@@ -24,7 +24,7 @@ const FOLDER_VALUE_PREFIX = "__secret_folder__:";
 function statusBadge(status: SecretStatus | undefined) {
   if (!status || status === "active") return null;
   return (
-    <Badge variant="outline" className="ml-auto text-(length:--text-nano) font-normal text-muted-foreground">
+    <Badge variant="outline" className="ml-auto text-(length:--text-nano) font-normal text-ink-3">
       {status}
     </Badge>
   );
@@ -258,17 +258,17 @@ export function SecretPicker({
       emptyMessage="No matching secrets"
       triggerClassName={cn(
         "h-(--sz-34px) min-h-(--sz-34px) font-mono text-sm",
-        boundMissing && "border-destructive text-destructive",
+        boundMissing && "border-bad text-bad",
         boundSecret && boundSecret.status !== "active" && "border-amber-500/60",
         triggerClassName,
       )}
       renderValue={(option) => {
         if (!option) {
-          return <span className="text-muted-foreground">Select secret…</span>;
+          return <span className="text-ink-3">Select secret…</span>;
         }
         if (option.missing) {
           return (
-            <span className="flex w-full min-w-0 items-center gap-1.5 text-destructive">
+            <span className="flex w-full min-w-0 items-center gap-1.5 text-bad">
               <KeyRound className="size-3.5 shrink-0" />
               <span className="min-w-0 flex-1 truncate">{option.label}</span>
             </span>
@@ -277,7 +277,7 @@ export function SecretPicker({
         const nonActive = option.status && option.status !== "active";
         return (
           <span className="flex w-full min-w-0 items-center gap-1.5" title={option.title}>
-            <KeyRound className={cn("size-3.5 shrink-0", nonActive ? "text-amber-600" : "text-muted-foreground")} />
+            <KeyRound className={cn("size-3.5 shrink-0", nonActive ? "text-amber-600" : "text-ink-3")} />
             <span className="min-w-0 flex-1 truncate">{option.label}</span>
             {nonActive ? <span className="text-amber-600">({option.status})</span> : null}
           </span>
@@ -288,11 +288,11 @@ export function SecretPicker({
           const Icon = option.kind === "back" ? CornerUpLeft : Folder;
           return (
             <span className="flex min-w-0 flex-1 items-center gap-1.5" title={option.title ?? option.label}>
-              <Icon className="size-3.5 shrink-0 text-muted-foreground" />
+              <Icon className="size-3.5 shrink-0 text-ink-3" />
               <span className="flex min-w-0 flex-col">
                 <span className={cn("truncate text-sm", selected && "font-medium")}>{option.label}</span>
                 {option.pathHint ? (
-                  <span className="truncate font-mono text-(length:--text-micro) text-muted-foreground">{option.pathHint}</span>
+                  <span className="truncate font-mono text-(length:--text-micro) text-ink-3">{option.pathHint}</span>
                 ) : null}
               </span>
             </span>
@@ -304,13 +304,13 @@ export function SecretPicker({
             className={cn("flex min-w-0 flex-1 items-center gap-1.5", option.disabled && "opacity-60")}
             title={option.title ?? option.label}
           >
-            <KeyRound className="size-3.5 shrink-0 text-muted-foreground" />
+            <KeyRound className="size-3.5 shrink-0 text-ink-3" />
             <span className="flex min-w-0 flex-col">
               <span className={cn("min-w-0 truncate font-mono text-sm", selected && "font-medium")}>
                 {option.label}
               </span>
               {option.pathHint && option.pathHint !== option.label ? (
-                <span className="truncate font-mono text-(length:--text-micro) text-muted-foreground">{option.pathHint}</span>
+                <span className="truncate font-mono text-(length:--text-micro) text-ink-3">{option.pathHint}</span>
               ) : null}
             </span>
             {statusBadge(option.status)}

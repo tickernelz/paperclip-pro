@@ -32,9 +32,9 @@ export function ProjectRepositories({ project }: { project: Project }) {
   return <section aria-label="Repositories" className="flex min-w-0 flex-col gap-4 py-4">
     <ProjectRepositoryInput companyId={project.companyId} selected={draft ?? saved} onChange={(repos) => { setDraft(repos); save.reset(); }} onConnect={() => setConnecting(true)} disabled={save.isPending} />
     {project.workspaces.filter((workspace) => workspace.repoUrl && !workspace.metadata?.githubRepositoryId).map((workspace) => <LegacyProjectRepository key={workspace.id} workspace={workspace} projectRef={project.urlKey} />)}
-    <div className="flex flex-wrap items-center justify-end gap-2 border-t border-border pt-4">
-      {save.isError && <p role="alert" className="mr-auto text-sm text-destructive">{save.error.message}</p>}
-      {save.isSuccess && <span role="status" className="mr-auto text-sm text-muted-foreground">Changes saved</span>}
+    <div className="flex flex-wrap items-center justify-end gap-2 border-t border-line pt-4">
+      {save.isError && <p role="alert" className="mr-auto text-sm text-bad">{save.error.message}</p>}
+      {save.isSuccess && <span role="status" className="mr-auto text-sm text-ink-3">Changes saved</span>}
       {draft && <Button type="button" variant="ghost" disabled={save.isPending} onClick={() => { setDraft(null); save.reset(); }}>Discard changes</Button>}
       <Button type="button" disabled={!draft || save.isPending} onClick={() => save.mutate()}>{save.isPending ? "Saving…" : "Save changes"}</Button>
     </div>

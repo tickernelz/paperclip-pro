@@ -18,15 +18,15 @@ const managerAgent =
 
 function StoryFrame({ title, description, children }: { title: string; description?: string; children: ReactNode }) {
   return (
-    <main className="min-h-screen bg-background p-4 text-foreground sm:p-8">
+    <main className="min-h-screen bg-bg p-4 text-ink sm:p-8">
       <div className="mx-auto max-w-5xl space-y-5">
         <header>
-          <div className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
+          <div className="text-xs font-medium uppercase tracking-[0.2em] text-ink-3">
             Source-issue recovery
           </div>
           <h1 className="mt-1 text-2xl font-semibold">{title}</h1>
           {description ? (
-            <p className="mt-2 max-w-3xl text-sm text-muted-foreground">{description}</p>
+            <p className="mt-2 max-w-3xl text-sm text-ink-3">{description}</p>
           ) : null}
         </header>
         {children}
@@ -79,7 +79,7 @@ function CardPanel({ caption, action, forcedState, canFalsePositive }: {
 }) {
   return (
     <section className="space-y-2">
-      <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+      <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-3">
         {caption}
       </div>
       <IssueRecoveryActionCard
@@ -308,7 +308,7 @@ function RetryLineagePanel() {
         canFalsePositive
       />
       <section className="space-y-2">
-        <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-muted-foreground">
+        <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-ink-3">
           Parent blocker chips · same actions, same liveness state
         </div>
         <IssueBlockedNotice
@@ -425,7 +425,7 @@ const RUN_CARD_RECOVERY_TONE: Record<RunCardRecoveryState, { icon: typeof Triang
   observe_only: {
     icon: Eye,
     label: "Observing active run",
-    className: "border-border bg-muted text-muted-foreground",
+    className: "border-line bg-bg-3 text-ink-3",
   },
   escalated: {
     icon: OctagonAlert,
@@ -460,7 +460,7 @@ function ActiveRunCardMock({
 }) {
   return (
     <div className="flex h-[260px] w-full max-w-[320px] flex-col overflow-hidden rounded-xl border border-cyan-500/25 bg-cyan-500/[0.04] shadow-[0_16px_40px_rgba(6,182,212,0.08)]">
-      <div className="border-b border-border/60 px-3 py-3">
+      <div className="border-b border-line/60 px-3 py-3">
         <div className="flex items-start justify-between gap-2">
           <div className="min-w-0">
             <div className="flex items-center gap-2">
@@ -470,15 +470,15 @@ function ActiveRunCardMock({
               </span>
               <span className="text-sm font-medium">CodexCoder</span>
             </div>
-            <div className="mt-2 flex items-center gap-2 text-[11px] text-muted-foreground">
+            <div className="mt-2 flex items-center gap-2 text-[11px] text-ink-3">
               <span>Live now</span>
             </div>
           </div>
-          <span className="inline-flex items-center gap-1 rounded-full border border-border/70 bg-background/70 px-2 py-1 text-[10px] text-muted-foreground">
+          <span className="inline-flex items-center gap-1 rounded-full border border-line/70 bg-bg/70 px-2 py-1 text-[10px] text-ink-3">
             <ExternalLink className="h-2.5 w-2.5" />
           </span>
         </div>
-        <div className="mt-3 rounded-lg border border-border/60 bg-background/60 px-2.5 py-2 text-xs">
+        <div className="mt-3 rounded-lg border border-line/60 bg-bg/60 px-2.5 py-2 text-xs">
           <span className="line-clamp-2 text-cyan-700 dark:text-cyan-300">
             {identifier} - {title}
           </span>
@@ -487,7 +487,7 @@ function ActiveRunCardMock({
           </div>
         </div>
       </div>
-      <div className="flex-1 px-3 py-2 text-[11px] text-muted-foreground">Live transcript…</div>
+      <div className="flex-1 px-3 py-2 text-[11px] text-ink-3">Live transcript…</div>
     </div>
   );
 }
@@ -522,7 +522,7 @@ function ActiveRunPanel() {
 function InboxRowPanel() {
   const baseIssue = createIssue();
   return (
-    <div className="rounded-lg border border-border/70 bg-background/80">
+    <div className="rounded-lg border border-line/70 bg-bg/80">
       <IssueRow
         issue={{
           ...baseIssue,

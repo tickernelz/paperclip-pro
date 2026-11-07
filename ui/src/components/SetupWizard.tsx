@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 export function SetupWizardSidebar() {
   const sidebar = useSetupWizardSidebar();
   return (
-    <aside className="flex h-full min-h-0 w-full flex-col border-r border-border bg-background">
+    <aside className="flex h-full min-h-0 w-full flex-col border-r border-line bg-bg">
       <div ref={sidebar?.setTarget} className="overflow-y-auto px-4 py-6" />
     </aside>
   );
@@ -48,7 +48,7 @@ export function SetupWizardNavigation({
           <li key={label}>
             {index > 0 && (
               <div aria-hidden="true" className="flex w-8 justify-center py-1">
-                <span className="h-4 border-l border-border" />
+                <span className="h-4 border-l border-line" />
               </div>
             )}
             <button
@@ -59,16 +59,16 @@ export function SetupWizardNavigation({
                 onSelect(index);
                 if (isMobile) setSidebarOpen(false);
               }}
-              className="flex w-full items-center gap-3 rounded-md text-left outline-none transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-default disabled:hover:bg-transparent"
+              className="flex w-full items-center gap-3 rounded-md text-left outline-none transition-colors hover:bg-bg-3 focus-visible:ring-2 focus-visible:ring-focus disabled:cursor-default disabled:hover:bg-transparent"
             >
               <span className={cn(
                 "flex size-8 shrink-0 items-center justify-center rounded-full border font-medium",
-                index === step ? "border-primary bg-primary text-primary-foreground" :
-                  index <= availableStep ? "border-foreground text-foreground" : "border-border text-muted-foreground",
+                index === step ? "border-accent bg-accent text-accent-ink" :
+                  index <= availableStep ? "border-ink text-ink" : "border-line text-ink-3",
               )}>
                 {index + 1}
               </span>
-              <span className={index === step ? "font-medium text-foreground" : "text-muted-foreground"}>
+              <span className={index === step ? "font-medium text-ink" : "text-ink-3"}>
                 {label}
               </span>
             </button>
@@ -91,7 +91,7 @@ export function SetupWizardSidebarOutlet({ children }: { children: ReactNode }) 
 /** Each step owns one footer row; secondary actions stay with the primary action. */
 export function SetupWizardFooter({ onSaveExit, children, disabled = false }: { onSaveExit: () => void; children: ReactNode; disabled?: boolean }) {
   return <div className="flex flex-wrap items-center justify-between gap-3 pt-2">
-    <Button type="button" variant="ghost" className="text-muted-foreground" onClick={onSaveExit} disabled={disabled}>Save &amp; exit</Button>
+    <Button type="button" variant="ghost" onClick={onSaveExit} disabled={disabled}>Save &amp; exit</Button>
     <div className="ml-auto flex flex-wrap items-center gap-2">{children}</div>
   </div>;
 }

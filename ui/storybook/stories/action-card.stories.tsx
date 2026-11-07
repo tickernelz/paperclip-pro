@@ -73,7 +73,7 @@ export const DesktopSideBySide: Story = {
 
 export const Mobile: Story = {
   render: () => (
-    <div className="w-[390px] bg-background p-3">
+    <div className="w-[390px] bg-bg p-3">
       <ActionCardMobile {...baseProps} />
     </div>
   ),

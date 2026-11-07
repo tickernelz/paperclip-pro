@@ -215,9 +215,9 @@ export function RoutineTriggerWizard({
           ? "Copy these details into the sending app, then save its webhook settings."
           : "Test that events arrive and authentication works. This won’t start the routine.";
   const selectClass =
-    "w-full rounded-md border border-input bg-background px-3 py-2 text-sm";
+    "w-full rounded-md border border-line-strong bg-bg px-3 py-2 text-sm";
   const goBack = (
-    <Button variant="outline" onClick={() => patch({ step: draft.step - 1 })}>
+    <Button variant="secondary" onClick={() => patch({ step: draft.step - 1 })}>
       Back
     </Button>
   );
@@ -235,7 +235,7 @@ export function RoutineTriggerWizard({
       <fieldset disabled={busy} className="min-w-0 space-y-6">
         <div className="space-y-1">
           <h1 className="text-xl font-bold">{title}</h1>
-          <p className="text-sm text-muted-foreground">{subtitle}</p>
+          <p className="text-sm text-ink-3">{subtitle}</p>
         </div>
         {!schedule && draft.step > 0 && <WebhookUrlWarning url={webhookUrl} />}
         {draft.step === 0 && (
@@ -261,10 +261,10 @@ export function RoutineTriggerWizard({
               <label
                 key={kind}
                 className={cn(
-                  "flex cursor-pointer items-start gap-3 rounded-md border p-4 focus-within:ring-2 focus-within:ring-ring",
+                  "flex cursor-pointer items-start gap-3 rounded-md border p-4 focus-within:ring-2 focus-within:ring-focus",
                   draft.kind === kind
-                    ? "border-primary bg-accent/30"
-                    : "border-border hover:bg-accent/20",
+                    ? "border-accent bg-bg-3/30"
+                    : "border-line hover:bg-bg-3/20",
                 )}
               >
                 <input
@@ -281,10 +281,10 @@ export function RoutineTriggerWizard({
                   }
                   className="sr-only"
                 />
-                <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+                <Icon className="mt-0.5 h-4 w-4 shrink-0 text-ink-3" />
                 <span className="flex-1">
                   <span className="block text-sm font-medium">{label}</span>
-                  <span className="block text-xs text-muted-foreground">
+                  <span className="block text-xs text-ink-3">
                     {detail}
                   </span>
                 </span>
@@ -363,7 +363,7 @@ export function RoutineTriggerWizard({
                   <option key={zone}>{zone}</option>
                 ))}
               </select>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-ink-3">
                 The time follows this zone, including daylight saving changes.
               </p>
             </div>
@@ -371,16 +371,16 @@ export function RoutineTriggerWizard({
         )}
         {schedule && draft.step === 2 && (
           <div className="space-y-5">
-            <div className="flex items-start gap-3 rounded-md bg-muted/40 p-4">
-              <CalendarClock className="h-5 w-5 text-muted-foreground" />
+            <div className="flex items-start gap-3 rounded-md bg-bg-3/40 p-4">
+              <CalendarClock className="h-5 w-5 text-ink-3" />
               <div>
                 <p className="text-sm font-medium">{describeSchedule(draft)}</p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-ink-3">
                   {draft.timezone}
                 </p>
               </div>
             </div>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-ink-3">
               Each scheduled run creates a task for the routine’s assigned
               agent. Any existing webhook triggers will continue to work.
             </p>
@@ -405,10 +405,10 @@ export function RoutineTriggerWizard({
                 <label
                   key={sender}
                   className={cn(
-                    "flex cursor-pointer items-center gap-3 rounded-md border p-3 focus-within:ring-2 focus-within:ring-ring",
+                    "flex cursor-pointer items-center gap-3 rounded-md border p-3 focus-within:ring-2 focus-within:ring-focus",
                     draft.sender === sender
-                      ? "border-primary bg-accent/30"
-                      : "border-border",
+                      ? "border-accent bg-bg-3/30"
+                      : "border-line",
                     draft.created && "cursor-default",
                   )}
                 >
@@ -429,7 +429,7 @@ export function RoutineTriggerWizard({
           </fieldset>
         )}
         {draft.kind === "webhook" && draft.step === 0 && (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-ink-3">
             Public services need a publicly reachable HTTPS webhook URL.
           </p>
         )}
@@ -452,7 +452,7 @@ export function RoutineTriggerWizard({
               value={webhookUrl}
             />
             {!github && draft.signingMode !== "bearer" && (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-ink-3">
                 Paste this key into your app’s signing secret field.
                 {draft.signingMode !== "fireflies_hmac" && <>
                   {" "}If your app uses custom headers instead, set Authorization to Bearer followed
@@ -467,12 +467,12 @@ export function RoutineTriggerWizard({
               />
             ) : (
               <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-ink-3">
                   The key is hidden after leaving setup. If you haven’t saved it
                   in your app, generate a replacement.
                 </p>
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   onClick={() => void perform(() => onRotateKey?.())}
                 >
                   Generate new key
@@ -483,9 +483,9 @@ export function RoutineTriggerWizard({
         )}
         {!schedule && draft.step === 2 && (
           <div className="space-y-5">
-            <div className="space-y-1 rounded-md border border-border p-4">
+            <div className="space-y-1 rounded-md border border-line p-4">
               <p className="text-sm font-medium">Connection test only</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-ink-3">
                 Events received during setup won’t start the routine or create
                 tasks.
               </p>
@@ -494,25 +494,25 @@ export function RoutineTriggerWizard({
               <p className="text-sm font-medium">
                 Send an event from {github ? "GitHub" : "your app"}
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-ink-3">
                 {github
                   ? "Open this webhook in your repository settings. Under Recent Deliveries, choose Redeliver on an event."
                   : "Look for “Send test” in your app’s webhook settings. If it doesn’t have one, do the action that should trigger the webhook—for example, complete a deployment."}
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-ink-3">
                 Keep this page open to see the test result.
               </p>
             </div>
             <div
               role="status"
-              className="flex items-start gap-3 rounded-md bg-muted/40 p-4"
+              className="flex items-start gap-3 rounded-md bg-bg-3/40 p-4"
             >
               {checkResult === "received" ? (
                 <CheckCircle2 className="h-5 w-5 shrink-0 text-(--status-task-done)" />
               ) : checkResult === "rejected" ? (
-                <AlertCircle className="h-5 w-5 shrink-0 text-destructive" />
+                <AlertCircle className="h-5 w-5 shrink-0 text-bad" />
               ) : (
-                <Radio className="h-5 w-5 shrink-0 text-muted-foreground" />
+                <Radio className="h-5 w-5 shrink-0 text-ink-3" />
               )}
               <div className="space-y-1">
                 <p className="text-sm font-medium">
@@ -524,7 +524,7 @@ export function RoutineTriggerWizard({
                         ? "No event received yet"
                         : "Waiting for an event from your app…"}
                 </p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-ink-3">
                   {checkResult === "received"
                     ? "Authentication passed. No routine run or task was created."
                     : checkResult === "rejected"
@@ -534,11 +534,11 @@ export function RoutineTriggerWizard({
               </div>
             </div>
             <details>
-              <summary className="cursor-pointer text-xs text-muted-foreground">
+              <summary className="cursor-pointer text-xs text-ink-3">
                 Troubleshoot delivery
               </summary>
               <div className="space-y-3 pt-3">
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-ink-3">
                   Check that the webhook is enabled in your sending app and that
                   its URL matches. Scripts must send POST with a JSON body.
                 </p>
@@ -548,20 +548,20 @@ export function RoutineTriggerWizard({
           </div>
         )}
         {!schedule && draft.step === 2 && (
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             {routineActive
               ? "Finish setup to enable this webhook. Future events will start the routine; this test event won’t be replayed."
               : "Finish setup to save this webhook. The routine is paused; enable its automatic triggers when you’re ready. This test event won’t be replayed."}
           </p>
         )}
         {schedule && draft.step === 2 && !routineActive && (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-ink-3">
             The routine is paused. Enable its automatic triggers when you’re
             ready to use this schedule.
           </p>
         )}
         {saveError && (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-sm text-bad">
             {saveError}
           </p>
         )}

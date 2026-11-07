@@ -191,7 +191,7 @@ describe("Artifacts page", () => {
         .find((element) => element.textContent === "All") as HTMLButtonElement;
       expect(groupControl).not.toBeNull();
       expect(groupControl.textContent).toBe("");
-      expect(groupControl.getAttribute("data-variant")).toBe("outline");
+      expect(groupControl.getAttribute("data-variant")).toBe("secondary");
       expect(groupControl.getAttribute("data-size")).toBe("icon");
       expect(groupControl.getAttribute("data-group-by")).toBe("task");
       expect(Boolean(groupControl.compareDocumentPosition(allFilter) & Node.DOCUMENT_POSITION_FOLLOWING)).toBe(true);

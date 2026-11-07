@@ -152,7 +152,7 @@ function StreamlinedTasks() {
         toolbarContext={(
           <div className="flex min-w-0 items-center gap-2">
             {viewsMenu}
-            <Button size="sm" variant="outline" aria-label="New Task" onClick={() => openNewIssue()}>
+            <Button size="sm" variant="secondary" aria-label="New Task" onClick={() => openNewIssue()}>
               <Plus className="h-4 w-4 sm:mr-1" />
               <span className="hidden sm:inline">New Task</span>
             </Button>

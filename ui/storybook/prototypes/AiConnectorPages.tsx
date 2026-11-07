@@ -129,13 +129,13 @@ export function AiConnectorPages({ initialConnections = AI_REVIEW_CONNECTIONS, d
   if (!ready) return <p className="p-6">Loading Connectors review…</p>;
   return <QueryClientProvider client={client}>
     <main className="mx-auto max-w-5xl p-6">
-      <p className="mb-6 text-xs text-muted-foreground">Existing app page components below · Fixture accounts · Review annotation</p>
+      <p className="mb-6 text-xs text-ink-3">Existing app page components below · Fixture accounts · Review annotation</p>
       <BreadcrumbBar />
       <div className="pt-6">
       <Routes>
         <Route path="/:companyPrefix/apps" element={<Browse renderAccountDetails={(connection) => {
           const row = store.accounts.find((account) => account.id === connection.id);
-          return row ? <p className="text-xs text-muted-foreground">{aiMethodLabel(row.provider, row.method)} · {row.ownership === "shared" ? "Company shared" : "Personal"}{row.isDefault ? " · Personal default" : ""}{row.accountLabel ? ` · ${row.accountLabel}` : ""}</p> : null;
+          return row ? <p className="text-xs text-ink-3">{aiMethodLabel(row.provider, row.method)} · {row.ownership === "shared" ? "Company shared" : "Personal"}{row.isDefault ? " · Personal default" : ""}{row.accountLabel ? ` · ${row.accountLabel}` : ""}</p> : null;
         }} />} />
         <Route path="/:companyPrefix/apps/connect" element={<Setup accounts={store.accounts} onSave={update} />} />
         <Route path="/:companyPrefix/apps/:connectionId/:tab" element={<AppDetail onReconnect={(connection) => navigate(`/apps/connect?source=${connection.config?.sourceTemplateKey}&stage=setup&reconnect=${connection.id}`)} renderActions={(connection) => {
@@ -179,6 +179,6 @@ function Setup({ accounts, onSave }: { accounts: AiConnectionSummary[]; onSave: 
       onSubmit={() => complete(grantKind, agentIds, allAgents)}
       onCancel={() => navigate("/apps")}
       onDone={() => navigate(`/apps/${savedId}/permissions`)} />
-    {state.phase === "waiting" && method === "subscription" && provider !== "anthropic" && <Button variant="outline" onClick={() => complete(grantKind, agentIds, allAgents)}>Storybook only: simulate browser completion</Button>}
+    {state.phase === "waiting" && method === "subscription" && provider !== "anthropic" && <Button variant="secondary" onClick={() => complete(grantKind, agentIds, allAgents)}>Storybook only: simulate browser completion</Button>}
   </div></AiReviewBoundary>} />;
 }

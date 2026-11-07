@@ -29,12 +29,12 @@ function Harness({
   const onChange = (change: FrontmatterPanelChange) => setState(change);
 
   return (
-    <div className="bg-background text-foreground" style={{ width }}>
-      <div className="rounded-(--rad-8) border border-border">
+    <div className="bg-bg text-ink" style={{ width }}>
+      <div className="rounded-(--rad-8) border border-line">
         {/* Mimic the Studio file-path + Save toolbar that sits above the panel. */}
-        <div className="flex items-center justify-between gap-2 border-b border-border px-3 py-1.5">
-          <span className="truncate font-mono text-xs text-muted-foreground">{fileName} · v3</span>
-          <span className="text-xs text-muted-foreground">Save</span>
+        <div className="flex items-center justify-between gap-2 border-b border-line px-3 py-1.5">
+          <span className="truncate font-mono text-xs text-ink-3">{fileName} · v3</span>
+          <span className="text-xs text-ink-3">Save</span>
         </div>
         <FrontmatterPanel
           key={fileName}
@@ -46,9 +46,9 @@ function Harness({
           onChange={onChange}
         />
         {/* Stand-in for the rich MarkdownEditor body below the panel. */}
-        <div className="px-3 py-6 text-sm text-muted-foreground"># Skill body (rich editor)…</div>
+        <div className="px-3 py-6 text-sm text-ink-3"># Skill body (rich editor)…</div>
       </div>
-      <pre className="mt-3 max-w-full overflow-auto rounded-(--rad-6) bg-muted/40 p-2 text-[10px] leading-relaxed text-muted-foreground">
+      <pre className="mt-3 max-w-full overflow-auto rounded-(--rad-6) bg-bg-3/40 p-2 text-[10px] leading-relaxed text-ink-3">
         {state.hasFrontmatter ? `---\n${state.frontmatterText}\n---` : "(no frontmatter)"}
       </pre>
     </div>

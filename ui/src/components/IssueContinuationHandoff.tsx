@@ -40,29 +40,29 @@ export function IssueContinuationHandoff({
       ref={rootRef}
       id={`document-${ISSUE_CONTINUATION_SUMMARY_DOCUMENT_KEY}`}
       className={cn(
-        "mb-3 rounded-lg border border-border bg-accent/20 p-3 transition-colors duration-1000",
-        highlighted && "border-primary/50 bg-primary/5",
+        "mb-3 rounded-lg border border-line bg-bg-3/20 p-3 transition-colors duration-1000",
+        highlighted && "border-accent/50 bg-accent/5",
       )}
     >
       <div className="flex flex-wrap items-center gap-2">
         <button
           type="button"
-          className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-accent/60 hover:text-foreground"
+          className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-sm text-ink-3 transition-colors hover:bg-bg-3/60 hover:text-ink"
           onClick={() => setExpanded((current) => !current)}
           aria-label={expanded ? "Collapse continuation handoff" : "Expand continuation handoff"}
           aria-expanded={expanded}
         >
           {expanded ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
         </button>
-        <History className="h-4 w-4 text-muted-foreground" />
+        <History className="h-4 w-4 text-ink-3" />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm font-medium text-foreground">{title}</span>
-            <Badge variant="outline" className="border-border font-mono text-(length:--text-nano) uppercase text-muted-foreground">
+            <span className="text-sm font-medium text-ink">{title}</span>
+            <Badge variant="outline" className="border-line font-mono text-(length:--text-nano) uppercase text-ink-3">
               handoff
             </Badge>
           </div>
-          <div className="text-(length:--text-micro) text-muted-foreground">
+          <div className="text-(length:--text-micro) text-ink-3">
             Updated {relativeTime(document.updatedAt)}
             {document.latestRevisionNumber > 0 ? ` - revision ${document.latestRevisionNumber}` : ""}
           </div>
@@ -76,7 +76,7 @@ export function IssueContinuationHandoff({
         />
       </div>
       {expanded ? (
-        <div className="mt-3 rounded-md border border-border bg-background/80 p-3">
+        <div className="mt-3 rounded-md border border-line bg-bg/80 p-3">
           <MarkdownBody
             className="paperclip-edit-in-place-content text-sm leading-6"
             softBreaks={false}

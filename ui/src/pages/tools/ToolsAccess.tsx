@@ -53,7 +53,7 @@ export function ToolsAccess() {
   }, [setBreadcrumbs, selectedCompany?.name, advanced, tabLabel]);
 
   if (!selectedCompanyId) {
-    return <div className="p-6 text-sm text-muted-foreground">Select an organization to open advanced setup.</div>;
+    return <div className="p-6 text-sm text-ink-3">Select an organization to open advanced setup.</div>;
   }
 
   if (params.tab === "run-your-own") {
@@ -86,22 +86,22 @@ export function ToolsAccess() {
       <div className="mx-auto flex w-full max-w-4xl flex-col gap-5 p-4 sm:p-6">
         <header>
           <div className="flex items-center gap-2.5">
-            <h1 className="text-xl font-bold text-foreground">Advanced setup</h1>
-            <span className="inline-flex items-center rounded-full bg-foreground px-2.5 py-0.5 text-(length:--text-micro) font-bold text-background">
+            <h1 className="text-xl font-bold text-ink">Advanced setup</h1>
+            <span className="inline-flex items-center rounded-full bg-ink px-2.5 py-0.5 text-(length:--text-micro) font-bold text-bg">
               Advanced
             </span>
           </div>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-ink-3">
             For tools that aren't in the gallery. You'll need details from the tool's documentation.
             Most people never need this — if the app you want is in the gallery,{" "}
-            <Link to="/apps" className="font-medium text-primary hover:underline">
+            <Link to="/apps" className="font-medium text-accent hover:underline">
               connect it there instead
             </Link>
             .
           </p>
         </header>
 
-        <nav className="flex items-center gap-6 border-b border-border">
+        <nav className="flex items-center gap-6 border-b border-line">
           {ADVANCED_TABS.map((tab) => (
             <Link
               key={tab.key}
@@ -109,8 +109,8 @@ export function ToolsAccess() {
               className={cn(
                 "-mb-px border-b-2 pb-2 text-sm transition-colors",
                 tab.key === activeTab
-                  ? "border-foreground font-bold text-foreground"
-                  : "border-transparent text-muted-foreground hover:text-foreground",
+                  ? "border-ink font-bold text-ink"
+                  : "border-transparent text-ink-3 hover:text-ink",
               )}
             >
               {tab.label}
@@ -120,10 +120,10 @@ export function ToolsAccess() {
 
         <div className="min-h-(--sz-300px)">{renderTab(activeTab, selectedCompanyId)}</div>
 
-        <p className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <p className="flex items-center gap-1.5 text-xs text-ink-3">
           <Wrench className="h-3.5 w-3.5" />
           Looking for the developer surface?{" "}
-          <Link to={advancedTabHref("profiles")} className="font-medium text-primary hover:underline">
+          <Link to={advancedTabHref("profiles")} className="font-medium text-accent hover:underline">
             Open developer tools
           </Link>
         </p>

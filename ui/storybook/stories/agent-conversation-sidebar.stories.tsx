@@ -11,7 +11,7 @@ function InteractiveSidebar(args: React.ComponentProps<typeof AgentConversationS
     setActiveId(agent.id);
     setAgents(current => current.some(item => item.id === agent.id) ? current : [...current, agent]);
   };
-  return <div className="h-dvh w-60 bg-background text-foreground"><AgentConversationSidebar {...args} agents={agents} activeId={activeId} onSelect={selectAgent} onAddChat={selectAgent} onBrowse={undefined} /></div>;
+  return <div className="h-dvh w-60 bg-bg text-ink"><AgentConversationSidebar {...args} agents={agents} activeId={activeId} onSelect={selectAgent} onAddChat={selectAgent} onBrowse={undefined} /></div>;
 }
 const meta = {
   title: "Design explorations/Agent chat sidebar/Components",

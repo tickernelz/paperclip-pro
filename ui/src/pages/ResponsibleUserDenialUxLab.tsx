@@ -19,10 +19,10 @@ function LabSection({
   children: ReactNode;
 }) {
   return (
-    <section className="rounded-2xl border border-border/70 bg-background/85 p-5 shadow-sm">
+    <section className="rounded-2xl border border-line/70 bg-bg/85 p-5 shadow-sm">
       <div className="mb-4">
-        <h2 className="text-base font-semibold text-foreground">{title}</h2>
-        <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+        <h2 className="text-base font-semibold text-ink">{title}</h2>
+        <p className="mt-1 text-sm text-ink-3">{description}</p>
       </div>
       <div className="grid gap-4 lg:grid-cols-2">{children}</div>
     </section>
@@ -32,10 +32,10 @@ function LabSection({
 function BeforeAfter({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="space-y-2">
-      <div className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">
+      <div className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-caps) text-ink-3">
         {label}
       </div>
-      <Card className="block border-border/60 p-3">{children}</Card>
+      <Card className="block border-line/60 p-3">{children}</Card>
     </div>
   );
 }
@@ -49,30 +49,30 @@ function RunLedgerRow({
   denial?: ReactNode;
 }) {
   return (
-    <article className="space-y-1.5 rounded-lg border border-border/60 px-3 py-2 text-xs text-muted-foreground">
+    <article className="space-y-1.5 rounded-lg border border-line/60 px-3 py-2 text-xs text-ink-3">
       <div className="flex flex-wrap items-center gap-1.5">
-        <span className="font-medium text-foreground">Run</span>
-        <span className="min-w-0 max-w-full truncate font-mono text-foreground">a1b2c3d4</span>
+        <span className="font-medium text-ink">Run</span>
+        <span className="min-w-0 max-w-full truncate font-mono text-ink">a1b2c3d4</span>
         <span>by CodexCoder</span>
         {onBehalfOf ? (
-          <span className="min-w-0 max-w-full truncate text-muted-foreground">
-            on behalf of <span className="text-foreground">{onBehalfOf}</span>
+          <span className="min-w-0 max-w-full truncate text-ink-3">
+            on behalf of <span className="text-ink">{onBehalfOf}</span>
           </span>
         ) : null}
-        <span className="rounded-md border border-border px-1.5 py-0.5 text-(length:--text-micro) capitalize text-muted-foreground">
+        <span className="rounded-md border border-line px-1.5 py-0.5 text-(length:--text-micro) capitalize text-ink-3">
           {denial ? "Failed" : "Succeeded"}
         </span>
         <span className="ml-auto shrink-0">2m ago</span>
       </div>
-      <div className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-3">
+      <div className="grid gap-2 text-xs text-ink-3 sm:grid-cols-3">
         <div className="min-w-0">
-          <span className="text-foreground">Elapsed</span> 1m 4s
+          <span className="text-ink">Elapsed</span> 1m 4s
         </div>
         <div className="min-w-0">
-          <span className="text-foreground">Last useful action</span> 2m ago
+          <span className="text-ink">Last useful action</span> 2m ago
         </div>
         <div className="min-w-0">
-          <span className="text-foreground">Stop</span> {denial ? "Denied" : "Completed"}
+          <span className="text-ink">Stop</span> {denial ? "Denied" : "Completed"}
         </div>
       </div>
       {denial}
@@ -85,20 +85,20 @@ function RunDetailHeader({ onBehalfOf, denial }: { onBehalfOf?: string | null; d
   return (
     <div className="space-y-2">
       <div className="flex items-center gap-2">
-        <span className="text-lg font-semibold text-foreground">Run a1b2c3d4</span>
-        <span className="rounded-md border border-border px-1.5 py-0.5 text-(length:--text-micro) capitalize text-muted-foreground">
+        <span className="text-lg font-semibold text-ink">Run a1b2c3d4</span>
+        <span className="rounded-md border border-line px-1.5 py-0.5 text-(length:--text-micro) capitalize text-ink-3">
           {denial ? "failed" : "succeeded"}
         </span>
       </div>
-      <div className="flex flex-wrap items-center gap-1.5 font-mono text-(length:--text-micro) text-muted-foreground">
-        <span className="rounded bg-muted px-1.5 py-0.5 text-(length:--text-nano) font-medium uppercase tracking-wide">
+      <div className="flex flex-wrap items-center gap-1.5 font-mono text-(length:--text-micro) text-ink-3">
+        <span className="rounded bg-bg-3 px-1.5 py-0.5 text-(length:--text-nano) font-medium uppercase tracking-wide">
           codex local
         </span>
         <span>anthropic/claude-opus-4-8</span>
       </div>
       {onBehalfOf ? (
-        <div className="text-xs text-muted-foreground">
-          On behalf of <span className="text-foreground">{onBehalfOf}</span>
+        <div className="text-xs text-ink-3">
+          On behalf of <span className="text-ink">{onBehalfOf}</span>
         </div>
       ) : null}
       {denial}
@@ -108,16 +108,16 @@ function RunDetailHeader({ onBehalfOf, denial }: { onBehalfOf?: string | null; d
 
 export function ResponsibleUserDenialUxLab() {
   return (
-    <div className="min-h-screen bg-muted/20 p-6">
+    <div className="min-h-screen bg-bg-3/20 p-6">
       <div className="mx-auto max-w-5xl space-y-6">
         <header>
-          <div className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">
+          <div className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-caps) text-ink-3">
             PAP-12462 · P7
           </div>
-          <h1 className="mt-1 text-xl font-semibold text-foreground">
+          <h1 className="mt-1 text-xl font-semibold text-ink">
             Run "on behalf of" surfacing + denial copy
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-ink-3">
             Before/after of the two run surfaces and the four denial-related states.
           </p>
         </header>
@@ -149,7 +149,7 @@ export function ResponsibleUserDenialUxLab() {
               <span className="text-red-600 dark:text-red-400">
                 Forbidden: action not permitted
               </span>
-              <span className="ml-1 text-muted-foreground">(RESPONSIBLE_USER_UNAUTHORIZED)</span>
+              <span className="ml-1 text-ink-3">(RESPONSIBLE_USER_UNAUTHORIZED)</span>
             </div>
           </BeforeAfter>
           <BeforeAfter label="After — actionable denial copy">
@@ -169,11 +169,11 @@ export function ResponsibleUserDenialUxLab() {
               <span className="text-red-600 dark:text-red-400">
                 Forbidden: agent is not permitted to perform this action
               </span>
-              <span className="ml-1 text-muted-foreground">(deny_missing_membership)</span>
+              <span className="ml-1 text-ink-3">(deny_missing_membership)</span>
             </div>
           </BeforeAfter>
           <BeforeAfter label="No responsible-user notice rendered">
-            <div className="text-xs text-muted-foreground">
+            <div className="text-xs text-ink-3">
               Responsible-user denial notice intentionally absent for non-responsible-user codes.
             </div>
           </BeforeAfter>
@@ -188,7 +188,7 @@ export function ResponsibleUserDenialUxLab() {
               <span className="text-red-600 dark:text-red-400">
                 Forbidden: responsible user unavailable
               </span>
-              <span className="ml-1 text-muted-foreground">(RESPONSIBLE_USER_UNAVAILABLE)</span>
+              <span className="ml-1 text-ink-3">(RESPONSIBLE_USER_UNAVAILABLE)</span>
             </div>
           </BeforeAfter>
           <BeforeAfter label="After — actionable denial copy">
@@ -227,7 +227,7 @@ export function ResponsibleUserDenialUxLab() {
           </BeforeAfter>
         </LabSection>
 
-        <p className={cn("text-center text-(length:--text-micro) text-muted-foreground")}>
+        <p className={cn("text-center text-(length:--text-micro) text-ink-3")}>
           Copy is sourced from the shared <code>describeResponsibleUserDenial</code> contract.
         </p>
       </div>

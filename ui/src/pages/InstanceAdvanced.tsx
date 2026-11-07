@@ -56,7 +56,7 @@ function formatActivationTimestamp(iso: string): string {
 function WorktreeRunExecutionState({ state }: { state: WorktreeRunExecutionDisplayState }) {
   if (state.kind === "armed") {
     return (
-      <div className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm">
+      <div className="flex items-center gap-2 rounded-md border border-line px-3 py-2 text-sm">
         <Play aria-hidden="true" className="size-4 shrink-0 text-(--status-task-done)" />
         <span>
           Running tasks created after <span className="font-medium">{formatActivationTimestamp(state.activatedAt)}</span>.
@@ -66,11 +66,11 @@ function WorktreeRunExecutionState({ state }: { state: WorktreeRunExecutionDispl
   }
   if (state.kind === "fail_closed") {
     return (
-      <div className="flex items-start gap-2 rounded-md border border-border px-3 py-2 text-sm">
-        <AlertTriangle aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+      <div className="flex items-start gap-2 rounded-md border border-line px-3 py-2 text-sm">
+        <AlertTriangle aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-ink-3" />
         <div className="space-y-0.5">
           <p className="font-medium">Execution is suppressed, so it is effectively off.</p>
-          <p className="text-muted-foreground">
+          <p className="text-ink-3">
             {state.reason === "instance_mismatch"
               ? "This was turned on in a different instance and copied here, so no tasks run automatically."
               : "This is missing its activation cutoff, so no tasks run automatically."}{" "}
@@ -92,11 +92,11 @@ export function InstanceAdvanced() {
   }, [setBreadcrumbs]);
 
   if (features.query.isLoading) {
-    return <div className="text-sm text-muted-foreground">Loading advanced settings...</div>;
+    return <div className="text-sm text-ink-3">Loading advanced settings...</div>;
   }
   if (features.query.error) {
     return (
-      <div className="text-sm text-destructive">{features.query.error.message || "Failed to load advanced settings."}</div>
+      <div className="text-sm text-bad">{features.query.error.message || "Failed to load advanced settings."}</div>
     );
   }
 
@@ -125,23 +125,23 @@ export function InstanceAdvanced() {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="space-y-1">
           <h1 className="text-lg font-semibold">Advanced</h1>
-          <p className="text-sm text-muted-foreground">Tools for people who run or develop this instance.</p>
+          <p className="text-sm text-ink-3">Tools for people who run or develop this instance.</p>
         </div>
-        <Button variant="outline" disabled={features.pending || resettable.length === 0} onClick={reset}>
+        <Button variant="secondary" disabled={features.pending || resettable.length === 0} onClick={reset}>
           <RotateCcw aria-hidden="true" />
           Reset to defaults
         </Button>
       </div>
 
-      <div role="note" className="flex items-start gap-3 rounded-lg border border-border bg-card px-4 py-3 text-sm">
-        <AlertTriangle aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+      <div role="note" className="flex items-start gap-3 rounded-lg border border-line bg-bg-2 px-4 py-3 text-sm">
+        <AlertTriangle aria-hidden="true" className="mt-0.5 size-4 shrink-0 text-ink-3" />
         <p>
           These change how runs are executed or show internal data. Leave them alone unless you know why you need one.
         </p>
       </div>
 
       {features.error ? (
-        <div role="alert" className="rounded-md border border-destructive/40 px-3 py-2 text-sm text-destructive">
+        <div role="alert" className="rounded-md border border-bad/40 px-3 py-2 text-sm text-bad">
           {features.error}
         </div>
       ) : null}

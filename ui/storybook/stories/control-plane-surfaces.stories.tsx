@@ -31,7 +31,7 @@ function Section({
 }) {
   return (
     <section className="paperclip-story__frame overflow-hidden">
-      <div className="border-b border-border px-5 py-4">
+      <div className="border-b border-line px-5 py-4">
         <div className="paperclip-story__label">{eyebrow}</div>
         <h2 className="mt-1 text-xl font-semibold">{title}</h2>
       </div>
@@ -49,7 +49,7 @@ function ControlPlaneSurfaces() {
             <div>
               <div className="paperclip-story__label">Product surfaces</div>
               <h1 className="mt-2 text-3xl font-semibold tracking-tight">Control-plane boards and cards</h1>
-              <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
+              <p className="mt-3 max-w-3xl text-sm leading-6 text-ink-3">
                 Paperclip's common board surfaces are deliberately dense: task rows, approvals, budget policy cards,
                 and audit rows all need to scan quickly while preserving enough state to make autonomous work governable.
               </p>
@@ -63,7 +63,7 @@ function ControlPlaneSurfaces() {
         </section>
 
         <Section eyebrow="Issues" title="Inbox/task rows across selection and unread states">
-          <div className="overflow-hidden rounded-xl border border-border bg-background/70">
+          <div className="overflow-hidden rounded-xl border border-line bg-bg/70">
             {storybookIssues.map((issue, index) => (
               <IssueRow
                 key={issue.id}
@@ -78,7 +78,7 @@ function ControlPlaneSurfaces() {
                     {issue.assigneeAgentId ? (
                       <Identity name={storybookAgentMap.get(issue.assigneeAgentId)?.name ?? "Unassigned"} size="sm" />
                     ) : (
-                      <span className="text-xs text-muted-foreground">Board</span>
+                      <span className="text-xs text-ink-3">Board</span>
                     )}
                   </span>
                 }
@@ -122,7 +122,7 @@ function ControlPlaneSurfaces() {
               />
             ))}
           </div>
-          <div className="mt-5 rounded-xl border border-border bg-background/70 p-5">
+          <div className="mt-5 rounded-xl border border-line bg-bg/70 p-5">
             <BudgetPolicyCard
               summary={storybookBudgetSummaries[2]!}
               variant="plain"
@@ -133,7 +133,7 @@ function ControlPlaneSurfaces() {
 
         <Section eyebrow="Activity" title="Audit rows with agent, user, and system actors">
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
-            <div className="overflow-hidden rounded-xl border border-border bg-background/70">
+            <div className="overflow-hidden rounded-xl border border-line bg-bg/70">
               {storybookActivityEvents.map((event) => (
                 <ActivityRow
                   key={event.id}
@@ -159,11 +159,11 @@ function ControlPlaneSurfaces() {
                 ].map((item) => {
                   const Icon = item.icon;
                   return (
-                    <div key={item.label} className="flex items-start gap-3 rounded-lg border border-border bg-background/70 p-3">
+                    <div key={item.label} className="flex items-start gap-3 rounded-lg border border-line bg-bg/70 p-3">
                       <Icon className={`mt-0.5 h-4 w-4 ${item.tone}`} />
                       <div>
                         <div className="text-sm font-medium">{item.label}</div>
-                        <div className="text-xs leading-5 text-muted-foreground">{item.detail}</div>
+                        <div className="text-xs leading-5 text-ink-3">{item.detail}</div>
                       </div>
                     </div>
                   );
@@ -185,7 +185,7 @@ function ControlPlaneSurfaces() {
                   <CardDescription>{agent.title}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm">
-                  <p className="leading-6 text-muted-foreground">{agent.capabilities}</p>
+                  <p className="leading-6 text-ink-3">{agent.capabilities}</p>
                   <div className="flex flex-wrap gap-2">
                     <Badge variant="outline">{agent.role}</Badge>
                     <Badge variant="outline">{agent.adapterType}</Badge>
@@ -225,9 +225,9 @@ function ControlPlaneSurfaces() {
                 </div>
               </CardContent>
             </Card>
-            <div className="rounded-xl border border-border bg-background/70 p-5">
+            <div className="rounded-xl border border-line bg-bg/70 p-5">
               <div className="mb-4 flex items-center gap-2 text-sm font-medium">
-                <Eye className="h-4 w-4 text-muted-foreground" />
+                <Eye className="h-4 w-4 text-ink-3" />
                 Review target
               </div>
               <IssueRow

@@ -62,8 +62,8 @@ export function GitHubConnectionComplete({
                 <h2 className="break-words text-base font-semibold">
                   {endpoint.botLabel ?? endpoint.botUsername ?? endpoint.assignedAgentName}
                 </h2>
-                <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
-                  <Link to={`/agents/${endpoint.assignedAgentId}`} className="hover:text-foreground hover:underline">
+                <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-ink-3">
+                  <Link to={`/agents/${endpoint.assignedAgentId}`} className="hover:text-ink hover:underline">
                     {endpoint.assignedAgentName}
                   </Link>
                   {endpoint.providerAccountLabel && <>
@@ -74,7 +74,7 @@ export function GitHubConnectionComplete({
                     </span>
                   </>}
                 </p>
-                <Link to={`/apps/chat/${endpoint.id}/access`} className="inline-block text-xs text-muted-foreground underline underline-offset-4">
+                <Link to={`/apps/chat/${endpoint.id}/access`} className="inline-block text-xs text-ink-3 underline underline-offset-4">
                   {repositories.isError ? "Repository access unavailable" : count === undefined ? "Repository access" : count === 0 ? "No repositories enabled" : `${count} ${count === 1 ? "repository" : "repositories"} enabled`}
                 </Link>
               </div>
@@ -84,14 +84,14 @@ export function GitHubConnectionComplete({
             <section className="space-y-2">
               <h2 className="text-sm font-medium">Before your first review</h2>
               {incomplete.map((check) => (
-                <p key={check.key} className="text-sm text-muted-foreground">{check.detail}</p>
+                <p key={check.key} className="text-sm text-ink-3">{check.detail}</p>
               ))}
             </section>
           )}
           <section className="space-y-3">
             <div className="space-y-1">
               <h2 className="text-base font-semibold">Try your bot</h2>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-ink-3">
                 {count === 0
                   ? "Enable a repository in Access to try your bot."
                   : "Post this on a pull request in an enabled repository."}
@@ -102,10 +102,10 @@ export function GitHubConnectionComplete({
               ariaLabel="Copy mention"
               title="Copy mention"
               containerClassName="w-full"
-              className="flex w-full items-center gap-3 rounded-md border border-border bg-muted/30 p-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="flex w-full items-center gap-3 rounded-md border border-line bg-bg-3/30 p-3 text-left outline-none focus-visible:ring-2 focus-visible:ring-focus"
             >
               <code className="min-w-0 flex-1 break-words text-sm">{mention}</code>
-              <Copy className="size-4 shrink-0 text-muted-foreground" />
+              <Copy className="size-4 shrink-0 text-ink-3" />
             </CopyText>
           </section>
           <GitHubAppBranding

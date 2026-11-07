@@ -121,12 +121,12 @@ export function ProfileSettings() {
   });
 
   if (sessionQuery.isLoading) {
-    return <div className="text-sm text-muted-foreground">Loading profile...</div>;
+    return <div className="text-sm text-ink-3">Loading profile...</div>;
   }
 
   if (sessionQuery.error || !sessionQuery.data) {
     return (
-      <div className="text-sm text-destructive">
+      <div className="text-sm text-bad">
         {sessionQuery.error instanceof Error ? sessionQuery.error.message : "Failed to load profile."}
       </div>
     );
@@ -144,30 +144,30 @@ export function ProfileSettings() {
     <div className="max-w-6xl space-y-6">
       <div className="space-y-2">
         <div className="flex items-center gap-2">
-          <UserRoundPen className="h-5 w-5 text-muted-foreground" />
+          <UserRoundPen className="h-5 w-5 text-ink-3" />
           <h1 className="text-lg font-semibold">Profile</h1>
         </div>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           Control how your account appears in the sidebar and other board surfaces.
         </p>
       </div>
 
       {actionError ? (
-        <div className="rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+        <div className="rounded-md border border-bad/40 bg-bad/5 px-3 py-2 text-sm text-bad">
           {actionError}
         </div>
       ) : null}
 
       <section className="space-y-8">
-        <Card className="block relative overflow-hidden rounded-(--rad-28) border-border/70">
+        <Card className="block relative overflow-hidden rounded-(--rad-28) border-line/70">
           <div className="absolute inset-x-0 top-0 h-32 bg-(image:--gradient-extract-26)" />
           <div className="absolute inset-0 bg-(image:--gradient-extract-7)" />
           <div className="relative p-6 pt-10">
-            <div className="flex flex-wrap items-end gap-5 rounded-(--rad-24) border border-border/70 bg-background/92 p-5 shadow-(--shadow-extract-18) backdrop-blur-sm">
+            <div className="flex flex-wrap items-end gap-5 rounded-(--rad-24) border border-line/70 bg-bg/92 p-5 shadow-(--shadow-extract-18) backdrop-blur-sm">
               <div className="space-y-3">
                 <label
                   htmlFor={avatarInputId}
-                  className="group relative block cursor-pointer rounded-full focus-within:outline-none focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2 focus-within:ring-offset-background"
+                  className="group relative block cursor-pointer rounded-full focus-within:outline-none focus-within:ring-2 focus-within:ring-focus focus-within:ring-offset-2 focus-within:ring-offset-bg"
                 >
                   <input
                     ref={avatarInputRef}
@@ -184,10 +184,10 @@ export function ProfileSettings() {
                     }}
                   />
                   <span className="absolute inset-0 z-10 rounded-full bg-black/0 transition-colors group-hover:bg-black/14 group-focus-within:bg-black/14" />
-                  <span className="absolute bottom-1 right-1 z-20 flex size-9 items-center justify-center rounded-full border border-background bg-primary text-primary-foreground shadow-sm">
+                  <span className="absolute bottom-1 right-1 z-20 flex size-9 items-center justify-center rounded-full border border-bg bg-accent text-accent-ink shadow-sm">
                     {uploadAvatarMutation.isPending ? <LoaderCircle className="size-4 animate-spin" /> : <Camera className="size-4" />}
                   </span>
-                  <Avatar size="lg" className="data-[size=lg]:size-24 ring-4 ring-background shadow-xl">
+                  <Avatar size="lg" className="data-[size=lg]:size-24 ring-4 ring-bg shadow-xl">
                     {currentImage ? <AvatarImage src={currentImage} alt={currentName} /> : null}
                     <AvatarFallback>{initials}</AvatarFallback>
                   </Avatar>
@@ -205,7 +205,7 @@ export function ProfileSettings() {
                   {currentImage ? (
                     <Button
                       type="button"
-                      variant="outline"
+                      variant="secondary"
                       onClick={() => removeAvatarMutation.mutate()}
                       disabled={isSavingProfile}
                     >
@@ -218,10 +218,10 @@ export function ProfileSettings() {
 
               <div className="min-w-0 flex-1 space-y-2 pb-1">
                 <div>
-                  <h2 className="truncate text-2xl font-semibold text-foreground">{currentName}</h2>
-                  <p className="truncate text-sm text-muted-foreground">{sessionQuery.data.user.email ?? "No email"}</p>
+                  <h2 className="truncate text-2xl font-semibold text-ink">{currentName}</h2>
+                  <p className="truncate text-sm text-ink-3">{sessionQuery.data.user.email ?? "No email"}</p>
                 </div>
-                <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
+                <p className="max-w-2xl text-sm leading-6 text-ink-3">
                   Click the avatar to upload a new image. {uploadHint}
                 </p>
               </div>
@@ -245,7 +245,7 @@ export function ProfileSettings() {
               maxLength={120}
               placeholder="Board"
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-ink-3">
               Shown in the sidebar account footer and comment author surfaces.
             </p>
           </div>
@@ -258,7 +258,7 @@ export function ProfileSettings() {
               readOnly
               disabled
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-ink-3">
               Email is managed by your auth session and is read-only here.
             </p>
           </div>

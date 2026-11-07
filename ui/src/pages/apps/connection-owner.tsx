@@ -60,13 +60,13 @@ export function assistantConnectionDisplayName(connection: McpConnection): strin
 }
 
 export function ConnectionOwnerIdentity({ owner }: { owner: ConnectionOwnerProfile | null }) {
-  if (!owner) return <span className="text-xs text-muted-foreground">Unknown</span>;
+  if (!owner) return <span className="text-xs text-ink-3">Unknown</span>;
   return (
     <Identity
       name={owner.label}
       avatarUrl={owner.image}
       size="sm"
-      className="text-muted-foreground"
+      className="text-ink-3"
     />
   );
 }

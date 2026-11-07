@@ -97,13 +97,13 @@ export function CreateStatusCardDialog({
             className="text-sm"
           />
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-medium text-muted-foreground">Examples</span>
+            <span className="text-xs font-medium text-ink-3">Examples</span>
             {EXAMPLES.map((example) => (
               <button
                 key={example}
                 type="button"
                 onClick={() => setPrompt(example)}
-                className="rounded-full border border-border px-3 py-1 text-xs text-muted-foreground transition-colors hover:bg-accent/40"
+                className="rounded-full border border-line px-3 py-1 text-xs text-ink-3 transition-colors hover:bg-bg-3/40"
               >
                 {example}
               </button>
@@ -114,14 +114,14 @@ export function CreateStatusCardDialog({
         <div className="space-y-2">
           <label className="block text-sm font-semibold">Agent</label>
           <SummarizerAgentSelect companyId={companyId} value={agentId} onChange={setAgentId} enabled={open} />
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             Runs this card's setup and updates. Leave on the default unless another agent should own it.
           </p>
         </div>
 
         <DialogFooter>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={close} disabled={createMutation.isPending}>
+            <Button variant="secondary" onClick={close} disabled={createMutation.isPending}>
               Cancel
             </Button>
             <Button

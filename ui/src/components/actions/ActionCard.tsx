@@ -49,16 +49,16 @@ export function BindingsTable({
   className?: string;
 }) {
   return (
-    <dl className={cn("divide-y divide-border rounded-md border border-border text-sm", className)}>
+    <dl className={cn("divide-y divide-line rounded-md border border-line text-sm", className)}>
       {rows.map((row) => (
         <div key={row.label} className="flex gap-3 px-3 py-2">
           <dt
-            className="shrink-0 pt-0.5 text-xs font-medium uppercase tracking-normal text-muted-foreground"
+            className="shrink-0 pt-0.5 text-xs font-medium uppercase tracking-normal text-ink-3"
             style={{ width: labelWidth }}
           >
             {row.label}
           </dt>
-          <dd className={cn("min-w-0 flex-1 break-all text-foreground", row.mono && "font-mono text-xs")}>
+          <dd className={cn("min-w-0 flex-1 break-all text-ink", row.mono && "font-mono text-xs")}>
             {row.value}
           </dd>
         </div>
@@ -133,7 +133,7 @@ function initials(name: string): string {
 function bindingRows(binding: ActionCardBinding, isStale: boolean): BindingRow[] {
   const catalogValue = isStale && binding.previousCatalogSha256 ? (
     <span className="inline-flex flex-wrap items-center gap-1.5">
-      <span className="text-muted-foreground line-through decoration-amber-500" title="Previous catalog hash">
+      <span className="text-ink-3 line-through decoration-amber-500" title="Previous catalog hash">
         {shortSha(binding.previousCatalogSha256)}
       </span>
       <span className="text-amber-600 dark:text-amber-400" title="Current catalog hash">
@@ -150,7 +150,7 @@ function bindingRows(binding: ActionCardBinding, isStale: boolean): BindingRow[]
       value: (
         <span>
           {binding.application}
-          <span className="ml-1.5 text-xs text-muted-foreground">manifest v{binding.manifestVersion}</span>
+          <span className="ml-1.5 text-xs text-ink-3">manifest v{binding.manifestVersion}</span>
         </span>
       ),
     },
@@ -162,7 +162,7 @@ function bindingRows(binding: ActionCardBinding, isStale: boolean): BindingRow[]
         <span className="inline-flex items-center gap-1.5">
           <ShieldCheck className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
           <span>{shortSha(binding.payloadSha256)}</span>
-          <span className="font-sans text-(length:--text-micro) uppercase tracking-normal text-muted-foreground">signed</span>
+          <span className="font-sans text-(length:--text-micro) uppercase tracking-normal text-ink-3">signed</span>
         </span>
       ),
       mono: true,
@@ -207,12 +207,12 @@ export function ActionCard({
     </Button>
   );
   const denyButton = (
-    <Button size="sm" variant="outline" onClick={onDeny} className={mobile ? "w-full" : undefined}>
+    <Button size="sm" variant="secondary" onClick={onDeny} className={mobile ? "w-full" : undefined}>
       Deny
     </Button>
   );
   const editButton = (
-    <Button size="sm" variant="outline" onClick={onEditResign} className={mobile ? "w-full" : undefined}>
+    <Button size="sm" variant="secondary" onClick={onEditResign} className={mobile ? "w-full" : undefined}>
       <Pencil className="mr-1 h-3.5 w-3.5" />
       Edit &amp; re-sign
     </Button>
@@ -235,10 +235,10 @@ export function ActionCard({
             <AvatarFallback>{initials(agentName)}</AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
-            <p className="text-sm text-foreground">
+            <p className="text-sm text-ink">
               <span className="font-medium">{agentName}</span> requested approval to call
             </p>
-            <p className="mt-0.5 font-mono text-xs text-muted-foreground break-all">{toolName}</p>
+            <p className="mt-0.5 font-mono text-xs text-ink-3 break-all">{toolName}</p>
           </div>
           <div className="shrink-0">
             <DecisionBadge decision="require_approval" />
@@ -247,7 +247,7 @@ export function ActionCard({
 
         {/* Body: tool name + risk / capability pills */}
         <div className="flex flex-wrap items-center gap-2">
-          <span className="font-mono text-sm text-foreground">{toolName}</span>
+          <span className="font-mono text-sm text-ink">{toolName}</span>
           <RiskBadge risk={risk} />
           <CapabilityBadges isReadOnly={isReadOnly} isWrite={isWrite} isDestructive={isDestructive} />
         </div>
@@ -266,21 +266,21 @@ export function ActionCard({
 
         {/* JSON input */}
         <div className="space-y-1">
-          <p className="text-xs font-medium uppercase tracking-normal text-muted-foreground">Input</p>
-          <pre className="overflow-x-auto rounded-md border border-border bg-muted/40 p-3 font-mono text-xs leading-relaxed text-foreground">
+          <p className="text-xs font-medium uppercase tracking-normal text-ink-3">Input</p>
+          <pre className="overflow-x-auto rounded-md border border-line bg-bg-3/40 p-3 font-mono text-xs leading-relaxed text-ink">
             {json}
           </pre>
         </div>
 
         {/* Why I'm asking */}
         <div className="space-y-1">
-          <p className="text-xs font-medium uppercase tracking-normal text-muted-foreground">Why I&apos;m asking</p>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs font-medium uppercase tracking-normal text-ink-3">Why I&apos;m asking</p>
+          <p className="text-sm text-ink-3">
             {reason}
             {policyNumber != null ? (
               <>
                 {" "}
-                <span className="font-medium text-foreground">Policy #{policyNumber}</span> requires approval here.
+                <span className="font-medium text-ink">Policy #{policyNumber}</span> requires approval here.
               </>
             ) : null}
           </p>
@@ -290,11 +290,11 @@ export function ActionCard({
       {/* Footrow: expiry + actions */}
       <div
         className={cn(
-          "flex gap-2 border-t border-border p-4",
+          "flex gap-2 border-t border-line p-4",
           mobile ? "flex-col" : "flex-wrap items-center justify-between",
         )}
       >
-        <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <span className="flex items-center gap-1.5 text-xs text-ink-3">
           <Clock className="h-3.5 w-3.5 shrink-0" />
           {expiresInLabel ?? "no expiry set"}
         </span>

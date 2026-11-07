@@ -112,7 +112,7 @@ function RunnerTurnStatus({
 
   return (
     <span
-      className="min-w-0 truncate text-sm font-normal text-muted-foreground"
+      className="min-w-0 truncate text-sm font-normal text-ink-3"
       data-testid="task-chat-turn-status-header"
       data-turn-position="identity"
       aria-live="polite"
@@ -129,7 +129,7 @@ function RunnerTurnStatus({
 
 function RunnerCurrentActivityTail({ status }: { status: string }) {
   if (isTerminalRunStatus(status)) return null;
-  return <div className="mt-2 flex min-h-8 min-w-0 items-center gap-2 px-1 py-1 text-xs text-muted-foreground" data-testid="task-chat-current-activity" data-turn-position="tail">
+  return <div className="mt-2 flex min-h-8 min-w-0 items-center gap-2 px-1 py-1 text-xs text-ink-3" data-testid="task-chat-current-activity" data-turn-position="tail">
     <span className="shimmer-text shimmer-text-muted" aria-live="polite" data-testid="task-chat-current-activity-label">Thinking</span>
   </div>;
 }
@@ -324,7 +324,7 @@ export function TaskChatRunnerTurn({
       </div>
       {activityUnavailable ? (
         <div
-          className="px-1 py-1 text-xs text-muted-foreground"
+          className="px-1 py-1 text-xs text-ink-3"
           role="status"
           data-testid="task-chat-activity-unavailable"
         >

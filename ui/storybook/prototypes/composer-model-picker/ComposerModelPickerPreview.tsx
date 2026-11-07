@@ -35,12 +35,12 @@ function ModelRow({ option, selected, onSelect }: {
 }) {
   return (
     <button type="button" role="option" aria-selected={selected} onClick={() => onSelect(option.id)}
-      className="flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-left text-sm transition-colors hover:bg-accent focus-visible:bg-accent focus-visible:outline-none">
+      className="flex w-full items-center gap-3 rounded-md px-2.5 py-2 text-left text-sm transition-colors hover:bg-bg-3 focus-visible:bg-bg-3 focus-visible:outline-none">
       <span className="min-w-0 flex-1">
         <span className="block truncate font-medium">{option.label}</span>
-        <span className="block truncate font-mono text-xs text-muted-foreground">{option.id}</span>
+        <span className="block truncate font-mono text-xs text-ink-3">{option.id}</span>
       </span>
-      {option.detail ? <span className="shrink-0 text-xs text-muted-foreground">{option.detail}</span> : null}
+      {option.detail ? <span className="shrink-0 text-xs text-ink-3">{option.detail}</span> : null}
       {selected ? <Check className="composer-picker-accent size-4 shrink-0" aria-hidden /> : null}
     </button>
   );
@@ -152,40 +152,40 @@ export function ComposerModelPickerPreview({
   }
 
   const pickerTrigger = (
-    <button type="button" aria-label="Select assignee, model and effort" className="flex h-8 min-w-0 max-w-64 items-center gap-1.5 rounded-full bg-muted px-2.5 text-xs font-medium hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" data-testid="composer-model-trigger">
+    <button type="button" aria-label="Select assignee, model and effort" className="flex h-8 min-w-0 max-w-64 items-center gap-1.5 rounded-full bg-bg-3 px-2.5 text-xs font-medium hover:bg-bg-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus" data-testid="composer-model-trigger">
       <AgentMark agent={agent} size={16} />
       <span className="max-w-20 shrink-0 truncate">{agent.name}</span>
-      <span className="text-muted-foreground" aria-hidden>·</span>
-      <span className="min-w-0 truncate text-muted-foreground">{modelAvailable ? modelLabel(agent, model) : "Default"}</span>
-      {effectiveEffort ? <span className="hidden shrink-0 text-muted-foreground sm:inline">{effortLabel}</span> : null}
-      <ChevronDown className="size-3 shrink-0 text-muted-foreground" aria-hidden />
+      <span className="text-ink-3" aria-hidden>·</span>
+      <span className="min-w-0 truncate text-ink-3">{modelAvailable ? modelLabel(agent, model) : "Default"}</span>
+      {effectiveEffort ? <span className="hidden shrink-0 text-ink-3 sm:inline">{effortLabel}</span> : null}
+      <ChevronDown className="size-3 shrink-0 text-ink-3" aria-hidden />
     </button>
   );
 
-  const mobileCloseButton = mobile ? <DialogClose asChild><button type="button" aria-label="Close picker" className="grid size-8 shrink-0 place-items-center rounded-md text-muted-foreground hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"><X className="size-4" aria-hidden /></button></DialogClose> : null;
+  const mobileCloseButton = mobile ? <DialogClose asChild><button type="button" aria-label="Close picker" className="grid size-8 shrink-0 place-items-center rounded-md text-ink-3 hover:bg-bg-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"><X className="size-4" aria-hidden /></button></DialogClose> : null;
 
   const pickerBody = (
     view === "settings" ? (
       <div className="p-3">
         <div className="flex items-center gap-2">
-          <button type="button" onClick={() => { setAssigneeSearch(""); setHighlightedAssigneeIndex(0); setView("agents"); }} aria-label="Choose assignee" className="flex min-w-0 flex-1 items-center gap-2 rounded-md px-1 py-1 text-left hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+          <button type="button" onClick={() => { setAssigneeSearch(""); setHighlightedAssigneeIndex(0); setView("agents"); }} aria-label="Choose assignee" className="flex min-w-0 flex-1 items-center gap-2 rounded-md px-1 py-1 text-left hover:bg-bg-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
             <AgentMark agent={agent} />
-            <span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium">{agent.name}</span><span className="block truncate text-xs text-muted-foreground">{agent.harness}{agent.provider ? ` · ${agent.provider}` : ""}</span></span>
-            <ChevronDown className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+            <span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium">{agent.name}</span><span className="block truncate text-xs text-ink-3">{agent.harness}{agent.provider ? ` · ${agent.provider}` : ""}</span></span>
+            <ChevronDown className="size-4 shrink-0 text-ink-3" aria-hidden />
           </button>
-          {modelAvailable && !choices.length ? <button type="button" onClick={reset} aria-label="Reset to agent default" title="Reset to agent default" disabled={!modelOverride && !effortOverride && !fast} className="grid size-8 shrink-0 place-items-center rounded-md text-muted-foreground hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-40"><RotateCcw className="size-4" aria-hidden /></button> : null}
+          {modelAvailable && !choices.length ? <button type="button" onClick={reset} aria-label="Reset to agent default" title="Reset to agent default" disabled={!modelOverride && !effortOverride && !fast} className="grid size-8 shrink-0 place-items-center rounded-md text-ink-3 hover:bg-bg-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:opacity-40"><RotateCcw className="size-4" aria-hidden /></button> : null}
           {mobileCloseButton}
         </div>
-        {modelAvailable ? <button type="button" onClick={() => setView("models")} className="mt-3 flex w-full items-center gap-2 rounded-md px-1 py-1 text-left hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label="Choose exact model">
-          <span className="min-w-0 flex-1"><span className="block text-xs text-muted-foreground">Model</span><span className="block truncate text-sm font-medium">{modelLabel(agent, model)}</span></span>
-          <ChevronDown className="size-4 shrink-0 text-muted-foreground" aria-hidden />
-        </button> : <div className="mt-3 rounded-md bg-muted/40 px-3 py-2 text-xs text-muted-foreground" data-testid="model-unavailable">{agent.noModelReason}</div>}
+        {modelAvailable ? <button type="button" onClick={() => setView("models")} className="mt-3 flex w-full items-center gap-2 rounded-md px-1 py-1 text-left hover:bg-bg-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus" aria-label="Choose exact model">
+          <span className="min-w-0 flex-1"><span className="block text-xs text-ink-3">Model</span><span className="block truncate text-sm font-medium">{modelLabel(agent, model)}</span></span>
+          <ChevronDown className="size-4 shrink-0 text-ink-3" aria-hidden />
+        </button> : <div className="mt-3 rounded-md bg-bg-3/40 px-3 py-2 text-xs text-ink-3" data-testid="model-unavailable">{agent.noModelReason}</div>}
         {modelAvailable && choices.length ? (
           <div className="mt-3">
             <div className="flex items-center gap-2">
-              {fastAvailable ? <button type="button" onClick={() => setFast((current) => !current)} aria-label="Fast mode" aria-pressed={fast} title="Fast mode · faster responses, higher usage" className={cn("grid size-8 shrink-0 place-items-center rounded-md hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", fast ? "composer-picker-accent bg-accent" : "text-muted-foreground")}><Zap className="size-4" aria-hidden /></button> : <span className="size-8 shrink-0" aria-hidden />}
+              {fastAvailable ? <button type="button" onClick={() => setFast((current) => !current)} aria-label="Fast mode" aria-pressed={fast} title="Fast mode · faster responses, higher usage" className={cn("grid size-8 shrink-0 place-items-center rounded-md hover:bg-bg-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus", fast ? "composer-picker-accent bg-bg-3" : "text-ink-3")}><Zap className="size-4" aria-hidden /></button> : <span className="size-8 shrink-0" aria-hidden />}
               <label htmlFor="composer-effort" className="composer-picker-accent min-w-0 flex-1 text-center text-sm font-medium" data-testid="selected-effort">{effortLabel}</label>
-              <button type="button" onClick={reset} aria-label="Reset to agent default" title="Reset to agent default" disabled={!modelOverride && !effortOverride && !fast} className="grid size-8 shrink-0 place-items-center rounded-md text-muted-foreground hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-40"><RotateCcw className="size-4" aria-hidden /></button>
+              <button type="button" onClick={reset} aria-label="Reset to agent default" title="Reset to agent default" disabled={!modelOverride && !effortOverride && !fast} className="grid size-8 shrink-0 place-items-center rounded-md text-ink-3 hover:bg-bg-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:opacity-40"><RotateCcw className="size-4" aria-hidden /></button>
             </div>
             <input id="composer-effort" type="range" min={0} max={choices.length} step={1} value={effortIndex}
               aria-label={agent.adapterType === "pi_local" ? "Thinking" : "Effort"} aria-valuetext={effortLabel} onChange={(event) => setEffortOverride(Number(event.target.value) === 0 ? null : choices[Number(event.target.value) - 1])}
@@ -195,61 +195,61 @@ export function ComposerModelPickerPreview({
       </div>
     ) : view === "agents" ? (
       <div className="p-2" data-testid="composer-agent-menu">
-        <div className="flex items-center gap-2 px-1 py-1.5"><button type="button" onClick={() => { setAssigneeSearch(""); setHighlightedAssigneeIndex(0); setView("settings"); }} aria-label="Back to selection" className="grid size-7 place-items-center rounded-md hover:bg-accent"><ArrowLeft className="size-4" aria-hidden /></button><div className="min-w-0 flex-1"><p className="text-xs font-semibold">Choose assignee</p><p className="truncate text-xs text-muted-foreground">Each agent keeps its configured harness.</p></div>{mobileCloseButton}</div>
-        <div className="relative mt-2"><Search className="pointer-events-none absolute left-2.5 top-2.5 size-4 text-muted-foreground" aria-hidden /><input autoFocus type="search" value={assigneeSearch} onChange={(event) => { setAssigneeSearch(event.target.value); setHighlightedAssigneeIndex(0); }} onKeyDown={(event) => {
+        <div className="flex items-center gap-2 px-1 py-1.5"><button type="button" onClick={() => { setAssigneeSearch(""); setHighlightedAssigneeIndex(0); setView("settings"); }} aria-label="Back to selection" className="grid size-7 place-items-center rounded-md hover:bg-bg-3"><ArrowLeft className="size-4" aria-hidden /></button><div className="min-w-0 flex-1"><p className="text-xs font-semibold">Choose assignee</p><p className="truncate text-xs text-ink-3">Each agent keeps its configured harness.</p></div>{mobileCloseButton}</div>
+        <div className="relative mt-2"><Search className="pointer-events-none absolute left-2.5 top-2.5 size-4 text-ink-3" aria-hidden /><input autoFocus type="search" value={assigneeSearch} onChange={(event) => { setAssigneeSearch(event.target.value); setHighlightedAssigneeIndex(0); }} onKeyDown={(event) => {
           if (event.key === "ArrowDown" || event.key === "ArrowUp") { event.preventDefault(); setHighlightedAssigneeIndex((current) => filteredAssignees.length ? (current + (event.key === "ArrowDown" ? 1 : -1) + filteredAssignees.length) % filteredAssignees.length : 0); }
           if (event.key === "Enter" && filteredAssignees.length) { event.preventDefault(); chooseAgent(filteredAssignees[Math.min(highlightedAssigneeIndex, filteredAssignees.length - 1)]); }
-        }} placeholder="Search assignees…" aria-label="Search assignees" aria-controls="composer-assignees" aria-activedescendant={filteredAssignees[highlightedAssigneeIndex] ? `composer-assignee-${filteredAssignees[highlightedAssigneeIndex].id}` : undefined} className="h-9 w-full rounded-md border border-border bg-background pl-8 pr-2 text-sm outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring" /></div>
+        }} placeholder="Search assignees…" aria-label="Search assignees" aria-controls="composer-assignees" aria-activedescendant={filteredAssignees[highlightedAssigneeIndex] ? `composer-assignee-${filteredAssignees[highlightedAssigneeIndex].id}` : undefined} className="h-9 w-full rounded-md border border-line bg-bg pl-8 pr-2 text-sm outline-none placeholder:text-ink-3 focus-visible:ring-2 focus-visible:ring-focus" /></div>
         <div id="composer-assignees" className="mt-2 max-h-60 overflow-y-auto" role="listbox" aria-label="Agents">
-          {filteredAssignees.map((item, index) => <button type="button" role="option" id={`composer-assignee-${item.id}`} aria-selected={agent.id === item.id} key={item.id} onMouseEnter={() => setHighlightedAssigneeIndex(index)} onClick={() => chooseAgent(item)} className={cn("flex w-full items-center gap-2 rounded-md px-2 py-2 text-left focus-visible:bg-accent focus-visible:outline-none", highlightedAssigneeIndex === index ? "bg-accent" : "hover:bg-accent")}>
+          {filteredAssignees.map((item, index) => <button type="button" role="option" id={`composer-assignee-${item.id}`} aria-selected={agent.id === item.id} key={item.id} onMouseEnter={() => setHighlightedAssigneeIndex(index)} onClick={() => chooseAgent(item)} className={cn("flex w-full items-center gap-2 rounded-md px-2 py-2 text-left focus-visible:bg-bg-3 focus-visible:outline-none", highlightedAssigneeIndex === index ? "bg-bg-3" : "hover:bg-bg-3")}>
             <AgentMark agent={item} />
-            <span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium">{item.name}</span><span className="block truncate text-xs text-muted-foreground">{item.role}</span></span>
-            <span className="text-xs text-muted-foreground">{item.harness}</span>
+            <span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium">{item.name}</span><span className="block truncate text-xs text-ink-3">{item.role}</span></span>
+            <span className="text-xs text-ink-3">{item.harness}</span>
             {agent.id === item.id ? <Check className="composer-picker-accent size-3.5" aria-hidden /> : null}
           </button>)}
-          {!filteredAssignees.length ? <p className="px-2 py-2 text-xs text-muted-foreground">No matches.</p> : null}
+          {!filteredAssignees.length ? <p className="px-2 py-2 text-xs text-ink-3">No matches.</p> : null}
         </div>
       </div>
     ) : (
       <div className="p-2">
-        <div className="flex items-center gap-2 px-1 py-1.5"><button type="button" onClick={() => { setView("settings"); setSearch(""); }} aria-label="Back to selection" className="grid size-7 place-items-center rounded-md hover:bg-accent"><ArrowLeft className="size-4" aria-hidden /></button><div className="min-w-0 flex-1"><p className="text-xs font-semibold">Choose model</p><p className="truncate text-xs text-muted-foreground">{agent.harness}{agent.provider ? ` · ${agent.provider}` : ""}</p></div>{mobileCloseButton}</div>
-        <div className="relative mt-2"><Search className="pointer-events-none absolute left-2.5 top-2.5 size-4 text-muted-foreground" aria-hidden /><input autoFocus type="search" value={search} onChange={(event) => setSearch(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && manualValid && !exactCatalogMatch) chooseModel(query); }} placeholder="Search or paste a model ID" aria-label="Search or paste a model ID" className="h-9 w-full rounded-md border border-border bg-background pl-8 pr-2 text-sm outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring" /></div>
+        <div className="flex items-center gap-2 px-1 py-1.5"><button type="button" onClick={() => { setView("settings"); setSearch(""); }} aria-label="Back to selection" className="grid size-7 place-items-center rounded-md hover:bg-bg-3"><ArrowLeft className="size-4" aria-hidden /></button><div className="min-w-0 flex-1"><p className="text-xs font-semibold">Choose model</p><p className="truncate text-xs text-ink-3">{agent.harness}{agent.provider ? ` · ${agent.provider}` : ""}</p></div>{mobileCloseButton}</div>
+        <div className="relative mt-2"><Search className="pointer-events-none absolute left-2.5 top-2.5 size-4 text-ink-3" aria-hidden /><input autoFocus type="search" value={search} onChange={(event) => setSearch(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter" && manualValid && !exactCatalogMatch) chooseModel(query); }} placeholder="Search or paste a model ID" aria-label="Search or paste a model ID" className="h-9 w-full rounded-md border border-line bg-bg pl-8 pr-2 text-sm outline-none placeholder:text-ink-3 focus-visible:ring-2 focus-visible:ring-focus" /></div>
         <div className="mt-2 max-h-60 overflow-y-auto" role="listbox" aria-label={`${agent.harness} models`}>
-          {!query ? <button type="button" role="option" aria-selected={modelOverride === null} onClick={() => chooseModel(null)} className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"><span className="min-w-0 flex-1"><span className="block text-sm font-medium">Use agent default</span><span className="block truncate text-xs text-muted-foreground">{modelLabel(agent, agent.defaultModel ?? "")}</span></span>{modelOverride === null ? <Check className="composer-picker-accent size-4" aria-hidden /> : null}</button> : null}
+          {!query ? <button type="button" role="option" aria-selected={modelOverride === null} onClick={() => chooseModel(null)} className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left hover:bg-bg-3 focus-visible:bg-bg-3 focus-visible:outline-none"><span className="min-w-0 flex-1"><span className="block text-sm font-medium">Use agent default</span><span className="block truncate text-xs text-ink-3">{modelLabel(agent, agent.defaultModel ?? "")}</span></span>{modelOverride === null ? <Check className="composer-picker-accent size-4" aria-hidden /> : null}</button> : null}
           {filtered.map((option) => <ModelRow key={option.id} option={option} selected={modelOverride === option.id} onSelect={(id) => chooseModel(id)} />)}
-          {!filtered.length && query ? <p className="px-2.5 py-2 text-xs text-muted-foreground">No catalog match.</p> : null}
+          {!filtered.length && query ? <p className="px-2.5 py-2 text-xs text-ink-3">No catalog match.</p> : null}
         </div>
-        {query && !exactCatalogMatch ? <div className="mt-2 border-t border-border pt-2"><button type="button" disabled={!manualValid} onClick={() => chooseModel(query)} className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-sm hover:bg-accent disabled:cursor-not-allowed disabled:opacity-40"><Plus className="size-4 shrink-0" aria-hidden /><span className="min-w-0 flex-1 truncate">Use exact ID <span className="font-mono font-semibold">{query}</span></span></button>{!manualValid ? <p className="px-2.5 text-xs text-destructive">{agent.provider === "OpenRouter" ? "Use openrouter/provider/model with no spaces." : "Model IDs cannot contain spaces."}</p> : null}</div> : null}
-        <p className="px-2.5 pb-1 pt-2 text-xs text-muted-foreground">{agent.manualPattern ? `Custom IDs: ${agent.manualPattern}. Provider access is checked when the run starts.` : "Only models for this harness are shown."}</p>
+        {query && !exactCatalogMatch ? <div className="mt-2 border-t border-line pt-2"><button type="button" disabled={!manualValid} onClick={() => chooseModel(query)} className="flex w-full items-center gap-2 rounded-md px-2.5 py-2 text-left text-sm hover:bg-bg-3 disabled:cursor-not-allowed disabled:opacity-40"><Plus className="size-4 shrink-0" aria-hidden /><span className="min-w-0 flex-1 truncate">Use exact ID <span className="font-mono font-semibold">{query}</span></span></button>{!manualValid ? <p className="px-2.5 text-xs text-bad">{agent.provider === "OpenRouter" ? "Use openrouter/provider/model with no spaces." : "Model IDs cannot contain spaces."}</p> : null}</div> : null}
+        <p className="px-2.5 pb-1 pt-2 text-xs text-ink-3">{agent.manualPattern ? `Custom IDs: ${agent.manualPattern}. Provider access is checked when the run starts.` : "Only models for this harness are shown."}</p>
       </div>
     )
   );
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="min-h-screen bg-bg text-ink">
       <div className={cn("mx-auto flex min-h-screen w-full flex-col px-4 py-6 sm:px-8", compact ? "max-w-md" : "max-w-4xl")}>
-        <header className="flex items-center gap-3 border-b border-border pb-4">
+        <header className="flex items-center gap-3 border-b border-line pb-4">
           <AgentAvatar agent={{ id: agent.id, name: agent.name, appearance: composerAgentAppearance(agent.id) }} size={32} />
           <span className="min-w-0 flex-1">
             <span className="block text-sm font-semibold">Agent conversation</span>
-            <span className="block text-xs text-muted-foreground">Model and effort can be chosen for the next message</span>
+            <span className="block text-xs text-ink-3">Model and effort can be chosen for the next message</span>
           </span>
         </header>
 
         <main className="flex flex-1 flex-col justify-end gap-5 py-8">
           <div className="max-w-prose space-y-1">
-            <p className="text-xs font-medium text-muted-foreground">{agent.name} · {agent.role}</p>
+            <p className="text-xs font-medium text-ink-3">{agent.name} · {agent.role}</p>
             <p className="text-sm leading-relaxed">I can take the next step. Pick the model and effort you want me to use, then send your instructions.</p>
           </div>
           {messages.map((message, index) => (
-            <div key={index} className="ml-auto max-w-prose rounded-xl bg-secondary px-4 py-3">
+            <div key={index} className="ml-auto max-w-prose rounded-xl bg-bg-3 px-4 py-3">
               <p className="text-sm">{message.text}</p>
-              <p className="mt-1 text-xs text-muted-foreground">To {message.agent}{message.model ? ` · ${message.model}` : ""}{message.effort ? ` · ${effortLabels[message.effort] ?? message.effort}` : ""}{message.fast ? " · Fast" : ""}</p>
+              <p className="mt-1 text-xs text-ink-3">To {message.agent}{message.model ? ` · ${message.model}` : ""}{message.effort ? ` · ${effortLabels[message.effort] ?? message.effort}` : ""}{message.fast ? " · Fast" : ""}</p>
             </div>
           ))}
         </main>
 
-        <div className="rounded-xl border border-border bg-card p-3 shadow-sm">
+        <div className="rounded-xl border border-line bg-bg-2 p-3 shadow-sm">
           <textarea value={draft} onChange={(event) => setDraft(event.target.value)}
             onKeyDown={(event) => {
               if ((event.metaKey || event.ctrlKey) && event.key === ".") { event.preventDefault(); setMode(nextWorkMode); return; }
@@ -257,8 +257,8 @@ export function ComposerModelPickerPreview({
             }}
             placeholder={`Message ${agent.name} — describe what you want done…`}
             aria-label="Message" rows={2}
-            className="block min-h-16 w-full resize-y bg-transparent text-sm leading-6 text-foreground outline-none placeholder:text-muted-foreground" />
-          {attachments.length ? <div className="mt-2 flex flex-wrap gap-2">{attachments.map((name, index) => <button key={`${name}-${index}`} type="button" onClick={() => setAttachments((items) => items.filter((_, itemIndex) => itemIndex !== index))} className="rounded-md bg-muted px-2 py-1 text-xs">{name} ×</button>)}</div> : null}
+            className="block min-h-16 w-full resize-y bg-transparent text-sm leading-6 text-ink outline-none placeholder:text-ink-3" />
+          {attachments.length ? <div className="mt-2 flex flex-wrap gap-2">{attachments.map((name, index) => <button key={`${name}-${index}`} type="button" onClick={() => setAttachments((items) => items.filter((_, itemIndex) => itemIndex !== index))} className="rounded-md bg-bg-3 px-2 py-1 text-xs">{name} ×</button>)}</div> : null}
           <div className={cn("mt-3 flex min-w-0 items-center gap-x-1.5 gap-y-3", mobile ? "flex-nowrap" : "flex-wrap")}>
             <div className="flex min-w-0 max-w-full items-center gap-1.5">
             <input ref={fileInputRef} type="file" className="hidden" onChange={(event) => { setAttachments((items) => [...items, ...Array.from(event.target.files ?? []).map((file) => file.name)]); event.target.value = ""; }} />
@@ -283,7 +283,7 @@ export function ComposerModelPickerPreview({
                 </PopoverContent>
               </Popover>
             )}
-            <button type="button" onClick={send} disabled={!draft.trim()} aria-label="Send message" className="grid size-8 min-h-8 min-w-8 shrink-0 aspect-square place-items-center rounded-full bg-primary text-primary-foreground disabled:opacity-40"><ArrowUp className="size-4" aria-hidden /></button>
+            <button type="button" onClick={send} disabled={!draft.trim()} aria-label="Send message" className="grid size-8 min-h-8 min-w-8 shrink-0 aspect-square place-items-center rounded-full bg-accent text-accent-ink disabled:opacity-40"><ArrowUp className="size-4" aria-hidden /></button>
             </div>
           </div>
         </div>

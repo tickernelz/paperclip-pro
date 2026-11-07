@@ -2027,11 +2027,11 @@ describe("IssueChatThread", () => {
       );
     });
 
-    // Conference-room canonical agent bubble: bg-card + border + tail corner.
+    // Conference-room canonical agent bubble: bg-bg-2 + border + tail corner.
     const bubble = Array.from(container.querySelectorAll("div")).find(
       (el) =>
-        el.className.includes("bg-card") &&
-        el.className.includes("border-border") &&
+        el.className.includes("bg-bg-2") &&
+        el.className.includes("border-line") &&
         el.className.includes("[border-radius:14px_14px_14px_4px]"),
     );
     expect(bubble).toBeDefined();
@@ -3671,7 +3671,7 @@ describe("IssueChatThread", () => {
     expect(container.textContent).toContain(
       "Other files are added to this task",
     );
-    expect(composer?.className).toContain("border-primary/45");
+    expect(composer?.className).toContain("border-accent/45");
 
     act(() => {
       root.unmount();
@@ -4075,7 +4075,7 @@ describe("IssueChatThread", () => {
     ).not.toBeNull();
     expect(container.textContent).toContain("Drop to upload");
     expect(container.textContent).not.toContain("Drop image to upload");
-    expect(composer?.className).toContain("border-primary/45");
+    expect(composer?.className).toContain("border-accent/45");
 
     const fileInput = container.querySelector(
       'input[type="file"]',

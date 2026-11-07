@@ -191,7 +191,7 @@ export function ConfigureBuiltInAgentModal({
           )}
 
           {modelError && (
-            <p className="text-sm text-destructive" role="alert">
+            <p className="text-sm text-bad" role="alert">
               {modelError}
             </p>
           )}
@@ -205,7 +205,7 @@ export function ConfigureBuiltInAgentModal({
 
           <Field label="Monthly budget (optional)" hint="Leave blank for no cap.">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">$</span>
+              <span className="text-sm text-ink-3">$</span>
               <Input
                 type="number"
                 min="0"
@@ -216,12 +216,12 @@ export function ConfigureBuiltInAgentModal({
                 onChange={(event) => setBudgetDollars(event.target.value)}
                 className="w-32"
               />
-              <span className="text-sm text-muted-foreground">/ month</span>
+              <span className="text-sm text-ink-3">/ month</span>
             </div>
           </Field>
 
           {error && (
-            <p className="text-sm text-destructive" role="alert">
+            <p className="text-sm text-bad" role="alert">
               {error}
             </p>
           )}

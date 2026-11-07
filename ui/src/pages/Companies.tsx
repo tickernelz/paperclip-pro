@@ -119,8 +119,8 @@ export function Companies() {
       </div>
 
       <div className="h-6">
-        {loading && <p className="text-sm text-muted-foreground">Loading organizations...</p>}
-        {error && <p className="text-sm text-destructive">{error.message}</p>}
+        {loading && <p className="text-sm text-ink-3">Loading organizations...</p>}
+        {error && <p className="text-sm text-bad">{error.message}</p>}
       </div>
 
       <div className="grid gap-4">
@@ -152,7 +152,7 @@ export function Companies() {
               }}
               interactive
               className={`block group text-left p-5 ${
-                selected ? "border-primary ring-1 ring-primary hover:border-primary" : ""
+                selected ? "border-accent ring-1 ring-accent hover:border-accent" : ""
               }`}
             >
               {/* Header row: name + menu */}
@@ -182,7 +182,7 @@ export function Companies() {
                         <Check className="h-3.5 w-3.5 text-green-500" />
                       </Button>
                       <Button variant="ghost" size="icon-xs" onClick={cancelEdit}>
-                        <X className="h-3.5 w-3.5 text-muted-foreground" />
+                        <X className="h-3.5 w-3.5 text-ink-3" />
                       </Button>
                     </div>
                   ) : (
@@ -194,7 +194,7 @@ export function Companies() {
                             ? "bg-green-500/10 text-green-600 dark:text-green-400"
                             : company.status === "paused"
                               ? "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400"
-                              : "bg-muted text-muted-foreground"
+                              : "bg-bg-3 text-ink-3"
                         }`}
                       >
                         {company.status}
@@ -202,7 +202,7 @@ export function Companies() {
                       <Button
                         variant="ghost"
                         size="icon-xs"
-                        className="text-muted-foreground opacity-0 group-hover:opacity-100"
+                        className="opacity-0 group-hover:opacity-100"
                         onClick={(e) => {
                           e.stopPropagation();
                           startEdit(company.id, company.name);
@@ -213,7 +213,7 @@ export function Companies() {
                     </div>
                   )}
                   {company.description && !isEditing && (
-                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                    <p className="text-sm text-ink-3 mt-1 line-clamp-2">
                       {company.description}
                     </p>
                   )}
@@ -226,7 +226,7 @@ export function Companies() {
                       <Button
                         variant="ghost"
                         size="icon-xs"
-                        className="text-muted-foreground opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100"
+                        className="opacity-0 group-hover:opacity-100 data-[state=open]:opacity-100"
                       >
                         <MoreHorizontal className="h-4 w-4" />
                       </Button>
@@ -261,7 +261,7 @@ export function Companies() {
               </div>
 
               {/* Stats row */}
-              <div className="flex items-center gap-3 sm:gap-5 mt-4 text-sm text-muted-foreground flex-wrap">
+              <div className="flex items-center gap-3 sm:gap-5 mt-4 text-sm text-ink-3 flex-wrap">
                 <div className="flex items-center gap-1.5">
                   <Users className="h-3.5 w-3.5" />
                   <span>
@@ -292,10 +292,10 @@ export function Companies() {
               {/* Delete confirmation */}
               {isConfirmingDelete && (
                 <div
-                  className="mt-4 flex items-center justify-between bg-destructive/5 border border-destructive/20 rounded-md px-4 py-3"
+                  className="mt-4 flex items-center justify-between bg-bad/5 border border-bad/20 rounded-md px-4 py-3"
                   onClick={(e) => e.stopPropagation()}
                 >
-                  <p className="text-sm text-destructive font-medium">
+                  <p className="text-sm text-bad font-medium">
                     Delete this organization and all its data? This cannot be undone.
                   </p>
                   <div className="flex items-center gap-2 ml-4 shrink-0">
@@ -308,7 +308,7 @@ export function Companies() {
                       Cancel
                     </Button>
                     <Button
-                      variant="destructive"
+                      variant="delete"
                       size="sm"
                       onClick={() => deleteMutation.mutate(company.id)}
                       disabled={deleteMutation.isPending}

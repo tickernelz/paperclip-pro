@@ -45,7 +45,7 @@ export function IssueFieldChangeReceipt({
   return (
     <div
       data-testid="issue-field-change-receipt"
-      className={cn("space-y-1 border-l-2 border-border/70 pl-2", className)}
+      className={cn("space-y-1 border-l-2 border-line/70 pl-2", className)}
     >
       {rows.length > 0 ? (
         <dl className="space-y-0.5">
@@ -55,17 +55,17 @@ export function IssueFieldChangeReceipt({
               data-testid={`issue-change-row-${row.field}`}
               className="flex min-w-0 flex-wrap items-baseline gap-x-1.5 text-xs"
             >
-              <dt className="text-muted-foreground">{row.label}</dt>
+              <dt className="text-ink-3">{row.label}</dt>
               <dd className="flex min-w-0 flex-wrap items-baseline gap-x-1.5">
-                <span className="min-w-0 break-words text-muted-foreground line-through decoration-muted-foreground/50">
+                <span className="min-w-0 break-words text-ink-3 line-through decoration-ink-3/50">
                   {row.from}
                 </span>
-                <ArrowRight className="size-3 shrink-0 text-muted-foreground/70" aria-hidden="true" />
-                <span className="min-w-0 break-words font-medium text-foreground">{row.to}</span>
+                <ArrowRight className="size-3 shrink-0 text-ink-3/70" aria-hidden="true" />
+                <span className="min-w-0 break-words font-medium text-ink">{row.to}</span>
                 {/* Long text is stored as a preview, so the receipt says so
                     rather than implying the whole value is shown. */}
                 {row.truncated ? (
-                  <span className="text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
+                  <span className="text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow) text-ink-3">
                     preview
                   </span>
                 ) : null}
@@ -78,14 +78,14 @@ export function IssueFieldChangeReceipt({
         // Inline flow, not flex: as separate flex items the icon wraps onto its
         // own line and orphans above the reason at narrow widths. Inline keeps it
         // glued to the first word.
-        <p className="min-w-0 text-(length:--text-micro) leading-4 text-muted-foreground">
+        <p className="min-w-0 text-(length:--text-micro) leading-4 text-ink-3">
           <ShieldCheck
             className="mr-1 inline size-3 align-(--va-0_125em)"
             aria-hidden="true"
           />
           {responsibleUserName ? (
             <>
-              for <span className="text-foreground">{responsibleUserName}</span>
+              for <span className="text-ink">{responsibleUserName}</span>
               {" · "}
             </>
           ) : null}

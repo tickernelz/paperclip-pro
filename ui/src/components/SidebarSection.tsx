@@ -74,18 +74,18 @@ function SidebarSectionHeader({
   const hasMenu = Boolean(
     menu && ((menu.actions?.length ?? 0) > 0 || (menu.radioChoices?.length ?? 0) > 0),
   );
-  const labelClassName = "text-(length:--text-nano) font-medium uppercase tracking-widest font-mono text-muted-foreground/60";
+  const labelClassName = "text-(length:--text-nano) font-medium uppercase tracking-widest font-mono text-ink-3/60";
   const headerControlVisibilityClassName = isMobile
     ? "opacity-100"
     : "opacity-0 group-hover/sidebar-section:opacity-100 group-focus-within/sidebar-section:opacity-100";
   const caretClassName = cn(
-    "h-3 w-3 shrink-0 text-muted-foreground/60 transition-all",
+    "h-3 w-3 shrink-0 text-ink-3/60 transition-all",
     headerControlVisibilityClassName,
     collapsible?.open && "rotate-90",
     menuOpen && "opacity-100",
   );
   const actionClassName = cn(
-    "h-5 w-5 shrink-0 text-muted-foreground/60 transition-opacity hover:text-foreground data-[state=open]:opacity-100",
+    "h-5 w-5 shrink-0 text-ink-3/60 transition-opacity hover:text-ink data-[state=open]:opacity-100",
     headerControlVisibilityClassName,
   );
   const headerContent = <span className={labelClassName}>{label}</span>;
@@ -99,8 +99,8 @@ function SidebarSectionHeader({
           data-slot="icon-button"
           className={cn(
             "inline-flex min-w-0 max-w-full items-center rounded-md px-1 py-0.5 text-left outline-none transition-colors",
-            "hover:bg-accent/50 focus-visible:bg-accent/50 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
-            menuOpen && "bg-accent/50",
+            "hover:bg-bg-3/50 focus-visible:bg-bg-3/50 focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-1",
+            menuOpen && "bg-bg-3/50",
           )}
           aria-label={menu?.ariaLabel ?? `${label} actions`}
         >
@@ -159,7 +159,7 @@ function SidebarSectionHeader({
             <button
               type="button"
               data-slot="icon-button"
-              className="absolute -left-4 flex h-5 w-5 items-center justify-center rounded-sm outline-none transition-colors hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1"
+              className="absolute -left-4 flex h-5 w-5 items-center justify-center rounded-sm outline-none transition-colors hover:bg-bg-3 focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-1"
               aria-label={collapsible.open ? `Collapse ${label}` : `Expand ${label}`}
             >
               <ChevronRight className={caretClassName} aria-hidden="true" />
@@ -210,7 +210,7 @@ export function SidebarSection({
         <div className="px-3 py-1.5 pointer-coarse:py-1">
           <div className="flex min-h-6 items-center">
             <span className="sr-only">{label}</span>
-            <div className="h-px w-full bg-border/60" aria-hidden="true" />
+            <div className="h-px w-full bg-line/60" aria-hidden="true" />
           </div>
         </div>
         {content}

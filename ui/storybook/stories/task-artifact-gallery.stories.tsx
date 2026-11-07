@@ -72,17 +72,17 @@ function GalleryStory({ scenario = "videos", width = 480 }: { scenario?: Scenari
   return (
     <QueryClientProvider client={client}>
       <IssueGalleryContext.Provider value={(src) => { const index = items.findIndex((item) => item.contentPath === src); if (index < 0) return false; setGalleryIndex(index); return true; }}>
-        <main className="min-h-screen bg-background p-6 text-foreground">
+        <main className="min-h-screen bg-bg p-6 text-ink">
           <div className="mx-auto flex max-w-6xl flex-wrap items-start gap-8">
             <div className="flex min-w-0 flex-1 flex-col gap-3" style={{ minWidth: 240 }}>
-              <p className="font-mono text-xs text-muted-foreground">Media artifacts · Design review</p>
+              <p className="font-mono text-xs text-ink-3">Media artifacts · Design review</p>
               <h1 className="text-xl font-semibold">Paperclip Ships artifacts</h1>
-              <p className="max-w-md text-sm text-muted-foreground">Eight video outputs across two runs. Compare previews at a glance, then click anywhere on a tile to watch it.</p>
-              <p className="max-w-md text-xs text-muted-foreground">Illustrative offline clips inspired by the task’s five style directions. These stories use the production artifact components.</p>
+              <p className="max-w-md text-sm text-ink-3">Eight video outputs across two runs. Compare previews at a glance, then click anywhere on a tile to watch it.</p>
+              <p className="max-w-md text-xs text-ink-3">Illustrative offline clips inspired by the task’s five style directions. These stories use the production artifact components.</p>
               {scenario === "rows" ? <div className="flex flex-col gap-2"><TaskChatBubble item={{ id: "clip-comment", kind: "message", author: "agent", text: "Video ready to review." }} attachments={[{ id: "chat-clip", issueCommentId: "clip-comment", contentPath: trail, contentType: "video/mp4", originalFilename: "paper-trail.mp4", byteSize: 128000 } as IssueAttachment]} />{workProducts.map((wp) => <RichWorkProductCard key={wp.id} workProduct={wp} href={workProductHref(wp)} variant="compact" />)}</div> : null}
             </div>
-            <section className="max-w-full shrink-0 rounded-lg border border-border bg-background" style={{ width }} aria-label="Task artifacts panel">
-              <header className="flex items-center gap-4 border-b border-border px-4 py-3 text-sm"><span className="text-muted-foreground">Properties</span><strong className="font-medium">Artifacts</strong></header>
+            <section className="max-w-full shrink-0 rounded-lg border border-line bg-bg" style={{ width }} aria-label="Task artifacts panel">
+              <header className="flex items-center gap-4 border-b border-line px-4 py-3 text-sm"><span className="text-ink-3">Properties</span><strong className="font-medium">Artifacts</strong></header>
               <div className="p-3"><IssuePropertiesArtifactsTab issue={issue} /></div>
             </section>
           </div>

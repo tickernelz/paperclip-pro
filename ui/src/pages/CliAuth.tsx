@@ -46,11 +46,11 @@ export function CliAuthPage() {
   });
 
   if (!challengeId || !token) {
-    return <div className="mx-auto max-w-xl py-10 text-sm text-destructive">Invalid CLI auth URL.</div>;
+    return <div className="mx-auto max-w-xl py-10 text-sm text-bad">Invalid CLI auth URL.</div>;
   }
 
   if (sessionQuery.isLoading || challengeQuery.isLoading) {
-    return <div className="mx-auto max-w-xl py-10 text-sm text-muted-foreground">Loading CLI auth challenge...</div>;
+    return <div className="mx-auto max-w-xl py-10 text-sm text-ink-3">Loading CLI auth challenge...</div>;
   }
 
   if (challengeQuery.error) {
@@ -58,7 +58,7 @@ export function CliAuthPage() {
       <div className="mx-auto max-w-xl py-10">
         <Card className="block p-6">
           <h1 className="text-lg font-semibold">CLI auth challenge unavailable</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-2 text-sm text-ink-3">
             {challengeQuery.error instanceof Error ? challengeQuery.error.message : "Challenge is invalid or expired."}
           </p>
         </Card>
@@ -68,7 +68,7 @@ export function CliAuthPage() {
 
   const challenge = challengeQuery.data;
   if (!challenge) {
-    return <div className="mx-auto max-w-xl py-10 text-sm text-destructive">CLI auth challenge unavailable.</div>;
+    return <div className="mx-auto max-w-xl py-10 text-sm text-bad">CLI auth challenge unavailable.</div>;
   }
 
   if (challenge.status === "approved") {
@@ -76,11 +76,11 @@ export function CliAuthPage() {
       <div className="mx-auto max-w-xl py-10">
         <Card className="block p-6">
           <h1 className="text-xl font-semibold">CLI access approved</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-2 text-sm text-ink-3">
             The Paperclip CLI can now finish authentication on the requesting machine.
           </p>
-          <p className="mt-4 text-sm text-muted-foreground">
-            Command: <span className="font-mono text-foreground">{challenge.command}</span>
+          <p className="mt-4 text-sm text-ink-3">
+            Command: <span className="font-mono text-ink">{challenge.command}</span>
           </p>
         </Card>
       </div>
@@ -94,7 +94,7 @@ export function CliAuthPage() {
           <h1 className="text-xl font-semibold">
             {challenge.status === "expired" ? "CLI auth challenge expired" : "CLI auth challenge cancelled"}
           </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-2 text-sm text-ink-3">
             Start the CLI auth flow again from your terminal to generate a new approval request.
           </p>
         </Card>
@@ -107,7 +107,7 @@ export function CliAuthPage() {
       <div className="mx-auto max-w-xl py-10">
         <Card className="block p-6">
           <h1 className="text-xl font-semibold">Sign in required</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-2 text-sm text-ink-3">
             Sign in or create an account, then return to this page to approve the CLI access request.
           </p>
           <Button asChild className="mt-4">
@@ -122,35 +122,35 @@ export function CliAuthPage() {
     <div className="mx-auto max-w-xl py-10">
       <Card className="block p-6">
         <h1 className="text-xl font-semibold">Approve Paperclip CLI access</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="mt-2 text-sm text-ink-3">
           A local Paperclip CLI process is requesting board access to this instance.
         </p>
 
         <div className="mt-5 space-y-3 text-sm">
           <div>
-            <div className="text-muted-foreground">Command</div>
-            <div className="font-mono text-foreground">{challenge.command}</div>
+            <div className="text-ink-3">Command</div>
+            <div className="font-mono text-ink">{challenge.command}</div>
           </div>
           <div>
-            <div className="text-muted-foreground">Client</div>
-            <div className="text-foreground">{challenge.clientName ?? "paperclip-pro cli"}</div>
+            <div className="text-ink-3">Client</div>
+            <div className="text-ink">{challenge.clientName ?? "paperclip-pro cli"}</div>
           </div>
           <div>
-            <div className="text-muted-foreground">Requested access</div>
-            <div className="text-foreground">
+            <div className="text-ink-3">Requested access</div>
+            <div className="text-ink">
               {challenge.requestedAccess === "instance_admin_required" ? "Instance admin" : "Board"}
             </div>
           </div>
           {challenge.requestedCompanyName && (
             <div>
-              <div className="text-muted-foreground">Requested organization</div>
-              <div className="text-foreground">{challenge.requestedCompanyName}</div>
+              <div className="text-ink-3">Requested organization</div>
+              <div className="text-ink">{challenge.requestedCompanyName}</div>
             </div>
           )}
         </div>
 
         {(approveMutation.error || cancelMutation.error) && (
-          <p className="mt-4 text-sm text-destructive">
+          <p className="mt-4 text-sm text-bad">
             {(approveMutation.error ?? cancelMutation.error) instanceof Error
               ? ((approveMutation.error ?? cancelMutation.error) as Error).message
               : "Failed to update CLI auth challenge"}
@@ -158,7 +158,7 @@ export function CliAuthPage() {
         )}
 
         {!challenge.canApprove && (
-          <p className="mt-4 text-sm text-destructive">
+          <p className="mt-4 text-sm text-bad">
             This challenge requires instance-admin access. Sign in with an instance admin account to approve it.
           </p>
         )}
@@ -172,7 +172,7 @@ export function CliAuthPage() {
           </Button>
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             onClick={() => cancelMutation.mutate()}
             disabled={approveMutation.isPending || cancelMutation.isPending}
           >

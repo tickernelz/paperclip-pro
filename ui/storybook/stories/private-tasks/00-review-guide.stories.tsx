@@ -152,22 +152,22 @@ const journeys = [
 ];
 function Overview() {
   return (
-    <main className="min-h-screen bg-background p-6 text-foreground">
+    <main className="min-h-screen bg-bg p-6 text-ink">
       <div className="mx-auto max-w-6xl space-y-8">
         <header className="max-w-3xl space-y-3">
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          <p className="text-xs font-medium uppercase tracking-wide text-ink-3">
             Private tasks · Review guide
           </p>
           <h1 className="text-3xl font-semibold">
             Every changed surface, in context
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-ink-3">
             This review covers all changed components and pages changed by
             the private-task feature.
             Each canvas uses the production component with fictional, isolated
             API fixtures.
           </p>
-          <p className="rounded-lg border border-border bg-muted p-4 text-sm">
+          <p className="rounded-lg border border-line bg-bg-3 p-4 text-sm">
             Privacy flows down the task tree. Sharing a child grants access to
             that child and its descendants. Ancestors and siblings need a
             separate grant.
@@ -175,7 +175,7 @@ function Overview() {
         </header>
         <section className="space-y-3">
           <h2 className="text-xl font-semibold">Start with the user stories</h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-ink-3">
             These {journeys.length} journeys run their interactions automatically and leave
             the resulting screen visible. Use the Storybook interactions panel
             to inspect each named step, or reload a component story to explore
@@ -187,10 +187,10 @@ function Overview() {
                 key={id}
                 href={storyLink("07 User stories", id!)}
                 target="_top"
-                className="space-y-1 rounded-lg border border-border bg-card p-4 hover:bg-accent"
+                className="space-y-1 rounded-lg border border-line bg-bg-2 p-4 hover:bg-bg-3"
               >
                 <h3 className="text-sm font-semibold">{name}</h3>
-                <p className="text-sm text-muted-foreground">{description}</p>
+                <p className="text-sm text-ink-3">{description}</p>
               </a>
             ))}
           </div>
@@ -199,9 +199,9 @@ function Overview() {
           <h2 className="text-xl font-semibold">
             Complete component inventory
           </h2>
-          <div className="overflow-x-auto rounded-lg border border-border">
+          <div className="overflow-x-auto rounded-lg border border-line">
             <table className="w-full text-left text-sm">
-              <thead className="bg-muted">
+              <thead className="bg-bg-3">
                 <tr>
                   <th className="p-3">Production surface</th>
                   <th className="p-3">Change</th>
@@ -210,28 +210,28 @@ function Overview() {
               </thead>
               <tbody>
                 {surfaces.map(([name, change, group, id, coverage]) => (
-                  <tr key={name} className="border-t border-border">
+                  <tr key={name} className="border-t border-line">
                     <td className="p-3 align-top font-medium">
                       <a
                         href={storyLink(group!, id!)}
                         target="_top"
-                        className="text-primary underline underline-offset-4"
+                        className="text-accent underline underline-offset-4"
                       >
                         {name}
                       </a>
                     </td>
-                    <td className="p-3 align-top text-muted-foreground">
+                    <td className="p-3 align-top text-ink-3">
                       {change}
                     </td>
-                    <td className="p-3 text-muted-foreground">{coverage}</td>
+                    <td className="p-3 text-ink-3">{coverage}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         </section>
-        <section className="max-w-3xl space-y-3 text-sm text-muted-foreground">
-          <h2 className="text-xl font-semibold text-foreground">
+        <section className="max-w-3xl space-y-3 text-sm text-ink-3">
+          <h2 className="text-xl font-semibold text-ink">
             How to review
           </h2>
           <ol className="list-decimal space-y-2 pl-5">

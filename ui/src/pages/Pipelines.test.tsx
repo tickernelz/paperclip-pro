@@ -129,11 +129,11 @@ describe("pipeline stage board presentation", () => {
   });
 
   it("uses type-aware column outlines and backgrounds", () => {
-    expect(getPipelineStageColumnTone("working").outer).toContain("border-border");
+    expect(getPipelineStageColumnTone("working").outer).toContain("border-line");
     expect(getPipelineStageColumnTone("review").outer).toContain("violet");
     expect(getPipelineStageColumnTone("in_review").body).toContain("violet");
     expect(getPipelineStageColumnTone("done").outer).toContain("green");
-    expect(getPipelineStageColumnTone("cancelled").outer).toContain("bg-muted/25");
+    expect(getPipelineStageColumnTone("cancelled").outer).toContain("bg-bg-3/25");
     expect(getPipelineStageColumnTone("cancelled").outer).toContain("opacity-85");
   });
 });

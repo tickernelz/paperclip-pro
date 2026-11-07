@@ -30,6 +30,18 @@ async function installHeightProbe(page: Page): Promise<void> {
   });
 }
 
+async function expectBottomNavTuckedAway(page: Page): Promise<void> {
+  const nav = page.locator('[data-testid="mobile-bottom-nav"]');
+  await expect(nav).toHaveCSS("pointer-events", "none");
+  await expect
+    .poll(async () => {
+      const box = (await nav.boundingBox())!;
+      const layoutHeight = await page.evaluate(() => window.innerHeight);
+      return Math.round(box.y) >= layoutHeight;
+    })
+    .toBe(true);
+}
+
 async function flickToBottom(page: Page): Promise<void> {
   await page.evaluate(
     () =>
@@ -183,6 +195,8 @@ test.describe("mobile task chat shell", () => {
       getComputedStyle(document.documentElement).getPropertyValue("--mobile-viewport-inset-bottom").trim(),
     );
     expect(inset).toBe(`${KEYBOARD_PX}px`);
+    await expect(page.locator("html")).toHaveAttribute("data-keyboard-open", "true");
+    await expectBottomNavTuckedAway(page);
 
     const spacer = (await page.locator('[data-testid="task-chat-keyboard-spacer"]').boundingBox())!;
     expect(Math.round(spacer.height)).toBe(KEYBOARD_PX);
@@ -219,6 +233,7 @@ test.describe("mobile task chat shell", () => {
     await expect(page.locator("html")).toHaveAttribute("data-keyboard-open", "true");
     await expect(page.locator('[data-testid="task-chat-composer-takeover-summary"]')).toBeVisible();
     await expect(page.locator('[data-slot="mobile-topbar"]')).toBeHidden();
+    await expectBottomNavTuckedAway(page);
 
     await page.locator('[data-testid="task-chat-composer-takeover-summary"]').click();
     await expect(page.locator('[data-testid="task-chat-composer-takeover"]')).toBeVisible();

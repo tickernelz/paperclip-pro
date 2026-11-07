@@ -85,7 +85,7 @@ export function RoutineContextualSidebar({
       icon={Repeat}
       fallbackTo="/routines"
       showHeader={false}
-      className="border-r border-border bg-background"
+      className="border-r border-line bg-bg"
     >
       <nav className="min-h-0 flex-1 overflow-y-auto px-3 py-2" aria-label="Routine navigation">
         <div className="flex flex-col gap-0.5">
@@ -100,7 +100,7 @@ export function RoutineContextualSidebar({
           ))}
         </div>
 
-        <p className="px-4 pb-1 pt-5 text-(length:--text-nano) font-mono font-medium uppercase tracking-widest text-muted-foreground/60">
+        <p className="px-4 pb-1 pt-5 text-(length:--text-nano) font-mono font-medium uppercase tracking-widest text-ink-3/60">
           Operate
         </p>
         <div className="flex flex-col gap-0.5">

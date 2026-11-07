@@ -47,7 +47,7 @@ export function PhotonConnectStep({
     <div className="space-y-5">
       <div className="space-y-2">
         <h1 className="text-xl font-bold">Connect iMessage Photon</h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           Connect {agentName} to Photon Cloud. Pro supports direct messages through
           a shared line. Dedicated numbers also support individually enabled groups.
         </p>
@@ -72,7 +72,7 @@ export function PhotonConnectStep({
         </p>
       </div>
       {repairing && (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           Reconnect keeps this project and{" "}
           {endpoint.photonAllocation === "shared" ? "shared DM allocation" : endpoint.botExternalId ?? "dedicated number"}. Leave the secret blank
           to reuse the saved connection.
@@ -104,7 +104,7 @@ export function PhotonConnectStep({
         />
       </label>
       <Button
-        variant="outline"
+        variant="secondary"
         disabled={
           pending || inspection.isPending || !projectId.trim() || !projectSecret
         }
@@ -113,7 +113,7 @@ export function PhotonConnectStep({
         {inspection.isPending ? "Inspecting Photon…" : "Inspect Photon project"}
       </Button>
       {inspection.isError && (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-sm text-bad">
           {sanitizedSetupErrorMessage(inspection.error, { projectSecret })}
         </p>
       )}
@@ -123,14 +123,14 @@ export function PhotonConnectStep({
             {inspection.data.allocation === "shared" ? "Shared DMs" : "Dedicated numbers"} in {inspection.data.projectName}
           </legend>
           {!inspection.data.eligible && (
-            <p role="alert" className="text-sm text-destructive">
+            <p role="alert" className="text-sm text-bad">
               {inspection.data.allocation === "shared"
                 ? "This shared project already belongs to another channel. Use a separate Photon project for each agent."
                 : "No eligible dedicated number is available. Check the line allocation in Photon and existing Paperclip channels."}
             </p>
           )}
           {inspection.data.allocation === "shared" && inspection.data.eligible && (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-ink-3">
               Direct messages only. Enroll each test sender in your Photon project's Users page,
               then use the number Photon assigns to that sender. Paperclip identity linking is
               still required. Groups cannot be enabled on this channel.

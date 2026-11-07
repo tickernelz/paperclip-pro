@@ -215,7 +215,7 @@ function trapFocus(container: HTMLElement, event: KeyboardEvent): void {
 function launcherTriggerClassName(placementZone: PluginLauncherPlacementZone): string {
   switch (placementZone) {
     case "projectSidebarItem":
-      return "justify-start h-auto px-3 py-1 text-[12px] font-normal text-muted-foreground hover:text-foreground";
+      return "justify-start h-auto px-3 py-1 text-[12px] font-normal text-ink-3 hover:text-ink";
     case "contextMenuItem":
     case "commentContextMenuItem":
       return "justify-start h-7 w-full px-2 text-xs font-normal";
@@ -416,7 +416,7 @@ class LauncherErrorBoundary extends Component<LauncherErrorBoundaryProps, Launch
   override render() {
     if (this.state.hasError) {
       return (
-        <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+        <div className="rounded-md border border-bad/30 bg-bad/5 p-3 text-sm text-bad">
           {this.props.launcher.pluginDisplayName}: failed to render
         </div>
       );
@@ -449,13 +449,13 @@ function LauncherRenderContent({
         <iframe
           src={`/_plugins/${encodeURIComponent(instance.launcher.pluginId)}/ui/${instance.launcher.action.target}`}
           title={`${instance.launcher.pluginDisplayName} ${instance.launcher.displayName}`}
-          className="h-full min-h-[24rem] w-full rounded-md border border-border bg-background"
+          className="h-full min-h-[24rem] w-full rounded-md border border-line bg-bg"
         />
       );
     }
 
     return (
-      <div className="rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+      <div className="rounded-md border border-bad/30 bg-bad/5 p-3 text-sm text-bad">
         {instance.launcher.pluginDisplayName}: could not resolve launcher target "{instance.launcher.action.target}".
       </div>
     );
@@ -548,10 +548,10 @@ function LauncherModalShell({
     : launcherShellBoundsStyle(instance.bounds);
 
   const panelClassName = shellType === "openDrawer"
-    ? "fixed right-0 top-0 h-full max-w-[min(44rem,100vw)] overflow-hidden border-l border-border bg-background shadow-2xl"
+    ? "fixed right-0 top-0 h-full max-w-[min(44rem,100vw)] overflow-hidden border-l border-line bg-bg shadow-2xl"
     : shellType === "openPopover"
-      ? "fixed overflow-hidden rounded-xl border border-border bg-background shadow-2xl"
-      : "fixed left-1/2 top-1/2 max-h-[calc(100vh-2rem)] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl border border-border bg-background shadow-2xl";
+      ? "fixed overflow-hidden rounded-xl border border-line bg-bg shadow-2xl"
+      : "fixed left-1/2 top-1/2 max-h-[calc(100vh-2rem)] -translate-x-1/2 -translate-y-1/2 overflow-hidden rounded-2xl border border-line bg-bg shadow-2xl";
 
   return (
     <>
@@ -580,12 +580,12 @@ function LauncherModalShell({
         }}
         onMouseDown={(event) => event.stopPropagation()}
       >
-        <div className="flex items-center gap-3 border-b border-border px-4 py-3">
+        <div className="flex items-center gap-3 border-b border-line px-4 py-3">
           <div className="min-w-0">
             <h2 id={titleId} className="truncate text-sm font-semibold">
               {instance.launcher.displayName}
             </h2>
-            <p className="truncate text-xs text-muted-foreground">
+            <p className="truncate text-xs text-ink-3">
               {instance.launcher.pluginDisplayName}
             </p>
           </div>
@@ -764,7 +764,7 @@ function DefaultLauncherTrigger({
   return (
     <Button
       type="button"
-      variant={placementZone === "toolbarButton" || placementZone === "globalToolbarButton" ? "outline" : "ghost"}
+      variant={placementZone === "toolbarButton" || placementZone === "globalToolbarButton" ? "secondary" : "ghost"}
       size="sm"
       className={launcherTriggerClassName(placementZone)}
       onClick={onClick}
@@ -808,7 +808,7 @@ export function PluginLauncherOutlet({
 
   if (errorMessage && errorBehavior === "inline") {
     return (
-      <div className={cn("rounded-md border border-destructive/30 bg-destructive/5 px-2 py-1 text-xs text-destructive", errorClassName)}>
+      <div className={cn("rounded-md border border-bad/30 bg-bad/5 px-2 py-1 text-xs text-bad", errorClassName)}>
         Plugin launchers unavailable: {errorMessage}
       </div>
     );

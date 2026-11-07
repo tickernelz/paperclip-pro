@@ -46,7 +46,7 @@ export function SidePanelMobileTabs({ tabs, activeTabId, onActiveTabChange, onCl
             disabled={tabs.length === 0}
           >
             <span id={activeTab ? `side-panel-tab-${activeTab.id}` : undefined} className="min-w-0 flex-1 truncate text-left">{activeTab?.label ?? "Choose a tab"}</span>
-            <span className="shrink-0 rounded-md bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">{tabs.length}</span>
+            <span className="shrink-0 rounded-md bg-bg-3 px-1.5 py-0.5 text-xs text-ink-3">{tabs.length}</span>
             <ChevronDown aria-hidden className="shrink-0" />
           </Button>
         </PopoverTrigger>
@@ -66,10 +66,10 @@ export function SidePanelMobileTabs({ tabs, activeTabId, onActiveTabChange, onCl
             if (addButton) { event.preventDefault(); addButton.focus(); }
           }}
         >
-          <p className="px-2 py-2 text-xs font-medium text-muted-foreground">Open tabs</p>
+          <p className="px-2 py-2 text-xs font-medium text-ink-3">Open tabs</p>
           <ul ref={listRef} aria-label="Open tabs" className="max-h-(--side-panel-mobile-tabs-max-height) overflow-y-auto overscroll-contain">
             {tabs.map((tab) => (
-              <li key={tab.id} className={cn("flex items-center rounded-md", tab.id === activeTabId && "bg-muted")}>
+              <li key={tab.id} className={cn("flex items-center rounded-md", tab.id === activeTabId && "bg-bg-3")}>
                 <button
                   type="button"
                   data-mobile-tab-select={tab.id}
@@ -78,9 +78,9 @@ export function SidePanelMobileTabs({ tabs, activeTabId, onActiveTabChange, onCl
                   aria-label={tab.ariaLabel ?? tab.label}
                   onKeyDown={(event) => moveFocus(event, tab.id)}
                   onClick={() => { onActiveTabChange(tab.id); setOpen(false); }}
-                  className="flex min-h-(--sz-44px) min-w-0 flex-1 items-center gap-3 rounded-md px-2 py-3 text-left text-sm hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+                  className="flex min-h-(--sz-44px) min-w-0 flex-1 items-center gap-3 rounded-md px-2 py-3 text-left text-sm hover:bg-bg-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:opacity-50"
                 >
-                  <span aria-hidden className="shrink-0 text-muted-foreground [&_svg]:size-4">{tab.icon}</span>
+                  <span aria-hidden className="shrink-0 text-ink-3 [&_svg]:size-4">{tab.icon}</span>
                   <span className="min-w-0 flex-1 break-words">{tab.label}</span>
                   {tab.id === activeTabId ? <Check aria-hidden className="size-4 shrink-0" /> : null}
                 </button>

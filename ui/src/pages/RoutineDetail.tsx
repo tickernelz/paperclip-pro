@@ -685,10 +685,10 @@ export function RoutineDetail() {
           : "Paused";
   const automationLabelClassName =
     routine.status === "archived"
-      ? "text-muted-foreground"
+      ? "text-ink-3"
       : automationEnabled
         ? "text-emerald-400"
-        : "text-muted-foreground";
+        : "text-ink-3";
 
   const contextValue: RoutineDetailContextValue = {
     routine,
@@ -765,7 +765,7 @@ export function RoutineDetail() {
     <RoutineDetailContext.Provider value={contextValue}>
       <a
         href="#routine-section"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-20 focus:rounded focus:bg-background focus:px-3 focus:py-1.5 focus:text-sm"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-2 focus:top-2 focus:z-20 focus:rounded focus:bg-bg focus:px-3 focus:py-1.5 focus:text-sm"
       >
         Skip to section
       </a>
@@ -774,13 +774,13 @@ export function RoutineDetail() {
           content scroll owner and a compact action header. */}
       <div className="-m-4 flex h-full min-h-0 overflow-hidden md:-m-6">
         <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-        <header className="flex min-h-14 shrink-0 flex-wrap items-center gap-3 border-b border-border bg-background px-4 py-2 md:px-6">
+        <header className="flex min-h-14 shrink-0 flex-wrap items-center gap-3 border-b border-line bg-bg px-4 py-2 md:px-6">
           <div className="flex min-w-0 flex-1 items-center gap-3">
             {section === "overview" && overviewEditing ? (
               <textarea
                 ref={titleInputRef}
                 data-autosize-title
-                className="min-w-0 flex-1 resize-none overflow-hidden bg-transparent text-base font-semibold leading-7 outline-none placeholder:text-muted-foreground/50"
+                className="min-w-0 flex-1 resize-none overflow-hidden bg-transparent text-base font-semibold leading-7 outline-none placeholder:text-ink-3/50"
                 placeholder="Routine title"
                 rows={1}
                 value={editDraft.title}
@@ -799,7 +799,7 @@ export function RoutineDetail() {
               <h1 className="min-w-0 flex-1 truncate text-xl font-bold">{routine.title}</h1>
             )}
             {routine.managedByPlugin ? (
-              <Badge variant="outline" className="hidden shrink-0 gap-1.5 text-xs text-muted-foreground sm:inline-flex">
+              <Badge variant="outline" className="hidden shrink-0 gap-1.5 text-xs text-ink-3 sm:inline-flex">
                 <Sparkles className="h-3 w-3" />
                 {routine.managedByPlugin.pluginDisplayName}
                 <span className="font-mono text-(length:--text-nano)">{routine.managedByPlugin.resourceKey}</span>
@@ -828,7 +828,7 @@ export function RoutineDetail() {
             {section === "overview" ? (
               overviewEditing ? (
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   onClick={() => {
                     discardSection("overview");
@@ -839,7 +839,7 @@ export function RoutineDetail() {
                   Cancel editing
                 </Button>
               ) : (
-                <Button variant="outline" size="sm" onClick={() => setOverviewEditing(true)}>
+                <Button variant="secondary" size="sm" onClick={() => setOverviewEditing(true)}>
                   <Pencil className="h-3.5 w-3.5" />
                   Edit routine
                 </Button>

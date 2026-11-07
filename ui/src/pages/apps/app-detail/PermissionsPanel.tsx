@@ -14,6 +14,7 @@ import { type InstallState } from "@/lib/tool-installs";
 import { QuarantinedActionsReview } from "./SetupPanel";
 import { ActionTestDialog } from "./ActionTestDialog";
 import type { AccessDraft, AppDetailSectionProps } from "./types";
+import { Chip } from "@/components/ui/chip";
 
 type ActionPermission = "off" | "ask" | "allowed";
 type ActionKindFilter = "all" | "read" | "write";
@@ -124,10 +125,10 @@ function AgentAccessSection({
   const requiredAgentIds = install.agentIds;
 
   return (
-    <section className="space-y-4 border-t border-border pt-8">
+    <section className="space-y-4 border-t border-line pt-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-sm font-semibold text-foreground">Which agents can use this connection?</h2>
-        {disabled ? <span className="text-xs text-muted-foreground">Saving…</span> : null}
+        <h2 className="text-sm font-semibold text-ink">Which agents can use this connection?</h2>
+        {disabled ? <span className="text-xs text-ink-3">Saving…</span> : null}
       </div>
 
       {canManage ? (
@@ -180,15 +181,15 @@ function AgentAccessSection({
           ) : null}
         </div>
       ) : access.mode === "all" ? (
-        <p className="text-sm text-muted-foreground">Any agent can use this connection.</p>
+        <p className="text-sm text-ink-3">Any agent can use this connection.</p>
       ) : selectedAgents.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No agents can use this connection.</p>
+        <p className="text-sm text-ink-3">No agents can use this connection.</p>
       ) : (
         <div className="space-y-0.5">
           {selectedAgents.map((agent) => (
             <div key={agent.id} className="flex items-center gap-2 px-1.5 py-1 text-sm">
-              <AgentAvatar agent={agent} size={16} className="h-4 w-4 shrink-0 text-muted-foreground"/>
-              <span className="min-w-0 flex-1 truncate text-foreground">{agent.name}</span>
+              <AgentAvatar agent={agent} size={16} className="h-4 w-4 shrink-0 text-ink-3"/>
+              <span className="min-w-0 flex-1 truncate text-ink">{agent.name}</span>
             </div>
           ))}
         </div>
@@ -248,14 +249,14 @@ export function ActionsSection({
   const visibleCount = visibleRead.length + visibleWrite.length;
 
   return (
-    <section className="space-y-6 border-t border-border pt-8">
+    <section className="space-y-6 border-t border-line pt-8">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 className="text-lg font-semibold text-foreground">Actions</h2>
+        <h2 className="text-lg font-semibold text-ink">Actions</h2>
         {canConfigure ? (
           <div className="flex items-center gap-2">
-            {disabled ? <span className="text-xs text-muted-foreground">Saving…</span> : null}
+            {disabled ? <span className="text-xs text-ink-3">Saving…</span> : null}
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               onClick={onRefreshActions}
               disabled={refreshPending || disabled}
@@ -288,7 +289,7 @@ export function ActionsSection({
       <div className="space-y-2">
         <div className="flex flex-wrap items-center gap-2">
           <div className="relative min-w-(--sz-12rem) flex-1">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-3" />
             <Input
               aria-label="Find an action"
               placeholder="Find an action…"
@@ -301,11 +302,11 @@ export function ActionsSection({
           <FilterChip label={`Read ${readOnly.length}`} active={kindFilter === "read"} onClick={() => setKindFilter("read")} />
           <FilterChip label={`Write ${canChange.length}`} active={kindFilter === "write"} onClick={() => setKindFilter("write")} />
         </div>
-        <p className="text-xs text-muted-foreground">{visibleCount} matches · sorted A–Z</p>
+        <p className="text-xs text-ink-3">{visibleCount} matches · sorted A–Z</p>
       </div>
 
       {visibleCount === 0 ? (
-        <div className="py-6 text-center text-sm text-muted-foreground">
+        <div className="py-6 text-center text-sm text-ink-3">
           No actions match “{query}”. Clear the search to see them all.
         </div>
       ) : (
@@ -348,19 +349,11 @@ export function ActionsSection({
 
 function FilterChip({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
   return (
-    <button
-      type="button"
+    <Chip selected={active}
       onClick={onClick}
-      aria-pressed={active}
-      className={cn(
-        "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
-        active
-          ? "border-primary bg-primary/10 text-primary"
-          : "border-border text-muted-foreground hover:bg-accent",
-      )}
     >
       {label}
-    </button>
+    </Chip>
   );
 }
 
@@ -397,12 +390,12 @@ function ActionGroup({
   return (
     <div>
       <div className="mb-1.5 flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{title}</h3>
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-ink-3">{title}</h3>
         {canConfigure ? (
           // PAP-659 C6b: set the whole group at once, so narrowing a fresh
           // connection's writes is one choice rather than one per action;
           // per-row overrides stay underneath.
-          <label className="flex items-center gap-2 text-xs text-muted-foreground">
+          <label className="flex items-center gap-2 text-xs text-ink-3">
             <span className="sr-only">{`Set every action in ${title}`}</span>
             <select
               aria-label={`Set every action in ${title}`}
@@ -414,7 +407,7 @@ function ActionGroup({
                 // the last call overwrite the others.
                 onSetPermission(actions.map((action) => action.id), event.target.value as ActionPermission);
               }}
-              className="h-7 rounded-md border border-input bg-background px-2 text-xs text-foreground outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30"
+              className="h-7 rounded-md border border-line-strong bg-bg px-2 text-xs text-ink outline-none focus-visible:border-focus focus-visible:ring-3 focus-visible:ring-focus/30"
             >
               {groupValue === "" ? <option value="">Mixed</option> : null}
               {PERMISSION_OPTIONS.map((option) => (
@@ -424,7 +417,7 @@ function ActionGroup({
           </label>
         ) : null}
       </div>
-      <div className="divide-y divide-border">
+      <div className="divide-y divide-line">
         {actions.map((action) => (
           <ActionRow
             key={action.id}
@@ -487,25 +480,25 @@ function ActionRow({
         ref={rowRef}
         className={cn(
           "flex flex-col gap-3 py-3 sm:flex-row sm:items-center",
-          focused && "rounded-md bg-primary/5 ring-2 ring-primary/40",
+          focused && "rounded-md bg-accent/5 ring-2 ring-accent/40",
         )}
         data-action-id={action.id}
       >
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm font-medium text-foreground">{title}</span>
+            <span className="text-sm font-medium text-ink">{title}</span>
             {/* PAP-659 C7: the gate is only as good as the classifier, so say
                 what each action was classified as. A misfiled tool is then one
                 glance to spot and one click to move. */}
             <span
-              className="rounded-full border border-border px-1.5 py-px text-xs font-medium uppercase tracking-wide text-muted-foreground"
+              className="rounded-full border border-line px-1.5 py-px text-xs font-medium uppercase tracking-wide text-ink-3"
               title={`Paperclip classified this action as ${action.riskLevel}`}
             >
               {action.riskLevel}
             </span>
           </div>
           {action.description ? (
-            <div className="truncate text-xs text-muted-foreground">{action.description}</div>
+            <div className="truncate text-xs text-ink-3">{action.description}</div>
           ) : null}
         </div>
         <div className="flex shrink-0 items-center gap-2">
@@ -514,7 +507,7 @@ function ActionRow({
               <div
                 role="radiogroup"
                 aria-label={`${title} permission`}
-                className="inline-flex rounded-md border border-border bg-muted/40 p-0.5"
+                className="inline-flex rounded-md border border-line bg-bg-3/40 p-0.5"
               >
               {PERMISSION_OPTIONS.map((option) => {
                 const Icon = option.icon;
@@ -530,10 +523,10 @@ function ActionRow({
                         disabled={disabled}
                         onClick={() => onSetPermission([action.id], option.value)}
                         className={cn(
-                          "flex h-8 w-8 items-center justify-center rounded-sm text-muted-foreground outline-none transition-colors",
-                          "hover:bg-background hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring",
+                          "flex h-8 w-8 items-center justify-center rounded-sm text-ink-3 outline-none transition-colors",
+                          "hover:bg-bg hover:text-ink focus-visible:ring-2 focus-visible:ring-focus",
                           "disabled:cursor-not-allowed disabled:opacity-50",
-                          selected && "bg-background text-foreground shadow-xs",
+                          selected && "bg-bg text-ink shadow-xs",
                         )}
                       >
                         <Icon className="h-3.5 w-3.5" />
@@ -548,11 +541,11 @@ function ActionRow({
               </div>
             </TooltipProvider>
           ) : (
-            <span className="text-sm text-muted-foreground">
+            <span className="text-sm text-ink-3">
               {PERMISSION_OPTIONS.find((option) => option.value === value)?.label}
             </span>
           )}
-          <Button type="button" size="sm" variant="outline" onClick={() => setTestOpen(true)}>
+          <Button type="button" size="sm" variant="secondary" onClick={() => setTestOpen(true)}>
             <FlaskConical className="mr-1.5 h-3.5 w-3.5" />
             Test
           </Button>

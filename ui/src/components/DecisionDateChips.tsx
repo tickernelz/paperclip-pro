@@ -48,26 +48,26 @@ export function DecisionDateChips({ value, custom, onChange }: DecisionDateChips
         </PopoverTrigger>
         <PopoverContent align="start" className="w-auto space-y-2 p-3">
           <div className="flex flex-col gap-1.5">
-            <label className="text-(length:--text-nano) font-medium uppercase tracking-wide text-muted-foreground">
+            <label className="text-(length:--text-nano) font-medium uppercase tracking-wide text-ink-3">
               From
             </label>
             <input
               type="date"
               value={custom.from ?? ""}
               max={custom.to ?? undefined}
-              className="rounded-sm border border-border bg-background px-2 py-1 text-xs"
+              className="rounded-sm border border-line bg-bg px-2 py-1 text-xs"
               onChange={(event) => onChange("custom", { ...custom, from: event.target.value || null })}
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-(length:--text-nano) font-medium uppercase tracking-wide text-muted-foreground">
+            <label className="text-(length:--text-nano) font-medium uppercase tracking-wide text-ink-3">
               To
             </label>
             <input
               type="date"
               value={custom.to ?? ""}
               min={custom.from ?? undefined}
-              className="rounded-sm border border-border bg-background px-2 py-1 text-xs"
+              className="rounded-sm border border-line bg-bg px-2 py-1 text-xs"
               onChange={(event) => onChange("custom", { ...custom, to: event.target.value || null })}
             />
           </div>
@@ -104,8 +104,8 @@ function ChipButton({
   const className = cn(
     "inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
     active
-      ? "border-primary bg-primary/10 text-primary"
-      : "border-border text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+      ? "border-accent bg-accent/10 text-accent"
+      : "border-line text-ink-3 hover:bg-bg-3/50 hover:text-ink",
   );
   if (asChild) {
     // The child is a real <button>; merge the chip class straight onto it so the

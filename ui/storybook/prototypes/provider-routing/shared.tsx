@@ -41,7 +41,7 @@ export function AdvancedOptions({
         <Button
           variant="ghost"
           size="sm"
-          className="group px-0 text-muted-foreground"
+          className="group px-0"
         >
           <ChevronDown className="size-4 -rotate-90 group-data-[state=open]:rotate-0" />
           {label}
@@ -74,15 +74,15 @@ export function ReviewFrame({
     <div className="mx-auto flex max-w-7xl flex-col gap-6 p-4 sm:p-6">
       <aside
         aria-label="Prototype review context"
-        className="flex flex-col gap-3 rounded-lg border border-dashed border-border bg-muted p-4"
+        className="flex flex-col gap-3 rounded-lg border border-dashed border-line bg-bg-3 p-4"
       >
         <div className="flex flex-wrap items-center justify-between gap-2">
           <strong className="text-sm">Provider routing · Design review</strong>
-          <span className="text-xs text-muted-foreground">
+          <span className="text-xs text-ink-3">
             Storybook prototype · No live authentication
           </span>
         </div>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           <strong>Location:</strong> {location}
         </p>
         <nav
@@ -100,7 +100,7 @@ export function ReviewFrame({
             </a>
           ))}
         </nav>
-        <details className="text-xs text-muted-foreground">
+        <details className="text-xs text-ink-3">
           <summary className="cursor-pointer">
             Production location and prototype scope
           </summary>
@@ -112,7 +112,7 @@ export function ReviewFrame({
         </details>
       </aside>
       <div
-        className="min-w-0 rounded-lg border border-border bg-background"
+        className="min-w-0 rounded-lg border border-line bg-bg"
         data-testid="provider-routing-preview"
       >
         {children}
@@ -143,7 +143,7 @@ export function Surface({
         <header className="space-y-2">
           <h1 className="text-xl font-semibold">{title}</h1>
           {description && (
-            <p className="text-sm text-muted-foreground">{description}</p>
+            <p className="text-sm text-ink-3">{description}</p>
           )}
         </header>
       )}
@@ -159,7 +159,7 @@ export function TextField({
   const id = useId();
   return (
     <div className="flex flex-col gap-1">
-      <label htmlFor={id} className="text-xs text-muted-foreground">
+      <label htmlFor={id} className="text-xs text-ink-3">
         {label}
       </label>
       <Input
@@ -168,7 +168,7 @@ export function TextField({
         {...props}
       />
       {hint && (
-        <p id={`${id}-hint`} className="text-xs text-muted-foreground">
+        <p id={`${id}-hint`} className="text-xs text-ink-3">
           {hint}
         </p>
       )}
@@ -191,7 +191,7 @@ export function Choice({
   const id = useId();
   return (
     <div className="flex min-w-0 flex-col gap-1">
-      <label htmlFor={id} className="text-xs text-muted-foreground">
+      <label htmlFor={id} className="text-xs text-ink-3">
         {label}
       </label>
       <Select value={value} onValueChange={onChange} disabled={disabled}>
@@ -227,7 +227,7 @@ export function Footer({
   disabled?: boolean;
 }) {
   return (
-    <footer className="flex items-center justify-between gap-3 border-t border-border pt-4">
+    <footer className="flex items-center justify-between gap-3 border-t border-line pt-4">
       <Button variant="ghost" onClick={onBack}>
         {back ?? "Back"}
       </Button>
@@ -247,7 +247,7 @@ export function Notice({
   return (
     <div
       role={error ? "alert" : "status"}
-      className={`rounded-md border p-3 text-sm ${error ? "border-destructive/30 text-destructive" : "border-border bg-muted text-foreground"}`}
+      className={`rounded-md border p-3 text-sm ${error ? "border-bad/30 text-bad" : "border-line bg-bg-3 text-ink"}`}
     >
       {children}
     </div>

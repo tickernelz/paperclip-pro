@@ -8,15 +8,15 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 
 function RepoRow({ repo, onRemove }: { repo: ProjectRepository; onRemove: () => void }) {
   return (
-    <div className="flex min-w-0 items-center gap-3 rounded-md border border-border px-3 py-2">
-      <GithubIcon className="size-4 shrink-0 text-muted-foreground" />
+    <div className="flex min-w-0 items-center gap-3 rounded-md border border-line px-3 py-2">
+      <GithubIcon className="size-4 shrink-0 text-ink-3" />
       <div className="flex min-w-0 flex-1 flex-col gap-1">
         <span className="truncate text-sm font-medium" title={repo.fullName}>{repo.fullName}</span>
-        {repo.connections.length > 0 && <span className="truncate text-xs text-muted-foreground" title={repo.connections.join(" · ")}>
+        {repo.connections.length > 0 && <span className="truncate text-xs text-ink-3" title={repo.connections.join(" · ")}>
           {repo.connections.join(" · ")}
         </span>}
       </div>
-      {repo.private && <LockKeyhole className="size-3 shrink-0 text-muted-foreground" aria-label="Private repository" />}
+      {repo.private && <LockKeyhole className="size-3 shrink-0 text-ink-3" aria-label="Private repository" />}
       <Button type="button" variant="ghost" size="icon-sm" aria-label={`Remove ${repo.fullName}`} onClick={onRemove}><X className="size-4" /></Button>
     </div>
   );
@@ -45,15 +45,15 @@ export function RepositoryEditor({ selected, onChange, state = "ready", availabl
   const addLabel = selected.length ? "Add another repo" : "Add GitHub repo";
   return (
     <fieldset disabled={disabled} className="flex min-w-0 flex-col gap-3">
-      <div className="flex items-baseline gap-2"><span className="text-sm font-medium">Source repos</span><span className="text-xs text-muted-foreground">optional</span></div>
+      <div className="flex items-baseline gap-2"><span className="text-sm font-medium">Source repos</span><span className="text-xs text-ink-3">optional</span></div>
       {selected.map((repo) => <RepoRow key={repo.id} repo={repo} onRemove={() => onChange(selected.filter((item) => item.id !== repo.id))} />)}
       {state === "disconnected" ? (
         <Popover>
-          <PopoverTrigger asChild><Button type="button" variant="outline" className={addClassName}><GithubIcon className="size-4" />{addLabel}</Button></PopoverTrigger>
+          <PopoverTrigger asChild><Button type="button" variant="secondary" className={addClassName}><GithubIcon className="size-4" />{addLabel}</Button></PopoverTrigger>
           <PopoverContent align="start" className="w-72">
             <div className="flex flex-col gap-3">
               <GithubIcon className="size-5" />
-              <div className="flex flex-col gap-1"><p className="text-sm font-medium">Connect GitHub to pick a repo</p><p className="text-xs text-muted-foreground">Choose from repos you can access through your GitHub connections.</p></div>
+              <div className="flex flex-col gap-1"><p className="text-sm font-medium">Connect GitHub to pick a repo</p><p className="text-xs text-ink-3">Choose from repos you can access through your GitHub connections.</p></div>
               <Button type="button" onClick={onConnect}><GithubIcon className="size-4" />Connect GitHub</Button>
             </div>
           </PopoverContent>
@@ -66,19 +66,19 @@ export function RepositoryEditor({ selected, onChange, state = "ready", availabl
             contentClassName="max-h-(--radix-popover-content-available-height) overflow-hidden [&_[data-slot=command]]:max-h-(--radix-popover-content-available-height) [&_[data-slot=command-list]]:min-h-0 [&_[data-slot=command-list]]:flex-1 [&_[data-slot=command-input-wrapper]]:shrink-0"
             loading={state === "loading"} loadingMessage="Loading GitHub repos…"
             emptyMessage={state === "error" ? "Couldn’t load GitHub repos. Try again." : state === "empty" ? "No repos available. Connect an account with repo access." : "No matching repos. Try another search or connection."}
-            renderValue={() => <span className="flex items-center gap-2 text-foreground"><GithubIcon className="size-4" />{addLabel}</span>}
-            renderOption={({ repo }) => <><GitBranch className="size-4 shrink-0 text-muted-foreground" /><span className="flex min-w-0 flex-1 flex-col gap-1"><span className="truncate">{repo.fullName}</span><span className="truncate text-xs text-muted-foreground">{repo.connections.join(" · ")}</span></span>{repo.private && <LockKeyhole className="size-3 shrink-0 text-muted-foreground" />}</>}
+            renderValue={() => <span className="flex items-center gap-2 text-ink"><GithubIcon className="size-4" />{addLabel}</span>}
+            renderOption={({ repo }) => <><GitBranch className="size-4 shrink-0 text-ink-3" /><span className="flex min-w-0 flex-1 flex-col gap-1"><span className="truncate">{repo.fullName}</span><span className="truncate text-xs text-ink-3">{repo.connections.join(" · ")}</span></span>{repo.private && <LockKeyhole className="size-3 shrink-0 text-ink-3" />}</>}
             onValueChange={(_, option) => { onChange([...selected, option.repo]); setShowPicker(false); }}
             createItem={state === "error"
               ? { render: () => <>Try again</>, onSelect: () => { onRetry(); } }
               : { render: () => <><Plus className="size-4" />Connect another GitHub account</>, onSelect: onConnect }}
           />
           <div className="flex items-center justify-between gap-2">
-            <p className="text-xs text-muted-foreground">{"All GitHub connections you can use."}</p>
+            <p className="text-xs text-ink-3">{"All GitHub connections you can use."}</p>
             <Button type="button" variant="ghost" size="sm" onClick={() => setShowPicker(false)}>Cancel</Button>
           </div>
         </div>
-      ) : <Button type="button" variant="outline" className={addClassName} onClick={() => setShowPicker(true)}><GithubIcon className="size-4" />{addLabel}</Button>}
+      ) : <Button type="button" variant="secondary" className={addClassName} onClick={() => setShowPicker(true)}><GithubIcon className="size-4" />{addLabel}</Button>}
     </fieldset>
   );
 }

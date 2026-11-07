@@ -51,31 +51,31 @@ function AgentChatsContent({ companyId, userId, enabled, loaded, agents, chats, 
   useEffect(() => {
     if (entryPath) navigate(entryPath, { replace: true });
   }, [navigate, entryPath]);
-  if (!loaded) return <p role="status" className="text-sm text-muted-foreground">Loading chat…</p>;
-  if (!enabled) return <p className="text-sm text-muted-foreground">Agent chat is off. Turn it on in Settings &gt; Features.</p>;
-  if (!companyId) return <p className="text-sm text-muted-foreground">Select a company to start a conversation.</p>;
-  if (resolvingRecent || entryPath || primary?.loading) return <p role="status" className="text-sm text-muted-foreground">Opening chat…</p>;
+  if (!loaded) return <p role="status" className="text-sm text-ink-3">Loading chat…</p>;
+  if (!enabled) return <p className="text-sm text-ink-3">Agent chat is off. Turn it on in Settings &gt; Features.</p>;
+  if (!companyId) return <p className="text-sm text-ink-3">Select a company to start a conversation.</p>;
+  if (resolvingRecent || entryPath || primary?.loading) return <p role="status" className="text-sm text-ink-3">Opening chat…</p>;
   const error = blockingError ?? (recentIds.length > 0 ? chats.error : null);
   return <div className="mx-auto flex h-full max-w-xl flex-col justify-center gap-6 px-4 py-12">
     <div className="flex flex-col gap-3">
-      <MessageCircle className="size-6 text-muted-foreground" />
+      <MessageCircle className="size-6 text-ink-3" />
       <h1 className="text-xl font-semibold">Who would you like to talk to?</h1>
-      <p className="text-sm leading-relaxed text-muted-foreground">Ask a question, think through an idea, or plan the next step with your team.</p>
+      <p className="text-sm leading-relaxed text-ink-3">Ask a question, think through an idea, or plan the next step with your team.</p>
     </div>
-    {error ? <div role="alert" className="flex flex-col items-start gap-3"><p className="text-sm">Couldn’t load your chats.</p><Button variant="outline" onClick={() => { void agents.refetch(); void chats.refetch(); void session.refetch(); }}>Try again</Button></div>
-      : agents.isPending || session.isPending ? <p role="status" className="text-sm text-muted-foreground">Loading agents…</p>
+    {error ? <div role="alert" className="flex flex-col items-start gap-3"><p className="text-sm">Couldn’t load your chats.</p><Button variant="secondary" onClick={() => { void agents.refetch(); void chats.refetch(); void session.refetch(); }}>Try again</Button></div>
+      : agents.isPending || session.isPending ? <p role="status" className="text-sm text-ink-3">Loading agents…</p>
       : <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         {(agents.data ?? []).slice(0, 6).map(agent => <button key={agent.id} type="button" disabled={openingId !== null}
           onClick={async () => {
             setOpeningId(agent.id); setOpenError(null);
             try { await openChat(agent); } catch (error) { setOpenError(error instanceof Error ? error.message : "Couldn’t open chat. Try again."); } finally { setOpeningId(null); }
-          }} className="flex items-center gap-3 rounded-lg border border-border p-4 text-left hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50">
+          }} className="flex items-center gap-3 rounded-lg border border-line p-4 text-left hover:bg-bg-3/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:opacity-50">
           <AgentAvatar agent={agent} size={32} />
-          <span className="flex min-w-0 flex-col gap-1"><span className="truncate text-sm font-medium">{agent.name}</span><span className="text-xs text-muted-foreground">{openingId === agent.id ? "Opening chat…" : agent.title ?? agent.role}</span></span>
+          <span className="flex min-w-0 flex-col gap-1"><span className="truncate text-sm font-medium">{agent.name}</span><span className="text-xs text-ink-3">{openingId === agent.id ? "Opening chat…" : agent.title ?? agent.role}</span></span>
         </button>)}
       </div>}
-    {openError && <p role="alert" className="text-sm text-destructive">{openError}</p>}
-    {agents.data?.length === 0 && <p className="text-sm text-muted-foreground">Add an agent to start a conversation.</p>}
+    {openError && <p role="alert" className="text-sm text-bad">{openError}</p>}
+    {agents.data?.length === 0 && <p className="text-sm text-ink-3">Add an agent to start a conversation.</p>}
     <Button variant="ghost" className="self-start" asChild><Link to="/agents/all">Browse all agents</Link></Button>
   </div>;
 }

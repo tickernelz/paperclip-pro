@@ -151,7 +151,7 @@ export function LocalRunLimitsSection({
       <div className="space-y-4">
         <div className="space-y-1.5">
           <h2 className="text-sm font-semibold">Local run limits</h2>
-          <p className="max-w-2xl text-sm text-muted-foreground">
+          <p className="max-w-2xl text-sm text-ink-3">
             Cap how many local CLI agent runs this instance runs at once and how many may be starting up together.
             Changes apply to the next run admission without a restart; lowering a limit never stops runs that are
             already running. The memory reserve and cooldown only drive the memory gate's log line for now: each local
@@ -173,7 +173,7 @@ export function LocalRunLimitsSection({
               const locked = current?.source === "env";
               return (
                 <label key={field.key} className="space-y-1.5">
-                  <span className="text-xs font-medium text-muted-foreground">{field.label}</span>
+                  <span className="text-xs font-medium text-ink-3">{field.label}</span>
                   <Input
                     type="number"
                     inputMode="numeric"
@@ -192,11 +192,11 @@ export function LocalRunLimitsSection({
                     }}
                   />
                   {locked ? (
-                    <span className="block text-xs text-muted-foreground" data-testid={`local-run-limit-env-${field.key}`}>
+                    <span className="block text-xs text-ink-3" data-testid={`local-run-limit-env-${field.key}`}>
                       Overridden by the {current.envVar} environment variable. Unset it to manage this here.
                     </span>
                   ) : current ? (
-                    <span className="block text-xs text-muted-foreground" data-testid={`local-run-limit-effective-${field.key}`}>
+                    <span className="block text-xs text-ink-3" data-testid={`local-run-limit-effective-${field.key}`}>
                       In force: <span className="font-medium tabular-nums">{current.value}</span> ({SOURCE_LABELS[current.source]}).
                       Range {field.min}–{field.max}.
                     </span>
@@ -211,7 +211,7 @@ export function LocalRunLimitsSection({
             </Button>
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               size="sm"
               disabled={busy || !dirty}
               onClick={() => {
@@ -224,7 +224,7 @@ export function LocalRunLimitsSection({
           </div>
         </form>
         {shownError ? (
-          <p role="alert" className="text-sm text-destructive">{shownError}</p>
+          <p role="alert" className="text-sm text-bad">{shownError}</p>
         ) : null}
       </div>
     </section>

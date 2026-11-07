@@ -40,14 +40,14 @@ function Section({
   emptyLabel: string;
 }) {
   return (
-    <section className="space-y-3 rounded-lg border border-border p-3">
+    <section className="space-y-3 rounded-lg border border-line p-3">
       <div className="space-y-1">
         <h3 className="text-sm font-semibold">{title}</h3>
-        <p className="text-xs text-muted-foreground">{description}</p>
+        <p className="text-xs text-ink-3">{description}</p>
       </div>
 
       {items.length === 0 ? (
-        <p className="text-xs text-muted-foreground">{emptyLabel}</p>
+        <p className="text-xs text-ink-3">{emptyLabel}</p>
       ) : (
         <ul className="-mx-1 flex flex-col">
           {items.map((item) => {
@@ -56,11 +56,11 @@ function Section({
             return (
               <li
                 key={item.issue.id}
-                className="flex flex-wrap items-center gap-x-2 gap-y-1.5 rounded-md px-1 py-1.5 hover:bg-accent/40"
+                className="flex flex-wrap items-center gap-x-2 gap-y-1.5 rounded-md px-1 py-1.5 hover:bg-bg-3/40"
               >
                 <IssueReferencePill issue={item.issue} />
                 {showTitle ? (
-                  <span className="min-w-0 flex-1 truncate text-sm text-muted-foreground">
+                  <span className="min-w-0 flex-1 truncate text-sm text-ink-3">
                     {item.issue.title}
                   </span>
                 ) : null}
@@ -68,7 +68,7 @@ function Section({
                   {groupedSources.map((group) => (
                     <Badge variant="outline"
                       key={`${item.issue.id}:${group.label}`}
-                      className="border-border bg-muted/40 text-muted-foreground"
+                      className="border-line bg-bg-3/40 text-ink-3"
                       title={group.sampleMatchedText ?? undefined}
                     >
                       <span>{group.label}</span>
@@ -109,31 +109,31 @@ function ExternalObjectsSection({
   });
 
   return (
-    <section className="space-y-3 rounded-lg border border-border p-3">
+    <section className="space-y-3 rounded-lg border border-line p-3">
       <div className="space-y-1">
         <h3 className="text-sm font-semibold">External objects</h3>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-ink-3">
           Remote work referenced from this issue — pull requests, deployments, tickets in other systems, and more.
         </p>
       </div>
 
       {isError ? (
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-ink-3">
           Couldn't load external objects.{" "}
           {onRetry ? (
             <button
               type="button"
               onClick={onRetry}
-              className="text-primary underline-offset-2 hover:underline"
+              className="text-accent underline-offset-2 hover:underline"
             >
               Retry
             </button>
           ) : null}
         </p>
       ) : isLoading ? (
-        <p className="text-xs text-muted-foreground">Loading external objects…</p>
+        <p className="text-xs text-ink-3">Loading external objects…</p>
       ) : sorted.length === 0 ? (
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-ink-3">
           This issue does not reference any external objects yet.
         </p>
       ) : (
@@ -143,11 +143,11 @@ function ExternalObjectsSection({
             return (
               <li
                 key={object?.id ?? `${pill.providerKey}:${pill.objectType}:${pill.url ?? "anon"}`}
-                className="flex flex-wrap items-center gap-x-2 gap-y-1.5 rounded-md px-1 py-1.5 hover:bg-accent/40"
+                className="flex flex-wrap items-center gap-x-2 gap-y-1.5 rounded-md px-1 py-1.5 hover:bg-bg-3/40"
               >
                 <ExternalObjectPill object={pill} sourceCount={mentionCount} sourceSummary={sourceLabels.join(", ")} />
                 {pill.displayTitle ? (
-                  <span className="min-w-0 flex-1 truncate text-sm text-muted-foreground">
+                  <span className="min-w-0 flex-1 truncate text-sm text-ink-3">
                     {pill.displayTitle}
                   </span>
                 ) : null}
@@ -155,7 +155,7 @@ function ExternalObjectsSection({
                   {sourceLabels.map((label) => (
                     <Badge variant="outline"
                       key={`${object?.id ?? pill.url ?? label}:${label}`}
-                      className="border-border bg-muted/40 text-muted-foreground"
+                      className="border-line bg-bg-3/40 text-ink-3"
                     >
                       <span>{label}</span>
                     </Badge>

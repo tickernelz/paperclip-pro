@@ -92,17 +92,17 @@ export function OnboardingLoginCard({
   if (loading) {
     return (
       <div
-        className="flex min-h-(--sz-108px) items-center justify-center rounded-xl bg-muted/40"
+        className="flex min-h-(--sz-108px) items-center justify-center rounded-xl bg-bg-3/40"
         role="status"
         aria-label="Preparing the sign-in"
       >
-        <Loader2 className="size-4 animate-spin text-muted-foreground" />
+        <Loader2 className="size-4 animate-spin text-ink-3" />
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-(--sz-108px) flex-col gap-4 rounded-xl bg-muted/40 p-4">
+    <div className="flex min-h-(--sz-108px) flex-col gap-4 rounded-xl bg-bg-3/40 p-4">
       {/* The row is the instruction alone. It shared this line with a Cancel
           until that button went — it repeated the footer's Back, which is the
           step's one way out.
@@ -121,7 +121,7 @@ export function OnboardingLoginCard({
         initial={{ opacity: 0, y: CARD_REVEAL_TRAVEL }}
         animate={{ opacity: 1, y: 0, transition: CARD_REVEAL_INSTRUCTION }}
       >
-        <span className="text-xs text-muted-foreground">{instruction}</span>
+        <span className="text-xs text-ink-3">{instruction}</span>
       </motion.div>
       {/* A beat behind the sentence above it, so the card reads as one thing
           unfolding and the instruction has been read by the time the field is
@@ -145,7 +145,7 @@ export function OnboardingLoginCard({
  */
 function LoginCardRow({ children }: { children: ReactNode }) {
   return (
-    <div className="flex h-(--sz-44px) items-center gap-2 rounded-lg bg-muted pl-5 pr-2.5">
+    <div className="flex h-(--sz-44px) items-center gap-2 rounded-lg bg-bg-3 pl-5 pr-2.5">
       {children}
     </div>
   );
@@ -185,7 +185,7 @@ function LoginCardCopyButton({
       size="icon-xs"
       aria-label={label}
       title={label}
-      className="size-6 shrink-0 text-muted-foreground hover:text-foreground [&_svg]:size-3"
+      className="size-6 shrink-0 [&_svg]:size-3"
       onClick={async () => {
         try {
           await copyTextToClipboard(value);
@@ -291,15 +291,15 @@ export function OnboardingLoginCodeRow({
   }, [autoCopy, code]);
 
   return (
-    <div className="flex h-(--sz-44px) items-center gap-2 rounded-lg bg-muted px-4">
-      <span className="min-w-0 flex-1 truncate text-sm text-foreground">
+    <div className="flex h-(--sz-44px) items-center gap-2 rounded-lg bg-bg-3 px-4">
+      <span className="min-w-0 flex-1 truncate text-sm text-ink">
         {code}
       </span>
       <AnimatePresence initial={false}>
         {copied && (
           <motion.span
             key="copied"
-            className="shrink-0 text-sm text-muted-foreground/40"
+            className="shrink-0 text-sm text-ink-3/40"
             initial={{ opacity: 0, y: COPIED_REVEAL_TRAVEL }}
             animate={{ opacity: 1, y: 0, transition: COPIED_REVEAL }}
             exit={{ opacity: 0, transition: COPIED_REVEAL }}
@@ -331,9 +331,9 @@ export function OnboardingLoginCodeRow({
  * a switch. They differ in what they hold, not in what they look like.
  */
 export const onboardingCardInputClass =
-  "h-(--sz-44px) w-full rounded-lg bg-muted px-5 font-mono text-xs text-foreground " +
-  "placeholder:font-sans placeholder:text-sm placeholder:text-muted-foreground " +
-  "outline-none focus-visible:ring-ring/50 focus-visible:ring-(length:--rad-3)";
+  "h-(--sz-44px) w-full rounded-lg bg-bg-3 px-5 font-mono text-xs text-ink " +
+  "placeholder:font-sans placeholder:text-sm placeholder:text-ink-3 " +
+  "outline-none focus-visible:ring-focus/50 focus-visible:ring-(length:--rad-3)";
 
 /**
  * The card's single-line field, whatever the card is asking for.
@@ -436,7 +436,7 @@ export function ProviderSubscriptionCard({
             href={authorizationUrl}
             target="_blank"
             rel="noreferrer noopener"
-            className="underline underline-offset-2 hover:text-foreground"
+            className="underline underline-offset-2 hover:text-ink"
           >
             Sign in to {providerName}
           </a>
@@ -490,11 +490,11 @@ export function LocalProviderLoginInstructions({ adapterType, login }: {
       setSubmitting(false);
     }
   }
-  if (login?.preparing) return <p role="status" className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="size-4 animate-spin" />Preparing sign-in…</p>;
+  if (login?.preparing) return <p role="status" className="flex items-center gap-2 text-sm text-ink-3"><Loader2 className="size-4 animate-spin" />Preparing sign-in…</p>;
   const ready = login?.status === "ready";
-  return <div className="min-w-0 max-w-full space-y-3 text-sm text-muted-foreground">
+  return <div className="min-w-0 max-w-full space-y-3 text-sm text-ink-3">
     {ready ? <>
-      <p role="status" className="flex items-center gap-2 text-foreground"><Check className="size-4 shrink-0 text-(--status-task-icon-done)" />{provider} is signed in. Click Connect to use this account.</p>
+      <p role="status" className="flex items-center gap-2 text-ink"><Check className="size-4 shrink-0 text-(--status-task-icon-done)" />{provider} is signed in. Click Connect to use this account.</p>
       {!showCommand && <button type="button" className="underline underline-offset-4" onClick={() => browserLogin ? login?.retry() : setShowCommand(true)}>Use a different account</button>}
     </> : !browserLogin && <p>{isolated ? `Sign in to ${provider} for this connection on the machine running Paperclip. Your existing terminal login stays separate.` : `Connect uses your local ${provider} account on the machine running Paperclip.`}</p>}
     {browserLogin && !ready && !login?.authorizationUrl && !login?.error && <p role="status">Preparing browser sign-in…</p>}
@@ -515,7 +515,7 @@ export function LocalProviderLoginInstructions({ adapterType, login }: {
     </ProviderSubscriptionCard>}
     {!browserLogin && (!ready || showCommand) && !login?.error && <>
       <p>Run this in a terminal on that machine and finish signing in in your browser. We’ll check automatically when you return.</p>
-      {command && <div className="flex min-w-0 max-w-full items-start gap-2 rounded-md border bg-muted p-3 text-foreground">
+      {command && <div className="flex min-w-0 max-w-full items-start gap-2 rounded-md border bg-bg-3 p-3 text-ink">
         <pre className="min-w-0 flex-1 whitespace-pre-wrap break-all font-mono text-xs"><code>{command}</code></pre>
         <LoginCardCopyButton value={command} label="Copy sign-in command" />
       </div>}

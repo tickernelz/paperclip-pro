@@ -122,7 +122,7 @@ export function RoutineTriggers() {
     return (
       <div className="space-y-4">
         {statusError && (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-sm text-bad">
             Connection status is unavailable. Retrying…
           </p>
         )}
@@ -141,7 +141,7 @@ export function RoutineTriggers() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           {routine.triggers.length}{" "}
           {routine.triggers.length === 1 ? "trigger" : "triggers"}
         </p>
@@ -151,7 +151,7 @@ export function RoutineTriggers() {
         </Button>
       </div>
       {(error || statusError) && (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-sm text-bad">
           {error || "Connection status is unavailable. Retrying…"}
         </p>
       )}
@@ -159,7 +159,7 @@ export function RoutineTriggers() {
         <div
           key={trigger.id}
           role="status"
-          className="flex items-center gap-3 rounded-md bg-muted/40 px-4 py-3 text-sm"
+          className="flex items-center gap-3 rounded-md bg-bg-3/40 px-4 py-3 text-sm"
         >
           <span className="flex-1">
             {trigger.kind === "schedule"
@@ -197,13 +197,13 @@ export function RoutineTriggers() {
               <CopyField label="Secret key" value={entry.webhookSecret} />
             </div>
           ))}
-          <Button variant="outline" onClick={() => ctx.setSecretMessage(null)}>
+          <Button variant="secondary" onClick={() => ctx.setSecretMessage(null)}>
             Done
           </Button>
         </div>
       )}
       {routine.triggers.length === 0 && (
-        <p className="py-6 text-sm text-muted-foreground">
+        <p className="py-6 text-sm text-ink-3">
           Run this routine on a schedule or when another app sends a webhook.
         </p>
       )}
@@ -279,7 +279,7 @@ export function RoutineTriggers() {
                 onCancel={() => setExpanded(null)}
               />
             ) : trigger.kind === "api" ? (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-ink-3">
                 This trigger starts the routine through the API.
               </p>
             ) : (
@@ -470,7 +470,7 @@ function ScheduleSettings({
         />
       </Label>
       {error && (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-sm text-bad">
           {error}
         </p>
       )}
@@ -495,7 +495,7 @@ function ScheduleSettings({
         >
           Save schedule
         </Button>
-        <Button variant="outline" onClick={onCancel}>
+        <Button variant="secondary" onClick={onCancel}>
           Cancel
         </Button>
       </div>
@@ -551,11 +551,11 @@ function WebhookSettings({
               }
             />
           ) : (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-ink-3">
               The secret key is hidden.
             </p>
           )}
-          <Button variant="outline" size="sm" onClick={() => setReplace(true)}>
+          <Button variant="secondary" size="sm" onClick={() => setReplace(true)}>
             Replace key
           </Button>
           {secret && (
@@ -566,19 +566,19 @@ function WebhookSettings({
         </div>
       )}
       {trigger.signingMode === "none" && (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           This webhook uses its URL as the shared secret.
         </p>
       )}
       {trigger.signingMode === "hmac_sha256" && (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           Sign the timestamp, a period, and the exact JSON body with
           HMAC-SHA256. Send X-Paperclip-Timestamp and X-Paperclip-Signature:
           sha256=&lt;signature&gt;.
         </p>
       )}
       <Button
-        variant="outline"
+        variant="secondary"
         onClick={() =>
           setCheckBaseline(trigger.lastWebhookDelivery?.receivedAt ?? "")
         }
@@ -595,7 +595,7 @@ function WebhookSettings({
             </DialogDescription>
           </DialogHeader>
           {error && (
-            <p role="alert" className="text-sm text-destructive">
+            <p role="alert" className="text-sm text-bad">
               {error}
             </p>
           )}

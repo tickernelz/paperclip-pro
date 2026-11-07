@@ -351,7 +351,7 @@ function IntegratedSurface({
   return (
     <QueryClientProvider client={queryClient}>
       <div className="paperclip-doc-annotation-integrated mx-auto max-w-[1320px] p-4">
-        <div className="rounded-lg border border-border bg-background p-4">
+        <div className="rounded-lg border border-line bg-bg p-4">
           <IssueDocumentsSection
             issue={issue}
             canDeleteDocuments={false}
@@ -386,21 +386,21 @@ function DirtyDraftWithIntegratedHeader() {
   return (
     <QueryClientProvider client={queryClient}>
       <div className="paperclip-doc-annotation-integrated mx-auto max-w-[1320px] p-4">
-        <div className="rounded-lg border border-border bg-background p-4">
+        <div className="rounded-lg border border-line bg-bg p-4">
           <div className="space-y-3">
             <div className="flex flex-wrap items-center gap-2 min-w-0">
-              <h3 className="w-full text-sm font-medium text-muted-foreground shrink-0 sm:w-auto">Documents</h3>
+              <h3 className="w-full text-sm font-medium text-ink-3 shrink-0 sm:w-auto">Documents</h3>
             </div>
-            <div className="rounded-lg border border-border p-3">
+            <div className="rounded-lg border border-line p-3">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2 min-w-0">
-                    <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-sm text-muted-foreground">▾</span>
-                    <span className="shrink-0 rounded-full border border-border px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+                    <span className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-sm text-ink-3">▾</span>
+                    <span className="shrink-0 rounded-full border border-line px-2 py-0.5 font-mono text-[10px] uppercase tracking-[0.16em] text-ink-3">
                       plan
                     </span>
-                    <span className="text-[11px] text-muted-foreground">rev 4 ▾</span>
-                    <span className="truncate text-[11px] text-muted-foreground">updated 2h ago</span>
+                    <span className="text-[11px] text-ink-3">rev 4 ▾</span>
+                    <span className="truncate text-[11px] text-ink-3">updated 2h ago</span>
                     <DocumentAnnotationsCountChip
                       issueId={issue.id}
                       docKey={integratedDoc.key}
@@ -455,7 +455,7 @@ function StatesShowcase({ focusedThreadId = "open-1" }: { focusedThreadId?: stri
   return (
     <QueryClientProvider client={queryClient}>
       <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="relative rounded-lg border border-border bg-card p-4">
+        <div className="relative rounded-lg border border-line bg-bg-2 p-4">
           <section
             ref={(element) => {
               bodyRef.current = element;

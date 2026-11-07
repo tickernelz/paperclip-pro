@@ -72,7 +72,7 @@ function publicShareImageSrc(token: string, src: string): string | null {
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="space-y-3">
-      <h2 className="text-sm font-semibold text-muted-foreground">{title}</h2>
+      <h2 className="text-sm font-semibold text-ink-3">{title}</h2>
       {children}
     </section>
   );
@@ -87,7 +87,7 @@ function Timestamp({ value }: { value: string }) {
     <time
       dateTime={value}
       title={formatDateTime(value)}
-      className="text-xs text-muted-foreground"
+      className="text-xs text-ink-3"
     >
       {relativeTime(value)}
     </time>
@@ -98,7 +98,7 @@ function ActiveRunPill({ agentName }: { agentName: string }) {
   return (
     <span
       data-testid="public-share-run-pill"
-      className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1 text-xs text-foreground"
+      className="inline-flex items-center gap-1.5 rounded-full border border-line px-3 py-1 text-xs text-ink"
     >
       <span className="h-2 w-2 animate-pulse rounded-full bg-(--status-agent-running)" aria-hidden />
       {agentName} is working…
@@ -158,18 +158,18 @@ function RelatedIssueRow({
   );
   return (
     <li className="flex items-center gap-2 text-sm">
-      <span className="w-20 shrink-0 text-xs text-muted-foreground">
+      <span className="w-20 shrink-0 text-xs text-ink-3">
         {RELATION_LABELS[related.relation]}
       </span>
       {related.navigable ? (
         <Link
           to={isSharedRoot ? sharePath(token, related.id) : sharePath(token)}
-          className="flex min-w-0 items-center gap-2 text-foreground underline-offset-2 hover:underline"
+          className="flex min-w-0 items-center gap-2 text-ink underline-offset-2 hover:underline"
         >
           {content}
         </Link>
       ) : (
-        <span className="flex min-w-0 items-center gap-2 text-muted-foreground">{content}</span>
+        <span className="flex min-w-0 items-center gap-2 text-ink-3">{content}</span>
       )}
     </li>
   );
@@ -182,16 +182,16 @@ function TimelineEntry({ comment, resolveImageSrc }: { comment: PublicIssueComme
     return (
       <li
         data-testid="public-share-redacted-comment"
-        className="flex flex-wrap items-center gap-2 rounded-lg border border-dashed border-border px-3 py-2"
+        className="flex flex-wrap items-center gap-2 rounded-lg border border-dashed border-line px-3 py-2"
       >
         <ActorIdentity actor={comment.author} />
         <Timestamp value={comment.createdAt} />
-        <span className="text-xs italic text-muted-foreground">Internal update</span>
+        <span className="text-xs italic text-ink-3">Internal update</span>
       </li>
     );
   }
   return (
-    <li className="space-y-2 rounded-lg border border-border bg-card px-3 py-3">
+    <li className="space-y-2 rounded-lg border border-line bg-bg-2 px-3 py-3">
       <div className="flex flex-wrap items-center gap-2">
         <ActorIdentity actor={comment.author} />
         <Timestamp value={comment.createdAt} />
@@ -206,18 +206,18 @@ function TimelineEntry({ comment, resolveImageSrc }: { comment: PublicIssueComme
 
 function DocumentCard({ document, resolveImageSrc }: { document: PublicShareDocument; resolveImageSrc: ImageSrcResolver }) {
   return (
-    <details className="group rounded-lg border border-border bg-card">
+    <details className="group rounded-lg border border-line bg-bg-2">
       <summary className="flex cursor-pointer items-center gap-2 px-3 py-2 text-sm">
-        <FileText className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+        <FileText className="h-4 w-4 shrink-0 text-ink-3" aria-hidden />
         <span className="min-w-0 flex-1 truncate font-medium">{document.title ?? document.key}</span>
         <Timestamp value={document.updatedAt} />
       </summary>
-      <div className="space-y-3 border-t border-border px-3 py-3">
+      <div className="space-y-3 border-t border-line px-3 py-3">
         <a
           href={document.pdfUrl}
           download
           rel="noreferrer"
-          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+          className="inline-flex items-center gap-1.5 text-xs text-ink-3 hover:text-ink"
         >
           <Download className="h-3.5 w-3.5" aria-hidden />
           Download PDF
@@ -232,9 +232,9 @@ function DocumentCard({ document, resolveImageSrc }: { document: PublicShareDocu
 
 function WorkProductRow({ product }: { product: PublicShareWorkProduct }) {
   return (
-    <li className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-border bg-card px-3 py-2 text-sm">
+    <li className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-line bg-bg-2 px-3 py-2 text-sm">
       <span className="min-w-0 flex-1 truncate font-medium">{product.title}</span>
-      <span className="text-xs text-muted-foreground">
+      <span className="text-xs text-ink-3">
         {product.type.replace(/_/g, " ")} · {product.status.replace(/_/g, " ")}
       </span>
       {product.url ? (
@@ -242,7 +242,7 @@ function WorkProductRow({ product }: { product: PublicShareWorkProduct }) {
           href={product.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+          className="inline-flex items-center gap-1 text-xs text-ink-3 hover:text-ink"
         >
           <ExternalLink className="h-3.5 w-3.5" aria-hidden />
           Open
@@ -253,7 +253,7 @@ function WorkProductRow({ product }: { product: PublicShareWorkProduct }) {
           href={product.downloadUrl}
           download
           rel="noreferrer"
-          className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+          className="inline-flex items-center gap-1 text-xs text-ink-3 hover:text-ink"
         >
           <Download className="h-3.5 w-3.5" aria-hidden />
           Download
@@ -265,10 +265,10 @@ function WorkProductRow({ product }: { product: PublicShareWorkProduct }) {
 
 function CenteredNotice({ title, body, action }: { title: string; body: string; action?: ReactNode }) {
   return (
-    <div className="flex h-dvh overflow-y-auto bg-background px-4 text-foreground">
-      <div className="m-auto w-full max-w-sm space-y-2 rounded-lg border border-border bg-card p-6 text-center">
+    <div className="flex h-dvh overflow-y-auto bg-bg px-4 text-ink">
+      <div className="m-auto w-full max-w-sm space-y-2 rounded-lg border border-line bg-bg-2 p-6 text-center">
         <h1 className="text-lg font-semibold">{title}</h1>
-        <p className="text-sm text-muted-foreground">{body}</p>
+        <p className="text-sm text-ink-3">{body}</p>
         {action}
       </div>
     </div>
@@ -279,8 +279,8 @@ function PublicIssueShareContent({ view, token }: { view: PublicIssueShareView; 
   const { company, issue } = view;
   const resolveImageSrc = useCallback((src: string) => publicShareImageSrc(token, src), [token]);
   return (
-    <div className="h-dvh overflow-y-auto bg-background text-foreground">
-      <header className="border-b border-border">
+    <div className="h-dvh overflow-y-auto bg-bg text-ink">
+      <header className="border-b border-line">
         <div className="mx-auto flex max-w-3xl items-center gap-3 px-4 py-3">
           <CompanyPatternIcon
             companyName={company.name}
@@ -289,21 +289,21 @@ function PublicIssueShareContent({ view, token }: { view: PublicIssueShareView; 
             className="h-8 w-8 shrink-0 rounded-md"
           />
           <span className="min-w-0 truncate text-sm font-medium">{company.name}</span>
-          <span className="ml-auto shrink-0 text-xs text-muted-foreground">Read-only view</span>
+          <span className="ml-auto shrink-0 text-xs text-ink-3">Read-only view</span>
         </div>
       </header>
       <main className="mx-auto max-w-3xl space-y-8 px-4 py-5">
         {!view.isSharedRoot ? (
           <Link
             to={sharePath(token)}
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+            className="inline-flex items-center gap-1.5 text-sm text-ink-3 hover:text-ink"
           >
             <ArrowLeft className="h-4 w-4" aria-hidden />
             Back to main task
           </Link>
         ) : null}
         <section className="space-y-3">
-          <div className="flex flex-wrap items-center gap-x-2 text-xs text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-x-2 text-xs text-ink-3">
             {issue.identifier ? <span>{issue.identifier}</span> : null}
             {issue.projectName ? <span>{issue.projectName}</span> : null}
           </div>
@@ -314,7 +314,7 @@ function PublicIssueShareContent({ view, token }: { view: PublicIssueShareView; 
             {issue.assignee ? <ActorIdentity actor={issue.assignee} /> : null}
             {view.activeRun ? <ActiveRunPill agentName={view.activeRun.agentName} /> : null}
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             Created {formatDateTime(issue.createdAt)} · Updated {relativeTime(issue.updatedAt)}
             {issue.completedAt ? ` · Completed ${formatDateTime(issue.completedAt)}` : ""}
           </p>
@@ -369,7 +369,7 @@ function PublicIssueShareContent({ view, token }: { view: PublicIssueShareView; 
               ))}
             </ol>
           ) : (
-            <p className="text-sm text-muted-foreground">No updates yet.</p>
+            <p className="text-sm text-ink-3">No updates yet.</p>
           )}
         </Section>
       </main>
@@ -410,7 +410,7 @@ export function PublicIssueSharePage() {
         title="Couldn't load this page"
         body="Check your connection and try again."
         action={
-          <Button variant="outline" size="sm" className="mt-2" onClick={() => void query.refetch()}>
+          <Button variant="secondary" size="sm" className="mt-2" onClick={() => void query.refetch()}>
             Try again
           </Button>
         }

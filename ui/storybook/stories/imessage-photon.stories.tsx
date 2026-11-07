@@ -64,13 +64,13 @@ function Journey({ screen = "catalog" }: { screen?: Screen }) {
   }, [screen]);
   const refresh = () => { void queryClient.invalidateQueries(); rerender((n) => n + 1); };
   return <div className="mx-auto max-w-4xl space-y-6 p-4">
-    <aside className="space-y-2 rounded-lg border border-border bg-muted p-3 text-sm">
+    <aside className="space-y-2 rounded-lg border border-line bg-bg-3 p-3 text-sm">
       <p><strong>Simulated Photon demo.</strong> Production catalog, setup, access, management, and message components use local fixtures. No credentials are saved and no real messages are sent.</p>
       <div className="flex flex-wrap gap-2">
-        <Button size="sm" variant="outline" onClick={() => { simulateIncoming(); refresh(); }}>Simulate incoming iMessage</Button>
-        <Button size="sm" variant="outline" onClick={() => { principal = { ...sender, status: "linked", paperclipUserLabel: "Alex" }; refresh(); }}>Simulate identity confirmation</Button>
-        <Button size="sm" variant="outline" onClick={() => navigate(`${setupUrl}&resume=${endpointId}`)}>Return to setup</Button>
-        <Button size="sm" variant="outline" onClick={() => navigate("/issues/DEMO-1")}>View simulated task</Button>
+        <Button size="sm" variant="secondary" onClick={() => { simulateIncoming(); refresh(); }}>Simulate incoming iMessage</Button>
+        <Button size="sm" variant="secondary" onClick={() => { principal = { ...sender, status: "linked", paperclipUserLabel: "Alex" }; refresh(); }}>Simulate identity confirmation</Button>
+        <Button size="sm" variant="secondary" onClick={() => navigate(`${setupUrl}&resume=${endpointId}`)}>Return to setup</Button>
+        <Button size="sm" variant="secondary" onClick={() => navigate("/issues/DEMO-1")}>View simulated task</Button>
       </div>
     </aside>
     <Routes>
@@ -83,7 +83,7 @@ function Journey({ screen = "catalog" }: { screen?: Screen }) {
       <Route path="/:companyPrefix/apps/chat/:endpointId/:tab" element={<ChatEndpointDetail />} />
       <Route path="/:companyPrefix/issues/DEMO-1" element={<section className="space-y-4" aria-label="Simulated task conversation">
         <h1 className="text-xl font-bold">DEMO-1 · Launch plan</h1>
-        <p className="text-sm text-muted-foreground">Each simulated reply completes a turn. Follow-ups stay on DEMO-1. Use /new or /close in Messages when you want a new task.</p>
+        <p className="text-sm text-ink-3">Each simulated reply completes a turn. Follow-ups stay on DEMO-1. Use /new or /close in Messages when you want a new task.</p>
         {messages.length ? messages.map((message) => <TaskChatBubble key={message.id} item={message} />) : <p>Link the sender, then simulate a fresh message to start work.</p>}
       </section>} />
     </Routes>

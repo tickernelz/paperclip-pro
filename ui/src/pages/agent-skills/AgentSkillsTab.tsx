@@ -394,13 +394,13 @@ export function AgentSkillsTab({ agent, companyId }: { agent: Agent; companyId?:
       {/* Header */}
       <div className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm font-medium text-foreground">
+          <span className="text-sm font-medium text-ink">
             {enabledRows.length} of {libraryRows.length} enabled
           </span>
           {applicationLabel ? (
             <Tooltip>
               <TooltipTrigger asChild>
-                <span className="inline-flex cursor-default items-center rounded-full border border-border bg-muted/40 px-2 py-0.5 text-xs text-muted-foreground">
+                <span className="inline-flex cursor-default items-center rounded-full border border-line bg-bg-3/40 px-2 py-0.5 text-xs text-ink-3">
                   {applicationLabel}
                 </span>
               </TooltipTrigger>
@@ -416,7 +416,7 @@ export function AgentSkillsTab({ agent, companyId }: { agent: Agent; companyId?:
           />
           <div className="ml-auto flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center">
             <div className="relative w-full sm:w-auto">
-              <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+              <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-3" />
               <Input
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
@@ -425,7 +425,7 @@ export function AgentSkillsTab({ agent, companyId }: { agent: Agent; companyId?:
                 aria-label="Search skills"
               />
             </div>
-            <Button asChild variant="outline" size="sm" className="shrink-0">
+            <Button asChild variant="secondary" size="sm" className="shrink-0">
               <Link to="/skills" className="no-underline">
                 <Store className="h-3.5 w-3.5" />
                 Browse skills store
@@ -435,7 +435,7 @@ export function AgentSkillsTab({ agent, companyId }: { agent: Agent; companyId?:
         </div>
 
         {syncSkills.isError ? (
-          <p className="text-xs text-destructive">
+          <p className="text-xs text-bad">
             {syncSkills.error instanceof Error ? syncSkills.error.message : "Failed to update skills"}
           </p>
         ) : null}
@@ -443,7 +443,7 @@ export function AgentSkillsTab({ agent, companyId }: { agent: Agent; companyId?:
 
       {/* Unsupported adapter banner */}
       {unsupportedMessage ? (
-        <div className="rounded-lg border border-border bg-muted/30 px-4 py-3 text-sm text-muted-foreground">
+        <div className="rounded-lg border border-line bg-bg-3/30 px-4 py-3 text-sm text-ink-3">
           {unsupportedMessage}
         </div>
       ) : null}
@@ -459,14 +459,13 @@ export function AgentSkillsTab({ agent, companyId }: { agent: Agent; companyId?:
               <span className="min-w-0 truncate">
                 <span className="font-medium">{key}</span> is enabled but missing from the organization library.
               </span>
-              <button
+              <Button variant="secondary" size="xs" className="shrink-0"
                 type="button"
                 onClick={() => toggleSkill(key, false)}
-                className="inline-flex shrink-0 items-center gap-1 rounded-md border border-amber-400/50 px-2 py-0.5 font-medium transition-colors hover:bg-amber-100/60 dark:hover:bg-amber-900/30"
               >
                 <X className="h-3 w-3" />
                 Remove
-              </button>
+              </Button>
             </div>
           ))}
         </div>
@@ -504,18 +503,18 @@ export function AgentSkillsTab({ agent, companyId }: { agent: Agent; companyId?:
 
           {detectedRows.length > 0 ? (
             <Collapsible open={detectedOpen} onOpenChange={setDetectedOpen}>
-              <div className="overflow-hidden rounded-lg border border-border">
-                <CollapsibleTrigger className="flex w-full items-center gap-2 bg-muted/50 px-3 py-2 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring">
+              <div className="overflow-hidden rounded-lg border border-line">
+                <CollapsibleTrigger className="flex w-full items-center gap-2 bg-bg-3/50 px-3 py-2 text-left outline-none focus-visible:ring-2 focus-visible:ring-focus">
                   <ChevronDown
                     className={cn(
-                      "h-3.5 w-3.5 text-muted-foreground transition-transform",
+                      "h-3.5 w-3.5 text-ink-3 transition-transform",
                       detectedOpen ? "" : "-rotate-90",
                     )}
                   />
-                  <span className="text-xs font-medium text-muted-foreground">
+                  <span className="text-xs font-medium text-ink-3">
                     Automatic and detected skills (read-only)
                   </span>
-                  <span className="text-xs text-muted-foreground/70">{filteredDetected.length}</span>
+                  <span className="text-xs text-ink-3/70">{filteredDetected.length}</span>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   {filteredDetected.length > 0 ? (
@@ -530,7 +529,7 @@ export function AgentSkillsTab({ agent, companyId }: { agent: Agent; companyId?:
             </Collapsible>
           ) : null}
 
-          <div className="text-xs text-muted-foreground">
+          <div className="text-xs text-ink-3">
             Adapter: {adapterLabels[agent.adapterType] ?? agent.adapterType}
           </div>
         </div>
@@ -550,7 +549,7 @@ function SaveStatusChip({
 }) {
   if (pending) {
     return (
-      <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+      <span className="inline-flex items-center gap-1.5 text-xs text-ink-3">
         <Loader2 className="h-3.5 w-3.5 animate-spin" />
         Saving…
       </span>
@@ -558,7 +557,7 @@ function SaveStatusChip({
   }
   if (error) {
     return (
-      <span className="inline-flex items-center gap-1.5 text-xs text-destructive">
+      <span className="inline-flex items-center gap-1.5 text-xs text-bad">
         <AlertCircle className="h-3.5 w-3.5" />
         Couldn’t save
       </span>
@@ -566,7 +565,7 @@ function SaveStatusChip({
   }
   if (unsaved) {
     return (
-      <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+      <span className="inline-flex items-center gap-1.5 text-xs text-ink-3">
         <Loader2 className="h-3.5 w-3.5 animate-spin" />
         Saving soon…
       </span>
@@ -590,10 +589,10 @@ function SkillSection({
   children: React.ReactNode;
 }) {
   return (
-    <section className="overflow-hidden rounded-lg border border-border">
-      <div className="flex items-center gap-2 bg-muted/50 px-3 py-2">
-        <span className="text-xs font-medium text-muted-foreground">{title}</span>
-        <span className="text-xs text-muted-foreground/70">{count}</span>
+    <section className="overflow-hidden rounded-lg border border-line">
+      <div className="flex items-center gap-2 bg-bg-3/50 px-3 py-2">
+        <span className="text-xs font-medium text-ink-3">{title}</span>
+        <span className="text-xs text-ink-3/70">{count}</span>
       </div>
       <div>{children}</div>
     </section>
@@ -601,20 +600,20 @@ function SkillSection({
 }
 
 function SectionEmpty({ children }: { children: React.ReactNode }) {
-  return <div className="px-3 py-4 text-xs text-muted-foreground">{children}</div>;
+  return <div className="px-3 py-4 text-xs text-ink-3">{children}</div>;
 }
 
 function EmptyLibraryCard() {
   return (
-    <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-border px-6 py-10 text-center">
-      <Store className="h-8 w-8 text-muted-foreground/60" />
+    <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-line px-6 py-10 text-center">
+      <Store className="h-8 w-8 text-ink-3/60" />
       <div className="space-y-1">
-        <p className="text-sm font-medium text-foreground">No skills in the organization library</p>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-sm font-medium text-ink">No skills in the organization library</p>
+        <p className="text-xs text-ink-3">
           Install skills to the organization, then enable them on this agent.
         </p>
       </div>
-      <Button asChild variant="outline" size="sm">
+      <Button asChild variant="secondary" size="sm">
         <Link to="/skills" className="no-underline">
           <Store className="h-3.5 w-3.5" />
           Browse skills store

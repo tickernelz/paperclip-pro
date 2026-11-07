@@ -103,7 +103,7 @@ function awsVaultOptions(configs: CompanySecretProviderConfig[]): CompanySecretP
 function statusToneClasses(status: RemoteSecretImportCandidate["status"]) {
   switch (status) {
     case "duplicate":
-      return "text-muted-foreground border-border/60";
+      return "text-ink-3 border-line/60";
     case "conflict":
       return "text-amber-600 border-amber-500/40 dark:text-amber-400";
     case "ready":
@@ -158,7 +158,7 @@ function RowResultBadge({ status }: { status: RemoteSecretImportRowResult["statu
       return (
         <Badge
           variant="outline"
-          className="gap-1 px-1.5 py-0 font-normal text-muted-foreground border-border/60"
+          className="gap-1 px-1.5 py-0 font-normal text-ink-3 border-line/60"
         >
           <Link2 className="h-3 w-3" /> Skipped
         </Badge>
@@ -168,7 +168,7 @@ function RowResultBadge({ status }: { status: RemoteSecretImportRowResult["statu
       return (
         <Badge
           variant="outline"
-          className="gap-1 px-1.5 py-0 font-normal text-destructive border-destructive/40"
+          className="gap-1 px-1.5 py-0 font-normal text-bad border-bad/40"
         >
           <XCircle className="h-3 w-3" /> Failed
         </Badge>
@@ -652,19 +652,19 @@ export function ImportFromVaultDialog({
         className="flex max-h-(--sz-85vh) flex-col gap-0 overflow-hidden p-0 sm:max-w-4xl"
         data-testid="import-from-vault-dialog"
       >
-        <header className="flex items-start justify-between gap-3 border-b border-border/60 px-5 py-4">
+        <header className="flex items-start justify-between gap-3 border-b border-line/60 px-5 py-4">
           <div className="flex flex-col gap-1">
             <DialogTitle className="text-base font-semibold">
               Import from AWS Secrets Manager
             </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground">
+            <DialogDescription className="text-xs text-ink-3">
               Bring AWS-managed secrets into Paperclip as external references.
             </DialogDescription>
             <Stepper step={step} />
           </div>
           <button
             type="button"
-            className="rounded-sm text-muted-foreground transition-opacity hover:opacity-100 opacity-70"
+            className="rounded-sm text-ink-3 transition-opacity hover:opacity-100 opacity-70"
             onClick={() => handleClose()}
             aria-label="Close import dialog"
           >
@@ -719,7 +719,7 @@ export function ImportFromVaultDialog({
           )}
         </div>
 
-        <footer className="flex items-center justify-between gap-3 border-t border-border/60 bg-muted/20 px-5 py-3">
+        <footer className="flex items-center justify-between gap-3 border-t border-line/60 bg-bg-3/20 px-5 py-3">
           <FooterStatus
             step={step}
             totalSelected={totalSelected}
@@ -735,7 +735,7 @@ export function ImportFromVaultDialog({
             )}
             {step === "review" && (
               <Button
-                variant="outline"
+                variant="secondary"
                 size="sm"
                 onClick={() => setStep("select")}
                 disabled={importMutation.isPending}
@@ -791,30 +791,30 @@ function Stepper({ step }: { step: Step }) {
   ];
   const activeIndex = steps.findIndex((s) => s.id === step);
   return (
-    <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+    <div className="mt-1 flex items-center gap-2 text-xs text-ink-3">
       {steps.map((s, index) => (
         <span key={s.id} className="flex items-center gap-2">
           <span
             className={cn(
               "inline-flex h-4 w-4 items-center justify-center rounded-full border text-(length:--text-nano)",
               index === activeIndex
-                ? "border-primary bg-primary text-primary-foreground"
+                ? "border-accent bg-accent text-accent-ink"
                 : index < activeIndex
-                  ? "border-primary text-primary"
-                  : "border-border/60",
+                  ? "border-accent text-accent"
+                  : "border-line/60",
             )}
           >
             {index + 1}
           </span>
           <span
             className={cn(
-              index === activeIndex ? "text-foreground font-medium" : undefined,
+              index === activeIndex ? "text-ink font-medium" : undefined,
             )}
           >
             {s.label}
           </span>
           {index < steps.length - 1 && (
-            <span className="text-muted-foreground/60">›</span>
+            <span className="text-ink-3/60">›</span>
           )}
         </span>
       ))}
@@ -896,8 +896,8 @@ function SelectStep(props: SelectStepProps) {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="flex flex-wrap items-center gap-2 border-b border-border/60 px-5 py-3">
-        <label className="text-xs uppercase tracking-wide text-muted-foreground">Vault</label>
+      <div className="flex flex-wrap items-center gap-2 border-b border-line/60 px-5 py-3">
+        <label className="text-xs uppercase tracking-wide text-ink-3">Vault</label>
         {awsVaults.length === 1 && eligible.length === 1 ? (
           <span className="text-xs font-medium" data-testid="vault-static-label">
             {eligible[0].displayName}
@@ -929,7 +929,7 @@ function SelectStep(props: SelectStepProps) {
                         <Badge variant="outline" className="px-1 py-0 text-(length:--text-nano) text-amber-500 border-amber-500/40">warning</Badge>
                       )}
                       {blocked && (
-                        <Badge variant="outline" className="px-1 py-0 text-(length:--text-nano) text-muted-foreground">
+                        <Badge variant="outline" className="px-1 py-0 text-(length:--text-nano) text-ink-3">
                           {vault.status === "coming_soon" ? "coming soon" : vault.status}
                         </Badge>
                       )}
@@ -942,7 +942,7 @@ function SelectStep(props: SelectStepProps) {
         )}
 
         <div className="relative ml-auto w-64">
-          <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+          <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-3" />
           <Input
             value={searchInput}
             onChange={(event) => onSearchInput(event.target.value)}
@@ -952,12 +952,12 @@ function SelectStep(props: SelectStepProps) {
             data-testid="vault-search"
           />
           {showSearchSpinner && (
-            <Loader2 className="absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 animate-spin text-muted-foreground" />
+            <Loader2 className="absolute right-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 animate-spin text-ink-3" />
           )}
         </div>
 
         <Button
-          variant="outline"
+          variant="secondary"
           size="sm"
           onClick={onRefresh}
           disabled={previewLoading || !vaultId}
@@ -968,7 +968,7 @@ function SelectStep(props: SelectStepProps) {
       </div>
 
       {selectedNotVisible > 0 && (
-        <div className="flex items-center justify-between border-b border-border/60 bg-muted/20 px-5 py-1.5 text-xs text-muted-foreground">
+        <div className="flex items-center justify-between border-b border-line/60 bg-bg-3/20 px-5 py-1.5 text-xs text-ink-3">
           <span>
             {selection.size} selected · {selectedNotVisible} not visible with current search
           </span>
@@ -992,7 +992,7 @@ function SelectStep(props: SelectStepProps) {
           <EmptyCandidates query={debouncedQuery} />
         ) : (
           <table className="w-full text-sm">
-            <thead className="sticky top-0 z-10 bg-muted/40 text-xs uppercase tracking-wide text-muted-foreground">
+            <thead className="sticky top-0 z-10 bg-bg-3/40 text-xs uppercase tracking-wide text-ink-3">
               <tr>
                 <th className="px-3 py-2 text-left">
                   <Checkbox
@@ -1023,11 +1023,11 @@ function SelectStep(props: SelectStepProps) {
                   <tr
                     key={candidate.externalRef}
                     className={cn(
-                      "border-b border-border/60 transition-colors",
+                      "border-b border-line/60 transition-colors",
                       candidate.importable
-                        ? "cursor-pointer hover:bg-accent/40"
-                        : "cursor-not-allowed text-muted-foreground",
-                      isSelected && "bg-accent/60",
+                        ? "cursor-pointer hover:bg-bg-3/40"
+                        : "cursor-not-allowed text-ink-3",
+                      isSelected && "bg-bg-3/60",
                     )}
                     onClick={() => toggleRow(candidate)}
                     data-testid={`vault-row-${candidate.externalRef}`}
@@ -1046,13 +1046,13 @@ function SelectStep(props: SelectStepProps) {
                     </td>
                     <td className="px-2 py-2.5 text-xs">
                       <span
-                        className="font-mono text-muted-foreground"
+                        className="font-mono text-ink-3"
                         title={candidate.externalRef}
                       >
                         {middleTruncate(candidate.externalRef, 50)}
                       </span>
                     </td>
-                    <td className="px-2 py-2.5 text-xs text-muted-foreground">
+                    <td className="px-2 py-2.5 text-xs text-ink-3">
                       {formatRelativeShort(lastChanged)}
                     </td>
                     <td className="px-2 py-2.5 text-xs font-mono">{candidate.key}</td>
@@ -1061,7 +1061,7 @@ function SelectStep(props: SelectStepProps) {
                         <StatusBadge status={candidate.status} />
                         {candidate.status === "duplicate" &&
                           candidate.conflicts.find((c) => c.type === "exact_reference")?.existingSecretId && (
-                            <span className="text-(length:--text-micro) text-muted-foreground">
+                            <span className="text-(length:--text-micro) text-ink-3">
                               Already imported
                             </span>
                           )}
@@ -1087,7 +1087,7 @@ function SelectStep(props: SelectStepProps) {
         )}
 
         {hasNextPage && !previewError && (
-          <div className="flex items-center justify-between border-t border-border/60 px-5 py-2 text-xs text-muted-foreground">
+          <div className="flex items-center justify-between border-t border-line/60 px-5 py-2 text-xs text-ink-3">
             <span>
               {candidates.length} loaded
               {selectableInLoaded.length > 0 && (
@@ -1095,7 +1095,7 @@ function SelectStep(props: SelectStepProps) {
               )}
             </span>
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               onClick={onLoadMore}
               disabled={pageLoading}
@@ -1122,7 +1122,7 @@ function PreviewErrorBanner({ error, onRetry }: { error: unknown; onRetry: () =>
   const message = readableErrorMessage(error);
   return (
     <div
-      className="m-5 flex items-start gap-3 rounded-md border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive"
+      className="m-5 flex items-start gap-3 rounded-md border border-bad/40 bg-bad/10 p-4 text-sm text-bad"
       role="alert"
       data-testid="preview-error-banner"
     >
@@ -1135,13 +1135,13 @@ function PreviewErrorBanner({ error, onRetry }: { error: unknown; onRetry: () =>
               ? "AWS throttled the listing request"
               : "Could not load remote secrets"}
         </div>
-        <div className="mt-1 text-xs leading-relaxed text-destructive/80">
+        <div className="mt-1 text-xs leading-relaxed text-bad/80">
           {isPermission
             ? "The AWS principal behind this vault is missing secretsmanager:ListSecrets. Update IAM and try again."
             : message}
         </div>
         <div className="mt-2 flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={onRetry}>
+          <Button variant="secondary" size="sm" onClick={onRetry}>
             <RefreshCw className="mr-1.5 h-3.5 w-3.5" /> Retry
           </Button>
           {isPermission && (
@@ -1212,7 +1212,7 @@ function ReviewStep({ drafts, reviewErrors, updateDraft, removeDraft, importing 
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="flex flex-wrap items-center gap-3 border-b border-border/60 bg-muted/20 px-5 py-3 text-xs">
+      <div className="flex flex-wrap items-center gap-3 border-b border-line/60 bg-bg-3/20 px-5 py-3 text-xs">
         <span className="font-medium">{ready} secrets ready to import</span>
         {blocked > 0 && (
           <span className="text-amber-600 dark:text-amber-400">
@@ -1227,7 +1227,7 @@ function ReviewStep({ drafts, reviewErrors, updateDraft, removeDraft, importing 
             <div
               key={draft.candidate.externalRef}
               className={cn(
-                "border-b border-border/60 p-4",
+                "border-b border-line/60 p-4",
                 error && "border-l-2 border-l-amber-500/60 bg-amber-500/5",
               )}
               data-testid={`review-row-${draft.candidate.externalRef}`}
@@ -1237,7 +1237,7 @@ function ReviewStep({ drafts, reviewErrors, updateDraft, removeDraft, importing 
                   <div className="flex flex-col gap-0.5">
                     <span className="text-sm font-medium">{draft.candidate.remoteName}</span>
                     <span
-                      className="font-mono text-xs text-muted-foreground"
+                      className="font-mono text-xs text-ink-3"
                       title={draft.candidate.externalRef}
                     >
                       {middleTruncate(draft.candidate.externalRef, 60)}
@@ -1245,7 +1245,7 @@ function ReviewStep({ drafts, reviewErrors, updateDraft, removeDraft, importing 
                   </div>
                   <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                     <label className="flex flex-col gap-1 text-xs">
-                      <span className="text-muted-foreground">Paperclip name</span>
+                      <span className="text-ink-3">Paperclip name</span>
                       <Input
                         value={draft.name}
                         onChange={(e) =>
@@ -1258,7 +1258,7 @@ function ReviewStep({ drafts, reviewErrors, updateDraft, removeDraft, importing 
                       />
                     </label>
                     <label className="flex flex-col gap-1 text-xs">
-                      <span className="text-muted-foreground">Key</span>
+                      <span className="text-ink-3">Key</span>
                       <Input
                         value={draft.key}
                         onChange={(e) =>
@@ -1276,7 +1276,7 @@ function ReviewStep({ drafts, reviewErrors, updateDraft, removeDraft, importing 
                       />
                     </label>
                     <label className="flex flex-col gap-1 text-xs">
-                      <span className="text-muted-foreground">Description (optional)</span>
+                      <span className="text-ink-3">Description (optional)</span>
                       <Input
                         value={draft.description}
                         onChange={(e) =>
@@ -1353,12 +1353,12 @@ function ResultStep({ result, draftList }: ResultStepProps) {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="border-b border-border/60 px-5 py-3" data-testid="result-summary">
+      <div className="border-b border-line/60 px-5 py-3" data-testid="result-summary">
         <h3 className="text-sm font-semibold">{heading}</h3>
-        <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+        <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-ink-3">
           <span className="text-emerald-600 dark:text-emerald-400">✓ {result.importedCount} created</span>
           <span>⊘ {result.skippedCount} skipped</span>
-          <span className="text-destructive">⨯ {result.errorCount} failed</span>
+          <span className="text-bad">⨯ {result.errorCount} failed</span>
         </div>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto">
@@ -1387,10 +1387,10 @@ function ResultGroup({
 }) {
   return (
     <section>
-      <header className="bg-muted/30 px-5 py-1.5 text-xs uppercase tracking-wide text-muted-foreground">
+      <header className="bg-bg-3/30 px-5 py-1.5 text-xs uppercase tracking-wide text-ink-3">
         {label} · {rows.length}
       </header>
-      <ul className="divide-y divide-border/60">
+      <ul className="divide-y divide-line/60">
         {rows.map((row) => {
           const draft = draftLookup.get(row.externalRef);
           const remoteName = draft?.candidate.remoteName ?? row.name;
@@ -1403,24 +1403,24 @@ function ResultGroup({
             >
               <RowResultBadge status={row.status} />
               <span className="font-medium">{row.name}</span>
-              <span className="font-mono text-muted-foreground">{row.key}</span>
+              <span className="font-mono text-ink-3">{row.key}</span>
               <span
-                className="font-mono text-muted-foreground"
+                className="font-mono text-ink-3"
                 title={row.externalRef}
               >
                 {middleTruncate(row.externalRef, 40)}
               </span>
               <span className="ml-auto flex items-center gap-2">
                 {row.status === "imported" && row.secretId && (
-                  <span className="text-muted-foreground">{remoteName}</span>
+                  <span className="text-ink-3">{remoteName}</span>
                 )}
                 {row.reason && (
                   <span
                     className={cn(
                       "max-w-(--sz-24rem) truncate",
                       row.status === "error"
-                        ? "text-destructive"
-                        : "text-muted-foreground",
+                        ? "text-bad"
+                        : "text-ink-3",
                     )}
                     title={row.reason}
                   >
@@ -1453,7 +1453,7 @@ function FooterStatus({
 }: FooterStatusProps) {
   if (step === "select") {
     return (
-      <div className="text-xs text-muted-foreground">
+      <div className="text-xs text-ink-3">
         {totalSelected === 0
           ? "Select remote secrets to import"
           : `${totalSelected} selected`}
@@ -1462,7 +1462,7 @@ function FooterStatus({
   }
   if (step === "review") {
     return (
-      <div className="text-xs text-muted-foreground">
+      <div className="text-xs text-ink-3">
         {readyReviewCount} ready
         {blockedReviewCount > 0 && (
           <span className="ml-2 text-amber-600 dark:text-amber-400">
@@ -1474,7 +1474,7 @@ function FooterStatus({
   }
   if (result) {
     return (
-      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+      <div className="flex items-center gap-3 text-xs text-ink-3">
         <span>{result.importedCount} created</span>
         <span>{result.skippedCount} skipped</span>
         <span>{result.errorCount} failed</span>

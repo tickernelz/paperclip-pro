@@ -12,16 +12,16 @@ export function SlackAvatarSettingsPreview({ initialInstructions = "", failFirst
   const [instructions, setInstructions] = useState(initialInstructions);
   const [failSave, setFailSave] = useState(failFirstSave);
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="flex gap-3 border-b border-border px-6 py-4 text-sm">
-        <span className="text-muted-foreground">Connectors /</span>CEO · Slack
+    <div className="min-h-screen bg-bg text-ink">
+      <header className="flex gap-3 border-b border-line px-6 py-4 text-sm">
+        <span className="text-ink-3">Connectors /</span>CEO · Slack
       </header>
       <div className="flex flex-col md:flex-row">
-        <aside className="flex shrink-0 gap-2 border-b border-border p-4 md:w-60 md:flex-col md:border-r md:border-b-0">
+        <aside className="flex shrink-0 gap-2 border-b border-line p-4 md:w-60 md:flex-col md:border-r md:border-b-0">
           {["Settings", "Access", "Conversations", "Activity"].map((tab) => (
             <span
               key={tab}
-              className={`rounded-md px-3 py-2 text-sm ${tab === "Settings" ? "bg-accent font-medium" : "text-muted-foreground"}`}
+              className={`rounded-md px-3 py-2 text-sm ${tab === "Settings" ? "bg-bg-3 font-medium" : "text-ink-3"}`}
             >
               {tab}
             </span>
@@ -36,7 +36,7 @@ export function SlackAvatarSettingsPreview({ initialInstructions = "", failFirst
                 Invite the bot to a channel, then mention it to start a
                 conversation.
               </p>
-              <div className="flex items-center justify-between gap-3 rounded-lg border border-border p-3">
+              <div className="flex items-center justify-between gap-3 rounded-lg border border-line p-3">
                 <code>@ceo you there?</code>
                 <Button
                   variant="ghost"
@@ -64,9 +64,9 @@ export function SlackAvatarSettingsPreview({ initialInstructions = "", failFirst
                 Where this agent can work
               </h2>
               <h3 className="text-sm font-semibold">Allowed Channels</h3>
-              <div className="border-y border-border py-3 text-sm">
+              <div className="border-y border-line py-3 text-sm">
                 #general{" "}
-                <ExternalLink className="inline size-3 text-muted-foreground" />
+                <ExternalLink className="inline size-3 text-ink-3" />
               </div>
             </section>
           </div>

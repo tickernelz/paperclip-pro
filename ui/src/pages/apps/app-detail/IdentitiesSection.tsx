@@ -176,15 +176,15 @@ export function IdentitiesSection({
     const github = agentGrant?.providerTenant?.github;
     return (
       <section className="space-y-5">
-        <h2 className="text-sm font-semibold text-foreground">GitHub identity</h2>
-        <p className="text-sm text-muted-foreground">This agent uses this GitHub account for everyone’s work, instead of the person giving instructions.</p>
+        <h2 className="text-sm font-semibold text-ink">GitHub identity</h2>
+        <p className="text-sm text-ink-3">This agent uses this GitHub account for everyone’s work, instead of the person giving instructions.</p>
         <IdentityRow
           title={github ? `@${github.login}` : "Dedicated GitHub account"}
           status={agentGrant?.status ?? null}
           detail={dedicatedAgent ? (
             <Link
               to={agentUrl(dedicatedAgent)}
-              className="transition-colors hover:text-foreground hover:underline"
+              className="transition-colors hover:text-ink hover:underline"
             >
               Used only by {dedicatedAgent.name}
             </Link>
@@ -248,7 +248,7 @@ export function IdentitiesSection({
           orgGrant ? (
             orgGrant.capabilities?.canEditAudience ? (
               <div className="flex justify-end">
-                  <Button size="sm" variant="outline" onClick={() => onOpenAudience(orgGrant.id)}>
+                  <Button size="sm" variant="secondary" onClick={() => onOpenAudience(orgGrant.id)}>
                     Manage access
                   </Button>
               </div>
@@ -309,17 +309,17 @@ function GitHubConnectionSummary({
     ? "No repositories selected"
     : `${github.repositoryCount} selected ${github.repositoryCount === 1 ? "repository" : "repositories"}`;
   return (
-    <div className="divide-y divide-border border-y border-border">
+    <div className="divide-y divide-line border-y border-line">
       <div className="py-3">
-        <div className="text-sm font-medium text-foreground">GitHub account</div>
-        <a className="text-sm text-muted-foreground hover:underline" href={`https://github.com/${encodeURIComponent(github.login)}`} target="_blank" rel="noreferrer">
+        <div className="text-sm font-medium text-ink">GitHub account</div>
+        <a className="text-sm text-ink-3 hover:underline" href={`https://github.com/${encodeURIComponent(github.login)}`} target="_blank" rel="noreferrer">
           @{github.login}
         </a>
       </div>
       <div className="space-y-3 py-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="min-w-0">
-            <div className="text-sm font-medium text-foreground">Repositories</div>
+            <div className="text-sm font-medium text-ink">Repositories</div>
             {repositoryWarning ? (
               <div
                 role="note"
@@ -332,21 +332,21 @@ function GitHubConnectionSummary({
                 {repositoryWarning}
               </div>
             ) : (
-              <div className="text-xs text-muted-foreground">{repositorySummary}</div>
+              <div className="text-xs text-ink-3">{repositorySummary}</div>
             )}
           </div>
           <div className="flex items-center gap-2">
             {onRefreshAccess && configurationUrl ? (
-              <Button size="icon-sm" variant="outline" aria-label="Refresh access" title="Refresh access" disabled={refreshPending} onClick={onRefreshAccess}>
+              <Button size="icon-sm" variant="secondary" aria-label="Refresh access" title="Refresh access" disabled={refreshPending} onClick={onRefreshAccess}>
                 {refreshPending ? <Loader2 className="animate-spin" aria-hidden="true" /> : <RefreshCw aria-hidden="true" />}
               </Button>
             ) : null}
             {configurationUrl ? (
-              <Button asChild size="sm" variant="outline">
+              <Button asChild size="sm" variant="secondary">
                 <a href={configurationUrl} target="_blank" rel="noreferrer">Add More Repos on GitHub</a>
               </Button>
             ) : onRefreshAccess ? (
-              <Button size="sm" variant="outline" disabled={refreshPending} onClick={onRefreshAccess}>
+              <Button size="sm" variant="secondary" disabled={refreshPending} onClick={onRefreshAccess}>
                 {refreshPending ? <Loader2 className="animate-spin" aria-hidden="true" /> : <RefreshCw aria-hidden="true" />}
                 Load GitHub configuration
               </Button>
@@ -357,21 +357,21 @@ function GitHubConnectionSummary({
           github.repositories.length ? <ul aria-label="Accessible GitHub repositories" tabIndex={0} className="max-h-(--sz-github-repository-list) space-y-2 overflow-y-auto text-sm">
             {github.repositories.map((repository) => (
               <li key={repository.id}>
-                <a className="flex items-center gap-2 text-muted-foreground hover:underline" href={`https://github.com/${repository.fullName.split("/").map(encodeURIComponent).join("/")}`} target="_blank" rel="noreferrer">
+                <a className="flex items-center gap-2 text-ink-3 hover:underline" href={`https://github.com/${repository.fullName.split("/").map(encodeURIComponent).join("/")}`} target="_blank" rel="noreferrer">
                   <GithubIcon className="h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                   <span className="break-all">{repository.fullName}</span>
                   {repository.private === true ? <Lock className="h-3 w-3 shrink-0" role="img" aria-label="Private repository" /> : null}
                 </a>
               </li>
             ))}
-          </ul> : <p role="status" className="text-sm text-muted-foreground">
+          </ul> : <p role="status" className="text-sm text-ink-3">
             No accessible repositories.
           </p>
         ) : (
-          <p className="text-sm text-muted-foreground">Refresh access to load the current repository list.</p>
+          <p className="text-sm text-ink-3">Refresh access to load the current repository list.</p>
         )}
-        {configurationUrl ? <p className="text-xs text-muted-foreground">
-          Missing an organization or repository? <a href={configurationUrl} target="_blank" rel="noreferrer" className="text-foreground hover:underline">Configure access on GitHub</a>, then refresh this list.
+        {configurationUrl ? <p className="text-xs text-ink-3">
+          Missing an organization or repository? <a href={configurationUrl} target="_blank" rel="noreferrer" className="text-ink hover:underline">Configure access on GitHub</a>, then refresh this list.
         </p> : null}
       </div>
     </div>
@@ -379,7 +379,7 @@ function GitHubConnectionSummary({
 }
 
 function IdentitiesHeading() {
-  return <h2 className="text-sm font-semibold text-foreground">Which humans can use this credential?</h2>;
+  return <h2 className="text-sm font-semibold text-ink">Which humans can use this credential?</h2>;
 }
 
 function HumanAccessCards({
@@ -463,10 +463,10 @@ function IdentityRow({
     <div id={id} className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-8">
       <div className="min-w-0">
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-sm font-semibold text-foreground">{title}</span>
+          <span className="text-sm font-semibold text-ink">{title}</span>
           {status === "active" ? null : <StatusText status={status} />}
         </div>
-        {detail ? <div className="mt-0.5 text-xs text-muted-foreground">{detail}</div> : null}
+        {detail ? <div className="mt-0.5 text-xs text-ink-3">{detail}</div> : null}
       </div>
       <div className="flex flex-wrap items-center gap-2">{actions}</div>
     </div>
@@ -550,7 +550,7 @@ export function AudienceDialog({
             />
           ) : null}
 
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             This controls whose work can use the identity. It does not change which agents have the
             connection.
           </p>

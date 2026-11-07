@@ -255,11 +255,11 @@ export function RunWorkspaceRecoverySurface({ run }: { run: HeartbeatRun }) {
   return (
     <div className="space-y-2" data-testid="run-workspace-recovery-surface">
       <div className="flex items-center justify-between gap-2">
-        <span className="text-xs font-medium text-muted-foreground">Workspace recovery</span>
+        <span className="text-xs font-medium text-ink-3">Workspace recovery</span>
         {issue?.identifier ? (
           <a
             href={`/issues/${issue.identifier}`}
-            className="font-mono text-xs text-muted-foreground underline-offset-2 hover:underline"
+            className="font-mono text-xs text-ink-3 underline-offset-2 hover:underline"
             onClick={(event) => {
               event.preventDefault();
               navigate(`/issues/${issue.identifier}`);

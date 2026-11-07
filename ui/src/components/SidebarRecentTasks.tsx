@@ -32,7 +32,7 @@ import { SidebarSection } from "./SidebarSection";
 import { SidebarNavItem } from "./SidebarNavItem";
 
 const RECENT_TASK_MENU_ITEM_CLASS =
-  "h-(--profile-popover-row-height) gap-(--profile-popover-row-gap) rounded-lg px-2.5 py-0 text-(length:--text-compact) font-medium leading-(--profile-popover-label-line-height) focus:bg-accent/50 focus:text-foreground";
+  "h-(--profile-popover-row-height) gap-(--profile-popover-row-gap) rounded-lg px-2.5 py-0 text-(length:--text-compact) font-medium leading-(--profile-popover-label-line-height) focus:bg-bg-3/50 focus:text-ink";
 const RESTART_WAKE_RETRY_STORAGE_SUFFIX = ":restart-wake-retry";
 
 function restartWakeRetryStorageKey(companyId: string, userId: string | null) {
@@ -256,9 +256,9 @@ function RecentTasksList({
               to={`/issues/${entry.id}`}
               label={entry.title}
               trailing={entry.status === "in_review" && entry.externalConversationState === "waiting"
-                ? <span className="text-xs text-muted-foreground">Idle</span> : undefined}
+                ? <span className="text-xs text-ink-3">Idle</span> : undefined}
               trailingLabel={entry.status === "in_review" && entry.externalConversationState === "waiting" ? "Idle" : undefined}
-              className={rail ? undefined : "sidebar-action-link pointer-coarse:pr-8"}
+              className={rail ? undefined : "sidebar-action-link pointer-coarse:pr-8 [.sidebar-action-row:is(:hover,:focus-within)_&]:text-ink [.sidebar-action-row:has(.sidebar-action-menu[data-state=open])_&]:text-ink"}
               liveCount={liveIssueIds.has(entry.id) ? 1 : undefined}
             />
             {!rail ? (
@@ -269,7 +269,7 @@ function RecentTasksList({
                     variant="ghost"
                     size="icon-xs"
                     aria-label={`More actions for ${entry.title}`}
-                    className="sidebar-action-menu absolute right-2 top-(--pct-50) z-10 -translate-y-(--pct-50) text-muted-foreground pointer-events-none opacity-0 transition-opacity hover:bg-sidebar-accent dark:hover:bg-sidebar-accent hover:text-foreground focus-visible:pointer-events-auto focus-visible:opacity-100 pointer-coarse:pointer-events-auto pointer-coarse:opacity-100 pointer-coarse:before:hidden group-hover/recent-task:pointer-events-auto group-hover/recent-task:opacity-100 group-focus-within/recent-task:pointer-events-auto group-focus-within/recent-task:opacity-100 data-[state=open]:pointer-events-auto data-[state=open]:bg-sidebar-accent data-[state=open]:text-foreground data-[state=open]:opacity-100"
+                    className="sidebar-action-menu absolute right-2 top-(--pct-50) z-10 -translate-y-(--pct-50) pointer-events-none opacity-0 transition-opacity focus-visible:pointer-events-auto focus-visible:opacity-100 pointer-coarse:pointer-events-auto pointer-coarse:opacity-100 pointer-coarse:before:hidden group-hover/recent-task:pointer-events-auto group-hover/recent-task:opacity-100 group-focus-within/recent-task:pointer-events-auto group-focus-within/recent-task:opacity-100 data-[state=open]:pointer-events-auto data-[state=open]:opacity-100"
                   >
                     <MoreHorizontal aria-hidden="true" />
                   </Button>
@@ -331,7 +331,7 @@ function RecentTasksList({
             <DialogFooter>
               <Button
                 type="button"
-                variant="outline"
+                variant="secondary"
                 disabled={pendingAction === "rename"}
                 onClick={() => setRenameEntry(null)}
               >

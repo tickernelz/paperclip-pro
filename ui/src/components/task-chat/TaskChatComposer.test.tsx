@@ -957,11 +957,11 @@ describe("TaskChatComposer", () => {
     )!;
 
     expect(composer.classList).toContain("border");
-    expect(composer.classList).toContain("border-border");
-    expect(composer.classList).toContain("bg-card");
+    expect(composer.classList).toContain("border-line");
+    expect(composer.classList).toContain("bg-bg-2");
     expect(composer.classList).toContain("shadow-(--shadow-task-composer)");
     expect(composer.classList).toContain("dark:border-0");
-    expect(composer.classList).toContain("dark:bg-muted");
+    expect(composer.classList).toContain("dark:bg-bg-3");
     expect(composer.classList).toContain("dark:shadow-none");
     expect(composer.className).not.toContain("focus-within:ring");
   });
@@ -1113,9 +1113,7 @@ describe("TaskChatComposer", () => {
     expect(send.classList).toContain("aspect-square");
     expect(send.classList).toContain("shrink-0");
     expect(send.classList).toContain("min-w-8");
-    expect(send.classList).toContain("bg-foreground");
-    expect(send.classList).toContain("text-background");
-    expect(send.classList).toContain("disabled:opacity-100");
+    expect(send.getAttribute("data-variant")).toBe("primary");
   });
 
   it("passes reopen=true when the issue resumes-to-todo and the assignee is an agent", async () => {
@@ -2927,7 +2925,7 @@ describe("TaskChatComposer", () => {
         (button) => button.textContent?.trim() === "Production",
       );
       expect(staging?.getAttribute("data-recommended")).toBe("true");
-      expect(staging?.className.split(" ")).toContain("bg-muted/50");
+      expect(staging?.className.split(" ")).toContain("bg-bg-3/50");
       expect(
         production?.className
           .split(" ")
@@ -2938,7 +2936,7 @@ describe("TaskChatComposer", () => {
 
       flushSync(() => staging?.click());
       expect(staging?.getAttribute("data-selected")).toBe("true");
-      expect(staging?.className.split(" ")).toContain("bg-foreground/5");
+      expect(staging?.className.split(" ")).toContain("bg-ink/5");
     });
 
     it("hides Skip when the takeover already provides a request-changes path", () => {

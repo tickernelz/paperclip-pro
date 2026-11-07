@@ -27,13 +27,13 @@ export function OutputRow({ item, creatorName }: OutputRowProps) {
     <Card className="flex-row items-center gap-2.5 p-2">
       <OutputFileTile contentType={meta?.contentType} />
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-foreground" title={filename}>
+        <p className="truncate text-sm font-medium text-ink" title={filename}>
           {filename}
         </p>
         <p
           className={cn(
             "truncate text-(length:--text-micro)",
-            item.degraded ? "text-destructive" : "text-muted-foreground",
+            item.degraded ? "text-bad" : "text-ink-3",
           )}
         >
           {item.degraded ? "File details unavailable" : metaBits.join(" · ")}

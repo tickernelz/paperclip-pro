@@ -81,12 +81,12 @@ function statusTone(status: string): string {
   if (
     ["failed", "blocked", "denied", "cancelled", "interrupted"].includes(status)
   )
-    return "text-destructive";
+    return "text-bad";
   if (["running", "pending", "in_progress", "waiting"].includes(status))
     return "text-(--status-agent-running)";
   if (["completed", "done", "succeeded", "passed", "resolved"].includes(status))
     return "text-(--status-task-icon-done)";
-  return "text-muted-foreground";
+  return "text-ink-3";
 }
 
 export function StatusIcon({
@@ -148,8 +148,8 @@ function CardShell({
 }) {
   const titleRow = (
     <div className="flex min-w-0 items-center gap-2">
-      <Icon aria-hidden className="h-4 w-4 shrink-0 text-muted-foreground" />
-      <strong className="min-w-0 truncate text-sm font-medium text-foreground">
+      <Icon aria-hidden className="h-4 w-4 shrink-0 text-ink-3" />
+      <strong className="min-w-0 truncate text-sm font-medium text-ink">
         {title}
       </strong>
       {status && status !== "pending" ? (
@@ -175,7 +175,7 @@ function CardShell({
         {summary ? (
           <p
             className={cn(
-              "text-sm text-muted-foreground",
+              "text-sm text-ink-3",
               Boolean(children) && "mb-3",
             )}
           >
@@ -192,18 +192,18 @@ function CardShell({
       className={cn(
         "overflow-hidden",
         presentation === "timeline" &&
-          "rounded-md border border-border bg-card/60",
+          "rounded-md border border-line bg-bg-2/60",
       )}
       data-testid={testId}
     >
       <header className="flex min-w-0 items-start gap-2 px-3 py-2.5">
         <Icon
           aria-hidden
-          className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground"
+          className="mt-0.5 h-4 w-4 shrink-0 text-ink-3"
         />
         <div className="min-w-0 flex-1">
           <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
-            <strong className="text-sm font-medium text-foreground">
+            <strong className="text-sm font-medium text-ink">
               {title}
             </strong>
             {status ? (
@@ -219,12 +219,12 @@ function CardShell({
             ) : null}
           </div>
           {summary ? (
-            <p className="mt-1 text-sm text-muted-foreground">{summary}</p>
+            <p className="mt-1 text-sm text-ink-3">{summary}</p>
           ) : null}
         </div>
       </header>
       {children ? (
-        <div className="border-t border-border/70 px-3 py-2.5">{children}</div>
+        <div className="border-t border-line/70 px-3 py-2.5">{children}</div>
       ) : null}
     </article>
   );
@@ -241,7 +241,7 @@ function PlanSteps({ steps }: { steps: TaskChatProtocolStep[] }) {
             className={cn(
               "min-w-0 flex-1",
               step.status === "completed" &&
-                "text-muted-foreground line-through",
+                "text-ink-3 line-through",
             )}
           >
             {step.label}
@@ -277,7 +277,7 @@ function ProviderActivityCard({
           {item.children.map((child) => (
             <li
               key={child.id}
-              className="rounded-sm bg-muted/40 px-2.5 py-2 text-sm"
+              className="rounded-sm bg-bg-3/40 px-2.5 py-2 text-sm"
             >
               <div className="flex items-center gap-2">
                 <StatusIcon status={child.status} className="shrink-0" />
@@ -292,12 +292,12 @@ function ProviderActivityCard({
                 </span>
               </div>
               {child.metadata ? (
-                <p className="mt-1 text-xs text-muted-foreground">
+                <p className="mt-1 text-xs text-ink-3">
                   {child.metadata}
                 </p>
               ) : null}
               {child.summary ? (
-                <p className="mt-1 text-sm text-muted-foreground">
+                <p className="mt-1 text-sm text-ink-3">
                   {child.summary}
                 </p>
               ) : null}
@@ -310,7 +310,7 @@ function ProviderActivityCard({
           {item.links.map((link) => (
             <li key={link.href}>
               <a
-                className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+                className="inline-flex items-center gap-1 text-sm font-medium text-accent hover:underline"
                 href={link.href}
                 target="_blank"
                 rel="noreferrer"
@@ -319,7 +319,7 @@ function ProviderActivityCard({
                 <ExternalLink aria-hidden className="h-3.5 w-3.5" />
               </a>
               {link.description ? (
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-ink-3">
                   {link.description}
                 </p>
               ) : null}
@@ -336,7 +336,7 @@ function ProviderActivityCard({
               "mt-2",
           )}
         >
-          <summary className="flex cursor-pointer list-none items-center gap-1 text-xs font-medium text-muted-foreground">
+          <summary className="flex cursor-pointer list-none items-center gap-1 text-xs font-medium text-ink-3">
             <ChevronDown aria-hidden className="h-3.5 w-3.5" /> Details
           </summary>
           {item.details.length > 0 ? (
@@ -346,10 +346,10 @@ function ProviderActivityCard({
                   key={`${detail.label}:${detail.value}`}
                   className="grid min-w-0 grid-cols-1 gap-0.5 sm:grid-cols-(--gtc-task-chat-details) sm:gap-3"
                 >
-                  <dt className="text-muted-foreground">{detail.label}</dt>
+                  <dt className="text-ink-3">{detail.label}</dt>
                   <dd
                     className={cn(
-                      "min-w-0 break-words text-foreground",
+                      "min-w-0 break-words text-ink",
                       detail.mono && "font-mono",
                     )}
                   >
@@ -360,12 +360,12 @@ function ProviderActivityCard({
             </dl>
           ) : null}
           {item.output ? (
-            <pre className="mt-2 max-h-(--sz-64) overflow-auto whitespace-pre-wrap rounded-sm bg-muted/50 p-2 font-mono text-xs text-foreground">
+            <pre className="mt-2 max-h-(--sz-64) overflow-auto whitespace-pre-wrap rounded-sm bg-bg-3/50 p-2 font-mono text-xs text-ink">
               {item.output}
             </pre>
           ) : null}
           {item.outputTruncated ? (
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="mt-1 text-xs text-ink-3">
               Output truncated to 8 KiB.
             </p>
           ) : null}
@@ -377,7 +377,7 @@ function ProviderActivityCard({
 
 function diffStats(file: TaskChatWorkspaceChangeItem["files"][number]) {
   return (
-    <span className="shrink-0 font-mono text-xs text-muted-foreground">
+    <span className="shrink-0 font-mono text-xs text-ink-3">
       {file.additions == null ? "" : `+${file.additions}`}
       {file.additions != null && file.deletions != null ? " " : ""}
       {file.deletions == null ? "" : `−${file.deletions}`}
@@ -414,7 +414,7 @@ function WorkspaceChangeCard({ item }: { item: TaskChatWorkspaceChangeItem }) {
             <button
               key={`${file.operation}:${file.path}`}
               type="button"
-              className="flex min-w-0 items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-muted/60"
+              className="flex min-w-0 items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm hover:bg-bg-3/60"
               onClick={() => setSelectedPath(file.path)}
             >
               <span className="min-w-0 flex-1">
@@ -423,7 +423,7 @@ function WorkspaceChangeCard({ item }: { item: TaskChatWorkspaceChangeItem }) {
                     ? `${file.previousPath} → ${file.path}`
                     : file.path}
                 </span>
-                <span className="text-xs capitalize text-muted-foreground">
+                <span className="text-xs capitalize text-ink-3">
                   {file.binary ? "binary · " : ""}
                   {file.operation.replaceAll("_", " ")}
                 </span>
@@ -449,7 +449,7 @@ function WorkspaceChangeCard({ item }: { item: TaskChatWorkspaceChangeItem }) {
             <Button
               type="button"
               size="sm"
-              variant="outline"
+              variant="secondary"
               onClick={() => setSelectedPath(item.files[0].path)}
             >
               Review diff
@@ -488,15 +488,15 @@ function WorkspaceChangeCard({ item }: { item: TaskChatWorkspaceChangeItem }) {
             </div>
           ) : null}
           {selected?.binary ? (
-            <p className="rounded-sm bg-muted/50 p-3 text-sm text-muted-foreground">
+            <p className="rounded-sm bg-bg-3/50 p-3 text-sm text-ink-3">
               Binary file; text diff is unavailable.
             </p>
           ) : selected?.diff ? (
-            <pre className="max-h-(--sz-70vh) overflow-auto whitespace-pre rounded-sm bg-muted/50 p-3 font-mono text-xs">
+            <pre className="max-h-(--sz-70vh) overflow-auto whitespace-pre rounded-sm bg-bg-3/50 p-3 font-mono text-xs">
               {selected.diff}
             </pre>
           ) : (
-            <p className="rounded-sm bg-muted/50 p-3 text-sm text-muted-foreground">
+            <p className="rounded-sm bg-bg-3/50 p-3 text-sm text-ink-3">
               No inline patch was recorded for this file.
             </p>
           )}
@@ -543,7 +543,7 @@ function WorkspaceFileCard({ item }: { item: TaskChatWorkspaceFileItem }) {
             className="ml-auto"
             type="button"
             size="sm"
-            variant="outline"
+            variant="secondary"
             onClick={() => setOpen(true)}
           >
             Preview
@@ -555,14 +555,14 @@ function WorkspaceFileCard({ item }: { item: TaskChatWorkspaceFileItem }) {
           <DialogHeader>
             <DialogTitle>{item.displayName}</DialogTitle>
           </DialogHeader>
-          <p className="font-mono text-xs text-muted-foreground">{item.path}</p>
+          <p className="font-mono text-xs text-ink-3">{item.path}</p>
           {item.preview == null ? (
-            <p className="rounded-sm bg-muted/50 p-3 text-sm text-muted-foreground">
+            <p className="rounded-sm bg-bg-3/50 p-3 text-sm text-ink-3">
               Preview unavailable. The verified workspace reference is still
               available above.
             </p>
           ) : item.presentation === "document" ? (
-            <div className="max-h-(--sz-70vh) overflow-auto rounded-sm bg-muted/30 p-3">
+            <div className="max-h-(--sz-70vh) overflow-auto rounded-sm bg-bg-3/30 p-3">
               <MarkdownBody>{item.preview}</MarkdownBody>
             </div>
           ) : item.presentation === "image" &&
@@ -574,12 +574,12 @@ function WorkspaceFileCard({ item }: { item: TaskChatWorkspaceFileItem }) {
               src={item.preview}
             />
           ) : (
-            <pre className="max-h-(--sz-70vh) overflow-auto whitespace-pre-wrap rounded-sm bg-muted/50 p-3 font-mono text-xs">
+            <pre className="max-h-(--sz-70vh) overflow-auto whitespace-pre-wrap rounded-sm bg-bg-3/50 p-3 font-mono text-xs">
               {item.preview}
             </pre>
           )}
           {item.previewTruncated ? (
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-ink-3">
               Preview truncated by the runner.
             </p>
           ) : null}
@@ -617,14 +617,14 @@ function RuntimeQuestionHistory({
           {questionSet.questions.map((question) => (
             <div key={question.id}>
               {question.header ? (
-                <p className="text-xs font-medium text-muted-foreground">
+                <p className="text-xs font-medium text-ink-3">
                   {question.header}
                 </p>
               ) : null}
-              <p className="text-foreground">{question.prompt}</p>
+              <p className="text-ink">{question.prompt}</p>
             </div>
           ))}
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             {item.status === "resolved"
               ? "Answer details were not recorded by this older runtime."
               : `No answers were submitted; this request was ${item.status}.`}
@@ -650,30 +650,30 @@ function RuntimeQuestionReceipt({
           : "Questions resolved";
   return (
     <details className="group" data-testid="task-chat-runtime-request">
-      <summary className="flex min-h-8 cursor-pointer list-none items-center gap-2 rounded-sm px-1 py-1.5 text-sm leading-5 text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+      <summary className="flex min-h-8 cursor-pointer list-none items-center gap-2 rounded-sm px-1 py-1.5 text-sm leading-5 text-ink-3 transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
         <span
           className="flex w-6 shrink-0 items-center justify-center"
           data-testid="task-chat-runtime-request-icon-slot"
         >
           <CircleHelp
             aria-hidden
-            className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
+            className="h-3.5 w-3.5 shrink-0 text-ink-3"
             data-testid="task-chat-runtime-request-icon"
           />
         </span>
         <span>{label}</span>
         <ChevronRight
           aria-hidden
-          className="ml-auto h-3 w-3 shrink-0 text-muted-foreground opacity-0 transition-[opacity,transform] group-hover:opacity-70 group-focus-visible:opacity-70 group-open:rotate-90"
+          className="ml-auto h-3 w-3 shrink-0 text-ink-3 opacity-0 transition-[opacity,transform] group-hover:opacity-70 group-focus-visible:opacity-70 group-open:rotate-90"
           data-testid="task-chat-runtime-request-caret"
         />
       </summary>
       <div className="pb-3 pl-7 pr-1">
         <div className="mb-3">
-          <p className="text-sm font-medium text-foreground">
+          <p className="text-sm font-medium text-ink">
             {item.questionSet?.title ?? "Runtime input"}
           </p>
-          <p className="mt-1 text-sm text-muted-foreground">{item.prompt}</p>
+          <p className="mt-1 text-sm text-ink-3">{item.prompt}</p>
         </div>
         <RuntimeQuestionHistory item={item} />
       </div>
@@ -813,7 +813,7 @@ function RuntimeRequestCard({
                 className="flex flex-col gap-1.5 text-sm"
                 htmlFor={inputId}
               >
-                <span className="font-medium text-foreground">
+                <span className="font-medium text-ink">
                   {field.label}
                 </span>
                 <Textarea
@@ -822,7 +822,7 @@ function RuntimeRequestCard({
                   placeholder={field.placeholder ?? undefined}
                   disabled={!onDecision || submitting}
                   rows={2}
-                  className="resize-y border-0 bg-muted/35 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
+                  className="resize-y border-0 bg-bg-3/35 shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
                   onChange={(event) =>
                     setValues((current) => ({
                       ...current,
@@ -845,7 +845,7 @@ function RuntimeRequestCard({
               <Button
                 type="button"
                 size="sm"
-                variant="outline"
+                variant="secondary"
                 disabled={!onDecision || submitting}
                 onClick={() => void submit({ action: "decline" })}
               >
@@ -856,7 +856,7 @@ function RuntimeRequestCard({
               <Button
                 type="button"
                 size="sm"
-                variant="outline"
+                variant="secondary"
                 disabled={!onDecision || submitting}
                 onClick={() => void submit({ action: "cancel" })}
               >
@@ -877,7 +877,7 @@ function RuntimeRequestCard({
                 key={choice.key}
                 type="button"
                 size="sm"
-                variant="outline"
+                variant="secondary"
                 disabled={
                   item.status !== "pending" || !onDecision || submitting
                 }
@@ -898,12 +898,12 @@ function RuntimeRequestCard({
         </div>
       ) : null}
       {item.status === "pending" && !onDecision ? (
-        <p className="mt-2 text-xs text-muted-foreground">
+        <p className="mt-2 text-xs text-ink-3">
           Resolve this request in the active runtime session.
         </p>
       ) : null}
       {error ? (
-        <p className="mt-2 text-xs text-destructive" role="alert">
+        <p className="mt-2 text-xs text-bad" role="alert">
           {error}
         </p>
       ) : null}
@@ -932,9 +932,9 @@ function ResultCard({
       {hasDetails ? (
         <div className="flex flex-col gap-3 text-sm">
           {item.blocker ? (
-            <div className="rounded-sm bg-muted/50 p-2">
+            <div className="rounded-sm bg-bg-3/50 p-2">
               <strong>Blocked: {item.blocker.reasonCode}</strong>
-              <p className="mt-1 text-muted-foreground">
+              <p className="mt-1 text-ink-3">
                 {item.blocker.unblockAction}
               </p>
             </div>
@@ -958,7 +958,7 @@ function ResultCard({
                       {check.commandOrCheck}
                     </span>
                     {check.detail ? (
-                      <span className="block text-xs text-muted-foreground">
+                      <span className="block text-xs text-ink-3">
                         {check.detail}
                       </span>
                     ) : null}
@@ -968,7 +968,7 @@ function ResultCard({
             </ul>
           ) : null}
           {item.remainingWork.length > 0 ? (
-            <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
+            <ul className="list-disc space-y-1 pl-5 text-ink-3">
               {item.remainingWork.map((work, index) => (
                 <li key={`${work.description}:${index}`}>
                   {work.description}
@@ -982,7 +982,7 @@ function ResultCard({
               {item.artifacts.map((artifact) => (
                 <span
                   key={`${artifact.kind}:${artifact.ref}`}
-                  className="rounded-sm border border-border px-2 py-1 font-mono text-xs"
+                  className="rounded-sm border border-line px-2 py-1 font-mono text-xs"
                 >
                   {artifact.title ?? artifact.ref}
                 </span>
@@ -1038,7 +1038,7 @@ function ResourceCard({
   );
   return item.href ? (
     <a
-      className="block rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="block rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
       href={item.href}
     >
       {body}

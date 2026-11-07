@@ -596,7 +596,7 @@ export function DocumentAnnotationLayer({
               data-testid="document-annotation-selection-toolbar"
               role="toolbar"
               aria-label="Selection actions"
-              className="paperclip-doc-annotation-selection-toolbar pointer-events-auto absolute z-10 flex items-center gap-1 rounded-md border border-border bg-popover px-1 py-1 shadow-md"
+              className="paperclip-doc-annotation-selection-toolbar pointer-events-auto absolute z-10 flex items-center gap-1 rounded-md border border-line bg-bg-2 px-1 py-1 shadow-md"
               style={{ top: toolbarPosition.top, left: toolbarPosition.left }}
               onMouseDown={(event) => event.preventDefault()}
             >

@@ -82,11 +82,11 @@ function BulkListPreview({
           return (
             <li key={agent.agentId} data-testid={`bulk-agent-config-list-preview-${field.key}-${agent.agentId}`}>
               <span className="font-medium">{agent.name}</span>
-              <span className="text-muted-foreground">
+              <span className="text-ink-3">
                 : {listText(agent.currentLists?.[field.key] ?? [])} → {listText(fitted.list)}
               </span>
               {fitted.dropped.map((value) => (
-                <span key={value} className="block text-muted-foreground">
+                <span key={value} className="block text-ink-3">
                   {label(value)} dropped for {agent.name}: same as primary
                 </span>
               ))}
@@ -95,7 +95,7 @@ function BulkListPreview({
         })}
       </ul>
       {skipped.length > 0 && (
-        <p className="text-muted-foreground" data-testid={`bulk-agent-config-list-skipped-${field.key}`}>
+        <p className="text-ink-3" data-testid={`bulk-agent-config-list-skipped-${field.key}`}>
           Skipped (no {field.label.toLowerCase()} support): {skipped.map((agent) => agent.name).join(", ")}
         </p>
       )}
@@ -266,7 +266,7 @@ export function BulkAgentAdapterConfigDialog({
           </DialogDescription>
         </DialogHeader>
 
-        {preview.isLoading && <p className="text-sm text-muted-foreground">Loading fields…</p>}
+        {preview.isLoading && <p className="text-sm text-ink-3">Loading fields…</p>}
 
         {result ? (
           <div className="space-y-2" data-testid="bulk-agent-config-results">
@@ -281,7 +281,7 @@ export function BulkAgentAdapterConfigDialog({
                   data-testid={`bulk-agent-config-result-${entry.agentId}`}
                 >
                   <span className="truncate">{entry.name}</span>
-                  <span className="text-right text-muted-foreground">
+                  <span className="text-right text-ink-3">
                     {entry.status === "updated" ? entry.changedKeys.join(", ") : "unchanged"}
                     {entry.skippedKeys?.length ? (
                       <span className="block text-xs">
@@ -318,10 +318,10 @@ export function BulkAgentAdapterConfigDialog({
                     <ModelListCount count={lists[field.key]?.length ?? 0} max={field.list.maxItems} />
                   )}
                 </div>
-                {field.hint && <p className="text-xs text-muted-foreground">{field.hint}</p>}
+                {field.hint && <p className="text-xs text-ink-3">{field.hint}</p>}
                 <select
                   id={`bulk-field-${field.key}`}
-                  className="h-9 w-full rounded-md border border-input bg-transparent px-2 text-sm"
+                  className="h-9 w-full rounded-md border border-line-strong bg-transparent px-2 text-sm"
                   data-testid={`bulk-agent-config-field-${field.key}`}
                   value={selections[field.key] ?? UNCHANGED}
                   onChange={(event) =>
@@ -375,10 +375,10 @@ export function BulkAgentAdapterConfigDialog({
                 <label className="block text-sm font-medium" htmlFor={`bulk-field-${field.key}`}>
                   {field.label}
                 </label>
-                {field.hint && <p className="text-xs text-muted-foreground">{field.hint}</p>}
+                {field.hint && <p className="text-xs text-ink-3">{field.hint}</p>}
                 <select
                   id={`bulk-field-${field.key}`}
-                  className="h-9 w-full rounded-md border border-input bg-transparent px-2 text-sm"
+                  className="h-9 w-full rounded-md border border-line-strong bg-transparent px-2 text-sm"
                   data-testid={`bulk-agent-config-field-${field.key}`}
                   value={selections[field.key] ?? UNCHANGED}
                   onChange={(event) =>
@@ -421,10 +421,10 @@ export function BulkAgentAdapterConfigDialog({
 
             {ineligible.length > 0 && (
               <div className="space-y-1" data-testid="bulk-agent-config-skipped">
-                <p className="text-xs font-medium text-muted-foreground">
+                <p className="text-xs font-medium text-ink-3">
                   Not included ({ineligible.length})
                 </p>
-                <ul className="space-y-0.5 text-xs text-muted-foreground">
+                <ul className="space-y-0.5 text-xs text-ink-3">
                   {ineligible.map((agent) => (
                     <li key={agent.agentId}>
                       {agent.name}: {agent.reason}
@@ -442,12 +442,12 @@ export function BulkAgentAdapterConfigDialog({
             )}
 
             {error && (
-              <p className="text-sm text-destructive" role="alert" data-testid="bulk-agent-config-error">
+              <p className="text-sm text-bad" role="alert" data-testid="bulk-agent-config-error">
                 {error}
               </p>
             )}
             {failures.length > 0 && (
-              <ul className="space-y-0.5 text-xs text-destructive" data-testid="bulk-agent-config-failures">
+              <ul className="space-y-0.5 text-xs text-bad" data-testid="bulk-agent-config-failures">
                 {failures.map((failure) => (
                   <li key={`${failure.agentId}-${failure.key ?? "agent"}`}>
                     {failure.name}: {failure.message}

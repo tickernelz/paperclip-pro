@@ -478,7 +478,7 @@ function IssueChatLiveRunStatusLine({
   return (
     <span
       className={cn(
-        "mt-0.5 block truncate text-xs leading-4 text-muted-foreground/70",
+        "mt-0.5 block truncate text-xs leading-4 text-ink-3/70",
         className,
       )}
       title={text}
@@ -840,7 +840,7 @@ export function IssueAssigneePausedNotice({
           canResume ? (
             <Button
               size="sm"
-              variant="outline"
+              variant="secondary"
               onClick={onResume}
               disabled={resuming}
               data-testid="issue-assignee-paused-resume"
@@ -926,9 +926,9 @@ function IssueChatFallbackThread({
       {messages.length === 0 ? (
         <Card
           className={cn(
-            "block shadow-none text-center text-sm text-muted-foreground",
+            "block shadow-none text-center text-sm text-ink-3",
             variant === "embedded"
-              ? "border-dashed border-border/70 bg-background/60 px-4 py-6"
+              ? "border-dashed border-line/70 bg-bg/60 px-4 py-6"
               : "border-dashed px-6 py-10",
           )}
         >
@@ -941,14 +941,14 @@ function IssueChatFallbackThread({
             return (
               <Card
                 key={message.id}
-                className="block border-border/60 bg-card/70 px-4 py-3"
+                className="block border-line/60 bg-bg-2/70 px-4 py-3"
               >
                 <div className="mb-2 flex items-center gap-2 text-sm">
-                  <span className="font-medium text-foreground">
+                  <span className="font-medium text-ink">
                     {fallbackAuthorLabel(message)}
                   </span>
                   {message.createdAt ? (
-                    <span className="text-(length:--text-micro) text-muted-foreground">
+                    <span className="text-(length:--text-micro) text-ink-3">
                       {commentDateLabel(message.createdAt)}
                     </span>
                   ) : null}
@@ -964,7 +964,7 @@ function IssueChatFallbackThread({
                       </MarkdownBody>
                     ))
                   ) : (
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-ink-3">
                       No message content.
                     </p>
                   )}
@@ -1285,16 +1285,16 @@ function IssueChatChainOfThought({
     <div>
       <button
         type="button"
-        className="group flex w-full items-start gap-2.5 rounded-lg px-1 py-2 text-left transition-colors hover:bg-accent/5"
+        className="group flex w-full items-start gap-2.5 rounded-lg px-1 py-2 text-left transition-colors hover:bg-bg-3/5"
         onClick={() => hasContent && setExpanded((v) => !v)}
       >
         <div className="min-w-0 flex-1">
           <div className="flex min-w-0 items-center gap-2.5">
-            <span className="inline-flex items-center gap-2 text-sm font-medium text-foreground/80">
+            <span className="inline-flex items-center gap-2 text-sm font-medium text-ink/80">
               {agentId ? (
                 <AgentAvatar agent={agentId ? agentMap?.get(agentId) ?? { id: agentId } : undefined} size={16} />
               ) : isActive ? (
-                <Loader2 className="h-4 w-4 shrink-0 animate-spin text-muted-foreground" />
+                <Loader2 className="h-4 w-4 shrink-0 animate-spin text-ink-3" />
               ) : (
                 <span className="flex h-4 w-4 shrink-0 items-center justify-center">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-500/70" />
@@ -1307,12 +1307,12 @@ function IssueChatChainOfThought({
               )}
             </span>
             {headerSuffix ? (
-              <span className="text-xs text-muted-foreground/60">
+              <span className="text-xs text-ink-3/60">
                 {headerSuffix}
               </span>
             ) : null}
             {toolSummary ? (
-              <span className="text-xs text-muted-foreground/40">
+              <span className="text-xs text-ink-3/40">
                 · {toolSummary}
               </span>
             ) : null}
@@ -1326,7 +1326,7 @@ function IssueChatChainOfThought({
         {hasContent ? (
           <ChevronDown
             className={cn(
-              "mt-0.5 h-4 w-4 shrink-0 text-muted-foreground/50 transition-transform",
+              "mt-0.5 h-4 w-4 shrink-0 text-ink-3/50 transition-transform",
               expanded && "rotate-180",
             )}
           />
@@ -1406,7 +1406,7 @@ function IssueChatVerboseLiveReasoningPart({ text }: { text: string }) {
   return (
     <div className="flex gap-2 px-1">
       <div className="flex flex-col items-center pt-0.5">
-        <Brain className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" />
+        <Brain className="h-3.5 w-3.5 shrink-0 text-ink-3/50" />
       </div>
       <div
         ref={scrollRef}
@@ -1421,7 +1421,7 @@ function IssueChatVerboseLiveReasoningPart({ text }: { text: string }) {
         {lines.map((line, index) => (
           <p
             key={index}
-            className="whitespace-pre-wrap break-words text-(length:--text-compact) italic leading-5 text-muted-foreground/70"
+            className="whitespace-pre-wrap break-words text-(length:--text-compact) italic leading-5 text-ink-3/70"
           >
             {line}
           </p>
@@ -1452,13 +1452,13 @@ function IssueChatReasoningPart({ text }: { text: string }) {
   return (
     <div className="flex gap-2 px-1">
       <div className="flex flex-col items-center pt-0.5">
-        <Brain className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" />
+        <Brain className="h-3.5 w-3.5 shrink-0 text-ink-3/50" />
       </div>
       <div className="relative h-5 min-w-0 flex-1 overflow-hidden">
         {ticker.exiting !== null && (
           <span
             key={`out-${ticker.key}`}
-            className="cot-line-exit absolute inset-x-0 truncate text-(length:--text-compact) italic leading-5 text-muted-foreground/70"
+            className="cot-line-exit absolute inset-x-0 truncate text-(length:--text-compact) italic leading-5 text-ink-3/70"
             onAnimationEnd={() => setTicker((t) => ({ ...t, exiting: null }))}
           >
             {ticker.exiting}
@@ -1467,7 +1467,7 @@ function IssueChatReasoningPart({ text }: { text: string }) {
         <span
           key={`in-${ticker.key}`}
           className={cn(
-            "absolute inset-x-0 truncate text-(length:--text-compact) italic leading-5 text-muted-foreground/70",
+            "absolute inset-x-0 truncate text-(length:--text-compact) italic leading-5 text-ink-3/70",
             ticker.key > 0 && "cot-line-enter",
           )}
         >
@@ -1510,16 +1510,16 @@ function IssueChatRollingToolPart({
     <div className="flex gap-2 px-1">
       <div className="flex flex-col items-center pt-0.5">
         {isRunning ? (
-          <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-muted-foreground/50" />
+          <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-ink-3/50" />
         ) : (
-          <ToolIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" />
+          <ToolIcon className="h-3.5 w-3.5 shrink-0 text-ink-3/50" />
         )}
       </div>
       <div className="relative h-5 min-w-0 flex-1 overflow-hidden">
         {ticker.exiting !== null && (
           <span
             key={`out-${ticker.key}`}
-            className="cot-line-exit absolute inset-x-0 truncate text-(length:--text-compact) leading-5 text-muted-foreground/70"
+            className="cot-line-exit absolute inset-x-0 truncate text-(length:--text-compact) leading-5 text-ink-3/70"
             onAnimationEnd={() => setTicker((t) => ({ ...t, exiting: null }))}
           >
             {ticker.exiting}
@@ -1528,7 +1528,7 @@ function IssueChatRollingToolPart({
         <span
           key={`in-${ticker.key}`}
           className={cn(
-            "absolute inset-x-0 truncate text-(length:--text-compact) leading-5 text-muted-foreground/70",
+            "absolute inset-x-0 truncate text-(length:--text-compact) leading-5 text-ink-3/70",
             ticker.key > 0 && "cot-line-enter",
           )}
         >
@@ -1554,7 +1554,7 @@ function CopyablePreBlock({
       <button
         type="button"
         className={cn(
-          "absolute right-1.5 top-1.5 inline-flex h-6 w-6 items-center justify-center rounded-md bg-background/80 text-muted-foreground opacity-0 backdrop-blur-sm transition-opacity hover:text-foreground group-hover/pre:opacity-100",
+          "absolute right-1.5 top-1.5 inline-flex h-6 w-6 items-center justify-center rounded-md bg-bg/80 text-ink-3 opacity-0 backdrop-blur-sm transition-opacity hover:text-ink group-hover/pre:opacity-100",
           copied && "opacity-100",
         )}
         title="Copy"
@@ -1645,28 +1645,28 @@ function IssueChatToolPart({
   return (
     <div className="flex gap-2 px-1">
       <div className="flex flex-col items-center pt-1">
-        <ToolIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground/50" />
-        {open ? <div className="mt-1 w-px flex-1 bg-border/40" /> : null}
+        <ToolIcon className="h-3.5 w-3.5 shrink-0 text-ink-3/50" />
+        {open ? <div className="mt-1 w-px flex-1 bg-line/40" /> : null}
       </div>
 
       <div className="min-w-0 flex-1">
         <button
           type="button"
-          className="flex w-full items-center gap-2 rounded-md py-0.5 text-left transition-colors hover:bg-accent/5"
+          className="flex w-full items-center gap-2 rounded-md py-0.5 text-left transition-colors hover:bg-bg-3/5"
           onClick={() => setOpen((current) => !current)}
         >
-          <span className="min-w-0 flex-1 truncate text-(length:--text-compact) text-muted-foreground/80">
+          <span className="min-w-0 flex-1 truncate text-(length:--text-compact) text-ink-3/80">
             {title}
             {!intentDetail && summary ? (
-              <span className="ml-1.5 text-muted-foreground/50">{summary}</span>
+              <span className="ml-1.5 text-ink-3/50">{summary}</span>
             ) : null}
           </span>
           {result === undefined ? (
-            <Loader2 className="h-3 w-3 shrink-0 animate-spin text-muted-foreground/50" />
+            <Loader2 className="h-3 w-3 shrink-0 animate-spin text-ink-3/50" />
           ) : null}
           <ChevronDown
             className={cn(
-              "h-3.5 w-3.5 shrink-0 text-muted-foreground/40 transition-transform",
+              "h-3.5 w-3.5 shrink-0 text-ink-3/40 transition-transform",
               open && "rotate-180",
             )}
           />
@@ -1676,18 +1676,18 @@ function IssueChatToolPart({
           <div className="mt-1 space-y-2 pb-1">
             {nonIntentDetails.length > 0 ? (
               <div>
-                <div className="mb-1 text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground/60">
+                <div className="mb-1 text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-eyebrow) text-ink-3/60">
                   Input
                 </div>
                 <dl className="space-y-1.5">
                   {nonIntentDetails.map((detail) => (
                     <div key={`${detail.label}:${detail.value}`}>
-                      <dt className="text-(length:--text-nano) font-medium text-muted-foreground/60">
+                      <dt className="text-(length:--text-nano) font-medium text-ink-3/60">
                         {detail.label}
                       </dt>
                       <dd
                         className={cn(
-                          "text-xs leading-5 text-foreground/70",
+                          "text-xs leading-5 text-ink/70",
                           detail.tone === "code" &&
                             "font-mono text-(length:--text-micro)",
                         )}
@@ -1700,20 +1700,20 @@ function IssueChatToolPart({
               </div>
             ) : rawArgsText ? (
               <div>
-                <div className="mb-1 text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground/60">
+                <div className="mb-1 text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-eyebrow) text-ink-3/60">
                   Input
                 </div>
-                <CopyablePreBlock className="overflow-x-auto rounded-md bg-accent/30 p-2 text-(length:--text-micro) leading-4 text-foreground/70">
+                <CopyablePreBlock className="overflow-x-auto rounded-md bg-bg-3/30 p-2 text-(length:--text-micro) leading-4 text-ink/70">
                   {rawArgsText}
                 </CopyablePreBlock>
               </div>
             ) : null}
             {result !== undefined ? (
               <div>
-                <div className="mb-1 text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground/60">
+                <div className="mb-1 text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-eyebrow) text-ink-3/60">
                   Result
                 </div>
-                <CopyablePreBlock className="overflow-x-auto rounded-md bg-accent/30 p-2 text-(length:--text-micro) leading-4 text-foreground/70">
+                <CopyablePreBlock className="overflow-x-auto rounded-md bg-bg-3/30 p-2 text-(length:--text-micro) leading-4 text-ink/70">
                   {resultText}
                 </CopyablePreBlock>
               </div>
@@ -1774,35 +1774,35 @@ function IssueChatProviderActivity({
       data-provider-family={String(value.family ?? "unknown")}
     >
       <div className="pt-1">
-        <ClipboardList className="h-3.5 w-3.5 text-muted-foreground/50" />
+        <ClipboardList className="h-3.5 w-3.5 text-ink-3/50" />
       </div>
       <div className="min-w-0 flex-1">
         <button
           type="button"
-          className="flex w-full items-center gap-2 rounded-md py-0.5 text-left hover:bg-accent/5"
+          className="flex w-full items-center gap-2 rounded-md py-0.5 text-left hover:bg-bg-3/5"
           onClick={onToggle}
           aria-expanded={open}
         >
-          <span className="min-w-0 flex-1 truncate text-(length:--text-compact) text-muted-foreground/80">
+          <span className="min-w-0 flex-1 truncate text-(length:--text-compact) text-ink-3/80">
             {title}
             {summary ? (
-              <span className="ml-1.5 text-muted-foreground/50">{summary}</span>
+              <span className="ml-1.5 text-ink-3/50">{summary}</span>
             ) : null}
           </span>
           {running ? (
-            <Loader2 className="h-3 w-3 animate-spin text-muted-foreground/50" />
+            <Loader2 className="h-3 w-3 animate-spin text-ink-3/50" />
           ) : null}
           {hasDetails ? (
             <ChevronDown
               className={cn(
-                "h-3.5 w-3.5 text-muted-foreground/40 transition-transform",
+                "h-3.5 w-3.5 text-ink-3/40 transition-transform",
                 open && "rotate-180",
               )}
             />
           ) : null}
         </button>
         {open && hasDetails ? (
-          <div className="mt-1 space-y-2 rounded-md border border-border/50 bg-accent/15 p-2 text-xs">
+          <div className="mt-1 space-y-2 rounded-md border border-line/50 bg-bg-3/15 p-2 text-xs">
             {steps.map((entry, index) => {
               const step =
                 typeof entry === "object" && entry !== null
@@ -1860,7 +1860,7 @@ function IssueChatProviderActivity({
                   ) : (
                     <span>{String(source.title ?? "Unavailable source")}</span>
                   )}{" "}
-                  <span className="text-muted-foreground">
+                  <span className="text-ink-3">
                     (provider-reported)
                   </span>
                 </div>
@@ -1868,7 +1868,7 @@ function IssueChatProviderActivity({
             })}
             {effectiveModel ? (
               <div>
-                <span className="text-muted-foreground">Model</span>{" "}
+                <span className="text-ink-3">Model</span>{" "}
                 {requestedModel && requestedModel !== effectiveModel
                   ? `${requestedModel} → `
                   : ""}
@@ -1876,7 +1876,7 @@ function IssueChatProviderActivity({
               </div>
             ) : null}
             {output ? (
-              <CopyablePreBlock className="max-h-56 overflow-auto whitespace-pre-wrap rounded bg-background/70 p-2 font-mono text-(length:--text-micro)">
+              <CopyablePreBlock className="max-h-56 overflow-auto whitespace-pre-wrap rounded bg-bg/70 p-2 font-mono text-(length:--text-micro)">
                 {output}
               </CopyablePreBlock>
             ) : null}
@@ -2090,7 +2090,7 @@ function IssueChatUserMessage({
           isCurrentUser ? "justify-end" : "justify-start",
         )}
       >
-        <span className="text-sm font-medium text-foreground">
+        <span className="text-sm font-medium text-ink">
           {resolvedAuthorName}
         </span>
         <SourceTrustBadge sourceTrust={sourceTrust} artifactLabel="comment" />
@@ -2113,12 +2113,12 @@ function IssueChatUserMessage({
           queued
             ? "bg-amber-50/80 dark:bg-amber-500/10"
             : deleted
-              ? "bg-muted/50 text-muted-foreground"
+              ? "bg-bg-3/50 text-ink-3"
               : isCurrentUser
                 ? // Liveness blue (--liveness-blue, decoupled from --status-task-in_progress
                   // in DECISION-SHEET.md A6) for the human's own messages (PAP-95 rev 5).
                   "bg-(--liveness-blue) text-white"
-                : "bg-muted",
+                : "bg-bg-3",
           pending && "opacity-80",
         )}
       >
@@ -2133,8 +2133,8 @@ function IssueChatUserMessage({
             {onInterruptQueued ? (
               <Button
                 size="sm"
-                variant="outline"
-                className="h-6 border-red-300 px-2 text-(length:--text-micro) text-red-700 hover:bg-red-50 hover:text-red-800 dark:border-red-500/40 dark:text-red-300 dark:hover:bg-red-500/10"
+                variant="danger"
+                className="h-6 px-2 text-(length:--text-micro)"
                 disabled={isInterruptingQueuedRun}
                 onClick={() => void onInterruptQueued(queueTargetRunId)}
               >
@@ -2144,8 +2144,8 @@ function IssueChatUserMessage({
             {onCancelQueued ? (
               <Button
                 size="sm"
-                variant="outline"
-                className="h-6 border-amber-300 px-2 text-(length:--text-micro) text-amber-900 hover:bg-amber-100/80 hover:text-amber-950 dark:border-amber-500/40 dark:text-amber-100 dark:hover:bg-amber-500/10"
+                variant="secondary"
+                className="h-6 px-2 text-(length:--text-micro)"
                 onClick={() => onCancelQueued(commentId)}
               >
                 Cancel
@@ -2154,7 +2154,7 @@ function IssueChatUserMessage({
           </div>
         ) : null}
         {deleted ? (
-          <div className="text-sm italic text-muted-foreground">
+          <div className="text-sm italic text-ink-3">
             Comment deleted
           </div>
         ) : (
@@ -2168,14 +2168,14 @@ function IssueChatUserMessage({
       </div>
 
       {sentFromIMessage && !deleted ? (
-        <div className="mt-1 px-1 text-xs text-muted-foreground">
+        <div className="mt-1 px-1 text-xs text-ink-3">
           Sent from iMessage
         </div>
       ) : null}
       {pending ? (
         <div
           className={cn(
-            "mt-1 flex px-1 text-(length:--text-micro) text-muted-foreground",
+            "mt-1 flex px-1 text-(length:--text-micro) text-ink-3",
             isCurrentUser ? "justify-end" : "justify-start",
           )}
         >
@@ -2192,7 +2192,7 @@ function IssueChatUserMessage({
             <TooltipTrigger asChild>
               <a
                 href={anchorId ? `#${anchorId}` : undefined}
-                className="text-(length:--text-micro) text-muted-foreground hover:text-foreground hover:underline"
+                className="text-(length:--text-micro) text-ink-3 hover:text-ink hover:underline"
               >
                 {message.createdAt ? commentDateLabel(message.createdAt) : ""}
               </a>
@@ -2204,7 +2204,7 @@ function IssueChatUserMessage({
           {!deleted ? (
             <button
               type="button"
-              className="inline-flex h-6 w-6 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
+              className="inline-flex h-6 w-6 items-center justify-center text-ink-3 transition-colors hover:text-ink"
               title="Copy message"
               aria-label="Copy message"
               onClick={() => {
@@ -2242,7 +2242,7 @@ function IssueChatUserMessage({
           {canDeleteComment ? (
             <button
               type="button"
-              className="inline-flex h-6 w-6 items-center justify-center text-muted-foreground transition-colors hover:text-destructive"
+              className="inline-flex h-6 w-6 items-center justify-center text-ink-3 transition-colors hover:text-bad"
               title="Delete comment"
               aria-label="Delete comment"
               onClick={handleDeleteComment}
@@ -2293,12 +2293,12 @@ function IssueChatUserMessage({
           </DialogHeader>
           <DialogFooter>
             <Button
-              variant="outline"
+              variant="secondary"
               onClick={() => setDeleteDialogOpen(false)}
             >
               Cancel
             </Button>
-            <Button variant="destructive" onClick={confirmDeleteComment}>
+            <Button variant="delete" onClick={confirmDeleteComment}>
               Delete comment
             </Button>
           </DialogFooter>
@@ -2450,7 +2450,7 @@ function IssueChatAssistantMessage({
     <div className="mt-2 flex items-center gap-1">
       <button
         type="button"
-        className="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+        className="inline-flex h-7 w-7 items-center justify-center rounded-md text-ink-3 transition-colors hover:bg-bg-3 hover:text-ink"
         title="Copy message"
         aria-label="Copy message"
         onClick={() => {
@@ -2489,7 +2489,7 @@ function IssueChatAssistantMessage({
         <TooltipTrigger asChild>
           <a
             href={anchorId ? `#${anchorId}` : undefined}
-            className="text-(length:--text-micro) text-muted-foreground hover:text-foreground hover:underline"
+            className="text-(length:--text-micro) text-ink-3 hover:text-ink hover:underline"
           >
             {message.createdAt ? commentDateLabel(message.createdAt) : ""}
           </a>
@@ -2503,7 +2503,6 @@ function IssueChatAssistantMessage({
           <Button
             variant="ghost"
             size="icon-xs"
-            className="text-muted-foreground hover:text-foreground"
             title="More actions"
             aria-label="More actions"
           >
@@ -2511,7 +2510,7 @@ function IssueChatAssistantMessage({
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          {custom.origin === "fast_response" && <div className="max-w-xs px-2 py-2 text-xs text-muted-foreground">Platform-generated acknowledgement. The agent’s substantive response follows separately.</div>}
+          {custom.origin === "fast_response" && <div className="max-w-xs px-2 py-2 text-xs text-ink-3">Platform-generated acknowledgement. The agent’s substantive response follows separately.</div>}
           <DropdownMenuItem
             onClick={() => {
               void copyTextToClipboard(copyText).catch((error) => {
@@ -2570,7 +2569,7 @@ function IssueChatAssistantMessage({
         <div className="group flex flex-col items-start py-1.5">
           {/* Icon + name together in a header ABOVE the bubble (PAP-95 rev 7). */}
           <div className="mb-1 flex items-center gap-1.5 px-1">
-            <span className="flex size-5 shrink-0 items-center justify-center text-muted-foreground">
+            <span className="flex size-5 shrink-0 items-center justify-center text-ink-3">
               {agentId ? (
                 <AgentAvatar agent={agentId ? agentMap?.get(agentId) ?? { id: agentId } : undefined} size={16} />
               ) : (
@@ -2581,7 +2580,7 @@ function IssueChatAssistantMessage({
                 </Avatar>
               )}
             </span>
-            <span className="text-sm font-medium text-foreground">
+            <span className="text-sm font-medium text-ink">
               {authorName}
             </span>
             {/* Reads as "Fable · for Dotta" beside the author name (the open cross-task write design (attribution)). */}
@@ -2610,12 +2609,12 @@ function IssueChatAssistantMessage({
               "min-w-0 break-words px-3 py-2 text-sm overflow-x-auto overflow-y-visible [border-radius:14px_14px_14px_4px]",
               AGENT_COMMENT_BUBBLE_WIDTH_CLASS,
               deleted
-                ? "border border-border bg-muted/50 text-muted-foreground"
-                : "border border-border bg-card text-foreground",
+                ? "border border-line bg-bg-3/50 text-ink-3"
+                : "border border-line bg-bg-2 text-ink",
             )}
           >
             {deleted ? (
-              <div className="text-sm italic text-muted-foreground">
+              <div className="text-sm italic text-ink-3">
                 Comment deleted
               </div>
             ) : (
@@ -2626,7 +2625,7 @@ function IssueChatAssistantMessage({
                     {notices.map((notice, index) => (
                       <div
                         key={`${message.id}:notice:${index}`}
-                        className="rounded-sm border border-border/60 bg-accent/20 px-3 py-2 text-sm text-muted-foreground"
+                        className="rounded-sm border border-line/60 bg-bg-3/20 px-3 py-2 text-sm text-ink-3"
                       >
                         {notice}
                       </div>
@@ -2654,32 +2653,32 @@ function IssueChatAssistantMessage({
               className="group flex w-full items-center gap-2 py-0.5 text-left"
               onClick={() => setFolded((v) => !v)}
             >
-              <span className="text-sm font-medium text-foreground">
+              <span className="text-sm font-medium text-ink">
                 {authorName}
               </span>
               <SourceTrustBadge
                 sourceTrust={sourceTrust}
                 artifactLabel="comment"
               />
-              <span className="text-xs text-muted-foreground/60">
+              <span className="text-xs text-ink-3/60">
                 {chainOfThoughtLabel?.toLowerCase()}
               </span>
               <ChevronDown
                 aria-hidden="true"
                 className={cn(
-                  "h-3.5 w-3.5 shrink-0 text-muted-foreground/40 opacity-0 transition-[opacity,transform] group-hover:opacity-100 group-focus-visible:opacity-100",
+                  "h-3.5 w-3.5 shrink-0 text-ink-3/40 opacity-0 transition-[opacity,transform] group-hover:opacity-100 group-focus-visible:opacity-100",
                   !folded && "rotate-180",
                 )}
               />
               {message.createdAt ? (
-                <span className="ml-auto text-(length:--text-micro) text-muted-foreground/50">
+                <span className="ml-auto text-(length:--text-micro) text-ink-3/50">
                   {commentDateLabel(message.createdAt)}
                 </span>
               ) : null}
             </button>
           ) : (
             <div className="mb-1.5 flex items-center gap-2">
-              <span className="text-sm font-medium text-foreground">
+              <span className="text-sm font-medium text-ink">
                 {authorName}
               </span>
               <SourceTrustBadge
@@ -2712,7 +2711,7 @@ function IssueChatAssistantMessage({
           )}
 
           {deleted ? (
-            <div className="rounded-sm bg-muted/40 px-3 py-2 text-sm italic text-muted-foreground">
+            <div className="rounded-sm bg-bg-3/40 px-3 py-2 text-sm italic text-ink-3">
               Comment deleted
             </div>
           ) : !folded ? (
@@ -2722,11 +2721,11 @@ function IssueChatAssistantMessage({
                 {message.content.length === 0 && waitingText ? (
                   <div className="rounded-lg px-1 py-2">
                     <div className="flex min-w-0 items-center gap-2.5">
-                      <span className="inline-flex items-center gap-2 text-sm font-medium text-foreground/80">
+                      <span className="inline-flex items-center gap-2 text-sm font-medium text-ink/80">
                         {agentId ? (
                           <AgentAvatar agent={agentId ? agentMap?.get(agentId) ?? { id: agentId } : undefined} size={16} />
                         ) : (
-                          <Loader2 className="h-4 w-4 shrink-0 animate-spin text-muted-foreground" />
+                          <Loader2 className="h-4 w-4 shrink-0 animate-spin text-ink-3" />
                         )}
                         <span className="shimmer-text">{waitingText}</span>
                       </span>
@@ -2743,7 +2742,7 @@ function IssueChatAssistantMessage({
                     {notices.map((notice, index) => (
                       <div
                         key={`${message.id}:notice:${index}`}
-                        className="rounded-sm border border-border/60 bg-accent/20 px-3 py-2 text-sm text-muted-foreground"
+                        className="rounded-sm border border-line/60 bg-bg-3/20 px-3 py-2 text-sm text-ink-3"
                       >
                         {notice}
                       </div>
@@ -2854,7 +2853,7 @@ function IssueChatFeedbackButtons({
           "inline-flex h-7 w-7 items-center justify-center rounded-md transition-colors",
           visibleVote === "up"
             ? "text-green-600 dark:text-green-400"
-            : "text-muted-foreground hover:bg-accent hover:text-foreground",
+            : "text-ink-3 hover:bg-bg-3 hover:text-ink",
         )}
         title="Helpful"
         aria-label="Helpful"
@@ -2871,7 +2870,7 @@ function IssueChatFeedbackButtons({
               "inline-flex h-7 w-7 items-center justify-center rounded-md transition-colors",
               visibleVote === "down"
                 ? "text-amber-600 dark:text-amber-400"
-                : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                : "text-ink-3 hover:bg-bg-3 hover:text-ink",
             )}
             title="Needs work"
             aria-label="Needs work"
@@ -2888,14 +2887,14 @@ function IssueChatFeedbackButtons({
             value={downvoteReason}
             onChange={(event) => setDownvoteReason(event.target.value)}
             placeholder="Add a short note"
-            className="min-h-20 resize-y bg-background text-sm"
+            className="min-h-20 resize-y bg-bg text-sm"
             disabled={isSaving}
           />
           <div className="mt-2 flex items-center justify-end gap-2">
             <Button
               type="button"
               size="sm"
-              variant="outline"
+              variant="secondary"
               disabled={isSaving}
               onClick={() => {
                 setReasonOpen(false);
@@ -2934,13 +2933,13 @@ function IssueChatFeedbackButtons({
               down votes.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-3 text-sm text-muted-foreground">
+          <div className="space-y-3 text-sm text-ink-3">
             <p>This vote is always saved locally.</p>
             <p>
               Choose{" "}
-              <span className="font-medium text-foreground">Always allow</span>{" "}
+              <span className="font-medium text-ink">Always allow</span>{" "}
               to share this vote and future voted AI outputs. Choose{" "}
-              <span className="font-medium text-foreground">Don't allow</span>{" "}
+              <span className="font-medium text-ink">Don't allow</span>{" "}
               to keep this vote and future votes local.
             </p>
             <p>You can change this later in Settings &gt; General.</p>
@@ -2949,7 +2948,7 @@ function IssueChatFeedbackButtons({
                 href={termsUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex text-sm text-foreground underline underline-offset-4"
+                className="inline-flex text-sm text-ink underline underline-offset-4"
               >
                 Read our terms of service
               </a>
@@ -2958,7 +2957,7 @@ function IssueChatFeedbackButtons({
           <DialogFooter>
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               disabled={!pendingSharingDialog || isSaving}
               onClick={() => {
                 if (!pendingSharingDialog) return;
@@ -3049,17 +3048,17 @@ function ExpiredRequestConfirmationActivity({
           isCurrentUser && "justify-end",
         )}
       >
-        <span className="font-medium text-foreground">{actorName}</span>
-        <span className="text-muted-foreground">updated this task</span>
+        <span className="font-medium text-ink">{actorName}</span>
+        <span className="text-ink-3">updated this task</span>
         <a
           href={anchorId ? `#${anchorId}` : undefined}
-          className="text-xs text-muted-foreground transition-colors hover:text-foreground hover:underline"
+          className="text-xs text-ink-3 transition-colors hover:text-ink hover:underline"
         >
           {timeAgo(message.createdAt)}
         </a>
         <button
           type="button"
-          className="inline-flex items-center gap-1 rounded-md border border-border/70 bg-background/70 px-1.5 py-0.5 text-(length:--text-micro) font-medium text-muted-foreground transition-colors hover:border-border hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+          className="inline-flex items-center gap-1 rounded-md border border-line/70 bg-bg/70 px-1.5 py-0.5 text-(length:--text-micro) font-medium text-ink-3 transition-colors hover:border-line hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2"
           aria-expanded={expanded}
           aria-controls={detailsId}
           onClick={() => setExpanded((current) => !current)}
@@ -3076,7 +3075,7 @@ function ExpiredRequestConfirmationActivity({
       {expanded ? (
         <p
           className={cn(
-            "mt-1 text-xs text-muted-foreground",
+            "mt-1 text-xs text-ink-3",
             isCurrentUser && "text-right",
           )}
         >
@@ -3199,7 +3198,7 @@ function StaleDispositionWarningMetadataRow({
   row: SystemNoticeMetadataRow;
 }) {
   const label = (
-    <span className="text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
+    <span className="text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-eyebrow) text-ink-3">
       {row.label}
     </span>
   );
@@ -3209,7 +3208,7 @@ function StaleDispositionWarningMetadataRow({
         return <span>{row.value}</span>;
       case "code":
         return (
-          <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-(length:--text-micro) text-foreground/80">
+          <code className="rounded bg-bg-3 px-1.5 py-0.5 font-mono text-(length:--text-micro) text-ink/80">
             {row.value}
           </code>
         );
@@ -3218,38 +3217,38 @@ function StaleDispositionWarningMetadataRow({
           <>
             <span>{row.identifier}</span>
             {row.title ? (
-              <span className="text-muted-foreground"> - {row.title}</span>
+              <span className="text-ink-3"> - {row.title}</span>
             ) : null}
           </>
         );
         return row.href ? (
           <a
             href={row.href}
-            className="font-medium text-foreground underline-offset-2 hover:underline"
+            className="font-medium text-ink underline-offset-2 hover:underline"
           >
             {content}
           </a>
         ) : (
-          <span className="font-medium text-foreground">{content}</span>
+          <span className="font-medium text-ink">{content}</span>
         );
       }
       case "agent":
         return row.href ? (
           <a
             href={row.href}
-            className="font-medium text-foreground underline-offset-2 hover:underline"
+            className="font-medium text-ink underline-offset-2 hover:underline"
           >
             {row.name}
           </a>
         ) : (
-          <span className="font-medium text-foreground">{row.name}</span>
+          <span className="font-medium text-ink">{row.name}</span>
         );
       case "run": {
         const runShort =
           row.runId.length > 12 ? `${row.runId.slice(0, 8)}...` : row.runId;
         const content = (
           <>
-            <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-(length:--text-micro) text-foreground/80">
+            <code className="rounded bg-bg-3 px-1.5 py-0.5 font-mono text-(length:--text-micro) text-ink/80">
               {runShort}
             </code>
             {row.status ? <span>{row.status}</span> : null}
@@ -3272,7 +3271,7 @@ function StaleDispositionWarningMetadataRow({
   return (
     <div className="grid grid-cols-(--gtc-7) gap-2 text-xs leading-5">
       {label}
-      <div className="min-w-0 break-words text-foreground/80">{value}</div>
+      <div className="min-w-0 break-words text-ink/80">{value}</div>
     </div>
   );
 }
@@ -3324,7 +3323,7 @@ function StaleDispositionWarningDetails({
 }) {
   if (sections.length === 0) {
     return (
-      <div className="text-xs leading-5 text-muted-foreground">
+      <div className="text-xs leading-5 text-ink-3">
         No additional details.
       </div>
     );
@@ -3335,7 +3334,7 @@ function StaleDispositionWarningDetails({
       {sections.map((section) => (
         <div key={metadataSectionKey(section)} className="space-y-1.5">
           {section.title ? (
-            <div className="text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
+            <div className="text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-eyebrow) text-ink-3">
               {section.title}
             </div>
           ) : null}
@@ -3382,21 +3381,21 @@ function StaleDispositionWarningRow({
             className="group flex w-full items-center gap-2 py-0.5 text-left"
             onClick={() => setOpen((value) => !value)}
           >
-            <span className="text-sm font-medium text-foreground/80">
+            <span className="text-sm font-medium text-ink/80">
               Stale disposition warning
             </span>
             <span className="ml-auto flex items-center gap-1.5">
               {message.createdAt ? (
                 <span
                   data-testid="stale-disposition-warning-time"
-                  className="text-(length:--text-micro) text-muted-foreground/50"
+                  className="text-(length:--text-micro) text-ink-3/50"
                 >
                   {commentDateLabel(message.createdAt)}
                 </span>
               ) : null}
               <ChevronDown
                 className={cn(
-                  "h-3.5 w-3.5 text-muted-foreground/40 transition-transform",
+                  "h-3.5 w-3.5 text-ink-3/40 transition-transform",
                   open && "rotate-180",
                 )}
               />
@@ -3414,7 +3413,7 @@ function StaleDispositionWarningRow({
 // Tone-colored dot for the fully-collapsed compact notice row. Tone is never
 // conveyed by color alone — the adjacent title text names the notice.
 const COMPACT_TONE_DOT: Record<SystemNoticeTone, string> = {
-  neutral: "bg-muted-foreground/40",
+  neutral: "bg-ink-3/40",
   info: "bg-sky-500 dark:bg-sky-400",
   success: "bg-emerald-500 dark:bg-emerald-400",
   warning: "bg-amber-500 dark:bg-amber-400",
@@ -3454,7 +3453,7 @@ function CompactSystemNoticeRow({
             type="button"
             aria-expanded={open}
             aria-controls={detailsId}
-            className="-mx-1 flex w-full items-center gap-2 rounded-md px-1 py-0.5 text-left transition-colors hover:bg-accent/5"
+            className="-mx-1 flex w-full items-center gap-2 rounded-md px-1 py-0.5 text-left transition-colors hover:bg-bg-3/5"
             onClick={() => setOpen((value) => !value)}
           >
             <span
@@ -3464,11 +3463,11 @@ function CompactSystemNoticeRow({
               )}
               aria-hidden
             />
-            <span className="truncate text-sm font-medium text-foreground/80">
+            <span className="truncate text-sm font-medium text-ink/80">
               {title}
             </span>
             {source ? (
-              <span className="truncate text-(length:--text-micro) text-muted-foreground">
+              <span className="truncate text-(length:--text-micro) text-ink-3">
                 · {source.label}
               </span>
             ) : null}
@@ -3478,14 +3477,14 @@ function CompactSystemNoticeRow({
               {message.createdAt ? (
                 <span
                   data-testid="compact-system-notice-time"
-                  className="whitespace-nowrap text-(length:--text-micro) text-muted-foreground/50"
+                  className="whitespace-nowrap text-(length:--text-micro) text-ink-3/50"
                 >
                   {commentDateLabel(message.createdAt)}
                 </span>
               ) : null}
               <ChevronDown
                 className={cn(
-                  "h-3.5 w-3.5 shrink-0 text-muted-foreground/40 transition-transform group-hover:text-muted-foreground/70",
+                  "h-3.5 w-3.5 shrink-0 text-ink-3/40 transition-transform group-hover:text-ink-3/70",
                   open && "rotate-180",
                 )}
               />
@@ -3664,7 +3663,7 @@ function SystemNoticeCommentContent({
             <TooltipTrigger asChild>
               <a
                 href={anchorId ? `#${anchorId}` : undefined}
-                className="text-(length:--text-micro) text-muted-foreground hover:text-foreground hover:underline"
+                className="text-(length:--text-micro) text-ink-3 hover:text-ink hover:underline"
               >
                 {message.createdAt ? commentDateLabel(message.createdAt) : ""}
               </a>
@@ -3676,7 +3675,7 @@ function SystemNoticeCommentContent({
           {anchorId ? (
             <button
               type="button"
-              className="inline-flex h-6 w-6 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
+              className="inline-flex h-6 w-6 items-center justify-center text-ink-3 transition-colors hover:text-ink"
               title="Copy link"
               aria-label="Copy link to system notice"
               onClick={handleCopyLink}
@@ -3690,7 +3689,7 @@ function SystemNoticeCommentContent({
           ) : null}
           <button
             type="button"
-            className="inline-flex h-6 w-6 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
+            className="inline-flex h-6 w-6 items-center justify-center text-ink-3 transition-colors hover:text-ink"
             title="Copy notice text"
             aria-label="Copy system notice"
             onClick={handleCopy}
@@ -3725,8 +3724,8 @@ function IssueChatMetadataRow({
 }) {
   return (
     <div id={anchorId} data-testid={testid}>
-      <div className="ml-3 flex items-start gap-2.5 border-l-2 border-border/50 py-0.5 pl-3">
-        <span className="mt-px flex size-(--sz-18px) shrink-0 items-center justify-center rounded-full border border-border/70 bg-muted/30 text-muted-foreground/60">
+      <div className="ml-3 flex items-start gap-2.5 border-l-2 border-line/50 py-0.5 pl-3">
+        <span className="mt-px flex size-(--sz-18px) shrink-0 items-center justify-center rounded-full border border-line/70 bg-bg-3/30 text-ink-3/60">
           {icon}
         </span>
         <div className="min-w-0 flex-1 space-y-1">{children}</div>
@@ -3838,15 +3837,15 @@ function IssueChatSystemMessage({ message }: { message: ThreadMessage }) {
     return (
       <IssueChatMetadataRow anchorId={anchorId} icon={rowIcon}>
         <div className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 text-xs">
-          <span className="font-medium text-foreground">{actorName}</span>
-          <span className="text-muted-foreground">
+          <span className="font-medium text-ink">{actorName}</span>
+          <span className="text-ink-3">
             {custom.followUpRequested === true
               ? "requested follow-up"
               : "updated this task"}
           </span>
           <a
             href={anchorId ? `#${anchorId}` : undefined}
-            className="text-xs text-muted-foreground/70 transition-colors hover:text-foreground hover:underline"
+            className="text-xs text-ink-3/70 transition-colors hover:text-ink hover:underline"
           >
             {timeAgo(message.createdAt)}
           </a>
@@ -3854,14 +3853,14 @@ function IssueChatSystemMessage({ message }: { message: ThreadMessage }) {
 
         {statusChange ? (
           <div className="flex flex-wrap items-center gap-1.5 text-xs">
-            <span className="text-(length:--text-nano) font-medium uppercase tracking-wider text-muted-foreground/70">
+            <span className="text-(length:--text-nano) font-medium uppercase tracking-wider text-ink-3/70">
               Status
             </span>
-            <span className="text-muted-foreground">
+            <span className="text-ink-3">
               {humanizeValue(statusChange.from)}
             </span>
-            <ArrowRight className="h-3 w-3 text-muted-foreground/70" />
-            <span className="font-medium text-foreground">
+            <ArrowRight className="h-3 w-3 text-ink-3/70" />
+            <span className="font-medium text-ink">
               {humanizeValue(statusChange.to)}
             </span>
           </div>
@@ -3875,14 +3874,14 @@ function IssueChatSystemMessage({ message }: { message: ThreadMessage }) {
                 isCurrentUser && "justify-end",
               )}
             >
-              <span className="text-(length:--text-nano) font-medium uppercase tracking-wider text-muted-foreground/70">
+              <span className="text-(length:--text-nano) font-medium uppercase tracking-wider text-ink-3/70">
                 Assignee
               </span>
               <AssigneeChip
                 assignee={assigneeChange.from}
                 resolvers={handoffResolvers}
               />
-              <ArrowRight className="h-3 w-3 text-muted-foreground/70" />
+              <ArrowRight className="h-3 w-3 text-ink-3/70" />
               <AssigneeChip
                 assignee={assigneeChange.to}
                 resolvers={handoffResolvers}
@@ -3900,14 +3899,14 @@ function IssueChatSystemMessage({ message }: { message: ThreadMessage }) {
 
         {workspaceChange ? (
           <div className="flex flex-wrap items-center gap-1.5 text-xs">
-            <span className="text-(length:--text-nano) font-medium uppercase tracking-wider text-muted-foreground/70">
+            <span className="text-(length:--text-nano) font-medium uppercase tracking-wider text-ink-3/70">
               Workspace
             </span>
-            <span className="text-muted-foreground">
+            <span className="text-ink-3">
               {formatTimelineWorkspaceLabel(workspaceChange.from)}
             </span>
-            <ArrowRight className="h-3 w-3 text-muted-foreground/70" />
-            <span className="font-medium text-foreground">
+            <ArrowRight className="h-3 w-3 text-ink-3/70" />
+            <span className="font-medium text-ink">
               {formatTimelineWorkspaceLabel(workspaceChange.to)}
             </span>
           </div>
@@ -3930,14 +3929,14 @@ function IssueChatSystemMessage({ message }: { message: ThreadMessage }) {
         <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs">
           <Link
             to={`/agents/${runAgentId}`}
-            className="font-medium text-foreground transition-colors hover:underline"
+            className="font-medium text-ink transition-colors hover:underline"
           >
             {displayedRunAgentName}
           </Link>
-          <span className="text-muted-foreground">run</span>
+          <span className="text-ink-3">run</span>
           <Link
             to={`/agents/${runAgentId}/runs/${runId}`}
-            className="inline-flex items-center rounded-md border border-border bg-accent/40 px-1.5 py-0.5 font-mono text-(length:--text-nano) text-muted-foreground transition-colors hover:bg-accent/60 hover:text-foreground"
+            className="inline-flex items-center rounded-md border border-line bg-bg-3/40 px-1.5 py-0.5 font-mono text-(length:--text-nano) text-ink-3 transition-colors hover:bg-bg-3/60 hover:text-ink"
           >
             {runId.slice(0, 8)}
           </Link>
@@ -3947,7 +3946,7 @@ function IssueChatSystemMessage({ message }: { message: ThreadMessage }) {
           />
           <a
             href={anchorId ? `#${anchorId}` : undefined}
-            className="text-xs text-muted-foreground/70 transition-colors hover:text-foreground hover:underline"
+            className="text-xs text-ink-3/70 transition-colors hover:text-ink hover:underline"
           >
             {timeAgo(message.createdAt)}
           </a>
@@ -4563,11 +4562,11 @@ function IssueChatDeletedComment({
 
   return (
     <div id={anchorId} className="flex items-start gap-2.5 py-1.5">
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-border bg-muted/40 text-muted-foreground">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-line bg-bg-3/40 text-ink-3">
         <Trash2 className="h-3.5 w-3.5" />
       </div>
-      <div className="min-w-0 rounded-md border border-dashed border-border bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
-        <span className="font-medium text-foreground/80">{authorName}</span>
+      <div className="min-w-0 rounded-md border border-dashed border-line bg-bg-3/20 px-3 py-2 text-sm text-ink-3">
+        <span className="font-medium text-ink/80">{authorName}</span>
         <span> deleted this comment</span>
         {deletedDateLabel ? (
           <span className="text-xs"> · {deletedDateLabel}</span>
@@ -5404,10 +5403,10 @@ export const IssueChatComposer = forwardRef<
       data-testid="issue-chat-composer"
       data-pending-work-mode={pendingWorkMode}
       className={cn(
-        "relative rounded-md border border-border/70 bg-background/95 p-(--sz-15px) shadow-(--shadow-extract-4) backdrop-blur transition-(--tp-border-color-background-color-box-shadow) duration-150 supports-[backdrop-filter]:bg-background/85 dark:shadow-(--shadow-extract-5)",
+        "relative rounded-md border border-line/70 bg-bg/95 p-(--sz-15px) shadow-(--shadow-extract-4) backdrop-blur transition-(--tp-border-color-background-color-box-shadow) duration-150 supports-[backdrop-filter]:bg-bg/85 dark:shadow-(--shadow-extract-5)",
         pendingWorkModeMeta.classes.container,
         isDragOver &&
-          "border-primary/45 bg-background shadow-(--shadow-extract-7)",
+          "border-accent/45 bg-bg shadow-(--shadow-extract-7)",
       )}
       onKeyDownCapture={handleComposerKeyDown}
       onDragEnterCapture={handleFileDragEnter}
@@ -5418,17 +5417,17 @@ export const IssueChatComposer = forwardRef<
       {isDragOver && canAcceptFiles ? (
         <div
           data-testid="issue-chat-composer-drop-overlay"
-          className="pointer-events-none absolute inset-2 z-30 flex items-center justify-center rounded-sm border border-dashed border-primary/55 bg-background/75 px-4 py-3 text-center shadow-sm backdrop-blur-(--blur-2px) dark:bg-background/65"
+          className="pointer-events-none absolute inset-2 z-30 flex items-center justify-center rounded-sm border border-dashed border-accent/55 bg-bg/75 px-4 py-3 text-center shadow-sm backdrop-blur-(--blur-2px) dark:bg-bg/65"
         >
-          <div className="flex max-w-md items-center gap-3 rounded-md bg-background/80 px-3 py-2 text-left shadow-sm ring-1 ring-border/60">
-            <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+          <div className="flex max-w-md items-center gap-3 rounded-md bg-bg/80 px-3 py-2 text-left shadow-sm ring-1 ring-line/60">
+            <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-accent/10 text-accent">
               <Paperclip className="h-4 w-4" />
             </span>
             <div className="min-w-0">
-              <div className="text-sm font-medium text-foreground">
+              <div className="text-sm font-medium text-ink">
                 Drop to upload
               </div>
-              <div className="mt-0.5 text-xs leading-5 text-muted-foreground">
+              <div className="mt-0.5 text-xs leading-5 text-ink-3">
                 Images insert into the reply. Other files are added to this
                 task.
               </div>
@@ -5438,7 +5437,7 @@ export const IssueChatComposer = forwardRef<
       ) : null}
 
       {draftRecovery && draftRecovery.sourceKey === sharedDraftKey ? (
-        <p role="status" className="mb-3 text-sm text-muted-foreground">
+        <p role="status" className="mb-3 text-sm text-ink-3">
           Another tab changed the saved draft. This draft is kept separately in this tab.
           {!draftRecovery.persisted ? " Browser storage is unavailable; copy your text before leaving." : " It will be restored if you reload this tab."}
         </p>
@@ -5446,7 +5445,7 @@ export const IssueChatComposer = forwardRef<
       {uncertainSubmission ? (
         <div
           role="alert"
-          className="mb-3 space-y-2 rounded-md border border-border bg-muted p-3 text-sm"
+          className="mb-3 space-y-2 rounded-md border border-line bg-bg-3 p-3 text-sm"
         >
           <p>
             We couldn’t confirm whether this comment was saved. It may already
@@ -5454,7 +5453,7 @@ export const IssueChatComposer = forwardRef<
           </p>
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             size="sm"
             onClick={async () => {
               setReviewError(false);
@@ -5489,7 +5488,7 @@ export const IssueChatComposer = forwardRef<
               </p>
               <Button
                 type="button"
-                variant="outline"
+                variant="secondary"
                 size="sm"
                 onClick={() => {
                   if (draftKey)
@@ -5543,7 +5542,7 @@ export const IssueChatComposer = forwardRef<
 
       {deliveryError ? (
         <p
-          className="text-xs text-destructive"
+          className="text-xs text-bad"
           role="alert"
           data-testid="issue-chat-delivery-error"
         >
@@ -5553,7 +5552,7 @@ export const IssueChatComposer = forwardRef<
 
       {deliveryNotice ? (
         <p
-          className="text-xs text-muted-foreground"
+          className="text-xs text-ink-3"
           role="status"
           data-testid="issue-chat-delivery-notice"
         >
@@ -5562,7 +5561,7 @@ export const IssueChatComposer = forwardRef<
       ) : null}
 
       {composerHint ? (
-        <div className="inline-flex items-center rounded-full border border-border/70 bg-muted/30 px-2 py-1 text-(length:--text-micro) text-muted-foreground">
+        <div className="inline-flex items-center rounded-full border border-line/70 bg-bg-3/30 px-2 py-1 text-(length:--text-micro) text-ink-3">
           {composerHint}
         </div>
       ) : null}
@@ -5570,7 +5569,7 @@ export const IssueChatComposer = forwardRef<
       {composerAttachments.length > 0 ? (
         <div
           data-testid="issue-chat-composer-attachments"
-          className="mb-3 mt-2 space-y-1.5 rounded-md border border-dashed border-border/80 bg-muted/20 p-2"
+          className="mb-3 mt-2 space-y-1.5 rounded-md border border-dashed border-line/80 bg-bg-3/20 p-2"
         >
           {composerAttachments.map((attachment) => {
             const sizeLabel = formatAttachmentSize(attachment.size);
@@ -5588,8 +5587,8 @@ export const IssueChatComposer = forwardRef<
                 className={cn(
                   "flex min-w-0 items-center gap-2 rounded-sm px-2 py-1.5 text-xs",
                   attachment.status === "error"
-                    ? "bg-destructive/10 text-destructive"
-                    : "bg-background/70 text-muted-foreground",
+                    ? "bg-bad/10 text-bad"
+                    : "bg-bg/70 text-ink-3",
                 )}
               >
                 {attachment.status === "uploading" ? (
@@ -5599,15 +5598,15 @@ export const IssueChatComposer = forwardRef<
                 ) : (
                   <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
                 )}
-                <span className="min-w-0 flex-1 truncate font-medium text-foreground">
+                <span className="min-w-0 flex-1 truncate font-medium text-ink">
                   {attachment.name}
                 </span>
                 {sizeLabel ? (
-                  <span className="shrink-0 text-muted-foreground">
+                  <span className="shrink-0 text-ink-3">
                     {sizeLabel}
                   </span>
                 ) : null}
-                <span className="shrink-0 text-muted-foreground">
+                <span className="shrink-0 text-ink-3">
                   {statusLabel}
                 </span>
                 {!attachment.inline || attachment.status !== "attached" ? (
@@ -5686,7 +5685,7 @@ export const IssueChatComposer = forwardRef<
             renderTriggerValue={(option) => {
               if (!option)
                 return (
-                  <span className="text-muted-foreground">Responsible</span>
+                  <span className="text-ink-3">Responsible</span>
                 );
               const agentId = option.id.startsWith("agent:")
                 ? option.id.slice("agent:".length)
@@ -5695,7 +5694,7 @@ export const IssueChatComposer = forwardRef<
               return (
                 <>
                   {agent ? (
-                    <AgentAvatar agent={agent} size={16} className="h-3.5 w-3.5 shrink-0 text-muted-foreground"/>
+                    <AgentAvatar agent={agent} size={16} className="h-3.5 w-3.5 shrink-0 text-ink-3"/>
                   ) : null}
                   <span className="truncate">{option.label}</span>
                 </>
@@ -5711,7 +5710,7 @@ export const IssueChatComposer = forwardRef<
               return (
                 <>
                   {agent ? (
-                    <AgentAvatar agent={agent} size={16} className="h-3.5 w-3.5 shrink-0 text-muted-foreground"/>
+                    <AgentAvatar agent={agent} size={16} className="h-3.5 w-3.5 shrink-0 text-ink-3"/>
                   ) : null}
                   <span className="truncate">{option.label}</span>
                 </>
@@ -5746,7 +5745,7 @@ export const IssueChatComposer = forwardRef<
       </div>
 
       {stopControl.error ? (
-        <p role="alert" className="text-xs text-destructive">
+        <p role="alert" className="text-xs text-bad">
           {stopControl.error}
         </p>
       ) : null}
@@ -6619,7 +6618,7 @@ export function IssueChatThread({
               <button
                 type="button"
                 onClick={handleJumpToLatest}
-                className="text-xs text-muted-foreground transition-colors hover:text-foreground"
+                className="text-xs text-ink-3 transition-colors hover:text-ink"
               >
                 Jump to latest
               </button>
@@ -6641,9 +6640,9 @@ export function IssueChatThread({
                 {messages.length === 0 ? (
                   <Card
                     className={cn(
-                      "block shadow-none text-center text-sm text-muted-foreground",
+                      "block shadow-none text-center text-sm text-ink-3",
                       variant === "embedded"
-                        ? "border-dashed border-border/70 bg-background/60 px-4 py-6"
+                        ? "border-dashed border-line/70 bg-bg/60 px-4 py-6"
                         : "border-dashed px-6 py-10",
                     )}
                   >
@@ -6724,7 +6723,7 @@ export function IssueChatThread({
                                 >
                                   {legacyRecoverySourceIssue.identifier}
                                   {legacyRecoverySourceIssue.title ? (
-                                    <span className="text-muted-foreground">
+                                    <span className="text-ink-3">
                                       {" "}
                                       — {legacyRecoverySourceIssue.title}
                                     </span>
@@ -6800,7 +6799,7 @@ export function IssueChatThread({
             <div
               ref={composerViewportAnchorRef}
               data-testid="issue-chat-composer-dock"
-              className="sticky bottom-(--sz-calc-8) z-20 space-y-2 bg-gradient-to-t from-background via-background/95 to-background/0 pt-6"
+              className="sticky bottom-(--sz-calc-8) z-20 space-y-2 bg-gradient-to-t from-bg via-bg/95 to-bg/0 pt-6"
             >
               <IssueChatComposer
                 ref={composerRef}

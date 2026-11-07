@@ -54,7 +54,7 @@ function ModeLink({ destination, onClick, modes }: {
         // stands in for, so switching between the two alternates moves nothing
         // else on the step.
         "group grid cursor-pointer px-3 py-2 text-left text-sm font-medium",
-        "rounded-md outline-none focus-visible:ring-ring/50 focus-visible:ring-(length:--rad-3)",
+        "rounded-md outline-none focus-visible:ring-focus/50 focus-visible:ring-(length:--rad-3)",
       )}
     >
       {/*
@@ -83,9 +83,9 @@ function ModeLink({ destination, onClick, modes }: {
             // The underline sits on the label, never on the button: the button
             // is as wide as the longer sentence, so an underline there would
             // run past the end of the shorter one.
-            "underline decoration-muted-foreground/40 underline-offset-4",
-            "text-muted-foreground transition-colors",
-            "group-hover:text-foreground group-hover:decoration-foreground/40",
+            "underline decoration-ink-3/40 underline-offset-4",
+            "text-ink-3 transition-colors",
+            "group-hover:text-ink group-hover:decoration-ink/40",
           )}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1, transition: LINK_LABEL_FADE_IN }}

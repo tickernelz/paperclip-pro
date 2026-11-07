@@ -5,27 +5,22 @@
     <title>LLM Wiki UI Harness</title>
     <style>
       :root {
-        --background: oklch(0.145 0 0);
-        --foreground: oklch(0.985 0 0);
-        --card: oklch(0.205 0 0);
-        --primary: oklch(0.985 0 0);
-        --primary-foreground: oklch(0.205 0 0);
-        --secondary: oklch(0.269 0 0);
-        --secondary-foreground: oklch(0.985 0 0);
-        --muted: oklch(0.269 0 0);
-        --muted-foreground: oklch(0.708 0 0);
-        --accent: oklch(0.269 0 0);
-        --accent-foreground: oklch(0.985 0 0);
-        --border: oklch(0.269 0 0);
-        --input: oklch(0.269 0 0);
-        --sidebar: oklch(0.145 0 0);
+        --bg: oklch(0.165 0.006 268);
+        --bg-2: oklch(0.2 0.007 268);
+        --bg-3: oklch(0.24 0.008 268);
+        --line: oklch(0.31 0.009 268);
+        --line-strong: oklch(0.6 0.012 268);
+        --ink: oklch(0.962 0.004 268);
+        --ink-3: oklch(0.715 0.01 268);
+        --accent: oklch(0.73 0.145 277);
+        --accent-ink: oklch(0.17 0.02 277);
       }
       html, body, #root {
         margin: 0;
         padding: 0;
         height: 100%;
-        background: var(--background);
-        color: var(--foreground);
+        background: var(--bg);
+        color: var(--ink);
         font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
         font-size: 14px;
       }
@@ -38,9 +33,9 @@
       .min-h-0 { min-height: 0; }
       .border-r { border-right-width: 1px; border-right-style: solid; }
       .border-t { border-top-width: 1px; border-top-style: solid; }
-      .border-border { border-color: var(--border); }
-      .bg-background { background: var(--background); }
-      .bg-accent { background: var(--accent); }
+      .border-line { border-color: var(--line); }
+      .bg-bg { background: var(--bg); }
+      .bg-bg-3 { background: var(--bg-3); }
       .flex { display: flex; }
       .flex-col { flex-direction: column; }
       .flex-1 { flex: 1; }
@@ -68,9 +63,9 @@
       .font-bold { font-weight: 700; }
       .uppercase { text-transform: uppercase; }
       .tracking-normal { letter-spacing: 0; }
-      .text-foreground { color: var(--foreground); }
-      .text-foreground\/80 { color: color-mix(in oklab, var(--foreground) 80%, transparent); }
-      .text-muted-foreground { color: var(--muted-foreground); }
+      .text-ink { color: var(--ink); }
+      .text-ink\/80 { color: color-mix(in oklab, var(--ink) 80%, transparent); }
+      .text-ink-3 { color: var(--ink-3); }
       .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
       .rounded-md { border-radius: 0.375rem; }
       .transition-colors { transition: background-color 150ms, color 150ms; }

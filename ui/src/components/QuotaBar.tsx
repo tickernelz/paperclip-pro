@@ -33,17 +33,17 @@ export function QuotaBar({
     <div className={cn("space-y-1.5", className)}>
       {/* row header */}
       <div className="flex items-center justify-between gap-2">
-        <span className="text-xs text-muted-foreground">{label}</span>
+        <span className="text-xs text-ink-3">{label}</span>
         <div className="flex items-center gap-2 shrink-0">
           <span className="text-xs font-medium tabular-nums">{leftLabel}</span>
           {rightLabel && (
-            <span className="text-xs text-muted-foreground tabular-nums">{rightLabel}</span>
+            <span className="text-xs text-ink-3 tabular-nums">{rightLabel}</span>
           )}
         </div>
       </div>
 
       {/* track — boxed border, square corners to match the theme */}
-      <div className="relative h-2 w-full border border-border overflow-hidden">
+      <div className="relative h-2 w-full border border-line overflow-hidden">
         {/* fill */}
         <div
           role="progressbar"
@@ -60,7 +60,7 @@ export function QuotaBar({
         {/* deficit notch — 2px wide, sits at the fill tip */}
         {showDeficitNotch && clampedPct > 0 && (
           <div
-            className="absolute inset-y-0 w-(--sz-2px) bg-destructive z-10"
+            className="absolute inset-y-0 w-(--sz-2px) bg-bad z-10"
             style={{ left: `${notchLeft}%` }}
           />
         )}

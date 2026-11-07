@@ -52,7 +52,7 @@ function Section({
 }) {
   return (
     <section className="paperclip-story__frame overflow-hidden">
-      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-5 py-4">
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-line px-5 py-4">
         <div>
           <div className="paperclip-story__label">{eyebrow}</div>
           <h2 className="mt-1 text-xl font-semibold">{title}</h2>
@@ -723,7 +723,7 @@ function RunChatMatrix() {
   return (
     <Section eyebrow="RunChatSurface" title="Live run chat with streaming output, tools, and code blocks">
       <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="rounded-lg border border-border bg-background/70 p-4">
+        <div className="rounded-lg border border-line bg-bg/70 p-4">
           <RunChatSurface
             run={liveRun}
             transcript={liveRunTranscript}
@@ -738,15 +738,15 @@ function RunChatMatrix() {
           </CardHeader>
           <CardContent className="space-y-3 text-sm">
             <div className="flex items-center justify-between gap-3">
-              <span className="text-muted-foreground">Status</span>
+              <span className="text-ink-3">Status</span>
               <Badge variant="secondary">running</Badge>
             </div>
             <div className="flex items-center justify-between gap-3">
-              <span className="text-muted-foreground">Tool calls</span>
+              <span className="text-ink-3">Tool calls</span>
               <span className="font-mono text-xs">rg, apply_patch</span>
             </div>
             <div className="flex items-center justify-between gap-3">
-              <span className="text-muted-foreground">Transcript entries</span>
+              <span className="text-ink-3">Transcript entries</span>
               <span className="font-mono text-xs">{liveRunTranscript.length}</span>
             </div>
           </CardContent>
@@ -760,7 +760,7 @@ function IssueChatMatrix() {
   return (
     <Section eyebrow="IssueChatThread" title="Issue-specific chat with timeline events, linked runs, and live output">
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
-        <div className="rounded-lg border border-border bg-background/70 p-4">
+        <div className="rounded-lg border border-line bg-bg/70 p-4">
           <IssueChatThread
             comments={issueChatComments}
             linkedRuns={issueLinkedRuns}
@@ -854,7 +854,7 @@ function IssueThreadNoticeReview() {
     <div className="paperclip-story">
       <main className="paperclip-story__inner max-w-4xl">
         <Section eyebrow="IssueChatThread" title="Workspace changes and stale disposition notices">
-          <div className="rounded-lg border border-border bg-background/70 p-4">
+          <div className="rounded-lg border border-line bg-bg/70 p-4">
             <IssueChatThread
               comments={issueThreadNoticeReviewComments}
               timelineEvents={issueThreadNoticeReviewTimelineEvents}
@@ -948,7 +948,7 @@ function CompactRecoveryNoticeReview() {
     <div className="paperclip-story">
       <main className="paperclip-story__inner max-w-4xl space-y-6">
         <Section eyebrow="IssueChatThread" title="Compact recovery notices — collapsed">
-          <div className="rounded-lg border border-border bg-background/70 p-4">
+          <div className="rounded-lg border border-line bg-bg/70 p-4">
             <IssueChatThread
               comments={compactRecoveryComments(false)}
               timelineEvents={[]}
@@ -967,7 +967,7 @@ function CompactRecoveryNoticeReview() {
           </div>
         </Section>
         <Section eyebrow="IssueChatThread" title="Compact recovery notices — expanded">
-          <div className="rounded-lg border border-border bg-background/70 p-4">
+          <div className="rounded-lg border border-line bg-bg/70 p-4">
             <IssueChatThread
               comments={compactRecoveryComments(true)}
               timelineEvents={[]}
@@ -997,7 +997,7 @@ function ChatCommentsStories() {
         <section className="paperclip-story__frame p-6">
           <div className="paperclip-story__label">Chat & Comments</div>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight">Threaded work conversations</h1>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-ink-3">
             Fixture-backed coverage for classic issue comments, embedded run chat, and the assistant-style issue chat
             surface. The scenarios use Paperclip operational content with mixed authors, system timeline events,
             markdown, code blocks, @mentions, links, queued comments, tool calls, and streaming run output.

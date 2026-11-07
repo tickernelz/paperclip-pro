@@ -192,7 +192,7 @@ const SHELL: Record<CardTone, string> = {
   success: "border-emerald-400/70",
   partial: "border-amber-400/70",
   failed: "border-rose-400/70",
-  neutral: "border-border/60",
+  neutral: "border-line/60",
 };
 
 const BADGE: Record<CardTone, string> = {
@@ -201,7 +201,7 @@ const BADGE: Record<CardTone, string> = {
   success: "border-emerald-500/60 bg-emerald-500/10 text-emerald-900 dark:bg-emerald-500/15 dark:text-emerald-100",
   partial: "border-amber-500/60 bg-amber-500/10 text-amber-900 dark:bg-amber-500/15 dark:text-amber-100",
   failed: "border-rose-500/60 bg-rose-500/10 text-rose-800 dark:bg-rose-500/15 dark:text-rose-100",
-  neutral: "border-border/70 bg-muted/50 text-muted-foreground",
+  neutral: "border-line/70 bg-bg-3/50 text-ink-3",
 };
 
 function IssueLink({ ref: link }: { ref: DecisionIssueRef | null }) {
@@ -209,7 +209,7 @@ function IssueLink({ ref: link }: { ref: DecisionIssueRef | null }) {
   return (
     <a
       href={link.href}
-      className="inline-flex items-center gap-1 rounded-sm border border-border/70 bg-background px-1.5 py-0.5 text-xs font-medium text-foreground hover:border-sky-500/70 hover:text-sky-700 dark:hover:text-sky-300"
+      className="inline-flex items-center gap-1 rounded-sm border border-line/70 bg-bg px-1.5 py-0.5 text-xs font-medium text-ink hover:border-sky-500/70 hover:text-sky-700 dark:hover:text-sky-300"
     >
       {issueLabel(link, link.id)}
       <ExternalLink className="h-3 w-3" aria-hidden />
@@ -221,7 +221,7 @@ const RESULT_ICON: Record<ResultRow["status"], ReactNode> = {
   executed: <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" aria-hidden />,
   failed: <XCircle className="mt-0.5 h-4 w-4 shrink-0 text-rose-600 dark:text-rose-400" aria-hidden />,
   skipped: <MinusCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" aria-hidden />,
-  claimed: <Loader2 className="mt-0.5 h-4 w-4 shrink-0 animate-spin text-muted-foreground" aria-hidden />,
+  claimed: <Loader2 className="mt-0.5 h-4 w-4 shrink-0 animate-spin text-ink-3" aria-hidden />,
 };
 
 export function DecisionCard({
@@ -320,7 +320,7 @@ export function DecisionCard({
   return (
     <div
       className={cn(
-        "rounded-2xl border bg-background/82 p-4 text-sm",
+        "rounded-2xl border bg-bg/82 p-4 text-sm",
         SHELL[tone],
         dimmed && "opacity-80",
         className,
@@ -329,7 +329,7 @@ export function DecisionCard({
     >
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-2">
-        <h3 className="min-w-0 flex-1 text-base font-semibold text-foreground">{decision.title}</h3>
+        <h3 className="min-w-0 flex-1 text-base font-semibold text-ink">{decision.title}</h3>
         <div className="flex shrink-0 items-center gap-1.5">
           {open && hasCancelTree && (
             <span className={cn("inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-(length:--text-micro) font-semibold uppercase tracking-wide", BADGE.destructive)}>
@@ -343,12 +343,12 @@ export function DecisionCard({
       </div>
 
       {/* Provenance */}
-      <p className="mt-1 text-xs text-muted-foreground">
-        Proposed by <span className="font-medium text-foreground">{originAgentName ?? "an agent"}</span>
+      <p className="mt-1 text-xs text-ink-3">
+        Proposed by <span className="font-medium text-ink">{originAgentName ?? "an agent"}</span>
         {originIssue && (
           <>
             {" "}while running{" "}
-            <a href={originIssue.href} className="font-medium text-primary underline-offset-2 hover:underline">
+            <a href={originIssue.href} className="font-medium text-accent underline-offset-2 hover:underline">
               {issueLabel(originIssue, originIssue.id)}
             </a>
           </>
@@ -360,11 +360,11 @@ export function DecisionCard({
               <span key={id}>
                 {index > 0 && ", "}
                 {ref ? (
-                  <a href={ref.href} className="font-medium text-primary underline-offset-2 hover:underline">
+                  <a href={ref.href} className="font-medium text-accent underline-offset-2 hover:underline">
                     {issueLabel(ref, id)}
                   </a>
                 ) : (
-                  <span className="font-medium text-foreground">{issueLabel(null, id)}</span>
+                  <span className="font-medium text-ink">{issueLabel(null, id)}</span>
                 )}
               </span>
             ))}
@@ -380,7 +380,7 @@ export function DecisionCard({
 
       {/* Body */}
       {decision.body?.trim() && (
-        <div className="mt-3 text-sm leading-6 text-foreground/90">
+        <div className="mt-3 text-sm leading-6 text-ink/90">
           <MarkdownBody>{decision.body}</MarkdownBody>
         </div>
       )}
@@ -417,7 +417,7 @@ export function DecisionCard({
         <div className="mt-3 space-y-2">
           {(decision.inputs ?? []).map((field) => (
             <label key={field.id} className="block">
-              <span className="text-xs font-medium text-muted-foreground">
+              <span className="text-xs font-medium text-ink-3">
                 {field.label}
                 {field.required && <span className="text-rose-500"> *</span>}
               </span>
@@ -426,7 +426,7 @@ export function DecisionCard({
                 onChange={(event) => setInputValues((prev) => ({ ...prev, [field.id]: event.target.value }))}
                 placeholder={field.placeholder ?? undefined}
                 maxLength={field.maxLength ?? undefined}
-                className="mt-1 min-h-16 bg-background text-sm"
+                className="mt-1 min-h-16 bg-bg text-sm"
               />
             </label>
           ))}
@@ -454,11 +454,11 @@ export function DecisionCard({
                   disabled={disabled}
                   onClick={() => runOption(option)}
                   className={cn(
-                    "w-full rounded-sm border px-4 py-3 text-left transition-colors outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring/50",
+                    "w-full rounded-sm border px-4 py-3 text-left transition-colors outline-none focus-visible:border-focus focus-visible:ring-2 focus-visible:ring-focus/50",
                     disabled && "cursor-not-allowed opacity-60",
                     destructive
-                      ? "border-rose-500/70 bg-rose-500/5 text-foreground hover:border-rose-500 hover:bg-rose-500/10"
-                      : "border-border/70 bg-transparent text-foreground hover:border-sky-500/70 hover:bg-sky-500/10",
+                      ? "border-rose-500/70 bg-rose-500/5 text-ink hover:border-rose-500 hover:bg-rose-500/10"
+                      : "border-line/70 bg-transparent text-ink hover:border-sky-500/70 hover:bg-sky-500/10",
                   )}
                 >
                   <div className="flex items-center justify-between gap-2">
@@ -472,7 +472,7 @@ export function DecisionCard({
                     )}
                   </div>
                   {option.description && (
-                    <div className="mt-1 text-sm leading-6 text-muted-foreground">{option.description}</div>
+                    <div className="mt-1 text-sm leading-6 text-ink-3">{option.description}</div>
                   )}
                   {option.effects.length > 0 && (
                     <ul className="mt-2 space-y-0.5">
@@ -481,7 +481,7 @@ export function DecisionCard({
                           key={index}
                           className={cn(
                             "flex items-start gap-1.5 text-xs",
-                            effect.type === "cancel_issue_tree" ? "text-rose-700 dark:text-rose-300" : "text-muted-foreground",
+                            effect.type === "cancel_issue_tree" ? "text-rose-700 dark:text-rose-300" : "text-ink-3",
                           )}
                         >
                           <ArrowRight className="mt-0.5 h-3 w-3 shrink-0" aria-hidden />
@@ -500,7 +500,7 @@ export function DecisionCard({
                     </div>
                     {previewRows && previewRows.length > 0 ? (
                       <>
-                        <p className="mt-1 text-xs text-muted-foreground">
+                        <p className="mt-1 text-xs text-ink-3">
                           {pluralize(previewRows.length, "issue")} will be cancelled:
                         </p>
                         <ul className="mt-1 max-h-40 space-y-0.5 overflow-auto text-xs">
@@ -509,19 +509,19 @@ export function DecisionCard({
                               <Ban className="h-3 w-3 shrink-0 text-rose-500" aria-hidden />
                               <span className="font-medium">{issueLabel(row, row.id)}</span>
                               {row.title && row.identifier && (
-                                <span className="truncate text-muted-foreground">{row.title}</span>
+                                <span className="truncate text-ink-3">{row.title}</span>
                               )}
                             </li>
                           ))}
                         </ul>
                       </>
                     ) : (
-                      <p className="mt-1 text-xs text-muted-foreground">
+                      <p className="mt-1 text-xs text-ink-3">
                         This issue and every sub-issue beneath it will be cancelled.
                       </p>
                     )}
-                    <p className="mt-2 text-xs text-muted-foreground">
-                      Type <span className="font-mono font-medium text-foreground">{confirmToken}</span> to confirm.
+                    <p className="mt-2 text-xs text-ink-3">
+                      Type <span className="font-mono font-medium text-ink">{confirmToken}</span> to confirm.
                     </p>
                     <Input
                       value={confirmText}
@@ -543,7 +543,7 @@ export function DecisionCard({
                         Cancel
                       </Button>
                       <Button
-                        variant="destructive"
+                        variant="danger"
                         size="sm"
                         disabled={busy || confirmText.trim() !== confirmToken}
                         onClick={() => onDecide?.(option.id, inputValues)}
@@ -561,7 +561,7 @@ export function DecisionCard({
           {/* Always-present zero-effect Dismiss (telemetered "no", distinct from expiry) */}
           {!decision.options.some((option) => option.effects.length === 0) && (
             <div className="flex items-center justify-between gap-2 pt-1">
-              <span className="text-xs text-muted-foreground">Not now?</span>
+              <span className="text-xs text-ink-3">Not now?</span>
               <Button variant="ghost" size="sm" disabled={busy} onClick={() => onDismiss?.()}>
                 Dismiss — no effects
               </Button>
@@ -575,8 +575,8 @@ export function DecisionCard({
       {!open && (
         <div className="mt-3 space-y-2">
           {decision.status === "expired" && (
-            <div className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
-              <div className="flex items-center gap-2 font-medium text-foreground">
+            <div className="rounded-lg border border-line/60 bg-bg-3/30 px-3 py-2 text-xs text-ink-3">
+              <div className="flex items-center gap-2 font-medium text-ink">
                 <Clock className="h-4 w-4" aria-hidden /> The decision window closed
               </div>
               <p className="mt-1">
@@ -590,12 +590,12 @@ export function DecisionCard({
             </div>
           )}
           {decision.status === "cancelled" && (
-            <p className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+            <p className="rounded-lg border border-line/60 bg-bg-3/30 px-3 py-2 text-xs text-ink-3">
               This decision was withdrawn by the proposer before a response.
             </p>
           )}
           {decision.status === "decided" && dismissed && (
-            <p className="rounded-lg border border-border/60 bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+            <p className="rounded-lg border border-line/60 bg-bg-3/30 px-3 py-2 text-xs text-ink-3">
               Dismissed — no effects were run.
             </p>
           )}
@@ -607,14 +607,14 @@ export function DecisionCard({
                   return (
                     <li key={row.key} className="flex items-start gap-2">
                       {RESULT_ICON[row.status]}
-                      <span className="min-w-0 flex-1 text-sm text-foreground/90">{row.summary}</span>
+                      <span className="min-w-0 flex-1 text-sm text-ink/90">{row.summary}</span>
                       <IssueLink ref={row.link} />
                     </li>
                   );
                 })}
               </ul>
               {decision.executionStatus !== "succeeded" && (
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-ink-3">
                   Some effects may already have been applied. Review the results before asking the proposer to re-propose.
                 </p>
               )}

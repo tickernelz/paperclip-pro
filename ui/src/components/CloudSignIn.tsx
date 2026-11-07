@@ -21,7 +21,7 @@ export function CloudSignIn({ cloud, returnTo }: { cloud: CloudInstanceHealthSta
   return (
     <div className="mx-auto max-w-xl space-y-4 p-6">
       <h1 className="text-xl font-semibold">Sign in to Paperclip Cloud</h1>
-      <p role="alert" className="text-sm text-muted-foreground">
+      <p role="alert" className="text-sm text-ink-3">
         {entryUrl
           ? "We couldn't restore your session. Continue to Paperclip Cloud to try again."
           : "Cloud sign-in is unavailable for this workspace. Please contact your administrator."}

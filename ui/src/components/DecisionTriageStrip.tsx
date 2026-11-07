@@ -21,6 +21,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import { Chip } from "@/components/ui/chip";
 
 const HOUR_MS = 60 * 60 * 1000;
 const DAY_MS = 24 * HOUR_MS;
@@ -143,7 +144,7 @@ export function DecisionTriageStrip({ item, companyId, agents }: DecisionTriageS
 
   return (
     <div
-      className="flex flex-col gap-2 rounded-lg border border-border bg-muted/30 p-3"
+      className="flex flex-col gap-2 rounded-lg border border-line bg-bg-3/30 p-3"
       data-decision-triage-strip
       // Contained inside the expandable panel; stop the card's expand toggle
       // from firing when the operator interacts with a control.
@@ -155,15 +156,15 @@ export function DecisionTriageStrip({ item, companyId, agents }: DecisionTriageS
         if (!text) return null;
         return (
           <div className="flex items-center gap-1.5 text-xs">
-            <AlarmClock className={cn("h-3.5 w-3.5", overdue ? "text-destructive" : "text-muted-foreground")} />
-            <span className={overdue ? "font-medium text-destructive" : "text-muted-foreground"}>{text}</span>
+            <AlarmClock className={cn("h-3.5 w-3.5", overdue ? "text-bad" : "text-ink-3")} />
+            <span className={overdue ? "font-medium text-bad" : "text-ink-3"}>{text}</span>
           </div>
         );
       })()}
 
       {/* When to decide — the importance signal that drives desk ordering. */}
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs font-medium text-muted-foreground">When to decide</span>
+        <span className="text-xs font-medium text-ink-3">When to decide</span>
         <div className="flex flex-wrap items-center gap-1" role="group" aria-label="When to decide">
           {DECIDE_BY_OPTIONS.map(([value, label]) => (
             <SegmentButton
@@ -186,7 +187,7 @@ export function DecisionTriageStrip({ item, companyId, agents }: DecisionTriageS
               <input
                 type="date"
                 defaultValue={isDatePreset ? decideBy ?? "" : ""}
-                className="rounded-sm border border-border bg-background px-2 py-1 text-xs"
+                className="rounded-sm border border-line bg-bg px-2 py-1 text-xs"
                 onChange={(event) => {
                   if (event.target.value) setDecideBy.mutate(event.target.value);
                 }}
@@ -201,16 +202,16 @@ export function DecisionTriageStrip({ item, companyId, agents }: DecisionTriageS
 
       {/* Queues — current membership as removable chips + add/create. */}
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs font-medium text-muted-foreground">Queues</span>
+        <span className="text-xs font-medium text-ink-3">Queues</span>
         {item.queues.map((queue) => (
           <span
             key={queue.key}
-            className="inline-flex items-center gap-1 rounded-sm border border-border bg-background px-1.5 py-0.5 text-xs"
+            className="inline-flex items-center gap-1 rounded-sm border border-line bg-bg px-1.5 py-0.5 text-xs"
           >
             {queue.title}
             <button
               type="button"
-              className="text-muted-foreground hover:text-destructive disabled:opacity-50"
+              className="text-ink-3 hover:text-bad disabled:opacity-50"
               aria-label={`Remove from ${queue.title}`}
               disabled={pending}
               onClick={() => removeFromQueue.mutate(queue.key)}
@@ -230,12 +231,12 @@ export function DecisionTriageStrip({ item, companyId, agents }: DecisionTriageS
       {/* Snooze + route-to-agent. */}
       <div className="flex flex-wrap items-center gap-2">
         {item.snoozedUntil ? (
-          <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5 text-xs text-ink-3">
             <AlarmClock className="h-3.5 w-3.5" />
             Snoozed until {new Date(item.snoozedUntil).toLocaleString()}
             <button
               type="button"
-              className="text-muted-foreground hover:text-foreground"
+              className="text-ink-3 hover:text-ink"
               disabled={pending}
               onClick={() => setSnooze.mutate(null)}
             >
@@ -245,7 +246,7 @@ export function DecisionTriageStrip({ item, companyId, agents }: DecisionTriageS
         ) : (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button type="button" variant="outline" size="xs" className="h-7 gap-1" disabled={pending}>
+              <Button type="button" variant="secondary" size="xs" className="h-7 gap-1" disabled={pending}>
                 <AlarmClock className="h-3.5 w-3.5" />
                 Snooze
                 <ChevronDown className="h-3 w-3" />
@@ -267,7 +268,7 @@ export function DecisionTriageStrip({ item, companyId, agents }: DecisionTriageS
           disabledReason={!relatedIssueId ? "No linked task to ask about" : undefined}
           onRoute={(agent) => routeToAgent.mutate(agent)}
         />
-        {pending && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" />}
+        {pending && <Loader2 className="h-3.5 w-3.5 animate-spin text-ink-3" />}
       </div>
     </div>
   );
@@ -285,20 +286,12 @@ function SegmentButton({
   children: React.ReactNode;
 }) {
   return (
-    <button
-      type="button"
+    <Chip selected={active}
       disabled={disabled}
       onClick={onClick}
-      aria-pressed={active}
-      className={cn(
-        "inline-flex items-center gap-1 rounded-sm border px-2 py-1 text-xs transition-colors disabled:opacity-50",
-        active
-          ? "border-primary bg-primary/10 font-medium text-primary"
-          : "border-border text-muted-foreground hover:bg-accent/50 hover:text-foreground",
-      )}
     >
       {children}
-    </button>
+    </Chip>
   );
 }
 
@@ -346,7 +339,7 @@ function QueuePicker({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button type="button" variant="outline" size="xs" className="h-7 gap-1" disabled={disabled}>
+        <Button type="button" variant="secondary" size="xs" className="h-7 gap-1" disabled={disabled}>
           <Plus className="h-3.5 w-3.5" />
           Queue
         </Button>
@@ -363,7 +356,7 @@ function QueuePicker({
                 if (event.key === "Escape") setCreating(false);
               }}
               placeholder="New queue name…"
-              className="w-full rounded-sm border border-border bg-background px-2 py-1 text-xs"
+              className="w-full rounded-sm border border-line bg-bg px-2 py-1 text-xs"
             />
             <div className="flex justify-end gap-1">
               <Button type="button" variant="ghost" size="xs" onClick={() => setCreating(false)}>
@@ -378,13 +371,13 @@ function QueuePicker({
         ) : (
           <div className="max-h-64 space-y-0.5 overflow-y-auto">
             {available.length === 0 && (
-              <p className="px-2 py-1.5 text-xs text-muted-foreground">No other queues yet.</p>
+              <p className="px-2 py-1.5 text-xs text-ink-3">No other queues yet.</p>
             )}
             {available.map((queue) => (
               <button
                 key={queue.key}
                 type="button"
-                className="flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-left text-sm text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                className="flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-left text-sm text-ink-3 hover:bg-bg-3/50 hover:text-ink"
                 onClick={() => {
                   onAdd(queue.key);
                   setOpen(false);
@@ -392,7 +385,7 @@ function QueuePicker({
               >
                 <span className="truncate">{queue.title}</span>
                 {queue.itemCount > 0 && (
-                  <span className="ml-2 shrink-0 text-(length:--text-nano) tabular-nums text-muted-foreground">
+                  <span className="ml-2 shrink-0 text-(length:--text-nano) tabular-nums text-ink-3">
                     {queue.itemCount}
                   </span>
                 )}
@@ -401,7 +394,7 @@ function QueuePicker({
             <DropdownMenuSeparatorLike />
             <button
               type="button"
-              className="flex w-full items-center gap-1.5 rounded-sm px-2 py-1.5 text-left text-sm text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+              className="flex w-full items-center gap-1.5 rounded-sm px-2 py-1.5 text-left text-sm text-ink-3 hover:bg-bg-3/50 hover:text-ink"
               onClick={() => setCreating(true)}
             >
               <Plus className="h-3.5 w-3.5" />
@@ -415,7 +408,7 @@ function QueuePicker({
 }
 
 function DropdownMenuSeparatorLike() {
-  return <div className="my-1 h-px bg-border" />;
+  return <div className="my-1 h-px bg-line" />;
 }
 
 /**
@@ -441,7 +434,7 @@ function AskAgentPicker({
       <DropdownMenuTrigger asChild>
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           size="xs"
           className="h-7 gap-1"
           disabled={disabled || active.length === 0}

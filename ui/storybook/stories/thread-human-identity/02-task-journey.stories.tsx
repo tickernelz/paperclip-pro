@@ -17,11 +17,11 @@ function Conversation({ viewer = alexId, fullHistory = false }: { viewer?: strin
     cache.setQueryData([...queryKeys.issues.documents(issueId), "plan"], null);
     return cache;
   });
-  return <QueryClientProvider client={client}><div className="flex h-full min-h-0 flex-col bg-background text-foreground">
+  return <QueryClientProvider client={client}><div className="flex h-full min-h-0 flex-col bg-bg text-ink">
     <TaskChatThread comments={comments} issueId={issueId} issueStatus="todo" currentUserId={viewer}
       userProfileMap={profiles} userLabelMap={new Map([...profiles].map(([id, p]) => [id, p.label]))}
       agentMap={agentMap} enableLiveTranscriptPolling={false}
-      threadHeader={<div className="px-4 pt-4"><p className="text-xs text-muted-foreground">Task conversation</p><h1 className="text-lg font-semibold">Notification names and avatars</h1></div>}
+      threadHeader={<div className="px-4 pt-4"><p className="text-xs text-ink-3">Task conversation</p><h1 className="text-lg font-semibold">Notification names and avatars</h1></div>}
       onAdd={async body => { setComments(rows => [...rows, { ...initialComments[0]!, id: `preview-${rows.length}`, authorUserId: viewer, body, createdAt: new Date(), updatedAt: new Date() }]); }}
     />
   </div></QueryClientProvider>;

@@ -38,18 +38,18 @@ export function PausedComposerPreview({
     <div className={cn("mx-auto flex w-full flex-col gap-8 p-6", mobile ? "max-w-sm" : "max-w-3xl")}>
       {!composerOnly ? (
         <>
-          <div className="flex flex-col gap-3 border-b border-border pb-6">
-            <span className="font-mono text-xs text-muted-foreground">PAP-204</span>
+          <div className="flex flex-col gap-3 border-b border-line pb-6">
+            <span className="font-mono text-xs text-ink-3">PAP-204</span>
             <h1 className="text-xl font-semibold">Polish the task conversation</h1>
           </div>
           <div className="flex justify-end">
-            <p className="max-w-sm rounded-xl bg-muted px-4 py-3 text-sm">
+            <p className="max-w-sm rounded-xl bg-bg-3 px-4 py-3 text-sm">
               Check the composer and make sure follow-ups work well on mobile.
             </p>
           </div>
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2 text-sm">
-              <Bot aria-hidden="true" className="size-4 text-muted-foreground" />
+              <Bot aria-hidden="true" className="size-4 text-ink-3" />
               <span className="font-medium">Alex</span>
             </div>
             <p className="text-sm leading-relaxed">
@@ -60,7 +60,7 @@ export function PausedComposerPreview({
         </>
       ) : null}
       {messages.map((message, index) => (
-        <p key={index} className="self-end rounded-xl bg-muted px-4 py-3 text-sm">{message}</p>
+        <p key={index} className="self-end rounded-xl bg-bg-3 px-4 py-3 text-sm">{message}</p>
       ))}
       <TaskChatComposer
         workMode="standard"

@@ -90,10 +90,10 @@ function handoffIssueInFlight() {
 
 function StoryFrame({ children, title = "Board-visible handoff states" }: { children: ReactNode; title?: string }) {
   return (
-    <main className="min-h-screen bg-background p-4 text-foreground sm:p-8">
+    <main className="min-h-screen bg-bg p-4 text-ink sm:p-8">
       <div className="mx-auto max-w-6xl space-y-5">
         <div>
-          <div className="text-xs font-medium uppercase text-muted-foreground">Successful-run next-step review</div>
+          <div className="text-xs font-medium uppercase text-ink-3">Successful-run next-step review</div>
           <h1 className="mt-1 text-2xl font-semibold">{title}</h1>
         </div>
         {children}
@@ -105,8 +105,8 @@ function StoryFrame({ children, title = "Board-visible handoff states" }: { chil
 function PinnedNoticePanel() {
   const issue = handoffIssue();
   return (
-    <div className="rounded-lg border border-border bg-card p-4">
-      <div className="mb-3 text-sm font-medium text-muted-foreground">A. Pinned needs-next-step notice</div>
+    <div className="rounded-lg border border-line bg-bg-2 p-4">
+      <div className="mb-3 text-sm font-medium text-ink-3">A. Pinned needs-next-step notice</div>
       <IssueBlockedNotice
         issueStatus="in_progress"
         blockers={[]}
@@ -120,8 +120,8 @@ function PinnedNoticePanel() {
 function InFlightNoticePanel() {
   const issue = handoffIssueInFlight();
   return (
-    <div className="rounded-lg border border-border bg-card p-4">
-      <div className="mb-3 text-sm font-medium text-muted-foreground">
+    <div className="rounded-lg border border-line bg-bg-2 p-4">
+      <div className="mb-3 text-sm font-medium text-ink-3">
         A2. Calm in-flight notice (live continuation)
       </div>
       <IssueBlockedNotice
@@ -146,8 +146,8 @@ function HandoffLivenessComparisonPanel() {
 
 function ActivityEventsPanel() {
   return (
-    <div className="rounded-lg border border-border bg-card p-4">
-      <div className="mb-3 text-sm font-medium text-muted-foreground">B. Activity stream events</div>
+    <div className="rounded-lg border border-line bg-bg-2 p-4">
+      <div className="mb-3 text-sm font-medium text-ink-3">B. Activity stream events</div>
       <div className="space-y-2">
         <ActivityExample action={SUCCESSFUL_RUN_HANDOFF_REQUIRED_ACTION} />
         <ActivityExample action="issue.successful_run_handoff_resolved" />
@@ -160,8 +160,8 @@ function ActivityEventsPanel() {
 function IssueCardPanel() {
   const issue = handoffIssue();
   return (
-    <div className="rounded-lg border border-border bg-card p-4">
-      <div className="mb-3 text-sm font-medium text-muted-foreground">C. Issue card indicator</div>
+    <div className="rounded-lg border border-line bg-bg-2 p-4">
+      <div className="mb-3 text-sm font-medium text-ink-3">C. Issue card indicator</div>
       <KanbanBoard
         issues={[
           issue,
@@ -184,8 +184,8 @@ function IssueCardPanel() {
 
 function EscalationCommentPanel() {
   return (
-    <div className="rounded-lg border border-border bg-card p-4">
-      <div className="mb-3 text-sm font-medium text-muted-foreground">D. Escalation comment callout</div>
+    <div className="rounded-lg border border-line bg-bg-2 p-4">
+      <div className="mb-3 text-sm font-medium text-ink-3">D. Escalation comment callout</div>
       <SuccessfulRunHandoffCommentCallout
         text={[
           "Paperclip exhausted the bounded successful-run handoff correction for this issue, but it still has no valid issue disposition.",

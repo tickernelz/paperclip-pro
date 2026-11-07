@@ -11,7 +11,7 @@
  *   Gate 1 — zero hardcoded COLOR LITERALS: hex colors (#fff, #ffffff,
  *     #ffffffff) and rgb()/rgba()/hsl()/hsla()/oklch() value literals
  *     (i.e. NOT a var() reference, and not merely referencing a CSS
- *     variable inside one of those functions, e.g. hsl(var(--primary)) is
+ *     variable inside one of those functions, e.g. hsl(var(--accent)) is
  *     fine — only a literal numeric color argument fails the gate).
  *
  *   Gate 2 — zero VALUE-BEARING arbitrary Tailwind bracket utilities:
@@ -256,6 +256,115 @@ function findLegacyHslVarWrapperIssues(content) {
   }));
 }
 
+const PAINT_PROP_RE = /^(color|background|background-color|font-size|font|fill|stroke|border-color|-webkit-text-fill-color)$/;
+const PROSE_SELECTOR_RE = /mdxeditor|markdown|prose|paperclip-doc|\.cm-|xterm|mermaid|katex|hljs|shiki|ProseMirror|contenteditable/i;
+const STATEFUL_RE = /:hover|:focus|:active|:checked|:disabled|\[data-state|\[aria-(?!label|hidden|live)|\[data-active|\[data-selected/;
+const LAYERLESS_AT_RULES = new Set(["theme", "utility", "keyframes", "font-face", "property", "custom-variant"]);
+
+function splitTopLevel(text, separator) {
+  const parts = [];
+  let depth = 0;
+  let current = "";
+  for (const char of text) {
+    if (char === "(" || char === "[") depth++;
+    else if (char === ")" || char === "]") depth--;
+    if (depth === 0 && separator.test(char)) {
+      parts.push(current);
+      current = "";
+    } else current += char;
+  }
+  parts.push(current);
+  return parts.map((part) => part.trim()).filter(Boolean);
+}
+
+function parseCssBlocks(css) {
+  const source = css.replace(/\/\*[\s\S]*?\*\//g, (comment) => comment.replace(/[^\n]/g, " "));
+  const rules = [];
+  const stack = [];
+  let start = 0;
+  for (let index = 0; index < source.length; index++) {
+    const char = source[index];
+    if (char === "{") {
+      const prelude = source.slice(start, index).split(";").pop().trim();
+      stack.push({ prelude, offset: index, declarations: [] });
+      start = index + 1;
+    } else if (char === ";" && stack.length) {
+      const declaration = source.slice(start, index).trim();
+      const colon = declaration.indexOf(":");
+      if (colon > 0) stack[stack.length - 1].declarations.push(declaration.slice(0, colon).trim());
+      start = index + 1;
+    } else if (char === "}") {
+      const tail = source.slice(start, index).trim();
+      const block = stack.pop();
+      if (block && tail.includes(":")) block.declarations.push(tail.slice(0, tail.indexOf(":")).trim());
+      if (block && !block.prelude.startsWith("@")) {
+        const ancestors = stack.map((entry) => entry.prelude);
+        rules.push({ selector: block.prelude, declarations: block.declarations, ancestors, offset: block.offset });
+      }
+      start = index + 1;
+    }
+  }
+  return rules;
+}
+
+function findCascadeLayerIssues(css) {
+  const issues = [];
+  for (const rule of parseCssBlocks(css)) {
+    const atRules = rule.ancestors.filter((prelude) => prelude.startsWith("@"));
+    if (atRules.some((prelude) => LAYERLESS_AT_RULES.has(prelude.slice(1).split(/\s/)[0]))) continue;
+    const layer = atRules.find((prelude) => prelude.startsWith("@layer "))?.slice(7).trim();
+    const paints = rule.declarations.some((prop) => PAINT_PROP_RE.test(prop));
+    const report = (reason) => issues.push({ index: rule.offset, snippet: `${reason}: ${rule.selector.replace(/\s+/g, " ").slice(0, 120)}` });
+    if (!layer) {
+      report("unlayered rule");
+      continue;
+    }
+    if (layer === "layout" && paints) report("layout layer sets colour or text size");
+    if (!paints) continue;
+    for (const selector of splitTopLevel(rule.selector, /,/)) {
+      const compounds = splitTopLevel(selector.replace(/\s*([>+~])\s*/g, " $1 "), /\s/).filter((part) => !/^[>+~]$/.test(part));
+      if (compounds.length < 2) continue;
+      const last = compounds[compounds.length - 1];
+      if (/^(\*|[a-z][\w-]*)/i.test(last) && !last.includes("::") && !PROSE_SELECTOR_RE.test(selector)) report("container sets colour or text size of a child element");
+      if (layer === "state" && compounds.slice(0, -1).some((part) => STATEFUL_RE.test(part))) report("container state paints a child");
+    }
+  }
+  return issues;
+}
+
+const RAW_BUTTON_FILL_RE = /<button\b[^>]*?className=(?:"[^"]*|\{[^}]*?)(?<![\w:/-])(?:hover:)?bg-(?:accent|bad|ink|(?:red|orange|amber|yellow|green|emerald|teal|sky|blue|indigo|violet|purple|pink|rose)-[5-9]00)(?![\w/-])/g;
+
+function findRawButtonFillIssues(content) {
+  return Array.from(content.matchAll(RAW_BUTTON_FILL_RE), (match) => ({
+    index: match.index,
+    snippet: match[0].replace(/\s+/g, " ").slice(0, 120),
+  }));
+}
+
+const PACKAGE_CSS_IMPORT_RE = /(?:^\s*import\s+(?:[^"'`;]*?\s+from\s+)?|\bimport\s*\(\s*)["'`](?![./]|@\/)([^"'`?]+\.css)(?:\?[^"'`]*)?["'`]/gm;
+const UNLAYERED_CSS_IMPORT_RE = /^\s*@import\s+(?:url\()?["'](?![./])(?!tailwindcss["'])([^"']+)["']\)?(?![^;]*\blayer\()[^;]*;/gm;
+
+function findVendorCssImportIssues() {
+  const files = [];
+  const collect = (dir) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const p = join(dir, entry.name);
+      if (entry.isDirectory()) collect(p);
+      else if (/\.(tsx?|jsx?|css)$/.test(entry.name)) files.push(p);
+    }
+  };
+  collect(UI_SRC);
+  const issues = [];
+  for (const filePath of files.sort()) {
+    const content = readFileSync(filePath, "utf8");
+    const pattern = filePath.endsWith(".css") ? UNLAYERED_CSS_IMPORT_RE : PACKAGE_CSS_IMPORT_RE;
+    for (const match of content.matchAll(pattern)) {
+      issues.push({ file: relPathToPosix(filePath), index: match.index, content, snippet: `package stylesheet outside @layer vendor: ${match[1]}` });
+    }
+  }
+  return issues;
+}
+
 function lineNumberAt(content, index) {
   return content.slice(0, index).split("\n").length;
 }
@@ -264,7 +373,7 @@ function main() {
   const allowlist = loadAllowlist(CSS_PATH);
   const files = listFiles();
 
-  const violations = { gate1: [], gate2: [], gate3: [], gate4: [] };
+  const violations = { gate1: [], gate2: [], gate3: [], gate4: [], gate5: [], gate6: [] };
   let allowlistedSkips = 0;
 
   for (const filePath of files) {
@@ -276,6 +385,9 @@ function main() {
     const g1 = findColorLiteralIssues(content);
     const g2 = findArbitraryBracketIssues(content);
     const g3 = findFontSizeIssues(content);
+    for (const issue of relPathPosix.startsWith("ui/src/components/ui/") ? [] : findRawButtonFillIssues(content)) {
+      violations.gate6.push({ file: relPathPosix, line: lineNumberAt(content, issue.index), snippet: issue.snippet });
+    }
 
     if (allowed) {
       allowlistedSkips += g1.length + g2.length + g3.length;
@@ -302,6 +414,18 @@ function main() {
     });
   }
 
+  for (const issue of findCascadeLayerIssues(tokenLayer)) {
+    violations.gate5.push({
+      file: relPathToPosix(CSS_PATH),
+      line: lineNumberAt(tokenLayer, issue.index),
+      snippet: issue.snippet,
+    });
+  }
+
+  for (const issue of findVendorCssImportIssues()) {
+    violations.gate5.push({ file: issue.file, line: lineNumberAt(issue.content, issue.index), snippet: issue.snippet });
+  }
+
   const totalViolations = Object.values(violations).reduce((total, gate) => total + gate.length, 0);
 
   console.log("check-token-gates summary");
@@ -313,6 +437,8 @@ function main() {
   console.log(`  Gate 2 (arbitrary bracket vals): ${violations.gate2.length === 0 ? "CLEAN" : `${violations.gate2.length} violation(s)`}`);
   console.log(`  Gate 3 (raw font-size):        ${violations.gate3.length === 0 ? "CLEAN" : `${violations.gate3.length} violation(s)`}`);
   console.log(`  Gate 4 (legacy hsl(var())):    ${violations.gate4.length === 0 ? "CLEAN" : `${violations.gate4.length} violation(s)`}`);
+  console.log(`  Gate 5 (cascade layers):       ${violations.gate5.length === 0 ? "CLEAN" : `${violations.gate5.length} violation(s)`}`);
+  console.log(`  Gate 6 (raw action buttons):   ${violations.gate6.length === 0 ? "CLEAN" : `${violations.gate6.length} violation(s)`}`);
 
   if (totalViolations > 0) {
     console.log("\nViolations:\n");

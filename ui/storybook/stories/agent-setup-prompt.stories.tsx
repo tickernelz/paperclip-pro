@@ -36,7 +36,7 @@ const meta = {
     label: "Set up with an agent",
     side: "top",
     align: "start",
-    variant: "outline",
+    variant: "secondary",
   },
   argTypes: {
     variant: { control: "select", options: ["outline", "ghost"] },
@@ -53,23 +53,23 @@ export const Playground: Story = {
   render: (args) => (
     <div className="mx-auto flex min-h-screen w-full max-w-xl flex-col justify-center gap-8 p-6">
       <div className="flex flex-col gap-3">
-        <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">A little help with setup</span>
+        <span className="text-xs font-medium uppercase tracking-widest text-ink-3">A little help with setup</span>
         <h1 className="text-3xl font-semibold tracking-tight">Let your agent handle it.</h1>
-        <p className="max-w-md text-sm leading-relaxed text-muted-foreground">Give your agent the instructions. Get back to what you were building.</p>
+        <p className="max-w-md text-sm leading-relaxed text-ink-3">Give your agent the instructions. Get back to what you were building.</p>
       </div>
-      <div className="flex flex-col gap-6 rounded-xl border border-border bg-card p-6">
+      <div className="flex flex-col gap-6 rounded-xl border border-line bg-bg-2 p-6">
         <div className="flex items-start gap-3">
-          <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-muted">
+          <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-bg-3">
             <img src="/brands/apps/slack.svg" alt="" className="size-6" />
           </div>
           <div className="flex flex-col gap-1">
             <h2 className="text-base font-medium">Connect Slack</h2>
-            <p className="text-sm leading-relaxed text-muted-foreground">Bring your Paperclip agent into your workspace.</p>
+            <p className="text-sm leading-relaxed text-ink-3">Bring your Paperclip agent into your workspace.</p>
           </div>
         </div>
         <div><AgentSetupPrompt {...args} /></div>
       </div>
-      <p className="text-xs text-muted-foreground">Hover the logos. Click once to copy and preview.</p>
+      <p className="text-xs text-ink-3">Hover the logos. Click once to copy and preview.</p>
     </div>
   ),
 };
@@ -93,7 +93,7 @@ export const ClipboardCheck: Story = {
   render: (args) => (
     <div className="mx-auto flex min-h-screen w-full max-w-lg flex-col justify-center gap-4 p-6">
       <div><AgentSetupPrompt {...args} /></div>
-      <label htmlFor="clipboard-check" className="text-sm text-muted-foreground">Click the setup button, then paste here to check the full text.</label>
+      <label htmlFor="clipboard-check" className="text-sm text-ink-3">Click the setup button, then paste here to check the full text.</label>
       <Textarea id="clipboard-check" placeholder="Paste the copied prompt here" rows={8} className="font-mono text-xs" />
     </div>
   ),
@@ -102,8 +102,8 @@ export const QuickAccess: Story = {
   args: { prompt: apiPrompt, description: "Paste this into your agent to configure the API.", variant: "ghost", label: "Agent setup" },
   render: (args) => (
     <div className="flex min-h-screen items-center p-6">
-      <div className="flex w-64 flex-col gap-1 rounded-xl border border-border bg-card p-2">
-        <p className="px-3 py-2 text-xs text-muted-foreground">Quick access</p>
+      <div className="flex w-64 flex-col gap-1 rounded-xl border border-line bg-bg-2 p-2">
+        <p className="px-3 py-2 text-xs text-ink-3">Quick access</p>
         <Button variant="ghost" className="justify-start" disabled><KeyRound />API key</Button>
         <AgentSetupPrompt {...args} />
         <Button variant="ghost" className="justify-start" disabled><BookOpen />Documentation</Button>
@@ -138,7 +138,7 @@ export const AppPlacements: Story = {
     <div className="mx-auto flex min-h-screen w-full max-w-2xl flex-col gap-8 p-6">
       <div className="space-y-2">
         <h1 className="text-2xl font-semibold">Hand it to your agent</h1>
-        <p className="text-sm text-muted-foreground">The same one-click handoff across the app. These are the production controls, with sample data for webhooks and task continuation.</p>
+        <p className="text-sm text-ink-3">The same one-click handoff across the app. These are the production controls, with sample data for webhooks and task continuation.</p>
       </div>
       <section className="space-y-3">
         <h2 className="text-sm font-medium">Slack connection</h2>

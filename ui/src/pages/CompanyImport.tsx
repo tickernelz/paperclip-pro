@@ -68,6 +68,7 @@ import {
   writeStoredImportJob,
 } from "../lib/import-job-watch";
 import { Badge } from "@/components/ui/badge";
+import { Chip } from "@/components/ui/chip";
 
 // ── Import-specific helpers ───────────────────────────────────────────
 
@@ -129,17 +130,17 @@ const ACTION_COLORS: Record<string, string> = {
   update: "text-amber-500 border-amber-500/30",
   overwrite: "text-red-500 border-red-500/30",
   replace: "text-red-500 border-red-500/30",
-  skip: "text-muted-foreground border-border",
-  none: "text-muted-foreground border-border",
+  skip: "text-ink-3 border-line",
+  none: "text-ink-3 border-line",
 };
 
 function FrontmatterCard({ data }: { data: FrontmatterData }) {
   return (
-    <div className="rounded-md border border-border bg-accent/20 px-4 py-3 mb-4">
+    <div className="rounded-md border border-line bg-bg-3/20 px-4 py-3 mb-4">
       <dl className="grid grid-cols-(--gtc-5) gap-x-4 gap-y-1.5 text-sm">
         {Object.entries(data).map(([key, value]) => (
           <div key={key} className="contents">
-            <dt className="text-muted-foreground whitespace-nowrap py-0.5">
+            <dt className="text-ink-3 whitespace-nowrap py-0.5">
               {FRONTMATTER_FIELD_LABELS[key] ?? key}
             </dt>
             <dd className="py-0.5">
@@ -148,7 +149,7 @@ function FrontmatterCard({ data }: { data: FrontmatterData }) {
                   {value.map((item) => (
                     <span
                       key={item}
-                      className="inline-flex items-center rounded-md border border-border bg-background px-2 py-0.5 text-xs"
+                      className="inline-flex items-center rounded-md border border-line bg-bg px-2 py-0.5 text-xs"
                     >
                       {item}
                     </span>
@@ -238,7 +239,7 @@ function ImportPreviewPane({
 
   return (
     <div className="min-w-0">
-      <div className="border-b border-border px-5 py-3">
+      <div className="border-b border-line px-5 py-3">
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0 flex items-center gap-2">
             <span className="truncate font-mono text-sm">{selectedFile}</span>
@@ -267,15 +268,15 @@ function ImportPreviewPane({
         ) : isMarkdown ? (
           <MarkdownBody resolveImageSrc={resolveImageSrc} softBreaks={false} linkIssueReferences={false}>{textContent ?? ""}</MarkdownBody>
         ) : imageSrc ? (
-          <div className="flex min-h-(--sz-520px) items-center justify-center rounded-lg border border-border bg-accent/10 p-6">
+          <div className="flex min-h-(--sz-520px) items-center justify-center rounded-lg border border-line bg-bg-3/10 p-6">
             <img src={imageSrc} alt={selectedFile} className="max-h-(--sz-480px) max-w-full object-contain" />
           </div>
         ) : textContent !== null ? (
-          <pre className="overflow-x-auto whitespace-pre-wrap break-words border-0 bg-transparent p-0 font-mono text-sm text-foreground">
+          <pre className="overflow-x-auto whitespace-pre-wrap break-words border-0 bg-transparent p-0 font-mono text-sm text-ink">
             <code>{textContent}</code>
           </pre>
         ) : (
-          <div className="rounded-lg border border-border bg-accent/10 px-4 py-3 text-sm text-muted-foreground">
+          <div className="rounded-lg border border-line bg-bg-3/10 px-4 py-3 text-sm text-ink-3">
             Binary asset preview is not available for this file type.
           </div>
         )}
@@ -452,16 +453,16 @@ function ConflictResolutionList({
 
   return (
     <div className="mx-5 mt-3">
-      <div className="rounded-md border border-border">
-        <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
+      <div className="rounded-md border border-line">
+        <div className="flex items-center gap-2 border-b border-line px-4 py-2.5">
           <h3 className="text-sm font-medium">
             Renames
           </h3>
-          <span className="text-xs text-muted-foreground">
+          <span className="text-xs text-ink-3">
             {conflicts.length} item{conflicts.length === 1 ? "" : "s"}
           </span>
         </div>
-        <div className="divide-y divide-border">
+        <div className="divide-y divide-line">
           {conflicts.map((item) => {
             const isSkipped = skippedSlugs.has(item.slug);
             const isConfirmed = confirmedSlugs.has(item.slug);
@@ -481,8 +482,8 @@ function ConflictResolutionList({
                   className={cn(
                     "shrink-0 rounded-md border px-2.5 py-1 text-xs transition-colors",
                     isSkipped
-                      ? "border-foreground bg-accent text-foreground"
-                      : "border-border text-muted-foreground hover:bg-accent/50",
+                      ? "border-ink bg-bg-3 text-ink"
+                      : "border-line text-ink-3 hover:bg-bg-3/50",
                   )}
                   onClick={() => onToggleSkip(item.slug, item.filePath)}
                 >
@@ -492,7 +493,7 @@ function ConflictResolutionList({
                 <Badge variant="outline" className={cn(
                   "text-(length:--text-nano) uppercase tracking-wide",
                   isSkipped
-                    ? "text-muted-foreground border-border"
+                    ? "text-ink-3 border-line"
                     : isConfirmed
                       ? "text-emerald-500 border-emerald-500/30"
                       : "text-amber-500 border-amber-500/30",
@@ -502,21 +503,21 @@ function ConflictResolutionList({
 
                 <span className={cn(
                   "shrink-0 font-mono text-xs",
-                  isSkipped ? "text-muted-foreground line-through" : "text-muted-foreground",
+                  isSkipped ? "text-ink-3 line-through" : "text-ink-3",
                 )}>
                   {item.originalName}
                 </span>
 
                 {!isSkipped && (
                   <>
-                    <ArrowRight className="h-3 w-3 shrink-0 text-muted-foreground" />
+                    <ArrowRight className="h-3 w-3 shrink-0 text-ink-3" />
                     {isConfirmed ? (
                       <span className="min-w-0 flex-1 font-mono text-xs text-emerald-500">
                         {currentName}
                       </span>
                     ) : (
                       <input
-                        className="min-w-0 flex-1 rounded-md border border-border bg-transparent px-2 py-1 font-mono text-xs outline-none focus:border-foreground"
+                        className="min-w-0 flex-1 rounded-md border border-line bg-transparent px-2 py-1 font-mono text-xs outline-none focus:border-ink"
                         value={currentName}
                         onChange={(e) => onRename(item.slug, e.target.value)}
                       />
@@ -526,14 +527,7 @@ function ConflictResolutionList({
 
                 {/* Confirm rename button on the right */}
                 {!isSkipped && (
-                  <button
-                    type="button"
-                    className={cn(
-                      "ml-auto shrink-0 rounded-md border px-2.5 py-1 text-xs transition-colors inline-flex items-center gap-1.5",
-                      isConfirmed
-                        ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-500"
-                        : "border-border text-muted-foreground hover:bg-accent/50",
-                    )}
+                  <Chip selected={isConfirmed} className="ml-auto shrink-0"
                     onClick={() => onToggleConfirm(item.slug)}
                   >
                     {isConfirmed ? (
@@ -544,7 +538,7 @@ function ConflictResolutionList({
                     ) : (
                       "confirm rename"
                     )}
-                  </button>
+                  </Chip>
                 )}
               </div>
             );
@@ -624,14 +618,14 @@ function AdapterPickerList({
 
   return (
     <div className="mx-5 mt-3">
-      <div className="rounded-md border border-border">
-        <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
+      <div className="rounded-md border border-line">
+        <div className="flex items-center gap-2 border-b border-line px-4 py-2.5">
           <h3 className="text-sm font-medium">Adapters</h3>
-          <span className="text-xs text-muted-foreground">
+          <span className="text-xs text-ink-3">
             {agents.length} agent{agents.length === 1 ? "" : "s"}
           </span>
         </div>
-        <div className="divide-y divide-border">
+        <div className="divide-y divide-line">
           {agents.map((agent) => {
             const selectedType =
               adapterOverrides[agent.slug] ?? agent.fallbackAdapterType ?? agent.adapterChoice;
@@ -649,12 +643,12 @@ function AdapterPickerList({
                   )}>
                     agent
                   </Badge>
-                  <span className="shrink-0 font-mono text-xs text-muted-foreground">
+                  <span className="shrink-0 font-mono text-xs text-ink-3">
                     {agent.name}
                   </span>
-                  <ArrowRight className="h-3 w-3 shrink-0 text-muted-foreground" />
+                  <ArrowRight className="h-3 w-3 shrink-0 text-ink-3" />
                   <select
-                    className="min-w-0 flex-1 rounded-md border border-border bg-transparent px-2 py-1 text-xs outline-none focus:border-foreground"
+                    className="min-w-0 flex-1 rounded-md border border-line bg-transparent px-2 py-1 text-xs outline-none focus:border-ink"
                     value={selectedType}
                     onChange={(e) => onChangeAdapter(agent.slug, e.target.value)}
                   >
@@ -669,8 +663,8 @@ function AdapterPickerList({
                     className={cn(
                       "ml-auto shrink-0 rounded-md border px-2.5 py-1 text-xs transition-colors inline-flex items-center gap-1.5",
                       isExpanded
-                        ? "border-foreground bg-accent text-foreground"
-                        : "border-border text-muted-foreground hover:bg-accent/50",
+                        ? "border-ink bg-bg-3 text-ink"
+                        : "border-line text-ink-3 hover:bg-bg-3/50",
                     )}
                     onClick={() => onToggleExpand(agent.slug)}
                   >
@@ -687,7 +681,7 @@ function AdapterPickerList({
                   </div>
                 )}
                 {isExpanded && (
-                  <div className="border-t border-border bg-accent/10 px-4 py-3 space-y-3">
+                  <div className="border-t border-line bg-bg-3/10 px-4 py-3 space-y-3">
                     <AgentConfigForm
                       mode="create"
                       values={vals}
@@ -1717,13 +1711,13 @@ export function CompanyImport() {
       <div className="max-w-6xl space-y-4 px-5 py-5">
         <div>
           <h2 className="text-base font-semibold">Import completed</h2>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-xs text-ink-3 mt-1">
             {importOutcome.companyName
-              ? <>The import finished and <span className="font-medium text-foreground">{importOutcome.companyName}</span> is ready. Its detailed summary is no longer available.</>
+              ? <>The import finished and <span className="font-medium text-ink">{importOutcome.companyName}</span> is ready. Its detailed summary is no longer available.</>
               : "The import finished and your organization is ready. Its detailed summary is no longer available, but the organization has been added — select it from the organization switcher to view it."}
           </p>
           {importOutcome.pausedAutomations ? (
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-xs text-ink-3 mt-1">
               Imported agents arrived paused — resume them from the company's Agents page so assigned tasks can start.
             </p>
           ) : null}
@@ -1732,7 +1726,7 @@ export function CompanyImport() {
           <div className="flex flex-wrap items-center gap-2">
             <Button
               size="sm"
-              variant="outline"
+              variant="secondary"
               data-testid="import-expired-open-company"
               // Force a fresh dashboard load so newly imported agents are
               // immediately visible (same reason as the full-outcome CTA).
@@ -1757,7 +1751,7 @@ export function CompanyImport() {
       <div className="max-w-6xl space-y-4 px-5 py-5">
         <div>
           <h2 className="text-base font-semibold">Import complete</h2>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-xs text-ink-3 mt-1">
             {result.company.name}: {result.agents.length} agent{result.agents.length === 1 ? "" : "s"},{" "}
             {skillResults.length} skill{skillResults.length === 1 ? "" : "s"},{" "}
             {result.projects.length} project{result.projects.length === 1 ? "" : "s"}, and{" "}
@@ -1766,17 +1760,17 @@ export function CompanyImport() {
         </div>
 
         {skillResults.length > 0 && (
-          <div className="rounded-md border border-border">
-            <div className="border-b border-border px-4 py-2.5">
+          <div className="rounded-md border border-line">
+            <div className="border-b border-line px-4 py-2.5">
               <h3 className="text-sm font-medium">Skill import results</h3>
             </div>
-            <div className="divide-y divide-border">
+            <div className="divide-y divide-line">
               {skillResults.map((skill) => (
                 <div key={`${skill.originalKey}:${skill.id}`} className="flex items-center gap-3 px-4 py-2.5 text-sm">
                   <span className="min-w-0 flex-1 truncate">{skill.originalSlug}</span>
-                  <span className="shrink-0 text-xs text-muted-foreground">{skill.action}</span>
+                  <span className="shrink-0 text-xs text-ink-3">{skill.action}</span>
                   {skill.slug !== skill.originalSlug && (
-                    <span className="shrink-0 text-xs text-muted-foreground">as {skill.slug}</span>
+                    <span className="shrink-0 text-xs text-ink-3">as {skill.slug}</span>
                   )}
                 </div>
               ))}
@@ -1793,12 +1787,12 @@ export function CompanyImport() {
         )}
 
         {activationItems.length > 0 && (
-          <div className="rounded-md border border-border">
-            <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
+          <div className="rounded-md border border-line">
+            <div className="flex items-center gap-2 border-b border-line px-4 py-2.5">
               <h3 className="text-sm font-medium">Activate imported agents and routines</h3>
-              <span className="text-xs text-muted-foreground">imported paused</span>
+              <span className="text-xs text-ink-3">imported paused</span>
             </div>
-            <div className="divide-y divide-border">
+            <div className="divide-y divide-line">
               {activationItems.map((item) => {
                 const isActivated = activatedKeys.has(item.key);
                 const failure = activationFailures[item.key];
@@ -1809,7 +1803,7 @@ export function CompanyImport() {
                       checked={activationChecked.has(item.key)}
                       disabled={isActivated || isActivating}
                       onChange={() => handleToggleActivationItem(item.key)}
-                      className="accent-foreground"
+                      className="accent-ink"
                     />
                     <Badge variant="outline" className={cn(
                       "text-(length:--text-nano) uppercase tracking-wide",
@@ -1823,15 +1817,15 @@ export function CompanyImport() {
                     {isActivated ? (
                       <span className="shrink-0 text-xs text-emerald-500">activated</span>
                     ) : failure ? (
-                      <span className="shrink-0 text-xs text-destructive">failed: {failure}</span>
+                      <span className="shrink-0 text-xs text-bad">failed: {failure}</span>
                     ) : (
-                      <span className="shrink-0 text-xs text-muted-foreground">paused</span>
+                      <span className="shrink-0 text-xs text-ink-3">paused</span>
                     )}
                   </label>
                 );
               })}
             </div>
-            <div className="flex justify-end border-t border-border px-4 py-2.5">
+            <div className="flex justify-end border-t border-line px-4 py-2.5">
               <Button
                 size="sm"
                 onClick={() => void handleActivateSelected()}
@@ -1844,7 +1838,7 @@ export function CompanyImport() {
         )}
 
         {importOutcome.pausedAutomations ? (
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             Anything left paused here stays visible on the company's Agents and Routines pages, which offer the same resume actions — nothing is lost if you leave this page.
           </p>
         ) : null}
@@ -1853,7 +1847,7 @@ export function CompanyImport() {
         <div className="flex flex-wrap items-center gap-2">
           <Button
             size="sm"
-            variant="outline"
+            variant="secondary"
             onClick={() => window.location.assign(dashboardPath)}
           >
             Go to dashboard
@@ -1871,13 +1865,13 @@ export function CompanyImport() {
       <div className="max-w-6xl space-y-4 px-5 py-5">
         <div>
           <h2 className="text-base font-semibold">Resume watching import</h2>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-xs text-ink-3 mt-1">
             An import you started earlier is still running on the server.
           </p>
         </div>
-        <div className="flex items-start gap-2 rounded-md border border-border bg-muted/30 px-3 py-2.5">
-          <Loader2 className="mt-0.5 h-3.5 w-3.5 shrink-0 animate-spin text-muted-foreground" />
-          <p className="text-xs text-muted-foreground">
+        <div className="flex items-start gap-2 rounded-md border border-line bg-bg-3/30 px-3 py-2.5">
+          <Loader2 className="mt-0.5 h-3.5 w-3.5 shrink-0 animate-spin text-ink-3" />
+          <p className="text-xs text-ink-3">
             Import running on the server — safe to keep waiting; reconnecting won&apos;t lose it.
           </p>
         </div>
@@ -1892,10 +1886,10 @@ export function CompanyImport() {
   return (
     <div className="max-w-6xl">
       {/* Source form section */}
-      <div className="border-b border-border px-5 py-5 space-y-4">
+      <div className="border-b border-line px-5 py-5 space-y-4">
         <div>
           <h2 className="text-base font-semibold">Import source</h2>
-          <p className="text-xs text-muted-foreground mt-1">
+          <p className="text-xs text-ink-3 mt-1">
             Choose a GitHub repo or upload a local Paperclip zip package.
           </p>
         </div>
@@ -1913,8 +1907,8 @@ export function CompanyImport() {
               className={cn(
                 "rounded-md border px-3 py-2 text-left text-sm transition-colors",
                 sourceMode === key
-                  ? "border-foreground bg-accent"
-                  : "border-border hover:bg-accent/50",
+                  ? "border-ink bg-bg-3"
+                  : "border-line hover:bg-bg-3/50",
                 importMutation.isPending && "cursor-not-allowed opacity-50",
               )}
               disabled={importMutation.isPending}
@@ -1932,7 +1926,7 @@ export function CompanyImport() {
         </div>
 
         {sourceMode === "local" ? (
-          <div className="rounded-md border border-dashed border-border px-3 py-3">
+          <div className="rounded-md border border-dashed border-line px-3 py-3">
             <input
               ref={packageInputRef}
               type="file"
@@ -1943,14 +1937,14 @@ export function CompanyImport() {
             <div className="flex flex-wrap items-center gap-2">
               <Button
                 size="sm"
-                variant="outline"
+                variant="secondary"
                 onClick={() => packageInputRef.current?.click()}
                 disabled={importMutation.isPending}
               >
                 Choose zip
               </Button>
               {localPackage && (
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs text-ink-3">
                   {localPackage.name} with{" "}
                   {Object.keys(localPackage.files).length} file
                   {Object.keys(localPackage.files).length === 1 ? "" : "s"}
@@ -1959,7 +1953,7 @@ export function CompanyImport() {
               )}
             </div>
             {!localPackage && (
-              <p className="mt-2 text-xs text-muted-foreground">
+              <p className="mt-2 text-xs text-ink-3">
                 {localZipHelpText}
               </p>
             )}
@@ -1970,7 +1964,7 @@ export function CompanyImport() {
             hint="Repo tree path or blob URL to COMPANY.md (e.g. github.com/owner/repo/tree/main/company)."
           >
             <input
-              className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
+              className="w-full rounded-md border border-line bg-transparent px-2.5 py-1.5 text-sm outline-none"
               type="text"
               value={importUrl}
               placeholder="https://github.com/owner/repo/tree/main/company"
@@ -1985,7 +1979,7 @@ export function CompanyImport() {
 
         <Field label="Target" hint="Import into this organization or create a new one.">
           <select
-            className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
+            className="w-full rounded-md border border-line bg-transparent px-2.5 py-1.5 text-sm outline-none"
             value={targetMode}
             disabled={importMutation.isPending}
             onChange={(e) => {
@@ -2006,7 +2000,7 @@ export function CompanyImport() {
             hint="Optional override. Leave blank to use the package name."
           >
             <input
-              className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
+              className="w-full rounded-md border border-line bg-transparent px-2.5 py-1.5 text-sm outline-none"
               type="text"
               value={newCompanyName}
               onChange={(e) => {
@@ -2023,7 +2017,7 @@ export function CompanyImport() {
           hint="Board imports can rename, skip, or replace matching organization content."
         >
           <select
-            className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
+            className="w-full rounded-md border border-line bg-transparent px-2.5 py-1.5 text-sm outline-none"
             value={collisionStrategy}
             disabled={importMutation.isPending}
             onChange={(e) => {
@@ -2040,7 +2034,7 @@ export function CompanyImport() {
         <div className="flex flex-wrap items-center gap-2">
           <Button
             size="sm"
-            variant="outline"
+            variant="secondary"
             onClick={() => previewMutation.mutate(previewGenerationRef.current)}
             disabled={
               previewMutation.isPending || importMutation.isPending || !hasSource
@@ -2049,20 +2043,20 @@ export function CompanyImport() {
             {previewMutation.isPending ? "Previewing..." : "Preview import"}
           </Button>
           {!hasSource && !previewMutation.isPending && (
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs text-ink-3">
               Choose a package above to enable the preview.
             </span>
           )}
           {importMutation.isPending && (
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs text-ink-3">
               Import in progress — the package and settings unlock when it finishes.
             </span>
           )}
         </div>
         {previewMutation.isPending && (
-          <div className="mt-3 flex items-start gap-2 rounded-md border border-border bg-muted/30 px-3 py-2.5">
-            <Loader2 className="mt-0.5 h-3.5 w-3.5 shrink-0 animate-spin text-muted-foreground" />
-            <p className="text-xs text-muted-foreground">
+          <div className="mt-3 flex items-start gap-2 rounded-md border border-line bg-bg-3/30 px-3 py-2.5">
+            <Loader2 className="mt-0.5 h-3.5 w-3.5 shrink-0 animate-spin text-ink-3" />
+            <p className="text-xs text-ink-3">
               {transferProgress
                 ? `${formatTransferProgress(transferProgress)} An interrupted upload resumes from the finished parts.`
                 : `Uploading and analyzing your package${
@@ -2074,8 +2068,8 @@ export function CompanyImport() {
         {previewMutation.isError &&
           !previewMutation.isPending &&
           previewMutation.variables === previewGenerationRef.current && (
-          <div className="mt-3 rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2.5">
-            <p className="text-xs text-destructive">
+          <div className="mt-3 rounded-md border border-bad/40 bg-bad/5 px-3 py-2.5">
+            <p className="text-xs text-bad">
               Preview failed:{" "}
               {previewMutation.error instanceof Error
                 ? previewMutation.error.message
@@ -2090,12 +2084,12 @@ export function CompanyImport() {
       {importPreview && (
         <>
           {/* Sticky import action bar */}
-          <div className="sticky top-0 z-10 border-b border-border bg-background px-5 py-3">
+          <div className="sticky top-0 z-10 border-b border-line bg-bg px-5 py-3">
             <div className="flex flex-wrap items-center gap-4 text-sm">
               <span className="font-medium">
                 Import preview
               </span>
-              <span className="text-muted-foreground">
+              <span className="text-ink-3">
                 {selectedCount} / {totalFiles} file{totalFiles === 1 ? "" : "s"} selected
               </span>
               {conflicts.length > 0 && (
@@ -2104,7 +2098,7 @@ export function CompanyImport() {
                 </span>
               )}
               {importPreview.errors.length > 0 && (
-                <span className="text-destructive">
+                <span className="text-bad">
                   {importPreview.errors.length} error{importPreview.errors.length === 1 ? "" : "s"}
                 </span>
               )}
@@ -2136,7 +2130,7 @@ export function CompanyImport() {
 
           {/* Import button — below renames */}
           <div className="mx-5 mt-3 flex flex-wrap items-center justify-end gap-3">
-            <label className="flex items-center gap-2 text-xs text-muted-foreground">
+            <label className="flex items-center gap-2 text-xs text-ink-3">
               <input
                 type="checkbox"
                 checked={pauseAutomations}
@@ -2144,7 +2138,7 @@ export function CompanyImport() {
                   setPauseAutomations(e.target.checked);
                   resetMutationState();
                 }}
-                className="accent-foreground"
+                className="accent-ink"
               />
               Start imported agents and routines paused
             </label>
@@ -2160,9 +2154,9 @@ export function CompanyImport() {
             </Button>
           </div>
           {importMutation.isPending && (
-            <div className="mx-5 mt-3 flex items-start gap-2 rounded-md border border-border bg-muted/30 px-3 py-2.5">
-              <Loader2 className="mt-0.5 h-3.5 w-3.5 shrink-0 animate-spin text-muted-foreground" />
-              <p className="text-xs text-muted-foreground">
+            <div className="mx-5 mt-3 flex items-start gap-2 rounded-md border border-line bg-bg-3/30 px-3 py-2.5">
+              <Loader2 className="mt-0.5 h-3.5 w-3.5 shrink-0 animate-spin text-ink-3" />
+              <p className="text-xs text-ink-3">
                 {transferProgress
                   ? `${formatTransferProgress(transferProgress)} An interrupted upload resumes from the finished parts.`
                   : "Import running on the server — safe to keep waiting; reconnecting won't lose it. Large packages can take several minutes."}
@@ -2170,8 +2164,8 @@ export function CompanyImport() {
             </div>
           )}
           {importMutation.isError && !importMutation.isPending && (
-            <div className="mx-5 mt-3 rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2.5">
-              <p className="text-xs text-destructive">
+            <div className="mx-5 mt-3 rounded-md border border-bad/40 bg-bad/5 px-3 py-2.5">
+              <p className="text-xs text-bad">
                 Import failed:{" "}
                 {importMutation.error instanceof Error
                   ? importMutation.error.message
@@ -2193,17 +2187,17 @@ export function CompanyImport() {
 
           {/* Errors */}
           {importPreview.errors.length > 0 && (
-            <div className="mx-5 mt-3 rounded-md border border-destructive/30 bg-destructive/5 px-4 py-3">
+            <div className="mx-5 mt-3 rounded-md border border-bad/30 bg-bad/5 px-4 py-3">
               {importPreview.errors.map((e) => (
-                <div key={e} className="text-xs text-destructive">{e}</div>
+                <div key={e} className="text-xs text-bad">{e}</div>
               ))}
             </div>
           )}
 
           {/* Two-column layout */}
           <div className="grid gap-4 xl:h-(--sz-calc-31) xl:grid-cols-(--gtc-25) xl:gap-0">
-            <aside className="flex max-h-(--sz-24rem) flex-col overflow-hidden border-b border-border xl:max-h-none xl:border-b-0 xl:border-r">
-              <div className="border-b border-border px-4 py-3 shrink-0">
+            <aside className="flex max-h-(--sz-24rem) flex-col overflow-hidden border-b border-line xl:max-h-none xl:border-b-0 xl:border-r">
+              <div className="border-b border-line px-4 py-3 shrink-0">
                 <h2 className="text-base font-semibold">Package files</h2>
               </div>
               <div className="flex-1 overflow-y-auto">

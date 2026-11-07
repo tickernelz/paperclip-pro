@@ -1210,7 +1210,7 @@ export function TaskChatComposer({
     <Button
       type="button"
       size="sm"
-      variant="outline"
+      variant="secondary"
       disabled={takeoverBusy}
       onClick={skipTakeover}
     >
@@ -1230,7 +1230,7 @@ export function TaskChatComposer({
       {takeoverCollapsed && takeover ? (
         <button
           type="button"
-          className="flex min-h-11 w-full min-w-0 items-center gap-2 rounded-xl border border-border bg-card px-3 text-left text-(length:--text-compact) shadow-sm dark:border-0 dark:bg-muted dark:shadow-none"
+          className="flex min-h-11 w-full min-w-0 items-center gap-2 rounded-xl border border-line bg-bg-2 px-3 text-left text-(length:--text-compact) shadow-sm dark:border-0 dark:bg-bg-3 dark:shadow-none"
           aria-expanded={false}
           aria-label={`Show ${takeover.label}`}
           onMouseDown={(event) => event.preventDefault()}
@@ -1240,22 +1240,22 @@ export function TaskChatComposer({
           }}
           data-testid="task-chat-composer-takeover-summary"
         >
-          <CircleHelp className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
-          <span className="min-w-0 flex-1 truncate font-medium text-foreground">
+          <CircleHelp className="h-4 w-4 shrink-0 text-ink-3" aria-hidden />
+          <span className="min-w-0 flex-1 truncate font-medium text-ink">
             {takeover.label}
           </span>
           {takeover.pendingCount > 1 ? (
-            <span className="shrink-0 text-xs text-muted-foreground">
+            <span className="shrink-0 text-xs text-ink-3">
               {takeover.pendingCount} pending
             </span>
           ) : null}
-          <ChevronUp className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
+          <ChevronUp className="h-4 w-4 shrink-0 text-ink-3" aria-hidden />
         </button>
       ) : null}
       {takeoverVisible && takeover ? (
         <section
           className={cn(
-            "relative rounded-xl border border-border bg-card p-(--sz-18px) shadow-sm dark:border-0 dark:bg-muted dark:shadow-none",
+            "relative rounded-xl border border-line bg-bg-2 p-(--sz-18px) shadow-sm dark:border-0 dark:bg-bg-3 dark:shadow-none",
             mobile
               ? "flex max-h-(--tc-interaction-card-max-h-mobile) flex-col overflow-hidden p-(--tc-mobile-card-padding)"
               : "max-h-(--tc-interaction-card-max-h) overflow-y-auto scrollbar-auto-hide",
@@ -1280,7 +1280,7 @@ export function TaskChatComposer({
           >
             <div className="min-w-0 flex-1">
               {!takeoverHeaderClaimed && !takeover.hideLabel ? (
-                <strong className="block truncate text-sm font-medium text-foreground">
+                <strong className="block truncate text-sm font-medium text-ink">
                   {takeover.label}
                 </strong>
               ) : null}
@@ -1311,7 +1311,6 @@ export function TaskChatComposer({
                 type="button"
                 size="icon-xs"
                 variant="ghost"
-                className="text-muted-foreground hover:text-foreground"
                 aria-label="Hide"
                 aria-expanded
                 data-testid="task-chat-composer-takeover-hide"
@@ -1326,7 +1325,6 @@ export function TaskChatComposer({
                 type="button"
                 size="icon-xs"
                 variant="ghost"
-                className="text-muted-foreground hover:text-foreground"
                 aria-label={`Dismiss ${takeover.label}`}
                 disabled={takeoverBusy}
                 onClick={takeover.onDismiss}
@@ -1363,7 +1361,7 @@ export function TaskChatComposer({
             </TaskChatComposerTakeoverActionsContext.Provider>
           </div>
           {takeoverError ? (
-            <p className="mt-2 shrink-0 text-sm text-destructive" role="alert">
+            <p className="mt-2 shrink-0 text-sm text-bad" role="alert">
               {takeoverError}
             </p>
           ) : null}
@@ -1390,8 +1388,8 @@ export function TaskChatComposer({
       <div
         className={cn(
         streamlined
-          ? "paperclip-task-chat-composer rounded-(--radius-task-composer) border border-border bg-card p-(--sz-18px) shadow-(--shadow-task-composer) dark:border-0 dark:bg-muted dark:shadow-none"
-          : "paperclip-task-chat-composer rounded-xl bg-card p-(--sz-18px)",
+          ? "paperclip-task-chat-composer rounded-(--radius-task-composer) border border-line bg-bg-2 p-(--sz-18px) shadow-(--shadow-task-composer) dark:border-0 dark:bg-bg-3 dark:shadow-none"
+          : "paperclip-task-chat-composer rounded-xl bg-bg-2 p-(--sz-18px)",
         mobile && "p-(--tc-mobile-card-padding)",
       )}
       onKeyDownCapture={(e) => {
@@ -1416,7 +1414,7 @@ export function TaskChatComposer({
         {uncertainSubmission ? (
         <div
           role="alert"
-          className="mb-3 space-y-2 rounded-md border border-border bg-muted p-3 text-sm"
+          className="mb-3 space-y-2 rounded-md border border-line bg-bg-3 p-3 text-sm"
         >
           <p>
             We couldn’t confirm whether this comment was saved. It may already
@@ -1424,7 +1422,7 @@ export function TaskChatComposer({
           </p>
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             size="sm"
             onClick={reviewUncertainSubmission}
           >
@@ -1441,7 +1439,7 @@ export function TaskChatComposer({
               </p>
               <Button
                 type="button"
-                variant="outline"
+                variant="secondary"
                 size="sm"
                 onClick={discardUncertainDraft}
               >
@@ -1454,7 +1452,7 @@ export function TaskChatComposer({
           {!takeoverVisible && (pendingTakeover || takeover) ? (
             <button
               type="button"
-              className="mb-2 flex w-full items-center gap-2 rounded-md bg-muted/50 px-2.5 py-2 text-left text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              className="mb-2 flex w-full items-center gap-2 rounded-md bg-bg-3/50 px-2.5 py-2 text-left text-xs text-ink-3 transition-colors hover:bg-bg-3 hover:text-ink"
               onClick={pendingTakeover?.onOpen}
               data-testid="task-chat-pending-input-indicator"
             >
@@ -1470,7 +1468,7 @@ export function TaskChatComposer({
           {pause && conversationMode ? (
             <div className="space-y-2">
               <TaskChatPausedTakeover {...pause} hasDraft={Boolean(body.trim() || attachments.length)} />
-              <p className="text-xs text-muted-foreground">Send /new to start a fresh session and resume this conversation.</p>
+              <p className="text-xs text-ink-3">Send /new to start a fresh session and resume this conversation.</p>
             </div>
           ) : null}
           <div
@@ -1519,7 +1517,7 @@ export function TaskChatComposer({
 
           {actionError ? (
             <p
-              className="px-1 text-xs text-destructive"
+              className="px-1 text-xs text-bad"
               role="alert"
               data-testid={creation ? "task-chat-create-error" : "task-chat-goal-error"}
             >
@@ -1529,7 +1527,7 @@ export function TaskChatComposer({
 
           {deliveryNotice ? (
             <p
-              className="px-1 text-xs text-muted-foreground"
+              className="px-1 text-xs text-ink-3"
               role="status"
               data-testid="task-chat-delivery-notice"
             >
@@ -1626,7 +1624,7 @@ export function TaskChatComposer({
             />
             {creation?.privacy?.private ? <ComposerPrivacyChip inherited={creation.privacy.inherited} onRemove={() => creation.privacy!.onChange(false)} disabled={disabled} /> : null}
             {queuedEdit ? (
-              <span className="px-1 text-xs font-medium text-muted-foreground">
+              <span className="px-1 text-xs font-medium text-ink-3">
                 {queuedEdit.stale
                   ? "Queued message changed"
                   : "Editing queued message"}
@@ -1686,13 +1684,13 @@ export function TaskChatComposer({
                 type="button"
                 onClick={onCancelQueuedEdit}
                 disabled={submitting}
-                className="h-8 shrink-0 rounded-md px-2.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-50"
+                className="h-8 shrink-0 rounded-md px-2.5 text-xs font-medium text-ink-3 transition-colors hover:bg-bg-3 hover:text-ink disabled:opacity-50"
               >
                 Cancel
               </button>
             ) : null}
 
-            <button
+            <Button variant={showStop ? "danger" : "primary"} size="icon-sm" className="size-8 min-h-8 min-w-8 shrink-0 aspect-square rounded-full"
               type="button"
               onClick={() => void (showStop ? stopControl.stop() : submit())}
               disabled={
@@ -1734,12 +1732,6 @@ export function TaskChatComposer({
                     : creation?.submitLabel ?? "Send"
               }
               aria-busy={submitting}
-              className={cn(
-                "flex size-8 min-h-8 min-w-8 shrink-0 aspect-square items-center justify-center rounded-full transition-transform hover:scale-105 disabled:scale-100",
-                streamlined
-                  ? "bg-foreground text-background disabled:bg-foreground disabled:text-background disabled:opacity-100"
-                  : "bg-primary text-primary-foreground disabled:bg-muted disabled:text-muted-foreground",
-              )}
               data-testid={
                 showStop ? "task-chat-composer-stop" : "task-chat-composer-send"
               }
@@ -1752,11 +1744,11 @@ export function TaskChatComposer({
               ) : (
                 <ArrowUp className="h-4 w-4" aria-hidden />
               )}
-            </button>
+            </Button>
             </div>
           </div>
           {stopControl.error ? (
-            <p role="alert" className="text-xs text-destructive">
+            <p role="alert" className="text-xs text-bad">
               {stopControl.error}
             </p>
           ) : null}

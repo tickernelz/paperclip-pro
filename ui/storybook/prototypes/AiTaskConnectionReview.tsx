@@ -50,9 +50,9 @@ function TaskCard() {
   const query = useQuery({ queryKey: ["issues", "interactions", "ai-review"], queryFn: async (): Promise<ConnectionIntentInteraction[]> => (await fetch("/api/ai-review-interactions")).json() });
   const interaction = query.data?.[0];
   return <main className="mx-auto max-w-3xl space-y-6 p-6">
-    <p className="text-xs text-muted-foreground">Example task context · Storybook only</p>
+    <p className="text-xs text-ink-3">Example task context · Storybook only</p>
     <h1 className="text-lg font-semibold">Nova needs your Claude connection</h1>
-    <p className="text-sm text-muted-foreground">Existing task connection request · Fixture data. Harness: Claude Code. Model: Configured Claude model.</p>
+    <p className="text-sm text-ink-3">Existing task connection request · Fixture data. Harness: Claude Code. Model: Configured Claude model.</p>
     {interaction && <AiReviewBoundary label="Existing app component: ConnectionIntentInteractionBody"><ConnectionIntentInteractionBody interaction={interaction} currentUserId="dotta" addresseeLabel="Dotta" renderSetup={(props) => <TaskSetup {...props} />} /></AiReviewBoundary>}
   </main>;
 }

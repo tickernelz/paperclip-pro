@@ -136,14 +136,14 @@ export function GoalDetail() {
   }, [goal]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (isLoading) return <PageSkeleton variant="detail" />;
-  if (error) return <p className="text-sm text-destructive">{error.message}</p>;
+  if (error) return <p className="text-sm text-bad">{error.message}</p>;
   if (!goal) return null;
 
   return (
     <div className="space-y-6">
       <div className="space-y-3">
         <div className="flex items-center gap-2">
-          <span className="text-xs uppercase text-muted-foreground">
+          <span className="text-xs uppercase text-ink-3">
             {goal.level}
           </span>
           <StatusBadge status={goal.status} />
@@ -166,7 +166,7 @@ export function GoalDetail() {
           value={goal.description ?? ""}
           onSave={(description) => updateGoal.mutate({ description })}
           as="p"
-          className="text-sm text-muted-foreground"
+          className="text-sm text-ink-3"
           placeholder="Add a description..."
           multiline
           imageUploadHandler={async (file) => {
@@ -190,7 +190,7 @@ export function GoalDetail() {
           <div className="flex items-center justify-start">
             <Button
               size="sm"
-              variant="outline"
+              variant="secondary"
               onClick={() => openNewGoal({ parentId: goalId })}
             >
               <Plus className="h-3.5 w-3.5 mr-1.5" />
@@ -198,7 +198,7 @@ export function GoalDetail() {
             </Button>
           </div>
           {childGoals.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No sub-goals.</p>
+            <p className="text-sm text-ink-3">No sub-goals.</p>
           ) : (
             <GoalTree goals={childGoals} goalLink={(g) => `/goals/${g.id}`} />
           )}
@@ -206,9 +206,9 @@ export function GoalDetail() {
 
         <TabsContent value="projects" className="mt-4">
           {linkedProjects.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No linked projects.</p>
+            <p className="text-sm text-ink-3">No linked projects.</p>
           ) : (
-            <div className="border border-border">
+            <div className="border border-line">
               {linkedProjects.map((project) => (
                 <EntityRow
                   key={project.id}

@@ -57,7 +57,7 @@ export function ReviewIndex() {
             >
               {index + 1}. {label}
             </a>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-ink-3">
               {descriptions[index + 1]}
             </p>
           </li>
@@ -65,7 +65,7 @@ export function ReviewIndex() {
       </ol>
       <section className="space-y-3">
         <h2 className="font-semibold">Simple by default</h2>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           Start with Default path or Happy path walkthrough in Onboarding, then
           Codex new runner or Claude default in Agent. Sign in with the normal
           account, choose a model, and test. The Connection dropdown lists saved
@@ -73,7 +73,7 @@ export function ReviewIndex() {
           gateways. Provider URLs, custom provider setup, and custom model entry
           stay behind an explicit Advanced action.
         </p>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           Advanced providers stories show the expanded controls. Configured
           gateway shows the everyday view after setup: the connection name and
           selected model remain visible while its technical settings are folded
@@ -82,12 +82,12 @@ export function ReviewIndex() {
       </section>
       <section className="space-y-3">
         <h2 className="font-semibold">Where these changes live</h2>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           Agent settings live at Agents → Nova → Harness / Runtime. The Agent
           stories render the existing settings page, sidebar, and header, with
           the proposed connection controls in its runtime section.
         </p>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           Manage uses the existing Connectors provider cards and account rows.
           Setup reuses the Access cards, agent picker, and API key form. Agent
           selection uses the existing harness dropdown, connection choices,
@@ -123,7 +123,7 @@ export function ReviewIndex() {
       </section>
       <section className="space-y-3">
         <h2 className="font-semibold">Included harnesses</h2>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           Codex, Claude Code, OpenCode, Grok Build, Pi, Gemini CLI, Kimi CLI,
           and Hermes local. Both runner paths are represented where available.
           Cursor is shown as unverified for custom endpoints; native Pi and
@@ -133,7 +133,7 @@ export function ReviewIndex() {
       </section>
       <section className="space-y-3">
         <h2 className="font-semibold">Excluded from this update</h2>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           OpenClaw Gateway, Hermes Gateway, Claude Managed, AWS AgentCore,
           Process, HTTP, and legacy acpx_local are out of scope. Remote/custom
           integrations retain model configuration in the agent service or
@@ -153,11 +153,11 @@ export function ReviewIndex() {
             >
               {label}
             </a>
-            <p className="text-xs text-muted-foreground">{detail}</p>
+            <p className="text-xs text-ink-3">{detail}</p>
           </div>
         ))}
       </section>
-      <p className="text-xs text-muted-foreground">
+      <p className="text-xs text-ink-3">
         Use example credentials only. In the recovery demo, “invalid” simulates
         rejection. Stories reset on navigation. Local state and intercepted
         fixture APIs keep credentials, tests, and settings in the preview;

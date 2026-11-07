@@ -124,7 +124,7 @@ export function StatusCards() {
         </div>
         <div className="flex items-center gap-4">
           {showCostMeter ? (
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs text-ink-3">
               Today: {formatTokens(todayTotals.tokens)} · ~{formatCents(todayTotals.cents)}
             </span>
           ) : null}
@@ -138,7 +138,7 @@ export function StatusCards() {
       {actionError ? <InlineBanner tone="warning" title="Heads up">{actionError}</InlineBanner> : null}
 
       {activeQuery.isLoading ? (
-        <div className="flex items-center gap-2 py-12 text-sm text-muted-foreground">
+        <div className="flex items-center gap-2 py-12 text-sm text-ink-3">
           <Loader2 className="h-4 w-4 animate-spin" /> Loading cards…
         </div>
       ) : activeQuery.isError ? (
@@ -178,7 +178,7 @@ export function StatusCards() {
           <button
             type="button"
             onClick={() => setShowArchived((prev) => !prev)}
-            className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+            className="text-xs text-ink-3 underline-offset-2 hover:text-ink hover:underline"
           >
             {showArchived ? "Hide archived" : `Show archived (${archivedCards.length})`}
           </button>

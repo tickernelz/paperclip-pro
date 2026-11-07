@@ -19,7 +19,7 @@ export function CopyField({
   return (
     <div className="space-y-1.5">
       <Label className="text-xs">{label}</Label>
-      <div className="flex min-w-0 items-center gap-2 rounded-md border border-border bg-background px-3 py-2">
+      <div className="flex min-w-0 items-center gap-2 rounded-md border border-line bg-bg px-3 py-2">
         <code title={value} className="min-w-0 flex-1 truncate text-xs">
           {value}
         </code>
@@ -45,10 +45,10 @@ export function CopyField({
           {copied ? "Copied" : "Copy"}
         </Button>
       </div>
-      {help && <p className="text-xs text-muted-foreground">{help}</p>}
+      {help && <p className="text-xs text-ink-3">{help}</p>}
       {error && (
         <div className="space-y-2">
-          <p role="alert" className="text-xs text-destructive">
+          <p role="alert" className="text-xs text-bad">
             Copy failed. Select and copy the text below.
           </p>
           <textarea
@@ -56,7 +56,7 @@ export function CopyField({
             aria-label={`${label} text`}
             value={value}
             rows={5}
-            className="w-full rounded-md border border-input bg-background p-3 font-mono text-xs"
+            className="w-full rounded-md border border-line-strong bg-bg p-3 font-mono text-xs"
           />
         </div>
       )}
@@ -68,11 +68,11 @@ export function AgentInstructions({ value }: { value: string }) {
   return (
     <section
       aria-label="Agent instructions"
-      className="space-y-3 rounded-md bg-muted/40 p-4"
+      className="space-y-3 rounded-md bg-bg-3/40 p-4"
     >
       <div className="space-y-1">
         <h2 className="text-sm font-medium">Agent instructions</h2>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           Give your agent everything it needs to connect this webhook: the URL,
           authentication key, and step-by-step instructions.
         </p>

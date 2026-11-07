@@ -42,15 +42,15 @@ class RouteErrorBoundaryInner extends Component<RouteErrorBoundaryInnerProps, Ro
       <div className="mx-auto max-w-2xl space-y-4 px-4 py-10">
         <div>
           <h1 className="text-lg font-semibold">This page hit an error</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-ink-3">
             Something went wrong while rendering this page. You can go back and try again, or reload.
           </p>
         </div>
-        <pre className="overflow-auto rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive whitespace-pre-wrap">
+        <pre className="overflow-auto rounded-md border border-bad/30 bg-bad/10 px-3 py-2 text-xs text-bad whitespace-pre-wrap">
           {error.message}
         </pre>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={this.props.onReset}>
+          <Button variant="secondary" size="sm" onClick={this.props.onReset}>
             Go back
           </Button>
           <Button size="sm" onClick={() => window.location.reload()}>

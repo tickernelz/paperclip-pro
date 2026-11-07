@@ -32,7 +32,7 @@ const TONE_ICON: Record<SystemNoticeTone, LucideIcon> = {
 };
 
 const TONE_ICON_CLASS: Record<SystemNoticeTone, string> = {
-  neutral: "text-muted-foreground",
+  neutral: "text-ink-3",
   info: "text-(--status-task-icon-in_progress)",
   success: "text-(--status-task-icon-done)",
   warning: "text-(--status-task-icon-todo)",
@@ -108,15 +108,15 @@ export function TaskChatSystemNotice({
           aria-expanded={open}
           aria-controls={detailsId}
           className={cn(
-            "flex min-w-0 items-center gap-1.5 rounded-md px-2 py-0.5 text-xs text-muted-foreground",
-            "hover:bg-muted/50 hover:text-foreground",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
+            "flex min-w-0 items-center gap-1.5 rounded-md px-2 py-0.5 text-xs text-ink-3",
+            "hover:bg-bg-3/50 hover:text-ink",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/50",
           )}
         >
           <ToneIcon className={cn("h-3.5 w-3.5 shrink-0", TONE_ICON_CLASS[tone])} aria-hidden />
           <span className="truncate font-medium">{title}</span>
           {detail ? <span className="hidden truncate sm:inline">· {detail}</span> : null}
-          {relative ? <span className="shrink-0 text-muted-foreground/70">· {relative}</span> : null}
+          {relative ? <span className="shrink-0 text-ink-3/70">· {relative}</span> : null}
           <ChevronDown
             className={cn("tc-notice-chevron h-3.5 w-3.5 shrink-0 transition-transform", open && "rotate-180")}
             aria-hidden
@@ -125,7 +125,7 @@ export function TaskChatSystemNotice({
         {showTryAgain && !open ? (
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             size="xs"
             onClick={handleTryAgain}
             disabled={tryAgainNoLiveExecutionPathPending}
@@ -139,10 +139,10 @@ export function TaskChatSystemNotice({
         <div
           id={detailsId}
           data-testid="task-chat-system-notice-details"
-          className="mt-1 w-full max-w-(--pct-85) overflow-hidden rounded-lg border border-border bg-muted/25 text-left text-sm dark:bg-muted/15"
+          className="mt-1 w-full max-w-(--pct-85) overflow-hidden rounded-lg border border-line bg-bg-3/25 text-left text-sm dark:bg-bg-3/15"
         >
           {showBody ? (
-            <div className="px-3 py-2.5 text-foreground/90">
+            <div className="px-3 py-2.5 text-ink/90">
               <MarkdownBody softBreaks linkIssueReferences>
                 {item.text}
               </MarkdownBody>
@@ -151,15 +151,15 @@ export function TaskChatSystemNotice({
           {sections.length > 0 ? (
             <div
               className={cn(
-                "bg-background/50 dark:bg-background/30",
-                showBody && "border-t border-border/70",
+                "bg-bg/50 dark:bg-bg/30",
+                showBody && "border-t border-line/70",
               )}
             >
               <SystemNoticeMetadataSections sections={sections} tone={tone} />
             </div>
           ) : null}
           {showTryAgain ? (
-            <div className="flex justify-end border-t border-border/70 bg-background/50 px-3 py-2 dark:bg-background/30">
+            <div className="flex justify-end border-t border-line/70 bg-bg/50 px-3 py-2 dark:bg-bg/30">
               <Button
                 type="button"
                 size="xs"

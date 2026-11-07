@@ -25,8 +25,8 @@ function Workspace({ sheet = false }: { sheet?: boolean }) {
     return cache;
   });
   return <QueryClientProvider client={client}><FileViewerProvider issueId={issueId}>
-    <main className="min-h-screen bg-background p-4 text-foreground">
-      {sheet ? <FileViewerSheet issueId={issueId} state={state} open /> : <section className="mx-auto h-(--sz-640px) max-w-3xl overflow-hidden rounded-lg border border-border">
+    <main className="min-h-screen bg-bg p-4 text-ink">
+      {sheet ? <FileViewerSheet issueId={issueId} state={state} open /> : <section className="mx-auto h-(--sz-640px) max-w-3xl overflow-hidden rounded-lg border border-line">
         <TaskWorkspaceFilePanel issueId={issueId} payload={{ kind: "workspace-file", ...state }} />
       </section>}
     </main>

@@ -182,7 +182,7 @@ export function ConnectModelPreview({
                     checked={useApiKeys}
                     onCheckedChange={(checked) => setUseApiKeys(checked === true)}
                   />
-                  <span className="text-sm font-medium text-foreground">
+                  <span className="text-sm font-medium text-ink">
                     Use API keys instead
                   </span>
                 </label>

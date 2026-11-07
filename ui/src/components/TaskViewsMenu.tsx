@@ -32,12 +32,12 @@ export function TaskViewsMenu({
       <DropdownMenuTrigger asChild>
         <Button
           size="sm"
-          variant="outline"
+          variant="secondary"
           className="h-8 gap-1.5"
           aria-label={`Change view — currently ${active.label}`}
         >
           <span className="max-w-(--sz-160px) truncate font-medium">{active.label}</span>
-          <ChevronDown aria-hidden="true" className="h-3.5 w-3.5 text-muted-foreground" />
+          <ChevronDown aria-hidden="true" className="h-3.5 w-3.5 text-ink-3" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-(--sz-260px)">
@@ -47,7 +47,7 @@ export function TaskViewsMenu({
             <DropdownMenuLabel className="flex items-center justify-between gap-2">
               <span>{group.label}</span>
               {groupIndex === 0 && badgeCount != null && badgeCount > 0 ? (
-                <span className="rounded-full bg-primary px-1.5 text-(length:--text-nano) leading-tight text-primary-foreground">
+                <span className="rounded-full bg-accent px-1.5 text-(length:--text-nano) leading-tight text-accent-ink">
                   {badgeCount > 99 ? "99+" : badgeCount}
                 </span>
               ) : null}
@@ -67,7 +67,7 @@ export function TaskViewsMenu({
                   />
                   <span className="min-w-0">
                     <span className={cn("block truncate", selected && "font-medium")}>{view.label}</span>
-                    <span className="block text-(length:--text-nano) text-muted-foreground">{view.hint}</span>
+                    <span className="block text-(length:--text-nano) text-ink-3">{view.hint}</span>
                   </span>
                 </DropdownMenuItem>
               );

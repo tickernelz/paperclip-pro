@@ -26,7 +26,7 @@ export function ChatDetailSidebar({
     enabled: Boolean(endpointId),
   });
   return (
-    <aside className="flex h-full min-h-0 w-full flex-col border-r border-border bg-background">
+    <aside className="flex h-full min-h-0 w-full flex-col border-r border-line bg-bg">
       <nav
         aria-label="Chat connection"
         data-slot="contextual-sidebar-nav"

@@ -53,7 +53,7 @@ export function CompanySwitcher({ open: controlledOpen, onOpenChange }: CompanyS
               {selectedCompany?.name ?? "Select organization"}
             </span>
           </div>
-          <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+          <ChevronsUpDown className="h-3.5 w-3.5 shrink-0 text-ink-3" />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-(--sz-220px)">
@@ -63,7 +63,7 @@ export function CompanySwitcher({ open: controlledOpen, onOpenChange }: CompanyS
           <DropdownMenuItem
             key={company.id}
             onClick={() => setSelectedCompanyId(company.id)}
-            className={company.id === selectedCompany?.id ? "bg-accent" : ""}
+            className={company.id === selectedCompany?.id ? "bg-bg-3" : ""}
           >
             <span className={`h-2 w-2 rounded-full shrink-0 mr-2 ${statusDotColor(company.status)}`} />
             <span className="truncate">{company.name}</span>

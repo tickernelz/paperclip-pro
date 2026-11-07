@@ -19,7 +19,7 @@ function Action({ action, primary, onClick }: { action: AnnouncementAction; prim
   const content = <>{action.label}{!primary && action.kind === "external" && <ArrowUpRight className="size-3.5 shrink-0" aria-hidden="true" />}</>;
   const onAuxClick = (event: MouseEvent<HTMLAnchorElement>) => { if (event.button === 1) onClick(); };
   return (
-    <Button asChild variant={primary ? "default" : "ghost"} size="sm" className="h-auto min-h-9 min-w-0 whitespace-normal py-2 text-left">
+    <Button asChild variant={primary ? "primary" : "ghost"} size="sm" className="h-auto min-h-9 min-w-0 whitespace-normal py-2 text-left">
       {action.kind === "external" ? (
         <a href={action.url} target="_blank" rel="noopener noreferrer" onClick={onClick} onAuxClick={onAuxClick}>{content}</a>
       ) : <Link to={action.path} onClick={onClick} onAuxClick={onAuxClick}>{content}</Link>}
@@ -43,7 +43,7 @@ export function AnnouncementCard({ announcement, onDismiss, imageSrc, animationS
         if (event.key === "Escape") { event.preventDefault(); event.stopPropagation(); onDismiss(); }
       }}
     >
-      {(showImage || animationDocument) && <div className="relative h-(--announcement-image-mobile-height) w-full shrink-0 overflow-hidden bg-muted md:h-(--announcement-image-height)">
+      {(showImage || animationDocument) && <div className="relative h-(--announcement-image-mobile-height) w-full shrink-0 overflow-hidden bg-bg-3 md:h-(--announcement-image-height)">
         {showImage && <img src={src} alt={showAnimation ? "" : announcement.image!.alt} referrerPolicy="no-referrer" onError={() => setFailedImage(src)} className="h-full w-full object-cover" />}
         {showAnimation && <div role="img" aria-label={announcement.animation!.alt} className="pointer-events-none absolute inset-0">
           <iframe title={announcement.animation!.alt} aria-hidden="true" tabIndex={-1} sandbox="" referrerPolicy="no-referrer" srcDoc={animationDocument!} className="h-full w-full border-0" />
@@ -53,9 +53,9 @@ export function AnnouncementCard({ announcement, onDismiss, imageSrc, animationS
         <X className="size-4" aria-hidden="true" />
       </Button>
       <div className={cn("flex flex-col gap-1 px-4 py-4", !showImage && !animationDocument && "pr-12")}>
-        <p className="text-xs text-muted-foreground">{announcement.eyebrow}</p>
+        <p className="text-xs text-ink-3">{announcement.eyebrow}</p>
         <h2 id={titleId} className="break-words text-base font-semibold leading-snug">{announcement.title}</h2>
-        <p className="break-words text-sm leading-snug text-muted-foreground">{announcement.description}</p>
+        <p className="break-words text-sm leading-snug text-ink-3">{announcement.description}</p>
       </div>
       <div className="flex flex-wrap items-center justify-between gap-2 border-t px-3 py-2">
         {announcement.secondaryLink && <Action action={announcement.secondaryLink} onClick={onDismiss} />}

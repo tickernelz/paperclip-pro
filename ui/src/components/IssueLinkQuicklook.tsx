@@ -177,14 +177,14 @@ export function IssueQuicklookCard({
       <div className="flex items-center gap-1">
         <div className="flex min-w-0 flex-1 items-center gap-1">
           <StatusGlyph status={issue.status} size="md" title={statusLabel(issue.status)} />
-          <span className="shrink-0 font-mono text-(length:--text-micro) text-muted-foreground">
+          <span className="shrink-0 font-mono text-(length:--text-micro) text-ink-3">
             {issue.identifier ?? issue.id.slice(0, 8)}
           </span>
           {projectName ? (
             <>
-              <QuicklookSeparator className="shrink-0 text-muted-foreground" />
+              <QuicklookSeparator className="shrink-0 text-ink-3" />
               <span
-                className="flex min-w-0 max-w-(--sz-12rem) flex-1 items-center gap-1 text-(length:--text-micro) text-muted-foreground"
+                className="flex min-w-0 max-w-(--sz-12rem) flex-1 items-center gap-1 text-(length:--text-micro) text-ink-3"
                 title={projectName}
                 data-testid="quicklook-project"
               >
@@ -194,7 +194,7 @@ export function IssueQuicklookCard({
             </>
           ) : null}
         </div>
-        <span className="shrink-0 text-(length:--text-micro) text-muted-foreground">
+        <span className="shrink-0 text-(length:--text-micro) text-ink-3">
           {timeAgo(new Date(issue.updatedAt))}
         </span>
       </div>
@@ -208,7 +208,7 @@ export function IssueQuicklookCard({
       </RouterDom.Link>
 
       {description ? (
-        <p className="text-xs leading-5 text-muted-foreground [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:4] overflow-hidden">
+        <p className="text-xs leading-5 text-ink-3 [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:4] overflow-hidden">
           {description}
         </p>
       ) : null}
@@ -438,11 +438,11 @@ export const IssueLinkQuicklook = React.forwardRef<
           <IssueQuicklookCard issue={data} linkTo={detailPath} linkState={prefetchedState} compact />
         ) : (
           <div className="space-y-2">
-            <div className="h-4 w-24 rounded bg-accent/50" />
-            <div className="h-4 w-full rounded bg-accent/40" />
-            <div className="h-4 w-3/4 rounded bg-accent/30" />
+            <div className="h-4 w-24 rounded bg-bg-3/50" />
+            <div className="h-4 w-full rounded bg-bg-3/40" />
+            <div className="h-4 w-3/4 rounded bg-bg-3/30" />
             {!isLoading ? (
-              <p className="text-xs text-muted-foreground">Unable to load task preview.</p>
+              <p className="text-xs text-ink-3">Unable to load task preview.</p>
             ) : null}
           </div>
         )}

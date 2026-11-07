@@ -582,7 +582,7 @@ describe("WorkspaceRuntimeControls", () => {
 
       const alert = container.querySelector('[role="alert"]');
       const summary = alert?.firstElementChild;
-      expect(alert?.classList.contains("text-destructive")).toBe(true);
+      expect(alert?.classList.contains("text-bad")).toBe(true);
       expect(summary?.classList.contains("line-clamp-3")).toBe(true);
       expect(summary?.getAttribute("title")).toBe(lastError);
       expect(alert?.textContent).toContain(label);
@@ -615,14 +615,14 @@ describe("WorkspaceRuntimeControls", () => {
       ));
     });
 
-    const summaryPanel = container.querySelector(".border.border-border\\/70");
-    const servicePanel = Array.from(container.querySelectorAll(".border.border-border\\/80"))
+    const summaryPanel = container.querySelector(".border.border-line\\/70");
+    const servicePanel = Array.from(container.querySelectorAll(".border.border-line\\/80"))
       .find((element) => element.textContent?.includes("web"));
     const startButton = Array.from(container.querySelectorAll("button"))
       .find((button) => button.textContent?.trim() === "Start");
 
     expect(summaryPanel?.className).toContain("rounded-none");
-    expect(summaryPanel?.className).not.toContain("bg-background/60");
+    expect(summaryPanel?.className).not.toContain("bg-bg/60");
     expect(servicePanel?.className).toContain("rounded-none");
     expect(startButton?.className).toContain("rounded-none");
 

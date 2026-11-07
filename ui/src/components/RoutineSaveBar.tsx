@@ -75,7 +75,7 @@ export function RoutineSaveBar({
           "motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2",
           saveConflict
             ? "border-amber-500/30 bg-amber-500/5"
-            : "border-border bg-background/95",
+            : "border-line bg-bg/95",
         )}
       >
         {saveConflict ? (
@@ -88,7 +88,7 @@ export function RoutineSaveBar({
             <PopoverTrigger asChild>
               <button
                 type="button"
-                className="flex items-center gap-2 text-sm text-foreground hover:text-foreground"
+                className="flex items-center gap-2 text-sm text-ink hover:text-ink"
               >
                 <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
                 <span className="font-medium">
@@ -97,7 +97,7 @@ export function RoutineSaveBar({
               </button>
             </PopoverTrigger>
             <PopoverContent align="start" className="w-64">
-              <p className="mb-2 text-xs font-medium text-muted-foreground">
+              <p className="mb-2 text-xs font-medium text-ink-3">
                 Pending changes
               </p>
               <ul className="space-y-1 text-sm">
@@ -115,14 +115,14 @@ export function RoutineSaveBar({
         <div className="flex items-center gap-2">
           {saveConflict ? (
             <>
-              <Button variant="outline" size="sm" onClick={onReload}>
+              <Button variant="secondary" size="sm" onClick={onReload}>
                 Reload latest
               </Button>
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <Button
-                      variant="destructive"
+                      variant="danger"
                       size="sm"
                       disabled={isSaving || disabled}
                       onClick={onSave}
@@ -154,7 +154,7 @@ export function RoutineSaveBar({
               >
                 {isSaving ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}
                 Save changes
-                <kbd className="ml-2 hidden rounded bg-foreground/10 px-1 text-(length:--text-nano) font-medium sm:inline">
+                <kbd className="ml-2 hidden rounded bg-ink/10 px-1 text-(length:--text-nano) font-medium sm:inline">
                   ⌘S
                 </kbd>
               </Button>
@@ -177,7 +177,7 @@ export function RoutineSaveBar({
               Keep editing
             </Button>
             <Button
-              variant="destructive"
+              variant="danger"
               size="sm"
               onClick={() => {
                 onDiscard();
@@ -196,7 +196,7 @@ export function RoutineSaveBar({
 /** Read-only strip for non-owners on editable sections (§1.6). */
 export function RoutineReadOnlyStrip() {
   return (
-    <div className="-mx-8 mt-6 border-t border-border bg-muted/20 px-8 py-3 text-xs text-muted-foreground">
+    <div className="-mx-8 mt-6 border-t border-line bg-bg-3/20 px-8 py-3 text-xs text-ink-3">
       Read-only — you don't own this routine.
     </div>
   );

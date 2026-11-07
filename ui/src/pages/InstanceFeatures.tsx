@@ -64,10 +64,10 @@ export function InstanceFeatures() {
   };
 
   if (features.query.isLoading) {
-    return <div className="text-sm text-muted-foreground">Loading features...</div>;
+    return <div className="text-sm text-ink-3">Loading features...</div>;
   }
   if (features.query.error) {
-    return <div className="text-sm text-destructive">{features.query.error.message || "Failed to load features."}</div>;
+    return <div className="text-sm text-bad">{features.query.error.message || "Failed to load features."}</div>;
   }
 
   const settings = features.settings ?? {};
@@ -112,13 +112,13 @@ export function InstanceFeatures() {
     <div className="max-w-4xl space-y-5">
       <div className="space-y-1">
         <h1 className="text-lg font-semibold">Features</h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           {onCount} of {visibleKeys.length} on. Turning one off hides it; nothing is deleted.
         </p>
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div role="group" aria-label="Preset" className="inline-flex shrink-0 rounded-md border border-border p-0.5">
+        <div role="group" aria-label="Preset" className="inline-flex shrink-0 rounded-md border border-line p-0.5">
           {FEATURE_PRESET_IDS.map((preset) => (
             <button
               key={preset}
@@ -129,8 +129,8 @@ export function InstanceFeatures() {
               className={cn(
                 "rounded-(--rad-4) px-3 py-1 text-sm transition-colors disabled:cursor-not-allowed",
                 activePreset === preset
-                  ? "bg-accent font-medium text-foreground"
-                  : "text-muted-foreground hover:text-foreground",
+                  ? "bg-bg-3 font-medium text-ink"
+                  : "text-ink-3 hover:text-ink",
               )}
             >
               {PRESET_LABELS[preset]}
@@ -139,7 +139,7 @@ export function InstanceFeatures() {
         </div>
         <label className="relative flex-1">
           <span className="sr-only">Search features</span>
-          <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+          <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-ink-3" />
           <Input
             type="search"
             value={search}
@@ -151,13 +151,13 @@ export function InstanceFeatures() {
       </div>
 
       {features.error ? (
-        <div role="alert" className="rounded-md border border-destructive/40 px-3 py-2 text-sm text-destructive">
+        <div role="alert" className="rounded-md border border-bad/40 px-3 py-2 text-sm text-bad">
           {features.error}
         </div>
       ) : null}
 
       {matchedGroups.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No feature matches "{search.trim()}".</p>
+        <p className="text-sm text-ink-3">No feature matches "{search.trim()}".</p>
       ) : (
         matchedGroups.map(({ group, keys, shown }) => (
           <FeatureSettingGroup
@@ -190,7 +190,7 @@ export function InstanceFeatures() {
                   }
                 >
                   {placement.requires.length > 0 ? (
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-ink-3">
                       Needs {placement.requires.map(featureName).join(" and ")}
                       {missing.length > 0 && !blockedByManaged ? "; turning this on turns it on too." : "."}
                     </p>
@@ -207,7 +207,7 @@ export function InstanceFeatures() {
                       />
                       <span>
                         <span className="font-medium">Use for new projects</span>
-                        <span className="block text-muted-foreground">
+                        <span className="block text-ink-3">
                           Projects without their own workspace policy get isolated workspaces.
                         </span>
                       </span>
@@ -220,7 +220,7 @@ export function InstanceFeatures() {
         ))
       )}
 
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm text-ink-3">
         Runtime and developer switches are in{" "}
         <Link to={`${INSTANCE_SETTINGS_PATH_PREFIX}/advanced`} className="underline underline-offset-4">
           Advanced

@@ -239,7 +239,7 @@ function ExposureFailureDetail({ exposure }: { exposure: RuntimeExposureStatus |
   const copy = exposureFailureCopy(exposure);
   if (!copy) return null;
   return (
-    <div className="space-y-1 break-words text-xs text-destructive" role="alert">
+    <div className="space-y-1 break-words text-xs text-bad" role="alert">
       <div
         className="line-clamp-3 font-medium"
         title={exposure?.lastError ?? undefined}
@@ -418,7 +418,7 @@ function CommandActionButtons({
         return (
           <Button
             key={`${item.key}:${action}`}
-            variant={iconOnly ? "outline" : action === "stop" ? "destructive" : action === "restart" ? "outline" : "default"}
+            variant={iconOnly ? "secondary" : action === "stop" ? "danger" : action === "restart" ? "secondary" : "primary"}
             size={iconOnly ? "icon-xs" : "sm"}
             className={cn(
               iconOnly ? "shrink-0" : "w-full justify-start sm:w-auto",
@@ -470,22 +470,22 @@ function CommandSection({
     <div className="space-y-3">
       <div className="space-y-1">
         <div className="text-sm font-medium">{title}</div>
-        <p className="text-xs text-muted-foreground">{description}</p>
+        <p className="text-xs text-ink-3">{description}</p>
       </div>
       {items.length === 0 ? (
-        <div className={cn("border border-dashed border-border/80 bg-background px-3 py-4 text-sm text-muted-foreground", square ? "rounded-none" : "rounded-xl")}>
+        <div className={cn("border border-dashed border-line/80 bg-bg px-3 py-4 text-sm text-ink-3", square ? "rounded-none" : "rounded-xl")}>
           {emptyMessage}
           {disabledHint ? <p className="mt-2 text-xs">{disabledHint}</p> : null}
         </div>
       ) : (
         <div className="space-y-3">
           {items.map((item) => (
-            <div key={item.key} className={cn("border border-border/80 bg-background px-3 py-3", square ? "rounded-none" : "rounded-xl")}>
+            <div key={item.key} className={cn("border border-line/80 bg-bg px-3 py-3", square ? "rounded-none" : "rounded-xl")}>
               <div className="flex flex-col gap-3">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="space-y-1">
                     <div className="text-sm font-medium">{item.title}</div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-xs text-ink-3">
                       {item.kind} · {item.statusLabel}
                       {item.lifecycle ? ` · ${item.lifecycle}` : ""}
                     </div>
@@ -499,7 +499,7 @@ function CommandSection({
                     iconOnly={iconOnly}
                   />
                 </div>
-                <div className="space-y-1 text-xs text-muted-foreground">
+                <div className="space-y-1 text-xs text-ink-3">
                   {item.url ? (
                     <a href={item.url} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 hover:underline">
                       {item.url}
@@ -519,8 +519,8 @@ function CommandSection({
                       item.healthStatus === "healthy"
                         ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
                         : item.healthStatus === "unhealthy"
-                          ? "border-destructive/30 bg-destructive/10 text-destructive"
-                          : "border-border text-muted-foreground",
+                          ? "border-bad/30 bg-bad/10 text-bad"
+                          : "border-line text-ink-3",
                     )}>
                       {item.healthStatus}
                     </Badge>
@@ -564,28 +564,28 @@ export function WorkspaceRuntimeControls({
 
   return (
     <div className={cn("space-y-4", className)}>
-      <div className={cn("border border-border/70 bg-background p-3", square ? "rounded-none" : "rounded-xl")}>
+      <div className={cn("border border-line/70 bg-bg p-3", square ? "rounded-none" : "rounded-xl")}>
         <div className="space-y-1">
-          <div className="text-xs font-medium uppercase tracking-(--tracking-eyebrow) text-muted-foreground">Workspace commands</div>
+          <div className="text-xs font-medium uppercase tracking-(--tracking-eyebrow) text-ink-3">Workspace commands</div>
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant="outline"
               className={cn(
                 "gap-1.5 px-2.5 py-1",
                 runningCount > 0
                   ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-                  : "border-border bg-background text-muted-foreground",
+                  : "border-line bg-bg text-ink-3",
               )}
             >
               <Activity className="h-3.5 w-3.5" />
               {runningCount > 0 ? `${runningCount} services running` : "No services running"}
             </Badge>
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs text-ink-3">
               {resolvedSections.jobs.length > 0
                 ? `${resolvedSections.jobs.length} job${resolvedSections.jobs.length === 1 ? "" : "s"} available to run on demand.`
                 : "Each command can be controlled independently."}
             </span>
           </div>
-          {visibleDisabledHint ? <p className="text-xs text-muted-foreground">{visibleDisabledHint}</p> : null}
+          {visibleDisabledHint ? <p className="text-xs text-ink-3">{visibleDisabledHint}</p> : null}
         </div>
       </div>
 
@@ -658,7 +658,7 @@ export function WorkspaceRuntimeQuickControls({
           {controlItems.map((item) => (
             <div key={item.key} className={cn("flex min-w-0 flex-col gap-1", alignEnd ? "sm:items-end" : "sm:items-start")}>
               {controlItems.length > 1 ? (
-                <span className="truncate text-xs text-muted-foreground">{item.title}</span>
+                <span className="truncate text-xs text-ink-3">{item.title}</span>
               ) : null}
               <CommandActionButtons
                 item={item}
@@ -678,7 +678,7 @@ export function WorkspaceRuntimeQuickControls({
           target="_blank"
           rel="noreferrer"
           className={cn(
-            "inline-flex min-w-0 items-center gap-1 self-start break-all text-xs text-muted-foreground hover:text-foreground hover:underline",
+            "inline-flex min-w-0 items-center gap-1 self-start break-all text-xs text-ink-3 hover:text-ink hover:underline",
             alignEnd ? "sm:self-end" : "sm:self-start",
           )}
         >

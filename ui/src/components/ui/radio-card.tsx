@@ -49,8 +49,8 @@ export function RadioCard({
         "group relative flex w-full flex-col items-start gap-1 rounded-md border px-4 py-3 text-left transition-colors",
         "motion-safe:transition-(--tp-border-color-background-color) motion-safe:duration-150",
         selected
-          ? "border-primary bg-primary/5 ring-1 ring-primary"
-          : "border-border hover:border-border hover:bg-accent/40",
+          ? "border-accent bg-accent/5 ring-1 ring-accent"
+          : "border-line hover:border-line hover:bg-bg-3/40",
         "disabled:cursor-not-allowed disabled:opacity-60",
         className,
       )}
@@ -62,7 +62,7 @@ export function RadioCard({
           {icon ? (
             <span
               data-slot="radio-card-icon"
-              className="shrink-0 text-muted-foreground"
+              className="shrink-0 text-ink-3"
               aria-hidden="true"
             >
               {icon}
@@ -70,10 +70,10 @@ export function RadioCard({
           ) : null}
           <span>{title}</span>
         </span>
-        {selected ? <Check className="h-4 w-4 shrink-0 text-primary" /> : null}
+        {selected ? <Check className="h-4 w-4 shrink-0 text-accent" /> : null}
       </div>
       {description ? (
-        <span className="text-xs text-muted-foreground">{description}</span>
+        <span className="text-xs text-ink-3">{description}</span>
       ) : null}
     </button>
   );

@@ -28,6 +28,7 @@ import {
   type EnvRow,
 } from "./model";
 import type { EnvironmentVariableDirtyFields } from "./Row";
+import { Button } from "@/components/ui/button";
 
 const DEFAULT_RESERVED_PREFIXES = ["PAPERCLIP_"];
 
@@ -450,8 +451,8 @@ export const EnvironmentVariablesEditor = forwardRef<EnvironmentVariablesEditorH
         <>
           {/* Header (desktop only) */}
           <div className="hidden gap-x-1.5 @[40rem]/env:grid @[40rem]/env:grid-cols-(--gtc-14)">
-            <span className="text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">Name</span>
-            <span className="text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">Value</span>
+            <span className="text-(length:--text-micro) font-medium uppercase tracking-wide text-ink-3">Name</span>
+            <span className="text-(length:--text-micro) font-medium uppercase tracking-wide text-ink-3">Value</span>
             <span />
           </div>
 
@@ -484,7 +485,7 @@ export const EnvironmentVariablesEditor = forwardRef<EnvironmentVariablesEditorH
           })}
         </>
       ) : (
-        <p className="text-sm text-muted-foreground">No environment variables</p>
+        <p className="text-sm text-ink-3">No environment variables</p>
       )}
 
       {/* Footer bar */}
@@ -493,7 +494,7 @@ export const EnvironmentVariablesEditor = forwardRef<EnvironmentVariablesEditorH
           type="button"
           onClick={addRow}
           disabled={disabled}
-          className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+          className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-ink-3 transition-colors hover:bg-bg-3 hover:text-ink disabled:pointer-events-none disabled:opacity-50"
         >
           <Plus className="size-3.5" />
           Add variable
@@ -501,7 +502,7 @@ export const EnvironmentVariablesEditor = forwardRef<EnvironmentVariablesEditorH
 
         {quickBind.length > 0 && !disabled ? (
           <div className="flex flex-wrap items-center gap-1.5">
-            <span className="inline-flex items-center gap-1 text-(length:--text-micro) text-muted-foreground/70">
+            <span className="inline-flex items-center gap-1 text-(length:--text-micro) text-ink-3/70">
               <KeyRound className="size-3" />
               Recently used:
             </span>
@@ -510,7 +511,7 @@ export const EnvironmentVariablesEditor = forwardRef<EnvironmentVariablesEditorH
                 key={secret.id}
                 type="button"
                 onClick={() => bindRecentSecret(secret)}
-                className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 font-mono text-(length:--text-micro) text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
+                className="inline-flex items-center gap-1 rounded-full border border-line px-2 py-0.5 font-mono text-(length:--text-micro) text-ink-3 transition-colors hover:bg-bg-3/50 hover:text-ink"
                 title={`Bind ${secret.name}`}
               >
                 + {secret.name}
@@ -538,29 +539,27 @@ export const EnvironmentVariablesEditor = forwardRef<EnvironmentVariablesEditorH
             ) : null}
           </div>
           <div className="flex items-center gap-2">
-            <button
+            <Button variant="secondary" size="sm" className="h-9"
               type="button"
               onClick={revertDraft}
-              className="inline-flex h-9 items-center gap-1.5 rounded-md border border-amber-500/30 bg-background px-3 text-sm font-medium text-foreground transition-colors hover:bg-amber-500/10 dark:bg-background/80"
             >
               <RotateCcw className="size-4" />
               Revert
-            </button>
-            <button
+            </Button>
+            <Button variant="primary" size="sm" className="h-9"
               type="button"
               onClick={saveDraft}
-              className="inline-flex h-9 items-center gap-1.5 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
             >
               <Save className="size-4" />
               Save
-            </button>
+            </Button>
           </div>
         </div>
       ) : null}
 
-      {hint ? <p className="text-(length:--text-micro) text-muted-foreground/70">{hint}</p> : null}
+      {hint ? <p className="text-(length:--text-micro) text-ink-3/70">{hint}</p> : null}
       {rows.some((row) => row.source === "user_secret" && row.userSecretKey) ? (
-        <p className="inline-flex items-start gap-1 text-(length:--text-micro) text-muted-foreground/70">
+        <p className="inline-flex items-start gap-1 text-(length:--text-micro) text-ink-3/70">
           <UserRound className="mt-0.5 size-3 shrink-0" />
           <span>
             User secrets resolve from the user responsible for the run. Required bindings fail until that user

@@ -1,9 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-linecap="round" stroke-linejoin="round">
-  <style>
-    path { stroke: #18181b; }
-    @media (prefers-color-scheme: dark) {
-      path { stroke: #e4e4e7; }
-    }
-  </style>
-  <path stroke-width="2" d="m16 6-8.414 8.586a2 2 0 0 0 2.829 2.829l8.414-8.586a4 4 0 1 0-5.657-5.657l-8.379 8.551a6 6 0 1 0 8.485 8.485l8.379-8.551"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512"><rect width="512" height="512" rx="120" fill="#0d0e11"/><circle cx="256.00" cy="256.00" r="72.46" fill="#f1f2f5"/><circle cx="256.00" cy="89.54" r="54.83" fill="#f1f2f5"/><circle cx="400.16" cy="172.77" r="54.83" fill="#919dff"/><circle cx="400.16" cy="339.23" r="54.83" fill="#f1f2f5"/><circle cx="256.00" cy="422.46" r="54.83" fill="#f1f2f5"/><circle cx="111.84" cy="339.23" r="54.83" fill="#f1f2f5"/><circle cx="111.84" cy="172.77" r="54.83" fill="#f1f2f5"/></svg>

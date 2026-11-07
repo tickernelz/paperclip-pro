@@ -52,7 +52,7 @@ function Section({
 }) {
   return (
     <section className="paperclip-story__frame overflow-hidden">
-      <div className="border-b border-border px-5 py-4">
+      <div className="border-b border-line px-5 py-4">
         <div className="paperclip-story__label">{eyebrow}</div>
         <h2 className="mt-1 text-xl font-semibold">{title}</h2>
       </div>
@@ -73,7 +73,7 @@ function RouteSetter({ to }: { to: string }) {
 
 function SidebarShell({ collapsed = false }: { collapsed?: boolean }) {
   return (
-    <div className="h-[520px] overflow-hidden border border-border bg-background">
+    <div className="h-[520px] overflow-hidden border border-line bg-bg">
       <div className="flex h-full min-h-0">
         <div className={cn("overflow-hidden transition-[width]", collapsed ? "w-0" : "w-60")}>
           <Sidebar />
@@ -91,7 +91,7 @@ function BreadcrumbScenario({ breadcrumbs }: { breadcrumbs: Breadcrumb[] }) {
   }, [breadcrumbs, setBreadcrumbs]);
 
   return (
-    <div className="overflow-hidden border border-border bg-background">
+    <div className="overflow-hidden border border-line bg-bg">
       <BreadcrumbBar />
     </div>
   );
@@ -128,7 +128,7 @@ function MobileBottomNavActiveStateMatrix() {
   return (
     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
       {mobileNavItems.map((activeItem) => (
-        <div key={activeItem.label} className="overflow-hidden border border-border bg-background">
+        <div key={activeItem.label} className="overflow-hidden border border-line bg-bg">
           <div className="grid h-16 grid-cols-5 px-1">
             {mobileNavItems.map((item) => {
               const Icon = item.icon;
@@ -138,13 +138,13 @@ function MobileBottomNavActiveStateMatrix() {
                   key={item.label}
                   className={cn(
                     "relative flex min-w-0 flex-col items-center justify-center gap-1 rounded-md text-[10px] font-medium",
-                    active ? "text-foreground" : "text-muted-foreground",
+                    active ? "text-ink" : "text-ink-3",
                   )}
                 >
                   <span className="relative">
                     <Icon className={cn("h-[18px] w-[18px]", active && "stroke-[2.3]")} />
                     {item.badge ? (
-                      <span className="absolute -right-2 -top-2 rounded-full bg-primary px-1.5 py-0.5 text-[10px] leading-none text-primary-foreground">
+                      <span className="absolute -right-2 -top-2 rounded-full bg-accent px-1.5 py-0.5 text-[10px] leading-none text-accent-ink">
                         {item.badge}
                       </span>
                     ) : null}
@@ -162,14 +162,14 @@ function MobileBottomNavActiveStateMatrix() {
 
 function CommandResultsSurface() {
   return (
-    <Command className="rounded-none border border-border">
+    <Command className="rounded-none border border-line">
       <CommandInput value="story" readOnly placeholder="Search issues, agents, projects..." />
       <CommandList className="max-h-none">
         <CommandGroup heading="Actions">
           <CommandItem>
             <SquarePen className="mr-2 h-4 w-4" />
             Create new issue
-            <span className="ml-auto text-xs text-muted-foreground">C</span>
+            <span className="ml-auto text-xs text-ink-3">C</span>
           </CommandItem>
         </CommandGroup>
         <CommandSeparator />
@@ -177,7 +177,7 @@ function CommandResultsSurface() {
           {storybookIssues.slice(0, 2).map((issue) => (
             <CommandItem key={issue.id}>
               <CircleDot className="mr-2 h-4 w-4" />
-              <span className="mr-2 font-mono text-xs text-muted-foreground">{issue.identifier}</span>
+              <span className="mr-2 font-mono text-xs text-ink-3">{issue.identifier}</span>
               <span className="flex-1 truncate">{issue.title}</span>
               <StatusBadge status={issue.status} />
             </CommandItem>
@@ -189,7 +189,7 @@ function CommandResultsSurface() {
             <CommandItem key={agent.id}>
               <Bot className="mr-2 h-4 w-4" />
               {agent.name}
-              <span className="ml-2 text-xs text-muted-foreground">{agent.role}</span>
+              <span className="ml-2 text-xs text-ink-3">{agent.role}</span>
             </CommandItem>
           ))}
         </CommandGroup>
@@ -209,7 +209,7 @@ function CommandResultsSurface() {
 
 function CommandEmptySurface() {
   return (
-    <Command className="rounded-none border border-border">
+    <Command className="rounded-none border border-line">
       <CommandInput value="no matching command" readOnly placeholder="Search issues, agents, projects..." />
       <CommandList>
         <CommandEmpty>No results found.</CommandEmpty>
@@ -228,7 +228,7 @@ function NavigationLayoutStories() {
             <div>
               <div className="paperclip-story__label">Navigation and layout</div>
               <h1 className="mt-2 text-3xl font-semibold tracking-tight">Sidebar, command, tabs, and mobile chrome</h1>
-              <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
+              <p className="mt-3 max-w-3xl text-sm leading-6 text-ink-3">
                 Fixture-backed navigation states for the board shell: company switching, dense work navigation,
                 breadcrumbs, command discovery, and mobile entry points.
               </p>
@@ -250,7 +250,7 @@ function NavigationLayoutStories() {
 
         <Section eyebrow="Menus" title="Account, company, and switcher menus in open state">
           <div className="grid gap-5 xl:grid-cols-3">
-            <div className="relative h-[440px] overflow-hidden border border-border bg-background">
+            <div className="relative h-[440px] overflow-hidden border border-line bg-bg">
               <div className="absolute bottom-0 left-0 w-72">
                 <SidebarAccountMenu
                   deploymentMode="authenticated"
@@ -260,11 +260,11 @@ function NavigationLayoutStories() {
               </div>
             </div>
 
-            <div className="h-[260px] overflow-hidden border border-border bg-background p-3">
+            <div className="h-[260px] overflow-hidden border border-line bg-bg p-3">
               <SidebarCompanyMenu open onOpenChange={() => undefined} />
             </div>
 
-            <div className="h-[320px] overflow-hidden border border-border bg-background p-4">
+            <div className="h-[320px] overflow-hidden border border-line bg-bg p-4">
               <CompanySwitcher open onOpenChange={() => undefined} />
             </div>
           </div>
@@ -303,7 +303,7 @@ function NavigationLayoutStories() {
 
         <Section eyebrow="Mobile bottom nav" title="Actual mobile bar and all active item states">
           <div className="space-y-5">
-            <div className="relative h-24 max-w-sm overflow-hidden border border-border bg-background [&>nav]:!absolute [&>nav]:!bottom-0 [&>nav]:!left-0 [&>nav]:!right-0 [&>nav]:!z-0 [&>nav]:!block">
+            <div className="relative h-24 max-w-sm overflow-hidden border border-line bg-bg [&>nav]:!absolute [&>nav]:!bottom-0 [&>nav]:!left-0 [&>nav]:!right-0 [&>nav]:!z-0 [&>nav]:!block">
               <MobileBottomNav visible />
             </div>
             <MobileBottomNavActiveStateMatrix />
@@ -319,7 +319,7 @@ function NavigationLayoutStories() {
         </Section>
 
         <Section eyebrow="Keyboard shortcuts" title="Rendered shortcuts cheatsheet">
-          <div className="max-w-md overflow-hidden border border-border bg-background">
+          <div className="max-w-md overflow-hidden border border-line bg-bg">
             <div className="px-5 pb-3 pt-5">
               <h3 className="text-base font-semibold">Keyboard shortcuts</h3>
             </div>
@@ -371,10 +371,10 @@ function SidebarIconAlignmentHarness() {
     <PluginLauncherProvider>
       <div className="paperclip-story">
         <RouteSetter to="/PAP/projects/board-ui/issues" />
-        <div className="flex min-h-[760px] items-start justify-center bg-muted/30 p-8">
+        <div className="flex min-h-[760px] items-start justify-center bg-bg-3/30 p-8">
           <div
             data-testid="sidebar-align-frame"
-            className="h-[700px] w-60 overflow-hidden border border-border bg-background"
+            className="h-[700px] w-60 overflow-hidden border border-line bg-bg"
           >
             <Sidebar />
           </div>

@@ -15,7 +15,7 @@ import { SearchAddon } from "@xterm/addon-search";
 import { ClipboardAddon } from "@xterm/addon-clipboard";
 import { ImageAddon } from "@xterm/addon-image";
 import { Unicode11Addon } from "@xterm/addon-unicode11";
-import "@xterm/xterm/css/xterm.css";
+import "./xterm-vendor.css";
 import { ArrowDown, ArrowUp, ClipboardPaste, Copy, Download, Eraser, RotateCw, Search, TextSelect, Upload, X } from "lucide-react";
 import {
   clampTerminalCols,
@@ -91,8 +91,8 @@ const STATUS_DOT: Record<TerminalConnectionState, string> = {
   connecting: "bg-amber-500",
   connected: "bg-emerald-500",
   reconnecting: "bg-amber-500",
-  exited: "bg-muted-foreground",
-  failed: "bg-destructive",
+  exited: "bg-ink-3",
+  failed: "bg-bad",
 };
 
 function errorText(error: unknown, fallback: string): string {
@@ -586,16 +586,16 @@ export function TerminalView({
 
   return (
     <div
-      className={cn("relative flex h-full min-h-0 flex-col bg-background", className)}
+      className={cn("relative flex h-full min-h-0 flex-col bg-bg", className)}
       data-testid="terminal-view"
       data-session-id={sessionId}
       data-connection={connection}
       data-renderer={renderer}
     >
-      <div className="flex shrink-0 items-center gap-2 border-b border-border px-2 py-1 text-xs">
+      <div className="flex shrink-0 items-center gap-2 border-b border-line px-2 py-1 text-xs">
         <span aria-hidden className={cn("size-2 shrink-0 rounded-full", STATUS_DOT[connection])} />
-        <span className="shrink-0 text-muted-foreground" role="status">{STATUS_LABEL[connection]}</span>
-        {message ? <span className="min-w-0 truncate text-muted-foreground" title={message}>{message}</span> : null}
+        <span className="shrink-0 text-ink-3" role="status">{STATUS_LABEL[connection]}</span>
+        {message ? <span className="min-w-0 truncate text-ink-3" title={message}>{message}</span> : null}
         <div className="ml-auto flex shrink-0 items-center gap-1">
           {connection === "failed" ? (
             <Button type="button" variant="ghost" size="xs" onClick={() => retryRef.current()}>
@@ -626,7 +626,7 @@ export function TerminalView({
         </div>
       </div>
       {searchOpen ? (
-        <div className="flex shrink-0 items-center gap-1 border-b border-border px-2 py-1">
+        <div className="flex shrink-0 items-center gap-1 border-b border-line px-2 py-1">
           <Input
             ref={searchInputRef}
             value={searchTerm}
@@ -648,7 +648,7 @@ export function TerminalView({
         </div>
       ) : null}
       {downloadOpen ? (
-        <form className="flex shrink-0 items-center gap-1 border-b border-border px-2 py-1" onSubmit={(event) => void submitDownload(event)}>
+        <form className="flex shrink-0 items-center gap-1 border-b border-line px-2 py-1" onSubmit={(event) => void submitDownload(event)}>
           <Input
             value={downloadPath}
             onChange={(event) => setDownloadPath(event.target.value)}
@@ -657,7 +657,7 @@ export function TerminalView({
             className="h-7 font-mono text-xs md:text-xs"
             autoFocus
           />
-          <Button type="submit" variant="outline" size="xs" disabled={!downloadPath.trim()}>
+          <Button type="submit" variant="secondary" size="xs" disabled={!downloadPath.trim()}>
             Download
           </Button>
         </form>
@@ -736,7 +736,7 @@ export function TerminalView({
           }}
         />
         {dragging ? (
-          <div className="pointer-events-none absolute inset-1 flex items-center justify-center rounded-md border-2 border-dashed border-ring bg-background/80 text-sm text-foreground">
+          <div className="pointer-events-none absolute inset-1 flex items-center justify-center rounded-md border-2 border-dashed border-focus bg-bg/80 text-sm text-ink">
             Drop files to upload into the session folder
           </div>
         ) : null}

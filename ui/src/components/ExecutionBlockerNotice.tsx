@@ -45,20 +45,20 @@ export function ExecutionBlockerNotice({ companyId, issueId, blocker, onRetried,
         )}
       </div>
       {blocker.agentId && blocker.runId && (
-        <Button variant="outline" size="sm" asChild>
+        <Button variant="secondary" size="sm" asChild>
           <Link to={`/agents/${blocker.agentId}/runs/${blocker.runId}`}>Inspect run</Link>
         </Button>
       )}
       {!blocker.workspaceRepairRequired && (!requiresInspection || blocker.canRetry) && blocker.agentId && blocker.runId &&
         ((blocker.cause === "legacy_execution_requires_reconciliation" && failedRun) || blocker.canContinue || blocker.canRetry) && (
-        <Button variant="outline" size="sm" disabled={retry.isPending} onClick={() => retry.mutate()}>
+        <Button variant="secondary" size="sm" disabled={retry.isPending} onClick={() => retry.mutate()}>
           {retry.isPending ? "Starting…" : blocker.canContinue ? "Continue" : "Retry"}
         </Button>
       )}
       {retry.isError && (
-        <p role="alert" className="w-full text-destructive">{retry.error.message}</p>
+        <p role="alert" className="w-full text-bad">{retry.error.message}</p>
       )}
-      {runsError && <p role="alert" className="w-full text-destructive">{runsError.message}</p>}
+      {runsError && <p role="alert" className="w-full text-bad">{runsError.message}</p>}
     </div>
   );
 }

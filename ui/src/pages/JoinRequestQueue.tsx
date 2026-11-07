@@ -57,11 +57,11 @@ export function JoinRequestQueue() {
   });
 
   if (!selectedCompanyId) {
-    return <div className="text-sm text-muted-foreground">Select an organization to review join requests.</div>;
+    return <div className="text-sm text-ink-3">Select an organization to review join requests.</div>;
   }
 
   if (requestsQuery.isLoading) {
-    return <div className="text-sm text-muted-foreground">Loading join requests…</div>;
+    return <div className="text-sm text-ink-3">Loading join requests…</div>;
   }
 
   if (requestsQuery.error) {
@@ -71,17 +71,17 @@ export function JoinRequestQueue() {
         : requestsQuery.error instanceof Error
           ? requestsQuery.error.message
           : "Failed to load join requests.";
-    return <div className="text-sm text-destructive">{message}</div>;
+    return <div className="text-sm text-bad">{message}</div>;
   }
 
   return (
     <div className="max-w-6xl space-y-6">
       <div className="space-y-3">
         <div className="flex items-center gap-2">
-          <UserPlus2 className="h-5 w-5 text-muted-foreground" />
+          <UserPlus2 className="h-5 w-5 text-ink-3" />
           <h1 className="text-lg font-semibold">Join Request Queue</h1>
         </div>
-        <p className="max-w-3xl text-sm text-muted-foreground">
+        <p className="max-w-3xl text-sm text-ink-3">
           Review human and agent join requests outside the mixed inbox feed. This queue uses the same approval mutations as the inline inbox cards.
         </p>
       </div>
@@ -90,7 +90,7 @@ export function JoinRequestQueue() {
         <label className="space-y-2 text-sm">
           <span className="font-medium">Status</span>
           <select
-            className="rounded-md border border-border bg-background px-3 py-2"
+            className="rounded-md border border-line bg-bg px-3 py-2"
             value={status}
             onChange={(event) =>
               setStatus(event.target.value as "pending_approval" | "approved" | "rejected")
@@ -104,7 +104,7 @@ export function JoinRequestQueue() {
         <label className="space-y-2 text-sm">
           <span className="font-medium">Request type</span>
           <select
-            className="rounded-md border border-border bg-background px-3 py-2"
+            className="rounded-md border border-line bg-bg px-3 py-2"
             value={requestType}
             onChange={(event) =>
               setRequestType(event.target.value as "all" | "human" | "agent")
@@ -119,7 +119,7 @@ export function JoinRequestQueue() {
 
       <div className="space-y-4">
         {(requestsQuery.data ?? []).length === 0 ? (
-          <div className="rounded-xl border border-dashed border-border px-4 py-8 text-sm text-muted-foreground">
+          <div className="rounded-xl border border-dashed border-line px-4 py-8 text-sm text-ink-3">
             No join requests match the current filters.
           </div>
         ) : (
@@ -140,7 +140,7 @@ export function JoinRequestQueue() {
                         ? request.requesterUser?.name || request.requestEmailSnapshot || request.requestingUserId || "Unknown human requester"
                         : request.agentName || "Unknown agent requester"}
                     </div>
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-sm text-ink-3">
                       {request.requestType === "human"
                         ? request.requesterUser?.email || request.requestEmailSnapshot || request.requestingUserId
                         : request.capabilities || request.requestIp}
@@ -151,7 +151,7 @@ export function JoinRequestQueue() {
                 {request.status === "pending_approval" ? (
                   <div className="flex gap-2">
                     <Button
-                      variant="outline"
+                      variant="secondary"
                       onClick={() => rejectMutation.mutate(request.id)}
                       disabled={rejectMutation.isPending}
                     >
@@ -167,8 +167,8 @@ export function JoinRequestQueue() {
                 ) : null}
               </div>
 
-              <div className="mt-4 grid gap-3 text-sm text-muted-foreground md:grid-cols-2">
-                <div className="rounded-lg border border-border bg-background px-3 py-2">
+              <div className="mt-4 grid gap-3 text-sm text-ink-3 md:grid-cols-2">
+                <div className="rounded-lg border border-line bg-bg px-3 py-2">
                   <div className="text-xs font-medium uppercase tracking-wide">Invite context</div>
                   <div className="mt-2">
                     {request.invite
@@ -176,10 +176,10 @@ export function JoinRequestQueue() {
                       : "Invite metadata unavailable"}
                   </div>
                   {request.invite?.inviteMessage ? (
-                    <div className="mt-2 text-foreground">{request.invite.inviteMessage}</div>
+                    <div className="mt-2 text-ink">{request.invite.inviteMessage}</div>
                   ) : null}
                 </div>
-                <div className="rounded-lg border border-border bg-background px-3 py-2">
+                <div className="rounded-lg border border-line bg-bg px-3 py-2">
                   <div className="text-xs font-medium uppercase tracking-wide">Request details</div>
                   <div className="mt-2">Submitted {new Date(request.createdAt).toLocaleString()}</div>
                   <div>Source IP {request.requestIp}</div>

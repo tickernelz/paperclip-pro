@@ -118,7 +118,7 @@ function SessionGoalStates() {
   };
 
   return (
-    <main className="min-h-screen bg-background p-6 text-foreground">
+    <main className="min-h-screen bg-bg p-6 text-ink">
       <div className="mx-auto max-w-6xl space-y-8">
         <section>
           <h1 className="mb-3 text-lg font-semibold">Goal statuses and negotiated actions</h1>

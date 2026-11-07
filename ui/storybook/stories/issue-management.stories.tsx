@@ -178,7 +178,7 @@ function Section({
 }) {
   return (
     <section className="paperclip-story__frame overflow-hidden">
-      <div className="border-b border-border px-5 py-4">
+      <div className="border-b border-line px-5 py-4">
         <div className="paperclip-story__label">{eyebrow}</div>
         <h2 className="mt-1 text-xl font-semibold">{title}</h2>
       </div>
@@ -305,11 +305,11 @@ function IssuePropertiesLongValuePane({ inline = false }: { inline?: boolean }) 
         <div
           className={
             inline
-              ? "mx-auto flex h-[620px] w-[390px] max-w-full flex-col overflow-hidden border border-border bg-background"
-              : "flex h-[620px] w-80 flex-col overflow-hidden border border-border bg-card"
+              ? "mx-auto flex h-[620px] w-[390px] max-w-full flex-col overflow-hidden border border-line bg-bg"
+              : "flex h-[620px] w-80 flex-col overflow-hidden border border-line bg-bg-2"
           }
         >
-          <div className="border-b border-border px-4 py-2 text-sm font-medium">Properties</div>
+          <div className="border-b border-line px-4 py-2 text-sm font-medium">Properties</div>
           <ScrollArea className="flex-1">
             <div className="p-4">
               <IssueProperties
@@ -353,8 +353,8 @@ function IssuePropertiesRelationshipBadgesPane({ inline = false }: { inline?: bo
   return (
     <LongValueStorybookData>
       <div className="paperclip-story flex flex-wrap items-start gap-6 p-6">
-        <div className="w-80 max-w-full border border-border bg-card">
-          <div className="border-b border-border px-4 py-2 text-sm font-medium">Properties</div>
+        <div className="w-80 max-w-full border border-line bg-bg-2">
+          <div className="border-b border-line px-4 py-2 text-sm font-medium">Properties</div>
           <div className="p-4">
             <IssueProperties
               issue={issue}
@@ -373,10 +373,10 @@ function IssuePropertiesRelationshipBadgesPane({ inline = false }: { inline?: bo
         </div>
         <div className="max-w-sm space-y-3 text-sm">
           <h2 className="font-semibold">Task relationship badges</h2>
-          <p className="text-muted-foreground">Click a status icon or task ID to navigate. Hover or focus a blocker to reveal its remove button. Only the X removes that blocker.</p>
-          <p className="text-muted-foreground">The arrow opens the relationship picker. Badge widths stay fixed on hover.</p>
+          <p className="text-ink-3">Click a status icon or task ID to navigate. Hover or focus a blocker to reveal its remove button. Only the X removes that blocker.</p>
+          <p className="text-ink-3">The arrow opens the relationship picker. Badge widths stay fixed on hover.</p>
           <p>Current route: <code data-testid="relationship-route" className="font-mono text-xs">{location.pathname}</code></p>
-          <Button variant="outline" size="sm" onClick={() => setIssue(relationshipIssue)}>Reset blockers</Button>
+          <Button variant="secondary" size="sm" onClick={() => setIssue(relationshipIssue)}>Reset blockers</Button>
         </div>
       </div>
     </LongValueStorybookData>
@@ -387,8 +387,8 @@ function IssuePropertiesModelOverridePane() {
   return (
     <StorybookData>
       <div className="paperclip-story p-6">
-        <div className="mx-auto w-80 border border-border bg-card">
-          <div className="border-b border-border px-4 py-2 text-sm font-medium">Properties</div>
+        <div className="mx-auto w-80 border border-line bg-bg-2">
+          <div className="border-b border-line px-4 py-2 text-sm font-medium">Properties</div>
           <div className="p-4">
             <IssueProperties
               issue={modelOverrideIssue}
@@ -422,8 +422,8 @@ function IssuePropertiesMobileBlockerActionsPane() {
   return (
     <StorybookData>
       <div ref={rootRef} className="paperclip-story min-h-screen p-4">
-        <div className="mx-auto max-w-sm border border-border bg-background">
-          <div className="border-b border-border px-4 py-2 text-sm font-medium">Properties</div>
+        <div className="mx-auto max-w-sm border border-line bg-bg">
+          <div className="border-b border-line px-4 py-2 text-sm font-medium">Properties</div>
           <div className="p-4">
             <IssueProperties
               issue={storybookIssues[1]!}
@@ -452,8 +452,8 @@ function ColumnConfigurationMatrix() {
 
   return (
     <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
-      <div className="overflow-hidden rounded-lg border border-border bg-background/70">
-        <div className="grid grid-cols-[minmax(0,1fr)_minmax(420px,0.9fr)] items-center border-b border-border px-4 py-2 text-[11px] font-semibold uppercase text-muted-foreground">
+      <div className="overflow-hidden rounded-lg border border-line bg-bg/70">
+        <div className="grid grid-cols-[minmax(0,1fr)_minmax(420px,0.9fr)] items-center border-b border-line px-4 py-2 text-[11px] font-semibold uppercase text-ink-3">
           <span>Issue</span>
           <span className="grid grid-cols-[6rem_6rem_7rem_9rem_6rem_4.5rem] gap-2">
             <span>Assignee</span>
@@ -465,7 +465,7 @@ function ColumnConfigurationMatrix() {
           </span>
         </div>
         {storybookIssues.slice(0, 3).map((issue) => (
-          <div key={issue.id} className="grid grid-cols-[minmax(0,1fr)_minmax(420px,0.9fr)] items-center border-b border-border/60 px-4 py-3 last:border-b-0">
+          <div key={issue.id} className="grid grid-cols-[minmax(0,1fr)_minmax(420px,0.9fr)] items-center border-b border-line/60 px-4 py-3 last:border-b-0">
             <div className="flex min-w-0 items-center gap-2">
               <InboxIssueMetaLeading
                 issue={issue}
@@ -527,12 +527,12 @@ function ColumnConfigurationMatrix() {
             ].map((item) => {
               const Icon = item.icon;
               return (
-                <div key={item.label} className="flex items-center justify-between rounded-md border border-border bg-background/70 px-3 py-2 text-sm">
+                <div key={item.label} className="flex items-center justify-between rounded-md border border-line bg-bg/70 px-3 py-2 text-sm">
                   <span className="flex items-center gap-2">
-                    <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+                    <Icon className="h-3.5 w-3.5 text-ink-3" />
                     {item.label}
                   </span>
-                  <span className="text-xs text-muted-foreground">{item.state}</span>
+                  <span className="text-xs text-ink-3">{item.state}</span>
                 </div>
               );
             })}
@@ -553,14 +553,14 @@ function GroupHeaderMatrix() {
   return (
     <div className="grid gap-4 md:grid-cols-3">
       {rows.map((row, index) => (
-        <div key={row.label} className="rounded-lg border border-border bg-background/70 p-2">
+        <div key={row.label} className="rounded-lg border border-line bg-bg/70 p-2">
           <IssueGroupHeader
             label={row.label}
             collapsible
             collapsed={index === 1}
-            trailing={<span className="text-xs text-muted-foreground">{row.trailing}</span>}
+            trailing={<span className="text-xs text-ink-3">{row.trailing}</span>}
           />
-          <div className="border-t border-border px-3 py-4">{row.badge}</div>
+          <div className="border-t border-line px-3 py-4">{row.badge}</div>
         </div>
       ))}
     </div>
@@ -584,7 +584,7 @@ function OpenFiltersPopover() {
   }, []);
 
   return (
-    <div className="flex min-h-[500px] items-start justify-end rounded-lg border border-dashed border-border bg-background/60 p-4">
+    <div className="flex min-h-[500px] items-start justify-end rounded-lg border border-dashed border-line bg-bg/60 p-4">
       <div ref={triggerRef}>
         <IssueFiltersPopover
           state={state}
@@ -595,7 +595,7 @@ function OpenFiltersPopover() {
           labels={storybookIssueLabels.map((label) => ({ id: label.id, name: label.name, color: label.color }))}
           currentUserId="user-board"
           enableRoutineVisibilityFilter
-          buttonVariant="outline"
+          buttonVariant="secondary"
           creators={[
             { id: "user:user-board", label: "Riley Board", kind: "user", searchText: "board user human" },
             ...storybookAgents.map((agent) => ({
@@ -622,8 +622,8 @@ function RunLedgerWithCostColumns() {
         childIssues={childIssues}
         agentMap={storybookAgentMap}
       />
-      <div className="overflow-hidden rounded-lg border border-border bg-background/70">
-        <div className="grid grid-cols-[1fr_90px_80px_70px] gap-2 border-b border-border px-3 py-2 text-[11px] font-semibold uppercase text-muted-foreground">
+      <div className="overflow-hidden rounded-lg border border-line bg-bg/70">
+        <div className="grid grid-cols-[1fr_90px_80px_70px] gap-2 border-b border-line px-3 py-2 text-[11px] font-semibold uppercase text-ink-3">
           <span>Run</span>
           <span>Status</span>
           <span>Duration</span>
@@ -635,10 +635,10 @@ function RunLedgerWithCostColumns() {
           const minutes = start ? Math.max(1, Math.round((end - start) / 60_000)) : null;
           const costCents = typeof run.usageJson?.costCents === "number" ? run.usageJson.costCents : 0;
           return (
-            <div key={run.runId} className="grid grid-cols-[1fr_90px_80px_70px] gap-2 border-b border-border/60 px-3 py-2 text-xs last:border-b-0">
+            <div key={run.runId} className="grid grid-cols-[1fr_90px_80px_70px] gap-2 border-b border-line/60 px-3 py-2 text-xs last:border-b-0">
               <span className="min-w-0 truncate font-mono">{run.runId}</span>
-              <span className="capitalize text-muted-foreground">{run.status}</span>
-              <span className="text-muted-foreground">{minutes ? `${minutes}m` : "unknown"}</span>
+              <span className="capitalize text-ink-3">{run.status}</span>
+              <span className="text-ink-3">{minutes ? `${minutes}m` : "unknown"}</span>
               <span className="text-right font-mono">${(costCents / 100).toFixed(2)}</span>
             </div>
           );
@@ -668,17 +668,17 @@ function WorkspaceCardWithRuntime() {
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
           <div className="flex items-center justify-between gap-3">
-            <span className="text-muted-foreground">Branch</span>
+            <span className="text-ink-3">Branch</span>
             <span className="truncate font-mono text-xs">{primaryIssue.currentExecutionWorkspace?.branchName}</span>
           </div>
           <div className="space-y-1">
-            <span className="text-muted-foreground">Path</span>
-            <div className="break-all rounded-md border border-border bg-background/70 p-2 font-mono text-xs">
+            <span className="text-ink-3">Path</span>
+            <div className="break-all rounded-md border border-line bg-bg/70 p-2 font-mono text-xs">
               {primaryIssue.currentExecutionWorkspace?.cwd}
             </div>
           </div>
           {service ? (
-            <div className="flex items-center justify-between gap-3 rounded-md border border-border bg-background/70 px-3 py-2">
+            <div className="flex items-center justify-between gap-3 rounded-md border border-line bg-bg/70 px-3 py-2">
               <span>{service.serviceName}</span>
               <Badge variant="outline">{service.status}</Badge>
             </div>
@@ -692,20 +692,20 @@ function WorkspaceCardWithRuntime() {
 function QuicklookSurfaces() {
   return (
     <div className="grid gap-5 lg:grid-cols-2">
-      <div className="rounded-lg border border-border bg-background/70 p-4">
+      <div className="rounded-lg border border-line bg-bg/70 p-4">
         <div className="mb-3 flex items-center gap-2 text-sm font-medium">
-          <Link2 className="h-4 w-4 text-muted-foreground" />
+          <Link2 className="h-4 w-4 text-ink-3" />
           IssueLinkQuicklook
         </div>
         <IssueLinkQuicklook
           issuePathId={primaryIssue.identifier ?? primaryIssue.id}
           issuePrefetch={primaryIssue}
           to={`/PAP/issues/${primaryIssue.identifier}`}
-          className="font-mono text-sm text-primary hover:underline"
+          className="font-mono text-sm text-accent hover:underline"
         >
           {primaryIssue.identifier}
         </IssueLinkQuicklook>
-        <div className="mt-4 rounded-md border border-border bg-popover p-3 shadow-xl">
+        <div className="mt-4 rounded-md border border-line bg-bg-2 p-3 shadow-xl">
           <IssueQuicklookCard
             issue={primaryIssue}
             linkTo={`/PAP/issues/${primaryIssue.identifier}`}
@@ -714,15 +714,15 @@ function QuicklookSurfaces() {
         </div>
       </div>
 
-      <div className="rounded-lg border border-border bg-background/70 p-4">
+      <div className="rounded-lg border border-line bg-bg/70 p-4">
         <div className="mb-3 flex items-center gap-2 text-sm font-medium">
-          <PanelRight className="h-4 w-4 text-muted-foreground" />
+          <PanelRight className="h-4 w-4 text-ink-3" />
           IssuesQuicklook
         </div>
         <IssuesQuicklook issue={storybookIssues[2]!}>
-          <Button variant="outline" size="sm">Hover preview trigger</Button>
+          <Button variant="secondary" size="sm">Hover preview trigger</Button>
         </IssuesQuicklook>
-        <div className="mt-4 rounded-md border border-border bg-card p-3">
+        <div className="mt-4 rounded-md border border-line bg-bg-2 p-3">
           <IssueQuicklookCard
             issue={storybookIssues[2]!}
             linkTo={`/PAP/issues/${storybookIssues[2]!.identifier}`}
@@ -743,7 +743,7 @@ function IssueManagementStories() {
               <div>
                 <div className="paperclip-story__label">Issue management</div>
                 <h1 className="mt-2 text-3xl font-semibold tracking-tight">List, detail, filters, runs, and workspace states</h1>
-                <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
+                <p className="mt-3 max-w-3xl text-sm leading-6 text-ink-3">
                   Fixture-backed issue management stories cover the operational states used by the board when reviewing,
                   filtering, handing off, and continuing agent work.
                 </p>
@@ -757,7 +757,7 @@ function IssueManagementStories() {
           </section>
 
           <Section eyebrow="IssuesList" title="Full list view with grouped issue rows and column headers">
-            <div className="mb-3 grid grid-cols-[minmax(0,1fr)_120px_120px_110px] gap-3 rounded-lg border border-border bg-background/70 px-4 py-2 text-[11px] font-semibold uppercase text-muted-foreground">
+            <div className="mb-3 grid grid-cols-[minmax(0,1fr)_120px_120px_110px] gap-3 rounded-lg border border-line bg-bg/70 px-4 py-2 text-[11px] font-semibold uppercase text-ink-3">
               <span>Issue</span>
               <span>Assignee</span>
               <span>Workspace</span>
@@ -785,16 +785,16 @@ function IssueManagementStories() {
 
           <Section eyebrow="IssueProperties" title="Full issue detail sidebar with all property fields">
             <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_380px]">
-              <div className="space-y-4 rounded-lg border border-border bg-background/70 p-5">
+              <div className="space-y-4 rounded-lg border border-line bg-bg/70 p-5">
                 <div className="flex flex-wrap items-center gap-2">
                   <StatusBadge status={primaryIssue.status} />
                   <PriorityIcon priority={primaryIssue.priority} showLabel />
                   <Badge variant="secondary">{primaryIssue.identifier}</Badge>
                 </div>
                 <h3 className="text-2xl font-semibold tracking-tight">{primaryIssue.title}</h3>
-                <p className="max-w-2xl text-sm leading-6 text-muted-foreground">{primaryIssue.description}</p>
+                <p className="max-w-2xl text-sm leading-6 text-ink-3">{primaryIssue.description}</p>
               </div>
-              <div className="rounded-lg border border-border bg-background/70 p-4">
+              <div className="rounded-lg border border-line bg-bg/70 p-4">
                 <IssueProperties
                   issue={primaryIssue}
                   childIssues={childIssues}
@@ -806,7 +806,7 @@ function IssueManagementStories() {
             </div>
             <div className="mt-5 grid gap-4 lg:grid-cols-3">
               {attributionIssues.map((issue) => (
-                <div key={issue.id} className="rounded-lg border border-border bg-background/70 p-4">
+                <div key={issue.id} className="rounded-lg border border-line bg-bg/70 p-4">
                   <div className="mb-3 truncate text-sm font-medium">{issue.title}</div>
                   <IssueProperties
                     issue={issue}
@@ -857,7 +857,7 @@ function IssueManagementStories() {
               return (
                 <Card key={item.label} className="paperclip-story__frame shadow-none">
                   <CardHeader>
-                    <Icon className="h-4 w-4 text-muted-foreground" />
+                    <Icon className="h-4 w-4 text-ink-3" />
                     <CardTitle>{item.label}</CardTitle>
                     <CardDescription>{item.detail}</CardDescription>
                   </CardHeader>

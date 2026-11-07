@@ -48,18 +48,16 @@ function contrastRatio(first: string, second: string): number {
 }
 
 describe("destructive theme tokens", () => {
-  // Confirm buttons use `bg-destructive text-destructive-foreground`. The label
+  // Confirm buttons use `bg-bad text-accent-ink`. The label
   // must stay readable on the destructive fill in both themes.
-  // Light theme meets WCAG AA for normal text (4.5:1). The dark theme keeps the
-  // brighter red chosen in the gallery review, so it only has to meet 3:1.
   for (const [selector, minimum] of [
     [":root", 4.5],
-    [".dark", 3],
+    [".dark", 4.5],
   ] as const) {
-    it(`keeps destructive-foreground readable on the destructive fill in ${selector}`, () => {
+    it(`keeps accent-ink readable on the bad fill in ${selector}`, () => {
       const block = cssBlock(selector);
-      const fill = token(block, "destructive");
-      const foreground = token(block, "destructive-foreground");
+      const fill = token(block, "bad");
+      const foreground = token(block, "accent-ink");
 
       expect(contrastRatio(foreground, fill)).toBeGreaterThanOrEqual(minimum);
     });

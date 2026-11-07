@@ -492,7 +492,7 @@ describe("AttentionQueueRow", () => {
 
     const row = container?.querySelector("[data-attention-row]");
     expect(row?.getAttribute("class")).toContain("rounded-xl");
-    expect(row?.getAttribute("class")).toContain("ring-ring");
+    expect(row?.getAttribute("class")).toContain("ring-focus");
   });
 
   it("renders collapsed inline decision verbs in a dedicated action bar with semantic variants", () => {
@@ -532,10 +532,10 @@ describe("AttentionQueueRow", () => {
 
     const buttons = Array.from(decisionActions?.querySelectorAll("button") ?? []);
     expect(buttons.find((button) => button.textContent === "Approve")?.getAttribute("data-variant")).toBe(
-      "default",
+      "primary",
     );
     expect(buttons.find((button) => button.textContent === "Reject")?.getAttribute("data-variant")).toBe(
-      "destructive",
+      "secondary",
     );
   });
 
@@ -597,8 +597,8 @@ describe("AttentionQueueRow", () => {
     const decisionActions = container?.querySelector('[aria-label="Decision actions"]');
     expect(decisionActions?.textContent).toContain("Approve plan");
     expect(decisionActions?.textContent).toContain("Request changes");
-    expect(Array.from(decisionActions?.querySelectorAll("button") ?? []).find((button) => button.textContent === "Approve plan")?.getAttribute("data-variant")).toBe("default");
-    expect(Array.from(decisionActions?.querySelectorAll("button") ?? []).find((button) => button.textContent === "Request changes")?.getAttribute("data-variant")).toBe("outline");
+    expect(Array.from(decisionActions?.querySelectorAll("button") ?? []).find((button) => button.textContent === "Approve plan")?.getAttribute("data-variant")).toBe("primary");
+    expect(Array.from(decisionActions?.querySelectorAll("button") ?? []).find((button) => button.textContent === "Request changes")?.getAttribute("data-variant")).toBe("secondary");
 
     const approve = Array.from(decisionActions?.querySelectorAll("button") ?? []).find(
       (button) => button.textContent === "Approve plan",

@@ -313,11 +313,11 @@ function statusTextTone(status: SecretStatus) {
     case "disabled":
       return "text-amber-700 dark:text-amber-300";
     case "archived":
-      return "text-muted-foreground";
+      return "text-ink-3";
     case "deleted":
-      return "text-destructive";
+      return "text-bad";
     default:
-      return "text-muted-foreground";
+      return "text-ink-3";
   }
 }
 
@@ -368,11 +368,11 @@ function statusDotTone(status: SecretStatus) {
     case "disabled":
       return "bg-amber-500";
     case "archived":
-      return "bg-muted-foreground";
+      return "bg-ink-3";
     case "deleted":
-      return "bg-destructive";
+      return "bg-bad";
     default:
-      return "bg-muted-foreground";
+      return "bg-ink-3";
   }
 }
 
@@ -387,7 +387,7 @@ function StatusBadge({ status }: { status: SecretStatus }) {
 
 function MetaChip({ children }: { children: React.ReactNode }) {
   return (
-    <span className="inline-flex min-w-0 items-center gap-1 rounded-md border border-border bg-background px-2 py-0.5 text-(length:--text-micro) text-muted-foreground">
+    <span className="inline-flex min-w-0 items-center gap-1 rounded-md border border-line bg-bg px-2 py-0.5 text-(length:--text-micro) text-ink-3">
       {children}
     </span>
   );
@@ -426,7 +426,7 @@ function SecretProviderIndicator({
       <TooltipTrigger asChild>
         <span
           aria-label={label}
-          className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-border bg-muted/40 text-muted-foreground"
+          className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-line bg-bg-3/40 text-ink-3"
         >
           <Icon className="h-3 w-3" />
         </span>
@@ -448,7 +448,7 @@ function UpdatedWithTooltip({
       <TooltipTrigger asChild>
         <span
           aria-label={tooltip}
-          className="inline-flex cursor-help border-b border-dotted border-muted-foreground/60 text-xs text-muted-foreground"
+          className="inline-flex cursor-help border-b border-dotted border-ink-3/60 text-xs text-ink-3"
         >
           {formatRelative(updatedAt)}
         </span>
@@ -1658,7 +1658,7 @@ export function Secrets() {
   function renderSecretName(name: string) {
     if (searching) return <SecretPathName name={name} className="text-sm" />;
     if (showFolderView) return <SecretPathName name={name} basePath={folderPath} className="text-sm" />;
-    return <span className="truncate font-medium text-foreground">{name}</span>;
+    return <span className="truncate font-medium text-ink">{name}</span>;
   }
 
   function renderFolderTableRow(folder: SecretPathFolder) {
@@ -1667,14 +1667,14 @@ export function Secrets() {
         key={`folder:${folder.path}`}
         to={folderLinkTo(folder.path)}
         role="row"
-        className="grid grid-cols-(--gtc-54) items-center gap-3 border-b border-border/60 px-3 py-3 hover:bg-accent/40"
+        className="grid grid-cols-(--gtc-54) items-center gap-3 border-b border-line/60 px-3 py-3 hover:bg-bg-3/40"
       >
         <div role="cell" className="min-w-0">
           <div className="flex min-w-0 items-center gap-2">
-            <Folder className="h-4 w-4 shrink-0 text-muted-foreground" />
-            <span className="truncate font-medium text-foreground">{folder.name}</span>
+            <Folder className="h-4 w-4 shrink-0 text-ink-3" />
+            <span className="truncate font-medium text-ink">{folder.name}</span>
           </div>
-          <div className="mt-0.5 pl-6 text-xs text-muted-foreground">
+          <div className="mt-0.5 pl-6 text-xs text-ink-3">
             {formatSecretPathCounts(folder.secretCount, folder.folderCount)}
           </div>
         </div>
@@ -1682,7 +1682,7 @@ export function Secrets() {
         <div role="cell" aria-hidden="true" />
         <div role="cell" aria-hidden="true" />
         <div role="cell" className="flex justify-end">
-          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          <ChevronRight className="h-4 w-4 text-ink-3" />
         </div>
       </Link>
     );
@@ -1693,18 +1693,18 @@ export function Secrets() {
       <Link
         key={`folder:${folder.path}`}
         to={folderLinkTo(folder.path)}
-        className="flex items-center justify-between gap-2 rounded-md border border-border bg-background p-3 hover:bg-accent/30"
+        className="flex items-center justify-between gap-2 rounded-md border border-line bg-bg p-3 hover:bg-bg-3/30"
       >
         <div className="flex min-w-0 items-center gap-2">
-          <Folder className="h-4 w-4 shrink-0 text-muted-foreground" />
+          <Folder className="h-4 w-4 shrink-0 text-ink-3" />
           <div className="min-w-0">
-            <div className="truncate font-medium text-foreground">{folder.name}</div>
-            <div className="text-xs text-muted-foreground">
+            <div className="truncate font-medium text-ink">{folder.name}</div>
+            <div className="text-xs text-ink-3">
               {formatSecretPathCounts(folder.secretCount, folder.folderCount)}
             </div>
           </div>
         </div>
-        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+        <ChevronRight className="h-4 w-4 shrink-0 text-ink-3" />
       </Link>
     );
   }
@@ -1716,10 +1716,10 @@ export function Secrets() {
         to={folderLinkTo(parentFolderPath)}
         role={variant === "table" ? "row" : undefined}
         className={cn(
-          "flex items-center gap-2 text-xs text-muted-foreground hover:bg-accent/40",
+          "flex items-center gap-2 text-xs text-ink-3 hover:bg-bg-3/40",
           variant === "table"
-            ? "border-b border-border/60 px-3 py-2.5"
-            : "rounded-md border border-border bg-background px-3 py-2.5",
+            ? "border-b border-line/60 px-3 py-2.5"
+            : "rounded-md border border-line bg-bg px-3 py-2.5",
         )}
       >
         <CornerLeftUp className="h-4 w-4 shrink-0" />
@@ -1750,17 +1750,17 @@ export function Secrets() {
             const isEllipsis = crumb.name === "…" && crumb.path === "" && index > 0 && !isLast;
             return (
               <li key={`${crumb.path}:${index}`} className="flex min-w-0 items-center gap-1">
-                {index > 0 ? <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground/60" /> : null}
+                {index > 0 ? <ChevronRight className="h-3.5 w-3.5 shrink-0 text-ink-3/60" /> : null}
                 {isEllipsis ? (
-                  <span className="px-0.5 text-muted-foreground">…</span>
+                  <span className="px-0.5 text-ink-3">…</span>
                 ) : isLast ? (
-                  <span aria-current="page" className="truncate font-medium text-foreground">
+                  <span aria-current="page" className="truncate font-medium text-ink">
                     {crumb.name}
                   </span>
                 ) : (
                   <Link
                     to={folderLinkTo(crumb.path)}
-                    className="max-w-40 truncate text-muted-foreground hover:text-foreground hover:underline"
+                    className="max-w-40 truncate text-ink-3 hover:text-ink hover:underline"
                   >
                     {crumb.name}
                   </Link>
@@ -1776,19 +1776,19 @@ export function Secrets() {
               <Link
                 to={folderLinkTo(parentFolderPath)}
                 aria-label="Up one folder"
-                className="shrink-0 text-muted-foreground hover:text-foreground"
+                className="shrink-0 text-ink-3 hover:text-ink"
               >
                 <ChevronLeft className="h-4 w-4" />
               </Link>
               {parentLabel !== "All secrets" ? (
-                <span className="shrink-0 text-muted-foreground">{parentLabel} /</span>
+                <span className="shrink-0 text-ink-3">{parentLabel} /</span>
               ) : null}
-              <span aria-current="page" className="truncate font-medium text-foreground">
+              <span aria-current="page" className="truncate font-medium text-ink">
                 {currentName}
               </span>
             </>
           ) : (
-            <span aria-current="page" className="truncate font-medium text-foreground">
+            <span aria-current="page" className="truncate font-medium text-ink">
               All secrets
             </span>
           )}
@@ -1799,7 +1799,7 @@ export function Secrets() {
 
   if (!selectedCompanyId) {
     return (
-      <div className="p-6 text-sm text-muted-foreground">Select an organization to manage secrets.</div>
+      <div className="p-6 text-sm text-ink-3">Select an organization to manage secrets.</div>
     );
   }
 
@@ -1807,7 +1807,7 @@ export function Secrets() {
     <TooltipProvider>
     <div className="flex max-w-6xl flex-col gap-4">
       <div className="flex items-center gap-2">
-        <KeyRound className="h-5 w-5 text-muted-foreground" />
+        <KeyRound className="h-5 w-5 text-ink-3" />
         <h1 className="text-lg font-semibold">Secrets</h1>
       </div>
 
@@ -1851,7 +1851,7 @@ export function Secrets() {
           <SecretsHowToUse />
           <div className="flex flex-wrap items-center gap-2">
             <div className="relative w-48 sm:w-64 md:w-80">
-              <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+              <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-3" />
               <Input
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
@@ -1875,7 +1875,7 @@ export function Secrets() {
               role="group"
               aria-label="View mode"
               className={cn(
-                "inline-flex items-center rounded-md border border-border p-0.5",
+                "inline-flex items-center rounded-md border border-line p-0.5",
                 searching && "opacity-50",
               )}
             >
@@ -1889,8 +1889,8 @@ export function Secrets() {
                   className={cn(
                     "rounded-sm px-2.5 py-1 text-xs font-medium capitalize transition-colors disabled:cursor-not-allowed",
                     effectiveViewMode === mode
-                      ? "bg-accent text-accent-foreground"
-                      : "text-muted-foreground hover:text-foreground",
+                      ? "bg-bg-3 text-ink"
+                      : "text-ink-3 hover:text-ink",
                   )}
                 >
                   {mode}
@@ -1906,7 +1906,7 @@ export function Secrets() {
             {showFolderView ? (
               <Button
                 type="button"
-                variant="outline"
+                variant="secondary"
                 size="sm"
                 onClick={() => {
                   setNewFolderOpen(true);
@@ -1939,7 +1939,7 @@ export function Secrets() {
                   autoFocus
                 />
                 {newFolderError ? (
-                  <p className="mt-1 text-xs text-destructive" role="alert">
+                  <p className="mt-1 text-xs text-bad" role="alert">
                     {newFolderError}
                   </p>
                 ) : null}
@@ -1954,7 +1954,7 @@ export function Secrets() {
           ) : null}
           <div>
             {secretsQuery.isError || userDefinitionsQuery.isError ? (
-              <div className="text-sm text-destructive flex items-center gap-2 py-4">
+              <div className="text-sm text-bad flex items-center gap-2 py-4">
                 <AlertCircle className="h-4 w-4" /> Failed to load secrets:{" "}
                 {((secretsQuery.error ?? userDefinitionsQuery.error) as Error).message}
                 <Button
@@ -1983,14 +1983,14 @@ export function Secrets() {
                 {showFolderView ? (
                   <div className="mb-3 flex flex-wrap items-center justify-between gap-x-3 gap-y-1">
                     {renderSecretsBreadcrumb()}
-                    <span className="shrink-0 text-xs text-muted-foreground">
+                    <span className="shrink-0 text-xs text-ink-3">
                       {formatSecretPathCounts(currentFolderSecretCount, folderListing.folders.length)}
                     </span>
                   </div>
                 ) : searching ? (
                   <div className="mb-3">
-                    <div className="text-sm font-medium text-foreground">Search results</div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-sm font-medium text-ink">Search results</div>
+                    <div className="text-xs text-ink-3">
                       {filteredRows.length} {filteredRows.length === 1 ? "match" : "matches"} across all
                       folders{folderPath ? ` · searching everywhere, not just ${folderPath}` : ""}
                     </div>
@@ -2001,7 +2001,7 @@ export function Secrets() {
                   secretsQuery.isPending || userDefinitionsQuery.isPending ? (
                     <div className="space-y-2 py-2" aria-hidden="true" data-testid="secrets-loading-skeleton">
                       {[0, 1, 2, 3].map((index) => (
-                        <div key={index} className="h-14 animate-pulse rounded-md bg-muted/40" />
+                        <div key={index} className="h-14 animate-pulse rounded-md bg-bg-3/40" />
                       ))}
                     </div>
                   ) : showFolderView && folderPath && activeSecretFilterCount === 0 ? (
@@ -2027,7 +2027,7 @@ export function Secrets() {
                 >
                   <div
                     role="row"
-                    className="grid grid-cols-(--gtc-54) items-center gap-3 bg-muted/40 px-3 py-2 text-xs uppercase tracking-wide text-muted-foreground"
+                    className="grid grid-cols-(--gtc-54) items-center gap-3 bg-bg-3/40 px-3 py-2 text-xs uppercase tracking-wide text-ink-3"
                   >
                     <div role="columnheader" className="font-medium">Secret</div>
                     <div role="columnheader" className="font-medium">Status</div>
@@ -2054,9 +2054,9 @@ export function Secrets() {
                           key={row.id}
                           role="row"
                           className={cn(
-                            "grid cursor-pointer grid-cols-(--gtc-54) items-center gap-3 border-b border-border/60 px-3 py-3 hover:bg-accent/40",
-                            row.kind === "company" && selectedSecretId === row.secret.id && "bg-accent/60",
-                            row.kind === "user" && selectedDefinitionId === row.definition.id && "bg-accent/60",
+                            "grid cursor-pointer grid-cols-(--gtc-54) items-center gap-3 border-b border-line/60 px-3 py-3 hover:bg-bg-3/40",
+                            row.kind === "company" && selectedSecretId === row.secret.id && "bg-bg-3/60",
+                            row.kind === "user" && selectedDefinitionId === row.definition.id && "bg-bg-3/60",
                           )}
                           onClick={() => {
                             if (row.kind === "company") openCompanySecret(row.secret);
@@ -2086,7 +2086,7 @@ export function Secrets() {
                                 </Tooltip>
                               )}
                             </div>
-                            <code className="mt-0.5 block truncate text-(length:--text-micro) text-muted-foreground">
+                            <code className="mt-0.5 block truncate text-(length:--text-micro) text-ink-3">
                               {row.kind === "company" ? row.secret.key : row.definition.key}
                             </code>
                             <div className="mt-1">
@@ -2104,8 +2104,8 @@ export function Secrets() {
                           </div>
                           <div role="cell" className="min-w-0 text-xs">
                             {row.kind === "company" ? (
-                              <span className="truncate text-muted-foreground">
-                                <span className="font-mono text-foreground">v{row.secret.latestVersion}</span>
+                              <span className="truncate text-ink-3">
+                                <span className="font-mono text-ink">v{row.secret.latestVersion}</span>
                                 <span> · {row.secret.managedMode === "external_reference" ? "linked" : "managed"}</span>
                               </span>
                             ) : (
@@ -2133,9 +2133,9 @@ export function Secrets() {
                       <div
                         key={row.id}
                         className={cn(
-                          "cursor-pointer rounded-md border border-border bg-background p-3 hover:bg-accent/30",
-                          row.kind === "company" && selectedSecretId === row.secret.id && "bg-accent/60",
-                          row.kind === "user" && selectedDefinitionId === row.definition.id && "bg-accent/60",
+                          "cursor-pointer rounded-md border border-line bg-bg p-3 hover:bg-bg-3/30",
+                          row.kind === "company" && selectedSecretId === row.secret.id && "bg-bg-3/60",
+                          row.kind === "user" && selectedDefinitionId === row.definition.id && "bg-bg-3/60",
                         )}
                         onClick={() => {
                           if (row.kind === "company") openCompanySecret(row.secret);
@@ -2147,7 +2147,7 @@ export function Secrets() {
                             <div className="min-w-0 truncate">
                               {renderSecretName(row.kind === "company" ? row.secret.name : row.definition.name)}
                             </div>
-                            <code className="mt-0.5 block truncate text-(length:--text-micro) text-muted-foreground">
+                            <code className="mt-0.5 block truncate text-(length:--text-micro) text-ink-3">
                               {row.kind === "company" ? row.secret.key : row.definition.key}
                             </code>
                           </div>
@@ -2174,7 +2174,7 @@ export function Secrets() {
                             </>
                           )}
                         </div>
-                        <div className="mt-2 flex items-center justify-between gap-2 text-xs text-muted-foreground">
+                        <div className="mt-2 flex items-center justify-between gap-2 text-xs text-ink-3">
                           <span className="min-w-0 truncate">
                             {row.kind === "company" ? (
                               <>
@@ -2257,8 +2257,8 @@ export function Secrets() {
                 <SheetDescription className="sr-only">
                   {providerLabel(providers, selectedSecret.provider)} secret {selectedSecret.key}
                 </SheetDescription>
-                <div className="flex min-w-0 items-center gap-2 rounded-md border border-border bg-muted/20 px-2 py-1.5">
-                  <code className="min-w-0 flex-1 truncate font-mono text-xs text-foreground">
+                <div className="flex min-w-0 items-center gap-2 rounded-md border border-line bg-bg-3/20 px-2 py-1.5">
+                  <code className="min-w-0 flex-1 truncate font-mono text-xs text-ink">
                     {selectedSecret.key}
                   </code>
                   <Button
@@ -2288,12 +2288,12 @@ export function Secrets() {
                   <RefreshCw className="h-3.5 w-3.5 mr-1" />
                   {rotateActionLabel(selectedSecret)}
                 </Button>
-                <Button variant="outline" size="sm" onClick={copyDetailLink}>
+                <Button variant="secondary" size="sm" onClick={copyDetailLink}>
                   <Link2 className="h-3.5 w-3.5 mr-1" /> Copy link
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" aria-label={`More actions for ${selectedSecret.name}`}>
+                    <Button variant="secondary" size="sm" aria-label={`More actions for ${selectedSecret.name}`}>
                       <MoreHorizontal className="mr-1 h-3.5 w-3.5" /> More
                     </Button>
                   </DropdownMenuTrigger>
@@ -2338,7 +2338,7 @@ export function Secrets() {
                 </DropdownMenu>
               </div>
               <Tabs value={secretDetailTab} onValueChange={setSecretDetailTab} className="flex-1 min-h-0 flex flex-col">
-                <div className="border-b border-border px-4">
+                <div className="border-b border-line px-4">
                   <PageTabBar
                     items={[
                       { value: "details", label: "Details" },
@@ -2391,8 +2391,8 @@ export function Secrets() {
                 <SheetDescription className="sr-only">
                   Each user secret definition {selectedDefinition.key}
                 </SheetDescription>
-                <div className="flex min-w-0 items-center gap-2 rounded-md border border-border bg-muted/20 px-2 py-1.5">
-                  <code className="min-w-0 flex-1 truncate font-mono text-xs text-foreground">
+                <div className="flex min-w-0 items-center gap-2 rounded-md border border-line bg-bg-3/20 px-2 py-1.5">
+                  <code className="min-w-0 flex-1 truncate font-mono text-xs text-ink">
                     {selectedDefinition.key}
                   </code>
                   <Button
@@ -2427,7 +2427,7 @@ export function Secrets() {
                 </Button>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" aria-label={`More actions for ${selectedDefinition.name}`}>
+                    <Button variant="secondary" size="sm" aria-label={`More actions for ${selectedDefinition.name}`}>
                       <MoreHorizontal className="mr-1 h-3.5 w-3.5" /> More
                     </Button>
                   </DropdownMenuTrigger>
@@ -2476,7 +2476,7 @@ export function Secrets() {
                 </DropdownMenu>
               </div>
               <Tabs value={secretDetailTab} onValueChange={setSecretDetailTab} className="flex-1 min-h-0 flex flex-col">
-                <div className="border-b border-border px-4">
+                <div className="border-b border-line px-4">
                   <PageTabBar
                     items={[
                       { value: "details", label: "Details" },
@@ -2587,7 +2587,7 @@ export function Secrets() {
           <div className="space-y-4">
             {!editingDefinition ? (
               <div className="space-y-1.5">
-                <p className="text-xs font-medium text-foreground">Who provides the value?</p>
+                <p className="text-xs font-medium text-ink">Who provides the value?</p>
                 <Tabs
                   value={secretValueProvider}
                   onValueChange={(value) => {
@@ -2609,7 +2609,7 @@ export function Secrets() {
                     <TabsTrigger value="user">Each user</TabsTrigger>
                   </TabsList>
                 </Tabs>
-                <p className="text-(length:--text-micro) text-muted-foreground">
+                <p className="text-(length:--text-micro) text-ink-3">
                   Organization stores one shared value. Each user lets every member supply their own value under My secrets.
                 </p>
               </div>
@@ -2627,15 +2627,15 @@ export function Secrets() {
             <div>
               <label className="text-xs font-medium" htmlFor="new-secret-name">Name</label>
               {createNamePrefix && !editingDefinition ? (
-                <div className="flex h-9 w-full min-w-0 items-center gap-1.5 rounded-md border border-input bg-transparent px-2 shadow-xs transition-[color,box-shadow] focus-within:border-ring focus-within:ring-ring/50 focus-within:ring-3">
+                <div className="flex h-9 w-full min-w-0 items-center gap-1.5 rounded-md border border-line-strong bg-transparent px-2 shadow-xs transition-[color,box-shadow] focus-within:border-focus focus-within:ring-focus/50 focus-within:ring-3">
                   <span
-                    className="inline-flex min-w-0 shrink items-center gap-1 rounded-full bg-muted px-2 py-1 text-xs text-muted-foreground"
+                    className="inline-flex min-w-0 shrink items-center gap-1 rounded-full bg-bg-3 px-2 py-1 text-xs text-ink-3"
                     title={createNamePrefix}
                   >
                     <span className="truncate">{createNamePrefix}</span>
                     <button
                       type="button"
-                      className="shrink-0 rounded-full text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      className="shrink-0 rounded-full text-ink-3 transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
                       aria-label="Remove folder prefix"
                       onClick={() => setCreateNamePrefix(null)}
                     >
@@ -2644,7 +2644,7 @@ export function Secrets() {
                   </span>
                   <input
                     id="new-secret-name"
-                    className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                    className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-ink-3"
                     value={createForm.name.slice(createNamePrefix.length)}
                     onChange={(event) => {
                       const name = createNamePrefix + event.target.value;
@@ -2683,7 +2683,7 @@ export function Secrets() {
                 />
               )}
               {createNamePrefix && !editingDefinition ? (
-                <p className="mt-1 text-xs text-muted-foreground">
+                <p className="mt-1 text-xs text-ink-3">
                   Creating in {folderPath} — remove the chip to type a different path.
                 </p>
               ) : null}
@@ -2716,7 +2716,7 @@ export function Secrets() {
                   placeholder="arn:aws:secretsmanager:..."
                   className="font-mono text-xs"
                 />
-                <p className="text-(length:--text-micro) text-muted-foreground mt-1">
+                <p className="text-(length:--text-micro) text-ink-3 mt-1">
                   Existing provider secrets are resolve-only in Paperclip. Rotate the value in the provider,
                   then update this reference only if the path, ARN, or version changes.
                 </p>
@@ -2729,8 +2729,8 @@ export function Secrets() {
                   user&apos;s value at runtime.
                 </div>
                 <div className="space-y-1">
-                  <label className="text-xs font-medium text-foreground" htmlFor="new-secret-usage-guidance">
-                    Usage guidance <span className="text-muted-foreground/70">(optional)</span>
+                  <label className="text-xs font-medium text-ink" htmlFor="new-secret-usage-guidance">
+                    Usage guidance <span className="text-ink-3/70">(optional)</span>
                   </label>
                   <Textarea
                     id="new-secret-usage-guidance"
@@ -2753,7 +2753,7 @@ export function Secrets() {
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="h-5 px-1.5 text-(length:--text-micro) text-muted-foreground"
+                    className="h-5 px-1.5 text-(length:--text-micro)"
                     onClick={() => setCreateKeyEditable(true)}
                   >
                     <Pencil className="mr-1 h-3 w-3" /> Edit
@@ -2774,10 +2774,10 @@ export function Secrets() {
                 disabled={Boolean(editingDefinition)}
                 className={cn(
                   "font-mono text-sm",
-                  !createKeyEditable && !editingDefinition && "border-dashed bg-muted/40 text-muted-foreground",
+                  !createKeyEditable && !editingDefinition && "border-dashed bg-bg-3/40 text-ink-3",
                 )}
               />
-              <p className="mt-1 text-(length:--text-micro) text-muted-foreground">
+              <p className="mt-1 text-(length:--text-micro) text-ink-3">
                 {editingDefinition
                   ? "Stable env binding key. Cannot be changed."
                   : !createKeyEditable
@@ -2790,7 +2790,7 @@ export function Secrets() {
 
             <div>
               <label className="text-xs font-medium" htmlFor="new-secret-description">
-                Description <span className="text-muted-foreground/70">(optional)</span>
+                Description <span className="text-ink-3/70">(optional)</span>
               </label>
               <Input
                 id="new-secret-description"
@@ -2809,7 +2809,7 @@ export function Secrets() {
                   <label className="text-xs font-medium" htmlFor="new-secret-provider">Provider</label>
                   <select
                     id="new-secret-provider"
-                    className="h-9 w-full rounded-md border border-border bg-background px-2 text-sm outline-none"
+                    className="h-9 w-full rounded-md border border-line bg-bg px-2 text-sm outline-none"
                     value={createForm.provider}
                     onChange={(event) =>
                       setCreateForm((current) => {
@@ -2846,19 +2846,19 @@ export function Secrets() {
                     ))}
                   </select>
                   {createProviderBlockReason ? (
-                    <p className="mt-1 flex items-center gap-1 text-(length:--text-micro) text-destructive">
+                    <p className="mt-1 flex items-center gap-1 text-(length:--text-micro) text-bad">
                       <AlertCircle className="h-3 w-3" />
                       {createProviderBlockReason}
                     </p>
                   ) : createProviderHealthText ? (
-                    <p className="mt-1 text-(length:--text-micro) text-muted-foreground">{createProviderHealthText}</p>
+                    <p className="mt-1 text-(length:--text-micro) text-ink-3">{createProviderHealthText}</p>
                   ) : null}
                 </div>
                 <div>
                   <label className="text-xs font-medium" htmlFor="new-secret-vault">Provider vault</label>
                   <select
                     id="new-secret-vault"
-                    className="h-9 w-full rounded-md border border-border bg-background px-2 text-sm outline-none"
+                    className="h-9 w-full rounded-md border border-line bg-bg px-2 text-sm outline-none"
                     value={createForm.providerConfigId}
                     onChange={(event) =>
                       setCreateForm((current) => ({ ...current, providerConfigId: event.target.value }))
@@ -2888,7 +2888,7 @@ export function Secrets() {
                     {awsManagedPathPreview ? (
                       <div className="mt-1">
                         AWS managed path:{" "}
-                        <code className="break-all rounded bg-background/70 px-1 py-0.5">
+                        <code className="break-all rounded bg-bg/70 px-1 py-0.5">
                           {awsManagedPathPreview}
                         </code>
                       </div>
@@ -2906,7 +2906,7 @@ export function Secrets() {
             ) : null}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateOpen(false)}>
+            <Button variant="secondary" onClick={() => setCreateOpen(false)}>
               Cancel
             </Button>
             <Button
@@ -2950,7 +2950,7 @@ export function Secrets() {
                 <label className="text-xs font-medium" htmlFor="vault-provider">Provider</label>
                 <select
                   id="vault-provider"
-                  className="h-9 w-full rounded-md border border-border bg-background px-2 text-sm outline-none disabled:opacity-60"
+                  className="h-9 w-full rounded-md border border-line bg-bg px-2 text-sm outline-none disabled:opacity-60"
                   value={vaultForm.provider}
                   disabled={Boolean(editingVault)}
                   onChange={(event) => {
@@ -2982,7 +2982,7 @@ export function Secrets() {
                 <label className="text-xs font-medium" htmlFor="vault-status">Status</label>
                 <select
                   id="vault-status"
-                  className="h-9 w-full rounded-md border border-border bg-background px-2 text-sm outline-none"
+                  className="h-9 w-full rounded-md border border-line bg-bg px-2 text-sm outline-none"
                   value={vaultForm.status}
                   onChange={(event) => {
                     const status = event.target.value as SecretProviderConfigStatus;
@@ -3007,7 +3007,7 @@ export function Secrets() {
               <label className="flex items-center gap-2 pt-6 text-sm">
                 <input
                   type="checkbox"
-                  className="h-4 w-4 rounded border-border"
+                  className="h-4 w-4 rounded border-line"
                   checked={vaultForm.isDefault}
                   disabled={vaultForm.status === "coming_soon" || vaultForm.status === "disabled"}
                   onChange={(event) =>
@@ -3041,10 +3041,10 @@ export function Secrets() {
                 the provider module is implemented and reviewed.
               </div>
             ) : null}
-            {vaultError ? <p className="text-xs text-destructive">{vaultError}</p> : null}
+            {vaultError ? <p className="text-xs text-bad">{vaultError}</p> : null}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setVaultDialogOpen(false)}>
+            <Button variant="secondary" onClick={() => setVaultDialogOpen(false)}>
               Cancel
             </Button>
             <Button
@@ -3093,7 +3093,7 @@ export function Secrets() {
             <label className="text-xs font-medium" htmlFor="rotate-secret-vault">Provider vault</label>
             <select
               id="rotate-secret-vault"
-              className="h-9 w-full rounded-md border border-border bg-background px-2 text-sm outline-none"
+              className="h-9 w-full rounded-md border border-line bg-bg px-2 text-sm outline-none"
               value={rotateProviderConfigId}
               onChange={(event) => setRotateProviderConfigId(event.target.value)}
             >
@@ -3112,7 +3112,7 @@ export function Secrets() {
             {selectedRotateProviderConfig ? (
               <ProviderVaultInlineWarning config={selectedRotateProviderConfig} />
             ) : (
-              <p className="mt-1 text-(length:--text-micro) text-muted-foreground">
+              <p className="mt-1 text-(length:--text-micro) text-ink-3">
                 Rotating with the deployment default preserves current fallback behavior.
               </p>
             )}
@@ -3127,7 +3127,7 @@ export function Secrets() {
                 placeholder={selectedSecret.externalRef ?? "Updated reference"}
                 className="font-mono text-xs"
               />
-              <p className="mt-1 text-(length:--text-micro) text-muted-foreground">
+              <p className="mt-1 text-(length:--text-micro) text-ink-3">
                 Rotate the actual value in the provider before changing this Paperclip reference.
               </p>
             </div>
@@ -3143,15 +3143,15 @@ export function Secrets() {
                 placeholder="Paste the new value"
               />
               {selectedSecret?.managedMode === "external_reference" ? (
-                <p className="mt-1 text-(length:--text-micro) text-muted-foreground">
+                <p className="mt-1 text-(length:--text-micro) text-ink-3">
                   Written to <code className="font-mono">{selectedSecret.externalRef}</code> in the provider.
                 </p>
               ) : null}
             </div>
           )}
-          {rotateError ? <p className="text-xs text-destructive">{rotateError}</p> : null}
+          {rotateError ? <p className="text-xs text-bad">{rotateError}</p> : null}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRotateOpen(false)}>
+            <Button variant="secondary" onClick={() => setRotateOpen(false)}>
               Cancel
             </Button>
             <Button
@@ -3185,9 +3185,9 @@ export function Secrets() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteConfirm(null)}>Cancel</Button>
+            <Button variant="secondary" onClick={() => setDeleteConfirm(null)}>Cancel</Button>
             <Button
-              variant="destructive"
+              variant="delete"
               onClick={() => deleteConfirm && deleteMutation.mutate(deleteConfirm.id)}
               disabled={deleteMutation.isPending}
             >
@@ -3211,9 +3211,9 @@ export function Secrets() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDefinitionDeleteConfirm(null)}>Cancel</Button>
+            <Button variant="secondary" onClick={() => setDefinitionDeleteConfirm(null)}>Cancel</Button>
             <Button
-              variant="destructive"
+              variant="delete"
               onClick={() =>
                 definitionDeleteConfirm && deleteDefinitionMutation.mutate(definitionDeleteConfirm)
               }
@@ -3249,9 +3249,9 @@ export function Secrets() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRemoveVaultConfirm(null)}>Cancel</Button>
+            <Button variant="secondary" onClick={() => setRemoveVaultConfirm(null)}>Cancel</Button>
             <Button
-              variant="destructive"
+              variant="delete"
               onClick={() => removeVaultConfirm && removeVaultMutation.mutate(removeVaultConfirm.id)}
               disabled={removeVaultMutation.isPending}
             >
@@ -3268,14 +3268,14 @@ export function Secrets() {
 
 function SecretsHowToUse() {
   return (
-    <div className="flex items-start gap-2 rounded-md border border-border bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
+    <div className="flex items-start gap-2 rounded-md border border-line bg-bg-3/20 px-3 py-2 text-xs text-ink-3">
       <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
       <div className="space-y-1">
-        <p className="font-medium text-foreground">Use secrets by binding them to runtime environment variables.</p>
+        <p className="font-medium text-ink">Use secrets by binding them to runtime environment variables.</p>
         <p>
           Create or link a secret here, then open an agent&apos;s Environment variables or a project&apos;s Env field.
           Add the env key the process expects, for example <code className="font-mono">GH_TOKEN</code>, choose{" "}
-          <span className="font-medium text-foreground">Secret</span>, and select the stored secret version.
+          <span className="font-medium text-ink">Secret</span>, and select the stored secret version.
         </p>
         <p>
           Paperclip resolves the value server-side when the run starts and injects it as that env var. Project env
@@ -3322,9 +3322,9 @@ function SecretsFiltersPopover({
     <Popover>
       <PopoverTrigger asChild>
         <Button
-          variant="outline"
+          variant="secondary"
           size="icon"
-          className={cn("relative h-8 w-8 shrink-0", activeFilterCount > 0 && "text-blue-600 dark:text-blue-400")}
+          className={cn("relative h-8 w-8 shrink-0")}
           title={activeFilterCount > 0 ? `Filters: ${activeFilterCount}` : "Filter"}
         >
           <Filter className="h-3.5 w-3.5" />
@@ -3345,7 +3345,7 @@ function SecretsFiltersPopover({
             {activeFilterCount > 0 ? (
               <button
                 type="button"
-                className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                className="inline-flex items-center gap-1 text-xs text-ink-3 hover:text-ink"
                 onClick={resetFilters}
               >
                 <X className="h-3 w-3" />
@@ -3356,10 +3356,10 @@ function SecretsFiltersPopover({
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
             <div className="space-y-1">
-              <span className="text-xs text-muted-foreground">Status</span>
+              <span className="text-xs text-ink-3">Status</span>
               <div className="space-y-0.5">
                 {statusOptions.map((option) => (
-                  <label key={option.value} className="flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1 hover:bg-accent/50">
+                  <label key={option.value} className="flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1 hover:bg-bg-3/50">
                     <Checkbox
                       checked={statusFilter === option.value}
                       onCheckedChange={() => onStatusChange(option.value)}
@@ -3371,14 +3371,14 @@ function SecretsFiltersPopover({
             </div>
 
             <div className="space-y-1">
-              <span className="text-xs text-muted-foreground">Provided by</span>
+              <span className="text-xs text-ink-3">Provided by</span>
               <div className="space-y-0.5">
                 {[
                   { value: "all" as const, label: "All sources" },
                   { value: "company" as const, label: "Organization" },
                   { value: "user" as const, label: "Each user" },
                 ].map((option) => (
-                  <label key={option.value} className="flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1 hover:bg-accent/50">
+                  <label key={option.value} className="flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1 hover:bg-bg-3/50">
                     <Checkbox
                       checked={providedByFilter === option.value}
                       onCheckedChange={() => onProvidedByChange(option.value)}
@@ -3390,9 +3390,9 @@ function SecretsFiltersPopover({
             </div>
 
             <div className="space-y-1">
-              <span className="text-xs text-muted-foreground">Provider</span>
+              <span className="text-xs text-ink-3">Provider</span>
               <div className="max-h-48 space-y-0.5 overflow-y-auto pr-1">
-                <label className="flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1 hover:bg-accent/50">
+                <label className="flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1 hover:bg-bg-3/50">
                   <Checkbox
                     checked={providerFilter === "all"}
                     onCheckedChange={() => onProviderChange("all")}
@@ -3400,7 +3400,7 @@ function SecretsFiltersPopover({
                   <span className="text-sm">All providers</span>
                 </label>
                 {providers.map((provider) => (
-                  <label key={provider.id} className="flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1 hover:bg-accent/50">
+                  <label key={provider.id} className="flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1 hover:bg-bg-3/50">
                     <Checkbox
                       checked={providerFilter === provider.id}
                       onCheckedChange={() => onProviderChange(provider.id)}
@@ -3426,9 +3426,9 @@ function providerConfigStatusTone(status: SecretProviderConfigStatus) {
     case "coming_soon":
       return "border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300";
     case "disabled":
-      return "border-muted bg-muted text-muted-foreground";
+      return "border-bg-3 bg-bg-3 text-ink-3";
     default:
-      return "border-border bg-muted text-muted-foreground";
+      return "border-line bg-bg-3 text-ink-3";
   }
 }
 
@@ -3452,14 +3452,14 @@ function ProviderVaultInlineWarning({ config }: { config: CompanySecretProviderC
   const message = blockReason ?? config.healthMessage;
   if (!message) {
     return (
-      <p className="mt-1 text-(length:--text-micro) text-muted-foreground">
+      <p className="mt-1 text-(length:--text-micro) text-ink-3">
         {config.isDefault ? "Default vault" : "Vault"} · {config.status.replace("_", " ")}
       </p>
     );
   }
   const warning = config.status === "warning" || config.healthStatus === "warning";
   return (
-    <p className={cn("mt-1 flex items-center gap-1 text-(length:--text-micro)", warning ? "text-amber-600 dark:text-amber-400" : "text-destructive")}>
+    <p className={cn("mt-1 flex items-center gap-1 text-(length:--text-micro)", warning ? "text-amber-600 dark:text-amber-400" : "text-bad")}>
       {warning ? <AlertTriangle className="h-3 w-3" /> : <AlertCircle className="h-3 w-3" />}
       {message}
     </p>
@@ -3496,7 +3496,7 @@ function ImportFromVaultButton({
         variant="ghost"
         size="sm"
         onClick={onManageVaults}
-        className={cn("text-xs text-muted-foreground", className)}
+        className={cn("text-xs", className)}
         title="Configure an AWS provider vault to enable remote import"
       >
         <Cloud className="h-3.5 w-3.5 mr-1" /> AWS vault disabled — manage
@@ -3506,7 +3506,7 @@ function ImportFromVaultButton({
 
   return (
     <Button
-      variant="outline"
+      variant="secondary"
       size="sm"
       onClick={onClick}
       className={className}
@@ -3548,7 +3548,7 @@ export function ProviderVaultsTab({
 }) {
   if (loading) {
     return (
-      <div className="flex items-center gap-2 py-4 text-sm text-muted-foreground">
+      <div className="flex items-center gap-2 py-4 text-sm text-ink-3">
         <Loader2 className="h-4 w-4 animate-spin" />
         Loading provider vaults
       </div>
@@ -3557,7 +3557,7 @@ export function ProviderVaultsTab({
 
   if (error) {
     return (
-      <div className="py-4 text-sm text-destructive flex items-center gap-2">
+      <div className="py-4 text-sm text-bad flex items-center gap-2">
         <AlertCircle className="h-4 w-4" /> Failed to load provider vaults: {(error as Error).message}
         <Button variant="ghost" size="sm" onClick={onRetry}>
           Retry
@@ -3583,7 +3583,7 @@ export function ProviderVaultsTab({
             <a
               key={id}
               href={`#provider-vaults-${id}`}
-              className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+              className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-ink-3 hover:bg-bg-3/50 hover:text-ink"
             >
               <Icon className="h-4 w-4" />
               <span className="truncate">{provider?.label ?? id.replaceAll("_", " ")}</span>
@@ -3596,19 +3596,19 @@ export function ProviderVaultsTab({
         {providerRows.map(({ id, provider, Icon, isComingSoonFamily, configs }) => (
           <section key={id} id={`provider-vaults-${id}`} className={cn("scroll-mt-6 space-y-2", isComingSoonFamily && "opacity-50")}>
             <div className="flex flex-wrap items-center gap-2">
-              <Icon className="h-4 w-4 text-muted-foreground" />
+              <Icon className="h-4 w-4 text-ink-3" />
               <h2 className="text-sm font-semibold">{provider?.label ?? id.replaceAll("_", " ")}</h2>
               {isComingSoonFamily ? (
-                <span className="ml-auto text-xs text-muted-foreground">Coming soon</span>
+                <span className="ml-auto text-xs text-ink-3">Coming soon</span>
               ) : (
-                <Button variant="outline" size="sm" className="ml-auto" onClick={() => onCreate(id)}>
+                <Button variant="secondary" size="sm" className="ml-auto" onClick={() => onCreate(id)}>
                   <Plus className="h-3.5 w-3.5 mr-1" />
                   Add vault
                 </Button>
               )}
             </div>
             {configs.length === 0 ? (
-              <div className="rounded-md border border-dashed border-border bg-muted/20 p-4 text-sm text-muted-foreground">
+              <div className="rounded-md border border-dashed border-line bg-bg-3/20 p-4 text-sm text-ink-3">
                 {isComingSoonFamily
                   ? "Not yet supported."
                   : "No organization-specific vaults yet. Secrets can still use the deployment default provider settings."}
@@ -3659,7 +3659,7 @@ function ProviderVaultCard({
   const blockReason = getProviderConfigBlockReason(config);
   const details = config.healthDetails;
   return (
-    <div className="rounded-md border border-border bg-background p-4">
+    <div className="rounded-md border border-line bg-bg p-4">
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
@@ -3676,11 +3676,11 @@ function ProviderVaultCard({
               {config.status.replace("_", " ")}
             </Badge>
             {config.healthStatus ? (
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs text-ink-3">
                 Health {config.healthStatus.replace("_", " ")} · {formatRelative(config.healthCheckedAt)}
               </span>
             ) : (
-              <span className="text-xs text-muted-foreground">Health not checked</span>
+              <span className="text-xs text-ink-3">Health not checked</span>
             )}
           </div>
         </div>
@@ -3689,7 +3689,7 @@ function ProviderVaultCard({
         </Button>
       </div>
       {config.healthMessage || blockReason ? (
-        <div className={cn("mt-3 rounded-md p-2 text-xs", blockReason ? "bg-destructive/5 text-destructive" : "bg-muted/40 text-muted-foreground")}>
+        <div className={cn("mt-3 rounded-md p-2 text-xs", blockReason ? "bg-bad/5 text-bad" : "bg-bg-3/40 text-ink-3")}>
           {blockReason ?? config.healthMessage}
           {details?.guidance?.length ? (
             <ul className="mt-1 list-disc space-y-0.5 pl-4">
@@ -3701,13 +3701,13 @@ function ProviderVaultCard({
         </div>
       ) : null}
       <div className="mt-3 flex flex-wrap gap-2">
-        <Button variant="outline" size="sm" onClick={onHealthCheck} disabled={pending}>
+        <Button variant="secondary" size="sm" onClick={onHealthCheck} disabled={pending}>
           {pending ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <RefreshCw className="h-3.5 w-3.5 mr-1" />}
           Check health
         </Button>
         {config.provider === "aws_secrets_manager" ? (
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             onClick={onImportSecrets}
             disabled={pending || Boolean(blockReason)}
@@ -3723,7 +3723,7 @@ function ProviderVaultCard({
           </Button>
         ) : null}
         <Button
-          variant="outline"
+          variant="secondary"
           size="sm"
           onClick={onSetDefault}
           disabled={pending || Boolean(blockReason) || config.isDefault}
@@ -3732,9 +3732,8 @@ function ProviderVaultCard({
           Make default
         </Button>
         <Button
-          variant="outline"
+          variant="danger"
           size="sm"
-          className="text-destructive hover:text-destructive"
           onClick={onDisable}
           disabled={pending || config.status === "disabled"}
         >
@@ -3742,9 +3741,8 @@ function ProviderVaultCard({
           Disable
         </Button>
         <Button
-          variant="outline"
+          variant="danger"
           size="sm"
-          className="text-destructive hover:text-destructive"
           onClick={onRemove}
           disabled={pending}
         >
@@ -3769,10 +3767,10 @@ function ProviderVaultFields({
 
   if (form.provider === "local_encrypted") {
     return (
-      <label className="flex items-start gap-2 rounded-md border border-border bg-muted/20 p-3 text-sm">
+      <label className="flex items-start gap-2 rounded-md border border-line bg-bg-3/20 p-3 text-sm">
         <input
           type="checkbox"
-          className="mt-0.5 h-4 w-4 rounded border-border"
+          className="mt-0.5 h-4 w-4 rounded border-line"
           checked={form.backupReminderAcknowledged}
           onChange={(event) => setField("backupReminderAcknowledged", event.target.checked)}
         />
@@ -3836,17 +3834,17 @@ function AwsProviderVaultDiscoveryPanel({
   const warnings = preview?.warnings ?? [];
 
   return (
-    <div className="space-y-3 border-t border-border pt-3">
+    <div className="space-y-3 border-t border-line pt-3">
       <div className="flex flex-wrap items-center gap-2">
         <div className="min-w-0 flex-1">
           <p className="text-sm font-medium">AWS discovery</p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             Uses the current draft routing fields to inspect AWS Secrets Manager metadata. Values are not read.
           </p>
         </div>
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           size="sm"
           onClick={onDiscover}
           disabled={!canDiscover || loading}
@@ -3862,11 +3860,11 @@ function AwsProviderVaultDiscoveryPanel({
       </div>
 
       {!canDiscover ? (
-        <p className="text-xs text-muted-foreground">Enter an AWS region before discovery.</p>
+        <p className="text-xs text-ink-3">Enter an AWS region before discovery.</p>
       ) : null}
 
       {loading ? (
-        <div className="flex items-center gap-2 rounded-md border border-border bg-muted/20 p-3 text-xs text-muted-foreground">
+        <div className="flex items-center gap-2 rounded-md border border-line bg-bg-3/20 p-3 text-xs text-ink-3">
           <Loader2 className="h-3.5 w-3.5 animate-spin" />
           Searching AWS Secrets Manager metadata
         </div>
@@ -3888,14 +3886,14 @@ function AwsProviderVaultDiscoveryPanel({
       ) : null}
 
       {preview && preview.candidates.length === 0 && !loading ? (
-        <div className="rounded-md border border-dashed border-border bg-muted/20 p-3 text-xs text-muted-foreground">
+        <div className="rounded-md border border-dashed border-line bg-bg-3/20 p-3 text-xs text-ink-3">
           No AWS vault metadata candidates found. Manual entry is still available.
         </div>
       ) : null}
 
       {preview && preview.candidates.length > 0 ? (
         <div className="space-y-2">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2 text-xs text-ink-3">
             <Database className="h-3.5 w-3.5" />
             <span>
               {preview.candidates.length} candidate{preview.candidates.length === 1 ? "" : "s"} from{" "}
@@ -3957,7 +3955,7 @@ function AwsProviderVaultDiscoveryError({
 
   return (
     <div
-      className="rounded-md border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive"
+      className="rounded-md border border-bad/30 bg-bad/5 p-3 text-xs text-bad"
       role="alert"
       data-testid="aws-vault-discovery-error"
     >
@@ -3968,7 +3966,7 @@ function AwsProviderVaultDiscoveryError({
             <p className="font-medium">
               {isAccessDenied ? "AWS discovery needs ListSecrets permission" : "AWS discovery failed"}
             </p>
-            <p className="mt-1 leading-relaxed text-destructive/85">
+            <p className="mt-1 leading-relaxed text-bad/85">
               {isAccessDenied
                 ? details?.actionableMessage ??
                   "Discovery needs secretsmanager:ListSecrets in the selected region for the Paperclip server runtime/provider credential path."
@@ -3976,12 +3974,12 @@ function AwsProviderVaultDiscoveryError({
             </p>
           </div>
           {isAccessDenied ? (
-            <p className="leading-relaxed text-destructive/85">
+            <p className="leading-relaxed text-bad/85">
               {details?.safeAlternative ??
                 "If you already know the exact AWS Secrets Manager ARN, paste/link that ARN instead of using discovery. Exact-resource DescribeSecret and runtime read permissions are still required."}
             </p>
           ) : null}
-          <dl className="grid gap-1 text-destructive/80 sm:grid-cols-2">
+          <dl className="grid gap-1 text-bad/80 sm:grid-cols-2">
             <div>
               <dt className="font-medium">Region</dt>
               <dd>{region}</dd>
@@ -3999,9 +3997,9 @@ function AwsProviderVaultDiscoveryError({
               <dd>{details?.providerVaultContext ?? "draft_config"}</dd>
             </div>
           </dl>
-          <div className="rounded-md border border-destructive/20 bg-background/70 p-2 text-foreground">
+          <div className="rounded-md border border-bad/20 bg-bg/70 p-2 text-ink">
             <div className="mb-1 flex items-center justify-between gap-2">
-              <span className="font-medium text-muted-foreground">Safe request/error details</span>
+              <span className="font-medium text-ink-3">Safe request/error details</span>
               <CopyDetailsButton text={detailsText} />
             </div>
             <pre className="max-h-36 overflow-auto whitespace-pre-wrap break-words font-mono text-(length:--text-micro) leading-relaxed">
@@ -4044,7 +4042,7 @@ function SecretCreateError({
 
   if (!isAwsCreateError) {
     return (
-      <p className="text-xs text-destructive" role="alert" data-testid="secret-create-error">
+      <p className="text-xs text-bad" role="alert" data-testid="secret-create-error">
         {message}
       </p>
     );
@@ -4052,7 +4050,7 @@ function SecretCreateError({
 
   return (
     <div
-      className="space-y-2 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-xs text-destructive"
+      className="space-y-2 rounded-md border border-bad/30 bg-bad/5 p-3 text-xs text-bad"
       role="alert"
       data-testid="secret-create-error"
     >
@@ -4063,14 +4061,14 @@ function SecretCreateError({
             <p className="font-medium">
               {isAccessDenied ? "AWS secret creation needs CreateSecret permission" : "AWS secret creation failed"}
             </p>
-            <p className="mt-1 leading-relaxed text-destructive/85">
+            <p className="mt-1 leading-relaxed text-bad/85">
               {details?.actionableMessage ?? message}
             </p>
           </div>
           {details?.safeAlternative ? (
-            <p className="leading-relaxed text-destructive/85">{details.safeAlternative}</p>
+            <p className="leading-relaxed text-bad/85">{details.safeAlternative}</p>
           ) : null}
-          <dl className="grid gap-1 text-destructive/80 sm:grid-cols-2">
+          <dl className="grid gap-1 text-bad/80 sm:grid-cols-2">
             {details?.requiredCapability ? (
               <div>
                 <dt className="font-medium">Required IAM capability</dt>
@@ -4092,9 +4090,9 @@ function SecretCreateError({
               <dd>{details?.operation ?? "secret.create"}</dd>
             </div>
           </dl>
-          <div className="rounded-md border border-destructive/20 bg-background/70 p-2 text-foreground">
+          <div className="rounded-md border border-bad/20 bg-bg/70 p-2 text-ink">
             <div className="mb-1 flex items-center justify-between gap-2">
-              <span className="font-medium text-muted-foreground">Safe request/error details</span>
+              <span className="font-medium text-ink-3">Safe request/error details</span>
               <CopyDetailsButton text={detailsText} />
             </div>
             <pre className="max-h-36 overflow-auto whitespace-pre-wrap break-words font-mono text-(length:--text-micro) leading-relaxed">
@@ -4121,20 +4119,20 @@ function AwsProviderVaultDiscoveryCandidateRow({
   ].filter(Boolean);
 
   return (
-    <div className="rounded-md border border-border bg-background p-3">
+    <div className="rounded-md border border-line bg-bg p-3">
       <div className="flex items-start gap-3">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
             <p className="text-sm font-medium leading-snug">{candidate.displayName}</p>
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs text-ink-3">
               {candidate.sampleCount} sample{candidate.sampleCount === 1 ? "" : "s"}
             </span>
           </div>
-          <p className="mt-1 truncate text-xs text-muted-foreground">
+          <p className="mt-1 truncate text-xs text-ink-3">
             {fieldSummary.length > 0 ? fieldSummary.join(" / ") : "No stable namespace or prefix detected"}
           </p>
           {candidate.samples[0] ? (
-            <p className="mt-1 truncate font-mono text-(length:--text-micro) text-muted-foreground">
+            <p className="mt-1 truncate font-mono text-(length:--text-micro) text-ink-3">
               {candidate.samples[0].name}
             </p>
           ) : null}
@@ -4175,7 +4173,7 @@ function TextField({
     <div>
       <label className="text-xs font-medium" htmlFor={id}>
         {label}
-        {required ? null : <span className="text-muted-foreground/70"> (optional)</span>}
+        {required ? null : <span className="text-ink-3/70"> (optional)</span>}
       </label>
       <Input id={id} value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} />
     </div>
@@ -4197,10 +4195,10 @@ function CoverageInline({
     staleTime: 30_000,
   });
   const summary = coverageQuery.data;
-  if (coverageQuery.isPending) return <span className="text-muted-foreground">Loading…</span>;
-  if (coverageQuery.isError) return <span className="text-destructive">Coverage unavailable</span>;
+  if (coverageQuery.isPending) return <span className="text-ink-3">Loading…</span>;
+  if (coverageQuery.isError) return <span className="text-bad">Coverage unavailable</span>;
   return (
-    <span className="inline-flex min-w-0 items-center gap-1 text-muted-foreground">
+    <span className="inline-flex min-w-0 items-center gap-1 text-ink-3">
       <Users className="h-3 w-3" />
       <span className="truncate">
         {compact && summary
@@ -4226,9 +4224,9 @@ function UserSecretDetailsTab({
   onViewCoverage: () => void;
 }) {
   return (
-    <dl className="divide-y divide-border/60 text-xs">
+    <dl className="divide-y divide-line/60 text-xs">
       <DetailRow label="Description">
-        <span>{definition.description ?? <span className="text-muted-foreground">—</span>}</span>
+        <span>{definition.description ?? <span className="text-ink-3">—</span>}</span>
       </DetailRow>
       <DetailRow label="Provided by">Each user</DetailRow>
       <DetailRow label="Key">
@@ -4238,17 +4236,17 @@ function UserSecretDetailsTab({
       <DetailRow label="Coverage">
         <button
           type="button"
-          className="inline-flex min-w-0 items-center gap-1 text-left text-primary hover:underline"
+          className="inline-flex min-w-0 items-center gap-1 text-left text-accent hover:underline"
           onClick={onViewCoverage}
         >
           <CoverageInline companyId={companyId} definitionId={definition.id} />
-          <span className="shrink-0 text-muted-foreground">· View in Coverage</span>
+          <span className="shrink-0 text-ink-3">· View in Coverage</span>
         </button>
       </DetailRow>
       <DetailRow label="Created">{formatRelative(definition.createdAt)}</DetailRow>
       <DetailRow label="Updated">{formatRelative(definition.updatedAt)}</DetailRow>
       <DetailRow label="Usage guidance">
-        {definition.usageGuidance ?? <span className="text-muted-foreground">—</span>}
+        {definition.usageGuidance ?? <span className="text-ink-3">—</span>}
       </DetailRow>
       <div className="mt-3 rounded-md border border-violet-500/30 bg-violet-500/5 p-2 text-(length:--text-micro) text-violet-800 dark:text-violet-200">
         No value is stored on this admin row. Each member manages their own value under My secrets.
@@ -4270,16 +4268,16 @@ function UserSecretCoverageTab({
     staleTime: 30_000,
   });
   if (coverageQuery.isPending) {
-    return <div className="py-6 text-center text-xs text-muted-foreground">Loading…</div>;
+    return <div className="py-6 text-center text-xs text-ink-3">Loading…</div>;
   }
   if (coverageQuery.isError) {
-    return <div className="py-6 text-center text-xs text-destructive">Coverage unavailable.</div>;
+    return <div className="py-6 text-center text-xs text-bad">Coverage unavailable.</div>;
   }
   const summary: UserSecretCoverageSummary = coverageQuery.data;
   const total = summary.configuredCount + summary.missingCount + summary.inactiveCount;
   return (
     <div className="space-y-3 text-sm">
-      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+      <div className="flex items-center gap-2 text-xs text-ink-3">
         <Users className="h-3.5 w-3.5" />
         <span>{coverageSummaryLabel(summary)}</span>
       </div>
@@ -4288,22 +4286,22 @@ function UserSecretCoverageTab({
           <div className="text-lg font-semibold text-emerald-700 dark:text-emerald-300">
             {summary.configuredCount}
           </div>
-          <div className="text-muted-foreground">Set</div>
+          <div className="text-ink-3">Set</div>
         </div>
         <div className="rounded-md border border-amber-500/30 bg-amber-500/5 p-3">
           <div className="text-lg font-semibold text-amber-700 dark:text-amber-300">
             {summary.missingCount}
           </div>
-          <div className="text-muted-foreground">Missing</div>
+          <div className="text-ink-3">Missing</div>
         </div>
-        <div className="rounded-md border border-border bg-muted/30 p-3">
-          <div className="text-lg font-semibold text-muted-foreground">
+        <div className="rounded-md border border-line bg-bg-3/30 p-3">
+          <div className="text-lg font-semibold text-ink-3">
             {summary.inactiveCount}
           </div>
-          <div className="text-muted-foreground">Inactive</div>
+          <div className="text-ink-3">Inactive</div>
         </div>
       </div>
-      <p className="text-xs text-muted-foreground">
+      <p className="text-xs text-ink-3">
         Coverage is counts only across {total} member{total === 1 ? "" : "s"}. Secret values are never shown here.
       </p>
     </div>
@@ -4312,16 +4310,16 @@ function UserSecretCoverageTab({
 
 function UserSecretUsageTab({ definition }: { definition: UserSecretDefinition }) {
   return (
-    <div className="space-y-3 text-xs text-muted-foreground">
-      <div className="rounded-md border border-border bg-muted/20 p-3">
+    <div className="space-y-3 text-xs text-ink-3">
+      <div className="rounded-md border border-line bg-bg-3/20 p-3">
         Bind runtime environment variables to this user-provided secret by choosing{" "}
-        <span className="font-medium text-foreground">User secret</span> and selecting{" "}
+        <span className="font-medium text-ink">User secret</span> and selecting{" "}
         <code className="font-mono">{definition.key}</code>.
       </div>
       {definition.usageGuidance ? (
         <div>
-          <p className="mb-1 text-(length:--text-micro) uppercase tracking-wide text-muted-foreground">Member guidance</p>
-          <p className="text-foreground">{definition.usageGuidance}</p>
+          <p className="mb-1 text-(length:--text-micro) uppercase tracking-wide text-ink-3">Member guidance</p>
+          <p className="text-ink">{definition.usageGuidance}</p>
         </div>
       ) : null}
     </div>
@@ -4330,7 +4328,7 @@ function UserSecretUsageTab({ definition }: { definition: UserSecretDefinition }
 
 function UserSecretAccessEventsTab() {
   return (
-    <div className="py-6 text-center text-xs text-muted-foreground">
+    <div className="py-6 text-center text-xs text-ink-3">
       Access events are recorded on each member&apos;s stored value when runtime resolution occurs.
     </div>
   );
@@ -4500,20 +4498,20 @@ function AgentAccessSection({
   const canGrant = Boolean(selectedAgentId) && envKeyValid && !grantMutation.isPending;
 
   return (
-    <section className="rounded-md border border-border bg-muted/20 p-3">
+    <section className="rounded-md border border-line bg-bg-3/20 p-3">
       <div className="flex items-center gap-1.5">
-        <Users className="h-3.5 w-3.5 text-muted-foreground" />
-        <h3 className="text-xs font-medium text-foreground">Agent access</h3>
+        <Users className="h-3.5 w-3.5 text-ink-3" />
+        <h3 className="text-xs font-medium text-ink">Agent access</h3>
       </div>
-      <p className="mt-0.5 text-(length:--text-micro) text-muted-foreground">
+      <p className="mt-0.5 text-(length:--text-micro) text-ink-3">
         {reference.kind === "company"
           ? "Add here to inject this secret as an environment variable at run start. API-access grants (fetched on demand, no env var) are managed from each agent's Secret access settings and shown below."
           : "These agents resolve the responsible user's value as an environment variable at run start."}
       </p>
       {agentsQuery.isPending ? (
-        <p className="mt-2 text-(length:--text-micro) text-muted-foreground">Loading agents…</p>
+        <p className="mt-2 text-(length:--text-micro) text-ink-3">Loading agents…</p>
       ) : agentsQuery.isError ? (
-        <p className="mt-2 text-(length:--text-micro) text-muted-foreground">
+        <p className="mt-2 text-(length:--text-micro) text-ink-3">
           Agent list unavailable. Manage access from each agent&apos;s configuration instead.
         </p>
       ) : (
@@ -4523,7 +4521,7 @@ function AgentAccessSection({
               {agentAccess.map(({ agent, envKeys, apiAliases }) => (
                 <li
                   key={agent.id}
-                  className="flex items-center gap-2 rounded border border-border/60 bg-background px-2 py-1"
+                  className="flex items-center gap-2 rounded border border-line/60 bg-bg px-2 py-1"
                 >
                   <span className="min-w-0 flex-1 truncate text-xs font-medium">{agent.name}</span>
                   <span className="flex shrink-0 flex-wrap items-center justify-end gap-1">
@@ -4548,7 +4546,7 @@ function AgentAccessSection({
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="h-6 w-6 shrink-0 p-0 text-muted-foreground"
+                    className="h-6 w-6 shrink-0 p-0"
                     aria-label={`Remove access for ${agent.name}`}
                     disabled={revokeMutation.isPending}
                     onClick={() => revokeMutation.mutate({ agentId: agent.id })}
@@ -4559,12 +4557,12 @@ function AgentAccessSection({
               ))}
             </ul>
           ) : (
-            <p className="mt-2 text-(length:--text-micro) text-muted-foreground">No agents have access yet.</p>
+            <p className="mt-2 text-(length:--text-micro) text-ink-3">No agents have access yet.</p>
           )}
           <div className="mt-2 flex items-end gap-2">
             <div className="min-w-0 flex-1">
               <label
-                className="text-(length:--text-micro) font-medium text-muted-foreground"
+                className="text-(length:--text-micro) font-medium text-ink-3"
                 htmlFor="agent-access-agent"
               >
                 Agent
@@ -4580,7 +4578,7 @@ function AgentAccessSection({
             </div>
             <div className="min-w-0 flex-1">
               <label
-                className="text-(length:--text-micro) font-medium text-muted-foreground"
+                className="text-(length:--text-micro) font-medium text-ink-3"
                 htmlFor="agent-access-env-key"
               >
                 Env var
@@ -4612,12 +4610,12 @@ function AgentAccessSection({
             </Button>
           </div>
           {effectiveEnvKey && !envKeyValid ? (
-            <p className="mt-1 text-(length:--text-micro) text-destructive">
+            <p className="mt-1 text-(length:--text-micro) text-bad">
               Env keys use letters, digits, and underscores, and cannot start with a digit.
             </p>
           ) : null}
           {accessError ? (
-            <p className="mt-1 text-(length:--text-micro) text-destructive">{accessError}</p>
+            <p className="mt-1 text-(length:--text-micro) text-bad">{accessError}</p>
           ) : null}
         </>
       )}
@@ -4641,9 +4639,9 @@ function SecretDetailsTab({
     : `${secret.referenceCount ?? 0} bindings`;
 
   return (
-    <dl className="divide-y divide-border/60 text-xs">
+    <dl className="divide-y divide-line/60 text-xs">
       <DetailRow label="Description">
-        <span>{secret.description ?? <span className="text-muted-foreground">—</span>}</span>
+        <span>{secret.description ?? <span className="text-ink-3">—</span>}</span>
       </DetailRow>
       <DetailRow label="Provided by">Organization</DetailRow>
       <DetailRow label="Custody">{modeLabel(secret.managedMode)}</DetailRow>
@@ -4653,18 +4651,18 @@ function SecretDetailsTab({
         {secret.externalRef ? (
           <span className="break-all font-mono">{secret.externalRef}</span>
         ) : (
-          <span className="text-muted-foreground">—</span>
+          <span className="text-ink-3">—</span>
         )}
       </DetailRow>
       <DetailRow label="Latest version">v{secret.latestVersion}</DetailRow>
       <DetailRow label="References">
         <button
           type="button"
-          className="inline-flex items-center gap-1 text-left text-primary hover:underline"
+          className="inline-flex items-center gap-1 text-left text-accent hover:underline"
           onClick={onViewUsage}
         >
           {bindingLabel}
-          <span className="text-muted-foreground">· View in Usage</span>
+          <span className="text-ink-3">· View in Usage</span>
         </button>
       </DetailRow>
       <DetailRow label="Created">{formatRelative(secret.createdAt)}</DetailRow>
@@ -4688,19 +4686,19 @@ function SecretDetailsTab({
 function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="grid grid-cols-(--gtc-55) gap-3 py-2">
-      <dt className="text-(length:--text-micro) uppercase tracking-wide text-muted-foreground">{label}</dt>
-      <dd className="min-w-0 text-foreground">{children}</dd>
+      <dt className="text-(length:--text-micro) uppercase tracking-wide text-ink-3">{label}</dt>
+      <dd className="min-w-0 text-ink">{children}</dd>
     </div>
   );
 }
 
 export function SecretUsageTab({ loading, bindings }: { loading: boolean; bindings: CompanySecretUsageBinding[] }) {
   if (loading) {
-    return <div className="py-6 text-center text-xs text-muted-foreground">Loading…</div>;
+    return <div className="py-6 text-center text-xs text-ink-3">Loading…</div>;
   }
   if (bindings.length === 0) {
     return (
-      <div className="py-6 text-center text-xs text-muted-foreground">
+      <div className="py-6 text-center text-xs text-ink-3">
         No active bindings. Add this secret in agent, project, environment, or plugin config to start using it.
       </div>
     );
@@ -4712,7 +4710,7 @@ export function SecretUsageTab({ loading, bindings }: { loading: boolean; bindin
         return (
           <div
             key={binding.id}
-            className="rounded-md border border-border bg-muted/30 p-2 text-xs"
+            className="rounded-md border border-line bg-bg-3/30 p-2 text-xs"
           >
             <div className="flex items-center justify-between gap-2">
               <span className="flex items-center gap-1.5">
@@ -4731,11 +4729,11 @@ export function SecretUsageTab({ loading, bindings }: { loading: boolean; bindin
                   {deliveryModeLabel(deliveryMode)}
                 </Badge>
               </span>
-              <span className="font-mono text-muted-foreground">v{binding.versionSelector}</span>
+              <span className="font-mono text-ink-3">v{binding.versionSelector}</span>
             </div>
             <div className="mt-0.5 flex min-w-0 items-center gap-2">
               {binding.target.href ? (
-                <Link to={binding.target.href} className="truncate font-medium text-primary hover:underline">
+                <Link to={binding.target.href} className="truncate font-medium text-accent hover:underline">
                   {binding.target.label}
                 </Link>
               ) : (
@@ -4747,10 +4745,10 @@ export function SecretUsageTab({ loading, bindings }: { loading: boolean; bindin
                 </Badge>
               ) : null}
             </div>
-            <div className="font-mono text-(length:--text-micro) text-muted-foreground break-all">
+            <div className="font-mono text-(length:--text-micro) text-ink-3 break-all">
               {binding.targetId}
             </div>
-            <div className="text-(length:--text-micro) text-muted-foreground">
+            <div className="text-(length:--text-micro) text-ink-3">
               {deliveryMode === "api" ? (
                 <>API alias <span className="font-mono">{aliasFromConfigPath(binding.configPath)}</span></>
               ) : (
@@ -4794,11 +4792,11 @@ export function SecretEventsTab({
   };
 
   if (loading) {
-    return <div className="py-6 text-center text-xs text-muted-foreground">Loading…</div>;
+    return <div className="py-6 text-center text-xs text-ink-3">Loading…</div>;
   }
   if (events.length === 0) {
     return (
-      <div className="py-6 text-center text-xs text-muted-foreground">
+      <div className="py-6 text-center text-xs text-ink-3">
         No access events recorded yet. Each runtime resolution writes a redacted entry here.
       </div>
     );
@@ -4806,7 +4804,7 @@ export function SecretEventsTab({
   return (
     <div className="space-y-1.5">
       {events.map((event) => (
-        <div key={event.id} className="rounded border border-border px-2 py-1.5 text-xs">
+        <div key={event.id} className="rounded border border-line px-2 py-1.5 text-xs">
           <div className="flex items-center justify-between gap-2">
             <span className="flex items-center gap-1.5">
               <span>{consumerTypeLabel(event.consumerType)}</span>
@@ -4820,24 +4818,24 @@ export function SecretEventsTab({
                 </Badge>
               ) : null}
             </span>
-            <span className="text-(length:--text-micro) text-muted-foreground">{formatRelative(event.createdAt)}</span>
+            <span className="text-(length:--text-micro) text-ink-3">{formatRelative(event.createdAt)}</span>
           </div>
-          <div className="font-mono text-(length:--text-micro) text-muted-foreground break-all">
+          <div className="font-mono text-(length:--text-micro) text-ink-3 break-all">
             {event.consumerId}
           </div>
           {event.responsibleUserId ? (
-            <div className="text-(length:--text-micro) text-muted-foreground">
-              Responsible user: <span className="text-foreground">{userLabel(event.responsibleUserId)}</span>
+            <div className="text-(length:--text-micro) text-ink-3">
+              Responsible user: <span className="text-ink">{userLabel(event.responsibleUserId)}</span>
             </div>
           ) : null}
           {event.credentialOwnerUserId &&
           event.credentialOwnerUserId !== event.responsibleUserId ? (
-            <div className="text-(length:--text-micro) text-muted-foreground">
-              Credential owner: <span className="text-foreground">{userLabel(event.credentialOwnerUserId)}</span>
+            <div className="text-(length:--text-micro) text-ink-3">
+              Credential owner: <span className="text-ink">{userLabel(event.credentialOwnerUserId)}</span>
             </div>
           ) : null}
           {event.errorCode ? (
-            <div className="text-(length:--text-micro) text-destructive">{event.errorCode}</div>
+            <div className="text-(length:--text-micro) text-bad">{event.errorCode}</div>
           ) : null}
         </div>
       ))}

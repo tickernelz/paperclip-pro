@@ -51,6 +51,7 @@ import {
   connectionOwnerProfile,
   type ConnectionOwnerProfile,
 } from "./connection-owner";
+import { Chip } from "@/components/ui/chip";
 
 const BROWSE_HREF = "/apps";
 
@@ -106,8 +107,8 @@ function rowNeedsAttention(row: AppRow): boolean {
 const STATUS_CLASS: Record<AppStatus["tone"], string> = {
   connected: "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
   attention: "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300",
-  paused: "border-border bg-muted text-muted-foreground",
-  not_connected: "border-border bg-background text-muted-foreground",
+  paused: "border-line bg-bg-3 text-ink-3",
+  not_connected: "border-line bg-bg text-ink-3",
 };
 
 export function Connections() {
@@ -304,7 +305,7 @@ export function Connections() {
   const visibleRows = filter === "attention" ? rowsNeedingAttention : rows;
 
   if (!selectedCompanyId) {
-    return <div className="p-6 text-sm text-muted-foreground">Select an organization to manage apps.</div>;
+    return <div className="p-6 text-sm text-ink-3">Select an organization to manage apps.</div>;
   }
 
   const loading = applicationsQuery.isLoading || connectionsQuery.isLoading || galleryQuery.isLoading;
@@ -335,7 +336,7 @@ export function Connections() {
           <header className="flex flex-wrap items-end justify-between gap-3">
             <div>
               <h1 className="text-2xl font-bold tracking-tight">Connections</h1>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <p className="mt-1 text-sm text-ink-3">
                 The tools you’ve connected, and whether they’re working.
               </p>
             </div>
@@ -394,10 +395,10 @@ export function Connections() {
             </button>
           )}
 
-          <div className="overflow-hidden rounded-lg border border-border">
+          <div className="overflow-hidden rounded-lg border border-line">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border bg-muted/40 text-left text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
+                <tr className="border-b border-line bg-bg-3/40 text-left text-(length:--text-micro) font-semibold uppercase tracking-wide text-ink-3">
                   <th className="px-4 py-2.5">Connection</th>
                   <th className="px-4 py-2.5">Type</th>
                   <th className="px-4 py-2.5">Connected by</th>
@@ -438,7 +439,7 @@ export function Connections() {
                       key={connection?.id ?? application.id}
                       onClick={() => navigate(appHref)}
                       className={cn(
-                        "cursor-pointer border-b border-border transition-colors last:border-0 hover:bg-muted/30",
+                        "cursor-pointer border-b border-line transition-colors last:border-0 hover:bg-bg-3/30",
                         attention && "bg-amber-500/[0.06]",
                       )}
                     >
@@ -453,17 +454,17 @@ export function Connections() {
                           />
                           <div className="min-w-0">
                             <div className="flex flex-wrap items-center gap-2">
-                              <span className="font-medium text-foreground">{row.displayName}</span>
+                              <span className="font-medium text-ink">{row.displayName}</span>
                               <ConnectionProvenanceChip connection={row.connection} />
                             </div>
                             {hint && (
-                              <div className="truncate text-xs text-muted-foreground">{hint}</div>
+                              <div className="truncate text-xs text-ink-3">{hint}</div>
                             )}
                           </div>
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <span className="text-xs font-medium text-foreground">
+                        <span className="text-xs font-medium text-ink">
                           {connection ? connectionTypeLabel(connection.credentialPolicy) : "—"}
                         </span>
                       </td>
@@ -481,17 +482,17 @@ export function Connections() {
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        <span className="text-xs text-muted-foreground">{row.actionCount} on</span>
+                        <span className="text-xs text-ink-3">{row.actionCount} on</span>
                       </td>
                       <td className="px-4 py-3">
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-xs text-ink-3">
                           {row.lastUsedAt ? timeAgo(row.lastUsedAt) : "—"}
                         </span>
                       </td>
                       <td className="px-4 py-3 text-right">
                         <div className="flex items-center justify-end gap-1">
                           <Button
-                            variant={attention ? "default" : "outline"}
+                            variant={attention ? "primary" : "secondary"}
                             size="sm"
                             onClick={(event) => {
                               event.stopPropagation();
@@ -504,7 +505,6 @@ export function Connections() {
                             <Button
                               variant="ghost"
                               size="icon-sm"
-                              className="text-muted-foreground hover:text-destructive"
                               aria-label={`Delete ${row.displayName} connection`}
                               onClick={(event) => {
                                 event.stopPropagation();
@@ -529,7 +529,7 @@ export function Connections() {
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-ink-3">
               Apps you connect become available to every agent unless you change “Who can use it”.
             </p>
           </div>
@@ -556,7 +556,7 @@ export function Connections() {
           <AlertDialogFooter>
             <AlertDialogCancel disabled={deleteConnection.isPending}>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-bad text-accent-ink hover:bg-bad/90"
               disabled={!connectionToDelete || deleteConnection.isPending}
               onClick={(event) => {
                 event.preventDefault();
@@ -586,11 +586,11 @@ function CloudConnectorEnrollmentBanner({
 }) {
   if (status?.configured) {
     return (
-      <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-card px-4 py-3">
-        <ShieldCheck className="h-5 w-5 text-primary" />
+      <div className="flex flex-wrap items-center gap-3 rounded-lg border border-line bg-bg-2 px-4 py-3">
+        <ShieldCheck className="h-5 w-5 text-accent" />
         <div className="min-w-0 flex-1">
-          <div className="text-sm font-semibold text-foreground">Paperclip-managed sign-in is ready</div>
-          <div className="truncate text-xs text-muted-foreground">
+          <div className="text-sm font-semibold text-ink">Paperclip-managed sign-in is ready</div>
+          <div className="truncate text-xs text-ink-3">
             Provider authorization uses {status.brokerBaseUrl}; credentials stay in this instance.
           </div>
         </div>
@@ -599,24 +599,24 @@ function CloudConnectorEnrollmentBanner({
   }
   if (unavailable) {
     return (
-      <div className="flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3">
-        <Cloud className="h-5 w-5 text-muted-foreground" />
-        <div className="text-sm text-muted-foreground">Paperclip Cloud enrollment status is unavailable.</div>
+      <div className="flex items-center gap-3 rounded-lg border border-line bg-bg-2 px-4 py-3">
+        <Cloud className="h-5 w-5 text-ink-3" />
+        <div className="text-sm text-ink-3">Paperclip Cloud enrollment status is unavailable.</div>
       </div>
     );
   }
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-card px-4 py-3">
-      <Cloud className="h-5 w-5 text-muted-foreground" />
+    <div className="flex flex-wrap items-center gap-3 rounded-lg border border-line bg-bg-2 px-4 py-3">
+      <Cloud className="h-5 w-5 text-ink-3" />
       <div className="min-w-0 flex-1">
-        <div className="text-sm font-semibold text-foreground">
+        <div className="text-sm font-semibold text-ink">
           {status?.status === "pending" ? "Finish Paperclip Cloud enrollment" : "Enable Paperclip-managed sign-in"}
         </div>
-        <div className="text-xs text-muted-foreground">
+        <div className="text-xs text-ink-3">
           Confirm this server’s exact address before Cloud can return encrypted Google credentials to it.
         </div>
       </div>
-      <Button variant="outline" size="sm" disabled={busy} onClick={onEnable}>
+      <Button variant="secondary" size="sm" disabled={busy} onClick={onEnable}>
         {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
         {status?.status === "pending" ? "Continue enrollment" : "Enable"}
       </Button>
@@ -638,22 +638,12 @@ function FilterChip({
   children: ReactNode;
 }) {
   return (
-    <button
-      type="button"
+    <Chip selected={active} className="rounded-full"
       disabled={disabled}
       onClick={onClick}
-      className={cn(
-        "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
-        disabled && "cursor-not-allowed opacity-50",
-        active
-          ? tone === "danger"
-            ? "border-red-500/40 bg-red-500/10 text-red-700 dark:text-red-300"
-            : "border-foreground/30 bg-foreground/[0.06] text-foreground"
-          : "border-border bg-background text-muted-foreground hover:border-foreground/30 hover:text-foreground",
-      )}
     >
       {children}
-    </button>
+    </Chip>
   );
 }
 
@@ -676,18 +666,18 @@ function EmptyConnections({ onBrowse }: { onBrowse: () => void }) {
     <div className="space-y-6">
       <header>
         <h1 className="text-2xl font-bold tracking-tight">Connections</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="mt-1 text-sm text-ink-3">
           The tools you’ve connected, and whether they’re working.
         </p>
       </header>
 
-      <div className="rounded-2xl border border-dashed border-border bg-card p-10 text-center">
-        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-          <AppWindow className="h-6 w-6 text-muted-foreground" />
+      <div className="rounded-2xl border border-dashed border-line bg-bg-2 p-10 text-center">
+        <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-bg-3">
+          <AppWindow className="h-6 w-6 text-ink-3" />
         </div>
-        <p className="mt-4 text-sm font-medium text-foreground">No connections yet.</p>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Add one from <span className="font-medium text-foreground">Apps</span> to give your agents
+        <p className="mt-4 text-sm font-medium text-ink">No connections yet.</p>
+        <p className="mt-1 text-sm text-ink-3">
+          Add one from <span className="font-medium text-ink">Apps</span> to give your agents
           the tools they need.
         </p>
         <Button className="mt-6" onClick={onBrowse}>

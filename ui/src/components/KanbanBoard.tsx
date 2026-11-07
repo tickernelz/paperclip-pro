@@ -49,12 +49,12 @@ export const boardStatuses = [
 ] as const satisfies readonly IssueStatus[];
 
 const defaultKanbanColumnTone = {
-  rail: "border-border bg-muted/20",
-  railOver: "bg-accent/50 ring-1 ring-primary/20",
-  header: "text-muted-foreground",
-  count: "text-muted-foreground/60",
-  body: "bg-muted/20",
-  bodyOver: "bg-accent/40",
+  rail: "border-line bg-bg-3/20",
+  railOver: "bg-bg-3/50 ring-1 ring-accent/20",
+  header: "text-ink-3",
+  count: "text-ink-3/60",
+  body: "bg-bg-3/20",
+  bodyOver: "bg-bg-3/40",
   card: "",
 };
 
@@ -63,12 +63,12 @@ const defaultKanbanColumnTone = {
 // red blocked, green done) so no column reads as accidentally unstyled.
 export const kanbanColumnTones: Partial<Record<IssueStatus, typeof defaultKanbanColumnTone>> = {
   backlog: {
-    rail: "border-border bg-muted/30",
-    railOver: "bg-muted/50 ring-1 ring-neutral-400/25",
-    header: "text-muted-foreground",
-    count: "text-muted-foreground/60",
-    body: "bg-muted/30 ring-1 ring-inset ring-border/50",
-    bodyOver: "bg-muted/50 ring-1 ring-inset ring-neutral-400/25",
+    rail: "border-line bg-bg-3/30",
+    railOver: "bg-bg-3/50 ring-1 ring-neutral-400/25",
+    header: "text-ink-3",
+    count: "text-ink-3/60",
+    body: "bg-bg-3/30 ring-1 ring-inset ring-line/50",
+    bodyOver: "bg-bg-3/50 ring-1 ring-inset ring-neutral-400/25",
     card: "",
   },
   todo: {
@@ -117,13 +117,13 @@ export const kanbanColumnTones: Partial<Record<IssueStatus, typeof defaultKanban
     card: "",
   },
   cancelled: {
-    rail: "border-neutral-300/70 bg-muted/25 opacity-80 dark:border-neutral-700/70 dark:bg-neutral-900/20",
-    railOver: "bg-muted/45 opacity-90 ring-1 ring-neutral-400/25 dark:bg-neutral-900/35",
-    header: "text-muted-foreground/80",
-    count: "text-muted-foreground/50",
-    body: "bg-muted/25 ring-1 ring-inset ring-border/50",
-    bodyOver: "bg-muted/45 ring-1 ring-inset ring-neutral-400/25",
-    card: "bg-muted/35 text-muted-foreground opacity-80 hover:shadow-none",
+    rail: "border-neutral-300/70 bg-bg-3/25 opacity-80 dark:border-neutral-700/70 dark:bg-neutral-900/20",
+    railOver: "bg-bg-3/45 opacity-90 ring-1 ring-neutral-400/25 dark:bg-neutral-900/35",
+    header: "text-ink-3/80",
+    count: "text-ink-3/50",
+    body: "bg-bg-3/25 ring-1 ring-inset ring-line/50",
+    bodyOver: "bg-bg-3/45 ring-1 ring-inset ring-neutral-400/25",
+    card: "bg-bg-3/35 text-ink-3 opacity-80 hover:shadow-none",
   },
 };
 
@@ -206,7 +206,7 @@ function KanbanColumn({
         <span className={cn("mt-2 [writing-mode:vertical-rl] rotate-180 text-(length:--text-nano) font-semibold uppercase tracking-wide", tone.header)}>
           {statusLabel(status)}
         </span>
-        <Badge variant="ghost" className={cn("mt-auto bg-background px-1.5 text-(length:--text-nano) tabular-nums", tone.header)}>
+        <Badge variant="ghost" className={cn("mt-auto bg-bg px-1.5 text-(length:--text-nano) tabular-nums", tone.header)}>
           {issues.length}
         </Badge>
       </div>
@@ -251,14 +251,14 @@ function KanbanColumn({
         {hiddenCount > 0 ? (
           <button
             type="button"
-            className="mt-1 flex w-full items-center justify-center rounded-md border border-dashed border-border bg-background/70 px-2 py-2 text-xs font-medium text-muted-foreground transition-colors hover:border-foreground/30 hover:text-foreground"
+            className="mt-1 flex w-full items-center justify-center rounded-md border border-dashed border-line bg-bg/70 px-2 py-2 text-xs font-medium text-ink-3 transition-colors hover:border-ink/30 hover:text-ink"
             onClick={onShowMore}
           >
             Show {nextRevealCount} more
           </button>
         ) : null}
         {issues.length > 0 && (hiddenCount > 0 || issues.length >= visibleCount) ? (
-          <p className="px-1 pt-1 text-(length:--text-micro) text-muted-foreground">
+          <p className="px-1 pt-1 text-(length:--text-micro) text-ink-3">
             Showing {visibleIssues.length} of {issues.length}
           </p>
         ) : null}
@@ -314,7 +314,7 @@ function KanbanCard({
       className={cn(
         "block cursor-grab active:cursor-grabbing transition-shadow",
         isDragging && !isOverlay ? "opacity-30" : "",
-        isOverlay ? "shadow-lg ring-1 ring-primary/20" : "hover:shadow-sm",
+        isOverlay ? "shadow-lg ring-1 ring-accent/20" : "hover:shadow-sm",
         compact ? "p-2" : "p-2.5",
         className,
       )}
@@ -329,7 +329,7 @@ function KanbanCard({
         }}
       >
         <div className={`flex items-start gap-1.5 ${compact ? "mb-1" : "mb-1.5"}`}>
-          <span className="text-xs text-muted-foreground font-mono shrink-0">
+          <span className="text-xs text-ink-3 font-mono shrink-0">
             {issue.identifier ?? issue.id.slice(0, 8)}
           </span>
           {isSuccessfulRunHandoffRequired(issue) ? (
@@ -353,10 +353,10 @@ function KanbanCard({
           )}
           {!isLive && subtreeLiveCount > 0 && (
             <Badge variant="outline"
-              className="border-border px-1.5 text-(length:--text-nano) text-muted-foreground"
+              className="border-line px-1.5 text-(length:--text-nano) text-ink-3"
               title={`${subtreeLiveCount} sub-task${subtreeLiveCount === 1 ? "" : "s"} running below`}
             >
-              <span className="h-2 w-2 shrink-0 rounded-full border border-muted-foreground/60" aria-hidden="true" />
+              <span className="h-2 w-2 shrink-0 rounded-full border border-ink-3/60" aria-hidden="true" />
               {subtreeLiveCount} live below
             </Badge>
           )}
@@ -370,7 +370,7 @@ function KanbanCard({
             return name ? (
               <AgentIdentity agent={agents?.find((agent) => agent.id === issue.assigneeAgentId) ?? { id: issue.assigneeAgentId, name }} size="xs" />
             ) : (
-              <span className="text-xs text-muted-foreground font-mono">
+              <span className="text-xs text-ink-3 font-mono">
                 {issue.assigneeAgentId.slice(0, 8)}
               </span>
             );

@@ -68,7 +68,7 @@ function ChainOfThoughtReview() {
   const [step, setStep] = useState(0);
   return (
     <div className="flex max-w-xl flex-col gap-3">
-      <div className="rounded-lg border border-border bg-background p-4">
+      <div className="rounded-lg border border-line bg-bg p-4">
         <TaskChatRunnerTurn
           runId="storybook-live-run"
           agentName="CodexRunner"
@@ -77,10 +77,10 @@ function ChainOfThoughtReview() {
           startedAtMs={Date.now() - 12_000}
         />
       </div>
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+      <div className="flex items-center gap-2 text-sm text-ink-3">
         <button
           type="button"
-          className="rounded-md border border-border bg-background px-3 py-1.5 text-foreground hover:bg-muted"
+          className="rounded-md border border-line bg-bg px-3 py-1.5 text-ink hover:bg-bg-3"
           onClick={() =>
             setStep((value) => (value + 1) % runningItemSteps.length)
           }
@@ -117,7 +117,7 @@ const steeredComment: IssueChatComment = {
 function TimestampReview() {
   const [item] = commentsToTaskChatItems([steeredComment]);
   return (
-    <div className="max-w-xl rounded-lg border border-border bg-background p-4">
+    <div className="max-w-xl rounded-lg border border-line bg-bg p-4">
       <TaskChatBubble item={item as TaskChatMessageItem} animateEntry={false} />
     </div>
   );
@@ -133,7 +133,7 @@ function SteeringSenderAvatarReview() {
     userProfileMap: new Map([["colleague", { label: "Alex Rivera", image: null }]]),
   });
   return (
-    <div className="flex max-w-xl flex-col gap-6 rounded-lg border border-border bg-background p-4">
+    <div className="flex max-w-xl flex-col gap-6 rounded-lg border border-line bg-bg p-4">
       {items.map((item) => <TaskChatBubble key={item.id} item={item as TaskChatMessageItem} animateEntry={false} />)}
     </div>
   );
@@ -142,7 +142,7 @@ function SteeringSenderAvatarReview() {
 function ReconnectingAlignmentReview() {
   const [open, setOpen] = useState(false);
   return (
-    <div className="max-w-xl rounded-lg border border-border bg-background p-4">
+    <div className="max-w-xl rounded-lg border border-line bg-bg p-4">
       <TaskChatStatusPill
         item={{
           id: "reconnecting-status",

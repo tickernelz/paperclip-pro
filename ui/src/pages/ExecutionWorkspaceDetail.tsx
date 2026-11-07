@@ -357,8 +357,8 @@ function Field({
   return (
     <label className="block space-y-2">
       <div className="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-3">
-        <span className="text-sm font-medium text-foreground">{label}</span>
-        {hint ? <span className="text-xs text-muted-foreground sm:text-right">{hint}</span> : null}
+        <span className="text-sm font-medium text-ink">{label}</span>
+        {hint ? <span className="text-xs text-ink-3 sm:text-right">{hint}</span> : null}
       </div>
       {children}
     </label>
@@ -421,7 +421,7 @@ export function resolveRuntimeProvisionStatus(input: {
 function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-1.5 py-1.5 sm:flex-row sm:items-start sm:gap-3">
-      <div className="shrink-0 text-xs text-muted-foreground sm:w-32">{label}</div>
+      <div className="shrink-0 text-xs text-ink-3 sm:w-32">{label}</div>
       <div className="min-w-0 flex-1 text-sm">{children}</div>
     </div>
   );
@@ -429,7 +429,7 @@ function DetailRow({ label, children }: { label: string; children: React.ReactNo
 
 function StatusPill({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn("inline-flex items-center rounded-full border border-border bg-background px-2.5 py-1 text-xs text-muted-foreground", className)}>
+    <div className={cn("inline-flex items-center rounded-full border border-line bg-bg px-2.5 py-1 text-xs text-ink-3", className)}>
       {children}
     </div>
   );
@@ -444,14 +444,14 @@ export function RuntimeProvisionStatusValue({
 }) {
   if (status.kind === "eager") {
     return (
-      <span className="text-sm text-muted-foreground">Eager · provisioned during workspace setup</span>
+      <span className="text-sm text-ink-3">Eager · provisioned during workspace setup</span>
     );
   }
   if (status.kind === "deferred") {
     return (
       <div className="flex flex-col gap-1">
         <StatusPill className="border-amber-500/40 text-amber-600 dark:text-amber-400">Deferred</StatusPill>
-        <span className="text-xs text-muted-foreground">
+        <span className="text-xs text-ink-3">
           Runs once before the first runtime-service start.
         </span>
       </div>
@@ -459,7 +459,7 @@ export function RuntimeProvisionStatusValue({
   }
   if (status.kind === "provisioning") {
     return (
-      <StatusPill className="border-border text-muted-foreground">
+      <StatusPill className="border-line text-ink-3">
         <Loader2 className="mr-1.5 h-3 w-3 animate-spin" />
         Provisioning…
       </StatusPill>
@@ -474,10 +474,10 @@ export function RuntimeProvisionStatusValue({
   }
   return (
     <div className="flex flex-col gap-1">
-      <StatusPill className="border-destructive/50 text-destructive">
+      <StatusPill className="border-bad/50 text-bad">
         Provisioning failed{status.at ? ` · ${formatDateTime(status.at)}` : ""}
       </StatusPill>
-      <button type="button" onClick={onViewLogs} className="self-start text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground">
+      <button type="button" onClick={onViewLogs} className="self-start text-xs text-ink-3 underline underline-offset-2 hover:text-ink">
         View runtime logs
       </button>
     </div>
@@ -489,7 +489,7 @@ function MonoValue({ value, copy }: { value: string; copy?: boolean }) {
     <div className="inline-flex max-w-full items-start gap-2">
       <span className="break-all font-mono text-xs">{value}</span>
       {copy ? (
-        <CopyText text={value} className="shrink-0 text-muted-foreground hover:text-foreground" copiedLabel="Copied">
+        <CopyText text={value} className="shrink-0 text-ink-3 hover:text-ink" copiedLabel="Copied">
           <Copy className="h-3.5 w-3.5" />
         </CopyText>
       ) : null}
@@ -606,22 +606,22 @@ function WorkspaceRoutineRow({
   const isRunning = runningRoutineId === routine.id;
 
   return (
-    <div className="flex flex-col gap-3 border-b border-border px-3 py-3 last:border-b-0 sm:flex-row sm:items-center">
+    <div className="flex flex-col gap-3 border-b border-line px-3 py-3 last:border-b-0 sm:flex-row sm:items-center">
       <div className="min-w-0 flex-1 space-y-1.5">
         <div className="flex flex-wrap items-center gap-2">
           <Link to={`/routines/${routine.id}`} className="truncate text-sm font-medium hover:underline">
             {routine.title}
           </Link>
           {routine.status !== "active" ? (
-            <span className="text-xs text-muted-foreground">{routine.status}</span>
+            <span className="text-xs text-ink-3">{routine.status}</span>
           ) : null}
         </div>
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-3">
           <span>{routine.assigneeAgentId ? "Default agent set" : "Choose agent when running"}</span>
           <span>Last run {formatOptionalDateTime(routine.lastRun?.triggeredAt ?? routine.lastTriggeredAt)}</span>
           <span className="flex flex-wrap gap-1">
             {variableNames.map((name) => (
-              <span key={name} className="rounded-sm bg-muted px-1.5 py-0.5 font-mono text-(length:--text-micro) text-muted-foreground">
+              <span key={name} className="rounded-sm bg-bg-3 px-1.5 py-0.5 font-mono text-(length:--text-micro) text-ink-3">
                 {name}
               </span>
             ))}
@@ -629,7 +629,7 @@ function WorkspaceRoutineRow({
         </div>
       </div>
       <Button
-        variant="outline"
+        variant="secondary"
         size="sm"
         className="w-full sm:w-auto"
         disabled={isArchived || isRunning}
@@ -722,20 +722,20 @@ function ExecutionWorkspaceRoutinesList({
         </CardHeader>
         <CardContent>
           {isLoading ? (
-            <p className="text-sm text-muted-foreground">Loading routines...</p>
+            <p className="text-sm text-ink-3">Loading routines...</p>
           ) : error ? (
-            <p className="text-sm text-destructive">
+            <p className="text-sm text-bad">
               {error instanceof Error ? error.message : "Failed to load routines."}
             </p>
           ) : workspaceRoutines.length === 0 ? (
             <div className="flex flex-col items-center gap-2 py-10 text-center">
-              <Repeat className="h-5 w-5 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">
+              <Repeat className="h-5 w-5 text-ink-3" />
+              <p className="text-sm text-ink-3">
                 No routines use workspace-specific variables yet.
               </p>
             </div>
           ) : (
-            <div className="rounded-lg border border-border">
+            <div className="rounded-lg border border-line">
               {workspaceRoutines.map((routine) => (
                 <WorkspaceRoutineRow
                   key={routine.id}
@@ -979,10 +979,10 @@ export function ExecutionWorkspaceDetail() {
     },
   });
 
-  if (workspaceQuery.isLoading) return <p className="text-sm text-muted-foreground">Loading workspace…</p>;
+  if (workspaceQuery.isLoading) return <p className="text-sm text-ink-3">Loading workspace…</p>;
   if (workspaceQuery.error) {
     return (
-      <p className="text-sm text-destructive">
+      <p className="text-sm text-bad">
         {workspaceQuery.error instanceof Error ? workspaceQuery.error.message : "Failed to load workspace"}
       </p>
     );
@@ -1058,7 +1058,7 @@ export function ExecutionWorkspaceDetail() {
       <div className="space-y-4 overflow-hidden sm:space-y-6">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0 space-y-2">
-            <div className="text-xs font-medium uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
+            <div className="text-xs font-medium uppercase tracking-(--tracking-eyebrow) text-ink-3">
               Execution workspace
             </div>
             <h1 className="truncate text-xl font-semibold sm:text-2xl">{workspace.name}</h1>
@@ -1074,8 +1074,8 @@ export function ExecutionWorkspaceDetail() {
             onManageServices={() => handleTabChange("services")}
           />
         </div>
-        {runtimeActionErrorMessage ? <p className="text-sm text-destructive">{runtimeActionErrorMessage}</p> : null}
-        {!runtimeActionErrorMessage && runtimeActionMessage ? <p className="text-sm text-muted-foreground">{runtimeActionMessage}</p> : null}
+        {runtimeActionErrorMessage ? <p className="text-sm text-bad">{runtimeActionErrorMessage}</p> : null}
+        {!runtimeActionErrorMessage && runtimeActionMessage ? <p className="text-sm text-ink-3">{runtimeActionMessage}</p> : null}
 
         <PluginSlotOutlet
           slotTypes={["toolbarButton", "contextMenuItem"]}
@@ -1123,7 +1123,7 @@ export function ExecutionWorkspaceDetail() {
                 </CardDescription>
                 <CardAction>
                   <Button
-                    variant="destructive"
+                    variant="danger"
                     size="sm"
                     className="w-full sm:w-auto"
                     onClick={() => setCloseDialogOpen(true)}
@@ -1138,7 +1138,7 @@ export function ExecutionWorkspaceDetail() {
 
               <div className="space-y-6">
                 <div className="space-y-4">
-                  <div className="text-xs font-medium uppercase tracking-widest text-muted-foreground">General</div>
+                  <div className="text-xs font-medium uppercase tracking-widest text-ink-3">General</div>
                   <Field label="Workspace name">
                     <Input
                       value={form.name}
@@ -1151,7 +1151,7 @@ export function ExecutionWorkspaceDetail() {
                 <Separator />
 
                 <div className="space-y-4">
-                  <div className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Source control</div>
+                  <div className="text-xs font-medium uppercase tracking-widest text-ink-3">Source control</div>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <Field label="Branch name" hint="Useful for isolated worktrees">
                       <Input
@@ -1193,7 +1193,7 @@ export function ExecutionWorkspaceDetail() {
                 {!hideHostPaths && (
                   <>
                     <div className="space-y-4">
-                      <div className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Paths</div>
+                      <div className="text-xs font-medium uppercase tracking-widest text-ink-3">Paths</div>
                       <Field label="Working directory">
                         <Input
                           className="font-mono"
@@ -1227,7 +1227,7 @@ export function ExecutionWorkspaceDetail() {
                 {!hideHostPaths && (
                   <>
                     <div className="space-y-4">
-                      <div className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Lifecycle commands</div>
+                      <div className="text-xs font-medium uppercase tracking-widest text-ink-3">Lifecycle commands</div>
                       <Field label="Provision command" hint="Runs when Paperclip prepares this execution workspace">
                         <Textarea
                           className="min-h-20 font-mono"
@@ -1273,14 +1273,14 @@ export function ExecutionWorkspaceDetail() {
                 )}
 
                 <div className="space-y-4">
-                  <div className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Runtime config</div>
-                  <div className="rounded-md border border-dashed border-border/70 bg-background px-4 py-3">
+                  <div className="text-xs font-medium uppercase tracking-widest text-ink-3">Runtime config</div>
+                  <div className="rounded-md border border-dashed border-line/70 bg-bg px-4 py-3">
                     <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
                       <div className="space-y-1">
-                        <div className="text-sm font-medium text-foreground">
+                        <div className="text-sm font-medium text-ink">
                           Runtime config source
                         </div>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-ink-3">
                           {runtimeConfigSource === "execution_workspace"
                             ? "This execution workspace currently overrides the project workspace runtime config."
                             : runtimeConfigSource === "project_workspace"
@@ -1289,7 +1289,7 @@ export function ExecutionWorkspaceDetail() {
                         </p>
                       </div>
                       <Button
-                        variant="outline"
+                        variant="secondary"
                         className="w-full sm:w-auto"
                         size="sm"
                         disabled={!linkedProjectWorkspace?.runtimeConfig?.workspaceRuntime}
@@ -1306,18 +1306,18 @@ export function ExecutionWorkspaceDetail() {
                     </div>
                   </div>
 
-                  <details className="rounded-md border border-dashed border-border/70 bg-background px-4 py-3">
+                  <details className="rounded-md border border-dashed border-line/70 bg-bg px-4 py-3">
                     <summary className="cursor-pointer text-sm font-medium">Advanced runtime JSON</summary>
-                    <p className="mt-2 text-sm text-muted-foreground">
+                    <p className="mt-2 text-sm text-ink-3">
                       Override the inherited workspace command model only when this execution workspace truly needs different service or job behavior.
                     </p>
                     <div className="mt-3">
                       <Field label="Workspace commands JSON" hint="Legacy `services` arrays still work, but `commands` supports both services and jobs.">
-                        <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
+                        <div className="mb-2 flex items-center gap-2 text-sm text-ink-3">
                           <input
                             id="inherit-runtime-config"
                             type="checkbox"
-                            className="rounded border-border"
+                            className="rounded border-line"
                             checked={form.inheritRuntime}
                             onChange={(event) => {
                               const checked = event.target.checked;
@@ -1344,10 +1344,10 @@ export function ExecutionWorkspaceDetail() {
                   </details>
 
                   {configuredRuntimeServicePorts.length > 0 ? (
-                    <div className="space-y-3 rounded-md border border-border bg-muted/20 p-4">
+                    <div className="space-y-3 rounded-md border border-line bg-bg-3/20 p-4">
                       <div>
                         <div className="text-sm font-medium">Service ports</div>
-                        <p className="mt-1 text-sm text-muted-foreground">
+                        <p className="mt-1 text-sm text-ink-3">
                           Set a fixed port for a service or leave it blank to use its configured automatic behavior. Editing an inherited service creates an execution-workspace runtime override.
                         </p>
                       </div>
@@ -1383,11 +1383,11 @@ export function ExecutionWorkspaceDetail() {
                         ))}
                       </div>
                       {configuredRuntimeServicePortWarnings.length > 0 ? (
-                        <div className="rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                        <div className="rounded-md border border-bad/40 bg-bad/10 px-3 py-2 text-sm text-bad">
                           {configuredRuntimeServicePortWarnings.map((warning) => <p key={warning}>{warning}</p>)}
                         </div>
                       ) : null}
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-ink-3">
                         Paperclip checks fixed ports again when a service starts and rejects cross-workspace conflicts.
                       </p>
                     </div>
@@ -1401,7 +1401,7 @@ export function ExecutionWorkspaceDetail() {
                   Save changes
                 </Button>
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   className="w-full sm:w-auto"
                   disabled={!isDirty || updateWorkspace.isPending}
                   onClick={() => {
@@ -1413,8 +1413,8 @@ export function ExecutionWorkspaceDetail() {
                 >
                   Reset
                 </Button>
-                {errorMessage ? <p className="text-sm text-destructive">{errorMessage}</p> : null}
-                {!errorMessage && !isDirty ? <p className="text-sm text-muted-foreground">No unsaved changes.</p> : null}
+                {errorMessage ? <p className="text-sm text-bad">{errorMessage}</p> : null}
+                {!errorMessage && !isDirty ? <p className="text-sm text-ink-3">No unsaved changes.</p> : null}
               </div>
               </CardContent>
             </Card>
@@ -1490,7 +1490,7 @@ export function ExecutionWorkspaceDetail() {
                       {workspace.repoUrl}
                       <ExternalLink className="h-3.5 w-3.5 shrink-0" />
                     </a>
-                    <CopyText text={workspace.repoUrl} className="shrink-0 text-muted-foreground hover:text-foreground" copiedLabel="Copied">
+                    <CopyText text={workspace.repoUrl} className="shrink-0 text-ink-3 hover:text-ink" copiedLabel="Copied">
                       <Copy className="h-3.5 w-3.5" />
                     </CopyText>
                   </div>
@@ -1524,9 +1524,9 @@ export function ExecutionWorkspaceDetail() {
             </CardHeader>
             <CardContent>
             {workspaceOperationsQuery.isLoading ? (
-              <p className="text-sm text-muted-foreground">Loading workspace operations…</p>
+              <p className="text-sm text-ink-3">Loading workspace operations…</p>
             ) : workspaceOperationsQuery.error ? (
-              <p className="text-sm text-destructive">
+              <p className="text-sm text-bad">
                 {workspaceOperationsQuery.error instanceof Error
                   ? workspaceOperationsQuery.error.message
                   : "Failed to load workspace operations."}
@@ -1534,18 +1534,18 @@ export function ExecutionWorkspaceDetail() {
             ) : workspaceOperationsQuery.data && workspaceOperationsQuery.data.length > 0 ? (
               <div className="space-y-3">
                 {workspaceOperationsQuery.data.map((operation) => (
-                  <div key={operation.id} className="rounded-none border border-border/80 bg-background px-4 py-3">
+                  <div key={operation.id} className="rounded-none border border-line/80 bg-bg px-4 py-3">
                     <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                       <div className="space-y-1">
                         <div className="text-sm font-medium">{operation.command ?? workspaceOperationPhaseLabel(operation.phase)}</div>
-                        <div className="text-xs text-muted-foreground">
+                        <div className="text-xs text-ink-3">
                           {formatDateTime(operation.startedAt)}
                           {operation.finishedAt ? ` → ${formatDateTime(operation.finishedAt)}` : ""}
                         </div>
                         {operation.stderrExcerpt ? (
-                          <div className="whitespace-pre-wrap break-words text-xs text-destructive">{operation.stderrExcerpt}</div>
+                          <div className="whitespace-pre-wrap break-words text-xs text-bad">{operation.stderrExcerpt}</div>
                         ) : operation.stdoutExcerpt ? (
-                          <div className="whitespace-pre-wrap break-words text-xs text-muted-foreground">{operation.stdoutExcerpt}</div>
+                          <div className="whitespace-pre-wrap break-words text-xs text-ink-3">{operation.stdoutExcerpt}</div>
                         ) : null}
                       </div>
                       <StatusPill className="self-start">{operation.status}</StatusPill>
@@ -1554,7 +1554,7 @@ export function ExecutionWorkspaceDetail() {
                 ))}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">No workspace operations have been recorded yet.</p>
+              <p className="text-sm text-ink-3">No workspace operations have been recorded yet.</p>
             )}
             </CardContent>
           </Card>
@@ -1584,11 +1584,11 @@ export function ExecutionWorkspaceDetail() {
           />
         ) : isExecutionWorkspacePluginTab(activeTab) && workspacePluginDetailSlotsLoading ? (
           <Card>
-            <CardContent className="py-6 text-sm text-muted-foreground">Loading workspace plugin...</CardContent>
+            <CardContent className="py-6 text-sm text-ink-3">Loading workspace plugin...</CardContent>
           </Card>
         ) : isExecutionWorkspacePluginTab(activeTab) && workspacePluginDetailSlotsError ? (
           <Card>
-            <CardContent className="py-6 text-sm text-destructive">{workspacePluginDetailSlotsError}</CardContent>
+            <CardContent className="py-6 text-sm text-bad">{workspacePluginDetailSlotsError}</CardContent>
           </Card>
         ) : isExecutionWorkspacePluginTab(activeTab) ? (
           <MissingPluginTabPlaceholder

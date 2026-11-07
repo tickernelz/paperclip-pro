@@ -68,7 +68,7 @@ export function IssueAutonomyWindowBadge({
     <span className="inline-flex shrink-0 items-center gap-1" data-testid="issue-autonomy-window">
       <Tooltip>
         <TooltipTrigger asChild>
-          <Badge variant="outline" className="gap-1 border-primary/40 bg-primary/10 text-(length:--text-nano) text-primary">
+          <Badge variant="outline" className="gap-1 border-accent/40 bg-accent/10 text-(length:--text-nano) text-accent">
             <ShieldCheck className="h-3 w-3" />
             Autonomy until {formatClockTime(window.expiresAt)}
           </Badge>

@@ -132,8 +132,8 @@ function SeedFixtures({ children }: { children: ReactNode }) {
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section className="border-b border-border p-6 last:border-b-0">
-      <h2 className="mb-3 text-sm font-semibold text-foreground">{title}</h2>
+    <section className="border-b border-line p-6 last:border-b-0">
+      <h2 className="mb-3 text-sm font-semibold text-ink">{title}</h2>
       {children}
     </section>
   );

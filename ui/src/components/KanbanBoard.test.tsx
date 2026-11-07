@@ -189,13 +189,13 @@ describe("KanbanBoard", () => {
   });
 
   it("gives every column a status-hued tone", () => {
-    expect(getKanbanColumnTone("backlog").body).toContain("bg-muted/30");
+    expect(getKanbanColumnTone("backlog").body).toContain("bg-bg-3/30");
     expect(getKanbanColumnTone("todo").body).toContain("amber");
     expect(getKanbanColumnTone("in_progress").body).toContain("blue");
     expect(getKanbanColumnTone("in_review").body).toContain("violet");
     expect(getKanbanColumnTone("blocked").body).toContain("red");
     expect(getKanbanColumnTone("done").body).toContain("green");
-    expect(getKanbanColumnTone("cancelled").body).toContain("bg-muted/25");
+    expect(getKanbanColumnTone("cancelled").body).toContain("bg-bg-3/25");
     expect(getKanbanColumnTone("cancelled").card).toContain("opacity-80");
   });
 
@@ -206,7 +206,7 @@ describe("KanbanBoard", () => {
 
     const card = container.querySelector('a[href="/issues/PAP-1"]')?.parentElement;
 
-    expect(card?.className).toContain("bg-muted/35");
+    expect(card?.className).toContain("bg-bg-3/35");
     expect(card?.className).toContain("opacity-80");
   });
 

@@ -281,12 +281,12 @@ export function GatewaysTab({ companyId }: { companyId: string }) {
       </div>
 
       {creating ? (
-        <form className="space-y-3 rounded-md border border-border p-4" onSubmit={submitCreateGateway}>
+        <form className="space-y-3 rounded-md border border-line p-4" onSubmit={submitCreateGateway}>
           <div className="grid gap-3 md:grid-cols-(--gtc-60)">
             <label className="space-y-1.5 text-sm">
-              <span className="text-xs font-medium text-muted-foreground">Gateway name</span>
+              <span className="text-xs font-medium text-ink-3">Gateway name</span>
               <input
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                className="w-full rounded-md border border-line-strong bg-bg px-3 py-2 text-sm"
                 value={createDraft.name}
                 onChange={(event) => setCreateDraft((current) => ({ ...current, name: event.target.value }))}
                 placeholder="Engineering laptops"
@@ -294,9 +294,9 @@ export function GatewaysTab({ companyId }: { companyId: string }) {
               />
             </label>
             <label className="space-y-1.5 text-sm">
-              <span className="text-xs font-medium text-muted-foreground">Access profile</span>
+              <span className="text-xs font-medium text-ink-3">Access profile</span>
               <select
-                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                className="w-full rounded-md border border-line-strong bg-bg px-3 py-2 text-sm"
                 value={createDraft.profileId}
                 onChange={(event) => setCreateDraft((current) => ({ ...current, profileId: event.target.value }))}
                 required
@@ -314,16 +314,16 @@ export function GatewaysTab({ companyId }: { companyId: string }) {
             </label>
           </div>
           <label className="space-y-1.5 text-sm">
-            <span className="text-xs font-medium text-muted-foreground">Description</span>
+            <span className="text-xs font-medium text-ink-3">Description</span>
             <textarea
-              className="min-h-20 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              className="min-h-20 w-full rounded-md border border-line-strong bg-bg px-3 py-2 text-sm"
               value={createDraft.description}
               onChange={(event) => setCreateDraft((current) => ({ ...current, description: event.target.value }))}
               placeholder="Who this endpoint is for and when it should be rotated."
             />
           </label>
           {activeProfiles.length === 0 && !profileLoading ? (
-            <p className="text-xs text-muted-foreground">Create an access profile before adding a gateway.</p>
+            <p className="text-xs text-ink-3">Create an access profile before adding a gateway.</p>
           ) : null}
           <div className="flex flex-wrap justify-end gap-2">
             <Button type="button" variant="ghost" size="sm" onClick={() => setCreating(false)}>
@@ -337,11 +337,11 @@ export function GatewaysTab({ companyId }: { companyId: string }) {
       ) : null}
 
       {gateways.length === 0 ? (
-        <div className="rounded-md border border-dashed border-border p-5 text-sm text-muted-foreground">
+        <div className="rounded-md border border-dashed border-line p-5 text-sm text-ink-3">
           No named gateways yet. Create one here, then issue a token for the client that will connect to it.
         </div>
       ) : (
-        <div className="divide-y divide-border rounded-md border border-border">
+        <div className="divide-y divide-line rounded-md border border-line">
           {gateways.map((gateway) => {
             const endpoint = `${origin}${gateway.endpointPath}`;
             const snippets = gateway.clientSnippets ?? [];
@@ -354,60 +354,60 @@ export function GatewaysTab({ companyId }: { companyId: string }) {
                 <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2">
-                      <LinkIcon className="h-4 w-4 text-muted-foreground" />
-                      <h3 className="truncate text-sm font-semibold text-foreground">{gateway.name}</h3>
-                      <span className="text-xs text-muted-foreground">{gateway.status}</span>
+                      <LinkIcon className="h-4 w-4 text-ink-3" />
+                      <h3 className="truncate text-sm font-semibold text-ink">{gateway.name}</h3>
+                      <span className="text-xs text-ink-3">{gateway.status}</span>
                     </div>
                     {gateway.description ? (
-                      <p className="mt-1 text-sm text-muted-foreground">{gateway.description}</p>
+                      <p className="mt-1 text-sm text-ink-3">{gateway.description}</p>
                     ) : null}
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    <Button type="button" variant="outline" size="sm" onClick={() => void copyText(endpoint, "Gateway endpoint")}>
+                    <Button type="button" variant="secondary" size="sm" onClick={() => void copyText(endpoint, "Gateway endpoint")}>
                       <Copy className="mr-1.5 h-3.5 w-3.5" />
                       Copy endpoint
                     </Button>
-                    <Button type="button" variant="outline" size="sm" onClick={() => startIssuing(gateway.id)}>
+                    <Button type="button" variant="secondary" size="sm" onClick={() => startIssuing(gateway.id)}>
                       <KeyRound className="mr-1.5 h-3.5 w-3.5" />
                       Issue token
                     </Button>
                   </div>
                 </div>
 
-                <div className="break-all rounded bg-muted px-3 py-2 font-mono text-xs text-muted-foreground">
+                <div className="break-all rounded bg-bg-3 px-3 py-2 font-mono text-xs text-ink-3">
                   {endpoint}
                 </div>
 
                 <dl className="grid gap-x-4 gap-y-2 text-sm sm:grid-cols-2 lg:grid-cols-4">
                   <div>
-                    <dt className="text-xs font-medium text-muted-foreground">Owner</dt>
-                    <dd className="mt-0.5 text-foreground">{formatOwner(gateway, agentNames)}</dd>
+                    <dt className="text-xs font-medium text-ink-3">Owner</dt>
+                    <dd className="mt-0.5 text-ink">{formatOwner(gateway, agentNames)}</dd>
                   </div>
                   <div>
-                    <dt className="text-xs font-medium text-muted-foreground">Scope</dt>
-                    <dd className="mt-0.5 text-foreground">{formatScope(gateway, projectNames, agentNames)}</dd>
+                    <dt className="text-xs font-medium text-ink-3">Scope</dt>
+                    <dd className="mt-0.5 text-ink">{formatScope(gateway, projectNames, agentNames)}</dd>
                   </div>
                   <div>
-                    <dt className="text-xs font-medium text-muted-foreground">Allowed tools</dt>
-                    <dd className="mt-0.5 text-foreground">
+                    <dt className="text-xs font-medium text-ink-3">Allowed tools</dt>
+                    <dd className="mt-0.5 text-ink">
                       {profile ? `${formatAllowedTools(profile)} via ${profile.name}` : `Profile ${shortId(gateway.profileId)}`}
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs font-medium text-muted-foreground">Last activity</dt>
-                    <dd className="mt-0.5 text-foreground">
+                    <dt className="text-xs font-medium text-ink-3">Last activity</dt>
+                    <dd className="mt-0.5 text-ink">
                       {lastActivity ? <RelativeTime value={lastActivity} /> : "Never used"}
                     </dd>
                   </div>
                 </dl>
 
                 {issuingGatewayId === gateway.id ? (
-                  <form className="space-y-3 rounded-md border border-border p-3" onSubmit={(event) => submitCreateToken(event, gateway.id)}>
+                  <form className="space-y-3 rounded-md border border-line p-3" onSubmit={(event) => submitCreateToken(event, gateway.id)}>
                     <div className="grid gap-3 md:grid-cols-2">
                       <label className="space-y-1.5 text-sm">
-                        <span className="text-xs font-medium text-muted-foreground">Token name</span>
+                        <span className="text-xs font-medium text-ink-3">Token name</span>
                         <input
-                          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                          className="w-full rounded-md border border-line-strong bg-bg px-3 py-2 text-sm"
                           value={tokenDraft.name}
                           onChange={(event) =>
                             setTokenDrafts((current) => ({
@@ -420,9 +420,9 @@ export function GatewaysTab({ companyId }: { companyId: string }) {
                         />
                       </label>
                       <label className="space-y-1.5 text-sm">
-                        <span className="text-xs font-medium text-muted-foreground">Client label</span>
+                        <span className="text-xs font-medium text-ink-3">Client label</span>
                         <input
-                          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                          className="w-full rounded-md border border-line-strong bg-bg px-3 py-2 text-sm"
                           value={tokenDraft.clientLabel}
                           onChange={(event) =>
                             setTokenDrafts((current) => ({
@@ -437,9 +437,9 @@ export function GatewaysTab({ companyId }: { companyId: string }) {
                     </div>
                     <div className="grid gap-3 md:grid-cols-[1fr_auto]">
                       <label className="space-y-1.5 text-sm">
-                        <span className="text-xs font-medium text-muted-foreground">Owner note</span>
+                        <span className="text-xs font-medium text-ink-3">Owner note</span>
                         <input
-                          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                          className="w-full rounded-md border border-line-strong bg-bg px-3 py-2 text-sm"
                           value={tokenDraft.ownerNote}
                           onChange={(event) =>
                             setTokenDrafts((current) => ({
@@ -452,9 +452,9 @@ export function GatewaysTab({ companyId }: { companyId: string }) {
                         />
                       </label>
                       <label className="space-y-1.5 text-sm">
-                        <span className="text-xs font-medium text-muted-foreground">Expires</span>
+                        <span className="text-xs font-medium text-ink-3">Expires</span>
                         <input
-                          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                          className="w-full rounded-md border border-line-strong bg-bg px-3 py-2 text-sm"
                           type="date"
                           value={tokenDraft.expiresAt}
                           onChange={(event) =>
@@ -469,7 +469,7 @@ export function GatewaysTab({ companyId }: { companyId: string }) {
                     </div>
                     <div className="flex flex-wrap items-center gap-3 text-sm">
                       {(["tools/list", "tools/call"] as ToolMcpGatewayTokenAction[]).map((action) => (
-                        <label key={action} className="flex items-center gap-2 text-muted-foreground">
+                        <label key={action} className="flex items-center gap-2 text-ink-3">
                           <input
                             type="checkbox"
                             checked={tokenDraft.allowedActions.includes(action)}
@@ -506,15 +506,15 @@ export function GatewaysTab({ companyId }: { companyId: string }) {
                 ) : null}
 
                 {createdToken ? (
-                  <div className="space-y-2 rounded-md border border-border bg-muted/40 p-3 text-sm">
+                  <div className="space-y-2 rounded-md border border-line bg-bg-3/40 p-3 text-sm">
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                      <div className="font-medium text-foreground">New token for {createdToken.name}</div>
-                      <Button type="button" variant="outline" size="sm" onClick={() => void copyText(createdToken.token, "Gateway bearer token")}>
+                      <div className="font-medium text-ink">New token for {createdToken.name}</div>
+                      <Button type="button" variant="secondary" size="sm" onClick={() => void copyText(createdToken.token, "Gateway bearer token")}>
                         <Copy className="mr-1.5 h-3.5 w-3.5" />
                         Copy token
                       </Button>
                     </div>
-                    <div className="break-all rounded bg-background px-3 py-2 font-mono text-xs text-muted-foreground">
+                    <div className="break-all rounded bg-bg px-3 py-2 font-mono text-xs text-ink-3">
                       {createdToken.token}
                     </div>
                   </div>
@@ -522,13 +522,13 @@ export function GatewaysTab({ companyId }: { companyId: string }) {
 
                 <div className="grid gap-3 md:grid-cols-2">
                   <div>
-                    <div className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                    <div className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-ink-3">
                       <KeyRound className="h-3.5 w-3.5" />
                       Tokens
                     </div>
                     <div className="space-y-1 text-sm">
                       {gateway.tokens.length === 0 ? (
-                        <p className="text-muted-foreground">No tokens issued.</p>
+                        <p className="text-ink-3">No tokens issued.</p>
                       ) : (
                         gateway.tokens.map((token) => {
                           const revoked = Boolean(token.revokedAt);
@@ -537,13 +537,13 @@ export function GatewaysTab({ companyId }: { companyId: string }) {
                             <div key={token.id} className="space-y-1 py-1">
                               <div className="flex items-center justify-between gap-3">
                                 <div className="min-w-0">
-                                  <div className="truncate text-foreground">{token.name}</div>
-                                  <div className="text-xs text-muted-foreground">
+                                  <div className="truncate text-ink">{token.name}</div>
+                                  <div className="text-xs text-ink-3">
                                     {token.clientLabel || token.tokenPrefix} · {token.allowedActions.join(", ")}
                                   </div>
                                 </div>
                                 <div className="flex shrink-0 items-center gap-2">
-                                  <span className="text-xs text-muted-foreground">
+                                  <span className="text-xs text-ink-3">
                                     {token.revokedAt ? (
                                       <>
                                         revoked <RelativeTime value={token.revokedAt} />
@@ -559,9 +559,9 @@ export function GatewaysTab({ companyId }: { companyId: string }) {
                                   {!revoked ? (
                                     <Button
                                       type="button"
-                                      variant="ghost"
+                                      variant="danger"
                                       size="sm"
-                                      className="h-7 px-2 text-xs text-destructive hover:text-destructive"
+                                      className="h-7 px-2 text-xs"
                                       onClick={() => setConfirmingRevokeTokenId(token.id)}
                                       aria-label={`Revoke ${token.name}`}
                                     >
@@ -572,7 +572,7 @@ export function GatewaysTab({ companyId }: { companyId: string }) {
                                 </div>
                               </div>
                               {confirming ? (
-                                <div className="flex flex-wrap items-center justify-end gap-2 text-xs text-muted-foreground">
+                                <div className="flex flex-wrap items-center justify-end gap-2 text-xs text-ink-3">
                                   <span>Revoke this token now?</span>
                                   <Button
                                     type="button"
@@ -586,7 +586,7 @@ export function GatewaysTab({ companyId }: { companyId: string }) {
                                   </Button>
                                   <Button
                                     type="button"
-                                    variant="destructive"
+                                    variant="danger"
                                     size="sm"
                                     className="h-7 px-2"
                                     onClick={() => revokeTokenMutation.mutate(token.id)}
@@ -605,16 +605,16 @@ export function GatewaysTab({ companyId }: { companyId: string }) {
                   </div>
 
                   <div>
-                    <div className="mb-1.5 text-xs font-medium text-muted-foreground">Client snippets</div>
+                    <div className="mb-1.5 text-xs font-medium text-ink-3">Client snippets</div>
                     <div className="space-y-1 text-sm">
                       {snippets.length === 0 ? (
-                        <p className="text-muted-foreground">No snippets available.</p>
+                        <p className="text-ink-3">No snippets available.</p>
                       ) : (
                         snippets.map((snippet) => (
-                          <details key={snippet.client} className="rounded px-2 py-1 open:bg-muted/40">
+                          <details key={snippet.client} className="rounded px-2 py-1 open:bg-bg-3/40">
                             <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-left">
-                              <span className="flex min-w-0 items-center gap-2 text-foreground">
-                                <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                              <span className="flex min-w-0 items-center gap-2 text-ink">
+                                <ChevronDown className="h-3.5 w-3.5 shrink-0 text-ink-3" />
                                 <span className="truncate">{snippet.label}</span>
                               </span>
                               <Button
@@ -631,11 +631,11 @@ export function GatewaysTab({ companyId }: { companyId: string }) {
                                 Copy
                               </Button>
                             </summary>
-                            <pre className="mt-2 max-h-56 overflow-auto whitespace-pre-wrap break-words rounded bg-background p-3 text-xs text-muted-foreground">
+                            <pre className="mt-2 max-h-56 overflow-auto whitespace-pre-wrap break-words rounded bg-bg p-3 text-xs text-ink-3">
                               {formatSnippetConfig(snippet.config)}
                             </pre>
                             {snippet.notes.length > 0 ? (
-                              <div className="mt-2 space-y-1 text-xs text-muted-foreground">
+                              <div className="mt-2 space-y-1 text-xs text-ink-3">
                                 {snippet.notes.map((note) => (
                                   <div key={note}>{note}</div>
                                 ))}

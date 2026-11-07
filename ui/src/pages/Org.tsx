@@ -46,7 +46,7 @@ function OrgTreeNode({
     <div>
       <Link
         to={hrefFn(node.id)}
-        className="flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors cursor-pointer hover:bg-accent/50 no-underline text-inherit"
+        className="flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors cursor-pointer hover:bg-bg-3/50 no-underline text-inherit"
         style={{ paddingLeft: `${depth * 16 + 12}px` }}
       >
         {hasChildren ? (
@@ -74,7 +74,7 @@ function OrgTreeNode({
           )}
         />
         <span className="font-medium flex-1">{node.name}</span>
-        <span className="text-xs text-muted-foreground">{node.role}</span>
+        <span className="text-xs text-ink-3">{node.role}</span>
         <StatusBadge status={node.status} />
       </Link>
       {hasChildren && expanded && (
@@ -108,7 +108,7 @@ export function Org() {
 
   return (
     <div className="space-y-4">
-      {error && <p className="text-sm text-destructive">{error.message}</p>}
+      {error && <p className="text-sm text-bad">{error.message}</p>}
 
       {data && data.length === 0 && (
         <EmptyState
@@ -118,7 +118,7 @@ export function Org() {
       )}
 
       {data && data.length > 0 && (
-        <div className="border border-border py-1">
+        <div className="border border-line py-1">
           <OrgTree nodes={data} hrefFn={(id) => `/agents/${id}`} />
         </div>
       )}

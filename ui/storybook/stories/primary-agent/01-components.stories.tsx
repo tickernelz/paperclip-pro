@@ -5,7 +5,7 @@ import { primaryDecorator, primaryParameters, usePrimaryStory, type PrimaryScena
 
 function Components(_args: PrimaryScenario) {
   const { agents } = usePrimaryStory();
-  return <main className="min-h-screen bg-background p-6 text-foreground"><div className="mx-auto max-w-lg divide-y divide-border">
+  return <main className="min-h-screen bg-bg p-6 text-ink"><div className="mx-auto max-w-lg divide-y divide-line">
     {agents.map(agent => <section key={agent.id} aria-label={`${agent.name} identity`} className="flex flex-col items-start gap-2 py-4">
       <div className="flex min-w-0 items-center gap-2"><AgentIdentity agent={agent} /><PrimaryAgentIndicator agentId={agent.id} companyId={agent.companyId} /></div>
     </section>)}

@@ -279,10 +279,10 @@ export function ConnectionIntentInteractionBody({
           className="flex items-start gap-3"
           data-testid="connection-intent-terminal"
         >
-          <StatusIcon className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
+          <StatusIcon className="mt-0.5 h-5 w-5 shrink-0 text-ink-3" />
           <div>
-            <p className="font-medium text-foreground">{status.title}</p>
-            {status.body ? <p className="mt-1 text-sm text-muted-foreground">{status.body}</p> : null}
+            <p className="font-medium text-ink">{status.title}</p>
+            {status.body ? <p className="mt-1 text-sm text-ink-3">{status.body}</p> : null}
           </div>
         </div>
       </div>
@@ -301,12 +301,12 @@ export function ConnectionIntentInteractionBody({
           className="flex items-start gap-3"
           data-testid="connection-intent-waiting"
         >
-          <Clock className="mt-0.5 h-5 w-5 shrink-0 text-muted-foreground" />
+          <Clock className="mt-0.5 h-5 w-5 shrink-0 text-ink-3" />
           <div>
-            <p className="font-medium text-foreground">
+            <p className="font-medium text-ink">
               Waiting for {addresseeLabel}
             </p>
-            {!accessRequest ? <p className="mt-1 text-sm text-muted-foreground">
+            {!accessRequest ? <p className="mt-1 text-sm text-ink-3">
               Only the addressed person can choose an identity or authorize this
               connection.
             </p> : null}
@@ -322,22 +322,22 @@ export function ConnectionIntentInteractionBody({
   if (accessRequest) {
     const busy = completeMutation.isPending || declineMutation.isPending;
     return <div id={focusTargetId} ref={focusTargetRef} tabIndex={-1} data-testid="connection-intent-focus-target">
-      <div data-testid="connection-intent-access-request" className="space-y-3 rounded-lg border border-border bg-card p-4">
+      <div data-testid="connection-intent-access-request" className="space-y-3 rounded-lg border border-line bg-bg-2 p-4">
         <div className="flex items-center gap-3">
           <AgentAvatar agent={agentQuery.data ?? { id: interaction.payload.requestingAgentId, name: interaction.payload.requestingAgentName }} size={32} label={interaction.payload.requestingAgentName} />
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium text-foreground">Grant {interaction.payload.requestingAgentName} access to “{accessRequest.connectionName}”?</p>
+            <p className="text-sm font-medium text-ink">Grant {interaction.payload.requestingAgentName} access to “{accessRequest.connectionName}”?</p>
           </div>
           <AppLogo name={interaction.payload.serviceName} logoUrl={interaction.payload.serviceLogoUrl} darkLogoUrl={interaction.payload.serviceDarkLogoUrl} size={32} />
         </div>
         <ul aria-label="Tool permissions" className="max-h-48 space-y-2 overflow-y-auto text-xs">
           {accessRequest.tools.map(tool => <li key={tool.catalogEntryId} className="flex items-start justify-between gap-3">
-            <span className="min-w-0 break-all font-mono text-foreground">{tool.toolName}</span>
-            <span className="shrink-0 text-muted-foreground">{tool.permission === "allowed" ? "Allowed" : "Ask first"}</span>
+            <span className="min-w-0 break-all font-mono text-ink">{tool.toolName}</span>
+            <span className="shrink-0 text-ink-3">{tool.permission === "allowed" ? "Allowed" : "Ask first"}</span>
           </li>)}
         </ul>
-        {setupQuery.isError || completeMutation.isError || declineMutation.isError ? <p role="alert" className="text-sm text-destructive">{(completeMutation.error ?? declineMutation.error ?? setupQuery.error)?.message ?? "Couldn’t update this access request."}</p> : null}
-        {setupQuery.data?.canGrantAccess === false ? <p role="status" className="text-sm text-muted-foreground">Connection manager required.</p> : null}
+        {setupQuery.isError || completeMutation.isError || declineMutation.isError ? <p role="alert" className="text-sm text-bad">{(completeMutation.error ?? declineMutation.error ?? setupQuery.error)?.message ?? "Couldn’t update this access request."}</p> : null}
+        {setupQuery.data?.canGrantAccess === false ? <p role="status" className="text-sm text-ink-3">Connection manager required.</p> : null}
         <div className="flex items-center justify-between gap-2">
           <Button size="sm" variant="ghost" disabled={busy} onClick={() => declineMutation.mutate()}>Not now</Button>
           <Button size="sm" disabled={busy || !setupQuery.data?.canGrantAccess} onClick={() => completeMutation.mutate(accessRequest.connectionId)}>
@@ -354,23 +354,23 @@ export function ConnectionIntentInteractionBody({
     ? adoptionConnectionId ?? (selectedReady ? repair.connection.id : null)
     : null;
   const setupContent = setupQuery.isLoading ? (
-                <div className="flex min-h-48 items-center justify-center gap-2 text-sm text-muted-foreground">
+                <div className="flex min-h-48 items-center justify-center gap-2 text-sm text-ink-3">
                   <Loader2 className="h-4 w-4 animate-spin" /> Loading
                   connection options…
                 </div>
               ) : setupQuery.isError ? (
                 <div className="py-8 text-center">
-                  <p className="font-medium text-foreground">
+                  <p className="font-medium text-ink">
                     Couldn’t load connection setup
                   </p>
-                  <p className="mt-1 text-sm text-muted-foreground">
+                  <p className="mt-1 text-sm text-ink-3">
                     {setupQuery.error instanceof Error
                       ? setupQuery.error.message
                       : "Try again."}
                   </p>
                   <Button
                     className="mt-4"
-                    variant="outline"
+                    variant="secondary"
                     onClick={() => setupQuery.refetch()}
                   >
                     Try again
@@ -418,12 +418,12 @@ export function ConnectionIntentInteractionBody({
         allAgents={false}
         onComplete={(result) => selectAiAccountMutation.mutate({ ...result, generation })}
         onCancel={() => { closeSetup(); returnFocusToCard(); }}
-      /> : <p role="status" className="text-sm text-muted-foreground">
+      /> : <p role="status" className="text-sm text-ink-3">
         {repair.connection.ownership === "personal" ? `${repair.connection.ownerName ?? "The account owner"} must reconnect ${repair.connection.name}.` : `The account owner must reconnect ${repair.connection.name}.`}
         {" "}You can continue here once it is restored.
       </p>
     : aiConnection && aiConnection.mode !== "responsible_user"
-      ? <p role="status" className="text-sm text-muted-foreground">The selected account is no longer available to you. Ask its owner to restore access, or choose an available AI connection in the agent’s settings.</p>
+      ? <p role="status" className="text-sm text-ink-3">The selected account is no longer available to you. Ask its owner to restore access, or choose an available AI connection in the agent’s settings.</p>
       : aiConnection ? <AiConnectionCredentialStep
           companyId={interaction.companyId}
           provider={aiConnection.provider}
@@ -453,10 +453,10 @@ export function ConnectionIntentInteractionBody({
             size={40}
           />
           <div>
-            <p className="font-medium text-foreground">
+            <p className="font-medium text-ink">
               {readyForAdoption ? `Use your ${aiProviderName} account` : needsOwnAiConnection ? `Connect your ${aiProviderName} account` : isAi ? `${aiProviderName} authentication required` : `${interaction.payload.requestingAgentName} needs ${interaction.payload.serviceName}`}
             </p>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-sm text-ink-3">
               {readyForAdoption
                 ? `Your account is connected. Use it for ${interaction.payload.requestingAgentName} to resume this task.`
                 : needsOwnAiConnection
@@ -470,7 +470,7 @@ export function ConnectionIntentInteractionBody({
         </div>
 
         {needsRetry ? (
-          <p className="mt-4 flex items-center gap-2 text-sm text-destructive">
+          <p className="mt-4 flex items-center gap-2 text-sm text-bad">
             <RotateCcw className="h-4 w-4" />
             Authorization didn’t finish. Your previous choices are safe; try
             again.
@@ -535,14 +535,14 @@ export function ConnectionIntentInteractionBody({
             </DialogContent>
           </Dialog>}
         </div>}
-        {isAi && open ? <div className="mt-4 border-t border-border pt-4" data-testid="ai-connection-inline-repair">{inlineContent}</div> : null}
+        {isAi && open ? <div className="mt-4 border-t border-line pt-4" data-testid="ai-connection-inline-repair">{inlineContent}</div> : null}
 
         {(!isEmail && completeMutation.isError) ||
         (selectAiAccountMutation.isError && selectAiAccountMutation.variables?.generation === generation) ||
         adoptMutation.isError ||
         declineMutation.isError ||
         phaseMutation.isError ? (
-          <p className="mt-3 text-sm text-destructive" role="alert">
+          <p className="mt-3 text-sm text-bad" role="alert">
             {(completeMutation.error ??
               selectAiAccountMutation.error ??
               adoptMutation.error ??

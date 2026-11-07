@@ -49,7 +49,7 @@ import {
 } from "@/components/ui/tooltip";
 
 export const githubSelectClass =
-  "w-full rounded-md border border-input bg-background px-3 py-2 text-sm";
+  "w-full rounded-md border border-line-strong bg-bg px-3 py-2 text-sm";
 const eventLabels = {
   opened: "New pull request",
   synchronize: "Updated commits",
@@ -72,7 +72,7 @@ function GitHubHelp({
         <button
           type="button"
           aria-label={`About ${label}`}
-          className="inline-flex shrink-0 items-center text-muted-foreground hover:text-foreground"
+          className="inline-flex shrink-0 items-center text-ink-3 hover:text-ink"
           onClick={() => setOpen(true)}
         >
           <HelpCircle className="size-4" />
@@ -108,7 +108,7 @@ export function GitHubToggle({
           {help && <GitHubHelp label={label}>{help}</GitHubHelp>}
         </div>
         {description && (
-          <p className="mt-1 text-xs text-muted-foreground">{description}</p>
+          <p className="mt-1 text-xs text-ink-3">{description}</p>
         )}
       </div>
       <ToggleSwitch
@@ -195,7 +195,7 @@ function GitHubPassingScore({
               if (next.trim() && Number.isInteger(score) && score >= 1 && score <= 5)
                 onChange(score as 1 | 2 | 3 | 4 | 5);
             }} />
-          <span className="text-sm text-muted-foreground">out of 5</span>
+          <span className="text-sm text-ink-3">out of 5</span>
         </div>
         <Label className="flex items-center gap-2 text-sm font-normal">
           <Checkbox aria-label="Report only" checked={value === null}
@@ -203,15 +203,15 @@ function GitHubPassingScore({
           Report only
         </Label>
       </div>
-      {!valid && <p id={`${id}-error`} role="alert" className="text-xs text-destructive">Enter a whole number from 1 to 5.</p>}
-      <p id={`${id}-help`} className="text-xs text-muted-foreground">
+      {!valid && <p id={`${id}-error`} role="alert" className="text-xs text-bad">Enter a whole number from 1 to 5.</p>}
+      <p id={`${id}-help`} className="text-xs text-ink-3">
         {value === null
           ? "Publishes a neutral check without a score requirement. GitHub can accept neutral checks for merging."
           : "Paperclip passes the check when a complete review of the latest commit meets this score. Lower scores fail. This does not approve the PR."}
       </p>
-      <p className="text-xs text-muted-foreground">
+      <p className="text-xs text-ink-3">
         To block merging, require the <strong>Paperclip Review</strong> check from this App in your GitHub branch rules.{" "}
-        <a className="underline hover:text-foreground"
+        <a className="underline hover:text-ink"
           href="https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/creating-rulesets-for-a-repository"
           target="_blank" rel="noreferrer">Configure on GitHub</a>
       </p>
@@ -263,7 +263,7 @@ export function GitHubPolicyEditor({
         values={policy[key]}
         onChange={(values) => set(key, values)}
       />
-      <p className="text-xs text-muted-foreground">{help}</p>
+      <p className="text-xs text-ink-3">{help}</p>
     </div>
   );
   const [prompt, setPrompt] = useState<
@@ -293,7 +293,7 @@ export function GitHubPolicyEditor({
           placeholder="What should this agent do on GitHub?"
           onChange={(value) => set("instructions", value)}
         />
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-ink-3">
           Included in every GitHub task. Type / to select a skill for the agent
           to use.
         </p>
@@ -334,7 +334,7 @@ export function GitHubPolicyEditor({
                     })
               }
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-ink-3">
               Added to the main instructions for this event. Type / to select a skill for the agent to use.
             </p>
           </div>
@@ -351,10 +351,10 @@ export function GitHubPolicyEditor({
           When to run
         </h2>
         <div className="flex items-start gap-3 py-2">
-          <AtSign className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+          <AtSign className="mt-0.5 size-4 shrink-0 text-ink-3" />
           <div className="space-y-1">
             <p className="text-sm font-medium">When mentioned</p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-ink-3">
               Authorized people can always @mention this bot.{" "}
               {accessHref && (
                 <Link className="underline underline-offset-4" to={accessHref}>
@@ -407,7 +407,7 @@ export function GitHubPolicyEditor({
                 New issues
               </Label>
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-ink-3">
               Runs for authorized authors in Access. Use the author filters below to limit whose issues and PRs start work.
             </p>
             <GitHubSettingsDisclosure title="Automatic review filters">
@@ -466,7 +466,7 @@ export function GitHubPolicyEditor({
                   )}
                 </div>
               </GitHubSettingsDisclosure>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-ink-3">
                 Reviews requested by @mention bypass these scheduling filters.
                 Repository access and ignored files still apply.
               </p>
@@ -499,7 +499,7 @@ export function GitHubPolicyEditor({
         <GitHubPassingScore value={policy.ratingThreshold} text={scoreText} onTextChange={onScoreTextChange}
           onChange={(value) => set("ratingThreshold", value)} onValidityChange={onValidityChange} />
       </section>
-      <div className="divide-y divide-border">
+      <div className="divide-y divide-line">
         <GitHubSettingsDisclosure title="Ignored files">
           {filterField(
             "ignoredPaths",
@@ -540,14 +540,14 @@ export function GitHubPolicyEditor({
                 <option value="warning">Warning</option>
                 <option value="error">Error</option>
               </select>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-ink-3">
                 Hidden findings still count in the assessment.
               </p>
             </div>
           </div>
         </GitHubSettingsDisclosure>
         <GitHubSettingsDisclosure title="Approvals and change requests">
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             Optional formal decisions on GitHub. Scores, comments, and checks
             still work when these are off.
           </p>
@@ -674,7 +674,7 @@ export function GitHubAccessEditor({
     }
   };
   const peopleRows = (people: GitHubAllowedPerson[]) => (
-    <div className="divide-y divide-border">
+    <div className="divide-y divide-line">
       {people.map((person) => {
         const identity = linkedAccounts.find(
           (link) => link.githubUserId === person.githubUserId,
@@ -695,20 +695,20 @@ export function GitHubAccessEditor({
           >
             <div className="min-w-0 flex-1 basis-32">
               <p className="break-words text-sm font-medium">@{person.login}</p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-ink-3">
                 {person.kind === "guest"
                   ? `Sponsored by ${memberName(person.sponsorUserId)}`
                   : (identity?.paperclipUserLabel ?? "Company member")}
               </p>
               {!linked && (
-                <p className="mt-1 text-xs text-destructive">
+                <p className="mt-1 text-xs text-bad">
                   GitHub account needs linking.
                 </p>
               )}
             </div>
             <div className="flex items-center gap-5">
               <div className="flex flex-col items-center gap-2">
-                <span className="text-xs text-muted-foreground">Mentions</span>
+                <span className="text-xs text-ink-3">Mentions</span>
                 {person.kind === "guest" ||
                 configuration.memberAccess === "all_linked" ? (
                   <span
@@ -716,7 +716,7 @@ export function GitHubAccessEditor({
                     aria-label={`Mentions ${linked ? "allowed" : "unavailable"} for @${person.login}`}
                   >
                     {linked && (
-                      <Check className="size-3.5 text-muted-foreground" />
+                      <Check className="size-3.5 text-ink-3" />
                     )}
                     {linked ? "Allowed" : "Unlinked"}
                   </span>
@@ -767,7 +767,7 @@ export function GitHubAccessEditor({
     <section className="space-y-6" aria-label="People">
       <div className="space-y-1">
         <h2 className="text-base font-semibold">People</h2>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           Choose who can mention this bot and whose activity can start work
           automatically.
         </p>
@@ -776,7 +776,7 @@ export function GitHubAccessEditor({
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h3 className="text-sm font-semibold">Company members</h3>
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             onClick={() => {
               setDialog("member");
@@ -805,16 +805,16 @@ export function GitHubAccessEditor({
         />
         {peopleRows(memberRows)}
         {links.isPending && (
-          <p role="status" className="py-4 text-sm text-muted-foreground">
+          <p role="status" className="py-4 text-sm text-ink-3">
             Loading linked accounts…
           </p>
         )}
         {!links.isPending && !links.isError && memberRows.length === 0 && (
-          <p className="py-4 text-sm text-muted-foreground">
+          <p className="py-4 text-sm text-ink-3">
             No members linked yet. Link an account to get started.
           </p>
         )}
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-ink-3">
           {automatic ? (
             <>
               Automatic runs use the events and author filters in{" "}
@@ -841,13 +841,13 @@ export function GitHubAccessEditor({
         </p>
       </section>
       <section
-        className="space-y-2 border-t border-border pt-6"
+        className="space-y-2 border-t border-line pt-6"
         aria-label="External contributors"
       >
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h3 className="text-sm font-semibold">External contributors</h3>
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             onClick={() => {
               setDialog("guest");
@@ -858,7 +858,7 @@ export function GitHubAccessEditor({
             Add external contributor
           </Button>
         </div>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-ink-3">
           Allow specific GitHub users with a member as their sponsor. They
           receive restricted access, without company membership or the sponsor’s
           personal credentials.
@@ -921,7 +921,7 @@ export function GitHubAccessEditor({
               </select>
             </>
           )}
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             The member accountable for automatically created Paperclip tasks.
             GitHub authors remain recorded separately. This grants no access to
             the member’s personal credentials.
@@ -929,13 +929,13 @@ export function GitHubAccessEditor({
         </div>
       </GitHubSettingsDisclosure>
       {error && (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-sm text-bad">
           {error}
         </p>
       )}
       {(members.error || links.error) && (
         <div className="flex flex-wrap items-center gap-2">
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-sm text-bad">
             Could not load members or linked accounts.
           </p>
           <Button
@@ -972,7 +972,7 @@ export function GitHubAccessEditor({
           {dialog === "member" ? (
             <>
               <Button
-                variant="outline"
+                variant="secondary"
                 aria-label="Copy account linking URL"
                 onClick={() => {
                   if (accountLink.current)
@@ -996,7 +996,7 @@ export function GitHubAccessEditor({
                 Link your account
               </Link>
               {error && (
-                <p role="alert" className="text-sm text-destructive">
+                <p role="alert" className="text-sm text-bad">
                   {error}
                 </p>
               )}
@@ -1018,7 +1018,7 @@ export function GitHubAccessEditor({
                     }}
                   />
                   <Button
-                    variant="outline"
+                    variant="secondary"
                     disabled={busy || !login.trim()}
                     onClick={async () => {
                       setBusy(true);
@@ -1072,7 +1072,7 @@ export function GitHubAccessEditor({
                 </p>
               )}
               {lookupError && (
-                <p role="alert" className="text-sm text-destructive">
+                <p role="alert" className="text-sm text-bad">
                   {lookupError}
                 </p>
               )}

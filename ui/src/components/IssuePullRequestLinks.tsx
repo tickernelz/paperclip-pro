@@ -25,12 +25,12 @@ export function IssuePullRequestLinks({ products, externalObjects = [] }: {
           <li key={product.id} className="flex min-w-0 flex-wrap items-center gap-2">
             {href ? (
               <a href={href} target="_blank" rel="noopener noreferrer" title={product.title}
-                className="break-words text-sm text-primary underline-offset-2 hover:underline">
+                className="break-words text-sm text-accent underline-offset-2 hover:underline">
                 {label}
               </a>
             ) : <span className="break-words text-sm">{label} · No PR link provided</span>}
             {provider ? (
-              <span className="inline-flex items-center gap-1 text-xs text-muted-foreground"
+              <span className="inline-flex items-center gap-1 text-xs text-ink-3"
                 data-external-status={provider.statusCategory} data-external-liveness={provider.liveness}>
                 <ExternalObjectStatusIcon category={provider.statusCategory} liveness={provider.liveness}
                   statusIconKey={provider.statusIconKey} label={providerStatus} />
@@ -41,7 +41,7 @@ export function IssuePullRequestLinks({ products, externalObjects = [] }: {
               <Badge variant="outline">Review requested</Badge>
             ) : ["merged", "closed", "archived", "draft", "changes_requested"].includes(state)
               && providerStatus?.toLowerCase() !== state ? (
-              <span className="text-xs text-muted-foreground">{provider ? "Saved: " : ""}{state.replaceAll("_", " ")}</span>
+              <span className="text-xs text-ink-3">{provider ? "Saved: " : ""}{state.replaceAll("_", " ")}</span>
             ) : null}
           </li>
         );

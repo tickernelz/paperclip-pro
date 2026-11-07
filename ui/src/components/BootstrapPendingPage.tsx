@@ -17,17 +17,17 @@ type BootstrapPendingPageProps = {
 
 function CliFallback({ hasActiveInvite = false }: { hasActiveInvite?: boolean }) {
   return (
-    <div className="mt-6 border-t border-border pt-5">
+    <div className="mt-6 border-t border-line pt-5">
       <div className="flex items-center gap-2 text-sm font-medium">
-        <Terminal className="size-4 text-muted-foreground" aria-hidden />
+        <Terminal className="size-4 text-ink-3" aria-hidden />
         <span>Prefer to finish setup from the host?</span>
       </div>
-      <p className="mt-2 text-sm text-muted-foreground">
+      <p className="mt-2 text-sm text-ink-3">
         {hasActiveInvite
           ? "A bootstrap invite is already active. Check your Paperclip startup logs for the first-admin URL, or run this command on the host to rotate it:"
           : "Run this command on the host that runs Paperclip to print a one-time first-admin invite URL:"}
       </p>
-      <pre className="mt-3 overflow-x-auto rounded-md border border-border bg-muted/30 p-3 font-mono text-xs">
+      <pre className="mt-3 overflow-x-auto rounded-md border border-line bg-bg-3/30 p-3 font-mono text-xs">
 {BOOTSTRAP_FALLBACK_COMMAND}
       </pre>
     </div>
@@ -77,12 +77,12 @@ export function BootstrapPendingPage({
     return (
       <StateChrome>
         <h1 className="text-xl font-semibold">This Paperclip is waiting on its first admin</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="mt-2 text-sm text-ink-3">
           This instance runs in invite-only mode. The operator must generate a one-time first-admin invite URL
           from the host. Once you have the link, open it from this browser to finish setup.
         </p>
         <CliFallback hasActiveInvite={hasActiveInvite} />
-        <p className="mt-4 text-xs text-muted-foreground">
+        <p className="mt-4 text-xs text-ink-3">
           Browser-based claim is intentionally disabled in public mode so anyone on the network can't promote
           themselves.
         </p>
@@ -99,17 +99,17 @@ export function BootstrapPendingPage({
           </div>
           <div>
             <h1 className="text-xl font-semibold">You're the instance admin</h1>
-            <p className="mt-2 text-sm text-muted-foreground">
+            <p className="mt-2 text-sm text-ink-3">
               Setup is complete. Taking you to onboarding to create your first organization...
             </p>
           </div>
         </div>
         <div className="mt-5 flex items-center gap-3">
-          <Loader2 className="size-4 animate-spin text-muted-foreground" aria-hidden />
-          <span className="text-sm text-muted-foreground">Redirecting...</span>
+          <Loader2 className="size-4 animate-spin text-ink-3" aria-hidden />
+          <span className="text-sm text-ink-3">Redirecting...</span>
         </div>
         <div className="mt-5">
-          <Button asChild variant="outline">
+          <Button asChild variant="secondary">
             <a href="/">Continue to dashboard</a>
           </Button>
         </div>
@@ -121,7 +121,7 @@ export function BootstrapPendingPage({
     return (
       <StateChrome>
         <h1 className="text-xl font-semibold">Finish setting up this Paperclip</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="mt-2 text-sm text-ink-3">
           No admin has claimed this instance yet. Sign in or create your Paperclip account to become the first
           admin from this browser.
         </p>
@@ -140,7 +140,7 @@ export function BootstrapPendingPage({
   return (
     <StateChrome>
       <h1 className="text-xl font-semibold">Finish setting up this Paperclip</h1>
-      <p className="mt-2 text-sm text-muted-foreground">
+      <p className="mt-2 text-sm text-ink-3">
         No admin has claimed this instance yet. Claim it now to become the first admin and start onboarding.
       </p>
       <div className="mt-5 flex flex-wrap items-center gap-3">
@@ -148,11 +148,11 @@ export function BootstrapPendingPage({
           {isClaiming && <Loader2 className="mr-2 size-4 animate-spin" aria-hidden />}
           {isClaiming ? "Claiming..." : "Claim this instance"}
         </Button>
-        <span className="text-sm text-muted-foreground">
-          Signed in as <span className="font-medium text-foreground">{displayIdentity(session)}</span>
+        <span className="text-sm text-ink-3">
+          Signed in as <span className="font-medium text-ink">{displayIdentity(session)}</span>
         </span>
       </div>
-      <p className="mt-3 text-xs text-muted-foreground">
+      <p className="mt-3 text-xs text-ink-3">
         Wrong account?{" "}
         <Link to="/auth?next=/" className="underline underline-offset-2">
           Switch account
@@ -162,12 +162,12 @@ export function BootstrapPendingPage({
       {claimError && (
         <div
           role="alert"
-          className="mt-4 flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive"
+          className="mt-4 flex items-start gap-2 rounded-md border border-bad/40 bg-bad/10 p-3 text-sm text-bad"
         >
           <TriangleAlert className="mt-0.5 size-4 flex-shrink-0" aria-hidden />
           <div>
             <p className="font-medium">{errorCopy.title}</p>
-            {errorCopy.body && <p className="mt-1 text-destructive/90">{errorCopy.body}</p>}
+            {errorCopy.body && <p className="mt-1 text-bad/90">{errorCopy.body}</p>}
           </div>
         </div>
       )}

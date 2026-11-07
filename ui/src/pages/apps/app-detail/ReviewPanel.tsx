@@ -15,7 +15,7 @@ export function ReviewPanel({
 
   return (
     <div className="space-y-6">
-      <h2 className="text-lg font-semibold text-foreground">Review</h2>
+      <h2 className="text-lg font-semibold text-ink">Review</h2>
       {showsQuarantinedActions ? (
         <QuarantinedActionsReview
           entries={quarantined}

@@ -150,7 +150,7 @@ function MarkdownWorkProductRow({
   let expandedBody: React.ReactNode;
   if (tooLarge) {
     expandedBody = (
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm text-ink-3">
         This Markdown file is too large to preview. Use Raw or Download instead.
       </p>
     );
@@ -172,12 +172,12 @@ function MarkdownWorkProductRow({
           <MarkdownBody>{reviewDoc.body}</MarkdownBody>
         </IssueDocumentAnnotations>
       ) : (
-        <p className="text-sm text-muted-foreground">Document is empty.</p>
+        <p className="text-sm text-ink-3">Document is empty.</p>
       );
   } else if (ensure.isError) {
     expandedBody = (
       <div className="flex flex-col items-start gap-1.5">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           {unsupportedError
             ? "This file can't be previewed as Markdown. Use Raw or Download instead."
             : "Preview failed to load."}
@@ -185,7 +185,7 @@ function MarkdownWorkProductRow({
         {!unsupportedError ? (
           <button
             type="button"
-            className="rounded-md border border-border px-2 py-0.5 text-(length:--text-micro) text-muted-foreground hover:bg-accent/50"
+            className="rounded-md border border-line px-2 py-0.5 text-(length:--text-micro) text-ink-3 hover:bg-bg-3/50"
             onClick={() => {
               ensure.reset();
               ensure.mutate();
@@ -198,7 +198,7 @@ function MarkdownWorkProductRow({
     );
   } else {
     expandedBody = (
-      <p className="text-sm text-muted-foreground">Preparing preview…</p>
+      <p className="text-sm text-ink-3">Preparing preview…</p>
     );
   }
 
@@ -217,7 +217,7 @@ function MarkdownWorkProductRow({
           expanded={expanded}
           statusBadge={
             badge ? (
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs text-ink-3">
                 {badge.label}
               </span>
             ) : undefined
@@ -241,7 +241,7 @@ function MarkdownWorkProductRow({
                   onClick={() => openTextAttachment(metadata.attachmentId, metadata.originalFilename ?? workProduct.title)}
                   aria-label={`Open in tab: ${workProduct.title}`}
                   title="Open in tab"
-                  className="shrink-0 px-1.5 py-1.5 text-muted-foreground hover:text-foreground"
+                  className="shrink-0 px-1.5 py-1.5 text-ink-3 hover:text-ink"
                 >
                   <FileText className="h-3 w-3" />
                 </button>
@@ -252,7 +252,7 @@ function MarkdownWorkProductRow({
                 rel="noreferrer"
                 aria-label={`Open raw ${workProduct.title}`}
                 title="Open raw"
-                className="shrink-0 px-1.5 py-1.5 text-muted-foreground hover:text-foreground"
+                className="shrink-0 px-1.5 py-1.5 text-ink-3 hover:text-ink"
               >
                 <ExternalLink className="h-3 w-3" />
               </a>
@@ -260,7 +260,7 @@ function MarkdownWorkProductRow({
                 href={metadata.downloadPath}
                 aria-label={`Download ${workProduct.title}`}
                 title="Download"
-                className="shrink-0 py-1.5 pr-2 pl-0.5 text-muted-foreground hover:text-foreground"
+                className="shrink-0 py-1.5 pr-2 pl-0.5 text-ink-3 hover:text-ink"
               >
                 <Download className="h-3 w-3" />
               </a>
@@ -269,7 +269,7 @@ function MarkdownWorkProductRow({
         />
       </div>
       {expanded ? (
-        <div className="border-t border-border px-2.5 py-2">{expandedBody}</div>
+        <div className="border-t border-line px-2.5 py-2">{expandedBody}</div>
       ) : null}
     </div>
   );
@@ -327,7 +327,7 @@ function DocumentRow({
         }
       />
       {expanded ? (
-        <div className="border-t border-border px-2.5 py-2">
+        <div className="border-t border-line px-2.5 py-2">
           {doc.body.trim().length > 0 ? (
             <IssueDocumentAnnotations
               issueId={issueId}
@@ -344,7 +344,7 @@ function DocumentRow({
               <MarkdownBody>{doc.body}</MarkdownBody>
             </IssueDocumentAnnotations>
           ) : (
-            <p className="text-sm text-muted-foreground">Document is empty.</p>
+            <p className="text-sm text-ink-3">Document is empty.</p>
           )}
         </div>
       ) : null}
@@ -494,7 +494,7 @@ export function IssuePropertiesArtifactsTab({
   const loadError = attachmentsError || productsError || documentsError;
   const loading = attachmentsPending || productsPending || documentsPending;
   const feedback = loadError ? (
-    <div role="alert" className="px-1 py-3 text-sm text-muted-foreground">
+    <div role="alert" className="px-1 py-3 text-sm text-ink-3">
       Some artifacts could not be loaded.
       <button
         className="ml-2 underline"
@@ -508,7 +508,7 @@ export function IssuePropertiesArtifactsTab({
       </button>
     </div>
   ) : loading ? (
-    <p role="status" className="px-1 py-3 text-sm text-muted-foreground">
+    <p role="status" className="px-1 py-3 text-sm text-ink-3">
       Loading artifacts…
     </p>
   ) : null;
@@ -520,7 +520,7 @@ export function IssuePropertiesArtifactsTab({
   ) {
     if (feedback) return feedback;
     return (
-      <div className="px-1 py-6 text-sm text-muted-foreground">
+      <div className="px-1 py-6 text-sm text-ink-3">
         No artifacts yet. Work products, documents, and agent-produced files
         will appear here.
       </div>
@@ -537,11 +537,11 @@ export function IssuePropertiesArtifactsTab({
           <section key={group.runId} className="flex flex-col gap-1.5">
             {group.runId !== "other" ? (
               <header className="flex items-baseline justify-between gap-2 px-1">
-                <h3 className="truncate text-xs font-medium text-foreground">
+                <h3 className="truncate text-xs font-medium text-ink">
                   {agent?.name ?? `Run ${group.runId.slice(0, 8)}`}
                 </h3>
                 <time
-                  className="shrink-0 text-(length:--text-micro) text-muted-foreground"
+                  className="shrink-0 text-(length:--text-micro) text-ink-3"
                   dateTime={group.date.toISOString()}
                 >
                   {formatDateTime(group.date)}

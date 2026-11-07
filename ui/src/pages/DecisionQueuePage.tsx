@@ -214,7 +214,7 @@ export function DecisionQueuePage() {
   });
 
   if (!selectedCompanyId) {
-    return <p className="text-sm text-muted-foreground">Select an organization first.</p>;
+    return <p className="text-sm text-ink-3">Select an organization first.</p>;
   }
   if (isLoading) {
     return <PageSkeleton variant="approvals" />;
@@ -227,7 +227,7 @@ export function DecisionQueuePage() {
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="min-w-0">
           <h1 className="text-xl font-bold">{queue?.title ?? queueKey}</h1>
-          {queue?.description && <p className="mt-0.5 text-sm text-muted-foreground">{queue.description}</p>}
+          {queue?.description && <p className="mt-0.5 text-sm text-ink-3">{queue.description}</p>}
         </div>
         <DecisionsToolbar
           visibleCount={visibleCount}
@@ -262,21 +262,21 @@ export function DecisionQueuePage() {
         />
       )}
 
-      {error && <p className="text-sm text-destructive">{(error as Error).message}</p>}
+      {error && <p className="text-sm text-bad">{(error as Error).message}</p>}
 
       {isEmpty ? (
-        <div className="rounded-xl border border-dashed border-border py-14 text-center">
-          <p className="text-sm font-medium text-foreground">This queue is empty.</p>
-          <p className="mt-1 text-xs text-muted-foreground">
+        <div className="rounded-xl border border-dashed border-line py-14 text-center">
+          <p className="text-sm font-medium text-ink">This queue is empty.</p>
+          <p className="mt-1 text-xs text-ink-3">
             Decisions land here when they match the queue's rules or an agent adds them.
           </p>
         </div>
       ) : (
         <div className="space-y-4">
           {visibleCount === 0 ? (
-            <div className="rounded-xl border border-dashed border-border py-10 text-center">
-              <p className="text-sm font-medium text-foreground">No decisions match your filters.</p>
-              <p className="mt-1 text-xs text-muted-foreground">Adjust or clear the filters to see the rest.</p>
+            <div className="rounded-xl border border-dashed border-line py-10 text-center">
+              <p className="text-sm font-medium text-ink">No decisions match your filters.</p>
+              <p className="mt-1 text-xs text-ink-3">Adjust or clear the filters to see the rest.</p>
             </div>
           ) : (
             groups.map((group) => {
@@ -291,7 +291,7 @@ export function DecisionQueuePage() {
                       collapsed={collapsed}
                       onToggle={() => toggleGroupCollapse(group.key)}
                       trailing={
-                        <span className="text-xs tabular-nums text-muted-foreground">{group.items.length}</span>
+                        <span className="text-xs tabular-nums text-ink-3">{group.items.length}</span>
                       }
                     />
                   )}
@@ -327,7 +327,7 @@ export function DecisionQueuePage() {
               open={agingOpen}
               onToggle={() => setAgingOpen((prev) => !prev)}
             >
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-ink-3">
                 Idle past {ATTENTION_AGING_DAYS} days — kept off the queue. Keep any you still want surfaced.
               </p>
               {agingItems.map((item) => (
@@ -371,33 +371,33 @@ function SeedRulesCard({
   onToggle: () => void;
 }) {
   return (
-    <div className="rounded-xl border border-border bg-muted/20 p-3">
+    <div className="rounded-xl border border-line bg-bg-3/20 p-3">
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-2">
-          <Settings2 className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+          <Settings2 className="mt-0.5 h-4 w-4 shrink-0 text-ink-3" />
           <div className="min-w-0 space-y-1">
-            <p className="text-sm font-medium text-foreground">Auto-seeding is {enabled ? "on" : "off"}</p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-sm font-medium text-ink">Auto-seeding is {enabled ? "on" : "off"}</p>
+            <p className="text-xs text-ink-3">
               {enabled
                 ? "This queue fills itself automatically. Decisions are added the moment they match any of its rules:"
                 : "Automatic adds are paused. These rules would add decisions to the queue when on:"}
             </p>
             <ul className="mt-0.5 space-y-0.5">
               {rules.map((rule) => (
-                <li key={rule} className="flex items-start gap-1.5 text-xs text-muted-foreground">
+                <li key={rule} className="flex items-start gap-1.5 text-xs text-ink-3">
                   <Check className="mt-0.5 h-3 w-3 shrink-0" />
                   {rule}
                 </li>
               ))}
             </ul>
-            <p className="text-(length:--text-nano) text-muted-foreground">
+            <p className="text-(length:--text-nano) text-ink-3">
               {enabled
                 ? "Turning it off stops new automatic adds only — decisions already here stay, and you can still add or remove decisions by hand."
                 : "Adding or removing decisions by hand still works while automatic seeding is off."}
             </p>
           </div>
         </div>
-        <Button type="button" variant="outline" size="xs" className="h-7 shrink-0" disabled={pending} onClick={onToggle}>
+        <Button type="button" variant="secondary" size="xs" className="h-7 shrink-0" disabled={pending} onClick={onToggle}>
           {pending && <Loader2 className="h-3 w-3 animate-spin" />}
           {enabled ? "Disable" : "Enable"}
         </Button>
@@ -463,18 +463,18 @@ function QueueItemRow({
       <div className="flex items-center justify-end px-1">
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
-            <Button type="button" variant="ghost" size="xs" className="h-7 gap-1 text-muted-foreground">
+            <Button type="button" variant="ghost" size="xs" className="h-7 gap-1">
               <X className="h-3.5 w-3.5" />
               Exclude
             </Button>
           </PopoverTrigger>
           <PopoverContent align="end" className="w-64 space-y-2 p-3">
-            <p className="text-xs font-medium text-foreground">Remove from this queue</p>
+            <p className="text-xs font-medium text-ink">Remove from this queue</p>
             <textarea
               value={reason}
               onChange={(event) => setReason(event.target.value)}
               placeholder="Reason (optional)…"
-              className="min-h-16 w-full rounded-sm border border-border bg-background px-2 py-1 text-xs"
+              className="min-h-16 w-full rounded-sm border border-line bg-bg px-2 py-1 text-xs"
             />
             <div className="flex justify-end gap-1">
               <Button type="button" variant="ghost" size="xs" onClick={() => setOpen(false)}>

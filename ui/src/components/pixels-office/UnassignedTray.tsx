@@ -32,11 +32,11 @@ export function UnassignedTray({ companyId, canAssign, armedIssueId, onArmIssue 
 
   return (
     <div className="flex w-full min-w-0 flex-col gap-1 md:w-auto md:max-w-full">
-      <span className="text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
+      <span className="text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-ink-3">
         Unassigned · {issues.length}
       </span>
       {issues.length === 0 ? (
-        <span className="text-xs text-muted-foreground">Everything has an owner.</span>
+        <span className="text-xs text-ink-3">Everything has an owner.</span>
       ) : (
         <ul className="flex max-w-full gap-1 overflow-x-auto pb-1">
           {issues.map((issue) => (
@@ -61,12 +61,12 @@ export function UnassignedTray({ companyId, canAssign, armedIssueId, onArmIssue 
                 }}
                 className={
                   armedIssueId === issue.id
-                    ? "flex min-h-8 cursor-grab items-center gap-1 rounded-md border border-primary bg-primary/10 px-2 py-1 text-xs text-foreground active:cursor-grabbing"
-                    : "flex min-h-8 cursor-grab items-center gap-1 rounded-md border border-border bg-card px-2 py-1 text-xs text-foreground active:cursor-grabbing"
+                    ? "flex min-h-8 cursor-grab items-center gap-1 rounded-md border border-accent bg-accent/10 px-2 py-1 text-xs text-ink active:cursor-grabbing"
+                    : "flex min-h-8 cursor-grab items-center gap-1 rounded-md border border-line bg-bg-2 px-2 py-1 text-xs text-ink active:cursor-grabbing"
                 }
               >
-                <GripVertical className="size-3 shrink-0 text-muted-foreground" aria-hidden />
-                <span className="whitespace-nowrap font-mono text-muted-foreground">{issue.identifier ?? issue.id.slice(0, 8)}</span>
+                <GripVertical className="size-3 shrink-0 text-ink-3" aria-hidden />
+                <span className="whitespace-nowrap font-mono text-ink-3">{issue.identifier ?? issue.id.slice(0, 8)}</span>
                 <span className="max-w-(--sz-150px) truncate">{issue.title}</span>
               </div>
             </li>

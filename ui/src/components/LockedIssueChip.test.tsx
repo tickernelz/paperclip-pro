@@ -60,7 +60,7 @@ describe("LockedIssueChip", () => {
     renderChip(<LockedIssueChip identifier="PAP-9" />);
     const chip = container.querySelector('[data-testid="locked-issue-chip"]');
     expect(chip?.className).toContain("border-dashed");
-    expect(chip?.className).toContain("text-muted-foreground");
+    expect(chip?.className).toContain("text-ink-3");
   });
 });
 

@@ -10,6 +10,7 @@ import {
   type ReassignInterruptCopy,
   type TimelineAssigneeLike,
 } from "../../lib/interrupt-handoff";
+import { Button } from "@/components/ui/button";
 
 /**
  * Presentational views for the interrupt-handoff UX clarity surfaces (PAP-10669).
@@ -43,7 +44,7 @@ function userLabel(userId: string, resolvers: HandoffChipResolvers): string {
 }
 
 const CHIP_CLASS =
-  "inline-flex items-center gap-1 rounded-full border border-border bg-muted/40 px-2 py-0.5 text-xs";
+  "inline-flex items-center gap-1 rounded-full border border-line bg-bg-3/40 px-2 py-0.5 text-xs";
 
 /** A labelled assignee chip — agent, user, or unassigned — that never lets a
  * user owner read like an agent. */
@@ -69,14 +70,14 @@ export function AssigneeChip({
     return (
       <span className={cn(CHIP_CLASS, className)} data-testid="handoff-assignee-chip" data-kind="user">
         <span className="sr-only">User </span>
-        <User className="h-3 w-3 shrink-0 text-muted-foreground" />
+        <User className="h-3 w-3 shrink-0 text-ink-3" />
         <span className="max-w-(--sz-12rem) truncate">{userLabel(assignee.userId, resolvers)}</span>
       </span>
     );
   }
   return (
     <span
-      className={cn("text-xs italic text-muted-foreground", className)}
+      className={cn("text-xs italic text-ink-3", className)}
       data-testid="handoff-assignee-chip"
       data-kind="unassigned"
     >
@@ -107,8 +108,8 @@ export function HandoffWakeRow({
       data-testid="handoff-wake-row"
       data-kind={info.kind}
     >
-      <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Wake</span>
-      <span className={cn(info.kind === "agent_wake" ? "text-foreground" : "text-muted-foreground")}>
+      <span className="text-xs font-medium uppercase tracking-wider text-ink-3">Wake</span>
+      <span className={cn(info.kind === "agent_wake" ? "text-ink" : "text-ink-3")}>
         {info.wakeText}
       </span>
     </div>
@@ -167,7 +168,7 @@ export function ComposerHandoffPreviewRow({
     <div
       className={cn(
         "flex flex-wrap items-center justify-end gap-1.5 text-xs",
-        preview.tone === "warn" ? "text-amber-700 dark:text-amber-300" : "text-muted-foreground",
+        preview.tone === "warn" ? "text-amber-700 dark:text-amber-300" : "text-ink-3",
       )}
       data-testid="composer-handoff-preview"
       data-kind={preview.kind}
@@ -206,14 +207,13 @@ export function ComposerMentionCoach({
         Did you mean <span className="font-medium">@{candidate.matchedText}</span>? Plain text won't
         notify or assign an agent.
       </span>
-      <button
+      <Button variant="secondary" size="xs" className="shrink-0"
         type="button"
         onClick={onInsert}
-        className="shrink-0 rounded border border-amber-400/50 px-1.5 py-0.5 font-medium hover:bg-amber-100/60 dark:hover:bg-amber-500/20"
         aria-label={`Insert mention for ${agentDisplayName} into your comment`}
       >
         Insert mention
-      </button>
+      </Button>
       <button
         type="button"
         onClick={onDismiss}
@@ -283,21 +283,19 @@ export function InterruptAssignConfirm({
         </div>
       </div>
       <div className="flex justify-end gap-2">
-        <button
+        <Button variant="secondary" size="xs"
           type="button"
           onClick={onCancel}
-          className="rounded border border-amber-400/50 px-2 py-0.5 font-medium hover:bg-amber-100/60 dark:hover:bg-amber-500/20"
         >
           {copy.cancelAction}
-        </button>
-        <button
+        </Button>
+        <Button variant="primary" size="xs"
           type="button"
           onClick={onConfirm}
           data-testid="interrupt-assign-confirm-action"
-          className="rounded bg-amber-600 px-2 py-0.5 font-medium text-white hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-400"
         >
           {copy.confirmAction}
-        </button>
+        </Button>
       </div>
     </div>
   );
@@ -315,14 +313,14 @@ export function PauseAffectsSummaryView({
   return (
     <div
       data-testid="pause-affects-summary"
-      className={cn("space-y-2 rounded-md border border-border bg-muted/30 p-3", className)}
+      className={cn("space-y-2 rounded-md border border-line bg-bg-3/30 p-3", className)}
     >
-      <div className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+      <div className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider text-ink-3">
         <PauseCircle className="h-3.5 w-3.5" aria-hidden />
         What this affects
       </div>
       {summary.nothingLive ? (
-        <p role="status" className="text-xs text-muted-foreground" data-testid="pause-nothing-live">
+        <p role="status" className="text-xs text-ink-3" data-testid="pause-nothing-live">
           Nothing live to pause — no agent run is in flight or queued. This records a hold so new work
           won't start until you resume.
         </p>
@@ -335,14 +333,14 @@ export function PauseAffectsSummaryView({
               data-bucket={bucket.key}
               className="flex flex-wrap items-baseline gap-x-1.5 gap-y-0.5 text-xs"
             >
-              <span className="font-medium text-foreground">{bucket.label}:</span>
-              <span className="tabular-nums text-foreground">{bucket.count}</span>
-              <span className="text-muted-foreground">— {bucket.detail}</span>
+              <span className="font-medium text-ink">{bucket.label}:</span>
+              <span className="tabular-nums text-ink">{bucket.count}</span>
+              <span className="text-ink-3">— {bucket.detail}</span>
             </li>
           ))}
         </ul>
       ) : (
-        <p className="text-xs text-muted-foreground">No tasks are affected.</p>
+        <p className="text-xs text-ink-3">No tasks are affected.</p>
       )}
     </div>
   );

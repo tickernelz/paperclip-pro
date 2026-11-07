@@ -30,7 +30,7 @@ function Section({
 }) {
   return (
     <section className="paperclip-story__frame overflow-hidden">
-      <div className="border-b border-border px-5 py-4">
+      <div className="border-b border-line px-5 py-4">
         <div className="paperclip-story__label">{eyebrow}</div>
         <h2 className="mt-1 text-xl font-semibold">{title}</h2>
       </div>
@@ -331,8 +331,8 @@ function BlockedNoticeSurface({
   const isMobile = size === "mobile";
   return (
     <div className={isDark ? "dark" : undefined}>
-      <div className="rounded-lg border border-border bg-background text-foreground">
-        <div className="flex items-center justify-between border-b border-border px-3 py-2 text-xs font-medium text-muted-foreground">
+      <div className="rounded-lg border border-line bg-bg text-ink">
+        <div className="flex items-center justify-between border-b border-line px-3 py-2 text-xs font-medium text-ink-3">
           <span>{fixture.label}</span>
           <span className="font-mono">
             {size} · {mode}
@@ -344,7 +344,7 @@ function BlockedNoticeSurface({
             blockers={fixture.blockers}
             blockerAttention={fixture.blockerAttention}
           />
-          <p className="text-[11px] text-muted-foreground">{fixture.caption}</p>
+          <p className="text-[11px] text-ink-3">{fixture.caption}</p>
         </div>
       </div>
     </div>
@@ -357,8 +357,8 @@ function CoveredBlockedSurface({ mode, size }: { mode: "light" | "dark"; size: "
 
   return (
     <div className={isDark ? "dark" : undefined}>
-      <div className="rounded-lg border border-border bg-background text-foreground">
-        <div className="border-b border-border px-3 py-2 text-xs font-medium text-muted-foreground">
+      <div className="rounded-lg border border-line bg-bg text-ink">
+        <div className="border-b border-line px-3 py-2 text-xs font-medium text-ink-3">
           {size} · {mode}
         </div>
         <div className={isMobile ? "max-w-[340px]" : "min-w-[620px]"}>
@@ -382,7 +382,7 @@ function StatusLanguage() {
         <section className="paperclip-story__frame p-6">
           <div className="paperclip-story__label">Language</div>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight">Status, priority, identity, and metrics</h1>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-ink-3">
             These components carry the operational vocabulary of the board: who is acting, what state work is in,
             how urgent it is, and whether capacity or spend needs attention.
           </p>
@@ -420,22 +420,22 @@ function StatusLanguage() {
             {coveredBlockedMatrix.map((item) => (
               <div
                 key={item.label}
-                className="flex min-h-[136px] flex-col justify-between rounded-lg border border-border bg-background/70 p-4"
+                className="flex min-h-[136px] flex-col justify-between rounded-lg border border-line bg-bg/70 p-4"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
                     <div className="text-sm font-medium">{item.label}</div>
-                    <div className="mt-1 text-xs text-muted-foreground">{item.expectedVisual}</div>
+                    <div className="mt-1 text-xs text-ink-3">{item.expectedVisual}</div>
                   </div>
                   <StatusIcon status={item.status} blockerAttention={item.blockerAttention} />
                 </div>
-                <div className="mt-4 rounded-md bg-muted/45 px-2.5 py-2 font-mono text-[11px] leading-5 text-muted-foreground">
+                <div className="mt-4 rounded-md bg-bg-3/45 px-2.5 py-2 font-mono text-[11px] leading-5 text-ink-3">
                   {item.expectedCopy}
                 </div>
               </div>
             ))}
           </div>
-          <p className="mt-3 text-xs text-muted-foreground">
+          <p className="mt-3 text-xs text-ink-3">
             Tooltip and aria-label copy begin with "Blocked · " for every cell after the first. Covered cells show a cyan
             ring with a small dot, stalled-review cells show an amber ring with a centered dot, and the needs-attention
             cells retain the solid red ring.
@@ -462,7 +462,7 @@ function StatusLanguage() {
               </div>
             ))}
           </div>
-          <p className="mt-3 text-xs text-muted-foreground">
+          <p className="mt-3 text-xs text-ink-3">
             Stalled-state copy switches to "stalled in review without a clear next step" and adds a "Stalled in review"
             chip strip beneath the regular blocker chips. The trailing imperative pluralizes when multiple stalled
             leaves are surfaced ("reviews"/"them") to match the chip strip.
@@ -474,9 +474,9 @@ function StatusLanguage() {
           <div className="grid gap-4 lg:grid-cols-[1fr_320px]">
             <div className="grid gap-3 sm:grid-cols-2">
               {ISSUE_PRIORITIES.map((item) => (
-                <div key={item} className="flex items-center justify-between rounded-lg border border-border bg-background/70 p-4">
+                <div key={item} className="flex items-center justify-between rounded-lg border border-line bg-bg/70 p-4">
                   <PriorityIcon priority={item} showLabel />
-                  <span className="font-mono text-xs text-muted-foreground">{item}</span>
+                  <span className="font-mono text-xs text-ink-3">{item}</span>
                 </div>
               ))}
             </div>
@@ -487,7 +487,7 @@ function StatusLanguage() {
               </CardHeader>
               <CardContent>
                 <PriorityIcon priority={priority} onChange={setPriority} showLabel />
-                <div className="mt-3 text-xs text-muted-foreground">Current value: {priority}</div>
+                <div className="mt-3 text-xs text-ink-3">Current value: {priority}</div>
               </CardContent>
             </Card>
           </div>
@@ -546,11 +546,11 @@ function StatusLanguage() {
               </CardHeader>
               <CardContent className="space-y-2 text-sm">
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-muted-foreground">Issue</span>
+                  <span className="text-ink-3">Issue</span>
                   <CopyText text="PAP-1641" className="font-mono">PAP-1641</CopyText>
                 </div>
                 <div className="flex items-center justify-between gap-3">
-                  <span className="text-muted-foreground">Run</span>
+                  <span className="text-ink-3">Run</span>
                   <CopyText text="49442f05-f1c1-45c5-88d3-1e5b871dbb8b" className="font-mono">
                     49442f05
                   </CopyText>

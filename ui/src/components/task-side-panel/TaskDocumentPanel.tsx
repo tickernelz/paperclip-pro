@@ -37,7 +37,7 @@ export function TaskDocumentPanel({
 
   if (query.isLoading) {
     return (
-      <div className="flex items-center gap-2 py-8 text-sm text-muted-foreground" role="status">
+      <div className="flex items-center gap-2 py-8 text-sm text-ink-3" role="status">
         <Loader2 className="size-4 animate-spin" aria-hidden />
         Loading document…
       </div>
@@ -45,7 +45,7 @@ export function TaskDocumentPanel({
   }
   if (query.isError) {
     return (
-      <div className="py-8 text-sm text-muted-foreground" role="alert">
+      <div className="py-8 text-sm text-ink-3" role="alert">
         The document could not be loaded. Retry from the tab launcher or refresh the task.
       </div>
     );
@@ -54,10 +54,10 @@ export function TaskDocumentPanel({
   if (!document) {
     return (
       <div className="flex items-start gap-3 py-8 text-sm" role="status">
-        <FileQuestion className="mt-0.5 size-5 shrink-0 text-muted-foreground" aria-hidden />
+        <FileQuestion className="mt-0.5 size-5 shrink-0 text-ink-3" aria-hidden />
         <div className="space-y-1">
           <p className="font-medium">Document no longer available</p>
-          <p className="text-muted-foreground">
+          <p className="text-ink-3">
             This tab is preserved so the missing resource is explicit. Close it or choose another document.
           </p>
         </div>
@@ -79,7 +79,7 @@ export function TaskDocumentPanel({
             body={document.body}
           />
         </div>
-        <div className="flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-1 text-xs text-ink-3">
           <span>{`Revision ${document.latestRevisionNumber ?? 1}`}</span>
           <span aria-hidden>·</span>
           <span>{`Updated ${new Date(document.updatedAt).toLocaleString()}`}</span>
@@ -107,7 +107,7 @@ export function TaskDocumentPanel({
           <MarkdownBody>{document.body}</MarkdownBody>
         </IssueDocumentAnnotations>
       ) : (
-        <p className="text-sm text-muted-foreground">Document is empty.</p>
+        <p className="text-sm text-ink-3">Document is empty.</p>
       )}
     </article>
   );

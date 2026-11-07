@@ -25,7 +25,7 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 
 /** A muted em-dash for null / empty / missing values. */
 function EmptyValue() {
-  return <span className="text-muted-foreground">—</span>;
+  return <span className="text-ink-3">—</span>;
 }
 
 function isIssueIdentifierField(fieldKey: string | undefined): boolean {
@@ -97,7 +97,7 @@ function CopyableCompactValue({
     <span className="relative inline-flex min-w-0 max-w-full">
       <button
         type="button"
-        className={cn("min-w-0 max-w-full cursor-copy truncate text-left transition-colors hover:text-foreground", className)}
+        className={cn("min-w-0 max-w-full cursor-copy truncate text-left transition-colors hover:text-ink", className)}
         title={text}
         onClick={handleCopy}
       >
@@ -107,7 +107,7 @@ function CopyableCompactValue({
         <span
           role="status"
           aria-live="polite"
-          className="pointer-events-none absolute bottom-full left-1/2 mb-1.5 inline-flex -translate-x-1/2 items-center gap-1 rounded-md bg-foreground px-2 py-1 text-xs whitespace-nowrap text-background"
+          className="pointer-events-none absolute bottom-full left-1/2 mb-1.5 inline-flex -translate-x-1/2 items-center gap-1 rounded-md bg-ink px-2 py-1 text-xs whitespace-nowrap text-bg"
         >
           <Check className="h-3 w-3 shrink-0" />
           Copied
@@ -128,7 +128,7 @@ function StringValue({ value, variant }: { value: string; variant: "compact" | "
         target="_blank"
         rel="noreferrer"
         className={cn(
-          "inline-flex max-w-full items-center gap-0.5 text-sm text-primary hover:underline",
+          "inline-flex max-w-full items-center gap-0.5 text-sm text-accent hover:underline",
           variant === "compact" ? "truncate" : "break-all",
         )}
         title={trimmed}
@@ -140,7 +140,7 @@ function StringValue({ value, variant }: { value: string; variant: "compact" | "
   }
   if (CASE_ID_RE.test(trimmed)) {
     return (
-      <Link to={caseHref(trimmed)} className="font-mono text-sm text-primary hover:underline">
+      <Link to={caseHref(trimmed)} className="font-mono text-sm text-accent hover:underline">
         {trimmed}
       </Link>
     );
@@ -195,7 +195,7 @@ export function CaseFieldValue({
     if (value.length === 0) return <EmptyValue />;
     if (variant === "compact") {
       return (
-        <CopyableCompactValue value={value} className="text-sm text-muted-foreground">
+        <CopyableCompactValue value={value} className="text-sm text-ink-3">
           {stringifyCopyValue(value)}
         </CopyableCompactValue>
       );
@@ -217,13 +217,13 @@ export function CaseFieldValue({
     const snippet = JSON.stringify(value);
     if (variant === "compact") {
       return (
-        <CopyableCompactValue value={value} className="font-mono text-xs text-muted-foreground">
+        <CopyableCompactValue value={value} className="font-mono text-xs text-ink-3">
           {snippet}
         </CopyableCompactValue>
       );
     }
     return (
-      <pre className="max-w-full whitespace-pre-wrap break-words font-mono text-xs text-muted-foreground">
+      <pre className="max-w-full whitespace-pre-wrap break-words font-mono text-xs text-ink-3">
         {JSON.stringify(value, null, 2)}
       </pre>
     );
@@ -239,16 +239,16 @@ export function CaseFieldsPanel({ fields }: { fields: Record<string, unknown> })
     <section className="space-y-2">
       <div className="flex items-baseline gap-2">
         <h2 className="text-sm font-semibold">Fields</h2>
-        <span className="text-xs text-muted-foreground">from the skill&apos;s schema — rendered generically</span>
+        <span className="text-xs text-ink-3">from the skill&apos;s schema — rendered generically</span>
       </div>
       <Card className="gap-0 py-0">
         {entries.length === 0 ? (
-          <div className="px-4 py-3 text-sm text-muted-foreground">No fields set</div>
+          <div className="px-4 py-3 text-sm text-ink-3">No fields set</div>
         ) : (
-          <dl className="divide-y divide-border">
+          <dl className="divide-y divide-line">
             {entries.map(([key, value]) => (
               <div key={key} className="flex items-start justify-between gap-4 px-4 py-1.5">
-                <dt className="shrink-0 text-xs text-muted-foreground">{key}</dt>
+                <dt className="shrink-0 text-xs text-ink-3">{key}</dt>
                 <dd className="min-w-0 max-w-(--pct-70) text-right">
                   <CaseFieldValue value={value} fieldKey={key} />
                 </dd>

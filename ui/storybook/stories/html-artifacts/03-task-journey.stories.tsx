@@ -49,7 +49,7 @@ function TaskJourney({ openInitially = false }: { openInitially?: boolean }) {
           <TaskChatBubble item={{ id: "response", kind: "message", author: "agent", text: "Hyperswitch and Storybook lead the combined ranking. Open the report to explore the weighting and filter the results." }} />
           <IssueArtifactFile id={attachment.id} attachmentId={attachment.id} title="Interactive repository usage report" summary="" filename={attachment.originalFilename!} contentType={attachment.contentType} contentPath={attachment.contentPath} downloadPath={attachment.downloadPath!} byteSize={attachment.byteSize} author="CodexRunner" updatedAt="7:54 AM" />
         </section>
-        <section className="h-(--sz-640px) min-w-0 flex-1 overflow-hidden rounded-lg border border-border" aria-label="Task side panel">
+        <section className="h-(--sz-640px) min-w-0 flex-1 overflow-hidden rounded-lg border border-line" aria-label="Task side panel">
           <TaskSidePanel issue={issue} accountScope="storybook-html" inline onUpdate={() => {}} fileTabsEnabled={false} openAttachment={open} />
         </section>
       </div>

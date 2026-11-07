@@ -21,7 +21,7 @@ export function ToolsAdminGate({ children }: { children: ReactNode }) {
   });
 
   if (boardAccess.isLoading) {
-    return <div className="mx-auto max-w-xl py-10 text-sm text-muted-foreground">Loading…</div>;
+    return <div className="mx-auto max-w-xl py-10 text-sm text-ink-3">Loading…</div>;
   }
 
   const data = boardAccess.data;
@@ -37,15 +37,15 @@ export function ToolsAdminGate({ children }: { children: ReactNode }) {
   if (!canManageTools) {
     return (
       <div className="mx-auto max-w-xl py-10">
-        <div className="flex flex-col gap-3 rounded-lg border border-border bg-card p-6">
-          <div className="flex items-center gap-2 text-foreground">
-            <ShieldAlert className="h-5 w-5 text-muted-foreground" />
+        <div className="flex flex-col gap-3 rounded-lg border border-line bg-bg-2 p-6">
+          <div className="flex items-center gap-2 text-ink">
+            <ShieldAlert className="h-5 w-5 text-ink-3" />
             <h1 className="text-lg font-semibold">Access profiles require editing access</h1>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-ink-3">
             Access profiles decide which tools your agents can use. Ask a company editor to set these up, or
             head back to{" "}
-            <Link to="/apps" className="font-medium text-primary hover:underline">
+            <Link to="/apps" className="font-medium text-accent hover:underline">
               your apps
             </Link>
             .

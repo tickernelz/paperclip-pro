@@ -71,26 +71,26 @@ export function AgentChat() {
   }, [agent, selectedCompanyId, chat.data, client, userId]);
   if (!loaded || agents.isPending || session.isPending || historyAgent.isFetching && !agent)
     return (
-      <p className="text-sm text-muted-foreground">Loading conversation…</p>
+      <p className="text-sm text-ink-3">Loading conversation…</p>
     );
   if (!enabled && !chat.data)
     return (
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm text-ink-3">
         Agent chat is off. Turn it on in Settings &gt; Features. Existing
         history remains available through task links.
       </p>
     );
   if (agents.error || chat.error || !rosterAgent && historyAgent.error)
     return (
-      <p className="text-sm text-destructive">
+      <p className="text-sm text-bad">
         {(agents.error ?? chat.error ?? historyAgent.error)?.message}
       </p>
     );
   if (!agent)
-    return <p className="text-sm text-destructive">Agent not found.</p>;
+    return <p className="text-sm text-bad">Agent not found.</p>;
   if (chat.isPending)
     return (
-      <p className="text-sm text-muted-foreground">Loading conversation…</p>
+      <p className="text-sm text-ink-3">Loading conversation…</p>
     );
   return (
     <TaskDetailSurface

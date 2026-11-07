@@ -113,17 +113,17 @@ function LabSection({
   return (
     <section
       className={cn(
-        "rounded-(--rad-28) border border-border/70 bg-background/80 p-4 shadow-[0_24px_60px_rgba(15,23,42,0.08)] sm:p-5",
+        "rounded-(--rad-28) border border-line/70 bg-bg/80 p-4 shadow-[0_24px_60px_rgba(15,23,42,0.08)] sm:p-5",
         accentClassName,
       )}
     >
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">
+          <div className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-caps) text-ink-3">
             {eyebrow}
           </div>
           <h2 className="mt-1 text-xl font-semibold tracking-tight">{title}</h2>
-          <p className="mt-2 max-w-3xl text-sm text-muted-foreground">{description}</p>
+          <p className="mt-2 max-w-3xl text-sm text-ink-3">{description}</p>
         </div>
       </div>
       {children}
@@ -143,7 +143,7 @@ function StatusCard({
   tone?: "default" | "warn" | "success" | "error";
 }) {
   const toneClassName = {
-    default: "border-border/70 bg-background/85",
+    default: "border-line/70 bg-bg/85",
     warn: "border-amber-400/40 bg-amber-500/[0.08]",
     success: "border-emerald-400/40 bg-emerald-500/[0.08]",
     error: "border-rose-400/40 bg-rose-500/[0.08]",
@@ -152,7 +152,7 @@ function StatusCard({
   return (
     <Card className={cn("rounded-(--rad-24) shadow-none", toneClassName)}>
       <CardHeader className="space-y-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full border border-current/10 bg-background/70 text-muted-foreground">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full border border-current/10 bg-bg/70 text-ink-3">
           {icon}
         </div>
         <div>
@@ -451,18 +451,18 @@ function InviteResultPreview({
 
 function AuthScreenPreview({ mode, error }: { mode: "sign_in" | "sign_up"; error?: string }) {
   return (
-    <div className="overflow-hidden rounded-(--rad-28) border border-border/70 bg-background shadow-[0_24px_60px_rgba(15,23,42,0.08)]">
-      <div className="grid gap-px bg-border/60 md:grid-cols-2">
-        <div className="flex min-h-(--sz-420px) flex-col justify-center bg-background px-8 py-10">
+    <div className="overflow-hidden rounded-(--rad-28) border border-line/70 bg-bg shadow-[0_24px_60px_rgba(15,23,42,0.08)]">
+      <div className="grid gap-px bg-line/60 md:grid-cols-2">
+        <div className="flex min-h-(--sz-420px) flex-col justify-center bg-bg px-8 py-10">
           <div className="mx-auto w-full max-w-md">
             <div className="mb-8 flex items-center gap-2">
-              <FlaskConical className="h-4 w-4 text-muted-foreground" />
+              <FlaskConical className="h-4 w-4 text-ink-3" />
               <span className="text-sm font-medium">Paperclip</span>
             </div>
             <h3 className="text-xl font-semibold">
               {mode === "sign_in" ? "Sign in to Paperclip" : "Create your Paperclip account"}
             </h3>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-sm text-ink-3">
               {mode === "sign_in"
                 ? "Use your email and password to access this instance."
                 : "Create an account for this instance. Email confirmation is not required in v1."}
@@ -470,38 +470,38 @@ function AuthScreenPreview({ mode, error }: { mode: "sign_in" | "sign_up"; error
             <div className="mt-6 space-y-4">
               {mode === "sign_up" ? (
                 <label className="block">
-                  <span className="mb-1 block text-xs text-muted-foreground">Name</span>
+                  <span className="mb-1 block text-xs text-ink-3">Name</span>
                   <input
-                    className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm"
+                    className="w-full rounded-md border border-line bg-transparent px-3 py-2 text-sm"
                     defaultValue="Jane Example"
                     readOnly
                   />
                 </label>
               ) : null}
               <label className="block">
-                <span className="mb-1 block text-xs text-muted-foreground">Email</span>
+                <span className="mb-1 block text-xs text-ink-3">Email</span>
                 <input
-                  className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm"
+                  className="w-full rounded-md border border-line bg-transparent px-3 py-2 text-sm"
                   defaultValue="jane@example.com"
                   readOnly
                 />
               </label>
               <label className="block">
-                <span className="mb-1 block text-xs text-muted-foreground">Password</span>
+                <span className="mb-1 block text-xs text-ink-3">Password</span>
                 <input
-                  className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm"
+                  className="w-full rounded-md border border-line bg-transparent px-3 py-2 text-sm"
                   defaultValue="supersecret"
                   readOnly
                 />
               </label>
-              {error ? <p className="text-xs text-destructive">{error}</p> : null}
+              {error ? <p className="text-xs text-bad">{error}</p> : null}
               <Button type="button" className="w-full">
                 {mode === "sign_in" ? "Sign In" : "Create Account"}
               </Button>
             </div>
-            <div className="mt-5 text-sm text-muted-foreground">
+            <div className="mt-5 text-sm text-ink-3">
               {mode === "sign_in" ? "Need an account?" : "Already have an account?"}{" "}
-              <span className="font-medium text-foreground underline underline-offset-2">
+              <span className="font-medium text-ink underline underline-offset-2">
                 {mode === "sign_in" ? "Create one" : "Sign in"}
               </span>
             </div>
@@ -528,7 +528,7 @@ function CompanyInvitesPreview() {
     <div className="grid gap-5 xl:grid-cols-(--gtc-38)">
       <Card className="rounded-(--rad-28) shadow-none">
         <CardHeader className="space-y-3">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2 text-sm text-ink-3">
             <MailPlus className="h-4 w-4" />
             Organization Invites
           </div>
@@ -542,65 +542,65 @@ function CompanyInvitesPreview() {
         <CardContent className="space-y-4">
           <fieldset className="space-y-3">
             <legend className="text-sm font-medium">Choose a role</legend>
-            <div className="rounded-2xl border border-border">
+            <div className="rounded-2xl border border-line">
               {inviteRoleOptions.map((option, index) => (
                 <label
                   key={option.value}
-                  className={cn("flex cursor-default gap-3 px-4 py-4", index > 0 && "border-t border-border")}
+                  className={cn("flex cursor-default gap-3 px-4 py-4", index > 0 && "border-t border-line")}
                 >
                   <input
                     type="radio"
                     readOnly
                     checked={option.value === "operator"}
-                    className="mt-1 h-4 w-4 border-border text-foreground"
+                    className="mt-1 h-4 w-4 border-line text-ink"
                   />
                   <span className="min-w-0 space-y-1">
                     <span className="flex flex-wrap items-center gap-2">
                       <span className="text-sm font-medium">{option.label}</span>
                       {option.value === "operator" ? (
-                        <Badge variant="outline" className="border-border text-muted-foreground">
+                        <Badge variant="outline" className="border-line text-ink-3">
                           Default
                         </Badge>
                       ) : null}
                     </span>
-                    <span className="block max-w-2xl text-sm text-muted-foreground">{option.description}</span>
-                    <span className="block text-sm text-foreground">{option.gets}</span>
+                    <span className="block max-w-2xl text-sm text-ink-3">{option.description}</span>
+                    <span className="block text-sm text-ink">{option.gets}</span>
                   </span>
                 </label>
               ))}
             </div>
           </fieldset>
 
-          <div className="rounded-xl border border-border px-4 py-3 text-sm text-muted-foreground">
+          <div className="rounded-xl border border-line px-4 py-3 text-sm text-ink-3">
             Each invite link is single-use. Human invitees get the selected role immediately after sign-in; agent invites still create a join request for approval.
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
             <Button type="button">Create invite</Button>
-            <span className="text-sm text-muted-foreground">Invite history below keeps the audit trail.</span>
+            <span className="text-sm text-ink-3">Invite history below keeps the audit trail.</span>
           </div>
 
-          <div className="space-y-3 rounded-2xl border border-border px-4 py-4">
+          <div className="space-y-3 rounded-2xl border border-line px-4 py-4">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <div className="text-sm font-medium">Latest invite link</div>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-sm text-ink-3">
                   This URL includes the current Paperclip domain returned by the server.
                 </div>
               </div>
-              <div className="inline-flex items-center gap-1 text-xs font-medium text-foreground">
+              <div className="inline-flex items-center gap-1 text-xs font-medium text-ink">
                 <Check className="h-3.5 w-3.5" />
                 Copied
               </div>
             </div>
             <button
               type="button"
-              className="w-full rounded-md border border-border bg-muted/60 px-3 py-2 text-left text-sm break-all"
+              className="w-full rounded-md border border-line bg-bg-3/60 px-3 py-2 text-left text-sm break-all"
             >
               https://paperclip.local/invite/new-token
             </button>
             <div className="flex flex-wrap gap-2">
-              <Button type="button" size="sm" variant="outline">
+              <Button type="button" size="sm" variant="secondary">
                 <ExternalLink className="h-4 w-4" />
                 Open invite
               </Button>
@@ -624,48 +624,48 @@ function CompanyInvitesPreview() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="overflow-x-auto rounded-2xl border border-border">
+          <div className="overflow-x-auto rounded-2xl border border-line">
             <table className="min-w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-border">
-                  <th className="px-5 py-3 font-medium text-muted-foreground">State</th>
-                  <th className="px-5 py-3 font-medium text-muted-foreground">Role</th>
-                  <th className="px-5 py-3 font-medium text-muted-foreground">Invited by</th>
-                  <th className="px-5 py-3 font-medium text-muted-foreground">Created</th>
-                  <th className="px-5 py-3 font-medium text-muted-foreground">Join request</th>
-                  <th className="px-5 py-3 text-right font-medium text-muted-foreground">Action</th>
+                <tr className="border-b border-line">
+                  <th className="px-5 py-3 font-medium text-ink-3">State</th>
+                  <th className="px-5 py-3 font-medium text-ink-3">Role</th>
+                  <th className="px-5 py-3 font-medium text-ink-3">Invited by</th>
+                  <th className="px-5 py-3 font-medium text-ink-3">Created</th>
+                  <th className="px-5 py-3 font-medium text-ink-3">Join request</th>
+                  <th className="px-5 py-3 text-right font-medium text-ink-3">Action</th>
                 </tr>
               </thead>
               <tbody>
                 {inviteHistory.map((invite) => (
-                  <tr key={invite.id} className="border-b border-border last:border-b-0">
+                  <tr key={invite.id} className="border-b border-line last:border-b-0">
                     <td className="px-5 py-3 align-top">
-                      <Badge variant="outline" className="border-border text-muted-foreground">
+                      <Badge variant="outline" className="border-line text-ink-3">
                         {invite.state}
                       </Badge>
                     </td>
                     <td className="px-5 py-3 align-top">{invite.humanRole}</td>
                     <td className="px-5 py-3 align-top">
                       <div>{invite.invitedBy}</div>
-                      <div className="text-xs text-muted-foreground">{invite.email}</div>
+                      <div className="text-xs text-ink-3">{invite.email}</div>
                     </td>
-                    <td className="px-5 py-3 align-top text-muted-foreground">{invite.createdAt}</td>
+                    <td className="px-5 py-3 align-top text-ink-3">{invite.createdAt}</td>
                     <td className="px-5 py-3 align-top">
                       {invite.relatedLabel === "Review request" ? (
                         <a href="/inbox/requests" className="underline underline-offset-4">
                           {invite.relatedLabel}
                         </a>
                       ) : (
-                        <span className="text-muted-foreground">{invite.relatedLabel}</span>
+                        <span className="text-ink-3">{invite.relatedLabel}</span>
                       )}
                     </td>
                     <td className="px-5 py-3 text-right align-top">
                       {invite.action === "Revoke" ? (
-                        <Button type="button" size="sm" variant="outline">
+                        <Button type="button" size="sm" variant="secondary">
                           Revoke
                         </Button>
                       ) : (
-                        <span className="text-xs text-muted-foreground">Inactive</span>
+                        <span className="text-xs text-ink-3">Inactive</span>
                       )}
                     </td>
                   </tr>
@@ -675,15 +675,15 @@ function CompanyInvitesPreview() {
           </div>
 
           <div className="grid gap-3 md:grid-cols-2">
-            <div className="rounded-2xl border border-border p-4">
+            <div className="rounded-2xl border border-line p-4">
               <div className="text-sm font-medium">Empty history state</div>
-              <div className="mt-2 text-sm text-muted-foreground">
+              <div className="mt-2 text-sm text-ink-3">
                 No invites have been created for this organization yet.
               </div>
             </div>
             <div className="rounded-2xl border border-rose-400/40 bg-rose-500/[0.07] p-4">
-              <div className="text-sm font-medium text-foreground">Permission error</div>
-              <div className="mt-2 text-sm text-muted-foreground">
+              <div className="text-sm font-medium text-ink">Permission error</div>
+              <div className="mt-2 text-sm text-ink-3">
                 You do not have permission to manage organization invites.
               </div>
             </div>
@@ -697,7 +697,7 @@ function CompanyInvitesPreview() {
 export function InviteUxLab() {
   return (
     <div className="space-y-6">
-      <div className="overflow-hidden rounded-(--rad-32) border border-border/70 bg-[linear-gradient(135deg,rgba(8,145,178,0.10),transparent_28%),linear-gradient(180deg,rgba(245,158,11,0.10),transparent_44%),var(--background)] shadow-[0_30px_80px_rgba(15,23,42,0.10)]">
+      <div className="overflow-hidden rounded-(--rad-32) border border-line/70 bg-[linear-gradient(135deg,rgba(8,145,178,0.10),transparent_28%),linear-gradient(180deg,rgba(245,158,11,0.10),transparent_44%),var(--bg)] shadow-[0_30px_80px_rgba(15,23,42,0.10)]">
         <div className="grid gap-6 lg:grid-cols-(--gtc-39)">
           <div className="p-6 sm:p-7">
             <div className="inline-flex items-center gap-2 rounded-full border border-cyan-500/25 bg-cyan-500/[0.08] px-3 py-1 text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-caps) text-cyan-700 dark:text-cyan-300">
@@ -705,7 +705,7 @@ export function InviteUxLab() {
               Invite UX Lab
             </div>
             <h1 className="mt-4 text-3xl font-semibold tracking-tight">Invite and signup UX review surface</h1>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-ink-3">
               This page collects the current invite landing, signup, approval-result, and organization invite-management states in one place so styling changes can be reviewed without recreating each backend condition by hand.
             </p>
 
@@ -722,8 +722,8 @@ export function InviteUxLab() {
             </div>
           </div>
 
-          <aside className="border-t border-border/60 bg-background/70 p-6 lg:border-l lg:border-t-0">
-            <div className="mb-4 text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">
+          <aside className="border-t border-line/60 bg-bg/70 p-6 lg:border-l lg:border-t-0">
+            <div className="mb-4 text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-caps) text-ink-3">
               Covered states
             </div>
             <div className="space-y-3">
@@ -736,7 +736,7 @@ export function InviteUxLab() {
               ].map((highlight) => (
                 <div
                   key={highlight}
-                  className="rounded-2xl border border-border/70 bg-background/85 px-4 py-3 text-sm text-muted-foreground"
+                  className="rounded-2xl border border-line/70 bg-bg/85 px-4 py-3 text-sm text-ink-3"
                 >
                   {highlight}
                 </div>
@@ -750,7 +750,7 @@ export function InviteUxLab() {
         eyebrow="Top-level states"
         title="Landing state coverage"
         description="Small cards for the fast-return invite states that do not render the full split-screen layout."
-        accentClassName="bg-[linear-gradient(180deg,rgba(59,130,246,0.05),transparent_30%),var(--background)]"
+        accentClassName="bg-[linear-gradient(180deg,rgba(59,130,246,0.05),transparent_30%),var(--bg)]"
       >
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           <StatusCard
@@ -804,7 +804,7 @@ export function InviteUxLab() {
         eyebrow="Invite landing"
         title="Split-screen invite flows"
         description="These frames mirror the production invite surface closely enough to review spacing, hierarchy, and control states while keeping data fixture-driven."
-        accentClassName="bg-[linear-gradient(180deg,rgba(234,179,8,0.06),transparent_28%),var(--background)]"
+        accentClassName="bg-[linear-gradient(180deg,rgba(234,179,8,0.06),transparent_28%),var(--bg)]"
       >
         <div className="space-y-5">
           <InviteLandingShell
@@ -881,7 +881,7 @@ export function InviteUxLab() {
         eyebrow="Result states"
         title="Approval and completion screens"
         description="These are the post-submit states returned from invite acceptance, including optional claim and onboarding metadata."
-        accentClassName="bg-[linear-gradient(180deg,rgba(16,185,129,0.06),transparent_30%),var(--background)]"
+        accentClassName="bg-[linear-gradient(180deg,rgba(16,185,129,0.06),transparent_30%),var(--bg)]"
       >
         <div className="grid gap-5 xl:grid-cols-3">
           <InviteResultPreview
@@ -906,7 +906,7 @@ export function InviteUxLab() {
         eyebrow="Standalone auth"
         title="Auth page states"
         description="The general `/auth` page uses a different composition from invite landing. These previews keep both sign-in and sign-up variants visible."
-        accentClassName="bg-[linear-gradient(180deg,rgba(168,85,247,0.06),transparent_28%),var(--background)]"
+        accentClassName="bg-[linear-gradient(180deg,rgba(168,85,247,0.06),transparent_28%),var(--bg)]"
       >
         <div className="space-y-5">
           <AuthScreenPreview mode="sign_in" error="Invalid email or password" />
@@ -918,7 +918,7 @@ export function InviteUxLab() {
         eyebrow="Settings"
         title="Organization invite management"
         description="This section captures the board-side invite creation flow, copied-link state, audit table, and the edge states that are otherwise tedious to stage."
-        accentClassName="bg-[linear-gradient(180deg,rgba(244,114,182,0.06),transparent_28%),var(--background)]"
+        accentClassName="bg-[linear-gradient(180deg,rgba(244,114,182,0.06),transparent_28%),var(--bg)]"
       >
         <CompanyInvitesPreview />
       </LabSection>

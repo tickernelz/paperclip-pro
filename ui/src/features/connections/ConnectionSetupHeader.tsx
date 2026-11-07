@@ -41,7 +41,7 @@ export function StepHeader({
             <h1 ref={headingRef} tabIndex={headingRef ? -1 : undefined} className="text-2xl font-bold tracking-tight outline-none">
               {title ?? (appIdentity ? `Connect ${appIdentity.name}` : "Connect your own MCP server")}
             </h1>
-            {subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
+            {subtitle && <p className="mt-1 text-sm text-ink-3">{subtitle}</p>}
             {unverifiedHost ? <UnverifiedServerBadge host={unverifiedHost} className="mt-2" /> : null}
           </div>
         </div>
@@ -61,11 +61,11 @@ export function StepHeader({
                 key={label}
                 data-testid="wizard-step-dot"
                 data-step-active={i === activeIndex ? "true" : undefined}
-                className={cn("h-1 w-20 rounded-full", i <= activeIndex ? "bg-foreground" : "bg-border")}
+                className={cn("h-1 w-20 rounded-full", i <= activeIndex ? "bg-ink" : "bg-line")}
               />
             ))}
           </ol>
-          <div className="mt-2 text-xs text-muted-foreground" data-testid="wizard-step-labels">
+          <div className="mt-2 text-xs text-ink-3" data-testid="wizard-step-labels">
             {labels.join("   ·   ")}
           </div>
         </nav>

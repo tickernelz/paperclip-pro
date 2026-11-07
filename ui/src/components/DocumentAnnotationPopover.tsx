@@ -81,13 +81,13 @@ export function DocumentAnnotationPopover(props: DocumentAnnotationPopoverProps)
       role="dialog"
       aria-label={props.pendingAnchor ? "Add annotation comment" : "Annotation thread"}
       data-testid="document-annotation-popover"
-      className="absolute z-(--z-20) w-80 max-w-full rounded-lg border border-border bg-popover text-popover-foreground shadow-xl"
+      className="absolute z-(--z-20) w-80 max-w-full rounded-lg border border-line bg-bg-2 text-ink shadow-xl"
       style={{ top, left }}
     >
-      {mutationError ? <p className="border-b border-border bg-destructive/10 px-3 py-2 text-xs text-destructive">{mutationError}</p> : null}
+      {mutationError ? <p className="border-b border-line bg-bad/10 px-3 py-2 text-xs text-bad">{mutationError}</p> : null}
       {props.pendingAnchor ? (
         <div className="p-3">
-          <blockquote className="mb-2 line-clamp-2 rounded-md bg-muted px-2 py-1 text-xs italic text-muted-foreground">
+          <blockquote className="mb-2 line-clamp-2 rounded-md bg-bg-3 px-2 py-1 text-xs italic text-ink-3">
             {truncate(props.pendingAnchor.selectedText, 120)}
           </blockquote>
           <Textarea

@@ -81,7 +81,7 @@ export function FingerprintChip({
       }}
       title={`Copy full digest — ${full}`}
       className={cn(
-        "inline-flex items-center gap-1 font-mono hover:text-foreground",
+        "inline-flex items-center gap-1 font-mono hover:text-ink",
         className,
       )}
     >
@@ -108,8 +108,8 @@ export function ProposalJustification({
 }) {
   return (
     <div className={cn("space-y-0.5", className)}>
-      <p className="text-(length:--text-micro) text-muted-foreground">Reason given by the agent</p>
-      <p className="whitespace-pre-wrap break-words text-xs text-foreground/80">
+      <p className="text-(length:--text-micro) text-ink-3">Reason given by the agent</p>
+      <p className="whitespace-pre-wrap break-words text-xs text-ink/80">
         “{justification}”
       </p>
     </div>
@@ -126,7 +126,7 @@ export function AgentRefChip({
 }) {
   return (
     <span className={cn("inline-flex min-w-0 items-center gap-1", className)}>
-      <AgentAvatar agent={agent} size={16} className="h-3.5 w-3.5 shrink-0 text-muted-foreground"/>
+      <AgentAvatar agent={agent} size={16} className="h-3.5 w-3.5 shrink-0 text-ink-3"/>
       <span className="min-w-0 truncate">{agent.name}</span>
     </span>
   );
@@ -144,7 +144,7 @@ export function DeliveryBadge({ configPath }: { configPath: string | null }) {
         "h-5 gap-1 px-1.5 text-(length:--text-nano) font-normal",
         isEnv && "border-sky-500/30 bg-sky-500/10 text-sky-700 dark:text-sky-300",
         isApi && "border-violet-500/30 bg-violet-500/10 text-violet-700 dark:text-violet-300",
-        !isEnv && !isApi && "border-border bg-muted/40 text-muted-foreground",
+        !isEnv && !isApi && "border-line bg-bg-3/40 text-ink-3",
       )}
     >
       {isEnv ? <Variable className="size-3" /> : isApi ? <ServerCog className="size-3" /> : null}
@@ -407,10 +407,10 @@ function ApproveDialog({
             </DialogHeader>
 
             {/* Provenance recap — keeps the social-engineering surface visible. */}
-            <div className="space-y-1.5 rounded-md border border-border bg-muted/30 p-2.5 text-xs">
-              <div className="flex items-center gap-1.5 text-muted-foreground">
+            <div className="space-y-1.5 rounded-md border border-line bg-bg-3/30 p-2.5 text-xs">
+              <div className="flex items-center gap-1.5 text-ink-3">
                 <span>Proposed by</span>
-                <AgentRefChip agent={draft.proposal.proposedBy} className="font-medium text-foreground" />
+                <AgentRefChip agent={draft.proposal.proposedBy} className="font-medium text-ink" />
               </div>
               <ProposalJustification justification={draft.proposal.justification} />
             </div>
@@ -441,7 +441,7 @@ function ApproveDialog({
                     />
                   </div>
                 </div>
-                <p className="text-(length:--text-micro) text-muted-foreground">
+                <p className="text-(length:--text-micro) text-ink-3">
                   Lands as{" "}
                   {previewName ? (
                     <SecretPathName name={previewName} className="font-mono" />
@@ -469,7 +469,7 @@ function ApproveDialog({
                       onChange={(event) =>
                         onChange({ ...draft, providerConfigId: event.target.value })
                       }
-                      className="h-9 w-full rounded-md border border-input bg-transparent px-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                      className="h-9 w-full rounded-md border border-line-strong bg-transparent px-2 text-sm outline-none focus-visible:border-focus focus-visible:ring-3 focus-visible:ring-focus/50"
                     >
                       <option value="">Deployment default</option>
                       {localConfigs.map((config) => (
@@ -481,7 +481,7 @@ function ApproveDialog({
                   </div>
                 ) : null}
 
-                <div className="rounded-md border border-border bg-background px-2.5 py-1.5 text-xs text-muted-foreground">
+                <div className="rounded-md border border-line bg-bg px-2.5 py-1.5 text-xs text-ink-3">
                   <FingerprintChip
                     fingerprint={draft.proposal.valueFingerprintSha256}
                     length={draft.proposal.valueLength}
@@ -493,7 +493,7 @@ function ApproveDialog({
             )}
 
             {error ? (
-              <p className="text-xs text-destructive" role="alert">
+              <p className="text-xs text-bad" role="alert">
                 {error}
               </p>
             ) : null}
@@ -531,26 +531,26 @@ function BindingApproveBody({
   const envKey = bindingEnvKey(proposal);
   return (
     <div className="space-y-3 text-sm">
-      <div className="space-y-2 rounded-md border border-border p-3">
+      <div className="space-y-2 rounded-md border border-line p-3">
         <div className="flex items-center justify-between gap-2">
-          <span className="text-xs text-muted-foreground">Target agent</span>
+          <span className="text-xs text-ink-3">Target agent</span>
           {proposal.target ? (
             <AgentRefChip agent={proposal.target} className="text-sm font-medium" />
           ) : (
-            <span className="text-muted-foreground">—</span>
+            <span className="text-ink-3">—</span>
           )}
         </div>
         <div className="flex items-center justify-between gap-2">
-          <span className="text-xs text-muted-foreground">Delivered as</span>
+          <span className="text-xs text-ink-3">Delivered as</span>
           <span className="flex items-center gap-1.5">
             <DeliveryBadge configPath={proposal.configPath} />
             <code className="font-mono text-xs">{envKey || proposal.configPath}</code>
           </span>
         </div>
         <div className="flex items-center justify-between gap-2">
-          <span className="text-xs text-muted-foreground">Secret</span>
+          <span className="text-xs text-ink-3">Secret</span>
           <span className="flex items-center gap-1.5">
-            <KeyRound className="size-3.5 text-muted-foreground" />
+            <KeyRound className="size-3.5 text-ink-3" />
             <span className="font-medium">{secret.name}</span>
             {secret.pending ? <ProposedBadge /> : null}
           </span>
@@ -566,7 +566,7 @@ function BindingApproveBody({
             className="mt-0.5"
             aria-label="Also approve the proposed secret"
           />
-          <span className="text-foreground/90">
+          <span className="text-ink/90">
             Also approve the proposed secret{" "}
             <span className="font-medium">{secret.name}</span> and create it in the same step. The
             binding can’t land without it.
@@ -608,7 +608,7 @@ function RejectDialog({
               <DialogTitle>Reject proposal</DialogTitle>
               <DialogDescription>
                 The reason is sent back to{" "}
-                <AgentRefChip agent={proposal.proposedBy} className="text-foreground" />. Dependent
+                <AgentRefChip agent={proposal.proposedBy} className="text-ink" />. Dependent
                 bindings are rejected too.
               </DialogDescription>
             </DialogHeader>
@@ -624,7 +624,7 @@ function RejectDialog({
               />
             </div>
             {error ? (
-              <p className="text-xs text-destructive" role="alert">
+              <p className="text-xs text-bad" role="alert">
                 {error}
               </p>
             ) : null}
@@ -632,7 +632,7 @@ function RejectDialog({
               <Button variant="ghost" onClick={onCancel} disabled={pending}>
                 Cancel
               </Button>
-              <Button variant="destructive" onClick={onConfirm} disabled={pending || !canConfirm}>
+              <Button variant="secondary" onClick={onConfirm} disabled={pending || !canConfirm}>
                 {pending ? "Rejecting…" : "Reject"}
               </Button>
             </DialogFooter>
@@ -690,7 +690,7 @@ export function ProposalActions({
       )}
       <Button
         size="sm"
-        variant="outline"
+        variant="secondary"
         className={heightClass}
         disabled={disabled}
         onClick={() => onReject(proposal)}

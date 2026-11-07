@@ -6,8 +6,8 @@ import { todoRowText } from "./task-chat-todo";
 
 const STATUS_ICON = {
   in_progress: { Icon: Loader2, spin: true, tone: "text-(--status-agent-running)", label: "running" },
-  completed: { Icon: Check, spin: false, tone: "text-muted-foreground", label: "done" },
-  failed: { Icon: X, spin: false, tone: "text-destructive", label: "failed" },
+  completed: { Icon: Check, spin: false, tone: "text-ink-3", label: "done" },
+  failed: { Icon: X, spin: false, tone: "text-bad", label: "failed" },
 } as const;
 
 /** Compact one-line row standing in for an agent todo tool call. */
@@ -23,7 +23,7 @@ export function TaskChatTodoRow({ item }: { item: TaskChatTodoItem }) {
       aria-describedby={error ? errorId : undefined}
       data-testid="task-chat-todo-row"
       data-todo-status={item.status}
-      className="-mx-1.5 flex min-w-0 max-w-full flex-col overflow-hidden px-1.5 py-1 text-xs text-muted-foreground"
+      className="-mx-1.5 flex min-w-0 max-w-full flex-col overflow-hidden px-1.5 py-1 text-xs text-ink-3"
     >
       <div className="flex min-h-4 min-w-0 items-center gap-2 leading-none">
         <span className="flex w-5 shrink-0 items-center justify-center">
@@ -38,7 +38,7 @@ export function TaskChatTodoRow({ item }: { item: TaskChatTodoItem }) {
         <p
           id={errorId}
           data-testid="task-chat-todo-error"
-          className="mt-0.5 line-clamp-3 whitespace-pre-wrap break-words pl-7 leading-4 text-destructive"
+          className="mt-0.5 line-clamp-3 whitespace-pre-wrap break-words pl-7 leading-4 text-bad"
           title={error}
         >
           {error}

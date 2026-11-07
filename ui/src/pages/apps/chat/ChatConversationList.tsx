@@ -49,7 +49,7 @@ export function ChatConversationList({
   return (
     <ul
       aria-label="Conversations"
-      className="divide-y divide-border border-y border-border"
+      className="divide-y divide-line border-y border-line"
     >
       {rows.map((row) => (
         <li key={row.id} className="flex items-start gap-3 py-4 text-sm">
@@ -62,7 +62,7 @@ export function ChatConversationList({
           <div className="min-w-0 flex-1 space-y-1">
             <div className="break-words">
               {row.issueIdentifier && (
-                <span className="mr-2 text-xs text-muted-foreground">
+                <span className="mr-2 text-xs text-ink-3">
                   {row.issueIdentifier}
                 </span>
               )}
@@ -79,13 +79,13 @@ export function ChatConversationList({
                 </span>
               )}
             </div>
-            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-xs text-muted-foreground">
+            <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-xs text-ink-3">
               {row.externalUrl ? (
                 <a
                   href={row.externalUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="break-words hover:text-foreground hover:underline"
+                  className="break-words hover:text-ink hover:underline"
                 >
                   {conversationDestination(row, provider)}
                 </a>

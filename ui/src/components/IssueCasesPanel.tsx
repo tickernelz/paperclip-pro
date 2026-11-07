@@ -38,8 +38,8 @@ export function IssueCasesPanel({ issueId }: { issueId: string }) {
   if (casesQuery.isError) {
     return (
       <section className="space-y-2">
-        <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Cases</h3>
-        <p className="text-sm text-destructive">Could not load linked cases.</p>
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-ink-3">Cases</h3>
+        <p className="text-sm text-bad">Could not load linked cases.</p>
       </section>
     );
   }
@@ -47,15 +47,15 @@ export function IssueCasesPanel({ issueId }: { issueId: string }) {
 
   return (
     <section className="space-y-2">
-      <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Cases</h3>
+      <h3 className="text-xs font-semibold uppercase tracking-wide text-ink-3">Cases</h3>
       <div className="space-y-1">
         {links.map((link) => (
           <Link
             key={link.id}
             to={caseHref(link.case.identifier)}
-            className="flex items-center gap-2 rounded-md border border-border px-2.5 py-1.5 text-sm transition-colors hover:bg-accent/50"
+            className="flex items-center gap-2 rounded-md border border-line px-2.5 py-1.5 text-sm transition-colors hover:bg-bg-3/50"
           >
-            <span className="font-mono text-xs text-muted-foreground shrink-0">{link.case.identifier}</span>
+            <span className="font-mono text-xs text-ink-3 shrink-0">{link.case.identifier}</span>
             <span className="min-w-0 flex-1 truncate" title={link.case.title}>{link.case.title}</span>
             <Badge variant="secondary" className="shrink-0">{ROLE_LABEL[link.role]}</Badge>
             <StatusBadge status={link.case.status} />

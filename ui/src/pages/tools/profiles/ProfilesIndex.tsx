@@ -29,6 +29,7 @@ import { ProfileActionDialog, type ProfileActionDialogKind } from "./ProfileActi
 import { TEMPLATES, type TemplateKey } from "./profile-model";
 import { useProfilesData } from "./useProfilesData";
 import { allowsLabel, assignedLabel, isDraft, STATUS_LABEL } from "./profile-summary";
+import { SegmentedItem } from "@/components/ui/segmented";
 
 /** The wizard route for a fresh profile, optionally seeded with a template. */
 function newProfileHref(template?: TemplateKey): string {
@@ -125,7 +126,7 @@ export function ProfilesIndex({
       description="Decide which tools your agents can use. Build a profile once, then assign it to the agents that need it."
       actions={
         <>
-          <Button variant="outline" onClick={() => setResolverOpen(true)}>
+          <Button variant="secondary" onClick={() => setResolverOpen(true)}>
             <ShieldCheck className="mr-1.5 h-4 w-4" />
             Check an agent's access
           </Button>
@@ -141,7 +142,7 @@ export function ProfilesIndex({
   const resolverDialog = (
     <Sheet open={resolverOpen} onOpenChange={setResolverOpen}>
       <SheetContent className="w-full gap-0 p-0 sm:max-w-xl">
-        <SheetHeader className="border-b border-border">
+        <SheetHeader className="border-b border-line">
           <SheetTitle>Check an agent's access</SheetTitle>
           <SheetDescription>
             See exactly which tools an agent can use right now, and which profile allows each one.
@@ -178,32 +179,27 @@ export function ProfilesIndex({
     <div className="space-y-5">
       {header}
 
-      <div className="inline-flex rounded-md border border-border p-0.5">
+      <div className="inline-flex rounded-md border border-line p-0.5">
         {(["active", "archived"] as const).map((key) => (
-          <button
+          <SegmentedItem selected={statusFilter === key}
             key={key}
-            type="button"
             onClick={() => setStatusFilter(key)}
-            className={cn(
-              "rounded px-3 py-1 text-sm font-medium",
-              statusFilter === key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
-            )}
           >
             {key === "active" ? "Active" : "Archived"}
-          </button>
+          </SegmentedItem>
         ))}
       </div>
 
       {rows.length === 0 ? (
         statusFilter === "archived" ? (
-          <div className="rounded-lg border border-dashed border-border px-4 py-5 text-sm text-muted-foreground">
+          <div className="rounded-lg border border-dashed border-line px-4 py-5 text-sm text-ink-3">
             No archived profiles.
           </div>
         ) : (
           <EmptyTemplatePicker onPick={(key) => navigate(newProfileHref(key))} />
         )
       ) : (
-        <div className="overflow-hidden rounded-lg border border-border">
+        <div className="overflow-hidden rounded-lg border border-line">
           <table className="w-full table-fixed text-sm">
             <colgroup>
               <col className="w-(--sz-30pct)" />
@@ -214,7 +210,7 @@ export function ProfilesIndex({
               <col className="w-10" />
             </colgroup>
             <thead>
-              <tr className="border-b border-border bg-muted/40 text-left text-xs font-medium text-muted-foreground">
+              <tr className="border-b border-line bg-bg-3/40 text-left text-xs font-medium text-ink-3">
                 <th className="px-3 py-2 font-medium">Profile</th>
                 <th className="px-3 py-2 font-medium">Allows</th>
                 <th className="px-3 py-2 font-medium">Assigned to</th>
@@ -231,19 +227,19 @@ export function ProfilesIndex({
                 return (
                   <tr
                     key={profile.id}
-                    className="group h-10 border-b border-border last:border-0 hover:bg-accent/40"
+                    className="group h-10 border-b border-line last:border-0 hover:bg-bg-3/40"
                   >
                     <td className="min-w-0 px-3 py-1.5">
                       <button
                         type="button"
                         onClick={open}
                         title={profile.name}
-                        className="block w-full truncate text-left font-medium text-foreground hover:underline"
+                        className="block w-full truncate text-left font-medium text-ink hover:underline"
                       >
                         {profile.name}
                       </button>
                     </td>
-                    <td className="px-3 py-1.5 text-muted-foreground">
+                    <td className="px-3 py-1.5 text-ink-3">
                       <span className="inline-flex items-center gap-2">
                         <span>{allowsLabel(profile.summary)}</span>
                         {(profile.newToolsPendingCount ?? 0) > 0 ? (
@@ -255,14 +251,14 @@ export function ProfilesIndex({
                     </td>
                     <td className="px-3 py-1.5">
                       {assigned.unassigned ? (
-                        <span className="text-muted-foreground">
+                        <span className="text-ink-3">
                           {assigned.text}
-                          <span className="ml-1 text-xs text-muted-foreground/70">— does not change access</span>
+                          <span className="ml-1 text-xs text-ink-3/70">— does not change access</span>
                         </span>
                       ) : (
-                        <span className="inline-flex items-center gap-1.5 text-foreground">
+                        <span className="inline-flex items-center gap-1.5 text-ink">
                           {profile.summary.isCompanyDefault ? null : (
-                            <Users className="h-3.5 w-3.5 text-muted-foreground" />
+                            <Users className="h-3.5 w-3.5 text-ink-3" />
                           )}
                           {assigned.text}
                         </span>
@@ -275,7 +271,7 @@ export function ProfilesIndex({
                           <button
                             type="button"
                             onClick={open}
-                            className="text-xs font-medium text-primary hover:underline"
+                            className="text-xs font-medium text-accent hover:underline"
                           >
                             Resume
                           </button>
@@ -344,7 +340,7 @@ function RowMenu({
         <button
           type="button"
           aria-label="Profile actions"
-          className="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:bg-accent group-hover:opacity-100 data-[state=open]:opacity-100"
+          className="inline-flex h-7 w-7 items-center justify-center rounded-md text-ink-3 opacity-0 transition-opacity hover:bg-bg-3 group-hover:opacity-100 data-[state=open]:opacity-100"
         >
           <MoreHorizontal className="h-4 w-4" />
         </button>
@@ -361,7 +357,7 @@ function RowMenu({
           <DropdownMenuItem onSelect={onArchive}>Archive</DropdownMenuItem>
         )}
         <DropdownMenuSeparator />
-        <DropdownMenuItem onSelect={onDelete} className="text-destructive focus:text-destructive">
+        <DropdownMenuItem onSelect={onDelete} className="text-bad focus:text-bad">
           Delete
         </DropdownMenuItem>
       </DropdownMenuContent>
@@ -372,10 +368,10 @@ function RowMenu({
 /** Empty state (AP2): the same five step-1 template cards the wizard opens with. */
 function EmptyTemplatePicker({ onPick }: { onPick: (key: TemplateKey) => void }) {
   return (
-    <div className="rounded-lg border border-dashed border-border p-6">
+    <div className="rounded-lg border border-dashed border-line p-6">
       <div className="mb-4 max-w-2xl">
-        <h3 className="text-base font-semibold text-foreground">Create your first access profile</h3>
-        <p className="text-sm text-muted-foreground">
+        <h3 className="text-base font-semibold text-ink">Create your first access profile</h3>
+        <p className="text-sm text-ink-3">
           Pick a starting point. You can fine-tune exactly which tools it allows in the next step.
         </p>
       </div>
@@ -386,12 +382,12 @@ function EmptyTemplatePicker({ onPick }: { onPick: (key: TemplateKey) => void })
             type="button"
             onClick={() => onPick(template.key)}
             className={cn(
-              "flex flex-col items-start gap-1 rounded-md border border-border bg-card px-4 py-3 text-left transition-colors",
-              "hover:border-primary hover:bg-primary/5",
+              "flex flex-col items-start gap-1 rounded-md border border-line bg-bg-2 px-4 py-3 text-left transition-colors",
+              "hover:border-accent hover:bg-accent/5",
             )}
           >
-            <span className="text-sm font-medium text-foreground">{template.title}</span>
-            <span className="text-xs text-muted-foreground">{template.description}</span>
+            <span className="text-sm font-medium text-ink">{template.title}</span>
+            <span className="text-xs text-ink-3">{template.description}</span>
           </button>
         ))}
       </div>

@@ -76,20 +76,20 @@ export function TaskChatLiveRunPill({
       className="flex min-w-0 items-center gap-2 py-2"
       data-testid="task-chat-live-run-pill"
     >
-      <span className="inline-flex items-center gap-2 text-sm font-medium text-foreground/80">
+      <span className="inline-flex items-center gap-2 text-sm font-medium text-ink/80">
         {active ? (
           <span className="flex size-5 shrink-0 items-center justify-center">
-            <Loader2 className="size-4 animate-spin text-muted-foreground" />
+            <Loader2 className="size-4 animate-spin text-ink-3" />
           </span>
         ) : (
           <span className="flex size-5 shrink-0 items-center justify-center">
-            <span className={cn("h-1.5 w-1.5 rounded-full", (failed || active) ? "bg-muted-foreground/40" : "bg-emerald-500/70")} />
+            <span className={cn("h-1.5 w-1.5 rounded-full", (failed || active) ? "bg-ink-3/40" : "bg-emerald-500/70")} />
           </span>
         )}
         {active ? <span className={cn("shimmer-text")}>{verb}</span> : verb}
       </span>
-      {suffix ? <span className="text-xs text-muted-foreground/60">{suffix}</span> : null}
-      {toolSummary ? <span className="text-xs text-muted-foreground/40">· {toolSummary}</span> : null}
+      {suffix ? <span className="text-xs text-ink-3/60">{suffix}</span> : null}
+      {toolSummary ? <span className="text-xs text-ink-3/40">· {toolSummary}</span> : null}
     </div>
   );
 }

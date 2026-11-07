@@ -79,7 +79,7 @@ export function TaskBrowserFooter({
   return (
     <footer
       aria-label="Browser session"
-      className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1 border-t px-3 py-2 text-xs text-muted-foreground"
+      className="flex shrink-0 flex-wrap items-center gap-x-3 gap-y-1 border-t px-3 py-2 text-xs text-ink-3"
     >
       {closingSoon && (
         <span
@@ -165,7 +165,7 @@ export function TaskBrowserFooter({
                 <DropdownMenuSubTrigger disabled={resizing || !resizeAvailable}>
                   <Monitor aria-hidden="true" />
                   <span>Browser size</span>
-                  <span className="ml-auto text-xs text-muted-foreground">
+                  <span className="ml-auto text-xs text-ink-3">
                     {sizeLabel}
                   </span>
                 </DropdownMenuSubTrigger>
@@ -209,7 +209,7 @@ export function TaskBrowserFooter({
                         }}
                       >
                         <span>{preset.label}</span>
-                        <span className="ml-auto font-mono text-xs tabular-nums text-muted-foreground">
+                        <span className="ml-auto font-mono text-xs tabular-nums text-ink-3">
                           {preset.width} × {preset.height}
                         </span>
                       </DropdownMenuRadioItem>
@@ -222,7 +222,7 @@ export function TaskBrowserFooter({
                 <RefreshCw className="mt-0.5" aria-hidden="true" />
                 <span className="flex flex-col gap-1">
                   <span>Reconnect view</span>
-                  <span className="text-xs font-normal text-muted-foreground">
+                  <span className="text-xs font-normal text-ink-3">
                     Reload the live view. Browser work keeps running.
                   </span>
                 </span>
@@ -235,7 +235,7 @@ export function TaskBrowserFooter({
                   <Clock3 className="mt-0.5" aria-hidden="true" />
                   <span className="flex flex-col gap-1">
                     <span>Keep browser open</span>
-                    <span className="text-xs font-normal text-muted-foreground">
+                    <span className="text-xs font-normal text-ink-3">
                       Keep it open for up to 10 more minutes.
                     </span>
                   </span>
@@ -250,7 +250,7 @@ export function TaskBrowserFooter({
                 <X className="mt-0.5" aria-hidden="true" />
                 <span className="flex flex-col gap-1">
                   <span>Close browser</span>
-                  <span className="text-xs font-normal text-muted-foreground">
+                  <span className="text-xs font-normal text-ink-3">
                     End this browser and stop any browsing.
                   </span>
                 </span>

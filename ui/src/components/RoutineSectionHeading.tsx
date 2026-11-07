@@ -20,7 +20,7 @@ export function RoutineSectionHeading({
           ariaLabel="Copy description"
           title="Copy description"
           copiedLabel="Description copied"
-          className="inline-flex size-6 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
+          className="inline-flex size-6 items-center justify-center rounded-md text-ink-3 hover:bg-bg-3 hover:text-ink"
         >
           <Copy className="size-3.5" aria-hidden="true" />
         </CopyText>

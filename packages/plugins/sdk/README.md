@@ -1083,15 +1083,15 @@ export function SyncToolbarButton() {
           onClick={() => !submitting && setOpen(false)}
         >
           <div
-            className="w-full max-w-md rounded-lg bg-background p-4 shadow-xl"
+            className="w-full max-w-md rounded-lg bg-bg p-4 shadow-xl"
             onClick={(event) => event.stopPropagation()}
           >
             <h2 className="text-base font-semibold">Sync this project?</h2>
-            <p className="mt-2 text-sm text-muted-foreground">
+            <p className="mt-2 text-sm text-ink-3">
               Queue a sync for <code>{context.projectId}</code>.
             </p>
             {errorMessage ? (
-              <p className="mt-2 text-sm text-destructive">{errorMessage}</p>
+              <p className="mt-2 text-sm text-bad">{errorMessage}</p>
             ) : null}
             <div className="mt-4 flex justify-end gap-2">
               <button type="button" onClick={() => setOpen(false)}>

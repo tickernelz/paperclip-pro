@@ -192,7 +192,7 @@ describe("BreadcrumbBar", () => {
     expect(identifier).toBeTruthy();
     expect(identifier?.className).not.toContain("absolute");
     expect(identifier?.closest(".relative")?.className).toContain("border-b");
-    expect(identifier?.closest(".relative")?.className).toContain("border-border");
+    expect(identifier?.closest(".relative")?.className).toContain("border-line");
     expect(identifier?.closest(".relative")?.className).toContain("h-(--sz-60px)");
 
     const title = Array.from(container.querySelectorAll("span"))
@@ -204,8 +204,8 @@ describe("BreadcrumbBar", () => {
     expect(header?.classList).not.toContain("px-3");
     expect(tasksLink?.classList).toContain("font-semibold");
     expect(tasksLink?.classList).toContain("tracking-wider");
-    expect(tasksLink?.classList).toContain("text-muted-foreground");
-    expect(tasksLink?.classList).toContain("hover:text-foreground");
+    expect(tasksLink?.classList).toContain("text-ink-3");
+    expect(tasksLink?.classList).toContain("hover:text-ink");
     expect(tasksLink?.classList).not.toContain("font-bold");
     expect(title?.className).toContain("truncate");
     expect(title?.nextElementSibling).toBe(identifier);
@@ -225,8 +225,8 @@ describe("BreadcrumbBar", () => {
     expect(rootCrumb?.classList).toContain("font-semibold");
     expect(rootCrumb?.classList).toContain("uppercase");
     expect(rootCrumb?.classList).toContain("tracking-wider");
-    expect(rootCrumb?.classList).toContain("text-muted-foreground");
-    expect(rootCrumb?.classList).toContain("hover:text-foreground");
+    expect(rootCrumb?.classList).toContain("text-ink-3");
+    expect(rootCrumb?.classList).toContain("hover:text-ink");
   });
 
   it("routes the single task-detail panel button through a page override", async () => {

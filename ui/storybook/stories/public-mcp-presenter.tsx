@@ -18,23 +18,23 @@ export function PublicMcpPresenter() {
   const chapter = chapters[index]!;
   return <main className="space-y-5 p-5" aria-label="Assistant connection guided walkthrough">
     <header className="space-y-2">
-      <p className="text-xs font-medium text-muted-foreground">STORYBOOK WALKTHROUGH · SAMPLE DATA</p>
+      <p className="text-xs font-medium text-ink-3">STORYBOOK WALKTHROUGH · SAMPLE DATA</p>
       <h1 className="text-xl font-semibold">Start in Paperclip. Bring your organization into your assistant.</h1>
-      <p className="text-sm text-muted-foreground">Click through the real product screens below. Presenter chapters explain the terminal and assistant handoffs; they do not simulate live OAuth or model execution.</p>
+      <p className="text-sm text-ink-3">Click through the real product screens below. Presenter chapters explain the terminal and assistant handoffs; they do not simulate live OAuth or model execution.</p>
     </header>
     <nav aria-label="Journey chapters" className="flex flex-wrap gap-2">{chapters.map((item, n) => <Button key={item.title} size="sm" variant={n === index ? "secondary" : "ghost"} aria-current={n === index ? "step" : undefined} onClick={() => setIndex(n)}>{n + 1}. {item.title}</Button>)}</nav>
-    <section className="space-y-2 rounded-lg border border-border p-4" aria-live="polite">
-      <p className="text-xs text-muted-foreground">{chapter.place}</p>
+    <section className="space-y-2 rounded-lg border border-line p-4" aria-live="polite">
+      <p className="text-xs text-ink-3">{chapter.place}</p>
       <h2 className="text-lg font-semibold">{index + 1}. {chapter.title}</h2>
       <p className="text-sm">{chapter.action}</p>
-      <p className="text-sm text-muted-foreground">{chapter.result}</p>
+      <p className="text-sm text-ink-3">{chapter.result}</p>
       <nav aria-label="Walkthrough controls" className="flex items-center justify-between gap-3 pt-3">
-        <Button variant="outline" disabled={index === 0} onClick={() => setIndex(n => n - 1)}>Previous chapter</Button>
-        <span className="text-xs text-muted-foreground">{index + 1} / {chapters.length}</span>
+        <Button variant="secondary" disabled={index === 0} onClick={() => setIndex(n => n - 1)}>Previous chapter</Button>
+        <span className="text-xs text-ink-3">{index + 1} / {chapters.length}</span>
         <Button onClick={() => setIndex(n => n === chapters.length - 1 ? 0 : n + 1)}>{index === chapters.length - 1 ? "Restart walkthrough" : "Next chapter"}</Button>
       </nav>
     </section>
-    {chapter.story ? <iframe key={chapter.story} className="h-screen w-full rounded-lg border border-border" src={`./iframe.html?id=${chapter.story}&viewMode=story&globals=theme:dark`} title={`${chapter.title} — real product screen with mocked services`} />
-      : <section className="space-y-4 rounded-lg border border-border p-6"><p className="text-xs font-medium text-muted-foreground">ILLUSTRATIVE CONVERSATION · NO LIVE EXECUTION</p>{chapter.scene?.map(text => <p className="text-sm" key={text}>{text}</p>)}</section>}
+    {chapter.story ? <iframe key={chapter.story} className="h-screen w-full rounded-lg border border-line" src={`./iframe.html?id=${chapter.story}&viewMode=story&globals=theme:dark`} title={`${chapter.title} — real product screen with mocked services`} />
+      : <section className="space-y-4 rounded-lg border border-line p-6"><p className="text-xs font-medium text-ink-3">ILLUSTRATIVE CONVERSATION · NO LIVE EXECUTION</p>{chapter.scene?.map(text => <p className="text-sm" key={text}>{text}</p>)}</section>}
   </main>;
 }

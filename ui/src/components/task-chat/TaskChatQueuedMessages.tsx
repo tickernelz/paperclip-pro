@@ -138,9 +138,9 @@ function SortableQueuedMessage({
       ref={sortable.setNodeRef}
       style={style}
       className={cn(
-        "group flex h-11 min-w-0 items-center gap-1 border-b border-border/55 bg-card/95 px-2.5 text-sm last:border-b-0",
+        "group flex h-11 min-w-0 items-center gap-1 border-b border-line/55 bg-bg-2/95 px-2.5 text-sm last:border-b-0",
         sortable.isDragging &&
-          "relative z-20 rounded-lg border border-border shadow-lg",
+          "relative z-20 rounded-lg border border-line shadow-lg",
       )}
       data-testid={`task-chat-queued-message-${entry.comment.id}`}
     >
@@ -151,13 +151,13 @@ function SortableQueuedMessage({
         {...sortable.listeners}
         disabled={queueMutationDisabled || immutableResponse}
         aria-label={`Reorder queued message: ${entry.comment.body}`}
-        className="flex h-7 w-7 shrink-0 cursor-grab items-center justify-center rounded-md text-muted-foreground/70 transition-colors hover:bg-accent hover:text-foreground active:cursor-grabbing disabled:cursor-default disabled:opacity-40"
+        className="flex h-7 w-7 shrink-0 cursor-grab items-center justify-center rounded-md text-ink-3/70 transition-colors hover:bg-bg-3 hover:text-ink active:cursor-grabbing disabled:cursor-default disabled:opacity-40"
       >
         <GripVertical className="h-3.5 w-3.5" aria-hidden />
       </button>
 
       <CornerDownRight
-        className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
+        className="h-3.5 w-3.5 shrink-0 text-ink-3"
         aria-hidden
       />
       <span className="min-w-0 flex-1 truncate px-1" title={entry.comment.body}>
@@ -165,7 +165,7 @@ function SortableQueuedMessage({
       </span>
       {count > 1 ? (
         <span
-          className="shrink-0 rounded-md bg-muted px-1.5 text-xs font-medium tabular-nums text-muted-foreground"
+          className="shrink-0 rounded-md bg-bg-3 px-1.5 text-xs font-medium tabular-nums text-ink-3"
           title={`${count} identical queued messages`}
           data-testid={`task-chat-queued-count-${entry.comment.id}`}
         >
@@ -179,7 +179,7 @@ function SortableQueuedMessage({
           onClick={onInterrupt}
           disabled={busy || !queue.queueId || !onInterrupt}
           title={queue.targetRunId ? "Interrupt the active turn and send queued messages" : "Send queued messages now"}
-          className="flex h-7 shrink-0 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40"
+          className="flex h-7 shrink-0 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-ink-3 transition-colors hover:bg-bg-3 hover:text-ink disabled:opacity-40"
           data-testid={`task-chat-queued-interrupt-${entry.comment.id}`}
         >
           {action === "interrupt" ? (
@@ -195,7 +195,7 @@ function SortableQueuedMessage({
           onClick={onSteer}
           disabled={steerDisabled}
           title={steerTitle}
-          className="flex h-7 shrink-0 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40"
+          className="flex h-7 shrink-0 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-ink-3 transition-colors hover:bg-bg-3 hover:text-ink disabled:opacity-40"
           data-testid={`task-chat-queued-steer-${entry.comment.id}`}
         >
           {action === "steer" ? (
@@ -217,7 +217,7 @@ function SortableQueuedMessage({
         }
         title="Discard queued message"
         aria-label={`Discard queued message: ${entry.comment.body}`}
-        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-destructive/10 hover:text-destructive disabled:opacity-40"
+        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-ink-3 transition-colors hover:bg-bad/10 hover:text-bad disabled:opacity-40"
         data-testid={`task-chat-queued-discard-${entry.comment.id}`}
       >
         {action === "discard" ? (
@@ -234,7 +234,7 @@ function SortableQueuedMessage({
             disabled={queueMutationDisabled || immutableResponse}
             title="Queued message actions"
             aria-label={`Queued message actions: ${entry.comment.body}`}
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-40"
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-ink-3 transition-colors hover:bg-bg-3 hover:text-ink disabled:opacity-40"
           >
             <MoreHorizontal className="h-4 w-4" aria-hidden />
           </button>
@@ -497,7 +497,7 @@ export function TaskChatQueuedMessages({
       aria-label="Queued messages"
     >
       <div
-        className="flex h-8 min-w-0 items-center gap-1 border-b border-border/55 pl-3 pr-1.5 text-xs text-muted-foreground"
+        className="flex h-8 min-w-0 items-center gap-1 border-b border-line/55 pl-3 pr-1.5 text-xs text-ink-3"
         data-testid="task-chat-queued-header"
       >
         <span className="min-w-0 flex-1 truncate font-medium">
@@ -511,7 +511,6 @@ export function TaskChatQueuedMessages({
             aria-expanded={expanded}
             aria-controls={listId}
             onClick={() => setExpanded((current) => !current)}
-            className="text-muted-foreground"
             data-testid="task-chat-queued-toggle"
           >
             {expanded ? (
@@ -528,7 +527,6 @@ export function TaskChatQueuedMessages({
           size="xs"
           onClick={() => setConfirmDiscardAll(true)}
           disabled={busy || !queue.queueId || discardAllIds.length === 0}
-          className="text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
           data-testid="task-chat-queued-discard-all"
         >
           {pending?.scope === "all" ? (
@@ -540,7 +538,7 @@ export function TaskChatQueuedMessages({
         </Button>
       </div>
       {queue.executionWait && (
-        <div role="status" aria-live="polite" className="px-3 py-1.5 text-xs text-muted-foreground">
+        <div role="status" aria-live="polite" className="px-3 py-1.5 text-xs text-ink-3">
           {queue.executionWait.message}
         </div>
       )}
@@ -602,7 +600,7 @@ export function TaskChatQueuedMessages({
         <div
           role="status"
           aria-live="polite"
-          className="border-t border-destructive/20 bg-destructive/5 px-3 py-1.5 text-xs text-destructive"
+          className="border-t border-bad/20 bg-bad/5 px-3 py-1.5 text-xs text-bad"
         >
           {visibleError}
         </div>
@@ -623,7 +621,7 @@ export function TaskChatQueuedMessages({
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-bad text-accent-ink hover:bg-bad/90"
               onClick={() => void runRowAction(discardAllIds, "discard", "all")}
               data-testid="task-chat-queued-discard-all-confirm"
             >

@@ -28,27 +28,27 @@ export function OpenwaLinkedNumbers({ endpointId }: { endpointId: string }) {
       description="Link another WhatsApp number on this gateway so the agent can read chats you choose, only when an owner asks. A linked number never sends, never wakes the agent, and starts with no chats allowed."
     >
       {linked.isPending ? (
-        <p className="text-sm text-muted-foreground">Loading linked numbers…</p>
+        <p className="text-sm text-ink-3">Loading linked numbers…</p>
       ) : linked.isError ? (
-        <p role="alert" className="text-sm text-destructive">Couldn't load linked numbers.</p>
+        <p role="alert" className="text-sm text-bad">Couldn't load linked numbers.</p>
       ) : linked.data.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No linked numbers.</p>
+        <p className="text-sm text-ink-3">No linked numbers.</p>
       ) : (
-        <ul className="divide-y divide-border border-y border-border">
+        <ul className="divide-y divide-line border-y border-line">
           {linked.data.map((entry) => (
             <LinkedNumberRow key={entry.id} endpointId={endpointId} linked={entry} onUnlinked={setUnlinkWarning} />
           ))}
         </ul>
       )}
       {unlinkWarning ? (
-        <div role="alert" className="flex items-start gap-2 rounded-md border border-border bg-muted p-2">
-          <p className="min-w-0 flex-1 text-xs text-foreground">{unlinkWarning}</p>
+        <div role="alert" className="flex items-start gap-2 rounded-md border border-line bg-bg-3 p-2">
+          <p className="min-w-0 flex-1 text-xs text-ink">{unlinkWarning}</p>
           <Button size="sm" variant="ghost" onClick={() => setUnlinkWarning(undefined)}>
             Dismiss
           </Button>
         </div>
       ) : null}
-      <Button size="sm" variant="outline" onClick={() => setLinking(true)}>
+      <Button size="sm" variant="secondary" onClick={() => setLinking(true)}>
         Link a number
       </Button>
       {linking ? <LinkNumberDialog endpointId={endpointId} onClose={() => setLinking(false)} /> : null}
@@ -91,13 +91,13 @@ function LinkNumberDialog({ endpointId, onClose }: { endpointId: string; onClose
           </DialogDescription>
         </DialogHeader>
         {sessions.isPending ? (
-          <p className="text-sm text-muted-foreground">Loading gateway sessions…</p>
+          <p className="text-sm text-ink-3">Loading gateway sessions…</p>
         ) : sessions.isError ? (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-sm text-bad">
             {failureMessage(sessions.error, "Couldn't read sessions from the gateway.")}
           </p>
         ) : sessions.data.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No other session on this gateway can be linked.</p>
+          <p className="text-sm text-ink-3">No other session on this gateway can be linked.</p>
         ) : (
           <div className="grid gap-3">
             <div className="grid gap-1">
@@ -130,7 +130,7 @@ function LinkNumberDialog({ endpointId, onClose }: { endpointId: string; onClose
           </div>
         )}
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="secondary" onClick={onClose}>
             Cancel
           </Button>
           <Button disabled={link.isPending || !sessions.data?.length} onClick={submit}>
@@ -160,14 +160,14 @@ function LinkedNumberRow({ endpointId, linked, onUnlinked }: { endpointId: strin
       <div className="space-y-2 sm:flex sm:items-center sm:gap-3">
         <div className="min-w-0">
           <p className="truncate text-sm font-medium">{linked.label}</p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             {[linked.phoneMasked, linked.status === "active" ? "Read-only" : "Unavailable: link it again", linked.allowedChats.length + " chats allowed"]
               .filter(Boolean)
               .join(" · ")}
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2 sm:shrink-0 sm:justify-end">
-          <Button size="sm" variant="outline" className="shrink-0" onClick={() => setPicking((value) => !value)}>
+          <Button size="sm" variant="secondary" className="shrink-0" onClick={() => setPicking((value) => !value)}>
             {picking ? "Close chats" : "Choose chats"}
           </Button>
           <Button size="icon-sm" variant="ghost" aria-label={"Unlink " + linked.label} disabled={unlink.isPending} onClick={() => setConfirming(true)}>
@@ -176,14 +176,14 @@ function LinkedNumberRow({ endpointId, linked, onUnlinked }: { endpointId: strin
         </div>
       </div>
       {confirming ? (
-        <div role="alertdialog" aria-label={"Unlink " + linked.label + "?"} className="flex flex-wrap items-center gap-2 rounded-md border border-border p-2">
-          <p className="min-w-0 flex-1 text-xs text-muted-foreground">Unlinking revokes the key on the gateway and the agent loses access to this number.</p>
-          <Button size="sm" variant="outline" onClick={() => setConfirming(false)}>
+        <div role="alertdialog" aria-label={"Unlink " + linked.label + "?"} className="flex flex-wrap items-center gap-2 rounded-md border border-line p-2">
+          <p className="min-w-0 flex-1 text-xs text-ink-3">Unlinking revokes the key on the gateway and the agent loses access to this number.</p>
+          <Button size="sm" variant="secondary" onClick={() => setConfirming(false)}>
             Keep
           </Button>
           <Button
             size="sm"
-            variant="destructive"
+            variant="danger"
             disabled={unlink.isPending}
             onClick={() => {
               setConfirming(false);
@@ -233,8 +233,8 @@ function LinkedChatPicker({ endpointId, linked, onClose }: { endpointId: string;
   const list = (title: string, items: typeof visible) =>
     items.length === 0 ? null : (
       <div className="space-y-1">
-        <h4 className="text-xs font-medium text-muted-foreground">{title}</h4>
-        <ul className="divide-y divide-border">
+        <h4 className="text-xs font-medium text-ink-3">{title}</h4>
+        <ul className="divide-y divide-line">
           {items.map((chat) => {
             const id = "openwa-linked-chat-" + linked.id + "-" + chat.chatId;
             return (
@@ -250,16 +250,16 @@ function LinkedChatPicker({ endpointId, linked, onClose }: { endpointId: string;
       </div>
     );
   return (
-    <div aria-label={"Chats for " + linked.label} className="space-y-2 rounded-md border border-border p-3">
+    <div aria-label={"Chats for " + linked.label} className="space-y-2 rounded-md border border-line p-3">
       <Input aria-label="Search chats" placeholder="Search chats" value={search} onChange={(event) => setSearch(event.target.value)} />
       {chats.isPending ? (
-        <p className="text-sm text-muted-foreground">Loading chats from the linked number…</p>
+        <p className="text-sm text-ink-3">Loading chats from the linked number…</p>
       ) : chats.isError ? (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-sm text-bad">
           {failureMessage(chats.error, "Couldn't read chats from the linked number.")}
         </p>
       ) : visible.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No chats match.</p>
+        <p className="text-sm text-ink-3">No chats match.</p>
       ) : (
         <div className="max-h-80 space-y-3 overflow-y-auto">
           {list("Groups", groups)}
@@ -270,9 +270,9 @@ function LinkedChatPicker({ endpointId, linked, onClose }: { endpointId: string;
         <Button size="sm" disabled={save.isPending || chats.isPending} onClick={() => save.mutate()}>
           {save.isPending ? "Saving…" : "Save chats"}
         </Button>
-        <span className="text-xs text-muted-foreground">{selected.size} selected</span>
+        <span className="text-xs text-ink-3">{selected.size} selected</span>
         {error ? (
-          <span role="alert" className="text-xs text-destructive">
+          <span role="alert" className="text-xs text-bad">
             {error}
           </span>
         ) : null}

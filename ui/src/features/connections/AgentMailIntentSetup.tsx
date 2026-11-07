@@ -95,7 +95,7 @@ export function AgentMailIntentSetup({ companyId, agentId, requestId, savedCrede
     }
   }}>
     {credentialId || inboxConnectionId
-      ? <p className="text-sm text-muted-foreground">{inboxConnectionId ? "Your inbox is ready. Continue to resume the chat." : "API key saved. Finish creating the inbox."}</p>
+      ? <p className="text-sm text-ink-3">{inboxConnectionId ? "Your inbox is ready. Continue to resume the chat." : "API key saved. Finish creating the inbox."}</p>
       : <AgentMailCredentialField companyId={companyId} connectionId={selectedCredentialId}
           onConnectionChange={id => { setSelectedCredentialId(id); setApiKey(""); }}
           value={apiKey} onChange={setApiKey} disabled={setup.isPending || changeKey.isPending || declining} />}
@@ -103,8 +103,8 @@ export function AgentMailIntentSetup({ companyId, agentId, requestId, savedCrede
       disabled={setup.isPending || changeKey.isPending || declining} onClick={() => changeKey.mutate(setupRequestId)}>
       {changeKey.isPending ? "Checking setup…" : "Change API key"}
     </Button>}
-    {changeKey.error && <p className="text-sm text-destructive" role="alert">{changeKey.error.message}</p>}
-    {setup.error && <p className="text-sm text-destructive" role="alert">{setup.error.message}</p>}
+    {changeKey.error && <p className="text-sm text-bad" role="alert">{changeKey.error.message}</p>}
+    {setup.error && <p className="text-sm text-bad" role="alert">{setup.error.message}</p>}
     <div className="flex items-center justify-between gap-2">
       <Button type="button" variant="ghost" disabled={setup.isPending || changeKey.isPending || declining} onClick={onDecline}>Not now</Button>
       <Button type="submit" disabled={setup.isPending || changeKey.isPending || declining || (!credentialId && !selectedCredentialId && !inboxConnectionId && !apiKey.trim())}>

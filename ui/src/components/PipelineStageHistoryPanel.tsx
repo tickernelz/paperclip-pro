@@ -73,53 +73,53 @@ export function PipelineStageHistoryPanel({
   const revisions = revisionsQuery.data ?? [];
 
   return (
-    <Collapsible open={open} onOpenChange={setOpen} className="overflow-hidden rounded-lg border border-border/70">
+    <Collapsible open={open} onOpenChange={setOpen} className="overflow-hidden rounded-lg border border-line/70">
       <CollapsibleTrigger className="flex w-full items-center justify-between px-3 py-2 text-left">
         <div className="flex items-center gap-2">
-          <History className="h-4 w-4 text-muted-foreground" />
+          <History className="h-4 w-4 text-ink-3" />
           <div>
             <p className="text-sm font-medium">History</p>
-            <p className="text-xs text-muted-foreground">Past versions of these instructions.</p>
+            <p className="text-xs text-ink-3">Past versions of these instructions.</p>
           </div>
         </div>
         {open ? (
-          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          <ChevronDown className="h-4 w-4 text-ink-3" />
         ) : (
-          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          <ChevronRight className="h-4 w-4 text-ink-3" />
         )}
       </CollapsibleTrigger>
-      <CollapsibleContent className="border-t border-border/70">
+      <CollapsibleContent className="border-t border-line/70">
         {!hasDocument ? (
-          <p className="px-4 py-3 text-xs text-muted-foreground">
+          <p className="px-4 py-3 text-xs text-ink-3">
             No history yet. Save the instructions to create the first revision.
           </p>
         ) : revisionsQuery.isLoading ? (
-          <p className="px-4 py-3 text-xs text-muted-foreground">Loading revisions…</p>
+          <p className="px-4 py-3 text-xs text-ink-3">Loading revisions…</p>
         ) : revisionsQuery.error ? (
-          <p className="px-4 py-3 text-xs text-destructive">
+          <p className="px-4 py-3 text-xs text-bad">
             {revisionsQuery.error instanceof Error ? revisionsQuery.error.message : "Could not load revisions."}
           </p>
         ) : revisions.length === 0 ? (
-          <p className="px-4 py-3 text-xs text-muted-foreground">No revisions recorded yet.</p>
+          <p className="px-4 py-3 text-xs text-ink-3">No revisions recorded yet.</p>
         ) : (
-          <ul className="divide-y divide-border/70">
+          <ul className="divide-y divide-line/70">
             {revisions.map((revision) => {
               const isCurrent = revision.id === currentRevisionId;
               return (
                 <li
                   key={revision.id}
-                  className={cn("flex items-center justify-between gap-3 px-4 py-2.5", isCurrent && "bg-accent/30")}
+                  className={cn("flex items-center justify-between gap-3 px-4 py-2.5", isCurrent && "bg-bg-3/30")}
                 >
                   <div className="min-w-0">
                     <p className="text-sm font-medium">
                       Revision {revision.revisionNumber}
                       {isCurrent ? (
-                        <Badge variant="ghost" className="ml-2 bg-muted text-(length:--text-micro) text-muted-foreground">
+                        <Badge variant="ghost" className="ml-2 bg-bg-3 text-(length:--text-micro) text-ink-3">
                           Current
                         </Badge>
                       ) : null}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-ink-3">
                       {timeAgo(revision.createdAt)}
                       {revision.changeSummary ? ` · ${revision.changeSummary}` : ""}
                     </p>

@@ -192,7 +192,7 @@ export function AttentionRetryButton({
   const button = (
     <Button
       type="button"
-      variant="outline"
+      variant="secondary"
       size="xs"
       className={cn("aria-disabled:cursor-not-allowed aria-disabled:opacity-50", className)}
       disabled={pending}

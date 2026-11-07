@@ -131,7 +131,7 @@ export function AttentionInteractionResolver({
 
   if (isLoading) {
     return (
-      <div className="flex items-center gap-2 py-3 text-xs text-muted-foreground">
+      <div className="flex items-center gap-2 py-3 text-xs text-ink-3">
         <Loader2 className="h-3.5 w-3.5 animate-spin" /> Loading decision…
       </div>
     );
@@ -139,7 +139,7 @@ export function AttentionInteractionResolver({
 
   if (error || !interaction) {
     return (
-      <p className="py-3 text-xs text-muted-foreground">
+      <p className="py-3 text-xs text-ink-3">
         This decision is no longer available — it may have been resolved elsewhere.
       </p>
     );

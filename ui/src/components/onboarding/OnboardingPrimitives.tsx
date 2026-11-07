@@ -15,7 +15,7 @@ export function OnboardingCard({
   return (
     <div
       className={cn(
-        "w-(--sz-560px) max-w-full rounded-xl border border-border bg-card px-8 py-10 sm:px-10 sm:py-11",
+        "w-(--sz-560px) max-w-full rounded-xl border border-line bg-bg-2 px-8 py-10 sm:px-10 sm:py-11",
         className,
       )}
     >
@@ -36,11 +36,11 @@ export function OnboardingHeading({
 }) {
   return (
     <div className={cn("space-y-2", center && "text-center")}>
-      <h1 className="text-(length:--text-onboarding-title) font-semibold leading-(--leading-onboarding-title) tracking-tight text-foreground">
+      <h1 className="text-(length:--text-onboarding-title) font-semibold leading-(--leading-onboarding-title) tracking-tight text-ink">
         {title}
       </h1>
       {lede ? (
-        <p className="text-base leading-relaxed text-muted-foreground">{lede}</p>
+        <p className="text-base leading-relaxed text-ink-3">{lede}</p>
       ) : null}
     </div>
   );

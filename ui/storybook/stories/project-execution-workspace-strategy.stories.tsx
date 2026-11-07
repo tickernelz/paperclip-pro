@@ -45,7 +45,7 @@ export const IsolatedStrategy: Story = {
   name: "Isolated workspace strategy (advanced open)",
   render: () => (
     <Hydrate>
-      <div className="max-w-2xl rounded-lg border border-border bg-background p-4">
+      <div className="max-w-2xl rounded-lg border border-line bg-bg p-4">
         <ProjectProperties
           project={editableProject}
           onFieldUpdate={() => undefined}
@@ -62,7 +62,7 @@ export const IsolatedStrategy: Story = {
 function StatefulConcurrency() {
   const [project, setProject] = useState<Project>(editableProject);
   return (
-    <div className="max-w-2xl rounded-lg border border-border bg-background p-4">
+    <div className="max-w-2xl rounded-lg border border-line bg-bg p-4">
       <ProjectProperties
         project={project}
         onFieldUpdate={(_field, data) => {

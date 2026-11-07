@@ -12,10 +12,10 @@ const qaAgent = storybookAgents.find((agent) => agent.id === "agent-qa") ?? stor
 
 function StoryFrame({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <main className="min-h-screen bg-background p-4 text-foreground sm:p-8">
+    <main className="min-h-screen bg-bg p-4 text-ink sm:p-8">
       <div className="mx-auto max-w-5xl space-y-5">
         <div>
-          <div className="text-xs font-medium uppercase text-muted-foreground">Assigned-backlog UI safeguards</div>
+          <div className="text-xs font-medium uppercase text-ink-3">Assigned-backlog UI safeguards</div>
           <h1 className="mt-1 text-2xl font-semibold">{title}</h1>
         </div>
         {children}
@@ -26,40 +26,40 @@ function StoryFrame({ title, children }: { title: string; children: ReactNode })
 
 function CreationFormPanel() {
   return (
-    <div className="rounded-lg border border-border bg-card p-4">
-      <div className="mb-3 text-sm font-medium text-muted-foreground">A. Issue creation chip bar with intent note</div>
+    <div className="rounded-lg border border-line bg-bg-2 p-4">
+      <div className="mb-3 text-sm font-medium text-ink-3">A. Issue creation chip bar with intent note</div>
 
-      <div className="space-y-3 rounded-md border border-border/60 bg-background p-3">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+      <div className="space-y-3 rounded-md border border-line/60 bg-bg p-3">
+        <div className="flex items-center gap-2 text-sm text-ink-3">
           <span className="w-6 shrink-0 text-center">For</span>
-          <span className="inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs">
+          <span className="inline-flex items-center gap-1.5 rounded-md border border-line px-2 py-1 text-xs">
             ClaudeCoder
           </span>
           <span>in</span>
-          <span className="inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs">
+          <span className="inline-flex items-center gap-1.5 rounded-md border border-line px-2 py-1 text-xs">
             Paperclip App
           </span>
         </div>
         <div className="space-y-1.5">
           <div className="text-sm font-semibold">Fix flaky deploy step on the worker pipeline</div>
-          <div className="text-xs text-muted-foreground">
+          <div className="text-xs text-ink-3">
             Investigate the intermittent timeout the worker pipeline hit during the last release rehearsal.
           </div>
         </div>
-        <div className="flex items-center gap-1.5 border-t border-border pt-3 flex-wrap">
-          <span className="inline-flex items-center gap-1.5 rounded-md border border-border bg-amber-100/40 px-2 py-1 text-xs dark:bg-amber-500/10">
+        <div className="flex items-center gap-1.5 border-t border-line pt-3 flex-wrap">
+          <span className="inline-flex items-center gap-1.5 rounded-md border border-line bg-amber-100/40 px-2 py-1 text-xs dark:bg-amber-500/10">
             <CircleDot className="h-3 w-3 text-purple-500" />
             Backlog
           </span>
-          <span className="inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs">
+          <span className="inline-flex items-center gap-1.5 rounded-md border border-line px-2 py-1 text-xs">
             <CircleDot className="h-3 w-3 text-amber-500" />
             High
           </span>
-          <span className="inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5 rounded-md border border-line px-2 py-1 text-xs text-ink-3">
             <Paperclip className="h-3 w-3" />
             Upload
           </span>
-          <span className="inline-flex items-center justify-center rounded-md border border-border p-1 text-xs text-muted-foreground">
+          <span className="inline-flex items-center justify-center rounded-md border border-line p-1 text-xs text-ink-3">
             <MoreHorizontal className="h-3 w-3" />
           </span>
         </div>
@@ -71,20 +71,20 @@ function CreationFormPanel() {
         </div>
       </div>
 
-      <div className="mt-4 rounded-md border border-border bg-popover p-1 text-xs">
-        <div className="px-2 pb-1 text-[10px] uppercase text-muted-foreground">Status options</div>
-        <div className="flex w-full items-start gap-2 rounded px-2 py-1.5 hover:bg-accent/50">
+      <div className="mt-4 rounded-md border border-line bg-bg-2 p-1 text-xs">
+        <div className="px-2 pb-1 text-[10px] uppercase text-ink-3">Status options</div>
+        <div className="flex w-full items-start gap-2 rounded px-2 py-1.5 hover:bg-bg-3/50">
           <CircleDot className="h-3 w-3 mt-0.5 shrink-0 text-purple-500" />
           <span className="flex flex-col text-left leading-tight">
             <span>Backlog</span>
-            <span className="text-[10px] text-muted-foreground">Parked — assignee will not be woken</span>
+            <span className="text-[10px] text-ink-3">Parked — assignee will not be woken</span>
           </span>
         </div>
-        <div className="flex w-full items-start gap-2 rounded bg-accent px-2 py-1.5">
+        <div className="flex w-full items-start gap-2 rounded bg-bg-3 px-2 py-1.5">
           <CircleDot className="h-3 w-3 mt-0.5 shrink-0 text-blue-500" />
           <span className="flex flex-col text-left leading-tight">
             <span>Todo</span>
-            <span className="text-[10px] text-muted-foreground">Executable — assignee will be woken</span>
+            <span className="text-[10px] text-ink-3">Executable — assignee will be woken</span>
           </span>
         </div>
       </div>
@@ -94,8 +94,8 @@ function CreationFormPanel() {
 
 function AssignedBacklogNoticePanel() {
   return (
-    <div className="rounded-lg border border-border bg-card p-4">
-      <div className="mb-3 text-sm font-medium text-muted-foreground">B. Issue panel banner — parked with assignee</div>
+    <div className="rounded-lg border border-line bg-bg-2 p-4">
+      <div className="mb-3 text-sm font-medium text-ink-3">B. Issue panel banner — parked with assignee</div>
       <IssueAssignedBacklogNotice
         issueStatus="backlog"
         assigneeAgent={qaAgent}
@@ -117,8 +117,8 @@ function BlockedByParkedWorkPanel() {
     assigneeUserId: null,
   };
   return (
-    <div className="rounded-lg border border-border bg-card p-4">
-      <div className="mb-3 text-sm font-medium text-muted-foreground">C. Parent issue blocked by parked work</div>
+    <div className="rounded-lg border border-line bg-bg-2 p-4">
+      <div className="mb-3 text-sm font-medium text-ink-3">C. Parent issue blocked by parked work</div>
       <IssueBlockedNotice
         issueStatus="blocked"
         blockers={[parkedBlocker]}
@@ -139,9 +139,9 @@ function BlockedByParkedWorkPanel() {
 
 function ListRowsPanel() {
   return (
-    <div className="rounded-lg border border-border bg-card p-4">
-      <div className="mb-3 text-sm font-medium text-muted-foreground">D. Issue list row indicators</div>
-      <div className="rounded-md border border-border">
+    <div className="rounded-lg border border-line bg-bg-2 p-4">
+      <div className="mb-3 text-sm font-medium text-ink-3">D. Issue list row indicators</div>
+      <div className="rounded-md border border-line">
         <IssueRow
           issue={createIssue({
             id: "issue-blocked-parent",

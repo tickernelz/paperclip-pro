@@ -44,10 +44,10 @@ export function QuestionChat({ movedOn = false, multiple = false, answered = fal
     ] : []),
     ...(answered ? [comment("late-answer", "Blue it is. I'll use that preference when we return to the welcome note.", "2026-04-01T12:07:00Z", true)] : []),
   ]);
-  return <QueryClientProvider client={queryClient}><div className="flex h-screen flex-col bg-background text-foreground">
+  return <QueryClientProvider client={queryClient}><div className="flex h-screen flex-col bg-bg text-ink">
     <TaskChatThread conversationMode={conversationMode} comments={comments} interactions={interactions} issueId={conversationMode ? question.issueId : "task-unanswered-questions-demo"}
       issueStatus="in_review" currentUserId="user-board" agentMap={storybookAgentMap} enableLiveTranscriptPolling={false}
-      threadHeader={<div className="p-4"><h1 className="text-xl font-semibold">{conversationMode ? "Garden club chat" : "Draft the garden club welcome note"}</h1><p className="text-sm text-muted-foreground">Questions can wait. Open an unanswered question in history whenever you're ready.</p></div>}
+      threadHeader={<div className="p-4"><h1 className="text-xl font-semibold">{conversationMode ? "Garden club chat" : "Draft the garden club welcome note"}</h1><p className="text-sm text-ink-3">Questions can wait. Open an unanswered question in history whenever you're ready.</p></div>}
       onAdd={async body => {
         setComments(rows => [...rows, comment(`user-${rows.length}`, body, new Date().toISOString()),
           comment(`agent-${rows.length}`, "We can come back to that question later. What would you like to work on next?", new Date(Date.now() + 1).toISOString(), true)]);

@@ -48,7 +48,7 @@ export function SummarizerAgentSelect({
     const agent = option.id.startsWith("agent:") ? agentById.get(option.id.slice("agent:".length)) : null;
     return (
       <>
-        {agent ? <AgentAvatar agent={agent} size={16} className="h-3.5 w-3.5 shrink-0 text-muted-foreground"/> : null}
+        {agent ? <AgentAvatar agent={agent} size={16} className="h-3.5 w-3.5 shrink-0 text-ink-3"/> : null}
         <span className="truncate">{option.label}</span>
       </>
     );

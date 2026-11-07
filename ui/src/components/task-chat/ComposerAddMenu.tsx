@@ -134,7 +134,7 @@ export function ComposerAddMenu({
           disabled={disabled}
           data-testid={triggerTestId}
           data-slot="icon-button"
-          className="flex size-8 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50"
+          className="flex size-8 shrink-0 items-center justify-center rounded-md text-ink-3 transition-colors hover:bg-bg-3 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:opacity-50"
         >
           <Plus className="size-4" aria-hidden />
         </button>
@@ -154,7 +154,7 @@ export function ComposerAddMenu({
       >
         <MobilePickerSheetHeader title="Add" onClose={() => setOpen(false)} />
         <div data-mobile-sheet-body="" className="flex min-w-0 flex-col">
-          <div className="px-2 py-1 text-xs text-muted-foreground max-sm:hidden">
+          <div className="px-2 py-1 text-xs text-ink-3 max-sm:hidden">
             Add
           </div>
           <div data-slot="entity-option-list" className="min-w-0">
@@ -170,19 +170,19 @@ export function ComposerAddMenu({
                 className={cn(mobile && "min-h-11")}
               >
                 <action.Icon
-                  className="size-4 shrink-0 text-muted-foreground"
+                  className="size-4 shrink-0 text-ink-3"
                   aria-hidden
                 />
                 <span className="flex min-w-0 flex-1 items-baseline gap-2">
                   <span>{action.label}</span>
                   {action.detail ? (
-                    <span className="truncate text-xs text-muted-foreground">
+                    <span className="truncate text-xs text-ink-3">
                       {action.detail}
                     </span>
                   ) : null}
                 </span>
                 {action.selected ? (
-                  <Check className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+                  <Check className="size-4 shrink-0 text-ink-3" aria-hidden />
                 ) : null}
               </DropdownMenuItem>
             ))}
@@ -221,7 +221,7 @@ export function ComposerModeChip({
       data-slot="task-chat-mode-trigger"
       data-testid={testId}
       className={cn(
-        "inline-flex h-8 shrink-0 items-center rounded-full border text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50",
+        "inline-flex h-8 shrink-0 items-center rounded-full border text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:opacity-50",
         mobile ? "gap-1 px-2" : "gap-1 px-2 sm:gap-1.5 sm:px-2.5",
         meta.classes.chip,
       )}
@@ -247,7 +247,7 @@ export function ComposerPrivacyChip({ inherited, onRemove, disabled }: { inherit
         <button type="button" onClick={onRemove} aria-label={inherited ? "Private task" : "Remove private task"}
           title={explanation}
           disabled={disabled || Boolean(inherited)} data-testid="composer-private-chip"
-          className="inline-flex h-8 shrink-0 items-center gap-1 rounded-full border border-border bg-muted px-2 text-xs font-medium text-foreground transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50">
+          className="inline-flex h-8 shrink-0 items-center gap-1 rounded-full border border-line bg-bg-3 px-2 text-xs font-medium text-ink transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:pointer-events-none disabled:opacity-50">
           <Lock className="size-3.5" aria-hidden />
           <span className="max-sm:sr-only">Private</span>
           {!inherited ? <X className="size-3.5" aria-hidden /> : null}

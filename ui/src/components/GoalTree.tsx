@@ -45,14 +45,14 @@ function GoalNode({ goal, children, allGoals, depth, goalLink, onSelect }: GoalN
       ) : (
         <span className="w-4" />
       )}
-      <span className="text-xs text-muted-foreground capitalize">{goal.level}</span>
+      <span className="text-xs text-ink-3 capitalize">{goal.level}</span>
       <span className="flex-1 truncate">{goal.title}</span>
       <StatusBadge status={goal.status} />
     </>
   );
 
   const classes = cn(
-    "flex items-center gap-2 px-3 py-1.5 text-sm transition-colors cursor-pointer hover:bg-accent/50",
+    "flex items-center gap-2 px-3 py-1.5 text-sm transition-colors cursor-pointer hover:bg-bg-3/50",
   );
 
   return (
@@ -98,11 +98,11 @@ export function GoalTree({ goals, goalLink, onSelect }: GoalTreeProps) {
   const roots = goals.filter((g) => !g.parentId || !goalIds.has(g.parentId));
 
   if (goals.length === 0) {
-    return <p className="text-sm text-muted-foreground">No goals.</p>;
+    return <p className="text-sm text-ink-3">No goals.</p>;
   }
 
   return (
-    <div className="border border-border py-1">
+    <div className="border border-line py-1">
       {roots.map((goal) => (
         <GoalNode
           key={goal.id}

@@ -103,31 +103,31 @@ export function GitHubRepositoryAccess({
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-      <p className="text-xs text-muted-foreground">
+      <p className="text-xs text-ink-3">
         Choose where the bot can receive messages and use tools. Repository
         changes save immediately.
       </p>
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative min-w-0 flex-1 basis-48">
-          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-3" />
           <Input aria-label="Search repositories" placeholder="Search repositories" className="pl-9"
             value={search} maxLength={200} onChange={(event) => setSearch(event.target.value)} />
         </div>
-        <Button variant="outline" size="sm" disabled={pending || list.isFetching || !summary || !summary.totalCount || (!disableAll && !summary.availableCount)}
+        <Button variant="secondary" size="sm" disabled={pending || list.isFetching || !summary || !summary.totalCount || (!disableAll && !summary.availableCount)}
           aria-label={`${disableAll ? "Disable" : "Enable"} all repositories`}
           onClick={() => onToggleAll(!disableAll)}>
           {disableAll ? "Disable all" : "Enable all"}
         </Button>
       </div>
-      {summary && <p className="text-xs text-muted-foreground">
+      {summary && <p className="text-xs text-ink-3">
         {summary.enabledCount} of {summary.totalCount} repositories enabled. Toggle all applies across the entire connection.
       </p>}
-      {list.isError && <p role="alert" className="text-sm text-destructive">
+      {list.isError && <p role="alert" className="text-sm text-bad">
         Could not load repositories. <Button variant="link" size="sm" onClick={() => void list.refetch()}>Try again</Button>
       </p>}
       <div ref={scroller} role="region" aria-label="Repositories" tabIndex={0}
-        className="max-h-96 overflow-y-auto overscroll-contain border-y border-border">
-        <div className="divide-y divide-border">
+        className="max-h-96 overflow-y-auto overscroll-contain border-y border-line">
+        <div className="divide-y divide-line">
         {rows.map((resource) => (
           <div key={resource.id} className="px-1 py-1">
             <GitHubToggle
@@ -147,8 +147,8 @@ export function GitHubRepositoryAccess({
           </div>
         ))}
         </div>
-        {list.isPending ? <p role="status" className="py-4 text-sm text-muted-foreground">Loading repositories…</p> : rows.length === 0 && !list.isError && (
-          <p className="py-4 text-sm text-muted-foreground">
+        {list.isPending ? <p role="status" className="py-4 text-sm text-ink-3">Loading repositories…</p> : rows.length === 0 && !list.isError && (
+          <p className="py-4 text-sm text-ink-3">
             {search ? "No repositories match your search." : "No repositories available. Add repository access on GitHub, then refresh."}
           </p>
         )}
@@ -215,7 +215,7 @@ export function GitHubBotManagement({
   };
   if (query.isError)
     return (
-      <p role="alert" className="text-sm text-destructive">
+      <p role="alert" className="text-sm text-bad">
         Could not load the bot configuration.{" "}
         <Button
           variant="link"
@@ -229,7 +229,7 @@ export function GitHubBotManagement({
     );
   if (!record)
     return (
-      <p role="status" className="text-sm text-muted-foreground">
+      <p role="status" className="text-sm text-ink-3">
         Loading configuration…
       </p>
     );
@@ -280,12 +280,12 @@ export function GitHubBotManagement({
             />
             {!config.toolsEnabled && (
               <div className="space-y-2">
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-ink-3">
                   This saved bot has GitHub tools disabled, so it cannot start
                   work or respond.
                 </p>
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   onClick={() => edit({ ...config, toolsEnabled: true })}
                 >
                   Enable bot tools
@@ -294,7 +294,7 @@ export function GitHubBotManagement({
             )}
             {endpoint.connectionId && (
               <Link
-                className="text-xs text-muted-foreground underline underline-offset-4"
+                className="text-xs text-ink-3 underline underline-offset-4"
                 to={`/apps/${endpoint.connectionId}`}
               >
                 Manage tool permissions
@@ -316,17 +316,17 @@ export function GitHubBotManagement({
         )}
       </fieldset>
       {error && (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-sm text-bad">
           {error}
         </p>
       )}
       {notice && (
-        <p role="status" className="text-sm text-muted-foreground">
+        <p role="status" className="text-sm text-ink-3">
           {notice}
         </p>
       )}
       {(dirty || !scoreValid) && (
-        <div className="sticky bottom-(--tc-composer-bottom) z-10 flex items-center justify-between gap-3 border-t border-border bg-background py-4 md:bottom-0">
+        <div className="sticky bottom-(--tc-composer-bottom) z-10 flex items-center justify-between gap-3 border-t border-line bg-bg py-4 md:bottom-0">
           <Button
             variant="ghost"
             disabled={pending}
@@ -403,7 +403,7 @@ function ReviewResult({ review }: { review: GitHubTaskReview }) {
         <span className="text-sm font-medium">
           {gitHubReviewResultLabel(review)}
         </span>
-        <span className="text-xs text-muted-foreground">
+        <span className="text-xs text-ink-3">
           Commit <code>{review.headSha.slice(0, 7)}</code> ·{" "}
           {formatDateTime(review.updatedAt)}
         </span>
@@ -413,11 +413,11 @@ function ReviewResult({ review }: { review: GitHubTaskReview }) {
           {review.assessment.summary}
         </MarkdownBody>
       ) : (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           No assessment has been submitted yet.
         </p>
       )}
-      <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+      <div className="flex flex-wrap items-center gap-4 text-xs text-ink-3">
         <Link
           className="underline underline-offset-4"
           to={`/issues/${review.issueId}`}
@@ -465,7 +465,7 @@ function ReviewResult({ review }: { review: GitHubTaskReview }) {
                   {review.assessment.findings.map((finding) => (
                     <div
                       key={finding.key}
-                      className="space-y-2 border-l border-border pl-4"
+                      className="space-y-2 border-l border-line pl-4"
                     >
                       <p className="break-all font-mono text-xs">
                         {finding.path}:{finding.line} · {finding.severity}
@@ -476,12 +476,12 @@ function ReviewResult({ review }: { review: GitHubTaskReview }) {
                 </section>
               )}
               <h3 className="font-medium">Coverage</h3>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-ink-3">
                 {review.assessment.coverage.reviewedPaths.length} files reviewed
                 · {review.assessment.coverage.omittedPaths.length} omitted
               </p>
               {review.assessment.coverage.limitations.map((limit, index) => (
-                <p key={index} className="text-xs text-muted-foreground">
+                <p key={index} className="text-xs text-ink-3">
                   {limit}
                 </p>
               ))}
@@ -511,19 +511,19 @@ export function GitHubReviewList({
   return (
     <ul
       aria-label="Reviews"
-      className="divide-y divide-border border-y border-border"
+      className="divide-y divide-line border-y border-line"
     >
       {orderedGitHubReviews(reviews).map((review) => (
         <li key={review.id}>
           <Link
             to={`/apps/chat/${endpointId}/reviews/${review.id}`}
-            className="flex flex-wrap items-center gap-x-6 gap-y-2 py-4 text-sm hover:bg-accent/50"
+            className="flex flex-wrap items-center gap-x-6 gap-y-2 py-4 text-sm hover:bg-bg-3/50"
           >
             <div className="min-w-0 flex-1 basis-48 space-y-1">
               <p className="break-words font-medium">
                 {review.event.title || `Pull request #${review.pullNumber}`}
               </p>
-              <p className="break-all text-xs text-muted-foreground">
+              <p className="break-all text-xs text-ink-3">
                 {review.repository} #{review.pullNumber} ·{" "}
                 <code>{review.headSha.slice(0, 7)}</code>
               </p>
@@ -531,7 +531,7 @@ export function GitHubReviewList({
             <div className="space-y-1 text-right">
               <p className="font-medium">{gitHubReviewResultLabel(review)}</p>
               <time
-                className="text-xs text-muted-foreground"
+                className="text-xs text-ink-3"
                 dateTime={review.createdAt}
               >
                 {formatDateTime(review.createdAt)}
@@ -554,7 +554,7 @@ export function GitHubReviewDetail({
   return (
     <article className="max-w-3xl space-y-6">
       <Link
-        className="text-sm text-muted-foreground hover:underline"
+        className="text-sm text-ink-3 hover:underline"
         to={`/apps/chat/${endpointId}/reviews`}
       >
         ← All reviews
@@ -564,7 +564,7 @@ export function GitHubReviewDetail({
           {review.event.title || `Pull request #${review.pullNumber}`}
         </h2>
         <a
-          className="break-all text-sm text-muted-foreground hover:underline"
+          className="break-all text-sm text-ink-3 hover:underline"
           href={`https://github.com/${review.repository}/pull/${review.pullNumber}`}
           target="_blank"
           rel="noreferrer"
@@ -591,7 +591,7 @@ export function GitHubReviews({
   });
   if (query.isError)
     return (
-      <p role="alert" className="text-sm text-destructive">
+      <p role="alert" className="text-sm text-bad">
         {reviewId ? "This review could not be loaded or was not found in this connection." : "Reviews could not be loaded."}{" "}
         <Button variant="link" onClick={() => void query.refetch()}>
           Try again
@@ -600,7 +600,7 @@ export function GitHubReviews({
     );
   if (query.isPending)
     return (
-      <p role="status" className="text-sm text-muted-foreground">
+      <p role="status" className="text-sm text-ink-3">
         Loading reviews…
       </p>
     );
@@ -610,7 +610,7 @@ export function GitHubReviews({
       <GitHubReviewDetail endpointId={endpointId} review={review} />
     ) : (
       <div className="space-y-3">
-        <p role="alert" className="text-sm text-muted-foreground">
+        <p role="alert" className="text-sm text-ink-3">
           This review was not found in this connection.
         </p>
         <Link

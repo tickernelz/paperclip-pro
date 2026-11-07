@@ -36,8 +36,8 @@ export function SecretPathName({ name, basePath = "", className, leafClassName }
 
   return (
     <span className={cn("min-w-0 truncate", className)}>
-      {directory ? <span className="text-muted-foreground">{directory}/</span> : null}
-      <span className={cn("font-medium text-foreground", leafClassName)}>{leaf}</span>
+      {directory ? <span className="text-ink-3">{directory}/</span> : null}
+      <span className={cn("font-medium text-ink", leafClassName)}>{leaf}</span>
     </span>
   );
 }

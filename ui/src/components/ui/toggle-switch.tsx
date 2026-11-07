@@ -8,14 +8,6 @@ export interface ToggleSwitchProps
   size?: "default" | "lg";
 }
 
-/*
- * Custom API (checked/onCheckedChange button, no Radix dep) with the shadcn
- * radix-luma Switch's capsule form: border-2 track, oval thumb, bg-input
- * off-state. Deliberate deviation from the registry: the on-state is the
- * status-system green (var(--status-task-done)), not bg-primary — user
- * ruling, DECISION-SHEET "toggle form" note. Do not swap for the registry
- * Switch without revisiting that ruling (C7).
- */
 export const ToggleSwitch = React.forwardRef<
   HTMLButtonElement,
   ToggleSwitchProps
@@ -35,13 +27,11 @@ export const ToggleSwitch = React.forwardRef<
         data-slot="toggle"
         disabled={disabled}
         className={cn(
-          "relative inline-flex shrink-0 items-center rounded-full border-2 transition-all outline-none",
-          "focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30",
-          "disabled:cursor-not-allowed disabled:opacity-50",
+          "relative inline-flex shrink-0 items-center rounded-full border-2 transition-all outline-hidden",
+          "focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
+          "disabled:cursor-not-allowed disabled:border-line-strong disabled:bg-bg-3",
           isLg ? "h-6 w-12" : "h-5 w-11",
-          checked
-            ? "border-(--status-task-done) bg-(--status-task-done)"
-            : "border-transparent bg-input/90",
+          checked ? "border-accent bg-accent" : "border-transparent bg-line-strong",
           className,
         )}
         {...props}
@@ -55,7 +45,7 @@ export const ToggleSwitch = React.forwardRef<
       >
         <span
           className={cn(
-            "pointer-events-none inline-block rounded-full bg-background shadow-sm transition-transform not-dark:bg-clip-padding dark:bg-foreground",
+            "pointer-events-none inline-block rounded-full bg-bg-2 shadow-sm transition-transform",
             isLg ? "h-5 w-7" : "h-4 w-6",
             checked ? "translate-x-4" : "translate-x-0",
           )}

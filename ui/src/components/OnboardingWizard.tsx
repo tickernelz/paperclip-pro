@@ -2220,7 +2220,7 @@ function OnboardingWizardInner({
         {/* Plain div instead of DialogOverlay — Radix's overlay wraps in
             RemoveScroll which blocks wheel events on our custom (non-DialogContent)
             scroll container. A plain div preserves the background without scroll-locking. */}
-        <div className="fixed inset-0 z-50 bg-background" />
+        <div className="fixed inset-0 z-50 bg-bg" />
         {/* A deliberate hook for "the wizard mounted".
 
             The tests that assert it opens used to prove it by finding any text
@@ -2403,7 +2403,7 @@ function OnboardingWizardInner({
                       animate={step === 1 || step === 3 ? ledeMotion.closed : ledeMotion.open}
                       aria-hidden={step === 1 || step === 3 || undefined}
                     >
-                      <p className="pt-2 text-base leading-relaxed text-muted-foreground">
+                      <p className="pt-2 text-base leading-relaxed text-ink-3">
                         <motion.span key={step} {...titleSwapMotion} className="inline-block">
                           {step === 4
                             ? ompOffered
@@ -2438,7 +2438,7 @@ function OnboardingWizardInner({
                     <Label htmlFor="onboarding-company-name">Name</Label>
                     <Input
                       id="onboarding-company-name"
-                      className="h-(--sz-44px) rounded-lg border-transparent bg-muted shadow-none dark:bg-muted"
+                      className="h-(--sz-44px) rounded-lg border-transparent bg-bg-3 shadow-none dark:bg-bg-3"
                       placeholder="e.g. Northwind Labs"
                       value={companyName}
                       onChange={(e) => setCompanyName(e.target.value)}
@@ -2467,15 +2467,15 @@ function OnboardingWizardInner({
                     {/*
                       Filled, not outlined, and the column's full width — the
                       same field the naming step before the hand-off draws.
-                      `bg-muted` is the design's field surface; the default
-                      Input is a hairline border over `bg-input/30`, which on
+                      `bg-bg-3` is the design's field surface; the default
+                      Input is a hairline border over `bg-line-strong/30`, which on
                       this ground reads as an empty outline rather than a place
                       to type. The border is kept but made transparent so the
                       focus ring, which colours the border, still has one.
                     */}
                     <Input
                       id="onboarding-agent-name"
-                      className="h-(--sz-44px) rounded-lg border-transparent bg-muted shadow-none dark:bg-muted"
+                      className="h-(--sz-44px) rounded-lg border-transparent bg-bg-3 shadow-none dark:bg-bg-3"
                       placeholder="e.g. Chief of staff"
                       value={agentName}
                       onChange={(e) => setAgentName(e.target.value)}
@@ -2574,8 +2574,8 @@ function OnboardingWizardInner({
                     >
                       <div className="-ml-3 mt-1">
                         <CredentialModeLink mode={credentialMode} onChange={setCredentialMode} />
-                        {savedKeys.options.length > 0 && <p className="px-3 text-sm text-muted-foreground">{savedKeys.options.length} saved API {savedKeys.options.length === 1 ? "key available" : "keys available"}.</p>}
-                        {credentialMode === "subscription" && authSignalStatus === "present" && <p className="px-3 text-sm text-muted-foreground">An existing provider connection is available.</p>}
+                        {savedKeys.options.length > 0 && <p className="px-3 text-sm text-ink-3">{savedKeys.options.length} saved API {savedKeys.options.length === 1 ? "key available" : "keys available"}.</p>}
+                        {credentialMode === "subscription" && authSignalStatus === "present" && <p className="px-3 text-sm text-ink-3">An existing provider connection is available.</p>}
                       </div>
                     </motion.div>
                   </div>
@@ -2617,7 +2617,7 @@ function OnboardingWizardInner({
                       `connectCardMounted`.
                     */}
                     {!connectCardMounted ? null : connectProgress ? (
-                      <p role="status" className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <p role="status" className="flex items-center gap-2 text-sm text-ink-3">
                         <Loader2 className="size-4 animate-spin" />
                         {connectProgress}
                       </p>
@@ -2744,7 +2744,7 @@ function OnboardingWizardInner({
                     ) : hasSavedSubscription || localLogin.status === "ready" ? null : connectStepHasNoSandbox ? (
                       canUseLocalLogin && managedProvider ? (
                         <LocalProviderLoginInstructions adapterType={adapterType} login={{ ...localLogin, retry: () => { autoConnectStartedRef.current = false; setError(null); localLogin.retry(); } }} />
-                      ) : <p className="text-xs text-muted-foreground">This environment does not support browser sign-in. Choose another sign-in environment or connect with an API key.</p>
+                      ) : <p className="text-xs text-ink-3">This environment does not support browser sign-in. Choose another sign-in environment or connect with an API key.</p>
                     ) : null}
                   </motion.div>
 
@@ -2770,9 +2770,9 @@ function OnboardingWizardInner({
                       `finally` after the early return — so a genuine block still
                       shows its checks, which is the whole reason this is here. */}
                   {isLocalAdapter && !loading && (adapterEnvError || (adapterEnvResult && adapterEnvResult.status !== "pass")) && (
-                    <div className="space-y-2 rounded-md border border-border p-3">
+                    <div className="space-y-2 rounded-md border border-line p-3">
                       {adapterEnvError && (
-                        <div className="rounded-md border border-destructive/30 bg-destructive/10 px-2.5 py-2 text-(length:--text-micro) text-destructive">
+                        <div className="rounded-md border border-bad/30 bg-bad/10 px-2.5 py-2 text-(length:--text-micro) text-bad">
                           {adapterEnvError}
                         </div>
                       )}
@@ -2800,28 +2800,28 @@ function OnboardingWizardInner({
                       ) : null}
 
                       {adapterEnvResult && adapterEnvResult.status === "fail" && (
-                        <div className="rounded-md border border-border/70 bg-muted/20 px-2.5 py-2 text-(length:--text-micro) space-y-1.5">
+                        <div className="rounded-md border border-line/70 bg-bg-3/20 px-2.5 py-2 text-(length:--text-micro) space-y-1.5">
                           <p className="font-medium">Manual debug</p>
-                          <p className="text-muted-foreground font-mono break-all">
+                          <p className="text-ink-3 font-mono break-all">
                             {adapterType === OMP_ADAPTER_TYPE
                                 ? `${effectiveAdapterCommand} models --json`
                               : `${effectiveAdapterCommand} --print - --output-format stream-json --verbose`}
                           </p>
                           {adapterType !== OMP_ADAPTER_TYPE && (
-                            <p className="text-muted-foreground">
+                            <p className="text-ink-3">
                               Prompt:{" "}
                               <span className="font-mono">Respond with hello.</span>
                             </p>
                           )}
                           {adapterType === OMP_ADAPTER_TYPE ? (
-                            <p className="text-muted-foreground">
+                            <p className="text-ink-3">
                               If no models are listed, run{" "}
                               <span className="font-mono">omp setup</span> or sign in to a provider with{" "}
                               <span className="font-mono">/login</span> inside{" "}
                               <span className="font-mono">omp</span>, then retry.
                             </p>
                           ) : (
-                            <p className="text-muted-foreground">If login is required, connect the provider above and retry.</p>
+                            <p className="text-ink-3">If login is required, connect the provider above and retry.</p>
                           )}
                         </div>
                       )}
@@ -2830,11 +2830,11 @@ function OnboardingWizardInner({
 
                   {adapterType === "http" && (
                     <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">
+                      <label className="text-xs text-ink-3 mb-1 block">
                         Webhook URL
                       </label>
                       <input
-                        className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm font-mono outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/50"
+                        className="w-full rounded-md border border-line bg-transparent px-3 py-2 text-sm font-mono outline-none focus:ring-1 focus:ring-focus placeholder:text-ink-3/50"
                         placeholder="https://..."
                         value={url}
                         onChange={(e) => setUrl(e.target.value)}
@@ -2856,7 +2856,7 @@ function OnboardingWizardInner({
               {/* Error */}
               {visibleError && (
                 <div className="mt-3">
-                  <p className="text-xs text-destructive">{visibleError}</p>
+                  <p className="text-xs text-bad">{visibleError}</p>
                 </div>
               )}
 

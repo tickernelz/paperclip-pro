@@ -21,6 +21,7 @@ import {
 } from "@/lib/search-filters";
 import { buildSearchFilterOptions, type SearchFilterDataProps } from "./SearchFilterBar";
 import type { FilterMenuOption } from "./SearchFilterMenu";
+import { Chip } from "@/components/ui/chip";
 
 function ChipToggleGroup({
   title,
@@ -36,20 +37,13 @@ function ChipToggleGroup({
   if (options.length === 0) return null;
   return (
     <div className="space-y-1.5">
-      <div className="text-xs font-medium text-muted-foreground">{title}</div>
+      <div className="text-xs font-medium text-ink-3">{title}</div>
       <div className="flex flex-wrap gap-1.5">
         {options.map((option) => {
           const isActive = selected.includes(option.value);
           return (
-            <button
+            <Chip selected={isActive}
               key={option.value}
-              type="button"
-              className={cn(
-                "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs transition-colors",
-                isActive
-                  ? "border-primary bg-primary text-primary-foreground"
-                  : "border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground",
-              )}
               onClick={() => onToggle(option.value)}
             >
               {option.swatch ? (
@@ -57,11 +51,11 @@ function ChipToggleGroup({
               ) : null}
               <span>{option.label}</span>
               {typeof option.count === "number" ? (
-                <span className={cn("tabular-nums", isActive ? "opacity-80" : "text-muted-foreground/70")}>
+                <span className={cn("tabular-nums", isActive ? "opacity-80" : "text-ink-3/70")}>
                   {option.count}
                 </span>
               ) : null}
-            </button>
+            </Chip>
           );
         })}
       </div>
@@ -137,11 +131,11 @@ export function SearchFilterSheet({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="max-h-(--sz-85vh) gap-0 rounded-t-xl p-0" data-testid="search-filter-sheet">
-        <SheetHeader className="flex-row items-center justify-between border-b border-border">
+        <SheetHeader className="flex-row items-center justify-between border-b border-line">
           <SheetTitle className="text-base">Filters</SheetTitle>
           <button
             type="button"
-            className={cn("text-xs text-muted-foreground hover:text-foreground", activeCount === 0 && "invisible")}
+            className={cn("text-xs text-ink-3 hover:text-ink", activeCount === 0 && "invisible")}
             onClick={() => update({})}
           >
             Clear all
@@ -189,30 +183,23 @@ export function SearchFilterSheet({
             onToggle={(value) => toggleSingle("updatedWithin", value)}
           />
           <div className="space-y-1.5">
-            <div className="text-xs font-medium text-muted-foreground">Sort by</div>
+            <div className="text-xs font-medium text-ink-3">Sort by</div>
             <div className="flex flex-wrap gap-1.5">
               {COMPANY_SEARCH_SORTS.map((value) => (
-                <button
+                <Chip selected={value === sort}
                   key={value}
-                  type="button"
-                  className={cn(
-                    "rounded-full border px-2.5 py-1 text-xs transition-colors",
-                    value === sort
-                      ? "border-primary bg-primary text-primary-foreground"
-                      : "border-border text-muted-foreground hover:border-foreground/30 hover:text-foreground",
-                  )}
                   onClick={() => onSortChange(value)}
                 >
                   {SORT_LABELS[value]}
-                </button>
+                </Chip>
               ))}
             </div>
           </div>
         </div>
 
-        <SheetFooter className="flex-row gap-2 border-t border-border">
+        <SheetFooter className="flex-row gap-2 border-t border-line">
           <SheetClose asChild>
-            <Button variant="outline" className="flex-1">
+            <Button variant="secondary" className="flex-1">
               Cancel
             </Button>
           </SheetClose>
@@ -240,11 +227,11 @@ export function SearchFilterSheetTrigger({
   onClick: () => void;
 }) {
   return (
-    <Button variant="outline" size="sm" className="h-8 gap-1.5 text-xs font-normal" onClick={onClick}>
+    <Button variant="secondary" size="sm" className="h-8 gap-1.5 text-xs font-normal" onClick={onClick}>
       <SlidersHorizontal className="h-3.5 w-3.5" />
       Filters
       {activeCount > 0 ? (
-        <span className="ml-0.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-(length:--text-nano) font-semibold tabular-nums text-primary-foreground">
+        <span className="ml-0.5 inline-flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-(length:--text-nano) font-semibold tabular-nums text-accent-ink">
           {activeCount}
         </span>
       ) : null}

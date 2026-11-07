@@ -59,7 +59,7 @@ export function WorkspaceBaseRefRecoveryNotice({
   }
 
   return (
-    <section aria-labelledby={`${id}-title`} className="flex min-w-0 gap-3 rounded-lg border border-border bg-muted/20 p-4" data-testid="workspace-base-ref-recovery">
+    <section aria-labelledby={`${id}-title`} className="flex min-w-0 gap-3 rounded-lg border border-line bg-bg-3/20 p-4" data-testid="workspace-base-ref-recovery">
       {repairedBranch
         ? <Check aria-hidden className="mt-0.5 size-4 shrink-0 text-(--status-task-icon-done)" />
         : <TriangleAlert aria-hidden className="mt-0.5 size-4 shrink-0 text-(--status-task-icon-blocked)" />}
@@ -68,18 +68,18 @@ export function WorkspaceBaseRefRecoveryNotice({
           <h2 id={`${id}-title`} className="break-words text-sm font-semibold">
             {repairedBranch ? "Branch updated · retry requested" : failureKind === "missing_branch" ? <>Branch <code className="font-mono">{requestedRef}</code> was not found</> : <>Couldn’t use branch <code className="font-mono">{requestedRef}</code></>}
           </h2>
-          <p className="text-sm leading-relaxed text-muted-foreground">
+          <p className="text-sm leading-relaxed text-ink-3">
             {repairedBranch
-              ? <>This task now starts from <code className="font-mono text-foreground">{repairedBranch}</code>. A retry has been requested for {agentName}.</>
-              : <><span className="break-all text-foreground">{repository}</span>{failureKind === "missing_branch" ? <> has no branch named <code className="font-mono text-foreground">{requestedRef}</code>.</> : " could not resolve the starting branch. Check the branch name and repository access."} {agentName} hasn’t started.</>}
+              ? <>This task now starts from <code className="font-mono text-ink">{repairedBranch}</code>. A retry has been requested for {agentName}.</>
+              : <><span className="break-all text-ink">{repository}</span>{failureKind === "missing_branch" ? <> has no branch named <code className="font-mono text-ink">{requestedRef}</code>.</> : " could not resolve the starting branch. Check the branch name and repository access."} {agentName} hasn’t started.</>}
           </p>
         </div>
         {!repairedBranch && (
           <>
-            {defaultBranch && !editing && <p className="flex flex-wrap items-center gap-1.5 text-sm"><GitBranch aria-hidden className="size-4 text-muted-foreground" /><code className="font-mono">{defaultBranch}</code><span className="text-muted-foreground">is the repository’s default branch.</span></p>}
-            <p className="text-xs text-muted-foreground">Changes only this task’s starting branch.</p>
-            {unavailableReason && <p id={`${id}-unavailable`} className="text-sm text-muted-foreground">{unavailableReason}</p>}
-            {error && <p role="alert" id={`${id}-error`} className="text-sm text-destructive">Couldn’t confirm the repair. {error}</p>}
+            {defaultBranch && !editing && <p className="flex flex-wrap items-center gap-1.5 text-sm"><GitBranch aria-hidden className="size-4 text-ink-3" /><code className="font-mono">{defaultBranch}</code><span className="text-ink-3">is the repository’s default branch.</span></p>}
+            <p className="text-xs text-ink-3">Changes only this task’s starting branch.</p>
+            {unavailableReason && <p id={`${id}-unavailable`} className="text-sm text-ink-3">{unavailableReason}</p>}
+            {error && <p role="alert" id={`${id}-error`} className="text-sm text-bad">Couldn’t confirm the repair. {error}</p>}
             {editing ? (
               <form className="flex flex-col gap-3" onSubmit={event => { event.preventDefault(); void repair(branch); }}>
                 <div className="flex flex-col gap-1.5">
@@ -104,10 +104,10 @@ export function WorkspaceBaseRefRecoveryNotice({
           </>
         )}
         <div>
-          <Button type="button" variant="ghost" size="xs" className="text-muted-foreground" aria-expanded={details} aria-controls={`${id}-details`} onClick={() => setDetails(value => !value)}>
+          <Button type="button" variant="ghost" size="xs" aria-expanded={details} aria-controls={`${id}-details`} onClick={() => setDetails(value => !value)}>
             {details ? "Hide details" : "Why did this happen?"}<ChevronDown aria-hidden className={cn("size-3", details && "rotate-180")} />
           </Button>
-          {details && <div id={`${id}-details`} className="mt-2 rounded-md border border-border bg-background">
+          {details && <div id={`${id}-details`} className="mt-2 rounded-md border border-line bg-bg">
             <SystemNoticeMetadataSections tone="neutral" sections={[{ rows: [
               { kind: "text", label: "Setting", value: taskOverride ? "Task-specific starting branch" : "Workspace starting branch" },
               { kind: "code", label: "Requested branch", value: requestedRef },

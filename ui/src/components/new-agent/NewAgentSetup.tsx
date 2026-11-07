@@ -73,7 +73,7 @@ export function NewAgentSetup() {
   const [params] = useSearchParams();
   if (!selectedCompanyId)
     return (
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm text-ink-3">
         Select an organization to create an agent.
       </p>
     );
@@ -514,7 +514,7 @@ function Setup({
     return (
       <p
         role={savedAgent.error ? "alert" : "status"}
-        className="text-sm text-muted-foreground"
+        className="text-sm text-ink-3"
       >
         {savedAgent.error
           ? "Could not load the created agent. Return to Agents to view it."
@@ -568,7 +568,7 @@ function Setup({
             muted={!created && testState !== "pass"} />
           <div className="space-y-2">
             <h1 className="text-2xl font-semibold tracking-tight">{name}</h1>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2 text-sm text-ink-3">
               <AdapterMark type={brandType} />
               <span>{getAdapterDisplay(brandType).label}</span>
               {isRunner && !isDot && (
@@ -583,24 +583,24 @@ function Setup({
           </div>
         </header>
         {environmentError && !envs.isPending && (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-sm text-bad">
             {environmentError}
           </p>
         )}
         {setupError && (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-sm text-bad">
             {setupError.message}
           </p>
         )}
         {adapters.data && !available && (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-sm text-bad">
             This adapter is unavailable. Choose an enabled adapter.
           </p>
         )}
         {(managedOnly || forced.forced) &&
           !envs.isPending &&
           !environmentId && (
-            <p role="alert" className="text-sm text-destructive">
+            <p role="alert" className="text-sm text-bad">
               No managed environment is available. Configure an environment
               before continuing.
             </p>
@@ -620,16 +620,16 @@ function Setup({
                     className={cn(
                       "flex w-full items-center gap-3 rounded-md px-3 py-3 text-left text-sm",
                       step === screen
-                        ? "bg-accent font-medium"
-                        : "text-muted-foreground",
+                        ? "bg-bg-3 font-medium"
+                        : "text-ink-3",
                     )}
                   >
                     <span
                       className={cn(
                         "flex size-6 shrink-0 items-center justify-center rounded-full border text-xs",
                         step === screen
-                          ? "border-foreground bg-foreground text-background"
-                          : "border-border",
+                          ? "border-ink bg-ink text-bg"
+                          : "border-line",
                       )}
                     >
                       {index + 1}
@@ -704,11 +704,11 @@ function Setup({
                         resetTest();
                         setScreen("runtime");
                       }}
-                    /> : <p role="status" className="text-sm text-muted-foreground">Loading connection settings…</p>}
+                    /> : <p role="status" className="text-sm text-ink-3">Loading connection settings…</p>}
                   </OnboardingCard>
                 ) : screen === "saved" && created ? (
                   <div className="space-y-6">
-                    <div className="space-y-6 rounded-lg border border-border p-6">
+                    <div className="space-y-6 rounded-lg border border-line p-6">
                       <h2 className="flex items-center gap-3 text-lg font-semibold">
                         <Check className="size-5" />
                         {created.status === "pending_approval"
@@ -716,20 +716,20 @@ function Setup({
                           : isDot ? "Your Dot agent has been created" : "Your agent is ready"}
                       </h2>
                       <dl className="grid grid-cols-2 gap-4 text-sm">
-                        <dt className="text-muted-foreground">Adapter</dt>
+                        <dt className="text-ink-3">Adapter</dt>
                         <dd>{getAdapterDisplay(isDot ? "openai_dot" : adapterType).label}</dd>
                         {showModel && (
                           <>
-                            <dt className="text-muted-foreground">Model</dt>
+                            <dt className="text-ink-3">Model</dt>
                             <dd className="break-all">
                               {String(confirmationModel)}
                             </dd>
                           </>
                         )}
-                        <dt className="text-muted-foreground">Environment</dt>
+                        <dt className="text-ink-3">Environment</dt>
                         <dd>{environmentLabel}</dd>
                       </dl>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-ink-3">
                         {created.status === "pending_approval"
                           ? "An organization administrator must approve this agent before it can work."
                           : isDot ? "Pair your Dot and test event delivery in configuration before assigning work." : "Assign a task when you’re ready for this agent to work."}
@@ -737,7 +737,7 @@ function Setup({
                     </div>
                     <div className="flex flex-wrap justify-between gap-3">
                       <Button
-                        variant="outline"
+                        variant="secondary"
                         onClick={() => navigate(isDot ? "/agents/all" : `${agentUrl(created)}/runtime`)}
                       >
                         <Settings2 className="size-4" />
@@ -769,8 +769,8 @@ function Setup({
                     <fieldset disabled={busy} className="space-y-8">
                       <section className="space-y-5">
                         {isDot && <>
-                          <p className="text-sm text-muted-foreground">Create this agent, then copy its pairing prompt to your Dot.</p>
-                          {experimental.data?.enablePublicMcp !== true && <p className="text-sm text-muted-foreground">Turn on Assistant connections in Settings &gt; Features before pairing.</p>}
+                          <p className="text-sm text-ink-3">Create this agent, then copy its pairing prompt to your Dot.</p>
+                          {experimental.data?.enablePublicMcp !== true && <p className="text-sm text-ink-3">Turn on Assistant connections in Settings &gt; Features before pairing.</p>}
                           <ToggleField label="Allow externally billed provider" hint="Dot does not report token usage or cost. Paperclip cannot enforce a provider spend ceiling; known company and agent budget limits still apply."
                             checked={allowUnmeteredProvider} onChange={value => { setAllowUnmeteredProvider(value); resetTest(); }} />
                         </>}
@@ -778,7 +778,7 @@ function Setup({
                           <AiConnectionField companyId={companyId} agentName={name} adapterType={brandType} model={model} environmentId={environmentId ?? undefined} value={aiBinding}
                             onChange={binding => { binding.mode !== "router" && setRuntimeAiBinding(binding); resetTest(); }} />
                         )}
-                        {(connectionModels ? connectionModels.error : models.error) && <p role="alert" className="text-sm text-destructive">Could not load models. Retry or enter a model ID manually.</p>}
+                        {(connectionModels ? connectionModels.error : models.error) && <p role="alert" className="text-sm text-bad">Could not load models. Retry or enter a model ID manually.</p>}
                         {showModel && (
                           <div className="grid items-start gap-5 sm:grid-cols-2">
                             {showModel && (
@@ -904,7 +904,7 @@ function Setup({
                                 />
                               </Field>
                             </div>
-                            <p className="text-xs text-muted-foreground sm:col-span-2">
+                            <p className="text-xs text-ink-3 sm:col-span-2">
                               New keys are saved as organization secrets when
                               you finish setup.
                               {multiProvider && ` Use a ${provider}/model ID.`}
@@ -948,11 +948,11 @@ function Setup({
                       onTest={() => void runTest()}
                     />
                     {error && testState !== "fail" && (
-                      <p role="alert" className="text-sm text-destructive">
+                      <p role="alert" className="text-sm text-bad">
                         {error}
                       </p>
                     )}
-                    <div className="flex justify-between border-t border-border py-5">
+                    <div className="flex justify-between border-t border-line py-5">
                       {connectionAdapter ? (
                         <Button
                           type="button"

@@ -719,7 +719,7 @@ export function TaskSidePanel({
           variant="ghost"
           size="icon-sm"
           className={cn(
-            "shrink-0 text-muted-foreground hover:text-foreground focus-visible:text-foreground",
+            "shrink-0",
             mobile
               ? "size-(--sz-44px) rounded-md"
               : streamlinedTabs

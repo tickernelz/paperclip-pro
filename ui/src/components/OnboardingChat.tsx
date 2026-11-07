@@ -247,7 +247,7 @@ export function OnboardingChat({
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-8 text-muted-foreground text-sm">
+      <div className="flex items-center justify-center py-8 text-ink-3 text-sm">
         <Loader2 className="h-4 w-4 mr-2 animate-spin" />
         Loading conversation...
       </div>
@@ -283,8 +283,8 @@ export function OnboardingChat({
               className={cn(
                 "rounded-md px-3 py-2 text-sm",
                 isAgent
-                  ? "bg-muted/50 border border-border mr-8"
-                  : "bg-accent/50 border border-accent ml-8",
+                  ? "bg-bg-3/50 border border-line mr-8"
+                  : "bg-bg-3/50 border border-bg-3 ml-8",
               )}
             >
               <div className="flex items-center gap-1.5 mb-1">
@@ -292,8 +292,8 @@ export function OnboardingChat({
                   className={cn(
                     "text-(length:--text-nano) font-medium uppercase tracking-wide",
                     isAgent
-                      ? "text-muted-foreground"
-                      : "text-foreground/70",
+                      ? "text-ink-3"
+                      : "text-ink/70",
                   )}
                 >
                   {isAgent ? agentName : "You"}
@@ -318,7 +318,7 @@ export function OnboardingChat({
 
         {/* Status indicator — shows real heartbeat run status */}
         {showStatus && (
-          <div className="flex items-center justify-between text-sm text-muted-foreground px-3 py-2">
+          <div className="flex items-center justify-between text-sm text-ink-3 px-3 py-2">
             <div className="flex items-center gap-2">
               {hasActiveRun ? (
                 <>
@@ -335,7 +335,7 @@ export function OnboardingChat({
                 </>
               )}
             </div>
-            <span className="text-(length:--text-micro) text-muted-foreground/60 tabular-nums shrink-0">
+            <span className="text-(length:--text-micro) text-ink-3/60 tabular-nums shrink-0">
               {elapsedStr}
             </span>
           </div>
@@ -352,7 +352,7 @@ export function OnboardingChat({
                 <p className="text-sm font-medium">
                   {agentName} has prepared a hiring plan
                 </p>
-                <p className="text-(length:--text-micro) text-muted-foreground">
+                <p className="text-(length:--text-micro) text-ink-3">
                   Review it, make edits, then approve.
                 </p>
               </div>
@@ -366,11 +366,11 @@ export function OnboardingChat({
       )}
 
       {/* Input area */}
-      <div className="flex items-center gap-2 border-t border-border pt-3">
+      <div className="flex items-center gap-2 border-t border-line pt-3">
         <input
           ref={inputRef}
           type="text"
-          className="flex-1 rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/50"
+          className="flex-1 rounded-md border border-line bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-focus placeholder:text-ink-3/50"
           placeholder={detectedPlanCommentId ? `Ask ${agentName} to revise the plan...` : `Message ${agentName}...`}
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -425,9 +425,9 @@ function WelcomeMessage({
     <>
       {/* Message — appears after typing indicator */}
       {showMessage && (
-        <div className="rounded-md px-3 py-2 text-sm bg-muted/50 border border-border mr-8 animate-in fade-in duration-300">
+        <div className="rounded-md px-3 py-2 text-sm bg-bg-3/50 border border-line mr-8 animate-in fade-in duration-300">
           <div className="flex items-center gap-1.5 mb-1">
-            <span className="text-(length:--text-nano) font-medium uppercase tracking-wide text-muted-foreground">
+            <span className="text-(length:--text-nano) font-medium uppercase tracking-wide text-ink-3">
               {agentName}
             </span>
           </div>
@@ -446,18 +446,16 @@ function WelcomeMessage({
       {/* Chips — fade in after message */}
       {showChips && (
         <div className="flex gap-2 ml-auto justify-end animate-in fade-in duration-500">
-          <button
-            className="rounded-full border border-border px-3 py-1 text-xs hover:bg-accent/50 transition-colors text-muted-foreground hover:text-foreground"
+          <Button variant="secondary" size="sm" className="rounded-full"
             onClick={onDiscuss}
           >
             Let's discuss first
-          </button>
-          <button
-            className="rounded-full border border-foreground bg-foreground text-background px-3 py-1 text-xs hover:opacity-90 transition-opacity"
+          </Button>
+          <Button variant="primary" size="sm" className="rounded-full"
             onClick={onStart}
           >
             Yes, get started!
-          </button>
+          </Button>
         </div>
       )}
 
@@ -466,7 +464,7 @@ function WelcomeMessage({
         <div className="flex-1" />
       )}
       {!showMessage && (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground px-3 py-2">
+        <div className="flex items-center gap-2 text-sm text-ink-3 px-3 py-2">
           <span className="relative flex h-2.5 w-2.5 shrink-0">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-blue-500" />

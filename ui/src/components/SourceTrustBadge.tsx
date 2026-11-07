@@ -31,7 +31,7 @@ export function SourceTrustBadge({
           className={cn(
             "inline-flex items-center gap-1 whitespace-nowrap px-1.5 py-0 text-(length:--text-nano) font-medium tracking-normal",
             promoted
-              ? "border-border text-muted-foreground"
+              ? "border-line text-ink-3"
               : "border-amber-500/40 text-amber-700 dark:text-amber-100",
             className,
           )}

@@ -204,7 +204,7 @@ function TaskListExamples({
         <h2 className="text-lg font-semibold">
           Task lists without execution badges
         </h2>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           Execution phases add no badges to the task list. Routine recovery
           stays in the background.
         </p>
@@ -265,7 +265,7 @@ export const NativeChatStatusLabels: Story = {
       <h2 className="text-lg font-semibold">
         Native-runner chat status labels
       </h2>
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm text-ink-3">
         Active transcript headers keep saying Working during automatic recovery.
         Current activity remains visible while the run continues.
       </p>
@@ -289,7 +289,7 @@ export const LegacyChatStatusLabels: Story = {
   render: () => (
     <div className="space-y-4">
       <h2 className="text-lg font-semibold">Legacy chat status labels</h2>
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm text-ink-3">
         Active transcripts keep the Working indicator and elapsed timer during
         automatic recovery, with no recovery panel.
       </p>
@@ -353,7 +353,7 @@ function DashboardLabelExamples() {
     <QueryClientProvider client={client}>
       <div className="space-y-4">
         <h2 className="text-lg font-semibold">Dashboard agent-card labels</h2>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           Active agents say Working during automatic recovery, with no additional
           card or controls.
         </p>

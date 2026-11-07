@@ -36,10 +36,10 @@ export function ZeroResultsRecovery({
       className="mx-auto flex w-full max-w-xl flex-col items-center gap-4 px-4 py-12 text-center"
       data-testid="search-zero-results-recovery"
     >
-      <FilterX className="h-10 w-10 text-muted-foreground" aria-hidden />
+      <FilterX className="h-10 w-10 text-ink-3" aria-hidden />
       <div className="space-y-1">
         <div className="text-base font-semibold">No results with these filters</div>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           {unfilteredTotal === 1 ? "1 result matches" : `${unfilteredTotal} results match`}
           {query ? <> &ldquo;{query}&rdquo;</> : null}, but your{" "}
           {activeCount === 1 ? "active filter hides" : `${activeCount} active filters hide`} all of them.
@@ -48,14 +48,14 @@ export function ZeroResultsRecovery({
 
       {suggestions.length > 0 ? (
         <div className="flex w-full flex-col gap-1.5">
-          <div className="text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
+          <div className="text-(length:--text-micro) font-semibold uppercase tracking-wide text-ink-3">
             Loosen a filter
           </div>
           {suggestions.map((suggestion) => (
             <button
               key={`${suggestion.filter}:${suggestion.values.join(",")}`}
               type="button"
-              className="flex items-center justify-between gap-3 rounded-md border border-border px-3 py-2 text-left text-sm hover:border-foreground/30 hover:bg-accent/40"
+              className="flex items-center justify-between gap-3 rounded-md border border-line px-3 py-2 text-left text-sm hover:border-ink/30 hover:bg-bg-3/40"
               onClick={() => onChange(clearFilterDimension(filters, suggestion.filter))}
             >
               <span className="min-w-0 truncate">
@@ -72,7 +72,7 @@ export function ZeroResultsRecovery({
         </div>
       ) : null}
 
-      <Button onClick={onClearAll} variant="default" size="sm">
+      <Button onClick={onClearAll} variant="primary" size="sm">
         <RotateCcw className="mr-1.5 h-4 w-4" />
         Clear all filters
       </Button>

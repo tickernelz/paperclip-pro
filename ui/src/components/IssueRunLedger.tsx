@@ -131,7 +131,7 @@ const LIVENESS_COPY: Record<RunLivenessState, LivenessCopy> = {
 
 const PENDING_LIVENESS_COPY: LivenessCopy = {
   label: "Checks after finish",
-  tone: "border-border bg-background text-muted-foreground",
+  tone: "border-line bg-bg text-ink-3",
   description: "Liveness is evaluated after the run finishes.",
 };
 
@@ -143,7 +143,7 @@ const RETRY_PENDING_LIVENESS_COPY: LivenessCopy = {
 
 const MISSING_LIVENESS_COPY: LivenessCopy = {
   label: "No liveness data",
-  tone: "border-border bg-background text-muted-foreground",
+  tone: "border-line bg-bg text-ink-3",
   description: "This run has no persisted liveness classification.",
 };
 
@@ -667,10 +667,10 @@ export function IssueRunLedgerContent({
     <section className="space-y-3" aria-label="Task run ledger">
       <div className="flex items-center justify-between gap-2">
         <div className="min-w-0">
-          <h3 className="text-sm font-medium text-muted-foreground">
+          <h3 className="text-sm font-medium text-ink-3">
             Run ledger
           </h3>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             {latestRun
               ? runSummary(latestRun, agentMap)
               : issueStatus === "in_progress"
@@ -681,7 +681,7 @@ export function IssueRunLedgerContent({
         {latestRun ? (
           <Link
             to={`/agents/${latestRun.agentId}/runs/${latestRun.runId}`}
-            className="shrink-0 rounded-md border border-border px-2 py-1 text-xs text-muted-foreground hover:text-foreground"
+            className="shrink-0 rounded-md border border-line px-2 py-1 text-xs text-ink-3 hover:text-ink"
           >
             Latest run
           </Link>
@@ -689,10 +689,10 @@ export function IssueRunLedgerContent({
       </div>
 
       {children.total > 0 ? (
-        <div className="rounded-md border border-border/70 px-3 py-2">
+        <div className="rounded-md border border-line/70 px-3 py-2">
           <div className="flex flex-wrap items-center gap-2 text-xs">
-            <span className="font-medium text-foreground">Child work</span>
-            <span className="text-muted-foreground">
+            <span className="font-medium text-ink">Child work</span>
+            <span className="text-ink-3">
               {children.active.length > 0
                 ? `${children.active.length} active, ${children.done} done, ${children.cancelled} cancelled`
                 : `all ${children.total} terminal (${children.done} done, ${children.cancelled} cancelled)`}
@@ -704,19 +704,19 @@ export function IssueRunLedgerContent({
                 <Link
                   key={child.id}
                   to={`/issues/${child.identifier ?? child.id}`}
-                  className="inline-flex min-w-0 max-w-full items-center gap-1 rounded-md border border-border bg-background px-2 py-1 text-(length:--text-micro) hover:bg-accent/40"
+                  className="inline-flex min-w-0 max-w-full items-center gap-1 rounded-md border border-line bg-bg px-2 py-1 text-(length:--text-micro) hover:bg-bg-3/40"
                 >
-                  <span className="shrink-0 font-mono text-muted-foreground">
+                  <span className="shrink-0 font-mono text-ink-3">
                     {child.identifier ?? child.id.slice(0, 8)}
                   </span>
                   <span className="truncate">{child.title}</span>
-                  <span className="shrink-0 text-muted-foreground">
+                  <span className="shrink-0 text-ink-3">
                     {statusLabel(child.status)}
                   </span>
                 </Link>
               ))}
               {children.active.length > 4 ? (
-                <span className="rounded-md border border-border px-2 py-1 text-(length:--text-micro) text-muted-foreground">
+                <span className="rounded-md border border-line px-2 py-1 text-(length:--text-micro) text-ink-3">
                   +{children.active.length - 4} more
                 </span>
               ) : null}
@@ -767,7 +767,7 @@ export function IssueRunLedgerContent({
             <div className="mt-2 flex flex-wrap gap-1.5">
               <button
                 type="button"
-                className="rounded-md border border-border bg-background/80 px-2 py-1 text-(length:--text-micro) text-foreground hover:bg-background"
+                className="rounded-md border border-line bg-bg/80 px-2 py-1 text-(length:--text-micro) text-ink hover:bg-bg"
                 onClick={() =>
                   onWatchdogDecision({
                     runId: latestSilentRun.runId,
@@ -782,7 +782,7 @@ export function IssueRunLedgerContent({
               </button>
               <button
                 type="button"
-                className="rounded-md border border-border bg-background/80 px-2 py-1 text-(length:--text-micro) text-foreground hover:bg-background"
+                className="rounded-md border border-line bg-bg/80 px-2 py-1 text-(length:--text-micro) text-ink hover:bg-bg"
                 onClick={() =>
                   onWatchdogDecision({
                     runId: latestSilentRun.runId,
@@ -801,7 +801,7 @@ export function IssueRunLedgerContent({
               </button>
               <button
                 type="button"
-                className="rounded-md border border-border bg-background/80 px-2 py-1 text-(length:--text-micro) text-foreground hover:bg-background"
+                className="rounded-md border border-line bg-bg/80 px-2 py-1 text-(length:--text-micro) text-ink hover:bg-bg"
                 onClick={() =>
                   onWatchdogDecision({
                     runId: latestSilentRun.runId,
@@ -826,7 +826,7 @@ export function IssueRunLedgerContent({
       ) : null}
 
       {feedItems.length === 0 ? (
-        <div className="rounded-md border border-dashed border-border px-3 py-3 text-sm text-muted-foreground">
+        <div className="rounded-md border border-dashed border-line px-3 py-3 text-sm text-ink-3">
           {renderActivityEvent
             ? "Runs and activity will appear here once this task has history."
             : "Historical runs without liveness metadata will appear here once linked to this task."}
@@ -861,13 +861,13 @@ export function IssueRunLedgerContent({
             return (
               <article
                 key={`run:${run.runId}`}
-                className="space-y-1.5 rounded-lg border border-border/60 px-3 py-2 text-xs text-muted-foreground"
+                className="space-y-1.5 rounded-lg border border-line/60 px-3 py-2 text-xs text-ink-3"
               >
                 <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="font-medium text-foreground">Run</span>
+                  <span className="font-medium text-ink">Run</span>
                   <Link
                     to={`/agents/${run.agentId}/runs/${run.runId}`}
-                    className="min-w-0 max-w-full truncate font-mono text-foreground hover:underline"
+                    className="min-w-0 max-w-full truncate font-mono text-ink hover:underline"
                   >
                     {run.runId.slice(0, 8)}
                   </Link>
@@ -875,14 +875,14 @@ export function IssueRunLedgerContent({
                   {onBehalfOfLabel ? (
                     <span
                       data-testid="run-on-behalf-of"
-                      className="min-w-0 max-w-full truncate text-muted-foreground"
+                      className="min-w-0 max-w-full truncate text-ink-3"
                       title={`Acting on behalf of ${onBehalfOfLabel}`}
                     >
                       on behalf of{" "}
-                      <span className="text-foreground">{onBehalfOfLabel}</span>
+                      <span className="text-ink">{onBehalfOfLabel}</span>
                     </span>
                   ) : null}
-                  <span className="rounded-md border border-border px-1.5 py-0.5 text-(length:--text-micro) capitalize text-muted-foreground">
+                  <span className="rounded-md border border-line px-1.5 py-0.5 text-(length:--text-micro) capitalize text-ink-3">
                     {statusLabel(run.status)}
                   </span>
                   {run.isLive ? (
@@ -911,7 +911,7 @@ export function IssueRunLedgerContent({
                     </span>
                   ) : null}
                   {continuation ? (
-                    <span className="text-(length:--text-micro) text-muted-foreground">
+                    <span className="text-(length:--text-micro) text-ink-3">
                       {continuation}
                     </span>
                   ) : null}
@@ -942,30 +942,30 @@ export function IssueRunLedgerContent({
                   </span>
                   <button
                     type="button"
-                    className="rounded-md border border-border px-1.5 py-0.5 text-(length:--text-micro) text-foreground hover:bg-accent/40"
+                    className="rounded-md border border-line px-1.5 py-0.5 text-(length:--text-micro) text-ink hover:bg-bg-3/40"
                     onClick={() => setInspectedRun(run)}
                   >
                     Inspect run
                   </button>
                 </div>
 
-                <div className="grid gap-2 text-xs text-muted-foreground sm:grid-cols-3">
+                <div className="grid gap-2 text-xs text-ink-3 sm:grid-cols-3">
                   <div className="min-w-0">
-                    <span className="text-foreground">Elapsed</span>{" "}
+                    <span className="text-ink">Elapsed</span>{" "}
                     {duration ?? "unknown"}
                   </div>
                   <div className="min-w-0">
-                    <span className="text-foreground">Last useful action</span>{" "}
+                    <span className="text-ink">Last useful action</span>{" "}
                     {lastUsefulActionLabel(run)}
                   </div>
                   <div className="min-w-0">
-                    <span className="text-foreground">Stop</span>{" "}
+                    <span className="text-ink">Stop</span>{" "}
                     {stopStatusLabel(run, stopReason)}
                   </div>
                 </div>
 
                 {retryState ? (
-                  <div className="rounded-md border border-border/70 bg-accent/20 px-2 py-2 text-xs leading-5 text-muted-foreground">
+                  <div className="rounded-md border border-line/70 bg-bg-3/20 px-2 py-2 text-xs leading-5 text-ink-3">
                     {retryState.detail ? <p>{retryState.detail}</p> : null}
                     {retryState.secondary ? (
                       <p>{retryState.secondary}</p>
@@ -975,7 +975,7 @@ export function IssueRunLedgerContent({
                         Retry of{" "}
                         <Link
                           to={`/agents/${run.agentId}/runs/${retryState.retryOfRunId}`}
-                          className="font-mono text-foreground hover:underline"
+                          className="font-mono text-ink hover:underline"
                         >
                           {retryState.retryOfRunId.slice(0, 8)}
                         </Link>
@@ -985,7 +985,7 @@ export function IssueRunLedgerContent({
                 ) : null}
 
                 {run.livenessReason ? (
-                  <p className="min-w-0 break-words text-xs leading-5 text-muted-foreground">
+                  <p className="min-w-0 break-words text-xs leading-5 text-ink-3">
                     {run.livenessReason}
                   </p>
                 ) : null}
@@ -1002,11 +1002,11 @@ export function IssueRunLedgerContent({
                 ) : null}
 
                 {run.nextAction ? (
-                  <div className="min-w-0 rounded-md bg-accent/40 px-2 py-1.5 text-xs leading-5">
-                    <span className="font-medium text-foreground">
+                  <div className="min-w-0 rounded-md bg-bg-3/40 px-2 py-1.5 text-xs leading-5">
+                    <span className="font-medium text-ink">
                       Next action:{" "}
                     </span>
-                    <span className="break-words text-muted-foreground">
+                    <span className="break-words text-ink-3">
                       {run.nextAction}
                     </span>
                   </div>
@@ -1015,7 +1015,7 @@ export function IssueRunLedgerContent({
             );
           })}
           {feedItems.length > 20 ? (
-            <div className="px-3 py-2 text-xs text-muted-foreground">
+            <div className="px-3 py-2 text-xs text-ink-3">
               {feedItems.length - 20} older items not shown
             </div>
           ) : null}

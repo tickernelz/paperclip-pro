@@ -25,7 +25,7 @@ export function ExternalAgentPresetPicker({ onSelect, dotDisabledReason }: { onS
       onClick={() => onSelect(preset.id)}
       disabled={preset.id === "dot" && !!dotDisabledReason}
       title={preset.id === "dot" ? dotDisabledReason : undefined}
-      className="flex aspect-square flex-col items-center justify-center gap-3 rounded-lg border border-border bg-card px-3 py-4 text-center transition-colors disabled:opacity-50 hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="flex aspect-square flex-col items-center justify-center gap-3 rounded-lg border border-line bg-bg-2 px-3 py-4 text-center transition-colors disabled:opacity-50 hover:bg-bg-3/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
     >
       <AdapterMark type={preset.adapter} className="size-8" />
       <span className="text-sm font-medium">{preset.name}</span>
@@ -60,19 +60,19 @@ export function DotConnectionChecks({ state }: { state: DotConnectionState }) {
         const active = index === completed && !state.problem;
         const Icon = done ? Check : failed ? CircleAlert : active ? Loader2 : Circle;
         return <li key={check.title} className="flex items-start gap-3" aria-current={active ? "step" : undefined}>
-          <span className={cn("flex size-6 shrink-0 items-center justify-center rounded-full", done ? "bg-accent text-foreground" : failed ? "text-destructive" : "text-muted-foreground")}>
+          <span className={cn("flex size-6 shrink-0 items-center justify-center rounded-full", done ? "bg-bg-3 text-ink" : failed ? "text-bad" : "text-ink-3")}>
             <Icon className={cn("size-4", active && "animate-spin motion-reduce:animate-none")} />
           </span>
           <div className="min-w-0 pt-0.5">
-            <p className={cn("text-sm", done || active || failed ? "font-medium" : "text-muted-foreground")}>
+            <p className={cn("text-sm", done || active || failed ? "font-medium" : "text-ink-3")}>
               {check.title}<span className="sr-only">{done ? ": complete" : failed ? ": needs attention" : active ? ": in progress" : ": waiting"}</span>
             </p>
-            {done && <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{check.description}</p>}
+            {done && <p className="mt-1 text-xs leading-relaxed text-ink-3">{check.description}</p>}
           </div>
         </li>;
       })}
     </ol>
-    <p role={state.problem && state.problem !== "prompt_unavailable" ? "alert" : "status"} aria-live="polite" className={cn("text-sm leading-relaxed", state.problem && state.problem !== "prompt_unavailable" ? "text-destructive" : "text-muted-foreground")}>{message}</p>
+    <p role={state.problem && state.problem !== "prompt_unavailable" ? "alert" : "status"} aria-live="polite" className={cn("text-sm leading-relaxed", state.problem && state.problem !== "prompt_unavailable" ? "text-bad" : "text-ink-3")}>{message}</p>
   </section>;
 }
 
@@ -124,16 +124,16 @@ export function ExternalAgentInviteContent({
           </DialogDescription>
         </div>
       </div>
-      {error && <div role="alert" className="space-y-3 text-sm text-destructive"><p>{error}</p><Button variant="outline" disabled={busy} onClick={onRetry}>Try again</Button></div>}
+      {error && <div role="alert" className="space-y-3 text-sm text-bad"><p>{error}</p><Button variant="secondary" disabled={busy} onClick={onRetry}>Try again</Button></div>}
       {!provider ? <><ExternalAgentPresetPicker onSelect={onSelect} dotDisabledReason={dotDisabledReason} />
-        {dotDisabledReason && <p className="text-sm text-muted-foreground">{dotDisabledReason}</p>}</>
-        : approvalHref ? <p className="text-sm text-muted-foreground">An organization admin needs to approve this agent before Dot can connect. This page will update after approval.</p>
-        : busy && !prompt && connection.phase === "waiting" ? <p role="status" className="text-sm text-muted-foreground">Preparing your invitation…</p> : dot ? <>
+        {dotDisabledReason && <p className="text-sm text-ink-3">{dotDisabledReason}</p>}</>
+        : approvalHref ? <p className="text-sm text-ink-3">An organization admin needs to approve this agent before Dot can connect. This page will update after approval.</p>
+        : busy && !prompt && connection.phase === "waiting" ? <p role="status" className="text-sm text-ink-3">Preparing your invitation…</p> : dot ? <>
         <div className="border-t pt-6"><DotConnectionChecks state={connection} />
-          {connection.phase === "waiting" && <p className="mt-4 text-xs text-muted-foreground">Dot uses your OpenAI account. Provider usage and cost aren’t reported to Paperclip.</p>}</div>
-        {connection.problem === "event_timeout" && <Button variant="outline" disabled={busy} onClick={onRetry}>Retry test event</Button>}
-        {connection.problem === "offline" && <Button variant="outline" disabled={busy} onClick={onRetry}>Reconnect updates</Button>}
-      </> : <p className="text-sm leading-relaxed text-muted-foreground">The invitation includes everything your agent needs to join {companyName}. You can review its request before granting access.</p>}
+          {connection.phase === "waiting" && <p className="mt-4 text-xs text-ink-3">Dot uses your OpenAI account. Provider usage and cost aren’t reported to Paperclip.</p>}</div>
+        {connection.problem === "event_timeout" && <Button variant="secondary" disabled={busy} onClick={onRetry}>Retry test event</Button>}
+        {connection.problem === "offline" && <Button variant="secondary" disabled={busy} onClick={onRetry}>Reconnect updates</Button>}
+      </> : <p className="text-sm leading-relaxed text-ink-3">The invitation includes everything your agent needs to join {companyName}. You can review its request before granting access.</p>}
     </div>
     <div className="flex items-center justify-between gap-3 border-t px-6 py-4 sm:px-8">
       <Button variant="ghost" onClick={provider ? onBack : onClose}>

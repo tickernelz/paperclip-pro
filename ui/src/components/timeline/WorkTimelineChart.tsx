@@ -189,8 +189,8 @@ function ActorGlyph({
       x={cx - size / 2} y={cy - size / 2} width={size} height={size} preserveAspectRatio="xMidYMid meet" />;
   }
 
-  const stroke = "var(--color-foreground)";
-  const fill = actor.type === "system" ? "var(--color-muted)" : "var(--color-card)";
+  const stroke = "var(--color-ink)";
+  const fill = actor.type === "system" ? "var(--color-bg-3)" : "var(--color-bg-2)";
   const label = shortLabel(actor.name);
 
   if (actor.type === "user" && actor.avatar) {
@@ -491,8 +491,8 @@ export function WorkTimelineChart({
           >
             <defs>
               <linearGradient id="tl-fade" x1="0" y1="0" x2="1" y2="0">
-                <stop offset="0%" stopColor="var(--color-foreground)" stopOpacity={0.28} />
-                <stop offset="100%" stopColor="var(--color-foreground)" stopOpacity={0} />
+                <stop offset="0%" stopColor="var(--color-ink)" stopOpacity={0.28} />
+                <stop offset="100%" stopColor="var(--color-ink)" stopOpacity={0} />
               </linearGradient>
             </defs>
 
@@ -504,7 +504,7 @@ export function WorkTimelineChart({
                 y={row.y + AXIS_H}
                 width={layout.width}
                 height={row.h}
-                fill={i % 2 ? "var(--color-muted)" : "transparent"}
+                fill={i % 2 ? "var(--color-bg-3)" : "transparent"}
                 opacity={i % 2 ? 0.35 : 1}
               />
             ))}
@@ -514,7 +514,7 @@ export function WorkTimelineChart({
               const gx = layout.gutter + ((ms - layout.fromMs) / 60000) * layout.pxPerMinute;
               return (
                 <g key={`tick-${ms}`}>
-                  <line x1={gx} y1={AXIS_H} x2={gx} y2={layout.height} stroke="var(--color-border)" strokeWidth={1} />
+                  <line x1={gx} y1={AXIS_H} x2={gx} y2={layout.height} stroke="var(--color-line)" strokeWidth={1} />
                 </g>
               );
             })}
@@ -534,8 +534,8 @@ export function WorkTimelineChart({
           )}
 
           {/* gutter divider + axis baseline */}
-          <line x1={layout.gutter} y1={0} x2={layout.gutter} y2={layout.height} stroke="var(--color-foreground)" strokeWidth={1.5} />
-          <line x1={0} y1={AXIS_H} x2={layout.width} y2={AXIS_H} stroke="var(--color-foreground)" strokeWidth={1.5} />
+          <line x1={layout.gutter} y1={0} x2={layout.gutter} y2={layout.height} stroke="var(--color-ink)" strokeWidth={1.5} />
+          <line x1={0} y1={AXIS_H} x2={layout.width} y2={AXIS_H} stroke="var(--color-ink)" strokeWidth={1.5} />
 
           {/* connectors (behind bars): hover reveals the connected handoff graph. */}
           {visibleConnectors.map((c, i) => {
@@ -550,12 +550,12 @@ export function WorkTimelineChart({
                 <path
                   d={`M${c.x1},${y1} V${y2} H${c.x2}`}
                   fill="none"
-                  stroke="var(--color-foreground)"
+                  stroke="var(--color-ink)"
                   strokeWidth={2.2}
                   strokeDasharray={c.dashed ? "5 4" : undefined}
                 />
-                <circle cx={c.x1} cy={y1} r={3.2} fill="var(--color-foreground)" />
-                <path d={arrow} fill="var(--color-foreground)" />
+                <circle cx={c.x1} cy={y1} r={3.2} fill="var(--color-ink)" />
+                <path d={arrow} fill="var(--color-ink)" />
               </g>
             );
           })}
@@ -567,7 +567,7 @@ export function WorkTimelineChart({
             return (
               <g key={`row-${row.actor.id}`}>
                 <ActorGlyph actor={row.actor} cx={26} cy={cy} r={AVATAR_R} clipId={actorGlyphId} />
-                <text x={26 + AVATAR_R + 10} y={cy + 4} fontSize={13} fill="var(--color-foreground)">
+                <text x={26 + AVATAR_R + 10} y={cy + 4} fontSize={13} fill="var(--color-ink)">
                   {truncate(row.actor.name, 18)}
                 </text>
 
@@ -580,7 +580,7 @@ export function WorkTimelineChart({
                       y1={ly}
                       x2={layout.width - 8}
                       y2={ly}
-                      stroke="var(--color-border)"
+                      stroke="var(--color-line)"
                       strokeWidth={1}
                       strokeDasharray="2 4"
                       opacity={0.6}
@@ -627,7 +627,7 @@ export function WorkTimelineChart({
                           height={bar.height}
                           rx={3}
                           fill={cancelled ? "transparent" : color}
-                          stroke={cancelled ? TIMELINE_COLORS.cancelled : "var(--color-foreground)"}
+                          stroke={cancelled ? TIMELINE_COLORS.cancelled : "var(--color-ink)"}
                           strokeWidth={1.5}
                           strokeDasharray={cancelled ? "4 3" : undefined}
                           opacity={barOpacity}
@@ -662,9 +662,9 @@ export function WorkTimelineChart({
               y={AXIS_H}
               width={Math.abs(dragSelection.currentX - dragSelection.anchorX)}
               height={layout.height - AXIS_H}
-              fill="var(--color-primary)"
+              fill="var(--color-accent)"
               opacity={0.16}
-              stroke="var(--color-primary)"
+              stroke="var(--color-accent)"
               strokeWidth={1.5}
               pointerEvents="none"
             />
@@ -696,9 +696,9 @@ function ActorGutter({ rows, height }: { rows: ReturnType<typeof computeLayout>[
       width={GEOM.gutter}
       height={height}
       viewBox={`0 0 ${GEOM.gutter} ${height}`}
-      className="sticky left-0 z-20 block bg-card"
+      className="sticky left-0 z-20 block bg-bg-2"
     >
-      <rect x={0} y={0} width={GEOM.gutter} height={height} fill="var(--color-card)" />
+      <rect x={0} y={0} width={GEOM.gutter} height={height} fill="var(--color-bg-2)" />
       {rows.map((row, i) => {
         const cy = row.y + AXIS_H + row.h / 2;
         const actorGlyphId = svgFragmentId(`gutter-${row.actor.id}`);
@@ -709,18 +709,18 @@ function ActorGutter({ rows, height }: { rows: ReturnType<typeof computeLayout>[
               y={row.y + AXIS_H}
               width={GEOM.gutter}
               height={row.h}
-              fill={i % 2 ? "var(--color-muted)" : "var(--color-card)"}
+              fill={i % 2 ? "var(--color-bg-3)" : "var(--color-bg-2)"}
               opacity={i % 2 ? 0.35 : 1}
             />
             <ActorGlyph actor={row.actor} cx={26} cy={cy} r={AVATAR_R} clipId={actorGlyphId} />
-            <text x={26 + AVATAR_R + 10} y={cy + 4} fontSize={13} fill="var(--color-foreground)">
+            <text x={26 + AVATAR_R + 10} y={cy + 4} fontSize={13} fill="var(--color-ink)">
               {truncate(row.actor.name, 16)}
             </text>
           </g>
         );
       })}
-      <line x1={GEOM.gutter} y1={0} x2={GEOM.gutter} y2={height} stroke="var(--color-foreground)" strokeWidth={1.5} />
-      <line x1={0} y1={AXIS_H} x2={GEOM.gutter} y2={AXIS_H} stroke="var(--color-foreground)" strokeWidth={1.5} />
+      <line x1={GEOM.gutter} y1={0} x2={GEOM.gutter} y2={height} stroke="var(--color-ink)" strokeWidth={1.5} />
+      <line x1={0} y1={AXIS_H} x2={GEOM.gutter} y2={AXIS_H} stroke="var(--color-ink)" strokeWidth={1.5} />
     </svg>
   );
 }
@@ -740,7 +740,7 @@ function TimeAxisOverlay({
     <div
       aria-hidden="true"
       data-testid="work-timeline-time-axis"
-      className="pointer-events-none absolute left-0 right-0 top-0 z-30 overflow-hidden bg-card"
+      className="pointer-events-none absolute left-0 right-0 top-0 z-30 overflow-hidden bg-bg-2"
       style={{ height: AXIS_H }}
     >
       <svg
@@ -750,29 +750,29 @@ function TimeAxisOverlay({
         className="block"
         style={{ transform: `translateX(${-scrollLeft}px)` }}
       >
-        <rect x={0} y={0} width={layout.width} height={AXIS_H} fill="var(--color-card)" />
+        <rect x={0} y={0} width={layout.width} height={AXIS_H} fill="var(--color-bg-2)" />
         {ticks.map((ms) => {
           const gx = layout.gutter + ((ms - layout.fromMs) / 60000) * layout.pxPerMinute;
           return (
             <g key={`axis-tick-${ms}`}>
-              <line x1={gx} y1={AXIS_H - 7} x2={gx} y2={AXIS_H} stroke="var(--color-border)" strokeWidth={1} />
-              <text x={gx + 3} y={19} fontSize={11} fill="var(--color-muted-foreground)">
+              <line x1={gx} y1={AXIS_H - 7} x2={gx} y2={AXIS_H} stroke="var(--color-line)" strokeWidth={1} />
+              <text x={gx + 3} y={19} fontSize={11} fill="var(--color-ink-3)">
                 {fmtTick(ms, stepMs)}
               </text>
             </g>
           );
         })}
-        <line x1={0} y1={AXIS_H} x2={layout.width} y2={AXIS_H} stroke="var(--color-foreground)" strokeWidth={1.5} />
+        <line x1={0} y1={AXIS_H} x2={layout.width} y2={AXIS_H} stroke="var(--color-ink)" strokeWidth={1.5} />
       </svg>
       <svg
         width={layout.gutter}
         height={AXIS_H}
         viewBox={`0 0 ${layout.gutter} ${AXIS_H}`}
-        className="absolute left-0 top-0 block bg-card"
+        className="absolute left-0 top-0 block bg-bg-2"
       >
-        <rect x={0} y={0} width={layout.gutter} height={AXIS_H} fill="var(--color-card)" />
-        <line x1={layout.gutter} y1={0} x2={layout.gutter} y2={AXIS_H} stroke="var(--color-foreground)" strokeWidth={1.5} />
-        <line x1={0} y1={AXIS_H} x2={layout.gutter} y2={AXIS_H} stroke="var(--color-foreground)" strokeWidth={1.5} />
+        <rect x={0} y={0} width={layout.gutter} height={AXIS_H} fill="var(--color-bg-2)" />
+        <line x1={layout.gutter} y1={0} x2={layout.gutter} y2={AXIS_H} stroke="var(--color-ink)" strokeWidth={1.5} />
+        <line x1={0} y1={AXIS_H} x2={layout.gutter} y2={AXIS_H} stroke="var(--color-ink)" strokeWidth={1.5} />
       </svg>
     </div>
   );
@@ -787,22 +787,22 @@ function Tooltip({ tooltip, now }: { tooltip: TooltipState; now: number }) {
   return (
     <div
       // design-allow(card-pattern): floating cursor-follow chart tooltip, not a content card (C5a Run 3)
-      className="pointer-events-none fixed z-50 max-w-(--sz-280px) rounded-md border border-foreground bg-card px-2.5 py-2 text-xs shadow-md"
+      className="pointer-events-none fixed z-50 max-w-(--sz-280px) rounded-md border border-ink bg-bg-2 px-2.5 py-2 text-xs shadow-md"
       style={{ left, top: tooltip.y + 14 }}
     >
-      <div className="text-(length:--text-compact) font-medium text-foreground">{truncate(title)}</div>
-      <div className="mt-0.5 text-muted-foreground">
+      <div className="text-(length:--text-compact) font-medium text-ink">{truncate(title)}</div>
+      <div className="mt-0.5 text-ink-3">
         {fmtClock(startMs)}–{bar.span.end ? fmtClock(endMs) : "now"} · {formatDuration(startMs, endMs)} ·{" "}
-        <span className="font-medium text-foreground">{bar.span.status}</span>
+        <span className="font-medium text-ink">{bar.span.status}</span>
       </div>
       {bar.kickoff && (
-        <div className="text-muted-foreground">
+        <div className="text-ink-3">
           kicked off by: {(bar.kickoff as WorkTimelineActor).name}
           {bar.span.retryOfRunId ? " · retry" : ""}
         </div>
       )}
       {tooltip.connectorHint && (
-        <div className="text-muted-foreground">{tooltip.connectorHint}</div>
+        <div className="text-ink-3">{tooltip.connectorHint}</div>
       )}
     </div>
   );
@@ -897,7 +897,7 @@ function MiniMap({
   };
 
   return (
-    <div className="mt-2 border-t border-border bg-card px-3.5 py-2">
+    <div className="mt-2 border-t border-line bg-bg-2 px-3.5 py-2">
       <svg
         width={W}
         height={H}
@@ -910,7 +910,7 @@ function MiniMap({
           setDocumentDrag(move, () => {});
         }}
       >
-        <rect x={0} y={0} width={W} height={H} fill="var(--color-card)" stroke="var(--color-foreground)" strokeWidth={1.5} />
+        <rect x={0} y={0} width={W} height={H} fill="var(--color-bg-2)" stroke="var(--color-ink)" strokeWidth={1.5} />
         {layout.rows.flatMap((row) =>
           row.bars.map((bar) => {
             const startMs = new Date(bar.span.start).getTime();
@@ -934,9 +934,9 @@ function MiniMap({
           y={1}
           width={brushW}
           height={H - 2}
-          fill="var(--color-foreground)"
+          fill="var(--color-ink)"
           opacity={0.12}
-          stroke="var(--color-foreground)"
+          stroke="var(--color-ink)"
           strokeWidth={1.5}
           onMouseDown={(e) => startRangeDrag("move", e)}
         />
@@ -995,12 +995,12 @@ function MiniMapHandle({
         width={width}
         height={height}
         rx={3}
-        fill="var(--color-foreground)"
+        fill="var(--color-ink)"
         opacity={0.16}
       />
-      <line x1={x - 3} y1={gripTop} x2={x - 3} y2={gripTop + 14} stroke="var(--color-foreground)" strokeWidth={1.5} opacity={0.85} />
-      <line x1={x} y1={gripTop} x2={x} y2={gripTop + 14} stroke="var(--color-foreground)" strokeWidth={1.5} opacity={0.85} />
-      <line x1={x + 3} y1={gripTop} x2={x + 3} y2={gripTop + 14} stroke="var(--color-foreground)" strokeWidth={1.5} opacity={0.85} />
+      <line x1={x - 3} y1={gripTop} x2={x - 3} y2={gripTop + 14} stroke="var(--color-ink)" strokeWidth={1.5} opacity={0.85} />
+      <line x1={x} y1={gripTop} x2={x} y2={gripTop + 14} stroke="var(--color-ink)" strokeWidth={1.5} opacity={0.85} />
+      <line x1={x + 3} y1={gripTop} x2={x + 3} y2={gripTop + 14} stroke="var(--color-ink)" strokeWidth={1.5} opacity={0.85} />
     </g>
   );
 }

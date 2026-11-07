@@ -31,6 +31,7 @@ import {
 import { formatDuration, TIMELINE_COLORS } from "@/lib/timeline/layout";
 import { cn } from "@/lib/utils";
 import { useLocation } from "@/lib/router";
+import { SegmentedItem } from "@/components/ui/segmented";
 
 type RangePreset = "today" | "7d" | "30d" | "custom";
 const TIMELINE_PAGE_LIMIT = 500;
@@ -220,23 +221,14 @@ function Segmented<T extends string>({
   onChange: (v: T) => void;
 }) {
   return (
-    <div className="inline-flex overflow-hidden rounded-md border border-border">
-      {options.map((opt, i) => (
-        <button
+    <div role="group" className="inline-flex items-center gap-0.5 rounded-md border border-line-strong bg-bg-2 p-0.5">
+      {options.map((opt) => (
+        <SegmentedItem selected={value === opt.value}
           key={opt.value}
-          type="button"
           onClick={() => onChange(opt.value)}
-          aria-pressed={value === opt.value}
-          className={cn(
-            "px-3 py-1.5 text-xs transition-colors",
-            i > 0 && "border-l border-border",
-            value === opt.value
-              ? "bg-primary text-primary-foreground"
-              : "bg-card text-foreground hover:bg-muted",
-          )}
         >
           {opt.label}
-        </button>
+        </SegmentedItem>
       ))}
     </div>
   );
@@ -245,7 +237,7 @@ function Segmented<T extends string>({
 /** Encoding key for the "Signal" timeline: colour = how each run started. */
 function TimelineLegend() {
   return (
-    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-border px-3.5 py-2 text-xs text-muted-foreground">
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-line px-3.5 py-2 text-xs text-ink-3">
       <span className="flex items-center gap-1.5">
         <span className="h-2.5 w-4 rounded-sm" style={{ backgroundColor: TIMELINE_COLORS.delegated }} />
         Delegated
@@ -286,16 +278,16 @@ function TimelineSummaryStats({
   ];
 
   return (
-    <dl className="grid flex-1 grid-cols-2 gap-3 border-y border-border py-3 md:grid-cols-4">
+    <dl className="grid flex-1 grid-cols-2 gap-3 border-y border-line py-3 md:grid-cols-4">
       {stats.map((stat) => {
         const Icon = stat.icon;
         return (
           <div key={stat.label} className="min-w-0">
-            <dt className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <dt className="flex items-center gap-1.5 text-xs text-ink-3">
               <Icon className="h-3.5 w-3.5 shrink-0" />
               <span>{stat.label}</span>
             </dt>
-            <dd className="mt-1 truncate text-lg font-semibold tabular-nums text-foreground">{stat.value}</dd>
+            <dd className="mt-1 truncate text-lg font-semibold tabular-nums text-ink">{stat.value}</dd>
           </div>
         );
       })}
@@ -367,7 +359,7 @@ export function Timeline({ embedded = false }: { embedded?: boolean } = {}) {
 
   const header = (
     <div className="flex items-center gap-2">
-      <GanttChartSquare className="h-6 w-6 text-muted-foreground" />
+      <GanttChartSquare className="h-6 w-6 text-ink-3" />
       <h1 className="text-3xl font-semibold tracking-tight">
         {scopedProjectId ? "Project Timeline" : "Work Timeline"}
       </h1>
@@ -394,7 +386,7 @@ export function Timeline({ embedded = false }: { embedded?: boolean } = {}) {
   const summary = data ? timelineSummary(data, visibleWindow ?? dataWindow(data)) : null;
 
   const rangeControls = (
-    <label className="flex min-w-0 flex-wrap items-center gap-2 text-xs text-muted-foreground">
+    <label className="flex min-w-0 flex-wrap items-center gap-2 text-xs text-ink-3">
       Range
       <Segmented
         value={rangePreset}
@@ -439,7 +431,7 @@ export function Timeline({ embedded = false }: { embedded?: boolean } = {}) {
       <div className="ml-auto flex items-center gap-1 pt-3" aria-label="Timeline zoom controls">
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           size="icon-xs"
           onClick={() => adjustZoom(0.8)}
           aria-label="Zoom out"
@@ -449,7 +441,7 @@ export function Timeline({ embedded = false }: { embedded?: boolean } = {}) {
         </Button>
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           size="icon-xs"
           onClick={() => adjustZoom(1.25)}
           aria-label="Zoom in"
@@ -459,7 +451,7 @@ export function Timeline({ embedded = false }: { embedded?: boolean } = {}) {
         </Button>
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           size="icon-xs"
           onClick={resetZoom}
           aria-label="Reset zoom"
@@ -526,7 +518,7 @@ export function Timeline({ embedded = false }: { embedded?: boolean } = {}) {
               />
             </Card>
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-ink-3">
                 {data.spans.length} run{data.spans.length === 1 ? "" : "s"} ·{" "}
                 {new Date(data.window.from).toLocaleString()} to {new Date(data.window.to).toLocaleString()}
                 {data.window.capped ? " · window capped" : ""}

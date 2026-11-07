@@ -72,9 +72,9 @@ function ProviderNamesHarness({ agentId, model }: { agentId: string; model?: str
   }, [model, set]);
   if (!seeded) return null;
   return (
-    <div className="flex min-h-screen items-end justify-center bg-background p-8 text-foreground">
-      <div className="w-full max-w-xl rounded-xl border border-border bg-card p-3 shadow-sm">
-        <p className="min-h-16 text-sm text-muted-foreground">Message {assignee.slice(6)}…</p>
+    <div className="flex min-h-screen items-end justify-center bg-bg p-8 text-ink">
+      <div className="w-full max-w-xl rounded-xl border border-line bg-bg-2 p-3 shadow-sm">
+        <p className="min-h-16 text-sm text-ink-3">Message {assignee.slice(6)}…</p>
         <div className="flex items-center justify-end">
           <ComposerRunSettingsPicker
             companyId="storybook"

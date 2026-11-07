@@ -179,7 +179,7 @@ function CheckNowButton({
   return (
     <Button
       type="button"
-      variant="outline"
+      variant="secondary"
       size="sm"
       className="shrink-0 shadow-none"
       onClick={onCheckNow}
@@ -218,10 +218,10 @@ function CancelMonitorButton({ onCancel }: { onCancel: () => Promise<unknown> })
           <AlertDialogTitle>Cancel monitor?</AlertDialogTitle>
           <AlertDialogDescription>This removes the scheduled monitor check. The agent will no longer resume from this monitor. You can send a message to continue the task.</AlertDialogDescription>
         </AlertDialogHeader>
-        {error ? <p role="alert" className="text-sm text-destructive">{error}</p> : null}
+        {error ? <p role="alert" className="text-sm text-bad">{error}</p> : null}
         <AlertDialogFooter>
           <AlertDialogCancel disabled={pending}>Keep monitor</AlertDialogCancel>
-          <Button type="button" variant="destructive" disabled={pending} onClick={() => void cancel()}>{pending ? "Cancelling…" : "Cancel monitor"}</Button>
+          <Button type="button" variant="danger" disabled={pending} onClick={() => void cancel()}>{pending ? "Cancelling…" : "Cancel monitor"}</Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
@@ -295,27 +295,27 @@ export function IssueMonitorComposerStrip({
     <div
       role="note"
       data-testid="issue-monitor-composer-strip"
-      className={cn("rounded-lg border border-border bg-muted/30 px-3 py-2", className)}
+      className={cn("rounded-lg border border-line bg-bg-3/30 px-3 py-2", className)}
     >
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-start gap-2">
-          <Clock className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+          <Clock className="mt-0.5 h-4 w-4 shrink-0 text-ink-3" aria-hidden="true" />
           <div className="flex min-w-0 flex-col gap-2">
-            <div className="text-sm font-medium text-foreground">{copy.stripTitle}</div>
+            <div className="text-sm font-medium text-ink">{copy.stripTitle}</div>
             {copy.pullRequestReview ? <IssuePullRequestLinks products={reviews} /> : null}
-            <div className="text-xs text-muted-foreground">{copy.stripMeta.join(" · ")}</div>
+            <div className="text-xs text-ink-3">{copy.stripMeta.join(" · ")}</div>
           </div>
         </div>
         {onCheckNow && !copy.workspaceWait ? <CheckNowButton onCheckNow={onCheckNow} checkingNow={checkingNow} reviewRequested={copy.pullRequestReview} /> : null}
       </div>
-      <p className="mt-1.5 text-xs text-muted-foreground">
+      <p className="mt-1.5 text-xs text-ink-3">
         {copy.pullRequestReview
           ? "Review on GitHub, then check status to have the agent verify the result."
           : copy.workspaceWait
           ? "You can keep sending instructions while the agent waits."
           : "Sending a reply wakes the agent now — before the scheduled check."}
       </p>
-      {checkError ? <p role="alert" className="text-sm text-destructive">{checkError}</p> : null}
+      {checkError ? <p role="alert" className="text-sm text-bad">{checkError}</p> : null}
     </div>
   );
 }

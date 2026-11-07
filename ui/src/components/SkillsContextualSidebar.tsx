@@ -28,7 +28,7 @@ export function SkillsContextualSidebar() {
       icon={Library}
       fallbackTo="/dashboard"
       showHeader={false}
-      className="border-r border-border bg-background"
+      className="border-r border-line bg-bg"
     >
       <nav
         aria-label="Skills"

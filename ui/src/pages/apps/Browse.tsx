@@ -864,7 +864,7 @@ export function Browse({ renderAccountDetails = (connection) => connection.conne
 
   if (!selectedCompanyId) {
     return (
-      <div className="p-6 text-sm text-muted-foreground">
+      <div className="p-6 text-sm text-ink-3">
         Select an organization to manage connectors.
       </div>
     );
@@ -886,7 +886,7 @@ export function Browse({ renderAccountDetails = (connection) => connection.conne
     <div ref={catalogTop} className="max-w-5xl space-y-5 pb-12">
       <header className="flex flex-col items-start gap-3">
         <div className="relative w-full max-w-md">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-3" />
           <Input
             type="search"
             value={query}
@@ -901,7 +901,7 @@ export function Browse({ renderAccountDetails = (connection) => connection.conne
 
       {loadFailed ? (
         <div
-          className="flex flex-wrap items-center gap-3 rounded-lg border border-destructive/40 bg-destructive/5 px-4 py-3 text-sm text-destructive"
+          className="flex flex-wrap items-center gap-3 rounded-lg border border-bad/40 bg-bad/5 px-4 py-3 text-sm text-bad"
           role="alert"
         >
           <AlertTriangle className="h-4 w-4 shrink-0" />
@@ -912,7 +912,7 @@ export function Browse({ renderAccountDetails = (connection) => connection.conne
           <Button
             type="button"
             size="sm"
-            variant="outline"
+            variant="secondary"
             onClick={() => {
               void galleryQuery.refetch();
               void applicationsQuery.refetch();
@@ -925,7 +925,7 @@ export function Browse({ renderAccountDetails = (connection) => connection.conne
         </div>
       ) : null}
 
-      {refreshAggregator.isError ? <p role="alert" className="text-sm text-destructive">Couldn’t refresh the gateway. Last known accounts are shown.</p> : null}
+      {refreshAggregator.isError ? <p role="alert" className="text-sm text-bad">Couldn’t refresh the gateway. Last known accounts are shown.</p> : null}
 
       {loading ? (
         <div className="space-y-3" aria-label="Loading connectors">
@@ -934,9 +934,9 @@ export function Browse({ renderAccountDetails = (connection) => connection.conne
           ))}
         </div>
       ) : nothingMatches ? (
-        <div className="flex flex-col items-start gap-3 rounded-xl border border-dashed border-border bg-card px-4 py-6 text-sm text-muted-foreground">
+        <div className="flex flex-col items-start gap-3 rounded-xl border border-dashed border-line bg-bg-2 px-4 py-6 text-sm text-ink-3">
           <p className="flex items-center gap-2"><Link2 className="h-4 w-4" />No connectors match “{query.trim()}”.</p>
-          <Button variant="outline" size="sm" onClick={() => changeQuery("")}>Clear search</Button>
+          <Button variant="secondary" size="sm" onClick={() => changeQuery("")}>Clear search</Button>
         </div>
       ) : (
         <div className="space-y-3" role="list" aria-label="Connector list">
@@ -969,14 +969,14 @@ export function Browse({ renderAccountDetails = (connection) => connection.conne
         </div>
       )}
 
-      {accountLoadErrors.length ? <p role="alert" className="text-sm text-destructive">Couldn’t load {Array.from(new Set(accountLoadErrors)).join(" or ")} accounts. Use Refresh in the connection’s menu to try again.</p> : null}
+      {accountLoadErrors.length ? <p role="alert" className="text-sm text-bad">Couldn’t load {Array.from(new Set(accountLoadErrors)).join(" or ")} accounts. Use Refresh in the connection’s menu to try again.</p> : null}
 
       {!loading && catalogRows.length > 0 ? <nav aria-label="Connector catalog pages" className="flex flex-wrap items-center justify-between gap-3 text-sm">
-        <p className="text-muted-foreground" role="status">{pageStart + 1}–{Math.min(pageStart + CATALOG_PAGE_SIZE, catalogRows.length)} of {catalogRows.length.toLocaleString()} connectors</p>
+        <p className="text-ink-3" role="status">{pageStart + 1}–{Math.min(pageStart + CATALOG_PAGE_SIZE, catalogRows.length)} of {catalogRows.length.toLocaleString()} connectors</p>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" disabled={currentPage === 1} onClick={() => { setPage(currentPage - 1); catalogTop.current?.scrollIntoView?.({ block: "start" }); }}>Previous</Button>
-          <span className="text-xs text-muted-foreground">Page {currentPage} of {pageCount}</span>
-          <Button variant="outline" size="sm" disabled={currentPage === pageCount} onClick={() => { setPage(currentPage + 1); catalogTop.current?.scrollIntoView?.({ block: "start" }); }}>Next</Button>
+          <Button variant="secondary" size="sm" disabled={currentPage === 1} onClick={() => { setPage(currentPage - 1); catalogTop.current?.scrollIntoView?.({ block: "start" }); }}>Previous</Button>
+          <span className="text-xs text-ink-3">Page {currentPage} of {pageCount}</span>
+          <Button variant="secondary" size="sm" disabled={currentPage === pageCount} onClick={() => { setPage(currentPage + 1); catalogTop.current?.scrollIntoView?.({ block: "start" }); }}>Next</Button>
         </div>
       </nav> : null}
 
@@ -1011,7 +1011,7 @@ export function Browse({ renderAccountDetails = (connection) => connection.conne
                   : "The saved credentials are deleted and agents lose access immediately. Connecting it again later requires a new sign-in or key."}
             </AlertDialogDescription>
           </AlertDialogHeader>
-          {removeConnection.isError ? <p role="alert" className="text-sm text-destructive">
+          {removeConnection.isError ? <p role="alert" className="text-sm text-bad">
             {removeConnection.error instanceof Error ? removeConnection.error.message : "Couldn’t remove the connection. Please try again."}
           </p> : null}
           <AlertDialogFooter className="sm:justify-between">
@@ -1019,7 +1019,7 @@ export function Browse({ renderAccountDetails = (connection) => connection.conne
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-bad text-accent-ink hover:bg-bad/90"
               disabled={!connectionToRemove || removeConnection.isPending}
               onClick={(event) => {
                 event.preventDefault();
@@ -1101,7 +1101,7 @@ export function ConnectorCard({
           ? "true"
           : "false"
       }
-      className="overflow-hidden rounded-xl border border-border"
+      className="overflow-hidden rounded-xl border border-line"
     >
       <div className="flex flex-wrap items-center gap-3 px-4 py-4">
         <AppLogo
@@ -1113,27 +1113,27 @@ export function ConnectorCard({
         />
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
-            <h2 className="text-sm font-semibold text-foreground">{row.name}</h2>
+            <h2 className="text-sm font-semibold text-ink">{row.name}</h2>
             {row.aggregatorApp?.routes.map((route) => {
               const providerName = AGGREGATOR_NAMES[route.provider];
               const managedSnapshot = row.upstreamApps?.find(app => (app.provider ?? "composio") === route.provider && app.accounts.length > 0);
               const managed = Boolean(managedSnapshot);
               const label = `${managed ? "Manage" : "Connect"} ${row.name} through ${providerName}, a third-party service`;
               return <Tooltip key={route.provider}><TooltipTrigger asChild>
-                <button type="button" aria-label={label} onClick={() => managed ? onManageAggregator?.(row.aggregatorApp!, managedSnapshot?.connectionId) : onConnectAggregator?.(row.aggregatorApp!)} className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+                <button type="button" aria-label={label} onClick={() => managed ? onManageAggregator?.(row.aggregatorApp!, managedSnapshot?.connectionId) : onConnectAggregator?.(row.aggregatorApp!)} className="rounded-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
                   <AppLogo name={providerName} brandKey={route.provider} size={16} compact />
                 </button>
               </TooltipTrigger><TooltipContent>{label}</TooltipContent></Tooltip>;
             })}
           </div>
-          <p className="mt-0.5 text-xs text-muted-foreground">
+          <p className="mt-0.5 text-xs text-ink-3">
             {row.aggregatorApp && row.upstreamApps?.some(app => app.accounts.length > 0) ? `Accounts managed in ${[...new Set(row.upstreamApps?.map(app => AGGREGATOR_NAMES[app.provider ?? "composio"]))].join(" and ")}.` : row.description}
           </p>
         </div>
         <Button
           type="button"
           size="sm"
-          variant="outline"
+          variant="secondary"
           disabled={!action.href && !row.aggregatorApp}
           title={action.title}
           onClick={() => {
@@ -1149,7 +1149,7 @@ export function ConnectorCard({
       </div>
 
       {row.connections.length > 0 ? (
-        <div className="divide-y divide-border border-t border-border">
+        <div className="divide-y divide-line border-t border-line">
           {row.connections.map((connection) => (
             <ConnectionAccountRow
               details={renderAccountDetails?.(connection)}
@@ -1187,7 +1187,7 @@ export function ConnectorCard({
           ))}
         </div>
       ) : null}
-      {row.upstreamCatalogApp && upstreamAccounts.length > 0 ? <div className="divide-y divide-border border-t border-border">
+      {row.upstreamCatalogApp && upstreamAccounts.length > 0 ? <div className="divide-y divide-line border-t border-line">
         {upstreamAccounts.map(({ connection, account, name, snapshot }) => {
           const gatewayState = connectionState(connection);
           const state: ConnectionState = gatewayState.kind !== "connected" ? gatewayState
@@ -1214,7 +1214,7 @@ export function ConnectorCard({
         })}
       </div> : null}
       {row.chatEndpoints.length > 0 ? (
-        <div className="divide-y divide-border border-t border-border">
+        <div className="divide-y divide-line border-t border-line">
           {row.chatEndpoints.map((endpoint) => (
             <div
               key={endpoint.id}
@@ -1233,7 +1233,7 @@ export function ConnectorCard({
                   >
                     {endpoint.assignedAgentName} · {endpoint.provider === "agentmail" ? "Email" : endpoint.provider === "github" ? "Code review bot" : "Chat"}
                   </button>
-                  <p className="truncate text-xs text-muted-foreground">
+                  <p className="truncate text-xs text-ink-3">
                     {endpoint.providerAccountLabel ??
                       endpoint.botLabel ??
                       "Provider identity"}
@@ -1244,13 +1244,13 @@ export function ConnectorCard({
                 <ConnectionOwnerIdentity owner={connectionOwnerProfile(
                   { createdByUserId: (endpoint.connectionId ? connectionById?.get(endpoint.connectionId)?.createdByUserId : null) ?? endpoint.sponsorUserId ?? null }, userProfileById,
                 )} />
-                {["paused", "attention", "revoked"].includes(endpoint.status) && <span className="text-xs text-muted-foreground">
+                {["paused", "attention", "revoked"].includes(endpoint.status) && <span className="text-xs text-ink-3">
                   {endpoint.status === "attention" ? "Needs attention" : endpoint.status === "revoked" ? "Access revoked" : "Paused"}
                 </span>}
                 {endpoint.status === "draft" ? (
                   <Button
                     size="sm"
-                    variant="outline"
+                    variant="secondary"
                     onClick={() => onNavigate(`/apps/chat/connect?provider=${endpoint.provider}&purpose=chat&resume=${endpoint.id}`)}
                   >
                     Finish setup
@@ -1331,13 +1331,13 @@ function ConnectionAccountRow({
   );
 
   return (
-    <ConnectionAccountRowLayout state={state} accountName={accountName} owner={owner} details={<>{details}{discovery?.discovery.message || discovery?.sync.status === "error" ? <p className="text-xs text-muted-foreground" role="status">{discovery.discovery.message ?? discovery.sync.error}</p> : null}</>}
+    <ConnectionAccountRowLayout state={state} accountName={accountName} owner={owner} details={<>{details}{discovery?.discovery.message || discovery?.sync.status === "error" ? <p className="text-xs text-ink-3" role="status">{discovery.discovery.message ?? discovery.sync.error}</p> : null}</>}
       openLabel={`Open ${accountName} permissions`} onOpen={() => onNavigate(`/apps/${connection.id}/permissions`)}>
         {state.kind === "attention" || state.kind === "draft" ? (
           <Button
             type="button"
             size="sm"
-            variant="outline"
+            variant="secondary"
             onClick={() => onNavigate(actionHref)}
           >
             {state.kind === "attention"
@@ -1393,7 +1393,7 @@ function ConnectionAccountRowLayout({ state, accountName, owner, source, details
         <div className="min-w-0">
           <button
             type="button"
-            className="block max-w-full cursor-pointer truncate text-left text-sm font-medium text-foreground hover:underline focus-visible:underline"
+            className="block max-w-full cursor-pointer truncate text-left text-sm font-medium text-ink hover:underline focus-visible:underline"
             aria-label={openLabel}
             onClick={onOpen}
           >
@@ -1404,8 +1404,8 @@ function ConnectionAccountRowLayout({ state, accountName, owner, source, details
             <div
               className={
                 state.kind === "attention"
-                  ? "truncate text-xs text-destructive"
-                  : "truncate text-xs text-muted-foreground"
+                  ? "truncate text-xs text-bad"
+                  : "truncate text-xs text-ink-3"
               }
             >
               {state.message}
@@ -1415,7 +1415,7 @@ function ConnectionAccountRowLayout({ state, accountName, owner, source, details
       </div>
 
       <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <div className="flex items-center gap-1.5 text-xs text-ink-3">
           {source ?? <ConnectionOwnerIdentity owner={owner ?? null} />}
         </div>
         {children}
@@ -1438,7 +1438,7 @@ function ConnectionStatusIcon({ state }: { state: ConnectionState }) {
   }
   if (state.kind === "attention") {
     return (
-      <span className="mt-0.5 text-destructive" title={state.label}>
+      <span className="mt-0.5 text-bad" title={state.label}>
         <AlertTriangle className="h-4 w-4" aria-hidden="true" />
         <span className="sr-only">{state.label}</span>
       </span>
@@ -1456,7 +1456,7 @@ function ConnectionStatusIcon({ state }: { state: ConnectionState }) {
     );
   }
   return (
-    <span className="mt-0.5 text-muted-foreground" title={state.label}>
+    <span className="mt-0.5 text-ink-3" title={state.label}>
       <PauseCircle className="h-4 w-4" aria-hidden="true" />
       <span className="sr-only">{state.label}</span>
     </span>
@@ -1474,24 +1474,24 @@ function CustomConnectorCard({
     <div
       role="listitem"
       data-app-slug="custom-mcp"
-      className="overflow-hidden rounded-xl border border-border"
+      className="overflow-hidden rounded-xl border border-line"
     >
       <div className="flex flex-wrap items-center gap-3 px-4 py-4">
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-bg-3 text-ink-3">
           <Link2 className="h-4 w-4" />
         </div>
         <div className="min-w-0 flex-1">
-          <h2 className="text-sm font-semibold text-foreground">
+          <h2 className="text-sm font-semibold text-ink">
             Connect your own tool
           </h2>
-          <p className="mt-0.5 text-xs text-muted-foreground">
+          <p className="mt-0.5 text-xs text-ink-3">
             Add a custom MCP server or paste an existing configuration.
           </p>
         </div>
         <Button
           type="button"
           size="sm"
-          variant="outline"
+          variant="secondary"
           aria-expanded={expanded}
           aria-controls="custom-connector-options"
           onClick={() => setExpanded((open) => !open)}
@@ -1503,7 +1503,7 @@ function CustomConnectorCard({
       {expanded ? (
         <div
           id="custom-connector-options"
-          className="grid gap-2 border-t border-border px-4 py-3 sm:grid-cols-2"
+          className="grid gap-2 border-t border-line px-4 py-3 sm:grid-cols-2"
         >
           <CustomConnectorOption
             icon={ServerCog}
@@ -1537,21 +1537,21 @@ function CustomConnectorOption({
   return (
     <button
       type="button"
-      className="flex items-center gap-3 rounded-lg border border-border px-3 py-3 text-left transition-colors hover:border-foreground/30 hover:bg-accent/40"
+      className="flex items-center gap-3 rounded-lg border border-line px-3 py-3 text-left transition-colors hover:border-ink/30 hover:bg-bg-3/40"
       onClick={onClick}
     >
-      <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border text-muted-foreground">
+      <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-line text-ink-3">
         <Icon className="h-4 w-4" />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-sm font-semibold text-foreground">
+        <span className="block text-sm font-semibold text-ink">
           {title}
         </span>
-        <span className="block text-xs text-muted-foreground">
+        <span className="block text-xs text-ink-3">
           {description}
         </span>
       </span>
-      <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+      <ChevronRight className="h-4 w-4 shrink-0 text-ink-3" />
     </button>
   );
 }

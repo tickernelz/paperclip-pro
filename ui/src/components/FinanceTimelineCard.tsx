@@ -26,12 +26,12 @@ export function FinanceTimelineCard({
       </CardHeader>
       <CardContent className="space-y-3 px-4 pb-4 pt-3">
         {rows.length === 0 ? (
-          <p className="text-sm text-muted-foreground">{emptyMessage}</p>
+          <p className="text-sm text-ink-3">{emptyMessage}</p>
         ) : (
           rows.map((row) => (
             <div
               key={row.id}
-              className="border border-border p-3"
+              className="border border-line p-3"
             >
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0 space-y-2">
@@ -40,15 +40,15 @@ export function FinanceTimelineCard({
                     <Badge variant={row.direction === "credit" ? "outline" : "secondary"}>
                       {financeDirectionDisplayName(row.direction)}
                     </Badge>
-                    <span className="text-xs text-muted-foreground">{formatDateTime(row.occurredAt)}</span>
+                    <span className="text-xs text-ink-3">{formatDateTime(row.occurredAt)}</span>
                   </div>
                   <div className="text-sm font-medium">
                     {providerDisplayName(row.biller)}
                     {row.provider ? ` -> ${providerDisplayName(row.provider)}` : ""}
-                    {row.model ? <span className="ml-1 font-mono text-xs text-muted-foreground">{row.model}</span> : null}
+                    {row.model ? <span className="ml-1 font-mono text-xs text-ink-3">{row.model}</span> : null}
                   </div>
                   {(row.description || row.externalInvoiceId || row.region || row.pricingTier) && (
-                    <div className="space-y-1 text-xs text-muted-foreground">
+                    <div className="space-y-1 text-xs text-ink-3">
                       {row.description ? <div>{row.description}</div> : null}
                       {row.externalInvoiceId ? <div>invoice {row.externalInvoiceId}</div> : null}
                       {row.region ? <div>region {row.region}</div> : null}
@@ -58,7 +58,7 @@ export function FinanceTimelineCard({
                 </div>
                 <div className="text-right tabular-nums">
                   <div className="text-sm font-semibold">{formatCents(row.amountCents, row.currency)}</div>
-                  <div className="text-xs text-muted-foreground">{row.currency}</div>
+                  <div className="text-xs text-ink-3">{row.currency}</div>
                   {row.estimated ? <div className="text-(length:--text-micro) uppercase tracking-(--tracking-eyebrow) text-amber-600">estimated</div> : null}
                 </div>
               </div>

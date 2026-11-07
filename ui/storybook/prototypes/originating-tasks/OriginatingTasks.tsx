@@ -241,10 +241,10 @@ export function OriginatingTasksReview({ scenario = "mixed", fullPage = true, na
     count: items.length + (withAncestors ? sourceAncestors.length : 0),
     content: <TasksPanel items={items} ancestors={withAncestors ? sourceAncestors : []} />,
   }), [items, withAncestors]);
-  if (!fullPage) return <div className={cn("min-h-screen bg-background p-4 text-foreground", narrow ? "max-w-md" : "max-w-3xl")}>{tasksTab.content}</div>;
+  if (!fullPage) return <div className={cn("min-h-screen bg-bg p-4 text-ink", narrow ? "max-w-md" : "max-w-3xl")}>{tasksTab.content}</div>;
   return (
     <TaskPageData scenario={scenario} withAncestors={withAncestors}>
-      {scenario === "arrival" && <div className="flex items-center gap-3 border-b border-border p-2 text-xs"><span>Story control</span><Button size="sm" variant="outline" disabled={items.length > 0} onClick={() => setItems(scenarioTasks("other").slice(0, 1))}>Simulate task creation</Button></div>}
+      {scenario === "arrival" && <div className="flex items-center gap-3 border-b border-line p-2 text-xs"><span>Story control</span><Button size="sm" variant="secondary" disabled={items.length > 0} onClick={() => setItems(scenarioTasks("other").slice(0, 1))}>Simulate task creation</Button></div>}
       <Routes>
         <Route path="/:companyPrefix" element={<Layout />}>
           <Route path="issues/:issueId" element={<TaskRoute tasksTab={baseline || scenario === "mixed" ? undefined : tasksTab} />} />

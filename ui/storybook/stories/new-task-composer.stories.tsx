@@ -186,7 +186,7 @@ function NewTaskStory({
   }, [client, isolation, openNewIssue, rememberedAssignee, rememberedProject, rememberedEffort, scenario, selectedCompanyId, setSelectedCompanyId, worktrees]);
 
   return (
-    <div className="min-h-screen bg-background p-8 text-foreground">
+    <div className="min-h-screen bg-bg p-8 text-ink">
       {submitted ? (
         <div role="status" className="mt-4 space-y-2">
           <p>Task created</p>

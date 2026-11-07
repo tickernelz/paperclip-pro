@@ -36,7 +36,7 @@ function LauncherContent({
   panel,
 }: Pick<SidePanelLauncherProps, "sections" | "onSelect" | "placeholder" | "emptyMessage"> & { panel: boolean }) {
   return (
-    <Command className={cn(panel && "border border-border shadow-sm")}>
+    <Command className={cn(panel && "border border-line shadow-sm")}>
       <CommandInput placeholder={placeholder} aria-label={placeholder} />
       <CommandList className={cn(panel && "max-h-none flex-1")}>
         <CommandEmpty>{emptyMessage}</CommandEmpty>
@@ -45,13 +45,13 @@ function LauncherContent({
             {sectionIndex > 0 ? <CommandSeparator /> : null}
             <CommandGroup heading={section.label}>
               {section.loading ? (
-                <div className="flex items-center gap-2 px-2 py-3 text-sm text-muted-foreground" role="status">
+                <div className="flex items-center gap-2 px-2 py-3 text-sm text-ink-3" role="status">
                   <Loader2 className="size-4 animate-spin" aria-hidden />
                   Loading…
                 </div>
               ) : null}
               {section.error ? (
-                <div className="flex items-start gap-2 px-2 py-3 text-sm text-muted-foreground" role="status">
+                <div className="flex items-start gap-2 px-2 py-3 text-sm text-ink-3" role="status">
                   <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden />
                   <span>{section.error}</span>
                 </div>
@@ -69,12 +69,12 @@ function LauncherContent({
                   <span className="min-w-0 flex-1">
                     <span className="block truncate">{item.label}</span>
                     {(item.description || item.disabledReason) ? (
-                      <span className="block truncate text-xs text-muted-foreground">
+                      <span className="block truncate text-xs text-ink-3">
                         {item.disabledReason ?? item.description}
                       </span>
                     ) : null}
                   </span>
-                  {item.alreadyOpen ? <Check className="size-4 text-muted-foreground" aria-label="Already open" /> : null}
+                  {item.alreadyOpen ? <Check className="size-4 text-ink-3" aria-label="Already open" /> : null}
                   {item.shortcut ? <CommandShortcut>{item.shortcut}</CommandShortcut> : null}
                 </CommandItem>
               ))}
@@ -135,7 +135,7 @@ export function SidePanelLauncher({
     <div className={cn("mx-auto flex h-full w-full max-w-xl flex-col justify-center gap-4 p-4", className)}>
       <div className="space-y-1 text-center">
         <h2 className="text-sm font-semibold">{title}</h2>
-        <p className="text-sm text-muted-foreground">{description}</p>
+        <p className="text-sm text-ink-3">{description}</p>
       </div>
       {content}
     </div>

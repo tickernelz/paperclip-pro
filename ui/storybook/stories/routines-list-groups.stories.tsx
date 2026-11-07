@@ -56,12 +56,12 @@ function GroupedList() {
               }
             >
               {group.label ? (
-                <div className={`flex items-center gap-2 rounded-lg border border-border px-3 py-2${isOpen ? " mb-1" : ""}`}>
+                <div className={`flex items-center gap-2 rounded-lg border border-line px-3 py-2${isOpen ? " mb-1" : ""}`}>
                   <CollapsibleTrigger className="flex items-center gap-1.5">
-                    <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform [[data-state=open]>&]:rotate-90" />
+                    <ChevronRight className="h-3.5 w-3.5 shrink-0 text-ink-3 transition-transform [[data-state=open]>&]:rotate-90" />
                     <span className="text-sm font-semibold uppercase tracking-wide">{group.label}</span>
                   </CollapsibleTrigger>
-                  <span className="text-xs text-muted-foreground">{group.items.length}</span>
+                  <span className="text-xs text-ink-3">{group.items.length}</span>
                 </div>
               ) : null}
               <CollapsibleContent>

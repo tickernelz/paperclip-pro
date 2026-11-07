@@ -20,12 +20,12 @@ export function AiConnectionIdentity({
         <span className="break-words text-sm font-medium">
           {connection.name}
         </span>
-        <span className="text-xs text-muted-foreground">
+        <span className="text-xs text-ink-3">
           {provider.name} ·{" "}
           {aiMethodLabel(connection.provider, connection.method)}
           {connection.accountLabel ? ` · ${connection.accountLabel}` : ""}
         </span>
-        <span className="flex items-center gap-1 text-xs text-muted-foreground">
+        <span className="flex items-center gap-1 text-xs text-ink-3">
           <Icon aria-hidden className="size-3" />
           {connection.ownership === "shared"
             ? "Company shared"

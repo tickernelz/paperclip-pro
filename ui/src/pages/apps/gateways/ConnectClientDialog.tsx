@@ -183,7 +183,7 @@ export function ConnectClientDialog({
             Client snippets
             <Tooltip>
               <TooltipTrigger asChild>
-                <button type="button" aria-label="About client snippets" className="text-muted-foreground hover:text-foreground">
+                <button type="button" aria-label="About client snippets" className="text-ink-3 hover:text-ink">
                   <HelpCircle className="h-4 w-4" />
                 </button>
               </TooltipTrigger>
@@ -198,8 +198,8 @@ export function ConnectClientDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex flex-wrap items-center gap-2 border-b border-border pb-3">
-          <span className="text-xs font-medium text-muted-foreground">Authorization</span>
+        <div className="flex flex-wrap items-center gap-2 border-b border-line pb-3">
+          <span className="text-xs font-medium text-ink-3">Authorization</span>
           {availableTokens.length > 0 ? (
             <SearchableSelect<string, TokenOption>
               value={selectedTokenId}
@@ -214,7 +214,7 @@ export function ConnectClientDialog({
               renderOption={(option) => (
                 <span className="flex min-w-0 flex-col">
                   <span className="truncate">{option.label}</span>
-                  <span className="truncate font-mono text-(length:--text-micro) text-muted-foreground">
+                  <span className="truncate font-mono text-(length:--text-micro) text-ink-3">
                     {maskedTokenLabel(option.token)}
                   </span>
                 </span>
@@ -227,7 +227,7 @@ export function ConnectClientDialog({
           ) : (
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               size="sm"
               className="rounded-full"
               disabled={issueTokenMutation.isPending}
@@ -250,7 +250,7 @@ export function ConnectClientDialog({
         </div>
 
         {!selectedToken ? (
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             Issue a token before copying a snippet; the full <code>Authorization: Bearer …</code> header is
             required. Existing token secrets cannot be retrieved again, so only tokens issued in this page
             session can fill a snippet.
@@ -269,8 +269,8 @@ export function ConnectClientDialog({
                   className={cn(
                     "flex shrink-0 items-center gap-2 rounded-md px-3 py-1.5 text-left text-sm transition-colors",
                     active === snippet.client
-                      ? "bg-muted font-medium text-foreground"
-                      : "text-muted-foreground hover:bg-muted/60",
+                      ? "bg-bg-3 font-medium text-ink"
+                      : "text-ink-3 hover:bg-bg-3/60",
                   )}
                 >
                   <Icon className="h-4 w-4 shrink-0" />
@@ -284,8 +284,8 @@ export function ConnectClientDialog({
               className={cn(
                 "flex shrink-0 items-center gap-2 rounded-md px-3 py-1.5 text-left text-sm transition-colors",
                 active === "raw_url"
-                  ? "bg-muted font-medium text-foreground"
-                  : "text-muted-foreground hover:bg-muted/60",
+                  ? "bg-bg-3 font-medium text-ink"
+                  : "text-ink-3 hover:bg-bg-3/60",
               )}
             >
               <LinkIcon className="h-4 w-4 shrink-0" />
@@ -297,20 +297,20 @@ export function ConnectClientDialog({
             {active === "raw_url" ? (
               <div className="space-y-3">
                 <div className="space-y-1.5">
-                  <div className="text-sm font-medium text-foreground">Endpoint URL</div>
+                  <div className="text-sm font-medium text-ink">Endpoint URL</div>
                   <div className="flex items-center gap-2">
-                    <code className="min-w-0 flex-1 truncate rounded-md bg-muted px-3 py-2 font-mono text-xs text-muted-foreground">
+                    <code className="min-w-0 flex-1 truncate rounded-md bg-bg-3 px-3 py-2 font-mono text-xs text-ink-3">
                       {endpoint}
                     </code>
-                    <Button variant="outline" size="sm" onClick={() => void copyText(endpoint, "Endpoint URL")}>
+                    <Button variant="secondary" size="sm" onClick={() => void copyText(endpoint, "Endpoint URL")}>
                       <Copy className="mr-1 h-3.5 w-3.5" />
                       Copy
                     </Button>
                   </div>
                 </div>
                 <div className="space-y-1.5">
-                  <div className="text-sm font-medium text-foreground">Authorization header</div>
-                  <code className="block truncate rounded-md bg-muted px-3 py-2 font-mono text-xs text-muted-foreground">
+                  <div className="text-sm font-medium text-ink">Authorization header</div>
+                  <code className="block truncate rounded-md bg-bg-3 px-3 py-2 font-mono text-xs text-ink-3">
                     {selectedToken ? `Authorization: Bearer ${maskedTokenLabel(selectedToken)}` : "Authorization: Bearer pcgw_•••"}
                   </code>
                 </div>
@@ -318,9 +318,9 @@ export function ConnectClientDialog({
             ) : activeSnippet ? (
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between gap-2">
-                  <div className="text-sm font-medium text-foreground">{activeSnippet.label}</div>
+                  <div className="text-sm font-medium text-ink">{activeSnippet.label}</div>
                   <Button
-                    variant="outline"
+                    variant="secondary"
                     size="sm"
                     disabled={!copyConfigText}
                     onClick={() => copyConfigText && void copyText(copyConfigText, `${activeSnippet.label} config`)}
@@ -329,20 +329,20 @@ export function ConnectClientDialog({
                     Copy
                   </Button>
                 </div>
-                <pre className="max-h-64 overflow-auto whitespace-pre-wrap break-words rounded-md bg-muted p-3 font-mono text-xs text-muted-foreground">
+                <pre className="max-h-64 overflow-auto whitespace-pre-wrap break-words rounded-md bg-bg-3 p-3 font-mono text-xs text-ink-3">
                   {displayConfigText}
                 </pre>
                 {activeSnippet.notes.length > 0 ? (
-                  <ul className="space-y-1 text-xs text-muted-foreground">
+                  <ul className="space-y-1 text-xs text-ink-3">
                     {activeSnippet.notes.map((note) => <li key={note}>{note}</li>)}
                   </ul>
                 ) : null}
               </div>
             ) : (
-              <p className="text-sm text-muted-foreground">No client snippets available for this gateway.</p>
+              <p className="text-sm text-ink-3">No client snippets available for this gateway.</p>
             )}
 
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-ink-3">
               Treat the token like a password. Anyone holding it can call the tools this gateway allows. Revoke
               it if it leaks.
             </p>

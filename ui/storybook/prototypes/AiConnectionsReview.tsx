@@ -148,7 +148,7 @@ function AgentConnectionReview({
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-6 p-6" ref={region}>
       <aside
-        className="flex flex-col gap-2 rounded-lg bg-muted p-3 text-xs text-muted-foreground"
+        className="flex flex-col gap-2 rounded-lg bg-bg-3 p-3 text-xs text-ink-3"
         aria-label="Storybook simulator"
       >
         <span>
@@ -159,7 +159,7 @@ function AgentConnectionReview({
           requirement.provider !== "anthropic" && (
             <Button
               size="sm"
-              variant="outline"
+              variant="secondary"
               className="self-start"
               onClick={connected}
             >
@@ -184,17 +184,17 @@ function AgentConnectionReview({
             </Button>
           )}
       </aside>
-      <div className="space-y-3 rounded-lg border border-dashed border-border p-3">
-      <p className="text-xs text-muted-foreground">Example page context · Storybook only</p>
+      <div className="space-y-3 rounded-lg border border-dashed border-line p-3">
+      <p className="text-xs text-ink-3">Example page context · Storybook only</p>
       <div className="flex flex-col gap-2">
         <h2 className="text-xl font-semibold">{titles[host]}</h2>
         {host === "onboarding" && (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-ink-3">
             Connect → Configure agent → First task
           </p>
         )}
         {host === "task" && (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-ink-3">
             Connect an account for the responsible user to continue this task.
           </p>
         )}
@@ -202,11 +202,11 @@ function AgentConnectionReview({
       {host !== "connections" && (
         <dl className="flex flex-wrap gap-6 text-sm" aria-label="Agent runtime">
           <div>
-            <dt className="text-xs text-muted-foreground">Harness</dt>
+            <dt className="text-xs text-ink-3">Harness</dt>
             <dd data-testid="ai-harness">{runtime[0]}</dd>
           </div>
           <div>
-            <dt className="text-xs text-muted-foreground">Model</dt>
+            <dt className="text-xs text-ink-3">Model</dt>
             <dd data-testid="ai-model">{runtime[1]}</dd>
           </div>
         </dl>
@@ -225,7 +225,7 @@ function AgentConnectionReview({
       {stage === "picker" && (
         <>
           {adopting && (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-ink-3">
               Confirm this account’s ownership and use, then test it before
               replacing existing authentication.
             </p>
@@ -252,11 +252,11 @@ function AgentConnectionReview({
           </AiReviewBoundary>
           {!readOnly && !loading && !connectionError && (
             <div className="space-y-2">
-            <p className="text-xs text-muted-foreground">Example form actions · Storybook only</p>
+            <p className="text-xs text-ink-3">Example form actions · Storybook only</p>
             <div className="flex flex-wrap gap-2">
               {adopting && (
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   disabled={Boolean(problem)}
                   onClick={() => setTested(true)}
                 >
@@ -353,11 +353,11 @@ function AgentConnectionReview({
               : "Connection saved."}{" "}
             Harness and model are unchanged.
           </p>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-ink-3">
             The account remains in Connections even if you leave agent setup.
           </p>
           <Button
-            variant="outline"
+            variant="secondary"
             onClick={() => {
               setSaved(false);
               setAdopting(false);

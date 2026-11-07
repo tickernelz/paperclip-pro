@@ -9,7 +9,7 @@ const meta: Meta<typeof TextAttachmentPreview> = {
   title: "Components/CSV File Tab",
   component: TextAttachmentPreview,
   parameters: { layout: "fullscreen" },
-  decorators: [(Story) => <div className="h-screen bg-background text-foreground"><Story /></div>],
+  decorators: [(Story) => <div className="h-screen bg-bg text-ink"><Story /></div>],
 };
 export default meta;
 type Story = StoryObj<typeof TextAttachmentPreview>;

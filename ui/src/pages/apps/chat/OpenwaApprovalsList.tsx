@@ -123,36 +123,36 @@ function ApprovalRow({ endpointId, approval, onNotice }: { endpointId: string; a
         {approval.categories.map((category) => (
           <Badge key={category} variant="outline">{categoryLabels[category]}</Badge>
         ))}
-        <time className="ml-auto font-mono text-xs text-muted-foreground" dateTime={approval.createdAt}>
+        <time className="ml-auto font-mono text-xs text-ink-3" dateTime={approval.createdAt}>
           {formatDateTime(approval.createdAt)}
         </time>
       </div>
       <div className="space-y-1">
         <p className="text-sm font-medium">{approval.summary}</p>
-        <p className="whitespace-pre-wrap break-words text-sm text-muted-foreground">{approval.proposedAction}</p>
+        <p className="whitespace-pre-wrap break-words text-sm text-ink-3">{approval.proposedAction}</p>
       </div>
       <dl className="grid gap-x-4 gap-y-2 text-sm sm:grid-cols-3">
         <div className="min-w-0">
-          <dt className="text-xs text-muted-foreground">Origin chat</dt>
+          <dt className="text-xs text-ink-3">Origin chat</dt>
           <dd className="truncate font-mono" title={approval.originChat}>{approval.originChat}</dd>
         </div>
         {approval.requester ? (
           <div className="min-w-0">
-            <dt className="text-xs text-muted-foreground">Requested by</dt>
+            <dt className="text-xs text-ink-3">Requested by</dt>
             <dd className="truncate font-mono" title={approval.requester}>{approval.requester}</dd>
           </div>
         ) : null}
         <div className="min-w-0">
-          <dt className="text-xs text-muted-foreground">Scope</dt>
+          <dt className="text-xs text-ink-3">Scope</dt>
           <dd>{scopeLabels[approval.scope]}</dd>
         </div>
         <div className="min-w-0">
-          <dt className="text-xs text-muted-foreground">Reminders sent</dt>
+          <dt className="text-xs text-ink-3">Reminders sent</dt>
           <dd className="font-mono">{approval.reminderCount}</dd>
         </div>
         {approval.resolvedAt ? (
           <div className="min-w-0">
-            <dt className="text-xs text-muted-foreground">Resolved</dt>
+            <dt className="text-xs text-ink-3">Resolved</dt>
             <dd>
               <time className="font-mono" dateTime={approval.resolvedAt}>{formatDateTime(approval.resolvedAt)}</time>
               {approval.resolvedVia ? " via " + channelLabels[approval.resolvedVia] : ""}
@@ -161,19 +161,19 @@ function ApprovalRow({ endpointId, approval, onNotice }: { endpointId: string; a
         ) : null}
         {approval.ownerText ? (
           <div className="min-w-0 sm:col-span-2">
-            <dt className="text-xs text-muted-foreground">Owner note</dt>
+            <dt className="text-xs text-ink-3">Owner note</dt>
             <dd className="whitespace-pre-wrap break-words">{approval.ownerText}</dd>
           </div>
         ) : null}
         {approval.agentConditions ? (
           <div className="min-w-0 sm:col-span-3">
-            <dt className="text-xs text-muted-foreground">Conditions</dt>
+            <dt className="text-xs text-ink-3">Conditions</dt>
             <dd className="whitespace-pre-wrap break-words">{approval.agentConditions}</dd>
           </div>
         ) : null}
         {approval.grants.length ? (
           <div className="min-w-0 sm:col-span-3">
-            <dt className="text-xs text-muted-foreground">Grants</dt>
+            <dt className="text-xs text-ink-3">Grants</dt>
             <dd className="flex flex-wrap gap-2">
               {approval.grants.map((grant) => (
                 <span key={grant.id} className="text-xs">
@@ -187,7 +187,7 @@ function ApprovalRow({ endpointId, approval, onNotice }: { endpointId: string; a
       </dl>
       {approval.canResolve ? (
         decision ? (
-          <div className="space-y-2 rounded-lg border border-border p-3">
+          <div className="space-y-2 rounded-lg border border-line p-3">
             <label htmlFor={noteId} className="text-xs font-medium">
               {decision === "approve" ? "Conditions for the agent (optional)" : "Reason for the agent (optional)"}
             </label>
@@ -203,19 +203,19 @@ function ApprovalRow({ endpointId, approval, onNotice }: { endpointId: string; a
               <Button size="sm" variant="ghost" disabled={resolve.isPending} onClick={() => { setDecision(null); setError(null); }}>
                 Cancel
               </Button>
-              <Button size="sm" variant={decision === "approve" ? "default" : "destructive"} disabled={resolve.isPending} onClick={submit}>
+              <Button size="sm" variant={decision === "approve" ? "primary" : "secondary"} disabled={resolve.isPending} onClick={submit}>
                 {resolve.isPending ? "Saving…" : decision === "approve" ? "Confirm approval" : "Confirm rejection"}
               </Button>
             </div>
           </div>
         ) : confirmingCancel ? (
-          <div className="space-y-2 rounded-lg border border-border p-3">
+          <div className="space-y-2 rounded-lg border border-line p-3">
             <p className="text-sm">Cancel this request? The agent gets no permission and is not woken; it no longer sees the request as pending.</p>
             <div className="flex items-center justify-end gap-2">
               <Button size="sm" variant="ghost" disabled={cancel.isPending} onClick={() => { setConfirmingCancel(false); setError(null); }}>
                 Keep request
               </Button>
-              <Button size="sm" variant="destructive" disabled={cancel.isPending} onClick={() => cancel.mutate()}>
+              <Button size="sm" variant="danger" disabled={cancel.isPending} onClick={() => cancel.mutate()}>
                 {cancel.isPending ? "Cancelling…" : "Confirm cancellation"}
               </Button>
             </div>
@@ -223,12 +223,12 @@ function ApprovalRow({ endpointId, approval, onNotice }: { endpointId: string; a
         ) : (
           <div className="flex items-center gap-2">
             <Button size="sm" onClick={() => { setDecision("approve"); setError(null); }}>Approve</Button>
-            <Button size="sm" variant="outline" onClick={() => { setDecision("reject"); setError(null); }}>Reject</Button>
+            <Button size="sm" variant="secondary" onClick={() => { setDecision("reject"); setError(null); }}>Reject</Button>
             <Button size="sm" variant="ghost" className="ml-auto" onClick={() => { setConfirmingCancel(true); setError(null); }}>Cancel request</Button>
           </div>
         )
       ) : null}
-      {error ? <p role="alert" className="text-sm text-destructive">{error}</p> : null}
+      {error ? <p role="alert" className="text-sm text-bad">{error}</p> : null}
     </li>
   );
 }
@@ -250,7 +250,7 @@ export function OpenwaApprovalsList({ endpointId }: { endpointId: string }) {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="space-y-1">
           <h2 className="text-lg font-semibold">Approvals</h2>
-          <p className="text-sm text-muted-foreground">Requests where the agent asked the owners before acting for someone else.</p>
+          <p className="text-sm text-ink-3">Requests where the agent asked the owners before acting for someone else.</p>
         </div>
         <div className="grid gap-1">
           <label htmlFor="openwa-approvals-status" className="text-xs font-medium">Status</label>
@@ -268,22 +268,22 @@ export function OpenwaApprovalsList({ endpointId }: { endpointId: string }) {
         </div>
       </div>
       {notice ? (
-        <p role={notice.tone} className={notice.tone === "alert" ? "text-sm text-destructive" : "text-sm text-muted-foreground"}>{notice.text}</p>
+        <p role={notice.tone} className={notice.tone === "alert" ? "text-sm text-bad" : "text-sm text-ink-3"}>{notice.text}</p>
       ) : null}
       {viewOnlyPending ? (
-        <p role="note" className="rounded-lg border border-border bg-muted/30 p-3 text-sm">{OWNER_ONLY_MESSAGE}</p>
+        <p role="note" className="rounded-lg border border-line bg-bg-3/30 p-3 text-sm">{OWNER_ONLY_MESSAGE}</p>
       ) : null}
       {query.isPending ? (
-        <p role="status" className="text-sm text-muted-foreground">Loading approval requests…</p>
+        <p role="status" className="text-sm text-ink-3">Loading approval requests…</p>
       ) : query.isError ? (
         <div className="space-y-2">
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-sm text-bad">
             {query.error instanceof ApiError ? query.error.message || "Couldn't load approval requests." : NETWORK_MESSAGE}
           </p>
-          <Button size="sm" variant="outline" onClick={() => void query.refetch()}>Try again</Button>
+          <Button size="sm" variant="secondary" onClick={() => void query.refetch()}>Try again</Button>
         </div>
       ) : rows.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
+        <p className="rounded-lg border border-dashed border-line p-4 text-sm text-ink-3">
           {filter === "pending"
             ? "No requests are waiting. When the agent asks the owners for permission, the request appears here."
             : filter === "all"
@@ -291,7 +291,7 @@ export function OpenwaApprovalsList({ endpointId }: { endpointId: string }) {
               : "No " + statusLabels[filter].toLowerCase() + " requests."}
         </p>
       ) : (
-        <ul className="divide-y divide-border border-y border-border">
+        <ul className="divide-y divide-line border-y border-line">
           {rows.map((approval) => (
             <ApprovalRow key={approval.id} endpointId={endpointId} approval={approval} onNotice={setNotice} />
           ))}

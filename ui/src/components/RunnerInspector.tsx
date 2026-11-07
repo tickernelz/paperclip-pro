@@ -382,10 +382,10 @@ function jsonMatches(value: unknown, query: string): boolean {
 }
 
 function JsonPrimitive({ value }: { value: unknown }) {
-  if (typeof value === "string") return <span className="text-primary">&quot;{value}&quot;</span>;
-  if (typeof value === "number") return <span className="text-muted-foreground">{value}</span>;
-  if (typeof value === "boolean") return <span className="text-secondary-foreground">{String(value)}</span>;
-  if (value === null) return <span className="text-muted-foreground">null</span>;
+  if (typeof value === "string") return <span className="text-accent">&quot;{value}&quot;</span>;
+  if (typeof value === "number") return <span className="text-ink-3">{value}</span>;
+  if (typeof value === "boolean") return <span className="text-ink">{String(value)}</span>;
+  if (value === null) return <span className="text-ink-3">null</span>;
   return <span>{String(value)}</span>;
 }
 
@@ -422,12 +422,12 @@ function JsonNode({
     void valueCopy.copy(serialized ?? String(value));
   };
   return (
-    <div className={cn(depth > 0 && "border-l border-border/60 pl-3")}>
+    <div className={cn(depth > 0 && "border-l border-line/60 pl-3")}>
       <div className="group flex min-h-6 items-start gap-1 font-mono text-xs leading-6">
         {expandable ? (
           <button
             type="button"
-            className="mt-1 rounded p-0.5 text-muted-foreground hover:bg-muted hover:text-foreground"
+            className="mt-1 rounded p-0.5 text-ink-3 hover:bg-bg-3 hover:text-ink"
             onClick={() => setExpanded(!isOpen)}
             aria-label={isOpen ? "Collapse JSON value" : "Expand JSON value"}
           >
@@ -436,9 +436,9 @@ function JsonNode({
         ) : (
           <span className="w-4" />
         )}
-        {label !== undefined ? <span className="text-primary">{label}:</span> : null}
+        {label !== undefined ? <span className="text-accent">{label}:</span> : null}
         {expandable ? (
-          <span className="text-muted-foreground">
+          <span className="text-ink-3">
             {Array.isArray(value) ? `[${entries.length}]` : `{${entries.length}}`}
           </span>
         ) : (
@@ -448,7 +448,7 @@ function JsonNode({
           <button
             type="button"
             title={pathCopy.copied ? "JSON path copied" : pathCopy.failed ? "Copy failed" : "Copy JSON path"}
-            className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+            className="rounded p-1 text-ink-3 hover:bg-bg-3 hover:text-ink"
             onClick={() => void pathCopy.copy(path)}
           >
             {pathCopy.copied ? <Check className="h-3 w-3" /> : <Braces className="h-3 w-3" />}
@@ -456,7 +456,7 @@ function JsonNode({
           <button
             type="button"
             title={valueCopy.copied ? "Value copied" : valueCopy.failed ? "Copy failed" : "Copy value"}
-            className="rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+            className="rounded p-1 text-ink-3 hover:bg-bg-3 hover:text-ink"
             onClick={copyValue}
           >
             {valueCopy.copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
@@ -476,7 +476,7 @@ function JsonNode({
             />
           ))}
           {query && visibleEntries.length === 0 ? (
-            <p className="pl-5 text-xs text-muted-foreground">No fields match.</p>
+            <p className="pl-5 text-xs text-ink-3">No fields match.</p>
           ) : null}
         </div>
       ) : null}
@@ -487,9 +487,9 @@ function JsonNode({
 function JsonExplorer({ value, label = "Search this JSON" }: { value: unknown; label?: string }) {
   const [query, setQuery] = useState("");
   return (
-    <div className="overflow-hidden rounded-md border border-border bg-muted/20">
-      <div className="relative border-b border-border bg-background/60">
-        <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-muted-foreground" />
+    <div className="overflow-hidden rounded-md border border-line bg-bg-3/20">
+      <div className="relative border-b border-line bg-bg/60">
+        <Search className="absolute left-2.5 top-2.5 h-3.5 w-3.5 text-ink-3" />
         <Input
           value={query}
           onChange={(event) => setQuery(event.target.value)}
@@ -531,9 +531,9 @@ function fieldMappings(entry: TraceEntry): ProviderTraceFieldMapping[] {
 }
 
 function mappingTone(action: ProviderTraceFieldMapping["action"]) {
-  if (action === "dropped" || action === "redacted") return "border-destructive/30 bg-destructive/10 text-destructive";
-  if (action === "derived") return "border-secondary bg-secondary text-secondary-foreground";
-  return "border-primary/30 bg-primary/10 text-primary";
+  if (action === "dropped" || action === "redacted") return "border-bad/30 bg-bad/10 text-bad";
+  if (action === "derived") return "border-bg-3 bg-bg-3 text-ink";
+  return "border-accent/30 bg-accent/10 text-accent";
 }
 
 function InterpretationStage({ entry, last }: { entry: TraceEntry; last: boolean }) {
@@ -541,23 +541,23 @@ function InterpretationStage({ entry, last }: { entry: TraceEntry; last: boolean
   return (
     <div className="relative grid grid-cols-(--gtc-runner-inspector-stage) gap-3">
       <div className="relative flex justify-center">
-        {!last ? <span className="absolute bottom-(--sz-neg-1_25rem) top-4 w-px bg-border" /> : null}
+        {!last ? <span className="absolute bottom-(--sz-neg-1_25rem) top-4 w-px bg-line" /> : null}
         <span className={cn(
-          "relative mt-1 h-3 w-3 rounded-full border-2 bg-background",
-          entry.disposition === "rejected" ? "border-destructive" : entry.disposition === "ignored" ? "border-muted-foreground" : "border-primary",
+          "relative mt-1 h-3 w-3 rounded-full border-2 bg-bg",
+          entry.disposition === "rejected" ? "border-bad" : entry.disposition === "ignored" ? "border-ink-3" : "border-accent",
         )} />
       </div>
-      <div className="mb-4 overflow-hidden rounded-lg border border-border bg-card">
-        <div className="flex flex-wrap items-center gap-2 border-b border-border/70 px-3 py-2">
+      <div className="mb-4 overflow-hidden rounded-lg border border-line bg-bg-2">
+        <div className="flex flex-wrap items-center gap-2 border-b border-line/70 px-3 py-2">
           <code className="text-xs font-semibold">{text(entry.stage)}</code>
           <Badge variant="outline" className="capitalize">{text(entry.disposition)}</Badge>
-          <code className="ml-auto text-(length:--text-nano) text-muted-foreground">{text(entry.ruleId)}</code>
+          <code className="ml-auto text-(length:--text-nano) text-ink-3">{text(entry.ruleId)}</code>
         </div>
-        <p className="px-3 py-2 text-xs text-muted-foreground">{text(entry.reason)}</p>
+        <p className="px-3 py-2 text-xs text-ink-3">{text(entry.reason)}</p>
         {mappings.length > 0 ? (
-          <div className="overflow-x-auto border-t border-border/70">
+          <div className="overflow-x-auto border-t border-line/70">
             <table className="w-full min-w-(--sz-36rem) text-left text-xs">
-              <thead className="bg-muted/30 text-muted-foreground">
+              <thead className="bg-bg-3/30 text-ink-3">
                 <tr>
                   <th className="px-3 py-1.5 font-medium">Action</th>
                   <th className="px-3 py-1.5 font-medium">Provider path</th>
@@ -567,20 +567,20 @@ function InterpretationStage({ entry, last }: { entry: TraceEntry; last: boolean
               </thead>
               <tbody>
                 {mappings.map((mapping, index) => (
-                  <tr key={`${mapping.inputPath}:${mapping.outputPath}:${index}`} className="border-t border-border/50 align-top">
+                  <tr key={`${mapping.inputPath}:${mapping.outputPath}:${index}`} className="border-t border-line/50 align-top">
                     <td className="px-3 py-2">
                       <span className={cn("rounded border px-1.5 py-0.5 text-(length:--text-nano)", mappingTone(mapping.action))}>{mapping.action}</span>
                     </td>
                     <td className="px-3 py-2 font-mono">{mapping.inputPath ?? "—"}</td>
                     <td className="px-3 py-2 font-mono">{mapping.outputPath ?? "—"}</td>
-                    <td className="max-w-xs px-3 py-2 text-muted-foreground">{mapping.reason ?? "—"}</td>
+                    <td className="max-w-xs px-3 py-2 text-ink-3">{mapping.reason ?? "—"}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
         ) : (
-          <p className="border-t border-border/70 px-3 py-2 text-(length:--text-nano) text-muted-foreground">No field-level mapping was recorded at this stage.</p>
+          <p className="border-t border-line/70 px-3 py-2 text-(length:--text-nano) text-ink-3">No field-level mapping was recorded at this stage.</p>
         )}
       </div>
     </div>
@@ -617,12 +617,12 @@ function ProductionSurfacePreview({ event, runId }: { event: HeartbeatRunEvent; 
   const decision = visibilityDecision(event);
   const VisibleIcon = decision.visible ? Eye : EyeOff;
   return (
-    <div className="rounded-md border border-border bg-card/60 px-3 py-2.5">
+    <div className="rounded-md border border-line bg-bg-2/60 px-3 py-2.5">
       <div className="flex items-start gap-2">
-        <VisibleIcon className="mt-0.5 h-4 w-4 text-muted-foreground" />
+        <VisibleIcon className="mt-0.5 h-4 w-4 text-ink-3" />
         <div className="min-w-0">
           <p className="text-sm font-medium">{event.eventType}</p>
-          <p className="mt-0.5 text-xs text-muted-foreground">
+          <p className="mt-0.5 text-xs text-ink-3">
             Production surface: {decision.surface} · {decision.action} in {decision.container}
           </p>
         </div>
@@ -633,10 +633,10 @@ function ProductionSurfacePreview({ event, runId }: { event: HeartbeatRunEvent; 
 
 function StatCard({ label, value, detail }: { label: string; value: string | number; detail?: string }) {
   return (
-    <div className="rounded-lg border border-border bg-card px-4 py-3">
-      <p className="text-(length:--text-nano) font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
+    <div className="rounded-lg border border-line bg-bg-2 px-4 py-3">
+      <p className="text-(length:--text-nano) font-medium uppercase tracking-wide text-ink-3">{label}</p>
       <p className="mt-1 text-2xl font-semibold tracking-tight">{value}</p>
-      {detail ? <p className="mt-1 text-xs text-muted-foreground">{detail}</p> : null}
+      {detail ? <p className="mt-1 text-xs text-ink-3">{detail}</p> : null}
     </div>
   );
 }
@@ -1023,7 +1023,7 @@ export function RunnerInspector({
         className="w-(--sz-calc-43) max-w-none gap-0 p-0 sm:max-w-none"
         aria-describedby="runner-inspector-description"
       >
-        <SheetHeader className="border-b border-border pr-12">
+        <SheetHeader className="border-b border-line pr-12">
           <div className="flex flex-wrap items-center gap-2">
             <SheetTitle>Runner Inspector</SheetTitle>
             {inspection?.trace ? (
@@ -1052,7 +1052,7 @@ export function RunnerInspector({
                   onClick={() => setView(option.value)}
                   className={cn(
                     "inline-flex items-center gap-1.5 border-b-2 px-3 py-2 text-sm font-medium transition-colors",
-                    view === option.value ? "border-foreground text-foreground" : "border-transparent text-muted-foreground hover:text-foreground",
+                    view === option.value ? "border-ink text-ink" : "border-transparent text-ink-3 hover:text-ink",
                   )}
                 >
                   <Icon className="h-4 w-4" /> {option.label}
@@ -1063,18 +1063,18 @@ export function RunnerInspector({
         </SheetHeader>
 
         <div className="flex min-h-0 flex-1 flex-col">
-          {error ? <div className="m-4 rounded-md border border-destructive/40 bg-destructive/5 p-3 text-sm text-destructive">{error}</div> : null}
+          {error ? <div className="m-4 rounded-md border border-bad/40 bg-bad/5 p-3 text-sm text-bad">{error}</div> : null}
           {!loading && !error && canInspectRaw === false ? (
-            <div className="m-4 rounded-md border border-border bg-muted/20 p-4">
+            <div className="m-4 rounded-md border border-line bg-bg-3/20 p-4">
               <p className="font-medium">Raw provider traces require an instance administrator.</p>
-              <p className="mt-1 text-sm text-muted-foreground">Canonical PRP events and presentation decisions remain inspectable below.</p>
+              <p className="mt-1 text-sm text-ink-3">Canonical PRP events and presentation decisions remain inspectable below.</p>
             </div>
           ) : null}
           {!loading && !error && canInspectRaw === true && !inspection?.trace ? (
-            <div className="m-4 flex items-start justify-between gap-4 rounded-md border border-border bg-muted/20 p-4">
+            <div className="m-4 flex items-start justify-between gap-4 rounded-md border border-line bg-bg-3/20 p-4">
               <div>
                 <p className="font-medium">Raw provider capture was off for this run.</p>
-                <p className="mt-1 text-sm text-muted-foreground">Canonical PRP events and persisted presentation decisions remain available below.</p>
+                <p className="mt-1 text-sm text-ink-3">Canonical PRP events and persisted presentation decisions remain available below.</p>
               </div>
               {onRerunWithTrace && canInspectRaw === true ? (
                 <Button size="sm" onClick={onRerunWithTrace}><RefreshCw className="mr-1.5 h-4 w-4" />Re-run with provider trace</Button>
@@ -1085,7 +1085,7 @@ export function RunnerInspector({
           {view === "overview" ? (
             <ScrollArea className="min-h-0 flex-1">
               <div className="space-y-6 p-5">
-                {loading ? <p className="text-sm text-muted-foreground">Loading run pipeline…</p> : null}
+                {loading ? <p className="text-sm text-ink-3">Loading run pipeline…</p> : null}
                 <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
                   <StatCard label="Provider" value={capturedProviders.join(", ") || inspection?.trace?.provider || "PRP only"} detail={inspection?.trace ? `captured through ${inspection.trace.provider}` : "capture was off"} />
                   <StatCard label="Raw frames" value={frames.length} detail={inspection?.trace ? formatBytes(inspection.trace.byteCount) : "no exact bytes"} />
@@ -1095,33 +1095,33 @@ export function RunnerInspector({
                   <StatCard label="Run status" value={run?.status ?? "unknown"} detail={inspection?.trace ? traceBadgeLabel(inspection.trace.status, inspection.trace.expiresAt) : "Raw capture off"} />
                 </div>
                 <div className="grid gap-4 lg:grid-cols-2">
-                  <section className="rounded-lg border border-border bg-card p-4">
+                  <section className="rounded-lg border border-line bg-bg-2 p-4">
                     <h3 className="text-sm font-semibold">Interpretation outcomes</h3>
                     <div className="mt-3 space-y-2">
                       {Object.entries(dispositionCounts).length ? Object.entries(dispositionCounts).map(([label, count]) => (
                         <div key={label} className="flex items-center gap-3 text-sm">
                           <Badge variant="outline" className="w-24 justify-center capitalize">{label}</Badge>
-                          <div className="h-2 flex-1 overflow-hidden rounded-full bg-muted"><div className="h-full rounded-full bg-primary" style={{ width: `${Math.max(4, (count / Math.max(1, interpretations.length)) * 100)}%` }} /></div>
+                          <div className="h-2 flex-1 overflow-hidden rounded-full bg-bg-3"><div className="h-full rounded-full bg-accent" style={{ width: `${Math.max(4, (count / Math.max(1, interpretations.length)) * 100)}%` }} /></div>
                           <span className="w-8 text-right font-mono text-xs">{count}</span>
                         </div>
-                      )) : <p className="text-sm text-muted-foreground">No interpretation records were persisted.</p>}
+                      )) : <p className="text-sm text-ink-3">No interpretation records were persisted.</p>}
                     </div>
                   </section>
-                  <section className="rounded-lg border border-border bg-card p-4">
+                  <section className="rounded-lg border border-line bg-bg-2 p-4">
                     <h3 className="text-sm font-semibold">Recent correlated operations</h3>
-                    <div className="mt-2 divide-y divide-border/70">
+                    <div className="mt-2 divide-y divide-line/70">
                       {operations.slice(-6).reverse().map((operation) => (
-                        <button key={operation.key} type="button" onClick={() => selectOperation(operation)} className="flex w-full items-center gap-3 py-2 text-left hover:text-primary">
-                          <span className={cn("h-2 w-2 rounded-full", operation.events.length ? "bg-primary" : "bg-muted-foreground")} />
-                          <span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium">{operation.title}</span><span className="block truncate text-xs text-muted-foreground">{operation.subtitle}</span></span>
-                          <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                        <button key={operation.key} type="button" onClick={() => selectOperation(operation)} className="flex w-full items-center gap-3 py-2 text-left hover:text-accent">
+                          <span className={cn("h-2 w-2 rounded-full", operation.events.length ? "bg-accent" : "bg-ink-3")} />
+                          <span className="min-w-0 flex-1"><span className="block truncate text-sm font-medium">{operation.title}</span><span className="block truncate text-xs text-ink-3">{operation.subtitle}</span></span>
+                          <ArrowRight className="h-4 w-4 text-ink-3" />
                         </button>
                       ))}
                     </div>
                   </section>
                 </div>
-                <section className="rounded-lg border border-border bg-accent/30 p-4">
-                  <div className="flex gap-3"><ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-accent-foreground" /><div><h3 className="text-sm font-semibold">Sensitive debug data</h3><p className="mt-1 text-sm text-muted-foreground">Parsed frames are redacted on the server. Exact reveals and downloads are administrator-only, warned, audited, and automatically expire.</p></div></div>
+                <section className="rounded-lg border border-line bg-bg-3/30 p-4">
+                  <div className="flex gap-3"><ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-ink" /><div><h3 className="text-sm font-semibold">Sensitive debug data</h3><p className="mt-1 text-sm text-ink-3">Parsed frames are redacted on the server. Exact reveals and downloads are administrator-only, warned, audited, and automatically expire.</p></div></div>
                 </section>
               </div>
             </ScrollArea>
@@ -1129,8 +1129,8 @@ export function RunnerInspector({
 
           {view === "pipeline" ? (
             <>
-              <div className="grid gap-2 border-b border-border p-3 sm:grid-cols-2 xl:grid-cols-(--gtc-runner-inspector-filters)">
-                <div className="relative"><Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" /><Input className="pl-8" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search operations, fields, and events" /></div>
+              <div className="grid gap-2 border-b border-line p-3 sm:grid-cols-2 xl:grid-cols-(--gtc-runner-inspector-filters)">
+                <div className="relative"><Search className="absolute left-2.5 top-2.5 h-4 w-4 text-ink-3" /><Input className="pl-8" value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search operations, fields, and events" /></div>
                 <Select value={direction} onValueChange={setDirection}><SelectTrigger><SelectValue placeholder="Direction" /></SelectTrigger><SelectContent><SelectItem value="all">All directions</SelectItem><SelectItem value="client_to_provider">Client → provider</SelectItem><SelectItem value="provider_to_client">Provider → client</SelectItem><SelectItem value="provider_stderr">Provider stderr</SelectItem></SelectContent></Select>
                 <Select value={nativeMethod} onValueChange={setNativeMethod}><SelectTrigger><SelectValue placeholder="Native method" /></SelectTrigger><SelectContent><SelectItem value="all">All native methods</SelectItem>{unique(frames.map(frameMethod)).sort().map((value) => <SelectItem key={value} value={value}>{value}</SelectItem>)}</SelectContent></Select>
                 <Select value={disposition} onValueChange={setDisposition}><SelectTrigger><SelectValue placeholder="Mapping" /></SelectTrigger><SelectContent><SelectItem value="all">All mappings</SelectItem>{["mapped", "generic", "ignored", "rejected", "operator_only"].map((value) => <SelectItem key={value} value={value}>{value}</SelectItem>)}</SelectContent></Select>
@@ -1138,15 +1138,15 @@ export function RunnerInspector({
                 <Select value={visibility} onValueChange={setVisibility}><SelectTrigger><SelectValue placeholder="Visibility" /></SelectTrigger><SelectContent><SelectItem value="all">Visible + hidden</SelectItem><SelectItem value="visible">Visible</SelectItem><SelectItem value="hidden">Hidden</SelectItem></SelectContent></Select>
               </div>
               <div className="grid min-h-0 flex-1 lg:grid-cols-(--gtc-runner-inspector-pipeline)">
-                <ScrollArea className="border-r border-border">
+                <ScrollArea className="border-r border-line">
                   <div className="p-2">
-                    {loading ? <p className="p-3 text-sm text-muted-foreground">Loading run pipeline…</p> : null}
-                    {!loading && filteredOperations.length === 0 ? <p className="p-3 text-sm text-muted-foreground">No operations match these filters.</p> : null}
+                    {loading ? <p className="p-3 text-sm text-ink-3">Loading run pipeline…</p> : null}
+                    {!loading && filteredOperations.length === 0 ? <p className="p-3 text-sm text-ink-3">No operations match these filters.</p> : null}
                     {filteredOperations.map((operation) => (
-                      <button key={operation.key} type="button" onClick={() => setSelectedKey(operation.key)} className="mb-1 w-full rounded-lg border border-transparent px-3 py-2.5 text-left hover:bg-muted/50 data-[selected=true]:border-border data-[selected=true]:bg-muted" data-selected={selectedOperation?.key === operation.key}>
-                        <span className="flex items-center gap-2"><span className={cn("h-2 w-2 shrink-0 rounded-full", operation.events.length ? operation.visible ? "bg-primary" : "bg-secondary-foreground" : "bg-muted-foreground")} role="img" aria-label={operation.events.length ? operation.visible ? "Visible production event" : "Hidden production event" : "No production event"} /><span className="min-w-0 flex-1 truncate text-sm font-medium">{operation.title}</span>{operation.frames.length > 1 ? <Badge variant="outline" className="px-1.5 text-(length:--text-nano)">{operation.frames.length} frames</Badge> : null}</span>
-                        <span className="mt-1 block truncate pl-4 text-(length:--text-nano) text-muted-foreground">{operation.subtitle}</span>
-                        <span className="mt-1.5 flex flex-wrap gap-1 pl-4">{operation.prpTypes.slice(0, 3).map((type) => <span key={type} className="rounded bg-background px-1.5 py-0.5 font-mono text-(length:--text-nano) text-muted-foreground">{type}</span>)}</span>
+                      <button key={operation.key} type="button" onClick={() => setSelectedKey(operation.key)} className="mb-1 w-full rounded-lg border border-transparent px-3 py-2.5 text-left hover:bg-bg-3/50 data-[selected=true]:border-line data-[selected=true]:bg-bg-3" data-selected={selectedOperation?.key === operation.key}>
+                        <span className="flex items-center gap-2"><span className={cn("h-2 w-2 shrink-0 rounded-full", operation.events.length ? operation.visible ? "bg-accent" : "bg-ink" : "bg-ink-3")} role="img" aria-label={operation.events.length ? operation.visible ? "Visible production event" : "Hidden production event" : "No production event"} /><span className="min-w-0 flex-1 truncate text-sm font-medium">{operation.title}</span>{operation.frames.length > 1 ? <Badge variant="outline" className="px-1.5 text-(length:--text-nano)">{operation.frames.length} frames</Badge> : null}</span>
+                        <span className="mt-1 block truncate pl-4 text-(length:--text-nano) text-ink-3">{operation.subtitle}</span>
+                        <span className="mt-1.5 flex flex-wrap gap-1 pl-4">{operation.prpTypes.slice(0, 3).map((type) => <span key={type} className="rounded bg-bg px-1.5 py-0.5 font-mono text-(length:--text-nano) text-ink-3">{type}</span>)}</span>
                       </button>
                     ))}
                   </div>
@@ -1154,47 +1154,47 @@ export function RunnerInspector({
                 <ScrollArea>
                   {selectedOperation ? (
                     <div className="space-y-6 p-5">
-                      <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border bg-muted/20 px-4 py-3">
-                        <strong className="text-sm">{selectedOperation.title}</strong><ArrowRight className="h-3.5 w-3.5 text-muted-foreground" /><span className="text-xs text-muted-foreground">{selectedOperation.frames.length} raw frame{selectedOperation.frames.length === 1 ? "" : "s"}</span><ArrowRight className="h-3.5 w-3.5 text-muted-foreground" /><span className="text-xs text-muted-foreground">{selectedOperation.interpretations.length} mapping stage{selectedOperation.interpretations.length === 1 ? "" : "s"}</span><ArrowRight className="h-3.5 w-3.5 text-muted-foreground" /><span className="text-xs text-muted-foreground">{selectedEvents.length} PRP event{selectedEvents.length === 1 ? "" : "s"}</span>
+                      <div className="flex flex-wrap items-center gap-2 rounded-lg border border-line bg-bg-3/20 px-4 py-3">
+                        <strong className="text-sm">{selectedOperation.title}</strong><ArrowRight className="h-3.5 w-3.5 text-ink-3" /><span className="text-xs text-ink-3">{selectedOperation.frames.length} raw frame{selectedOperation.frames.length === 1 ? "" : "s"}</span><ArrowRight className="h-3.5 w-3.5 text-ink-3" /><span className="text-xs text-ink-3">{selectedOperation.interpretations.length} mapping stage{selectedOperation.interpretations.length === 1 ? "" : "s"}</span><ArrowRight className="h-3.5 w-3.5 text-ink-3" /><span className="text-xs text-ink-3">{selectedEvents.length} PRP event{selectedEvents.length === 1 ? "" : "s"}</span>
                       </div>
                       <section>
-                        <div className="mb-2 flex flex-wrap items-center gap-2"><span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent text-xs font-semibold text-accent-foreground">1</span><h3 className="text-sm font-semibold">Provider frames</h3><span className="text-xs text-muted-foreground">server-redacted by default</span></div>
-                        {selectedOperation.frames.length > 1 ? <div className="mb-2 flex flex-wrap gap-1">{selectedOperation.frames.map((frame) => <button key={Number(frame.frameId)} type="button" onClick={() => setSelectedFrameId(Number(frame.frameId))} className={cn("rounded-md border px-2 py-1 font-mono text-xs", Number(frame.frameId) === Number(selectedFrame?.frameId) ? "border-primary/50 bg-primary/10 text-foreground" : "border-border text-muted-foreground hover:bg-muted")}>#{String(frame.frameId)} {frameMethod(frame) || text(frame.direction)}</button>)}</div> : null}
+                        <div className="mb-2 flex flex-wrap items-center gap-2"><span className="flex h-6 w-6 items-center justify-center rounded-full bg-bg-3 text-xs font-semibold text-ink">1</span><h3 className="text-sm font-semibold">Provider frames</h3><span className="text-xs text-ink-3">server-redacted by default</span></div>
+                        {selectedOperation.frames.length > 1 ? <div className="mb-2 flex flex-wrap gap-1">{selectedOperation.frames.map((frame) => <button key={Number(frame.frameId)} type="button" onClick={() => setSelectedFrameId(Number(frame.frameId))} className={cn("rounded-md border px-2 py-1 font-mono text-xs", Number(frame.frameId) === Number(selectedFrame?.frameId) ? "border-accent/50 bg-accent/10 text-ink" : "border-line text-ink-3 hover:bg-bg-3")}>#{String(frame.frameId)} {frameMethod(frame) || text(frame.direction)}</button>)}</div> : null}
                         {selectedFrame ? (
                           <div className="space-y-2">
-                            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground"><Badge variant="outline">frame {String(selectedFrame.frameId)}</Badge><span>{text(selectedFrame.direction).replaceAll("_", " ")}</span><span>{formatBytes(Number(selectedFrame.byteLength) || 0)}</span><code className="truncate">{text(selectedFrame.digest)}</code></div>
+                            <div className="flex flex-wrap items-center gap-2 text-xs text-ink-3"><Badge variant="outline">frame {String(selectedFrame.frameId)}</Badge><span>{text(selectedFrame.direction).replaceAll("_", " ")}</span><span>{formatBytes(Number(selectedFrame.byteLength) || 0)}</span><code className="truncate">{text(selectedFrame.digest)}</code></div>
                             <JsonExplorer value={selectedFrame.parsed} />
-                            {Array.isArray(selectedFrame.withheldPaths) && selectedFrame.withheldPaths.length > 0 ? <div className="flex items-start gap-2 rounded-md border border-border bg-accent/30 px-3 py-2 text-xs text-muted-foreground"><ShieldAlert className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent-foreground" /><span>Withheld paths: {selectedFrame.withheldPaths.join(", ")}</span></div> : null}
-                            {canInspectRaw === true ? <Button size="sm" variant="outline" onClick={() => void reveal(Number(selectedFrame.frameId))}><Eye className="mr-1.5 h-4 w-4" />Reveal exact frame</Button> : null}
-                            {revealedFrame ? <div className="rounded-md border border-destructive/30 p-2"><p className="mb-2 flex items-center gap-1.5 text-xs font-medium text-destructive"><ShieldAlert className="h-3.5 w-3.5" />Exact unredacted frame</p><JsonExplorer value={decodeExactFrame(revealedFrame.rawBase64)} label="Search exact frame" /></div> : null}
+                            {Array.isArray(selectedFrame.withheldPaths) && selectedFrame.withheldPaths.length > 0 ? <div className="flex items-start gap-2 rounded-md border border-line bg-bg-3/30 px-3 py-2 text-xs text-ink-3"><ShieldAlert className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ink" /><span>Withheld paths: {selectedFrame.withheldPaths.join(", ")}</span></div> : null}
+                            {canInspectRaw === true ? <Button size="sm" variant="secondary" onClick={() => void reveal(Number(selectedFrame.frameId))}><Eye className="mr-1.5 h-4 w-4" />Reveal exact frame</Button> : null}
+                            {revealedFrame ? <div className="rounded-md border border-bad/30 p-2"><p className="mb-2 flex items-center gap-1.5 text-xs font-medium text-bad"><ShieldAlert className="h-3.5 w-3.5" />Exact unredacted frame</p><JsonExplorer value={decodeExactFrame(revealedFrame.rawBase64)} label="Search exact frame" /></div> : null}
                           </div>
-                        ) : <p className="text-sm text-muted-foreground">This PRP event has no recoverable raw frame.</p>}
+                        ) : <p className="text-sm text-ink-3">This PRP event has no recoverable raw frame.</p>}
                       </section>
                       <section>
-                        <div className="mb-3 flex items-center gap-2"><span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary/10 text-xs font-semibold text-primary">2</span><h3 className="text-sm font-semibold">Interpretation stages</h3></div>
-                        {selectedInterpretations.length ? selectedInterpretations.map((entry, index) => <InterpretationStage key={`${entry.debugChannel}:${entry.debugSequence}:${index}`} entry={entry} last={index === selectedInterpretations.length - 1} />) : <p className="text-sm text-muted-foreground">No interpretation stage was recorded for this frame.</p>}
+                        <div className="mb-3 flex items-center gap-2"><span className="flex h-6 w-6 items-center justify-center rounded-full bg-accent/10 text-xs font-semibold text-accent">2</span><h3 className="text-sm font-semibold">Interpretation stages</h3></div>
+                        {selectedInterpretations.length ? selectedInterpretations.map((entry, index) => <InterpretationStage key={`${entry.debugChannel}:${entry.debugSequence}:${index}`} entry={entry} last={index === selectedInterpretations.length - 1} />) : <p className="text-sm text-ink-3">No interpretation stage was recorded for this frame.</p>}
                       </section>
                       <section>
-                        <div className="mb-3 flex items-center gap-2"><span className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-xs font-semibold text-secondary-foreground">3</span><h3 className="text-sm font-semibold">Canonical PRP events</h3></div>
+                        <div className="mb-3 flex items-center gap-2"><span className="flex h-6 w-6 items-center justify-center rounded-full bg-bg-3 text-xs font-semibold text-ink">3</span><h3 className="text-sm font-semibold">Canonical PRP events</h3></div>
                         {selectedEvents.length ? selectedEvents.map((event) => (
-                          <div key={event.id} className="mb-3 overflow-hidden rounded-lg border border-border bg-card">
-                            <div className="flex flex-wrap items-center gap-2 border-b border-border/70 px-3 py-2"><code className="text-xs font-semibold">{event.eventType}</code><Badge variant="outline">seq {event.seq}</Badge><button type="button" className="ml-auto text-xs text-primary underline-offset-4 hover:underline" onClick={() => { setVisibility(visibilityDecision(event).visible ? "visible" : "hidden"); setSelectedKey(selectedOperation.key); }}>Why isn’t this visible?</button></div>
-                            <dl className="grid gap-x-4 gap-y-1 px-3 py-2 text-xs sm:grid-cols-(--gtc-runner-inspector-fields)">{typedPrpFields(event).map(([label, value]) => <div key={label} className="contents"><dt className="text-muted-foreground">{label}</dt><dd className="min-w-0 break-words font-mono">{value}</dd></div>)}</dl>
-                            <details className="border-t border-border/70"><summary className="flex cursor-pointer list-none items-center gap-1 px-3 py-2 text-xs font-medium text-muted-foreground"><ChevronDown className="h-3.5 w-3.5" />Canonical event JSON</summary><div className="p-3 pt-0"><JsonExplorer value={eventPrp(event)} /></div></details>
+                          <div key={event.id} className="mb-3 overflow-hidden rounded-lg border border-line bg-bg-2">
+                            <div className="flex flex-wrap items-center gap-2 border-b border-line/70 px-3 py-2"><code className="text-xs font-semibold">{event.eventType}</code><Badge variant="outline">seq {event.seq}</Badge><button type="button" className="ml-auto text-xs text-accent underline-offset-4 hover:underline" onClick={() => { setVisibility(visibilityDecision(event).visible ? "visible" : "hidden"); setSelectedKey(selectedOperation.key); }}>Why isn’t this visible?</button></div>
+                            <dl className="grid gap-x-4 gap-y-1 px-3 py-2 text-xs sm:grid-cols-(--gtc-runner-inspector-fields)">{typedPrpFields(event).map(([label, value]) => <div key={label} className="contents"><dt className="text-ink-3">{label}</dt><dd className="min-w-0 break-words font-mono">{value}</dd></div>)}</dl>
+                            <details className="border-t border-line/70"><summary className="flex cursor-pointer list-none items-center gap-1 px-3 py-2 text-xs font-medium text-ink-3"><ChevronDown className="h-3.5 w-3.5" />Canonical event JSON</summary><div className="p-3 pt-0"><JsonExplorer value={eventPrp(event)} /></div></details>
                           </div>
-                        )) : <p className="text-sm text-muted-foreground">This provider operation emitted no canonical PRP events.</p>}
+                        )) : <p className="text-sm text-ink-3">This provider operation emitted no canonical PRP events.</p>}
                       </section>
                       <section>
-                        <div className="mb-3 flex items-center gap-2"><span className="flex h-6 w-6 items-center justify-center rounded-full bg-muted text-xs font-semibold text-foreground">4</span><h3 className="text-sm font-semibold">Production presentation</h3></div>
+                        <div className="mb-3 flex items-center gap-2"><span className="flex h-6 w-6 items-center justify-center rounded-full bg-bg-3 text-xs font-semibold text-ink">4</span><h3 className="text-sm font-semibold">Production presentation</h3></div>
                         {selectedEvents.length ? selectedEvents.map((event) => {
                           const decision = visibilityDecision(event);
-                          return <div key={event.id} className="mb-4 grid gap-3 xl:grid-cols-(--gtc-runner-inspector-presentation)"><dl className="grid grid-cols-(--gtc-runner-inspector-fields) gap-x-3 gap-y-1 rounded-lg border border-border p-3 text-sm"><dt className="text-muted-foreground">Visible</dt><dd className="flex items-center gap-1.5">{decision.visible ? <Check className="h-3.5 w-3.5 text-primary" /> : <CircleOff className="h-3.5 w-3.5 text-muted-foreground" />}{decision.visible ? "yes" : "no"}</dd><dt className="text-muted-foreground">Surface</dt><dd>{decision.surface}</dd><dt className="text-muted-foreground">Container</dt><dd>{decision.container}</dd><dt className="text-muted-foreground">State</dt><dd>{decision.state}</dd><dt className="text-muted-foreground">Action</dt><dd>{decision.action}</dd><dt className="text-muted-foreground">Reason</dt><dd>{decision.reason}</dd><dt className="text-muted-foreground">Reason code</dt><dd><code className="text-xs">{decision.reasonCode}</code></dd></dl><div><p className="mb-2 text-(length:--text-nano) font-medium uppercase tracking-wide text-muted-foreground">Production surface preview</p><ProductionSurfacePreview event={event} runId={runId} /></div></div>;
-                        }) : <p className="text-sm text-muted-foreground">No presentation surface was emitted for this operation.</p>}
-                        {Object.keys(presentationDecision).length > 0 ? <details className="rounded-lg border border-border"><summary className="cursor-pointer px-3 py-2 text-xs font-medium text-muted-foreground">Resolved final response decision</summary><div className="p-3 pt-0"><JsonExplorer value={presentationDecision} /></div></details> : null}
+                          return <div key={event.id} className="mb-4 grid gap-3 xl:grid-cols-(--gtc-runner-inspector-presentation)"><dl className="grid grid-cols-(--gtc-runner-inspector-fields) gap-x-3 gap-y-1 rounded-lg border border-line p-3 text-sm"><dt className="text-ink-3">Visible</dt><dd className="flex items-center gap-1.5">{decision.visible ? <Check className="h-3.5 w-3.5 text-accent" /> : <CircleOff className="h-3.5 w-3.5 text-ink-3" />}{decision.visible ? "yes" : "no"}</dd><dt className="text-ink-3">Surface</dt><dd>{decision.surface}</dd><dt className="text-ink-3">Container</dt><dd>{decision.container}</dd><dt className="text-ink-3">State</dt><dd>{decision.state}</dd><dt className="text-ink-3">Action</dt><dd>{decision.action}</dd><dt className="text-ink-3">Reason</dt><dd>{decision.reason}</dd><dt className="text-ink-3">Reason code</dt><dd><code className="text-xs">{decision.reasonCode}</code></dd></dl><div><p className="mb-2 text-(length:--text-nano) font-medium uppercase tracking-wide text-ink-3">Production surface preview</p><ProductionSurfacePreview event={event} runId={runId} /></div></div>;
+                        }) : <p className="text-sm text-ink-3">No presentation surface was emitted for this operation.</p>}
+                        {Object.keys(presentationDecision).length > 0 ? <details className="rounded-lg border border-line"><summary className="cursor-pointer px-3 py-2 text-xs font-medium text-ink-3">Resolved final response decision</summary><div className="p-3 pt-0"><JsonExplorer value={presentationDecision} /></div></details> : null}
                         {verificationCaveats.length > 0 || ignoredAttentionRequests.length > 0 ? (
-                          <div className="mt-3 rounded-lg border border-border bg-accent/30 p-3">
-                            <p className="text-xs font-semibold text-accent-foreground">Semantic finalization lineage</p>
-                            <p className="mt-1 text-xs text-muted-foreground">
+                          <div className="mt-3 rounded-lg border border-line bg-bg-3/30 p-3">
+                            <p className="text-xs font-semibold text-ink">Semantic finalization lineage</p>
+                            <p className="mt-1 text-xs text-ink-3">
                               Provider-native transport and model-authored tool arguments are separate layers. PRP normalized the model payload, then server policy chose the issue disposition.
                             </p>
                             {ignoredAttentionRequests.some((candidate) => record(candidate).sourceKind === "environment_constraint") ? (
@@ -1203,15 +1203,15 @@ export function RunnerInspector({
                               </p>
                             ) : null}
                             <dl className="mt-2 grid grid-cols-(--gtc-runner-inspector-fields) gap-x-3 gap-y-1 text-xs">
-                              <dt className="text-muted-foreground">Policy</dt><dd><code>{text(runResultJson.finalizationPolicyVersion) || "unknown"}</code></dd>
-                              <dt className="text-muted-foreground">Decision reason</dt><dd><code>{text(runResultJson.finalizationReasonCode) || "unknown"}</code></dd>
+                              <dt className="text-ink-3">Policy</dt><dd><code>{text(runResultJson.finalizationPolicyVersion) || "unknown"}</code></dd>
+                              <dt className="text-ink-3">Decision reason</dt><dd><code>{text(runResultJson.finalizationReasonCode) || "unknown"}</code></dd>
                             </dl>
-                            <details className="mt-2"><summary className="cursor-pointer text-xs font-medium text-muted-foreground">Normalized caveats and ignored requests</summary><div className="mt-2"><JsonExplorer value={{ verificationCaveats, ignoredAttentionRequests }} /></div></details>
+                            <details className="mt-2"><summary className="cursor-pointer text-xs font-medium text-ink-3">Normalized caveats and ignored requests</summary><div className="mt-2"><JsonExplorer value={{ verificationCaveats, ignoredAttentionRequests }} /></div></details>
                           </div>
                         ) : null}
                       </section>
                     </div>
-                  ) : <div className="p-5 text-sm text-muted-foreground">Select a correlated operation to inspect its pipeline.</div>}
+                  ) : <div className="p-5 text-sm text-ink-3">Select a correlated operation to inspect its pipeline.</div>}
                 </ScrollArea>
               </div>
             </>
@@ -1219,15 +1219,15 @@ export function RunnerInspector({
 
           {view === "trace" ? (
             <div className="grid min-h-0 flex-1 md:grid-cols-(--gtc-runner-inspector-trace)">
-              <ScrollArea className="border-r border-border"><div className="p-2">{frames.length ? [...frames].sort((left, right) => Number(left.frameId) - Number(right.frameId)).map((frame) => <button key={Number(frame.frameId)} type="button" onClick={() => { const operation = operations.find((candidate) => candidate.frames.some((candidateFrame) => Number(candidateFrame.frameId) === Number(frame.frameId))); if (operation) setSelectedKey(operation.key); setSelectedFrameId(Number(frame.frameId)); }} className={cn("mb-1 w-full rounded-md border px-3 py-2 text-left", Number(frame.frameId) === Number(selectedFrame?.frameId) ? "border-primary/40 bg-primary/10" : "border-transparent hover:bg-muted/50")}><span className="flex items-center gap-2 text-sm font-medium"><span className="font-mono text-xs text-muted-foreground">#{String(frame.frameId)}</span><span className="truncate">{frameMethod(frame) || text(frame.direction)}</span></span><span className="mt-1 block text-(length:--text-nano) text-muted-foreground">{text(frame.direction).replaceAll("_", " ")} · {formatBytes(Number(frame.byteLength) || 0)}</span></button>) : <p className="p-3 text-sm text-muted-foreground">No raw frames were captured for this run.</p>}</div></ScrollArea>
-              <ScrollArea><div className="space-y-3 p-5">{selectedFrame ? <><div className="flex flex-wrap items-center gap-2"><h3 className="text-sm font-semibold">Exact trace frame #{String(selectedFrame.frameId)}</h3><Badge variant="outline">{frameMethod(selectedFrame) || text(selectedFrame.direction)}</Badge></div><JsonExplorer value={selectedFrame.parsed} />{canInspectRaw === true ? <Button size="sm" variant="outline" onClick={() => void reveal(Number(selectedFrame.frameId))}><Eye className="mr-1.5 h-4 w-4" />Reveal exact frame</Button> : null}{revealedFrame ? <JsonExplorer value={decodeExactFrame(revealedFrame.rawBase64)} label="Search exact frame" /> : null}</> : <p className="text-sm text-muted-foreground">Select a frame from the chronological trace.</p>}</div></ScrollArea>
+              <ScrollArea className="border-r border-line"><div className="p-2">{frames.length ? [...frames].sort((left, right) => Number(left.frameId) - Number(right.frameId)).map((frame) => <button key={Number(frame.frameId)} type="button" onClick={() => { const operation = operations.find((candidate) => candidate.frames.some((candidateFrame) => Number(candidateFrame.frameId) === Number(frame.frameId))); if (operation) setSelectedKey(operation.key); setSelectedFrameId(Number(frame.frameId)); }} className={cn("mb-1 w-full rounded-md border px-3 py-2 text-left", Number(frame.frameId) === Number(selectedFrame?.frameId) ? "border-accent/40 bg-accent/10" : "border-transparent hover:bg-bg-3/50")}><span className="flex items-center gap-2 text-sm font-medium"><span className="font-mono text-xs text-ink-3">#{String(frame.frameId)}</span><span className="truncate">{frameMethod(frame) || text(frame.direction)}</span></span><span className="mt-1 block text-(length:--text-nano) text-ink-3">{text(frame.direction).replaceAll("_", " ")} · {formatBytes(Number(frame.byteLength) || 0)}</span></button>) : <p className="p-3 text-sm text-ink-3">No raw frames were captured for this run.</p>}</div></ScrollArea>
+              <ScrollArea><div className="space-y-3 p-5">{selectedFrame ? <><div className="flex flex-wrap items-center gap-2"><h3 className="text-sm font-semibold">Exact trace frame #{String(selectedFrame.frameId)}</h3><Badge variant="outline">{frameMethod(selectedFrame) || text(selectedFrame.direction)}</Badge></div><JsonExplorer value={selectedFrame.parsed} />{canInspectRaw === true ? <Button size="sm" variant="secondary" onClick={() => void reveal(Number(selectedFrame.frameId))}><Eye className="mr-1.5 h-4 w-4" />Reveal exact frame</Button> : null}{revealedFrame ? <JsonExplorer value={decodeExactFrame(revealedFrame.rawBase64)} label="Search exact frame" /> : null}</> : <p className="text-sm text-ink-3">Select a frame from the chronological trace.</p>}</div></ScrollArea>
             </div>
           ) : null}
 
           {canInspectRaw === true && inspection?.trace?.runId === runId ? (
-            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border p-3">
-              <p className="text-xs text-muted-foreground">{inspection.trace.frameCount} frames · {formatBytes(inspection.trace.byteCount)} · expires {new Date(inspection.trace.expiresAt).toLocaleString()}</p>
-              <div className="flex gap-2"><Button size="sm" variant="outline" onClick={() => void downloadTrace()}><Download className="mr-1.5 h-4 w-4" />Download exact trace</Button><Button size="sm" variant="destructive" onClick={() => void deleteTrace()}><Trash2 className="mr-1.5 h-4 w-4" />Delete trace</Button></div>
+            <div className="flex flex-wrap items-center justify-between gap-2 border-t border-line p-3">
+              <p className="text-xs text-ink-3">{inspection.trace.frameCount} frames · {formatBytes(inspection.trace.byteCount)} · expires {new Date(inspection.trace.expiresAt).toLocaleString()}</p>
+              <div className="flex gap-2"><Button size="sm" variant="secondary" onClick={() => void downloadTrace()}><Download className="mr-1.5 h-4 w-4" />Download exact trace</Button><Button size="sm" variant="danger" onClick={() => void deleteTrace()}><Trash2 className="mr-1.5 h-4 w-4" />Delete trace</Button></div>
             </div>
           ) : null}
         </div>

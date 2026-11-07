@@ -26,14 +26,14 @@ export function ArcadeDiscoverySetup({ connection, onClose }: { connection: Tool
     </DialogHeader>
     <form className="space-y-4" onSubmit={event => { event.preventDefault(); save.mutate(); }}>
       <div className="space-y-2"><Label htmlFor="arcade-discovery-key">Project API key</Label>
-        <p className="text-xs text-muted-foreground">Create a key in <a className="underline" href="https://app.arcade.dev" target="_blank" rel="noopener noreferrer">Arcade</a> for the same project as this gateway. The key is stored securely and used only for account sync.</p>
+        <p className="text-xs text-ink-3">Create a key in <a className="underline" href="https://app.arcade.dev" target="_blank" rel="noopener noreferrer">Arcade</a> for the same project as this gateway. The key is stored securely and used only for account sync.</p>
         <Input id="arcade-discovery-key" type="password" autoComplete="off" required value={apiKey} onChange={event => setApiKey(event.target.value)} />
       </div>
       <div className="space-y-2"><Label htmlFor="arcade-discovery-user">Arcade user ID</Label>
-        <p className="text-xs text-muted-foreground">Use the end-user ID configured for this gateway’s sign-in. This may differ from your email address.</p>
+        <p className="text-xs text-ink-3">Use the end-user ID configured for this gateway’s sign-in. This may differ from your email address.</p>
         <Input id="arcade-discovery-user" autoComplete="off" required value={userId} onChange={event => setUserId(event.target.value)} />
       </div>
-      {save.isError ? <p role="alert" className="text-sm text-destructive">{save.error instanceof Error ? save.error.message : "Couldn’t save account sync. Try again."}</p> : null}
+      {save.isError ? <p role="alert" className="text-sm text-bad">{save.error instanceof Error ? save.error.message : "Couldn’t save account sync. Try again."}</p> : null}
       <DialogFooter className="sm:justify-between"><Button type="button" variant="ghost" disabled={save.isPending} onClick={onClose}>Cancel</Button>
         <Button type="submit" disabled={!settled || save.isPending || !apiKey.trim() || !userId.trim()}>{save.isPending ? "Saving…" : "Save and sync"}</Button>
       </DialogFooter>

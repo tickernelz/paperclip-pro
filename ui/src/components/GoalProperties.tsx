@@ -21,7 +21,7 @@ interface GoalPropertiesProps {
 function PropertyRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-start gap-3 py-1.5">
-      <span className="text-xs text-muted-foreground shrink-0 w-20 mt-0.5">{label}</span>
+      <span className="text-xs text-ink-3 shrink-0 w-20 mt-0.5">{label}</span>
       <div className="flex items-center gap-1.5 min-w-0 flex-1 flex-wrap">{children}</div>
     </div>
   );
@@ -52,11 +52,11 @@ function PickerButton({
       </PopoverTrigger>
       <PopoverContent className="w-40 p-1" align="end">
         {options.map((opt) => (
-          <Button
+          <Button active={opt === current}
             key={opt}
             variant="ghost"
             size="sm"
-            className={cn("w-full justify-start text-xs", opt === current && "bg-accent")}
+            className={cn("w-full justify-start text-xs")}
             onClick={() => {
               onChange(opt);
               setOpen(false);
@@ -133,7 +133,7 @@ export function GoalProperties({ goal, onUpdate }: GoalPropertiesProps) {
               {ownerAgent.name}
             </Link>
           ) : (
-            <span className="text-sm text-muted-foreground">None</span>
+            <span className="text-sm text-ink-3">None</span>
           )}
         </PropertyRow>
 

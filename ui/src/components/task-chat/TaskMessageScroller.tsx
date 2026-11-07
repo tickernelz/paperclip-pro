@@ -291,7 +291,7 @@ export function TaskMessageScroller({ children, contentKey, className }: TaskMes
           // The tc-scroll-pill-* keyframes carry the translate(-50%) X-centering
           // (fill: both keeps it after the animation) — no -translate-x-1/2 here.
           className={cn(
-            "absolute left-1/2 flex size-8 items-center justify-center rounded-full border border-border bg-background shadow-sm hover:bg-muted",
+            "absolute left-1/2 flex size-8 items-center justify-center rounded-full border border-line bg-bg shadow-sm hover:bg-bg-3",
             streamlined ? "bottom-7" : "bottom-3",
             pillPhase === "out" ? "tc-scroll-pill-out" : "tc-scroll-pill-in",
           )}

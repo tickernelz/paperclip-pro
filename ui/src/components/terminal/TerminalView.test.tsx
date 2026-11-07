@@ -106,7 +106,6 @@ vi.mock("@xterm/addon-clipboard", () => ({
 }));
 vi.mock("@xterm/addon-image", () => ({ ImageAddon: xterm.MockAddon }));
 vi.mock("@xterm/addon-unicode11", () => ({ Unicode11Addon: xterm.MockAddon }));
-vi.mock("@xterm/xterm/css/xterm.css", () => ({}));
 
 const terminalApiMock = vi.hoisted(() => ({
   createToken: vi.fn(),

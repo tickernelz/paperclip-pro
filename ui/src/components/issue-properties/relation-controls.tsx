@@ -43,8 +43,8 @@ export function RemovableIssueReferencePill({
       : issue.title;
   const chipClassName = cn(
     "paperclip-mention-chip paperclip-mention-chip--issue",
-    "inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-xs no-underline",
-    !locked && issue.identifier && "hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-(length:--rad-3) focus-visible:ring-ring",
+    "inline-flex items-center gap-1 rounded-full border border-line px-2 py-0.5 text-xs no-underline",
+    !locked && issue.identifier && "hover:bg-bg-3/50 focus-visible:outline-none focus-visible:ring-(length:--rad-3) focus-visible:ring-focus",
   );
   // A private blocker referenced from a task you *can* see: show the locked chip
   // (never a title/link) but keep the detach affordance so you aren't stuck
@@ -104,7 +104,7 @@ export function RemovableIssueReferencePill({
           <>
             <button
               type="button"
-              className="absolute -right-1 -top-1 z-10 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-border bg-background text-muted-foreground opacity-0 shadow-sm transition-colors transition-opacity hover:bg-destructive/10 hover:text-destructive focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-(length:--rad-2) focus-visible:ring-ring group-hover:opacity-100"
+              className="absolute -right-1 -top-1 z-10 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full border border-line bg-bg text-ink-3 opacity-0 shadow-sm transition-colors transition-opacity hover:bg-bad/10 hover:text-bad focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-(length:--rad-2) focus-visible:ring-focus group-hover:opacity-100"
               aria-label={removeLabel}
               title={removeLabel}
               onClick={handleRemove}
@@ -146,9 +146,9 @@ export function RemovableIssueReferencePill({
           </DialogHeader>
           <DialogFooter>
             <DialogClose asChild>
-              <Button type="button" variant="outline">Cancel</Button>
+              <Button type="button" variant="secondary">Cancel</Button>
             </DialogClose>
-            <Button type="button" variant="destructive" onClick={confirmRemove}>
+            <Button type="button" variant="danger" onClick={confirmRemove}>
               Remove blocker
             </Button>
           </DialogFooter>
@@ -171,7 +171,7 @@ export function ExpandRelationListButton({
   return (
     <button
       type="button"
-      className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
+      className="inline-flex items-center gap-1 rounded-full border border-line px-2 py-0.5 text-xs text-ink-3 transition-colors hover:bg-bg-3/50 hover:text-ink"
       onClick={onClick}
       aria-label={expanded ? "Show fewer items" : `Show ${hiddenCount} more items`}
     >

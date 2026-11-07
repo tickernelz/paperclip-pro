@@ -51,12 +51,12 @@ export function ReviewQueueCard({
 
   if (!selectedCompanyId) return null;
   if (query.isLoading) return null;
-  if (query.isError) return <p role="alert" className="text-sm text-destructive">Could not load connection reviews. Please refresh to try again.</p>;
+  if (query.isError) return <p role="alert" className="text-sm text-bad">Could not load connection reviews. Please refresh to try again.</p>;
 
   if (items.length === 0) {
     if (emptyState === "hidden") return null;
     return (
-      <div className={plain ? "py-5 text-sm text-muted-foreground" : "rounded-xl border border-border bg-card p-5 text-sm text-muted-foreground"}>
+      <div className={plain ? "py-5 text-sm text-ink-3" : "rounded-xl border border-line bg-bg-2 p-5 text-sm text-ink-3"}>
         Nothing is waiting for your OK right now.
       </div>
     );
@@ -65,9 +65,9 @@ export function ReviewQueueCard({
   return (
     <section className="space-y-3">
       <div className="flex items-center gap-2">
-        <ShieldQuestion className="h-4 w-4 text-muted-foreground" />
-        <h2 className="text-sm font-bold text-foreground">{heading}</h2>
-        <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-xs font-semibold text-muted-foreground">
+        <ShieldQuestion className="h-4 w-4 text-ink-3" />
+        <h2 className="text-sm font-bold text-ink">{heading}</h2>
+        <span className="inline-flex items-center rounded-full bg-bg-3 px-2 py-0.5 text-xs font-semibold text-ink-3">
           {items.length}
         </span>
       </div>
@@ -172,34 +172,34 @@ function ReviewRow({
   const preview = item.request.previewMarkdown?.trim();
 
   return (
-    <div className={plain ? "py-3" : "rounded-xl border border-border bg-card p-4"}>
+    <div className={plain ? "py-3" : "rounded-xl border border-line bg-bg-2 p-4"}>
       <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1 text-sm">
-        <span className="font-bold text-foreground">{actionLabel(item)}</span>
+        <span className="font-bold text-ink">{actionLabel(item)}</span>
         {item.applicationName && (
-          <span className="text-muted-foreground">
+          <span className="text-ink-3">
             in {humanizeConnectionDisplayName(item.applicationName)}
           </span>
         )}
-        <span className="text-xs text-muted-foreground">· asked {timeAgo(item.request.createdAt)}</span>
+        <span className="text-xs text-ink-3">· asked {timeAgo(item.request.createdAt)}</span>
       </div>
 
       {preview ? (
-        <div className="mt-2 rounded-lg border border-border bg-background px-3 py-2 text-sm">
+        <div className="mt-2 rounded-lg border border-line bg-bg px-3 py-2 text-sm">
           <MarkdownBody>{preview}</MarkdownBody>
         </div>
       ) : (
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="mt-1 text-sm text-ink-3">
           An agent wants to run this action. Your connection policy requires approval first.
         </p>
       )}
 
-      {item.requestedByAgentId && item.connectionId && !item.request.approvalId ? <p className="mt-2 text-xs text-muted-foreground">Always allow lets this agent use this action with different arguments on this connection, within the current project when present.</p> : null}
+      {item.requestedByAgentId && item.connectionId && !item.request.approvalId ? <p className="mt-2 text-xs text-ink-3">Always allow lets this agent use this action with different arguments on this connection, within the current project when present.</p> : null}
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <Button size="sm" onClick={() => allowOnce.mutate()} disabled={busy}>
           {resolving === "allow" ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <Check className="mr-1.5 h-3.5 w-3.5" />}
           Allow once
         </Button>
-        {item.requestedByAgentId && item.connectionId && !item.request.approvalId ? <Button size="sm" variant="outline" onClick={() => alwaysAllow.mutate()} disabled={busy}>
+        {item.requestedByAgentId && item.connectionId && !item.request.approvalId ? <Button size="sm" variant="secondary" onClick={() => alwaysAllow.mutate()} disabled={busy}>
           {resolving === "always" ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : null}
           Always allow
         </Button> : null}

@@ -24,10 +24,10 @@ function ProviderEndpointGate({
   if (endpoint.isError)
     return (
       <div className="space-y-3 p-6">
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-sm text-bad">
           {endpoint.error.message}
         </p>
-        <Button variant="outline" onClick={() => void endpoint.refetch()}>
+        <Button variant="secondary" onClick={() => void endpoint.refetch()}>
           Retry
         </Button>
       </div>

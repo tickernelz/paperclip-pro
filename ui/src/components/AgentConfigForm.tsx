@@ -258,7 +258,7 @@ export function subtractPersistedOverlay(
 
 /* ---- Shared input class ---- */
 const inputClass =
-  "w-full rounded-md border border-border px-2.5 py-1.5 bg-transparent outline-none text-sm font-mono placeholder:text-muted-foreground/40";
+  "w-full rounded-md border border-line px-2.5 py-1.5 bg-transparent outline-none text-sm font-mono placeholder:text-ink-3/40";
 
 function parseCommaArgs(value: string): string[] {
   return value
@@ -1357,9 +1357,9 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
     return (
       <div className={cn("relative", cards && "space-y-6")}>
         {isDirty && !props.hideInlineSave && (
-          <div className="sticky top-0 z-10 flex items-center justify-end border-b border-primary/20 bg-background/90 px-4 py-2 backdrop-blur-sm">
+          <div className="sticky top-0 z-10 flex items-center justify-end border-b border-accent/20 bg-bg/90 px-4 py-2 backdrop-blur-sm">
             <div className="flex items-center gap-3">
-              <span className="text-xs text-muted-foreground">Unsaved changes</span>
+              <span className="text-xs text-ink-3">Unsaved changes</span>
               <Button size="sm" onClick={handleSave} disabled={props.isSaving}>
                 {props.isSaving ? "Saving..." : "Save"}
               </Button>
@@ -1368,24 +1368,24 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
         )}
 
         {props.environmentVariablesPlacement === "secrets" && (
-          <div data-config-section="environment-variables" className={cn(!cards && "border-b border-border")}>
+          <div data-config-section="environment-variables" className={cn(!cards && "border-b border-line")}>
             {cards
               ? <h3 className="mb-3 text-sm font-medium">Environment variables</h3>
-              : <div className="px-4 py-2 text-xs font-medium text-muted-foreground">Environment variables</div>
+              : <div className="px-4 py-2 text-xs font-medium text-ink-3">Environment variables</div>
             }
-            <div className={cn(cards ? "rounded-lg border border-border p-4" : "px-4 pb-3")}>
+            <div className={cn(cards ? "rounded-lg border border-line p-4" : "px-4 pb-3")}>
               {environmentVariablesEditor}
             </div>
           </div>
         )}
 
-        <div data-config-section="secrets" className={cn(!cards && "border-b border-border")}>
+        <div data-config-section="secrets" className={cn(!cards && "border-b border-line")}>
           {cards
             ? <h3 className="mb-3 text-sm font-medium">Secret access</h3>
-            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground">Secret access</div>
+            : <div className="px-4 py-2 text-xs font-medium text-ink-3">Secret access</div>
           }
-          <div className={cn(cards ? "space-y-3 rounded-lg border border-border p-4" : "space-y-3 px-4 pb-3")}>
-            <p className="text-xs text-muted-foreground">{help.secretAccess}</p>
+          <div className={cn(cards ? "space-y-3 rounded-lg border border-line p-4" : "space-y-3 px-4 pb-3")}>
+            <p className="text-xs text-ink-3">{help.secretAccess}</p>
             <AgentSecretAccessEditor
               config={{ ...config, ...overlay.adapterConfig }}
               secrets={availableSecrets}
@@ -1406,9 +1406,9 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
     <ConfigSections order={props.sectionOrder} className={cn("relative", cards && "space-y-6")}>
       {/* ---- Floating Save button (edit mode, when dirty) ---- */}
       {isDirty && !props.hideInlineSave && (
-        <div className="sticky top-0 z-10 flex items-center justify-end px-4 py-2 bg-background/90 backdrop-blur-sm border-b border-primary/20">
+        <div className="sticky top-0 z-10 flex items-center justify-end px-4 py-2 bg-bg/90 backdrop-blur-sm border-b border-accent/20">
           <div className="flex items-center gap-3">
-            <span className="text-xs text-muted-foreground">Unsaved changes</span>
+            <span className="text-xs text-ink-3">Unsaved changes</span>
             <Button
               size="sm"
               onClick={handleSave}
@@ -1422,12 +1422,12 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
 
       {/* ---- Identity (edit only) ---- */}
       {!isCreate && (
-        <div data-config-section="identity" className={cn(!cards && "border-b border-border")}>
+        <div data-config-section="identity" className={cn(!cards && "border-b border-line")}>
           {cards
             ? <h3 className="text-sm font-medium mb-3">{props.sectionTitles?.["identity"] ?? "Identity"}</h3>
-            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground">Identity</div>
+            : <div className="px-4 py-2 text-xs font-medium text-ink-3">Identity</div>
           }
-          <div className={cn(cards ? "border border-border rounded-lg p-4 space-y-3" : "px-4 pb-3 space-y-3")}>
+          <div className={cn(cards ? "border border-line rounded-lg p-4 space-y-3" : "px-4 pb-3 space-y-3")}>
             <Field label="Name" hint={help.name}>
               <DraftInput
                 value={eff("identity", "name", props.agent.name)}
@@ -1488,18 +1488,18 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
         // Instance execution policy forces the managed Kubernetes sandbox
         // (executionMode=kubernetes): never offer local / non-Kubernetes targets.
         // Render the environment read-only instead of the selectable picker.
-        <div data-config-section="environment" className={cn(!cards && (isCreate ? "border-t border-border" : "border-b border-border"))}>
+        <div data-config-section="environment" className={cn(!cards && (isCreate ? "border-t border-line" : "border-b border-line"))}>
           {cards
             ? <h3 className="text-sm font-medium mb-3">Environment</h3>
-            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground">Environment</div>
+            : <div className="px-4 py-2 text-xs font-medium text-ink-3">Environment</div>
           }
-          <div className={cn(cards ? "border border-border rounded-lg p-4 space-y-3" : "px-4 pb-3 space-y-3")}>
+          <div className={cn(cards ? "border border-line rounded-lg p-4 space-y-3" : "px-4 pb-3 space-y-3")}>
             <Field
               label="Default environment"
               hint="This instance runs all agents in the Kubernetes sandbox. Local execution is disabled."
             >
               {kubernetesEnvironment ? (
-                <div className={cn(inputClass, "flex items-center text-muted-foreground")}>
+                <div className={cn(inputClass, "flex items-center text-ink-3")}>
                   {kubernetesEnvironment.name} · Kubernetes sandbox
                 </div>
               ) : (
@@ -1513,12 +1513,12 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
           </div>
         </div>
       ) : showEnvironmentOverrideControl ? (
-        <div data-config-section="environment" className={cn(!cards && (isCreate ? "border-t border-border" : "border-b border-border"))}>
+        <div data-config-section="environment" className={cn(!cards && (isCreate ? "border-t border-line" : "border-b border-line"))}>
           {cards
             ? <h3 className="text-sm font-medium mb-3">Environment</h3>
-            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground">Environment</div>
+            : <div className="px-4 py-2 text-xs font-medium text-ink-3">Environment</div>
           }
-          <div className={cn(cards ? "border border-border rounded-lg p-4 space-y-3" : "px-4 pb-3 space-y-3")}>
+          <div className={cn(cards ? "border border-line rounded-lg p-4 space-y-3" : "px-4 pb-3 space-y-3")}>
             <Field label="Environment override">
               <div className="space-y-2">
                 <select
@@ -1547,16 +1547,16 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
       ) : null}
 
       {/* ---- Adapter ---- */}
-      <div data-config-section="adapter" className={cn(!cards && (isCreate ? "border-t border-border" : "border-b border-border"))}>
+      <div data-config-section="adapter" className={cn(!cards && (isCreate ? "border-t border-line" : "border-b border-line"))}>
         <div className={cn(cards ? "flex items-center justify-between mb-3" : "px-4 py-2 flex items-center justify-between gap-2")}>
           {cards
             ? <h3 className="text-sm font-medium">{props.sectionTitles?.["adapter"] ?? "Adapter"}</h3>
-            : <span className="text-xs font-medium text-muted-foreground">Adapter</span>
+            : <span className="text-xs font-medium text-ink-3">Adapter</span>
           }
           {showInlineAdapterTestEnvironmentButton && (
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               size="sm"
               className="h-7 px-2.5 text-xs"
               onClick={triggerTestEnvironment}
@@ -1566,7 +1566,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
             </Button>
           )}
         </div>
-        <div className={cn(cards ? "border border-border rounded-lg p-4 space-y-3" : "px-4 pb-3 space-y-3")}>
+        <div className={cn(cards ? "border border-line rounded-lg p-4 space-y-3" : "px-4 pb-3 space-y-3")}>
           {showAdapterTypeField && (
             <Field label="Adapter type" hint={help.adapterType}>
               <AdapterTypeDropdown
@@ -1625,7 +1625,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
             onChange={binding => mark("runtime", "runtimeConfig", { ...runtimeConfig, aiConnection: binding })} />}
 
           {showInlineAdapterTestEnvironmentFeedback && !props.compactTestFeedback && (testActionError || testEnvironment.error) && (
-            <div className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+            <div className="rounded-md border border-bad/30 bg-bad/10 px-3 py-2 text-xs text-bad">
               {testActionError
                 ?? (testEnvironment.error instanceof Error
                   ? testEnvironment.error.message
@@ -1654,8 +1654,8 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
           {/* Working directory */}
           {showLegacyWorkingDirectoryField && (
             <Field label="Working directory (deprecated)" hint={help.cwd}>
-              <div className="flex items-center gap-2 rounded-md border border-border px-2.5 py-1.5">
-                <FolderOpen className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+              <div className="flex items-center gap-2 rounded-md border border-line px-2.5 py-1.5">
+                <FolderOpen className="h-3.5 w-3.5 text-ink-3 shrink-0" />
                 <DraftInput
                   value={
                     isCreate
@@ -1668,7 +1668,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                       : mark("adapterConfig", "cwd", v || undefined)
                   }
                   immediate
-                  className="w-full bg-transparent outline-none text-sm font-mono placeholder:text-muted-foreground/40"
+                  className="w-full bg-transparent outline-none text-sm font-mono placeholder:text-ink-3/40"
                   placeholder="/path/to/project"
                 />
                 <ChoosePathButton />
@@ -1718,7 +1718,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                 emptyDetectHint="No model detected. Select or enter one manually."
               />
               {(refreshModelsError || modelError) && (
-                <p className="text-xs text-destructive">
+                <p className="text-xs text-bad">
                   {refreshModelsError
                     ?? (modelError instanceof Error
                       ? modelError.message
@@ -1747,12 +1747,12 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
 
       {/* ---- Configuration ---- */}
       {(
-        <div data-config-section="configuration" className={cn(!cards && "border-b border-border")}>
+        <div data-config-section="configuration" className={cn(!cards && "border-b border-line")}>
           {cards
             ? <h3 className="text-sm font-medium mb-3">Configuration</h3>
-            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground">Configuration</div>
+            : <div className="px-4 py-2 text-xs font-medium text-ink-3">Configuration</div>
           }
-          <div className={cn(cards ? "border border-border rounded-lg p-4 space-y-3" : "px-4 pb-3 space-y-3")}>
+          <div className={cn(cards ? "border border-line rounded-lg p-4 space-y-3" : "px-4 pb-3 space-y-3")}>
               {!isCreate && typeof config.bootstrapPromptTemplate === "string" && config.bootstrapPromptTemplate && (
                 <>
                   <Field label="Bootstrap prompt (legacy)" hint={help.bootstrapPrompt}>
@@ -1852,12 +1852,12 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
       )}
 
       {props.environmentVariablesPlacement !== "secrets" && (isLocal || configSchema?.fields.some((field) => schemaFieldSection(field.key) === "environment")) && (
-        <div data-config-section="environment-variables" className={cn(!cards && "border-b border-border")}>
+        <div data-config-section="environment-variables" className={cn(!cards && "border-b border-line")}>
           {cards
             ? <h3 className="text-sm font-medium mb-3">Environment variables</h3>
-            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground">Environment variables</div>
+            : <div className="px-4 py-2 text-xs font-medium text-ink-3">Environment variables</div>
           }
-          <div className={cn(cards ? "border border-border rounded-lg p-4 space-y-3" : "px-4 pb-3 space-y-3")}>
+          <div className={cn(cards ? "border border-line rounded-lg p-4 space-y-3" : "px-4 pb-3 space-y-3")}>
             {isLocal ? environmentVariablesEditor : renderAdapterFields("environment")}
           </div>
         </div>
@@ -1865,12 +1865,12 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
 
       {/* ---- Run Policy ---- */}
       {isCreate && showCreateRunPolicySection ? (
-        <div data-config-section="run-policy" className={cn(!cards && "border-b border-border")}>
+        <div data-config-section="run-policy" className={cn(!cards && "border-b border-line")}>
           {cards
             ? <h3 className="text-sm font-medium flex items-center gap-2 mb-3"><Heart className="h-3 w-3" /> Run Policy</h3>
-            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground flex items-center gap-2"><Heart className="h-3 w-3" /> Run Policy</div>
+            : <div className="px-4 py-2 text-xs font-medium text-ink-3 flex items-center gap-2"><Heart className="h-3 w-3" /> Run Policy</div>
           }
-          <div className={cn(cards ? "border border-border rounded-lg p-4 space-y-3" : "px-4 pb-3 space-y-3")}>
+          <div className={cn(cards ? "border border-line rounded-lg p-4 space-y-3" : "px-4 pb-3 space-y-3")}>
             <ToggleWithNumber
               label="Heartbeat on interval"
               hint={help.heartbeatInterval}
@@ -1889,12 +1889,12 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
           </div>
         </div>
       ) : !isCreate ? (
-        <div data-config-section="run-policy" className={cn(!cards && "border-b border-border")}>
+        <div data-config-section="run-policy" className={cn(!cards && "border-b border-line")}>
           {cards
             ? <h3 className="text-sm font-medium flex items-center gap-2 mb-3"><Heart className="h-3 w-3" /> Run Policy</h3>
-            : <div className="px-4 py-2 text-xs font-medium text-muted-foreground flex items-center gap-2"><Heart className="h-3 w-3" /> Run Policy</div>
+            : <div className="px-4 py-2 text-xs font-medium text-ink-3 flex items-center gap-2"><Heart className="h-3 w-3" /> Run Policy</div>
           }
-          <div className={cn(cards ? "border border-border rounded-lg overflow-hidden" : "")}>
+          <div className={cn(cards ? "border border-line rounded-lg overflow-hidden" : "")}>
             <div className={cn(cards ? "p-4 space-y-3" : "px-4 pb-3 space-y-3")}>
               <ToggleWithNumber
                 label="Heartbeat on interval"
@@ -1986,7 +1986,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                   className={inputClass}
                 />
               </Field>
-              <div className="rounded-md border border-border/70 px-3 py-2">
+              <div className="rounded-md border border-line/70 px-3 py-2">
                 <ToggleField
                   label="Continue after max-turn stop"
                   hint={help.maxTurnContinuationEnabled}
@@ -2028,19 +2028,19 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
 
       {/* ---- Debugging ---- */}
       {!isCreate && canConfigureProviderTrace ? (
-        <div className={cn(!cards && "border-b border-border")}>
+        <div className={cn(!cards && "border-b border-line")}>
           {cards ? (
             <h3 className="mb-3 flex items-center gap-2 text-sm font-medium">
               <Bug className="h-3 w-3" /> Debugging
             </h3>
           ) : (
-            <div className="flex items-center gap-2 px-4 py-2 text-xs font-medium text-muted-foreground">
+            <div className="flex items-center gap-2 px-4 py-2 text-xs font-medium text-ink-3">
               <Bug className="h-3 w-3" /> Debugging
             </div>
           )}
           <div
             className={cn(
-              "border-border bg-accent/30",
+              "border-line bg-bg-3/30",
               cards
                 ? "rounded-lg border p-4"
                 : "mx-4 mb-4 rounded-md border px-3 py-3",
@@ -2055,7 +2055,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
               }
             />
             {eff<unknown>("debug", "providerTrace", debug.providerTrace) === "raw" ? (
-              <div className="mt-3 flex items-start gap-2 rounded-md border border-border bg-background/60 px-3 py-2 text-xs text-foreground">
+              <div className="mt-3 flex items-start gap-2 rounded-md border border-line bg-bg/60 px-3 py-2 text-xs text-ink">
                 <Bug className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                 <span>
                   Raw tracing is on for future runs. Paperclip keeps at most 64 MiB per run and automatically deletes it after 24 hours.
@@ -2111,7 +2111,6 @@ function AdapterLoginCopyButton({ value, label }: { value: string; label: string
       size="icon-xs"
       aria-label={label}
       title={label}
-      className="text-muted-foreground hover:text-foreground"
       onClick={async () => {
         try {
           await copyTextToClipboard(value);
@@ -2139,7 +2138,7 @@ function AdapterLoginTerminalState({
 }) {
   if (status === "authenticated") {
     return (
-      <div className="flex items-center gap-2 text-(length:--text-micro) text-foreground">
+      <div className="flex items-center gap-2 text-(length:--text-micro) text-ink">
         <Check className="size-3 shrink-0" />
         <span>Authenticated. The environment has credentials now.</span>
       </div>
@@ -2152,7 +2151,7 @@ function AdapterLoginTerminalState({
         ? "Login cancelled"
         : "Login failed";
   return (
-    <div className="flex items-start gap-2 text-(length:--text-micro) text-destructive">
+    <div className="flex items-start gap-2 text-(length:--text-micro) text-bad">
       <TriangleAlert className="size-3 shrink-0" />
       <span>
         {label}
@@ -2553,16 +2552,16 @@ function DisplayedCodeLoginPanel({
       >
         {startError ? (
           <div>
-            <p role="alert" className="pl-2 text-xs text-destructive">{startError}</p>
+            <p role="alert" className="pl-2 text-xs text-bad">{startError}</p>
             {activeSessionQuery.error instanceof AdapterLoginConflictError && (
-              <Button type="button" variant="outline" disabled={cancelConflictingLogin.isPending}
+              <Button type="button" variant="secondary" disabled={cancelConflictingLogin.isPending}
                 onClick={() => cancelConflictingLogin.mutate()}>
                 Cancel previous sign-in and retry
               </Button>
             )}
           </div>
         ) : failed ? (
-          <p role="alert" className="pl-2 text-xs text-destructive">
+          <p role="alert" className="pl-2 text-xs text-bad">
             {status === "timed_out"
               ? "The login timed out. Start it again."
               : status === "cancelled"
@@ -2577,21 +2576,21 @@ function DisplayedCodeLoginPanel({
   }
 
   return (
-    <div className="rounded-md border border-border bg-muted/40 px-3 py-2 flex flex-col gap-2">
+    <div className="rounded-md border border-line bg-bg-3/40 px-3 py-2 flex flex-col gap-2">
       {/* `gap`, not `space-y`: the live region below collapses to
           `display: none` whenever it has nothing to announce, and
           `space-y` would still put its 8px on the row above — dead space
           inside the card that pushes the row off centre. A gap only
           applies between children that render. */}
       <div className="flex items-center justify-between gap-2">
-        <span className="text-xs font-medium text-foreground">{adapterLoginTitle(adapterType)}</span>
+        <span className="text-xs font-medium text-ink">{adapterLoginTitle(adapterType)}</span>
         <div className="flex items-center gap-1.5">
           {isActive && (
             <Button
               type="button"
               variant="ghost"
               size="sm"
-              className="h-7 px-2.5 text-xs text-muted-foreground hover:text-foreground"
+              className="h-7 px-2.5 text-xs"
               disabled={cancelLogin.isPending}
               onClick={() => cancelLogin.mutate()}
             >
@@ -2600,7 +2599,7 @@ function DisplayedCodeLoginPanel({
           )}
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             size="sm"
             className="h-7 px-2.5 text-xs"
             disabled={startDisabled}
@@ -2612,7 +2611,7 @@ function DisplayedCodeLoginPanel({
       </div>
 
       {startError && (
-        <div role="alert" className="text-(length:--text-micro) text-destructive">
+        <div role="alert" className="text-(length:--text-micro) text-bad">
           {startError}
         </div>
       )}
@@ -2621,7 +2620,7 @@ function DisplayedCodeLoginPanel({
           screen reader reports each transition without a re-navigation. */}
       <div role="status" aria-live="polite" className="space-y-2 empty:hidden">
         {isActive && !prompt && (
-          <div className="flex items-center gap-2 text-(length:--text-micro) text-muted-foreground">
+          <div className="flex items-center gap-2 text-(length:--text-micro) text-ink-3">
             <Loader2 className="size-3 animate-spin shrink-0" />
             <span>Preparing...</span>
           </div>
@@ -2629,7 +2628,7 @@ function DisplayedCodeLoginPanel({
 
         {isActive && prompt && (
           <div className="space-y-2">
-            <div className="text-(length:--text-micro) text-muted-foreground">
+            <div className="text-(length:--text-micro) text-ink-3">
               Copy the code, then open the authentication page.
             </div>
           {/* Code first, then the URL, and the sentence and the numbering both
@@ -2649,19 +2648,19 @@ function DisplayedCodeLoginPanel({
               does come first. */}
           <div className="flex items-center justify-between gap-2">
             <div className="min-w-0">
-              <div className="text-(length:--text-micro) uppercase tracking-wide text-muted-foreground">
+              <div className="text-(length:--text-micro) uppercase tracking-wide text-ink-3">
                 1. Code
               </div>
-              <span className="font-mono text-xs text-foreground break-all">{prompt.code}</span>
+              <span className="font-mono text-xs text-ink break-all">{prompt.code}</span>
             </div>
             <AdapterLoginCopyButton value={prompt.code} label="Copy code" />
           </div>
           <div className="flex items-center justify-between gap-2">
             <div className="min-w-0">
-              <div className="text-(length:--text-micro) uppercase tracking-wide text-muted-foreground">
+              <div className="text-(length:--text-micro) uppercase tracking-wide text-ink-3">
                 2. Authentication URL
               </div>
-              <span className="font-mono text-xs text-foreground break-all">{prompt.url}</span>
+              <span className="font-mono text-xs text-ink break-all">{prompt.url}</span>
             </div>
             <div className="flex items-center">
               <AdapterLoginCopyButton value={prompt.url} label="Copy URL" />
@@ -2672,7 +2671,6 @@ function DisplayedCodeLoginPanel({
                 size="icon-xs"
                 aria-label="Open the authentication page"
                 title="Open the authentication page"
-                className="text-muted-foreground hover:text-foreground"
               >
                 <a href={prompt.url} target="_blank" rel="noreferrer noopener">
                   <ExternalLink className="size-3" />
@@ -2691,26 +2689,26 @@ function DisplayedCodeLoginPanel({
             The bind is a second, separate save — showing it as part of the
             login would report success for a write that can still fail. */}
         {status === "authenticated" && accountBindState === "saving" && (
-          <div className="flex items-center gap-2 text-(length:--text-micro) text-muted-foreground">
+          <div className="flex items-center gap-2 text-(length:--text-micro) text-ink-3">
             <Loader2 className="size-3 animate-spin shrink-0" />
             <span>Binding this agent to the signed-in account...</span>
           </div>
         )}
         {status === "authenticated" && accountBindState === "bound" && (
-          <div className="flex items-center gap-2 text-(length:--text-micro) text-foreground">
+          <div className="flex items-center gap-2 text-(length:--text-micro) text-ink">
             <Check className="size-3 shrink-0" />
             <span>Agent bound to the signed-in account.</span>
           </div>
         )}
         {status === "authenticated" && accountBindState === "failed" && (
           <div className="flex items-center gap-2 text-(length:--text-micro)">
-            <TriangleAlert className="size-3 shrink-0 text-destructive" />
-            <span className="text-destructive">
+            <TriangleAlert className="size-3 shrink-0 text-bad" />
+            <span className="text-bad">
               Could not bind this agent to the signed-in account.
             </span>
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               size="sm"
               className="h-6 px-2 text-xs"
               onClick={() => {
@@ -3303,11 +3301,11 @@ function SubmittedBrowserCodeLoginPanel({
           </p>
         )}
         {startError ? (
-          <p role="alert" className="pl-2 text-xs text-destructive">
+          <p role="alert" className="pl-2 text-xs text-bad">
             {startError}
           </p>
         ) : failedNow ? (
-          <p role="alert" className="pl-2 text-xs text-destructive">
+          <p role="alert" className="pl-2 text-xs text-bad">
             {timedOut && !isFailure ? CLAUDE_LOGIN_TIMED_OUT_MESSAGE : CLAUDE_LOGIN_FAILED_MESSAGE}
           </p>
         ) : (
@@ -3330,21 +3328,21 @@ function SubmittedBrowserCodeLoginPanel({
   }
 
   return (
-    <div className="rounded-md border border-border bg-muted/40 px-3 py-2 flex flex-col gap-2">
+    <div className="rounded-md border border-line bg-bg-3/40 px-3 py-2 flex flex-col gap-2">
       {/* `gap`, not `space-y`: the live region below collapses to
           `display: none` whenever it has nothing to announce, and
           `space-y` would still put its 8px on the row above — dead space
           inside the card that pushes the row off centre. A gap only
           applies between children that render. */}
       <div className="flex items-center justify-between gap-2">
-        <span className="text-xs font-medium text-foreground">{adapterLoginTitle(adapterType)}</span>
+        <span className="text-xs font-medium text-ink">{adapterLoginTitle(adapterType)}</span>
         <div className="flex items-center gap-1.5">
           {isActive && (
             <Button
               type="button"
               variant="ghost"
               size="sm"
-              className="h-7 px-2.5 text-xs text-muted-foreground hover:text-foreground"
+              className="h-7 px-2.5 text-xs"
               disabled={cancelLogin.isPending}
               onClick={() => cancelLogin.mutate()}
             >
@@ -3357,7 +3355,7 @@ function SubmittedBrowserCodeLoginPanel({
           {onApplyStored && storedToken && !isActive && !isStored && !appliedStored && (
             <Button
               type="button"
-              variant="default"
+              variant="primary"
               size="sm"
               className="h-7 px-2.5 text-xs"
               onClick={() => {
@@ -3370,7 +3368,7 @@ function SubmittedBrowserCodeLoginPanel({
           )}
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             size="sm"
             className="h-7 px-2.5 text-xs"
             disabled={startDisabled}
@@ -3385,21 +3383,21 @@ function SubmittedBrowserCodeLoginPanel({
           first and does not force a fresh login. Use saved login binds the stored
           token; a replacement login rotates it under the captured version. */}
       {storedToken && !isActive && !isStored && !appliedStored && (
-        <div className="text-(length:--text-micro) text-muted-foreground">
+        <div className="text-(length:--text-micro) text-ink-3">
           You have a saved Claude login. Use it to bind this agent, or log in again to replace the
           stored token.
         </div>
       )}
 
       {appliedStored && (
-        <div className="flex items-center gap-2 text-(length:--text-micro) text-foreground">
+        <div className="flex items-center gap-2 text-(length:--text-micro) text-ink">
           <Check className="size-3 shrink-0" />
           <span>The saved Claude login is bound to this agent now.</span>
         </div>
       )}
 
       {startError && (
-        <div role="alert" className="text-(length:--text-micro) text-destructive">
+        <div role="alert" className="text-(length:--text-micro) text-bad">
           {startError}
         </div>
       )}
@@ -3408,7 +3406,7 @@ function SubmittedBrowserCodeLoginPanel({
           states, so a screen reader reports each transition. */}
       <div role="status" aria-live="polite" className="space-y-2 empty:hidden">
         {isActive && !authorizationUrl && !isCompleting && (
-          <div className="flex items-center gap-2 text-(length:--text-micro) text-muted-foreground">
+          <div className="flex items-center gap-2 text-(length:--text-micro) text-ink-3">
             <Loader2 className="size-3 animate-spin shrink-0" />
             <span>Preparing...</span>
           </div>
@@ -3427,15 +3425,15 @@ function SubmittedBrowserCodeLoginPanel({
                 </span>
               </div>
             )}
-            <div className="text-(length:--text-micro) text-muted-foreground">
+            <div className="text-(length:--text-micro) text-ink-3">
               Open the authorization page, then enter the browser code it shows.
             </div>
             <div className="flex items-center justify-between gap-2">
               <div className="min-w-0">
-                <div className="text-(length:--text-micro) uppercase tracking-wide text-muted-foreground">
+                <div className="text-(length:--text-micro) uppercase tracking-wide text-ink-3">
                   1. Authorization URL
                 </div>
-                <span className="font-mono text-xs text-foreground break-all">{authorizationUrl}</span>
+                <span className="font-mono text-xs text-ink break-all">{authorizationUrl}</span>
               </div>
               <div className="flex items-center">
                 <AdapterLoginCopyButton value={authorizationUrl} label="Copy URL" />
@@ -3446,7 +3444,6 @@ function SubmittedBrowserCodeLoginPanel({
                   size="icon-xs"
                   aria-label="Open the authorization page"
                   title="Open the authorization page"
-                  className="text-muted-foreground hover:text-foreground"
                 >
                   <a href={authorizationUrl} target="_blank" rel="noreferrer noopener">
                     <ExternalLink className="size-3" />
@@ -3455,7 +3452,7 @@ function SubmittedBrowserCodeLoginPanel({
               </div>
             </div>
             <div className="space-y-1">
-              <div className="text-(length:--text-micro) uppercase tracking-wide text-muted-foreground">
+              <div className="text-(length:--text-micro) uppercase tracking-wide text-ink-3">
                 2. Browser code
               </div>
               <div className="flex items-center gap-2">
@@ -3472,11 +3469,11 @@ function SubmittedBrowserCodeLoginPanel({
                       handleSubmit();
                     }
                   }}
-                  className="flex-1 min-w-0 rounded-md border border-border bg-background px-2 py-1 font-mono text-xs text-foreground"
+                  className="flex-1 min-w-0 rounded-md border border-line bg-bg px-2 py-1 font-mono text-xs text-ink"
                 />
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   className="h-7 px-2.5 text-xs"
                   disabled={!canSubmit}
@@ -3490,28 +3487,28 @@ function SubmittedBrowserCodeLoginPanel({
         )}
 
         {isCompleting && (
-          <div className="flex items-center gap-2 text-(length:--text-micro) text-muted-foreground">
+          <div className="flex items-center gap-2 text-(length:--text-micro) text-ink-3">
             <Loader2 className="size-3 animate-spin shrink-0" />
             <span>Completing the login…</span>
           </div>
         )}
 
         {isStored && (
-          <div className="flex items-center gap-2 text-(length:--text-micro) text-foreground">
+          <div className="flex items-center gap-2 text-(length:--text-micro) text-ink">
             <Check className="size-3 shrink-0" />
             <span>Authenticated. The environment has credentials now.</span>
           </div>
         )}
 
         {isFailure && (
-          <div className="flex items-start gap-2 text-(length:--text-micro) text-destructive">
+          <div className="flex items-start gap-2 text-(length:--text-micro) text-bad">
             <TriangleAlert className="size-3 shrink-0" />
             <span>{CLAUDE_LOGIN_FAILED_MESSAGE}</span>
           </div>
         )}
 
         {timedOut && !isFailure && !isStored && (
-          <div className="flex items-start gap-2 text-(length:--text-micro) text-destructive">
+          <div className="flex items-start gap-2 text-(length:--text-micro) text-bad">
             <TriangleAlert className="size-3 shrink-0" />
             <span>{CLAUDE_LOGIN_TIMED_OUT_MESSAGE}</span>
           </div>
@@ -3609,8 +3606,8 @@ export function AdapterTypeDropdown({
               "flex items-center justify-between w-full px-2 py-1.5 text-sm rounded",
               item.comingSoon
                 ? "opacity-40 cursor-not-allowed"
-                : "hover:bg-accent/50",
-              item.value === value && !item.comingSoon && "bg-accent",
+                : "hover:bg-bg-3/50",
+              item.value === value && !item.comingSoon && "bg-bg-3",
             )}
             onClick={() => {
               if (!item.comingSoon) {
@@ -3627,7 +3624,7 @@ export function AdapterTypeDropdown({
               {item.experimental && <ExperimentalBadge />}
             </span>
             {item.comingSoon && (
-              <span className="text-(length:--text-nano) text-muted-foreground">Coming soon</span>
+              <span className="text-(length:--text-nano) text-ink-3">Coming soon</span>
             )}
           </button>
         ))}
@@ -3798,13 +3795,13 @@ export function ModelDropdown({
           {creatable && <option value={customOption}>Enter custom model…</option>}
         </NativeSelect>
         {enteringCustomModel && (
-          <label className="mt-3 block space-y-1 text-xs text-muted-foreground">
+          <label className="mt-3 block space-y-1 text-xs text-ink-3">
             Model ID
             <Input aria-label="Model ID" value={value} onChange={event => onChange(event.target.value)}
               placeholder="Enter model ID or alias" autoFocus required={required} />
           </label>
         )}
-        {loadingModels && <p role="status" className="mt-2 text-xs text-muted-foreground">Loading models…</p>}
+        {loadingModels && <p role="status" className="mt-2 text-xs text-ink-3">Loading models…</p>}
         {onRefreshModels && <Button type="button" variant="ghost" size="sm" disabled={refreshingModels}
           onClick={() => void onRefreshModels()}>{refreshingModels ? "Refreshing…" : "Refresh models"}</Button>}
       </Field>
@@ -3824,31 +3821,31 @@ export function ModelDropdown({
           <button
             type="button"
             aria-label="Model"
-            className="flex w-full min-w-0 items-center gap-2 rounded-md border border-border px-2.5 py-1.5 text-left text-sm transition-colors hover:bg-accent/50"
+            className="flex w-full min-w-0 items-center gap-2 rounded-md border border-line px-2.5 py-1.5 text-left text-sm transition-colors hover:bg-bg-3/50"
             data-testid="model-dropdown-trigger"
           >
             {selectedDisplay ? (
               <ModelValueLabel display={selectedDisplay} layout="inline" className="min-w-0 flex-1" />
             ) : (
-              <span className="min-w-0 flex-1 truncate text-muted-foreground">
+              <span className="min-w-0 flex-1 truncate text-ink-3">
                 {allowDefault ? (defaultLabel ?? "Default") : required ? "Select model (required)" : "Select model"}
               </span>
             )}
             {effort && value && showsEffortControl(effort.value, value, [...pickerOptions.values()]) ? (
               <span
-                className={cn("shrink-0 text-xs", effort.value ? "text-foreground" : "text-muted-foreground")}
+                className={cn("shrink-0 text-xs", effort.value ? "text-ink" : "text-ink-3")}
                 data-testid="model-dropdown-effort-value"
               >
                 · {effort.value ?? "Auto effort"}
               </span>
             ) : null}
-            <ChevronDown className="size-4 shrink-0 text-muted-foreground" />
+            <ChevronDown className="size-4 shrink-0 text-ink-3" />
           </button>
         </PopoverTrigger>
         <PopoverContent className="w-(--radix-popover-trigger-width) p-1" align="start">
           {effort && value && showsEffortControl(effort.value, value, [...pickerOptions.values()]) ? (
-            <div className="-mx-1 -mt-1 mb-1 space-y-1.5 border-b border-border px-2.5 py-2">
-              <span className="block text-xs font-medium text-muted-foreground">Thinking effort</span>
+            <div className="-mx-1 -mt-1 mb-1 space-y-1.5 border-b border-line px-2.5 py-2">
+              <span className="block text-xs font-medium text-ink-3">Thinking effort</span>
               <EffortChips
                 levels={effortLevelsFor(value, [...pickerOptions.values()])}
                 value={effort.value}
@@ -3862,11 +3859,11 @@ export function ModelDropdown({
               />
             </div>
           ) : null}
-          <div className="relative -mx-1 -mt-1 mb-1 border-b border-border">
-            <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+          <div className="relative -mx-1 -mt-1 mb-1 border-b border-line">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-ink-3" aria-hidden="true" />
             <input
               aria-label="Search models"
-              className="h-9 w-full bg-transparent pl-8 pr-7 text-sm outline-none placeholder:text-muted-foreground"
+              className="h-9 w-full bg-transparent pl-8 pr-7 text-sm outline-none placeholder:text-ink-3"
               placeholder={creatable ? MODEL_SEARCH_PLACEHOLDER : "Search models"}
               value={modelSearch}
               onChange={(e) => setModelSearch(e.target.value)}
@@ -3876,7 +3873,7 @@ export function ModelDropdown({
               <button
                 type="button"
                 aria-label="Clear search"
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-ink-3 hover:text-ink"
                 onClick={() => setModelSearch("")}
               >
                 <svg aria-hidden="true" focusable="false" className="h-3 w-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -3889,7 +3886,7 @@ export function ModelDropdown({
           {onDetectModel && !modelSearch.trim() && (
             <button
               type="button"
-              className="flex items-center gap-1.5 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50 text-muted-foreground"
+              className="flex items-center gap-1.5 w-full px-2 py-1.5 text-xs rounded hover:bg-bg-3/50 text-ink-3"
               onClick={() => {
                 void handleDetectModel();
               }}
@@ -3905,7 +3902,7 @@ export function ModelDropdown({
           {onRefreshModels && !modelSearch.trim() && (
             <button
               type="button"
-              className="flex items-center gap-1.5 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50 text-muted-foreground"
+              className="flex items-center gap-1.5 w-full px-2 py-1.5 text-xs rounded hover:bg-bg-3/50 text-ink-3"
               onClick={() => {
                 void onRefreshModels();
               }}
@@ -3924,7 +3921,7 @@ export function ModelDropdown({
             <button
               type="button"
               className={cn(
-                "flex items-center w-full px-2 py-1.5 text-sm rounded bg-accent/50",
+                "flex items-center w-full px-2 py-1.5 text-sm rounded bg-bg-3/50",
               )}
               onClick={() => {
                 onOpenChange(false);
@@ -3942,7 +3939,7 @@ export function ModelDropdown({
             <button
               type="button"
               className={cn(
-                "flex items-center w-full px-2 py-1.5 text-sm rounded hover:bg-accent/50",
+                "flex items-center w-full px-2 py-1.5 text-sm rounded hover:bg-bg-3/50",
               )}
               onClick={() => {
                 onChange(detectedModel);
@@ -3966,7 +3963,7 @@ export function ModelDropdown({
                   key={`detected-${candidate}`}
                   type="button"
                   className={cn(
-                    "flex items-center w-full px-2 py-1.5 text-sm rounded hover:bg-accent/50",
+                    "flex items-center w-full px-2 py-1.5 text-sm rounded hover:bg-bg-3/50",
                   )}
                   onClick={() => {
                     onChange(candidate);
@@ -3987,8 +3984,8 @@ export function ModelDropdown({
               <button
                 type="button"
                 className={cn(
-                  "flex items-center gap-2 w-full px-2 py-1.5 text-sm rounded hover:bg-accent/50",
-                  !value && "bg-accent",
+                  "flex items-center gap-2 w-full px-2 py-1.5 text-sm rounded hover:bg-bg-3/50",
+                  !value && "bg-bg-3",
                 )}
                 onClick={() => {
                   onChange("");
@@ -4001,7 +3998,7 @@ export function ModelDropdown({
             {canCreateManualModel && (
               <button
                 type="button"
-                className="flex items-center justify-between gap-2 w-full px-2 py-1.5 text-sm rounded hover:bg-accent/50"
+                className="flex items-center justify-between gap-2 w-full px-2 py-1.5 text-sm rounded hover:bg-bg-3/50"
                 onClick={() => {
                   onChange(manualModel);
                   onOpenChange(false);
@@ -4009,7 +4006,7 @@ export function ModelDropdown({
                 }}
               >
                 <span>Use manual model</span>
-                <span className="text-xs font-mono text-muted-foreground">{manualModel}</span>
+                <span className="text-xs font-mono text-ink-3">{manualModel}</span>
               </button>
             )}
             {groupedModels.map((group) => (
@@ -4022,8 +4019,8 @@ export function ModelDropdown({
                     type="button"
                     key={m.id}
                     className={cn(
-                      "flex items-center gap-2 w-full px-2 py-1.5 text-left text-sm rounded hover:bg-accent/50",
-                      m.id === value && "bg-accent",
+                      "flex items-center gap-2 w-full px-2 py-1.5 text-left text-sm rounded hover:bg-bg-3/50",
+                      m.id === value && "bg-bg-3",
                     )}
                     onClick={() => {
                       onChange(m.id);
@@ -4038,7 +4035,7 @@ export function ModelDropdown({
             ))}
             {filteredModels.length === 0 && !canCreateManualModel && promotedModelIds.size === 0 && (
               <div className="px-2 py-2 space-y-2">
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-ink-3">
                   {loadingModels ? "Loading models…" : onDetectModel
                     ? (emptyDetectHint ?? "No model detected yet. Enter a provider/model manually.")
                     : "No models found."}
@@ -4071,9 +4068,9 @@ function ThinkingEffortDropdown({
     <Field label="Thinking effort" hint={help.thinkingEffort}>
       <Popover open={open} onOpenChange={onOpenChange}>
         <PopoverTrigger asChild>
-          <button className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-sm hover:bg-accent/50 transition-colors w-full justify-between">
-            <span className={cn(!value && "text-muted-foreground")}>{selected?.label ?? "Auto"}</span>
-            <ChevronDown className="h-3 w-3 text-muted-foreground" />
+          <button className="inline-flex items-center gap-1.5 rounded-md border border-line px-2.5 py-1.5 text-sm hover:bg-bg-3/50 transition-colors w-full justify-between">
+            <span className={cn(!value && "text-ink-3")}>{selected?.label ?? "Auto"}</span>
+            <ChevronDown className="h-3 w-3 text-ink-3" />
           </button>
         </PopoverTrigger>
         <PopoverContent className="w-(--radix-popover-trigger-width) p-1" align="start">
@@ -4081,8 +4078,8 @@ function ThinkingEffortDropdown({
             <button
               key={option.id || "auto"}
               className={cn(
-                "flex items-center justify-between w-full px-2 py-1.5 text-sm rounded hover:bg-accent/50",
-                option.id === value && "bg-accent",
+                "flex items-center justify-between w-full px-2 py-1.5 text-sm rounded hover:bg-bg-3/50",
+                option.id === value && "bg-bg-3",
               )}
               onClick={() => {
                 onChange(option.id);
@@ -4090,7 +4087,7 @@ function ThinkingEffortDropdown({
               }}
             >
               <span>{option.label}</span>
-              {option.id ? <span className="text-xs text-muted-foreground font-mono">{option.id}</span> : null}
+              {option.id ? <span className="text-xs text-ink-3 font-mono">{option.id}</span> : null}
             </button>
           ))}
         </PopoverContent>

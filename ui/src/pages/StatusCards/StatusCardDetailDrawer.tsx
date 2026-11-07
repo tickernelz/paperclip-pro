@@ -207,14 +207,14 @@ export function StatusCardDetailDrawer({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="flex w-full flex-col gap-0 p-0 sm:max-w-2xl">
-        <SheetHeader className="border-b border-border p-4">
+        <SheetHeader className="border-b border-line p-4">
           <div className="flex items-center gap-2 pr-8">
             <span className={cn("inline-block h-2.5 w-2.5 shrink-0 rounded-full", presentation.dotClassName)} aria-hidden="true" />
             <SheetTitle className="min-w-0 flex-1 truncate text-lg">{card.title ?? "Untitled card"}</SheetTitle>
             <Badge variant="outline">{presentation.label}</Badge>
             {lifecycle === "compiling" ? (
               <Button
-                variant="outline"
+                variant="secondary"
                 size="sm"
                 onClick={() => recompileMutation.mutate()}
                 // While the setup run is live, "Run now" is disabled — kicking a
@@ -230,7 +230,7 @@ export function StatusCardDetailDrawer({
               </Button>
             ) : (
               <Button
-                variant="outline"
+                variant="secondary"
                 size="sm"
                 onClick={() => refreshMutation.mutate()}
                 disabled={refreshMutation.isPending || lifecycle === "updating"}
@@ -240,14 +240,14 @@ export function StatusCardDetailDrawer({
               </Button>
             )}
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             {card.lastGeneratedAt ? `Updated ${relativeTime(card.lastGeneratedAt)}` : "No summary yet"} ·{" "}
             {describeRefreshPolicy(card.refreshPolicy)}
           </p>
         </SheetHeader>
 
         <Tabs value={tab} onValueChange={setTab} className="flex min-h-0 flex-1 flex-col gap-0">
-          <TabsList variant="line" className="w-full justify-start gap-4 border-b border-border px-4">
+          <TabsList variant="line" className="w-full justify-start gap-4 border-b border-line px-4">
             <TabsTrigger value="summary">Summary</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
             <TabsTrigger value="watched">Watched issues</TabsTrigger>
@@ -298,7 +298,7 @@ export function StatusCardDetailDrawer({
                       </SelectContent>
                     </Select>
                   ) : latestRevisionNumber > 0 ? (
-                    <span className="text-xs text-muted-foreground">Revision {latestRevisionNumber} · latest</span>
+                    <span className="text-xs text-ink-3">Revision {latestRevisionNumber} · latest</span>
                   ) : null}
                 </div>
               ) : null}
@@ -306,8 +306,8 @@ export function StatusCardDetailDrawer({
               {lifecycle === "updating" && draftStream.draft && !selectedRevision ? (
                 <MarkdownBody className="text-sm leading-7">{draftStream.draft}</MarkdownBody>
               ) : selectedRevision ? (
-                <div className="space-y-2 rounded-md border border-border bg-muted/30 p-3">
-                  <p className="text-xs text-muted-foreground" title={formatDateTime(selectedRevision.startedAt)}>
+                <div className="space-y-2 rounded-md border border-line bg-bg-3/30 p-3">
+                  <p className="text-xs text-ink-3" title={formatDateTime(selectedRevision.startedAt)}>
                     Revision {revisionNumberOf(selectedRevision)} · {updateKindLabel(selectedRevision.kind)} ·{" "}
                     {relativeTime(selectedRevision.startedAt)}
                   </p>
@@ -316,13 +316,13 @@ export function StatusCardDetailDrawer({
                   ) : selectedRevision.changeSummary ? (
                     <>
                       <MarkdownBody className="text-sm leading-7">{selectedRevision.changeSummary}</MarkdownBody>
-                      <p className="text-xs text-muted-foreground/70">
+                      <p className="text-xs text-ink-3/70">
                         The full summary text for this revision is unavailable — showing its change summary. The
                         integrated changes below are the live ledger for this revision.
                       </p>
                     </>
                   ) : (
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-ink-3">
                       No change summary was recorded for this revision.
                     </p>
                   )}
@@ -330,7 +330,7 @@ export function StatusCardDetailDrawer({
               ) : hasSummary ? (
                 <MarkdownBody className="text-sm leading-7">{card.summaryBody!}</MarkdownBody>
               ) : lifecycle === "compiling" ? (
-                <div className="space-y-2 text-sm text-muted-foreground">
+                <div className="space-y-2 text-sm text-ink-3">
                   <p className="flex items-center gap-2">
                     {setupRunning ? (
                       <Loader2 className="h-4 w-4 shrink-0 animate-spin" />
@@ -344,7 +344,7 @@ export function StatusCardDetailDrawer({
                   {setupRunning && card.generatingIssueId ? (
                     <Link
                       to={`/issues/${card.generatingIssueId}`}
-                      className="inline-flex items-center gap-1.5 text-xs font-medium text-foreground underline-offset-2 hover:underline"
+                      className="inline-flex items-center gap-1.5 text-xs font-medium text-ink underline-offset-2 hover:underline"
                     >
                       <ExternalLink className="h-3.5 w-3.5" />
                       View setup task
@@ -352,14 +352,14 @@ export function StatusCardDetailDrawer({
                   ) : null}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-ink-3">
                   No summary yet — the first one is generated automatically once this card finishes setting up.
                 </p>
               )}
 
               {displayedChanges.length > 0 ? (
                 <section className="space-y-2">
-                  <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  <h3 className="text-xs font-semibold uppercase tracking-wide text-ink-3">
                     {selectedRevision ? "Integrated in this revision" : "Integrated in this update"} (
                     {displayedChanges.length} {displayedChanges.length === 1 ? "change" : "changes"})
                   </h3>
@@ -376,20 +376,20 @@ export function StatusCardDetailDrawer({
               {/* History and cost live together: the today rollup up top, then
                   every recorded update (each update is one summary revision). */}
               {updatesQuery.isLoading ? (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2 text-sm text-ink-3">
                   <Loader2 className="h-4 w-4 animate-spin" /> Loading history…
                 </div>
               ) : updates.length === 0 ? (
-                <p className="text-sm text-muted-foreground">No updates recorded yet.</p>
+                <p className="text-sm text-ink-3">No updates recorded yet.</p>
               ) : (
                 <>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-xs text-ink-3">
                     Today: {todayRollup.updateCount}{" "}
                     {todayRollup.updateCount === 1 ? "update" : "updates"} ·{" "}
                     {formatTokens(todayRollup.totalTokens)} · {formatCents(todayRollup.totalCostCents)}
                     {card.refreshPolicy.dailyTokenCap ? ` · daily cap ${formatTokens(card.refreshPolicy.dailyTokenCap)}` : ""}
                   </div>
-                  <div className="divide-y divide-border">
+                  <div className="divide-y divide-line">
                     {updates.map((update) => (
                       <div key={update.id} className="py-2.5 first:pt-1">
                         <div className="flex items-center justify-between gap-2">
@@ -399,16 +399,16 @@ export function StatusCardDetailDrawer({
                               {update.status === "ok" ? update.trigger : update.status}
                             </Badge>
                           </span>
-                          <span className="text-xs text-muted-foreground" title={formatDateTime(update.startedAt)}>
+                          <span className="text-xs text-ink-3" title={formatDateTime(update.startedAt)}>
                             {relativeTime(update.startedAt)}
                           </span>
                         </div>
-                        <p className="mt-1 text-xs text-muted-foreground">
+                        <p className="mt-1 text-xs text-ink-3">
                           {formatTokenSplit(update.inputTokens, update.outputTokens)} · {formatCents(update.costCents)}
                           {update.model ? ` · ${update.model}` : ""}
                           {update.changes.length > 0 ? ` · ${update.changes.length} changes` : ""}
                         </p>
-                        {update.error ? <p className="mt-1 text-xs text-destructive">{update.error}</p> : null}
+                        {update.error ? <p className="mt-1 text-xs text-bad">{update.error}</p> : null}
                       </div>
                     ))}
                   </div>
@@ -418,11 +418,11 @@ export function StatusCardDetailDrawer({
 
             <TabsContent value="watched" className="mt-0 space-y-3">
               {card.queries.length === 0 && (card.mentionedIssueIds?.length ?? 0) === 0 ? (
-                <div className="rounded-md border border-dashed border-border px-3 py-4 text-sm text-muted-foreground">
+                <div className="rounded-md border border-dashed border-line px-3 py-4 text-sm text-ink-3">
                   This card is still setting up — the issues it watches appear here once it's ready.
                 </div>
               ) : dryRunQuery.isLoading ? (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="flex items-center gap-2 text-sm text-ink-3">
                   <Loader2 className="h-4 w-4 animate-spin" /> Matching issues…
                 </div>
               ) : dryRunQuery.isError ? (
@@ -458,7 +458,7 @@ export function StatusCardDetailDrawer({
                   className="text-sm"
                   aria-label="What this card watches & reports"
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-ink-3">
                   This one message drives the whole card: the agent compiles the watch query from it
                   and follows it as the instructions for every update. Editing it rebuilds the card.
                 </p>
@@ -478,7 +478,7 @@ export function StatusCardDetailDrawer({
 
               <QueryDebugSection card={card} />
 
-              <div className="flex justify-end border-t border-border pt-4">
+              <div className="flex justify-end border-t border-line pt-4">
                 <Button onClick={() => saveSettingsMutation.mutate()} disabled={saveSettingsMutation.isPending}>
                   {saveSettingsMutation.isPending ? <Loader2 className="animate-spin" /> : null}
                   Save
@@ -501,19 +501,19 @@ export function StatusCardDetailDrawer({
 function QueryDebugSection({ card }: { card: StatusCardView }) {
   const queryJson = JSON.stringify({ queries: card.queries, limit: 50 }, null, 2);
   return (
-    <Collapsible className="rounded-md border border-border">
+    <Collapsible className="rounded-md border border-line">
       <CollapsibleTrigger className="group flex w-full items-center justify-between gap-2 px-3 py-2.5 text-sm font-semibold">
         <span className="flex items-center gap-2">
           Query debug
           <Badge variant="secondary">v{card.queryVersion}</Badge>
         </span>
-        <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+        <ChevronDown className="h-4 w-4 text-ink-3 transition-transform group-data-[state=open]:rotate-180" />
       </CollapsibleTrigger>
-      <CollapsibleContent className="space-y-2 border-t border-border px-3 py-3">
-        <pre className="max-h-64 overflow-auto rounded-md bg-muted p-3 font-mono text-xs text-foreground">
+      <CollapsibleContent className="space-y-2 border-t border-line px-3 py-3">
+        <pre className="max-h-64 overflow-auto rounded-md bg-bg-3 p-3 font-mono text-xs text-ink">
           {card.queries.length > 0 ? queryJson : "// query not compiled yet"}
         </pre>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-ink-3">
           {card.queryCompiledAt
             ? `Compiled by Summarizer ${relativeTime(card.queryCompiledAt)} · version ${card.queryVersion}. Edit “What this card watches” above to rebuild it.`
             : "Not compiled yet. The query builds automatically once the card finishes setting up."}
@@ -542,7 +542,7 @@ function MatchedIssueList({ queries, mentioned }: { queries: StatusCardDryRun["q
   const mentionedOnly = mentioned.filter((issue) => !seen.has(issue.id));
   if (matched.length === 0 && mentionedOnly.length === 0) {
     return (
-      <div className="rounded-md border border-dashed border-border px-3 py-4 text-sm text-muted-foreground">
+      <div className="rounded-md border border-dashed border-line px-3 py-4 text-sm text-ink-3">
         The compiled query matches no issues right now.
       </div>
     );
@@ -558,7 +558,7 @@ function MatchedIssueList({ queries, mentioned }: { queries: StatusCardDryRun["q
       ) : null}
       {mentionedOnly.length > 0 ? (
         <div className="space-y-1.5">
-          <p className="text-xs font-medium text-muted-foreground">Mentioned in the latest update</p>
+          <p className="text-xs font-medium text-ink-3">Mentioned in the latest update</p>
           {mentionedOnly.map((issue) => (
             <WatchedIssueRow key={issue.id} issue={issue} />
           ))}
@@ -570,16 +570,16 @@ function MatchedIssueList({ queries, mentioned }: { queries: StatusCardDryRun["q
 
 function WatchedIssueRow({ issue }: { issue: CompanySearchIssueSummary }) {
   return (
-    <div className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-xs">
+    <div className="flex items-center gap-2 rounded-md border border-line px-3 py-2 text-xs">
       <Link
         to={`/issues/${issue.identifier ?? issue.id}`}
-        className="shrink-0 font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+        className="shrink-0 font-medium text-ink-3 underline-offset-2 hover:text-ink hover:underline"
       >
         {issue.identifier ?? issue.id.slice(0, 8)}
       </Link>
       <IssueStatusBadge status={issue.status} externalConversationState={issue.externalConversationState} />
       <span className="min-w-0 flex-1 truncate">{issue.title}</span>
-      <span className="shrink-0 text-muted-foreground">{relativeTime(issue.updatedAt)}</span>
+      <span className="shrink-0 text-ink-3">{relativeTime(issue.updatedAt)}</span>
     </div>
   );
 }
@@ -592,21 +592,21 @@ function WatchedIssueRow({ issue }: { issue: CompanySearchIssueSummary }) {
 function ChangeRow({ change }: { change: StatusCardUpdate["changes"][number] }) {
   const isTransition = Boolean(change.from && change.to);
   return (
-    <div className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-xs">
+    <div className="flex items-center gap-2 rounded-md border border-line px-3 py-2 text-xs">
       <Link
         to={`/issues/${change.identifier}`}
-        className="shrink-0 font-medium text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+        className="shrink-0 font-medium text-ink-3 underline-offset-2 hover:text-ink hover:underline"
       >
         {change.identifier}
       </Link>
       {isTransition ? (
         <span className="flex min-w-0 items-center gap-1.5">
           <IssueStatusBadge status={change.from!} />
-          <span aria-hidden="true" className="text-muted-foreground">→</span>
+          <span aria-hidden="true" className="text-ink-3">→</span>
           <IssueStatusBadge status={change.to!} />
         </span>
       ) : (
-        <span className="truncate text-muted-foreground">{describeChangeKind(change.changeKind)}</span>
+        <span className="truncate text-ink-3">{describeChangeKind(change.changeKind)}</span>
       )}
     </div>
   );

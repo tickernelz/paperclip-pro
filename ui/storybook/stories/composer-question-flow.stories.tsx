@@ -77,7 +77,7 @@ function InteractiveComposerQuestions() {
           onSkip: () => setOpen(false),
         } : null}
       />
-      <Button variant="outline" onClick={() => { setResponse(null); setReset((value) => value + 1); setOpen(true); }}>
+      <Button variant="secondary" onClick={() => { setResponse(null); setReset((value) => value + 1); setOpen(true); }}>
         Restart questions
       </Button>
     </div>

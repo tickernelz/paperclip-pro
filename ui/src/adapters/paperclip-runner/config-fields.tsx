@@ -31,7 +31,7 @@ import {
 } from "@tickernelz/paperclip-pro-adapter-utils";
 
 const inputClass =
-  "w-full rounded-md border border-border px-2.5 py-1.5 bg-transparent outline-none text-sm font-mono placeholder:text-muted-foreground/40";
+  "w-full rounded-md border border-line px-2.5 py-1.5 bg-transparent outline-none text-sm font-mono placeholder:text-ink-3/40";
 const instructionsFileHint =
   "Absolute path to a markdown file (e.g. AGENTS.md) that defines this agent's behavior. Injected into the system prompt at runtime. Note: Codex may still auto-apply repo-scoped AGENTS.md files from the workspace.";
 const defaultOpenCodeRunnerModel = "openrouter/deepseek/deepseek-v4-flash-0731";
@@ -509,7 +509,7 @@ export function CodexLocalConfigFields({
             </SelectContent>
           </Select>
           {runnerPermissionModeUnsupported && runnerProvider === "codex" && (
-            <p className="mt-1 text-xs text-destructive" role="alert">
+            <p className="mt-1 text-xs text-bad" role="alert">
               This saved Codex mode cannot start or recover a Paperclip Runner
               run. Select Automatic (isolated) to remediate it.
             </p>

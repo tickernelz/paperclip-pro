@@ -218,7 +218,7 @@ function CaseStatusPicker({
         <button
           type="button"
           disabled={disabled}
-          className="inline-flex items-center gap-1 rounded-md hover:bg-accent/50 disabled:opacity-50"
+          className="inline-flex items-center gap-1 rounded-md hover:bg-bg-3/50 disabled:opacity-50"
           aria-label="Change case status"
           onClick={(event) => {
             event.preventDefault();
@@ -226,7 +226,7 @@ function CaseStatusPicker({
           }}
         >
           <StatusBadge status={status} />
-          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+          <ChevronDown className="h-3.5 w-3.5 text-ink-3" />
         </button>
       </PopoverTrigger>
       <PopoverContent
@@ -245,10 +245,10 @@ function CaseStatusPicker({
               setOpen(false);
               if (option.value !== status) onChange(option.value);
             }}
-            className="flex w-full items-center justify-between rounded px-2 py-1.5 text-left hover:bg-accent"
+            className="flex w-full items-center justify-between rounded px-2 py-1.5 text-left hover:bg-bg-3"
           >
             <StatusBadge status={option.value} />
-            {option.value === status && <Check className="h-4 w-4 text-muted-foreground" />}
+            {option.value === status && <Check className="h-4 w-4 text-ink-3" />}
           </button>
         ))}
       </PopoverContent>
@@ -288,7 +288,7 @@ function CaseTrailingColumns({
               key={column}
               value={row.identifier}
               label="case ID"
-              className="font-mono text-xs text-muted-foreground"
+              className="font-mono text-xs text-ink-3"
               containerClassName="shrink-0"
               stopPropagation
             />
@@ -300,11 +300,11 @@ function CaseTrailingColumns({
               key={column}
               value={row.key}
               label="case key"
-              className="font-mono text-xs text-muted-foreground"
+              className="font-mono text-xs text-ink-3"
               stopPropagation
             />
           ) : (
-            <span key={column} className="min-w-0 truncate text-xs text-muted-foreground">None</span>
+            <span key={column} className="min-w-0 truncate text-xs text-ink-3">None</span>
           );
         }
         if (column === "title") {
@@ -318,11 +318,11 @@ function CaseTrailingColumns({
               )}
             >
               {treeView ? (
-                <span className="flex w-4 shrink-0 items-center text-muted-foreground">
+                <span className="flex w-4 shrink-0 items-center text-ink-3">
                   {childCount > 0 ? (
                     <button
                       type="button"
-                      className="flex h-4 w-4 items-center justify-center rounded-sm transition-colors hover:bg-accent/50"
+                      className="flex h-4 w-4 items-center justify-center rounded-sm transition-colors hover:bg-bg-3/50"
                       aria-label={`${treeCollapsed ? "Expand" : "Collapse"} ${row.title}`}
                       aria-expanded={!treeCollapsed}
                       onClick={(event) => {
@@ -334,7 +334,7 @@ function CaseTrailingColumns({
                       <ChevronDown className={cn("h-3.5 w-3.5 transition-transform", treeCollapsed && "-rotate-90")} />
                     </button>
                   ) : treeDepth > 0 ? (
-                    <span className="h-px w-3 bg-border" />
+                    <span className="h-px w-3 bg-line" />
                   ) : null}
                 </span>
               ) : null}
@@ -354,27 +354,27 @@ function CaseTrailingColumns({
           );
         }
         if (column === "type") {
-          return <span key={column} className="min-w-0 truncate text-xs text-muted-foreground">{row.caseType}</span>;
+          return <span key={column} className="min-w-0 truncate text-xs text-ink-3">{row.caseType}</span>;
         }
         if (column === "project") {
-          return <span key={column} className="min-w-0 truncate text-xs text-muted-foreground">{projectName ?? "No project"}</span>;
+          return <span key={column} className="min-w-0 truncate text-xs text-ink-3">{projectName ?? "No project"}</span>;
         }
         if (column === "parent") {
           return (
-            <span key={column} className="min-w-0 truncate font-mono text-xs text-muted-foreground">
+            <span key={column} className="min-w-0 truncate font-mono text-xs text-ink-3">
               {row.parentCaseId ? "Parent" : "None"}
             </span>
           );
         }
         if (column === "created") {
           return (
-            <span key={column} className="text-right text-xs text-muted-foreground tabular-nums">
+            <span key={column} className="text-right text-xs text-ink-3 tabular-nums">
               {relativeTime(row.createdAt)}
             </span>
           );
         }
         return (
-          <span key={column} className="text-right text-xs text-muted-foreground tabular-nums">
+          <span key={column} className="text-right text-xs text-ink-3 tabular-nums">
             {relativeTime(row.updatedAt)}
           </span>
         );
@@ -418,8 +418,8 @@ function CaseListRow({
       data-case-item
       to={caseHref(row.identifier)}
       className={cn(
-        "group flex items-start gap-2 border-b border-border py-2.5 pl-2 pr-3 text-sm no-underline text-inherit transition-colors last:border-b-0 hover:bg-accent/50 sm:items-center sm:py-2 sm:pl-1",
-        selected && "bg-accent/50",
+        "group flex items-start gap-2 border-b border-line py-2.5 pl-2 pr-3 text-sm no-underline text-inherit transition-colors last:border-b-0 hover:bg-bg-3/50 sm:items-center sm:py-2 sm:pl-1",
+        selected && "bg-bg-3/50",
       )}
       onMouseEnter={onSelect}
     >
@@ -439,7 +439,7 @@ function CaseListRow({
             <CaseCopyableToken
               value={row.identifier}
               label="case ID"
-              className="font-mono text-xs text-muted-foreground"
+              className="font-mono text-xs text-ink-3"
               containerClassName="shrink-0"
               stopPropagation
             />
@@ -448,11 +448,11 @@ function CaseListRow({
             <CaseCopyableToken
               value={row.key}
               label="case key"
-              className="shrink-0 font-mono text-xs text-muted-foreground"
+              className="shrink-0 font-mono text-xs text-ink-3"
               stopPropagation
             />
           ) : null}
-          <span className="text-xs text-muted-foreground sm:hidden">{relativeTime(row.updatedAt)}</span>
+          <span className="text-xs text-ink-3 sm:hidden">{relativeTime(row.updatedAt)}</span>
         </span>
       </span>
       {trailingColumns.length > 0 ? (
@@ -483,7 +483,7 @@ function CaseColumnHeader({
   trailingColumns: CaseColumn[];
 }) {
   return (
-    <div className="hidden border-b border-border px-2 py-1 text-(length:--text-micro) font-medium uppercase tracking-(--tracking-caps) text-muted-foreground sm:flex sm:items-center">
+    <div className="hidden border-b border-line px-2 py-1 text-(length:--text-micro) font-medium uppercase tracking-(--tracking-caps) text-ink-3 sm:flex sm:items-center">
       {trailingColumns.length > 0 ? (
         <span className="grid min-w-0 flex-1 items-center gap-2" style={{ gridTemplateColumns: caseTrailingGridTemplate(trailingColumns) }}>
           {trailingColumns.map((column) => (
@@ -518,7 +518,7 @@ function CaseGroup({
     <div className="mt-6 first:mt-0">
       <div
         data-case-item
-        className={cn("transition-colors", selected && "bg-accent/50")}
+        className={cn("transition-colors", selected && "bg-bg-3/50")}
         onMouseEnter={onSelect}
       >
         <IssueGroupHeader
@@ -527,7 +527,7 @@ function CaseGroup({
           collapsed={collapsed}
           onToggle={onToggle}
           trailing={(
-            <span className="text-xs text-muted-foreground tabular-nums">
+            <span className="text-xs text-ink-3 tabular-nums">
               {count} {count === 1 ? "case" : "cases"}
             </span>
           )}
@@ -580,11 +580,11 @@ function CaseToolbarButton({
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button
+        <Button active={active}
           type="button"
-          variant="outline"
+          variant="secondary"
           size="icon"
-          className={cn("h-8 w-8 shrink-0", active && "bg-accent")}
+          className={cn("h-8 w-8 shrink-0")}
           title={title}
           aria-label={title}
         >
@@ -599,7 +599,7 @@ function CaseToolbarButton({
 function FilterField({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="grid gap-1">
-      <div className="text-xs font-medium text-muted-foreground">{label}</div>
+      <div className="text-xs font-medium text-ink-3">{label}</div>
       {children}
     </div>
   );
@@ -615,7 +615,7 @@ function FilterCheckboxRow({
   onCheckedChange: (checked: boolean) => void;
 }) {
   return (
-    <label className="flex cursor-pointer items-center gap-2 rounded px-1 py-1 text-sm hover:bg-accent/50">
+    <label className="flex cursor-pointer items-center gap-2 rounded px-1 py-1 text-sm hover:bg-bg-3/50">
       <Checkbox
         checked={checked}
         onCheckedChange={(value) => onCheckedChange(value === true)}
@@ -639,28 +639,28 @@ function CaseColumnPicker({
     <CaseToolbarButton icon={Columns3} title="Columns" active={!sameStringSet([...visibleColumns], DEFAULT_CASE_COLUMNS)}>
       <PopoverContent align="end" className="w-(--sz-300px) p-1.5">
         <div className="px-2 pb-1 pt-1.5">
-          <div className="text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">
+          <div className="text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-caps) text-ink-3">
             Desktop case rows
           </div>
-          <div className="text-sm font-medium text-foreground">Choose visible columns</div>
+          <div className="text-sm font-medium text-ink">Choose visible columns</div>
         </div>
         <div className="space-y-0.5">
           {CASE_COLUMN_ORDER.map((column) => (
             <button
               key={column}
               type="button"
-              className="flex w-full items-center justify-between rounded px-2 py-1.5 text-sm hover:bg-accent/50"
+              className="flex w-full items-center justify-between rounded px-2 py-1.5 text-sm hover:bg-bg-3/50"
               onClick={() => onToggle(column, !visibleColumns.has(column))}
             >
               <span>{CASE_COLUMN_LABELS[column]}</span>
-              {visibleColumns.has(column) ? <Check className="h-3.5 w-3.5 text-muted-foreground" /> : null}
+              {visibleColumns.has(column) ? <Check className="h-3.5 w-3.5 text-ink-3" /> : null}
             </button>
           ))}
         </div>
-        <div className="mt-1 border-t border-border pt-1">
+        <div className="mt-1 border-t border-line pt-1">
           <button
             type="button"
-            className="flex w-full items-center justify-between rounded px-2 py-1.5 text-sm text-muted-foreground hover:bg-accent/50"
+            className="flex w-full items-center justify-between rounded px-2 py-1.5 text-sm text-ink-3 hover:bg-bg-3/50"
             onClick={onReset}
           >
             Reset defaults
@@ -689,7 +689,7 @@ function CaseSortPicker({
             type="button"
             className={cn(
               "flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-sm",
-              sortField === field ? "bg-accent/50 text-foreground" : "text-muted-foreground hover:bg-accent/50",
+              sortField === field ? "bg-bg-3/50 text-ink" : "text-ink-3 hover:bg-bg-3/50",
             )}
             onClick={() => {
               if (sortField === field) {
@@ -701,7 +701,7 @@ function CaseSortPicker({
           >
             <span>{CASE_SORT_LABELS[field]}</span>
             {sortField === field ? (
-              <span className="text-xs text-muted-foreground">{sortDir === "asc" ? "↑" : "↓"}</span>
+              <span className="text-xs text-ink-3">{sortDir === "asc" ? "↑" : "↓"}</span>
             ) : null}
           </button>
         ))}
@@ -714,23 +714,23 @@ function CaseSortPicker({
 function CasesEmptyHero() {
   return (
     <div className="mx-auto flex max-w-xl flex-col items-center gap-4 py-16 text-center">
-      <Layers className="h-10 w-10 text-muted-foreground" />
+      <Layers className="h-10 w-10 text-ink-3" />
       <h2 className="text-lg font-semibold">No cases yet</h2>
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm text-ink-3">
         Cases are durable work products — blog posts, tweet storms, docs pages — that tasks create and
         iterate on. In v1 they&apos;re created by agents, not from the UI.
       </p>
-      <div className="w-full space-y-2 rounded-lg border border-border bg-muted/50 p-4 text-left">
+      <div className="w-full space-y-2 rounded-lg border border-line bg-bg-3/50 p-4 text-left">
         <p className="text-sm font-medium">To start creating cases, add this to a skill:</p>
-        <pre className="overflow-x-auto rounded bg-background/60 p-3 font-mono text-xs text-muted-foreground">
+        <pre className="overflow-x-auto rounded bg-bg/60 p-3 font-mono text-xs text-ink-3">
 {`"Create a case of type blog_post with fields
 {slug, target_audience, publish_url} and key <release>/<slug>."`}
         </pre>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-ink-3">
           See the paperclip skill → <code className="font-mono">references/cases.md</code> for the API.
         </p>
       </div>
-      <p className="text-xs text-muted-foreground">
+      <p className="text-xs text-ink-3">
         Turn Cases on or off in Settings → Features.
       </p>
     </div>
@@ -1184,10 +1184,10 @@ export function Cases() {
   if (casesQuery.isError) {
     return (
       <div className="mx-auto max-w-md space-y-2 py-16 text-center">
-        <p className="text-sm text-destructive">
+        <p className="text-sm text-bad">
           {casesQuery.error instanceof Error ? casesQuery.error.message : "Cases could not be loaded."}
         </p>
-        <Button type="button" variant="outline" size="sm" onClick={() => void casesQuery.refetch()}>
+        <Button type="button" variant="secondary" size="sm" onClick={() => void casesQuery.refetch()}>
           Retry
         </Button>
       </div>
@@ -1212,7 +1212,7 @@ export function Cases() {
         <>
           <div className="flex items-center justify-between gap-2 sm:gap-3">
             <div className="relative w-48 sm:w-64 md:w-80">
-              <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+              <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-3" />
               <Input
                 value={viewState.search}
                 onChange={(e) => updateView({ search: e.target.value })}
@@ -1224,11 +1224,11 @@ export function Cases() {
             </div>
 
             <div className="flex shrink-0 items-center gap-0.5 sm:gap-1">
-              <Button
+              <Button active={viewState.treeView}
                 type="button"
-                variant="outline"
+                variant="secondary"
                 size="icon"
-                className={cn("h-8 w-8 shrink-0", viewState.treeView && "bg-accent")}
+                className={cn("h-8 w-8 shrink-0")}
                 title={viewState.treeView ? "Show flat case list" : "Show parent/children tree"}
                 aria-label={viewState.treeView ? "Show flat case list" : "Show parent/children tree"}
                 aria-pressed={viewState.treeView}
@@ -1249,7 +1249,7 @@ export function Cases() {
                     <FilterField label="Type">
                       <div className="max-h-40 overflow-y-auto">
                         {distinctTypes.length === 0 ? (
-                          <p className="px-1 py-1 text-xs text-muted-foreground">No types yet</p>
+                          <p className="px-1 py-1 text-xs text-ink-3">No types yet</p>
                         ) : distinctTypes.map((type) => (
                           <FilterCheckboxRow
                             key={type}
@@ -1334,7 +1334,7 @@ export function Cases() {
                       type="button"
                       className={cn(
                         "flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-sm",
-                        viewState.groupBy === value ? "bg-accent/50 text-foreground" : "text-muted-foreground hover:bg-accent/50",
+                        viewState.groupBy === value ? "bg-bg-3/50 text-ink" : "text-ink-3 hover:bg-bg-3/50",
                       )}
                       onClick={() => updateView({ groupBy: value })}
                     >

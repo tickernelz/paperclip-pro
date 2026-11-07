@@ -71,24 +71,24 @@ interface SourceBadgeSpec {
 
 // Source labels and icons distinguish access reasons; colors use semantic tokens.
 const SOURCE_BADGES: Record<IssueAccessGrantSource, SourceBadgeSpec> = {
-  owner: { label: "task owner", icon: Lock, className: "border-border bg-muted text-muted-foreground" },
+  owner: { label: "task owner", icon: Lock, className: "border-line bg-bg-3 text-ink-3" },
   explicit: {
     label: "shared directly",
     icon: UserPlus,
     className:
-      "border-primary/30 bg-primary/10 text-primary",
+      "border-accent/30 bg-accent/10 text-accent",
   },
   assignment: {
     label: "via assignment",
     icon: Check,
     className:
-      "border-border bg-secondary text-secondary-foreground",
+      "border-line bg-bg-3 text-ink",
   },
   project: {
     label: "via project",
     icon: Folder,
     className:
-      "border-border bg-accent text-accent-foreground",
+      "border-line bg-bg-3 text-ink",
   },
 };
 
@@ -150,7 +150,7 @@ function RowShell({
           <span className="truncate text-sm font-medium">{title}</span>
           {badge}
         </div>
-        {subtitle ? <div className="truncate text-xs text-muted-foreground">{subtitle}</div> : null}
+        {subtitle ? <div className="truncate text-xs text-ink-3">{subtitle}</div> : null}
       </div>
       {action ? <div className="shrink-0 self-center">{action}</div> : null}
     </div>
@@ -304,7 +304,7 @@ export function IssueShareSheet({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Lock className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+            <Lock className="h-4 w-4 shrink-0 text-ink-3" aria-hidden="true" />
             Who can access this task
           </DialogTitle>
           <DialogDescription>{aclDescription}</DialogDescription>
@@ -326,7 +326,7 @@ export function IssueShareSheet({
               </div>
             ) : isError ? (
               <div
-                className="flex items-center justify-between gap-2 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive"
+                className="flex items-center justify-between gap-2 rounded-md border border-bad/30 bg-bad/5 px-3 py-2 text-sm text-bad"
                 data-testid="share-sheet-error"
               >
                 <span className="flex items-center gap-1.5">
@@ -338,11 +338,11 @@ export function IssueShareSheet({
                 </Button>
               </div>
             ) : isEmpty ? (
-              <p className="py-3 text-sm text-muted-foreground" data-testid="share-sheet-empty">
+              <p className="py-3 text-sm text-ink-3" data-testid="share-sheet-empty">
                 Only you can see this task.
               </p>
             ) : (
-              <div className="divide-y divide-border/60">
+              <div className="divide-y divide-line/60">
                 {implicitPrincipals.filter(principal => !activeGrants.some(grant => grant.subjectId === principal.id || `${grant.subjectType}:${grant.subjectId}` === principal.id)).map((principal) => (
                   <RowShell
                     key={`implicit:${principal.id}`}
@@ -356,7 +356,7 @@ export function IssueShareSheet({
                     title={principal.displayName}
                     subtitle={principal.subtitle ?? undefined}
                     badge={
-                      <span className="inline-flex shrink-0 items-center rounded-md border border-border bg-muted/50 px-1.5 py-0.5 text-(length:--text-nano) font-medium text-muted-foreground">
+                      <span className="inline-flex shrink-0 items-center rounded-md border border-line bg-bg-3/50 px-1.5 py-0.5 text-(length:--text-nano) font-medium text-ink-3">
                         {principal.roleLabel}
                       </span>
                     }
@@ -386,13 +386,12 @@ export function IssueShareSheet({
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="text-muted-foreground hover:text-destructive"
                             onClick={() => setRevokeTarget(grant)}
                           >
                             {implicitPrincipal ? "Remove saved grant" : "Revoke"}
                           </Button>
                         ) : grant.source === "project" ? (
-                          <span className="text-(length:--text-nano) text-muted-foreground">
+                          <span className="text-(length:--text-nano) text-ink-3">
                             project-managed
                           </span>
                         ) : null
@@ -406,7 +405,7 @@ export function IssueShareSheet({
             {canManage ? (
               <div className="pt-2">
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   className="w-full"
                   onClick={() => setView("add")}
@@ -438,7 +437,7 @@ export function IssueShareSheet({
                 role="note"
                 aria-label="Shared agent caution"
                 data-testid="shared-agent-caution"
-                className="flex items-start gap-2 rounded-md border border-border bg-muted px-3 py-2 text-xs leading-relaxed text-foreground"
+                className="flex items-start gap-2 rounded-md border border-line bg-bg-3 px-3 py-2 text-xs leading-relaxed text-ink"
               >
                 <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
                 <span>
@@ -489,7 +488,7 @@ export function IssueShareSheet({
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-bad text-accent-ink hover:bg-bad/90"
               onClick={(event) => {
                 event.preventDefault();
                 if (revokeTarget) revokeMutation.mutate(revokeTarget);

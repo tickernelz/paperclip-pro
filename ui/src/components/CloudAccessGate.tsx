@@ -28,19 +28,19 @@ export function CloudAccessError({
 }) {
   return (
     <div className="mx-auto flex max-w-xl flex-col gap-4 px-4 py-16">
-      <RefreshCw className="size-6 text-muted-foreground" aria-hidden="true" />
+      <RefreshCw className="size-6 text-ink-3" aria-hidden="true" />
       <div className="flex flex-col gap-2" role="status">
         <h1 className="text-xl font-semibold">
           {temporary ? "Reconnecting to Paperclip" : "Unable to load Paperclip"}
         </h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           {temporary
             ? "The server may be restarting or your connection was interrupted. We’ll try again every few seconds and reconnect automatically."
             : "We couldn’t check your access to this instance. Try again, or contact your instance administrator if this continues."}
         </p>
       </div>
       <div>
-        <Button variant="outline" onClick={onRetry} disabled={retrying}>
+        <Button variant="secondary" onClick={onRetry} disabled={retrying}>
           {retrying ? "Connecting…" : "Try again"}
         </Button>
       </div>
@@ -53,11 +53,11 @@ function NoBoardAccessPage() {
     <div className="mx-auto max-w-xl py-10">
       <Card className="block p-6">
         <h1 className="text-xl font-semibold">No organization access</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="mt-2 text-sm text-ink-3">
           This account is signed in, but it does not have an active organization membership or instance-admin access on
           this Paperclip instance.
         </p>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="mt-2 text-sm text-ink-3">
           Use an organization invite or sign in with an account that already belongs to this org.
         </p>
       </Card>
@@ -213,7 +213,7 @@ export function CloudAccessGate({ allowMembershipRequest = false }: { allowMembe
   return (
     <>
       {isReconnecting && (
-        <div role="status" className="bg-muted px-4 py-2 text-center text-sm text-muted-foreground">
+        <div role="status" className="bg-bg-3 px-4 py-2 text-center text-sm text-ink-3">
           Connection interrupted. Reconnecting automatically…
         </div>
       )}

@@ -602,7 +602,7 @@ describe("MarkdownEditor", () => {
     await act(async () => {
       root.render(
         <MarkdownEditor
-          value="5. python3 circleback/sync_insights.py --input <tmp> -- writes insights/<group>/*.md"
+          value="5. python3 circleback/sync_insights.py --line-strong <tmp> -- writes insights/<group>/*.md"
           onChange={handleChange}
           placeholder="Markdown body"
         />,
@@ -614,7 +614,7 @@ describe("MarkdownEditor", () => {
     });
     const textarea = container.querySelector("textarea");
     expect(textarea).not.toBeNull();
-    expect(textarea?.value).toBe("5. python3 circleback/sync_insights.py --input <tmp> -- writes insights/<group>/*.md");
+    expect(textarea?.value).toBe("5. python3 circleback/sync_insights.py --line-strong <tmp> -- writes insights/<group>/*.md");
     expect(container.textContent).toContain("Rich editor unavailable for this markdown");
     expect(fallbackCode(container)).toBe("MDE-RENDER");
     expect(consoleError).toHaveBeenCalledWith(

@@ -91,7 +91,6 @@ function AttachmentActions({
           variant="ghost"
           size="icon-sm"
           title="Delete attachment"
-          className="text-muted-foreground hover:text-destructive"
           onClick={() => onDelete(attachment.id)}
           disabled={deletePending}
         >
@@ -104,7 +103,7 @@ function AttachmentActions({
 
 function AttachmentMeta({ attachment }: { attachment: IssueAttachment }) {
   return (
-    <p className="mt-0.5 text-(length:--text-micro) text-muted-foreground">
+    <p className="mt-0.5 text-(length:--text-micro) text-ink-3">
       Attachment · {attachment.contentType} · {formatBytes(attachment.byteSize)}
     </p>
   );
@@ -130,22 +129,22 @@ function MarkdownAttachmentCard({
   });
 
   return (
-    <div id={`attachment-${attachment.id}`} className="scroll-mt-20 rounded-lg border border-border p-3">
+    <div id={`attachment-${attachment.id}`} className="scroll-mt-20 rounded-lg border border-line p-3">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex min-w-0 items-center gap-2">
-            <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <FileText className="h-4 w-4 shrink-0 text-ink-3" />
             <a href={attachmentOpenPath(attachment)} onClick={openInPanel} className="truncate text-sm font-medium hover:underline" title={filename}>{filename}</a>
           </div>
           <AttachmentMeta attachment={attachment} />
         </div>
         <AttachmentActions attachment={attachment} onDelete={onDelete} deletePending={deletePending} />
       </div>
-      <div className="mt-3 rounded-md hover:bg-accent/10">
+      <div className="mt-3 rounded-md hover:bg-bg-3/10">
         {isLoading ? (
-          <p className="px-1 py-2 text-xs text-muted-foreground">Loading preview...</p>
+          <p className="px-1 py-2 text-xs text-ink-3">Loading preview...</p>
         ) : error ? (
-          <p className="px-1 py-2 text-xs text-destructive">Could not load markdown preview.</p>
+          <p className="px-1 py-2 text-xs text-bad">Could not load markdown preview.</p>
         ) : (
           <FoldCurtain>
             <MarkdownBody className="paperclip-edit-in-place-content min-h-(--sz-220px) text-sm leading-7" softBreaks={false}>
@@ -175,7 +174,7 @@ function VideoAttachmentCard({
       <OutputVideoPlayer src={attachment.contentPath} title={filename} />
       <div className="flex flex-col gap-2 p-3 md:flex-row md:items-center md:justify-between">
         <div className="min-w-0">
-          <p className="break-words text-sm font-semibold text-foreground">{filename}</p>
+          <p className="break-words text-sm font-semibold text-ink">{filename}</p>
           <AttachmentMeta attachment={attachment} />
         </div>
         <AttachmentActions
@@ -211,12 +210,12 @@ function GenericAttachmentRow({
           href={attachmentOpenPath(attachment)} onClick={openInPanel}
           target="_blank"
           rel="noreferrer"
-          className="block truncate text-sm font-medium text-foreground hover:underline"
+          className="block truncate text-sm font-medium text-ink hover:underline"
           title={filename}
         >
           {filename}
         </a>
-        <p className="truncate text-(length:--text-micro) text-muted-foreground">
+        <p className="truncate text-(length:--text-micro) text-ink-3">
           Attachment · {attachment.contentType} · {formatBytes(attachment.byteSize)}
         </p>
       </div>
@@ -239,7 +238,7 @@ function PurgedAttachmentRow({
     <Card id={`attachment-${attachment.id}`} data-purged-attachment="" className="flex-row scroll-mt-20 items-center gap-2.5 p-2">
       <OutputFileTile contentType={attachment.contentType} />
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-muted-foreground" title={filename}>
+        <p className="truncate text-sm font-medium text-ink-3" title={filename}>
           {filename}
         </p>
         <PurgedFileNotice purgedAt={attachment.purgedAt} className="mt-1" />
@@ -249,7 +248,6 @@ function PurgedAttachmentRow({
           variant="ghost"
           size="icon-sm"
           title="Delete attachment"
-          className="text-muted-foreground hover:text-destructive"
           onClick={() => onDelete(attachment.id)}
           disabled={deletePending}
         >
@@ -309,7 +307,7 @@ export function IssueAttachmentsSection({
     <div
       className={cn(
         "space-y-3 rounded-lg transition-colors",
-        dragActive && "bg-primary/5",
+        dragActive && "bg-accent/5",
       )}
       onDragEnter={onDragEnter}
       onDragOver={onDragOver}
@@ -318,15 +316,15 @@ export function IssueAttachmentsSection({
     >
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
-          <Paperclip className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
-          <h3 className="text-sm font-medium text-muted-foreground">Attachments</h3>
-          <span className="text-xs text-muted-foreground">{attachments.length}</span>
+          <Paperclip className="h-3.5 w-3.5 text-ink-3" aria-hidden="true" />
+          <h3 className="text-sm font-medium text-ink-3">Attachments</h3>
+          <span className="text-xs text-ink-3">{attachments.length}</span>
         </div>
         {uploadButton}
       </div>
 
       {error && (
-        <p className="text-xs text-destructive">{error}</p>
+        <p className="text-xs text-bad">{error}</p>
       )}
 
       {imageAttachments.length > 0 && (
@@ -335,7 +333,7 @@ export function IssueAttachmentsSection({
             <div
               key={attachment.id}
               id={`attachment-${attachment.id}`}
-              className="group relative aspect-square cursor-pointer scroll-mt-20 overflow-hidden rounded-lg border border-border bg-accent/10"
+              className="group relative aspect-square cursor-pointer scroll-mt-20 overflow-hidden rounded-lg border border-line bg-bg-3/10"
               onClick={() => onImageClick(attachment)}
             >
               <img
@@ -352,9 +350,8 @@ export function IssueAttachmentsSection({
                 >
                   <p className="text-xs font-medium text-white">Delete?</p>
                   <div className="flex gap-1.5">
-                    <button
+                    <Button variant="delete" size="xs"
                       type="button"
-                      className="rounded bg-destructive px-2 py-0.5 text-xs text-white hover:bg-destructive/80"
                       onClick={(event) => {
                         event.stopPropagation();
                         confirmDelete(attachment.id);
@@ -362,10 +359,10 @@ export function IssueAttachmentsSection({
                       disabled={deletePending}
                     >
                       Yes
-                    </button>
+                    </Button>
                     <button
                       type="button"
-                      className="rounded bg-muted px-2 py-0.5 text-xs hover:bg-muted/80"
+                      className="rounded bg-bg-3 px-2 py-0.5 text-xs hover:bg-bg-3/80"
                       onClick={(event) => {
                         event.stopPropagation();
                         setConfirmDeleteId(null);
@@ -376,17 +373,20 @@ export function IssueAttachmentsSection({
                   </div>
                 </div>
               ) : onDelete ? (
-                <button
+                <Button
                   type="button"
-                  className="absolute right-1.5 top-1.5 rounded-md bg-black/50 p-1 text-white opacity-0 transition-opacity hover:bg-destructive group-hover:opacity-100"
+                  variant="delete"
+                  size="icon-xs"
+                  className="absolute right-1.5 top-1.5 opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
                   onClick={(event) => {
                     event.stopPropagation();
                     requestDelete(attachment.id);
                   }}
                   title="Delete attachment"
+                  aria-label="Delete attachment"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
-                </button>
+                </Button>
               ) : null}
             </div>
           ))}
@@ -447,13 +447,13 @@ export function IssueAttachmentsSection({
       )}
 
       {onDelete && confirmDeleteId && !imageAttachments.some((attachment) => attachment.id === confirmDeleteId) ? (
-        <div className="flex items-center justify-between gap-3 rounded-md border border-destructive/20 bg-destructive/5 px-4 py-3">
-          <p className="text-sm font-medium text-destructive">Delete this attachment? This cannot be undone.</p>
+        <div className="flex items-center justify-between gap-3 rounded-md border border-bad/20 bg-bad/5 px-4 py-3">
+          <p className="text-sm font-medium text-bad">Delete this attachment? This cannot be undone.</p>
           <div className="flex shrink-0 items-center gap-2">
             <Button variant="ghost" size="sm" onClick={() => setConfirmDeleteId(null)} disabled={deletePending}>
               Cancel
             </Button>
-            <Button variant="destructive" size="sm" onClick={() => confirmDelete(confirmDeleteId)} disabled={deletePending}>
+            <Button variant="delete" size="sm" onClick={() => confirmDelete(confirmDeleteId)} disabled={deletePending}>
               {deletePending ? "Deleting..." : "Delete"}
             </Button>
           </div>

@@ -87,8 +87,8 @@ function buttonClass(active = false) {
   return [
     "inline-flex h-8 items-center justify-center rounded-md border px-2.5 text-xs font-medium transition-colors",
     active
-      ? "border-foreground/20 bg-foreground text-background"
-      : "border-border bg-background text-muted-foreground hover:text-foreground",
+      ? "border-ink/20 bg-ink text-bg"
+      : "border-line bg-bg text-ink-3 hover:text-ink",
   ].join(" ");
 }
 
@@ -96,8 +96,8 @@ function iconButtonClass(active = false) {
   return [
     "inline-flex h-7 w-7 items-center justify-center rounded-md border text-xs transition-colors",
     active
-      ? "border-foreground/20 bg-foreground text-background"
-      : "border-border bg-background text-muted-foreground hover:text-foreground",
+      ? "border-ink/20 bg-ink text-bg"
+      : "border-line bg-bg text-ink-3 hover:text-ink",
   ].join(" ");
 }
 
@@ -197,15 +197,15 @@ function FileRow({
   return (
     <div
       className={[
-        "group border-b border-border/70 px-3 py-2 last:border-b-0",
-        active ? "bg-accent/60" : "bg-background hover:bg-muted/45",
+        "group border-b border-line/70 px-3 py-2 last:border-b-0",
+        active ? "bg-bg-3/60" : "bg-bg hover:bg-bg-3/45",
       ].join(" ")}
     >
       <div key="main" className="flex min-w-0 items-start gap-2">
         <button
           key="toggle"
           type="button"
-          className="mt-0.5 text-muted-foreground hover:text-foreground"
+          className="mt-0.5 text-ink-3 hover:text-ink"
           onClick={onToggle}
           title={expandLabel}
           aria-label={fileAriaLabel}
@@ -218,13 +218,13 @@ function FileRow({
           className="min-w-0 flex-1 text-left"
           onClick={onSelect}
         >
-          <div key="name" className="truncate text-sm font-medium text-foreground">{fileName(file.path)}</div>
-          <div key="path" className="truncate font-mono text-[11px] text-muted-foreground">{file.path}</div>
+          <div key="name" className="truncate text-sm font-medium text-ink">{fileName(file.path)}</div>
+          <div key="path" className="truncate font-mono text-[11px] text-ink-3">{file.path}</div>
         </button>
         <button
           key="copy"
           type="button"
-          className="text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100"
+          className="text-ink-3 opacity-0 transition-opacity hover:text-ink group-hover:opacity-100"
           onClick={onCopy}
           title="Copy path"
           aria-label={`Copy ${file.path}`}
@@ -232,7 +232,7 @@ function FileRow({
           ⧉
         </button>
       </div>
-      <div key="meta" className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 pl-5 text-[11px] text-muted-foreground">
+      <div key="meta" className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 pl-5 text-[11px] text-ink-3">
         <span key="status">{statusLabel(file.status)}</span>
         <span key="additions" className="font-mono text-emerald-700 dark:text-emerald-300">{`+${file.additions}`}</span>
         <span key="deletions" className="font-mono text-red-700 dark:text-red-300">{`-${file.deletions}`}</span>
@@ -272,9 +272,9 @@ function WorkspacePatchDiff({
 
 function EmptyState() {
   return (
-    <div className="border border-dashed border-border bg-background px-4 py-8 text-center">
-      <div className="text-sm font-medium text-foreground">No workspace changes</div>
-      <div className="mt-1 text-sm text-muted-foreground">
+    <div className="border border-dashed border-line bg-bg px-4 py-8 text-center">
+      <div className="text-sm font-medium text-ink">No workspace changes</div>
+      <div className="mt-1 text-sm text-ink-3">
         The workspace matches its current comparison target.
       </div>
     </div>
@@ -283,7 +283,7 @@ function EmptyState() {
 
 function LoadingState() {
   return (
-    <div className="border border-dashed border-border bg-background px-4 py-8 text-center text-sm text-muted-foreground">
+    <div className="border border-dashed border-line bg-bg px-4 py-8 text-center text-sm text-ink-3">
       Loading workspace changes…
     </div>
   );
@@ -297,11 +297,11 @@ export function ErrorState({
   onRetry: () => void;
 }) {
   return (
-    <div className="border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm" role="alert">
+    <div className="border border-bad/30 bg-bad/5 px-4 py-3 text-sm" role="alert">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <div className="font-medium text-foreground">Unable to load workspace changes.</div>
-          <div className="mt-1 text-muted-foreground">
+          <div className="font-medium text-ink">Unable to load workspace changes.</div>
+          <div className="mt-1 text-ink-3">
             Retry the request or open the details below for the technical error.
           </div>
         </div>
@@ -315,10 +315,10 @@ export function ErrorState({
         </button>
       </div>
       <details className="mt-3">
-        <summary className="cursor-pointer text-xs font-medium text-muted-foreground hover:text-foreground">
+        <summary className="cursor-pointer text-xs font-medium text-ink-3 hover:text-ink">
           Troubleshooting details
         </summary>
-        <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap break-words border border-border bg-background px-3 py-2 font-mono text-xs text-muted-foreground">
+        <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap break-words border border-line bg-bg px-3 py-2 font-mono text-xs text-ink-3">
           {message || "No error message was provided."}
         </pre>
       </details>
@@ -338,7 +338,7 @@ function FileDiffPanel({
   const warning = warningText(file);
   if (warning) {
     return (
-      <div className="border border-dashed border-border bg-background px-4 py-6 text-sm text-muted-foreground">
+      <div className="border border-dashed border-line bg-bg px-4 py-6 text-sm text-ink-3">
         {warning ?? "No renderable patch is available for this file."}
       </div>
     );
@@ -349,16 +349,16 @@ function FileDiffPanel({
       {file.patches.map((patch, index) => {
         const patchWarning = patchWarningText(patch);
         return (
-          <div key={`${patch.kind}:${index}`} className="overflow-hidden border border-border bg-background">
+          <div key={`${patch.kind}:${index}`} className="overflow-hidden border border-line bg-bg">
             {file.patches.length > 1 ? (
-              <div className="flex items-center gap-2 border-b border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
-                <span className="font-medium text-foreground">{patchKindLabel(patch.kind)}</span>
+              <div className="flex items-center gap-2 border-b border-line bg-bg-3/30 px-3 py-2 text-xs text-ink-3">
+                <span className="font-medium text-ink">{patchKindLabel(patch.kind)}</span>
                 <span className="font-mono text-emerald-700 dark:text-emerald-300">{`+${patch.additions}`}</span>
                 <span className="font-mono text-red-700 dark:text-red-300">{`-${patch.deletions}`}</span>
               </div>
             ) : null}
             {patchWarning || !patch.patch ? (
-              <div className="px-4 py-6 text-sm text-muted-foreground">
+              <div className="px-4 py-6 text-sm text-ink-3">
                 {patchWarning ?? "No renderable patch is available for this file."}
               </div>
             ) : (
@@ -392,10 +392,10 @@ function CollapsedFilePanel({
     : statusLabel(file.status);
 
   return (
-    <div className="border border-dashed border-border bg-background px-4 py-5 text-sm text-muted-foreground">
+    <div className="border border-dashed border-line bg-bg px-4 py-5 text-sm text-ink-3">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
-          <div className="font-medium text-foreground">{title}</div>
+          <div className="font-medium text-ink">{title}</div>
           <div className="mt-1 font-mono text-xs">{details}</div>
         </div>
         <button
@@ -605,19 +605,19 @@ export function ChangesTab({ context }: PluginDetailTabProps) {
 
   return (
     <div className="space-y-3">
-      <div key="toolbar" className="flex flex-col gap-3 border-b border-border pb-3 lg:flex-row lg:items-center lg:justify-between">
+      <div key="toolbar" className="flex flex-col gap-3 border-b border-line pb-3 lg:flex-row lg:items-center lg:justify-between">
         <div key="summary" className="min-w-0">
           <div key="summary-line" className="flex flex-wrap items-center gap-2 text-sm">
-            <span key="changed" className="font-medium text-foreground">{summary.changedLabel}</span>
-            <span key="lines" className="font-mono text-xs text-muted-foreground">{summary.lineLabel}</span>
+            <span key="changed" className="font-medium text-ink">{summary.changedLabel}</span>
+            <span key="lines" className="font-mono text-xs text-ink-3">{summary.lineLabel}</span>
             {summary.truncated ? (
               <span key="truncated" className="text-xs text-amber-700 dark:text-amber-300">Truncated</span>
             ) : null}
             {summary.warningCount > 0 ? (
-              <span key="warnings" className="text-xs text-muted-foreground">{summary.warningCount} warnings</span>
+              <span key="warnings" className="text-xs text-ink-3">{summary.warningCount} warnings</span>
             ) : null}
           </div>
-          <div key="compare" className="mt-1 truncate font-mono text-xs text-muted-foreground">
+          <div key="compare" className="mt-1 truncate font-mono text-xs text-ink-3">
             {compareLabel}
           </div>
         </div>
@@ -668,7 +668,7 @@ export function ChangesTab({ context }: PluginDetailTabProps) {
           {view === "head" ? (
             <input
               key="base-ref"
-              className="h-8 w-40 rounded-md border border-border bg-background px-2.5 font-mono text-xs outline-none transition-colors placeholder:text-muted-foreground focus:border-foreground/40"
+              className="h-8 w-40 rounded-md border border-line bg-bg px-2.5 font-mono text-xs outline-none transition-colors placeholder:text-ink-3 focus:border-ink/40"
               value={baseRef}
               onChange={(event) => {
                 baseRefTouchedRef.current = true;
@@ -711,10 +711,10 @@ export function ChangesTab({ context }: PluginDetailTabProps) {
         <div key="content" className="flex flex-col gap-3 lg:h-[70vh] lg:min-h-[560px] lg:max-h-[820px] lg:flex-row">
           <aside
             key="files"
-            className="relative flex min-w-0 flex-col border border-border bg-background lg:h-full lg:shrink-0 lg:overflow-hidden"
+            className="relative flex min-w-0 flex-col border border-line bg-bg lg:h-full lg:shrink-0 lg:overflow-hidden"
             style={fileSidebarStyle}
           >
-            <div key="heading" className="border-b border-border px-3 py-2 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+            <div key="heading" className="border-b border-line px-3 py-2 text-xs font-medium uppercase tracking-[0.14em] text-ink-3">
               Files
             </div>
             <div key="list" className="max-h-[70vh] overflow-auto lg:max-h-none lg:flex-1">
@@ -741,8 +741,8 @@ export function ChangesTab({ context }: PluginDetailTabProps) {
               className={[
                 "absolute inset-y-0 right-0 z-20 hidden w-3 cursor-col-resize touch-none outline-none lg:block",
                 "before:absolute before:inset-y-0 before:left-1/2 before:w-px before:-translate-x-1/2 before:bg-transparent before:transition-colors",
-                "hover:before:bg-border focus-visible:before:bg-ring",
-                fileSidebarResizing ? "before:bg-ring" : "",
+                "hover:before:bg-line focus-visible:before:bg-focus",
+                fileSidebarResizing ? "before:bg-focus" : "",
               ].join(" ")}
               onPointerDown={handleFileSidebarPointerDown}
               onPointerMove={handleFileSidebarPointerMove}
@@ -768,13 +768,13 @@ export function ChangesTab({ context }: PluginDetailTabProps) {
                 >
                   <div
                     key="header"
-                    className="sticky top-0 z-30 flex min-w-0 items-center justify-between gap-3 border border-b-0 border-border bg-background px-3 py-2 shadow-sm"
+                    className="sticky top-0 z-30 flex min-w-0 items-center justify-between gap-3 border border-b-0 border-line bg-bg px-3 py-2 shadow-sm"
                   >
                     <div key="left" className="flex min-w-0 items-start gap-2">
                       <button
                         key="collapse"
                         type="button"
-                        className="mt-0.5 text-muted-foreground hover:text-foreground"
+                        className="mt-0.5 text-ink-3 hover:text-ink"
                         title={expandedFiles.has(file.path) ? "Collapse file" : "Expand file"}
                         aria-label={expandedFiles.has(file.path) ? `Collapse ${file.path}` : `Expand ${file.path}`}
                         onClick={() => setExpandedFiles((current) => nextExpandedFileSet(current, file.path))}
@@ -789,7 +789,7 @@ export function ChangesTab({ context }: PluginDetailTabProps) {
                       >
                         <div key="path" className="truncate text-sm font-medium">{file.path}</div>
                         {file.oldPath ? (
-                          <div key="old-path" className="truncate font-mono text-[11px] text-muted-foreground">
+                          <div key="old-path" className="truncate font-mono text-[11px] text-ink-3">
                             from {file.oldPath}
                           </div>
                         ) : null}

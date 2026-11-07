@@ -134,7 +134,7 @@ export function PluginSettings() {
   }, [pluginId]);
 
   if (pluginLoading) {
-    return <div className="p-4 text-sm text-muted-foreground">Loading plugin details...</div>;
+    return <div className="p-4 text-sm text-ink-3">Loading plugin details...</div>;
   }
 
   if (!plugin) {
@@ -167,12 +167,12 @@ export function PluginSettings() {
     <div className="max-w-6xl space-y-6">
       <div className="flex items-center gap-4">
         <Link to="/company/settings/instance/plugins">
-          <Button variant="outline" size="icon" className="h-8 w-8">
+          <Button variant="secondary" size="icon" className="h-8 w-8">
             <ArrowLeft className="h-4 w-4" />
           </Button>
         </Link>
         <div className="flex items-center gap-2">
-          <Puzzle className="h-6 w-6 text-muted-foreground" />
+          <Puzzle className="h-6 w-6 text-ink-3" />
           <h1 className="text-xl font-semibold">{plugin.manifestJson.displayName ?? plugin.packageName}</h1>
           <Badge variant={statusVariant} className="ml-2">
             {displayStatus}
@@ -200,16 +200,16 @@ export function PluginSettings() {
               <h2 className="text-base font-semibold">About</h2>
               <div className="grid gap-8 lg:grid-cols-(--gtc-52)">
                 <div className="space-y-2">
-                  <h3 className="text-sm font-medium text-muted-foreground">Description</h3>
-                  <p className="text-sm leading-6 text-foreground/90">{pluginDescription}</p>
+                  <h3 className="text-sm font-medium text-ink-3">Description</h3>
+                  <p className="text-sm leading-6 text-ink/90">{pluginDescription}</p>
                 </div>
                 <div className="space-y-4 text-sm">
                   <div className="space-y-1.5">
-                    <h3 className="font-medium text-muted-foreground">Author</h3>
-                    <p className="text-foreground">{plugin.manifestJson.author}</p>
+                    <h3 className="font-medium text-ink-3">Author</h3>
+                    <p className="text-ink">{plugin.manifestJson.author}</p>
                   </div>
                   <div className="space-y-2">
-                    <h3 className="font-medium text-muted-foreground">Categories</h3>
+                    <h3 className="font-medium text-ink-3">Categories</h3>
                     <div className="flex flex-wrap gap-2">
                       {plugin.categories.length > 0 ? (
                         plugin.categories.map((category) => (
@@ -218,7 +218,7 @@ export function PluginSettings() {
                           </Badge>
                         ))
                       ) : (
-                        <span className="text-foreground">None</span>
+                        <span className="text-ink">None</span>
                       )}
                     </div>
                   </div>
@@ -264,20 +264,20 @@ export function PluginSettings() {
                   supportsConfigTest={(plugin as unknown as { supportsConfigTest?: boolean }).supportsConfigTest === true}
                 />
               ) : environmentDrivers.length > 0 ? (
-                <div className="rounded-md border border-border/60 bg-muted/20 px-4 py-3 text-sm">
-                  <p className="font-medium text-foreground">Configure this plugin from Settings → Environments.</p>
-                  <p className="mt-1 text-muted-foreground">
+                <div className="rounded-md border border-line/60 bg-bg-3/20 px-4 py-3 text-sm">
+                  <p className="font-medium text-ink">Configure this plugin from Settings → Environments.</p>
+                  <p className="mt-1 text-ink-3">
                     {driverLabel || "This plugin"} registers environment runtime settings there so the execution target
                     stays instance-scoped while secret bindings still resolve through the selected organization context.
                   </p>
                   <div className="mt-3">
                     <Link to="/company/settings/instance/environments">
-                      <Button variant="outline" size="sm">Open Environments</Button>
+                      <Button variant="secondary" size="sm">Open Environments</Button>
                     </Link>
                   </div>
                 </div>
               ) : !hasLocalFolders ? (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-ink-3">
                   This plugin does not require any settings.
                 </p>
               ) : null}
@@ -303,33 +303,33 @@ export function PluginSettings() {
                     <>
                       <div>
                         <h3 className="text-sm font-medium mb-3 flex items-center gap-1.5">
-                          <Cpu className="h-3.5 w-3.5 text-muted-foreground" />
+                          <Cpu className="h-3.5 w-3.5 text-ink-3" />
                           Worker Process
                         </h3>
                         {dashboardData.worker ? (
                           <div className="grid grid-cols-2 gap-3 text-sm">
                             <div className="flex justify-between">
-                              <span className="text-muted-foreground">Status</span>
+                              <span className="text-ink-3">Status</span>
                               <Badge variant={dashboardData.worker.status === "running" ? "default" : "secondary"}>
                                 {dashboardData.worker.status}
                               </Badge>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-muted-foreground">PID</span>
+                              <span className="text-ink-3">PID</span>
                               <span className="font-mono text-xs">{dashboardData.worker.pid ?? "—"}</span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-muted-foreground">Uptime</span>
+                              <span className="text-ink-3">Uptime</span>
                               <span className="text-xs">{formatUptime(dashboardData.worker.uptime)}</span>
                             </div>
                             <div className="flex justify-between">
-                              <span className="text-muted-foreground">Pending RPCs</span>
+                              <span className="text-ink-3">Pending RPCs</span>
                               <span className="text-xs">{dashboardData.worker.pendingRequests}</span>
                             </div>
                             {dashboardData.worker.totalCrashes > 0 && (
                               <>
                                 <div className="flex justify-between col-span-2">
-                                  <span className="text-muted-foreground flex items-center gap-1">
+                                  <span className="text-ink-3 flex items-center gap-1">
                                     <AlertTriangle className="h-3 w-3 text-amber-500" />
                                     Crashes
                                   </span>
@@ -339,7 +339,7 @@ export function PluginSettings() {
                                 </div>
                                 {dashboardData.worker.lastCrashAt && (
                                   <div className="flex justify-between col-span-2">
-                                    <span className="text-muted-foreground">Last Crash</span>
+                                    <span className="text-ink-3">Last Crash</span>
                                     <span className="text-xs">{formatTimestamp(dashboardData.worker.lastCrashAt)}</span>
                                   </div>
                                 )}
@@ -347,7 +347,7 @@ export function PluginSettings() {
                             )}
                           </div>
                         ) : (
-                          <p className="text-sm text-muted-foreground italic">No worker process registered.</p>
+                          <p className="text-sm text-ink-3 italic">No worker process registered.</p>
                         )}
                       </div>
 
@@ -355,7 +355,7 @@ export function PluginSettings() {
 
                       <div>
                         <h3 className="text-sm font-medium mb-3 flex items-center gap-1.5">
-                          <CalendarClock className="h-3.5 w-3.5 text-muted-foreground" />
+                          <CalendarClock className="h-3.5 w-3.5 text-ink-3" />
                           Recent Job Runs
                         </h3>
                         {dashboardData.recentJobRuns.length > 0 ? (
@@ -363,7 +363,7 @@ export function PluginSettings() {
                             {dashboardData.recentJobRuns.map((run) => (
                               <div
                                 key={run.id}
-                                className="flex items-center justify-between gap-2 rounded-md bg-muted/50 px-2 py-1.5 text-sm"
+                                className="flex items-center justify-between gap-2 rounded-md bg-bg-3/50 px-2 py-1.5 text-sm"
                               >
                                 <div className="flex min-w-0 items-center gap-2">
                                   <JobStatusDot status={run.status} />
@@ -374,7 +374,7 @@ export function PluginSettings() {
                                     {run.trigger}
                                   </Badge>
                                 </div>
-                                <div className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
+                                <div className="flex shrink-0 items-center gap-2 text-xs text-ink-3">
                                   {run.durationMs != null ? <span>{formatDuration(run.durationMs)}</span> : null}
                                   <span title={run.createdAt}>{formatRelativeTime(run.createdAt)}</span>
                                 </div>
@@ -382,7 +382,7 @@ export function PluginSettings() {
                             ))}
                           </div>
                         ) : (
-                          <p className="text-sm text-muted-foreground italic">No job runs recorded yet.</p>
+                          <p className="text-sm text-ink-3 italic">No job runs recorded yet.</p>
                         )}
                       </div>
 
@@ -390,7 +390,7 @@ export function PluginSettings() {
 
                       <div>
                         <h3 className="text-sm font-medium mb-3 flex items-center gap-1.5">
-                          <Webhook className="h-3.5 w-3.5 text-muted-foreground" />
+                          <Webhook className="h-3.5 w-3.5 text-ink-3" />
                           Recent Webhook Deliveries
                         </h3>
                         {dashboardData.recentWebhookDeliveries.length > 0 ? (
@@ -398,7 +398,7 @@ export function PluginSettings() {
                             {dashboardData.recentWebhookDeliveries.map((delivery) => (
                               <div
                                 key={delivery.id}
-                                className="flex items-center justify-between gap-2 rounded-md bg-muted/50 px-2 py-1.5 text-sm"
+                                className="flex items-center justify-between gap-2 rounded-md bg-bg-3/50 px-2 py-1.5 text-sm"
                               >
                                 <div className="flex min-w-0 items-center gap-2">
                                   <DeliveryStatusDot status={delivery.status} />
@@ -406,7 +406,7 @@ export function PluginSettings() {
                                     {delivery.webhookKey}
                                   </span>
                                 </div>
-                                <div className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
+                                <div className="flex shrink-0 items-center gap-2 text-xs text-ink-3">
                                   {delivery.durationMs != null ? <span>{formatDuration(delivery.durationMs)}</span> : null}
                                   <span title={delivery.createdAt}>{formatRelativeTime(delivery.createdAt)}</span>
                                 </div>
@@ -414,17 +414,17 @@ export function PluginSettings() {
                             ))}
                           </div>
                         ) : (
-                          <p className="text-sm text-muted-foreground italic">No webhook deliveries recorded yet.</p>
+                          <p className="text-sm text-ink-3 italic">No webhook deliveries recorded yet.</p>
                         )}
                       </div>
 
-                      <div className="flex items-center gap-1.5 border-t border-border/50 pt-2 text-xs text-muted-foreground">
+                      <div className="flex items-center gap-1.5 border-t border-line/50 pt-2 text-xs text-ink-3">
                         <Clock className="h-3 w-3" />
                         Last checked: {new Date(dashboardData.checkedAt).toLocaleTimeString()}
                       </div>
                     </>
                   ) : (
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-ink-3">
                       Runtime diagnostics are unavailable right now.
                     </p>
                   )}
@@ -447,15 +447,15 @@ export function PluginSettings() {
                           key={entry.id}
                           className={`flex gap-2 py-0.5 ${
                             entry.level === "error"
-                              ? "text-destructive"
+                              ? "text-bad"
                               : entry.level === "warn"
                                 ? "text-yellow-600 dark:text-yellow-400"
                                 : entry.level === "debug"
-                                  ? "text-muted-foreground/60"
-                                  : "text-muted-foreground"
+                                  ? "text-ink-3/60"
+                                  : "text-ink-3"
                           }`}
                         >
-                          <span className="shrink-0 text-muted-foreground/50">{new Date(entry.createdAt).toLocaleTimeString()}</span>
+                          <span className="shrink-0 text-ink-3/50">{new Date(entry.createdAt).toLocaleTimeString()}</span>
                           <Badge variant="outline" className="h-4 shrink-0 px-1 text-(length:--text-nano)">{entry.level}</Badge>
                           <span className="truncate" title={entry.message}>{entry.message}</span>
                         </div>
@@ -476,27 +476,27 @@ export function PluginSettings() {
                 </CardHeader>
                 <CardContent>
                   {healthLoading ? (
-                    <p className="text-sm text-muted-foreground">Checking health...</p>
+                    <p className="text-sm text-ink-3">Checking health...</p>
                   ) : healthData ? (
                     <div className="space-y-4 text-sm">
                       <div className="flex items-center justify-between">
-                        <span className="text-muted-foreground">Overall</span>
+                        <span className="text-ink-3">Overall</span>
                         <Badge variant={healthData.healthy ? "default" : "destructive"}>
                           {healthData.status}
                         </Badge>
                       </div>
 
                       {healthData.checks.length > 0 ? (
-                        <div className="space-y-2 border-t border-border/50 pt-2">
+                        <div className="space-y-2 border-t border-line/50 pt-2">
                           {healthData.checks.map((check, i) => (
                             <div key={i} className="flex items-start justify-between gap-2">
-                              <span className="truncate text-muted-foreground" title={check.name}>
+                              <span className="truncate text-ink-3" title={check.name}>
                                 {check.name}
                               </span>
                               {check.passed ? (
                                 <CheckCircle className="h-4 w-4 shrink-0 text-green-500" />
                               ) : (
-                                <XCircle className="h-4 w-4 shrink-0 text-destructive" />
+                                <XCircle className="h-4 w-4 shrink-0 text-bad" />
                               )}
                             </div>
                           ))}
@@ -504,20 +504,20 @@ export function PluginSettings() {
                       ) : null}
 
                       {healthData.lastError ? (
-                        <div className="break-words rounded border border-destructive/20 bg-destructive/10 p-2 text-xs text-destructive">
+                        <div className="break-words rounded border border-bad/20 bg-bad/10 p-2 text-xs text-bad">
                           {healthData.lastError}
                         </div>
                       ) : null}
                     </div>
                   ) : (
-                    <div className="space-y-3 text-sm text-muted-foreground">
+                    <div className="space-y-3 text-sm text-ink-3">
                       <div className="flex items-center justify-between">
                         <span>Lifecycle</span>
                         <Badge variant={statusVariant}>{displayStatus}</Badge>
                       </div>
                       <p>Health checks run once the plugin is ready.</p>
                       {plugin.lastError ? (
-                        <div className="break-words rounded border border-destructive/20 bg-destructive/10 p-2 text-xs text-destructive">
+                        <div className="break-words rounded border border-bad/20 bg-bad/10 p-2 text-xs text-bad">
                           {plugin.lastError}
                         </div>
                       ) : null}
@@ -530,7 +530,7 @@ export function PluginSettings() {
                 <CardHeader>
                   <CardTitle className="text-base">Details</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3 text-sm text-muted-foreground">
+                <CardContent className="space-y-3 text-sm text-ink-3">
                   <div className="flex justify-between gap-3">
                     <span>Plugin ID</span>
                     <span className="font-mono text-xs text-right">{plugin.id}</span>
@@ -547,7 +547,7 @@ export function PluginSettings() {
                   </div>
                   <div className="flex justify-between gap-3">
                     <span>Version</span>
-                    <span className="text-right text-foreground">v{plugin.manifestJson.version ?? plugin.version}</span>
+                    <span className="text-right text-ink">v{plugin.manifestJson.version ?? plugin.version}</span>
                   </div>
                 </CardContent>
               </Card>
@@ -561,15 +561,15 @@ export function PluginSettings() {
                 </CardHeader>
                 <CardContent>
                   {pluginCapabilities.length > 0 ? (
-                    <ul className="space-y-2 text-sm text-muted-foreground">
+                    <ul className="space-y-2 text-sm text-ink-3">
                       {pluginCapabilities.map((cap) => (
-                        <li key={cap} className="rounded-md bg-muted/40 px-2.5 py-2 font-mono text-xs text-foreground/85">
+                        <li key={cap} className="rounded-md bg-bg-3/40 px-2.5 py-2 font-mono text-xs text-ink/85">
                           {cap}
                         </li>
                       ))}
                     </ul>
                   ) : (
-                    <p className="text-sm text-muted-foreground italic">No special permissions requested.</p>
+                    <p className="text-sm text-ink-3 italic">No special permissions requested.</p>
                   )}
                 </CardContent>
               </Card>
@@ -604,7 +604,7 @@ function PluginLocalFoldersSettings({ pluginId, companyId, declarations }: Plugi
 
   if (!companyId) {
     return (
-      <div className="rounded-md border border-border/60 bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
+      <div className="rounded-md border border-line/60 bg-bg-3/20 px-4 py-3 text-sm text-ink-3">
         Select an organization to configure this plugin's local folders.
       </div>
     );
@@ -613,16 +613,16 @@ function PluginLocalFoldersSettings({ pluginId, companyId, declarations }: Plugi
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-2">
-        <FolderOpen className="h-4 w-4 text-muted-foreground" />
+        <FolderOpen className="h-4 w-4 text-ink-3" />
         <h3 className="text-sm font-medium">Local folders</h3>
       </div>
       {error ? (
-        <div className="rounded-md border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+        <div className="rounded-md border border-bad/20 bg-bad/10 px-3 py-2 text-sm text-bad">
           {(error as Error).message || "Failed to load local folder settings."}
         </div>
       ) : null}
       {isLoading ? (
-        <div className="flex items-center gap-2 py-3 text-sm text-muted-foreground">
+        <div className="flex items-center gap-2 py-3 text-sm text-ink-3">
           <Loader2 className="h-4 w-4 animate-spin" />
           Loading local folders...
         </div>
@@ -701,7 +701,7 @@ function PluginLocalFolderRow({ pluginId, companyId, declaration, status }: Plug
   }, [saveMutation, trimmedPath]);
 
   return (
-    <div className="space-y-4 rounded-md border border-border/70 bg-background px-4 py-4">
+    <div className="space-y-4 rounded-md border border-line/70 bg-bg px-4 py-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 space-y-1">
           <div className="flex flex-wrap items-center gap-2">
@@ -714,7 +714,7 @@ function PluginLocalFolderRow({ pluginId, companyId, declaration, status }: Plug
             </Badge>
           </div>
           {declaration.description ? (
-            <p className="max-w-3xl text-sm leading-5 text-muted-foreground">
+            <p className="max-w-3xl text-sm leading-5 text-ink-3">
               {declaration.description}
             </p>
           ) : null}
@@ -736,21 +736,21 @@ function PluginLocalFolderRow({ pluginId, companyId, declaration, status }: Plug
 
       {status?.path ? (
         <div className="space-y-1 text-sm">
-          <div className="text-xs font-medium text-muted-foreground">Configured path</div>
-          <div className="break-all rounded-md bg-muted/60 px-2 py-1.5 font-mono text-xs text-foreground">
+          <div className="text-xs font-medium text-ink-3">Configured path</div>
+          <div className="break-all rounded-md bg-bg-3/60 px-2 py-1.5 font-mono text-xs text-ink">
             {status.path}
           </div>
         </div>
       ) : null}
 
       <div className="space-y-1.5">
-        <label className="text-xs font-medium text-muted-foreground" htmlFor={`local-folder-${declaration.folderKey}`}>
+        <label className="text-xs font-medium text-ink-3" htmlFor={`local-folder-${declaration.folderKey}`}>
           Local folder path
         </label>
         <div className="flex items-center gap-2">
           <input
             id={`local-folder-${declaration.folderKey}`}
-            className="min-w-0 flex-1 rounded-md border border-border bg-background px-2.5 py-1.5 font-mono text-sm outline-none focus:border-foreground/40 focus:ring-2 focus:ring-ring/20"
+            className="min-w-0 flex-1 rounded-md border border-line bg-bg px-2.5 py-1.5 font-mono text-sm outline-none focus:border-ink/40 focus:ring-2 focus:ring-focus/20"
             value={pathValue}
             onChange={(event) => {
               setPathValue(event.target.value);
@@ -777,7 +777,7 @@ function PluginLocalFolderRow({ pluginId, companyId, declaration, status }: Plug
       <FolderRequirements status={status} declaration={declaration} />
 
       {status?.problems?.length ? (
-        <div className="space-y-2 rounded-md border border-destructive/20 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+        <div className="space-y-2 rounded-md border border-bad/20 bg-bad/10 px-3 py-2 text-sm text-bad">
           <div className="font-medium">Validation problems</div>
           <ul className="space-y-1">
             {status.problems.map((problem, index) => (
@@ -795,7 +795,7 @@ function PluginLocalFolderRow({ pluginId, companyId, declaration, status }: Plug
           className={`rounded-md border px-3 py-2 text-sm ${
             message.type === "success"
               ? "border-green-200 bg-green-50 text-green-700 dark:border-green-900 dark:bg-green-950/30 dark:text-green-400"
-              : "border-destructive/20 bg-destructive/10 text-destructive"
+              : "border-bad/20 bg-bad/10 text-bad"
           }`}
         >
           {message.text}
@@ -807,8 +807,8 @@ function PluginLocalFolderRow({ pluginId, companyId, declaration, status }: Plug
 
 function FolderStatusMetric({ label, value, ok }: { label: string; value: string; ok: boolean }) {
   return (
-    <div className="flex items-center justify-between rounded-md border border-border/60 px-2.5 py-2">
-      <span className="text-muted-foreground">{label}</span>
+    <div className="flex items-center justify-between rounded-md border border-line/60 px-2.5 py-2">
+      <span className="text-ink-3">{label}</span>
       <Badge variant={ok ? "default" : "secondary"}>{value}</Badge>
     </div>
   );
@@ -870,9 +870,9 @@ function RequirementList({
   inspectionUnavailable?: boolean;
 }) {
   return (
-    <div className="space-y-2 rounded-md border border-border/60 px-3 py-2">
+    <div className="space-y-2 rounded-md border border-line/60 px-3 py-2">
       <div className="flex items-center justify-between gap-2">
-        <span className="text-xs font-medium text-muted-foreground">{title}</span>
+        <span className="text-xs font-medium text-ink-3">{title}</span>
         {inspectionUnavailable ? (
           <Badge variant="secondary" className="text-(length:--text-nano)">
             Not inspected
@@ -896,8 +896,8 @@ function RequirementList({
                   inspectionUnavailable
                     ? "border-amber-300/60 bg-amber-50 text-amber-700 dark:border-amber-800/70 dark:bg-amber-950/30 dark:text-amber-300"
                     : missing
-                    ? "border-destructive/30 bg-destructive/10 text-destructive"
-                    : "border-border bg-muted/50 text-foreground/80"
+                    ? "border-bad/30 bg-bad/10 text-bad"
+                    : "border-line bg-bg-3/50 text-ink/80"
                 }`}
               >
                 {item}
@@ -906,12 +906,12 @@ function RequirementList({
           })}
         </div>
       ) : (
-        <p className="text-xs text-muted-foreground">None declared.</p>
+        <p className="text-xs text-ink-3">None declared.</p>
       )}
       {inspectionUnavailable ? (
         <p className="text-xs text-amber-700 dark:text-amber-300">Configured root was not inspected.</p>
       ) : missingItems.length > 0 ? (
-        <p className="text-xs text-destructive">{missingLabel}: {missingItems.join(", ")}</p>
+        <p className="text-xs text-bad">{missingLabel}: {missingItems.join(", ")}</p>
       ) : null}
     </div>
   );
@@ -1056,7 +1056,7 @@ function PluginConfigForm({ pluginId, companyId, schema, initialValues, isLoadin
 
   if (isLoading) {
     return (
-      <div className="flex items-center gap-2 text-sm text-muted-foreground py-4">
+      <div className="flex items-center gap-2 text-sm text-ink-3 py-4">
         <Loader2 className="h-4 w-4 animate-spin" />
         Loading configuration...
       </div>
@@ -1079,7 +1079,7 @@ function PluginConfigForm({ pluginId, companyId, schema, initialValues, isLoadin
           className={`text-sm p-2 rounded border ${
             saveMessage.type === "success"
               ? "text-green-700 bg-green-50 border-green-200 dark:text-green-400 dark:bg-green-950/30 dark:border-green-900"
-              : "text-destructive bg-destructive/10 border-destructive/20"
+              : "text-bad bg-bad/10 border-bad/20"
           }`}
         >
           {saveMessage.text}
@@ -1091,7 +1091,7 @@ function PluginConfigForm({ pluginId, companyId, schema, initialValues, isLoadin
           className={`text-sm p-2 rounded border ${
             testResult.type === "success"
               ? "text-green-700 bg-green-50 border-green-200 dark:text-green-400 dark:bg-green-950/30 dark:border-green-900"
-              : "text-destructive bg-destructive/10 border-destructive/20"
+              : "text-bad bg-bad/10 border-bad/20"
           }`}
         >
           {testResult.text}
@@ -1116,7 +1116,7 @@ function PluginConfigForm({ pluginId, companyId, schema, initialValues, isLoadin
         </Button>
         {pluginStatus === "ready" && supportsConfigTest && (
           <Button
-            variant="outline"
+            variant="secondary"
             onClick={handleTestConnection}
             disabled={testMutation.isPending || !companyId}
             size="sm"

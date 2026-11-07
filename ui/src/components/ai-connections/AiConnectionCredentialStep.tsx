@@ -83,9 +83,9 @@ function SubscriptionConnectionStep({ companyId, provider, initialMethod, fixedM
       <SelectTrigger aria-label="Sign-in environment"><SelectValue placeholder="Sign-in environment" /></SelectTrigger>
       <SelectContent>{loginEnvironments.map((env) => <SelectItem key={env.id} value={env.id}>{env.name}</SelectItem>)}</SelectContent>
     </Select>}
-    {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
+    {error && <p role="alert" className="text-sm text-bad">{error}</p>}
     {defaults}
-    {loading ? <p role="status" className="text-sm text-muted-foreground">Preparing sign-in…</p> : <AgentProviderConnection
+    {loading ? <p role="status" className="text-sm text-ink-3">Preparing sign-in…</p> : <AgentProviderConnection
       key={environmentId ?? "local"}
       companyId={companyId}
       adapterType={provider === "anthropic" ? "claude_local" : provider === "xai" ? "grok_local" : "codex_local"}
@@ -111,7 +111,7 @@ function ApiKeyConnectionStep({ companyId, provider, connectionId, name: initial
   });
   return <div className="mx-auto w-full min-w-0 max-w-xl space-y-4">
     {!hideName && <label className="block space-y-2 text-sm">Connection name<Input value={name} onChange={(event) => setName(event.target.value)} disabled={Boolean(connectionId)} /></label>}
-    {save.error && <p role="alert" className="text-sm text-destructive">{save.error.message}</p>}
+    {save.error && <p role="alert" className="text-sm text-bad">{save.error.message}</p>}
     <ProviderApiKeyCard providerName={provider === "google" ? "Google" : "OpenRouter"} value={apiKey} onChange={setApiKey} onSubmit={() => save.mutate()} disabled={disabled || save.isPending} placeholder="Enter API key here" autoFocus />
     {defaults}
     <div className="flex justify-between gap-2"><Button variant="ghost" onClick={onCancel}>Cancel</Button><Button disabled={disabled || !name.trim() || !apiKey.trim() || save.isPending} onClick={() => save.mutate()}>{save.isPending ? "Connecting…" : "Connect"}</Button></div>

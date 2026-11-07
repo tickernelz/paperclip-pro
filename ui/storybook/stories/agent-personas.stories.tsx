@@ -43,7 +43,7 @@ export const Expressions: Story = {
   </div>)}</div>,
 };
 export const LightAndDark: Story = {
-  render: () => <div className="flex gap-4">{["light", "dark"].map(theme => <div key={theme} className={`${theme} bg-background p-6 text-foreground`}>
+  render: () => <div className="flex gap-4">{["light", "dark"].map(theme => <div key={theme} className={`${theme} bg-bg p-6 text-ink`}>
     <AgentIdentity agent={agent} /><AgentAvatar agent={agent} size={128} />
   </div>)}</div>,
 };
@@ -56,18 +56,18 @@ function Onboarding() {
   return <div ref={region} className="flex max-w-lg flex-col items-center gap-4 p-6">
     <AgentCharacter appearance={appearance} state={state} muted={state === "sleepy" || state === "loading"} trackingRegion={region} />
     <h2 className="text-lg font-semibold">{state === "success" ? "Ready to work" : "Connect your agent"}</h2>
-    <div className="flex gap-2"><Button onClick={() => setState("loading")}>Connecting</Button><Button onClick={() => setState("success")}>Connection succeeded</Button><Button variant="outline" onClick={() => setState("sleepy")}>Reset</Button></div>
+    <div className="flex gap-2"><Button onClick={() => setState("loading")}>Connecting</Button><Button onClick={() => setState("success")}>Connection succeeded</Button><Button variant="secondary" onClick={() => setState("sleepy")}>Reset</Button></div>
   </div>;
 }
 export const OnboardingTransition: Story = { render: () => <Onboarding /> };
 export const AppPlacements: Story = {
   render: () => <div className="grid max-w-3xl gap-6">
     <section className="space-y-3"><h2 className="text-lg font-semibold">Agents</h2>{AGENT_PALETTE_IDS.slice(0, 4).map((palette, i) => <div className="flex items-center justify-between gap-4" key={palette}>
-      <AgentIdentity agent={{ id: palette, name: ["Chief of Staff", "Researcher", "Designer", "Engineer"][i], appearance: appearanceForPalette(palette) }} /><span className="text-xs text-muted-foreground">Idle</span>
+      <AgentIdentity agent={{ id: palette, name: ["Chief of Staff", "Researcher", "Designer", "Engineer"][i], appearance: appearanceForPalette(palette) }} /><span className="text-xs text-ink-3">Idle</span>
     </div>)}</section>
     <section className="space-y-2"><h2 className="text-lg font-semibold">Task conversation</h2><AgentIdentity agent={agent} size="sm" /><p className="text-sm">The launch brief is ready for review.</p></section>
     <section className="flex items-center justify-between gap-4"><span className="text-sm">Prepare the launch brief</span><AgentAvatar agent={agent} size={20} label="Assigned to Chief of Staff" /></section>
-    <section className="flex items-center gap-6"><AgentCharacter agent={agent} size={128} /><div><h2 className="text-lg font-semibold">Agent configuration</h2><p className="text-sm text-muted-foreground">Chief of Staff · Connected</p></div></section>
+    <section className="flex items-center gap-6"><AgentCharacter agent={agent} size={128} /><div><h2 className="text-lg font-semibold">Agent configuration</h2><p className="text-sm text-ink-3">Chief of Staff · Connected</p></div></section>
   </div>,
 };
 export const FiveHundredStaticAvatars: Story = {
@@ -123,8 +123,8 @@ function SnapshotPair({ size = 256, state = "rest", density = 2 }: SnapshotPairP
     return () => { disposed = true; cleanup?.(); };
   }, [size, state, density]);
   return <div className="flex items-start gap-8">
-    <div className="space-y-3"><span data-testid="static-frame" className={`inline-block ${avatarSizeClasses[size]}`}><img src={agentAvatarUrl(appearance, size, density, state)} width={size} height={size} className="size-full object-contain" alt="Static PNG portrait" /></span><p className="text-xs text-muted-foreground">PNG · {size * density} × {size * density}</p></div>
-    <div className="space-y-3"><span data-testid="live-frame" ref={host} className={`inline-block ${avatarSizeClasses[size]}`} /><p className="text-xs text-muted-foreground">WebGL · {size * density} × {size * density}</p></div>
+    <div className="space-y-3"><span data-testid="static-frame" className={`inline-block ${avatarSizeClasses[size]}`}><img src={agentAvatarUrl(appearance, size, density, state)} width={size} height={size} className="size-full object-contain" alt="Static PNG portrait" /></span><p className="text-xs text-ink-3">PNG · {size * density} × {size * density}</p></div>
+    <div className="space-y-3"><span data-testid="live-frame" ref={host} className={`inline-block ${avatarSizeClasses[size]}`} /><p className="text-xs text-ink-3">WebGL · {size * density} × {size * density}</p></div>
   </div>;
 }
 export const SnapshotAgreement = { args: { size: 256, state: "rest", density: 2 }, argTypes: { density: { control: "inline-radio", options: [1, 2] } }, render: (args: SnapshotPairProps) => <SnapshotPair {...args} /> } satisfies StoryObj<SnapshotPairProps>;

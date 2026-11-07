@@ -185,7 +185,7 @@ export function CompanySettingsSidebar() {
             />
           )}
           {showPlugins && sidebarPlugins.length > 0 ? (
-            <div className="ml-4 mt-1 flex flex-col gap-0.5 border-l border-border/70 pl-3">
+            <div className="ml-4 mt-1 flex flex-col gap-0.5 border-l border-line/70 pl-3">
               {sidebarPlugins.map((plugin) => (
                 <NavLink
                   key={plugin.id}
@@ -195,8 +195,8 @@ export function CompanySettingsSidebar() {
                     [
                       "rounded-md px-2 py-1.5 text-xs transition-colors",
                       isActive
-                        ? "bg-accent text-foreground"
-                        : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+                        ? "bg-bg-3 text-ink"
+                        : "text-ink-3 hover:bg-bg-3/50 hover:text-ink",
                     ].join(" ")
                   }
                 >

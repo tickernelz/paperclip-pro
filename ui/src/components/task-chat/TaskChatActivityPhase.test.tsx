@@ -185,7 +185,7 @@ describe("TaskChatActivityPhase", () => {
     expect(summary.querySelectorAll("svg")).toHaveLength(2);
     expect(summary.className).toContain("min-h-8");
     expect(summary.className).toContain("py-1.5");
-    expect(summary.className).toContain("text-muted-foreground");
+    expect(summary.className).toContain("text-ink-3");
     expect(caret?.classList.contains("ml-auto")).toBe(true);
     expect(caret?.classList.contains("opacity-0")).toBe(true);
 

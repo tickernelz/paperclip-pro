@@ -40,16 +40,16 @@ export function AgentConversationSidebar({ agents, existingChatAgentIds, availab
     setSearch("");
     searchRef.current?.focus();
   }
-  return <aside aria-labelledby={headingId} className="flex h-full min-h-0 flex-col border-r border-border bg-background">
+  return <aside aria-labelledby={headingId} className="flex h-full min-h-0 flex-col border-r border-line bg-bg">
     <div className="flex shrink-0 flex-col gap-4 px-3 pb-4 pt-4">
       <div className="flex items-center justify-between gap-2">
         <h2 id={headingId} className="text-sm font-semibold">Chat</h2>
-        <Button variant="outline" size="icon-sm" aria-label="Add chat" title="Add chat" onClick={() => setPickerOpen(true)}>
+        <Button variant="secondary" size="icon-sm" aria-label="Add chat" title="Add chat" onClick={() => setPickerOpen(true)}>
           <Plus className="size-4" />
         </Button>
       </div>
       <div className="relative">
-        <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-muted-foreground" />
+        <Search aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 size-3.5 -translate-y-1/2 text-ink-3" />
         <Input ref={searchRef} aria-label="Search agents" placeholder="Find an agent" value={search} onChange={event => setSearch(event.target.value)}
           onKeyDown={event => { if (event.key === "Escape") { event.stopPropagation(); setSearch(""); } }}
           className="h-8 pl-8 pr-8 text-xs md:text-xs" />
@@ -57,41 +57,41 @@ export function AgentConversationSidebar({ agents, existingChatAgentIds, availab
       </div>
     </div>
     <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-3 pb-3 scrollbar-auto-hide">
-      <p className="px-2 text-(length:--text-micro) font-medium uppercase tracking-widest text-muted-foreground">
+      <p className="px-2 text-(length:--text-micro) font-medium uppercase tracking-widest text-ink-3">
         {query ? "Search results" : "Teammates"}
       </p>
       <span role="status" className="sr-only">{loading ? "Loading agents" : `${visible.length} ${visible.length === 1 ? "agent" : "agents"}`}</span>
-      {historyLoading && <p role="status" className="px-2 text-xs text-muted-foreground">Loading chat history…</p>}
+      {historyLoading && <p role="status" className="px-2 text-xs text-ink-3">Loading chat history…</p>}
       {historyError && <div role="alert" className="flex flex-col items-start gap-2 px-2 py-3">
-        <p className="text-xs text-muted-foreground">Some chat history couldn’t load.</p>
-        <Button variant="outline" size="sm" onClick={onRetryHistory}>Retry chat history</Button>
+        <p className="text-xs text-ink-3">Some chat history couldn’t load.</p>
+        <Button variant="secondary" size="sm" onClick={onRetryHistory}>Retry chat history</Button>
       </div>}
-      {error ? <div role="alert" className="flex flex-col items-start gap-2 px-2 py-6"><p className="text-sm">Couldn’t load your chats.</p><Button variant="outline" size="sm" onClick={onRetry}>Try again</Button></div> : loading ? <div aria-hidden="true" className="flex flex-col gap-1">
+      {error ? <div role="alert" className="flex flex-col items-start gap-2 px-2 py-6"><p className="text-sm">Couldn’t load your chats.</p><Button variant="secondary" size="sm" onClick={onRetry}>Try again</Button></div> : loading ? <div aria-hidden="true" className="flex flex-col gap-1">
         {[0, 1, 2, 3].map(index => <div key={index} className="flex items-center gap-3 rounded-md px-2 py-3 motion-safe:animate-pulse">
-          <div className="size-8 shrink-0 rounded-lg bg-muted" />
-          <div className="flex flex-1 flex-col gap-2"><div className="h-3 w-2/3 rounded-sm bg-muted" /><div className="h-2 w-full rounded-sm bg-muted" /></div>
+          <div className="size-8 shrink-0 rounded-lg bg-bg-3" />
+          <div className="flex flex-1 flex-col gap-2"><div className="h-3 w-2/3 rounded-sm bg-bg-3" /><div className="h-2 w-full rounded-sm bg-bg-3" /></div>
         </div>)}
       </div> : visible.length ? <nav aria-label="Agent conversations" className="flex flex-col gap-1">
         {visible.map(agent => <Link key={agent.id} to={`/chats/${encodeURIComponent(agent.status === "terminated" ? agent.id : agentRouteRef(agent))}`}
           aria-current={activeId === agent.id ? "page" : undefined}
           title={`${agent.name}${agent.title ? ` · ${agent.title}` : ""}`}
           onClick={event => { if (onSelect) { event.preventDefault(); onSelect(agent); } }}
-          className={cn("flex min-w-0 items-center gap-3 rounded-md px-2 py-3 text-left transition-colors hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring", activeId === agent.id && "bg-accent text-accent-foreground")}>
+          className={cn("flex min-w-0 items-center gap-3 rounded-md px-2 py-3 text-left transition-colors hover:bg-bg-3/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus", activeId === agent.id && "bg-bg-3 text-ink")}>
           <AgentAvatar agent={agent} size={32} />
           <span className="flex min-w-0 flex-1 flex-col gap-0.5">
             <span className="truncate text-sm font-medium">{agent.name}</span>
-            <span className="truncate text-xs text-muted-foreground">{agent.status === "terminated" ? "Terminated" : agent.status === "paused" ? "Paused" : previews[agent.id] ?? agent.title ?? "Start a conversation"}</span>
+            <span className="truncate text-xs text-ink-3">{agent.status === "terminated" ? "Terminated" : agent.status === "paused" ? "Paused" : previews[agent.id] ?? agent.title ?? "Start a conversation"}</span>
           </span>
         </Link>)}
       </nav> : !agents.length && (historyLoading || historyError) ? null : <div className="flex flex-col items-start gap-2 px-2 py-6">
         <p className="text-sm font-medium">{agents.length ? "No agents found" : "No chats yet"}</p>
-        <p className="text-xs leading-relaxed text-muted-foreground">{agents.length ? "Try another name or role." : "Choose an agent to start a conversation."}</p>
-        {!agents.length && <Button variant="outline" size="sm" onClick={() => setPickerOpen(true)}>Choose an agent</Button>}
-        {agents.length > 0 && <Button variant="outline" size="sm" onClick={focusSearch}>Clear search</Button>}
+        <p className="text-xs leading-relaxed text-ink-3">{agents.length ? "Try another name or role." : "Choose an agent to start a conversation."}</p>
+        {!agents.length && <Button variant="secondary" size="sm" onClick={() => setPickerOpen(true)}>Choose an agent</Button>}
+        {agents.length > 0 && <Button variant="secondary" size="sm" onClick={focusSearch}>Clear search</Button>}
       </div>}
     </div>
     <div className="shrink-0 px-3 py-4">
-      <Button variant="ghost" size="sm" className="w-full justify-start gap-2 px-2 text-muted-foreground" asChild={!onBrowse} onClick={onBrowse}>
+      <Button variant="ghost" size="sm" className="w-full justify-start gap-2 px-2" asChild={!onBrowse} onClick={onBrowse}>
         {onBrowse ? <><Users className="size-4" />Browse all agents</> : <Link to="/agents/all"><Users className="size-4" />Browse all agents</Link>}
       </Button>
     </div>

@@ -87,7 +87,7 @@ export function BillerSpendCard({
           />
         )}
 
-        <div className="text-xs text-muted-foreground">
+        <div className="text-xs text-ink-3">
           {row.apiRunCount > 0 ? `${row.apiRunCount} metered run${row.apiRunCount === 1 ? "" : "s"}` : "0 metered runs"}
           {" · "}
           {row.subscriptionRunCount > 0
@@ -99,15 +99,15 @@ export function BillerSpendCard({
 
         {billingTypeBreakdown.length > 0 && (
           <>
-            <div className="border-t border-border" />
+            <div className="border-t border-line" />
             <div className="space-y-2">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              <p className="text-xs font-semibold text-ink-3 uppercase tracking-wide">
                 Billing types
               </p>
               <div className="space-y-1.5">
                 {billingTypeBreakdown.map(([billingType, costCents]) => (
                   <div key={billingType} className="flex items-center justify-between gap-2 text-xs">
-                    <span className="text-muted-foreground">{billingTypeDisplayName(billingType as any)}</span>
+                    <span className="text-ink-3">{billingTypeDisplayName(billingType as any)}</span>
                     <span className="font-medium tabular-nums">{formatCents(costCents)}</span>
                   </div>
                 ))}
@@ -118,18 +118,18 @@ export function BillerSpendCard({
 
         {providerBreakdown.length > 0 && (
           <>
-            <div className="border-t border-border" />
+            <div className="border-t border-line" />
             <div className="space-y-2">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              <p className="text-xs font-semibold text-ink-3 uppercase tracking-wide">
                 Upstream providers
               </p>
               <div className="space-y-1.5">
                 {providerBreakdown.map((entry) => (
                   <div key={entry.provider} className="flex items-center justify-between gap-2 text-xs">
-                    <span className="text-muted-foreground">{providerDisplayName(entry.provider)}</span>
+                    <span className="text-ink-3">{providerDisplayName(entry.provider)}</span>
                     <div className="text-right tabular-nums">
                       <div className="font-medium">{formatCents(entry.costCents)}</div>
-                      <div className="text-muted-foreground">
+                      <div className="text-ink-3">
                         {formatTokens(entry.inputTokens + entry.outputTokens)} tok
                       </div>
                     </div>

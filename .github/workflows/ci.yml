@@ -360,6 +360,32 @@ jobs:
           path: tests/mobile-shell/test-results/
           retention-days: 7
 
+  contrast-gate:
+    name: Contrast gate (rendered colours)
+    needs: scope
+    if: needs.scope.outputs.docs_only != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-workspace
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run contrast gate
+        run: pnpm exec playwright test --config tests/contrast-gate/playwright.config.ts
+
+      - name: Upload contrast report
+        uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: contrast-gate-report
+          path: tests/contrast-gate/test-results/
+          retention-days: 14
+
   docs:
     name: Docs
     needs: scope
@@ -382,7 +408,7 @@ jobs:
   verify:
     name: verify
     if: always()
-    needs: [scope, policy, docs, typecheck, build, extensions, runner, general, serialized, e2e, mobile-shell]
+    needs: [scope, policy, docs, typecheck, build, extensions, runner, general, serialized, e2e, mobile-shell, contrast-gate]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

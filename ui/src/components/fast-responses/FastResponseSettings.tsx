@@ -110,7 +110,7 @@ export function FastResponseSettingsView({
           View usage
         </Link>
       </div>
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm text-ink-3">
         Send a short acknowledgement while your agent starts work. Usage is
         charged to the selected shared API connection.
       </p>
@@ -140,13 +140,13 @@ export function FastResponseSettingsView({
         }}
       />
       {!choices.length && (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           Add a shared API connection in Apps to get started.
         </p>
       )}
       <div className="flex items-center gap-3">
         {onAdd && (
-          <Button variant="outline" size="sm" onClick={onAdd}>
+          <Button variant="secondary" size="sm" onClick={onAdd}>
             Add connection
           </Button>
         )}
@@ -157,7 +157,7 @@ export function FastResponseSettingsView({
       {draft.connectionId && (
         <fieldset disabled={saving || testing} className="space-y-4">
           {!selected && (
-            <p role="status" className="text-sm text-muted-foreground">
+            <p role="status" className="text-sm text-ink-3">
               The saved connection is unavailable. Disable fast responses or
               choose another connection.
             </p>
@@ -199,7 +199,7 @@ export function FastResponseSettingsView({
                 setDraft((d) => ({ ...d, allowSponsored }))
               }
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-ink-3">
               Covers accepted external messages from people without a linked
               Paperclip account.
             </p>
@@ -207,7 +207,7 @@ export function FastResponseSettingsView({
         </fieldset>
       )}
       {error && (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-sm text-bad">
           {error}
         </p>
       )}
@@ -216,7 +216,7 @@ export function FastResponseSettingsView({
         (result.status === "succeeded" ? (
           <div role="status" className="space-y-2 text-sm">
             <p>{result.text}</p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-ink-3">
               {(result.durationMs / 1000).toFixed(2)} seconds ·{" "}
               {result.usage.inputTokens ?? "—"} input /{" "}
               {result.usage.outputTokens ?? "—"} output tokens · Usage recorded
@@ -224,7 +224,7 @@ export function FastResponseSettingsView({
             </p>
           </div>
         ) : (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-sm text-bad">
             {result.reason === "timeout"
               ? "The model did not respond within three seconds. Try a faster model."
               : "Could not generate a response. Check the connection and model, then try again."}
@@ -233,14 +233,14 @@ export function FastResponseSettingsView({
       <div className="flex items-center justify-between gap-3">
         <div className="space-y-1">
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             onClick={onTest}
             disabled={dirty || !settings.enabled || saving || testing}
           >
             {testing ? "Testing…" : "Test response"}
           </Button>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             {dirty
               ? "Save changes before testing."
               : "Runs a small sample with an API charge."}
@@ -311,15 +311,15 @@ export function FastResponseSettingsSection({
   });
   if (query.isPending)
     return (
-      <p className="text-sm text-muted-foreground">Loading fast response…</p>
+      <p className="text-sm text-ink-3">Loading fast response…</p>
     );
   if (query.error)
     return (
       <div role="alert">
-        <p className="text-sm text-destructive">
+        <p className="text-sm text-bad">
           Could not load fast response settings.
         </p>
-        <Button variant="outline" onClick={() => void query.refetch()}>
+        <Button variant="secondary" onClick={() => void query.refetch()}>
           Try again
         </Button>
       </div>

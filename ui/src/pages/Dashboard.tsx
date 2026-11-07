@@ -322,7 +322,7 @@ export function Dashboard() {
 
   return (
     <div className="space-y-6">
-      {error && <p className="text-sm text-destructive">{error.message}</p>}
+      {error && <p className="text-sm text-bad">{error.message}</p>}
 
       {pausedBanner?.kind === "imported" ? (
         <InlineBanner
@@ -476,17 +476,17 @@ export function Dashboard() {
             context={{ companyId: selectedCompanyId }}
             className="grid gap-4 md:grid-cols-2"
             // design-allow(card-pattern): class-string prop consumed by the plugin outlet; a component can't be passed here (C5a Run 3)
-            itemClassName="rounded-lg border bg-card p-4 shadow-sm"
+            itemClassName="rounded-lg border bg-bg-2 p-4 shadow-sm"
           />
 
           <div className="grid md:grid-cols-2 gap-4">
             {/* Recent Activity */}
             {recentActivity.length > 0 && (
               <div className="min-w-0">
-                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+                <h3 className="text-sm font-semibold text-ink-3 uppercase tracking-wide mb-3">
                   Recent Activity
                 </h3>
-                <Card className="@container block py-0 divide-y divide-border overflow-hidden">
+                <Card className="@container block py-0 divide-y divide-line overflow-hidden">
                   {recentActivity.map((event) => (
                     <ActivityRow
                       key={event.id}
@@ -504,20 +504,20 @@ export function Dashboard() {
 
             {/* Recent Tasks */}
             <div className="min-w-0">
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
+              <h3 className="text-sm font-semibold text-ink-3 uppercase tracking-wide mb-3">
                 Recent Tasks
               </h3>
               {recentIssues.length === 0 ? (
                 <Card className="block p-4">
-                  <p className="text-sm text-muted-foreground">No tasks yet.</p>
+                  <p className="text-sm text-ink-3">No tasks yet.</p>
                 </Card>
               ) : (
-                <Card className="@container block py-0 divide-y divide-border overflow-hidden">
+                <Card className="@container block py-0 divide-y divide-line overflow-hidden">
                   {recentIssues.slice(0, 10).map((issue) => (
                     <Link
                       key={issue.id}
                       to={`/issues/${issue.identifier ?? issue.id}`}
-                      className="dashboard-list-row text-sm cursor-pointer hover:bg-accent/50 transition-colors no-underline text-inherit block"
+                      className="dashboard-list-row text-sm cursor-pointer hover:bg-bg-3/50 transition-colors no-underline text-inherit block"
                     >
                       <div className="flex items-start gap-2 @xl:grid @xl:grid-cols-(--dashboard-task-list-columns) @xl:items-baseline">
                         <span className="flex size-6 shrink-0 items-center justify-end @xl:self-center">
@@ -528,7 +528,7 @@ export function Dashboard() {
                             <span className="min-w-0 flex-1 truncate text-sm leading-6" title={issue.title}>
                               {issue.title}
                             </span>
-                            <span className="ml-auto shrink-0 truncate text-right font-mono text-(length:--text-micro) text-muted-foreground @xl:col-start-4 @xl:row-start-1 @xl:w-(--dashboard-list-id-width)">
+                            <span className="ml-auto shrink-0 truncate text-right font-mono text-(length:--text-micro) text-ink-3 @xl:col-start-4 @xl:row-start-1 @xl:w-(--dashboard-list-id-width)">
                               {issue.identifier ?? issue.id.slice(0, 8)}
                             </span>
                           </span>
@@ -541,7 +541,7 @@ export function Dashboard() {
                                   : null;
                               })()}
                             </span>
-                            <span className="ml-auto w-(--dashboard-list-time-width) shrink-0 whitespace-nowrap text-right text-xs text-muted-foreground">
+                            <span className="ml-auto w-(--dashboard-list-time-width) shrink-0 whitespace-nowrap text-right text-xs text-ink-3">
                               {timeAgo(issue.updatedAt)}
                             </span>
                           </span>

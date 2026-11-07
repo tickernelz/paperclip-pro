@@ -318,10 +318,10 @@ describe("IssueRow", () => {
     const link = container.querySelector("[data-inbox-issue-link]") as HTMLAnchorElement | null;
     expect(row).not.toBeNull();
     expect(row?.className).toContain("hover:bg-transparent");
-    expect(row?.className).not.toContain("hover:bg-accent/50");
+    expect(row?.className).not.toContain("hover:bg-bg-3/50");
     // The overlay link no longer carries the hover wash.
     expect(link?.className ?? "").not.toContain("hover:bg-transparent");
-    expect(link?.className ?? "").not.toContain("hover:bg-accent/50");
+    expect(link?.className ?? "").not.toContain("hover:bg-bg-3/50");
 
     act(() => {
       root.unmount();
@@ -340,17 +340,17 @@ describe("IssueRow", () => {
     // Selected rows neutralize the status glyph to muted via `!`-important
     // utilities, which override the glyph's inline colour var. The glyph is an
     // <svg> (SVGAnimatedString className), so match on the class attribute.
-    const statusGlyph = container.querySelector('svg[class*="text-muted-foreground"]');
+    const statusGlyph = container.querySelector('svg[class*="text-ink-3"]');
 
     expect(markReadButton).not.toBeNull();
-    expect(markReadButton?.className).toContain("hover:bg-muted/80");
+    expect(markReadButton?.className).toContain("hover:bg-bg-3/80");
     expect(markReadButton?.className).not.toContain("hover:bg-blue-500/20");
     expect(unreadDot).not.toBeNull();
-    expect(unreadDot?.className).toContain("bg-muted-foreground/70");
+    expect(unreadDot?.className).toContain("bg-ink-3/70");
     expect(unreadDot?.className).not.toContain("bg-blue-600");
     expect(statusGlyph).not.toBeNull();
-    expect(statusGlyph?.getAttribute("class")).toContain("!text-muted-foreground");
-    expect(statusGlyph?.getAttribute("class")).toContain("!border-muted-foreground");
+    expect(statusGlyph?.getAttribute("class")).toContain("!text-ink-3");
+    expect(statusGlyph?.getAttribute("class")).toContain("!border-ink-3");
 
     act(() => {
       root.unmount();
@@ -528,9 +528,9 @@ describe("IssueRow", () => {
 
     expect(link).not.toBeNull();
     expect(link?.getAttribute("aria-current")).toBe("step");
-    expect(row?.className).toContain("bg-primary/5");
+    expect(row?.className).toContain("bg-accent/5");
     expect(row?.className).not.toContain("border-l-");
-    expect(link?.className ?? "").not.toContain("bg-primary/5");
+    expect(link?.className ?? "").not.toContain("bg-accent/5");
 
     act(() => {
       root.unmount();
@@ -687,8 +687,8 @@ describe("IssueRow", () => {
     const row = container.firstElementChild as HTMLElement | null;
     const link = container.querySelector("[data-inbox-issue-link]") as HTMLAnchorElement | null;
     // Hover wash paints behind the content on the root band...
-    expect(row?.className).toContain("hover:bg-accent/50");
-    expect(link?.className ?? "").not.toContain("hover:bg-accent/50");
+    expect(row?.className).toContain("hover:bg-bg-3/50");
+    expect(link?.className ?? "").not.toContain("hover:bg-bg-3/50");
     // ...and the overlay link keeps only positioning + focus concerns.
     expect(link?.className).toContain("absolute");
     expect(link?.className).toContain("inset-0");

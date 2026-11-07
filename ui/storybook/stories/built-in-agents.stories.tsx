@@ -85,7 +85,7 @@ function RosterRow({
     <>
       <BuiltInLifecycleChip status={lifecycle} />
       {lifecycle === "needs_setup" && (
-        <Button size="xs" variant="outline">Set up</Button>
+        <Button size="xs" variant="secondary">Set up</Button>
       )}
     </>
   ) : null;
@@ -104,7 +104,7 @@ function RosterRow({
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+    <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-3">
       {children}
     </p>
   );
@@ -124,12 +124,12 @@ export const SurfaceGallery: Story = {
     <div className="mx-auto max-w-3xl space-y-8 p-6">
       <div className="space-y-3">
         <SectionLabel>Board 1 — Roster rows</SectionLabel>
-        <div className="rounded-lg border border-border divide-y divide-border">
+        <div className="rounded-lg border border-line divide-y divide-line">
           <RosterRow name="Briefs Agent" lifecycle="needs_setup" status="idle" />
           <RosterRow name="Learning Agent" status="active" />
           <RosterRow name="Briefs Agent" lifecycle="pending_approval" status="idle" />
         </div>
-        <p className="text-[11px] text-muted-foreground">
+        <p className="text-[11px] text-ink-3">
           Resize below the <code>xl</code> breakpoint to see the lifecycle/action
           cluster drop to a second line so the agent name never collapses
           (PAP-12988).
@@ -141,7 +141,7 @@ export const SurfaceGallery: Story = {
         <InlineBanner
           tone="info"
           title="Built-in agent"
-          actions={<Button variant="outline" size="sm">Reset to defaults</Button>}
+          actions={<Button variant="secondary" size="sm">Reset to defaults</Button>}
         >
           Ships with Paperclip and powers <strong>Briefs</strong>. Configure it like any agent —
           model, instructions, budget. It can be paused but not deleted; pausing it pauses Briefs.
@@ -150,7 +150,7 @@ export const SurfaceGallery: Story = {
 
       <div className="space-y-3">
         <SectionLabel>Board 4A — Feature gate: setup empty-state</SectionLabel>
-        <div className="rounded-lg border border-border">
+        <div className="rounded-lg border border-line">
           <EmptyState
             icon={Bot}
             title="Set up the Briefs Agent"
@@ -164,7 +164,7 @@ export const SurfaceGallery: Story = {
 
       <div className="space-y-3">
         <SectionLabel>Board 4 — Feature gate: pending approval</SectionLabel>
-        <div className="rounded-lg border border-border">
+        <div className="rounded-lg border border-line">
           <EmptyState
             icon={Clock3}
             title="Briefs Agent is pending approval"
@@ -188,7 +188,7 @@ export const SurfaceGallery: Story = {
           >
             Its built-in agent was paused 2 days ago, so new briefs aren't being generated.
           </InlineBanner>
-          <div className="opacity-70 rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
+          <div className="opacity-70 rounded-lg border border-dashed border-line p-4 text-sm text-ink-3">
             Previously generated briefs stay readable while the agent is paused.
           </div>
         </div>
@@ -196,7 +196,7 @@ export const SurfaceGallery: Story = {
 
       <div className="space-y-3">
         <SectionLabel>Board 5 — Sidebar treatment</SectionLabel>
-        <div className="w-64 rounded-lg border border-border p-2 space-y-1">
+        <div className="w-64 rounded-lg border border-line p-2 space-y-1">
           <div className="flex items-center gap-2 px-3 py-1.5 text-[13px]">
             <span className="min-w-0 truncate">Briefs Agent</span>
             <span className="ml-1 flex items-center gap-1">
@@ -343,7 +343,7 @@ const READY = [
 function BundleCase({ title, state }: { title: string; state: BuiltInAgentState }) {
   return (
     <div className="space-y-2">
-      <p className="text-(length:--text-micro) font-medium text-muted-foreground">{title}</p>
+      <p className="text-(length:--text-micro) font-medium text-ink-3">{title}</p>
       <BuiltInBundlePanel
         state={state}
         agentRef="reflectioncoach"

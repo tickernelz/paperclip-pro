@@ -1335,11 +1335,11 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
         ref={containerRef}
         className={cn(
           "relative paperclip-mdxeditor-scope",
-          bordered ? "rounded-md border border-border bg-transparent" : "bg-transparent",
+          bordered ? "rounded-md border border-line bg-transparent" : "bg-transparent",
           className,
         )}
       >
-        <div className="flex items-start justify-between gap-3 px-3 pt-2 text-xs text-muted-foreground">
+        <div className="flex items-start justify-between gap-3 px-3 pt-2 text-xs text-ink-3">
           <p>
             Rich editor unavailable for this markdown. Showing raw source instead.{" "}
             <span data-testid="markdown-editor-fallback-code" className="font-mono">
@@ -1348,7 +1348,7 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
           </p>
           <button
             type="button"
-            className="shrink-0 underline underline-offset-2 hover:text-foreground"
+            className="shrink-0 underline underline-offset-2 hover:text-ink"
             onClick={() => {
               // The retry remounts MDXEditor, so re-arm the mount-time guard:
               // a fresh mount can emit an empty onChange that would otherwise
@@ -1392,8 +1392,8 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
       ref={containerRef}
       className={cn(
         "relative paperclip-mdxeditor-scope",
-        bordered ? "rounded-md border border-border bg-transparent" : "bg-transparent",
-        isDragOver && "ring-1 ring-primary/60 bg-accent/20",
+        bordered ? "rounded-md border border-line bg-transparent" : "bg-transparent",
+        isDragOver && "ring-1 ring-accent/60 bg-bg-3/20",
         className,
       )}
       onInputCapture={(event) => {
@@ -1587,7 +1587,7 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
           <div
             data-paperclip-floating-ui=""
             data-testid="mention-autocomplete-menu"
-            className="pointer-events-auto fixed z-(--z-9999) min-w-(--sz-180px) max-w-(--sz-calc-15) max-h-(--sz-208px) overflow-y-auto overscroll-contain rounded-md border border-border bg-popover shadow-md"
+            className="pointer-events-auto fixed z-(--z-9999) min-w-(--sz-180px) max-w-(--sz-calc-15) max-h-(--sz-208px) overflow-y-auto overscroll-contain rounded-md border border-line bg-bg-2 shadow-md"
             style={{
               top: mentionMenuPosition.top,
               left: mentionMenuPosition.left,
@@ -1618,8 +1618,8 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
                   autocompleteOptionRefs.current[i] = node;
                 }}
                 className={cn(
-                  "flex items-center gap-2 w-full px-3 py-1.5 text-sm text-left hover:bg-accent/50 transition-colors",
-                  i === mentionIndex && "bg-accent",
+                  "flex items-center gap-2 w-full px-3 py-1.5 text-sm text-left hover:bg-bg-3/50 transition-colors",
+                  i === mentionIndex && "bg-bg-3",
                   option.kind === "action" && option.disabled && "cursor-not-allowed opacity-60 hover:bg-transparent",
                 )}
                 onPointerDown={(e) => {
@@ -1640,26 +1640,26 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
                 }}
               >
                 {option.kind === "routine" ? (
-                  <CalendarClock className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                  <CalendarClock className="h-3.5 w-3.5 shrink-0 text-ink-3" />
                 ) : option.kind === "action" ? (
-                  <Flag className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                  <Flag className="h-3.5 w-3.5 shrink-0 text-ink-3" />
                 ) : option.kind === "skill" ? (
-                  <Boxes className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                  <Boxes className="h-3.5 w-3.5 shrink-0 text-ink-3" />
                 ) : option.kind === "issue" ? (
-                  <Hash className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                  <Hash className="h-3.5 w-3.5 shrink-0 text-ink-3" />
                 ) : option.kind === "project" && option.projectId ? (
                   <span
-                    className="inline-flex h-2 w-2 rounded-full border border-border/50"
+                    className="inline-flex h-2 w-2 rounded-full border border-line/50"
                     style={{ backgroundColor: option.projectColor ?? "var(--project-none)" }}
                   />
                 ) : option.kind === "user" ? (
-                  <User className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                  <User className="h-3.5 w-3.5 shrink-0 text-ink-3" />
                 ) : (
                   <AgentAvatar agent={{ id: option.agentId ?? option.id, name: option.name, appearance: option.agentAppearance }} size={16} />
                 )}
                 {option.kind === "issue" && option.issueIdentifier ? (
                   <span className="flex min-w-0 items-baseline gap-1.5">
-                    <span className="shrink-0 font-mono text-(length:--text-micro) text-muted-foreground">
+                    <span className="shrink-0 font-mono text-(length:--text-micro) text-ink-3">
                       {option.issueIdentifier}
                     </span>
                     <span className="truncate">{issueMentionTitle(option)}</span>
@@ -1672,32 +1672,32 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
                   </span>
                 )}
                 {option.kind === "issue" && (
-                  <span className="ml-auto text-(length:--text-nano) uppercase tracking-wide text-muted-foreground">
+                  <span className="ml-auto text-(length:--text-nano) uppercase tracking-wide text-ink-3">
                     Task
                   </span>
                 )}
                 {option.kind === "project" && option.projectId && (
-                  <span className="ml-auto text-(length:--text-nano) uppercase tracking-wide text-muted-foreground">
+                  <span className="ml-auto text-(length:--text-nano) uppercase tracking-wide text-ink-3">
                     Project
                   </span>
                 )}
                 {option.kind === "user" && (
-                  <span className="ml-auto text-(length:--text-nano) uppercase tracking-wide text-muted-foreground">
+                  <span className="ml-auto text-(length:--text-nano) uppercase tracking-wide text-ink-3">
                     User
                   </span>
                 )}
                 {option.kind === "skill" && (
-                  <span className="ml-auto text-(length:--text-nano) uppercase tracking-wide text-muted-foreground">
+                  <span className="ml-auto text-(length:--text-nano) uppercase tracking-wide text-ink-3">
                     Skill
                   </span>
                 )}
                 {option.kind === "routine" && (
-                  <span className="ml-auto text-(length:--text-nano) uppercase tracking-wide text-muted-foreground">
+                  <span className="ml-auto text-(length:--text-nano) uppercase tracking-wide text-ink-3">
                     Routine
                   </span>
                 )}
                 {option.kind === "action" && (
-                  <span className="ml-auto max-w-28 truncate text-(length:--text-nano) text-muted-foreground">
+                  <span className="ml-auto max-w-28 truncate text-(length:--text-nano) text-ink-3">
                     {option.disabled ? option.disabledReason : option.description}
                   </span>
                 )}
@@ -1710,7 +1710,7 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
       {isDragOver && canDropFile && (
         <div
           className={cn(
-            "pointer-events-none absolute inset-1 z-40 flex items-center justify-center rounded-md border border-dashed border-primary/80 bg-primary/10 text-xs font-medium text-primary",
+            "pointer-events-none absolute inset-1 z-40 flex items-center justify-center rounded-md border border-dashed border-accent/80 bg-accent/10 text-xs font-medium text-accent",
             !bordered && "inset-0 rounded-sm",
           )}
         >
@@ -1718,7 +1718,7 @@ export const MarkdownEditor = forwardRef<MarkdownEditorRef, MarkdownEditorProps>
         </div>
       )}
       {uploadError && (
-        <p className="px-3 pb-2 text-xs text-destructive">{uploadError}</p>
+        <p className="px-3 pb-2 text-xs text-bad">{uploadError}</p>
       )}
     </div>
   );

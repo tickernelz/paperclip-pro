@@ -83,7 +83,7 @@ function Questions() {
         setInteraction(current => ({ ...current, status: "cancelled", result: { version: 1, answers: [], cancellationReason: "Cancelled by the operator." } }));
       }}
     />
-    <output data-testid="question-receipt" className="block whitespace-pre-wrap font-mono text-xs text-muted-foreground">{receipt == null ? "No answer submitted" : JSON.stringify(receipt, null, 2)}</output>
+    <output data-testid="question-receipt" className="block whitespace-pre-wrap font-mono text-xs text-ink-3">{receipt == null ? "No answer submitted" : JSON.stringify(receipt, null, 2)}</output>
   </Frame>;
 }
 
@@ -118,14 +118,14 @@ function NativeCursorPlan() {
   }), "2026-09-28T12:00:00.000Z");
   const items = transcriptToTaskChatItems(entries, { runId: "cursor-native-plan", running: true });
   return <Frame>
-    <p className="text-xs text-muted-foreground" data-testid="plan-source-length">Complete source: {fullPlan.length} characters</p>
+    <p className="text-xs text-ink-3" data-testid="plan-source-length">Complete source: {fullPlan.length} characters</p>
     <div data-testid="native-plan-review">{items.map(item => item.kind === "protocol" && item.surface === "runtime_request"
       ? <TaskChatProtocolCard key={item.id} item={receipt ? {
         ...item, status: receipt.decision.action === "cancel" ? "cancelled" : "resolved",
         resolvedAction: receipt.decision.action,
         response: "response" in receipt.decision ? receipt.decision.response : null,
       } : item} onRuntimeRequestDecision={(current, decision) => setReceipt({ requestId: current.requestId, decision })} /> : null)}</div>
-    <output data-testid="native-plan-receipt" className="block whitespace-pre-wrap font-mono text-xs text-muted-foreground">{receipt == null ? "No decision submitted" : JSON.stringify(receipt, null, 2)}</output>
+    <output data-testid="native-plan-receipt" className="block whitespace-pre-wrap font-mono text-xs text-ink-3">{receipt == null ? "No decision submitted" : JSON.stringify(receipt, null, 2)}</output>
   </Frame>;
 }
 
@@ -146,14 +146,14 @@ function PlanReview() {
     setInteraction({ ...current, status: outcome, result: { version: 1, outcome, reason: reason ?? null } });
   }
   return <Frame>
-    <p className="text-xs text-muted-foreground" data-testid="plan-source-length">Complete source: {fullPlan.length} characters</p>
+    <p className="text-xs text-ink-3" data-testid="plan-source-length">Complete source: {fullPlan.length} characters</p>
     <div data-testid="full-plan-review">
       <IssueThreadInteractionCard interaction={interaction} agentMap={storybookAgentMap}
         currentUserId={issueThreadInteractionFixtureMeta.currentUserId}
         onAcceptInteraction={current => resolve(current as RequestConfirmationInteraction, "accepted")}
         onRejectInteraction={(current, reason) => resolve(current as RequestConfirmationInteraction, "rejected", reason)} />
     </div>
-    <output data-testid="plan-receipt" className="block whitespace-pre-wrap font-mono text-xs text-muted-foreground">{receipt == null ? "Pending revision 7" : JSON.stringify(receipt, null, 2)}</output>
+    <output data-testid="plan-receipt" className="block whitespace-pre-wrap font-mono text-xs text-ink-3">{receipt == null ? "Pending revision 7" : JSON.stringify(receipt, null, 2)}</output>
   </Frame>;
 }
 

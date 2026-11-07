@@ -202,7 +202,7 @@ function MonitorSurfaceStories() {
   return (
     <div className="space-y-8 p-6">
       <section className="space-y-3">
-        <div className="text-xs uppercase tracking-wide text-muted-foreground">
+        <div className="text-xs uppercase tracking-wide text-ink-3">
           Pinned top banner — scheduled (2h wait, external service)
         </div>
         <IssueMonitorBanner
@@ -212,25 +212,25 @@ function MonitorSurfaceStories() {
           checkingNow={false}
         />
 
-        <div className="text-xs uppercase tracking-wide text-muted-foreground">
+        <div className="text-xs uppercase tracking-wide text-ink-3">
           Pinned top banner — retrying (attempt 3)
         </div>
         <IssueMonitorBanner issue={retryingMonitorIssue} onCheckNow={() => undefined} />
 
-        <div className="text-xs uppercase tracking-wide text-muted-foreground">
+        <div className="text-xs uppercase tracking-wide text-ink-3">
           Pinned top banner — due now
         </div>
         <IssueMonitorBanner issue={dueNowMonitorIssue} onCheckNow={() => undefined} />
 
-        <div className="text-xs uppercase tracking-wide text-muted-foreground">
+        <div className="text-xs uppercase tracking-wide text-ink-3">
           Pinned top banner — overdue (warning tone)
         </div>
         <IssueMonitorBanner issue={overdueMonitorIssue} onCheckNow={() => undefined} />
 
-        <div className="text-xs uppercase tracking-wide text-muted-foreground">
+        <div className="text-xs uppercase tracking-wide text-ink-3">
           Pinned top banner — cleared / none (renders nothing)
         </div>
-        <div className="rounded-lg border border-dashed border-border px-3 py-2 text-xs text-muted-foreground">
+        <div className="rounded-lg border border-dashed border-line px-3 py-2 text-xs text-ink-3">
           (banner + strip hide entirely for cleared / no-monitor issues)
         </div>
         <IssueMonitorBanner issue={clearedIssue} onCheckNow={() => undefined} />
@@ -238,7 +238,7 @@ function MonitorSurfaceStories() {
       </section>
 
       <section className="space-y-3">
-        <div className="text-xs uppercase tracking-wide text-muted-foreground">
+        <div className="text-xs uppercase tracking-wide text-ink-3">
           Composer strip — scheduled (inline, above the reply composer)
         </div>
         <IssueMonitorComposerStrip
@@ -246,7 +246,7 @@ function MonitorSurfaceStories() {
           onCheckNow={() => undefined}
         />
 
-        <div className="text-xs uppercase tracking-wide text-muted-foreground">
+        <div className="text-xs uppercase tracking-wide text-ink-3">
           Composer strip — overdue
         </div>
         <IssueMonitorComposerStrip issue={overdueMonitorIssue} onCheckNow={() => undefined} />
@@ -254,10 +254,10 @@ function MonitorSurfaceStories() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="space-y-2">
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">
+          <div className="text-xs uppercase tracking-wide text-ink-3">
             IssueProperties Monitor row - Not scheduled (default state)
           </div>
-          <div className="rounded-lg border border-border bg-background/70 p-4">
+          <div className="rounded-lg border border-line bg-bg/70 p-4">
             <IssueProperties
               issue={baseIssue}
               onUpdate={() => undefined}
@@ -267,10 +267,10 @@ function MonitorSurfaceStories() {
         </section>
 
         <section className="space-y-2">
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">
+          <div className="text-xs uppercase tracking-wide text-ink-3">
             IssueProperties Monitor row - Scheduled (Greptile, in 5m)
           </div>
-          <div className="rounded-lg border border-border bg-background/70 p-4">
+          <div className="rounded-lg border border-line bg-bg/70 p-4">
             <IssueProperties
               issue={monitoredIssue}
               onUpdate={() => undefined}
@@ -280,10 +280,10 @@ function MonitorSurfaceStories() {
         </section>
 
         <section className="space-y-2">
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">
+          <div className="text-xs uppercase tracking-wide text-ink-3">
             IssueProperties Monitor row - Triggered recently
           </div>
-          <div className="rounded-lg border border-border bg-background/70 p-4">
+          <div className="rounded-lg border border-line bg-bg/70 p-4">
             <IssueProperties
               issue={triggeredIssue}
               onUpdate={() => undefined}
@@ -293,10 +293,10 @@ function MonitorSurfaceStories() {
         </section>
 
         <section className="space-y-2">
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">
+          <div className="text-xs uppercase tracking-wide text-ink-3">
             IssueProperties Monitor row - Cleared
           </div>
-          <div className="rounded-lg border border-border bg-background/70 p-4">
+          <div className="rounded-lg border border-line bg-bg/70 p-4">
             <IssueProperties
               issue={clearedIssue}
               onUpdate={() => undefined}

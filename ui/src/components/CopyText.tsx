@@ -50,7 +50,7 @@ export function CopyText({
         aria-label={ariaLabel}
         title={title}
         className={cn(
-          "cursor-copy hover:text-foreground transition-colors",
+          "cursor-copy hover:text-ink transition-colors",
           className,
         )}
         onClick={handleClick}
@@ -61,7 +61,7 @@ export function CopyText({
         role="status"
         aria-live="polite"
         className={cn(
-          "pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-full mb-1.5 rounded-md bg-foreground text-background px-2 py-1 text-xs whitespace-nowrap transition-opacity duration-300",
+          "pointer-events-none absolute left-1/2 -translate-x-1/2 bottom-full mb-1.5 rounded-md bg-ink text-bg px-2 py-1 text-xs whitespace-nowrap transition-opacity duration-300",
           visible ? "opacity-100" : "opacity-0",
         )}
       >

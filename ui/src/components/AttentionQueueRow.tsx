@@ -185,7 +185,7 @@ export const AttentionQueueRow = memo(function AttentionQueueRow({
   const toggle = expandable ? (
     <button
       type="button"
-      className="inline-flex shrink-0 items-center gap-1 rounded-md text-xs font-medium text-muted-foreground hover:text-foreground focus-visible:ring-ring focus-visible:ring-(length:--rad-3) focus-visible:outline-none"
+      className="inline-flex shrink-0 items-center gap-1 rounded-md text-xs font-medium text-ink-3 hover:text-ink focus-visible:ring-focus focus-visible:ring-(length:--rad-3) focus-visible:outline-none"
       aria-label={expanded ? "Collapse decision" : "Expand decision"}
       aria-expanded={expanded}
       onClick={activate}
@@ -231,7 +231,7 @@ export const AttentionQueueRow = memo(function AttentionQueueRow({
           )}
 
           {showOpen && (
-            <Button asChild variant="default" size="xs" className={ACTION_BTN}>
+            <Button asChild variant="primary" size="xs" className={ACTION_BTN}>
               <Link to={href!}>
                 Open
                 <ExternalLink className="h-3 w-3" />
@@ -240,7 +240,7 @@ export const AttentionQueueRow = memo(function AttentionQueueRow({
           )}
 
           {showRestore && (
-            <Button type="button" variant="outline" size="xs" className={ACTION_BTN} onClick={() => onRestore(item)}>
+            <Button type="button" variant="secondary" size="xs" className={ACTION_BTN} onClick={() => onRestore(item)}>
               <RotateCcw className="h-3 w-3" />
               Restore
             </Button>
@@ -253,14 +253,14 @@ export const AttentionQueueRow = memo(function AttentionQueueRow({
   return (
     <div
       className={cn(
-        "@container relative flex flex-col gap-4 overflow-hidden rounded-xl border border-border bg-card px-4 pt-3 pb-4",
+        "@container relative flex flex-col gap-4 overflow-hidden rounded-xl border border-line bg-bg-2 px-4 pt-3 pb-4",
         // The feed is uncapped, so off-screen rows must not cost layout/paint
         // while scrolling. The intrinsic-size estimate only matters before a
         // row's first paint; `auto` keeps the real measured height afterwards.
         "[content-visibility:auto] [contain-intrinsic-size:auto_104px]",
-        "motion-safe:transition-[opacity,transform,border-color,background-color] motion-safe:duration-200 motion-safe:ease-out hover:border-border/80",
-        isHidden && "bg-muted/30 opacity-80 hover:opacity-100",
-        selected && "border-ring ring-1 ring-ring",
+        "motion-safe:transition-[opacity,transform,border-color,background-color] motion-safe:duration-200 motion-safe:ease-out hover:border-line/80",
+        isHidden && "bg-bg-3/30 opacity-80 hover:opacity-100",
+        selected && "border-focus ring-1 ring-focus",
       )}
       id={`attention-row-${item.id}`}
       data-attention-row
@@ -273,7 +273,7 @@ export const AttentionQueueRow = memo(function AttentionQueueRow({
           headline, so the menu never toggles it. */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex min-w-0 flex-wrap items-center gap-1">
-          <span className="inline-flex items-center gap-1 text-xs font-medium text-muted-foreground">
+          <span className="inline-flex items-center gap-1 text-xs font-medium text-ink-3">
             <StatusGlyph status={status} size="md" />
             {meta.label}
           </span>
@@ -282,7 +282,7 @@ export const AttentionQueueRow = memo(function AttentionQueueRow({
               <EyebrowSeparator />
               <Link
                 to={taskRef.href ?? "#"}
-                className="font-mono text-(length:--text-nano) text-muted-foreground hover:text-foreground"
+                className="font-mono text-(length:--text-nano) text-ink-3 hover:text-ink"
                 onClick={(e) => e.stopPropagation()}
               >
                 {taskRef.identifier}
@@ -293,14 +293,14 @@ export const AttentionQueueRow = memo(function AttentionQueueRow({
             <>
               <EyebrowSeparator />
               <span
-                className="inline-flex items-center gap-1 text-(length:--text-nano) text-muted-foreground"
+                className="inline-flex items-center gap-1 text-(length:--text-nano) text-ink-3"
                 data-attention-decide-by={item.decideBy}
                 title={decideByProvenance(item) ? `Set by ${decideByProvenance(item)}` : undefined}
               >
                 <CalendarClock className="h-3 w-3" />
                 {decideByLabel(item.decideBy)}
                 {decideByProvenance(item) && (
-                  <span className="text-muted-foreground/80">· set by {decideByProvenance(item)}</span>
+                  <span className="text-ink-3/80">· set by {decideByProvenance(item)}</span>
                 )}
               </span>
             </>
@@ -310,13 +310,13 @@ export const AttentionQueueRow = memo(function AttentionQueueRow({
         <div className="flex shrink-0 items-center gap-1" data-attention-menu="true">
           {isHidden && snoozedUntil ? (
             <span
-              className="text-(length:--text-nano) text-muted-foreground"
+              className="text-(length:--text-nano) text-ink-3"
               title={`Reappears ${new Date(snoozedUntil).toLocaleString()}`}
             >
               Reappears {reappearLabel(snoozedUntil)}
             </span>
           ) : (
-            <span className="text-(length:--text-nano) text-muted-foreground">{relativeTime(item.activityAt)}</span>
+            <span className="text-(length:--text-nano) text-ink-3">{relativeTime(item.activityAt)}</span>
           )}
           {!isHidden && (
             <DropdownMenu>
@@ -324,7 +324,6 @@ export const AttentionQueueRow = memo(function AttentionQueueRow({
                 <Button
                   variant="ghost"
                   size="icon-xs"
-                  className="text-muted-foreground"
                   aria-label="Row actions"
                 >
                   <MoreHorizontal className="h-4 w-4" />
@@ -355,7 +354,7 @@ export const AttentionQueueRow = memo(function AttentionQueueRow({
       <div
         className={cn(
           "min-w-0 rounded-md",
-          expandable && "cursor-pointer focus-visible:ring-ring focus-visible:ring-(length:--rad-3) focus-visible:outline-none",
+          expandable && "cursor-pointer focus-visible:ring-focus focus-visible:ring-(length:--rad-3) focus-visible:outline-none",
         )}
         {...(expandable
           ? {
@@ -368,10 +367,10 @@ export const AttentionQueueRow = memo(function AttentionQueueRow({
             }
           : {})}
       >
-        <span className="line-clamp-2 text-sm font-medium text-foreground" title={item.subject.title ?? undefined}>
+        <span className="line-clamp-2 text-sm font-medium text-ink" title={item.subject.title ?? undefined}>
           {item.subject.title ?? meta.label}
         </span>
-        <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">{detailLine}</p>
+        <p className="mt-0.5 line-clamp-2 text-xs text-ink-3">{detailLine}</p>
       </div>
 
       {/* Collapsed-only content. It has no counterpart to morph into — the
@@ -436,7 +435,7 @@ export const AttentionQueueRow = memo(function AttentionQueueRow({
  */
 function EyebrowSeparator() {
   return (
-    <span className="text-xs text-muted-foreground" aria-hidden>
+    <span className="text-xs text-ink-3" aria-hidden>
       ·
     </span>
   );
@@ -466,10 +465,10 @@ function compactDecisionAction(item: AttentionItem, verbId: string): CompactDeci
  * rightmost — the same place in every row, collapsed or expanded — so the
  * operator's aim never has to move with the verb list.
  */
-const VERB_ORDER: Record<"outline" | "destructive" | "default", number> = {
-  outline: 0,
-  destructive: 1,
-  default: 2,
+const VERB_ORDER: Record<"secondary" | "delete" | "primary", number> = {
+  secondary: 0,
+  delete: 1,
+  primary: 2,
 };
 
 interface CompactAction {
@@ -590,11 +589,12 @@ function compactDecisionSuccessLabel(sourceKind: AttentionItem["sourceKind"], ac
   return action === "accept" ? "Confirmation accepted" : "Confirmation declined";
 }
 
-function decisionVerbVariant(verb: AttentionItem["decisionVerbs"][number]): "default" | "outline" | "destructive" {
+function decisionVerbVariant(verb: AttentionItem["decisionVerbs"][number]): "primary" | "secondary" | "delete" {
   const text = `${verb.label} ${verb.description ?? ""}`.toLowerCase();
-  if (/\b(reject|decline|deny|delete|remove)\b/.test(text)) return "destructive";
-  if (/\b(accept|approve|confirm|apply)\b/.test(text)) return "default";
-  return "outline";
+  if (/\b(delete|remove)\b/.test(text)) return "delete";
+  if (/\b(reject|decline|deny)\b/.test(text)) return "secondary";
+  if (/\b(accept|approve|confirm|apply)\b/.test(text)) return "primary";
+  return "secondary";
 }
 
 /** Square screenshot thumbnails at the right of the description (plan §10). */
@@ -611,12 +611,12 @@ function ThumbnailStack({ images }: { images: AttentionDetailImage[] }) {
             alt={img.alt ?? ""}
             loading="lazy"
             style={{ zIndex: visible.length - index }}
-            className="h-11 w-11 rounded-md border border-border bg-muted object-cover shadow-sm"
+            className="h-11 w-11 rounded-md border border-line bg-bg-3 object-cover shadow-sm"
           />
         ))}
       </div>
       {extra > 0 && (
-        <span className="ml-1 inline-flex h-6 items-center rounded-md border border-border bg-muted px-1.5 text-(length:--text-nano) font-medium text-muted-foreground">
+        <span className="ml-1 inline-flex h-6 items-center rounded-md border border-line bg-bg-3 px-1.5 text-(length:--text-nano) font-medium text-ink-3">
           +{extra}
         </span>
       )}
@@ -642,7 +642,7 @@ function ExpandedImages({ images, issueHref }: { images: AttentionDetailImage[];
             src={src}
             alt={img.alt ?? ""}
             loading="lazy"
-            className="h-32 w-44 rounded-md border border-border bg-muted object-cover shadow-sm"
+            className="h-32 w-44 rounded-md border border-line bg-bg-3 object-cover shadow-sm"
           />
         );
         return issueHref ? (
@@ -655,7 +655,7 @@ function ExpandedImages({ images, issueHref }: { images: AttentionDetailImage[];
             // this gallery directly under a stationary pointer, the preview
             // opens unbidden and can outlive the pointer that never entered it.
             disableIssueQuicklook
-            className="block rounded-md focus-visible:ring-ring focus-visible:ring-(length:--rad-3) focus-visible:outline-none"
+            className="block rounded-md focus-visible:ring-focus focus-visible:ring-(length:--rad-3) focus-visible:outline-none"
             onClick={(e) => e.stopPropagation()}
           >
             {image}
@@ -672,7 +672,7 @@ function ExpandedImages({ images, issueHref }: { images: AttentionDetailImage[];
           // Same gallery, same pointer trap — see the thumbnail note above.
           disableIssueQuicklook
           onClick={(e) => e.stopPropagation()}
-          className="flex h-32 w-24 flex-col items-center justify-center rounded-md border border-dashed border-border bg-muted/40 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-ring focus-visible:ring-(length:--rad-3) focus-visible:outline-none"
+          className="flex h-32 w-24 flex-col items-center justify-center rounded-md border border-dashed border-line bg-bg-3/40 text-sm font-medium text-ink-3 transition-colors hover:bg-bg-3 hover:text-ink focus-visible:ring-focus focus-visible:ring-(length:--rad-3) focus-visible:outline-none"
         >
           <span className="text-base font-semibold">{extra} more</span>
           <span className="mt-0.5 inline-flex items-center gap-1 text-(length:--text-nano)">
@@ -681,7 +681,7 @@ function ExpandedImages({ images, issueHref }: { images: AttentionDetailImage[];
           </span>
         </Link>
       ) : (
-        <span className="flex h-32 w-24 items-center justify-center rounded-md border border-dashed border-border bg-muted/40 text-sm font-semibold text-muted-foreground">
+        <span className="flex h-32 w-24 items-center justify-center rounded-md border border-dashed border-line bg-bg-3/40 text-sm font-semibold text-ink-3">
           {extra} more
         </span>
       ))}
@@ -718,14 +718,14 @@ function SnoozeSubmenu({ onSnooze }: { onSnooze: (snoozedUntil: string) => void 
           onKeyDown={(e) => e.stopPropagation()}
           onClick={(e) => e.stopPropagation()}
         >
-          <span className="text-(length:--text-nano) font-medium uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
+          <span className="text-(length:--text-nano) font-medium uppercase tracking-(--tracking-eyebrow) text-ink-3">
             Custom
           </span>
           <input
             type="datetime-local"
             value={customValue}
             onChange={(e) => setCustomValue(e.target.value)}
-            className="w-full rounded-sm border border-border bg-background px-2 py-1 text-xs"
+            className="w-full rounded-sm border border-line bg-bg px-2 py-1 text-xs"
           />
           <Button type="button" size="xs" disabled={!customValue} onClick={applyCustom}>
             Snooze until…
@@ -795,7 +795,7 @@ function InlineResolver({
   if (item.sourceKind === "issue_thread_interaction") {
     const issueId = (item.subject.metadata?.issueId as string | undefined) ?? item.relatedIssue?.id;
     if (!issueId) {
-      return <p className="text-xs text-muted-foreground">Missing issue reference for this decision.</p>;
+      return <p className="text-xs text-ink-3">Missing issue reference for this decision.</p>;
     }
     return (
       <>
@@ -878,11 +878,11 @@ function ApprovalResolver({ item, companyId, toggle }: { item: AttentionItem; co
         className="min-h-16 text-sm"
       />
       <ResolverFooter toggle={toggle}>
-        <Button size="sm" variant="outline" onClick={() => revise.mutate()} disabled={pending}>
+        <Button size="sm" variant="secondary" onClick={() => revise.mutate()} disabled={pending}>
           {revise.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
           Request revision
         </Button>
-        <Button size="sm" variant="destructive" onClick={() => reject.mutate()} disabled={pending}>
+        <Button size="sm" variant="secondary" onClick={() => reject.mutate()} disabled={pending}>
           {reject.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
           Reject
         </Button>
@@ -913,7 +913,7 @@ function JoinRequestResolver({ item, companyId, toggle }: { item: AttentionItem;
 
   return (
     <ResolverFooter toggle={toggle}>
-      <Button size="sm" variant="destructive" onClick={() => reject.mutate()} disabled={pending}>
+      <Button size="sm" variant="secondary" onClick={() => reject.mutate()} disabled={pending}>
         {reject.isPending && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
         Reject
       </Button>

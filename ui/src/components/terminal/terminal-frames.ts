@@ -64,12 +64,12 @@ function cssVariable(style: CSSStyleDeclaration, name: string): string | undefin
 export function resolveTerminalTheme(element: Element): ITheme {
   const style = window.getComputedStyle(element);
   const entries: Array<[keyof ITheme, string | undefined]> = [
-    ["background", cssVariable(style, "--background")],
-    ["foreground", cssVariable(style, "--foreground")],
-    ["cursor", cssVariable(style, "--primary")],
-    ["cursorAccent", cssVariable(style, "--background")],
-    ["selectionBackground", cssVariable(style, "--ring")],
-    ["selectionForeground", cssVariable(style, "--background")],
+    ["background", cssVariable(style, "--bg")],
+    ["foreground", cssVariable(style, "--ink")],
+    ["cursor", cssVariable(style, "--accent")],
+    ["cursorAccent", cssVariable(style, "--bg")],
+    ["selectionBackground", cssVariable(style, "--focus")],
+    ["selectionForeground", cssVariable(style, "--bg")],
   ];
   return Object.fromEntries(entries.filter((entry) => entry[1] !== undefined)) as ITheme;
 }

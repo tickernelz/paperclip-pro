@@ -29,15 +29,15 @@ import { readIngestOperationIssueId, uploadIssueAttachmentFile } from "./issue-a
 // ---------------------------------------------------------------------------
 
 const tokens = {
-  border: "var(--border, oklch(0.269 0 0))",
-  card: "var(--card, oklch(0.205 0 0))",
-  bg: "var(--background, oklch(0.145 0 0))",
-  fg: "var(--foreground, oklch(0.985 0 0))",
-  muted: "var(--muted-foreground, oklch(0.708 0 0))",
-  accent: "var(--accent, oklch(0.269 0 0))",
-  primary: "var(--primary, oklch(0.985 0 0))",
-  primaryFg: "var(--primary-foreground, oklch(0.205 0 0))",
-  destructive: "var(--destructive, oklch(0.637 0.237 25.331))",
+  border: "var(--line, oklch(0.269 0 0))",
+  card: "var(--bg-2, oklch(0.205 0 0))",
+  bg: "var(--bg, oklch(0.145 0 0))",
+  fg: "var(--ink, oklch(0.985 0 0))",
+  muted: "var(--ink-3, oklch(0.708 0 0))",
+  accent: "var(--bg-3, oklch(0.269 0 0))",
+  primary: "var(--accent, oklch(0.985 0 0))",
+  primaryFg: "var(--accent-ink, oklch(0.205 0 0))",
+  destructive: "var(--bad, oklch(0.637 0.237 25.331))",
   pluginBg: "oklch(0.3 0.06 70)",
   pluginFg: "oklch(0.92 0.08 80)",
   pluginBorder: "oklch(0.55 0.15 70)",
@@ -56,7 +56,7 @@ const tokens = {
 type Tone = "todo" | "in_progress" | "in_review" | "done" | "blocked" | "running" | "paused" | "failed" | "queued" | "default";
 
 const toneStyles: Record<Tone, CSSProperties> = {
-  default: { background: "var(--secondary, oklch(0.269 0 0))", color: tokens.fg, border: `1px solid ${tokens.border}` },
+  default: { background: "var(--bg-3, oklch(0.269 0 0))", color: tokens.fg, border: `1px solid ${tokens.border}` },
   todo: { background: "oklch(0.27 0.06 250)", color: "oklch(0.85 0.1 250)" },
   in_progress: { background: "oklch(0.27 0.06 280)", color: "oklch(0.85 0.1 280)" },
   in_review: { background: "oklch(0.27 0.07 305)", color: "oklch(0.85 0.1 305)" },
@@ -1307,7 +1307,7 @@ export function SidebarLink({ context }: PluginSidebarProps) {
   return (
     <a
       {...hostNavigation.linkProps("/wiki")}
-      className="flex items-center gap-2.5 px-3 py-2 text-[13px] font-medium text-foreground/80 transition-colors hover:bg-accent/50 hover:text-foreground"
+      className="flex items-center gap-2.5 px-3 py-2 text-[13px] font-medium text-ink/80 transition-colors hover:bg-bg-3/50 hover:text-ink"
       style={{ textDecoration: "none" }}
     >
       <span aria-hidden="true" className="shrink-0">
@@ -1755,7 +1755,7 @@ function WikiPageDropOverlay({ onClose }: { onClose: () => void }) {
         display: "grid",
         placeItems: "center",
         padding: 24,
-        background: "color-mix(in oklab, var(--background, oklch(0.145 0 0)) 72%, transparent)",
+        background: "color-mix(in oklab, var(--bg, oklch(0.145 0 0)) 72%, transparent)",
         backdropFilter: "blur(3px)",
       }}
     >
@@ -1776,7 +1776,7 @@ function WikiPageDropOverlay({ onClose }: { onClose: () => void }) {
           height: 34,
           borderRadius: 8,
           border: `1px solid ${tokens.border}`,
-          background: "color-mix(in oklab, var(--card, oklch(0.205 0 0)) 90%, transparent)",
+          background: "color-mix(in oklab, var(--bg-2, oklch(0.205 0 0)) 90%, transparent)",
           color: tokens.fg,
           display: "inline-grid",
           placeItems: "center",
@@ -1790,7 +1790,7 @@ function WikiPageDropOverlay({ onClose }: { onClose: () => void }) {
         width: "min(520px, 100%)",
         borderRadius: 8,
         border: `1.5px dashed ${tokens.pluginBorder}`,
-        background: "color-mix(in oklab, var(--card, oklch(0.205 0 0)) 92%, transparent)",
+        background: "color-mix(in oklab, var(--bg-2, oklch(0.205 0 0)) 92%, transparent)",
         color: tokens.fg,
         padding: "28px 24px",
         textAlign: "center",
@@ -2519,10 +2519,10 @@ export function WikiRouteSidebar({ context }: PluginRouteSidebarProps) {
         className={[
           "flex items-center gap-2.5 rounded-md px-2 py-1.5 text-[13px] font-medium transition-colors",
           isActive && !isLegacyLintSettingsActive
-            ? "bg-accent text-foreground"
+            ? "bg-bg-3 text-ink"
             : isActive
-              ? "text-foreground"
-            : "text-foreground/80 hover:bg-accent/50 hover:text-foreground",
+              ? "text-ink"
+            : "text-ink/80 hover:bg-bg-3/50 hover:text-ink",
         ].join(" ")}
         style={{ textDecoration: "none" }}
       >
@@ -2535,14 +2535,14 @@ export function WikiRouteSidebar({ context }: PluginRouteSidebarProps) {
   };
 
   return (
-    <aside className="w-full h-full min-h-0 border-r border-border bg-background flex flex-col">
+    <aside className="w-full h-full min-h-0 border-r border-line bg-bg flex flex-col">
       {warmupSpaces.map((space) => (
         <SpacePagesWarmup key={space.slug} companyId={context.companyId} spaceSlug={space.slug} />
       ))}
       <div className="flex flex-col gap-1 px-3 py-3 shrink-0">
         <a
           {...hostNavigation.linkProps("/dashboard")}
-          className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
+          className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-ink-3 transition-colors hover:bg-bg-3/50 hover:text-ink"
           style={{ textDecoration: "none" }}
         >
           <span aria-hidden="true" className="shrink-0">
@@ -2551,13 +2551,13 @@ export function WikiRouteSidebar({ context }: PluginRouteSidebarProps) {
           <span className="truncate">{companyName}</span>
         </a>
       </div>
-      <div className="flex-1 min-h-0 overflow-y-auto border-t border-border px-3 py-3">
+      <div className="flex-1 min-h-0 overflow-y-auto border-t border-line px-3 py-3">
         <nav aria-label="Wiki primary" className="mb-3">
           <div className="flex flex-col gap-0.5">
             {TOP_TOOL_SECTIONS.map(renderToolLink)}
           </div>
         </nav>
-        <div className="mb-1 flex items-center gap-1 px-2 text-[11px] font-semibold uppercase tracking-normal text-muted-foreground" style={{ height: 24 }}>
+        <div className="mb-1 flex items-center gap-1 px-2 text-[11px] font-semibold uppercase tracking-normal text-ink-3" style={{ height: 24 }}>
           <span
             className="flex-1 truncate"
             title="Destination spaces. Browsing and manual ingest happen in the active space; Paperclip distillation always writes into the default space in Phase 1."
@@ -2663,7 +2663,7 @@ export function WikiRouteSidebar({ context }: PluginRouteSidebarProps) {
       </div>
       <nav
         aria-label="Wiki secondary"
-        className="shrink-0 border-t border-border px-3 py-3"
+        className="shrink-0 border-t border-line px-3 py-3"
       >
         <div className="flex flex-col gap-0.5">
           {BOTTOM_TOOL_SECTIONS.map(renderToolLink)}
@@ -3912,7 +3912,7 @@ function FrontmatterValue({ value }: { value: WikiFrontmatterValue }) {
               maxWidth: "100%",
               padding: "1px 7px",
               borderRadius: 999,
-              background: "var(--secondary, oklch(0.269 0 0))",
+              background: "var(--bg-3, oklch(0.269 0 0))",
               color: tokens.fg,
               fontSize: 12,
               lineHeight: 1.5,

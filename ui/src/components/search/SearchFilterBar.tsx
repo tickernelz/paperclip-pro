@@ -91,7 +91,7 @@ export function buildSearchFilterOptions({
     assignee.push({
       value: "me",
       label: "Me",
-      icon: <User className="h-3.5 w-3.5 text-muted-foreground" />,
+      icon: <User className="h-3.5 w-3.5 text-ink-3" />,
       count: count(counts?.assigneeUserId, currentUserId),
       searchText: "me mine",
     });
@@ -99,7 +99,7 @@ export function buildSearchFilterOptions({
   assignee.push({
     value: "none",
     label: "Unassigned",
-    icon: <UserX className="h-3.5 w-3.5 text-muted-foreground" />,
+    icon: <UserX className="h-3.5 w-3.5 text-ink-3" />,
     searchText: "unassigned none nobody",
   });
   for (const agent of agents) {

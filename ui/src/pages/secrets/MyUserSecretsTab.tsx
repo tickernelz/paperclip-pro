@@ -71,7 +71,7 @@ export function MyUserSecretsTab({ companyId }: { companyId: string }) {
 
       <div>
         {mySecretsQuery.isError ? (
-          <div className="flex items-center gap-2 py-4 text-sm text-destructive">
+          <div className="flex items-center gap-2 py-4 text-sm text-bad">
             <AlertCircle className="h-4 w-4" /> Failed to load your secrets:{" "}
             {(mySecretsQuery.error as Error).message}
             <Button variant="ghost" size="sm" onClick={() => mySecretsQuery.refetch()}>
@@ -132,13 +132,13 @@ function MyUserSecretRow({
         "flex items-start gap-3 rounded-md border p-3",
         state === "not_set" && !disabledDefinition
           ? "border-amber-500/40 bg-amber-500/5"
-          : "border-border",
+          : "border-line",
       )}
     >
       <div className="min-w-0 flex-1">
         <div className="flex min-w-0 flex-wrap items-center gap-2">
           <SecretPathName name={definition.name} />
-          <code className="rounded bg-muted px-1.5 py-0.5 text-(length:--text-micro) text-muted-foreground">
+          <code className="rounded bg-bg-3 px-1.5 py-0.5 text-(length:--text-micro) text-ink-3">
             {definition.key}
           </code>
           {disabledDefinition ? (
@@ -148,10 +148,10 @@ function MyUserSecretRow({
           ) : null}
         </div>
         {definition.description ? (
-          <p className="mt-1 text-xs text-muted-foreground">{definition.description}</p>
+          <p className="mt-1 text-xs text-ink-3">{definition.description}</p>
         ) : null}
         {definition.usageGuidance ? (
-          <p className="mt-1 text-(length:--text-micro) text-muted-foreground/80">{definition.usageGuidance}</p>
+          <p className="mt-1 text-(length:--text-micro) text-ink-3/80">{definition.usageGuidance}</p>
         ) : null}
       </div>
 
@@ -160,7 +160,7 @@ function MyUserSecretRow({
           {myValueLabel(state)}
         </Badge>
         {!disabledDefinition ? (
-          <Button size="sm" variant={secret ? "outline" : "default"} onClick={onSet}>
+          <Button size="sm" variant={secret ? "secondary" : "primary"} onClick={onSet}>
             {secret ? "Update" : "Set value"}
           </Button>
         ) : null}
@@ -168,7 +168,6 @@ function MyUserSecretRow({
           <Button
             size="sm"
             variant="ghost"
-            className="text-muted-foreground hover:text-destructive"
             onClick={onClear}
             disabled={clearing}
             title="Clear my value"

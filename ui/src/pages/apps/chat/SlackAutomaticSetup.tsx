@@ -125,7 +125,7 @@ export function SlackAutomaticSetup({ endpoint, stage, disabled, saveDetails, on
   }
 
   return <div className="space-y-5">
-    {error || registration?.errorCode ? <p role="alert" className="text-sm text-destructive">
+    {error || registration?.errorCode ? <p role="alert" className="text-sm text-bad">
       {error ?? slackRegistrationErrorMessage(registration!.errorCode!)}
     </p> : null}
     {(stage === "app" && !created && !creating || configurationPending) && <>
@@ -146,7 +146,7 @@ export function SlackAutomaticSetup({ endpoint, stage, disabled, saveDetails, on
             <li>Select the workspace where you want to install your bot.</li>
             <li>Copy the <strong>Access Token</strong> and paste it below.</li>
           </ol>
-          <p className="text-muted-foreground">Paperclip uses this token to create your app</p>
+          <p className="text-ink-3">Paperclip uses this token to create your app</p>
         </div>
         <label htmlFor="slack-configuration-token" className="text-sm font-medium">App configuration access token</label>
         <Input id="slack-configuration-token" type="password" autoComplete="off" spellCheck={false}
@@ -154,13 +154,13 @@ export function SlackAutomaticSetup({ endpoint, stage, disabled, saveDetails, on
           aria-describedby="slack-configuration-token-help" />
       </div>}
     </>}
-    {creating && <p role="status" className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="size-4 animate-spin" /> Creating your Slack app. You can return to this saved setup.</p>}
+    {creating && <p role="status" className="flex items-center gap-2 text-sm text-ink-3"><Loader2 className="size-4 animate-spin" /> Creating your Slack app. You can return to this saved setup.</p>}
     {created && <p className="text-sm">
       <strong>{endpoint.setup?.slackApp?.appName ?? "Your Slack app"}</strong> is created.
       {stage === "credentials" && " Approve installation with your Slack account. Paperclip will link it to your signed-in Paperclip account and send you a welcome DM."}
     </p>}
     {stage === "credentials" && registration?.status === "credentials_saved" && <div className="space-y-2">
-      <p className="text-sm text-muted-foreground">Your installation credentials are saved. Retry connecting to finish setup. If Slack access has changed, authorize the same app again.</p>
+      <p className="text-sm text-ink-3">Your installation credentials are saved. Retry connecting to finish setup. If Slack access has changed, authorize the same app again.</p>
       <Button variant="link" className="h-auto p-0" disabled={busy || disabled} onClick={() => void run(authorize)}>Authorize in Slack again</Button>
     </div>}
     {stage === "app" && <SlackSetupAdvanced><div className="flex flex-wrap gap-4 text-sm">

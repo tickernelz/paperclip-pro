@@ -25,7 +25,7 @@ export function CompanyConnections() {
 
   if (!selectedCompanyId) {
     return (
-      <div className="text-sm text-muted-foreground">
+      <div className="text-sm text-ink-3">
         No organization selected. Select an organization from the switcher above.
       </div>
     );
@@ -34,11 +34,11 @@ export function CompanyConnections() {
   return (
     <div className="max-w-6xl space-y-8">
       <div className="flex items-center gap-2">
-        <Link2 className="h-5 w-5 text-muted-foreground" />
+        <Link2 className="h-5 w-5 text-ink-3" />
         <h1 className="text-lg font-semibold">Connections</h1>
       </div>
       <DecisionModelSettingsSection key={selectedCompanyId} companyId={selectedCompanyId} />
-      <div className="max-w-2xl border-t border-border pt-8">
+      <div className="max-w-2xl border-t border-line pt-8">
         <FastResponseSettingsSection key={`fast-${selectedCompanyId}`} companyId={selectedCompanyId} />
       </div>
     </div>

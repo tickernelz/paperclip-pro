@@ -82,11 +82,11 @@ export function TaskTerminalPanel({ issue, active }: { issue: Pick<Issue, "id" |
   if (error) {
     return (
       <div className="flex h-full flex-col items-center justify-center gap-2 p-6 text-center" data-testid="task-terminal-error">
-        <SquareTerminal className="size-6 text-muted-foreground" aria-hidden />
-        <p className="text-sm font-medium text-foreground">Terminal unavailable</p>
-        <p className="max-w-md text-sm text-muted-foreground">{error}</p>
+        <SquareTerminal className="size-6 text-ink-3" aria-hidden />
+        <p className="text-sm font-medium text-ink">Terminal unavailable</p>
+        <p className="max-w-md text-sm text-ink-3">{error}</p>
         {createError ? (
-          <Button type="button" variant="outline" size="sm" onClick={() => void startSession()}>
+          <Button type="button" variant="secondary" size="sm" onClick={() => void startSession()}>
             Try again
           </Button>
         ) : null}
@@ -95,7 +95,7 @@ export function TaskTerminalPanel({ issue, active }: { issue: Pick<Issue, "id" |
   }
 
   if (!sessionId) {
-    return <p className="p-4 text-sm text-muted-foreground">Opening a terminal in the task workspace…</p>;
+    return <p className="p-4 text-sm text-ink-3">Opening a terminal in the task workspace…</p>;
   }
 
   return (
@@ -109,11 +109,11 @@ export function TaskTerminalPanel({ issue, active }: { issue: Pick<Issue, "id" |
         onUnavailable={releaseUnavailableSession}
       />
       {ended ? (
-        <div className="flex shrink-0 items-center justify-between gap-2 border-t border-border px-3 py-2 text-xs text-muted-foreground">
+        <div className="flex shrink-0 items-center justify-between gap-2 border-t border-line px-3 py-2 text-xs text-ink-3">
           <span>The shell for this task has ended.</span>
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             size="xs"
             onClick={() => {
               setSessionId(null);

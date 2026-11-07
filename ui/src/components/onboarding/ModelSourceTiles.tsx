@@ -49,7 +49,7 @@ const CREDENTIAL_TAG_LABEL: Record<ModelConnectionMode, string> = {
  */
 export function CredentialTag({ mode }: { mode: ModelConnectionMode }) {
   return (
-    <span className="relative flex h-4 w-full items-center justify-center overflow-hidden text-(length:--text-micro) text-muted-foreground">
+    <span className="relative flex h-4 w-full items-center justify-center overflow-hidden text-(length:--text-micro) text-ink-3">
       <AnimatePresence initial={false} mode="sync">
         <motion.span
           key={mode}
@@ -99,7 +99,7 @@ function ModelSourceTile({
         // Focus is a ring, never a border. The stroke has exactly one job here
         // and lending it to focus as well would mean tabbing across the row
         // looked like picking every tile in turn.
-        "outline-none focus-visible:ring-ring/50 focus-visible:ring-(length:--rad-3)",
+        "outline-none focus-visible:ring-focus/50 focus-visible:ring-(length:--rad-3)",
         // Selection is a lighter surface *and* a brighter edge. An earlier pass
         // here used the fill alone, reasoning that a bright stroke on one tile
         // made the row read as one outlined object beside a plain one. The
@@ -110,8 +110,8 @@ function ModelSourceTile({
         // Hover stops short of the selected fill, so pointing at a tile says
         // "this one is live" rather than "this one is chosen".
         selected
-          ? "border-foreground/40 bg-accent"
-          : "border-border bg-card hover:bg-accent/40",
+          ? "border-ink/40 bg-bg-3"
+          : "border-line bg-bg-2 hover:bg-bg-3/40",
       )}
     >
       <span className="flex size-(--sz-30px) shrink-0 items-center justify-center">
@@ -124,7 +124,7 @@ function ModelSourceTile({
         font-size-only token form, so the line box comes from the tile's own
         rhythm rather than the Tailwind scale's paired line-height.
       */}
-      <span className="text-(length:--text-compact) font-medium text-foreground">
+      <span className="text-(length:--text-compact) font-medium text-ink">
         {source.label}
       </span>
       {mode ? <CredentialTag mode={mode} /> : <span aria-hidden className="h-4" />}

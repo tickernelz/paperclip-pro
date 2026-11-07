@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { AlertTriangle, RotateCcw, TimerReset } from "lucide-react";
 import { healthApi, type DevServerHealthStatus } from "../api/health";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 const RESTART_PENDING_RESET_MS = 30_000;
 
@@ -115,9 +116,8 @@ export function DevRestartBanner({ devServer }: { devServer?: DevServerHealthSta
               <span>Restart <code>pnpm dev:once</code> after the active work is safe to interrupt</span>
             </div>
           )}
-          <button
+          <Button variant="primary" size="sm"
             type="button"
-            className="inline-flex items-center gap-2 rounded-md bg-amber-950 px-3 py-1.5 text-xs font-semibold text-amber-50 transition-colors hover:bg-amber-900 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-amber-200 dark:text-amber-950 dark:hover:bg-amber-100"
             onClick={() => {
               void requestRestartNow();
             }}
@@ -125,7 +125,7 @@ export function DevRestartBanner({ devServer }: { devServer?: DevServerHealthSta
           >
             <RotateCcw className="h-3.5 w-3.5" />
             <span>{restartPending ? "Restart requested" : "Restart now"}</span>
-          </button>
+          </Button>
         </div>
       </div>
     </div>

@@ -428,23 +428,23 @@ export function InviteLandingPage() {
   }, [invite, isCurrentMember, sessionQuery.data, showsAgentForm]);
 
   if (!token) {
-    return <div className="mx-auto max-w-xl py-10 text-sm text-destructive">Invalid invite token.</div>;
+    return <div className="mx-auto max-w-xl py-10 text-sm text-bad">Invalid invite token.</div>;
   }
 
   if (inviteQuery.isLoading || healthQuery.isLoading || sessionQuery.isLoading) {
-    return <div className="mx-auto max-w-xl py-10 text-sm text-muted-foreground">Loading invite...</div>;
+    return <div className="mx-auto max-w-xl py-10 text-sm text-ink-3">Loading invite...</div>;
   }
 
   if (isCheckingExistingMembership) {
-    return <div className="mx-auto max-w-xl py-10 text-sm text-muted-foreground">Checking your access...</div>;
+    return <div className="mx-auto max-w-xl py-10 text-sm text-ink-3">Checking your access...</div>;
   }
 
   if (inviteQuery.error || !invite) {
     return (
       <div className="mx-auto max-w-xl py-10">
-        <div className="border border-border bg-card p-6" data-testid="invite-error">
+        <div className="border border-line bg-bg-2 p-6" data-testid="invite-error">
           <h1 className="text-lg font-semibold">Invite not available</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-2 text-sm text-ink-3">
             This invite may be expired, revoked, or already used.
           </p>
         </div>
@@ -457,7 +457,7 @@ export function InviteLandingPage() {
     inviteJoinRequestType === "human" &&
     isCurrentMember
   ) {
-    return <div className="mx-auto max-w-xl py-10 text-sm text-muted-foreground">Opening organization...</div>;
+    return <div className="mx-auto max-w-xl py-10 text-sm text-ink-3">Opening organization...</div>;
   }
 
   if (inviteJoinRequestStatus === "pending_approval" && !canCompleteAcceptedHumanInvite) {
@@ -473,9 +473,9 @@ export function InviteLandingPage() {
   if (inviteJoinRequestStatus && !canCompleteAcceptedHumanInvite) {
     return (
       <div className="mx-auto max-w-xl py-10">
-        <div className="border border-border bg-card p-6" data-testid="invite-error">
+        <div className="border border-line bg-bg-2 p-6" data-testid="invite-error">
           <h1 className="text-lg font-semibold">Invite not available</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-2 text-sm text-ink-3">
             {inviteJoinRequestStatus === "rejected"
               ? "This join request was not approved."
               : "This invite has already been used."}

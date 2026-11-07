@@ -7,7 +7,7 @@ import { PopoverTitle, PopoverDescription } from "@/components/ui/popover";
 const SECRET_NAME_RE = /^[a-z][a-z0-9_]*$/;
 
 const fieldClass =
-  "w-full rounded-md border border-border px-2.5 py-1.5 bg-transparent outline-none text-sm font-mono placeholder:text-muted-foreground/40 focus-visible:ring-2 focus-visible:ring-ring/40";
+  "w-full rounded-md border border-line px-2.5 py-1.5 bg-transparent outline-none text-sm font-mono placeholder:text-ink-3/40 focus-visible:ring-2 focus-visible:ring-focus/40";
 
 export interface SecretPopoverFormProps {
   /** Popover heading / body copy differ between the two flows. */
@@ -75,7 +75,7 @@ export function SecretPopoverForm({
       <div className="space-y-1">
         <PopoverTitle className="text-sm font-medium">{heading}</PopoverTitle>
         {mode === "store" ? (
-          <PopoverDescription className="text-(length:--text-micro) text-muted-foreground">
+          <PopoverDescription className="text-(length:--text-micro) text-ink-3">
             Moves the typed value into an encrypted organization secret and binds{" "}
             <span className="font-mono">{initialName || "this variable"}</span> to it.
           </PopoverDescription>
@@ -83,9 +83,9 @@ export function SecretPopoverForm({
       </div>
 
       <label className="block space-y-1">
-        <span className="text-(length:--text-micro) font-medium text-muted-foreground">Name</span>
+        <span className="text-(length:--text-micro) font-medium text-ink-3">Name</span>
         <input
-          className={cn(fieldClass, nameError && "border-destructive focus-visible:ring-destructive/40")}
+          className={cn(fieldClass, nameError && "border-bad focus-visible:ring-bad/40")}
           value={name}
           autoFocus
           spellCheck={false}
@@ -101,14 +101,14 @@ export function SecretPopoverForm({
             }
           }}
         />
-        {nameError ? <span className="block text-(length:--text-micro) text-destructive">{nameError}</span> : null}
+        {nameError ? <span className="block text-(length:--text-micro) text-bad">{nameError}</span> : null}
       </label>
 
       <label className="block space-y-1">
-        <span className="text-(length:--text-micro) font-medium text-muted-foreground">Value</span>
+        <span className="text-(length:--text-micro) font-medium text-ink-3">Value</span>
         <div className="relative">
           <input
-            className={cn(fieldClass, "pr-8", valueError && "border-destructive focus-visible:ring-destructive/40")}
+            className={cn(fieldClass, "pr-8", valueError && "border-bad focus-visible:ring-bad/40")}
             type={reveal ? "text" : "password"}
             value={value}
             readOnly={mode === "store"}
@@ -120,17 +120,17 @@ export function SecretPopoverForm({
           />
           <button
             type="button"
-            className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:text-foreground"
+            className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded p-1 text-ink-3 hover:text-ink"
             aria-label={reveal ? "Hide value" : "Show value"}
             onClick={() => setReveal((prev) => !prev)}
           >
             {reveal ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
           </button>
         </div>
-        {valueError ? <span className="block text-(length:--text-micro) text-destructive">{valueError}</span> : null}
+        {valueError ? <span className="block text-(length:--text-micro) text-bad">{valueError}</span> : null}
       </label>
 
-      {error ? <p className="text-(length:--text-micro) text-destructive">{error}</p> : null}
+      {error ? <p className="text-(length:--text-micro) text-bad">{error}</p> : null}
 
       <div className="flex items-center justify-end gap-2 pt-0.5">
         <Button type="button" variant="ghost" size="sm" onClick={onCancel} disabled={submitting}>

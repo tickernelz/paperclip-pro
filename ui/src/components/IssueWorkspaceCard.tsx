@@ -64,13 +64,13 @@ function CopyableInline({ value, label, mono }: { value: string; label?: string;
 
   return (
     <span className="inline-flex items-center gap-1 group/copy">
-      {label && <span className="text-muted-foreground">{label}</span>}
+      {label && <span className="text-ink-3">{label}</span>}
       <span className={cn("min-w-0", mono && "font-mono")} style={{ overflowWrap: "anywhere" }}>
         <BreakablePath text={value} />
       </span>
       <button
         type="button"
-        className="shrink-0 p-0.5 rounded hover:bg-accent/50 transition-colors text-muted-foreground hover:text-foreground opacity-0 group-hover/copy:opacity-100 focus:opacity-100"
+        className="shrink-0 p-0.5 rounded hover:bg-bg-3/50 transition-colors text-ink-3 hover:text-ink opacity-0 group-hover/copy:opacity-100 focus:opacity-100"
         onClick={handleCopy}
         title={copied ? "Copied!" : "Copy"}
         aria-label={copied ? "Copied to clipboard" : `Copy ${label ?? "value"}`}
@@ -133,9 +133,9 @@ function workspaceDetailLink(input: {
 function statusBadge(status: string) {
   const colors: Record<string, string> = {
     active: "bg-green-500/15 text-green-700 dark:text-green-400",
-    idle: "bg-muted text-muted-foreground",
+    idle: "bg-bg-3 text-ink-3",
     in_review: "bg-blue-500/15 text-blue-700 dark:text-blue-400",
-    archived: "bg-muted text-muted-foreground",
+    archived: "bg-bg-3 text-ink-3",
   };
   return (
     <Badge variant="ghost" className={cn("text-(length:--text-nano) px-1.5", colors[status] ?? colors.idle)}>
@@ -339,11 +339,11 @@ export function IssueWorkspaceCard({
   const showEditingControls = workspaceIsolationControlsVisible && (livePreview || editing);
 
   return (
-    <div className="rounded-lg border border-border p-3 space-y-2">
+    <div className="rounded-lg border border-line p-3 space-y-2">
       {/* Header row */}
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-          <GitBranch className="h-3.5 w-3.5 text-muted-foreground" />
+        <div className="flex items-center gap-2 text-sm font-medium text-ink">
+          <GitBranch className="h-3.5 w-3.5 text-ink-3" />
           {activeNonDefaultWorkspace && workspace
             ? workspaceModeLabel(workspace.mode)
             : configuredWorkspaceLabel(currentSelection, selectedReusableExecutionWorkspace)}
@@ -356,7 +356,7 @@ export function IssueWorkspaceCard({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-6 px-2 text-xs text-muted-foreground"
+                  className="h-6 px-2 text-xs"
                   onClick={handleCancel}
                 >
                   <X className="h-3 w-3 mr-1" />Cancel
@@ -374,7 +374,7 @@ export function IssueWorkspaceCard({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-6 px-2 text-xs text-muted-foreground"
+                className="h-6 px-2 text-xs"
                 onClick={() => setEditing(true)}
               >
                 <Pencil className="h-3 w-3 mr-1" />Edit
@@ -389,25 +389,25 @@ export function IssueWorkspaceCard({
         <div className="space-y-1.5 text-xs">
           {workspace?.branchName && (
             <div className="flex items-center gap-1.5">
-              <GitBranch className="h-3 w-3 text-muted-foreground shrink-0" />
+              <GitBranch className="h-3 w-3 text-ink-3 shrink-0" />
               <CopyableInline value={workspace.branchName} mono />
             </div>
           )}
           {workspace?.cwd && !hideHostPaths && (
             <div className="flex items-center gap-1.5">
-              <FolderOpen className="h-3 w-3 text-muted-foreground shrink-0" />
+              <FolderOpen className="h-3 w-3 text-ink-3 shrink-0" />
               <CopyableInline value={workspace.cwd} mono />
             </div>
           )}
           {workspace?.repoUrl && (
-            <div className="flex items-center gap-1.5 text-muted-foreground">
+            <div className="flex items-center gap-1.5 text-ink-3">
               <span className="text-(length:--text-micro)">Repo:</span>
               <CopyableInline value={workspace.repoUrl} mono />
             </div>
           )}
           {environmentsEnabled && currentEnvironmentId && (
-            <div className="text-muted-foreground" style={{ overflowWrap: "anywhere" }}>
-              Environment: <span className="text-foreground">{currentEnvironment?.name ?? currentEnvironmentId}</span>
+            <div className="text-ink-3" style={{ overflowWrap: "anywhere" }}>
+              Environment: <span className="text-ink">{currentEnvironment?.name ?? currentEnvironmentId}</span>
               {currentSelection === "reuse_existing" && currentReusableEnvironmentId === currentEnvironmentId
                 ? " · reused workspace"
                 : !issue.executionWorkspaceSettings?.environmentId && projectEnvironmentId === currentEnvironmentId
@@ -416,7 +416,7 @@ export function IssueWorkspaceCard({
             </div>
           )}
           {!workspace && (
-            <div className="text-muted-foreground">
+            <div className="text-ink-3">
               {currentSelection === "isolated_workspace"
                 ? "A fresh isolated workspace will be created when this task runs."
                 : currentSelection === "reuse_existing"
@@ -425,12 +425,12 @@ export function IssueWorkspaceCard({
             </div>
           )}
           {currentSelection === "reuse_existing" && selectedReusableExecutionWorkspace && (
-            <div className="text-muted-foreground" style={{ overflowWrap: "anywhere" }}>
+            <div className="text-ink-3" style={{ overflowWrap: "anywhere" }}>
               Reusing:{" "}
               {selectedReusableWorkspaceLink ? (
                 <Link
                   to={selectedReusableWorkspaceLink}
-                  className="hover:text-foreground hover:underline"
+                  className="hover:text-ink hover:underline"
                 >
                   <BreakablePath text={selectedReusableExecutionWorkspace.name} />
                 </Link>
@@ -443,7 +443,7 @@ export function IssueWorkspaceCard({
             <div className="pt-0.5">
               <Link
                 to={currentWorkspaceLink}
-                className="text-(length:--text-micro) text-muted-foreground hover:text-foreground hover:underline"
+                className="text-(length:--text-micro) text-ink-3 hover:text-ink hover:underline"
               >
                 View workspace details →
               </Link>
@@ -456,7 +456,7 @@ export function IssueWorkspaceCard({
       {editing && workspaceIsolationControlsVisible && (
         <div className="space-y-2 pt-1">
           <select
-            className="w-full rounded border border-border bg-transparent px-2 py-1.5 text-xs outline-none"
+            className="w-full rounded border border-line bg-transparent px-2 py-1.5 text-xs outline-none"
             value={draftSelection}
             onChange={(e) => {
               const nextMode = e.target.value as typeof draftSelection;
@@ -489,13 +489,13 @@ export function IssueWorkspaceCard({
 
           {/* Current workspace summary when editing */}
           {workspace && (
-            <div className="text-(length:--text-micro) text-muted-foreground space-y-0.5 pt-1 border-t border-border/50">
+            <div className="text-(length:--text-micro) text-ink-3 space-y-0.5 pt-1 border-t border-line/50">
               <div style={{ overflowWrap: "anywhere" }}>
                 Current:{" "}
                 {currentWorkspaceLink ? (
                   <Link
                     to={currentWorkspaceLink}
-                    className="hover:text-foreground hover:underline"
+                    className="hover:text-ink hover:underline"
                   >
                     <BreakablePath text={workspace.name} />
                   </Link>
@@ -512,11 +512,11 @@ export function IssueWorkspaceCard({
 
       {/* Workspace file discovery — calm row under the workspace identity. */}
       {!showEditingControls && onBrowseFiles && (
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-border/50 pt-2 text-xs">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-line/50 pt-2 text-xs">
           <button
             type="button"
             onClick={onBrowseFiles}
-            className="inline-flex items-center gap-1.5 text-muted-foreground transition-colors hover:text-foreground"
+            className="inline-flex items-center gap-1.5 text-ink-3 transition-colors hover:text-ink"
           >
             <FolderSearch className="h-3.5 w-3.5 shrink-0" />
             Browse files…
@@ -524,7 +524,7 @@ export function IssueWorkspaceCard({
           <button
             type="button"
             onClick={onOpenFileByPath ?? onBrowseFiles}
-            className="inline-flex items-center gap-1.5 text-muted-foreground transition-colors hover:text-foreground"
+            className="inline-flex items-center gap-1.5 text-ink-3 transition-colors hover:text-ink"
           >
             <FileSearch className="h-3.5 w-3.5 shrink-0" />
             Open file by path…

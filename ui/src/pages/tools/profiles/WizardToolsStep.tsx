@@ -29,6 +29,7 @@ import {
   type WizardSelections,
 } from "./profile-model";
 import { LoadingState } from "../shared";
+import { Chip } from "@/components/ui/chip";
 
 type NewToolsAction = "deny" | "allow";
 
@@ -79,16 +80,16 @@ export function WizardToolsStep(props: WizardToolsStepProps) {
   // Cold state A (AP17): nothing connected at all.
   if (appGroups.length === 0) {
     return (
-      <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-border py-12 text-center">
-        <Plug className="h-6 w-6 text-muted-foreground" />
+      <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-line py-12 text-center">
+        <Plug className="h-6 w-6 text-ink-3" />
         <div>
-          <p className="text-sm font-medium text-foreground">App connections are coming soon</p>
-          <p className="mx-auto max-w-sm text-sm text-muted-foreground">
+          <p className="text-sm font-medium text-ink">App connections are coming soon</p>
+          <p className="mx-auto max-w-sm text-sm text-ink-3">
             Profiles will be available once app connections are ready. Browse the planned integrations in the
             meantime.
           </p>
         </div>
-        <Button asChild variant="outline">
+        <Button asChild variant="secondary">
           <Link to="/apps">Browse app connections</Link>
         </Button>
       </div>
@@ -99,7 +100,7 @@ export function WizardToolsStep(props: WizardToolsStepProps) {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center gap-2">
         <div className="relative min-w-(--sz-220px) flex-1">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-3" />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
@@ -109,40 +110,33 @@ export function WizardToolsStep(props: WizardToolsStepProps) {
         </div>
         <div className="flex items-center gap-1.5">
           {CAPABILITY_FILTERS.map((cap) => (
-            <button
+            <Chip selected={capabilityFilter === cap}
               key={cap}
-              type="button"
               onClick={() => setCapabilityFilter((cur) => (cur === cap ? null : cap))}
-              className={cn(
-                "rounded-full border px-2.5 py-1 text-xs font-medium transition-colors",
-                capabilityFilter === cap
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-border text-muted-foreground hover:bg-accent",
-              )}
             >
               {CAPABILITY_LABEL[cap]}
-            </button>
+            </Chip>
           ))}
         </div>
       </div>
 
       {filteredGroups.length === 0 ? (
         // Cold state B (AP17): a search/filter that matches nothing.
-        <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-border py-10 text-center">
-          <p className="text-sm font-medium text-foreground">No tools match “{search}”.</p>
+        <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-line py-10 text-center">
+          <p className="text-sm font-medium text-ink">No tools match “{search}”.</p>
           <button
             type="button"
             onClick={() => {
               setSearch("");
               setCapabilityFilter(null);
             }}
-            className="text-sm font-medium text-primary hover:underline"
+            className="text-sm font-medium text-accent hover:underline"
           >
             Clear search
           </button>
         </div>
       ) : (
-        <div className="divide-y divide-border overflow-hidden rounded-lg border border-border">
+        <div className="divide-y divide-line overflow-hidden rounded-lg border border-line">
           {filteredGroups.map(({ group, tools }) => (
             <AppRow
               key={group.appKey}
@@ -197,15 +191,15 @@ function AppRow({
           className="flex flex-1 items-center gap-1.5 text-left"
         >
           {expanded ? (
-            <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <ChevronDown className="h-4 w-4 shrink-0 text-ink-3" />
           ) : (
-            <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <ChevronRight className="h-4 w-4 shrink-0 text-ink-3" />
           )}
           <span className="flex flex-col">
-            <span className="text-sm font-medium text-foreground">
+            <span className="text-sm font-medium text-ink">
               All {group.name} tools ({group.tools.length})
             </span>
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs text-ink-3">
               {state === "indeterminate"
                 ? appSelectionLabel(group, selection)
                 : "includes tools " + group.name + " adds later"}
@@ -215,13 +209,13 @@ function AppRow({
       </div>
 
       {expanded ? (
-        <div className="space-y-0.5 border-t border-border bg-muted/20 px-3 py-2 pl-10">
+        <div className="space-y-0.5 border-t border-line bg-bg-3/20 px-3 py-2 pl-10">
           {visibleTools.map((tool) => {
             const cap = toolCapability(tool);
             return (
               <label
                 key={tool.id}
-                className="flex cursor-pointer items-start gap-2.5 rounded-md px-1.5 py-1.5 hover:bg-accent/50"
+                className="flex cursor-pointer items-start gap-2.5 rounded-md px-1.5 py-1.5 hover:bg-bg-3/50"
               >
                 <Checkbox
                   className="mt-0.5"
@@ -230,13 +224,13 @@ function AppRow({
                 />
                 <span className="flex min-w-0 flex-1 flex-col gap-0.5">
                   <span className="flex flex-wrap items-center gap-2">
-                    <code className="font-mono text-xs text-foreground">{tool.toolName}</code>
+                    <code className="font-mono text-xs text-ink">{tool.toolName}</code>
                     <Badge variant={CAPABILITY_VARIANT[cap]} className="text-(length:--text-nano)">
                       {CAPABILITY_LABEL[cap]}
                     </Badge>
                   </span>
                   {tool.title || tool.description ? (
-                    <span className="text-xs text-muted-foreground">{tool.title ?? tool.description}</span>
+                    <span className="text-xs text-ink-3">{tool.title ?? tool.description}</span>
                   ) : null}
                 </span>
               </label>
@@ -269,8 +263,8 @@ function NewToolsRadio({
     },
   ];
   return (
-    <fieldset className="space-y-2 rounded-lg border border-border p-4">
-      <legend className="px-1 text-sm font-medium text-foreground">New tools that appear later</legend>
+    <fieldset className="space-y-2 rounded-lg border border-line p-4">
+      <legend className="px-1 text-sm font-medium text-ink">New tools that appear later</legend>
       <div className="space-y-2">
         {options.map((opt) => (
           <label key={opt.value} className="flex cursor-pointer items-start gap-2.5">
@@ -282,7 +276,7 @@ function NewToolsRadio({
               onChange={() => onChange(opt.value)}
             />
             <span className="flex flex-col gap-0.5">
-              <span className="flex items-center gap-2 text-sm font-medium text-foreground">
+              <span className="flex items-center gap-2 text-sm font-medium text-ink">
                 {opt.label}
                 {opt.recommended ? (
                   <Badge variant="outline" className="text-(length:--text-nano)">
@@ -292,7 +286,7 @@ function NewToolsRadio({
                   <span className="text-xs font-normal text-amber-600">(risky)</span>
                 )}
               </span>
-              <span className="text-xs text-muted-foreground">{opt.hint}</span>
+              <span className="text-xs text-ink-3">{opt.hint}</span>
             </span>
           </label>
         ))}
@@ -347,13 +341,13 @@ function AdvancedRules({
   };
 
   return (
-    <Collapsible open={open} onOpenChange={setOpen} className="rounded-lg border border-border">
+    <Collapsible open={open} onOpenChange={setOpen} className="rounded-lg border border-line">
       <CollapsibleTrigger className="flex w-full items-center justify-between px-4 py-3 text-left">
-        <span className="text-sm font-medium text-foreground">Advanced rules</span>
-        <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", open && "rotate-180")} />
+        <span className="text-sm font-medium text-ink">Advanced rules</span>
+        <ChevronDown className={cn("h-4 w-4 text-ink-3 transition-transform", open && "rotate-180")} />
       </CollapsibleTrigger>
-      <CollapsibleContent className="space-y-3 border-t border-border px-4 py-3">
-        <p className="text-xs text-muted-foreground">
+      <CollapsibleContent className="space-y-3 border-t border-line px-4 py-3">
+        <p className="text-xs text-ink-3">
           Match tools by a name pattern, a risk level, or a specific tool ID. These run on top of the choices
           above.
         </p>
@@ -363,14 +357,14 @@ function AdvancedRules({
             {rules.map((rule) => (
               <li
                 key={rule.id}
-                className="flex items-center justify-between gap-2 rounded-md border border-border bg-muted/30 px-3 py-1.5 text-sm"
+                className="flex items-center justify-between gap-2 rounded-md border border-line bg-bg-3/30 px-3 py-1.5 text-sm"
               >
-                <span className="text-foreground">{ruleSummary(rule)}</span>
+                <span className="text-ink">{ruleSummary(rule)}</span>
                 <button
                   type="button"
                   aria-label="Remove rule"
                   onClick={() => onChange(rules.filter((r) => r.id !== rule.id))}
-                  className="text-muted-foreground hover:text-destructive"
+                  className="text-ink-3 hover:text-bad"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -420,7 +414,7 @@ function AdvancedRules({
               className="w-44"
             />
           )}
-          <Button type="button" variant="outline" size="sm" onClick={addRule}>
+          <Button type="button" variant="secondary" size="sm" onClick={addRule}>
             <Plus className="mr-1 h-3.5 w-3.5" />
             Add rule
           </Button>

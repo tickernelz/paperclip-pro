@@ -46,7 +46,7 @@ export function OpenwaHealthCard({ endpoint }: { endpoint: Pick<ChatEndpoint, "i
     staleTime: 30_000,
   });
   return (
-    <section aria-label="Gateway health" className="space-y-3 rounded-lg border border-border p-4">
+    <section aria-label="Gateway health" className="space-y-3 rounded-lg border border-line p-4">
       <div className="flex items-center justify-between gap-3">
         <h3 className="text-sm font-semibold">Gateway health</h3>
         <Button size="sm" variant="ghost" disabled={health.isFetching} onClick={() => void health.refetch()}>
@@ -55,33 +55,33 @@ export function OpenwaHealthCard({ endpoint }: { endpoint: Pick<ChatEndpoint, "i
         </Button>
       </div>
       {health.isPending ? (
-        <p role="status" className="text-sm text-muted-foreground">Checking the gateway…</p>
+        <p role="status" className="text-sm text-ink-3">Checking the gateway…</p>
       ) : health.isError ? (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-sm text-bad">
           {health.error instanceof Error && health.error.message ? health.error.message : "Couldn't check the gateway."}
         </p>
       ) : (
         <>
           {health.data.gatewayError ? (
-            <p role="alert" className="text-sm text-destructive">{health.data.gatewayError}</p>
+            <p role="alert" className="text-sm text-bad">{health.data.gatewayError}</p>
           ) : null}
           <dl className="grid gap-x-4 gap-y-2 text-sm sm:grid-cols-2">
             {openwaHealthRows(health.data).map((row) => (
               <div key={row.label} className="min-w-0">
-                <dt className="text-xs text-muted-foreground">{row.label}</dt>
-                <dd className={row.attention ? "font-mono text-destructive" : "font-mono"}>{row.value}</dd>
+                <dt className="text-xs text-ink-3">{row.label}</dt>
+                <dd className={row.attention ? "font-mono text-bad" : "font-mono"}>{row.value}</dd>
               </div>
             ))}
           </dl>
           {health.data.gatewayVersion !== null && health.data.gatewayVersion !== health.data.pinnedVersion ? (
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-ink-3">
               Paperclip is tested with OpenWA <span className="font-mono">{health.data.pinnedVersion}</span>; some operations may behave differently.
             </p>
           ) : null}
           {endpoint.status === "attention" && (endpoint.lastError ?? endpoint.healthMessage) ? (
-            <p className="text-xs text-destructive">{endpoint.lastError ?? endpoint.healthMessage}</p>
+            <p className="text-xs text-bad">{endpoint.lastError ?? endpoint.healthMessage}</p>
           ) : null}
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             Checked <time className="font-mono" dateTime={health.data.checkedAt}>{formatDateTime(health.data.checkedAt, { includeSeconds: true })}</time>
           </p>
         </>

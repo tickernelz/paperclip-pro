@@ -284,7 +284,7 @@ export function InlineEditor({
       };
       return (
         <div
-          className={cn(markdownPad, "rounded transition-colors hover:bg-accent/20")}
+          className={cn(markdownPad, "rounded transition-colors hover:bg-bg-3/20")}
           onClick={(event) => {
             if (event.defaultPrevented) return;
             const target = event.target as HTMLElement | null;
@@ -330,7 +330,7 @@ export function InlineEditor({
         className={cn(
           markdownPad,
           "rounded transition-colors",
-          multilineFocused ? "bg-transparent" : "hover:bg-accent/20",
+          multilineFocused ? "bg-transparent" : "hover:bg-bg-3/20",
         )}
         onFocusCapture={(event) => {
           // Ignore focus events where the active element isn't actually inside
@@ -369,7 +369,7 @@ export function InlineEditor({
           <span
             className={cn(
               "text-(length:--text-micro) transition-opacity duration-150",
-              autosaveState === "error" ? "text-destructive" : "text-muted-foreground",
+              autosaveState === "error" ? "text-bad" : "text-ink-3",
               autosaveState === "idle" ? "opacity-0" : "opacity-100",
             )}
           >
@@ -417,9 +417,9 @@ export function InlineEditor({
   return (
     <DisplayTag
       className={cn(
-        "cursor-pointer rounded hover:bg-accent/50 transition-colors overflow-hidden",
+        "cursor-pointer rounded hover:bg-bg-3/50 transition-colors overflow-hidden",
         pad,
-        !value && "text-muted-foreground italic",
+        !value && "text-ink-3 italic",
         className,
       )}
       onClick={() => setEditing(true)}
