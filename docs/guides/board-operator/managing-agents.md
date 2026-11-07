@@ -60,7 +60,8 @@ Agents can request to hire subordinates. When this happens, you'll see a `hire_a
 
 Edit an agent's configuration from the agent detail page:
 
-- **Adapter config** — change model, prompt template, working directory, environment variables
+- **Setup** (OMP agents) — Style, Model, Thinking, Backup models, Tools and Stop a run after; company-wide values live in Settings > Agent defaults
+- **Adapter config** — prompt template, working directory, environment variables
 - **Heartbeat settings** — interval, cooldown, max concurrent runs, wake triggers
 - **Budget** — monthly spend limit
 
