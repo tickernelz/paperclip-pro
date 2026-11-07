@@ -22,7 +22,7 @@ interface InstallAppMenuActionProps {
 }
 
 const LABEL = "Install app";
-const DESCRIPTION = "Add Paperclip to your home screen or dock.";
+const DESCRIPTION = "Add Wardmote to your home screen or dock.";
 
 export function InstallAppMenuAction({ variant, onAfterAction }: InstallAppMenuActionProps) {
   const availability = useInstallAvailability();
@@ -73,8 +73,8 @@ export function IosInstallHelpDialog() {
     <Dialog open={open} onOpenChange={setIosInstallHelpOpen}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Install Paperclip</DialogTitle>
-          <DialogDescription>Add Paperclip to your Home Screen from Safari.</DialogDescription>
+          <DialogTitle>Install Wardmote</DialogTitle>
+          <DialogDescription>Add Wardmote to your Home Screen from Safari.</DialogDescription>
         </DialogHeader>
         <ol className="space-y-3 text-sm text-ink">
           <InstallStep index={1} icon={<Share className="size-4" />}>

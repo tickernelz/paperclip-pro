@@ -1,14 +1,30 @@
-// The build id is stamped into this file at production build time (see
-// stampServiceWorkerBuildId in vite.config.ts), so a deploy that changes only
-// the app bundle still changes sw.js byte-for-byte. That is what makes the
-// browser install a new worker, which — via skipWaiting + controllerchange —
-// reloads parked tabs onto the fresh bundle. Left as the literal placeholder in
-// dev, where HMR (not the worker) drives refreshes.
 const BUILD_ID = "__PAPERCLIP_BUILD_ID__";
-// Separate this allowlisted cache from older workers that cached arbitrary URLs.
-const CACHE_NAME = `paperclip-public-assets-${BUILD_ID}`;
+const SHELL_CACHE = `wardmote-shell-${BUILD_ID}`;
+const DATA_CACHE_PREFIX = "wardmote-data-";
+const LEGACY_CACHE_PREFIX = "paperclip-public-assets-";
+const SHELL_KEY = "/__wardmote_shell__";
+const CACHED_AT_HEADER = "x-wardmote-cached-at";
+const MAX_DATA_ENTRIES = 400;
+const SKIP_WAITING_MESSAGE = "wardmote.skip-waiting";
+const CLEAR_OFFLINE_DATA_MESSAGE = "wardmote.clear-offline-data";
+const SESSION_PATH = "/api/auth/get-session";
 const privateRequests = new Set();
 const privateCacheControl = /(?:^|,)\s*(?:no-store|private)(?:\s*(?:,|=)|\s*$)/i;
+const noStoreCacheControl = /(?:^|,)\s*no-store(?:\s*(?:,|=)|\s*$)/i;
+const ID = "[^/]+";
+const OFFLINE_READABLE_API = [
+  "/api/health",
+  SESSION_PATH,
+  "/api/companies",
+  "/api/sidebar-preferences/me",
+  "/api/instance/settings/experimental",
+  `/api/companies/${ID}/(?:agents|approvals|attention|dashboard|decision-queues|inbox-dismissals|issues|labels|live-runs|projects|sidebar-badges|sidebar-preferences/me|primary-agent/me|resource-memberships/me|user-directory|routines)`,
+  `/api/issues/${ID}`,
+  `/api/issues/${ID}/(?:comments|activity|documents|documents/plan|interactions|attachments|work-products|runs|live-runs|agent-todo|tree-control/state|tree-holds)`,
+  `/api/approvals/${ID}`,
+  `/api/approvals/${ID}/(?:comments|issues)`,
+].map((pattern) => new RegExp(`^${pattern}$`));
+const NEVER_CACHED_API = /(?:secret|token|key|credential|password|oauth|invite|cli-auth|env|login|sign-)/i;
 
 // Static recovery only: never cache or embed authenticated page content here.
 const OFFLINE_PAGE = `<!doctype html>
@@ -16,23 +32,23 @@ const OFFLINE_PAGE = `<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#18181b">
-<title>Paperclip is offline</title>
+<meta name="theme-color" content="#0d0e11">
+<title>Wardmote is offline</title>
 <style>
 :root { color-scheme: dark light; }
-body { margin: 0; min-height: 100dvh; display: grid; place-items: center; font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; background: #18181b; color: #e4e4e7; padding: env(safe-area-inset-top) 24px env(safe-area-inset-bottom); }
-@media (prefers-color-scheme: light) { body { background: #ffffff; color: #18181b; } button { background: #18181b; color: #ffffff; } }
+body { margin: 0; min-height: 100dvh; display: grid; place-items: center; font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; background: #0d0e11; color: #f1f2f5; padding: env(safe-area-inset-top) 24px env(safe-area-inset-bottom); }
+@media (prefers-color-scheme: light) { body { background: #f6f7f9; color: #1f2229; } button { background: #1f2229; color: #f6f7f9; } }
 main { max-width: 320px; text-align: center; }
 h1 { font-size: 18px; margin: 16px 0 4px; }
-p { margin: 0 0 20px; opacity: 0.7; }
-button { font: inherit; font-weight: 600; border: 0; border-radius: 10px; padding: 10px 20px; background: #e4e4e7; color: #18181b; }
+p { margin: 0 0 20px; opacity: 0.75; }
+button { font: inherit; font-weight: 600; border: 0; border-radius: 10px; padding: 10px 20px; background: #f1f2f5; color: #0d0e11; }
 </style>
 </head>
 <body>
 <main>
-<svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m16 6-8.414 8.586a2 2 0 0 0 2.829 2.829l8.414-8.586a4 4 0 1 0-5.657-5.657l-8.379 8.551a6 6 0 1 0 8.485 8.485l8.379-8.551"/></svg>
-<h1>Paperclip is offline</h1>
-<p>Paperclip needs a connection to your server. It will reload once you're back online.</p>
+<svg width="56" height="56" viewBox="0 0 512 512" fill="currentColor" aria-hidden="true"><circle cx="256" cy="256" r="72.46"/><circle cx="256" cy="89.54" r="54.83"/><circle cx="400.16" cy="172.77" r="54.83" fill="#919dff"/><circle cx="400.16" cy="339.23" r="54.83"/><circle cx="256" cy="422.46" r="54.83"/><circle cx="111.84" cy="339.23" r="54.83"/><circle cx="111.84" cy="172.77" r="54.83"/></svg>
+<h1>Wardmote is offline</h1>
+<p>Wardmote needs a connection to your server. It will reload once you're back online.</p>
 <button type="button" onclick="window.location.reload()">Reload page</button>
 </main>
 <script>addEventListener("online", () => location.reload());</script>
@@ -46,11 +62,108 @@ function offlineNavigationResponse() {
   });
 }
 
+function isOfflineReadableApi(url) {
+  if (url.origin !== self.location.origin || NEVER_CACHED_API.test(url.pathname)) return false;
+  return OFFLINE_READABLE_API.some((pattern) => pattern.test(url.pathname));
+}
+
 async function evictRequest(request) {
   await Promise.all((await caches.keys()).map(async (key) => {
     const cache = await caches.open(key);
     await cache.delete(request, { ignoreVary: true });
   }));
+}
+
+async function currentDataCacheName() {
+  return (await caches.keys()).find((key) => key.startsWith(DATA_CACHE_PREFIX)) ?? null;
+}
+
+async function clearOfflineData(keep = null) {
+  const keys = await caches.keys();
+  await Promise.all(keys.filter((key) => key.startsWith(DATA_CACHE_PREFIX) && key !== keep).map((key) => caches.delete(key)));
+}
+
+async function sessionCacheName(response) {
+  const payload = await response.clone().json().catch(() => null);
+  const session = payload?.session ?? payload?.data?.session;
+  if (typeof session?.id !== "string" || typeof session?.userId !== "string") return null;
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(session.userId + "\n" + session.id));
+  return DATA_CACHE_PREFIX + [...new Uint8Array(digest)].slice(0, 16).map((byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+async function rememberOfflineReadable(request, url, response) {
+  if (response.status === 401 || response.status === 403) {
+    await clearOfflineData();
+    return;
+  }
+  const cacheControl = response.headers.get("cache-control") ?? "";
+  const contentType = response.headers.get("content-type") ?? "";
+  if (response.status !== 200 || noStoreCacheControl.test(cacheControl) || !contentType.includes("application/json")) return;
+  let cacheName;
+  if (url.pathname === SESSION_PATH) {
+    cacheName = await sessionCacheName(response);
+    if (!cacheName) {
+      await clearOfflineData();
+      return;
+    }
+    await clearOfflineData(cacheName);
+  } else {
+    cacheName = await currentDataCacheName();
+    if (!cacheName) return;
+  }
+  const headers = new Headers(response.headers);
+  headers.set(CACHED_AT_HEADER, new Date().toISOString());
+  const stored = new Response(await response.blob(), { status: 200, headers });
+  const cache = await caches.open(cacheName);
+  await cache.put(request, stored);
+  const keys = await cache.keys();
+  if (keys.length > MAX_DATA_ENTRIES) {
+    await Promise.all(keys.slice(0, keys.length - MAX_DATA_ENTRIES).map((key) => cache.delete(key)));
+  }
+}
+
+async function offlineReadable(request) {
+  const cacheName = await currentDataCacheName();
+  if (!cacheName) return Response.error();
+  const cached = await (await caches.open(cacheName)).match(request);
+  return cached ?? Response.error();
+}
+
+function handleOfflineReadableApi(event, url) {
+  const { request } = event;
+  event.respondWith(
+    fetch(request).then(
+      (response) => {
+        event.waitUntil(rememberOfflineReadable(request, url, response.clone()).catch(() => {}));
+        return response;
+      },
+      () => offlineReadable(request).catch(() => Response.error()),
+    ),
+  );
+}
+
+function handleNavigation(event) {
+  event.respondWith(
+    fetch(event.request)
+      .then((response) => {
+        const contentType = response.headers.get("content-type") ?? "";
+        const cacheControl = response.headers.get("cache-control") ?? "";
+        if (response.ok && contentType.includes("text/html") && !privateCacheControl.test(cacheControl)) {
+          const clone = response.clone();
+          event.waitUntil(caches.open(SHELL_CACHE).then((cache) => cache.put(SHELL_KEY, clone)).catch(() => {}));
+        }
+        return response;
+      })
+      .catch(async () => {
+        try {
+          const shell = await (await caches.open(SHELL_CACHE)).match(SHELL_KEY);
+          if (shell) return shell;
+        } catch {
+          return offlineNavigationResponse();
+        }
+        return offlineNavigationResponse();
+      }),
+  );
 }
 
 const NOTIFICATION_MESSAGE = "paperclip.notification";
@@ -109,14 +222,28 @@ self.addEventListener("notificationclick", (event) => {
   })());
 });
 
-self.addEventListener("install", () => {
-  self.skipWaiting();
+self.addEventListener("message", (event) => {
+  const type = event.data?.type;
+  if (type === SKIP_WAITING_MESSAGE) {
+    self.skipWaiting();
+  } else if (type === CLEAR_OFFLINE_DATA_MESSAGE) {
+    event.waitUntil(clearOfflineData().catch(() => {}));
+  }
+});
+
+self.addEventListener("install", (event) => {
+  event.waitUntil(
+    caches.keys().then((keys) => {
+      if (keys.some((key) => key.startsWith(LEGACY_CACHE_PREFIX))) return self.skipWaiting();
+      return undefined;
+    }).catch(() => {}),
+  );
 });
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.map((key) => caches.delete(key)))
+      Promise.all(keys.filter((key) => key !== SHELL_CACHE && !key.startsWith(DATA_CACHE_PREFIX)).map((key) => caches.delete(key)))
     )
   );
   self.clients.claim();
@@ -133,11 +260,12 @@ self.addEventListener("fetch", (event) => {
   // Never infer that application/extension responses are public from absent
   // headers, or from an in-memory classification lost when this worker restarts.
   const publicAsset = url.origin === self.location.origin && !url.search &&
-    /^\/assets\/[^/]+-[a-zA-Z0-9_-]{8,}\.[a-zA-Z0-9.]+$/.test(url.pathname);
+    (/^\/assets\/[^/]+-[a-zA-Z0-9_-]{8,}\.[a-zA-Z0-9.]+$/.test(url.pathname) || /^\/fonts\/[^/]+\.woff2$/.test(url.pathname));
 
-  // Explicitly private requests must bypass BOTH cache writes and offline
-  // fallback, including extension endpoints outside the host /api namespace.
-  if (request.method !== "GET" || url.pathname.startsWith("/api")) {
+  if (request.method !== "GET") return;
+  if (url.pathname.startsWith("/api")) {
+    const eventStream = request.headers.get("accept")?.includes("text/event-stream") === true;
+    if (request.cache !== "no-store" && !eventStream && isOfflineReadableApi(url)) handleOfflineReadableApi(event, url);
     return;
   }
   if (request.cache === "no-store") {
@@ -155,7 +283,11 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Network-first; only public build assets can use an offline fallback.
+  if (request.mode === "navigate" && url.origin === self.location.origin) {
+    handleNavigation(event);
+    return;
+  }
+
   event.respondWith(
     fetch(request)
       .then(async (response) => {
@@ -167,7 +299,7 @@ self.addEventListener("fetch", (event) => {
           await evictRequest(request).catch(() => {});
         } else if (response.ok && publicAsset && !privateRequests.has(request.url)) {
           const clone = response.clone();
-          await caches.open(CACHE_NAME).then(async (cache) => {
+          await caches.open(SHELL_CACHE).then(async (cache) => {
             await cache.put(request, clone);
             // A concurrent response may have revoked this URL during put().
             if (privateRequests.has(request.url)) await cache.delete(request, { ignoreVary: true });
@@ -176,14 +308,13 @@ self.addEventListener("fetch", (event) => {
         return response;
       })
       .catch(async () => {
-        if (privateRequests.has(request.url)) return Response.error();
-        if (!publicAsset) return request.mode === "navigate" ? offlineNavigationResponse() : Response.error();
-        // Restrict lookup to this policy's cache; old arbitrary-response caches
-        // must not become fallback candidates if activation cleanup fails.
+        if (privateRequests.has(request.url) || !publicAsset) return Response.error();
         try {
-          const cached = await (await caches.open(CACHE_NAME)).match(request);
+          const cached = await (await caches.open(SHELL_CACHE)).match(request);
           if (cached && !privateCacheControl.test(cached.headers.get("cache-control") ?? "")) return cached;
-        } catch { /* Unavailable cache storage is an offline miss. */ }
+        } catch {
+          return Response.error();
+        }
         return Response.error();
       })
   );

@@ -10,6 +10,7 @@ import {
   type ReactNode,
 } from "react";
 import { AlertTriangle, Check, Loader2, Paperclip, Send } from "lucide-react";
+import { OFFLINE_ACTION_REASON, useOffline } from "../lib/online-status";
 import { cn } from "../lib/utils";
 import { Button } from "@/components/ui/button";
 
@@ -144,7 +145,8 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(fu
   const canAttach = typeof onAttachFiles === "function";
   const isAsk = tone === "ask";
   const isPlanning = tone === "planning";
-  const canSend = !disabled && !submitting && value.trim().length > 0;
+  const offline = useOffline();
+  const canSend = !offline && !disabled && !submitting && value.trim().length > 0;
 
   useImperativeHandle(forwardedRef, () => ({
     focus: () => textareaRef.current?.focus(),
@@ -365,7 +367,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(fu
           }}
           disabled={!canSend}
           aria-label={sendLabel}
-          title={sendLabel}
+          title={offline ? OFFLINE_ACTION_REASON : sendLabel}
         >
           {submitting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
         </Button>

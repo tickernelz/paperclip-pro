@@ -1,4 +1,5 @@
 import { resolveIssueChatHumanAuthor } from "@/lib/issue-chat-human-author";
+import { OFFLINE_ACTION_REASON, useOffline } from "@/lib/online-status";
 import { useWorkspaceBaseRefRecovery } from "./WorkspaceBaseRefRecovery";
 import { WorkspaceBaseRefRecoveryNotice } from "./WorkspaceBaseRefRecoveryNotice";
 import { DispositionRecoveryNotice, useDispositionRecoverySnapshot } from "./DispositionRecoveryNotice";
@@ -5286,7 +5287,9 @@ export const IssueChatComposer = forwardRef<
     void handleDroppedFiles(evt.dataTransfer?.files);
   }
 
+  const offline = useOffline();
   const canSubmit =
+    !offline &&
     !submitting &&
     !uploadUnsettled &&
     !uncertainSubmission &&
@@ -5737,6 +5740,7 @@ export const IssueChatComposer = forwardRef<
           <Button
             size="sm"
             disabled={!canSubmit}
+            title={offline ? OFFLINE_ACTION_REASON : undefined}
             onClick={() => void handleSubmit()}
           >
             {submitting ? "Posting..." : "Send"}

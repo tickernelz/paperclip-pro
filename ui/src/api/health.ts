@@ -58,7 +58,7 @@ export const healthApi = {
     const res = await fetch("/api/health", {
       credentials: "include",
       headers: { Accept: "application/json" },
-      cache: "no-store",
+      cache: "no-cache",
     });
     const payload = await readApiJson<HealthStatus & { error?: string } | null>(res);
     if (!res.ok) {

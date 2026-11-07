@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 
 import type { ReactNode } from "react";
+import manifestSource from "../public/site.webmanifest?raw";
 import { flushSync } from "react-dom";
 import { createRoot } from "react-dom/client";
 import { MemoryRouter } from "react-router-dom";
@@ -46,6 +47,13 @@ vi.mock("./components/OnboardingWizardVariant", () => ({
 vi.mock("./pages/Dashboard", () => ({ Dashboard: () => <div>DASHBOARD_PAGE</div> }));
 vi.mock("./pages/Inbox", () => ({ Inbox: () => <div>INBOX_PAGE</div> }));
 vi.mock("./pages/Issues", () => ({ Issues: () => <div>ISSUES_PAGE</div> }));
+vi.mock("./pages/WhatNeedsMe", () => ({ WhatNeedsMe: () => <div>DECISIONS_PAGE</div> }));
+
+const openNewIssue = vi.hoisted(() => vi.fn());
+vi.mock("./context/DialogContext", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("./context/DialogContext")>()),
+  useDialogActions: () => ({ openNewIssue, openOnboarding: vi.fn(), openNewAgent: vi.fn() }),
+}));
 
 vi.mock("./components/CloudAccessGate", async () => {
   const { Outlet } = await import("react-router-dom");
@@ -94,14 +102,25 @@ describe("App routing for installed-app shortcuts", () => {
     vi.clearAllMocks();
   });
 
-  it.each([
-    ["/inbox/mine?source=pwa-shortcut", "INBOX_PAGE"],
-    ["/issues?source=pwa-shortcut", "ISSUES_PAGE"],
-    ["/dashboard?source=pwa-shortcut", "DASHBOARD_PAGE"],
-  ])("opens %s inside the selected company", async (path, page) => {
-    const root = renderAppAt(container, path);
-    await vi.waitFor(() => expect(container.textContent).toContain(page));
-    expect(container.textContent).not.toContain("No organization matches prefix");
-    flushSync(() => root.unmount());
-  });
+  const manifest = JSON.parse(manifestSource) as {
+    shortcuts: Array<{ name: string; url: string }>;
+  };
+  const pageFor: Record<string, string> = {
+    Inbox: "INBOX_PAGE",
+    Decisions: "DECISIONS_PAGE",
+    Tasks: "ISSUES_PAGE",
+    "New task": "ISSUES_PAGE",
+  };
+
+  it.each(manifest.shortcuts.map((shortcut) => [shortcut.name, shortcut.url] as const))(
+    "opens the %s shortcut (%s) inside the selected company",
+    async (name, url) => {
+      const root = renderAppAt(container, url);
+      await vi.waitFor(() => expect(container.textContent).toContain(pageFor[name]));
+      expect(container.textContent).not.toContain("No organization matches prefix");
+      if (name === "New task") expect(openNewIssue).toHaveBeenCalled();
+      else expect(openNewIssue).not.toHaveBeenCalled();
+      flushSync(() => root.unmount());
+    },
+  );
 });
