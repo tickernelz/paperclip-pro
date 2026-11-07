@@ -140,7 +140,7 @@ import type {
   AdapterEnvironmentCheck,
   AdapterEnvironmentTestResult,
 } from "@tickernelz/paperclip-pro-adapter-utils";
-import type { CodexAccountBindingClaim } from "@tickernelz/paperclip-pro-shared";
+import type { AdapterAuthSignal, AdapterAuthSignalResponse, CodexAccountBindingClaim } from "@tickernelz/paperclip-pro-shared";
 import { getDisabledAdapterTypes } from "../services/adapter-plugin-store.js";
 import { skillVersionSelectionMap } from "../services/runtime-skill-selections.js";
 import { secretService } from "../services/secrets.js";
@@ -235,7 +235,7 @@ import type {
 import { retiredAdapterMessage, SETUP_TOKEN_TRANSPORT_ADVISORY_CODE } from "@tickernelz/paperclip-pro-shared";
 import { checkStagedCredentialReadiness, promoteDeviceLoginCredential } from "../services/ai-providers/codex/adapter-auth-promotion.js";
 import { readSubscriptionAccountId, withAccountHomeSecretMutationLock, withCodexAccountHomePromotionLock } from "../services/ai-providers/codex/codex-auth-cache.js";
-import { resolveManagedCodexHomeDir } from "../services/ai-providers/codex/codex-home.js";
+import { evaluateCodexCredentialReadiness, resolveManagedCodexHomeDir } from "../services/ai-providers/codex/codex-home.js";
 import { checkStagedGrokCredentialReadiness, promoteGrokDeviceLoginCredential } from "../services/ai-providers/grok/adapter-auth-promotion.js";
 import {
   AdapterAuthSessionConflictError,
@@ -3187,6 +3187,103 @@ export function agentRoutes(
       } finally {
         await release(releaseStatus);
       }
+    },
+  );
+
+  async function evaluateClaudeAuthSignal(
+    req: Request,
+    companyId: string,
+    environmentId: string | null,
+  ): Promise<AdapterAuthSignal> {
+    if (environmentId) {
+      const environment = await environmentsSvc.getById(environmentId);
+      const environmentEnv = Object.fromEntries(
+        Object.entries(parseObject(environment?.envVars)).filter(
+          ([key]) => !isForbiddenConfigEnvKey(key),
+        ),
+      );
+      const tokenBinding = environmentEnv.CLAUDE_CODE_OAUTH_TOKEN;
+      if (tokenBinding !== undefined) {
+        const resolution = await secretsSvc.resolveEnvBindings(
+          companyId,
+          { CLAUDE_CODE_OAUTH_TOKEN: tokenBinding },
+          buildActorSecretContext(req, { consumerType: "environment", consumerId: environmentId }),
+        );
+        if (asNonEmptyString(resolution.env.CLAUDE_CODE_OAUTH_TOKEN)) {
+          return "present";
+        }
+      }
+    }
+    const ownerUserId = req.actor.userId;
+    if (ownerUserId) {
+      const stored = await secretsSvc.readClaudeOAuthUserSecretStatus(companyId, ownerUserId);
+      if (stored) return "present";
+    }
+    return "absent";
+  }
+
+  async function evaluateCodexAuthSignal(
+    req: Request,
+    companyId: string,
+    environmentId: string | null,
+  ): Promise<AdapterAuthSignal> {
+    if (environmentId) {
+      const environment = await environmentsSvc.getById(environmentId);
+      if (environment && environment.driver !== "local") {
+        const environmentEnv = Object.fromEntries(
+          Object.entries(parseObject(environment.envVars)).filter(
+            ([key]) => !isForbiddenConfigEnvKey(key),
+          ),
+        );
+        const apiKeyBinding = environmentEnv.OPENAI_API_KEY;
+        if (apiKeyBinding !== undefined) {
+          const resolution = await secretsSvc.resolveEnvBindings(
+            companyId,
+            { OPENAI_API_KEY: apiKeyBinding },
+            buildActorSecretContext(req, { consumerType: "environment", consumerId: environmentId }),
+          );
+          if (asNonEmptyString(resolution.env.OPENAI_API_KEY)) {
+            return "present";
+          }
+        }
+        return "unknown";
+      }
+    }
+
+    const readiness = await evaluateCodexCredentialReadiness({
+      env: process.env,
+      companyId,
+      configuredCodexHome: null,
+      configuredApiKey: null,
+    });
+    return readiness.ready ? "present" : "absent";
+  }
+
+  router.get(
+    "/companies/:companyId/adapters/:type/auth-signal",
+    async (req, res) => {
+      const companyId = req.params.companyId as string;
+      const type = req.params.type as string;
+      await assertCanCreateAgentsForCompany(req, companyId);
+      const environmentId = asNonEmptyString(req.query.environmentId);
+      if (environmentId) {
+        await assertAdapterTestEnvironmentForCompany(companyId, environmentId);
+      }
+      res.setHeader("Cache-Control", "no-store");
+
+      let status: AdapterAuthSignal = "unknown";
+      try {
+        if (type === "claude_local") {
+          status = await evaluateClaudeAuthSignal(req, companyId, environmentId);
+        } else if (type === "codex_local") {
+          status = await evaluateCodexAuthSignal(req, companyId, environmentId);
+        }
+      } catch {
+        status = "unknown";
+      }
+
+      const body: AdapterAuthSignalResponse = { status };
+      res.json(body);
     },
   );
 

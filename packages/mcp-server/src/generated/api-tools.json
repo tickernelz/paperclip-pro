@@ -347,7 +347,7 @@
       "assertCanUpdateAgent"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@agents.ts:5022",
+    "boardGuard": "assertBoard@agents.ts:5119",
     "authorityCapability": null,
     "parameters": [
       {
@@ -1859,38 +1859,6 @@
         }
       }
     }
-  },
-  {
-    "name": "paperclipClaudeLoginAgent",
-    "operationId": "POST /api/agents/{id}/claude-login",
-    "method": "POST",
-    "path": "/agents/{agentId}/claude-login",
-    "description": "Trigger Claude login for agent",
-    "toolset": "extended",
-    "authority": "agent",
-    "authoritySource": "default",
-    "tags": [
-      "agents"
-    ],
-    "annotations": {
-      "readOnlyHint": false,
-      "destructiveHint": false,
-      "idempotentHint": false
-    },
-    "guards": [],
-    "permissions": [],
-    "boardGuard": null,
-    "authorityCapability": null,
-    "parameters": [
-      {
-        "name": "agentId",
-        "in": "path",
-        "required": true,
-        "schema": {
-          "type": "string"
-        }
-      }
-    ]
   },
   {
     "name": "paperclipClearErrorAgent",
@@ -8358,7 +8326,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:7008",
+    "boardGuard": "assertInstanceAdmin@agents.ts:7105",
     "authorityCapability": null,
     "parameters": [
       {
@@ -14760,7 +14728,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:7146",
+    "boardGuard": "assertInstanceAdmin@agents.ts:7243",
     "authorityCapability": null,
     "parameters": [
       {
@@ -17919,7 +17887,10 @@
       "destructiveHint": false,
       "idempotentHint": true
     },
-    "guards": [],
+    "guards": [
+      "assertAdapterTestEnvironmentForCompany",
+      "assertCanCreateAgentsForCompany"
+    ],
     "permissions": [],
     "boardGuard": null,
     "authorityCapability": null,
@@ -21504,7 +21475,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:6979",
+    "boardGuard": "assertInstanceAdmin@agents.ts:7076",
     "authorityCapability": null,
     "parameters": [
       {
@@ -31100,7 +31071,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:3524",
+    "boardGuard": "assertInstanceAdmin@agents.ts:3621",
     "authorityCapability": null,
     "parameters": []
   },
@@ -32951,7 +32922,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:6525",
+    "boardGuard": "assertInstanceAdmin@agents.ts:6622",
     "authorityCapability": null,
     "parameters": [
       {
@@ -39321,7 +39292,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@agents.ts:5300",
+    "boardGuard": "assertBoard@agents.ts:5397",
     "authorityCapability": null,
     "parameters": [
       {
@@ -39569,7 +39540,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:7071",
+    "boardGuard": "assertInstanceAdmin@agents.ts:7168",
     "authorityCapability": null,
     "parameters": [
       {

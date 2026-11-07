@@ -549,7 +549,6 @@ npx @tickernelz/paperclip-pro agent resume <agent-id>
 npx @tickernelz/paperclip-pro agent approve <agent-id>
 npx @tickernelz/paperclip-pro agent terminate <agent-id>
 npx @tickernelz/paperclip-pro agent heartbeat:invoke <agent-id>
-npx @tickernelz/paperclip-pro agent claude-login <agent-id>
 npx @tickernelz/paperclip-pro agent local-cli <agent-id-or-shortname> --company-id <company-id>
 ```
 

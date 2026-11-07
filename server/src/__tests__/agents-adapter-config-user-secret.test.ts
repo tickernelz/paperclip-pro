@@ -359,9 +359,6 @@ describeEmbeddedPostgres("agents adapter-config user-secret resolution routes", 
       expect(ev.responsibleUserId).toBe("user-1");
     }
   });
-
-  // ── claude-login ──────────────────────────────────────────────────
-
 });
 
 function beforeEachActor(actor: TestActor) {
