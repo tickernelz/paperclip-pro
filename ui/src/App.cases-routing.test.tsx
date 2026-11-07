@@ -56,8 +56,8 @@ vi.mock("./components/CasesExperimentalGate", () => ({
 }));
 
 // Rendered by <App> outside <Routes> and needs DialogProvider; irrelevant here.
-vi.mock("./components/OnboardingWizardVariant", () => ({
-  OnboardingWizardVariant: () => null,
+vi.mock("./components/onboarding/OnboardingFlow", () => ({
+  OnboardingFlow: () => null,
 }));
 
 // Sentinel pages so we can assert *which* route resolved.

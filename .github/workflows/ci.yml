@@ -324,6 +324,15 @@ jobs:
           # shellcheck disable=SC2086
           pnpm run test:e2e $specs
 
+      - name: Upload onboarding screenshots
+        uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: onboarding-shots-${{ matrix.shard_index }}
+          path: tests/e2e/test-results/onboarding-shots/
+          if-no-files-found: ignore
+          retention-days: 14
+
       - name: Upload Playwright report
         uses: actions/upload-artifact@v7
         if: failure()
@@ -386,6 +395,20 @@ jobs:
           path: tests/contrast-gate/test-results/
           retention-days: 14
 
+  docker-omp-pin:
+    name: Docker OMP pin
+    needs: scope
+    if: needs.scope.outputs.docs_only != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Check the bundled OMP matches the pin
+        run: bash scripts/check-docker-omp-pin.sh Dockerfile
+
   docs:
     name: Docs
     needs: scope
@@ -408,7 +431,7 @@ jobs:
   verify:
     name: verify
     if: always()
-    needs: [scope, policy, docs, typecheck, build, extensions, runner, general, serialized, e2e, mobile-shell, contrast-gate]
+    needs: [scope, policy, docs, typecheck, build, extensions, runner, general, serialized, e2e, mobile-shell, contrast-gate, docker-omp-pin]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

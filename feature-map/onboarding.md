@@ -1,20 +1,19 @@
 # Onboarding and first work
 
-An operator can start an instance, create a company, configure its first agent, and reach a real first task. Instance setup and company onboarding are separate steps.
+An operator installs OMP, starts an instance, and reaches a first agent working on a first task in three steps: Check OMP, Connect a model (skipped when OMP already has a signed-in model), and First task. Instance setup and company onboarding are separate steps.
 
-Implementation: [web wizard](../ui/src/components/OnboardingWizard.tsx), [CLI setup](../cli/src/commands/onboard.ts).
+Implementation: [web flow](../ui/src/components/onboarding/OnboardingFlow.tsx), [OMP readiness](../packages/adapters/omp-local/src/server/readiness.ts), [onboarding API](../server/src/routes/onboarding-omp.ts), [CLI setup](../cli/src/commands/onboard.ts).
 
 ## Sub-features
 
-- `instance`: choose local instance configuration and start the server.
-- `company`: create a company with its identity and initial agent.
-- `adapter`: choose an available harness, model, account, and execution environment.
-- `first-task`: leave setup with a task whose execution or missing prerequisite is visible.
-- `resume`: return to an incomplete wizard without losing saved state.
+- `omp-gate`: OMP must be on PATH (or chosen as a file) at version 18.1.16 or newer before setup continues. The CLI `onboard` command and the first-agent hire enforce it on local installs; the Docker image bundles a pinned OMP (`PAPERCLIP_OMP_BUNDLED_VERSION`) and is not gated.
+- `connect`: models are read from OMP's own sign-in (`~/.omp`); Paperclip never copies the credential. Sign-in runs `omp login <provider>` on this machine; on another machine or in Docker the step shows the command to run there.
+- `first-task`: one text box. The agent is Atlas (role general) with OMP's recommended model and the most recent OMP project folder, all changeable later on the agent page.
+- `remote`: one SSH address; OMP is checked over SSH and the agent gets an SSH environment whose working folder is the remote home folder.
 
 ## How to get to it (user POV)
 
-### `web-wizard`
+### `web-flow`
 
 Open `/onboarding` or the onboarding launcher in an empty company context.
 
@@ -24,19 +23,19 @@ Use `paperclip-pro onboard --help` or `paperclip-pro run --help` to select an is
 
 ## Driving it
 
-Preconditions: follow the [baseline](./README.md#before-driving-a-journey). Use a new isolated data directory and record deployment mode. A configured adapter may still need account authentication.
+Preconditions: follow the [baseline](./README.md#before-driving-a-journey). Use a new isolated data directory and record deployment mode.
 
-### `web-wizard`
+### `web-flow`
 
-Automated: [wizard tests](../ui/src/components/OnboardingWizard.test.tsx) cover mocked wizard behavior; [onboarding browser suite](../tests/e2e/onboarding.spec.ts) supplies its own test environment. Live model execution is a separate check.
+Automated: [onboarding browser suite](../tests/e2e/onboarding.spec.ts) counts the steps, decisions, clicks and fields of the real flow and captures every step and state at 360, 768 and 1440 px in both themes; [readiness](../packages/adapters/omp-local/src/server/readiness.test.ts), [route](../server/src/__tests__/onboarding-omp-route.test.ts) and [gate](../server/src/services/onboarding-omp-gate.test.ts) tests cover the version gate. [Docker pin check](../scripts/check-docker-omp-pin.sh) runs in CI.
 
-Manual: Create a disposable company and first agent. Save and leave midway, reopen, and finish. Follow the created first task, verify the selected agent and company, and inspect its output or explicit authentication gate. Reload both company and task.
+Manual: With an OMP older than 18.1.16 first on PATH, open `/onboarding` and confirm it stays on Update OMP. Update it and confirm the page moves on by itself. Finish with a first task and confirm Atlas runs it.
 
 ### `cli-setup`
 
-Automated: [CLI onboarding](../cli/src/__tests__/onboard.test.ts) and [isolated test drive](../cli/src/__tests__/test-drive.test.ts) cover their setup contracts; they do not establish that every model account is usable.
+Automated: [CLI onboarding](../cli/src/__tests__/onboard.test.ts) and [isolated test drive](../cli/src/__tests__/test-drive.test.ts) cover their setup contracts, including the OMP gate.
 
-Manual: Run setup in the disposable directory, open the URL it prints, and confirm the instance identity and company. Restart using that same configuration and verify saved state. Exercise an unavailable adapter and confirm an actionable error.
+Manual: Run setup in the disposable directory, open the URL it prints, and confirm the instance identity and company. Restart using that same configuration and verify saved state.
 
 ## Gotchas
 

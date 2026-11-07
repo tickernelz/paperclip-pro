@@ -304,8 +304,10 @@ auto_bootstrap_authenticated_smoke() {
 }
 
 echo "==> Building onboard smoke image"
+OMP_VERSION="${OMP_VERSION:-$(sed -n 's/^ARG OMP_VERSION=//p' "$REPO_ROOT/Dockerfile" | head -n 1)}"
 docker build \
   --build-arg PAPERCLIPAI_VERSION="$PAPERCLIPAI_VERSION" \
+  --build-arg OMP_VERSION="$OMP_VERSION" \
   --build-arg HOST_UID="$HOST_UID" \
   -f "$REPO_ROOT/docker/Dockerfile.onboard-smoke" \
   -t "$IMAGE_NAME" \

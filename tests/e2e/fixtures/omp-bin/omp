@@ -1,0 +1,6 @@
+#!/bin/sh
+case "$1" in
+  --version) echo "omp/18.18.0" ;;
+  models) echo '{"models":[{"provider":"anthropic","kind":"chat","id":"claude-e2e","selector":"anthropic/claude-e2e","name":"Claude E2E"}]}' ;;
+  *) echo "omp e2e stub only answers --version and models" >&2; exit 1 ;;
+esac
