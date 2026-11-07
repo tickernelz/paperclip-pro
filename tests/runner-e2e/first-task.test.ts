@@ -251,10 +251,12 @@ describe("first-task question presentation grading", () => {
     const section = reference.slice(
       reference.indexOf("For an open-ended answer,"),
     );
-    const example = section.match(/```json\nPOST [^\n]+\n([\s\S]*?)\n```/)![1];
-    const parsed = createIssueThreadInteractionSchema.parse(
-      JSON.parse(example),
-    );
+    const example = section.match(/```json\n([\s\S]*?)\n```/)![1];
+    const { issueId: _issueId, ...toolBody } = JSON.parse(example);
+    const parsed = createIssueThreadInteractionSchema.parse({
+      kind: "ask_user_questions",
+      ...toolBody,
+    });
     const card = { id: "documented-text-card", ...parsed };
     const rendered = renderInteractionCard(card);
     expect(rendered).toContain("Write your answer");

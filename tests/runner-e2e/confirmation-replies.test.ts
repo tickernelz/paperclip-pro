@@ -119,7 +119,7 @@ describe("confirmation-reply independent oracle", () => {
       company: { id: "company", name: "Garden" }, credentials: { [credential]: "test-credential" } });
     expect(get).toHaveBeenCalledExactlyOnceWith("/api/companies/company/environments?driver=local");
     expect(postSensitive).toHaveBeenCalledExactlyOnceWith("/api/companies/company/secrets", expect.objectContaining({ key: credential }));
-    expect(fixtures.agent.id).toBe(""); // The real wizard must still create the agent.
+    expect(fixtures.agent.id).toBe("");
     expect(JSON.stringify(fixtures)).not.toContain("test-credential");
   });
   it.each(["Select every proposal you want to approve.", "Choose the proposals to approve."])("accepts explicit proposal selection in an imperative form: %s", prompt => {

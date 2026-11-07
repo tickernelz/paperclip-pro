@@ -41,7 +41,7 @@ export async function verifyInstalledCli(env: NodeJS.ProcessEnv, executions: rea
   const manifest = findPackageJSON("@tickernelz/paperclip-pro-server", pathToFileURL(entry));
   if (!manifest || await realpath(manifest) !== join(serverRoot, "package.json")) throw new Error("Installed CLI resolved a foreign server dependency");
   const server = JSON.parse((await readOwned(join(serverRoot, "package.json"), 65536)).toString());
-  if (cli.name !== "paperclip-pro" || cli.bin?.paperclip-pro !== "./dist/index.js" || server.name !== "@tickernelz/paperclip-pro-server" || typeof cli.version !== "string" || cli.version !== server.version || server.exports?.["."]?.import !== "./dist/index.js") throw new Error("Installed CLI/server public package identity differs");
+  if (cli.name !== "paperclip-pro" || cli.bin?.["paperclip-pro"] !== "./dist/index.js" || server.name !== "@tickernelz/paperclip-pro-server" || typeof cli.version !== "string" || cli.version !== server.version || server.exports?.["."]?.import !== "./dist/index.js") throw new Error("Installed CLI/server public package identity differs");
   const serverEntry = join(serverRoot, "dist/index.js");
   if (await realpath(serverEntry) !== serverEntry) throw new Error("Installed server entrypoint escapes its package");
   const digest = (bytes: Buffer) => createHash("sha256").update(bytes).digest("hex");
