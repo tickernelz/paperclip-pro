@@ -27,7 +27,7 @@ function MobileFollow() {
   // The child updates independently, exercising late layout growth as well as
   // normal streaming without relying on a parent content-key notification.
   useWindowAutoFollow(0, true);
-  return <div className="flex min-h-dvh flex-col bg-background text-foreground">
+  return <div className="flex min-h-dvh flex-col bg-bg text-ink">
     <header className="flex h-12 shrink-0 items-center px-4 text-sm font-medium">Streaming progress report</header>
     <main className="flex flex-1 flex-col p-4 pb-(--tc-composer-visible-nav-offset)"
       style={{ "--tc-composer-bottom": "var(--tc-composer-visible-nav-offset)" } as CSSProperties}>

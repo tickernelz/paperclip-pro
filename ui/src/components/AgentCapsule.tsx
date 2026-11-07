@@ -122,7 +122,7 @@ export function AgentCapsule({
       <span
         aria-hidden="true"
         className={cn(
-          "agent-cap-dash agent-cap-layer pointer-events-none absolute inset-0 rounded-full border-2 border-dashed border-muted-foreground/60",
+          "agent-cap-dash agent-cap-layer pointer-events-none absolute inset-0 rounded-full border-2 border-dashed border-ink-3/60",
           state === "slot" ? "agent-cap-slot opacity-100" : "opacity-0",
         )}
         // In strokeDraw mode the dashed outline stays put while the solid one
@@ -153,7 +153,7 @@ export function AgentCapsule({
             height={dims.height - 2}
             rx={(dims.width - 2) / 2}
             strokeWidth={2}
-            className="stroke-foreground/70"
+            className="stroke-ink/70"
             initial={false}
             animate={{ pathLength: drawn ? 1 : 0 }}
             transition={
@@ -167,7 +167,7 @@ export function AgentCapsule({
         <span
           aria-hidden="true"
           className={cn(
-            "agent-cap-stroke agent-cap-layer pointer-events-none absolute inset-0 rounded-full border-2 border-solid border-foreground/70",
+            "agent-cap-stroke agent-cap-layer pointer-events-none absolute inset-0 rounded-full border-2 border-solid border-ink/70",
             state === "configured" ? "opacity-100" : "opacity-0",
           )}
         />

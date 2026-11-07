@@ -32,10 +32,10 @@ import {
 } from "./model";
 
 const nameInputClass =
-  "w-full rounded-md border border-border px-2.5 py-1.5 bg-transparent outline-none text-sm font-mono placeholder:text-muted-foreground/40 focus-visible:ring-2 focus-visible:ring-ring/40";
+  "w-full rounded-md border border-line px-2.5 py-1.5 bg-transparent outline-none text-sm font-mono placeholder:text-ink-3/40 focus-visible:ring-2 focus-visible:ring-focus/40";
 
 const valueTextInputClass =
-  "min-w-0 flex-1 bg-transparent px-2 py-1.5 text-sm font-mono outline-none placeholder:text-muted-foreground/40";
+  "min-w-0 flex-1 bg-transparent px-2 py-1.5 text-sm font-mono outline-none placeholder:text-ink-3/40";
 
 type SecretPopoverState = { mode: "create" | "store"; name: string; value: string } | null;
 export interface EnvironmentVariableDirtyFields {
@@ -211,7 +211,7 @@ export function EnvironmentVariableRow({
           className={cn(
             nameInputClass,
             dirtyFields.name && "border-amber-500/70 bg-amber-500/10 focus-visible:ring-amber-500/40",
-            showNameIssue && nameIssue?.level === "error" && "border-destructive focus-visible:ring-destructive/40",
+            showNameIssue && nameIssue?.level === "error" && "border-bad focus-visible:ring-bad/40",
             showNameIssue && nameIssue?.level === "warn" && "border-amber-500 focus-visible:ring-amber-500/40",
           )}
           placeholder="KEY"
@@ -250,7 +250,7 @@ export function EnvironmentVariableRow({
             <div
               ref={valueCellRef}
               className={cn(
-                "relative flex items-stretch overflow-hidden rounded-md border border-border bg-transparent focus-within:ring-2 focus-within:ring-ring/40",
+                "relative flex items-stretch overflow-hidden rounded-md border border-line bg-transparent focus-within:ring-2 focus-within:ring-focus/40",
                 dirtyFields.value && "border-amber-500/70 bg-amber-500/10 focus-within:ring-amber-500/40",
                 disabled && "opacity-60",
               )}
@@ -263,7 +263,7 @@ export function EnvironmentVariableRow({
                       <button
                         type="button"
                         aria-label="Value source"
-                        className="flex shrink-0 items-center gap-0.5 border-r border-border px-2 text-muted-foreground hover:bg-accent/50 disabled:pointer-events-none"
+                        className="flex shrink-0 items-center gap-0.5 border-r border-line px-2 text-ink-3 hover:bg-bg-3/50 disabled:pointer-events-none"
                       >
                         {row.source === "text" ? (
                           <TypeIcon className="size-3.5" />
@@ -281,15 +281,15 @@ export function EnvironmentVariableRow({
                 <DropdownMenuContent align="start" className="w-56">
                   <DropdownMenuItem className="flex-col items-start gap-0.5" onSelect={() => switchSource("text")}>
                     <span className="text-sm">Text value</span>
-                    <span className="text-(length:--text-micro) text-muted-foreground">Store the value inline as plain text.</span>
+                    <span className="text-(length:--text-micro) text-ink-3">Store the value inline as plain text.</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem className="flex-col items-start gap-0.5" onSelect={() => switchSource("secret")}>
                     <span className="text-sm">Organization secret</span>
-                    <span className="text-(length:--text-micro) text-muted-foreground">Resolve a stored organization secret at run start.</span>
+                    <span className="text-(length:--text-micro) text-ink-3">Resolve a stored organization secret at run start.</span>
                   </DropdownMenuItem>
                   <DropdownMenuItem className="flex-col items-start gap-0.5" onSelect={() => switchSource("user_secret")}>
                     <span className="text-sm">User secret</span>
-                    <span className="text-(length:--text-micro) text-muted-foreground">
+                    <span className="text-(length:--text-micro) text-ink-3">
                       Resolve the responsible user&apos;s own value at run start.
                     </span>
                   </DropdownMenuItem>
@@ -316,7 +316,7 @@ export function EnvironmentVariableRow({
                     }}
                   />
                   {sensitive ? (
-                    <div className="flex shrink-0 items-stretch border-l border-border">
+                    <div className="flex shrink-0 items-stretch border-l border-line">
                       <button
                         type="button"
                         onClick={openStoreAsSecret}
@@ -372,7 +372,7 @@ export function EnvironmentVariableRow({
                             "absolute right-8 top-1/2 z-10 -translate-y-1/2 rounded px-1.5 py-0.5 text-(length:--text-nano) font-medium",
                             versionPinned
                               ? "bg-amber-500/15 text-amber-700 dark:text-amber-400"
-                              : "text-muted-foreground hover:bg-accent",
+                              : "text-ink-3 hover:bg-bg-3",
                           )}
                         >
                           {versionTagLabel}
@@ -388,11 +388,11 @@ export function EnvironmentVariableRow({
                             setVersionOpen(false);
                           }}
                           className={cn(
-                            "flex w-full items-center justify-between rounded px-2 py-1.5 text-sm hover:bg-accent",
+                            "flex w-full items-center justify-between rounded px-2 py-1.5 text-sm hover:bg-bg-3",
                             row.version === "latest" && "font-medium",
                           )}
                         >
-                          latest <span className="text-(length:--text-micro) text-muted-foreground">(recommended)</span>
+                          latest <span className="text-(length:--text-micro) text-ink-3">(recommended)</span>
                         </button>
                         {Array.from({ length: versions }, (_, idx) => versions - idx)
                           .filter((v) => v > 0)
@@ -407,7 +407,7 @@ export function EnvironmentVariableRow({
                                 setVersionOpen(false);
                               }}
                               className={cn(
-                                "flex w-full items-center rounded px-2 py-1.5 text-sm hover:bg-accent",
+                                "flex w-full items-center rounded px-2 py-1.5 text-sm hover:bg-bg-3",
                                 row.version === v && "font-medium text-amber-700 dark:text-amber-400",
                               )}
                             >
@@ -462,7 +462,7 @@ export function EnvironmentVariableRow({
                     value={row.required ? "required" : "optional"}
                     disabled={disabled}
                     onChange={(event) => onPatch({ required: event.target.value === "required" })}
-                    className="border-l border-border bg-transparent px-2 py-1.5 text-xs font-medium text-muted-foreground outline-none disabled:pointer-events-none"
+                    className="border-l border-line bg-transparent px-2 py-1.5 text-xs font-medium text-ink-3 outline-none disabled:pointer-events-none"
                   >
                     <option value="required">Required</option>
                     <option value="optional">Optional</option>
@@ -523,7 +523,7 @@ export function EnvironmentVariableRow({
             role="status"
             className={cn(
               "mt-0.5 text-(length:--text-micro)",
-              health.level === "error" ? "text-destructive" : "text-amber-600 dark:text-amber-400",
+              health.level === "error" ? "text-bad" : "text-amber-600 dark:text-amber-400",
             )}
           >
             {health.message}
@@ -532,11 +532,11 @@ export function EnvironmentVariableRow({
 
         {/* 5s undo after Secret→Text */}
         {undoPrev ? (
-          <p className="mt-0.5 inline-flex items-center gap-2 text-(length:--text-micro) text-muted-foreground">
+          <p className="mt-0.5 inline-flex items-center gap-2 text-(length:--text-micro) text-ink-3">
             Reverted to text —{" "}
             <button
               type="button"
-              className="font-medium text-foreground underline underline-offset-2 hover:text-primary"
+              className="font-medium text-ink underline underline-offset-2 hover:text-accent"
               onClick={() => {
                 onPatch({ source: "secret", secretId: undoPrev.secretId, version: undoPrev.version, textValue: "" });
                 setUndoPrev(null);
@@ -553,7 +553,7 @@ export function EnvironmentVariableRow({
           id={nameErrorId}
           className={cn(
             "col-span-2 col-start-1 row-start-3 min-w-0 text-(length:--text-micro) @[40rem]/env:col-span-2 @[40rem]/env:row-start-2",
-            nameIssue.level === "error" ? "text-destructive" : "text-amber-600 dark:text-amber-400",
+            nameIssue.level === "error" ? "text-bad" : "text-amber-600 dark:text-amber-400",
           )}
         >
           {nameIssue.message}
@@ -568,7 +568,7 @@ export function EnvironmentVariableRow({
               <button
                 type="button"
                 aria-label="More actions"
-                className="rounded p-1 text-muted-foreground opacity-100 hover:bg-accent hover:text-foreground @[40rem]/env:opacity-0 @[40rem]/env:group-hover/row:opacity-100 @[40rem]/env:group-focus-within/row:opacity-100"
+                className="rounded p-1 text-ink-3 opacity-100 hover:bg-bg-3 hover:text-ink @[40rem]/env:opacity-0 @[40rem]/env:group-hover/row:opacity-100 @[40rem]/env:group-focus-within/row:opacity-100"
               >
                 <MoreHorizontal className="size-4" />
               </button>
@@ -596,7 +596,7 @@ export function EnvironmentVariableRow({
           onClick={onRemove}
           disabled={disabled}
           aria-label={`Remove ${row.name.trim() || "variable"}`}
-          className="rounded p-1 text-muted-foreground opacity-100 hover:bg-destructive/10 hover:text-destructive @[40rem]/env:opacity-0 @[40rem]/env:group-hover/row:opacity-100 @[40rem]/env:group-focus-within/row:opacity-100"
+          className="rounded p-1 text-ink-3 opacity-100 hover:bg-bad/10 hover:text-bad @[40rem]/env:opacity-0 @[40rem]/env:group-hover/row:opacity-100 @[40rem]/env:group-focus-within/row:opacity-100"
         >
           <X className="size-4" />
         </button>

@@ -135,7 +135,7 @@ export function GatewayDetail() {
   });
 
   if (!selectedCompanyId) {
-    return <div className="p-6 text-sm text-muted-foreground">Select an organization to manage gateways.</div>;
+    return <div className="p-6 text-sm text-ink-3">Select an organization to manage gateways.</div>;
   }
   if (!activeTab) {
     return <Navigate replace to={gatewayTabHref(gatewayId, "overview")} />;
@@ -155,8 +155,8 @@ export function GatewayDetail() {
   if (!gateway) {
     return (
       <div className="max-w-3xl p-6">
-        <p className="text-sm text-muted-foreground">We couldn’t find that gateway.</p>
-        <Button className="mt-4" variant="outline" onClick={() => navigate("/apps/gateways")}>
+        <p className="text-sm text-ink-3">We couldn’t find that gateway.</p>
+        <Button className="mt-4" variant="secondary" onClick={() => navigate("/apps/gateways")}>
           Back to gateways
         </Button>
       </div>
@@ -167,7 +167,7 @@ export function GatewayDetail() {
     <div className="max-w-4xl space-y-5 pb-12">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="text-xs text-muted-foreground">
+          <div className="text-xs text-ink-3">
             <Link to="/apps/gateways" className="hover:underline">
               Apps · Gateways
             </Link>
@@ -176,7 +176,7 @@ export function GatewayDetail() {
           <CopyableGatewayUrl endpointPath={gateway.endpointPath} className="mt-1 max-w-xl" />
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={() => setEditing(true)}>
+          <Button variant="secondary" onClick={() => setEditing(true)}>
             <Pencil className="mr-1.5 h-4 w-4" />
             Edit
           </Button>
@@ -187,7 +187,7 @@ export function GatewayDetail() {
         </div>
       </div>
 
-      <nav className="flex items-center gap-6 overflow-x-auto border-b border-border text-sm" aria-label="Gateway tabs">
+      <nav className="flex items-center gap-6 overflow-x-auto border-b border-line text-sm" aria-label="Gateway tabs">
         {GATEWAY_TABS.map((item) => {
           const isActive = item.key === activeTab;
           return (
@@ -197,8 +197,8 @@ export function GatewayDetail() {
               className={cn(
                 "-mb-px shrink-0 border-b-2 pb-2.5 pt-1 font-medium transition-colors",
                 isActive
-                  ? "border-foreground text-foreground"
-                  : "border-transparent text-muted-foreground hover:text-foreground",
+                  ? "border-ink text-ink"
+                  : "border-transparent text-ink-3 hover:text-ink",
               )}
               aria-current={isActive ? "page" : undefined}
             >

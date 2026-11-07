@@ -145,8 +145,8 @@ export function Projects() {
                   type="button"
                   className={`flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-sm ${
                     sortField === option.field
-                      ? "bg-accent/50 text-foreground"
-                      : "text-muted-foreground hover:bg-accent/50"
+                      ? "bg-bg-3/50 text-ink"
+                      : "text-ink-3 hover:bg-bg-3/50"
                   }`}
                   onClick={() => {
                     if (sortField === option.field) {
@@ -159,7 +159,7 @@ export function Projects() {
                 >
                   <span>{option.label}</span>
                   {sortField === option.field ? (
-                    <span className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1 text-xs text-ink-3">
                       <Check className="h-3 w-3" />
                       {sortDir === "asc" ? "Asc" : "Desc"}
                     </span>
@@ -169,13 +169,13 @@ export function Projects() {
             </div>
           </PopoverContent>
         </Popover>
-        <Button size="sm" variant="outline" onClick={openNewProject}>
+        <Button size="sm" variant="secondary" onClick={openNewProject}>
           <Plus className="h-4 w-4 mr-1" />
           Add Project
         </Button>
       </div>
 
-      {error && <p className="text-sm text-destructive">{error.message}</p>}
+      {error && <p className="text-sm text-bad">{error.message}</p>}
 
       {!isLoading && projects.length === 0 && (
         <EmptyState
@@ -198,11 +198,11 @@ export function Projects() {
               <section key={label} className="space-y-2">
                 <div className="flex items-center justify-between">
                   <h2 className="text-sm font-medium">{label}</h2>
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-xs text-ink-3">
                     {sectionProjects.length} project{sectionProjects.length === 1 ? "" : "s"}
                   </span>
                 </div>
-                <Card className="block py-0 overflow-hidden divide-y divide-border">
+                <Card className="block py-0 overflow-hidden divide-y divide-line">
                   {sectionProjects.map((project) => {
                     const state = resourceMembershipState(membershipsQuery.data, "project", project.id);
                     const pending = membershipMutation.isPending &&
@@ -219,23 +219,23 @@ export function Projects() {
                         subtitle={project.description ?? undefined}
                         reserveSubtitleSpace
                         to={projectUrl(project)}
-                        className={state === "left" ? "group text-foreground/55" : "group"}
+                        className={state === "left" ? "group text-ink/55" : "group"}
                         trailing={
                           <div className="flex items-center gap-3">
-                            {project.visibility === "private" ? <Lock className="size-4 shrink-0 text-muted-foreground" aria-label="Private project" /> : null}
+                            {project.visibility === "private" ? <Lock className="size-4 shrink-0 text-ink-3" aria-label="Private project" /> : null}
                             <span
-                              className="hidden text-xs text-muted-foreground tabular-nums sm:inline"
+                              className="hidden text-xs text-ink-3 tabular-nums sm:inline"
                               title={`${formatNumber(project.taskCount ?? 0)} task${(project.taskCount ?? 0) === 1 ? "" : "s"}`}
                             >
                               {formatNumber(project.taskCount ?? 0)} task{(project.taskCount ?? 0) === 1 ? "" : "s"}
                             </span>
                             {project.budget && (
-                              <span className="hidden text-xs text-muted-foreground tabular-nums sm:inline">
+                              <span className="hidden text-xs text-ink-3 tabular-nums sm:inline">
                                 {formatProjectBudget(project.budget)}
                               </span>
                             )}
                             {project.targetDate && (
-                              <span className="hidden text-xs text-muted-foreground md:inline">
+                              <span className="hidden text-xs text-ink-3 md:inline">
                                 {formatDate(project.targetDate)}
                               </span>
                             )}

@@ -131,31 +131,31 @@ function GatewaySessions({ endpointId, ownSessionId }: { endpointId: string; own
       description="Every session on this OpenWA gateway. Create a session, scan its QR or enter a pairing code, and start, stop, log out or delete it here instead of the OpenWA dashboard. Needs the channel's OpenWA admin key; every change is recorded in the audit log."
     >
       {sessions.isPending ? (
-        <p className="text-sm text-muted-foreground">Loading sessions…</p>
+        <p className="text-sm text-ink-3">Loading sessions…</p>
       ) : sessions.isError ? (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-sm text-bad">
           {failureMessage(sessions.error, "Couldn't read sessions from the gateway.")}
         </p>
       ) : rows<GatewaySession>(sessions.data).length === 0 ? (
-        <p className="text-sm text-muted-foreground">No sessions on this gateway.</p>
+        <p className="text-sm text-ink-3">No sessions on this gateway.</p>
       ) : (
-        <ul className="divide-y divide-border border-y border-border">
+        <ul className="divide-y divide-line border-y border-line">
           {rows<GatewaySession>(sessions.data).map((session) => (
             <li key={session.id} aria-label={"Session " + session.name} className="space-y-2 py-2">
               <div className="flex flex-wrap items-baseline gap-x-2 text-sm">
                 <span className="font-medium">{session.name}</span>
-                {session.id === ownSessionId ? <span className="rounded bg-muted px-1.5 text-xs">Agent session</span> : null}
-                <span data-testid="session-status" className="text-xs text-muted-foreground">
+                {session.id === ownSessionId ? <span className="rounded bg-bg-3 px-1.5 text-xs">Agent session</span> : null}
+                <span data-testid="session-status" className="text-xs text-ink-3">
                   {session.status}
                 </span>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs text-ink-3">
                   {[session.pushName, session.phone, when(session.connectedAt) ?? when(session.createdAt)].filter(Boolean).join(" · ")}
                 </span>
               </div>
-              {session.lastError ? <p className="text-xs text-destructive">{session.lastError}</p> : null}
+              {session.lastError ? <p className="text-xs text-bad">{session.lastError}</p> : null}
               <div className="flex flex-wrap gap-1">
                 {session.status !== "ready" ? (
-                  <Button size="sm" variant="outline" onClick={() => setConnecting(session)}>
+                  <Button size="sm" variant="secondary" onClick={() => setConnecting(session)}>
                     Connect
                   </Button>
                 ) : null}
@@ -176,7 +176,7 @@ function GatewaySessions({ endpointId, ownSessionId }: { endpointId: string; own
         </ul>
       )}
       <FieldMessage id="openwa-sessions" error={error} />
-      <Button size="sm" variant="outline" onClick={() => setCreating(true)}>
+      <Button size="sm" variant="secondary" onClick={() => setCreating(true)}>
         New session
       </Button>
       {creating ? (
@@ -241,7 +241,7 @@ function CreateSessionDialog({ endpointId, onClose, onCreated }: { endpointId: s
           <FieldMessage id="openwa-session-name" error={error} />
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="secondary" onClick={onClose}>
             Cancel
           </Button>
           <Button disabled={create.isPending} onClick={submit}>
@@ -298,7 +298,7 @@ export function ConnectSessionDialog({ endpointId, session, onClose }: { endpoin
         ) : image.startsWith("data:image/") ? (
           <img src={image} alt="WhatsApp login QR code" className="mx-auto size-64 bg-white p-2" />
         ) : (
-          <p className="text-sm text-muted-foreground">{qr.isError ? "Waiting for the gateway to issue a QR code…" : "Loading QR code…"}</p>
+          <p className="text-sm text-ink-3">{qr.isError ? "Waiting for the gateway to issue a QR code…" : "Loading QR code…"}</p>
         )}
         {connected ? null : (
           <div className="grid gap-1">
@@ -307,7 +307,7 @@ export function ConnectSessionDialog({ endpointId, session, onClose }: { endpoin
             </label>
             <div className="flex gap-2">
               <Input id="openwa-pairing-phone" value={phone} placeholder="628123456789" onChange={(event) => setPhone(event.target.value)} />
-              <Button variant="outline" disabled={pairing.isPending || phone.replace(/\D/g, "").length < 8} onClick={() => pairing.mutate()}>
+              <Button variant="secondary" disabled={pairing.isPending || phone.replace(/\D/g, "").length < 8} onClick={() => pairing.mutate()}>
                 Get code
               </Button>
             </div>
@@ -373,7 +373,7 @@ function SessionActionDialog({
           </DialogDescription>
         </DialogHeader>
         {own ? (
-          <div className="flex items-start gap-2 rounded-md border border-border bg-muted p-2">
+          <div className="flex items-start gap-2 rounded-md border border-line bg-bg-3 p-2">
             <Checkbox id="openwa-own-session-ack" checked={acknowledged} onCheckedChange={(value) => setAcknowledged(value === true)} />
             <label htmlFor="openwa-own-session-ack" className="text-xs">
               This is the agent's own session. The agent stops answering on WhatsApp until it is connected again.
@@ -382,10 +382,10 @@ function SessionActionDialog({
         ) : null}
         <FieldMessage id="openwa-session-action" error={error} />
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="secondary" onClick={onClose}>
             Cancel
           </Button>
-          <Button variant="destructive" disabled={perform.isPending || (own && !acknowledged)} onClick={() => perform.mutate()}>
+          <Button variant="danger" disabled={perform.isPending || (own && !acknowledged)} onClick={() => perform.mutate()}>
             {label}
           </Button>
         </DialogFooter>
@@ -430,7 +430,7 @@ function SessionConfigDialog({ endpointId, session, onClose }: { endpointId: str
           <DialogDescription>Settings the gateway exposes for a session. The session name cannot change after creation.</DialogDescription>
         </DialogHeader>
         {config.isPending ? (
-          <p className="text-sm text-muted-foreground">Loading settings…</p>
+          <p className="text-sm text-ink-3">Loading settings…</p>
         ) : (
           <div className="grid gap-3">
             <div className="flex items-center gap-2">
@@ -451,7 +451,7 @@ function SessionConfigDialog({ endpointId, session, onClose }: { endpointId: str
         )}
         <FieldMessage id="openwa-session-config" error={error} />
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="secondary" onClick={onClose}>
             Cancel
           </Button>
           <Button disabled={save.isPending || config.isPending} onClick={() => save.mutate()}>
@@ -466,13 +466,13 @@ function SessionConfigDialog({ endpointId, session, onClose }: { endpointId: str
 function RevealedSecret({ label, value, onDismiss }: { label: string; value: string; onDismiss: () => void }) {
   const { pushToast } = useToast();
   return (
-    <div role="alert" className="space-y-2 rounded-md border border-border bg-muted p-2">
+    <div role="alert" className="space-y-2 rounded-md border border-line bg-bg-3 p-2">
       <p className="text-xs">{label} Paperclip does not store it and will not show it again.</p>
       <p className="break-all font-mono text-xs">{value}</p>
       <div className="flex gap-2">
         <Button
           size="sm"
-          variant="outline"
+          variant="secondary"
           onClick={() =>
             void copyTextToClipboard(value).then(
               () => pushToast({ title: "Copied", tone: "success" }),
@@ -521,17 +521,17 @@ function GatewayApiKeys({ endpointId }: { endpointId: string }) {
   return (
     <SettingsSection title="OpenWA API keys" description="Keys other apps use to call this gateway. A new key is shown once, right after it is created.">
       {keys.isPending ? (
-        <p className="text-sm text-muted-foreground">Loading keys…</p>
+        <p className="text-sm text-ink-3">Loading keys…</p>
       ) : keys.isError ? (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-sm text-bad">
           {failureMessage(keys.error, "Couldn't read keys from the gateway.")}
         </p>
       ) : (
-        <ul className="divide-y divide-border border-y border-border">
+        <ul className="divide-y divide-line border-y border-line">
           {rows<GatewayKey>(keys.data).map((key) => (
             <li key={key.id} aria-label={"Key " + key.name} className="flex flex-wrap items-center gap-2 py-2 text-sm">
               <span className="font-medium">{key.name}</span>
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs text-ink-3">
                 {[key.role, key.keyPrefix ? key.keyPrefix + "…" : null, key.allowedSessions?.length ? key.allowedSessions.length + " sessions" : "all sessions", key.isActive === false ? "revoked" : "active", when(key.lastUsedAt)].filter(Boolean).join(" · ")}
               </span>
               <span className="ml-auto flex gap-1">
@@ -558,7 +558,7 @@ function GatewayApiKeys({ endpointId }: { endpointId: string }) {
             </option>
           ))}
         </select>
-        <Button size="sm" variant="outline" disabled={create.isPending || !name.trim()} onClick={() => create.mutate()}>
+        <Button size="sm" variant="secondary" disabled={create.isPending || !name.trim()} onClick={() => create.mutate()}>
           Create key
         </Button>
       </div>
@@ -573,7 +573,7 @@ function GatewayApiKeys({ endpointId }: { endpointId: string }) {
           </label>
         ))}
       </div>
-      <p className="text-xs text-muted-foreground">No session ticked means the key reaches every session.</p>
+      <p className="text-xs text-ink-3">No session ticked means the key reaches every session.</p>
       <FieldMessage id="openwa-keys" error={error} />
     </SettingsSection>
   );
@@ -637,11 +637,11 @@ function GatewayWebhooks({ endpointId }: { endpointId: string }) {
       </select>
       {sessionId ? (
         <>
-          <ul className="divide-y divide-border border-y border-border">
+          <ul className="divide-y divide-line border-y border-line">
             {rows<GatewayWebhook>(hooks.data).map((hook) => (
               <li key={hook.id} className="flex flex-wrap items-center gap-2 py-2 text-sm">
                 <span className="min-w-0 break-all">{hook.url}</span>
-                <span className="text-xs text-muted-foreground">{[hook.events?.join(", "), hook.active === false ? "paused" : "active"].filter(Boolean).join(" · ")}</span>
+                <span className="text-xs text-ink-3">{[hook.events?.join(", "), hook.active === false ? "paused" : "active"].filter(Boolean).join(" · ")}</span>
                 <span className="ml-auto flex gap-1">
                   <Button size="sm" variant="ghost" onClick={() => change.mutate({ operationId: "WebhookController_test", sessionId, args: { id: hook.id } })}>
                     Test
@@ -660,7 +660,7 @@ function GatewayWebhooks({ endpointId }: { endpointId: string }) {
             <Input aria-label="Webhook URL" placeholder="https://example.com/hooks/whatsapp" value={url} onChange={(event) => setUrl(event.target.value)} />
             <Input aria-label="Webhook events" value={events} onChange={(event) => setEvents(event.target.value)} />
             <Input aria-label="Webhook signing secret" type="password" placeholder="Signing secret (optional)" value={secret} onChange={(event) => setSecret(event.target.value)} />
-            <Button size="sm" variant="outline" disabled={create.isPending || !url.trim()} onClick={() => create.mutate()}>
+            <Button size="sm" variant="secondary" disabled={create.isPending || !url.trim()} onClick={() => create.mutate()}>
               Add webhook
             </Button>
           </div>
@@ -677,7 +677,7 @@ function GatewayWebhooks({ endpointId }: { endpointId: string }) {
           Retry failed deliveries
         </Button>
       </div>
-      {notice ? <p className="text-xs text-muted-foreground">{notice}</p> : null}
+      {notice ? <p className="text-xs text-ink-3">{notice}</p> : null}
       <FieldMessage id="openwa-webhooks" error={error} />
     </SettingsSection>
   );
@@ -728,13 +728,13 @@ function GatewayIntegrations({ endpointId }: { endpointId: string }) {
       </select>
       {pluginId ? (
         <>
-          <ul className="divide-y divide-border border-y border-border">
+          <ul className="divide-y divide-line border-y border-line">
             {rows<GatewayInstance>(instances.data).map((instance) => {
               const args = { pluginId, instanceId: instance.instanceId };
               return (
                 <li key={instance.instanceId} className="flex flex-wrap items-center gap-2 py-2 text-sm">
                   <span className="font-medium">{instance.instanceId}</span>
-                  <span className="text-xs text-muted-foreground">{[instance.sessionScope ?? "all sessions", instance.enabled === false ? "disabled" : "enabled"].join(" · ")}</span>
+                  <span className="text-xs text-ink-3">{[instance.sessionScope ?? "all sessions", instance.enabled === false ? "disabled" : "enabled"].join(" · ")}</span>
                   <span className="ml-auto flex gap-1">
                     <Button size="sm" variant="ghost" onClick={() => change.mutate({ operationId: "IntegrationInstanceController_patch", args: { ...args, enabled: instance.enabled === false } })}>
                       {instance.enabled === false ? "Enable" : "Disable"}
@@ -762,7 +762,7 @@ function GatewayIntegrations({ endpointId }: { endpointId: string }) {
             </select>
             <Button
               size="sm"
-              variant="outline"
+              variant="secondary"
               disabled={change.isPending || !instanceId.trim()}
               onClick={() => change.mutate({ operationId: "IntegrationInstanceController_create", args: { pluginId, instanceId: instanceId.trim(), ...(scope ? { sessionScope: scope } : {}) } })}
             >

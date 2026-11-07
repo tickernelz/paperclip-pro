@@ -55,7 +55,7 @@ const TREE_ROW_HEIGHT_CLASS = "min-h-9";
 const fileTreeToneClass: Record<FileTreeTone, string | undefined> = {
   default: undefined,
   warning: "bg-amber-500/5 text-amber-700 dark:text-amber-300",
-  error: "bg-destructive/5 text-destructive",
+  error: "bg-bad/5 text-bad",
   muted: "opacity-50",
 };
 
@@ -374,7 +374,7 @@ export function FileTree({
         <div
           role="treeitem"
           aria-level={1}
-          className="flex min-h-9 items-center justify-between gap-3 rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm"
+          className="flex min-h-9 items-center justify-between gap-3 rounded-md border border-bad/30 bg-bad/5 px-3 py-2 text-sm"
         >
           <div className="flex min-w-0 items-center gap-2">
             <Badge variant="ghost"
@@ -385,10 +385,10 @@ export function FileTree({
             >
               error
             </Badge>
-            <span className="min-w-0 text-destructive">{error.message}</span>
+            <span className="min-w-0 text-bad">{error.message}</span>
           </div>
           {error.retry && (
-            <Button type="button" size="xs" variant="outline" onClick={error.retry}>
+            <Button type="button" size="xs" variant="secondary" onClick={error.retry}>
               Retry
             </Button>
           )}
@@ -400,9 +400,9 @@ export function FileTree({
   if (visibleNodes.length === 0) {
     return (
       <div aria-label={ariaLabel} role="tree" className="p-3">
-        <div className="rounded-md border border-dashed border-border px-4 py-8 text-center">
+        <div className="rounded-md border border-dashed border-line px-4 py-8 text-center">
           <div className="text-sm font-medium">{empty?.title ?? "No files"}</div>
-          <div className="mt-1 text-xs text-muted-foreground">
+          <div className="mt-1 text-xs text-ink-3">
             {empty?.description ?? "Files will appear here when they are available."}
           </div>
         </div>
@@ -441,20 +441,20 @@ export function FileTree({
             tabIndex={tabStop === node.path ? 0 : -1}
             className={cn(
               layout === "explorer"
-                ? "group flex w-full items-center gap-2 pr-3 text-left text-sm text-muted-foreground hover:bg-accent/30 cursor-pointer"
+                ? "group flex w-full items-center gap-2 pr-3 text-left text-sm text-ink-3 hover:bg-bg-3/30 cursor-pointer"
                 : node.kind === "dir"
                 ? showCheckboxes
-                  ? "group grid w-full grid-cols-(--gtc-2) items-center gap-x-1 pr-3 text-left text-sm text-muted-foreground hover:bg-accent/30 hover:text-foreground"
-                  : "group grid w-full grid-cols-(--gtc-3) items-center gap-x-1 pr-3 text-left text-sm text-muted-foreground hover:bg-accent/30 hover:text-foreground max-[480px]:grid-cols-(--gtc-4)"
-                : "group flex w-full items-center gap-1 pr-3 text-left text-sm text-muted-foreground hover:bg-accent/30 hover:text-foreground cursor-pointer",
+                  ? "group grid w-full grid-cols-(--gtc-2) items-center gap-x-1 pr-3 text-left text-sm text-ink-3 hover:bg-bg-3/30 hover:text-ink"
+                  : "group grid w-full grid-cols-(--gtc-3) items-center gap-x-1 pr-3 text-left text-sm text-ink-3 hover:bg-bg-3/30 hover:text-ink max-[480px]:grid-cols-(--gtc-4)"
+                : "group flex w-full items-center gap-1 pr-3 text-left text-sm text-ink-3 hover:bg-bg-3/30 hover:text-ink cursor-pointer",
               layout === "explorer" ? "h-8" : TREE_ROW_HEIGHT_CLASS,
               layout === "explorer" && "file-tree-row-explorer",
-              isSelected && "text-foreground bg-accent/20",
+              isSelected && "text-ink bg-bg-3/20",
               fileTreeToneClass[tone],
               extraClassName,
               disabled && "opacity-50",
               "file-tree-row",
-              "outline-none focus-visible:ring-2 focus-visible:ring-ring/50 focus-visible:ring-inset",
+              "outline-none focus-visible:ring-2 focus-visible:ring-focus/50 focus-visible:ring-inset",
             )}
             style={{ "--file-tree-depth": depth } as CSSProperties}
             onFocus={() => setFocusedPath(node.path)}
@@ -463,7 +463,7 @@ export function FileTree({
             data-file-tree-path={node.path}
           >
             {layout === "explorer" && (node.kind === "dir" ? (
-              <button type="button" disabled={disabled} className="flex size-4 shrink-0 items-center justify-center rounded-sm hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/50"
+              <button type="button" disabled={disabled} className="flex size-4 shrink-0 items-center justify-center rounded-sm hover:text-ink focus-visible:ring-2 focus-visible:ring-focus/50"
                 onClick={event => { event.stopPropagation(); onToggleDir(node.path); }}
                 aria-label={expanded ? `Collapse ${node.name}` : `Expand ${node.name}`}>
                 {expanded ? <ChevronDown className="size-3.5" /> : <ChevronRight className="size-3.5" />}
@@ -480,7 +480,7 @@ export function FileTree({
                     if (element) element.indeterminate = someChecked;
                   }}
                   onChange={() => onToggleCheck?.(node.path, node.kind)}
-                  className={layout === "explorer" ? "size-3.5 shrink-0 accent-foreground" : "mr-2 accent-foreground"}
+                  className={layout === "explorer" ? "size-3.5 shrink-0 accent-ink" : "mr-2 accent-ink"}
                 />
               </label>
             ) : showCheckboxes && layout === "explorer" ? <span className="size-4 shrink-0" aria-hidden="true" /> : null}
@@ -517,7 +517,7 @@ export function FileTree({
               <button
                 type="button"
                 disabled={disabled}
-                className="flex h-9 w-9 items-center justify-center self-center rounded-sm text-muted-foreground opacity-70 transition-(--tp-background-color-color-opacity) hover:bg-accent hover:text-foreground group-hover:opacity-100 focus-visible:ring-2 focus-visible:ring-ring/50 max-[480px]:hidden"
+                className="flex h-9 w-9 items-center justify-center self-center rounded-sm text-ink-3 opacity-70 transition-(--tp-background-color-color-opacity) hover:bg-bg-3 hover:text-ink group-hover:opacity-100 focus-visible:ring-2 focus-visible:ring-focus/50 max-[480px]:hidden"
                 onClick={(event) => {
                   event.stopPropagation();
                   onToggleDir(node.path);

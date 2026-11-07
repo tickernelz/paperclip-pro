@@ -877,10 +877,10 @@ describe("TaskChatProtocolCard", () => {
     );
     expect(receipt?.querySelectorAll("summary svg")).toHaveLength(2);
     expect(receipt?.className).not.toContain("border");
-    expect(receipt?.className).not.toContain("bg-card");
+    expect(receipt?.className).not.toContain("bg-bg-2");
     expect(receipt?.querySelector("summary")?.className).toContain("px-1");
     expect(receipt?.querySelector("summary")?.className).toContain(
-      "text-muted-foreground",
+      "text-ink-3",
     );
     expect(receipt?.querySelector("summary")?.className).toContain("leading-5");
     expect(receipt?.querySelector("summary span")?.className).not.toContain(

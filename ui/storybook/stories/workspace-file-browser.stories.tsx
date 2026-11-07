@@ -164,7 +164,7 @@ function Placement() {
   return (
     <FileViewerProvider issueId={ISSUE_ID}>
       <div className="mx-auto max-w-3xl space-y-3 p-6">
-        <h3 className="text-sm font-medium text-muted-foreground">Workspace</h3>
+        <h3 className="text-sm font-medium text-ink-3">Workspace</h3>
         <IssueWorkspaceCard
           issue={{
             companyId: "company-1",

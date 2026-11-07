@@ -86,7 +86,7 @@ export function DocumentFrameHeader({
         <div className="flex items-center gap-2 min-w-0">
           <button
             type="button"
-            className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-sm text-muted-foreground transition-colors hover:bg-accent/60 hover:text-foreground"
+            className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-sm text-ink-3 transition-colors hover:bg-bg-3/60 hover:text-ink"
             onClick={onToggleFolded}
             aria-label={folded ? `Expand ${documentKey} document` : `Collapse ${documentKey} document`}
             aria-expanded={!folded}
@@ -95,13 +95,13 @@ export function DocumentFrameHeader({
           </button>
           {documentLabel ? (
             <>
-              <span className="truncate text-sm font-semibold text-foreground">{documentLabel}</span>
-              <Badge variant="outline" className="border-border font-mono text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
+              <span className="truncate text-sm font-semibold text-ink">{documentLabel}</span>
+              <Badge variant="outline" className="border-line font-mono text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow) text-ink-3">
                 {documentKey}
               </Badge>
             </>
           ) : (
-            <Badge variant="outline" className="border-border font-mono text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
+            <Badge variant="outline" className="border-line font-mono text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow) text-ink-3">
               {documentKey}
             </Badge>
           )}
@@ -113,8 +113,7 @@ export function DocumentFrameHeader({
                   variant="ghost"
                   size="sm"
                   className={cn(
-                    "h-auto px-1.5 py-0 text-(length:--text-micro) font-normal text-muted-foreground hover:text-foreground",
-                    revisionMenu.historicalPreview && "text-amber-700 hover:text-amber-800 dark:text-amber-300 dark:hover:text-amber-200",
+                    "h-auto px-1.5 py-0 text-(length:--text-micro) font-normal",
                   )}
                 >
                   rev {revisionMenu.displayedRevisionNumber}
@@ -140,12 +139,12 @@ export function DocumentFrameHeader({
                             <div className="flex items-center gap-2">
                               <span className="font-medium">rev {revision.revisionNumber}</span>
                               {isCurrentRevision ? (
-                                <Badge variant="outline" className="border-border px-1.5 text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
+                                <Badge variant="outline" className="border-line px-1.5 text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow) text-ink-3">
                                   Current
                                 </Badge>
                               ) : null}
                             </div>
-                            <div className="mt-1 flex min-w-0 items-center gap-1.5 text-(length:--text-micro) text-muted-foreground">
+                            <div className="mt-1 flex min-w-0 items-center gap-1.5 text-(length:--text-micro) text-ink-3">
                               <RevisionActorAvatar actor={revision.actor} />
                               <span className="truncate">
                                 {relativeTime(revision.createdAt)} • {revision.actor.name}
@@ -165,7 +164,7 @@ export function DocumentFrameHeader({
           {updatedAt ? (
             <a
               href={updatedHref ?? `#document-${encodeURIComponent(documentKey)}`}
-              className="truncate text-(length:--text-micro) text-muted-foreground transition-colors hover:text-foreground hover:underline"
+              className="truncate text-(length:--text-micro) text-ink-3 transition-colors hover:text-ink hover:underline"
             >
               updated {relativeTime(updatedAt)}
             </a>

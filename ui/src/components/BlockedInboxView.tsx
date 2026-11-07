@@ -125,20 +125,20 @@ export function BlockedInboxView({
       <div data-testid="blocked-inbox-loading" className="space-y-3" aria-busy="true">
         {Array.from({ length: 3 }).map((_, groupIdx) => (
           <div key={groupIdx} className="space-y-1">
-            <div className="h-4 w-40 animate-pulse rounded bg-muted/70" />
+            <div className="h-4 w-40 animate-pulse rounded bg-bg-3/70" />
             {Array.from({ length: 2 }).map((__, rowIdx) => (
               <div
                 key={rowIdx}
                 className={cn(
                   "flex items-center gap-3 px-3 py-2.5 sm:px-4",
-                  presentation === "legacy" && "border-b border-border/60",
+                  presentation === "legacy" && "border-b border-line/60",
                 )}
               >
-                <div className="h-3.5 w-3.5 animate-pulse rounded-full bg-muted" />
-                <div className="h-4 w-16 animate-pulse rounded bg-muted/70" />
-                <div className="h-4 w-32 animate-pulse rounded-md bg-muted/70" />
-                <div className="h-4 flex-1 animate-pulse rounded bg-muted/60" />
-                <div className="hidden h-3 w-24 animate-pulse rounded bg-muted/60 sm:block" />
+                <div className="h-3.5 w-3.5 animate-pulse rounded-full bg-bg-3" />
+                <div className="h-4 w-16 animate-pulse rounded bg-bg-3/70" />
+                <div className="h-4 w-32 animate-pulse rounded-md bg-bg-3/70" />
+                <div className="h-4 flex-1 animate-pulse rounded bg-bg-3/60" />
+                <div className="hidden h-3 w-24 animate-pulse rounded bg-bg-3/60 sm:block" />
               </div>
             ))}
           </div>
@@ -166,9 +166,9 @@ export function BlockedInboxView({
           </div>
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             size="sm"
-            className="h-7 shrink-0 border-amber-400/70 bg-white/40 text-amber-900 hover:bg-white/70 dark:bg-amber-500/20 dark:text-amber-100"
+            className="h-7 shrink-0"
             onClick={() => void refetch()}
             disabled={isFetching}
           >
@@ -183,14 +183,14 @@ export function BlockedInboxView({
     return (
       <Card
         data-testid="blocked-inbox-empty"
-        className="items-center gap-3 border-border/70 bg-card/40 px-6 py-10 text-center"
+        className="items-center gap-3 border-line/70 bg-bg-2/40 px-6 py-10 text-center"
       >
         <span className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
           <CheckCircle2 className="h-5 w-5" aria-hidden="true" />
         </span>
         <div className="space-y-1">
-          <p className="text-sm font-medium text-foreground">No work is stopped.</p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm font-medium text-ink">No work is stopped.</p>
+          <p className="text-xs text-ink-3">
             Tasks that need a decision, recovery, or external action will appear here.
           </p>
         </div>
@@ -203,7 +203,7 @@ export function BlockedInboxView({
       <div className="space-y-3">
         <Card
           data-testid="blocked-inbox-no-search-results"
-          className="block border-border/70 bg-card/40 px-4 py-6 text-center text-sm text-muted-foreground"
+          className="block border-line/70 bg-bg-2/40 px-4 py-6 text-center text-sm text-ink-3"
         >
           No stopped items match your search.
         </Card>
@@ -334,14 +334,14 @@ function BlockedInboxRow({
         />
       </span>
       {ownerName ? (
-        <span className="hidden w-(--sz-150px) min-w-0 items-center text-muted-foreground sm:inline-flex">
+        <span className="hidden w-(--sz-150px) min-w-0 items-center text-ink-3 sm:inline-flex">
           {isAgent ? <AgentIdentity agent={agents?.find((agent) => agent.id === row.attention.owner.agentId) ?? { id: row.attention.owner.agentId ?? undefined, name: ownerName }} size="xs" className="max-w-full" /> : <Identity name={ownerName} size="xs" className="max-w-full" />}
         </span>
       ) : (
         <span className="hidden w-(--sz-150px) shrink-0 sm:inline-flex" aria-hidden="true" />
       )}
       {presentation === "legacy" && showUpdatedColumn ? (
-        <span className="hidden w-(--sz-5_75rem) text-right text-muted-foreground sm:inline" data-testid="blocked-row-age">
+        <span className="hidden w-(--sz-5_75rem) text-right text-ink-3 sm:inline" data-testid="blocked-row-age">
           {stoppedAge}
         </span>
       ) : null}
@@ -349,13 +349,13 @@ function BlockedInboxRow({
   );
 
   const mobileMeta = (
-    <span className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-muted-foreground">
+    <span className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-ink-3">
       {presentation === "legacy" && <span data-testid="blocked-row-age-mobile">{stoppedAge}</span>}
       {ownerName ? (
         <>
           {presentation === "legacy" && <span aria-hidden="true">·</span>}
           <span
-            className={cn(isAgent ? "font-medium text-foreground/90" : null)}
+            className={cn(isAgent ? "font-medium text-ink/90" : null)}
             data-testid="blocked-row-owner-mobile"
           >
             {ownerName}
@@ -420,7 +420,7 @@ function BlockedRowDesktopMeta({
   return (
     <span className="hidden shrink-0 items-center gap-2 sm:inline-flex">
       {showStatusColumn ? <StatusIcon status={row.issue.status} blockerAttention={blockerAttention} /> : null}
-      {showIdentifierColumn ? <span className="font-mono text-xs text-muted-foreground">{identifier}</span> : null}
+      {showIdentifierColumn ? <span className="font-mono text-xs text-ink-3">{identifier}</span> : null}
     </span>
   );
 }

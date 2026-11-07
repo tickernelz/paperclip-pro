@@ -324,7 +324,7 @@ function PluginSdkIssuesList({
   });
 
   if (!companyId) {
-    return createElement("div", { className: "text-sm text-muted-foreground" }, "Select an organization to view tasks.");
+    return createElement("div", { className: "text-sm text-ink-3" }, "Select an organization to view tasks.");
   }
 
   return createElement(HostIssuesList, {
@@ -424,12 +424,12 @@ function PluginSdkAssigneePicker({
       onChange(nextValue, selection);
     },
     renderTriggerValue: (option: InlineEntityOption | null) => {
-      if (!option) return createElement("span", { className: "text-muted-foreground" }, placeholder);
+      if (!option) return createElement("span", { className: "text-ink-3" }, placeholder);
       if (selectedAgent) {
         return createElement(
           FragmentSafe,
           null,
-          createElement(AgentIcon, { icon: selectedAgent.icon, className: "h-3.5 w-3.5 shrink-0 text-muted-foreground" }),
+          createElement(AgentIcon, { icon: selectedAgent.icon, className: "h-3.5 w-3.5 shrink-0 text-ink-3" }),
           createElement("span", { className: "truncate" }, option.label),
         );
       }
@@ -445,8 +445,8 @@ function PluginSdkAssigneePicker({
         FragmentSafe,
         null,
         agent
-          ? createElement(AgentIcon, { icon: agent.icon, className: "h-3.5 w-3.5 shrink-0 text-muted-foreground" })
-          : createElement(User, { className: "h-3.5 w-3.5 shrink-0 text-muted-foreground" }),
+          ? createElement(AgentIcon, { icon: agent.icon, className: "h-3.5 w-3.5 shrink-0 text-ink-3" })
+          : createElement(User, { className: "h-3.5 w-3.5 shrink-0 text-ink-3" }),
         createElement("span", { className: "truncate" }, option.label),
       );
     },
@@ -513,7 +513,7 @@ function PluginSdkProjectPicker({
     },
     renderTriggerValue: (option: InlineEntityOption | null) => {
       if (!option || !selectedProject) {
-        return createElement("span", { className: "text-muted-foreground" }, placeholder);
+        return createElement("span", { className: "text-ink-3" }, placeholder);
       }
       return createElement(
         FragmentSafe,
@@ -580,8 +580,8 @@ type PluginDataTableProps = {
 };
 
 function PluginSdkDataTable({ columns, rows, loading, emptyMessage = "No rows." }: PluginDataTableProps) {
-  if (loading) return createElement("div", { className: "text-sm text-muted-foreground" }, "Loading...");
-  if (!rows.length) return createElement("div", { className: "text-sm text-muted-foreground" }, emptyMessage);
+  if (loading) return createElement("div", { className: "text-sm text-ink-3" }, "Loading...");
+  if (!rows.length) return createElement("div", { className: "text-sm text-ink-3" }, emptyMessage);
   const gridColumns = columns.map((column) => column.width ?? "minmax(0, 1fr)").join(" ");
   return createElement(
     "div",
@@ -589,7 +589,7 @@ function PluginSdkDataTable({ columns, rows, loading, emptyMessage = "No rows." 
     createElement(
       "div",
       {
-        className: "hidden border-b bg-muted/35 px-3 py-2 text-xs font-medium uppercase tracking-wide text-muted-foreground md:grid md:[grid-template-columns:var(--plugin-grid-cols)]",
+        className: "hidden border-b bg-bg-3/35 px-3 py-2 text-xs font-medium uppercase tracking-wide text-ink-3 md:grid md:[grid-template-columns:var(--plugin-grid-cols)]",
         style: { "--plugin-grid-cols": gridColumns },
       },
       columns.map((column) => createElement("div", { key: column.key }, column.header)),
@@ -607,7 +607,7 @@ function PluginSdkDataTable({ columns, rows, loading, emptyMessage = "No rows." 
         columns.map((column) => createElement(
           "div",
           { key: column.key, className: "min-w-0 text-sm" },
-          createElement("div", { className: "mb-1 text-[11px] font-medium uppercase tracking-wide text-muted-foreground md:hidden" }, column.header),
+          createElement("div", { className: "mb-1 text-[11px] font-medium uppercase tracking-wide text-ink-3 md:hidden" }, column.header),
           column.render ? column.render(row[column.key], row) : String(row[column.key] ?? ""),
         )),
       )),
@@ -624,7 +624,7 @@ function PluginSdkKeyValueList({ pairs }: PluginKeyValueListProps) {
     "dl",
     { className: "grid gap-x-4 gap-y-1 text-sm sm:grid-cols-[max-content_minmax(0,1fr)]" },
     pairs.flatMap((pair) => [
-      createElement("dt", { key: `${pair.label}:label`, className: "text-muted-foreground" }, pair.label),
+      createElement("dt", { key: `${pair.label}:label`, className: "text-ink-3" }, pair.label),
       createElement("dd", { key: `${pair.label}:value`, className: "min-w-0" }, pair.value),
     ]),
   );
@@ -633,19 +633,19 @@ function PluginSdkKeyValueList({ pairs }: PluginKeyValueListProps) {
 function PluginSdkMetricCard({ label, value, unit }: { label: string; value: string | number; unit?: string }) {
   return createElement(
     "div",
-    { className: "rounded-md border bg-card p-3" },
-    createElement("div", { className: "text-xs font-medium uppercase tracking-wide text-muted-foreground" }, label),
+    { className: "rounded-md border bg-bg-2 p-3" },
+    createElement("div", { className: "text-xs font-medium uppercase tracking-wide text-ink-3" }, label),
     createElement("div", { className: "mt-1 text-lg font-semibold" }, `${value}${unit ?? ""}`),
   );
 }
 
 function PluginSdkJsonTree({ data }: { data: unknown }) {
-  return createElement("pre", { className: "max-h-80 overflow-auto rounded-md border bg-muted/30 p-2 text-xs" }, JSON.stringify(data, null, 2));
+  return createElement("pre", { className: "max-h-80 overflow-auto rounded-md border bg-bg-3/30 p-2 text-xs" }, JSON.stringify(data, null, 2));
 }
 
 function PluginSdkSpinner({ label = "Loading" }: { size?: "sm" | "md" | "lg"; label?: string }) {
   return createElement("span", {
-    className: "inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-foreground align-middle",
+    className: "inline-block h-3.5 w-3.5 animate-spin rounded-full border-2 border-ink-3/30 border-t-ink align-middle",
     role: "status",
     "aria-label": label,
   });
@@ -660,7 +660,7 @@ class PluginSdkErrorBoundary extends Component<{ children: ReactNode; fallback?:
 
   override render() {
     if (this.state.hasError) {
-      return this.props.fallback ?? createElement("div", { className: "rounded-md border border-destructive/30 p-3 text-sm text-destructive" }, "Plugin UI failed to render.");
+      return this.props.fallback ?? createElement("div", { className: "rounded-md border border-bad/30 p-3 text-sm text-bad" }, "Plugin UI failed to render.");
     }
     return this.props.children;
   }

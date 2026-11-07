@@ -43,7 +43,7 @@ export function CopyableGatewayUrl({
         void copy();
       }}
       className={cn(
-        "flex min-w-0 max-w-full items-center gap-1 text-left font-mono text-xs text-muted-foreground hover:text-foreground",
+        "flex min-w-0 max-w-full items-center gap-1 text-left font-mono text-xs text-ink-3 hover:text-ink",
         className,
       )}
       title={`${url} — click to copy`}

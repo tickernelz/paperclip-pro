@@ -46,24 +46,24 @@ export function SlackIdentityStep({ endpointId, command, testStartedAt, onConnec
     <div className="space-y-5">
       <div>
         <h1 className="text-xl font-bold">Connect your Slack account</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="mt-1 text-sm text-ink-3">
           Send this command in Slack so we can identify your account. It won&apos;t start agent work.
         </p>
       </div>
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border p-3">
+      <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line p-3">
         <code className="text-sm">{connectCommand}</code>
         <Button variant="ghost" size="sm" onClick={() => {
           void copyTextToClipboard(connectCommand).then(() => { setCopied(true); setCopyError(false); }, () => setCopyError(true));
         }}><Copy className="size-4" />{copied ? "Copied" : "Copy command"}</Button>
       </div>
-      {copyError && <p role="alert" className="text-sm text-destructive">Couldn&apos;t copy the command. Select and copy it above.</p>}
+      {copyError && <p role="alert" className="text-sm text-bad">Couldn&apos;t copy the command. Select and copy it above.</p>}
       <p className="text-sm">
         <a href="https://app.slack.com/" target="_blank" rel="noopener noreferrer" className="underline underline-offset-4">Open Slack <ExternalLink className="inline size-3" /></a>, send the command in your workspace, then return here.
       </p>
       {identities.isError ? (
-        <p role="alert" className="text-sm text-destructive">Couldn&apos;t check for your Slack account. We&apos;ll keep trying.</p>
+        <p role="alert" className="text-sm text-bad">Couldn&apos;t check for your Slack account. We&apos;ll keep trying.</p>
       ) : candidates.length === 0 ? (
-        <p role="status" className="flex items-center gap-2 text-sm text-muted-foreground"><Loader2 className="size-4 animate-spin" />Waiting for your connect command…</p>
+        <p role="status" className="flex items-center gap-2 text-sm text-ink-3"><Loader2 className="size-4 animate-spin" />Waiting for your connect command…</p>
       ) : (
         <div className={`space-y-3 rounded-lg border p-4 ${linkedToMe
           ? "border-(--status-task-done)/30 bg-(--status-task-done)/10"
@@ -72,14 +72,14 @@ export function SlackIdentityStep({ endpointId, command, testStartedAt, onConnec
           {candidates.map((identity) => {
             const mine = identity.status === "linked" && identity.paperclipUserId === userId;
             return (
-              <div key={identity.principalId} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border p-3">
+              <div key={identity.principalId} className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line p-3">
                 <div className="min-w-0">
                   <p className="text-sm font-medium">{identity.externalLabel}</p>
-                  <p className="text-xs text-muted-foreground">{identity.externalDetail}</p>
+                  <p className="text-xs text-ink-3">{identity.externalDetail}</p>
                 </div>
                 {mine ? <p role="status" className="flex items-center gap-2 text-sm"><CheckCircle2 className="size-4 text-(--status-task-done)" />Linked to you</p>
-                  : identity.status === "linked" ? <p className="text-sm text-muted-foreground">Linked to {identity.paperclipUserLabel ?? "another Paperclip account"}</p>
-                  : <Button variant="outline" disabled={!userId || link.isPending} onClick={() => link.mutate(identity.principalId)} aria-label={`Link ${identity.externalLabel} to my Paperclip account`}>
+                  : identity.status === "linked" ? <p className="text-sm text-ink-3">Linked to {identity.paperclipUserLabel ?? "another Paperclip account"}</p>
+                  : <Button variant="secondary" disabled={!userId || link.isPending} onClick={() => link.mutate(identity.principalId)} aria-label={`Link ${identity.externalLabel} to my Paperclip account`}>
                     {link.isPending && link.variables === identity.principalId && <Loader2 className="size-4 animate-spin" />}This is my Slack account
                   </Button>}
               </div>
@@ -87,10 +87,10 @@ export function SlackIdentityStep({ endpointId, command, testStartedAt, onConnec
           })}
         </div>
       )}
-      {!userId && !session.isPending && !health.isPending && <p role="alert" className="text-sm text-destructive">Sign in to Paperclip to link your Slack account. Refresh this page after signing in.</p>}
-      {link.isError && <p role="alert" className="text-sm text-destructive">Couldn&apos;t link your account. Check that you are a member of this company and try again.</p>}
+      {!userId && !session.isPending && !health.isPending && <p role="alert" className="text-sm text-bad">Sign in to Paperclip to link your Slack account. Refresh this page after signing in.</p>}
+      {link.isError && <p role="alert" className="text-sm text-bad">Couldn&apos;t link your account. Check that you are a member of this company and try again.</p>}
       <div className="flex items-center justify-between gap-3">
-        <Button variant="ghost" className="text-muted-foreground" onClick={onSaveExit}>Save &amp; exit</Button>
+        <Button variant="ghost" onClick={onSaveExit}>Save &amp; exit</Button>
         {linkedToMe && <Button onClick={onConnected}>Continue to message test</Button>}
       </div>
     </div>

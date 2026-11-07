@@ -44,17 +44,17 @@ export function AgentLifecycleStatus({ agent, onRetry, retryPending, refreshErro
   const phase = pendingPhase(agent.lifecycleState);
   if (!phase && !refreshError) return null;
   return <div role="status" aria-live="polite" className="space-y-2 text-sm">
-    {refreshError && <p className="text-destructive">Could not refresh agent lifecycle status.</p>}
+    {refreshError && <p className="text-bad">Could not refresh agent lifecycle status.</p>}
     {phase && <div className="flex flex-wrap items-center gap-2">
       <Badge variant={agent.lifecycleError ? "destructive" : "secondary"}>
         {!agent.lifecycleError && <Loader2 aria-hidden="true" className="mr-1 size-3 animate-spin motion-reduce:animate-none" />}
         {phase[0]}
       </Badge>
-      <span className="text-muted-foreground">{phase[1]}</span>
+      <span className="text-ink-3">{phase[1]}</span>
     </div>}
-    {phase && agent.lifecycleError && <div className="flex flex-wrap items-center gap-2 text-destructive">
+    {phase && agent.lifecycleError && <div className="flex flex-wrap items-center gap-2 text-bad">
       <span>{agent.lifecycleError}</span>
-      <Button variant="outline" size="sm" disabled={retryPending} onClick={onRetry}>
+      <Button variant="secondary" size="sm" disabled={retryPending} onClick={onRetry}>
         {retryPending ? "Retrying…" : "Retry"}
       </Button>
     </div>}

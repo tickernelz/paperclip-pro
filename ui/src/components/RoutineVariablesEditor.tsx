@@ -80,24 +80,24 @@ export function RoutineVariablesEditor({
   }
 
   return (
-    <Collapsible open={open} onOpenChange={setOpen} className="overflow-hidden rounded-lg border border-border/70">
+    <Collapsible open={open} onOpenChange={setOpen} className="overflow-hidden rounded-lg border border-line/70">
       <CollapsibleTrigger className="flex w-full items-center justify-between px-3 py-2 text-left">
         <div>
           <p className="text-sm font-medium">Variables</p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             Detected from `{"{{name}}"}` placeholders in the title and instructions.
           </p>
         </div>
-        {open ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
+        {open ? <ChevronDown className="h-4 w-4 text-ink-3" /> : <ChevronRight className="h-4 w-4 text-ink-3" />}
       </CollapsibleTrigger>
-      <CollapsibleContent className="divide-y divide-border/70 border-t border-border/70">
+      <CollapsibleContent className="divide-y divide-line/70 border-t border-line/70">
         {syncedVariables.map((variable) => (
           <div key={variable.name} className="p-4">
             <div className="mb-3 flex flex-wrap items-center gap-2">
               <Badge variant="outline" className="font-mono text-xs">
                 {`{{${variable.name}}}`}
               </Badge>
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs text-ink-3">
                 Prompt the user for this value before each manual run.
               </span>
             </div>
@@ -140,7 +140,7 @@ export function RoutineVariablesEditor({
               <div className="space-y-1.5 md:col-span-2">
                 <div className="flex items-center justify-between gap-3">
                   <Label className="text-xs">Default value</Label>
-                  <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <label className="flex items-center gap-2 text-xs text-ink-3">
                     <input
                       type="checkbox"
                       checked={variable.required}
@@ -273,14 +273,14 @@ export function RoutineVariablesHint() {
 
   return (
     <>
-      <div className="flex items-center justify-between gap-2 rounded-lg border border-dashed border-border/70 px-3 py-2 text-xs text-muted-foreground">
+      <div className="flex items-center justify-between gap-2 rounded-lg border border-dashed border-line/70 px-3 py-2 text-xs text-ink-3">
         <span>
           Use `{"{{variable_name}}"}` placeholders in the title or instructions to prompt for inputs when the routine runs.
         </span>
         <button
           type="button"
           onClick={() => setHelpOpen(true)}
-          className="shrink-0 rounded-full p-0.5 text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="shrink-0 rounded-full p-0.5 text-ink-3 transition-colors hover:bg-bg-3/50 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
           aria-label="Show variable help"
         >
           <HelpCircle className="h-3.5 w-3.5" />
@@ -298,19 +298,19 @@ export function RoutineVariablesHint() {
 
           <div className="space-y-5 text-sm">
             <section className="space-y-2">
-              <h3 className="text-xs font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">
+              <h3 className="text-xs font-semibold uppercase tracking-(--tracking-caps) text-ink-3">
                 Custom variables
               </h3>
-              <p className="text-muted-foreground">
+              <p className="text-ink-3">
                 Type{" "}
-                <code className="rounded bg-muted px-1 py-0.5 font-mono text-xs text-foreground">
+                <code className="rounded bg-bg-3 px-1 py-0.5 font-mono text-xs text-ink">
                   {"{{variable_name}}"}
                 </code>{" "}
                 anywhere in the title or instructions. Paperclip detects each placeholder, lists it
-                under <span className="font-medium text-foreground">Variables</span>, and prompts
+                under <span className="font-medium text-ink">Variables</span>, and prompts
                 for a value before each run.
               </p>
-              <ul className="list-disc space-y-1 pl-5 text-muted-foreground">
+              <ul className="list-disc space-y-1 pl-5 text-ink-3">
                 <li>Names must start with a letter and may use letters, numbers, and underscores.</li>
                 <li>Pick a type (text, textarea, number, boolean, select, date), default value, and whether it is required.</li>
                 <li>Variable names ending in capital Date, such as startDate, are created as date variables by default.</li>
@@ -319,30 +319,30 @@ export function RoutineVariablesHint() {
             </section>
 
             <section className="space-y-2">
-              <h3 className="text-xs font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">
+              <h3 className="text-xs font-semibold uppercase tracking-(--tracking-caps) text-ink-3">
                 Built-in variables
               </h3>
-              <p className="text-muted-foreground">
+              <p className="text-ink-3">
                 These are filled in automatically — no setup needed and they will not appear in the
                 Variables list.
               </p>
-              <div className="overflow-hidden rounded-lg border border-border/70">
+              <div className="overflow-hidden rounded-lg border border-line/70">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-muted/40 text-muted-foreground">
+                  <thead className="bg-bg-3/40 text-ink-3">
                     <tr>
                       <th className="px-3 py-2 font-medium">Placeholder</th>
                       <th className="px-3 py-2 font-medium">Example</th>
                       <th className="px-3 py-2 font-medium">Description</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-border/70">
+                  <tbody className="divide-y divide-line/70">
                     {BUILTIN_VARIABLE_DOCS.map((entry) => (
                       <tr key={entry.name} className="align-top">
                         <td className="px-3 py-2">
                           <Badge variant="outline" className="font-mono text-xs">{`{{${entry.name}}}`}</Badge>
                         </td>
-                        <td className="px-3 py-2 font-mono text-muted-foreground">{entry.example}</td>
-                        <td className="px-3 py-2 text-muted-foreground">{entry.description}</td>
+                        <td className="px-3 py-2 font-mono text-ink-3">{entry.example}</td>
+                        <td className="px-3 py-2 text-ink-3">{entry.description}</td>
                       </tr>
                     ))}
                   </tbody>

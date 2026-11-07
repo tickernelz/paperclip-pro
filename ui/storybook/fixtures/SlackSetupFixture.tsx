@@ -96,9 +96,9 @@ export function SlackSetupFixture({ scenario = "create" }: { scenario?: SlackSet
     return () => { window.fetch = original; };
   }, [scenario]);
   return <div className="space-y-6 p-6">
-    <aside className="flex flex-wrap items-center gap-3 rounded-lg border border-border p-3 text-sm text-muted-foreground">
+    <aside className="flex flex-wrap items-center gap-3 rounded-lg border border-line p-3 text-sm text-ink-3">
       Preview fixture: Slack consent, callbacks, and identity discovery are simulated.
-      <Button variant="outline" size="sm" onClick={signalVerification}>Simulate connection evidence</Button>
+      <Button variant="secondary" size="sm" onClick={signalVerification}>Simulate connection evidence</Button>
     </aside>
     {ready && <ChatSetupSidebarProvider><div className="flex flex-col gap-8 md:flex-row"><aside className="w-56 shrink-0"><ChatSetupSidebar /></aside><main className="min-w-0 flex-1"><ChatEndpointSetup /></main></div></ChatSetupSidebarProvider>}
   </div>;

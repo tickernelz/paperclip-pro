@@ -110,7 +110,7 @@ export function IssueColumnPicker({
       <DropdownMenuTrigger asChild>
         <Button
           type="button"
-          variant={iconOnly ? "outline" : "ghost"}
+          variant={iconOnly ? "secondary" : "ghost"}
           size={iconOnly ? "icon" : "sm"}
           className={iconOnly ? "h-8 w-8 shrink-0" : "hidden h-8 shrink-0 px-2 text-xs sm:inline-flex"}
           title="Columns"
@@ -119,13 +119,13 @@ export function IssueColumnPicker({
           {!iconOnly && "Columns"}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-(--sz-300px) rounded-xl border-border/70 p-1.5 shadow-xl shadow-black/10">
+      <DropdownMenuContent align="end" className="w-(--sz-300px) rounded-xl border-line/70 p-1.5 shadow-xl shadow-black/10">
         <DropdownMenuLabel className="px-2 pb-1 pt-1.5">
           <div className="space-y-1">
-            <div className="text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">
+            <div className="text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-caps) text-ink-3">
               Desktop task rows
             </div>
-            <div className="text-sm font-medium text-foreground">
+            <div className="text-sm font-medium text-ink">
               {title}
             </div>
           </div>
@@ -140,10 +140,10 @@ export function IssueColumnPicker({
             className="items-start rounded-lg px-3 py-2.5 pl-8"
           >
             <span className="flex flex-col gap-0.5">
-              <span className="text-sm font-medium text-foreground">
+              <span className="text-sm font-medium text-ink">
                 {issueColumnLabels[column]}
               </span>
-              <span className="text-xs leading-relaxed text-muted-foreground">
+              <span className="text-xs leading-relaxed text-ink-3">
                 {issueColumnDescription(column, rowPresentation)}
               </span>
             </span>
@@ -157,10 +157,10 @@ export function IssueColumnPicker({
             className="items-start rounded-lg px-3 py-2.5 pl-8"
           >
             <span className="flex flex-col gap-0.5">
-              <span className="text-sm font-medium text-foreground">
+              <span className="text-sm font-medium text-ink">
                 Date group separators
               </span>
-              <span className="text-xs leading-relaxed text-muted-foreground">
+              <span className="text-xs leading-relaxed text-ink-3">
                 Show Today, Yesterday, and Earlier rules on newest-first task lists.
               </span>
             </span>
@@ -172,7 +172,7 @@ export function IssueColumnPicker({
           className="rounded-lg px-3 py-2 text-sm"
         >
           Reset defaults
-          <span className="ml-auto text-xs text-muted-foreground">status, id, updated</span>
+          <span className="ml-auto text-xs text-ink-3">status, id, updated</span>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
@@ -243,12 +243,12 @@ export function InboxIssueMetaLeading({
         </span>
       ) : null}
       {checklistStepNumber !== null ? (
-        <span className="shrink-0 font-mono text-xs text-muted-foreground" aria-hidden="true">
+        <span className="shrink-0 font-mono text-xs text-ink-3" aria-hidden="true">
           {checklistStepNumber}.
         </span>
       ) : null}
       {showIdentifier ? (
-        <span className="shrink-0 font-mono text-xs text-muted-foreground">
+        <span className="shrink-0 font-mono text-xs text-ink-3">
           {issue.identifier ?? issue.id.slice(0, 8)}
         </span>
       ) : null}
@@ -257,18 +257,18 @@ export function InboxIssueMetaLeading({
         <Badge variant="outline"
           className={cn(
             "px-1.5 sm:gap-1.5 sm:px-2",
-            "border-border bg-transparent",
+            "border-line bg-transparent",
           )}
           title={`${subtreeLiveCount} sub-task${subtreeLiveCount === 1 ? "" : "s"} running below`}
         >
           <span
             className={cn(
               "h-2 w-2 shrink-0 rounded-full border",
-              "border-muted-foreground/60 bg-transparent",
+              "border-ink-3/60 bg-transparent",
             )}
             aria-hidden="true"
           />
-          <span className="hidden text-(length:--text-micro) font-medium text-muted-foreground sm:inline">
+          <span className="hidden text-(length:--text-micro) font-medium text-ink-3 sm:inline">
             {subtreeLiveCount} live below
           </span>
         </Badge>
@@ -339,7 +339,7 @@ export function InboxIssueTrailingColumns({
 
           if (issue.assigneeAgentId) {
             return (
-              <span key={column} className="min-w-0 text-xs text-foreground">
+              <span key={column} className="min-w-0 text-xs text-ink">
                 <AgentIdentity
                   agent={assigneeAgent ?? { id: issue.assigneeAgentId, name: assigneeName ?? issue.assigneeAgentId.slice(0, 8) }}
                   size="sm"
@@ -351,7 +351,7 @@ export function InboxIssueTrailingColumns({
 
           if (issue.assigneeUserId) {
             return (
-              <span key={column} className="min-w-0 text-xs text-foreground">
+              <span key={column} className="min-w-0 text-xs text-ink">
                 <Identity
                   name={userLabel}
                   avatarUrl={assigneeUserAvatarUrl}
@@ -363,7 +363,7 @@ export function InboxIssueTrailingColumns({
           }
 
           return (
-            <span key={column} className="min-w-0 truncate text-xs text-muted-foreground">
+            <span key={column} className="min-w-0 truncate text-xs text-ink-3">
               Unassigned
             </span>
           );
@@ -375,7 +375,7 @@ export function InboxIssueTrailingColumns({
             return (
               <Tooltip key={column}>
                 <TooltipTrigger asChild>
-                  <span className="min-w-0 text-xs text-foreground">
+                  <span className="min-w-0 text-xs text-ink">
                     <AgentIdentity
                       agent={creatorAgent ?? { id: originatingActor.id, name }}
                       size="sm"
@@ -393,7 +393,7 @@ export function InboxIssueTrailingColumns({
             return (
               <Tooltip key={column}>
                 <TooltipTrigger asChild>
-                  <span className="min-w-0 text-xs text-foreground">
+                  <span className="min-w-0 text-xs text-ink">
                     <Identity
                       name={creatorUserLabel}
                       avatarUrl={creatorUserAvatarUrl}
@@ -408,7 +408,7 @@ export function InboxIssueTrailingColumns({
           }
 
           return (
-            <span key={column} className="min-w-0 truncate text-xs text-muted-foreground">
+            <span key={column} className="min-w-0 truncate text-xs text-ink-3">
               Unknown
             </span>
           );
@@ -434,7 +434,7 @@ export function InboxIssueTrailingColumns({
           }
 
           return (
-            <span key={column} className="min-w-0 truncate text-xs text-muted-foreground">
+            <span key={column} className="min-w-0 truncate text-xs text-ink-3">
               No project
             </span>
           );
@@ -458,7 +458,7 @@ export function InboxIssueTrailingColumns({
                   </Badge>
                 ))}
                 {(issue.labels ?? []).length > 2 ? (
-                  <span className="shrink-0 text-(length:--text-nano) font-medium text-muted-foreground">
+                  <span className="shrink-0 text-(length:--text-nano) font-medium text-ink-3">
                     +{(issue.labels ?? []).length - 2}
                   </span>
                 ) : null}
@@ -475,13 +475,13 @@ export function InboxIssueTrailingColumns({
           }
 
           return (
-            <span key={column} className="min-w-0 truncate text-xs text-muted-foreground">
+            <span key={column} className="min-w-0 truncate text-xs text-ink-3">
               {workspaceId && onFilterWorkspace ? (
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button
                       type="button"
-                      className="truncate rounded-sm text-left text-xs text-muted-foreground transition-colors hover:text-foreground hover:underline"
+                      className="truncate rounded-sm text-left text-xs text-ink-3 transition-colors hover:text-ink hover:underline"
                       onClick={(event) => {
                         event.preventDefault();
                         event.stopPropagation();
@@ -508,7 +508,7 @@ export function InboxIssueTrailingColumns({
           }
 
           return (
-            <span key={column} className="min-w-0 truncate text-xs text-muted-foreground" title={parentTitle ?? undefined}>
+            <span key={column} className="min-w-0 truncate text-xs text-ink-3" title={parentTitle ?? undefined}>
               {parentIdentifier ? (
                 <span className="font-mono">{parentIdentifier}</span>
               ) : (
@@ -520,7 +520,7 @@ export function InboxIssueTrailingColumns({
 
         if (column === "updated") {
           return (
-            <span key={column} className="min-w-0 truncate text-right text-(length:--text-micro) font-medium text-muted-foreground">
+            <span key={column} className="min-w-0 truncate text-right text-(length:--text-micro) font-medium text-ink-3">
               {activityText}
             </span>
           );

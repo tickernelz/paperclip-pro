@@ -127,7 +127,7 @@ describe("RunStatusBadge", () => {
     const host = mount(<RunStatusBadge status="cancelled" />);
     const badge = host.querySelector<HTMLElement>("[data-testid='run-status-badge']")!;
     expect(badge.textContent).toContain("cancelled");
-    expect(badge.className).toContain("muted");
+    expect(badge.className).toContain("text-ink-3");
   });
 });
 

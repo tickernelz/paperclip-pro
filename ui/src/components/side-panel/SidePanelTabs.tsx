@@ -78,10 +78,10 @@ function SortableSidePanelTab({
           aria-hidden
           data-side-panel-tab-separator="true"
           className={cn(
-            "pointer-events-none absolute w-px bg-border",
+            "pointer-events-none absolute w-px bg-line",
             appearance === "streamlined-task"
               ? "left-0 top-1/2 h-4 -translate-y-1/2"
-              : "inset-y-2 -left-0.5 bg-border/60",
+              : "inset-y-2 -left-0.5 bg-line/60",
           )}
         />
       ) : null}
@@ -317,7 +317,7 @@ export function SidePanelTabs({
           aria-label={addLabel}
           title={addLabel}
           className={cn(
-            "shrink-0 text-muted-foreground hover:text-foreground focus-visible:text-foreground",
+            "shrink-0",
             appearance === "streamlined-task"
               ? "h-(--side-panel-tab-height) w-(--side-panel-tab-height) rounded-md"
               : "h-(--side-panel-tab-height) w-(--side-panel-tab-height) rounded-(--side-panel-control-radius)",

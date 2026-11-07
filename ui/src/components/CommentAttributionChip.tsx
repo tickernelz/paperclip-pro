@@ -55,8 +55,8 @@ export function CommentAttributionChip({
           // the tooltip on focus as well as hover.
           tabIndex={0}
           className={cn(
-            "inline-flex max-w-40 items-center gap-1 whitespace-nowrap border-border px-1.5 py-0",
-            "text-(length:--text-nano) font-medium tracking-normal text-muted-foreground",
+            "inline-flex max-w-40 items-center gap-1 whitespace-nowrap border-line px-1.5 py-0",
+            "text-(length:--text-nano) font-medium tracking-normal text-ink-3",
             className,
           )}
         >

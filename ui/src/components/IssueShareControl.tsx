@@ -83,15 +83,15 @@ export function IssueShareControl({ issueId }: { issueId: string }) {
       <PopoverContent className="w-80 space-y-3 p-3" align="end">
         <div className="space-y-1">
           <p className="text-sm font-medium">Public link</p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             Anyone with the link can view this task and its directly related tasks without signing in.
             Internal comments stay hidden.
           </p>
         </div>
         {linkQuery.isPending ? (
-          <p className="text-xs text-muted-foreground">Loading…</p>
+          <p className="text-xs text-ink-3">Loading…</p>
         ) : linkQuery.isError ? (
-          <p className="text-xs text-destructive">Couldn't load the share link.</p>
+          <p className="text-xs text-bad">Couldn't load the share link.</p>
         ) : link ? (
           <div className="space-y-2">
             <Input
@@ -102,11 +102,11 @@ export function IssueShareControl({ issueId }: { issueId: string }) {
               onFocus={(event) => event.currentTarget.select()}
             />
             <div className="flex flex-wrap items-center gap-2">
-              <Button size="sm" variant="outline" onClick={() => void copy(link.url)}>
+              <Button size="sm" variant="secondary" onClick={() => void copy(link.url)}>
                 {copied ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
                 {failed ? "Copy failed" : copied ? "Copied" : "Copy link"}
               </Button>
-              <Button size="sm" variant="outline" asChild>
+              <Button size="sm" variant="secondary" asChild>
                 <a href={link.url} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="h-3.5 w-3.5" />
                   Open
@@ -115,8 +115,7 @@ export function IssueShareControl({ issueId }: { issueId: string }) {
               {confirmRevoke ? null : (
                 <Button
                   size="sm"
-                  variant="ghost"
-                  className="text-destructive"
+                  variant="danger"
                   onClick={() => setConfirmRevoke(true)}
                 >
                   Revoke
@@ -124,14 +123,14 @@ export function IssueShareControl({ issueId }: { issueId: string }) {
               )}
             </div>
             {confirmRevoke ? (
-              <div className="space-y-2 rounded-md border border-border p-2">
-                <p className="text-xs text-muted-foreground">
+              <div className="space-y-2 rounded-md border border-line p-2">
+                <p className="text-xs text-ink-3">
                   Revoke this link? It stops working immediately and cannot be restored.
                 </p>
                 <div className="flex items-center gap-2">
                   <Button
                     size="sm"
-                    variant="destructive"
+                    variant="danger"
                     disabled={revokeLink.isPending}
                     onClick={() => revokeLink.mutate()}
                   >

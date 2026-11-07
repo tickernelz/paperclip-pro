@@ -62,7 +62,7 @@ function GitHubConnections({ saved = false, chatEnabled = true }) {
             </div>
           )}
           <main className="mx-auto min-w-0 w-full max-w-4xl space-y-6 p-6">
-            <Link to="/apps" className="text-sm text-muted-foreground hover:text-foreground">
+            <Link to="/apps" className="text-sm text-ink-3 hover:text-ink">
               Connectors
             </Link>
             <Routes>

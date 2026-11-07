@@ -20,7 +20,7 @@ interface AgentPropertiesProps {
 function PropertyRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-start gap-3 py-1.5">
-      <span className="text-xs text-muted-foreground shrink-0 w-20 mt-0.5">{label}</span>
+      <span className="text-xs text-ink-3 shrink-0 w-20 mt-0.5">{label}</span>
       <div className="flex items-center gap-1.5 min-w-0 flex-1 flex-wrap">{children}</div>
     </div>
   );
@@ -80,7 +80,7 @@ export function AgentProperties({ agent, runtimeState }: AgentPropertiesProps) {
               className={
                 lastErrorIsActive
                   ? "text-xs text-red-600 dark:text-red-400 break-words min-w-0"
-                  : "text-xs text-muted-foreground break-words min-w-0"
+                  : "text-xs text-ink-3 break-words min-w-0"
               }
             >
               {runtimeState.lastError}

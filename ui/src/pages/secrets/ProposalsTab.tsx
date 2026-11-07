@@ -56,9 +56,9 @@ function ProposalRow({
   const envKey = bindingEnvKey(proposal);
 
   return (
-    <div className="flex flex-col gap-2 rounded-lg border border-border bg-card p-3 sm:flex-row sm:items-start sm:gap-3">
+    <div className="flex flex-col gap-2 rounded-lg border border-line bg-bg-2 p-3 sm:flex-row sm:items-start sm:gap-3">
       <span
-        className="mt-0.5 inline-flex size-7 shrink-0 items-center justify-center rounded-md border border-border bg-muted/40 text-muted-foreground"
+        className="mt-0.5 inline-flex size-7 shrink-0 items-center justify-center rounded-md border border-line bg-bg-3/40 text-ink-3"
         aria-hidden="true"
       >
         {isSecret ? <KeyRound className="size-3.5" /> : <Link2 className="size-3.5" />}
@@ -74,13 +74,13 @@ function ProposalRow({
               {proposal.target ? (
                 <AgentRefChip agent={proposal.target} className="font-medium" />
               ) : (
-                <span className="text-muted-foreground">agent</span>
+                <span className="text-ink-3">agent</span>
               )}
               <DeliveryBadge configPath={proposal.configPath} />
               <code className="font-mono text-xs">{envKey || proposal.configPath}</code>
-              <ArrowRight className="size-3 text-muted-foreground" />
+              <ArrowRight className="size-3 text-ink-3" />
               <span className="inline-flex items-center gap-1">
-                <KeyRound className="size-3 text-muted-foreground" />
+                <KeyRound className="size-3 text-ink-3" />
                 <span className="font-medium">{secret.name}</span>
                 {secret.pending ? <ProposedBadge /> : null}
               </span>
@@ -89,16 +89,16 @@ function ProposalRow({
         </div>
 
         {/* Provenance meta */}
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-ink-3">
           <span className="inline-flex items-center gap-1">
-            by <AgentRefChip agent={proposal.proposedBy} className="font-medium text-foreground" />
+            by <AgentRefChip agent={proposal.proposedBy} className="font-medium text-ink" />
           </span>
           {proposal.originIssue ? (
             <>
               <span aria-hidden="true">·</span>
               <Link
                 to={`/issues/${proposal.originIssue.key}`}
-                className="inline-flex items-center gap-1 font-mono hover:text-foreground hover:underline"
+                className="inline-flex items-center gap-1 font-mono hover:text-ink hover:underline"
                 title={proposal.originIssue.title}
               >
                 {proposal.originIssue.key}
@@ -166,7 +166,7 @@ export function ProposalsTab({
 
   if (proposalsQuery.isError) {
     return (
-      <div className="flex items-center gap-2 py-4 text-sm text-destructive">
+      <div className="flex items-center gap-2 py-4 text-sm text-bad">
         <AlertCircle className="size-4" /> Couldn’t load proposals. Try again.
       </div>
     );
@@ -174,7 +174,7 @@ export function ProposalsTab({
 
   if (proposalsQuery.isPending) {
     return (
-      <div className="flex items-center gap-2 py-8 text-sm text-muted-foreground">
+      <div className="flex items-center gap-2 py-8 text-sm text-ink-3">
         <Loader2 className="size-4 animate-spin" /> Loading proposals…
       </div>
     );
@@ -192,7 +192,7 @@ export function ProposalsTab({
 
   return (
     <div className="space-y-2">
-      <p className="text-xs text-muted-foreground">
+      <p className="text-xs text-ink-3">
         Agents propose credentials and access bindings; you approve or reject them here. Proposed
         values are never shown — only a fingerprint and length.
       </p>

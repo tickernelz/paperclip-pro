@@ -734,7 +734,7 @@ class PluginSlotErrorBoundary extends Component<PluginSlotErrorBoundaryProps, Pl
     if (this.state.hasError) {
       if (this.props.fallback !== undefined) return this.props.fallback;
       return (
-        <div className={cn("rounded-md border border-destructive/30 bg-destructive/5 px-2 py-1 text-xs text-destructive", this.props.className)}>
+        <div className={cn("rounded-md border border-bad/30 bg-bad/5 px-2 py-1 text-xs text-bad", this.props.className)}>
           {this.props.slot.pluginDisplayName}: failed to render
         </div>
       );
@@ -866,7 +866,7 @@ export function PluginSlotMount({
     if (fallback !== undefined) return fallback;
     if (missingBehavior === "hidden") return null;
     return (
-      <div className={cn("rounded-md border border-dashed border-border px-2 py-1 text-xs text-muted-foreground", className)}>
+      <div className={cn("rounded-md border border-dashed border-line px-2 py-1 text-xs text-ink-3", className)}>
         {slot.pluginDisplayName}: {slot.displayName}
       </div>
     );
@@ -931,7 +931,7 @@ export function PluginSlotOutlet({
 
   if (errorMessage && errorBehavior === "inline") {
     return (
-      <div className={cn("rounded-md border border-destructive/30 bg-destructive/5 px-2 py-1 text-xs text-destructive", errorClassName)}>
+      <div className={cn("rounded-md border border-bad/30 bg-bad/5 px-2 py-1 text-xs text-bad", errorClassName)}>
         Plugin extensions unavailable: {errorMessage}
       </div>
     );

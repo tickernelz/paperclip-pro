@@ -42,7 +42,7 @@ export function ResizableHandle({ className, orientation = "horizontal", ...prop
     <Separator
       className={cn(
         "group relative flex items-center justify-center bg-transparent outline-none",
-        "focus-visible:ring-1 focus-visible:ring-ring",
+        "focus-visible:ring-1 focus-visible:ring-focus",
         vertical ? "h-2 w-full cursor-row-resize" : "w-2 h-full cursor-col-resize",
         className,
       )}
@@ -51,7 +51,7 @@ export function ResizableHandle({ className, orientation = "horizontal", ...prop
       <span
         aria-hidden
         className={cn(
-          "bg-border transition-colors group-hover:bg-ring group-data-[dragging]:bg-ring",
+          "bg-line transition-colors group-hover:bg-focus group-data-[dragging]:bg-focus",
           vertical ? "h-px w-full" : "w-px h-full",
         )}
       />

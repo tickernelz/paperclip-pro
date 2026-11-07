@@ -282,12 +282,12 @@ export function ProfileWizard({
       </div>
 
       {/* Sticky footer: live count + navigation. */}
-      <div className="fixed inset-x-0 bottom-0 z-10 border-t border-border bg-background/95 backdrop-blur">
+      <div className="fixed inset-x-0 bottom-0 z-10 border-t border-line bg-bg/95 backdrop-blur">
         <div className="mx-auto flex w-full max-w-3xl items-center justify-between gap-3 px-4 py-3">
-          <div className="flex items-center gap-3 text-sm text-muted-foreground">
+          <div className="flex items-center gap-3 text-sm text-ink-3">
             {step >= 2 ? (
               <span>
-                Allows <span className="font-medium text-foreground">{live.allowed}</span> of {live.total}{" "}
+                Allows <span className="font-medium text-ink">{live.allowed}</span> of {live.total}{" "}
                 tools
               </span>
             ) : null}
@@ -296,7 +296,7 @@ export function ProfileWizard({
                 type="button"
                 onClick={saveAndExit}
                 disabled={busy}
-                className="font-medium text-primary hover:underline disabled:opacity-50"
+                className="font-medium text-accent hover:underline disabled:opacity-50"
               >
                 Save &amp; finish later
               </button>
@@ -305,7 +305,7 @@ export function ProfileWizard({
 
           <div className="flex items-center gap-2">
             {step > 1 ? (
-              <Button variant="outline" disabled={busy} onClick={() => setStep((s) => (s - 1) as WizardStep)}>
+              <Button variant="secondary" disabled={busy} onClick={() => setStep((s) => (s - 1) as WizardStep)}>
                 Back
               </Button>
             ) : (
@@ -410,17 +410,17 @@ function Stepper({ current }: { current: WizardStep }) {
             <span
               className={cn(
                 "inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-semibold",
-                active && "bg-primary text-primary-foreground",
-                done && "bg-primary/20 text-primary",
-                !active && !done && "bg-muted text-muted-foreground",
+                active && "bg-accent text-accent-ink",
+                done && "bg-accent/20 text-accent",
+                !active && !done && "bg-bg-3 text-ink-3",
               )}
             >
               {done ? <Check className="h-3.5 w-3.5" /> : step}
             </span>
-            <span className={cn("font-medium", active ? "text-foreground" : "text-muted-foreground")}>
+            <span className={cn("font-medium", active ? "text-ink" : "text-ink-3")}>
               {label}
             </span>
-            {idx < STEP_LABELS.length - 1 ? <span className="mx-1 text-muted-foreground">→</span> : null}
+            {idx < STEP_LABELS.length - 1 ? <span className="mx-1 text-ink-3">→</span> : null}
           </li>
         );
       })}
@@ -457,7 +457,7 @@ export function StepName({
   return (
     <div className="space-y-6">
       <div className="space-y-2">
-        <h3 className="text-sm font-medium text-foreground">Start from</h3>
+        <h3 className="text-sm font-medium text-ink">Start from</h3>
         <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {TEMPLATES.map((t) => (
             <button
@@ -467,12 +467,12 @@ export function StepName({
               className={cn(
                 "flex flex-col items-start gap-1 rounded-md border px-4 py-3 text-left transition-colors",
                 template === t.key
-                  ? "border-primary bg-primary/5 ring-1 ring-primary"
-                  : "border-border hover:border-primary/40 hover:bg-accent/40",
+                  ? "border-accent bg-accent/5 ring-1 ring-accent"
+                  : "border-line hover:border-accent/40 hover:bg-bg-3/40",
               )}
             >
-              <span className="text-sm font-medium text-foreground">{t.title}</span>
-              <span className="text-xs text-muted-foreground">{t.description}</span>
+              <span className="text-sm font-medium text-ink">{t.title}</span>
+              <span className="text-xs text-ink-3">{t.description}</span>
             </button>
           ))}
         </div>
@@ -480,15 +480,15 @@ export function StepName({
 
       {template === "copy" ? (
         <div className="space-y-2">
-          <h3 className="text-sm font-medium text-foreground">Which profile?</h3>
+          <h3 className="text-sm font-medium text-ink">Which profile?</h3>
           {copyOptions.length === 0 ? (
-            <p className="text-sm text-muted-foreground">You don't have another profile to copy yet.</p>
+            <p className="text-sm text-ink-3">You don't have another profile to copy yet.</p>
           ) : (
             <div className="space-y-1.5">
               {copyOptions.map((p) => (
                 <label
                   key={p.id}
-                  className="flex cursor-pointer items-center gap-2.5 rounded-md border border-border px-3 py-2"
+                  className="flex cursor-pointer items-center gap-2.5 rounded-md border border-line px-3 py-2"
                 >
                   <input
                     type="radio"
@@ -496,7 +496,7 @@ export function StepName({
                     checked={copyFromId === p.id}
                     onChange={() => onCopyFrom(p.id)}
                   />
-                  <span className="text-sm font-medium text-foreground">{p.name}</span>
+                  <span className="text-sm font-medium text-ink">{p.name}</span>
                 </label>
               ))}
             </div>
@@ -527,7 +527,7 @@ export function StepName({
       </div>
 
       <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>
-        <CollapsibleTrigger className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+        <CollapsibleTrigger className="flex items-center gap-1.5 text-sm text-ink-3 hover:text-ink">
           <ChevronDown className={cn("h-4 w-4 transition-transform", advancedOpen && "rotate-180")} />
           Advanced
         </CollapsibleTrigger>
@@ -540,7 +540,7 @@ export function StepName({
               onChange={(e) => onProfileKey(e.target.value)}
               className="font-mono text-xs"
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-ink-3">
               Used in exports and the API. Auto-filled from the name.
             </p>
           </div>
@@ -602,7 +602,7 @@ export function StepAssign({
 
   return (
     <div className="space-y-5">
-      <label className="flex items-start gap-3 rounded-lg border border-border p-4">
+      <label className="flex items-start gap-3 rounded-lg border border-line p-4">
         <input
           type="checkbox"
           className="mt-1"
@@ -610,8 +610,8 @@ export function StepAssign({
           onChange={(e) => onCompanyDefault(e.target.checked)}
         />
         <span className="flex flex-col gap-0.5">
-          <span className="text-sm font-medium text-foreground">Make this the organization default</span>
-          <span className="text-xs text-muted-foreground">
+          <span className="text-sm font-medium text-ink">Make this the organization default</span>
+          <span className="text-xs text-ink-3">
             Every agent without its own profile uses this one.
             {defaultProfileName ? ` Replaces “${defaultProfileName}”.` : ""}
           </span>
@@ -619,7 +619,7 @@ export function StepAssign({
       </label>
 
       <div className="space-y-2">
-        <h3 className="text-sm font-medium text-foreground">Assign to agents</h3>
+        <h3 className="text-sm font-medium text-ink">Assign to agents</h3>
         <AgentMultiSelect
           agents={agents}
           selectedAgentIds={selectedAgentIds}
@@ -635,19 +635,19 @@ export function StepAssign({
             return bits.length > 0 ? `already has: ${bits.join(" · ")}` : "no profiles yet";
           }}
         />
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-ink-3">
           If an agent has several profiles, it can use anything any of them allows.
         </p>
       </div>
 
       {(projects.length > 0 || routines.length > 0) && onToggleProject && onToggleRoutine ? (
-        <Collapsible open={moreOpen} onOpenChange={setMoreOpen} className="rounded-lg border border-border">
+        <Collapsible open={moreOpen} onOpenChange={setMoreOpen} className="rounded-lg border border-line">
           <CollapsibleTrigger className="flex w-full items-center justify-between px-4 py-3 text-left">
-            <span className="text-sm font-medium text-foreground">More targets</span>
-            <ChevronDown className={cn("h-4 w-4 text-muted-foreground transition-transform", moreOpen && "rotate-180")} />
+            <span className="text-sm font-medium text-ink">More targets</span>
+            <ChevronDown className={cn("h-4 w-4 text-ink-3 transition-transform", moreOpen && "rotate-180")} />
           </CollapsibleTrigger>
-          <CollapsibleContent className="space-y-4 border-t border-border px-4 py-3">
-            <p className="text-xs text-muted-foreground">
+          <CollapsibleContent className="space-y-4 border-t border-line px-4 py-3">
+            <p className="text-xs text-ink-3">
               Assign this profile to a whole project or a scheduled routine instead of (or as well as)
               individual agents.
             </p>
@@ -684,10 +684,10 @@ function TargetChecklist({
   if (options.length === 0) return null;
   return (
     <div className="space-y-1.5">
-      <h4 className="text-xs font-medium text-muted-foreground">{label}</h4>
+      <h4 className="text-xs font-medium text-ink-3">{label}</h4>
       <div className="flex flex-wrap gap-x-4 gap-y-1.5">
         {options.map((option) => (
-          <label key={option.id} className="flex cursor-pointer items-center gap-2 text-sm text-foreground">
+          <label key={option.id} className="flex cursor-pointer items-center gap-2 text-sm text-ink">
             <input type="checkbox" checked={selected.has(option.id)} onChange={() => onToggle(option.id)} />
             {option.name}
           </label>

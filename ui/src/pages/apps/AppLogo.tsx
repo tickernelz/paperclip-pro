@@ -102,7 +102,7 @@ export function AppLogo({
   if (fallbackLogoUrl) {
     return (
       <span
-        className={cn("inline-flex shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted", className)}
+        className={cn("inline-flex shrink-0 items-center justify-center overflow-hidden rounded-lg bg-bg-3", className)}
         style={dimension}
       >
         {hasDistinctThemeLogos ? (

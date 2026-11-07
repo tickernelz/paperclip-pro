@@ -652,7 +652,7 @@ describe("IssueProperties", () => {
     expect(statusVisual?.getAttribute("data-size")).toBeNull();
     expect(statusVisual?.getAttribute("data-glyph-container-class")).toContain("size-6");
     expect(surface?.querySelector('[data-property-section="true"] > div')?.classList)
-      .toContain("text-muted-foreground/70");
+      .toContain("text-ink-3/70");
     const projectLabel = surface?.querySelector('[data-property-label="Project"]');
     const labelsLabel = surface?.querySelector('[data-property-label="Labels"]');
     if (!projectLabel || !labelsLabel) throw new Error("Expected Project and Labels rows");
@@ -746,7 +746,7 @@ describe("IssueProperties", () => {
     const tab = headerSlot.querySelector<HTMLButtonElement>('[role="tab"]');
     expect(tab?.textContent).toBe("Properties");
     expect(tab?.getAttribute("aria-selected")).toBe("true");
-    expect(tab?.classList).toContain("bg-muted");
+    expect(tab?.classList).toContain("bg-bg-3");
     expect(tab?.classList).toContain("px-3");
     expect(tab?.classList).toContain("inline-flex");
 
@@ -784,7 +784,7 @@ describe("IssueProperties", () => {
     expect(propertiesTab?.classList).toContain("mx-1.5");
     expect(propertiesTab?.classList).toContain("px-3");
     expect(subtasksTab?.classList).toContain("px-3");
-    expect(subtasksTab?.classList).toContain("hover:bg-accent/50");
+    expect(subtasksTab?.classList).toContain("hover:bg-bg-3/50");
     expect(subtasksLabel?.classList).toContain("task-detail-pane-tab-label");
     expect(subtasksLabel?.classList).toContain("flex-1");
     expect(subtasksLabel?.classList).toContain("overflow-hidden");
@@ -1907,7 +1907,7 @@ describe("IssueProperties", () => {
     const stopButton = container.querySelector<HTMLButtonElement>('button[aria-label="Stop"]');
     expect(stopButton).not.toBeUndefined();
     expect(stopButton?.getAttribute("data-size")).toBe("icon-xs");
-    expect(stopButton?.getAttribute("data-variant")).toBe("outline");
+    expect(stopButton?.getAttribute("data-variant")).toBe("secondary");
 
     await act(async () => {
       stopButton!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
@@ -3244,7 +3244,7 @@ describe("IssueProperties", () => {
       instructionNode = Array.from(container.querySelectorAll("span"))
         .find((node) =>
           node.textContent?.includes("get greptile")
-          && node.className.includes("text-muted-foreground")
+          && node.className.includes("text-ink-3")
           && !node.className.includes("inline-flex")
         ) as HTMLSpanElement | undefined;
       expect(instructionNode).toBeTruthy();

@@ -128,7 +128,7 @@ function KindRow({
   const rowDisabled = disabled || !kindSettings.enabled;
 
   return (
-    <div className="flex flex-col gap-2 border-b border-border/70 py-3 last:border-b-0 sm:flex-row sm:items-center sm:gap-3">
+    <div className="flex flex-col gap-2 border-b border-line/70 py-3 last:border-b-0 sm:flex-row sm:items-center sm:gap-3">
       <div className="flex min-w-0 items-center gap-3 sm:w-48 sm:shrink-0">
         <ToggleSwitch
           checked={kindSettings.enabled}
@@ -161,7 +161,7 @@ function KindRow({
         </Select>
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           size="icon-sm"
           aria-label={`Preview ${label} sound`}
           disabled={rowDisabled || kindSettings.soundId === SILENT_SOUND_ID}
@@ -183,7 +183,7 @@ function KindRow({
         />
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           size="sm"
           disabled={rowDisabled || busy}
           onClick={() => document.getElementById(inputId)?.click()}
@@ -264,20 +264,20 @@ export function NotificationSettingsSection({ userId }: { userId: string | null 
     <section className="space-y-4" aria-label="Notifications">
       <div className="space-y-1">
         <div className="flex items-center gap-2">
-          <Bell className="h-5 w-5 text-muted-foreground" />
+          <Bell className="h-5 w-5 text-ink-3" />
           <h2 className="text-base font-semibold">Notifications</h2>
         </div>
-        <p className="max-w-2xl text-sm text-muted-foreground">
+        <p className="max-w-2xl text-sm text-ink-3">
           Sounds and alerts for approvals, agent questions, comments, assignments, reviews, failed runs and join
           requests. These settings apply to this browser only.
         </p>
       </div>
 
-      <div className="max-w-3xl space-y-4 rounded-md border border-border/70 p-4">
+      <div className="max-w-3xl space-y-4 rounded-md border border-line/70 p-4">
         <div className="flex items-center justify-between gap-4">
           <div className="min-w-0">
             <div className="text-sm font-medium">Notifications on this device</div>
-            <div className="text-xs text-muted-foreground">Play sounds and show alerts for new inbox items.</div>
+            <div className="text-xs text-ink-3">Play sounds and show alerts for new inbox items.</div>
           </div>
           <ToggleSwitch checked={settings.enabled} onCheckedChange={(enabled) => void setEnabled(enabled)} aria-label="Notifications on this device" />
         </div>
@@ -285,10 +285,10 @@ export function NotificationSettingsSection({ userId }: { userId: string | null 
         <div className="flex items-center justify-between gap-4">
           <div className="min-w-0">
             <div className="text-sm font-medium">Browser permission</div>
-            <div className="text-xs text-muted-foreground">{PERMISSION_LABELS[permission]}</div>
+            <div className="text-xs text-ink-3">{PERMISSION_LABELS[permission]}</div>
           </div>
           {permission === "default" ? (
-            <Button type="button" variant="outline" size="sm" className="shrink-0" onClick={() => void askPermission()}>
+            <Button type="button" variant="secondary" size="sm" className="shrink-0" onClick={() => void askPermission()}>
               Allow notifications
             </Button>
           ) : null}
@@ -297,7 +297,7 @@ export function NotificationSettingsSection({ userId }: { userId: string | null 
         <div className="flex items-center justify-between gap-4">
           <div className="min-w-0">
             <div className="text-sm font-medium">Push when Paperclip is closed</div>
-            <div className="text-xs text-muted-foreground">
+            <div className="text-xs text-ink-3">
               {canPush ? PUSH_STATUS_LABELS[pushState.status] : PUSH_STATUS_LABELS.unsupported}
               {pushState.error ? `: ${pushState.error}` : ""}
             </div>
@@ -311,13 +311,13 @@ export function NotificationSettingsSection({ userId }: { userId: string | null 
         </div>
 
         {settings.enabled && !pushActive ? (
-          <p className="rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">
+          <p className="rounded-md bg-bg-3 px-3 py-2 text-xs text-ink-3">
             Push is off on this device, so background alerts only work while a Paperclip tab is visible.
           </p>
         ) : null}
 
         {isIosWithoutHomeScreenInstall() ? (
-          <p className="rounded-md bg-muted px-3 py-2 text-xs text-muted-foreground">
+          <p className="rounded-md bg-bg-3 px-3 py-2 text-xs text-ink-3">
             On iPhone and iPad, push notifications need Paperclip added to the Home Screen (Share, then Add to Home
             Screen) and opened from there.
           </p>
@@ -340,7 +340,7 @@ export function NotificationSettingsSection({ userId }: { userId: string | null 
             }
             className="h-1.5 w-full max-w-xs"
           />
-          <span className="w-10 text-right text-xs text-muted-foreground">{Math.round(settings.volume * 100)}%</span>
+          <span className="w-10 text-right text-xs text-ink-3">{Math.round(settings.volume * 100)}%</span>
         </div>
 
         <div>
@@ -348,7 +348,7 @@ export function NotificationSettingsSection({ userId }: { userId: string | null 
             <KindRow key={kind} kind={kind} customName={customNames[kind]} disabled={masterDisabled} onError={setError} />
           ))}
         </div>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-ink-3">
           Custom sounds must be audio files of 512 KB or less. They play only while Paperclip is open; push
           notifications use your system sound.
         </p>
@@ -358,9 +358,9 @@ export function NotificationSettingsSection({ userId }: { userId: string | null 
             {testing ? <LoaderCircle className="animate-spin" /> : <Send />}
             Send test notification
           </Button>
-          {message ? <span className="text-sm text-muted-foreground">{message}</span> : null}
+          {message ? <span className="text-sm text-ink-3">{message}</span> : null}
         </div>
-        {error ? <div className="text-sm text-destructive">{error}</div> : null}
+        {error ? <div className="text-sm text-bad">{error}</div> : null}
       </div>
     </section>
   );

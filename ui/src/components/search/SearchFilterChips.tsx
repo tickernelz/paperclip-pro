@@ -23,7 +23,7 @@ export function SearchFilterChips({
           <span className="truncate">{chip.label}</span>
           <button
             type="button"
-            className="rounded-full p-0.5 hover:bg-background/60"
+            className="rounded-full p-0.5 hover:bg-bg/60"
             onClick={() => onChange(chip.remove(filters))}
             aria-label={`Remove filter ${chip.label}`}
           >
@@ -33,7 +33,7 @@ export function SearchFilterChips({
       ))}
       <button
         type="button"
-        className="text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+        className="text-xs text-ink-3 underline-offset-2 hover:text-ink hover:underline"
         onClick={onClearAll}
       >
         Clear all

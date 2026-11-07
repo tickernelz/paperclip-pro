@@ -205,7 +205,7 @@ describe("AgentsUsingSkillBadge", () => {
     const badge = findButton("0 agents");
     expect(badge).toBeDefined();
     expect(badge?.getAttribute("aria-label")).toBe("0 agents use this skill");
-    expect(badge?.className).toContain("text-muted-foreground");
+    expect(badge?.className).toContain("text-ink-3");
   });
 
   it("pluralizes and opens the dialog on click", async () => {

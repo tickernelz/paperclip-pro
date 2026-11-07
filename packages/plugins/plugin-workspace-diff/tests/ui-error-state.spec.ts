@@ -14,7 +14,7 @@ describe("workspace diff error state", () => {
     expect(html).toContain("Unable to load workspace changes.");
     expect(html).toContain("Retry");
     expect(html).toContain("Troubleshooting details");
-    expect(html).not.toContain(`font-medium text-foreground">${rawError}`);
+    expect(html).not.toContain(`font-medium text-ink">${rawError}`);
     expect(html.indexOf(rawError)).toBeGreaterThan(html.indexOf("Troubleshooting details"));
   });
 });

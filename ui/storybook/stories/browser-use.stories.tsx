@@ -30,7 +30,7 @@ const meta = {
   decorators: [
     (Story) => (
       <BrowserStoryProviders>
-        <div className="h-screen bg-background text-foreground">
+        <div className="h-screen bg-bg text-ink">
           <Story />
         </div>
       </BrowserStoryProviders>
@@ -182,20 +182,20 @@ function ResizableBrowserStory() {
   return (
     <div className="flex h-full flex-col gap-3 p-4">
       <div className="flex flex-wrap items-center gap-2">
-        <Button variant="outline" size="sm" onClick={() => setWidth(360)}>
+        <Button variant="secondary" size="sm" onClick={() => setWidth(360)}>
           Narrow pane
         </Button>
-        <Button variant="outline" size="sm" onClick={() => setWidth(800)}>
+        <Button variant="secondary" size="sm" onClick={() => setWidth(800)}>
           Wide pane
         </Button>
         <Button
-          variant="outline"
+          variant="secondary"
           size="sm"
           onClick={() => setHeight(height === 640 ? 440 : 640)}
         >
           Change height
         </Button>
-        <span className="text-xs text-muted-foreground">
+        <span className="text-xs text-ink-3">
           Drag the lower-right corner. Choose a fixed size to stop fitting.
         </span>
       </div>

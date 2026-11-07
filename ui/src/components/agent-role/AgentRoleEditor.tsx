@@ -121,7 +121,7 @@ export function AgentRoleEditor({
           <button
             type="button"
             className={cn(
-              "inline-flex min-w-0 cursor-pointer items-center gap-1 rounded-sm px-1 -mx-1 text-left transition-colors hover:bg-accent/70 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring data-[state=open]:bg-accent aria-busy:cursor-progress",
+              "inline-flex min-w-0 cursor-pointer items-center gap-1 rounded-sm px-1 -mx-1 text-left transition-colors hover:bg-bg-3/70 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus data-[state=open]:bg-bg-3 aria-busy:cursor-progress",
               className,
             )}
             aria-label={`Role for ${agent.name}: ${agentRoleLabel(shownRole)}`}
@@ -131,9 +131,9 @@ export function AgentRoleEditor({
           >
             <span className="truncate">{agentRoleLabel(shownRole)}</span>
             {pending ? (
-              <Loader2 className="size-3 shrink-0 animate-spin text-muted-foreground" aria-hidden="true" />
+              <Loader2 className="size-3 shrink-0 animate-spin text-ink-3" aria-hidden="true" />
             ) : (
-              <ChevronDown className="size-3 shrink-0 text-muted-foreground" aria-hidden="true" />
+              <ChevronDown className="size-3 shrink-0 text-ink-3" aria-hidden="true" />
             )}
           </button>
         </PopoverTrigger>
@@ -147,7 +147,7 @@ export function AgentRoleEditor({
                   type="button"
                   role="option"
                   aria-selected={selected}
-                  className="flex w-full items-center justify-between gap-2 rounded-sm px-2 py-1 text-left text-sm hover:bg-accent focus-visible:bg-accent focus-visible:outline-none"
+                  className="flex w-full items-center justify-between gap-2 rounded-sm px-2 py-1 text-left text-sm hover:bg-bg-3 focus-visible:bg-bg-3 focus-visible:outline-none"
                   data-testid={`agent-role-option-${agent.id}`}
                   data-value={option.value}
                   onClick={() => pick(option.value)}
@@ -161,7 +161,7 @@ export function AgentRoleEditor({
         </PopoverContent>
       </Popover>
       {error ? (
-        <span className="truncate text-xs text-destructive" role="alert" title={error} data-testid={`agent-role-error-${agent.id}`}>
+        <span className="truncate text-xs text-bad" role="alert" title={error} data-testid={`agent-role-error-${agent.id}`}>
           {error}
         </span>
       ) : null}

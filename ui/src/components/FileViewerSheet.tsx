@@ -139,7 +139,7 @@ export function describeDenial(code: string, fallback: string): { title: string;
   }
   if (lower.includes("archive") || lower.includes("cleaned")) {
     return {
-      icon: <FolderOpen aria-hidden="true" className="h-6 w-6 text-muted-foreground" />,
+      icon: <FolderOpen aria-hidden="true" className="h-6 w-6 text-ink-3" />,
       title: "Workspace is no longer available",
       body: "The isolated worktree for this issue has been cleaned up, so files cannot be previewed.",
     };
@@ -190,8 +190,8 @@ function FileViewerStateView({
       <div className="flex items-start gap-3">
         {icon}
         <div className="flex-1 space-y-1">
-          <p className="font-medium text-foreground">{title}</p>
-          {body ? <p className="text-muted-foreground">{body}</p> : null}
+          <p className="font-medium text-ink">{title}</p>
+          {body ? <p className="text-ink-3">{body}</p> : null}
           {secondary}
         </div>
       </div>
@@ -208,7 +208,7 @@ export function FileViewerMetadataRow({
   state: FileViewerUrlState | null;
 }) {
   return (
-    <div className="flex min-h-(--sz-18px) flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-muted-foreground">
+    <div className="flex min-h-(--sz-18px) flex-wrap items-center gap-x-2 gap-y-0.5 text-xs text-ink-3">
       {resolvedResource ? (
         <>
           {resolvedResource.previewKind ? <span className="capitalize">{resolvedResource.previewKind}</span> : null}
@@ -229,7 +229,7 @@ export function FileViewerMetadataRow({
           ) : null}
         </>
       ) : state ? (
-        <span className="h-3 w-28 rounded bg-muted animate-pulse" aria-label="Loading file details" />
+        <span className="h-3 w-28 rounded bg-bg-3 animate-pulse" aria-label="Loading file details" />
       ) : null}
     </div>
   );
@@ -291,11 +291,11 @@ export function FileContentViewer({ content, highlightedLine, onLoaded, previewM
       );
     }
     return (
-      <div className="flex items-center justify-center overflow-auto bg-muted/40 p-4">
+      <div className="flex items-center justify-center overflow-auto bg-bg-3/40 p-4">
         <img
           src={dataUrl}
           alt={resource.title}
-          className="max-h-full max-w-full rounded border border-border object-contain"
+          className="max-h-full max-w-full rounded border border-line object-contain"
         />
       </div>
     );
@@ -345,7 +345,7 @@ export function FileContentViewer({ content, highlightedLine, onLoaded, previewM
       role="region"
       aria-label={`${resource.title} source`}
       tabIndex={0}
-      className="paperclip-file-viewer-code flex-1 overflow-auto bg-(--code-bg-resolved) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+      className="paperclip-file-viewer-code flex-1 overflow-auto bg-(--code-bg-resolved) focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-inset"
     >
       <pre className="m-0 font-mono text-xs leading-5">
         {lines.map((lineText, index) => {
@@ -398,7 +398,7 @@ export function FileContentViewer({ content, highlightedLine, onLoaded, previewM
         <div
           role="group"
           aria-label={`${previewLabel} preview mode`}
-          className="inline-flex rounded-md border border-border bg-background/95 p-0.5 shadow-sm backdrop-blur"
+          className="inline-flex rounded-md border border-line bg-bg/95 p-0.5 shadow-sm backdrop-blur"
         >
           <Button
             type="button"
@@ -410,7 +410,6 @@ export function FileContentViewer({ content, highlightedLine, onLoaded, previewM
             onClick={() => setMarkdownMode("rendered")}
             className={cn(
               "h-7 w-7 rounded-sm",
-              markdownMode !== "rendered" && "text-muted-foreground hover:text-foreground",
             )}
           >
             <Eye aria-hidden="true" className="h-3.5 w-3.5" />
@@ -425,7 +424,6 @@ export function FileContentViewer({ content, highlightedLine, onLoaded, previewM
             onClick={() => setMarkdownMode("raw")}
             className={cn(
               "h-7 w-7 rounded-sm",
-              markdownMode !== "raw" && "text-muted-foreground hover:text-foreground",
             )}
           >
             <FileCode2 aria-hidden="true" className="h-3.5 w-3.5" />
@@ -440,7 +438,7 @@ export function FileContentViewer({ content, highlightedLine, onLoaded, previewM
           role="region"
           aria-label={`${resource.title} rendered Markdown`}
           tabIndex={0}
-          className="flex-1 overflow-auto bg-background p-5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+          className="flex-1 overflow-auto bg-bg p-5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-inset"
         >
           <WorkspaceFileMarkdownBody softBreaks={false}>
             {content.content.data}
@@ -460,7 +458,7 @@ function LoadingView({ elapsedMs }: { elapsedMs: number }) {
       <div className="flex-1 space-y-2 p-6" aria-busy="true" aria-live="polite">
         <span className="sr-only">Loading file preview</span>
         {Array.from({ length: 10 }).map((_, index) => (
-          <div key={index} className="h-3 rounded bg-muted animate-pulse" style={{ width: `${90 - index * 6}%` }} />
+          <div key={index} className="h-3 rounded bg-bg-3 animate-pulse" style={{ width: `${90 - index * 6}%` }} />
         ))}
       </div>
     );
@@ -471,7 +469,7 @@ function LoadingView({ elapsedMs }: { elapsedMs: number }) {
       role="status"
       aria-live="polite"
     >
-      <div className="flex items-center gap-2 text-muted-foreground">
+      <div className="flex items-center gap-2 text-ink-3">
         <Loader2 aria-hidden="true" className="h-4 w-4 animate-spin" />
         Loading file preview...
       </div>
@@ -746,12 +744,12 @@ export function FileViewerSheet({
           }
         }}
       >
-        <DialogHeader className="border-b border-border gap-1 p-3">
+        <DialogHeader className="border-b border-line gap-1 p-3">
           <div className="grid min-w-0 grid-cols-(--gtc-6) items-start gap-2">
             {browseMode ? (
-              <FolderSearch aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+              <FolderSearch aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-ink-3" />
             ) : (
-              <FileCode2 aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+              <FileCode2 aria-hidden="true" className="mt-0.5 h-4 w-4 shrink-0 text-ink-3" />
             )}
             <div className="min-w-0 flex-1">
               <DialogTitle id={FILE_VIEWER_LABELLED_BY_ID} className="truncate text-sm leading-5">
@@ -769,7 +767,7 @@ export function FileViewerSheet({
               </DialogDescription>
             </div>
             <div className="flex shrink-0 items-center gap-1 self-start">
-              <span className="hidden min-w-28 text-right text-xs text-muted-foreground sm:inline" role="status" aria-live="polite">
+              <span className="hidden min-w-28 text-right text-xs text-ink-3 sm:inline" role="status" aria-live="polite">
                 {copyFeedback}
               </span>
               {cameFromBrowse ? (
@@ -866,7 +864,7 @@ export function FileViewerSheet({
             {announcement}
           </div>
           {state ? (
-            <div className="flex min-h-0 flex-1 gap-3 bg-muted/30 p-3">
+            <div className="flex min-h-0 flex-1 gap-3 bg-bg-3/30 p-3">
               <aside
                 className="hidden min-h-0 shrink-0 overflow-hidden sm:flex"
                 style={{ width: fileTreeWidth }}
@@ -900,7 +898,7 @@ export function FileViewerSheet({
                 tabIndex={0}
                 onPointerDown={handleResizeStart}
                 onKeyDown={handleResizeKeyDown}
-                className="hidden w-1 shrink-0 cursor-col-resize rounded-full bg-border transition-colors hover:bg-muted-foreground/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:block"
+                className="hidden w-1 shrink-0 cursor-col-resize rounded-full bg-line transition-colors hover:bg-ink-3/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus sm:block"
               />
               <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
                 <FileViewerBody
@@ -982,7 +980,7 @@ export function FileViewerBody({
     if (normalized.status === 404) {
       return (
         <FileViewerStateView
-          icon={<FileSearch aria-hidden="true" className="h-6 w-6 text-muted-foreground" />}
+          icon={<FileSearch aria-hidden="true" className="h-6 w-6 text-ink-3" />}
           title="File not found"
           body="That file was not found in the active workspace."
           actions={
@@ -1003,7 +1001,7 @@ export function FileViewerBody({
     if (normalized.status === 422) {
       return (
         <FileViewerStateView
-          icon={<FolderOpen aria-hidden="true" className="h-6 w-6 text-muted-foreground" />}
+          icon={<FolderOpen aria-hidden="true" className="h-6 w-6 text-ink-3" />}
           title="No workspace available"
           body="This issue does not have a workspace that supports preview yet."
         />
@@ -1030,7 +1028,7 @@ export function FileViewerBody({
   if (resource.kind === "remote_resource") {
     return (
       <FileViewerStateView
-        icon={<Cloud aria-hidden="true" className="h-6 w-6 text-muted-foreground" />}
+        icon={<Cloud aria-hidden="true" className="h-6 w-6 text-ink-3" />}
         title="Remote workspace preview coming soon"
         body="This workspace is hosted remotely; inline previews are not supported yet."
       />

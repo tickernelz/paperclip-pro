@@ -61,14 +61,14 @@ function SiblingLink({
       issueQuicklookAlign={direction === "previous" ? "start" : "end"}
       aria-label={`${ariaDirection}: ${identifier} - ${issue.title}`}
       className={cn(
-        "group min-w-0 rounded-lg border border-border bg-card px-3 py-2.5 text-left no-underline transition-colors hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-(length:--rad-3) focus-visible:ring-ring",
+        "group min-w-0 rounded-lg border border-line bg-bg-2 px-3 py-2.5 text-left no-underline transition-colors hover:bg-bg-3/50 focus-visible:outline-none focus-visible:ring-(length:--rad-3) focus-visible:ring-focus",
         direction === "next" && "sm:text-right",
         className,
       )}
     >
       <div className="min-w-0 space-y-1.5">
         <div className={cn(
-          "flex items-center gap-1.5 text-xs text-muted-foreground transition-colors group-hover:text-foreground",
+          "flex items-center gap-1.5 text-xs text-ink-3 transition-colors group-hover:text-ink",
           direction === "next" && "sm:justify-end",
         )}>
           {direction === "previous" ? <Icon className="h-3.5 w-3.5 shrink-0" /> : null}
@@ -76,13 +76,13 @@ function SiblingLink({
           {direction === "next" ? <Icon className="h-3.5 w-3.5 shrink-0" /> : null}
         </div>
         <div className={cn(
-          "flex min-w-0 items-center gap-1.5 text-xs font-mono text-muted-foreground transition-colors group-hover:text-foreground",
+          "flex min-w-0 items-center gap-1.5 text-xs font-mono text-ink-3 transition-colors group-hover:text-ink",
           direction === "next" && "sm:justify-end",
         )}>
           <StatusIcon status={issue.status} externalConversationState={issue.externalConversationState} blockerAttention={issue.blockerAttention} />
           <span className="shrink-0">{identifier}</span>
         </div>
-        <div className="truncate text-sm text-foreground">
+        <div className="truncate text-sm text-ink">
           {issue.title}
         </div>
       </div>

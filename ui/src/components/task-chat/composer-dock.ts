@@ -8,6 +8,6 @@ export function composerDockClassName({ isMobile }: { isMobile: boolean }): stri
     "mx-auto flex w-full max-w-(--tc-shell-max-w) flex-col gap-2 px-1 pb-1 md:px-4 md:pb-2",
     "md:px-0 md:pb-0",
     isMobile &&
-      "bg-background/80 pt-1 backdrop-blur supports-[backdrop-filter]:bg-background/60 dark:bg-transparent dark:backdrop-blur-none dark:supports-[backdrop-filter]:bg-transparent",
+      "bg-bg/80 pt-1 backdrop-blur supports-[backdrop-filter]:bg-bg/60 dark:bg-transparent dark:backdrop-blur-none dark:supports-[backdrop-filter]:bg-transparent",
   );
 }

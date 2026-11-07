@@ -16,7 +16,7 @@ function OrganizationSwitcherLoading({ collapsed }: { collapsed: boolean }) {
     <Skeleton className="size-5 shrink-0" />
     {!collapsed && <>
       <span className="min-w-0 flex-1"><Skeleton className="h-4 w-20 max-w-full" /></span>
-      <ChevronsUpDown className="size-3.5 shrink-0 text-muted-foreground" aria-hidden="true" />
+      <ChevronsUpDown className="size-3.5 shrink-0 text-ink-3" aria-hidden="true" />
     </>}
   </div>;
 }

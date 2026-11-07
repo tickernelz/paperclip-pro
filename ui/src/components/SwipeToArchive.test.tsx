@@ -243,9 +243,9 @@ describe("SwipeToArchive", () => {
 
     const surface = container.querySelector("[data-inbox-row-surface]") as HTMLDivElement | null;
     expect(surface).not.toBeNull();
-    expect(surface?.className).toContain("bg-accent/50");
+    expect(surface?.className).toContain("bg-bg-3/50");
     expect(surface?.className).toContain("rounded-lg");
-    expect(surface?.className).not.toContain("bg-card");
+    expect(surface?.className).not.toContain("bg-bg-2");
     expect(surface?.style.backgroundColor).toBe("");
     expect(surface?.style.boxShadow).toBe("");
 

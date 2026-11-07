@@ -488,7 +488,7 @@ export function EffectiveAgentPanel({ companyId, agentOptions }: { companyId: st
         <AgentSelect agents={agentOptions} value={agentId} onChange={setAgentId} />
       </div>
       {!agentId ? (
-        <div className="rounded-lg border border-dashed border-border px-4 py-8 text-sm text-muted-foreground">
+        <div className="rounded-lg border border-dashed border-line px-4 py-8 text-sm text-ink-3">
           Pick an agent to see what it can use right now.
         </div>
       ) : effective.isLoading ? (
@@ -499,13 +499,13 @@ export function EffectiveAgentPanel({ companyId, agentOptions }: { companyId: st
         <div className="min-h-0 space-y-5 overflow-y-auto pr-1">
           <div className="space-y-2">
             <div className="flex items-center justify-between gap-2">
-              <h3 className="text-sm font-semibold text-foreground">Can use</h3>
-              <span className="text-xs text-muted-foreground tabular-nums">
+              <h3 className="text-sm font-semibold text-ink">Can use</h3>
+              <span className="text-xs text-ink-3 tabular-nums">
                 {(effective.data?.allowedToolNames ?? []).length} tools
               </span>
             </div>
             {(effective.data?.allowedToolNames ?? []).length === 0 ? (
-              <div className="rounded-lg border border-dashed border-border px-4 py-5 text-sm text-muted-foreground">
+              <div className="rounded-lg border border-dashed border-line px-4 py-5 text-sm text-ink-3">
                 This agent cannot use any app tools right now.
               </div>
             ) : (
@@ -517,16 +517,16 @@ export function EffectiveAgentPanel({ companyId, agentOptions }: { companyId: st
             )}
           </div>
           <div className="space-y-2">
-            <h3 className="text-sm font-semibold text-foreground">Access profiles</h3>
+            <h3 className="text-sm font-semibold text-ink">Access profiles</h3>
             {(effective.data?.profiles ?? []).length === 0 ? (
-              <div className="rounded-lg border border-dashed border-border px-4 py-5 text-sm text-muted-foreground">
+              <div className="rounded-lg border border-dashed border-line px-4 py-5 text-sm text-ink-3">
                 No active profile applies to this agent.
               </div>
             ) : (
-              <div className="divide-y divide-border rounded-lg border border-border">
+              <div className="divide-y divide-line rounded-lg border border-line">
                 {(effective.data?.profiles ?? []).map((profile) => (
                   <div key={profile.id} className="flex items-center justify-between gap-3 px-3 py-2.5">
-                    <span className="min-w-0 truncate text-sm font-medium text-foreground">{profile.name}</span>
+                    <span className="min-w-0 truncate text-sm font-medium text-ink">{profile.name}</span>
                     {profile.summary.isCompanyDefault ? (
                       <Badge variant="secondary">Organization default</Badge>
                     ) : null}
@@ -565,8 +565,8 @@ function AllowList({ rows, catalogLoading }: { rows: AllowListRow[]; catalogLoad
   return (
     <div className="space-y-2">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h4 className="text-sm font-semibold text-foreground">Allow list</h4>
-        <p className="text-xs text-muted-foreground">
+        <h4 className="text-sm font-semibold text-ink">Allow list</h4>
+        <p className="text-xs text-ink-3">
           {rows.length} tool{rows.length === 1 ? "" : "s"}
           {explicitCount > 0 ? ` · ${explicitCount} explicit` : ""}
           {patternCount > 0 ? ` · ${patternCount} via pattern` : ""}
@@ -574,7 +574,7 @@ function AllowList({ rows, catalogLoading }: { rows: AllowListRow[]; catalogLoad
         </p>
       </div>
       {rows.length === 0 ? (
-        <div className="rounded-md border border-dashed border-border px-3 py-6 text-center text-sm text-muted-foreground">
+        <div className="rounded-md border border-dashed border-line px-3 py-6 text-center text-sm text-ink-3">
           {catalogLoading
             ? "Resolving allowed tools…"
             : "No tools resolved for this profile. Add an include selector or refresh the tool catalog."}
@@ -584,7 +584,7 @@ function AllowList({ rows, catalogLoading }: { rows: AllowListRow[]; catalogLoad
           <CardContent className="px-0 py-0">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-border text-left text-xs text-muted-foreground">
+                <tr className="border-b border-line text-left text-xs text-ink-3">
                   <th className="px-3 py-2.5 font-medium">Tool</th>
                   <th className="px-3 py-2.5 font-medium">Application</th>
                   <th className="px-3 py-2.5 font-medium">Capabilities</th>
@@ -592,14 +592,14 @@ function AllowList({ rows, catalogLoading }: { rows: AllowListRow[]; catalogLoad
                   <th className="px-3 py-2.5 font-medium">Source</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border">
+              <tbody className="divide-y divide-line">
                 {rows.map((row) => (
                   <tr key={row.key} className="align-top">
                     <td className="px-3 py-2.5">
-                      <span className="font-mono text-xs text-foreground">{row.toolName}</span>
+                      <span className="font-mono text-xs text-ink">{row.toolName}</span>
                     </td>
-                    <td className="px-3 py-2.5 text-muted-foreground">
-                      {row.applicationName ?? <span className="text-muted-foreground/60">—</span>}
+                    <td className="px-3 py-2.5 text-ink-3">
+                      {row.applicationName ?? <span className="text-ink-3/60">—</span>}
                     </td>
                     <td className="px-3 py-2.5">
                       {row.isReadOnly || row.isWrite || row.isDestructive ? (
@@ -609,11 +609,11 @@ function AllowList({ rows, catalogLoading }: { rows: AllowListRow[]; catalogLoad
                           isDestructive={row.isDestructive}
                         />
                       ) : (
-                        <span className="text-muted-foreground/60">—</span>
+                        <span className="text-ink-3/60">—</span>
                       )}
                     </td>
                     <td className="px-3 py-2.5">
-                      {row.risk ? <RiskBadge risk={row.risk} /> : <span className="text-muted-foreground/60">—</span>}
+                      {row.risk ? <RiskBadge risk={row.risk} /> : <span className="text-ink-3/60">—</span>}
                     </td>
                     <td className="px-3 py-2.5">
                       <SourceBadge source={row.source} />
@@ -626,7 +626,7 @@ function AllowList({ rows, catalogLoading }: { rows: AllowListRow[]; catalogLoad
         </Card>
       )}
       {patternCount > 0 ? (
-        <p className="flex items-start gap-1.5 text-xs text-muted-foreground">
+        <p className="flex items-start gap-1.5 text-xs text-ink-3">
           <AlertTriangle className="mt-0.5 h-3 w-3 shrink-0 text-amber-500" />
           Tools marked <span className="font-medium">pattern</span> were pulled in by a wildcard, application,
           connection, or risk selector rather than named explicitly — review them when the catalog changes.
@@ -935,7 +935,7 @@ export function ProfilesTab({ companyId }: { companyId: string }) {
           {/* Master rail */}
           <Card className="h-fit">
             <CardContent className="p-0">
-              <ul className="divide-y divide-border">
+              <ul className="divide-y divide-line">
                 {list.map((profile) => {
                   const toolCount = resolveAllowList(
                     profile,
@@ -950,19 +950,19 @@ export function ProfilesTab({ companyId }: { companyId: string }) {
                         type="button"
                         onClick={() => setSelectedId(profile.id)}
                         className={cn(
-                          "flex w-full flex-col gap-1 px-3 py-2.5 text-left transition-colors hover:bg-accent/50",
-                          isActive && "bg-accent/70",
+                          "flex w-full flex-col gap-1 px-3 py-2.5 text-left transition-colors hover:bg-bg-3/50",
+                          isActive && "bg-bg-3/70",
                         )}
                       >
                         <span className="flex items-center gap-2">
-                          <span className="truncate font-medium text-foreground">{profile.name}</span>
+                          <span className="truncate font-medium text-ink">{profile.name}</span>
                           {profile.status !== "active" ? (
                             <Badge variant={statusVariant(profile.status)} className="text-(length:--text-nano)">
                               {profile.status}
                             </Badge>
                           ) : null}
                         </span>
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-xs text-ink-3">
                           {toolCount} tool{toolCount === 1 ? "" : "s"} · {bindingsSubtitle(profile.bindings)}
                         </span>
                       </button>
@@ -1092,7 +1092,7 @@ export function ProfilesTab({ companyId }: { companyId: string }) {
             ) : null}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => {
+            <Button variant="secondary" onClick={() => {
               setCreateOpen(false);
               setEditProfile(null);
               resetProfileForm();
@@ -1137,7 +1137,7 @@ export function ProfilesTab({ companyId }: { companyId: string }) {
             connections={connectionOptions}
           />
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEntryProfile(null)}>Cancel</Button>
+            <Button variant="secondary" onClick={() => setEntryProfile(null)}>Cancel</Button>
             <Button disabled={addEntry.isPending} onClick={saveEntry}>
               Add entry
             </Button>
@@ -1209,7 +1209,7 @@ export function ProfilesTab({ companyId }: { companyId: string }) {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setBindProfileFor(null)}>Cancel</Button>
+            <Button variant="secondary" onClick={() => setBindProfileFor(null)}>Cancel</Button>
             <Button disabled={bind.isPending} onClick={saveBinding}>
               Bind
             </Button>
@@ -1262,10 +1262,10 @@ function ProfileDetail({
       <CardContent className="space-y-5 py-4">
         {/* Header */}
         <div className="flex flex-wrap items-start gap-3">
-          <Layers className="mt-0.5 h-5 w-5 text-muted-foreground" />
+          <Layers className="mt-0.5 h-5 w-5 text-ink-3" />
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="font-medium text-foreground">{profile.name}</span>
+              <span className="font-medium text-ink">{profile.name}</span>
               <Badge variant="outline">{profile.profileKey}</Badge>
               <Badge variant={statusVariant(profile.status)}>{profile.status}</Badge>
               <Badge variant={profile.defaultAction === "allow" ? "secondary" : "outline"}>
@@ -1273,22 +1273,22 @@ function ProfileDetail({
               </Badge>
             </div>
             {profile.description ? (
-              <p className="mt-1 text-sm text-muted-foreground">{profile.description}</p>
+              <p className="mt-1 text-sm text-ink-3">{profile.description}</p>
             ) : null}
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="mt-1 text-xs text-ink-3">
               updated <RelativeTime value={profile.updatedAt} />
             </p>
           </div>
           <div className="flex shrink-0 flex-wrap gap-1.5">
-            <Button size="sm" variant="outline" onClick={onEdit}>
+            <Button size="sm" variant="secondary" onClick={onEdit}>
               <Pencil className="mr-1 h-3.5 w-3.5" />
               Edit
             </Button>
-            <Button size="sm" variant="outline" onClick={onAddEntry}>
+            <Button size="sm" variant="secondary" onClick={onAddEntry}>
               <Plus className="mr-1 h-3.5 w-3.5" />
               Entry
             </Button>
-            <Button size="sm" variant="outline" onClick={onBind}>
+            <Button size="sm" variant="secondary" onClick={onBind}>
               <Link2 className="mr-1 h-3.5 w-3.5" />
               Bind
             </Button>
@@ -1297,18 +1297,18 @@ function ProfileDetail({
 
         {/* Targets */}
         <div className="space-y-2">
-          <h4 className="text-sm font-semibold text-foreground">Targets</h4>
+          <h4 className="text-sm font-semibold text-ink">Targets</h4>
           <div className="flex flex-wrap gap-2">
             {profile.bindings.length === 0 ? (
-              <span className="text-sm text-muted-foreground">No targets bound.</span>
+              <span className="text-sm text-ink-3">No targets bound.</span>
             ) : profile.bindings.map((binding) => (
-              <span key={binding.id} className="inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs">
+              <span key={binding.id} className="inline-flex items-center gap-1.5 rounded-md border border-line px-2 py-1 text-xs">
                 <Badge variant="outline">{binding.targetType}</Badge>
                 <span>{bindingLabel(binding.targetType, binding.targetId, { companyId, ...maps })}</span>
-                <span className="text-muted-foreground">p{binding.priority}</span>
+                <span className="text-ink-3">p{binding.priority}</span>
                 <button
                   type="button"
-                  className="rounded p-0.5 text-muted-foreground hover:text-destructive"
+                  className="rounded p-0.5 text-ink-3 hover:text-bad"
                   onClick={() => onUnbind(binding)}
                   aria-label={`Remove ${binding.targetType} binding`}
                 >
@@ -1321,29 +1321,29 @@ function ProfileDetail({
 
         {/* Effective scope summary */}
         <div className="space-y-2">
-          <h4 className="text-sm font-semibold text-foreground">Effective scope</h4>
+          <h4 className="text-sm font-semibold text-ink">Effective scope</h4>
           <div className="flex flex-wrap gap-2 text-xs">
-            <span className="rounded-md border border-border px-2 py-1 text-muted-foreground">
-              Default <span className="font-medium text-foreground">{profile.defaultAction}</span>
+            <span className="rounded-md border border-line px-2 py-1 text-ink-3">
+              Default <span className="font-medium text-ink">{profile.defaultAction}</span>
             </span>
-            <span className="rounded-md border border-border px-2 py-1 text-muted-foreground">
-              <span className="font-medium text-foreground">{rows.length}</span> tools allowed
+            <span className="rounded-md border border-line px-2 py-1 text-ink-3">
+              <span className="font-medium text-ink">{rows.length}</span> tools allowed
             </span>
-            <span className="rounded-md border border-border px-2 py-1 text-muted-foreground">
-              <span className="font-medium text-foreground">{includeCount}</span> include /{" "}
-              <span className="font-medium text-foreground">{excludeCount}</span> exclude
+            <span className="rounded-md border border-line px-2 py-1 text-ink-3">
+              <span className="font-medium text-ink">{includeCount}</span> include /{" "}
+              <span className="font-medium text-ink">{excludeCount}</span> exclude
             </span>
           </div>
         </div>
 
         {/* Selectors (entry management) */}
         <div className="space-y-2">
-          <h4 className="text-sm font-semibold text-foreground">Selectors</h4>
+          <h4 className="text-sm font-semibold text-ink">Selectors</h4>
           <div className="flex flex-wrap gap-2">
             {profile.entries.length === 0 ? (
-              <span className="text-sm text-muted-foreground">No selectors.</span>
+              <span className="text-sm text-ink-3">No selectors.</span>
             ) : profile.entries.map((entry) => (
-              <span key={entry.id} className="inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs">
+              <span key={entry.id} className="inline-flex items-center gap-1.5 rounded-md border border-line px-2 py-1 text-xs">
                 <Badge variant={entry.effect === "include" ? "secondary" : "destructive"}>{entry.effect}</Badge>
                 <span className="font-mono">{entry.selectorType}</span>
                 {entry.selectorType === "risk_level" ? <RiskBadge risk={entry.riskLevel} /> : (
@@ -1351,7 +1351,7 @@ function ProfileDetail({
                 )}
                 <button
                   type="button"
-                  className="rounded p-0.5 text-muted-foreground hover:text-destructive"
+                  className="rounded p-0.5 text-ink-3 hover:text-bad"
                   onClick={() => onDeleteEntry(entry.id)}
                   aria-label={`Delete ${entry.selectorType} entry`}
                 >

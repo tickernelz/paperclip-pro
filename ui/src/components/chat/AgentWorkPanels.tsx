@@ -71,14 +71,14 @@ export function sortAgentTasks(
 
 function PanelMessage({ children, tone = "muted" }: { children: React.ReactNode; tone?: "muted" | "error" }) {
   return (
-    <p className={cn("px-1 py-6 text-center text-sm", tone === "error" ? "text-destructive" : "text-muted-foreground")}>
+    <p className={cn("px-1 py-6 text-center text-sm", tone === "error" ? "text-bad" : "text-ink-3")}>
       {children}
     </p>
   );
 }
 
 const cardClassName =
-  "flex flex-col gap-1 rounded-lg border border-border bg-card p-3 transition-colors hover:border-foreground/20 hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring";
+  "flex flex-col gap-1 rounded-lg border border-line bg-bg-2 p-3 transition-colors hover:border-ink/20 hover:bg-bg-3/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus";
 
 export function AgentTaskCard({ task }: { task: Issue }) {
   return (
@@ -97,11 +97,11 @@ export function AgentTaskCard({ task }: { task: Issue }) {
           blockerAttention={task.blockerAttention}
           className="mt-0.5 shrink-0"
         />
-        <span className="min-w-0 flex-1 line-clamp-2 text-sm font-medium text-foreground">
+        <span className="min-w-0 flex-1 line-clamp-2 text-sm font-medium text-ink">
           {task.title}
         </span>
       </div>
-      <div className="flex items-center gap-1.5 pl-6 text-xs text-muted-foreground">
+      <div className="flex items-center gap-1.5 pl-6 text-xs text-ink-3">
         <span className="font-mono">{task.identifier ?? task.id.slice(0, 8)}</span>
         <span aria-hidden>·</span>
         <time dateTime={new Date(task.updatedAt).toISOString()} title={new Date(task.updatedAt).toLocaleString()}>
@@ -190,13 +190,13 @@ export function AgentTasksPanel({
           activeFilterCount={activeFilterCount}
           projects={projectsQuery.data?.map((project) => ({ id: project.id, name: project.name }))}
           enableExternalObjectFilters={false}
-          buttonVariant="outline"
+          buttonVariant="secondary"
           iconOnly
           presentation="streamlined"
         />
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="icon" className="h-8 w-8 shrink-0" title="Sort" aria-label="Sort tasks">
+            <Button variant="secondary" size="icon" className="h-8 w-8 shrink-0" title="Sort" aria-label="Sort tasks">
               <ArrowUpDown className="h-3.5 w-3.5" />
             </Button>
           </PopoverTrigger>
@@ -208,7 +208,7 @@ export function AgentTasksPanel({
                   type="button"
                   className={cn(
                     "flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-sm",
-                    sortField === field ? "bg-accent/50 text-foreground" : "text-muted-foreground hover:bg-accent/50",
+                    sortField === field ? "bg-bg-3/50 text-ink" : "text-ink-3 hover:bg-bg-3/50",
                   )}
                   onClick={() => {
                     setSortPicked(true);
@@ -221,7 +221,7 @@ export function AgentTasksPanel({
                 >
                   <span>{label}</span>
                   {sortField === field ? (
-                    <span className="text-xs text-muted-foreground">{sortDir === "asc" ? "↑" : "↓"}</span>
+                    <span className="text-xs text-ink-3">{sortDir === "asc" ? "↑" : "↓"}</span>
                   ) : null}
                 </button>
               ))}
@@ -246,7 +246,7 @@ export function AgentTasksPanel({
         <div className="flex flex-col gap-2">
           {visible.map((task) => <AgentTaskCard key={task.id} task={task} />)}
           {capped ? (
-            <p className="px-1 text-xs text-muted-foreground">
+            <p className="px-1 text-xs text-ink-3">
               Showing the {AGENT_TASK_LIMIT} most recently updated tasks.
             </p>
           ) : null}
@@ -257,7 +257,7 @@ export function AgentTasksPanel({
 }
 
 function ArtifactKindIcon({ artifact }: { artifact: CompanyArtifact }) {
-  const className = "mt-0.5 h-4 w-4 shrink-0 text-muted-foreground";
+  const className = "mt-0.5 h-4 w-4 shrink-0 text-ink-3";
   switch (artifact.mediaKind) {
     case "image": return <Image className={className} aria-hidden />;
     case "video": return <Video className={className} aria-hidden />;
@@ -280,11 +280,11 @@ export function AgentArtifactCard({ artifact }: { artifact: CompanyArtifact }) {
     >
       <div className="flex min-w-0 items-start gap-2">
         <ArtifactKindIcon artifact={artifact} />
-        <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground" title={artifact.title}>
+        <span className="min-w-0 flex-1 truncate text-sm font-medium text-ink" title={artifact.title}>
           {artifact.title}
         </span>
       </div>
-      <div className="flex items-center gap-1.5 pl-6 text-xs text-muted-foreground">
+      <div className="flex items-center gap-1.5 pl-6 text-xs text-ink-3">
         <span>Updated {formatDate(artifact.updatedAt)}</span>
         <span aria-hidden>·</span>
         <span className="font-mono">{artifact.issue.identifier}</span>
@@ -324,7 +324,7 @@ export function AgentArtifactsPanel({ companyId, agentId }: { companyId: string;
     <section className="flex flex-col gap-2" aria-label="Agent artifacts">
       {artifacts.map((artifact) => <AgentArtifactCard key={artifact.id} artifact={artifact} />)}
       {truncated ? (
-        <p className="px-1 text-xs text-muted-foreground">Showing this agent's {artifacts.length} most recent artifacts.</p>
+        <p className="px-1 text-xs text-ink-3">Showing this agent's {artifacts.length} most recent artifacts.</p>
       ) : null}
     </section>
   );

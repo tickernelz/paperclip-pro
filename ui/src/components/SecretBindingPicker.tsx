@@ -75,11 +75,11 @@ function statusTone(status: CompanySecret["status"]): string {
     case "disabled":
       return "text-amber-600 dark:text-amber-400";
     case "archived":
-      return "text-muted-foreground";
+      return "text-ink-3";
     case "deleted":
-      return "text-destructive";
+      return "text-bad";
     default:
-      return "text-muted-foreground";
+      return "text-ink-3";
   }
 }
 
@@ -160,12 +160,12 @@ export function SecretBindingPicker({
   return (
     <div className={cn("space-y-1.5", className)}>
       {label ? (
-        <div className="flex items-center justify-between text-xs font-medium text-foreground/80">
+        <div className="flex items-center justify-between text-xs font-medium text-ink/80">
           <span>{label}</span>
           {value ? (
             <button
               type="button"
-              className="text-(length:--text-micro) text-muted-foreground hover:text-foreground inline-flex items-center gap-1"
+              className="text-(length:--text-micro) text-ink-3 hover:text-ink inline-flex items-center gap-1"
               onClick={() => onChange(null)}
               disabled={disabled}
             >
@@ -176,11 +176,11 @@ export function SecretBindingPicker({
       ) : null}
       <div className="flex items-center gap-1.5">
         <div className="relative flex-1">
-          <KeyRound className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+          <KeyRound className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-3" />
           <select
             className={cn(
-              "h-9 w-full rounded-md border border-border bg-background pl-7 pr-2 text-sm outline-none disabled:cursor-not-allowed disabled:opacity-60",
-              selectedMissing && !calmMissing && "border-destructive text-destructive",
+              "h-9 w-full rounded-md border border-line bg-bg pl-7 pr-2 text-sm outline-none disabled:cursor-not-allowed disabled:opacity-60",
+              selectedMissing && !calmMissing && "border-bad text-bad",
             )}
             value={value?.secretId ?? ""}
             onChange={(event) => {
@@ -212,7 +212,7 @@ export function SecretBindingPicker({
         </div>
         {allowVersionSelector ? (
           <select
-            className="h-9 rounded-md border border-border bg-background px-2 text-xs outline-none disabled:cursor-not-allowed disabled:opacity-60"
+            className="h-9 rounded-md border border-line bg-bg px-2 text-xs outline-none disabled:cursor-not-allowed disabled:opacity-60"
             value={value?.version === undefined ? VERSION_LATEST : String(value.version)}
             onChange={(event) => {
               if (!value) return;
@@ -239,7 +239,7 @@ export function SecretBindingPicker({
         ) : null}
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           size="sm"
           onClick={() => setCreateOpen(true)}
           disabled={disabled || !selectedCompanyId}
@@ -250,36 +250,36 @@ export function SecretBindingPicker({
       </div>
 
       {selectedSecret ? (
-        <p className={cn("text-(length:--text-micro) text-muted-foreground", statusTone(selectedSecret.status))}>
+        <p className={cn("text-(length:--text-micro) text-ink-3", statusTone(selectedSecret.status))}>
           {selectedSecret.status !== "active" ? `Status: ${selectedSecret.status}. ` : null}
           Bound to {versionDisplay(value?.version)} · {selectedSecret.key}
         </p>
       ) : crossCompanyHint ? (
-        <p className="text-(length:--text-micro) text-muted-foreground flex items-center gap-1">
+        <p className="text-(length:--text-micro) text-ink-3 flex items-center gap-1">
           <AlertCircle className="h-3 w-3" />
           Owned by {crossCompanyHint.companyName ? `the ${crossCompanyHint.companyName} organization` : "another organization"}. The binding keeps working; selecting a secret from this list re-points it here.
         </p>
       ) : missingHint ? (
-        <p className="text-(length:--text-micro) text-destructive flex items-center gap-1">
+        <p className="text-(length:--text-micro) text-bad flex items-center gap-1">
           <AlertCircle className="h-3 w-3" />
           {missingHint.status === "deleted"
             ? "The previously selected secret was deleted. Pick another or remove the binding."
             : `This secret is ${missingHint.status}; runs cannot resolve it until it is active again.`}
         </p>
       ) : hintsPending ? (
-        <p className="text-(length:--text-micro) text-muted-foreground flex items-center gap-1">
+        <p className="text-(length:--text-micro) text-ink-3 flex items-center gap-1">
           <AlertCircle className="h-3 w-3" />
           {hintsContext?.status === "error"
             ? "Could not load this secret reference's details."
             : "Checking this secret reference…"}
         </p>
       ) : selectedMissing ? (
-        <p className="text-(length:--text-micro) text-destructive flex items-center gap-1">
+        <p className="text-(length:--text-micro) text-bad flex items-center gap-1">
           <AlertCircle className="h-3 w-3" />
           The previously selected secret is no longer available. Pick another or remove the binding.
         </p>
       ) : (filteredSecrets.length === 0 && !secretsQuery.isPending) ? (
-        <p className="text-(length:--text-micro) text-muted-foreground">{emptyHint}</p>
+        <p className="text-(length:--text-micro) text-ink-3">{emptyHint}</p>
       ) : null}
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
@@ -289,7 +289,7 @@ export function SecretBindingPicker({
           </DialogHeader>
           <div className="space-y-3">
             <div>
-              <label className="text-xs font-medium text-foreground/80" htmlFor="secret-name">Name</label>
+              <label className="text-xs font-medium text-ink/80" htmlFor="secret-name">Name</label>
               <Input
                 id="secret-name"
                 value={createName}
@@ -299,7 +299,7 @@ export function SecretBindingPicker({
               />
             </div>
             <div>
-              <label className="text-xs font-medium text-foreground/80" htmlFor="secret-value">Value</label>
+              <label className="text-xs font-medium text-ink/80" htmlFor="secret-value">Value</label>
               <Textarea
                 id="secret-value"
                 value={createValue}
@@ -308,12 +308,12 @@ export function SecretBindingPicker({
                 placeholder="Paste the secret value"
                 className="font-mono text-xs"
               />
-              <p className="text-(length:--text-micro) text-muted-foreground mt-1">
+              <p className="text-(length:--text-micro) text-ink-3 mt-1">
                 The value is stored once and never re-displayed. Rotate to replace.
               </p>
             </div>
             <div>
-              <label className="text-xs font-medium text-foreground/80" htmlFor="secret-description">Description</label>
+              <label className="text-xs font-medium text-ink/80" htmlFor="secret-description">Description</label>
               <Input
                 id="secret-description"
                 value={createDescription}
@@ -321,10 +321,10 @@ export function SecretBindingPicker({
                 placeholder="Optional notes (no values)"
               />
             </div>
-            {createError ? <p className="text-xs text-destructive">{createError}</p> : null}
+            {createError ? <p className="text-xs text-bad">{createError}</p> : null}
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => setCreateOpen(false)}>Cancel</Button>
+            <Button type="button" variant="secondary" onClick={() => setCreateOpen(false)}>Cancel</Button>
             <Button
               type="button"
               onClick={() => createMutation.mutate()}

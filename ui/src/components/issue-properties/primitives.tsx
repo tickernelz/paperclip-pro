@@ -23,8 +23,8 @@ export function PropertySection({
         <div
           className={cn(
             streamlined
-              ? "pb-1 font-mono text-(length:--text-nano) font-normal uppercase tracking-wide text-muted-foreground/70"
-              : "text-xs font-semibold uppercase tracking-wide text-muted-foreground pb-1",
+              ? "pb-1 font-mono text-(length:--text-nano) font-normal uppercase tracking-wide text-ink-3/70"
+              : "text-xs font-semibold uppercase tracking-wide text-ink-3 pb-1",
             first ? "pt-0" : "pt-3",
           )}
         >
@@ -56,7 +56,7 @@ export function PropertyRow({
     >
       <span
         className={cn(
-          "text-xs text-muted-foreground shrink-0 w-24 truncate",
+          "text-xs text-ink-3 shrink-0 w-24 truncate",
           wrap && "mt-0.5",
         )}
         data-property-label={typeof label === "string" ? label : undefined}

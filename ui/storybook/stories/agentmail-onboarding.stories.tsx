@@ -31,7 +31,7 @@ function AgentMailJourney({ savedConnection = true }: { savedConnection?: boolea
   if (!ready || !selectedCompanyId) return null;
   if (!pathname.endsWith("/apps/chat/connect")) return <div className="p-6 text-sm">Setup complete.</div>;
   return <ChatSetupSidebarProvider>
-    <div className="min-h-screen bg-background text-foreground md:flex">
+    <div className="min-h-screen bg-bg text-ink md:flex">
       <div className="hidden w-60 shrink-0 md:block"><ChatSetupSidebar /></div>
       <main className="min-w-0 flex-1 py-6"><EmailEndpointSetup /></main>
     </div>

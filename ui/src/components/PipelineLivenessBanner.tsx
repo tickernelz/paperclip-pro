@@ -149,7 +149,7 @@ export function PipelineLivenessBanner({
             <p className="text-xs italic opacity-70">{view.helperNote}</p>
           ) : null}
           {retryError ? (
-            <p role="alert" className="text-sm font-medium text-destructive">
+            <p role="alert" className="text-sm font-medium text-bad">
               {retryError}
             </p>
           ) : null}
@@ -159,7 +159,7 @@ export function PipelineLivenessBanner({
         <Button
           type="button"
           size="sm"
-          variant="outline"
+          variant="secondary"
           className={cn("shrink-0", palette.button)}
           disabled={retryPending}
           onClick={() => onRetry?.(view.retryKind)}

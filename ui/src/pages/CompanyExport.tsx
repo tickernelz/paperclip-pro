@@ -366,11 +366,11 @@ function FrontmatterCard({
   onSkillClick?: (skill: string) => void;
 }) {
   return (
-    <div className="rounded-md border border-border bg-accent/20 px-4 py-3 mb-4">
+    <div className="rounded-md border border-line bg-bg-3/20 px-4 py-3 mb-4">
       <dl className="grid grid-cols-(--gtc-5) gap-x-4 gap-y-1.5 text-sm">
         {Object.entries(data).map(([key, value]) => (
           <div key={key} className="contents">
-            <dt className="text-muted-foreground whitespace-nowrap py-0.5">
+            <dt className="text-ink-3 whitespace-nowrap py-0.5">
               {FRONTMATTER_FIELD_LABELS[key] ?? key}
             </dt>
             <dd className="py-0.5">
@@ -381,8 +381,8 @@ function FrontmatterCard({
                       key={item}
                       type="button"
                       className={cn(
-                        "inline-flex items-center rounded-md border border-border bg-background px-2 py-0.5 text-xs",
-                        key === "skills" && onSkillClick && "cursor-pointer hover:bg-accent/50 hover:border-foreground/30 transition-colors",
+                        "inline-flex items-center rounded-md border border-line bg-bg px-2 py-0.5 text-xs",
+                        key === "skills" && onSkillClick && "cursor-pointer hover:bg-bg-3/50 hover:border-ink/30 transition-colors",
                       )}
                       onClick={() => key === "skills" && onSkillClick?.(item)}
                     >
@@ -555,7 +555,7 @@ function ExportPreviewPane({
 
   return (
     <div className="min-w-0">
-      <div className="border-b border-border px-5 py-3">
+      <div className="border-b border-line px-5 py-3">
         <div className="truncate font-mono text-sm">{selectedFile}</div>
       </div>
       <div className="min-h-(--sz-560px) px-5 py-5">
@@ -567,15 +567,15 @@ function ExportPreviewPane({
         ) : isMarkdown ? (
           <MarkdownBody resolveImageSrc={resolveImageSrc} softBreaks={false} linkIssueReferences={false}>{textContent ?? ""}</MarkdownBody>
         ) : imageSrc ? (
-          <div className="flex min-h-(--sz-520px) items-center justify-center rounded-lg border border-border bg-accent/10 p-6">
+          <div className="flex min-h-(--sz-520px) items-center justify-center rounded-lg border border-line bg-bg-3/10 p-6">
             <img src={imageSrc} alt={selectedFile} className="max-h-(--sz-480px) max-w-full object-contain" />
           </div>
         ) : textContent !== null ? (
-          <pre className="overflow-x-auto whitespace-pre-wrap break-words border-0 bg-transparent p-0 font-mono text-sm text-foreground">
+          <pre className="overflow-x-auto whitespace-pre-wrap break-words border-0 bg-transparent p-0 font-mono text-sm text-ink">
             <code>{textContent}</code>
           </pre>
         ) : (
-          <div className="rounded-lg border border-border bg-accent/10 px-4 py-3 text-sm text-muted-foreground">
+          <div className="rounded-lg border border-line bg-bg-3/10 px-4 py-3 text-sm text-ink-3">
             Binary asset preview is not available for this file type.
           </div>
         )}
@@ -1080,13 +1080,13 @@ export function CompanyExport() {
   return (
     <div className="max-w-6xl">
       {/* Sticky top action bar */}
-      <div className="sticky top-0 z-10 border-b border-border bg-background px-5 py-3">
+      <div className="sticky top-0 z-10 border-b border-line bg-bg px-5 py-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-4 text-sm">
             <span className="font-medium">
               {selectedCompany?.name ?? "Organization"} export
             </span>
-            <span className="text-muted-foreground">
+            <span className="text-ink-3">
               Exporting {selectedCount.toLocaleString()} of {totalFiles.toLocaleString()} file{totalFiles === 1 ? "" : "s"}
               {selectedCount > 0 && ` (~${formatBytes(estimatedZipBytes)})`}
             </span>
@@ -1133,7 +1133,7 @@ export function CompanyExport() {
               key={warning.code}
               className={cn(
                 "text-xs",
-                warning.severity === "blocker" ? "font-medium text-destructive" : "text-amber-500",
+                warning.severity === "blocker" ? "font-medium text-bad" : "text-amber-500",
               )}
             >
               {warning.message}
@@ -1144,12 +1144,12 @@ export function CompanyExport() {
 
       {/* Two-column layout */}
       <div className="grid gap-4 xl:h-(--sz-calc-30) xl:grid-cols-(--gtc-25) xl:gap-0">
-        <aside className="flex max-h-(--sz-24rem) flex-col overflow-hidden border-b border-border xl:max-h-none xl:border-b-0 xl:border-r">
-          <div className="border-b border-border px-4 py-3 shrink-0">
+        <aside className="flex max-h-(--sz-24rem) flex-col overflow-hidden border-b border-line xl:max-h-none xl:border-b-0 xl:border-r">
+          <div className="border-b border-line px-4 py-3 shrink-0">
             <h2 className="text-base font-semibold">Package files</h2>
           </div>
-          <div className="border-b border-border px-4 py-3 shrink-0">
-            <h3 className="mb-2 text-xs font-medium text-muted-foreground">What to include</h3>
+          <div className="border-b border-line px-4 py-3 shrink-0">
+            <h3 className="mb-2 text-xs font-medium text-ink-3">What to include</h3>
             <div className="grid grid-cols-2 gap-x-4 gap-y-1.5" role="group" aria-label="What to include">
               {EXPORT_CATEGORY_ORDER.map((key) => {
                 const isAttachments = key === "attachments";
@@ -1176,30 +1176,30 @@ export function CompanyExport() {
                       checked={checked}
                       disabled={disabled}
                       onChange={() => handleToggleCategory(key)}
-                      className="accent-foreground"
+                      className="accent-ink"
                       data-export-category={key}
                     />
                     <span className="min-w-0 truncate">{EXPORT_CATEGORY_LABELS[key]}</span>
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-ink-3">
                       {countLoaded ? count.toLocaleString() : "—"}
                     </span>
                   </label>
                 );
               })}
             </div>
-            <p className="mt-2 text-xs text-muted-foreground">
+            <p className="mt-2 text-xs text-ink-3">
               Task and routine history is opt-in because it can be large.
             </p>
           </div>
-          <div className="border-b border-border px-3 py-2 shrink-0">
-            <div className="flex items-center gap-2 rounded-md border border-border px-2 py-1">
-              <Search className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+          <div className="border-b border-line px-3 py-2 shrink-0">
+            <div className="flex items-center gap-2 rounded-md border border-line px-2 py-1">
+              <Search className="h-3.5 w-3.5 text-ink-3 shrink-0" />
               <input
                 type="text"
                 value={treeSearch}
                 onChange={(e) => handleSearchChange(e.target.value)}
                 placeholder="Search files..."
-                className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                className="w-full bg-transparent text-sm outline-none placeholder:text-ink-3"
                 data-page-search-target="true"
               />
             </div>
@@ -1220,7 +1220,7 @@ export function CompanyExport() {
                 <button
                   type="button"
                   onClick={() => setTaskLimit((prev) => prev + TASKS_PAGE_SIZE)}
-                  className="w-full rounded-md border border-border px-3 py-1.5 text-xs text-muted-foreground hover:bg-accent/30 hover:text-foreground transition-colors"
+                  className="w-full rounded-md border border-line px-3 py-1.5 text-xs text-ink-3 hover:bg-bg-3/30 hover:text-ink transition-colors"
                 >
                   Show more tasks ({visibleTaskChildren} of {totalTaskChildren})
                 </button>
@@ -1238,21 +1238,21 @@ export function CompanyExport() {
           />
           {exportPreviewMutation.isPending ? (
             <div
-              className="absolute inset-0 z-10 flex min-h-(--sz-520px) items-center justify-center bg-background/90 px-6 text-center"
+              className="absolute inset-0 z-10 flex min-h-(--sz-520px) items-center justify-center bg-bg/90 px-6 text-center"
               role="status"
               aria-live="polite"
               aria-busy="true"
               data-export-preview-state="loading"
             >
               <div className="flex max-w-md flex-col items-center gap-3">
-                <LoaderCircle className="h-6 w-6 animate-spin text-muted-foreground" />
+                <LoaderCircle className="h-6 w-6 animate-spin text-ink-3" />
                 <div>
                   <p className="text-sm font-medium">Updating export preview…</p>
-                  <p className="mt-1 text-xs text-muted-foreground">
+                  <p className="mt-1 text-xs text-ink-3">
                     Large task histories can take a minute. You can untick Tasks or cancel this update.
                   </p>
                 </div>
-                <Button type="button" variant="outline" size="sm" onClick={handleCancelPreview}>
+                <Button type="button" variant="secondary" size="sm" onClick={handleCancelPreview}>
                   <X />
                   Cancel update
                 </Button>
@@ -1260,17 +1260,17 @@ export function CompanyExport() {
             </div>
           ) : previewCancelled ? (
             <div
-              className="absolute inset-0 z-10 flex min-h-(--sz-520px) items-center justify-center bg-background/90 px-6 text-center"
+              className="absolute inset-0 z-10 flex min-h-(--sz-520px) items-center justify-center bg-bg/90 px-6 text-center"
               data-export-preview-state="cancelled"
             >
               <div className="flex max-w-md flex-col items-center gap-3">
                 <div>
                   <p className="text-sm font-medium">Preview update cancelled</p>
-                  <p className="mt-1 text-xs text-muted-foreground">
+                  <p className="mt-1 text-xs text-ink-3">
                     The previous preview remains available. Retry when you are ready.
                   </p>
                 </div>
-                <Button type="button" variant="outline" size="sm" onClick={startPreviewRequest}>
+                <Button type="button" variant="secondary" size="sm" onClick={startPreviewRequest}>
                   <RotateCcw />
                   Retry preview
                 </Button>
@@ -1278,18 +1278,18 @@ export function CompanyExport() {
             </div>
           ) : exportPreviewMutation.isError ? (
             <div
-              className="absolute inset-0 z-10 flex min-h-(--sz-520px) items-center justify-center bg-background/90 px-6 text-center"
+              className="absolute inset-0 z-10 flex min-h-(--sz-520px) items-center justify-center bg-bg/90 px-6 text-center"
               role="alert"
               data-export-preview-state="error"
             >
               <div className="flex max-w-md flex-col items-center gap-3">
                 <div>
-                  <p className="text-sm font-medium text-destructive">Export preview failed</p>
-                  <p className="mt-1 text-xs text-muted-foreground">
+                  <p className="text-sm font-medium text-bad">Export preview failed</p>
+                  <p className="mt-1 text-xs text-ink-3">
                     {previewErrorMessage(exportPreviewMutation.error)}
                   </p>
                 </div>
-                <Button type="button" variant="outline" size="sm" onClick={startPreviewRequest}>
+                <Button type="button" variant="secondary" size="sm" onClick={startPreviewRequest}>
                   <RotateCcw />
                   Retry preview
                 </Button>

@@ -159,7 +159,7 @@ export const InlineEntitySelector = forwardRef<HTMLButtonElement, InlineEntitySe
             data-testid={triggerTestId}
             data-slot={triggerDataSlot}
             className={cn(
-              "inline-flex min-w-0 items-center gap-1 rounded-md border border-border bg-muted/40 px-2 py-1 text-sm font-medium text-foreground transition-colors hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-50 disabled:pointer-events-none",
+              "inline-flex min-w-0 items-center gap-1 rounded-md border border-line bg-bg-3/40 px-2 py-1 text-sm font-medium text-ink transition-colors hover:bg-bg-3/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:opacity-50 disabled:pointer-events-none",
               className,
             )}
             onPointerDown={() => { isPointerDownRef.current = true; }}
@@ -172,7 +172,7 @@ export const InlineEntitySelector = forwardRef<HTMLButtonElement, InlineEntitySe
           >
             {renderTriggerValue
               ? renderTriggerValue(currentOption)
-              : (currentOption?.label ?? <span className="text-muted-foreground">{placeholder}</span>)}
+              : (currentOption?.label ?? <span className="text-ink-3">{placeholder}</span>)}
           </button>
         </PopoverTrigger>
         <PopoverContent
@@ -205,15 +205,15 @@ export const InlineEntitySelector = forwardRef<HTMLButtonElement, InlineEntitySe
           <div
             data-mobile-entity-picker-header=""
             data-mobile-sheet-header=""
-            className="hidden items-center justify-between gap-2 border-b border-border px-4 py-3"
+            className="hidden items-center justify-between gap-2 border-b border-line px-4 py-3"
           >
-            <span className="shrink-0 text-base font-semibold text-foreground">{mobileTitle ?? placeholder}</span>
-            <span data-mobile-sheet-value="" className="min-w-0 flex-1 truncate text-right text-xs text-muted-foreground">
+            <span className="shrink-0 text-base font-semibold text-ink">{mobileTitle ?? placeholder}</span>
+            <span data-mobile-sheet-value="" className="min-w-0 flex-1 truncate text-right text-xs text-ink-3">
               {currentOption?.label ?? noneLabel}
             </span>
             <button
               type="button"
-              className="inline-flex size-9 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
+              className="inline-flex size-9 shrink-0 items-center justify-center rounded-md text-ink-3 hover:bg-bg-3 hover:text-ink"
               aria-label="Close selector"
               data-mobile-sheet-close=""
               onClick={() => {
@@ -224,11 +224,11 @@ export const InlineEntitySelector = forwardRef<HTMLButtonElement, InlineEntitySe
               <X className="size-5" />
             </button>
           </div>
-          <div className="flex items-center gap-2 border-b border-border px-2">
-            <Search className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+          <div className="flex items-center gap-2 border-b border-line px-2">
+            <Search className="size-4 shrink-0 text-ink-3" aria-hidden />
             <input
               ref={inputRef}
-              className="min-w-0 flex-1 bg-transparent py-2 text-base outline-none placeholder:text-muted-foreground/60 md:text-sm"
+              className="min-w-0 flex-1 bg-transparent py-2 text-base outline-none placeholder:text-ink-3/60 md:text-sm"
               placeholder={searchPlaceholder}
               value={query}
               onChange={(event) => {
@@ -274,7 +274,7 @@ export const InlineEntitySelector = forwardRef<HTMLButtonElement, InlineEntitySe
           </div>
           <div data-mobile-entity-picker-list="" data-slot="entity-option-list" className="max-h-56 overflow-y-auto overscroll-contain py-1 touch-pan-y">
             {filteredOptions.length === 0 ? (
-              <p className="px-2 py-2 text-xs text-muted-foreground">{emptyMessage}</p>
+              <p className="px-2 py-2 text-xs text-ink-3">{emptyMessage}</p>
             ) : (
               filteredOptions.map((option, index) => {
                 const isSelected = option.id === value;
@@ -285,14 +285,14 @@ export const InlineEntitySelector = forwardRef<HTMLButtonElement, InlineEntitySe
                     type="button"
                     className={cn(
                       "flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-sm touch-manipulation",
-                      noneAtEnd && !option.id && "mt-1 rounded-none border-t border-border",
-                      isHighlighted && "bg-accent",
+                      noneAtEnd && !option.id && "mt-1 rounded-none border-t border-line",
+                      isHighlighted && "bg-bg-3",
                     )}
                     onMouseEnter={() => setHighlightedIndexValue(index)}
                     onClick={() => commitSelection(index, true)}
                   >
                     {renderOption ? renderOption(option, isSelected) : <span className="truncate">{option.label}</span>}
-                    <Check className={cn("ml-auto h-3.5 w-3.5 text-muted-foreground", isSelected ? "opacity-100" : "opacity-0")} />
+                    <Check className={cn("ml-auto h-3.5 w-3.5 text-ink-3", isSelected ? "opacity-100" : "opacity-0")} />
                   </button>
                 );
               })

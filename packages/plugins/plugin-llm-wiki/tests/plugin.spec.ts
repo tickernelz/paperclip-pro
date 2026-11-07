@@ -746,7 +746,7 @@ describe("LLM Wiki plugin scaffold", () => {
 
     expect(markup).toContain('href="/PAP/wiki"');
     expect(markup).toContain("gap-2.5 px-3 py-2 text-[13px] font-medium");
-    expect(markup).toContain("hover:bg-accent/50 hover:text-foreground");
+    expect(markup).toContain("hover:bg-bg-3/50 hover:text-ink");
     expect(markup).toContain("<svg");
     expect(markup).toContain("M12 7v14");
     expect(markup).not.toContain("Wiki plugin");
@@ -803,7 +803,7 @@ describe("LLM Wiki plugin scaffold", () => {
     expect(markup).not.toContain(">Lint</span>");
     expect(markup).not.toContain(">Ingest</span>");
     expect(markup).not.toContain(">Operations</span>");
-    expect(markup).not.toContain('text-sm font-bold text-foreground">Wiki');
+    expect(markup).not.toContain('text-sm font-bold text-ink">Wiki');
     expect(markup).not.toContain("Browse");
     expect(markup).not.toContain(">Query<");
     expect(markup).toContain('role="tree"');
@@ -989,8 +989,8 @@ Duplicate headings receive stable suffixes.
     expect(markup).not.toContain('href="/PAP/wiki/lint"');
     const settingsAnchor = markup.match(/<a[^>]*href="\/PAP\/wiki\/settings"[^>]*>/);
     expect(settingsAnchor?.[0]).toContain('aria-current="page"');
-    expect(settingsAnchor?.[0]).toContain("text-foreground");
-    expect(settingsAnchor?.[0]).not.toContain("bg-accent");
+    expect(settingsAnchor?.[0]).toContain("text-ink");
+    expect(settingsAnchor?.[0]).not.toContain("bg-bg-3");
     const askAnchor = markup.match(/<a[^>]*href="\/PAP\/wiki\/query"[^>]*>/);
     expect(askAnchor?.[0]).not.toContain('aria-current="page"');
   });

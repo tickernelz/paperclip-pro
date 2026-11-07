@@ -111,24 +111,24 @@ export function InboxAgentPolicyControl({ companyId }: { companyId: string | nul
 
   if (policyQuery.error) {
     return (
-      <div className="text-sm text-destructive">
+      <div className="text-sm text-bad">
         {policyQuery.error instanceof Error ? policyQuery.error.message : "Failed to load inbox agent policy."}
       </div>
     );
   }
 
   if (policyQuery.isLoading || !draft) {
-    return <div className="text-sm text-muted-foreground">Loading inbox agent policy…</div>;
+    return <div className="text-sm text-ink-3">Loading inbox agent policy…</div>;
   }
 
   return (
     <section className="space-y-4" aria-label="Let agents tidy my inbox">
       <div className="space-y-1">
         <div className="flex items-center gap-2">
-          <Inbox className="h-5 w-5 text-muted-foreground" />
+          <Inbox className="h-5 w-5 text-ink-3" />
           <h2 className="text-base font-semibold">Let agents tidy my inbox</h2>
         </div>
-        <p className="max-w-2xl text-sm text-muted-foreground">
+        <p className="max-w-2xl text-sm text-ink-3">
           Choose whether the agents you manage may archive tasks out of your inbox on your behalf. You can
           undo any archive, and every agent archive is attributed in the task&apos;s properties.
         </p>
@@ -166,14 +166,14 @@ export function InboxAgentPolicyControl({ companyId }: { companyId: string | nul
       ) : null}
 
       {updateMutation.error ? (
-        <div className="max-w-2xl rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+        <div className="max-w-2xl rounded-md border border-bad/40 bg-bad/5 px-3 py-2 text-sm text-bad">
           {updateMutation.error instanceof Error ? updateMutation.error.message : "Failed to save inbox agent policy."}
         </div>
       ) : null}
 
       <div className="flex max-w-2xl items-center justify-end gap-3">
         {updateMutation.isSuccess && !isDirty ? (
-          <span className="text-xs text-muted-foreground" role="status">Saved</span>
+          <span className="text-xs text-ink-3" role="status">Saved</span>
         ) : null}
         <Button
           type="button"

@@ -132,7 +132,7 @@ export function FoldCurtain({
               setAllowTransition(true);
               setExpanded((v) => !v);
             }}
-            className={cn("h-7 px-2 text-xs text-muted-foreground hover:text-foreground", toggleClassName)}
+            className={cn("h-7 px-2 text-xs", toggleClassName)}
           >
             {expanded ? lessLabel : moreLabel}
             {expanded ? (

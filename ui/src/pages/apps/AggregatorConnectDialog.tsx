@@ -52,14 +52,14 @@ export function AggregatorConnectDialog({ app, connections, initialProvider, onC
         const status = accounts.some((connection) => connection.status === "active" && connection.enabled && !isToolConnectionAttentionHealth(connection.healthStatus))
           ? "Already connected" : accounts.some((connection) => connection.status === "draft") ? "Setup incomplete" : accounts.length ? "Needs attention" : "Set up a connection";
         return <button type="button" key={route.provider} onClick={() => choose(route)}
-          className="flex w-full items-center gap-3 rounded-lg border border-border px-4 py-3 text-left hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+          className="flex w-full items-center gap-3 rounded-lg border border-line px-4 py-3 text-left hover:bg-bg-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
           <AppLogo name={name} brandKey={route.provider} size={24} />
-          <div className="min-w-0 flex-1"><div className="text-sm font-medium">{name}</div><div className="text-xs text-muted-foreground">{status}</div></div>
-          <span className="text-xs text-muted-foreground">Continue →</span>
+          <div className="min-w-0 flex-1"><div className="text-sm font-medium">{name}</div><div className="text-xs text-ink-3">{status}</div></div>
+          <span className="text-xs text-ink-3">Continue →</span>
         </button>;
       })}</div> : <div className="space-y-4">
         {selected.provider !== "composio" ? <div className="space-y-2"><Label htmlFor="aggregator-account">{provider!.name} account</Label>
-          <select id="aggregator-account" value={account?.id ?? ""} onChange={event => setSelectedAccountId(event.target.value)} className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm">
+          <select id="aggregator-account" value={account?.id ?? ""} onChange={event => setSelectedAccountId(event.target.value)} className="h-9 w-full rounded-md border border-line-strong bg-bg px-3 text-sm">
             {existing.map(connection => <option key={connection.id} value={connection.id}>{connection.name}</option>)}
           </select>
         </div> : null}
@@ -71,7 +71,7 @@ export function AggregatorConnectDialog({ app, connections, initialProvider, onC
         <Button variant="ghost" onClick={selected && canChooseProvider ? () => setSelected(null) : onClose}>{selected && canChooseProvider ? "Back" : "Cancel"}</Button>
         {selected ? <div className="flex flex-wrap items-center gap-3">
           {managementUrl ? <Button asChild><a href={managementUrl} target="_blank" rel="noopener noreferrer" onClick={onClose}>Continue<ExternalLink className="size-4" /></a></Button> : null}
-          <Button variant="link" size="sm" className="h-auto p-0 text-xs text-muted-foreground hover:text-foreground" onClick={() => { onNavigate(`${aggregatorAppConnectHref(selected)}&new=1`); onClose(); }}>Connect a new account</Button>
+          <Button variant="link" size="sm" className="h-auto p-0 text-xs" onClick={() => { onNavigate(`${aggregatorAppConnectHref(selected)}&new=1`); onClose(); }}>Connect a new account</Button>
         </div> : null}
       </DialogFooter> : null}
     </DialogContent>

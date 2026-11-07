@@ -31,8 +31,8 @@ const routes: Record<Step, string> = {
 
 function OutsideJourney() {
   return <div className="flex flex-col items-start gap-3 p-6">
-    <p className="text-sm text-muted-foreground">This preview covers the GitHub skills journey. Other app destinations are available in the running app.</p>
-    <Button asChild variant="outline"><Link to="/skills">Return to Skills</Link></Button>
+    <p className="text-sm text-ink-3">This preview covers the GitHub skills journey. Other app destinations are available in the running app.</p>
+    <Button asChild variant="secondary"><Link to="/skills">Return to Skills</Link></Button>
   </div>;
 }
 

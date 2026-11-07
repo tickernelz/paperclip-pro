@@ -162,8 +162,8 @@ type Story = StoryObj;
 /** The read-only external-skill banner with the primary "Edit a copy" CTA. */
 export const ReadOnlyBannerCTA: Story = {
   render: () => (
-    <div className="w-[30rem] max-w-full overflow-hidden rounded-md border border-border bg-card">
-      <div className="flex items-start gap-3 border-b border-border bg-muted/40 px-3 py-2.5 text-xs text-muted-foreground">
+    <div className="w-[30rem] max-w-full overflow-hidden rounded-md border border-line bg-bg-2">
+      <div className="flex items-start gap-3 border-b border-line bg-bg-3/40 px-3 py-2.5 text-xs text-ink-3">
         <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
         <div className="min-w-0 flex-1">
           <p>
@@ -176,7 +176,7 @@ export const ReadOnlyBannerCTA: Story = {
           </Button>
         </div>
       </div>
-      <div className="px-3 py-1.5 font-mono text-xs text-muted-foreground">SKILL.md</div>
+      <div className="px-3 py-1.5 font-mono text-xs text-ink-3">SKILL.md</div>
     </div>
   ),
 };
@@ -236,7 +236,7 @@ export const ForkedSkillHeader: Story = {
     });
     return (
       <Seed skill={fork}>
-        <div className="flex items-center gap-3 rounded-md border border-border bg-card px-3 py-2">
+        <div className="flex items-center gap-3 rounded-md border border-line bg-bg-2 px-3 py-2">
           <span className="text-base font-semibold">Deep Research (copy)</span>
           <Badge variant="secondary">Unsaved edits</Badge>
           <SkillLineageChip companyId={COMPANY_ID} forkedFromSkillId={ORIGINAL_ID} />
@@ -261,7 +261,7 @@ export const ProjectScanSourceNotice: Story = {
       editableReason: null,
     });
     return (
-      <div className="w-[30rem] max-w-full overflow-hidden rounded-md border border-border bg-card">
+      <div className="w-[30rem] max-w-full overflow-hidden rounded-md border border-line bg-bg-2">
         <ProjectScanNotice skill={skill} onEditACopy={() => {}} />
       </div>
     );

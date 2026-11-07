@@ -55,7 +55,7 @@ function Section({
 }) {
   return (
     <section className="paperclip-story__frame overflow-hidden">
-      <div className="border-b border-border px-5 py-4">
+      <div className="border-b border-line px-5 py-4">
         <div className="paperclip-story__label">{eyebrow}</div>
         <h2 className="mt-1 text-xl font-semibold">{title}</h2>
       </div>
@@ -556,17 +556,17 @@ function IconPickerMatrix() {
           <CardDescription>The real picker trigger updates the selected fixture state.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center gap-3 rounded-lg border border-border bg-background/70 p-4">
-            <div className="flex h-11 w-11 items-center justify-center rounded-lg border border-border bg-accent/40">
+          <div className="flex items-center gap-3 rounded-lg border border-line bg-bg/70 p-4">
+            <div className="flex h-11 w-11 items-center justify-center rounded-lg border border-line bg-bg-3/40">
               <AgentIcon icon={selectedIcon} className="h-5 w-5" />
             </div>
             <div>
               <div className="text-sm font-medium">StorybookEngineer</div>
-              <div className="font-mono text-xs text-muted-foreground">{selectedIcon}</div>
+              <div className="font-mono text-xs text-ink-3">{selectedIcon}</div>
             </div>
           </div>
           <AgentIconPicker value={selectedIcon} onChange={setSelectedIcon}>
-            <Button variant="outline" className="w-full justify-start">
+            <Button variant="secondary" className="w-full justify-start">
               <Settings2 className="h-4 w-4" />
               Open icon picker
             </Button>
@@ -574,7 +574,7 @@ function IconPickerMatrix() {
         </CardContent>
       </Card>
 
-      <div className="rounded-xl border border-border bg-background/70 p-4">
+      <div className="rounded-xl border border-line bg-bg/70 p-4">
         <div className="grid grid-cols-7 gap-2 sm:grid-cols-10 md:grid-cols-14">
           {visibleIcons.map((name) => (
             <button
@@ -583,8 +583,8 @@ function IconPickerMatrix() {
               title={name}
               onClick={() => setSelectedIcon(name)}
               className={cn(
-                "flex h-10 w-10 items-center justify-center rounded-lg border border-border transition-colors hover:bg-accent",
-                selectedIcon === name && "border-primary bg-primary/10 text-primary ring-1 ring-primary",
+                "flex h-10 w-10 items-center justify-center rounded-lg border border-line transition-colors hover:bg-bg-3",
+                selectedIcon === name && "border-accent bg-accent/10 text-accent ring-1 ring-accent",
               )}
             >
               <AgentIcon icon={name} className="h-4 w-4" />
@@ -616,7 +616,7 @@ function AgentActionsMatrix() {
             <CardHeader>
               <div className="flex items-start justify-between gap-3">
                 <div className="flex items-center gap-3">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-accent/40">
+                  <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-line bg-bg-3/40">
                     <AgentIcon icon={agent.icon} className="h-4 w-4" />
                   </span>
                   <div>
@@ -639,7 +639,7 @@ function AgentActionsMatrix() {
                 onClick={() => undefined}
                 disabled={runDisabled}
               />
-              <Button variant="outline" size="sm" disabled={restartDisabled}>
+              <Button variant="secondary" size="sm" disabled={restartDisabled}>
                 <RotateCcw className="h-3.5 w-3.5 sm:mr-1" />
                 <span className="hidden sm:inline">Restart</span>
               </Button>
@@ -668,13 +668,13 @@ function ConfigPrimitivesStory() {
 
   return (
     <div className="grid gap-5 lg:grid-cols-2">
-      <div className="space-y-4 rounded-xl border border-border bg-background/70 p-4">
+      <div className="space-y-4 rounded-xl border border-line bg-bg/70 p-4">
         <Field label="Text field" hint={help.model}>
           <DraftInput
             value={textValue}
             onCommit={setTextValue}
             immediate
-            className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 font-mono text-sm outline-none"
+            className="w-full rounded-md border border-line bg-transparent px-2.5 py-1.5 font-mono text-sm outline-none"
           />
         </Field>
         <Field label="Select field" hint={help.workspaceStrategy}>
@@ -696,7 +696,7 @@ function ConfigPrimitivesStory() {
           onChange={setToggleValue}
         />
       </div>
-      <div className="rounded-xl border border-border bg-background/70 p-4">
+      <div className="rounded-xl border border-line bg-bg/70 p-4">
         <Field label="JSON editor" hint={help.runtimeServicesJson}>
           <DraftTextarea
             value={jsonValue}
@@ -721,7 +721,7 @@ function AgentManagementStories() {
               <div>
                 <div className="paperclip-story__label">Agent management</div>
                 <h1 className="mt-2 text-3xl font-semibold tracking-tight">Agent details, controls, and config surfaces</h1>
-                <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
+                <p className="mt-3 max-w-3xl text-sm leading-6 text-ink-3">
                   Management stories exercise the dense pieces of the agent lifecycle: status detail panels,
                   adapter configuration, icon identity, run controls, live-agent cards, and the config-field primitives
                   used inside the form.
@@ -740,7 +740,7 @@ function AgentManagementStories() {
               <Card className="shadow-none">
                 <CardHeader>
                   <div className="flex items-start gap-3">
-                    <span className="flex h-11 w-11 items-center justify-center rounded-lg border border-border bg-accent/40">
+                    <span className="flex h-11 w-11 items-center justify-center rounded-lg border border-line bg-bg-3/40">
                       <AgentIcon icon={agentManagementAgents[0]!.icon} className="h-5 w-5" />
                     </span>
                     <div>
@@ -753,29 +753,29 @@ function AgentManagementStories() {
                   <AgentProperties agent={agentManagementAgents[0]!} runtimeState={runtimeState} />
                 </CardContent>
               </Card>
-              <div className="rounded-xl border border-border bg-background/70 p-5">
+              <div className="rounded-xl border border-line bg-bg/70 p-5">
                 <div className="mb-4 flex flex-wrap gap-2">
                   <Badge variant="secondary">session populated</Badge>
                   <Badge variant="secondary">last error shown</Badge>
                   <Badge variant="secondary">manager lookup seeded</Badge>
                 </div>
                 <div className="grid gap-3 text-sm md:grid-cols-2">
-                  <div className="rounded-lg border border-border p-3">
-                    <div className="text-xs text-muted-foreground">Budget</div>
+                  <div className="rounded-lg border border-line p-3">
+                    <div className="text-xs text-ink-3">Budget</div>
                     <div className="mt-1 font-mono">${(agentManagementAgents[0]!.budgetMonthlyCents / 100).toFixed(0)} / month</div>
                   </div>
-                  <div className="rounded-lg border border-border p-3">
-                    <div className="text-xs text-muted-foreground">Spent</div>
+                  <div className="rounded-lg border border-line p-3">
+                    <div className="text-xs text-ink-3">Spent</div>
                     <div className="mt-1 font-mono">${(agentManagementAgents[0]!.spentMonthlyCents / 100).toFixed(0)}</div>
                   </div>
-                  <div className="rounded-lg border border-border p-3">
-                    <div className="text-xs text-muted-foreground">Instructions</div>
+                  <div className="rounded-lg border border-line p-3">
+                    <div className="text-xs text-ink-3">Instructions</div>
                     <div className="mt-1 break-all font-mono text-xs">
                       {String(agentManagementAgents[0]!.adapterConfig.instructionsFilePath)}
                     </div>
                   </div>
-                  <div className="rounded-lg border border-border p-3">
-                    <div className="text-xs text-muted-foreground">Runtime policy</div>
+                  <div className="rounded-lg border border-line p-3">
+                    <div className="text-xs text-ink-3">Runtime policy</div>
                     <div className="mt-1 font-mono text-xs">heartbeat / 900s / max 2</div>
                   </div>
                 </div>
@@ -888,7 +888,7 @@ function ForcedKubernetesFixtures({
 function ForcedKubernetesStory({ environmentFixtures }: { environmentFixtures: Environment[] }) {
   return (
     <ForcedKubernetesFixtures environmentFixtures={environmentFixtures}>
-      <div className="min-h-screen bg-background text-foreground">
+      <div className="min-h-screen bg-bg text-ink">
         <main className="mx-auto max-w-4xl space-y-8 px-6 py-10">
           <Section
             eyebrow="AgentConfigForm"

@@ -75,7 +75,7 @@ export function GatewayAdvancedPanel({
   return (
     <div className="space-y-5">
       <section className="space-y-2">
-        <h3 className="text-sm font-semibold text-foreground">Transport</h3>
+        <h3 className="text-sm font-semibold text-ink">Transport</h3>
         <dl className="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
           <Row label="Transport" value="streamable_http" />
           <Row label="Authentication" value="bearer" />
@@ -83,10 +83,10 @@ export function GatewayAdvancedPanel({
           <Row label="Public ID" value={gateway.gatewayPublicId} mono />
         </dl>
         <div className="flex items-center gap-2">
-          <code className="min-w-0 flex-1 truncate rounded-md bg-muted px-3 py-2 font-mono text-xs text-muted-foreground">
+          <code className="min-w-0 flex-1 truncate rounded-md bg-bg-3 px-3 py-2 font-mono text-xs text-ink-3">
             {endpoint}
           </code>
-          <Button variant="outline" size="sm" onClick={() => void copy(endpoint, "Endpoint URL")}>
+          <Button variant="secondary" size="sm" onClick={() => void copy(endpoint, "Endpoint URL")}>
             <Copy className="mr-1 h-3.5 w-3.5" />
             Copy
           </Button>
@@ -95,20 +95,20 @@ export function GatewayAdvancedPanel({
 
       <section className="space-y-2">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-foreground">Raw configuration</h3>
-          <Button variant="outline" size="sm" onClick={() => void copy(rawConfig, "Gateway config JSON")}>
+          <h3 className="text-sm font-semibold text-ink">Raw configuration</h3>
+          <Button variant="secondary" size="sm" onClick={() => void copy(rawConfig, "Gateway config JSON")}>
             <Copy className="mr-1 h-3.5 w-3.5" />
             Copy JSON
           </Button>
         </div>
-        <pre className="max-h-96 overflow-auto whitespace-pre-wrap break-words rounded-md bg-muted p-3 font-mono text-xs text-muted-foreground">
+        <pre className="max-h-96 overflow-auto whitespace-pre-wrap break-words rounded-md bg-bg-3 p-3 font-mono text-xs text-ink-3">
           {rawConfig}
         </pre>
       </section>
 
-      <section className="space-y-2 rounded-lg border border-destructive/40 p-4">
-        <h3 className="text-sm font-semibold text-destructive">Danger zone</h3>
-        <p className="text-sm text-muted-foreground">
+      <section className="space-y-2 rounded-lg border border-bad/40 p-4">
+        <h3 className="text-sm font-semibold text-bad">Danger zone</h3>
+        <p className="text-sm text-ink-3">
           Archiving takes the gateway offline for every client. Existing tokens stop working. Type the
           gateway name to confirm.
         </p>
@@ -122,7 +122,7 @@ export function GatewayAdvancedPanel({
             />
             <div className="flex gap-2">
               <Button
-                variant="destructive"
+                variant="danger"
                 size="sm"
                 disabled={confirmName.trim() !== gateway.name || archiveMutation.isPending}
                 onClick={() => archiveMutation.mutate()}
@@ -135,7 +135,7 @@ export function GatewayAdvancedPanel({
             </div>
           </div>
         ) : (
-          <Button variant="outline" size="sm" className="text-destructive" onClick={() => setConfirming(true)}>
+          <Button variant="danger" size="sm" onClick={() => setConfirming(true)}>
             Archive gateway
           </Button>
         )}
@@ -147,8 +147,8 @@ export function GatewayAdvancedPanel({
 function Row({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
     <div>
-      <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
-      <dd className={mono ? "mt-0.5 font-mono text-foreground" : "mt-0.5 text-foreground"}>{value}</dd>
+      <dt className="text-xs font-medium text-ink-3">{label}</dt>
+      <dd className={mono ? "mt-0.5 font-mono text-ink" : "mt-0.5 text-ink"}>{value}</dd>
     </div>
   );
 }

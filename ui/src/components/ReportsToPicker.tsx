@@ -42,7 +42,7 @@ export function ReportsToPicker({
         <button
           type="button"
           className={cn(
-            "inline-flex max-w-full min-w-0 items-center gap-1.5 overflow-hidden rounded-md border border-border px-2 py-1 text-xs hover:bg-accent/50 transition-colors",
+            "inline-flex max-w-full min-w-0 items-center gap-1.5 overflow-hidden rounded-md border border-line px-2 py-1 text-xs hover:bg-bg-3/50 transition-colors",
             terminatedManager && "border-amber-600/45 bg-amber-500/5",
             disabled && "opacity-60 cursor-not-allowed",
           )}
@@ -50,12 +50,12 @@ export function ReportsToPicker({
         >
           {unknownManager ? (
             <>
-              <User className="h-3 w-3 shrink-0 text-muted-foreground" />
-              <span className="min-w-0 truncate text-muted-foreground">Unknown manager (stale ID)</span>
+              <User className="h-3 w-3 shrink-0 text-ink-3" />
+              <span className="min-w-0 truncate text-ink-3">Unknown manager (stale ID)</span>
             </>
           ) : current ? (
             <>
-              <AgentAvatar agent={current} size={16} className="h-3 w-3 shrink-0 text-muted-foreground"/>
+              <AgentAvatar agent={current} size={16} className="h-3 w-3 shrink-0 text-ink-3"/>
               <span
                 className={cn(
                   "min-w-0 truncate",
@@ -67,7 +67,7 @@ export function ReportsToPicker({
             </>
           ) : (
             <>
-              <User className="h-3 w-3 shrink-0 text-muted-foreground" />
+              <User className="h-3 w-3 shrink-0 text-ink-3" />
               <span className="min-w-0 truncate">
                 {disabled ? disabledEmptyLabel : chooseLabel}
               </span>
@@ -79,8 +79,8 @@ export function ReportsToPicker({
         <button
           type="button"
           className={cn(
-            "flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50",
-            value === null && "bg-accent",
+            "flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-bg-3/50",
+            value === null && "bg-bg-3",
           )}
           onClick={() => {
             onChange(null);
@@ -90,7 +90,7 @@ export function ReportsToPicker({
           No manager
         </button>
         {terminatedManager && (
-          <div className="flex min-w-0 items-center gap-2 overflow-hidden px-2 py-1.5 text-xs text-muted-foreground border-b border-border mb-0.5">
+          <div className="flex min-w-0 items-center gap-2 overflow-hidden px-2 py-1.5 text-xs text-ink-3 border-b border-line mb-0.5">
             <AgentAvatar agent={current} size={16} className="shrink-0 h-3 w-3"/>
             <span className="min-w-0 truncate">
               Current: {current.name} (terminated)
@@ -98,7 +98,7 @@ export function ReportsToPicker({
           </div>
         )}
         {unknownManager && (
-          <div className="px-2 py-1.5 text-xs text-muted-foreground border-b border-border mb-0.5">
+          <div className="px-2 py-1.5 text-xs text-ink-3 border-b border-line mb-0.5">
             Saved manager is missing from this organization. Choose a new manager or clear.
           </div>
         )}
@@ -107,17 +107,17 @@ export function ReportsToPicker({
             type="button"
             key={a.id}
             className={cn(
-              "flex items-center gap-2 w-full min-w-0 px-2 py-1.5 text-xs rounded hover:bg-accent/50 overflow-hidden",
-              a.id === value && "bg-accent",
+              "flex items-center gap-2 w-full min-w-0 px-2 py-1.5 text-xs rounded hover:bg-bg-3/50 overflow-hidden",
+              a.id === value && "bg-bg-3",
             )}
             onClick={() => {
               onChange(a.id);
               setOpen(false);
             }}
           >
-            <AgentAvatar agent={a} size={16} className="shrink-0 h-3 w-3 text-muted-foreground"/>
+            <AgentAvatar agent={a} size={16} className="shrink-0 h-3 w-3 text-ink-3"/>
             <span className="min-w-0 truncate">{a.name}</span>
-            <span className="text-muted-foreground ml-auto shrink-0">{roleLabels[a.role] ?? a.role}</span>
+            <span className="text-ink-3 ml-auto shrink-0">{roleLabels[a.role] ?? a.role}</span>
           </button>
         ))}
       </PopoverContent>

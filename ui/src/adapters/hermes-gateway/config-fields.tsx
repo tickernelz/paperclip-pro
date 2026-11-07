@@ -11,7 +11,7 @@ import {
 } from "../../components/agent-config-primitives";
 
 const inputClass =
-  "w-full rounded-md border border-border px-2.5 py-1.5 bg-transparent outline-none text-sm font-mono placeholder:text-muted-foreground/40";
+  "w-full rounded-md border border-line px-2.5 py-1.5 bg-transparent outline-none text-sm font-mono placeholder:text-ink-3/40";
 
 const DEFAULT_SESSION_KEY_STRATEGY = "issue";
 const DEFAULT_TIMEOUT_SEC = 600;
@@ -79,7 +79,7 @@ function SecretField({
         <button
           type="button"
           onClick={() => setVisible((v) => !v)}
-          className="absolute left-2 top-1/2 -translate-y-1/2 text-muted-foreground/50 hover:text-muted-foreground transition-colors"
+          className="absolute left-2 top-1/2 -translate-y-1/2 text-ink-3/50 hover:text-ink-3 transition-colors"
           aria-label={visible ? `Hide ${label}` : `Show ${label}`}
         >
           {visible ? <Eye className="h-3.5 w-3.5" /> : <EyeOff className="h-3.5 w-3.5" />}

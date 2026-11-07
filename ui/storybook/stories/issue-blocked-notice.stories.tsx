@@ -26,7 +26,7 @@ function blocker(
 function Frame({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="mx-auto max-w-[640px] space-y-2 p-6">
-      <div className="text-xs uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className="text-xs uppercase tracking-wide text-ink-3">{label}</div>
       {children}
     </div>
   );

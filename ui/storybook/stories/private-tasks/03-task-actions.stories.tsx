@@ -44,7 +44,7 @@ function PrivacyActionsStory({ child = false }: { child?: boolean }) {
             {(items) => (
               <div
                 aria-label="Task privacy menu"
-                className="max-w-xs rounded-md border border-border bg-popover p-1"
+                className="max-w-xs rounded-md border border-line bg-bg-2 p-1"
               >
                 {items}
               </div>

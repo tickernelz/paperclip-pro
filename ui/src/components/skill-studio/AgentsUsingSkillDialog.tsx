@@ -67,8 +67,8 @@ export function AgentsUsingSkillBadge({
         className={cn(
           "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors",
           count > 0
-            ? "border-border bg-muted text-foreground hover:bg-accent"
-            : "border-border/60 bg-transparent text-muted-foreground hover:bg-accent/50",
+            ? "border-line bg-bg-3 text-ink hover:bg-bg-3"
+            : "border-line/60 bg-transparent text-ink-3 hover:bg-bg-3/50",
         )}
       >
         <Users className="h-3.5 w-3.5" aria-hidden="true" />
@@ -242,13 +242,13 @@ export function AgentsUsingSkillDialog({
 
         <div className="max-h-80 overflow-y-auto">
           {count === 0 ? (
-            <div className="rounded-md border border-dashed border-border px-4 py-8 text-center text-sm text-muted-foreground">
+            <div className="rounded-md border border-dashed border-line px-4 py-8 text-center text-sm text-ink-3">
               {canManage
                 ? "Add an agent below to assign this skill."
                 : "This skill isn't assigned to any agents."}
             </div>
           ) : (
-            <ul className="divide-y divide-border">
+            <ul className="divide-y divide-line">
               {rows.map((agent) => (
                 <AgentRow
                   key={agent.id}
@@ -272,7 +272,7 @@ export function AgentsUsingSkillDialog({
         </div>
 
         {canManage ? (
-          <div className="flex items-center gap-2 border-t border-border pt-3">
+          <div className="flex items-center gap-2 border-t border-line pt-3">
             <AddAgentPicker
               agents={addableAgents}
               loading={agentsQuery.isLoading}
@@ -280,7 +280,7 @@ export function AgentsUsingSkillDialog({
               onSelect={(agent) => applyChange(agent, { kind: "add" })}
             />
             {syncMutation.isPending ? (
-              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" aria-hidden="true" />
+              <Loader2 className="h-4 w-4 animate-spin text-ink-3" aria-hidden="true" />
             ) : null}
           </div>
         ) : null}
@@ -325,22 +325,22 @@ function AgentRow({
 
   return (
     <li className="flex items-center gap-3 py-2.5">
-      <AgentIcon icon={icon} className="h-6 w-6 shrink-0 rounded-md text-muted-foreground" />
+      <AgentIcon icon={icon} className="h-6 w-6 shrink-0 rounded-md text-ink-3" />
       <div className="flex min-w-0 flex-1 flex-col">
         <Link
           to={`/agents/${agent.urlKey}/skills`}
-          className="truncate text-sm font-medium text-foreground hover:underline"
+          className="truncate text-sm font-medium text-ink hover:underline"
         >
           {agent.name}
         </Link>
-        <span className="truncate text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-muted-foreground">
+        <span className="truncate text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-ink-3">
           {agent.adapterType}
         </span>
       </div>
 
       <div className="flex shrink-0 flex-col items-end gap-0.5">
         {!hasVersions ? (
-          <span className="text-sm text-muted-foreground" aria-label={`${agent.name} version`}>
+          <span className="text-sm text-ink-3" aria-label={`${agent.name} version`}>
             —
           </span>
         ) : canManage ? (
@@ -351,7 +351,7 @@ function AgentRow({
             onChange={(event) =>
               onPin(event.target.value === LATEST_VALUE ? null : event.target.value)
             }
-            className="h-8 rounded-md border border-border bg-background px-2 text-xs text-foreground disabled:opacity-60"
+            className="h-8 rounded-md border border-line bg-bg px-2 text-xs text-ink disabled:opacity-60"
           >
             <option value={LATEST_VALUE}>
               Latest{latestRevision !== null ? ` (v${latestRevision})` : ""}
@@ -364,7 +364,7 @@ function AgentRow({
             ))}
           </select>
         ) : (
-          <span className="text-xs text-muted-foreground">
+          <span className="text-xs text-ink-3">
             {agent.versionId
               ? `v${pinnedRevision ?? "?"}`
               : `Latest${latestRevision !== null ? ` (v${latestRevision})` : ""}`}
@@ -381,7 +381,7 @@ function AgentRow({
         confirmingRemove ? (
           <div className="flex shrink-0 items-center gap-1">
             <Button
-              variant="destructive"
+              variant="delete"
               size="sm"
               onClick={onRemove}
               disabled={busy}
@@ -399,7 +399,7 @@ function AgentRow({
             size="icon-sm"
             onClick={onRequestRemove}
             disabled={busy}
-            className="shrink-0 text-muted-foreground hover:text-destructive"
+            className="shrink-0"
             aria-label={`Remove this skill from ${agent.name}`}
           >
             <Trash2 className="h-4 w-4" />
@@ -451,7 +451,7 @@ function AddAgentPicker({
       triggerClassName="h-8 w-full justify-start"
       contentClassName="w-72"
       renderValue={() => (
-        <span className="flex items-center gap-1.5 text-muted-foreground">
+        <span className="flex items-center gap-1.5 text-ink-3">
           <Plus className="h-3.5 w-3.5" aria-hidden="true" />
           Add agent…
         </span>
@@ -459,7 +459,7 @@ function AddAgentPicker({
       renderOption={(option) => (
         <span className="flex min-w-0 flex-col">
           <span className="truncate">{option.label}</span>
-          <span className="truncate text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-muted-foreground">
+          <span className="truncate text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-ink-3">
             {option.agent.adapterType}
           </span>
         </span>

@@ -33,7 +33,7 @@ export function ConnectionPicker({
   );
   return (
     <div className="flex min-w-0 flex-col gap-1">
-      <label htmlFor={id} className="text-xs text-muted-foreground">
+      <label htmlFor={id} className="text-xs text-ink-3">
         Connection
       </label>
       <Select

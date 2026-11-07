@@ -44,7 +44,7 @@ export function InteractionNoteReceipt({
   if (!value) return null;
   return (
     <div className={cn("text-sm", className)} data-testid="interaction-note-receipt">
-      <div className="text-xs font-medium text-muted-foreground">Note</div>
+      <div className="text-xs font-medium text-ink-3">Note</div>
       <MarkdownBody className="paperclip-markdown-inherit" externalReferences={externalReferences}>
         {value}
       </MarkdownBody>
@@ -96,7 +96,7 @@ export function InteractionNoteField({
         type="button"
         size="sm"
         variant="ghost"
-        className="-ml-2 h-7 px-2 text-muted-foreground"
+        className="-ml-2 h-7 px-2"
         aria-expanded={false}
         disabled={disabled}
         data-testid="interaction-note-toggle"
@@ -114,14 +114,13 @@ export function InteractionNoteField({
   return (
     <div className="space-y-1" data-testid="interaction-note">
       <div className="flex items-center justify-between gap-2">
-        <span id={labelId} className="text-xs font-medium text-muted-foreground">
+        <span id={labelId} className="text-xs font-medium text-ink-3">
           Note
         </span>
         <Button
           type="button"
           size="icon-xs"
           variant="ghost"
-          className="text-muted-foreground hover:text-foreground"
           aria-label="Remove note"
           disabled={disabled}
           onClick={() => {
@@ -147,7 +146,7 @@ export function InteractionNoteField({
         attachAnyFile
       />
       {interactionNoteTooLong(value) ? (
-        <p className="text-xs text-destructive" role="alert">
+        <p className="text-xs text-bad" role="alert">
           Notes can be at most {INTERACTION_NOTE_MAX_LENGTH.toLocaleString()} characters.
         </p>
       ) : null}

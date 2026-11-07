@@ -83,11 +83,11 @@ export function SidePanelTab({
         "side-panel-tab-motion",
         active
           ? appearance === "streamlined-task"
-            ? "text-foreground hover:bg-accent/50"
-            : "bg-(--side-panel-tab-active-bg) text-accent-foreground"
+            ? "text-ink hover:bg-bg-3/50"
+            : "bg-(--side-panel-tab-active-bg) text-ink"
           : appearance === "streamlined-task"
-            ? "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
-            : "text-muted-foreground hover:bg-(--side-panel-tab-hover-bg) hover:text-foreground",
+            ? "text-ink-3 hover:bg-bg-3/50 hover:text-ink"
+            : "text-ink-3 hover:bg-(--side-panel-tab-hover-bg) hover:text-ink",
         disabled && "opacity-50",
         className,
       )}
@@ -115,7 +115,7 @@ export function SidePanelTab({
                 ? "flex h-full w-full min-w-0 items-center justify-start rounded-md px-3 text-sm font-medium outline-none"
                 : "flex h-full w-full min-w-0 items-center gap-1.5 rounded-(--side-panel-tab-radius) py-1.5 pl-2 text-xs font-medium outline-none",
               appearance === "default" && (closable && (!hasStableWidth || active) ? "pr-7" : "pr-2.5"),
-              "focus-visible:ring-2 focus-visible:ring-ring/60",
+              "focus-visible:ring-2 focus-visible:ring-focus/60",
               dragHandleProps?.className,
             )}
           >
@@ -164,10 +164,10 @@ export function SidePanelTab({
             onClose();
           }}
           className={cn(
-            "side-panel-tab-close-motion absolute flex items-center justify-center text-muted-foreground outline-none hover:text-foreground",
+            "side-panel-tab-close-motion absolute flex items-center justify-center text-ink-3 outline-none hover:text-ink",
             appearance === "streamlined-task"
-              ? "right-0 top-1/2 z-20 size-5 -translate-y-1/2 rounded-sm opacity-0 hover:bg-accent focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-ring/60 group-hover/side-panel-tab:opacity-100"
-              : "right-1 size-6 rounded-lg hover:bg-background/70 focus-visible:ring-2 focus-visible:ring-ring/60",
+              ? "right-0 top-1/2 z-20 size-5 -translate-y-1/2 rounded-sm opacity-0 hover:bg-bg-3 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-focus/60 group-hover/side-panel-tab:opacity-100"
+              : "right-1 size-6 rounded-lg hover:bg-bg/70 focus-visible:ring-2 focus-visible:ring-focus/60",
           )}
         >
           <X className={appearance === "streamlined-task" ? "size-3.5" : "size-3"} aria-hidden />

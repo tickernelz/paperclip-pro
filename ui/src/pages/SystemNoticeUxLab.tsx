@@ -36,17 +36,17 @@ function LabSection({
     <section
       id={id}
       className={cn(
-        "rounded-(--rad-28) border border-border/70 bg-background/85 p-4 shadow-[0_24px_60px_rgba(15,23,42,0.08)] sm:p-5",
+        "rounded-(--rad-28) border border-line/70 bg-bg/85 p-4 shadow-[0_24px_60px_rgba(15,23,42,0.08)] sm:p-5",
         accentClassName,
       )}
     >
       <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">
+          <div className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-caps) text-ink-3">
             {eyebrow}
           </div>
           <h2 className="mt-1 text-xl font-semibold tracking-tight">{title}</h2>
-          <p className="mt-2 max-w-3xl text-sm text-muted-foreground">{description}</p>
+          <p className="mt-2 max-w-3xl text-sm text-ink-3">{description}</p>
         </div>
       </div>
       {children}
@@ -57,7 +57,7 @@ function LabSection({
 function FixtureFrame({ caption, children }: { caption: string; children: ReactNode }) {
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-2 text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
+      <div className="flex items-center gap-2 text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-ink-3">
         <CircleDashed className="h-3.5 w-3.5" />
         {caption}
       </div>
@@ -85,13 +85,13 @@ function MockUserBubble({
       <div className={cn("flex min-w-0 max-w-(--pct-85) flex-col", alignEnd && "items-end")}>
         <div
           className={cn(
-            "mb-1 px-1 text-sm font-medium text-foreground",
+            "mb-1 px-1 text-sm font-medium text-ink",
             alignEnd ? "text-right" : "text-left",
           )}
         >
           {authorName}
         </div>
-        <div className="min-w-0 max-w-full rounded-2xl bg-muted px-4 py-2.5 text-sm leading-6 text-foreground">
+        <div className="min-w-0 max-w-full rounded-2xl bg-bg-3 px-4 py-2.5 text-sm leading-6 text-ink">
           {body}
         </div>
       </div>
@@ -111,8 +111,8 @@ function MockAgentBubble({ agentName, body }: { agentName: string; body: string 
         <AvatarFallback>{agentName.slice(0, 2).toUpperCase()}</AvatarFallback>
       </Avatar>
       <div className="flex min-w-0 max-w-(--pct-85) flex-col">
-        <div className="mb-1 px-1 text-sm font-medium text-foreground">{agentName}</div>
-        <div className="min-w-0 max-w-full rounded-2xl border border-border/70 bg-background px-4 py-2.5 text-sm leading-6 text-foreground">
+        <div className="mb-1 px-1 text-sm font-medium text-ink">{agentName}</div>
+        <div className="min-w-0 max-w-full rounded-2xl border border-line/70 bg-bg px-4 py-2.5 text-sm leading-6 text-ink">
           {body}
         </div>
       </div>
@@ -141,7 +141,7 @@ export function SystemNoticeUxLab() {
 
   return (
     <div className="space-y-6">
-      <div className="overflow-hidden rounded-(--rad-32) border border-border/70 bg-[linear-gradient(135deg,rgba(245,158,11,0.10),transparent_28%),linear-gradient(180deg,rgba(8,145,178,0.08),transparent_44%),var(--background)] shadow-[0_30px_80px_rgba(15,23,42,0.10)]">
+      <div className="overflow-hidden rounded-(--rad-32) border border-line/70 bg-[linear-gradient(135deg,rgba(245,158,11,0.10),transparent_28%),linear-gradient(180deg,rgba(8,145,178,0.08),transparent_44%),var(--bg)] shadow-[0_30px_80px_rgba(15,23,42,0.10)]">
         <div className="grid gap-6 lg:grid-cols-(--gtc-39)">
           <div className="p-6 sm:p-7">
             <div className="inline-flex items-center gap-2 rounded-full border border-amber-500/25 bg-amber-500/[0.08] px-3 py-1 text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-caps) text-amber-700 dark:text-amber-300">
@@ -151,7 +151,7 @@ export function SystemNoticeUxLab() {
             <h1 className="mt-4 text-3xl font-semibold tracking-tight">
               First-class system notice treatment
             </h1>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-ink-3">
               Replaces the current pattern where a Paperclip-authored warning renders inside a user-style
               chat bubble. The notice is one container, system-styled, with hidden-by-default operational
               metadata. Tone is conveyed by icon, label, and color together so it stays accessible.
@@ -170,8 +170,8 @@ export function SystemNoticeUxLab() {
             </div>
           </div>
 
-          <aside className="border-t border-border/60 bg-background/70 p-6 lg:border-l lg:border-t-0">
-            <div className="mb-4 flex items-center gap-2 text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">
+          <aside className="border-t border-line/60 bg-bg/70 p-6 lg:border-l lg:border-t-0">
+            <div className="mb-4 flex items-center gap-2 text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-caps) text-ink-3">
               <ListChecks className="h-4 w-4 text-amber-700 dark:text-amber-300" />
               What this lab proves
             </div>
@@ -179,7 +179,7 @@ export function SystemNoticeUxLab() {
               {checklist.map((line) => (
                 <div
                   key={line}
-                  className="rounded-2xl border border-border/70 bg-background/85 px-4 py-3 text-sm text-muted-foreground"
+                  className="rounded-2xl border border-line/70 bg-bg/85 px-4 py-3 text-sm text-ink-3"
                 >
                   {line}
                 </div>
@@ -194,7 +194,7 @@ export function SystemNoticeUxLab() {
         eyebrow="Tone matrix"
         title="Three tones, two states"
         description="Each tone pairs a unique icon and tone label so the notice is recognizable without color. Collapsed is the default; the Details affordance reveals operational metadata only when reviewers ask for it."
-        accentClassName="bg-[linear-gradient(180deg,rgba(245,158,11,0.05),transparent_28%),var(--background)]"
+        accentClassName="bg-[linear-gradient(180deg,rgba(245,158,11,0.05),transparent_28%),var(--bg)]"
       >
         <div className="space-y-5">
           <FixtureFrame caption={warningCollapsed.caption}>
@@ -226,9 +226,9 @@ export function SystemNoticeUxLab() {
         eyebrow="Hierarchy in thread"
         title="Distinct from user and agent comments"
         description="Side-by-side with adjacent comment types so reviewers can confirm the system row reads as a system row — full width, no avatar gutter, no chat bubble — while user and agent comments keep their existing rounded bubbles."
-        accentClassName="bg-[linear-gradient(180deg,rgba(8,145,178,0.05),transparent_28%),var(--background)]"
+        accentClassName="bg-[linear-gradient(180deg,rgba(8,145,178,0.05),transparent_28%),var(--bg)]"
       >
-        <div className="space-y-4 rounded-2xl border border-border/70 bg-background/70 p-4">
+        <div className="space-y-4 rounded-2xl border border-line/70 bg-bg/70 p-4">
           <MockUserBubble
             authorName="Riley Board"
             body="Why does this issue keep waking back up without a clear next step?"
@@ -290,16 +290,16 @@ export function SystemNoticeUxLab() {
           eyebrow="Before"
           title="Today's nested treatment"
           description="The same content rendered through the existing user-bubble + warning-callout path. Two containers, same gray background as user comments, and the warning icon is forced inside a chat row."
-          accentClassName="bg-[linear-gradient(180deg,rgba(244,63,94,0.05),transparent_28%),var(--background)]"
+          accentClassName="bg-[linear-gradient(180deg,rgba(244,63,94,0.05),transparent_28%),var(--bg)]"
         >
-          <div className="space-y-3 rounded-2xl border border-border/70 bg-background/70 p-4">
+          <div className="space-y-3 rounded-2xl border border-line/70 bg-bg/70 p-4">
             <div className="flex items-start gap-2.5">
               <Avatar size="sm" className="shrink-0">
                 <AvatarFallback>YO</AvatarFallback>
               </Avatar>
               <div className="flex min-w-0 max-w-(--pct-85) flex-col">
-                <div className="mb-1 px-1 text-sm font-medium text-foreground">You</div>
-                <div className="min-w-0 max-w-full rounded-2xl bg-muted px-4 py-2.5 text-sm leading-6 text-foreground">
+                <div className="mb-1 px-1 text-sm font-medium text-ink">You</div>
+                <div className="min-w-0 max-w-full rounded-2xl bg-bg-3 px-4 py-2.5 text-sm leading-6 text-ink">
                   <div className="rounded-md border border-red-500/35 bg-red-500/10 px-3 py-2.5 text-sm text-red-950 dark:text-red-100">
                     <div className="flex items-start gap-2">
                       <Sparkles className="mt-1 h-4 w-4 shrink-0 text-red-600 dark:text-red-300" />
@@ -320,8 +320,8 @@ export function SystemNoticeUxLab() {
                 </div>
               </div>
             </div>
-            <p className="px-1 text-xs text-muted-foreground">
-              Author reads as <span className="font-medium text-foreground">You</span> even though the
+            <p className="px-1 text-xs text-ink-3">
+              Author reads as <span className="font-medium text-ink">You</span> even though the
               author is the Paperclip system. Two containers stack the warning inside a user-style
               bubble, and operational evidence is always visible.
             </p>
@@ -332,13 +332,13 @@ export function SystemNoticeUxLab() {
           eyebrow="After"
           title="System notice replacement"
           description="One container, system-authored label, hidden details. The chat surface keeps user and agent bubbles unchanged."
-          accentClassName="bg-[linear-gradient(180deg,rgba(16,185,129,0.05),transparent_28%),var(--background)]"
+          accentClassName="bg-[linear-gradient(180deg,rgba(16,185,129,0.05),transparent_28%),var(--bg)]"
         >
-          <div className="space-y-3 rounded-2xl border border-border/70 bg-background/70 p-4">
+          <div className="space-y-3 rounded-2xl border border-line/70 bg-bg/70 p-4">
             <SystemNotice {...dangerCollapsed} />
-            <p className="px-1 text-xs text-muted-foreground">
+            <p className="px-1 text-xs text-ink-3">
               Same content. The visible body is one short system sentence; reviewers expand{" "}
-              <span className="font-medium text-foreground">Details</span> only when they need run
+              <span className="font-medium text-ink">Details</span> only when they need run
               evidence. Tone is reinforced by the octagon icon and the &quot;System alert&quot; label,
               not just red.
             </p>
@@ -346,9 +346,9 @@ export function SystemNoticeUxLab() {
         </LabSection>
       </div>
 
-      <Card className="gap-4 border-border/70 bg-background/85 py-0">
+      <Card className="gap-4 border-line/70 bg-bg/85 py-0">
         <CardHeader className="px-5 pt-5 pb-0">
-          <div className="flex items-center gap-2 text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">
+          <div className="flex items-center gap-2 text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-caps) text-ink-3">
             <Layers className="h-4 w-4 text-amber-700 dark:text-amber-300" />
             Implementation notes
           </div>
@@ -357,45 +357,45 @@ export function SystemNoticeUxLab() {
             What the Phase 4 UI implementation should preserve from this design.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3 px-5 pb-5 pt-0 text-sm text-muted-foreground">
-          <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
-            <div className="mb-1 font-medium text-foreground">Component</div>
-            Use <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">{`<SystemNotice />`}</code>{" "}
-            from <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">@/components/SystemNotice</code>.
-            It accepts <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">tone</code>,{" "}
-            <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">label</code>,{" "}
-            <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">body</code>,{" "}
-            <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">metadata</code>, and{" "}
-            <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">detailsDefaultOpen</code>.
+        <CardContent className="space-y-3 px-5 pb-5 pt-0 text-sm text-ink-3">
+          <div className="rounded-2xl border border-line/70 bg-bg/80 px-4 py-3">
+            <div className="mb-1 font-medium text-ink">Component</div>
+            Use <code className="rounded bg-bg-3 px-1.5 py-0.5 font-mono text-xs">{`<SystemNotice />`}</code>{" "}
+            from <code className="rounded bg-bg-3 px-1.5 py-0.5 font-mono text-xs">@/components/SystemNotice</code>.
+            It accepts <code className="rounded bg-bg-3 px-1.5 py-0.5 font-mono text-xs">tone</code>,{" "}
+            <code className="rounded bg-bg-3 px-1.5 py-0.5 font-mono text-xs">label</code>,{" "}
+            <code className="rounded bg-bg-3 px-1.5 py-0.5 font-mono text-xs">body</code>,{" "}
+            <code className="rounded bg-bg-3 px-1.5 py-0.5 font-mono text-xs">metadata</code>, and{" "}
+            <code className="rounded bg-bg-3 px-1.5 py-0.5 font-mono text-xs">detailsDefaultOpen</code>.
           </div>
-          <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
-            <div className="mb-1 font-medium text-foreground">Routing in IssueChatThread</div>
+          <div className="rounded-2xl border border-line/70 bg-bg/80 px-4 py-3">
+            <div className="mb-1 font-medium text-ink">Routing in IssueChatThread</div>
             Comments where{" "}
-            <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">authorType === &quot;system&quot;</code>{" "}
+            <code className="rounded bg-bg-3 px-1.5 py-0.5 font-mono text-xs">authorType === &quot;system&quot;</code>{" "}
             or{" "}
-            <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">presentation.kind === &quot;system_notice&quot;</code>{" "}
+            <code className="rounded bg-bg-3 px-1.5 py-0.5 font-mono text-xs">presentation.kind === &quot;system_notice&quot;</code>{" "}
             should render as a SystemNotice row at full content width — never inside an{" "}
-            <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">IssueChatUserMessage</code>{" "}
+            <code className="rounded bg-bg-3 px-1.5 py-0.5 font-mono text-xs">IssueChatUserMessage</code>{" "}
             or assistant bubble.
           </div>
-          <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
-            <div className="mb-1 font-medium text-foreground">Accessibility</div>
+          <div className="rounded-2xl border border-line/70 bg-bg/80 px-4 py-3">
+            <div className="mb-1 font-medium text-ink">Accessibility</div>
             The Details button has{" "}
-            <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">aria-expanded</code>{" "}
+            <code className="rounded bg-bg-3 px-1.5 py-0.5 font-mono text-xs">aria-expanded</code>{" "}
             and{" "}
-            <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">aria-controls</code>{" "}
+            <code className="rounded bg-bg-3 px-1.5 py-0.5 font-mono text-xs">aria-controls</code>{" "}
             wired to the panel id. The container exposes{" "}
-            <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">role=&quot;status&quot;</code>{" "}
+            <code className="rounded bg-bg-3 px-1.5 py-0.5 font-mono text-xs">role=&quot;status&quot;</code>{" "}
             and an{" "}
-            <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">aria-label</code>{" "}
+            <code className="rounded bg-bg-3 px-1.5 py-0.5 font-mono text-xs">aria-label</code>{" "}
             equal to the visible tone label so screen readers announce tone with text.
           </div>
-          <div className="rounded-2xl border border-border/70 bg-background/80 px-4 py-3">
-            <div className="mb-1 font-medium text-foreground">Legacy fallback</div>
+          <div className="rounded-2xl border border-line/70 bg-bg/80 px-4 py-3">
+            <div className="mb-1 font-medium text-ink">Legacy fallback</div>
             Existing comments without{" "}
-            <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">presentation</code>{" "}
+            <code className="rounded bg-bg-3 px-1.5 py-0.5 font-mono text-xs">presentation</code>{" "}
             keep rendering through the current{" "}
-            <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-xs">SuccessfulRunHandoffCommentCallout</code>{" "}
+            <code className="rounded bg-bg-3 px-1.5 py-0.5 font-mono text-xs">SuccessfulRunHandoffCommentCallout</code>{" "}
             string-detector. The new contract is opt-in for the system generators in Phase 5.
           </div>
         </CardContent>

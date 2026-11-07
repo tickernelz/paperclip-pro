@@ -617,16 +617,16 @@ export function OnboardingRoutePage() {
 
   return (
     <div className="mx-auto max-w-xl py-10">
-      <div className="rounded-lg border border-border bg-card p-6">
+      <div className="rounded-lg border border-line bg-bg-2 p-6">
         <h1 className="text-xl font-semibold">{title}</h1>
-        <p className="mt-2 text-sm text-muted-foreground">{description}</p>
+        <p className="mt-2 text-sm text-ink-3">{description}</p>
         <div className="mt-4">
           {/* On a managed stack whose Cloud origin is unknown there is nowhere
               to send this click: creation lives on Cloud, and in-app creation
               is a 403 floor. A button that does nothing is worse than none, so
               say why instead of rendering an inert control. */}
           {!matchedCompany && cloudInstance && !createStackUrl ? (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-ink-3">
               {t("app.cloudCreateUnavailable", {
                 defaultValue:
                   "Organizations are created in Paperclip Cloud. This instance can't reach it right now — try again from your Cloud portfolio.",
@@ -744,18 +744,18 @@ function NoCompaniesStartPage() {
 
   return (
     <div className="mx-auto max-w-xl py-10">
-      <div className="rounded-lg border border-border bg-card p-6">
+      <div className="rounded-lg border border-line bg-bg-2 p-6">
         <h1 className="text-xl font-semibold">
           {t("app.noCompanies.title", { defaultValue: "Create your first organization" })}
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="mt-2 text-sm text-ink-3">
           {t("app.noCompanies.description", { defaultValue: "Get started by creating an organization." })}
         </p>
         <div className="mt-4">
           {/* Same as the onboarding route: no Cloud origin means nowhere to
               send the click, and in-app creation is a 403 floor here. */}
           {cloudInstance && !createStackUrl ? (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-ink-3">
               {t("app.cloudCreateUnavailable", {
                 defaultValue:
                   "Organizations are created in Paperclip Cloud. This instance can't reach it right now — try again from your Cloud portfolio.",

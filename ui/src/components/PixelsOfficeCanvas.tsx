@@ -264,15 +264,15 @@ export function PixelsOfficeCanvas({
         <div
           role="tooltip"
           style={{ left: tip.x + 12, top: tip.y + 12 }}
-          className="pointer-events-none absolute z-10 max-w-(--sz-320px) rounded-md border border-border bg-popover px-2 py-1 text-xs text-popover-foreground shadow-md"
+          className="pointer-events-none absolute z-10 max-w-(--sz-320px) rounded-md border border-line bg-bg-2 px-2 py-1 text-xs text-ink shadow-md"
         >
           <p className="font-medium">{tip.title}</p>
-          {tip.body ? <p className="text-muted-foreground">{tip.body}</p> : null}
-          {tip.age ? <p className="text-muted-foreground">{tip.age}</p> : null}
+          {tip.body ? <p className="text-ink-3">{tip.body}</p> : null}
+          {tip.age ? <p className="text-ink-3">{tip.age}</p> : null}
         </div>
       ) : null}
       {loadError ? (
-        <p className="absolute inset-x-0 bottom-2 text-center text-sm text-destructive">
+        <p className="absolute inset-x-0 bottom-2 text-center text-sm text-bad">
           {loadError}
         </p>
       ) : null}

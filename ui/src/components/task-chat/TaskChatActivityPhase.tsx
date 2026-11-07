@@ -77,7 +77,7 @@ export function TaskChatActivityPhase({
     >
       {item.interstitial ? (
         <div
-          className="min-w-0 px-1 text-sm text-foreground/90"
+          className="min-w-0 px-1 text-sm text-ink/90"
           data-testid="task-chat-phase-interstitial"
         >
           <MarkdownBody softBreaks linkIssueReferences>
@@ -93,9 +93,9 @@ export function TaskChatActivityPhase({
           onClick={() => setOpen((value) => !value)}
           className={cn(
             runnerAppearance
-              ? "group/activity-phase flex min-h-8 w-full min-w-0 items-center gap-2 rounded-sm px-1 py-1.5 text-left text-sm leading-5 transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              : "group flex min-w-0 items-center gap-1.5 rounded-sm px-1 py-0.5 text-left text-xs transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-            item.active ? "text-foreground/80" : "text-muted-foreground",
+              ? "group/activity-phase flex min-h-8 w-full min-w-0 items-center gap-2 rounded-sm px-1 py-1.5 text-left text-sm leading-5 transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
+              : "group flex min-w-0 items-center gap-1.5 rounded-sm px-1 py-0.5 text-left text-xs transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus",
+            item.active ? "text-ink/80" : "text-ink-3",
           )}
           data-testid="task-chat-phase-summary"
         >
@@ -139,7 +139,7 @@ export function TaskChatActivityPhase({
         >
           {showChildRail ? (
             <span
-              className="absolute inset-y-1 left-0 w-px bg-border/70"
+              className="absolute inset-y-1 left-0 w-px bg-line/70"
               aria-hidden
               data-testid="task-chat-phase-child-rail"
             />

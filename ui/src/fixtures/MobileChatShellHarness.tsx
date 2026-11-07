@@ -18,7 +18,6 @@ import { useMobileNavAutoHide } from "@/hooks/useMobileNavAutoHide";
 import { useMobileViewportInsets } from "@/hooks/useMobileViewportInsets";
 import { TaskChatWindowScroll } from "@/components/task-chat/useWindowAutoFollow";
 import { cn } from "@/lib/utils";
-import "@mdxeditor/editor/style.css";
 import "@/index.css";
 
 const TASK_PATH = "/PAP/issues/PAP-1";
@@ -61,19 +60,18 @@ function MobileBottomNavStub({ visible }: { visible: boolean }) {
   return (
     <nav
       data-testid="mobile-bottom-nav"
-      className={cn(
-        "fixed bottom-0 left-0 right-0 z-30 bg-border/50 transition-transform duration-200 ease-out dark:bg-muted md:hidden pb-(--sz-safe-bottom)",
-        visible ? "translate-y-0" : "translate-y-full",
-      )}
+      className="mobile-bottom-nav fixed bottom-0 left-0 right-0 z-30 bg-line/50 dark:bg-bg-3 md:hidden pb-(--sz-safe-bottom)"
+      data-visible={visible}
+      inert={!visible}
       aria-label="Mobile navigation"
     >
       <div className="grid h-16 grid-cols-5 px-1">
         {["Home", "Tasks", "New Task", "Agents", "Inbox"].map((label) => (
           <span
             key={label}
-            className="flex min-w-0 flex-col items-center justify-center gap-1 text-(length:--text-nano) font-medium text-muted-foreground"
+            className="flex min-w-0 flex-col items-center justify-center gap-1 text-(length:--text-nano) font-medium text-ink-3"
           >
-            <span className="h-(--sz-18px) w-(--sz-18px) rounded-sm bg-muted-foreground/40" />
+            <span className="h-(--sz-18px) w-(--sz-18px) rounded-sm bg-ink-3/40" />
             <span className="truncate">{label}</span>
           </span>
         ))}
@@ -227,7 +225,7 @@ function OverrideSheet({
               }
             : undefined
         }
-        className="w-full max-w-(--sz-turn-status-popover) rounded-md border border-border bg-popover p-0 text-popover-foreground shadow-md sm:w-(--sz-280px)"
+        className="w-full max-w-(--sz-turn-status-popover) rounded-md border border-line bg-bg-2 p-0 text-ink shadow-md sm:w-(--sz-280px)"
       >
         {LEGACY_PICKER ? null : (
           <MobilePickerSheetHeader
@@ -245,7 +243,7 @@ function OverrideSheet({
                 data-testid={`task-model-override-section-${section.key}`}
                 data-expanded={isOpen ? "true" : "false"}
                 className={cn(
-                  "flex min-w-0 flex-col gap-1 border-b border-border/60 p-2 last:border-b-0",
+                  "flex min-w-0 flex-col gap-1 border-b border-line/60 p-2 last:border-b-0",
                   isOpen ? "min-h-0 flex-1" : "shrink-0",
                 )}
               >
@@ -257,7 +255,7 @@ function OverrideSheet({
                   className="flex min-w-0 flex-1 items-baseline justify-between gap-2 px-1 text-left"
                 >
                   <span className="shrink-0 text-xs font-medium">{section.label}</span>
-                  <span className="min-w-0 truncate text-xs text-muted-foreground">
+                  <span className="min-w-0 truncate text-xs text-ink-3">
                     {section.value}
                   </span>
                 </button>
@@ -271,7 +269,7 @@ function OverrideSheet({
                         key={option}
                         type="button"
                         onClick={() => section.set(option)}
-                        className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs hover:bg-accent"
+                        className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs hover:bg-bg-3"
                       >
                         <span className="min-w-0 flex-1 truncate">{option}</span>
                       </button>
@@ -286,7 +284,7 @@ function OverrideSheet({
           <div
             data-mobile-sheet-controls=""
             data-testid="task-model-override-footer"
-            className="shrink-0 border-t border-border/60"
+            className="shrink-0 border-t border-line/60"
           >
             <ModelOverrideSubtaskRows
               inheritToSubtasks={inheritToSubtasks}
@@ -320,9 +318,9 @@ function Harness() {
   }, []);
 
   return (
-    <div className="min-h-dvh w-full overflow-x-clip bg-background text-foreground">
+    <div className="min-h-dvh w-full overflow-x-clip bg-bg text-ink">
       <TaskChatWindowScroll contentKey={`thread:${reserve}`} enabled />
-      <div data-slot="mobile-topbar" className="sticky top-0 z-20 bg-background/95 px-4 py-3 backdrop-blur">
+      <div data-slot="mobile-topbar" className="sticky top-0 z-20 bg-bg/95 px-4 py-3 backdrop-blur">
         <p className="text-sm font-medium">Kelola Agents ZHA-99</p>
       </div>
       <main
@@ -350,8 +348,8 @@ function Harness() {
               className={cn(
                 "max-w-[85%] rounded-xl px-3 py-2 text-sm",
                 message.mine
-                  ? "self-end bg-primary text-primary-foreground"
-                  : "self-start bg-muted",
+                  ? "self-end bg-accent text-accent-ink"
+                  : "self-start bg-bg-3",
               )}
             >
               {message.text}
@@ -359,14 +357,14 @@ function Harness() {
           ))}
           <div
             data-testid="thread-progress-row"
-            className="flex items-center gap-2 rounded-md px-1 py-2 text-xs text-muted-foreground"
+            className="flex items-center gap-2 rounded-md px-1 py-2 text-xs text-ink-3"
           >
-            <span className="font-medium text-foreground">Working</span>
+            <span className="font-medium text-ink">Working</span>
             <span>for 1 minute · ran 6 commands, called 9 tools</span>
           </div>
           <div
             data-testid="thread-last-row"
-            className="flex items-center gap-2 rounded-md px-1 py-2 text-xs text-muted-foreground"
+            className="flex items-center gap-2 rounded-md px-1 py-2 text-xs text-ink-3"
           >
             Thought through the task
           </div>
@@ -382,14 +380,14 @@ function Harness() {
                   onChange={(event) => setDraft(event.target.value)}
                   rows={draft.split("\n").length}
                   placeholder="Message Jono (Head Director)…"
-                  className="w-full resize-none rounded-xl border border-border bg-background px-3 py-2 text-base outline-none"
+                  className="w-full resize-none rounded-xl border border-line bg-bg px-3 py-2 text-base outline-none"
                 />
                 <div className="relative flex items-center gap-2 pt-2">
                   <button
                     type="button"
                     data-testid="task-chat-composer-model-override"
                     onClick={() => setOverrideOpen((current) => !current)}
-                    className="flex h-8 min-w-0 shrink items-center gap-1.5 rounded-md px-2.5 text-xs font-medium hover:bg-accent"
+                    className="flex h-8 min-w-0 shrink items-center gap-1.5 rounded-md px-2.5 text-xs font-medium hover:bg-bg-3"
                   >
                     <span className="max-w-20 truncate">Auto mode</span>
                   </button>

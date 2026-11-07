@@ -17,9 +17,9 @@ function TaskConversation() {
   useEffect(() => { setBreadcrumbs([{ label: "Tasks", href: "/PAP/issues" }, { label: "Rewrite agent policy", identifier: "PAP-24" }]); }, [setBreadcrumbs]);
   return <div className="mx-auto flex min-h-full w-full max-w-3xl flex-col gap-6 px-4 py-6 sm:px-8">
     <header className="flex flex-col gap-2">
-      <div className="flex flex-wrap items-center gap-2"><StatusBadge status={retried ? "todo" : "blocked"} /><span className="font-mono text-xs text-muted-foreground">PAP-24</span><span className="text-xs text-muted-foreground">Documentation</span></div>
+      <div className="flex flex-wrap items-center gap-2"><StatusBadge status={retried ? "todo" : "blocked"} /><span className="font-mono text-xs text-ink-3">PAP-24</span><span className="text-xs text-ink-3">Documentation</span></div>
       <h1 className="text-xl font-semibold">Let agents install missing dev tools</h1>
-      <p className="text-sm text-muted-foreground">Assigned to Jordan Lee</p>
+      <p className="text-sm text-ink-3">Assigned to Jordan Lee</p>
     </header>
     <TaskChatBubble item={{ id: "request", kind: "message", author: "human", text: "Update the agent policy so agents can install missing dev tools in user space and keep working." }} />
     <TaskChatBubble item={{ id: "delegation", kind: "message", author: "agent", authorName: "Casey Morgan", text: "I’ve assigned the policy update to Jordan in a separate workspace." }} />

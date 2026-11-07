@@ -1020,7 +1020,7 @@ describe("IssueDocumentAnnotations", () => {
       expect(sheet?.getAttribute("data-side")).toBe("bottom");
       expect(sheet?.className).toContain("paperclip-doc-annotation-sheet");
       expect(sheet?.className).toContain("z-(--z-60)");
-      expect(sheet?.className).toContain("bg-popover");
+      expect(sheet?.className).toContain("bg-bg-2");
     } finally {
       Object.defineProperty(window, "matchMedia", {
         configurable: true,

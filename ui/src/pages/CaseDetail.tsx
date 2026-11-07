@@ -129,13 +129,13 @@ function CaseRelationshipsSection({
     <section className="space-y-3" aria-label="Case relationships">
       {parent ? (
         <div className="space-y-1">
-          <h2 className="text-xs font-medium text-muted-foreground">Parent</h2>
+          <h2 className="text-xs font-medium text-ink-3">Parent</h2>
           <CaseChildrenTree children={[parent]} />
         </div>
       ) : null}
       {children.length > 0 ? (
         <div className="space-y-1">
-          <h2 className="text-xs font-medium text-muted-foreground">Children {children.length}</h2>
+          <h2 className="text-xs font-medium text-ink-3">Children {children.length}</h2>
           <CaseChildrenTree children={children} maxVisible={5} />
         </div>
       ) : null}
@@ -172,7 +172,7 @@ function CasePropertyRow({
     >
       <span
         className={cn(
-          "w-40 shrink-0 break-words text-xs text-muted-foreground",
+          "w-40 shrink-0 break-words text-xs text-ink-3",
           wrap && "mt-0.5",
         )}
         data-property-label={label}
@@ -201,11 +201,11 @@ function CaseStatusPicker({
         <button
           type="button"
           disabled={disabled}
-          className="inline-flex items-center gap-1 rounded-md hover:bg-accent/50 disabled:opacity-50"
+          className="inline-flex items-center gap-1 rounded-md hover:bg-bg-3/50 disabled:opacity-50"
           aria-label="Change case status"
         >
           <StatusBadge status={status} />
-          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+          <ChevronDown className="h-3.5 w-3.5 text-ink-3" />
         </button>
       </PopoverTrigger>
       <PopoverContent align="end" className="w-44 p-1">
@@ -217,10 +217,10 @@ function CaseStatusPicker({
               setOpen(false);
               if (s !== status) onChange(s);
             }}
-            className="flex w-full items-center justify-between rounded px-2 py-1.5 text-left hover:bg-accent"
+            className="flex w-full items-center justify-between rounded px-2 py-1.5 text-left hover:bg-bg-3"
           >
             <StatusBadge status={s} />
-            {s === status && <Check className="h-4 w-4 text-muted-foreground" />}
+            {s === status && <Check className="h-4 w-4 text-ink-3" />}
           </button>
         ))}
       </PopoverContent>
@@ -274,7 +274,7 @@ function CaseLabelsPicker({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-6 gap-1 px-2 text-xs text-muted-foreground">
+        <Button variant="ghost" size="sm" className="h-6 gap-1 px-2 text-xs">
           <Plus className="h-3.5 w-3.5" /> Labels
         </Button>
       </PopoverTrigger>
@@ -291,24 +291,24 @@ function CaseLabelsPicker({
               key={l.id}
               type="button"
               onClick={() => toggle(l.id)}
-              className="flex w-full items-center gap-2 rounded px-2 py-1 text-left text-sm hover:bg-accent"
+              className="flex w-full items-center gap-2 rounded px-2 py-1 text-left text-sm hover:bg-bg-3"
             >
               <span className="h-3 w-3 shrink-0 rounded-full" style={{ backgroundColor: l.color }} />
               <span className="flex-1 truncate">{l.name}</span>
-              {selectedIds.has(l.id) && <Check className="h-4 w-4 text-muted-foreground" />}
+              {selectedIds.has(l.id) && <Check className="h-4 w-4 text-ink-3" />}
             </button>
           ))}
           {filtered.length === 0 && !search.trim() && (
-            <p className="px-2 py-1 text-xs text-muted-foreground">No labels yet.</p>
+            <p className="px-2 py-1 text-xs text-ink-3">No labels yet.</p>
           )}
         </div>
         {search.trim() && !all.some((l) => l.name.toLowerCase() === search.trim().toLowerCase()) && (
-          <div className="mt-2 flex items-center gap-2 border-t border-border pt-2">
+          <div className="mt-2 flex items-center gap-2 border-t border-line pt-2">
             <input
               type="color"
               value={newColor}
               onChange={(e) => setNewColor(e.target.value)}
-              className="h-6 w-6 shrink-0 cursor-pointer rounded border border-border bg-transparent"
+              className="h-6 w-6 shrink-0 cursor-pointer rounded border border-line bg-transparent"
               aria-label="New label color"
             />
             <Button
@@ -359,7 +359,7 @@ function CasePropertiesContent({
             <CaseCopyableToken
               value={caseData.key}
               label="case key"
-              className="font-mono text-xs text-muted-foreground"
+              className="font-mono text-xs text-ink-3"
               truncate={!isFull}
             />
           </CasePropertyRow>
@@ -376,7 +376,7 @@ function CasePropertiesContent({
               </PropertyChip>
             ))
           ) : (
-            <span className="text-xs text-muted-foreground">None</span>
+            <span className="text-xs text-ink-3">None</span>
           )}
           {companyId ? (
             <CaseLabelsPicker
@@ -385,7 +385,7 @@ function CasePropertiesContent({
               onChange={onLabelIdsChange}
             />
           ) : null}
-          {labelsPending ? <span className="text-xs text-muted-foreground">Saving...</span> : null}
+          {labelsPending ? <span className="text-xs text-ink-3">Saving...</span> : null}
         </CasePropertyRow>
       </PropertySection>
 
@@ -409,7 +409,7 @@ function CasePropertiesContent({
       <PropertySection title="Linked tasks">
         {caseData.issueLinks.length === 0 ? (
           <CasePropertyRow label="Tasks" mode={mode}>
-            <span className="text-xs text-muted-foreground">None yet</span>
+            <span className="text-xs text-ink-3">None yet</span>
           </CasePropertyRow>
         ) : (
           <CasePropertyRow label="Tasks" wrap mode={mode}>
@@ -432,7 +432,7 @@ function CasePropertiesContent({
 
       <PropertySection title={`Children${childCases.length > 0 ? ` ${childCases.length}` : ""}`}>
         {childrenError ? (
-          <p className="text-xs text-destructive">Could not load child cases.</p>
+          <p className="text-xs text-bad">Could not load child cases.</p>
         ) : (
           <CaseChildrenTree children={childCases} />
         )}
@@ -441,7 +441,7 @@ function CasePropertiesContent({
       {caseData.attachments.length > 0 ? (
         <PropertySection title="Attachments">
           <CasePropertyRow label="Files" mode={mode}>
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs text-ink-3">
               {caseData.attachments.length} {caseData.attachments.length === 1 ? "file" : "files"}
             </span>
           </CasePropertyRow>
@@ -595,8 +595,8 @@ export function CaseDetail() {
   if (caseQuery.isError || !caseData) {
     return (
       <div className="mx-auto max-w-md py-16 text-center">
-        <p className="text-sm text-muted-foreground">Case not found.</p>
-        <Link to={caseHref()} className="mt-2 inline-block text-sm text-primary hover:underline">
+        <p className="text-sm text-ink-3">Case not found.</p>
+        <Link to={caseHref()} className="mt-2 inline-block text-sm text-accent hover:underline">
           ← Back to cases
         </Link>
       </div>
@@ -643,7 +643,7 @@ export function CaseDetail() {
               <PopoverContent align="end" className="w-48 p-1">
                 <button
                   type="button"
-                  className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs hover:bg-accent/50"
+                  className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs hover:bg-bg-3/50"
                   onClick={() => copyCaseToClipboard(caseData)}
                 >
                   {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
@@ -651,7 +651,7 @@ export function CaseDetail() {
                 </button>
                 <button
                   type="button"
-                  className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs hover:bg-accent/50"
+                  className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs hover:bg-bg-3/50"
                   onClick={() => {
                     if (panelContent) openPanel(panelContent);
                   }}
@@ -676,7 +676,7 @@ export function CaseDetail() {
           <TabsTrigger value="overview">Overview</TabsTrigger>
           <TabsTrigger value="properties">Properties</TabsTrigger>
           <TabsTrigger value="activity">
-            Activity{events.length > 0 && <span className="ml-1 text-muted-foreground">{events.length}</span>}
+            Activity{events.length > 0 && <span className="ml-1 text-ink-3">{events.length}</span>}
           </TabsTrigger>
         </TabsList>
 
@@ -720,7 +720,7 @@ export function CaseDetail() {
 
         <TabsContent value="activity">
           {eventsQuery.isError ? (
-          <p className="py-6 text-center text-sm text-destructive">Could not load case activity.</p>
+          <p className="py-6 text-center text-sm text-bad">Could not load case activity.</p>
         ) : (
           <CaseActivityFeed events={events} />
         )}

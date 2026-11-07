@@ -46,14 +46,14 @@ export function MyIssues() {
 
   return (
     <div className="space-y-4">
-      {error && <p className="text-sm text-destructive">{error.message}</p>}
+      {error && <p className="text-sm text-bad">{error.message}</p>}
 
       {myIssues.length === 0 && (
         <EmptyState icon={ListTodo} message="No tasks assigned to you." />
       )}
 
       {myIssues.length > 0 && (
-        <div className="border border-border">
+        <div className="border border-line">
           {myIssues.map((issue) => (
             <EntityRow
               key={issue.id}
@@ -64,7 +64,7 @@ export function MyIssues() {
                 <StatusIcon status={issue.status} externalConversationState={issue.externalConversationState} blockerAttention={issue.blockerAttention} />
               }
               trailing={
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs text-ink-3">
                   {formatDate(issue.createdAt)}
                 </span>
               }

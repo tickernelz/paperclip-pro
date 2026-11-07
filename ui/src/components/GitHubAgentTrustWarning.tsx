@@ -32,12 +32,12 @@ export function GitHubAgentTrustWarning({
         recommend a low-trust agent with a scoped work boundary and an isolated
         sandbox runtime.
       </p>
-      <p className="text-xs text-muted-foreground">
+      <p className="text-xs text-ink-3">
         Continuing keeps this agent’s current permissions. A restricted guest
         profile does not replace the agent’s trust and runtime settings.
       </p>
       {onChangeToLowTrust && (
-        <Button variant="outline" className="h-auto whitespace-normal" disabled={disabled} onClick={onChangeToLowTrust}>
+        <Button variant="secondary" className="h-auto whitespace-normal" disabled={disabled} onClick={onChangeToLowTrust}>
           Change {agent.name} to a low trust agent
         </Button>
       )}

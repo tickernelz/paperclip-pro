@@ -11,9 +11,9 @@ const providers = [...manifest.providers].sort((a, b) => {
 
 function Registry() {
   return (
-    <div className="bg-background p-6 text-foreground">
+    <div className="bg-bg p-6 text-ink">
       <h1 className="text-xl font-semibold">Connector icon registry — test fixtures</h1>
-      <p className="my-4 text-sm text-muted-foreground">
+      <p className="my-4 text-sm text-ink-3">
         Synthetic specimens using the shared AppLogo and local manifest. Brand library membership does not enable a connector.
         Columns include specimen sizes and actual caller sizes; gray frames and standard inner spacing are unchanged.
       </p>
@@ -23,7 +23,7 @@ function Registry() {
           <tr key={provider.slug} data-brand={provider.slug}>
             <th className="p-2 text-left font-medium">{provider.provider}</th>
             {sizes.map((size) => <td className="p-2 text-center" key={size}><AppLogo name={provider.provider} brandKey={provider.slug} size={size} allowRemoteFallback={false} /></td>)}
-            <td className="p-2 text-muted-foreground">{provider.catalogVisible ? "Catalog" : "Brand library"}</td>
+            <td className="p-2 text-ink-3">{provider.catalogVisible ? "Catalog" : "Brand library"}</td>
           </tr>
         ))}</tbody>
       </table>

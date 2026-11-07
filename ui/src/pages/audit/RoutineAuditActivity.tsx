@@ -29,7 +29,7 @@ export function RoutineAuditActivity({
 
   if (activity.isLoading) {
     return (
-      <div className="border-y border-border py-14 text-center text-sm text-muted-foreground">
+      <div className="border-y border-line py-14 text-center text-sm text-ink-3">
         Loading routine activity…
       </div>
     );
@@ -37,11 +37,11 @@ export function RoutineAuditActivity({
 
   if (activity.error) {
     return (
-      <div className="flex flex-col items-center gap-3 border-y border-border py-14 text-center">
-        <p className="text-sm text-muted-foreground">
+      <div className="flex flex-col items-center gap-3 border-y border-line py-14 text-center">
+        <p className="text-sm text-ink-3">
           {activity.error instanceof Error ? activity.error.message : "Failed to load routine activity."}
         </p>
-        <Button variant="outline" size="sm" onClick={() => activity.refetch()}>
+        <Button variant="secondary" size="sm" onClick={() => activity.refetch()}>
           Try again
         </Button>
       </div>
@@ -54,7 +54,7 @@ export function RoutineAuditActivity({
   }
 
   return (
-    <div className="border-y border-border" aria-label="Routine activity">
+    <div className="border-y border-line" aria-label="Routine activity">
       {events.map((event) => (
         <RoutineActivityRow key={event.id} event={event} />
       ))}

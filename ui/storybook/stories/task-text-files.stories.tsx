@@ -30,10 +30,10 @@ function TextFilesStory({ initial = "list", width = 640 }: { initial?: "list" | 
   });
   const id = initial === "markdown" ? "charter" : initial === "text" ? "summary" : initial;
   return <QueryClientProvider client={fixture.client}>
-    <main className="min-h-screen bg-background p-6 text-foreground">
+    <main className="min-h-screen bg-bg p-6 text-ink">
       <div className="mx-auto flex max-w-6xl flex-wrap gap-6">
-        <div className="min-w-0 flex-1"><h1 className="text-xl font-semibold">Review account outcomes</h1><p className="mt-3 text-sm text-muted-foreground">Open AGENTS.md or summary.txt from Artifacts. Each file opens in its own tab. Markdown can switch between rendered and raw text.</p></div>
-        <section className="h-(--sz-640px) max-w-full overflow-hidden rounded-lg border border-border" style={{ width }} aria-label="Task side panel">
+        <div className="min-w-0 flex-1"><h1 className="text-xl font-semibold">Review account outcomes</h1><p className="mt-3 text-sm text-ink-3">Open AGENTS.md or summary.txt from Artifacts. Each file opens in its own tab. Markdown can switch between rendered and raw text.</p></div>
+        <section className="h-(--sz-640px) max-w-full overflow-hidden rounded-lg border border-line" style={{ width }} aria-label="Task side panel">
           <TaskSidePanel issue={fixture.issue} accountScope="storybook-text-files" inline onUpdate={() => {}} fileTabsEnabled={false} openAttachment={initial === "list" ? null : { id, title: id === "charter" ? "AGENTS.md" : `${id}.txt`, requestId: 1 }} />
         </section>
       </div>

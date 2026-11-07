@@ -92,7 +92,7 @@ export function AuthPage() {
 
   // A health/session failure must not be mistaken for a self-hosted instance.
   if (healthQuery.error || sessionError) {
-    return <p role="alert" className="p-6 text-sm text-destructive">Unable to check sign-in. Refresh and try again.</p>;
+    return <p role="alert" className="p-6 text-sm text-bad">Unable to check sign-in. Refresh and try again.</p>;
   }
 
   if (healthQuery.data?.cloud) {
@@ -100,7 +100,7 @@ export function AuthPage() {
   }
 
   return (
-    <div className="fixed inset-0 flex bg-background">
+    <div className="fixed inset-0 flex bg-bg">
       <div className="absolute top-4 right-4 z-10">
         <ThemeToggle />
       </div>
@@ -114,7 +114,7 @@ export function AuthPage() {
           <h1 className="text-xl font-semibold">
             {mode === "sign_in" ? "Sign in to Paperclip" : "Create your Paperclip account"}
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-ink-3">
             {mode === "sign_in"
               ? "Use your email and password to access this instance."
               : "Create an account for this instance. Email confirmation is not required in v1."}
@@ -136,11 +136,11 @@ export function AuthPage() {
           >
             {mode === "sign_up" && (
               <div>
-                <label htmlFor="name" className="text-xs text-muted-foreground mb-1 block">Name</label>
+                <label htmlFor="name" className="text-xs text-ink-3 mb-1 block">Name</label>
                 <input
                   id="name"
                   name="name"
-                  className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/50"
+                  className="w-full rounded-md border border-line bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-focus placeholder:text-ink-3/50"
                   value={name}
                   onChange={(event) => setName(event.target.value)}
                   autoComplete="name"
@@ -153,11 +153,11 @@ export function AuthPage() {
               </div>
             )}
             <div>
-              <label htmlFor="email" className="text-xs text-muted-foreground mb-1 block">Email</label>
+              <label htmlFor="email" className="text-xs text-ink-3 mb-1 block">Email</label>
               <input
                 id="email"
                 name="email"
-                className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/50"
+                className="w-full rounded-md border border-line bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-focus placeholder:text-ink-3/50"
                 type="email"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
@@ -170,11 +170,11 @@ export function AuthPage() {
               />
             </div>
             <div>
-              <label htmlFor="password" className="text-xs text-muted-foreground mb-1 block">Password</label>
+              <label htmlFor="password" className="text-xs text-ink-3 mb-1 block">Password</label>
               <input
                 id="password"
                 name="password"
-                className="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-ring placeholder:text-muted-foreground/50"
+                className="w-full rounded-md border border-line bg-transparent px-3 py-2 text-sm outline-none focus:ring-1 focus:ring-focus placeholder:text-ink-3/50"
                 type="password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
@@ -186,7 +186,7 @@ export function AuthPage() {
               />
             </div>
             {error && (
-              <p id={errorId} role="alert" className="text-xs text-destructive">
+              <p id={errorId} role="alert" className="text-xs text-bad">
                 {error}
               </p>
             )}
@@ -204,11 +204,11 @@ export function AuthPage() {
             </Button>
           </form>
 
-          <div className="mt-5 text-sm text-muted-foreground">
+          <div className="mt-5 text-sm text-ink-3">
             {mode === "sign_in" ? "Need an account?" : "Already have an account?"}{" "}
             <button
               type="button"
-              className="font-medium text-foreground underline underline-offset-2"
+              className="font-medium text-ink underline underline-offset-2"
               onClick={() => {
                 setError(null);
                 setMode(mode === "sign_in" ? "sign_up" : "sign_in");

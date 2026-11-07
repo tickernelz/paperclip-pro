@@ -225,15 +225,15 @@ export function TerminalWorkspace({ companyId }: { companyId: string }) {
   };
 
   if (sessionsQuery.isLoading) {
-    return <p className="p-4 text-sm text-muted-foreground">Loading terminal sessions…</p>;
+    return <p className="p-4 text-sm text-ink-3">Loading terminal sessions…</p>;
   }
 
   if (sessionsQuery.isError) {
     return (
       <div className="flex h-full min-h-(--sz-60vh) flex-col items-center justify-center gap-2 p-6 text-center" data-testid="terminal-access-error">
-        <SquareTerminal className="size-6 text-muted-foreground" aria-hidden />
-        <p className="text-sm font-medium text-foreground">Terminal unavailable</p>
-        <p className="max-w-md text-sm text-muted-foreground">
+        <SquareTerminal className="size-6 text-ink-3" aria-hidden />
+        <p className="text-sm font-medium text-ink">Terminal unavailable</p>
+        <p className="max-w-md text-sm text-ink-3">
           {terminalAccessErrorMessage(sessionsQuery.error, "Terminal sessions could not be loaded.")}
         </p>
       </div>
@@ -245,8 +245,8 @@ export function TerminalWorkspace({ companyId }: { companyId: string }) {
   const creating = createMutation.isPending;
 
   return (
-    <div className="flex h-full min-h-(--sz-60vh) flex-col overflow-hidden rounded-md border border-border" data-testid="terminal-workspace">
-      <div className="flex shrink-0 items-center gap-1 border-b border-border px-2 py-1">
+    <div className="flex h-full min-h-(--sz-60vh) flex-col overflow-hidden rounded-md border border-line" data-testid="terminal-workspace">
+      <div className="flex shrink-0 items-center gap-1 border-b border-line px-2 py-1">
         <div role="tablist" aria-label="Terminal sessions" className="flex min-w-0 flex-1 items-center gap-1 overflow-x-auto">
           {sessions.map((session) => {
             const selected = session.id === focusedSessionId;
@@ -257,7 +257,7 @@ export function TerminalWorkspace({ companyId }: { companyId: string }) {
                 key={session.id}
                 className={cn(
                   "group flex shrink-0 items-center gap-1 rounded-md border px-2 py-1 text-xs",
-                  selected ? "border-ring bg-accent text-foreground" : visible ? "border-border text-foreground" : "border-transparent text-muted-foreground hover:bg-accent",
+                  selected ? "border-focus bg-bg-3 text-ink" : visible ? "border-line text-ink" : "border-transparent text-ink-3 hover:bg-bg-3",
                 )}
               >
                 {session.kind === "ssh" || session.sshHost ? (
@@ -286,13 +286,13 @@ export function TerminalWorkspace({ companyId }: { companyId: string }) {
                     onDoubleClick={() => setRenaming({ id: session.id, value: title })}
                   >
                     {title}
-                    {session.status === "exited" ? <span className="ml-1 text-muted-foreground">(ended)</span> : null}
+                    {session.status === "exited" ? <span className="ml-1 text-ink-3">(ended)</span> : null}
                   </button>
                 )}
                 <button
                   type="button"
                   aria-label={`Close ${title}`}
-                  className="rounded-sm text-muted-foreground hover:text-foreground"
+                  className="rounded-sm text-ink-3 hover:text-ink"
                   disabled={deleteMutation.isPending && deleteMutation.variables === session.id}
                   onClick={() => deleteMutation.mutate(session.id)}
                 >
@@ -321,7 +321,7 @@ export function TerminalWorkspace({ companyId }: { companyId: string }) {
                 {sshHostsQuery.isLoading ? (
                   <DropdownMenuItem disabled>Loading…</DropdownMenuItem>
                 ) : sshHostsQuery.isError ? (
-                  <DropdownMenuItem disabled className="text-destructive">
+                  <DropdownMenuItem disabled className="text-bad">
                     {terminalAccessErrorMessage(sshHostsQuery.error, "SSH hosts could not be loaded.")}
                   </DropdownMenuItem>
                 ) : sshConfigHosts.length === 0 && savedSshHosts.length === 0 ? (
@@ -335,7 +335,7 @@ export function TerminalWorkspace({ companyId }: { companyId: string }) {
                       sshConfigHosts.map((host) => (
                         <DropdownMenuItem key={host.id} onSelect={() => createSshHost(host)}>
                           <span className="truncate">{host.name}</span>
-                          <span className="ml-auto truncate pl-2 text-xs text-muted-foreground">
+                          <span className="ml-auto truncate pl-2 text-xs text-ink-3">
                             {host.destination}
                           </span>
                         </DropdownMenuItem>
@@ -348,7 +348,7 @@ export function TerminalWorkspace({ companyId }: { companyId: string }) {
                       savedSshHosts.map((host) => (
                         <DropdownMenuItem key={host.id} onSelect={() => createSshHost(host)}>
                           <span className="truncate">{host.name}</span>
-                          <span className="ml-auto truncate pl-2 text-xs text-muted-foreground">
+                          <span className="ml-auto truncate pl-2 text-xs text-ink-3">
                             {host.destination}
                             {host.port === null ? "" : `:${host.port}`}
                           </span>
@@ -358,7 +358,7 @@ export function TerminalWorkspace({ companyId }: { companyId: string }) {
                   </>
                 )}
                 {sshHostsQuery.data?.configError ? (
-                  <DropdownMenuItem disabled className="text-muted-foreground">
+                  <DropdownMenuItem disabled className="text-ink-3">
                     {sshHostsQuery.data.configError}
                   </DropdownMenuItem>
                 ) : null}
@@ -403,19 +403,19 @@ export function TerminalWorkspace({ companyId }: { companyId: string }) {
         onConnect={createSshHost}
       />
       {actionError ? (
-        <p className="shrink-0 border-b border-border px-3 py-1 text-xs text-destructive" role="alert">{actionError}</p>
+        <p className="shrink-0 border-b border-line px-3 py-1 text-xs text-bad" role="alert">{actionError}</p>
       ) : null}
       {layout.panes.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-3 p-6 text-center">
-          <SquareTerminal className="size-6 text-muted-foreground" aria-hidden />
-          <p className="text-sm text-muted-foreground">No terminal sessions yet.</p>
+          <SquareTerminal className="size-6 text-ink-3" aria-hidden />
+          <p className="text-sm text-ink-3">No terminal sessions yet.</p>
           {localAllowed ? (
-            <Button type="button" variant="outline" size="sm" onClick={() => createLocal()} disabled={creating}>
+            <Button type="button" variant="secondary" size="sm" onClick={() => createLocal()} disabled={creating}>
               <Plus aria-hidden />
               New local terminal
             </Button>
           ) : (
-            <p className="max-w-md text-xs text-muted-foreground">
+            <p className="max-w-md text-xs text-ink-3">
               A shell on this host needs instance admin access. Open an SSH terminal to a registered environment instead.
             </p>
           )}
@@ -427,7 +427,7 @@ export function TerminalWorkspace({ companyId }: { companyId: string }) {
               {index > 0 ? <ResizableHandle /> : null}
               <ResizablePanel id={`terminal-pane-${index}`} minSize="20%">
                 <div
-                  className={cn("h-full min-h-0", layout.panes.length > 1 && index === layout.focused && "ring-1 ring-inset ring-ring")}
+                  className={cn("h-full min-h-0", layout.panes.length > 1 && index === layout.focused && "ring-1 ring-inset ring-focus")}
                   onFocusCapture={() => setLayout((current) => (current.focused === index ? current : { ...current, focused: index }))}
                   onMouseDown={() => setLayout((current) => (current.focused === index ? current : { ...current, focused: index }))}
                   data-testid={`terminal-pane-${index}`}

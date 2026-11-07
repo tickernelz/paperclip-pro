@@ -257,8 +257,8 @@ export function TasksLiveNowSection({ companyId, liveRuns, issues, issueLinkStat
           <button
             type="button"
             className={cn(
-              "flex w-full min-w-0 flex-wrap items-center gap-x-2 gap-y-1 rounded-xl border py-1.5 pl-1.5 pr-3 text-left outline-none hover:bg-accent/40 focus-visible:ring-2 focus-visible:ring-ring",
-              collapsed ? "border-border bg-card" : "border-transparent",
+              "flex w-full min-w-0 flex-wrap items-center gap-x-2 gap-y-1 rounded-xl border py-1.5 pl-1.5 pr-3 text-left outline-none hover:bg-bg-3/40 focus-visible:ring-2 focus-visible:ring-focus",
+              collapsed ? "border-line bg-bg-2" : "border-transparent",
             )}
             aria-expanded={!collapsed}
             aria-controls={collapsed ? undefined : listId}
@@ -266,12 +266,12 @@ export function TasksLiveNowSection({ companyId, liveRuns, issues, issueLinkStat
           >
             <span className="inline-flex w-4 shrink-0 items-center justify-center">
               <ChevronRight
-                className={cn("h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform", !collapsed && "rotate-90")}
+                className={cn("h-3.5 w-3.5 shrink-0 text-ink-3 transition-transform", !collapsed && "rotate-90")}
               />
             </span>
             <LiveRunDot />
             <span className="shrink-0 text-sm font-semibold uppercase tracking-wide">Live now</span>
-            <span data-slot="tasks-live-now-count" className="text-xs tabular-nums text-muted-foreground">
+            <span data-slot="tasks-live-now-count" className="text-xs tabular-nums text-ink-3">
               {cards.length}
             </span>
             {collapsed ? <LiveNowAvatarStrip cards={cards} /> : null}
@@ -309,7 +309,7 @@ export function TasksLiveNowSection({ companyId, liveRuns, issues, issueLinkStat
               {cards.length > LIVE_NOW_WIDE_CARD_LIMIT ? (
                 <button
                   type="button"
-                  className="mt-2 hidden rounded-md px-2 py-1 text-xs text-muted-foreground outline-none hover:bg-accent/40 hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring sm:inline-flex"
+                  className="mt-2 hidden rounded-md px-2 py-1 text-xs text-ink-3 outline-none hover:bg-bg-3/40 hover:text-ink focus-visible:ring-2 focus-visible:ring-focus sm:inline-flex"
                   aria-controls={listId}
                   onClick={() => setShowAll((value) => !value)}
                 >
@@ -365,7 +365,7 @@ function LiveNowHealthSummary({ counts }: { counts: LiveNowHealthCounts }) {
   ].filter((part) => part.count > 0);
   const label = parts.map((part) => `${part.count} ${part.text}`).join(", ");
   return (
-    <span data-slot="tasks-live-now-summary" className="ml-auto flex shrink-0 items-center gap-2 text-xs text-muted-foreground sm:gap-3">
+    <span data-slot="tasks-live-now-summary" className="ml-auto flex shrink-0 items-center gap-2 text-xs text-ink-3 sm:gap-3">
       <span className="sr-only">{label}</span>
       {parts.map((part) => (
         <span
@@ -400,7 +400,7 @@ function LiveNowAvatarStrip({ cards }: { cards: readonly LiveNowCardModel[] }) {
           key={run.agentId}
           title={run.agentName}
           className={cn(
-            "-ml-1.5 inline-flex rounded-full bg-card ring-2 ring-card first:ml-0",
+            "-ml-1.5 inline-flex rounded-full bg-bg-2 ring-2 ring-bg-2 first:ml-0",
             index >= MOBILE_STRIP_AVATARS && "hidden sm:inline-flex",
           )}
         >
@@ -412,10 +412,10 @@ function LiveNowAvatarStrip({ cards }: { cards: readonly LiveNowCardModel[] }) {
         </span>
       ))}
       {mobileExtra > 0 ? (
-        <span aria-hidden="true" className="ml-1 text-xs tabular-nums text-muted-foreground sm:hidden">+{mobileExtra}</span>
+        <span aria-hidden="true" className="ml-1 text-xs tabular-nums text-ink-3 sm:hidden">+{mobileExtra}</span>
       ) : null}
       {extra > 0 ? (
-        <span aria-hidden="true" className="ml-1 hidden text-xs tabular-nums text-muted-foreground sm:inline">+{extra}</span>
+        <span aria-hidden="true" className="ml-1 hidden text-xs tabular-nums text-ink-3 sm:inline">+{extra}</span>
       ) : null}
       <span className="sr-only">{all.map(({ run }) => run.agentName).join(", ")}</span>
     </span>

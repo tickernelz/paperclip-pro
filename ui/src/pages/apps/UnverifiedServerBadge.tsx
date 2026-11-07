@@ -8,7 +8,7 @@ export function UnverifiedServerBadge({ host, className }: { host: string | null
         <ShieldAlert className="h-3 w-3" />
         Unverified server
       </span>
-      {host ? <span className="font-mono text-muted-foreground">{host}</span> : null}
+      {host ? <span className="font-mono text-ink-3">{host}</span> : null}
     </div>
   );
 }

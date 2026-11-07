@@ -140,39 +140,39 @@ export function ConnectorCatalogNavigation({
     <header ref={headerRef} className="flex flex-col gap-4">
       <h1 className="text-xl font-semibold">Connectors</h1>
       <div className="relative min-w-0">
-        <Search aria-hidden className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Search aria-hidden className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-3" />
         <Input aria-label="Search connectors" placeholder={provider ? `Search ${SOURCE_NAMES[source]} apps…` : source === "installed" ? "Search installed apps…" : "Search all connectors…"}
           value={query} onChange={event => changeQuery(event.target.value)} className="pl-9 pr-9" />
-        {query ? <button aria-label="Clear search" className="absolute right-3 top-1/2 -translate-y-1/2 rounded-sm text-muted-foreground hover:text-foreground"
+        {query ? <button aria-label="Clear search" className="absolute right-3 top-1/2 -translate-y-1/2 rounded-sm text-ink-3 hover:text-ink"
           onClick={() => changeQuery("")}><X className="size-4" /></button> : null}
       </div>
       <CatalogSourceFilters source={source} onChange={browse} />
     </header>
 
     {connected.length > 0 ? <section aria-label="Connected apps" className="flex flex-col gap-3">
-      <h2 className="text-xs font-medium text-muted-foreground">{source === "installed" ? "Installed" : "Connected"}</h2>
+      <h2 className="text-xs font-medium text-ink-3">{source === "installed" ? "Installed" : "Connected"}</h2>
       <div role="list" aria-label="Connected connectors" className="flex flex-col gap-3">{connected.map(renderRow)}</div>
     </section> : null}
 
     {(available.length > 0 || connected.length === 0) ? <section ref={availableRef} aria-label="Available apps" className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-xs font-medium text-muted-foreground">{term ? "Search results" : source === "paperclip" ? "Built into Paperclip" : provider ? `${SOURCE_NAMES[source]} apps` : source === "installed" ? "Installed" : "Available apps"}</h2>
-        <span className="text-xs text-muted-foreground" role="status">{available.length.toLocaleString("en-US")} {term ? available.length === 1 ? "result" : "results" : "apps"}</span>
+        <h2 className="text-xs font-medium text-ink-3">{term ? "Search results" : source === "paperclip" ? "Built into Paperclip" : provider ? `${SOURCE_NAMES[source]} apps` : source === "installed" ? "Installed" : "Available apps"}</h2>
+        <span className="text-xs text-ink-3" role="status">{available.length.toLocaleString("en-US")} {term ? available.length === 1 ? "result" : "results" : "apps"}</span>
       </div>
       {pageRows.length ? <div role="list" aria-label="Available connectors" className="flex flex-col gap-3">{pageRows.map(renderRow)}</div>
-        : <div className="flex flex-col items-start gap-3 rounded-xl border border-dashed border-border p-6">
-          <p className="text-sm text-muted-foreground">{source === "installed" ? `No installed apps match “${query.trim()}”.` : `No ${provider ? `${SOURCE_NAMES[source]} ` : ""}apps match “${query.trim()}”.`}</p>
+        : <div className="flex flex-col items-start gap-3 rounded-xl border border-dashed border-line p-6">
+          <p className="text-sm text-ink-3">{source === "installed" ? `No installed apps match “${query.trim()}”.` : `No ${provider ? `${SOURCE_NAMES[source]} ` : ""}apps match “${query.trim()}”.`}</p>
           <div className="flex flex-wrap gap-2">
-            <Button variant="outline" size="sm" onClick={() => changeQuery("")}>Clear search</Button>
+            <Button variant="secondary" size="sm" onClick={() => changeQuery("")}>Clear search</Button>
             {source !== "all" ? <Button variant="ghost" size="sm" onClick={() => browse("all")}>Search all apps</Button> : null}
           </div>
         </div>}
       {pageCount > 1 ? <nav aria-label="Catalog pages" className="flex flex-wrap items-center justify-between gap-3">
-        <span className="text-xs text-muted-foreground">{((currentPage - 1) * pageSize + 1).toLocaleString("en-US")}–{Math.min(currentPage * pageSize, available.length).toLocaleString("en-US")} of {available.length.toLocaleString("en-US")}</span>
+        <span className="text-xs text-ink-3">{((currentPage - 1) * pageSize + 1).toLocaleString("en-US")}–{Math.min(currentPage * pageSize, available.length).toLocaleString("en-US")} of {available.length.toLocaleString("en-US")}</span>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" disabled={currentPage === 1} onClick={() => changePage(currentPage - 1)} aria-label="Previous page"><ChevronLeft className="size-4" />Previous</Button>
-          <span className="text-xs text-muted-foreground">{currentPage} / {pageCount}</span>
-          <Button variant="outline" size="sm" disabled={currentPage === pageCount} onClick={() => changePage(currentPage + 1)} aria-label="Next page">Next<ChevronRight className="size-4" /></Button>
+          <Button variant="secondary" size="sm" disabled={currentPage === 1} onClick={() => changePage(currentPage - 1)} aria-label="Previous page"><ChevronLeft className="size-4" />Previous</Button>
+          <span className="text-xs text-ink-3">{currentPage} / {pageCount}</span>
+          <Button variant="secondary" size="sm" disabled={currentPage === pageCount} onClick={() => changePage(currentPage + 1)} aria-label="Next page">Next<ChevronRight className="size-4" /></Button>
         </div>
       </nav> : null}
     </section> : null}
@@ -180,7 +180,7 @@ export function ConnectorCatalogNavigation({
     <Dialog open={Boolean(previewAction)} onOpenChange={open => !open && setPreviewAction(null)}>
       <DialogContent><DialogHeader><DialogTitle>{previewAction}</DialogTitle>
         <DialogDescription>This preview covers catalog navigation. Account setup and management continue on the Apps page.</DialogDescription>
-      </DialogHeader><Button variant="outline" onClick={() => setPreviewAction(null)}>Back to catalog</Button></DialogContent>
+      </DialogHeader><Button variant="secondary" onClick={() => setPreviewAction(null)}>Back to catalog</Button></DialogContent>
     </Dialog>
   </main>;
 }

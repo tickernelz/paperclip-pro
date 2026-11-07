@@ -48,7 +48,7 @@ function DateLabels({ days }: { days: string[] }) {
       {days.map((day, i) => (
         <div key={day} className="flex-1 text-center">
           {(i === 0 || i === 6 || i === 13) ? (
-            <span className="text-(length:--text-nano) text-muted-foreground tabular-nums">{formatDayLabel(day)}</span>
+            <span className="text-(length:--text-nano) text-ink-3 tabular-nums">{formatDayLabel(day)}</span>
           ) : null}
         </div>
       ))}
@@ -60,7 +60,7 @@ function ChartLegend({ items }: { items: { color: string; label: string }[] }) {
   return (
     <div className="flex flex-wrap gap-x-2.5 gap-y-0.5 mt-2">
       {items.map(item => (
-        <span key={item.label} className="flex items-center gap-1 text-(length:--text-nano) text-muted-foreground">
+        <span key={item.label} className="flex items-center gap-1 text-(length:--text-nano) text-ink-3">
           <span className="h-1.5 w-1.5 rounded-full shrink-0" style={{ backgroundColor: item.color }} />
           {item.label}
         </span>
@@ -71,10 +71,10 @@ function ChartLegend({ items }: { items: { color: string; label: string }[] }) {
 
 export function ChartCard({ title, subtitle, children }: { title: string; subtitle?: string; children: React.ReactNode }) {
   return (
-    <div className="border border-border rounded-lg p-4 space-y-3">
+    <div className="border border-line rounded-lg p-4 space-y-3">
       <div>
-        <h3 className="text-xs font-medium text-muted-foreground">{title}</h3>
-        {subtitle && <span className="text-(length:--text-nano) text-muted-foreground/60">{subtitle}</span>}
+        <h3 className="text-xs font-medium text-ink-3">{title}</h3>
+        {subtitle && <span className="text-(length:--text-nano) text-ink-3/60">{subtitle}</span>}
       </div>
       {children}
     </div>
@@ -127,7 +127,7 @@ export function RunActivityChart(props: RunChartProps) {
   const hasData = activity.some(v => v.total > 0);
   const hasRecovered = activity.some(v => v.recovered > 0);
 
-  if (!hasData) return <p className="text-xs text-muted-foreground">No runs yet</p>;
+  if (!hasData) return <p className="text-xs text-ink-3">No runs yet</p>;
 
   const legendItems = [
     { color: runSegmentColors.succeeded, label: "Succeeded" },
@@ -153,7 +153,7 @@ export function RunActivityChart(props: RunChartProps) {
                   {entry.other > 0 && <div style={{ flex: entry.other, backgroundColor: runSegmentColors.other }} />}
                 </div>
               ) : (
-                <div className="bg-muted/30 rounded-sm" style={{ height: 2 }} />
+                <div className="bg-bg-3/30 rounded-sm" style={{ height: 2 }} />
               )}
             </div>
           );
@@ -188,7 +188,7 @@ export function PriorityChart({ issues }: { issues: { priority: string; createdA
   const maxValue = Math.max(...Array.from(grouped.values()).map(v => Object.values(v).reduce((a, b) => a + b, 0)), 1);
   const hasData = Array.from(grouped.values()).some(v => Object.values(v).reduce((a, b) => a + b, 0) > 0);
 
-  if (!hasData) return <p className="text-xs text-muted-foreground">No tasks</p>;
+  if (!hasData) return <p className="text-xs text-ink-3">No tasks</p>;
 
   return (
     <div>
@@ -206,7 +206,7 @@ export function PriorityChart({ issues }: { issues: { priority: string; createdA
                   ) : null)}
                 </div>
               ) : (
-                <div className="bg-muted/30 rounded-sm" style={{ height: 2 }} />
+                <div className="bg-bg-3/30 rounded-sm" style={{ height: 2 }} />
               )}
             </div>
           );
@@ -263,7 +263,7 @@ export function IssueStatusChart({ issues }: { issues: { status: string; created
   const maxValue = Math.max(...Array.from(grouped.values()).map(v => Object.values(v).reduce((a, b) => a + b, 0)), 1);
   const hasData = allStatuses.size > 0;
 
-  if (!hasData) return <p className="text-xs text-muted-foreground">No tasks</p>;
+  if (!hasData) return <p className="text-xs text-ink-3">No tasks</p>;
 
   return (
     <div>
@@ -281,7 +281,7 @@ export function IssueStatusChart({ issues }: { issues: { status: string; created
                   ) : null)}
                 </div>
               ) : (
-                <div className="bg-muted/30 rounded-sm" style={{ height: 2 }} />
+                <div className="bg-bg-3/30 rounded-sm" style={{ height: 2 }} />
               )}
             </div>
           );
@@ -299,7 +299,7 @@ export function SuccessRateChart(props: RunChartProps) {
   const grouped = new Map(activity.map((day) => [day.date, day]));
 
   const hasData = activity.some(v => v.total > 0);
-  if (!hasData) return <p className="text-xs text-muted-foreground">No runs yet</p>;
+  if (!hasData) return <p className="text-xs text-ink-3">No runs yet</p>;
 
   return (
     <div>
@@ -316,7 +316,7 @@ export function SuccessRateChart(props: RunChartProps) {
               {entry.total > 0 ? (
                 <div style={{ height: `${rate * 100}%`, minHeight: 2, backgroundColor: color }} />
               ) : (
-                <div className="bg-muted/30 rounded-sm" style={{ height: 2 }} />
+                <div className="bg-bg-3/30 rounded-sm" style={{ height: 2 }} />
               )}
             </div>
           );

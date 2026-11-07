@@ -46,8 +46,8 @@ export function IssuePlanDecompositionsSection({
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-2">
-        <h3 className="text-sm font-medium text-muted-foreground">Plan decomposition</h3>
-        <span className="text-(length:--text-micro) text-muted-foreground/80">
+        <h3 className="text-sm font-medium text-ink-3">Plan decomposition</h3>
+        <span className="text-(length:--text-micro) text-ink-3/80">
           {items.length === 1 ? "1 accepted plan revision" : `${items.length} accepted plan revisions`}
         </span>
       </div>
@@ -86,16 +86,16 @@ export function IssuePlanDecompositionsSection({
             <li
               key={record.id}
               // design-allow(card-pattern): semantic <li> row inside a <ul>; Card renders a div (C5a Run 3)
-              className="rounded-md border border-border bg-card/50 p-3 text-sm"
+              className="rounded-md border border-line bg-bg-2/50 p-3 text-sm"
             >
               <div className="flex flex-wrap items-center gap-2">
                 <StatusBadge status={record.status} />
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs text-ink-3">
                   Plan {revisionLabel}
                 </span>
-                <span className="text-xs text-muted-foreground/70">·</span>
-                <span className="inline-flex items-center gap-1 text-xs text-foreground">
-                  <GitBranch className="h-3 w-3 text-muted-foreground" />
+                <span className="text-xs text-ink-3/70">·</span>
+                <span className="inline-flex items-center gap-1 text-xs text-ink">
+                  <GitBranch className="h-3 w-3 text-ink-3" />
                   {created} of {requested} child {requested === 1 ? "task" : "tasks"} created
                 </span>
                 {record.status === "completed" && requested > 0 ? (
@@ -109,7 +109,7 @@ export function IssuePlanDecompositionsSection({
                 ) : null}
               </div>
 
-              <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-(length:--text-micro) text-muted-foreground">
+              <div className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-(length:--text-micro) text-ink-3">
                 {ownerName ? <span>Owner: {ownerName}</span> : null}
                 {startedAt ? (
                   <span title={formatDateTime(startedAt)}>Started {relativeTime(startedAt)}</span>
@@ -136,17 +136,17 @@ export function IssuePlanDecompositionsSection({
                       <Link
                         to={`/issues/${child.identifier ?? child.id}`}
                         className={cn(
-                          "inline-flex max-w-full items-center gap-1 rounded-sm border border-border bg-background px-2 py-0.5 text-(length:--text-micro) text-foreground transition-colors hover:bg-accent/40",
+                          "inline-flex max-w-full items-center gap-1 rounded-sm border border-line bg-bg px-2 py-0.5 text-(length:--text-micro) text-ink transition-colors hover:bg-bg-3/40",
                         )}
                         title={child.title}
                       >
                         <span className="font-medium">
                           {child.identifier ?? child.id.slice(0, 8)}
                         </span>
-                        <span className="truncate max-w-(--sz-24ch) text-muted-foreground">
+                        <span className="truncate max-w-(--sz-24ch) text-ink-3">
                           {child.title}
                         </span>
-                        <ChevronRight className="h-3 w-3 text-muted-foreground" />
+                        <ChevronRight className="h-3 w-3 text-ink-3" />
                       </Link>
                     </li>
                   ))}

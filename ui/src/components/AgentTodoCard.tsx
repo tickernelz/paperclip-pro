@@ -48,13 +48,13 @@ export function isAgentTodoRunLive(snapshot: Pick<AgentTodoSnapshot, "runStatus"
 }
 
 function AgentTodoTaskRow({ task, dense }: { task: AgentTodoTask; dense: boolean }) {
-  const settledTone = task.status === "dropped" ? "text-muted-foreground/70 line-through" : "text-muted-foreground line-through";
+  const settledTone = task.status === "dropped" ? "text-ink-3/70 line-through" : "text-ink-3 line-through";
   return (
     <li
       className={cn(
         "flex items-start gap-2 rounded-sm px-1.5 text-sm",
         dense ? "py-0.5 leading-5" : "py-1",
-        task.status === "in_progress" && "bg-muted font-medium text-foreground",
+        task.status === "in_progress" && "bg-bg-3 font-medium text-ink",
       )}
       data-status={task.status}
       aria-current={task.status === "in_progress" ? "step" : undefined}
@@ -67,7 +67,7 @@ function AgentTodoTaskRow({ task, dense }: { task: AgentTodoTask; dense: boolean
         <span className="sr-only">{`${STATUS_LABEL[task.status]}: `}</span>
         <span className={cn("break-words", isSettled(task) && settledTone)}>{task.content}</span>
         {task.status === "blocked" && task.blocker ? (
-          <p className="mt-0.5 text-xs text-destructive">{`Blocked: ${task.blocker}`}</p>
+          <p className="mt-0.5 text-xs text-bad">{`Blocked: ${task.blocker}`}</p>
         ) : null}
       </div>
     </li>
@@ -84,7 +84,7 @@ function AgentTodoPhaseSection({ phase, index, dense }: { phase: AgentTodoPhase;
     <section className="flex flex-col gap-1">
       <button
         type="button"
-        className="flex min-w-0 items-center gap-1.5 rounded-sm text-left text-xs font-medium text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="flex min-w-0 items-center gap-1.5 rounded-sm text-left text-xs font-medium text-ink-3 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
         aria-expanded={expanded}
         aria-controls={listId}
         onClick={() => setExpanded((value) => !value)}
@@ -107,7 +107,7 @@ export function AgentTodoList({ snapshot, dense = false }: { snapshot: AgentTodo
   const listed = snapshot.phases.reduce((sum, phase) => sum + phase.tasks.length, 0);
   const hidden = Math.max(0, snapshot.counts.total - listed);
   if (snapshot.phases.length === 0) {
-    return <p className="text-sm text-muted-foreground">The agent cleared its todo list.</p>;
+    return <p className="text-sm text-ink-3">The agent cleared its todo list.</p>;
   }
   return (
     <div className={cn("flex flex-col", dense ? "gap-2" : "gap-3")}>
@@ -115,7 +115,7 @@ export function AgentTodoList({ snapshot, dense = false }: { snapshot: AgentTodo
         <AgentTodoPhaseSection key={`${index}:${phase.name}`} phase={phase} index={index} dense={dense} />
       ))}
       {hidden > 0 ? (
-        <p className="text-xs text-muted-foreground">{`+${hidden} more ${hidden === 1 ? "task" : "tasks"} not listed`}</p>
+        <p className="text-xs text-ink-3">{`+${hidden} more ${hidden === 1 ? "task" : "tasks"} not listed`}</p>
       ) : null}
     </div>
   );
@@ -128,8 +128,8 @@ export function AgentTodoProgress({ snapshot, showLiveDot = true }: { snapshot: 
   const live = isAgentTodoRunLive(snapshot);
   return (
     <div className="flex flex-col gap-1.5">
-      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
-        <span className="font-medium tabular-nums text-foreground">{`${completed}/${total}`}</span>
+      <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-ink-3">
+        <span className="font-medium tabular-nums text-ink">{`${completed}/${total}`}</span>
         <span aria-hidden>·</span>
         <span className="inline-flex items-center gap-1.5">
           {live && showLiveDot ? (
@@ -154,7 +154,7 @@ export function AgentTodoProgress({ snapshot, showLiveDot = true }: { snapshot: 
         aria-valuemax={total}
         aria-valuenow={completed}
         aria-valuetext={`${completed} of ${total} tasks completed`}
-        className="h-1 w-full overflow-hidden rounded-full bg-muted"
+        className="h-1 w-full overflow-hidden rounded-full bg-bg-3"
       >
         <div className="h-full rounded-full bg-(--status-task-icon-done)" style={{ width: `${percent}%` }} />
       </div>
@@ -219,17 +219,17 @@ export function AgentTodoCard({
   const card = (
     <section
       aria-label="Agent todo"
-      className={cn("flex flex-col rounded-md border border-border bg-card px-3", expanded ? "gap-2 py-2" : "py-1.5", className)}
+      className={cn("flex flex-col rounded-md border border-line bg-bg-2 px-3", expanded ? "gap-2 py-2" : "py-1.5", className)}
       data-testid="agent-todo-card"
       data-expanded={expanded}
     >
       <header className="flex min-w-0 items-center gap-2">
-        <ListTodo aria-hidden className="size-4 shrink-0 text-muted-foreground" />
-        <h2 className={cn(expanded ? "min-w-0 flex-1 truncate text-sm font-medium text-foreground" : "sr-only")}>Agent todo</h2>
+        <ListTodo aria-hidden className="size-4 shrink-0 text-ink-3" />
+        <h2 className={cn(expanded ? "min-w-0 flex-1 truncate text-sm font-medium text-ink" : "sr-only")}>Agent todo</h2>
         {expanded ? null : (
           <button
             type="button"
-            className="min-w-0 flex-1 rounded-sm text-left text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="min-w-0 flex-1 rounded-sm text-left text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
             aria-expanded={false}
             aria-controls={bodyId}
             onClick={toggle}
@@ -239,7 +239,7 @@ export function AgentTodoCard({
           </button>
         )}
         {expanded ? null : (
-          <span className="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground">
+          <span className="flex shrink-0 items-center gap-1.5 text-xs text-ink-3">
             {live ? (
               <span
                 className="size-1.5 shrink-0 animate-pulse rounded-full bg-(--status-agent-running) motion-reduce:animate-none"
@@ -247,7 +247,7 @@ export function AgentTodoCard({
                 data-testid="agent-todo-live-dot"
               />
             ) : null}
-            <span className="font-medium tabular-nums text-foreground">{`${snapshot.counts.completed}/${snapshot.counts.total}`}</span>
+            <span className="font-medium tabular-nums text-ink">{`${snapshot.counts.completed}/${snapshot.counts.total}`}</span>
           </span>
         )}
         {openInPanel ? (

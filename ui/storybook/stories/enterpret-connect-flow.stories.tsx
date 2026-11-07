@@ -167,7 +167,7 @@ function ReconnectHost({ connection }: { connection: ToolConnection }) {
     <div className="mx-auto max-w-3xl p-6">
       <header className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight">Enterpret</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="mt-1 text-sm text-ink-3">
           Connection needs attention
         </p>
       </header>
@@ -192,12 +192,12 @@ function MethodCopyHost() {
       {[TOKEN_METHOD, OAUTH_METHOD].map((method) => (
         <section
           key={method.key}
-          className="space-y-2 rounded-lg border border-border p-4"
+          className="space-y-2 rounded-lg border border-line p-4"
         >
           <h2 className="text-lg font-semibold">{method.label}</h2>
-          <p className="text-sm text-muted-foreground">{method.whenToUse}</p>
+          <p className="text-sm text-ink-3">{method.whenToUse}</p>
           <p className="text-sm">{method.guidanceMd}</p>
-          <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-muted-foreground">
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-ink-3">
             <dt>Method key</dt>
             <dd className="font-mono">{method.key}</dd>
             <dt>Ownership</dt>

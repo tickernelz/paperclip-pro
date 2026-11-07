@@ -486,7 +486,7 @@ export function OrgChart({ orgTree: providedOrgTree, agents: providedAgents, emb
         <div className="mb-2 flex shrink-0 flex-wrap items-center justify-start gap-2">
         {showImport ? (
           <Link to="/company/import">
-            <Button variant="outline" size="sm">
+            <Button variant="secondary" size="sm">
               <Upload className="mr-1.5 h-3.5 w-3.5" />
               Import organization
             </Button>
@@ -494,7 +494,7 @@ export function OrgChart({ orgTree: providedOrgTree, agents: providedAgents, emb
         ) : null}
         {showExport ? (
           <Link to="/company/export">
-            <Button variant="outline" size="sm">
+            <Button variant="secondary" size="sm">
               <Download className="mr-1.5 h-3.5 w-3.5" />
               Export organization
             </Button>
@@ -505,7 +505,7 @@ export function OrgChart({ orgTree: providedOrgTree, agents: providedAgents, emb
       <div
         ref={containerRef}
         data-testid="org-chart-viewport"
-        className="w-full flex-1 min-h-0 overflow-hidden relative bg-muted/20 border border-border rounded-lg"
+        className="w-full flex-1 min-h-0 overflow-hidden relative bg-bg-3/20 border border-line rounded-lg"
         style={{
           cursor: dragging ? "grabbing" : "grab",
           touchAction: "none",
@@ -524,7 +524,7 @@ export function OrgChart({ orgTree: providedOrgTree, agents: providedAgents, emb
         {/* Zoom controls */}
         <div className="absolute top-3 right-3 z-10 flex flex-col gap-1.5">
           <button
-            className="flex size-9 items-center justify-center rounded border border-border bg-background text-sm transition-colors hover:bg-accent sm:size-7"
+            className="flex size-9 items-center justify-center rounded border border-line bg-bg text-sm transition-colors hover:bg-bg-3 sm:size-7"
             onClick={() => {
               const container = containerRef.current;
               if (container) {
@@ -540,7 +540,7 @@ export function OrgChart({ orgTree: providedOrgTree, agents: providedAgents, emb
             <Plus className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
           </button>
           <button
-            className="flex size-9 items-center justify-center rounded border border-border bg-background text-sm transition-colors hover:bg-accent sm:size-7"
+            className="flex size-9 items-center justify-center rounded border border-line bg-bg text-sm transition-colors hover:bg-bg-3 sm:size-7"
             onClick={() => {
               const container = containerRef.current;
               if (container) {
@@ -556,7 +556,7 @@ export function OrgChart({ orgTree: providedOrgTree, agents: providedAgents, emb
             <Minus className="h-4 w-4 sm:h-3.5 sm:w-3.5" />
           </button>
           <button
-            className="flex size-9 items-center justify-center rounded border border-border bg-background text-(length:--text-nano) transition-colors hover:bg-accent sm:size-7"
+            className="flex size-9 items-center justify-center rounded border border-line bg-bg text-(length:--text-nano) transition-colors hover:bg-bg-3 sm:size-7"
             onClick={fitToScreen}
             title="Fit to screen"
             aria-label="Fit chart to screen"
@@ -586,7 +586,7 @@ export function OrgChart({ orgTree: providedOrgTree, agents: providedAgents, emb
                   key={`${parent.id}-${child.id}`}
                   d={`M ${x1} ${y1} L ${x1} ${midY} L ${x2} ${midY} L ${x2} ${y2}`}
                   fill="none"
-                  stroke="var(--border)"
+                  stroke="var(--line)"
                   strokeWidth={1.5}
                 />
               );
@@ -611,7 +611,7 @@ export function OrgChart({ orgTree: providedOrgTree, agents: providedAgents, emb
               <Card
                 key={node.id}
                 data-org-card
-                className="block absolute py-0 hover:shadow-md hover:border-foreground/20 transition-(--tp-box-shadow-border-color) duration-150 cursor-pointer select-none"
+                className="block absolute py-0 hover:shadow-md hover:border-ink/20 transition-(--tp-box-shadow-border-color) duration-150 cursor-pointer select-none"
                 style={{
                   left: node.x,
                   top: node.y,
@@ -629,29 +629,29 @@ export function OrgChart({ orgTree: providedOrgTree, agents: providedAgents, emb
                 <div className="flex items-center px-4 py-3 gap-3">
                   {/* Agent icon + status dot */}
                   <div className="relative shrink-0">
-                    <div className="w-9 h-9 rounded-full bg-muted flex items-center justify-center">
-                      <AgentAvatar agent={agent} size={16} className="h-4.5 w-4.5 text-foreground/70"/>
+                    <div className="w-9 h-9 rounded-full bg-bg-3 flex items-center justify-center">
+                      <AgentAvatar agent={agent} size={16} className="h-4.5 w-4.5 text-ink/70"/>
                     </div>
                     <span
-                      className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-card"
+                      className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-bg-2"
                       style={{ backgroundColor: dotColor }}
                     />
                   </div>
                   {/* Name + role + adapter type */}
                   <div className="flex flex-col items-start min-w-0 flex-1">
-                    <span className="text-sm font-semibold text-foreground leading-tight">
+                    <span className="text-sm font-semibold text-ink leading-tight">
                       {node.name}
                     </span>
-                    <span className="text-(length:--text-micro) text-muted-foreground leading-tight mt-0.5">
+                    <span className="text-(length:--text-micro) text-ink-3 leading-tight mt-0.5">
                       {agent?.title ?? roleLabel(node.role)}
                     </span>
                     {agent && (
-                      <span className="text-(length:--text-nano) text-muted-foreground/60 font-mono leading-tight mt-1">
+                      <span className="text-(length:--text-nano) text-ink-3/60 font-mono leading-tight mt-1">
                         {getAdapterLabel(agent.adapterType)}
                       </span>
                     )}
                     {agent && agent.capabilities && (
-                      <span className="text-(length:--text-nano) text-muted-foreground/80 leading-tight mt-1 line-clamp-2">
+                      <span className="text-(length:--text-nano) text-ink-3/80 leading-tight mt-1 line-clamp-2">
                         {agent.capabilities}
                       </span>
                     )}

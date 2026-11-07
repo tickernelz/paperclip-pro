@@ -42,7 +42,7 @@ export function TaskChatBubbleActions({
     <div className="flex items-center gap-0.5" data-testid="task-chat-bubble-actions">
       <button
         type="button"
-        className="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+        className="inline-flex h-7 w-7 items-center justify-center rounded-md text-ink-3 transition-colors hover:bg-bg-3 hover:text-ink"
         title={label}
         aria-label={label}
         onClick={() => {
@@ -52,12 +52,12 @@ export function TaskChatBubbleActions({
         {copied ? (
           <Check className="h-3.5 w-3.5" />
         ) : failed ? (
-          <X className="h-3.5 w-3.5 text-destructive" />
+          <X className="h-3.5 w-3.5 text-bad" />
         ) : (
           <Copy className="h-3.5 w-3.5" />
         )}
       </button>
-      {fastResponse && <Popover><PopoverTrigger asChild><button type="button" aria-label="Message details" title="Message details" className="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"><Info className="h-3.5 w-3.5" /></button></PopoverTrigger><PopoverContent className="text-xs">Platform-generated acknowledgement. The agent’s substantive response follows separately.</PopoverContent></Popover>}
+      {fastResponse && <Popover><PopoverTrigger asChild><button type="button" aria-label="Message details" title="Message details" className="inline-flex h-7 w-7 items-center justify-center rounded-md text-ink-3 hover:bg-bg-3 hover:text-ink"><Info className="h-3.5 w-3.5" /></button></PopoverTrigger><PopoverContent className="text-xs">Platform-generated acknowledgement. The agent’s substantive response follows separately.</PopoverContent></Popover>}
       {feedback ? (
         <IssueChatFeedbackButtons
           activeVote={feedback.activeVote}

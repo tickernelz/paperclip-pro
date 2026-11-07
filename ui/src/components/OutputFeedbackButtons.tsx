@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { FeedbackDataSharingPreference, FeedbackVoteValue } from "@tickernelz/paperclip-pro-shared";
 import { Button } from "@/components/ui/button";
+import { Chip } from "@/components/ui/chip";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
@@ -113,47 +114,41 @@ export function OutputFeedbackButtons({
     <>
       <div className={cn(
         "flex items-center gap-2",
-        inline ? "justify-end" : "mt-3 border-t border-border/60 pt-3",
+        inline ? "justify-end" : "mt-3 border-t border-line/60 pt-3",
       )}>
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
+        <Chip
+          selected={visibleVote === "up"}
           disabled={disabled || isSaving}
-          className={cn(visibleVote === "up" && "border-green-600/50 bg-green-500/10 text-green-700")}
           onClick={() => handleVote("up")}
         >
-          <ThumbsUp className="mr-1.5 h-3.5 w-3.5" />
+          <ThumbsUp aria-hidden />
           Helpful
-        </Button>
-        <Button
-          type="button"
-          size="sm"
-          variant="outline"
+        </Chip>
+        <Chip
+          selected={visibleVote === "down"}
           disabled={disabled || isSaving}
-          className={cn(visibleVote === "down" && "border-amber-600/50 bg-amber-500/10 text-amber-800")}
           onClick={() => handleVote("down")}
         >
-          <ThumbsDown className="mr-1.5 h-3.5 w-3.5" />
+          <ThumbsDown aria-hidden />
           Needs work
-        </Button>
+        </Chip>
         {rightSlot ? <div className="ml-auto">{rightSlot}</div> : null}
       </div>
       {collectingDownvoteReason ? (
-        <div className="mt-2 rounded-md border border-border/60 bg-accent/20 p-3">
+        <div className="mt-2 rounded-md border border-line/60 bg-bg-3/20 p-3">
           <div className="mb-2 text-sm font-medium">What could have been better?</div>
           <Textarea
             value={downvoteReason}
             onChange={(event) => setDownvoteReason(event.target.value)}
             placeholder="Add a short note"
-            className="min-h-20 resize-y bg-background"
+            className="min-h-20 resize-y bg-bg"
             disabled={disabled || isSaving}
           />
           <div className="mt-3 flex items-center justify-end gap-2">
             <Button
               type="button"
               size="sm"
-              variant="outline"
+              variant="secondary"
               disabled={disabled || isSaving}
               onClick={() => {
                 setCollectingDownvoteReason(false);
@@ -197,14 +192,14 @@ export function OutputFeedbackButtons({
               answer becomes the default for future thumbs up and thumbs down votes.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-3 text-sm text-muted-foreground">
+          <div className="space-y-3 text-sm text-ink-3">
             <p>
               This vote is always saved locally.
             </p>
             <p>
-              Choose <span className="font-medium text-foreground">Always allow</span> to share
+              Choose <span className="font-medium text-ink">Always allow</span> to share
               this vote and future voted AI outputs. Choose{" "}
-              <span className="font-medium text-foreground">Don't allow</span> to keep this vote
+              <span className="font-medium text-ink">Don't allow</span> to keep this vote
               and future votes local.
             </p>
             <p>
@@ -215,7 +210,7 @@ export function OutputFeedbackButtons({
                 href={termsUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex text-sm text-foreground underline underline-offset-4"
+                className="inline-flex text-sm text-ink underline underline-offset-4"
               >
                 Read our terms of service
               </a>
@@ -224,7 +219,7 @@ export function OutputFeedbackButtons({
           <DialogFooter>
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               disabled={!pendingVote || isSaving}
               onClick={() => {
                 if (!pendingVote) return;

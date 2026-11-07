@@ -221,21 +221,21 @@ function SubIssuesWorkflowPanel() {
             <h1 className="text-2xl font-semibold tracking-tight">
               Workflow-sorted sub-issues with checklist affordances
             </h1>
-            <p className="max-w-3xl text-sm text-muted-foreground">
+            <p className="max-w-3xl text-sm text-ink-3">
               Fixture mirrors the PAP-1953 topology called out in the PAP-2189
               plan: two standalone scoping items, a Phase 1→2 pair, and a long
               Phase 3→4→5→6→7 chain. The panel renders with
-              <code className="mx-1 rounded bg-muted px-1 py-0.5 font-mono text-xs">
+              <code className="mx-1 rounded bg-bg-3 px-1 py-0.5 font-mono text-xs">
                 defaultSortField="workflow"
               </code>
               and
-              <code className="mx-1 rounded bg-muted px-1 py-0.5 font-mono text-xs">
+              <code className="mx-1 rounded bg-bg-3 px-1 py-0.5 font-mono text-xs">
                 showProgressSummary
               </code>
               so reviewers see the full checklist surface in isolation.
             </p>
           </header>
-          <div className="rounded-lg border border-border bg-background p-5">
+          <div className="rounded-lg border border-line bg-bg p-5">
             <IssuesList
               issues={subIssues}
               agents={storybookAgents}

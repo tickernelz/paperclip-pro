@@ -29,7 +29,7 @@ import {
 } from "./use-agent-model-settings";
 
 const cellTriggerClass =
-  "flex w-full min-w-0 cursor-pointer items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-xs transition-colors hover:bg-accent/70 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring data-[state=open]:bg-accent aria-busy:cursor-progress";
+  "flex w-full min-w-0 cursor-pointer items-center gap-1.5 rounded-md px-1.5 py-1 text-left text-xs transition-colors hover:bg-bg-3/70 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus data-[state=open]:bg-bg-3 aria-busy:cursor-progress";
 
 /** Column widths shared by the agents table header and its rows. */
 export const AGENT_MODEL_COLUMN_CLASSES = {
@@ -60,26 +60,26 @@ function RowIsolation({ className, children }: { className?: string; children: R
 
 function EmptyValue({ label }: { label: string }) {
   return (
-    <span className="block px-1.5 py-1 text-xs text-muted-foreground" aria-label={`${label} not available`}>
+    <span className="block px-1.5 py-1 text-xs text-ink-3" aria-label={`${label} not available`}>
       —
     </span>
   );
 }
 
 function CellAffordance({ pending }: { pending: boolean }) {
-  return pending ? <Loader2 className="size-3 shrink-0 animate-spin text-muted-foreground" aria-hidden="true" /> : null;
+  return pending ? <Loader2 className="size-3 shrink-0 animate-spin text-ink-3" aria-hidden="true" /> : null;
 }
 
 function FallbackChip({ index, display }: { index: number; display: ReturnType<typeof describeModelValue> }) {
   return (
     <span
-      className="inline-flex min-w-0 items-center gap-1 rounded border border-border px-1 text-(length:--text-micro) leading-4"
+      className="inline-flex min-w-0 items-center gap-1 rounded border border-line px-1 text-(length:--text-micro) leading-4"
       title={display.id}
     >
-      <span className="shrink-0 tabular-nums text-muted-foreground">{index + 1}</span>
+      <span className="shrink-0 tabular-nums text-ink-3">{index + 1}</span>
       <span className="truncate">
         {display.name}
-        {display.provider ? <span className="text-muted-foreground">{` · ${display.provider}`}</span> : null}
+        {display.provider ? <span className="text-ink-3">{` · ${display.provider}`}</span> : null}
       </span>
     </span>
   );
@@ -120,11 +120,11 @@ function ModelCell({ agent, settings, controller }: CellProps) {
             {display ? (
               <ModelValueLabel display={display} layout="inline" className="min-w-0 flex-1" />
             ) : (
-              <span className="min-w-0 flex-1 truncate text-muted-foreground">Adapter default</span>
+              <span className="min-w-0 flex-1 truncate text-ink-3">Adapter default</span>
             )}
             {settings.effortField && showsEffortControl(settings.effort, settings.model, settings.modelOptions) ? (
               <span
-                className={cn("shrink-0 text-xs", settings.effort ? "text-foreground" : "text-muted-foreground")}
+                className={cn("shrink-0 text-xs", settings.effort ? "text-ink" : "text-ink-3")}
                 data-testid={`agent-effort-${agent.id}`}
               >
                 {settings.effort ?? "default"}
@@ -135,8 +135,8 @@ function ModelCell({ agent, settings, controller }: CellProps) {
         </PopoverTrigger>
         <PopoverContent align="start" className="w-(--sz-22rem) max-w-(--radix-popover-content-available-width) p-0">
           {settings.effortField && showsEffortControl(settings.effort, settings.model, settings.modelOptions) ? (
-            <div className="space-y-1.5 border-b border-border px-2.5 py-2">
-              <span className="block text-xs font-medium text-muted-foreground">Thinking effort</span>
+            <div className="space-y-1.5 border-b border-line px-2.5 py-2">
+              <span className="block text-xs font-medium text-ink-3">Thinking effort</span>
               <EffortChips
                 levels={effortLevelsFor(settings.model, settings.modelOptions)}
                 value={settings.effort}
@@ -193,11 +193,11 @@ function FallbacksCell({ agent, settings, controller }: CellProps) {
               {first ? (
                 <FallbackChip index={0} display={describeModelValue(first, settings.modelOptions)} />
               ) : (
-                <span className="truncate text-muted-foreground">None</span>
+                <span className="truncate text-ink-3">None</span>
               )}
               {rest.length > 0 ? (
                 <span
-                  className="shrink-0 rounded border border-border px-1 text-(length:--text-micro) leading-4 tabular-nums text-muted-foreground"
+                  className="shrink-0 rounded border border-line px-1 text-(length:--text-micro) leading-4 tabular-nums text-ink-3"
                   data-testid={`agent-fallbacks-${agent.id}-overflow`}
                 >
                   +{rest.length}
@@ -283,7 +283,7 @@ export function AgentModelSummary({ agent, controller }: { agent: Agent; control
     controller.isPending(agent.id, AGENT_FALLBACK_MODELS_KEY) ||
     controller.isPending(agent.id, AGENT_EFFORT_KEY);
   return (
-    <RowIsolation className="flex min-w-0 max-w-full items-center gap-1 text-xs text-muted-foreground" >
+    <RowIsolation className="flex min-w-0 max-w-full items-center gap-1 text-xs text-ink-3" >
       <span className="min-w-0 truncate" title={settings.model ?? undefined} data-testid={`agent-model-summary-${agent.id}`}>
         {parts.join(" · ")}
         {fallbackCount > 0 ? ` · +${fallbackCount} fallback${fallbackCount === 1 ? "" : "s"}` : ""}

@@ -31,13 +31,13 @@ function LabSection({
   columns?: 1 | 2;
 }) {
   return (
-    <section className="rounded-2xl border border-border/70 bg-background/85 p-5 shadow-sm">
+    <section className="rounded-2xl border border-line/70 bg-bg/85 p-5 shadow-sm">
       <div className="mb-4">
-        <div className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">
+        <div className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-caps) text-ink-3">
           {index}
         </div>
-        <h2 className="mt-1 text-base font-semibold text-foreground">{title}</h2>
-        <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+        <h2 className="mt-1 text-base font-semibold text-ink">{title}</h2>
+        <p className="mt-1 text-sm text-ink-3">{description}</p>
       </div>
       <div className={cn("grid gap-4", columns === 2 && "lg:grid-cols-2")}>{children}</div>
     </section>
@@ -47,10 +47,10 @@ function LabSection({
 function Frame({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="space-y-2">
-      <div className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">
+      <div className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-caps) text-ink-3">
         {label}
       </div>
-      <Card className="block border-border/60 p-3">{children}</Card>
+      <Card className="block border-line/60 p-3">{children}</Card>
     </div>
   );
 }
@@ -68,19 +68,19 @@ function AgentCommentBubble({
   return (
     <div className="flex flex-col items-start py-1.5">
       <div className="mb-1 flex items-center gap-1.5 px-1">
-        <span className="flex size-5 shrink-0 items-center justify-center text-muted-foreground">
+        <span className="flex size-5 shrink-0 items-center justify-center text-ink-3">
           <Avatar size="sm" className="size-5">
             <AvatarFallback className="text-(length:--text-nano)">
               {authorName.slice(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
         </span>
-        <span className="text-sm font-medium text-foreground">{authorName}</span>
+        <span className="text-sm font-medium text-ink">{authorName}</span>
         {onBehalfOf ? (
           <CommentAttributionChip agentName={authorName} userName={onBehalfOf} />
         ) : null}
       </div>
-      <div className="min-w-0 max-w-(--pct-85) break-words border border-border bg-card px-3 py-2 text-sm text-foreground [border-radius:14px_14px_14px_4px]">
+      <div className="min-w-0 max-w-(--pct-85) break-words border border-line bg-bg-2 px-3 py-2 text-sm text-ink [border-radius:14px_14px_14px_4px]">
         {body}
       </div>
     </div>
@@ -98,7 +98,7 @@ function ActivityRow({
   children?: ReactNode;
 }) {
   return (
-    <div className="space-y-1.5 rounded-lg border border-border/60 px-3 py-2 text-xs text-muted-foreground">
+    <div className="space-y-1.5 rounded-lg border border-line/60 px-3 py-2 text-xs text-ink-3">
       <div className="flex items-center gap-1.5">
         <Identity name={actorName} size="sm" />
         <span>{verb}</span>
@@ -119,16 +119,16 @@ export function CrossIssueCollaborationUxLab() {
   const resolveUserLabel = (id: string) => (id === "user-dotta" ? "Dotta" : null);
 
   return (
-    <div className="min-h-screen bg-muted/20 p-6">
+    <div className="min-h-screen bg-bg-3/20 p-6">
       <div className="mx-auto max-w-5xl space-y-6">
         <header>
-          <div className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">
+          <div className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-caps) text-ink-3">
             Open cross-task collaboration
           </div>
-          <h1 className="mt-1 text-xl font-semibold text-foreground">
+          <h1 className="mt-1 text-xl font-semibold text-ink">
             Open cross-task collaboration — attribution, audit, and denial copy
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-ink-3">
             Agents may now write to any task they can read. These are the three surfaces that keep
             that legible: whose authority a comment rode, what an edit changed, and — when a write
             is refused — which boundary fired and what to do instead.
@@ -254,7 +254,7 @@ export function CrossIssueCollaborationUxLab() {
               <span className="text-red-600 dark:text-red-400">
                 403 Forbidden: Issue is outside this actor&apos;s authorization boundary
               </span>
-              <p className="mt-1 text-muted-foreground">
+              <p className="mt-1 text-ink-3">
                 No boundary named, nobody named, no path forward. The workaround (create a child
                 issue) had to be discovered by trial and error.
               </p>

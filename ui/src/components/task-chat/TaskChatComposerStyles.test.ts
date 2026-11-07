@@ -35,7 +35,7 @@ describe("task-chat composer styles", () => {
   it("keeps the composer's combined shadow valid with full-color semantic tokens", () => {
     const shadow = customPropertyValue("--shadow-extract-7");
 
-    expect(shadow).toContain("color-mix(in oklab, var(--primary) 16%, transparent)");
+    expect(shadow).toContain("color-mix(in oklab, var(--accent) 16%, transparent)");
     expect(shadow).not.toContain("hsl(var(");
   });
 });

@@ -13,17 +13,17 @@ function TaskGroup({ name, projectPath, children }: { name: string; projectPath?
   return (
     <Collapsible defaultOpen asChild>
       <section aria-label={name}>
-        <div className="group/header flex items-center gap-1 rounded-md hover:bg-accent/50">
+        <div className="group/header flex items-center gap-1 rounded-md hover:bg-bg-3/50">
           <h2>
-            <CollapsibleTrigger className="group flex items-center gap-1 rounded-md py-1 text-left text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+            <CollapsibleTrigger className="group flex items-center gap-1 rounded-md py-1 text-left text-sm font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
               <span>{name}</span>
               <span aria-hidden className="flex w-3.5 items-center justify-center opacity-0 transition-opacity duration-(--motion-duration-fast) ease-(--motion-ease-standard) group-hover/header:opacity-100 group-focus-within/header:opacity-100">
-                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground transition-transform duration-(--motion-duration-fast) ease-(--motion-ease-standard) group-data-[state=open]:rotate-90" />
+                <ChevronRight className="h-3.5 w-3.5 text-ink-3 transition-transform duration-(--motion-duration-fast) ease-(--motion-ease-standard) group-data-[state=open]:rotate-90" />
               </span>
             </CollapsibleTrigger>
           </h2>
           {projectPath && (
-            <Link to={projectPath} aria-label={`Go to ${name} project`} title={`Go to ${name} project`} className="ml-auto inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity duration-(--motion-duration-fast) ease-(--motion-ease-standard) hover:bg-accent hover:text-foreground group-hover/header:opacity-100 group-focus-within/header:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+            <Link to={projectPath} aria-label={`Go to ${name} project`} title={`Go to ${name} project`} className="ml-auto inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-ink-3 opacity-0 transition-opacity duration-(--motion-duration-fast) ease-(--motion-ease-standard) hover:bg-bg-3 hover:text-ink group-hover/header:opacity-100 group-focus-within/header:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
               <ArrowUpRight aria-hidden className="h-3.5 w-3.5" />
             </Link>
           )}
@@ -91,15 +91,15 @@ export function TaskDetailTasksPanel({ ancestors = [], createdFrom = null, subta
           <TaskDetailTaskList items={group.tasks} ariaLabel={`${group.name} tasks`} issueLinkState={issueLinkState} />
         </TaskGroup>
       ))}
-      {isLoading && <p role="status" className="text-sm text-muted-foreground">Loading tasks…</p>}
+      {isLoading && <p role="status" className="text-sm text-ink-3">Loading tasks…</p>}
       {hasError && (
-        <div role="alert" className="flex items-center gap-2 text-sm text-destructive">
+        <div role="alert" className="flex items-center gap-2 text-sm text-bad">
           <span>Could not load all tasks.</span>
           {onRetry && <Button variant="ghost" size="sm" onClick={onRetry}>Retry</Button>}
         </div>
       )}
       {!isLoading && !hasError && !createdFrom && ancestors.length === 0 && subtasks.length === 0 && createdTasks.length === 0 && (
-        <p className="py-6 text-center text-sm text-muted-foreground">No tasks yet.</p>
+        <p className="py-6 text-center text-sm text-ink-3">No tasks yet.</p>
       )}
     </section>
   );

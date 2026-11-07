@@ -101,7 +101,7 @@ describe("routine contextual navigation", () => {
     expect(frame?.getAttribute("data-title")).toBe("Weekly release review");
     expect(frame?.getAttribute("data-fallback")).toBe("/routines");
     expect(frame?.getAttribute("data-show-header")).toBe("false");
-    expect(frame?.classList).toContain("bg-background");
+    expect(frame?.classList).toContain("bg-bg");
     expect(frame?.classList).toContain("border-r");
     expect(container.querySelector('a[href="/routines/routine-1/overview"]')?.textContent).toBe("Overview");
     expect(container.querySelector('a[href="/routines/routine-1/triggers"]')?.textContent).toBe("Triggers");

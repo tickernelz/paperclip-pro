@@ -98,14 +98,14 @@ export function ManagedRoutinesList({
 
   if (routines.length === 0) {
     return (
-      <div className="rounded-lg border border-border px-3 py-8 text-center text-sm text-muted-foreground">
+      <div className="rounded-lg border border-line px-3 py-8 text-center text-sm text-ink-3">
         {emptyMessage}
       </div>
     );
   }
 
   return (
-    <div className="rounded-lg border border-border">
+    <div className="rounded-lg border border-line">
       {routines.map((routine) => {
         const row = managedRoutineToRow(routine);
         const href = routine.href ?? (routine.routineId ? `/routines/${routine.routineId}` : "/routines");
@@ -140,7 +140,7 @@ export function ManagedRoutinesList({
             />
             {hasRepairActions ? (
               <div
-                className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-3 pb-3 text-xs text-muted-foreground last:border-b-0"
+                className="flex flex-wrap items-center justify-between gap-2 border-b border-line px-3 pb-3 text-xs text-ink-3 last:border-b-0"
                 onClick={(event) => {
                   event.preventDefault();
                   event.stopPropagation();

@@ -387,11 +387,11 @@ function RoutineCShell({
 
   return (
     <RoutineDetailContext.Provider value={ctx}>
-      <div className="flex h-[900px] flex-col overflow-y-auto bg-background text-foreground">
-        <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border bg-background px-6">
+      <div className="flex h-[900px] flex-col overflow-y-auto bg-bg text-ink">
+        <header className="flex h-14 shrink-0 items-center gap-3 border-b border-line bg-bg px-6">
           <div className="flex min-w-0 flex-1 items-center gap-3">
             <span className="truncate text-base font-semibold">{routine.title}</span>
-            <Badge variant="outline" className="hidden shrink-0 gap-1.5 text-xs text-muted-foreground sm:inline-flex">
+            <Badge variant="outline" className="hidden shrink-0 gap-1.5 text-xs text-ink-3 sm:inline-flex">
               <Sparkles className="h-3 w-3" /> Digest Bot
             </Badge>
           </div>

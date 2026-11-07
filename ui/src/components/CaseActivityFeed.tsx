@@ -38,7 +38,7 @@ function actorLabel(event: CaseEvent): string {
 
 function ActorIcon({ event }: { event: CaseEvent }) {
   const Icon = event.actorType === "agent" ? Bot : event.actorType === "user" ? User : Cog;
-  return <Icon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />;
+  return <Icon className="h-3.5 w-3.5 shrink-0 text-ink-3" aria-hidden />;
 }
 
 function issueRelationLabel(event: CaseEvent): string {
@@ -57,9 +57,9 @@ export function CaseEventRow({ event, compact = false }: { event: CaseEvent; com
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-baseline gap-x-1.5">
           <span className="font-medium">{EVENT_LABEL[event.kind] ?? event.kind}</span>
-          {detail && <span className="text-muted-foreground">· {detail}</span>}
+          {detail && <span className="text-ink-3">· {detail}</span>}
         </div>
-        <div className="flex flex-wrap items-center gap-x-1.5 text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-x-1.5 text-ink-3">
           <span>{actorLabel(event)}</span>
           {event.issue && (
             <>
@@ -67,7 +67,7 @@ export function CaseEventRow({ event, compact = false }: { event: CaseEvent; com
               <span>{issueRelationLabel(event)}</span>
               <Link
                 to={`/issues/${event.issue.identifier}`}
-                className="inline-flex min-w-0 items-center gap-1 text-foreground/80 hover:underline"
+                className="inline-flex min-w-0 items-center gap-1 text-ink/80 hover:underline"
                 title={event.issue.title}
               >
                 <StatusIcon status={event.issue.status} size="sm" />
@@ -116,21 +116,21 @@ export function CaseActivityFeed({ events }: { events: CaseEvent[] }) {
       : `${active.size} filters`;
 
   if (events.length === 0) {
-    return <p className="py-6 text-center text-sm text-muted-foreground">No activity yet.</p>;
+    return <p className="py-6 text-center text-sm text-ink-3">No activity yet.</p>;
   }
 
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between gap-2">
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-ink-3">
           {filtered.length} of {events.length} events
         </p>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="h-8 gap-1.5">
+            <Button variant="secondary" size="sm" className="h-8 gap-1.5">
               <ListFilter className="h-3.5 w-3.5" />
               {filterLabel}
-              <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+              <ChevronDown className="h-3.5 w-3.5 text-ink-3" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-56">
@@ -152,9 +152,9 @@ export function CaseActivityFeed({ events }: { events: CaseEvent[] }) {
         </DropdownMenu>
       </div>
       {filtered.length === 0 ? (
-        <p className="py-6 text-center text-sm text-muted-foreground">No events match this filter.</p>
+        <p className="py-6 text-center text-sm text-ink-3">No events match this filter.</p>
       ) : (
-        <div className="divide-y divide-border">
+        <div className="divide-y divide-line">
           {filtered.map((event) => (
             <CaseEventRow key={event.id} event={event} />
           ))}

@@ -53,7 +53,7 @@ export function TextAttachmentPreview({ title, text, markdown, html = false, csv
   const renderHtml = html && mode === "rendered" && text.length > 0;
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <header className="flex items-center gap-2 border-b border-border px-3 py-2">
+      <header className="flex items-center gap-2 border-b border-line px-3 py-2">
         <h2 className="min-w-0 flex-1 truncate text-sm font-medium" title={title}>{title}</h2>
         {markdown || html || csv ? <FilePreviewModeToggle mode={mode} onChange={setMode} label={html ? "HTML view" : csv ? "CSV view" : "Markdown view"} /> : null}
         <Button asChild variant="ghost" size="icon-sm">
@@ -61,7 +61,7 @@ export function TextAttachmentPreview({ title, text, markdown, html = false, csv
         </Button>
       </header>
       <div className={renderHtml || renderCsv ? "flex min-h-0 flex-1 flex-col overflow-hidden" : "min-h-0 flex-1 overflow-auto p-4"}>
-        {text.length === 0 ? <p className="text-sm text-muted-foreground">File is empty.</p>
+        {text.length === 0 ? <p className="text-sm text-ink-3">File is empty.</p>
           : renderCsv ? <CsvPreview text={text} title={title} />
           : renderHtml ? <HtmlArtifactPreview html={text} title={title} />
           : markdown && mode === "rendered" ? <MarkdownBody mediaMode="reference">{text}</MarkdownBody>
@@ -97,7 +97,7 @@ export function TaskAttachmentPanel({ issueId, attachmentId }: { issueId: string
       <div className="space-y-3 p-4" role="alert">
         <p className="text-sm">{content.isError ? "Could not preview this file. Retry or download it." : "This file is too large or is not supported for text preview. Download it instead."}</p>
         {eligible ? <Button onClick={() => void content.refetch()}>Retry</Button> : null}
-        <Button asChild variant="outline"><a href={downloadUrl} download>Download file</a></Button>
+        <Button asChild variant="secondary"><a href={downloadUrl} download>Download file</a></Button>
       </div>
     );
   }

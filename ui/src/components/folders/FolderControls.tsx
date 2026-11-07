@@ -104,7 +104,7 @@ export function FolderSwatch({
   return (
     <span
       aria-hidden="true"
-      className={cn("h-2.5 w-2.5 shrink-0 rounded-sm border border-border/40", className)}
+      className={cn("h-2.5 w-2.5 shrink-0 rounded-sm border border-line/40", className)}
       style={{ backgroundColor }}
     />
   );
@@ -144,10 +144,10 @@ export function FolderChip({
 }) {
   const folder = result ? selectedFolderFromList(result.folders, selection) : null;
   return (
-    <Button variant="outline" size="sm" className="max-w-full justify-start" onClick={onClick}>
+    <Button variant="secondary" size="sm" className="max-w-full justify-start" onClick={onClick}>
       {selection === "all" ? <FolderIcon className="mr-2 h-3.5 w-3.5" /> : <FolderSwatch color={folder?.color} className="mr-2" />}
       <span className="truncate">{selectionLabel({ folders: result?.folders ?? [], selection, allLabel })}</span>
-      <span className="ml-2 text-xs text-muted-foreground">{selectionCount(result, selection)}</span>
+      <span className="ml-2 text-xs text-ink-3">{selectionCount(result, selection)}</span>
       <ChevronDown className="ml-1 h-3.5 w-3.5 shrink-0" />
     </Button>
   );
@@ -208,32 +208,32 @@ export function FolderRail({
       <button
         type="button"
         className={cn(
-          "grid w-full grid-cols-(--gtc-folder-row) items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors hover:bg-accent/40",
-          active ? "bg-accent/60 text-foreground" : "text-muted-foreground",
+          "grid w-full grid-cols-(--gtc-folder-row) items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors hover:bg-bg-3/40",
+          active ? "bg-bg-3/60 text-ink" : "text-ink-3",
         )}
         aria-current={active ? "page" : undefined}
         onClick={() => onSelect(key)}
       >
         <span className="h-4 w-4">{icon}</span>
         <span className="truncate">{label}</span>
-        <span className="text-xs text-muted-foreground">{count}</span>
+        <span className="text-xs text-ink-3">{count}</span>
       </button>
     );
   }
 
   return (
-    <nav aria-label={`${itemLabelPlural} folders`} className="hidden w-(--sz-folder-rail) shrink-0 border-r border-border pr-3 md:block">
+    <nav aria-label={`${itemLabelPlural} folders`} className="hidden w-(--sz-folder-rail) shrink-0 border-r border-line pr-3 md:block">
       <div className="mb-2 flex items-center justify-between gap-2">
-        <div className="text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">Folders</div>
+        <div className="text-(length:--text-micro) font-medium uppercase tracking-wide text-ink-3">Folders</div>
         <Button variant="ghost" size="icon-sm" title="New folder" onClick={onCreate}>
           <Plus className="h-3.5 w-3.5" />
         </Button>
       </div>
       {loading ? (
         <div className="space-y-2">
-          <div className="h-7 rounded-md bg-muted/60" />
-          <div className="h-7 rounded-md bg-muted/40" />
-          <div className="h-7 rounded-md bg-muted/30" />
+          <div className="h-7 rounded-md bg-bg-3/60" />
+          <div className="h-7 rounded-md bg-bg-3/40" />
+          <div className="h-7 rounded-md bg-bg-3/30" />
         </div>
       ) : (
         <div className="space-y-0.5">
@@ -254,7 +254,7 @@ export function FolderRail({
               onDelete={() => onDelete(folder)}
             />
           ))}
-          <div className="px-2 pb-1 pt-3 text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">
+          <div className="px-2 pb-1 pt-3 text-(length:--text-micro) font-medium uppercase tracking-wide text-ink-3">
             System
           </div>
           {renderVirtualRow("unfiled", "Unfiled", result?.unfiledCount ?? 0, <FolderSwatch color={null} className="mt-0.5" />)}
@@ -297,8 +297,8 @@ export function FolderRailItem({
   return (
     <div
       className={cn(
-        "group grid grid-cols-(--gtc-folder-row-actions) items-center gap-2 rounded-md px-2 py-1 text-sm transition-colors hover:bg-accent/40",
-        active ? "bg-accent/60 text-foreground" : "text-muted-foreground",
+        "group grid grid-cols-(--gtc-folder-row-actions) items-center gap-2 rounded-md px-2 py-1 text-sm transition-colors hover:bg-bg-3/40",
+        active ? "bg-bg-3/60 text-ink" : "text-ink-3",
       )}
     >
       <span className="h-4 w-4" />
@@ -320,14 +320,14 @@ export function FolderRailItem({
               if (event.key === "Escape") onRenameCancel();
             }}
             onBlur={onRenameCommit}
-            className="h-6 min-w-0 flex-1 rounded-sm border border-border bg-background px-1 text-sm outline-none"
+            className="h-6 min-w-0 flex-1 rounded-sm border border-line bg-bg px-1 text-sm outline-none"
             autoFocus
           />
         ) : (
           <span className="truncate">{folder.name}</span>
         )}
       </button>
-      <span className="text-xs text-muted-foreground">{folder.itemCount}</span>
+      <span className="text-xs text-ink-3">{folder.itemCount}</span>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
@@ -386,12 +386,12 @@ export function AllUnfiledBanner({
   }
 
   return (
-    <div className="mb-3 flex flex-wrap items-center gap-2 rounded-md border border-border bg-muted/40 px-3 py-2 text-sm">
-      <FolderIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-      <span className="min-w-0 flex-1 text-muted-foreground">
+    <div className="mb-3 flex flex-wrap items-center gap-2 rounded-md border border-line bg-bg-3/40 px-3 py-2 text-sm">
+      <FolderIcon className="h-3.5 w-3.5 shrink-0 text-ink-3" />
+      <span className="min-w-0 flex-1 text-ink-3">
         Group these {itemLabelPlural} into folders to keep things tidy.
       </span>
-      <Button size="sm" variant="outline" onClick={onCreateFolder}>
+      <Button size="sm" variant="secondary" onClick={onCreateFolder}>
         Create your first folder
       </Button>
       <Button size="icon-sm" variant="ghost" aria-label="Dismiss folder suggestion" onClick={dismiss}>
@@ -450,7 +450,7 @@ export function MobileFolderSheet({
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="max-h-(--sz-folder-sheet-max) rounded-t-lg pb-4">
-        <SheetHeader className="border-b border-border px-4 py-3">
+        <SheetHeader className="border-b border-line px-4 py-3">
           <SheetTitle>{itemLabelPlural} folders</SheetTitle>
         </SheetHeader>
         <div className="overflow-y-auto px-3">
@@ -465,7 +465,7 @@ export function MobileFolderSheet({
           {result?.kind === "skill" ? (
             <>
               {model.my ? renderBranch(model.my, "My Skills") : null}
-              <div className="px-2 pb-0.5 pt-2 text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">
+              <div className="px-2 pb-0.5 pt-2 text-(length:--text-micro) font-medium uppercase tracking-wide text-ink-3">
                 Organization
               </div>
               {model.company.map((node) => renderBranch(node))}
@@ -483,8 +483,8 @@ export function MobileFolderSheet({
             onSelect={select}
           />
         </div>
-        <div className="border-t border-border px-4 pt-3">
-          <Button size="sm" variant="outline" className="w-full" onClick={onCreate}>
+        <div className="border-t border-line px-4 pt-3">
+          <Button size="sm" variant="secondary" className="w-full" onClick={onCreate}>
             <Plus className="mr-2 h-3.5 w-3.5" />
             New folder
           </Button>
@@ -514,12 +514,12 @@ function MobileFolderRow({
   return (
     <button
       type="button"
-      className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm hover:bg-accent/50"
+      className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm hover:bg-bg-3/50"
       onClick={() => onSelect(id)}
     >
-      {all ? <FolderIcon className="h-3.5 w-3.5 text-muted-foreground" /> : <FolderSwatch color={color} />}
+      {all ? <FolderIcon className="h-3.5 w-3.5 text-ink-3" /> : <FolderSwatch color={color} />}
       <span className="min-w-0 flex-1 truncate">{label}</span>
-      <span className="text-xs text-muted-foreground">{count}</span>
+      <span className="text-xs text-ink-3">{count}</span>
       {selected ? <Check className="h-3.5 w-3.5" /> : null}
     </button>
   );
@@ -572,13 +572,13 @@ function MoveToMenuItems({
   return (
     <>
         <div className="flex items-center gap-2 px-2 py-1.5">
-          <Search className="h-3.5 w-3.5 text-muted-foreground" />
+          <Search className="h-3.5 w-3.5 text-ink-3" />
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             onKeyDown={(event) => event.stopPropagation()}
             placeholder="Search folders"
-            className="h-7 min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+            className="h-7 min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-ink-3"
           />
         </div>
         <DropdownMenuSeparator />
@@ -595,7 +595,7 @@ function MoveToMenuItems({
           </DropdownMenuItem>
         ))}
         {visibleFolders.length === 0 ? (
-          <div className="px-2 py-2 text-xs text-muted-foreground">No folders match.</div>
+          <div className="px-2 py-2 text-xs text-ink-3">No folders match.</div>
         ) : null}
         <DropdownMenuSeparator />
         <DropdownMenuItem onSelect={onCreateAndMove}>
@@ -662,8 +662,8 @@ export function FolderFormDialog({
                   type="button"
                   aria-label={`Use folder color ${swatch}`}
                   className={cn(
-                    "h-7 w-7 rounded-md border border-border",
-                    color === swatch && "ring-2 ring-ring ring-offset-2 ring-offset-background",
+                    "h-7 w-7 rounded-md border border-line",
+                    color === swatch && "ring-2 ring-focus ring-offset-2 ring-offset-bg",
                   )}
                   style={{ backgroundColor: FOLDER_COLOR_VALUES[swatch] }}
                   onClick={() => setColor(swatch)}
@@ -672,8 +672,8 @@ export function FolderFormDialog({
               <button
                 type="button"
                 className={cn(
-                  "h-7 rounded-md border border-border px-2 text-xs text-muted-foreground",
-                  color == null && "ring-2 ring-ring ring-offset-2 ring-offset-background",
+                  "h-7 rounded-md border border-line px-2 text-xs text-ink-3",
+                  color == null && "ring-2 ring-focus ring-offset-2 ring-offset-bg",
                 )}
                 onClick={() => setColor(null)}
               >
@@ -722,7 +722,7 @@ export function DeleteFolderDialog({
         <AlertDialogFooter>
           <AlertDialogCancel disabled={pending}>Cancel</AlertDialogCancel>
           <AlertDialogAction
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            className="bg-bad text-accent-ink hover:bg-bad/90"
             disabled={pending || !folder}
             onClick={(event) => {
               event.preventDefault();
@@ -754,11 +754,11 @@ export function BulkBar({
 }) {
   if (selectedCount === 0) return null;
   return (
-    <div className="sticky top-2 z-10 flex flex-wrap items-center gap-2 rounded-md border border-border bg-background/95 px-3 py-2 shadow-sm backdrop-blur">
-      <span className="mr-auto text-sm text-muted-foreground">{selectedCount} selected</span>
+    <div className="sticky top-2 z-10 flex flex-wrap items-center gap-2 rounded-md border border-line bg-bg/95 px-3 py-2 shadow-sm backdrop-blur">
+      <span className="mr-auto text-sm text-ink-3">{selectedCount} selected</span>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button size="sm" variant="outline">Move to...</Button>
+          <Button size="sm" variant="secondary">Move to...</Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-56">
           <MoveToMenuItems

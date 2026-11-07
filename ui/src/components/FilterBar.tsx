@@ -21,10 +21,10 @@ export function FilterBar({ filters, onRemove, onClear }: FilterBarProps) {
     <div className="flex items-center gap-2 flex-wrap">
       {filters.map((f) => (
         <Badge key={f.key} variant="secondary" className="gap-1 pr-1">
-          <span className="text-muted-foreground">{f.label}:</span>
+          <span className="text-ink-3">{f.label}:</span>
           <span>{f.value}</span>
           <button
-            className="ml-1 rounded-full hover:bg-accent p-0.5"
+            className="ml-1 rounded-full hover:bg-bg-3 p-0.5"
             onClick={() => onRemove(f.key)}
           >
             <X className="h-3 w-3" />

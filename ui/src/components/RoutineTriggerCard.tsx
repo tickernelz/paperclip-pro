@@ -71,7 +71,7 @@ export function RoutineTriggerCard({
   return (
     <form
       aria-label={`Trigger: ${trigger.label ?? trigger.kind}`}
-      className="space-y-4 rounded-lg border border-border p-4"
+      className="space-y-4 rounded-lg border border-line p-4"
       onSubmit={(event) => event.preventDefault()}
     >
       <div className="flex items-start justify-between gap-3">
@@ -81,7 +81,7 @@ export function RoutineTriggerCard({
             <span className="truncate">{trigger.label ?? trigger.kind}</span>
           </div>
           {humanCron ? (
-            <p id={`cron-readable-${trigger.id}`} className="text-xs text-muted-foreground">
+            <p id={`cron-readable-${trigger.id}`} className="text-xs text-ink-3">
               {humanCron}
             </p>
           ) : null}
@@ -92,7 +92,7 @@ export function RoutineTriggerCard({
               {lastResultLabel}
             </Badge>
           ) : null}
-          <span className="text-xs text-muted-foreground">
+          <span className="text-xs text-ink-3">
             {trigger.kind === "schedule" && trigger.nextRunAt
               ? `Next: ${new Date(trigger.nextRunAt).toLocaleString()}`
               : trigger.kind === "webhook"
@@ -106,7 +106,7 @@ export function RoutineTriggerCard({
         <div className="space-y-1.5">
           <Label htmlFor={`webhook-url-${trigger.id}`} className="text-xs">Webhook URL</Label>
           <Input id={`webhook-url-${trigger.id}`} value={trigger.webhookUrl} readOnly onFocus={(event) => event.target.select()} />
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             Send a POST request with Content-Type: application/json. Keep this URL private when signing is disabled.
           </p>
         </div>
@@ -176,20 +176,20 @@ export function RoutineTriggerCard({
           <Button
             variant="ghost"
             size="sm"
-            className="mr-auto text-muted-foreground hover:text-destructive"
+            className="mr-auto"
             onClick={() => onDelete(trigger.id)}
           >
             <Trash2 className="mr-1.5 h-3.5 w-3.5" />
             Delete
           </Button>
           {trigger.kind === "webhook" && (
-            <Button variant="outline" size="sm" onClick={() => onRotate(trigger.id)}>
+            <Button variant="secondary" size="sm" onClick={() => onRotate(trigger.id)}>
               <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
               Rotate secret
             </Button>
           )}
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             onClick={() =>
               onSave(trigger.id, buildRoutineTriggerPatch(trigger, draft, getLocalTimezone()))

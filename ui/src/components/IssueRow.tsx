@@ -106,7 +106,7 @@ export function InboxArchiveButton({
       }}
       disabled={disabled}
       className={cn(
-        "inline-flex shrink-0 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover:opacity-100 focus-visible:opacity-100 disabled:pointer-events-none disabled:opacity-30",
+        "inline-flex shrink-0 items-center gap-1.5 rounded-md px-2 text-xs font-medium text-ink-3 opacity-0 transition-opacity hover:bg-bg-3 hover:text-ink group-hover:opacity-100 focus-visible:opacity-100 disabled:pointer-events-none disabled:opacity-30",
         compact ? "h-5 py-0" : "py-1",
       )}
       aria-label="Archive"
@@ -176,24 +176,24 @@ export function IssueRow({
       }}
       className={cn(
         "inline-flex h-4 w-4 items-center justify-center rounded-full transition-colors",
-        selected ? "hover:bg-muted/80" : "hover:bg-blue-500/20",
+        selected ? "hover:bg-bg-3/80" : "hover:bg-blue-500/20",
       )}
       aria-label="Mark as read"
     >
       <span
         className={cn(
           "block h-2 w-2 rounded-full transition-opacity duration-300",
-          selected ? "bg-muted-foreground/70" : "bg-blue-600 dark:bg-blue-400",
+          selected ? "bg-ink-3/70" : "bg-blue-600 dark:bg-blue-400",
           unreadState === "fading" ? "opacity-0" : "opacity-100",
         )}
       />
     </button>
   );
-  const selectedStatusClass = selected ? "!text-muted-foreground !border-muted-foreground" : undefined;
+  const selectedStatusClass = selected ? "!text-ink-3 !border-ink-3" : undefined;
   const detailState = withIssueDetailHeaderSeed(issueLinkState, issue);
   const hasChecklistStep = checklistStepNumber !== null;
   const checklistStep = hasChecklistStep ? (
-    <span className="shrink-0 font-mono text-xs text-muted-foreground" aria-hidden="true">
+    <span className="shrink-0 font-mono text-xs text-ink-3" aria-hidden="true">
       {checklistStepNumber}.
     </span>
   ) : null;
@@ -225,8 +225,8 @@ export function IssueRow({
           "group relative flex min-w-0 items-start gap-2 rounded-lg py-2.5 pr-2 text-sm no-underline text-inherit sm:items-center sm:py-2",
           showUnreadSlot ? "pl-4" : "pl-2 sm:pl-4",
           "[&_button]:relative [&_button]:z-10",
-          selected ? "bg-accent/50 hover:bg-accent/50" : "hover:bg-accent/50",
-          checklistCurrentStep && "bg-primary/5",
+          selected ? "bg-bg-3/50 hover:bg-bg-3/50" : "hover:bg-bg-3/50",
+          checklistCurrentStep && "bg-accent/5",
           className,
         )}
       >
@@ -239,7 +239,7 @@ export function IssueRow({
           id={checklistRowId}
           aria-current={checklistCurrentStep ? "step" : undefined}
           onClickCapture={() => rememberIssueDetailLocationState(issuePathId, detailState)}
-          className="absolute inset-0 rounded-lg no-underline text-inherit focus-visible:z-10 focus-visible:outline-none focus-visible:ring-(length:--rad-3) focus-visible:ring-ring"
+          className="absolute inset-0 rounded-lg no-underline text-inherit focus-visible:z-10 focus-visible:outline-none focus-visible:ring-(length:--rad-3) focus-visible:ring-focus"
         >
           <span className="sr-only">Open {identifier}: {issue.title}</span>
         </Link>
@@ -266,16 +266,16 @@ export function IssueRow({
                 >
                   <span
                     data-slot="task-row-tree-connector"
-                    className="absolute -inset-y-3 left-7 w-px bg-background"
+                    className="absolute -inset-y-3 left-7 w-px bg-bg"
                   >
                     {gapForChevron ? (
                       <span className="absolute inset-0 flex flex-col">
-                        <span className="flex-1 bg-border" />
+                        <span className="flex-1 bg-line" />
                         <span className="h-3.5 shrink-0" />
-                        <span className="flex-1 bg-border" />
+                        <span className="flex-1 bg-line" />
                       </span>
                     ) : (
-                      <span className="absolute inset-0 bg-border" />
+                      <span className="absolute inset-0 bg-line" />
                     )}
                   </span>
                 </span>
@@ -308,7 +308,7 @@ export function IssueRow({
             </span>
             {recoveryIndicator}
             {mobileTitleMeta ? (
-              <span className="ml-auto shrink-0 whitespace-nowrap text-right text-xs text-muted-foreground sm:hidden">
+              <span className="ml-auto shrink-0 whitespace-nowrap text-right text-xs text-ink-3 sm:hidden">
                 {mobileTitleMeta}
               </span>
             ) : null}
@@ -317,7 +317,7 @@ export function IssueRow({
             <span className="flex flex-wrap gap-1">{checklistDependencyChips}</span>
           ) : null}
           {mobileMeta ? (
-            <span className="text-xs text-muted-foreground sm:hidden">{mobileMeta}</span>
+            <span className="text-xs text-ink-3 sm:hidden">{mobileMeta}</span>
           ) : null}
         </span>
 
@@ -333,12 +333,12 @@ export function IssueRow({
           {actions ? <span data-slot="task-row-actions" className="flex shrink-0 items-center gap-1">{actions}</span> : null}
           {onArchive ? <InboxArchiveButton onArchive={onArchive} disabled={archiveDisabled} compact /> : null}
           {showIdentifier ? (
-            <span data-slot="task-row-identifier" className="w-20 shrink-0 text-right font-mono text-xs text-muted-foreground">
+            <span data-slot="task-row-identifier" className="w-20 shrink-0 text-right font-mono text-xs text-ink-3">
               {identifier}
             </span>
           ) : null}
           {trailingMeta ? (
-            <span data-slot="task-row-timestamp" className="w-24 shrink-0 truncate text-right text-xs text-muted-foreground">
+            <span data-slot="task-row-timestamp" className="w-24 shrink-0 truncate text-right text-xs text-ink-3">
               {trailingMeta}
             </span>
           ) : null}
@@ -361,9 +361,9 @@ export function IssueRow({
         // the tint paints BEHIND the content and `last:border-b-0` matches the
         // real last row. Keeping these on the overlay Link (PR #10526) made the
         // last row keep its border and the hover wash paint over the text.
-        showDivider && "border-b border-border last:border-b-0",
-        selected ? "hover:bg-transparent" : "hover:bg-accent/50",
-        checklistCurrentStep ? "bg-primary/5" : null,
+        showDivider && "border-b border-line last:border-b-0",
+        selected ? "hover:bg-transparent" : "hover:bg-bg-3/50",
+        checklistCurrentStep ? "bg-accent/5" : null,
         className,
       )}
     >
@@ -379,7 +379,7 @@ export function IssueRow({
         className={cn(
           // Overlay Link keeps ONLY positioning + focus ring so header controls
           // stay clickable above it; visual washes belong on the root above.
-          "absolute inset-0 rounded-lg no-underline text-inherit focus-visible:z-10 focus-visible:outline-none focus-visible:ring-(length:--rad-3) focus-visible:ring-ring",
+          "absolute inset-0 rounded-lg no-underline text-inherit focus-visible:z-10 focus-visible:outline-none focus-visible:ring-(length:--rad-3) focus-visible:ring-focus",
         )}
       >
         <span className="sr-only">Open {identifier}: {issue.title}</span>
@@ -432,20 +432,20 @@ export function IssueRow({
                 {/* The connector drops from under the ancestor's STATUS icon,
                     not its chevron: the status column sits one level (w-4 slot
                     + gap-2 = 2rem) right of this guide slot's left edge.
-                    bg-background underlay: dark-mode --border is translucent,
+                    bg-bg underlay: dark-mode --line is translucent,
                     so overlapping row segments would stack brighter without
                     an opaque base. */}
-                <span className="absolute -inset-y-3 left-8 w-px bg-background">
+                <span className="absolute -inset-y-3 left-8 w-px bg-bg">
                   {gapForChevron ? (
                     // Two border segments centering a 14px (h-3.5) transparent
                     // gap for the row's own chevron.
                     <span className="absolute inset-0 flex flex-col">
-                      <span className="flex-1 bg-border" />
+                      <span className="flex-1 bg-line" />
                       <span className="h-3.5 shrink-0" />
-                      <span className="flex-1 bg-border" />
+                      <span className="flex-1 bg-line" />
                     </span>
                   ) : (
-                    <span className="absolute inset-0 bg-border" />
+                    <span className="absolute inset-0 bg-line" />
                   )}
                 </span>
               </span>
@@ -461,7 +461,7 @@ export function IssueRow({
                 <StatusIcon status={issue.status} externalConversationState={issue.externalConversationState} blockerAttention={issue.blockerAttention} size="md" className={selectedStatusClass} />
               </span>
               {checklistStep}
-              <span className="shrink-0 font-mono text-xs text-muted-foreground">
+              <span className="shrink-0 font-mono text-xs text-ink-3">
                 {identifier}
               </span>
               {parkedBlockerIndicator}
@@ -469,10 +469,10 @@ export function IssueRow({
           )}
           {mobileMeta ? (
             <>
-              <span className="text-xs text-muted-foreground sm:hidden" aria-hidden="true">
+              <span className="text-xs text-ink-3 sm:hidden" aria-hidden="true">
                 &middot;
               </span>
-              <span className="text-xs text-muted-foreground sm:hidden">{mobileMeta}</span>
+              <span className="text-xs text-ink-3 sm:hidden">{mobileMeta}</span>
             </>
           ) : null}
         </span>
@@ -487,7 +487,7 @@ export function IssueRow({
           ) : null}
           {desktopTrailing}
           {trailingMeta ? (
-            <span className="text-xs text-muted-foreground">{trailingMeta}</span>
+            <span className="text-xs text-ink-3">{trailingMeta}</span>
           ) : null}
         </span>
       ) : null}
@@ -526,7 +526,7 @@ function renderRecoveryChip(
       className={cn(
         "shrink-0 gap-0.5 text-(length:--text-nano)",
         tone.className,
-        selected ? "!border-muted-foreground !text-muted-foreground" : null,
+        selected ? "!border-ink-3 !text-ink-3" : null,
       )}
       title={detail
         ? `${label} — ${detail}. Open the source task to act.`

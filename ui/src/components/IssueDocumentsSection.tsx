@@ -894,7 +894,7 @@ export function IssueDocumentsSection({
       {isEmpty && !draft?.isNew ? (
         <div className="flex flex-wrap items-center justify-end gap-2 min-w-0">
           {extraActions}
-          <Button variant="outline" size="sm" onClick={beginNewDocument} className="shrink-0">
+          <Button variant="secondary" size="sm" onClick={beginNewDocument} className="shrink-0">
             <Plus className="mr-1.5 h-3.5 w-3.5" />
             <span className="hidden sm:inline">New document</span>
             <span className="sm:hidden">New</span>
@@ -902,10 +902,10 @@ export function IssueDocumentsSection({
         </div>
       ) : (
         <div className="flex flex-wrap items-center gap-2 min-w-0">
-          <h3 className="w-full text-sm font-medium text-muted-foreground shrink-0 sm:w-auto">Documents</h3>
+          <h3 className="w-full text-sm font-medium text-ink-3 shrink-0 sm:w-auto">Documents</h3>
           <div className="flex flex-wrap items-center gap-2 min-w-0 sm:ml-auto">
             {extraActions}
-            <Button variant="outline" size="sm" onClick={beginNewDocument} className="shrink-0">
+            <Button variant="secondary" size="sm" onClick={beginNewDocument} className="shrink-0">
               <Plus className="mr-1.5 h-3.5 w-3.5" />
               <span className="hidden sm:inline">New document</span>
               <span className="sm:hidden">New</span>
@@ -914,11 +914,11 @@ export function IssueDocumentsSection({
         </div>
       )}
 
-      {error && <p className="text-xs text-destructive">{error}</p>}
+      {error && <p className="text-xs text-bad">{error}</p>}
 
       {draft?.isNew && (
         <div
-          className="space-y-3 rounded-lg border border-border bg-accent/10 p-3"
+          className="space-y-3 rounded-lg border border-line bg-bg-3/10 p-3"
           onBlurCapture={handleDraftBlur}
           onKeyDown={handleDraftKeyDown}
         >
@@ -931,7 +931,7 @@ export function IssueDocumentsSection({
             placeholder="Document key"
           />
           {newDocumentKeyError && (
-            <p className="text-xs text-destructive">{newDocumentKeyError}</p>
+            <p className="text-xs text-bad">{newDocumentKeyError}</p>
           )}
           {!isPlanKey(draft.key) && (
             <Input
@@ -956,7 +956,7 @@ export function IssueDocumentsSection({
             onSubmit={() => void commitDraft(draft, { clearAfterSave: false, trackAutosave: false })}
           />
           <div className="flex items-center justify-end gap-2">
-            <Button variant="outline" size="sm" onClick={cancelDraft}>
+            <Button variant="secondary" size="sm" onClick={cancelDraft}>
               <X className="mr-1.5 h-3.5 w-3.5" />
               Cancel
             </Button>
@@ -976,7 +976,7 @@ export function IssueDocumentsSection({
           id="document-plan"
           className={cn(
             "rounded-lg border border-amber-500/30 bg-amber-500/5 p-3 transition-colors duration-1000",
-            highlightDocumentKey === "plan" && "border-primary/50 bg-primary/5",
+            highlightDocumentKey === "plan" && "border-accent/50 bg-accent/5",
           )}
         >
           <div className="mb-2 flex items-center gap-2">
@@ -1022,8 +1022,8 @@ export function IssueDocumentsSection({
               key={doc.id}
               id={`document-${doc.key}`}
               className={cn(
-                "rounded-lg border border-border p-3 transition-colors duration-1000",
-                highlightDocumentKey === doc.key && "border-primary/50 bg-primary/5",
+                "rounded-lg border border-line p-3 transition-colors duration-1000",
+                highlightDocumentKey === doc.key && "border-accent/50 bg-accent/5",
               )}
             >
               <DocumentFrameHeader
@@ -1065,8 +1065,7 @@ export function IssueDocumentsSection({
                       variant="ghost"
                       size="icon-xs"
                       className={cn(
-                        "text-muted-foreground transition-colors",
-                        isLocked && "text-amber-700 hover:text-amber-800 dark:text-amber-300 dark:hover:text-amber-200",
+                        "transition-colors",
                       )}
                       title={isLocked ? "Unlock document" : "Lock document"}
                       aria-label={isLocked ? `Unlock ${doc.key} document` : `Lock ${doc.key} document`}
@@ -1084,8 +1083,7 @@ export function IssueDocumentsSection({
                       variant="ghost"
                       size="icon-xs"
                       className={cn(
-                        "text-muted-foreground transition-colors",
-                        copiedDocumentKey === doc.key && "text-foreground",
+                        "transition-colors",
                       )}
                       title={copiedDocumentKey === doc.key ? "Copied" : "Copy document"}
                       onClick={() => void copyDocumentBody(doc.key, displayedBody)}
@@ -1101,7 +1099,6 @@ export function IssueDocumentsSection({
                         <Button
                           variant="ghost"
                           size="icon-xs"
-                          className="text-muted-foreground"
                           title="Document actions"
                         >
                           <MoreHorizontal className="h-3.5 w-3.5" />
@@ -1168,13 +1165,13 @@ export function IssueDocumentsSection({
                           <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
                             Viewing revision {selectedHistoricalRevision.revisionNumber}
                           </p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-xs text-ink-3">
                             This is a historical preview. Restoring it creates a new latest revision and keeps history append-only.
                           </p>
                         </div>
                         <div className="flex flex-wrap items-center gap-2">
                           <Button
-                            variant="outline"
+                            variant="secondary"
                             size="sm"
                             onClick={() => returnToLatestRevision(doc.key)}
                           >
@@ -1203,13 +1200,13 @@ export function IssueDocumentsSection({
                       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                         <div className="space-y-1">
                           <p className="text-sm font-medium text-amber-800 dark:text-amber-200">Out of date</p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-xs text-ink-3">
                             This document changed while you were editing. Your local draft is preserved and autosave is paused.
                           </p>
                         </div>
                         <div className="flex flex-wrap items-center gap-2">
                           <Button
-                            variant="outline"
+                            variant="secondary"
                             size="sm"
                             onClick={() =>
                               setDocumentConflict((current) =>
@@ -1222,14 +1219,14 @@ export function IssueDocumentsSection({
                             {activeConflict.showRemote ? "Hide remote" : "Review remote"}
                           </Button>
                           <Button
-                            variant="outline"
+                            variant="secondary"
                             size="sm"
                             onClick={() => keepConflictedDraft(doc.key)}
                           >
                             Keep my draft
                           </Button>
                           <Button
-                            variant="outline"
+                            variant="secondary"
                             size="sm"
                             onClick={() => reloadDocumentFromServer(doc.key)}
                           >
@@ -1245,8 +1242,8 @@ export function IssueDocumentsSection({
                         </div>
                       </div>
                       {activeConflict.showRemote && (
-                        <div className="mt-3 rounded-md border border-border/70 bg-background/60 p-3">
-                          <div className="mb-2 flex items-center gap-2 text-(length:--text-micro) text-muted-foreground">
+                        <div className="mt-3 rounded-md border border-line/70 bg-bg/60 p-3">
+                          <div className="mb-2 flex items-center gap-2 text-(length:--text-micro) text-ink-3">
                             <span>Remote revision {activeConflict.serverDocument.latestRevisionNumber}</span>
                             <span>•</span>
                             <span>updated {relativeTime(activeConflict.serverDocument.updatedAt)}</span>
@@ -1271,7 +1268,7 @@ export function IssueDocumentsSection({
                   )}
                   <div
                     className={`${documentBodyShellClassName} ${
-                      activeDraft || isHistoricalPreview ? "" : "rounded-md hover:bg-accent/10"
+                      activeDraft || isHistoricalPreview ? "" : "rounded-md hover:bg-bg-3/10"
                     }`}
                   >
                     {(() => {
@@ -1333,8 +1330,8 @@ export function IssueDocumentsSection({
                           : activeConflict
                           ? "text-amber-700 dark:text-amber-300"
                           : autosaveState === "error"
-                            ? "text-destructive"
-                            : "text-muted-foreground"
+                            ? "text-bad"
+                            : "text-ink-3"
                       } ${activeDraft || isHistoricalPreview ? "opacity-100" : "opacity-0"}`}
                     >
                       {isHistoricalPreview
@@ -1368,8 +1365,8 @@ export function IssueDocumentsSection({
               ) : null}
 
               {confirmDeleteKey === doc.key && (
-                <div className="mt-3 flex items-center justify-between gap-3 rounded-md border border-destructive/20 bg-destructive/5 px-4 py-3">
-                  <p className="text-sm text-destructive font-medium">
+                <div className="mt-3 flex items-center justify-between gap-3 rounded-md border border-bad/20 bg-bad/5 px-4 py-3">
+                  <p className="text-sm text-bad font-medium">
                     Delete this document? This cannot be undone.
                   </p>
                   <div className="flex items-center gap-2 shrink-0">
@@ -1382,7 +1379,7 @@ export function IssueDocumentsSection({
                       Cancel
                     </Button>
                     <Button
-                      variant="destructive"
+                      variant="delete"
                       size="sm"
                       onClick={() => deleteDocument.mutate(doc.key)}
                       disabled={deleteDocument.isPending}

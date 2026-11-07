@@ -66,28 +66,28 @@ function WatchdogSurfaceStories() {
     <div className="space-y-8 p-6">
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="space-y-2">
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">
+          <div className="text-xs uppercase tracking-wide text-ink-3">
             IssueProperties Watchdog row — empty (Set watchdog)
           </div>
-          <div className="rounded-lg border border-border bg-background/70 p-4">
+          <div className="rounded-lg border border-line bg-bg/70 p-4">
             <IssueProperties issue={emptyWatchdogIssue} onUpdate={() => undefined} inline />
           </div>
         </section>
 
         <section className="space-y-2">
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">
+          <div className="text-xs uppercase tracking-wide text-ink-3">
             IssueProperties Watchdog row — configured (agent + instructions)
           </div>
-          <div className="rounded-lg border border-border bg-background/70 p-4">
+          <div className="rounded-lg border border-line bg-bg/70 p-4">
             <IssueProperties issue={configuredWatchdogIssue} onUpdate={() => undefined} inline />
           </div>
         </section>
 
         <section className="space-y-2">
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">
+          <div className="text-xs uppercase tracking-wide text-ink-3">
             IssueProperties Watchdog row — triggered, linked to generated task
           </div>
-          <div className="rounded-lg border border-border bg-background/70 p-4">
+          <div className="rounded-lg border border-line bg-bg/70 p-4">
             <IssueProperties
               issue={triggeredWatchdogIssue}
               childIssues={[watchdogChildIssue]}

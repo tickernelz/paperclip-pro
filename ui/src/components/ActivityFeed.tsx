@@ -271,26 +271,26 @@ function CollapsedFeedGroup({
         onClick={() => setExpanded((e) => !e)}
         data-fc="card"
         className={cn(
-          "group ml-3 mr-3 md:ml-0 my-2 flex w-(--sz-calc-1) md:w-(--sz-calc-2) items-center gap-2 rounded-lg border bg-card p-(--sz-18px) text-left text-xs transition-(--tp-background-color-border-color) duration-150",
-          "cursor-pointer hover:bg-accent hover:border-muted-foreground/30",
+          "group ml-3 mr-3 md:ml-0 my-2 flex w-(--sz-calc-1) md:w-(--sz-calc-2) items-center gap-2 rounded-lg border bg-bg-2 p-(--sz-18px) text-left text-xs transition-(--tp-background-color-border-color) duration-150",
+          "cursor-pointer hover:bg-bg-3 hover:border-ink-3/30",
         )}
       >
         {expanded
-          ? <ChevronDown className="h-3 w-3 shrink-0 text-muted-foreground" />
-          : <ChevronRight className="h-3 w-3 shrink-0 text-muted-foreground" />
+          ? <ChevronDown className="h-3 w-3 shrink-0 text-ink-3" />
+          : <ChevronRight className="h-3 w-3 shrink-0 text-ink-3" />
         }
         {group.latestEvent.actorType === "agent"
-          ? <AgentAvatar agent={actor} size={16} className="h-3.5 w-3.5 shrink-0 text-muted-foreground"/>
+          ? <AgentAvatar agent={actor} size={16} className="h-3.5 w-3.5 shrink-0 text-ink-3"/>
           : group.latestEvent.actorType === "user"
-            ? <User className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-            : <Settings className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+            ? <User className="h-3.5 w-3.5 shrink-0 text-ink-3" />
+            : <Settings className="h-3.5 w-3.5 shrink-0 text-ink-3" />
         }
         <span className="flex-1 min-w-0 truncate">
           <span data-fc="actor" className="font-medium text-(--hex-959596) group-hover:text-white">{actorName}</span>
           <span data-fc="verb" className="ml-1 text-(--hex-959596)">made {group.events.length} updates to</span>
           <span data-fc="title" className="ml-1 text-(--hex-959596) group-hover:text-white">{entityName ?? group.entityId}</span>
         </span>
-        <span data-fc="time" className="text-muted-foreground shrink-0">
+        <span data-fc="time" className="text-ink-3 shrink-0">
           {timeAgo(group.latestEvent.createdAt)}
         </span>
       </button>
@@ -484,11 +484,11 @@ export function ActivityFeed({ className }: ActivityFeedProps) {
       if (prevIsRecent && !thisIsRecent) {
         separator = (
           <div className="flex items-center gap-2 px-4 py-1.5" key={`sep-${index}`}>
-            <div className="h-px flex-1 bg-border" />
-            <span className="text-(length:--text-nano) font-medium text-muted-foreground uppercase tracking-wider">
+            <div className="h-px flex-1 bg-line" />
+            <span className="text-(length:--text-nano) font-medium text-ink-3 uppercase tracking-wider">
               Earlier
             </span>
-            <div className="h-px flex-1 bg-border" />
+            <div className="h-px flex-1 bg-line" />
           </div>
         );
       }
@@ -573,8 +573,8 @@ export function ActivityFeed({ className }: ActivityFeedProps) {
 
       return (
         <div key={groupKey} className="mb-2">
-          <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b px-4 py-1.5">
-            <p className="text-xs font-medium text-muted-foreground truncate">{label}</p>
+          <div className="sticky top-0 z-10 bg-bg/95 backdrop-blur-sm border-b px-4 py-1.5">
+            <p className="text-xs font-medium text-ink-3 truncate">{label}</p>
           </div>
           {items.map((item, i) => renderItem(item, i, items))}
         </div>
@@ -610,19 +610,19 @@ export function ActivityFeed({ className }: ActivityFeedProps) {
   const isEmpty = visibleItems.length === 0;
 
   return (
-    <aside className={cn("flex min-h-0 min-w-0 flex-1 flex-col bg-background", className)}>
+    <aside className={cn("flex min-h-0 min-w-0 flex-1 flex-col bg-bg", className)}>
       {/* Header */}
       <div className="relative flex shrink-0 items-start justify-between gap-2 px-4 py-3">
         {/* Bottom rule: extends through the 12px resize handle on desktop so
              it visually meets the vertical divider between the chat pane
              and this feed. On mobile there's no handle, so left-0 is fine. */}
         <div
-          className="pointer-events-none absolute bottom-0 right-0 left-0 h-px bg-border md:-left-3"
+          className="pointer-events-none absolute bottom-0 right-0 left-0 h-px bg-line md:-left-3"
           aria-hidden
         />
         <div className="min-w-0 flex-1">
           <h3 className="text-sm font-semibold">Agent Feed</h3>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             Live activity from your agents
           </p>
         </div>
@@ -634,7 +634,7 @@ export function ActivityFeed({ className }: ActivityFeedProps) {
                 type="button"
                 variant={groupMode === "by-task" ? "secondary" : "ghost"}
                 size="icon-sm"
-                className="shrink-0 text-muted-foreground"
+                className="shrink-0"
                 aria-label="group by task"
                 onClick={() => setGroupMode((m) => (m === "flat" ? "by-task" : "flat"))}
               >
@@ -655,7 +655,7 @@ export function ActivityFeed({ className }: ActivityFeedProps) {
                     type="button"
                     variant={filter !== "all" || showAllActivity ? "secondary" : "ghost"}
                     size="icon-sm"
-                    className="shrink-0 text-muted-foreground"
+                    className="shrink-0"
                     aria-label="filter by"
                   >
                     <ListFilter className="h-3.5 w-3.5" />
@@ -698,11 +698,11 @@ export function ActivityFeed({ className }: ActivityFeedProps) {
             <div className="flex flex-col items-center gap-2 max-w-(--sz-16rem)">
               {emptyMessage?.showPulse && (
                 <span className="relative flex h-2.5 w-2.5">
-                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary/40" />
-                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-primary/60" />
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-accent/40" />
+                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-accent/60" />
                 </span>
               )}
-              <p className="text-center text-sm text-muted-foreground">
+              <p className="text-center text-sm text-ink-3">
                 {emptyMessage?.text ?? "Activity from your agents will appear here."}
               </p>
             </div>

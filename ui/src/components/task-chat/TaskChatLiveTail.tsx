@@ -46,7 +46,7 @@ export function TaskChatLiveTail({
 
   if (rows.length === 0) {
     return emptyMessage ? (
-      <div className="px-1 py-1 text-xs text-muted-foreground/70">{emptyMessage}</div>
+      <div className="px-1 py-1 text-xs text-ink-3/70">{emptyMessage}</div>
     ) : null;
   }
 
@@ -71,7 +71,7 @@ function renderTailRow(
       return (
         <div
           key={item.id}
-          className="px-1 text-sm text-foreground/90"
+          className="px-1 text-sm text-ink/90"
           data-testid="task-chat-live-text"
         >
           <MarkdownBody softBreaks linkIssueReferences>

@@ -71,12 +71,12 @@ export function DocumentAnnotationPanel(props: AnnotationPanelProps) {
         <SheetContent
           side="bottom"
           showCloseButton={false}
-          className="paperclip-doc-annotation-sheet z-(--z-60) flex max-h-(--sz-88vh) flex-col rounded-none border-t border-border bg-popover p-0 text-popover-foreground shadow-2xl"
+          className="paperclip-doc-annotation-sheet z-(--z-60) flex max-h-(--sz-88vh) flex-col rounded-none border-t border-line bg-bg-2 p-0 text-ink shadow-2xl"
         >
           <SheetTitle className="sr-only">
             Comments on {props.documentKey} revision {props.documentRevisionNumber}
           </SheetTitle>
-          <div className="mx-auto mt-2 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/30" aria-hidden="true" />
+          <div className="mx-auto mt-2 h-1.5 w-12 shrink-0 rounded-full bg-ink-3/30" aria-hidden="true" />
           <AnnotationPanelBody {...props} />
         </SheetContent>
       </Sheet>
@@ -91,7 +91,7 @@ export function DocumentAnnotationPanel(props: AnnotationPanelProps) {
       aria-label={`Annotations for ${props.documentKey.toUpperCase()}, revision ${props.documentRevisionNumber}`}
       data-testid="document-annotation-panel"
       className={cn(
-        "isolate flex h-full max-h-(--sz-80vh) shrink-0 flex-col overflow-hidden rounded-none border border-border bg-popover text-popover-foreground shadow-xl",
+        "isolate flex h-full max-h-(--sz-80vh) shrink-0 flex-col overflow-hidden rounded-none border border-line bg-bg-2 text-ink shadow-xl",
         props.inline ? "w-full" : "w-(--sz-360px)",
         props.className,
       )}
@@ -175,16 +175,15 @@ export function AnnotationPanelBody(props: AnnotationPanelProps) {
     <>
       <div
         data-testid={bodyTestId}
-        className="flex items-center justify-end gap-1 border-b border-border bg-popover px-2 py-1.5"
+        className="flex items-center justify-end gap-1 border-b border-line bg-bg-2 px-2 py-1.5"
       >
-        <span className="text-(length:--text-micro) tabular-nums text-muted-foreground">
+        <span className="text-(length:--text-micro) tabular-nums text-ink-3">
           rev {props.documentRevisionNumber}
         </span>
         <Button
           type="button"
           size="icon-xs"
           variant="ghost"
-          className="text-muted-foreground"
           onClick={() => {
             props.onFocusThread(null);
             props.onOpenChange(false);
@@ -197,7 +196,7 @@ export function AnnotationPanelBody(props: AnnotationPanelProps) {
       {props.newCommentDisabled && props.newCommentDisabledReason ? (
         <p
           data-testid="document-annotation-disabled-reason"
-          className="border-b border-border bg-muted px-3 py-1.5 text-(length:--text-micro) text-muted-foreground"
+          className="border-b border-line bg-bg-3 px-3 py-1.5 text-(length:--text-micro) text-ink-3"
         >
           {props.newCommentDisabledReason}
         </p>
@@ -205,12 +204,12 @@ export function AnnotationPanelBody(props: AnnotationPanelProps) {
       {mutationError ? (
         <p
           data-testid="document-annotation-error"
-          className="border-b border-border bg-destructive/10 px-3 py-1.5 text-(length:--text-micro) text-destructive"
+          className="border-b border-line bg-bad/10 px-3 py-1.5 text-(length:--text-micro) text-bad"
         >
           {mutationError}
         </p>
       ) : null}
-      <div ref={listScrollRef} className="min-h-0 flex-1 overflow-y-auto bg-popover px-3 py-2">
+      <div ref={listScrollRef} className="min-h-0 flex-1 overflow-y-auto bg-bg-2 px-3 py-2">
         {visibleThreads.length === 0 ? null : (
           <ul className="space-y-2">
             {visibleThreads.map((thread) => (
@@ -248,8 +247,8 @@ export function AnnotationPanelBody(props: AnnotationPanelProps) {
         )}
       </div>
       {props.pendingAnchor ? (
-        <div className="border-t border-border bg-popover px-3 py-2">
-          <blockquote className="mb-2 line-clamp-2 overflow-hidden rounded-none bg-muted px-2 py-1 text-xs italic leading-5 text-muted-foreground [overflow-wrap:anywhere]">
+        <div className="border-t border-line bg-bg-2 px-3 py-2">
+          <blockquote className="mb-2 line-clamp-2 overflow-hidden rounded-none bg-bg-3 px-2 py-1 text-xs italic leading-5 text-ink-3 [overflow-wrap:anywhere]">
             {truncate(props.pendingAnchor.selectedText, 160)}
           </blockquote>
           <div className="mb-1.5 flex items-center gap-1.5">
@@ -257,7 +256,7 @@ export function AnnotationPanelBody(props: AnnotationPanelProps) {
               {currentUser.image ? <AvatarImage src={currentUser.image} alt={currentUser.name} /> : null}
               <AvatarFallback>{deriveInitials(currentUser.name)}</AvatarFallback>
             </Avatar>
-            <span className="truncate text-(length:--text-micro) font-medium text-foreground">{currentUser.name}</span>
+            <span className="truncate text-(length:--text-micro) font-medium text-ink">{currentUser.name}</span>
           </div>
           <Textarea
             ref={composerRef}
@@ -343,9 +342,9 @@ export function ThreadCard(props: {
         data-focused={props.expanded || undefined}
         aria-labelledby={`thread-quote-${thread.id}`}
         className={cn(
-          "scroll-mt-2 rounded-none border border-border bg-background transition-colors",
-          props.expanded && "ring-2 ring-primary/80 ring-offset-1 ring-offset-popover",
-          thread.status === "resolved" && "bg-muted",
+          "scroll-mt-2 rounded-none border border-line bg-bg transition-colors",
+          props.expanded && "ring-2 ring-accent/80 ring-offset-1 ring-offset-bg-2",
+          thread.status === "resolved" && "bg-bg-3",
         )}
         tabIndex={0}
         onClick={props.onFocus}
@@ -353,8 +352,8 @@ export function ThreadCard(props: {
         <blockquote
           id={`thread-quote-${thread.id}`}
           className={cn(
-            "mx-3 mt-2 line-clamp-2 overflow-hidden rounded-none bg-muted px-2 py-1 text-xs italic leading-5 text-muted-foreground [overflow-wrap:anywhere]",
-            (thread.anchorState === "stale" || thread.status === "resolved") && "bg-muted",
+            "mx-3 mt-2 line-clamp-2 overflow-hidden rounded-none bg-bg-3 px-2 py-1 text-xs italic leading-5 text-ink-3 [overflow-wrap:anywhere]",
+            (thread.anchorState === "stale" || thread.status === "resolved") && "bg-bg-3",
           )}
         >
           {truncate(thread.selectedText, 120)}
@@ -420,7 +419,6 @@ export function ThreadCard(props: {
                     type="button"
                     variant="ghost"
                     size="icon-xs"
-                    className="text-muted-foreground"
                     title="More actions"
                     aria-label="More thread actions"
                   >
@@ -442,8 +440,8 @@ export function ThreadCard(props: {
             </div>
           </div>
         ) : (
-          <p className="px-3 py-2 text-xs text-muted-foreground">
-            <span className="font-medium text-foreground">
+          <p className="px-3 py-2 text-xs text-ink-3">
+            <span className="font-medium text-ink">
               {thread.comments.length} comment{thread.comments.length === 1 ? "" : "s"}
             </span>
             {latestComment ? <span className="ml-1">· {truncate(latestComment.body, 120)}</span> : null}
@@ -471,8 +469,8 @@ function CommentRow({
       id={`comment-${comment.id}`}
       data-focused={focused || undefined}
       className={cn(
-        "rounded-none border border-border bg-background px-2 py-1.5",
-        focused && "ring-2 ring-primary/40",
+        "rounded-none border border-line bg-bg px-2 py-1.5",
+        focused && "ring-2 ring-accent/40",
       )}
     >
       <div className="mb-0.5 flex items-center justify-between gap-2 text-(length:--text-micro)">
@@ -482,12 +480,12 @@ function CommentRow({
             {author.imageUrl ? <AvatarImage src={author.imageUrl} alt={author.name} /> : null}
             <AvatarFallback>{deriveInitials(author.name)}</AvatarFallback>
           </Avatar>)}
-          <span className="truncate font-medium text-foreground">{author.name}</span>
+          <span className="truncate font-medium text-ink">{author.name}</span>
           {author.role === "agent" ? (
-            <span className="text-muted-foreground">· agent</span>
+            <span className="text-ink-3">· agent</span>
           ) : null}
         </span>
-        <span className="shrink-0 text-muted-foreground">{relativeTime(comment.createdAt)}</span>
+        <span className="shrink-0 text-ink-3">{relativeTime(comment.createdAt)}</span>
       </div>
       <MarkdownBody className="text-sm leading-6">{comment.body}</MarkdownBody>
     </div>

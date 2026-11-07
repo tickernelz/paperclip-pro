@@ -26,14 +26,14 @@ const enforcementBanner = cva(
   {
     variants: {
       variant: {
-        default: "border-border bg-muted/40 text-muted-foreground",
+        default: "border-line bg-bg-3/40 text-ink-3",
         "denied-detected":
           "border-amber-500/40 bg-amber-50 text-amber-900 dark:bg-amber-950/40 dark:text-amber-200",
-        info: "border-border bg-muted/40 text-muted-foreground",
+        info: "border-line bg-bg-3/40 text-ink-3",
         warning:
           "border-amber-500/40 bg-amber-50 text-amber-900 dark:bg-amber-950/40 dark:text-amber-200",
         error:
-          "border-destructive/40 bg-destructive/5 text-destructive dark:text-destructive",
+          "border-bad/40 bg-bad/5 text-bad dark:text-bad",
       },
     },
     defaultVariants: { variant: "default" },
@@ -87,7 +87,7 @@ function PresentationalBanner({
       ? "text-emerald-600 dark:text-emerald-400"
       : tone === "warning"
         ? "text-amber-600 dark:text-amber-400"
-        : "text-destructive";
+        : "text-bad";
   return (
     <div className={cn(enforcementBanner({ variant: tone }), className)} role="status">
       <Icon className={cn("mt-0.5 h-4 w-4 shrink-0", iconTone)} />

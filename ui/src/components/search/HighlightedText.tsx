@@ -53,7 +53,7 @@ export function HighlightedText({ text, highlights, className, markClassName }: 
           <mark
             key={segment.key}
             className={cn(
-              "rounded-sm bg-yellow-200/60 px-0.5 text-foreground dark:bg-yellow-300/30",
+              "rounded-sm bg-yellow-200/60 px-0.5 text-ink dark:bg-yellow-300/30",
               markClassName,
             )}
           >

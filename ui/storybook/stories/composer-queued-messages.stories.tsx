@@ -68,16 +68,16 @@ function QueuedComposer({ protocol, steeringDisposition, initialEdit, mobile }: 
   }
 
   return (
-    <main className={`flex min-h-screen flex-col bg-background text-foreground ${mobile ? "p-4" : "p-6"}`}>
+    <main className={`flex min-h-screen flex-col bg-bg text-ink ${mobile ? "p-4" : "p-6"}`}>
       <div className={`mx-auto flex w-full flex-1 flex-col ${mobile ? "max-w-sm" : "max-w-3xl"}`}>
-        <header className="border-b border-border pb-4">
-          <p className="text-xs text-muted-foreground">PAP-204 · Codie is working</p>
+        <header className="border-b border-line pb-4">
+          <p className="text-xs text-ink-3">PAP-204 · Codie is working</p>
           <h1 className="mt-1 text-base font-semibold">Steering and queued messages</h1>
         </header>
         <div className="flex-1 space-y-3 py-6 text-sm">
-          <p className="rounded-lg bg-card px-4 py-3">I’m updating the composer and checking the responsive layout.</p>
-          {sent.map((body, index) => <p key={index} className="ml-auto max-w-fit rounded-lg bg-secondary px-4 py-3">{body}</p>)}
-          {notice ? <p role="status" className="text-muted-foreground">{notice}</p> : null}
+          <p className="rounded-lg bg-bg-2 px-4 py-3">I’m updating the composer and checking the responsive layout.</p>
+          {sent.map((body, index) => <p key={index} className="ml-auto max-w-fit rounded-lg bg-bg-3 px-4 py-3">{body}</p>)}
+          {notice ? <p role="status" className="text-ink-3">{notice}</p> : null}
         </div>
         <div className="relative isolate flex flex-col">
           {entries.length ? <TaskChatQueuedMessages

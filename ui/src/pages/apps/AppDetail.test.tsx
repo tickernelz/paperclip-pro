@@ -672,7 +672,7 @@ describe("AppDetail", () => {
     expect(container.textContent).toContain("2 actions available");
     expect(container.textContent).toContain(expectedText);
     expect(container.textContent).not.toContain("Setup");
-    expect(container.querySelector("section.bg-card")).toBeNull();
+    expect(container.querySelector("section.bg-bg-2")).toBeNull();
   });
 
   it("counts only active catalog entries as available actions", async () => {
@@ -937,7 +937,7 @@ describe("AppDetail", () => {
     expect(Array.from(container.querySelectorAll("button")).filter((button) => button.textContent?.trim() === "Test")).toHaveLength(2);
     expect(container.textContent).not.toContain("Views data without changing it.");
     expect(container.textContent).not.toContain("Creates or changes data.");
-    expect(container.querySelector("section.bg-card")).toBeNull();
+    expect(container.querySelector("section.bg-bg-2")).toBeNull();
   });
 
   it("opens an action test modal with agent selection, inputs, and result-ready chrome", async () => {

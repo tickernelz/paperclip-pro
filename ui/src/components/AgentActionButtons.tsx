@@ -61,7 +61,7 @@ export function RunButton({
   size?: "sm" | "default";
 }) {
   return (
-    <Button variant="outline" size={size} onClick={onClick} disabled={disabled}>
+    <Button variant="secondary" size={size} onClick={onClick} disabled={disabled}>
       <Play className="h-3.5 w-3.5 sm:mr-1" />
       <span className="hidden sm:inline">{label}</span>
     </Button>
@@ -83,7 +83,7 @@ export function PauseResumeButton({
 }) {
   if (isPaused) {
     return (
-      <Button variant="outline" size={size} onClick={onResume} disabled={disabled}>
+      <Button variant="secondary" size={size} onClick={onResume} disabled={disabled}>
         <Play className="h-3.5 w-3.5 sm:mr-1" />
         <span className="hidden sm:inline">Resume</span>
       </Button>
@@ -91,7 +91,7 @@ export function PauseResumeButton({
   }
 
   return (
-    <Button variant="outline" size={size} onClick={onPause} disabled={disabled}>
+    <Button variant="secondary" size={size} onClick={onPause} disabled={disabled}>
       <Pause className="h-3.5 w-3.5 sm:mr-1" />
       <span className="hidden sm:inline">Pause</span>
     </Button>
@@ -109,11 +109,10 @@ export function ClearErrorButton({
 }) {
   return (
     <Button
-      variant="outline"
+      variant="danger"
       size={size}
       onClick={onClick}
       disabled={disabled}
-      className="border-destructive/60 text-destructive hover:bg-destructive/10 hover:text-destructive dark:border-destructive/50"
       aria-label="Clear error and return agent to idle"
     >
       <CheckCircle2 className="h-3.5 w-3.5 sm:mr-1" />
@@ -386,7 +385,7 @@ export function AgentActionButtons({
     <div className={className ?? "flex items-center gap-1 sm:gap-2 shrink-0"}>
       {persistentProviderTrace ? (
         <span
-          className="hidden items-center gap-1 rounded-md border border-primary/30 bg-primary/10 px-2 py-1 text-xs font-medium text-primary lg:inline-flex"
+          className="hidden items-center gap-1 rounded-md border border-accent/30 bg-accent/10 px-2 py-1 text-xs font-medium text-accent lg:inline-flex"
           title="Exact provider traffic will be captured for future runs and retained for up to 24 hours."
         >
           <Bug className="h-3.5 w-3.5" />
@@ -394,7 +393,7 @@ export function AgentActionButtons({
         </span>
       ) : null}
       <Button
-        variant="outline"
+        variant="secondary"
         size={size}
         onClick={() => openNewIssue({ assigneeAgentId: agent.id })}
         disabled={assignAndRunDisabled}
@@ -414,7 +413,7 @@ export function AgentActionButtons({
       />}
       {canRunWithProviderTrace && (
         <Button
-          variant="outline"
+          variant="secondary"
           size={size}
           onClick={() => {
             if (navigateToRunOnInvoke && !confirmNavigationStart(agentActionStartedDirtyRef)) return;
@@ -474,7 +473,7 @@ export function AgentActionButtons({
         </PopoverTrigger>
         <PopoverContent className="w-44 p-1" align="end">
           <button
-            className="flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50"
+            className="flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-bg-3/50"
             disabled={duplicateAgent.isPending}
             onClick={handleDuplicateAgent}
           >
@@ -486,7 +485,7 @@ export function AgentActionButtons({
             Duplicate Agent
           </button>
           <button
-            className="flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50"
+            className="flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-bg-3/50"
             onClick={() => {
               void copyTextToClipboard(agent.id).catch(() => {
                 pushToast({ title: "Copy failed", body: "Clipboard access is unavailable.", tone: "error" });
@@ -498,7 +497,7 @@ export function AgentActionButtons({
             Copy Agent ID
           </button>
           <button
-            className="flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50"
+            className="flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-bg-3/50"
             onClick={() => {
               resetTaskSession.mutate();
               setMoreOpen(false);
@@ -509,7 +508,7 @@ export function AgentActionButtons({
           </button>
           {!hideTerminate && (
             <button
-              className="flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50 text-destructive"
+              className="flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-bg-3/50 text-bad"
               onClick={() => {
                 setMoreOpen(false);
                 if (onTerminateSuccess && !confirmNavigationStart(agentActionStartedDirtyRef)) return;

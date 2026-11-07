@@ -292,12 +292,12 @@ function RoutineSectionHeader({
   return (
     <div className="flex items-center gap-2 px-2 py-1.5">
       <CollapsibleTrigger className="flex items-center gap-1.5">
-        <ChevronRight className="h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform [[data-state=open]>&]:rotate-90" />
+        <ChevronRight className="h-3.5 w-3.5 shrink-0 text-ink-3 transition-transform [[data-state=open]>&]:rotate-90" />
         <span data-routine-section-label className="text-sm font-medium">
           {label}
         </span>
       </CollapsibleTrigger>
-      <span className="text-xs text-muted-foreground">
+      <span className="text-xs text-ink-3">
         {count}
       </span>
     </div>
@@ -771,12 +771,12 @@ export function Routines() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-1">
           <h1 className="text-xl font-bold">Routines</h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-ink-3">
             Recurring work definitions that materialize into auditable execution tasks.
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" asChild>
+          <Button variant="secondary" asChild>
               <Link to={auditSectionHref("runs", {})}>View all runs</Link>
             </Button>
           <Button onClick={openCreateRoutine}>
@@ -789,7 +789,7 @@ export function Routines() {
 
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between gap-3">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-ink-3">
             {visibleRoutines.length} routine{visibleRoutines.length === 1 ? "" : "s"}
           </p>
           <div className="flex items-center gap-1">
@@ -812,8 +812,8 @@ export function Routines() {
                         key={field}
                         className={`flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-sm ${
                           routineViewState.sortField === field
-                            ? "bg-accent/50 text-foreground"
-                            : "text-muted-foreground hover:bg-accent/50"
+                            ? "bg-bg-3/50 text-ink"
+                            : "text-ink-3 hover:bg-bg-3/50"
                         }`}
                         onClick={() => {
                           updateRoutineView(
@@ -825,7 +825,7 @@ export function Routines() {
                       >
                         <span>{label}</span>
                         {routineViewState.sortField === field ? (
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-xs text-ink-3">
                             {routineViewState.sortDir === "asc" ? "Asc" : "Desc"}
                           </span>
                         ) : null}
@@ -853,8 +853,8 @@ export function Routines() {
                         key={value}
                         className={`flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-sm ${
                           routineViewState.groupBy === value
-                            ? "bg-accent/50 text-foreground"
-                            : "text-muted-foreground hover:bg-accent/50"
+                            ? "bg-bg-3/50 text-ink"
+                            : "text-ink-3 hover:bg-bg-3/50"
                         }`}
                         onClick={() => updateRoutineView({ groupBy: value, collapsedGroups: [] })}
                       >
@@ -866,7 +866,7 @@ export function Routines() {
                 </PopoverContent>
               </Popover>
               {routineViewState.groupBy === "folder" && !hasRoutineFolders ? (
-                <Button variant="outline" size="sm" onClick={() => openCreateFolder()}>
+                <Button variant="secondary" size="sm" onClick={() => openCreateFolder()}>
                   <Plus className="mr-2 h-3.5 w-3.5" />
                   New folder
                 </Button>
@@ -902,10 +902,10 @@ export function Routines() {
           showCloseButton={false}
           className="flex max-h-(--sz-calc-18) max-w-3xl flex-col gap-0 overflow-hidden p-0"
         >
-          <div className="shrink-0 flex flex-wrap items-center justify-between gap-3 border-b border-border/60 px-5 py-3">
+          <div className="shrink-0 flex flex-wrap items-center justify-between gap-3 border-b border-line/60 px-5 py-3">
             <div>
-              <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">New routine</p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-ink-3">New routine</p>
+              <p className="text-sm text-ink-3">
                 Define the recurring work first. Default project and agent are optional for draft routines.
               </p>
             </div>
@@ -926,7 +926,7 @@ export function Routines() {
             <div className="px-5 pt-5 pb-3">
               <textarea
                 ref={titleInputRef}
-                className="w-full resize-none overflow-hidden bg-transparent text-xl font-semibold outline-none placeholder:text-muted-foreground/50"
+                className="w-full resize-none overflow-hidden bg-transparent text-xl font-semibold outline-none placeholder:text-ink-3/50"
                 placeholder="Routine title"
                 rows={1}
                 value={draft.title}
@@ -959,7 +959,7 @@ export function Routines() {
 
             <div className="px-5 pb-3">
               <div className="overflow-x-auto overscroll-x-contain">
-                <div className="inline-flex min-w-full flex-wrap items-center gap-2 text-sm text-muted-foreground sm:min-w-max sm:flex-nowrap">
+                <div className="inline-flex min-w-full flex-wrap items-center gap-2 text-sm text-ink-3 sm:min-w-max sm:flex-nowrap">
                   <span>For</span>
                   <InlineEntitySelector
                     ref={assigneeSelectorRef}
@@ -985,14 +985,14 @@ export function Routines() {
                       option ? (
                         currentAssignee ? (
                           <>
-                            <AgentAvatar agent={currentAssignee} size={16} className="h-3.5 w-3.5 shrink-0 text-muted-foreground"/>
+                            <AgentAvatar agent={currentAssignee} size={16} className="h-3.5 w-3.5 shrink-0 text-ink-3"/>
                             <span className="truncate">{option.label}</span>
                           </>
                         ) : (
                           <span className="truncate">{option.label}</span>
                         )
                       ) : (
-                        <span className="text-muted-foreground">Responsible</span>
+                        <span className="text-ink-3">Responsible</span>
                       )
                     }
                     renderOption={(option) => {
@@ -1000,7 +1000,7 @@ export function Routines() {
                       const assignee = agentById.get(option.id);
                       return (
                         <>
-                          {assignee ? <AgentAvatar agent={assignee} size={16} className="h-3.5 w-3.5 shrink-0 text-muted-foreground"/> : null}
+                          {assignee ? <AgentAvatar agent={assignee} size={16} className="h-3.5 w-3.5 shrink-0 text-ink-3"/> : null}
                           <span className="truncate">{option.label}</span>
                         </>
                       );
@@ -1031,7 +1031,7 @@ export function Routines() {
                           <span className="truncate">{option.label}</span>
                         </>
                       ) : (
-                        <span className="text-muted-foreground">Project</span>
+                        <span className="text-ink-3">Project</span>
                       )
                     }
                     renderOption={(option) => {
@@ -1056,7 +1056,7 @@ export function Routines() {
                       folderId: value === "__unfiled" ? null : value,
                     }))}
                   >
-                    <SelectTrigger className="h-8 w-auto min-w-32 border-0 bg-muted/50 px-2 shadow-none">
+                    <SelectTrigger className="h-8 w-auto min-w-32 border-0 bg-bg-3/50 px-2 shadow-none">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -1072,14 +1072,14 @@ export function Routines() {
               </div>
             </div>
 
-            <div className="border-t border-border/60 px-5 py-4">
+            <div className="border-t border-line/60 px-5 py-4">
               <MarkdownEditor
                 ref={descriptionEditorRef}
                 value={draft.description}
                 onChange={(description) => setDraft((current) => ({ ...current, description }))}
                 placeholder="Add instructions..."
                 bordered={false}
-                contentClassName="min-h-(--sz-160px) text-sm text-muted-foreground"
+                contentClassName="min-h-(--sz-160px) text-sm text-ink-3"
                 mentions={mentionOptions}
                 onSubmit={() => {
                   if (!createRoutine.isPending && draft.title.trim() && draft.projectId && draft.assigneeAgentId) {
@@ -1089,19 +1089,19 @@ export function Routines() {
               />
             </div>
 
-            <div className="border-t border-border/60 px-5 py-3">
+            <div className="border-t border-line/60 px-5 py-3">
               <Collapsible open={advancedOpen} onOpenChange={setAdvancedOpen}>
                 <CollapsibleTrigger className="flex w-full items-center justify-between text-left">
                   <div>
                     <p className="text-sm font-medium">Advanced delivery settings</p>
-                    <p className="text-sm text-muted-foreground">Keep policy controls secondary to the work definition.</p>
+                    <p className="text-sm text-ink-3">Keep policy controls secondary to the work definition.</p>
                   </div>
-                  {advancedOpen ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
+                  {advancedOpen ? <ChevronDown className="h-4 w-4 text-ink-3" /> : <ChevronRight className="h-4 w-4 text-ink-3" />}
                 </CollapsibleTrigger>
                 <CollapsibleContent className="pt-3">
                   <div className="grid gap-4 md:grid-cols-2">
                     <div className="space-y-2">
-                      <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">Concurrency</p>
+                      <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-ink-3">Concurrency</p>
                       <Select
                         value={draft.concurrencyPolicy}
                         onValueChange={(concurrencyPolicy) => setDraft((current) => ({ ...current, concurrencyPolicy }))}
@@ -1115,10 +1115,10 @@ export function Routines() {
                           ))}
                         </SelectContent>
                       </Select>
-                      <p className="text-xs text-muted-foreground">{concurrencyPolicyDescriptions[draft.concurrencyPolicy]}</p>
+                      <p className="text-xs text-ink-3">{concurrencyPolicyDescriptions[draft.concurrencyPolicy]}</p>
                     </div>
                     <div className="space-y-2">
-                      <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">Catch-up</p>
+                      <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-ink-3">Catch-up</p>
                       <Select
                         value={draft.catchUpPolicy}
                         onValueChange={(catchUpPolicy) => setDraft((current) => ({ ...current, catchUpPolicy }))}
@@ -1132,7 +1132,7 @@ export function Routines() {
                           ))}
                         </SelectContent>
                       </Select>
-                      <p className="text-xs text-muted-foreground">{catchUpPolicyDescriptions[draft.catchUpPolicy]}</p>
+                      <p className="text-xs text-ink-3">{catchUpPolicyDescriptions[draft.catchUpPolicy]}</p>
                     </div>
                   </div>
                 </CollapsibleContent>
@@ -1140,8 +1140,8 @@ export function Routines() {
             </div>
           </div>
 
-          <div className="shrink-0 flex flex-col gap-3 border-t border-border/60 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
-            <div className="text-sm text-muted-foreground">
+          <div className="shrink-0 flex flex-col gap-3 border-t border-line/60 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="text-sm text-ink-3">
               After creation, Paperclip takes you straight to trigger setup. Draft routines stay paused until you add a default agent.
             </div>
             <div className="flex flex-col gap-2 sm:items-end">
@@ -1156,7 +1156,7 @@ export function Routines() {
                 {createRoutine.isPending ? "Creating..." : "Create routine"}
               </Button>
               {createRoutine.isError ? (
-                <p className="text-sm text-destructive">
+                <p className="text-sm text-bad">
                   {createRoutine.error instanceof Error ? createRoutine.error.message : "Failed to create routine"}
                 </p>
               ) : null}
@@ -1167,7 +1167,7 @@ export function Routines() {
 
       {error ? (
         <Card>
-          <CardContent className="pt-6 text-sm text-destructive">
+          <CardContent className="pt-6 text-sm text-bad">
             {error instanceof Error ? error.message : "Failed to load routines"}
           </CardContent>
         </Card>
@@ -1198,7 +1198,7 @@ export function Routines() {
                 <div className="flex min-w-0 items-center gap-2 text-sm">
                   <FolderSwatch color={activeFolder?.color} />
                   <span className="truncate font-medium">{folderSelection === "unfiled" ? "Unfiled" : activeFolder?.name ?? "Folder"}</span>
-                  <span className="text-muted-foreground">{sortedRoutines.length} routine{sortedRoutines.length === 1 ? "" : "s"}</span>
+                  <span className="text-ink-3">{sortedRoutines.length} routine{sortedRoutines.length === 1 ? "" : "s"}</span>
                 </div>
               )}
             </div>
@@ -1384,9 +1384,9 @@ export function Routines() {
 function FolderIconHeader({ label, count }: { label: string; count: number }) {
   return (
     <div className="flex min-w-0 items-center gap-2 text-sm">
-      <Repeat className="h-3.5 w-3.5 text-muted-foreground" />
+      <Repeat className="h-3.5 w-3.5 text-ink-3" />
       <span className="truncate font-medium">{label}</span>
-      <span className="text-muted-foreground">{count} routine{count === 1 ? "" : "s"}</span>
+      <span className="text-ink-3">{count} routine{count === 1 ? "" : "s"}</span>
     </div>
   );
 }

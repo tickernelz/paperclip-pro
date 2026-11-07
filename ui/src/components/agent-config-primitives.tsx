@@ -76,7 +76,7 @@ export function HintIcon({ text }: { text: string }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <button type="button" className="inline-flex text-muted-foreground/50 hover:text-muted-foreground transition-colors">
+        <button type="button" className="inline-flex text-ink-3/50 hover:text-ink-3 transition-colors">
           <HelpCircle className="h-3 w-3" />
         </button>
       </TooltipTrigger>
@@ -91,7 +91,7 @@ export function Field({ label, hint, aside, children }: { label: string; hint?: 
   return (
     <div>
       <div className="flex items-center gap-1.5 mb-1">
-        <label className="text-xs text-muted-foreground">{label}</label>
+        <label className="text-xs text-ink-3">{label}</label>
         {aside}
         {hint && <HintIcon text={hint} />}
       </div>
@@ -116,7 +116,7 @@ export function ToggleField({
   return (
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-1.5">
-        <span className="text-xs text-muted-foreground">{label}</span>
+        <span className="text-xs text-ink-3">{label}</span>
         {hint && <HintIcon text={hint} />}
       </div>
       {/* Gallery feedback r3: was a hand-rolled h-5 w-9 pill with a bg-green-600
@@ -159,7 +159,7 @@ export function ToggleWithNumber({
     <div className="space-y-2">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-1.5">
-          <span className="text-xs text-muted-foreground">{label}</span>
+          <span className="text-xs text-ink-3">{label}</span>
           {hint && <HintIcon text={hint} />}
         </div>
         <ToggleSwitch
@@ -168,11 +168,11 @@ export function ToggleWithNumber({
         />
       </div>
       {showNumber && (
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <div className="flex items-center gap-1.5 text-xs text-ink-3">
           {numberPrefix && <span>{numberPrefix}</span>}
           <input
             type="number"
-            className="w-16 rounded-md border border-border px-2 py-0.5 bg-transparent outline-none text-xs font-mono text-center"
+            className="w-16 rounded-md border border-line px-2 py-0.5 bg-transparent outline-none text-xs font-mono text-center"
             value={number}
             onChange={(e) => onNumberChange(Number(e.target.value))}
           />
@@ -200,11 +200,11 @@ export function CollapsibleSection({
   children: React.ReactNode;
 }) {
   return (
-    <div className={cn(bordered && "border-t border-border")}>
+    <div className={cn(bordered && "border-t border-line")}>
       <button
         type="button"
         aria-expanded={open}
-        className="flex items-center gap-2 w-full px-4 py-2 text-xs font-medium text-muted-foreground hover:bg-accent/30 transition-colors"
+        className="flex items-center gap-2 w-full px-4 py-2 text-xs font-medium text-ink-3 hover:bg-bg-3/30 transition-colors"
         onClick={onToggle}
       >
         {open ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
@@ -246,7 +246,7 @@ export function AutoExpandTextarea({
   return (
     <textarea
       ref={textareaRef}
-      className="w-full rounded-md border border-border px-2.5 py-1.5 bg-transparent outline-none text-sm font-mono placeholder:text-muted-foreground/40 resize-none overflow-hidden"
+      className="w-full rounded-md border border-line px-2.5 py-1.5 bg-transparent outline-none text-sm font-mono placeholder:text-ink-3/40 resize-none overflow-hidden"
       placeholder={placeholder}
       value={value}
       onChange={(e) => onChange(e.target.value)}
@@ -327,7 +327,7 @@ export function DraftTextarea({
   return (
     <textarea
       ref={textareaRef}
-      className="w-full rounded-md border border-border px-2.5 py-1.5 bg-transparent outline-none text-sm font-mono placeholder:text-muted-foreground/40 resize-none overflow-hidden"
+      className="w-full rounded-md border border-line px-2.5 py-1.5 bg-transparent outline-none text-sm font-mono placeholder:text-ink-3/40 resize-none overflow-hidden"
       placeholder={placeholder}
       value={draft}
       onChange={(e) => {
@@ -388,7 +388,7 @@ export function ChoosePathButton() {
     <>
       <button
         type="button"
-        className="inline-flex items-center rounded-md border border-border px-2 py-0.5 text-xs text-muted-foreground hover:bg-accent/50 transition-colors shrink-0"
+        className="inline-flex items-center rounded-md border border-line px-2 py-0.5 text-xs text-ink-3 hover:bg-bg-3/50 transition-colors shrink-0"
         onClick={() => setOpen(true)}
       >
         Choose
@@ -405,31 +405,31 @@ export function ChoosePathButton() {
           <div className="space-y-4 text-sm">
             <section className="space-y-1.5">
               <p className="font-medium">macOS (Finder)</p>
-              <ol className="list-decimal space-y-1 pl-5 text-muted-foreground">
+              <ol className="list-decimal space-y-1 pl-5 text-ink-3">
                 <li>Find the folder in Finder.</li>
                 <li>Hold <kbd>Option</kbd> and right-click the folder.</li>
                 <li>Click "Copy &lt;folder name&gt; as Pathname".</li>
                 <li>Paste the result into the path input.</li>
               </ol>
-              <p className="rounded-md bg-muted px-2 py-1 font-mono text-xs">
+              <p className="rounded-md bg-bg-3 px-2 py-1 font-mono text-xs">
                 /Users/yourname/Documents/project
               </p>
             </section>
             <section className="space-y-1.5">
               <p className="font-medium">Windows (File Explorer)</p>
-              <ol className="list-decimal space-y-1 pl-5 text-muted-foreground">
+              <ol className="list-decimal space-y-1 pl-5 text-ink-3">
                 <li>Find the folder in File Explorer.</li>
                 <li>Hold <kbd>Shift</kbd> and right-click the folder.</li>
                 <li>Click "Copy as path".</li>
                 <li>Paste the result into the path input.</li>
               </ol>
-              <p className="rounded-md bg-muted px-2 py-1 font-mono text-xs">
+              <p className="rounded-md bg-bg-3 px-2 py-1 font-mono text-xs">
                 C:\Users\yourname\Documents\project
               </p>
             </section>
             <section className="space-y-1.5">
               <p className="font-medium">Terminal fallback (macOS/Linux)</p>
-              <ol className="list-decimal space-y-1 pl-5 text-muted-foreground">
+              <ol className="list-decimal space-y-1 pl-5 text-ink-3">
                 <li>Run <code>cd /path/to/folder</code>.</li>
                 <li>Run <code>pwd</code>.</li>
                 <li>Copy the output and paste it into the path input.</li>
@@ -437,7 +437,7 @@ export function ChoosePathButton() {
             </section>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setOpen(false)}>
+            <Button variant="secondary" onClick={() => setOpen(false)}>
               OK
             </Button>
           </DialogFooter>
@@ -454,7 +454,7 @@ export function InlineField({ label, hint, children }: { label: string; hint?: s
   return (
     <div className="flex items-center gap-3">
       <div className="flex items-center gap-1.5 shrink-0">
-        <label className="text-xs text-muted-foreground">{label}</label>
+        <label className="text-xs text-ink-3">{label}</label>
         {hint && <HintIcon text={hint} />}
       </div>
       <div className="w-24 ml-auto">{children}</div>

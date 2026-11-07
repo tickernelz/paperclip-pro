@@ -108,7 +108,7 @@ function SleepyZ({ tier, index }: { tier: ZTier; index: number }) {
     <motion.span
       key={cycle}
       className={cn(
-        "absolute font-semibold text-muted-foreground select-none",
+        "absolute font-semibold text-ink-3 select-none",
         tier.sizeClass,
       )}
       initial={{

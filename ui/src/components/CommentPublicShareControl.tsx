@@ -34,7 +34,6 @@ export function CommentPublicShareMenu({
         <Button
           variant="ghost"
           size="icon-xs"
-          className="text-muted-foreground hover:text-foreground"
           title="Comment actions"
           aria-label="Comment actions"
         >

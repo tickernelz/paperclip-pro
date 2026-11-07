@@ -1002,7 +1002,7 @@ describe("IssuesList", () => {
       expect(container.textContent?.replace(/\s+/g, "")).toContain("2.PAP-3");
       expect(rows.filter((row) => row.getAttribute("data-current-step") === "true")).toHaveLength(1);
       expect(rows.find((row) => row.textContent?.includes("Active blocker"))?.getAttribute("data-current-step")).toBe("true");
-      expect(rows.find((row) => row.textContent?.includes("Done first"))?.getAttribute("data-title-class")).toContain("text-muted-foreground");
+      expect(rows.find((row) => row.textContent?.includes("Done first"))?.getAttribute("data-title-class")).toContain("text-ink-3");
       expect(container.textContent).toContain("blocked by PAP-3 · step 2");
     });
 
@@ -2587,7 +2587,7 @@ describe("IssuesList", () => {
         separator.querySelectorAll("[data-date-group-rule]").length === 2
       ))).toBe(true);
       expect(separators.every((separator) => (
-        separator.querySelector("[data-date-group-label]")?.classList.contains("text-muted-foreground/70")
+        separator.querySelector("[data-date-group-label]")?.classList.contains("text-ink-3/70")
       ))).toBe(true);
     });
 

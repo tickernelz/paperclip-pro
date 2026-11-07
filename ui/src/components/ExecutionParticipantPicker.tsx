@@ -96,7 +96,7 @@ export function ExecutionParticipantPicker({
   const Icon = stageType === "review" ? Eye : ShieldCheck;
 
   if (!policyAvailable) {
-    return <span role="status" className="text-xs text-muted-foreground">Execution policy unavailable. Refresh to try again.</span>;
+    return <span role="status" className="text-xs text-ink-3">Execution policy unavailable. Refresh to try again.</span>;
   }
 
   return (
@@ -106,8 +106,8 @@ export function ExecutionParticipantPicker({
           className={cn(
             "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-(length:--text-nano) font-medium transition-colors cursor-pointer",
             values.length > 0
-              ? "border-border text-foreground hover:bg-accent/50"
-              : "border-dashed border-border/60 text-muted-foreground hover:border-border hover:text-foreground",
+              ? "border-line text-ink hover:bg-bg-3/50"
+              : "border-dashed border-line/60 text-ink-3 hover:border-line hover:text-ink",
           )}
         >
           <Icon className="h-3 w-3" />
@@ -122,7 +122,7 @@ export function ExecutionParticipantPicker({
       </PopoverTrigger>
       <PopoverContent className="p-1 w-56" align="start" collisionPadding={16}>
         <input
-          className="w-full px-2 py-1.5 text-xs bg-transparent outline-none border-b border-border mb-1 placeholder:text-muted-foreground/50"
+          className="w-full px-2 py-1.5 text-xs bg-transparent outline-none border-b border-line mb-1 placeholder:text-ink-3/50"
           placeholder={`Search ${label.toLowerCase()}...`}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -131,8 +131,8 @@ export function ExecutionParticipantPicker({
         <div className="max-h-48 overflow-y-auto overscroll-contain">
           <button
             className={cn(
-              "flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50",
-              values.length === 0 && "bg-accent",
+              "flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-bg-3/50",
+              values.length === 0 && "bg-bg-3",
             )}
             onClick={() => updatePolicy([])}
           >
@@ -141,24 +141,24 @@ export function ExecutionParticipantPicker({
           {currentUserId && (
             <button
               className={cn(
-                "flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50",
-                values.includes(`user:${currentUserId}`) && "bg-accent",
+                "flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-bg-3/50",
+                values.includes(`user:${currentUserId}`) && "bg-bg-3",
               )}
               onClick={() => toggle(`user:${currentUserId}`)}
             >
-              <User className="h-3 w-3 shrink-0 text-muted-foreground" />
+              <User className="h-3 w-3 shrink-0 text-ink-3" />
               Assign to me
             </button>
           )}
           {issue.createdByUserId && issue.createdByUserId !== currentUserId && (
             <button
               className={cn(
-                "flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50",
-                values.includes(`user:${issue.createdByUserId}`) && "bg-accent",
+                "flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-bg-3/50",
+                values.includes(`user:${issue.createdByUserId}`) && "bg-bg-3",
               )}
               onClick={() => toggle(`user:${issue.createdByUserId}`)}
             >
-              <User className="h-3 w-3 shrink-0 text-muted-foreground" />
+              <User className="h-3 w-3 shrink-0 text-ink-3" />
               {creatorUserLabel ?? "Requester"}
             </button>
           )}
@@ -171,12 +171,12 @@ export function ExecutionParticipantPicker({
               <button
                 key={option.id}
                 className={cn(
-                  "flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50",
-                  values.includes(option.id) && "bg-accent",
+                  "flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-bg-3/50",
+                  values.includes(option.id) && "bg-bg-3",
                 )}
                 onClick={() => toggle(option.id)}
               >
-                <User className="h-3 w-3 shrink-0 text-muted-foreground" />
+                <User className="h-3 w-3 shrink-0 text-ink-3" />
                 {option.label}
               </button>
             ))}
@@ -191,12 +191,12 @@ export function ExecutionParticipantPicker({
                 <button
                   key={agent.id}
                   className={cn(
-                    "flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50",
-                    values.includes(encoded) && "bg-accent",
+                    "flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-bg-3/50",
+                    values.includes(encoded) && "bg-bg-3",
                   )}
                   onClick={() => toggle(encoded)}
                 >
-                  <AgentAvatar agent={agent} size={16} className="shrink-0 h-3 w-3 text-muted-foreground"/>
+                  <AgentAvatar agent={agent} size={16} className="shrink-0 h-3 w-3 text-ink-3"/>
                   {agent.name}
                 </button>
               );

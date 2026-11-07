@@ -26,18 +26,18 @@ function AuditRow({ entry, contentAccess }: { entry: OpenwaAuditEntry; contentAc
     <li className="space-y-2 py-3">
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-sm font-medium">{AUDIT_KIND_LABELS[entry.kind]}</span>
-        <span className="text-xs text-muted-foreground">
+        <span className="text-xs text-ink-3">
           {actorLabels[entry.actorKind]}
           {entry.actorRef ? " · " : ""}
           {entry.actorRef ? <span className="font-mono">{entry.actorRef}</span> : null}
         </span>
         {entry.contentPurged ? <Badge variant="outline">Content purged</Badge> : null}
-        <time className="ml-auto font-mono text-xs text-muted-foreground" dateTime={entry.occurredAt} title={entry.occurredAt}>
+        <time className="ml-auto font-mono text-xs text-ink-3" dateTime={entry.occurredAt} title={entry.occurredAt}>
           {formatDateTime(entry.occurredAt, { includeSeconds: true })}
         </time>
       </div>
       {entry.chatKey ? (
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-ink-3">
           Chat <span className="font-mono">{entry.chatKey}</span>
         </p>
       ) : null}
@@ -45,17 +45,17 @@ function AuditRow({ entry, contentAccess }: { entry: OpenwaAuditEntry; contentAc
         <dl className="grid gap-x-3 gap-y-1 text-xs sm:grid-cols-2">
           {metadata.map(([key, value]) => (
             <div key={key} className="flex min-w-0 gap-2">
-              <dt className="shrink-0 text-muted-foreground">{key}</dt>
+              <dt className="shrink-0 text-ink-3">{key}</dt>
               <dd className="min-w-0 truncate font-mono" title={value}>{value}</dd>
             </div>
           ))}
         </dl>
       ) : null}
       {contentAccess && content.length ? (
-        <div className="space-y-1 rounded-md border border-border bg-muted/30 p-2">
+        <div className="space-y-1 rounded-md border border-line bg-bg-3/30 p-2">
           {content.map(([key, value]) => (
             <div key={key} className="text-xs">
-              <p className="text-muted-foreground">{key}</p>
+              <p className="text-ink-3">{key}</p>
               <p className="whitespace-pre-wrap break-words">{value}</p>
             </div>
           ))}
@@ -105,9 +105,9 @@ export function OpenwaAuditTab({ endpointId }: { endpointId: string }) {
     <section className="space-y-5">
       <div className="space-y-1">
         <h2 className="text-lg font-semibold">Audit</h2>
-        <p className="text-sm text-muted-foreground">Triggers, messages, tool calls, approvals, and settings changes for this WhatsApp connection.</p>
+        <p className="text-sm text-ink-3">Triggers, messages, tool calls, approvals, and settings changes for this WhatsApp connection.</p>
       </div>
-      <div aria-label="Audit filters" className="grid gap-3 rounded-lg border border-border p-3 sm:grid-cols-3">
+      <div aria-label="Audit filters" className="grid gap-3 rounded-lg border border-line p-3 sm:grid-cols-3">
         <div className="grid gap-1">
           <label htmlFor="openwa-audit-kind" className="text-xs font-medium">Kind</label>
           <select id="openwa-audit-kind" className={openwaSelectClass} value={kind} onChange={(event) => setKind(event.target.value as ChatAuditEntryKind | "")}>
@@ -144,25 +144,25 @@ export function OpenwaAuditTab({ endpointId }: { endpointId: string }) {
         </div>
       </div>
       {query.data && !contentAccess ? (
-        <p role="note" className="rounded-lg border border-border bg-muted/30 p-3 text-sm">
+        <p role="note" className="rounded-lg border border-line bg-bg-3/30 p-3 text-sm">
           You see metadata only. Message text and tool arguments are visible to the connection's owners and company owners.
         </p>
       ) : null}
       {query.isPending ? (
-        <p className="text-sm text-muted-foreground">Loading audit…</p>
+        <p className="text-sm text-ink-3">Loading audit…</p>
       ) : query.isError ? (
         <div className="space-y-2">
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-sm text-bad">
             {query.error instanceof Error && query.error.message ? query.error.message : "Couldn't load the audit."}
           </p>
-          <Button size="sm" variant="outline" onClick={() => void query.refetch()}>Try again</Button>
+          <Button size="sm" variant="secondary" onClick={() => void query.refetch()}>Try again</Button>
         </div>
       ) : rows.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
+        <p className="rounded-lg border border-dashed border-line p-4 text-sm text-ink-3">
           {Object.keys(applied).length ? "No audit entries match these filters." : "No audit entries yet."}
         </p>
       ) : (
-        <ul className="divide-y divide-border border-y border-border">
+        <ul className="divide-y divide-line border-y border-line">
           {rows.map((entry) => (
             <AuditRow key={entry.id} entry={entry} contentAccess={contentAccess} />
           ))}
@@ -170,12 +170,12 @@ export function OpenwaAuditTab({ endpointId }: { endpointId: string }) {
       )}
       {cursors.length > 1 || query.data?.nextCursor ? (
         <div className="flex justify-end gap-2">
-          <Button size="sm" variant="outline" disabled={cursors.length === 1 || query.isFetching} onClick={() => setCursors((pages) => pages.slice(0, -1))}>
+          <Button size="sm" variant="secondary" disabled={cursors.length === 1 || query.isFetching} onClick={() => setCursors((pages) => pages.slice(0, -1))}>
             Previous
           </Button>
           <Button
             size="sm"
-            variant="outline"
+            variant="secondary"
             disabled={!query.data?.nextCursor || query.isFetching || query.isError}
             onClick={() => {
               const next = query.data?.nextCursor;

@@ -50,7 +50,7 @@ export function initialAccess(guest = false): AccessPolicy {
   };
 }
 const selectClass =
-  "w-full rounded-md border border-input bg-background px-3 py-2 text-sm";
+  "w-full rounded-md border border-line-strong bg-bg px-3 py-2 text-sm";
 export function AccessEditor({
   value,
   onChange,
@@ -107,7 +107,7 @@ export function AccessEditor({
     <section className="space-y-5">
       <div>
         <h2 className="text-sm font-semibold">Who can start work</h2>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="mt-2 text-sm text-ink-3">
           Mentions create or continue a task on this bot’s assigned agent.
           Repository and publication permissions still apply.
         </p>
@@ -128,7 +128,7 @@ export function AccessEditor({
           <option value="all">All linked company members</option>
           <option value="selected">Selected members only</option>
         </select>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-ink-3">
           {value.members === "all"
             ? "Members with a linked personal GitHub account can mention the bot. Their PRs follow the connection’s automatic review rules; individual settings below take precedence."
             : "Only the members listed below can mention this bot. Each person must link their own personal GitHub connection."}
@@ -136,7 +136,7 @@ export function AccessEditor({
       </div>
       <div className="flex flex-wrap gap-2">
         <Button
-          variant="outline"
+          variant="secondary"
           onClick={() => {
             setAdding("member");
             setMessage("");
@@ -145,7 +145,7 @@ export function AccessEditor({
           Add Paperclip member
         </Button>
         <Button
-          variant="outline"
+          variant="secondary"
           onClick={() => {
             setAdding("guest");
             setFound(false);
@@ -157,11 +157,11 @@ export function AccessEditor({
         </Button>
       </div>
       {message && (
-        <p role="status" className="text-sm text-muted-foreground">
+        <p role="status" className="text-sm text-ink-3">
           {message}
         </p>
       )}
-      <div className="divide-y divide-border rounded-lg border border-border">
+      <div className="divide-y divide-line rounded-lg border border-line">
         {value.people.map((person) => (
           <article
             key={person.id}
@@ -173,7 +173,7 @@ export function AccessEditor({
                 <p className="text-sm font-medium">
                   {person.name ? `${person.name} · ` : ""}@{person.login}
                 </p>
-                <p className="mt-1 text-xs text-muted-foreground">
+                <p className="mt-1 text-xs text-ink-3">
                   {person.kind === "member"
                     ? "Paperclip member · uses their current permissions"
                     : "Restricted guest · no Paperclip membership or personal credentials"}
@@ -216,13 +216,13 @@ export function AccessEditor({
                   <option>Dotta</option>
                   <option>Alex</option>
                 </select>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-ink-3">
                   Restricted permission profile. Requests stop if this sponsor
                   loses authority.
                 </p>
               </div>
             ) : (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-ink-3">
                 Responsible user for mentions: {person.name}
               </p>
             )}
@@ -231,7 +231,7 @@ export function AccessEditor({
                 <p className="text-sm">
                   Automatically review PRs by @{person.login}
                 </p>
-                <p className="mt-1 text-xs text-muted-foreground">
+                <p className="mt-1 text-xs text-ink-3">
                   Also requires enabled events and matching review filters.
                 </p>
               </div>
@@ -246,7 +246,7 @@ export function AccessEditor({
           </article>
         ))}
         {!value.people.length && (
-          <p className="p-4 text-sm text-muted-foreground">
+          <p className="p-4 text-sm text-ink-3">
             No people added to the selected list.
           </p>
         )}
@@ -286,7 +286,7 @@ export function AccessEditor({
                   <option value="Sam">Sam · GitHub not linked</option>
                 </select>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-ink-3">
                 {member === "Sam"
                   ? "Sam must link a personal GitHub connection in Access before being added."
                   : "Adding a member switches access to Selected members only. Existing entries stay on the list."}
@@ -314,13 +314,13 @@ export function AccessEditor({
                     setLookupError("");
                   }}
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-ink-3">
                   Preview lookup supports @external-contributor. No request is
                   sent to GitHub.
                 </p>
               </div>
               <Button
-                variant="outline"
+                variant="secondary"
                 onClick={() => {
                   const match =
                     handle.trim().replace(/^@/, "").toLowerCase() ===
@@ -336,15 +336,15 @@ export function AccessEditor({
                 Look up account
               </Button>
               {lookupError && (
-                <p role="alert" className="text-sm text-destructive">
+                <p role="alert" className="text-sm text-bad">
                   {lookupError}
                 </p>
               )}
               {found && (
                 <>
-                  <div className="rounded-md border border-border p-3 text-sm">
+                  <div className="rounded-md border border-line p-3 text-sm">
                     <strong>@external-contributor</strong>
-                    <p className="mt-1 text-xs text-muted-foreground">
+                    <p className="mt-1 text-xs text-ink-3">
                       Verified GitHub account · preview
                     </p>
                   </div>
@@ -362,7 +362,7 @@ export function AccessEditor({
                       <option>Alex</option>
                     </select>
                   </div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-ink-3">
                     Permission profile: Restricted. {sponsor} is responsible for
                     this person’s requests. Automatic reviews start off;
                     personal credentials and membership are not shared.

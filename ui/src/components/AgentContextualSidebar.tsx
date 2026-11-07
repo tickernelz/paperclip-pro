@@ -74,7 +74,7 @@ export function AgentContextualSidebar({
       title={resolvedName}
       fallbackTo="/agents/all"
       showHeader={false}
-      className="border-r border-border bg-background"
+      className="border-r border-line bg-bg"
     >
       <nav
         aria-label={`${resolvedName} navigation`}
@@ -126,7 +126,7 @@ export function AgentContextualSidebar({
                 icon={item.icon}
               />
             )) : (
-              <p className="px-2 py-1.5 text-xs text-muted-foreground">Loading audit links…</p>
+              <p className="px-2 py-1.5 text-xs text-ink-3">Loading audit links…</p>
             )}
           </div>
         </div>

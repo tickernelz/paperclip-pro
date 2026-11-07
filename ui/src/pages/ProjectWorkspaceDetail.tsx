@@ -228,8 +228,8 @@ function Field({
   return (
     <label className="space-y-1.5">
       <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
-        <span className="text-xs font-medium uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{label}</span>
-        {hint ? <span className="text-(length:--text-micro) leading-relaxed text-muted-foreground sm:text-right">{hint}</span> : null}
+        <span className="text-xs font-medium uppercase tracking-(--tracking-eyebrow) text-ink-3">{label}</span>
+        {hint ? <span className="text-(length:--text-micro) leading-relaxed text-ink-3 sm:text-right">{hint}</span> : null}
       </div>
       {children}
     </label>
@@ -239,7 +239,7 @@ function Field({
 function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex flex-col gap-1.5 py-1.5 sm:flex-row sm:items-start sm:gap-3">
-      <div className="shrink-0 text-xs text-muted-foreground sm:w-28">{label}</div>
+      <div className="shrink-0 text-xs text-ink-3 sm:w-28">{label}</div>
       <div className="min-w-0 flex-1 text-sm">{children}</div>
     </div>
   );
@@ -391,16 +391,16 @@ export function ProjectWorkspaceDetail() {
     },
   });
 
-  if (projectQuery.isLoading) return <p className="text-sm text-muted-foreground">Loading workspace…</p>;
+  if (projectQuery.isLoading) return <p className="text-sm text-ink-3">Loading workspace…</p>;
   if (projectQuery.error) {
     return (
-      <p className="text-sm text-destructive">
+      <p className="text-sm text-bad">
         {projectQuery.error instanceof Error ? projectQuery.error.message : "Failed to load workspace"}
       </p>
     );
   }
   if (!project || !workspace || !form || !initialState) {
-    return <p className="text-sm text-muted-foreground">Workspace not found for this project.</p>;
+    return <p className="text-sm text-ink-3">Workspace not found for this project.</p>;
   }
 
   const canRunWorkspaceCommands = Boolean(workspace.cwd);
@@ -448,14 +448,14 @@ export function ProjectWorkspaceDetail() {
 
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0 space-y-2">
-          <div className="text-xs font-medium uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
+          <div className="text-xs font-medium uppercase tracking-(--tracking-eyebrow) text-ink-3">
             Project workspace
           </div>
           <h1 className="truncate text-xl font-semibold sm:text-2xl">{workspace.name}</h1>
         </div>
         {!workspace.isPrimary ? (
           <Button
-            variant="outline"
+            variant="secondary"
             className="w-full sm:w-auto"
             disabled={setPrimaryWorkspace.isPending}
             onClick={() => setPrimaryWorkspace.mutate()}
@@ -486,7 +486,7 @@ export function ProjectWorkspaceDetail() {
       <div className="grid gap-6 lg:grid-cols-(--gtc-53)">
         <div className="space-y-6">
           <Card className="block p-5">
-            <p className="max-w-2xl text-sm text-muted-foreground">
+            <p className="max-w-2xl text-sm text-ink-3">
               Configure the concrete workspace Paperclip attaches to this project. These values drive per-workspace
               checkout behavior, default runtime services for child execution workspaces, and let you override setup
               or cleanup commands when one workspace needs special handling.
@@ -497,7 +497,7 @@ export function ProjectWorkspaceDetail() {
             <div className="grid gap-4 md:grid-cols-2">
               <Field label="Workspace name">
                 <input
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none"
+                  className="w-full rounded-lg border border-line bg-bg px-3 py-2 text-sm outline-none"
                   value={form.name}
                   onChange={(event) => setForm((current) => current ? { ...current, name: event.target.value } : current)}
                   placeholder="Workspace name"
@@ -506,7 +506,7 @@ export function ProjectWorkspaceDetail() {
 
               <Field label="Visibility">
                 <select
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none"
+                  className="w-full rounded-lg border border-line bg-bg px-3 py-2 text-sm outline-none"
                   value={form.visibility}
                   onChange={(event) =>
                     setForm((current) => current ? { ...current, visibility: event.target.value as ProjectWorkspaceVisibility } : current)
@@ -522,7 +522,7 @@ export function ProjectWorkspaceDetail() {
             <div className="mt-4 grid gap-4">
               <Field label="Source type" hint={sourceTypeDescription ?? undefined}>
                 <select
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none"
+                  className="w-full rounded-lg border border-line bg-bg px-3 py-2 text-sm outline-none"
                   value={form.sourceType}
                   onChange={(event) =>
                     setForm((current) => current ? { ...current, sourceType: event.target.value as ProjectWorkspaceSourceType } : current)
@@ -544,7 +544,7 @@ export function ProjectWorkspaceDetail() {
                 <div className="grid gap-4 md:grid-cols-(--gtc-13)">
                   <Field label="Local path">
                     <input
-                      className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm outline-none"
+                      className="w-full rounded-lg border border-line bg-bg px-3 py-2 font-mono text-sm outline-none"
                       value={form.cwd}
                       onChange={(event) => setForm((current) => current ? { ...current, cwd: event.target.value } : current)}
                       placeholder="/absolute/path/to/workspace"
@@ -559,7 +559,7 @@ export function ProjectWorkspaceDetail() {
               <div className="grid gap-4 md:grid-cols-2">
                 <Field label="Repo URL">
                   <input
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none"
+                    className="w-full rounded-lg border border-line bg-bg px-3 py-2 text-sm outline-none"
                     value={form.repoUrl}
                     onChange={(event) => setForm((current) => current ? { ...current, repoUrl: event.target.value } : current)}
                     placeholder="https://github.com/org/repo"
@@ -567,7 +567,7 @@ export function ProjectWorkspaceDetail() {
                 </Field>
                 <Field label="Repo ref">
                   <input
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm outline-none"
+                    className="w-full rounded-lg border border-line bg-bg px-3 py-2 font-mono text-sm outline-none"
                     value={form.repoRef}
                     onChange={(event) => setForm((current) => current ? { ...current, repoRef: event.target.value } : current)}
                     placeholder="origin/main"
@@ -578,7 +578,7 @@ export function ProjectWorkspaceDetail() {
               <div className="grid gap-4 md:grid-cols-2">
                 <Field label="Default ref">
                   <input
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm outline-none"
+                    className="w-full rounded-lg border border-line bg-bg px-3 py-2 font-mono text-sm outline-none"
                     value={form.defaultRef}
                     onChange={(event) => setForm((current) => current ? { ...current, defaultRef: event.target.value } : current)}
                     placeholder="origin/main"
@@ -586,7 +586,7 @@ export function ProjectWorkspaceDetail() {
                 </Field>
                 <Field label="Shared workspace key">
                   <input
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm outline-none"
+                    className="w-full rounded-lg border border-line bg-bg px-3 py-2 font-mono text-sm outline-none"
                     value={form.sharedWorkspaceKey}
                     onChange={(event) => setForm((current) => current ? { ...current, sharedWorkspaceKey: event.target.value } : current)}
                     placeholder="frontend"
@@ -597,7 +597,7 @@ export function ProjectWorkspaceDetail() {
               <div className="grid gap-4 md:grid-cols-2">
                 <Field label="Remote provider">
                   <input
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm outline-none"
+                    className="w-full rounded-lg border border-line bg-bg px-3 py-2 text-sm outline-none"
                     value={form.remoteProvider}
                     onChange={(event) => setForm((current) => current ? { ...current, remoteProvider: event.target.value } : current)}
                     placeholder="codespaces"
@@ -605,7 +605,7 @@ export function ProjectWorkspaceDetail() {
                 </Field>
                 <Field label="Remote workspace ref">
                   <input
-                    className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm outline-none"
+                    className="w-full rounded-lg border border-line bg-bg px-3 py-2 font-mono text-sm outline-none"
                     value={form.remoteWorkspaceRef}
                     onChange={(event) => setForm((current) => current ? { ...current, remoteWorkspaceRef: event.target.value } : current)}
                     placeholder="workspace-123"
@@ -616,7 +616,7 @@ export function ProjectWorkspaceDetail() {
               <div className="grid gap-4 md:grid-cols-2">
                 <Field label="Setup command" hint="Runs when this workspace needs custom bootstrap">
                   <textarea
-                    className="min-h-28 w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm outline-none"
+                    className="min-h-28 w-full rounded-lg border border-line bg-bg px-3 py-2 font-mono text-sm outline-none"
                     value={form.setupCommand}
                     onChange={(event) => setForm((current) => current ? { ...current, setupCommand: event.target.value } : current)}
                     placeholder="pnpm install && pnpm dev"
@@ -624,7 +624,7 @@ export function ProjectWorkspaceDetail() {
                 </Field>
                 <Field label="Cleanup command" hint="Runs before project-level execution workspace teardown">
                   <textarea
-                    className="min-h-28 w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm outline-none"
+                    className="min-h-28 w-full rounded-lg border border-line bg-bg px-3 py-2 font-mono text-sm outline-none"
                     value={form.cleanupCommand}
                     onChange={(event) => setForm((current) => current ? { ...current, cleanupCommand: event.target.value } : current)}
                     placeholder="pkill -f vite || true"
@@ -632,15 +632,15 @@ export function ProjectWorkspaceDetail() {
                 </Field>
               </div>
 
-              <details className="rounded-xl border border-dashed border-border/70 bg-background px-3 py-3">
+              <details className="rounded-xl border border-dashed border-line/70 bg-bg px-3 py-3">
                 <summary className="cursor-pointer text-sm font-medium">Advanced runtime JSON</summary>
-                <p className="mt-2 text-sm text-muted-foreground">
+                <p className="mt-2 text-sm text-ink-3">
                   Paperclip derives Services and Jobs from this JSON. Prefer editing named commands first; use raw JSON for advanced lifecycle, port, readiness, or environment settings.
                 </p>
                 <div className="mt-3">
                   <Field label="Workspace commands JSON" hint="Execution workspaces inherit this config unless they override it. Legacy `services` arrays still work, but `commands` supports both services and jobs.">
                     <textarea
-                      className="min-h-96 w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm outline-none"
+                      className="min-h-96 w-full rounded-lg border border-line bg-bg px-3 py-2 font-mono text-sm outline-none"
                       value={form.runtimeConfig}
                       onChange={(event) => setForm((current) => current ? { ...current, runtimeConfig: event.target.value } : current)}
                       placeholder={"{\n  \"commands\": [\n    {\n      \"id\": \"web\",\n      \"name\": \"web\",\n      \"kind\": \"service\",\n      \"command\": \"pnpm dev\",\n      \"cwd\": \".\",\n      \"port\": { \"type\": \"auto\" },\n      \"readiness\": {\n        \"type\": \"http\",\n        \"urlTemplate\": \"http://127.0.0.1:${port}\"\n      },\n      \"expose\": {\n        \"type\": \"url\",\n        \"urlTemplate\": \"http://127.0.0.1:${port}\"\n      },\n      \"lifecycle\": \"shared\",\n      \"reuseScope\": \"project_workspace\"\n    },\n    {\n      \"id\": \"db-migrate\",\n      \"name\": \"db:migrate\",\n      \"kind\": \"job\",\n      \"command\": \"pnpm db:migrate\",\n      \"cwd\": \".\"\n    }\n  ]\n}"}
@@ -656,7 +656,7 @@ export function ProjectWorkspaceDetail() {
                 Save changes
               </Button>
               <Button
-                variant="outline"
+                variant="secondary"
                 className="w-full sm:w-auto"
                 disabled={!isDirty || updateWorkspace.isPending}
                 onClick={() => {
@@ -666,9 +666,9 @@ export function ProjectWorkspaceDetail() {
               >
                 Reset
               </Button>
-              {errorMessage ? <p className="text-sm text-destructive">{errorMessage}</p> : null}
-              {!errorMessage && runtimeActionMessage ? <p className="text-sm text-muted-foreground">{runtimeActionMessage}</p> : null}
-              {!errorMessage && !isDirty ? <p className="text-sm text-muted-foreground">No unsaved changes.</p> : null}
+              {errorMessage ? <p className="text-sm text-bad">{errorMessage}</p> : null}
+              {!errorMessage && runtimeActionMessage ? <p className="text-sm text-ink-3">{runtimeActionMessage}</p> : null}
+              {!errorMessage && !isDirty ? <p className="text-sm text-ink-3">No unsaved changes.</p> : null}
             </div>
           </Card>
         </div>
@@ -676,7 +676,7 @@ export function ProjectWorkspaceDetail() {
         <div className="space-y-6">
           <Card className="block p-5">
             <div className="space-y-1">
-              <div className="text-xs font-medium uppercase tracking-(--tracking-eyebrow) text-muted-foreground">Workspace facts</div>
+              <div className="text-xs font-medium uppercase tracking-(--tracking-eyebrow) text-ink-3">Workspace facts</div>
               <h2 className="text-lg font-semibold">Current state</h2>
             </div>
             <Separator className="my-4" />
@@ -708,9 +708,9 @@ export function ProjectWorkspaceDetail() {
           <Card className="block p-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div className="space-y-1">
-                <div className="text-xs font-medium uppercase tracking-(--tracking-eyebrow) text-muted-foreground">Workspace commands</div>
+                <div className="text-xs font-medium uppercase tracking-(--tracking-eyebrow) text-ink-3">Workspace commands</div>
                 <h2 className="text-lg font-semibold">Services and jobs</h2>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-ink-3">
                   Long-running services stay supervised here, while one-shot jobs run on demand against this workspace. Execution workspaces inherit this config unless they override it.
                 </p>
               </div>
@@ -748,7 +748,7 @@ export function ProjectWorkspaceDetail() {
             missingBehavior="placeholder"
           />
         ) : pluginDetailSlotsLoading || pluginDetailSlotsError ? (
-          <div className="rounded-lg border border-dashed border-border bg-background px-4 py-8 text-sm text-muted-foreground">
+          <div className="rounded-lg border border-dashed border-line bg-bg px-4 py-8 text-sm text-ink-3">
             {pluginDetailSlotsError ? pluginDetailSlotsError : "Loading workspace plugin..."}
           </div>
         ) : (

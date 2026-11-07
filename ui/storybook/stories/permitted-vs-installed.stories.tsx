@@ -139,7 +139,7 @@ function PanelHarness({
 }) {
   const [access, setAccess] = useState<AccessDraft>({ mode: "all", agentIds: new Set() });
   return (
-    <div className="mx-auto max-w-3xl bg-background p-6">
+    <div className="mx-auto max-w-3xl bg-bg p-6">
       <PermissionsPanel
         connectionId="connection-gmail"
         capabilities={capabilities}
@@ -245,7 +245,7 @@ function SeededAgentTools() {
   }, []);
   return (
     <QueryClientProvider client={client}>
-      <div className="mx-auto max-w-6xl bg-background p-6">
+      <div className="mx-auto max-w-6xl bg-bg p-6">
         <AgentToolsTab agent={{ id: "a-sage", name: "Sage" } as never} companyId={COMPANY} />
       </div>
     </QueryClientProvider>
@@ -295,7 +295,7 @@ function SeededAccessStep({
   const [ids, setIds] = useState(initialAgentIds);
   return (
     <QueryClientProvider client={client}>
-      <div className="bg-background p-6">
+      <div className="bg-bg p-6">
         <AccessStep
           companyId={COMPANY}
           authKind={authKind}
@@ -372,7 +372,7 @@ function AuthorizationCardHarness({
   currentUserId: string;
 }) {
   return (
-    <div className="mx-auto max-w-3xl bg-background p-6">
+    <div className="mx-auto max-w-3xl bg-bg p-6">
       <IssueThreadInteractionCard
         interaction={interaction}
         agentMap={new Map()}

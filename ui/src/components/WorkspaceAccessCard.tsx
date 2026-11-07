@@ -22,12 +22,12 @@ import type { WorkspaceAccessState } from "../lib/workspace-access-state";
 type ActiveWorkspaceAccessState = Exclude<WorkspaceAccessState["state"], "stopped">;
 
 const STATE_BADGE_CLASSES: Record<ActiveWorkspaceAccessState, string> = {
-  provisioning: "border-border text-muted-foreground",
-  validating: "border-border text-muted-foreground",
+  provisioning: "border-line text-ink-3",
+  validating: "border-line text-ink-3",
   ready: "border-(--status-task-done) text-(--status-task-icon-done)",
   degraded: "border-(--status-task-todo) text-(--status-task-icon-todo)",
-  repairing: "border-border text-muted-foreground",
-  failed: "border-destructive/50 text-destructive",
+  repairing: "border-line text-ink-3",
+  failed: "border-bad/50 text-bad",
 };
 
 const STATE_LABELS: Record<ActiveWorkspaceAccessState, string> = {
@@ -86,7 +86,7 @@ export function WorkspaceAccessCard({
             <span
               data-testid="workspace-access-badge"
               className={cn(
-                "inline-flex items-center rounded-full border bg-background px-2.5 py-1 text-xs",
+                "inline-flex items-center rounded-full border bg-bg px-2.5 py-1 text-xs",
                 STATE_BADGE_CLASSES[access.state],
               )}
             >
@@ -103,7 +103,7 @@ export function WorkspaceAccessCard({
         <div className="flex flex-wrap items-center gap-2">
           <Button
             type="button"
-            variant={access.action.kind === "open" ? "default" : "outline"}
+            variant={access.action.kind === "open" ? "primary" : "secondary"}
             disabled={isWaiting || isBusy}
             onClick={handlers[access.action.kind]}
           >
@@ -115,25 +115,25 @@ export function WorkspaceAccessCard({
             {access.action.label}
           </Button>
           {access.state === "ready" && !access.handoffAvailable ? (
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs text-ink-3">
               Signs in with the snapshot-local credentials captured when this clone was made.
             </span>
           ) : null}
           {access.state === "ready" && access.handoffAvailable ? (
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs text-ink-3">
               Uses a single-use login handoff — no password needed.
             </span>
           ) : null}
         </div>
         {errorMessage ? (
-          <p data-testid="workspace-access-error" className="text-sm text-destructive">
+          <p data-testid="workspace-access-error" className="text-sm text-bad">
             {errorMessage}
           </p>
         ) : null}
         {access.secondaryNotice && SecondaryNoticeIcon ? (
           <div data-testid="workspace-access-secondary-notice" className="flex flex-col gap-1.5 text-sm">
-            <p className="font-medium text-destructive">{access.secondaryNotice.title}</p>
-            <p className="text-muted-foreground">{access.secondaryNotice.description}</p>
+            <p className="font-medium text-bad">{access.secondaryNotice.title}</p>
+            <p className="text-ink-3">{access.secondaryNotice.description}</p>
             <Button
               type="button"
               variant="link"

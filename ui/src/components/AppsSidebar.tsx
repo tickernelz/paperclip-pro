@@ -31,7 +31,7 @@ export function AppsSidebar() {
   if (chatDetail) return <ChatDetailSidebar endpointId={chatDetail[1]} />;
 
   return (
-    <aside className="w-full h-full min-h-0 border-r border-border bg-background flex flex-col">
+    <aside className="w-full h-full min-h-0 border-r border-line bg-bg flex flex-col">
       <nav
         aria-label="Connectors"
         data-slot="contextual-sidebar-nav"

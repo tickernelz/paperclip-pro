@@ -61,7 +61,7 @@ export function AdvancedPanel({
   onRevokeIdentity?: (grant: ConnectionGrant) => void;
 }) {
   return (
-    <div className="space-y-4 border-t border-border pt-8">
+    <div className="space-y-4 border-t border-line pt-8">
       <TechnicalDetails connection={connection} />
       <DangerZone
         appName={appName}
@@ -113,16 +113,16 @@ function KeySection({
     <section>
       <div className="flex items-center justify-between">
         <div className="flex items-start gap-3">
-          <Lock className="mt-0.5 h-4 w-4 text-muted-foreground" />
+          <Lock className="mt-0.5 h-4 w-4 text-ink-3" />
           <div>
-            <h2 className="text-sm font-medium text-foreground">Reconnect</h2>
-            <p className="mt-0.5 text-xs text-muted-foreground">
+            <h2 className="text-sm font-medium text-ink">Reconnect</h2>
+            <p className="mt-0.5 text-xs text-ink-3">
               {canReplace ? "Replace the stored credential." : unavailableMessage}
             </p>
           </div>
         </div>
         {canReplace && !open && (
-          <Button size="sm" variant="outline" onClick={() => setOpen(true)}>
+          <Button size="sm" variant="secondary" onClick={() => setOpen(true)}>
             Reconnect
           </Button>
         )}
@@ -229,16 +229,16 @@ export function ReconnectCard({
             {reconnectUnavailableMessage ?? "You don't have permission to reconnect this identity."}
           </p>
         ) : methodUnavailable ? (
-          <Button size="sm" variant="outline" asChild>
+          <Button size="sm" variant="secondary" asChild>
             <Link to={`/apps/connect?source=${encodeURIComponent(galleryEntry!.slug)}`}>
               Add supported connection
             </Link>
           </Button>
         ) : onReconnect ? (
-          <Button size="sm" variant="outline" onClick={onReconnect}>Reconnect</Button>
+          <Button size="sm" variant="secondary" onClick={onReconnect}>Reconnect</Button>
         ) : managedByVercel && !oauth ? (
           <div className="flex items-center gap-2">
-            <Button type="button" size="sm" variant="outline" asChild>
+            <Button type="button" size="sm" variant="secondary" asChild>
               <a href="https://vercel.com/connect" target="_blank" rel="noreferrer">
                 Manage in Vercel <ArrowUpRight className="ml-1.5 h-3.5 w-3.5" />
               </a>
@@ -345,7 +345,7 @@ function ReconnectForm({
 
   if (connection.credentialSource === "vercel_connect") {
     return (
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm text-ink-3">
         Credentials for this connection are managed in Vercel Connect.
       </p>
     );
@@ -356,7 +356,7 @@ function ReconnectForm({
       {usesFields ? (
         fields.map((field) => (
           <div key={field.configPath}>
-            <label className="text-xs font-medium text-foreground">{field.label}</label>
+            <label className="text-xs font-medium text-ink">{field.label}</label>
             <Input
               type="password"
               aria-label={field.label}
@@ -371,7 +371,7 @@ function ReconnectForm({
                 href={field.helpUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-foreground underline underline-offset-2"
+                className="mt-1 inline-flex items-center gap-1 text-xs font-semibold text-ink underline underline-offset-2"
               >
                 Where do I find this? <ArrowUpRight className="h-3 w-3" />
               </a>
@@ -411,18 +411,18 @@ function TechnicalDetails({ connection }: { connection: ToolConnection }) {
       <section>
         <CollapsibleTrigger asChild>
           <button type="button" className="flex w-full items-center gap-3 py-1 text-left">
-            <span className="min-w-0 flex-1 text-sm font-medium text-foreground">Connection details</span>
+            <span className="min-w-0 flex-1 text-sm font-medium text-ink">Connection details</span>
             <ChevronRight
-              className={cn("h-4 w-4 shrink-0 text-muted-foreground transition-transform", open && "rotate-90")}
+              className={cn("h-4 w-4 shrink-0 text-ink-3 transition-transform", open && "rotate-90")}
             />
           </button>
         </CollapsibleTrigger>
         <CollapsibleContent>
           <dl className="mt-4 grid gap-2 pb-2 text-xs sm:grid-cols-(--gtc-59)">
-            <dt className="text-muted-foreground">Address</dt>
-            <dd className="break-all font-mono text-foreground">{connectionAddress(connection)}</dd>
-            <dt className="text-muted-foreground">Type</dt>
-            <dd className="text-foreground">{connectionTransportLabel(connection.transport)}</dd>
+            <dt className="text-ink-3">Address</dt>
+            <dd className="break-all font-mono text-ink">{connectionAddress(connection)}</dd>
+            <dt className="text-ink-3">Type</dt>
+            <dd className="text-ink">{connectionTransportLabel(connection.transport)}</dd>
           </dl>
         </CollapsibleContent>
       </section>
@@ -490,18 +490,18 @@ export function DangerZone({
             type="button"
             className="flex w-full items-center gap-3 py-1 text-left"
           >
-            <span className="min-w-0 flex-1 text-sm font-medium text-destructive">Danger zone</span>
+            <span className="min-w-0 flex-1 text-sm font-medium text-bad">Danger zone</span>
             <ChevronRight
-              className={cn("h-4 w-4 shrink-0 text-muted-foreground transition-transform", open && "rotate-90")}
+              className={cn("h-4 w-4 shrink-0 text-ink-3 transition-transform", open && "rotate-90")}
             />
           </button>
         </CollapsibleTrigger>
 
         <CollapsibleContent>
-          <div className="mt-3 divide-y divide-border border-t border-border">
+          <div className="mt-3 divide-y divide-line border-t border-line">
             {connection && onToggleConnection ? (
               <div className="flex items-center justify-between gap-4 py-4">
-                <h2 className="text-sm font-medium text-foreground">Pause connection</h2>
+                <h2 className="text-sm font-medium text-ink">Pause connection</h2>
                 <ToggleSwitch
                   aria-label="Pause connection"
                   checked={paused}
@@ -527,8 +527,8 @@ export function DangerZone({
             {connection?.authKind === "oauth" && !methodUnavailable && (onReconnectIdentity || !canReplaceCredential) ? (
               <div className="flex flex-wrap items-center justify-between gap-3 py-4">
                 <div>
-                  <p className="text-sm font-medium text-foreground">Reconnect</p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-sm font-medium text-ink">Reconnect</p>
+                  <p className="text-xs text-ink-3">
                     {canReplaceCredential
                       ? `Sign in to ${identityProviderName} again.`
                       : credentialUnavailableMessage}
@@ -537,7 +537,7 @@ export function DangerZone({
                 {canReplaceCredential && onReconnectIdentity ? (
                   <Button
                     size="sm"
-                    variant="outline"
+                    variant="secondary"
                     disabled={identityActionPending}
                     onClick={onReconnectIdentity}
                   >
@@ -553,13 +553,13 @@ export function DangerZone({
               && onRevokeIdentity ? (
                 <div className="flex flex-wrap items-center justify-between gap-3 py-4">
                   <div>
-                    <p className="text-sm font-medium text-foreground">Revoke identity</p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-sm font-medium text-ink">Revoke identity</p>
+                    <p className="text-xs text-ink-3">
                       Disconnect the identity currently used by this app.
                     </p>
                   </div>
                   <Button
-                    variant="destructive"
+                    variant="danger"
                     size="sm"
                     onClick={() => setRevokeTarget(identityGrant)}
                   >
@@ -570,8 +570,8 @@ export function DangerZone({
 
             <div className="flex flex-wrap items-center justify-between gap-3 py-4">
               <div>
-                <p className="text-sm font-medium text-foreground">Remove this app</p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-sm font-medium text-ink">Remove this app</p>
+                <p className="text-xs text-ink-3">
                   {`Deletes credentials for ${appName} and removes agent access. Reconnecting requires a new sign-in or key.`}
                 </p>
               </div>
@@ -580,13 +580,13 @@ export function DangerZone({
                   <Button variant="ghost" size="sm" onClick={() => setConfirming(false)} disabled={removing}>
                     Cancel
                   </Button>
-                  <Button variant="destructive" size="sm" onClick={onRemove} disabled={removing}>
+                  <Button variant="delete" size="sm" onClick={onRemove} disabled={removing}>
                     {removing && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
                     Yes, remove it
                   </Button>
                 </div>
               ) : (
-                <Button variant="destructive" size="sm" onClick={() => setConfirming(true)}>
+                <Button variant="danger" size="sm" onClick={() => setConfirming(true)}>
                   Remove app
                 </Button>
               )}

@@ -50,7 +50,7 @@ function Identity({
         {title}
       </h2>
       {summary && (
-        <p className="whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
+        <p className="whitespace-pre-wrap text-sm leading-relaxed text-ink-3">
           {summary}
         </p>
       )}
@@ -67,8 +67,8 @@ function Footer({
   action: ReactNode;
 }) {
   return (
-    <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-border px-5 py-3">
-      <span className="text-xs text-muted-foreground">
+    <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-line px-5 py-3">
+      <span className="text-xs text-ink-3">
         {[author, updatedAt].filter(Boolean).join(" · ")}
       </span>
       {statusBadge}
@@ -79,7 +79,7 @@ function Footer({
 
 function Card({ children }: { children: ReactNode }) {
   return (
-    <article className="w-full overflow-hidden rounded-lg border border-border bg-card text-card-foreground">
+    <article className="w-full overflow-hidden rounded-lg border border-line bg-bg-2 text-ink">
       {children}
     </article>
   );
@@ -87,14 +87,14 @@ function Card({ children }: { children: ReactNode }) {
 
 function SourceLink({ url, children }: { url: string; children: ReactNode }) {
   return url ? (
-    <Button variant="outline" size="sm" asChild>
+    <Button variant="secondary" size="sm" asChild>
       <a href={url} target="_blank" rel="noreferrer">
         {children}
         <ExternalLink className="size-3" />
       </a>
     </Button>
   ) : (
-    <Button variant="outline" size="sm" disabled>
+    <Button variant="secondary" size="sm" disabled>
       {children}
     </Button>
   );
@@ -114,7 +114,7 @@ function Viewer({
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline">
+        <Button size="sm" variant="secondary">
           {action}
         </Button>
       </DialogTrigger>
@@ -148,7 +148,7 @@ function Diff({ additions, deletions, filesChanged }: DiffProps) {
         </span>
       )}
       {filesChanged != null && (
-        <span className="text-muted-foreground">
+        <span className="text-ink-3">
           {filesChanged} {filesChanged === 1 ? "file" : "files"}
         </span>
       )}
@@ -202,15 +202,15 @@ export function PullRequestCard(props: PullRequestCardProps) {
   }[checks];
   const checkTone = {
     passed: "text-(--status-task-icon-done)",
-    pending: "text-muted-foreground",
+    pending: "text-ink-3",
     failed: "text-(--status-task-icon-blocked)",
-    unknown: "text-muted-foreground",
+    unknown: "text-ink-3",
   }[checks];
   return (
     <Card>
       <div className="flex flex-col gap-4 p-5">
         <div className="flex items-center justify-between gap-2">
-          <span className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span className="flex items-center gap-2 text-xs text-ink-3">
             <GitPullRequest className="size-4" /> Pull request{" "}
             {number != null && <span className="font-mono">#{number}</span>}
           </span>
@@ -219,7 +219,7 @@ export function PullRequestCard(props: PullRequestCardProps) {
             className={
               state === "merged"
                 ? "text-(--status-task-icon-done)"
-                : "text-muted-foreground"
+                : "text-ink-3"
             }
           >
             {state === "merged" && <GitMerge className="size-3" />}
@@ -227,7 +227,7 @@ export function PullRequestCard(props: PullRequestCardProps) {
           </Badge>
         </div>
         <Identity {...props} />
-        <div className="flex flex-col gap-2 text-xs text-muted-foreground">
+        <div className="flex flex-col gap-2 text-xs text-ink-3">
           <span>{repository}</span>
           {(sourceBranch || targetBranch) && (
             <div className="flex min-w-0 items-center gap-2">
@@ -246,7 +246,7 @@ export function PullRequestCard(props: PullRequestCardProps) {
         </div>
         <Diff {...props} />
       </div>
-      <div className="flex flex-col gap-2 border-t border-border px-5 py-4">
+      <div className="flex flex-col gap-2 border-t border-line px-5 py-4">
         <span className="flex items-center gap-2 text-xs">
           <CheckIcon className={`size-4 ${checkTone}`} />
           {checksLabel[checks]}
@@ -255,7 +255,7 @@ export function PullRequestCard(props: PullRequestCardProps) {
           <p className="text-xs leading-relaxed">{reviewSummary}</p>
         )}
         {evidenceSource && (
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             Source: {evidenceSource}
           </p>
         )}
@@ -278,16 +278,16 @@ export function CommitCard(props: CommitCardProps) {
   return (
     <Card>
       <div className="flex flex-col gap-4 p-5">
-        <span className="flex items-center gap-2 text-xs text-muted-foreground">
+        <span className="flex items-center gap-2 text-xs text-ink-3">
           <GitCommitHorizontal className="size-4" /> Commit{" "}
           <code title={props.sha}>{props.sha.slice(0, 8)}</code>
         </span>
         <Identity {...props} />
-        <span className="break-words text-xs text-muted-foreground">
+        <span className="break-words text-xs text-ink-3">
           {props.repository}
         </span>
         {props.branch && (
-          <span className="flex items-center gap-2 text-xs text-muted-foreground">
+          <span className="flex items-center gap-2 text-xs text-ink-3">
             <GitBranch className="size-3.5" />
             <code className="min-w-0 truncate">{props.branch}</code>
           </span>
@@ -380,19 +380,19 @@ export function DocumentCard(props: DocumentCardProps) {
     <Card>
       {props.body && (
         <div
-          className="max-h-52 overflow-hidden border-b border-border bg-muted/20 p-5"
+          className="max-h-52 overflow-hidden border-b border-line bg-bg-3/20 p-5"
           inert
         >
           <Markdown body={props.body.slice(0, 4000)} />
         </div>
       )}
       <div className="flex flex-col gap-3 p-5">
-        <span className="flex items-center gap-2 text-xs text-muted-foreground">
+        <span className="flex items-center gap-2 text-xs text-ink-3">
           <FileText className="size-4" /> Markdown
           {props.revision != null && ` · revision ${props.revision}`}
         </span>
         <Identity {...props} />
-        <span className="break-all font-mono text-xs text-muted-foreground">
+        <span className="break-all font-mono text-xs text-ink-3">
           {props.filename}
         </span>
       </div>
@@ -404,7 +404,7 @@ export function DocumentCard(props: DocumentCardProps) {
             {props.onOpen ? (
               <Button
                 size="sm"
-                variant="outline"
+                variant="secondary"
                 aria-expanded={props.expanded}
                 onClick={props.onOpen}
               >
@@ -443,7 +443,7 @@ function DataTable({ columns, rows }: Pick<DataCardProps, "columns" | "rows">) {
             {columns.map((column, i) => (
               <th
                 key={i}
-                className="border-b border-border px-3 py-3 font-medium text-muted-foreground"
+                className="border-b border-line px-3 py-3 font-medium text-ink-3"
               >
                 {column}
               </th>
@@ -454,7 +454,7 @@ function DataTable({ columns, rows }: Pick<DataCardProps, "columns" | "rows">) {
           {rows.map((row, i) => (
             <tr key={i}>
               {columns.map((_, j) => (
-                <td key={j} className="border-b border-border/50 px-3 py-3">
+                <td key={j} className="border-b border-line/50 px-3 py-3">
                   {row[j] ?? ""}
                 </td>
               ))}
@@ -463,7 +463,7 @@ function DataTable({ columns, rows }: Pick<DataCardProps, "columns" | "rows">) {
         </tbody>
       </table>
       {rows.length === 0 && (
-        <p className="p-4 text-xs text-muted-foreground">No rows</p>
+        <p className="p-4 text-xs text-ink-3">No rows</p>
       )}
     </div>
   );
@@ -476,18 +476,18 @@ export function DataCard(props: DataCardProps) {
     .join("\n");
   return (
     <Card>
-      <div className="border-b border-border bg-muted/20 px-2">
+      <div className="border-b border-line bg-bg-3/20 px-2">
         <DataTable columns={props.columns} rows={props.rows.slice(0, 3)} />
       </div>
       <div className="flex flex-col gap-3 p-5">
-        <span className="flex items-center gap-2 text-xs text-muted-foreground">
+        <span className="flex items-center gap-2 text-xs text-ink-3">
           <Table2 className="size-4" /> CSV · {props.truncated ? "First " : ""}
           {props.rows.length} {props.rows.length === 1 ? "row" : "rows"} ·{" "}
           {props.columns.length}{" "}
           {props.columns.length === 1 ? "column" : "columns"}
         </span>
         <Identity {...props} />
-        <span className="break-all font-mono text-xs text-muted-foreground">
+        <span className="break-all font-mono text-xs text-ink-3">
           {props.filename}
         </span>
       </div>
@@ -502,7 +502,7 @@ export function DataCard(props: DataCardProps) {
               action="View data"
             >
               <DataTable {...props} />
-              <Button asChild variant="outline" size="sm" className="w-fit">
+              <Button asChild variant="secondary" size="sm" className="w-fit">
                 <a
                   download={props.filename}
                   href={
@@ -532,7 +532,7 @@ function ImageContent({ src, alt }: { src: string; alt: string }) {
       className="aspect-video w-full object-contain"
     />
   ) : (
-    <div className="flex aspect-video flex-col items-center justify-center gap-3 text-muted-foreground">
+    <div className="flex aspect-video flex-col items-center justify-center gap-3 text-ink-3">
       <ImageIcon className="size-8" />
       <span className="text-xs">No preview available</span>
     </div>
@@ -550,18 +550,18 @@ export interface ImageCardProps extends ArtifactIdentity {
 export function ImageCard(props: ImageCardProps) {
   return (
     <Card>
-      <div className="border-b border-border bg-muted/20">
+      <div className="border-b border-line bg-bg-3/20">
         <ImageContent src={props.imageUrl} alt={props.alt} />
       </div>
       <div className="flex flex-col gap-3 p-5">
-        <span className="flex items-center gap-2 text-xs text-muted-foreground">
+        <span className="flex items-center gap-2 text-xs text-ink-3">
           <ImageIcon className="size-4" /> Image
           {props.width && props.height
             ? ` · ${props.width} × ${props.height}`
             : ""}
         </span>
         <Identity {...props} />
-        <span className="break-all font-mono text-xs text-muted-foreground">
+        <span className="break-all font-mono text-xs text-ink-3">
           {props.filename}
         </span>
       </div>
@@ -571,7 +571,7 @@ export function ImageCard(props: ImageCardProps) {
           props.onOpen ? (
             <Button
               size="sm"
-              variant="outline"
+              variant="secondary"
               aria-label={`View image: ${props.title}`}
               onClick={props.onOpen}
             >
@@ -609,15 +609,15 @@ export function VideoCard(props: VideoCardProps) {
         controls
         preload="metadata"
         aria-label={props.title}
-        className="aspect-video w-full border-b border-border bg-muted"
+        className="aspect-video w-full border-b border-line bg-bg-3"
       />
       <div className="flex flex-col gap-3 p-5">
-        <span className="flex items-center gap-2 text-xs text-muted-foreground">
+        <span className="flex items-center gap-2 text-xs text-ink-3">
           <Film className="size-4" /> Video
           {props.duration && ` · ${props.duration}`}
         </span>
         <Identity {...props} />
-        <span className="break-all font-mono text-xs text-muted-foreground">
+        <span className="break-all font-mono text-xs text-ink-3">
           {props.filename}
         </span>
       </div>
@@ -627,7 +627,7 @@ export function VideoCard(props: VideoCardProps) {
           props.onOpen ? (
             <Button
               size="sm"
-              variant="outline"
+              variant="secondary"
               aria-label={`Open video: ${props.title}`}
               onClick={props.onOpen}
             >
@@ -651,16 +651,16 @@ export function LinkPreviewCard(props: LinkPreviewCardProps) {
   return (
     <Card>
       {props.imageUrl && (
-        <div className="border-b border-border bg-muted/20">
+        <div className="border-b border-line bg-bg-3/20">
           <ImageContent src={props.imageUrl} alt={props.imageAlt} />
         </div>
       )}
       <div className="flex flex-col gap-4 p-5">
-        <span className="flex items-center gap-2 text-xs text-muted-foreground">
+        <span className="flex items-center gap-2 text-xs text-ink-3">
           <Globe className="size-4" /> Link preview
         </span>
         <Identity {...props} />
-        <span className="break-all font-mono text-xs text-muted-foreground">
+        <span className="break-all font-mono text-xs text-ink-3">
           {props.url}
         </span>
       </div>
@@ -685,23 +685,23 @@ export function FileCard(props: FileCardProps) {
   return (
     <Card>
       <div className="flex flex-col gap-4 p-5">
-        <span className="flex items-center gap-2 text-xs text-muted-foreground">
+        <span className="flex items-center gap-2 text-xs text-ink-3">
           <File className="size-4" /> File
           {props.fileSize && ` · ${props.fileSize}`}
         </span>
         <Identity {...props} />
         <div className="flex flex-col gap-1">
           <span className="break-all font-mono text-xs">{props.filename}</span>
-          <span className="break-all text-xs text-muted-foreground">
+          <span className="break-all text-xs text-ink-3">
             {props.contentType}
           </span>
         </div>
         {props.entries.length > 0 && (
-          <ul className="flex flex-col gap-2 border-t border-border pt-4">
+          <ul className="flex flex-col gap-2 border-t border-line pt-4">
             {props.entries.map((entry, i) => (
               <li
                 key={i}
-                className="flex items-center gap-2 font-mono text-xs text-muted-foreground"
+                className="flex items-center gap-2 font-mono text-xs text-ink-3"
               >
                 <FileText className="size-3.5 shrink-0" />
                 {entry}
@@ -719,13 +719,13 @@ export function FileCard(props: FileCardProps) {
               <SourceLink url={props.openUrl}>Open file</SourceLink>
             )}
             {props.downloadUrl ? (
-              <Button asChild size="sm" variant="outline">
+              <Button asChild size="sm" variant="secondary">
                 <a href={props.downloadUrl} download={props.filename}>
                   Download file
                 </a>
               </Button>
             ) : (
-              <Button size="sm" variant="outline" disabled>
+              <Button size="sm" variant="secondary" disabled>
                 Download unavailable
               </Button>
             )}

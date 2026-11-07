@@ -84,7 +84,7 @@ export function ExternalObjectStatusIcon({
         <Clock
           aria-hidden="true"
           className={cn(
-            "absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-background text-muted-foreground",
+            "absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full bg-bg text-ink-3",
             inline ? "" : "p-px",
           )}
         />

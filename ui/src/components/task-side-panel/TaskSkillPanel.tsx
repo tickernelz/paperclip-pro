@@ -19,7 +19,7 @@ export function TaskSkillPanel({ companyId, skillId }: { companyId: string; skil
   });
   if (query.isLoading) {
     return (
-      <div className="flex items-center gap-2 py-8 text-sm text-muted-foreground" role="status">
+      <div className="flex items-center gap-2 py-8 text-sm text-ink-3" role="status">
         <Loader2 className="size-4 animate-spin" aria-hidden />
         Loading skill…
       </div>
@@ -28,22 +28,22 @@ export function TaskSkillPanel({ companyId, skillId }: { companyId: string; skil
   if (query.isError) {
     const status = query.error instanceof ApiError ? query.error.status : null;
     if (status === 404) {
-      return <div className="py-8 text-sm text-muted-foreground" role="status">Skill no longer available.</div>;
+      return <div className="py-8 text-sm text-ink-3" role="status">Skill no longer available.</div>;
     }
     if (status === 403) {
-      return <div className="py-8 text-sm text-muted-foreground" role="alert">You do not have access to this skill.</div>;
+      return <div className="py-8 text-sm text-ink-3" role="alert">You do not have access to this skill.</div>;
     }
     return (
-      <div className="space-y-3 py-8 text-sm text-muted-foreground" role="alert">
+      <div className="space-y-3 py-8 text-sm text-ink-3" role="alert">
         <p>The skill could not be loaded.</p>
-        <Button variant="outline" size="sm" onClick={() => void query.refetch()} disabled={query.isFetching}>
+        <Button variant="secondary" size="sm" onClick={() => void query.refetch()} disabled={query.isFetching}>
           {query.isFetching ? "Retrying…" : "Retry"}
         </Button>
       </div>
     );
   }
   if (!query.data) {
-    return <div className="py-8 text-sm text-muted-foreground" role="status">Skill no longer available.</div>;
+    return <div className="py-8 text-sm text-ink-3" role="status">Skill no longer available.</div>;
   }
   const skill = query.data;
   const previewMarkdown = parseFrontmatterMarkdown(skill.markdown).body;
@@ -52,11 +52,11 @@ export function TaskSkillPanel({ companyId, skillId }: { companyId: string; skil
       <header className="space-y-2">
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-2">
-            <Wrench className="size-4 text-muted-foreground" aria-hidden />
+            <Wrench className="size-4 text-ink-3" aria-hidden />
             <h2 className="text-lg font-semibold">{skill.name}</h2>
           </div>
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             onClick={() => navigate(`/skills/studio/${encodeURIComponent(skill.id)}`)}
           >
@@ -64,13 +64,13 @@ export function TaskSkillPanel({ companyId, skillId }: { companyId: string; skil
             Open in Skill Studio
           </Button>
         </div>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-ink-3">
           {skill.slug} · {skill.currentVersion ? `Revision ${skill.currentVersion.revisionNumber}` : "Current version"}
         </p>
       </header>
-      {skill.description ? <p className="text-sm text-muted-foreground">{skill.description}</p> : null}
+      {skill.description ? <p className="text-sm text-ink-3">{skill.description}</p> : null}
       <section className="space-y-2">
-        <h3 className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
+        <h3 className="flex items-center gap-2 text-xs font-medium text-ink-3">
           <FileText className="size-3.5" aria-hidden />
           Skill instructions
         </h3>

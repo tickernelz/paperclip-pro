@@ -47,9 +47,9 @@ export function runStatusClassName(status: string): string {
     case "pending":
       return "text-amber-700 dark:text-amber-300";
     case "cancelled":
-      return "text-muted-foreground";
+      return "text-ink-3";
     default:
-      return "text-foreground";
+      return "text-ink";
   }
 }
 

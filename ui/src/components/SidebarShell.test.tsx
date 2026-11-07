@@ -105,8 +105,8 @@ describe("SidebarShell", () => {
     expect(separator?.style.right).toBe("-4px");
     expect(separator?.style.width).toBe("8px");
     expect(indicator?.className).toContain("w-0.5");
-    expect(indicator?.className).toContain("group-hover:bg-ring");
-    expect(indicator?.className).toContain("group-focus-visible:bg-ring");
+    expect(indicator?.className).toContain("group-hover:bg-focus");
+    expect(indicator?.className).toContain("group-focus-visible:bg-focus");
   });
 
   it("supports keyboard resizing and clamps to the configured bounds", () => {

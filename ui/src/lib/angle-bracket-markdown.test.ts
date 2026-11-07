@@ -248,7 +248,7 @@ describe("angle bracket escape round trip", () => {
   const cases = [
     "Rename <name> to the real name",
     "Affected versions: <= v0.3.1",
-    "5. python3 sync.py --input <tmp> -- writes insights/<group>/*.md",
+    "5. python3 sync.py --line-strong <tmp> -- writes insights/<group>/*.md",
     "a </close> and <!-- note --> and <?php",
     "Use `<name>` but not <other>",
     "```\n<name>\n```\n<after>",

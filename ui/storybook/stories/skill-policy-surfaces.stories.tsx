@@ -27,7 +27,7 @@ function platformDenial() {
 function Frame({ label, width, children }: { label: string; width: number; children: React.ReactNode }) {
   return (
     <div className="space-y-2 p-6" style={{ maxWidth: `${width}px` }}>
-      <div className="text-xs uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className="text-xs uppercase tracking-wide text-ink-3">{label}</div>
       {children}
     </div>
   );

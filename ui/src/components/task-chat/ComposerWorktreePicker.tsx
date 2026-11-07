@@ -71,12 +71,12 @@ export function ComposerWorktreePicker({
       contentStyle={contentStyle}
       contentWidth="auto"
       className="min-w-0 flex-1 sm:flex-none sm:max-w-72"
-      triggerClassName="h-8 gap-1.5 border-0 bg-transparent px-2 text-xs font-medium shadow-none hover:bg-accent focus-visible:bg-accent focus-visible:ring-0"
+      triggerClassName="h-8 gap-1.5 border-0 bg-transparent px-2 text-xs font-medium shadow-none hover:bg-bg-3 focus-visible:bg-bg-3 focus-visible:ring-0"
       renderValue={(option) => (
         <span className="flex min-w-0 items-center gap-1.5">
           <GitBranch className="size-3.5 shrink-0" aria-hidden />
           <span className="truncate">
-            <span className="hidden text-muted-foreground sm:inline">Worktrees · </span>
+            <span className="hidden text-ink-3 sm:inline">Worktrees · </span>
             {option?.label ?? selectedWorkspaceLabel ?? "Select worktree"}
           </span>
         </span>
@@ -86,20 +86,20 @@ export function ComposerWorktreePicker({
           : option.mode === "agent_default" ? Monitor : option.mode === "operator_branch" ? GitBranch : Folder;
         return (
           <>
-            <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+            <Icon className="size-4 shrink-0 text-ink-3" aria-hidden />
             <span className="flex min-w-0 flex-col">
               <span className="truncate">{option.label}</span>
-              <span className="truncate text-xs text-muted-foreground">{option.description}</span>
+              <span className="truncate text-xs text-ink-3">{option.description}</span>
             </span>
           </>
         );
       }}
       listFooter={loading || error || workspaces.length === 0 ? (
-        <div className="border-t border-border px-3 py-2 text-xs text-muted-foreground" role="status">
+        <div className="border-t border-line px-3 py-2 text-xs text-ink-3" role="status">
           {loading ? "Loading existing worktrees…" : error ? (
             <span className="flex items-center justify-between gap-2">
               Couldn't load worktrees.
-              <button type="button" className="rounded px-2 py-1 text-foreground hover:bg-accent" onClick={onRetry}>Retry</button>
+              <button type="button" className="rounded px-2 py-1 text-ink hover:bg-bg-3" onClick={onRetry}>Retry</button>
             </span>
           ) : "No existing worktrees yet. Choose New worktree to start one."}
         </div>

@@ -8,7 +8,7 @@ import type { WorkReference } from "../lib/pipeline-references";
  */
 export function PipelineWorkReferences({ references }: { references: WorkReference[] }) {
   if (references.length === 0) {
-    return <p className="py-3 text-sm text-muted-foreground">No linked work yet.</p>;
+    return <p className="py-3 text-sm text-ink-3">No linked work yet.</p>;
   }
   return (
     <ul className="min-w-0 space-y-2">
@@ -28,12 +28,12 @@ function WorkReferenceRow({ reference }: { reference: WorkReference }) {
         href={reference.url}
         target="_blank"
         rel="noreferrer"
-        className="group flex items-start gap-2 text-sm text-foreground"
+        className="group flex items-start gap-2 text-sm text-ink"
       >
-        <ExternalLink className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+        <ExternalLink className="mt-0.5 h-4 w-4 shrink-0 text-ink-3" />
         <span className="min-w-0 [overflow-wrap:anywhere]">
           <span className="font-medium underline-offset-2 group-hover:underline">{reference.label}</span>
-          <span className="block text-xs text-muted-foreground [overflow-wrap:anywhere]">{reference.url}</span>
+          <span className="block text-xs text-ink-3 [overflow-wrap:anywhere]">{reference.url}</span>
         </span>
       </a>
     );
@@ -42,11 +42,11 @@ function WorkReferenceRow({ reference }: { reference: WorkReference }) {
   if (reference.kind === "issue") {
     const inner = (
       <>
-        <CircleDot className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+        <CircleDot className="mt-0.5 h-4 w-4 shrink-0 text-ink-3" />
         <span className="min-w-0 [overflow-wrap:anywhere]">
           <span className="font-medium underline-offset-2 group-hover:underline">{reference.label}</span>
           {reference.identifier ? (
-            <span className="ml-1.5 rounded bg-muted px-1.5 py-0.5 font-mono text-xs text-muted-foreground">
+            <span className="ml-1.5 rounded bg-bg-3 px-1.5 py-0.5 font-mono text-xs text-ink-3">
               {reference.identifier}
             </span>
           ) : null}
@@ -54,26 +54,26 @@ function WorkReferenceRow({ reference }: { reference: WorkReference }) {
       </>
     );
     return reference.issueId ? (
-      <Link to={`/issues/${reference.issueId}`} className="group flex items-start gap-2 text-sm text-foreground">
+      <Link to={`/issues/${reference.issueId}`} className="group flex items-start gap-2 text-sm text-ink">
         {inner}
       </Link>
     ) : (
-      <span className="flex items-start gap-2 text-sm text-foreground">{inner}</span>
+      <span className="flex items-start gap-2 text-sm text-ink">{inner}</span>
     );
   }
 
   // workspace
   return (
-    <div className="flex items-start gap-2 text-sm text-foreground">
-      <FolderGit2 className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+    <div className="flex items-start gap-2 text-sm text-ink">
+      <FolderGit2 className="mt-0.5 h-4 w-4 shrink-0 text-ink-3" />
       <span className="min-w-0 [overflow-wrap:anywhere]">
-        <span className="block text-xs text-muted-foreground">Folder</span>
+        <span className="block text-xs text-ink-3">Folder</span>
         <span className="font-normal">{reference.label}</span>
         {reference.path ? (
-          <span className="block font-mono text-xs text-muted-foreground [overflow-wrap:anywhere]">{reference.path}</span>
+          <span className="block font-mono text-xs text-ink-3 [overflow-wrap:anywhere]">{reference.path}</span>
         ) : null}
         {reference.branch ? (
-          <span className="mt-0.5 inline-flex items-center gap-1 rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
+          <span className="mt-0.5 inline-flex items-center gap-1 rounded bg-bg-3 px-1.5 py-0.5 text-xs text-ink-3">
             <GitBranch className="h-3 w-3" />
             {reference.branch}
           </span>

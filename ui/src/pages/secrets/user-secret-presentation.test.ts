@@ -82,6 +82,6 @@ describe("myValueState", () => {
 describe("secretStatusTone", () => {
   it("uses emerald for active and muted for disabled", () => {
     expect(secretStatusTone("active")).toContain("emerald");
-    expect(secretStatusTone("disabled")).toContain("muted");
+    expect(secretStatusTone("disabled")).toContain("text-ink-3");
   });
 });

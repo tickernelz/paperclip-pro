@@ -120,21 +120,20 @@ export function NewGoalDialog() {
         onKeyDown={handleKeyDown}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-2.5 border-b border-border">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+        <div className="flex items-center justify-between px-4 py-2.5 border-b border-line">
+          <div className="flex items-center gap-2 text-sm text-ink-3">
             {selectedCompany && (
-              <span className="bg-muted px-1.5 py-0.5 rounded text-xs font-medium">
+              <span className="bg-bg-3 px-1.5 py-0.5 rounded text-xs font-medium">
                 {selectedCompany.issuePrefix}
               </span>
             )}
-            <span className="text-muted-foreground/60">&rsaquo;</span>
+            <span className="text-ink-3/60">&rsaquo;</span>
             <span>{newGoalDefaults.parentId ? "New sub-goal" : "New goal"}</span>
           </div>
           <div className="flex items-center gap-1">
             <Button
               variant="ghost"
               size="icon-xs"
-              className="text-muted-foreground"
               onClick={() => setExpanded(!expanded)}
             >
               {expanded ? <Minimize2 className="h-3.5 w-3.5" /> : <Maximize2 className="h-3.5 w-3.5" />}
@@ -142,7 +141,6 @@ export function NewGoalDialog() {
             <Button
               variant="ghost"
               size="icon-xs"
-              className="text-muted-foreground"
               onClick={() => { reset(); closeNewGoal(); }}
             >
               <span className="text-lg leading-none">&times;</span>
@@ -153,7 +151,7 @@ export function NewGoalDialog() {
         {/* Title */}
         <div className="px-4 pt-4 pb-2 shrink-0">
           <input
-            className="w-full text-lg font-semibold bg-transparent outline-none placeholder:text-muted-foreground/50"
+            className="w-full text-lg font-semibold bg-transparent outline-none placeholder:text-ink-3/50"
             placeholder="Goal title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
@@ -175,7 +173,7 @@ export function NewGoalDialog() {
             onChange={setDescription}
             placeholder="Add description..."
             bordered={false}
-            contentClassName={cn("text-sm text-muted-foreground", expanded ? "min-h-(--sz-220px)" : "min-h-(--sz-120px)")}
+            contentClassName={cn("text-sm text-ink-3", expanded ? "min-h-(--sz-220px)" : "min-h-(--sz-120px)")}
             imageUploadHandler={async (file) => {
               const asset = await uploadDescriptionImage.mutateAsync(file);
               return asset.contentPath;
@@ -184,11 +182,11 @@ export function NewGoalDialog() {
         </div>
 
         {/* Property chips */}
-        <div className="flex items-center gap-1.5 px-4 py-2 border-t border-border flex-wrap">
+        <div className="flex items-center gap-1.5 px-4 py-2 border-t border-line flex-wrap">
           {/* Status */}
           <Popover open={statusOpen} onOpenChange={setStatusOpen}>
             <PopoverTrigger asChild>
-              <button className="inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs hover:bg-accent/50 transition-colors">
+              <button className="inline-flex items-center gap-1.5 rounded-md border border-line px-2 py-1 text-xs hover:bg-bg-3/50 transition-colors">
                 <StatusBadge status={status} />
               </button>
             </PopoverTrigger>
@@ -197,8 +195,8 @@ export function NewGoalDialog() {
                 <button
                   key={s}
                   className={cn(
-                    "flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50 capitalize",
-                    s === status && "bg-accent"
+                    "flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-bg-3/50 capitalize",
+                    s === status && "bg-bg-3"
                   )}
                   onClick={() => { setStatus(s); setStatusOpen(false); }}
                 >
@@ -211,8 +209,8 @@ export function NewGoalDialog() {
           {/* Level */}
           <Popover open={levelOpen} onOpenChange={setLevelOpen}>
             <PopoverTrigger asChild>
-              <button className="inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs hover:bg-accent/50 transition-colors">
-                <Layers className="h-3 w-3 text-muted-foreground" />
+              <button className="inline-flex items-center gap-1.5 rounded-md border border-line px-2 py-1 text-xs hover:bg-bg-3/50 transition-colors">
+                <Layers className="h-3 w-3 text-ink-3" />
                 {levelLabels[level] ?? level}
               </button>
             </PopoverTrigger>
@@ -221,8 +219,8 @@ export function NewGoalDialog() {
                 <button
                   key={l}
                   className={cn(
-                    "flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50",
-                    l === level && "bg-accent"
+                    "flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-bg-3/50",
+                    l === level && "bg-bg-3"
                   )}
                   onClick={() => { setLevel(l); setLevelOpen(false); }}
                 >
@@ -235,16 +233,16 @@ export function NewGoalDialog() {
           {/* Parent goal */}
           <Popover open={parentOpen} onOpenChange={setParentOpen}>
             <PopoverTrigger asChild>
-              <button className="inline-flex items-center gap-1.5 rounded-md border border-border px-2 py-1 text-xs hover:bg-accent/50 transition-colors">
-                <Target className="h-3 w-3 text-muted-foreground" />
+              <button className="inline-flex items-center gap-1.5 rounded-md border border-line px-2 py-1 text-xs hover:bg-bg-3/50 transition-colors">
+                <Target className="h-3 w-3 text-ink-3" />
                 {currentParent ? currentParent.title : "Parent goal"}
               </button>
             </PopoverTrigger>
             <PopoverContent className="w-48 p-1" align="start">
               <button
                 className={cn(
-                  "flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50",
-                  !appliedParentId && "bg-accent"
+                  "flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-bg-3/50",
+                  !appliedParentId && "bg-bg-3"
                 )}
                 onClick={() => { setParentId(""); setParentOpen(false); }}
               >
@@ -254,8 +252,8 @@ export function NewGoalDialog() {
                 <button
                   key={g.id}
                   className={cn(
-                    "flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50 truncate",
-                    g.id === appliedParentId && "bg-accent"
+                    "flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-bg-3/50 truncate",
+                    g.id === appliedParentId && "bg-bg-3"
                   )}
                   onClick={() => { setParentId(g.id); setParentOpen(false); }}
                 >
@@ -267,7 +265,7 @@ export function NewGoalDialog() {
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end px-4 py-2.5 border-t border-border">
+        <div className="flex items-center justify-end px-4 py-2.5 border-t border-line">
           <Button
             size="sm"
             disabled={!title.trim() || createGoal.isPending}

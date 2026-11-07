@@ -138,14 +138,14 @@ function StateMatrix() {
     <div className="paperclip-story space-y-8">
       <header className="space-y-2">
         <h1 className="text-2xl font-semibold">External object status matrix</h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           Every status category × liveness combination from the UX spec §6, used as the canonical
           presentational reference for inline markdown, pills, properties, and rollups.
         </p>
       </header>
       <table className="w-full table-auto border-collapse text-sm">
         <thead>
-          <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted-foreground">
+          <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-ink-3">
             <th className="px-3 py-2">Category</th>
             {EXTERNAL_OBJECT_LIVENESS_STATES.map((liveness) => (
               <th key={liveness} className="px-3 py-2">{externalObjectLivenessLabel(liveness)}</th>
@@ -154,8 +154,8 @@ function StateMatrix() {
         </thead>
         <tbody>
           {EXTERNAL_OBJECT_STATUS_CATEGORIES.map((category) => (
-            <tr key={category} className="border-b border-border">
-              <td className="px-3 py-3 font-mono text-xs text-muted-foreground">{category}</td>
+            <tr key={category} className="border-b border-line">
+              <td className="px-3 py-3 font-mono text-xs text-ink-3">{category}</td>
               {EXTERNAL_OBJECT_LIVENESS_STATES.map((liveness) => (
                 <td key={liveness} className="px-3 py-3">
                   <ExternalObjectStatusIcon
@@ -410,13 +410,13 @@ function projectsRollupStory() {
     { name: "Auth provider", color: "#f97316", summary: summary({ auth: 1 }) },
   ];
   return (
-    <div className="paperclip-story w-72 rounded border border-border bg-background p-2">
-      <div className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">Projects (sidebar)</div>
+    <div className="paperclip-story w-72 rounded border border-line bg-bg p-2">
+      <div className="mb-2 text-xs uppercase tracking-wide text-ink-3">Projects (sidebar)</div>
       <ul className="flex flex-col">
         {projects.map((project) => (
           <li
             key={project.name}
-            className="flex items-center gap-2.5 px-3 py-1.5 text-[13px] font-medium hover:bg-accent/50"
+            className="flex items-center gap-2.5 px-3 py-1.5 text-[13px] font-medium hover:bg-bg-3/50"
           >
             <span className="h-3.5 w-3.5 shrink-0 rounded-sm" style={{ backgroundColor: project.color }} />
             <span className="flex-1 truncate">{project.name}</span>
@@ -526,8 +526,8 @@ function makeIntegrationSummary(): ExternalObjectSummary {
 function PropertiesPanelDesktop() {
   const issue = storybookIssues[0]!;
   return (
-    <div className="paperclip-story w-[420px] rounded-lg border border-border bg-background/70 p-4">
-      <div className="mb-3 text-xs uppercase tracking-wide text-muted-foreground">
+    <div className="paperclip-story w-[420px] rounded-lg border border-line bg-bg/70 p-4">
+      <div className="mb-3 text-xs uppercase tracking-wide text-ink-3">
         Issue properties — desktop @ 1440×900
       </div>
       <IssueProperties
@@ -544,8 +544,8 @@ function PropertiesPanelDesktop() {
 function PropertiesPanelMobile() {
   const issue = storybookIssues[0]!;
   return (
-    <div className="paperclip-story mx-auto w-[358px] rounded-lg border border-border bg-background/70 p-3">
-      <div className="mb-3 text-xs uppercase tracking-wide text-muted-foreground">
+    <div className="paperclip-story mx-auto w-[358px] rounded-lg border border-line bg-bg/70 p-3">
+      <div className="mb-3 text-xs uppercase tracking-wide text-ink-3">
         Issue properties — mobile sheet @ 390×844
       </div>
       <IssueProperties
@@ -563,7 +563,7 @@ function PropertiesPanelMobile() {
 function RelatedWorkEmptyDesktop() {
   return (
     <div className="paperclip-story space-y-3 p-6">
-      <div className="text-xs uppercase tracking-wide text-muted-foreground">
+      <div className="text-xs uppercase tracking-wide text-ink-3">
         Related work — empty external objects (zero refs, empty copy visible)
       </div>
       <IssueRelatedWorkPanel
@@ -577,8 +577,8 @@ function RelatedWorkEmptyDesktop() {
 function SidebarMobileDrawer() {
   const summary = makeIntegrationSummary();
   return (
-    <div className="paperclip-story mx-auto w-[320px] rounded border border-border bg-background p-2">
-      <div className="mb-2 text-xs uppercase tracking-wide text-muted-foreground">Projects (mobile drawer)</div>
+    <div className="paperclip-story mx-auto w-[320px] rounded border border-line bg-bg p-2">
+      <div className="mb-2 text-xs uppercase tracking-wide text-ink-3">Projects (mobile drawer)</div>
       <ul className="flex flex-col">
         {[
           { name: "Paperclip App", color: "#6366f1", summary },
@@ -587,7 +587,7 @@ function SidebarMobileDrawer() {
         ].map((project) => (
           <li
             key={project.name}
-            className="flex items-center gap-2.5 px-3 py-2 text-[13px] font-medium hover:bg-accent/50"
+            className="flex items-center gap-2.5 px-3 py-2 text-[13px] font-medium hover:bg-bg-3/50"
           >
             <span className="h-3.5 w-3.5 shrink-0 rounded-sm" style={{ backgroundColor: project.color }} />
             <span className="flex-1 truncate">{project.name}</span>
@@ -603,17 +603,17 @@ function IssueListWithBadge() {
   const summary = makeIntegrationSummary();
   return (
     <div className="paperclip-story p-6">
-      <div className="mb-3 text-xs uppercase tracking-wide text-muted-foreground">
+      <div className="mb-3 text-xs uppercase tracking-wide text-ink-3">
         Issue list — desktop @ 1440×900 (badge + control row)
       </div>
-      <div className="overflow-hidden rounded-xl border border-border bg-background/70">
+      <div className="overflow-hidden rounded-xl border border-line bg-bg/70">
         {storybookIssues.slice(0, 2).map((issue, index) => (
           <IssueRow
             key={issue.id}
             issue={issue}
             externalObjectSummary={index === 0 ? summary : null}
             desktopTrailing={
-              <span className="text-xs text-muted-foreground">{issue.priority}</span>
+              <span className="text-xs text-ink-3">{issue.priority}</span>
             }
           />
         ))}
@@ -648,7 +648,7 @@ function FilterPopoverWithExternalChecked() {
           labels={storybookIssueLabels.map((label) => ({ id: label.id, name: label.name, color: label.color }))}
           currentUserId="user-board"
           enableRoutineVisibilityFilter
-          buttonVariant="outline"
+          buttonVariant="secondary"
           creators={[
             { id: "user:user-board", label: "Riley Board", kind: "user", searchText: "board user human" },
           ]}

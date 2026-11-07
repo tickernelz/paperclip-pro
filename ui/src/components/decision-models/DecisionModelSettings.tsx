@@ -46,40 +46,40 @@ export function DecisionModelSettingsView({ settings, choices, saving, testing, 
       <h2 id="decision-model-heading" className="text-lg font-semibold">Decision model</h2>
       <Link to="/activity/costs?tab=decisions" className="text-sm underline underline-offset-4">View usage</Link>
     </div>
-    <p className="text-sm text-muted-foreground">Choose the shared connection Paperclip uses for optional decision features. API usage is charged to this connection.</p>
+    <p className="text-sm text-ink-3">Choose the shared connection Paperclip uses for optional decision features. API usage is charged to this connection.</p>
     <ConnectionChoiceList selectedId={draft.grantId ?? undefined} disabled={saving || testing}
       choices={choices.map(row => ({ id: row.grantId, name: row.name,
         description: `${row.decisionModel} · ${row.status === "connected" ? "Connected" : "Needs attention"}`,
         icon: <AppLogo name={row.provider === "openai" ? "OpenAI" : "OpenRouter"} brandKey={row.provider} size={24} />,
       }))}
       onSelect={grantId => { const row = choices.find(choice => choice.grantId === grantId)!; setDraft(value => ({ ...value, connectionId: row.id, grantId, enabled: value.connectionId ? value.enabled : true })); }} />
-    {choices.length === 0 && <p className="text-sm text-muted-foreground">Add a shared OpenAI or OpenRouter API connection to get started.</p>}
-    {draft.connectionId && !selected && <p role="status" className="text-sm text-muted-foreground">The saved connection is unavailable to you. Disable decisions or choose another connection.</p>}
+    {choices.length === 0 && <p className="text-sm text-ink-3">Add a shared OpenAI or OpenRouter API connection to get started.</p>}
+    {draft.connectionId && !selected && <p role="status" className="text-sm text-ink-3">The saved connection is unavailable to you. Disable decisions or choose another connection.</p>}
     <div className="flex flex-wrap items-center gap-3">
-      <Button variant="outline" size="sm" onClick={onAdd} disabled={saving || testing}>Add connection</Button>
+      <Button variant="secondary" size="sm" onClick={onAdd} disabled={saving || testing}>Add connection</Button>
       {selected && <Link to={`/apps/${selected.id}/permissions`} className="text-sm underline underline-offset-4">{selected.status === "connected" ? "Manage connection" : "Reconnect connection"}</Link>}
     </div>
     {draft.connectionId && <fieldset disabled={saving || testing} className="space-y-4">
       <ToggleField label="Enable decisions" checked={draft.enabled} onChange={enabled => setDraft(value => ({ ...value, enabled }))} />
       <div className="space-y-2">
         <ToggleField label="Allow company-sponsored background decisions" checked={draft.allowBackground} onChange={allowBackground => setDraft(value => ({ ...value, allowBackground }))} />
-        <p className="text-xs text-muted-foreground">Background features can charge this connection without a responsible person. These requests appear as Paperclip services.</p>
+        <p className="text-xs text-ink-3">Background features can charge this connection without a responsible person. These requests appear as Paperclip services.</p>
       </div>
     </fieldset>}
-    {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
-    {!dirty && unavailable && <p role="alert" className="text-sm text-destructive">{unavailable}</p>}
+    {error && <p role="alert" className="text-sm text-bad">{error}</p>}
+    {!dirty && unavailable && <p role="alert" className="text-sm text-bad">{unavailable}</p>}
     {!dirty && result?.status === "succeeded" && <div role="status" className="space-y-2 text-sm">
       <p className="font-medium">Decision model is working</p>
       <dl className="grid grid-cols-2 gap-2">{Object.entries(result.answers).map(([name, answer]) => <div key={name}>
-        <dt className="text-muted-foreground">{name === "billing" ? "Billing problem" : name === "team" ? "Assigned team" : "Disruption score"}</dt>
+        <dt className="text-ink-3">{name === "billing" ? "Billing problem" : name === "team" ? "Assigned team" : "Disruption score"}</dt>
         <dd className="font-mono">{answer.type === "boolean" ? `${Math.round(answer.probability * 100)}%` : answer.type === "choice" ? answer.choice : `${answer.score.toFixed(2)} / 2`}</dd>
       </div>)}</dl>
-      <p className="text-xs text-muted-foreground">Usage was recorded. Test answers are not saved.</p>
+      <p className="text-xs text-ink-3">Usage was recorded. Test answers are not saved.</p>
     </div>}
     <div className="flex flex-wrap items-center justify-between gap-3">
       <div className="space-y-1">
-        <Button variant="outline" size="sm" disabled={!settings.enabled || dirty || saving || testing || selected?.status !== "connected"} onClick={onTest}>{testing ? "Running test…" : "Run test"}</Button>
-        <p className="text-xs text-muted-foreground">{dirty ? "Save changes before testing." : "Runs a small sample with an API charge."}</p>
+        <Button variant="secondary" size="sm" disabled={!settings.enabled || dirty || saving || testing || selected?.status !== "connected"} onClick={onTest}>{testing ? "Running test…" : "Run test"}</Button>
+        <p className="text-xs text-ink-3">{dirty ? "Save changes before testing." : "Runs a small sample with an API charge."}</p>
       </div>
       {dirty && <Button onClick={() => onSave(draft)} disabled={saving || testing || (draft.enabled && selected?.status !== "connected")}>{saving ? "Saving…" : "Save decision model"}</Button>}
     </div>
@@ -100,8 +100,8 @@ export function DecisionModelSettingsSection({ companyId }: { companyId: string 
   const save = useMutation({ mutationFn: (settings: UpdateDecisionModel) => decisionModelsApi.update(companyId, settings), onSuccess: settings => {
     setNewlyConnectedId(null); test.reset(); client.setQueryData(key, { ...query.data, settings });
   } });
-  if (query.isPending) return <p className="text-sm text-muted-foreground">Loading decision model…</p>;
-  if (query.error) return <div role="alert" className="space-y-2"><p className="text-sm text-destructive">Could not load decision settings.</p><Button variant="outline" onClick={() => void query.refetch()}>Try again</Button></div>;
+  if (query.isPending) return <p className="text-sm text-ink-3">Loading decision model…</p>;
+  if (query.error) return <div role="alert" className="space-y-2"><p className="text-sm text-bad">Could not load decision settings.</p><Button variant="secondary" onClick={() => void query.refetch()}>Try again</Button></div>;
   if (!query.data?.canManage || !query.data.settings) return null;
   return <>
     <DecisionModelSettingsView settings={query.data.settings} choices={query.data.choices} saving={save.isPending} testing={test.isPending}

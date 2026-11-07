@@ -92,7 +92,7 @@ function SuccessfulRunRetryNowControl({
     && (retryNow.data?.outcome === "promoted" || retryNow.data?.outcome === "already_promoted");
 
   return (
-    <div className="mt-2 rounded-md border border-amber-300/70 bg-background/80 p-2 dark:border-amber-500/40 dark:bg-background/40">
+    <div className="mt-2 rounded-md border border-amber-300/70 bg-bg/80 p-2 dark:border-amber-500/40 dark:bg-bg/40">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0 text-xs leading-5 text-amber-900 dark:text-amber-100">
           {retryNow.data?.outcome === "waiting" && retryNow.data.scheduledRetry?.runId === scheduledRetry.runId
@@ -101,9 +101,9 @@ function SuccessfulRunRetryNowControl({
         </div>
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           size="sm"
-          className="shrink-0 border-amber-300/80 bg-background/80 text-amber-950 shadow-none hover:bg-amber-100 dark:border-amber-500/50 dark:bg-background/40 dark:text-amber-100 dark:hover:bg-amber-500/15"
+          className="shrink-0 shadow-none"
           onClick={() => retryNow.mutate()}
           disabled={retryNow.isPending || success}
           data-testid="issue-next-step-retry-now"
@@ -156,7 +156,7 @@ function WaitingChipLink({
     <IssueLinkQuicklook
       issuePathId={issuePathId}
       to={createIssueDetailPath(issuePathId)}
-      className="inline-flex max-w-full items-center gap-1 rounded-md border border-blue-300/70 bg-background/80 px-2 py-1 font-mono text-xs text-blue-950 transition-colors hover:border-blue-500 hover:bg-blue-100 hover:underline dark:border-blue-500/40 dark:bg-background/40 dark:text-blue-100 dark:hover:bg-blue-500/15"
+      className="inline-flex max-w-full items-center gap-1 rounded-md border border-blue-300/70 bg-bg/80 px-2 py-1 font-mono text-xs text-blue-950 transition-colors hover:border-blue-500 hover:bg-blue-100 hover:underline dark:border-blue-500/40 dark:bg-bg/40 dark:text-blue-100 dark:hover:bg-blue-500/15"
     >
       <StatusGlyph
         status={blocker.status}
@@ -210,7 +210,7 @@ function SuccessfulRunHandoffInFlightNotice({
     <div
       data-testid="issue-next-step-in-flight"
       data-successful-run-handoff="in_flight"
-      className="mb-3 rounded-md border border-border/60 bg-muted/40 px-3 py-2 text-xs text-muted-foreground"
+      className="mb-3 rounded-md border border-line/60 bg-bg-3/40 px-3 py-2 text-xs text-ink-3"
     >
       <div className="flex items-start gap-2">
         <span className="mt-1 flex h-3.5 w-3.5 shrink-0 items-center justify-center" aria-hidden>
@@ -225,7 +225,7 @@ function SuccessfulRunHandoffInFlightNotice({
               {assigneeAgentId ? (
                 <Link
                   to={`/agents/${assigneeAgentId}/runs/${liveRunId}`}
-                  className="font-mono underline underline-offset-2 hover:text-foreground"
+                  className="font-mono underline underline-offset-2 hover:text-ink"
                 >
                   run {shortRunId}
                 </Link>
@@ -553,7 +553,7 @@ export function IssueBlockedNotice({
       return (
         <span key={blocker.id} className="inline-flex max-w-full items-center gap-1.5">
           <LockedIssueChip identifier={blocker.identifier} />
-          <span className="text-(length:--text-micro) text-muted-foreground">
+          <span className="text-(length:--text-micro) text-ink-3">
             Private — you don't have access
           </span>
         </span>
@@ -566,7 +566,7 @@ export function IssueBlockedNotice({
         key={blocker.id}
         issuePathId={issuePathId}
         to={createIssueDetailPath(issuePathId)}
-        className="inline-flex max-w-full items-center gap-1 rounded-md border border-amber-300/70 bg-background/80 px-2 py-1 font-mono text-xs text-amber-950 transition-colors hover:border-amber-500 hover:bg-amber-100 hover:underline dark:border-amber-500/40 dark:bg-background/40 dark:text-amber-100 dark:hover:bg-amber-500/15"
+        className="inline-flex max-w-full items-center gap-1 rounded-md border border-amber-300/70 bg-bg/80 px-2 py-1 font-mono text-xs text-amber-950 transition-colors hover:border-amber-500 hover:bg-amber-100 hover:underline dark:border-amber-500/40 dark:bg-bg/40 dark:text-amber-100 dark:hover:bg-amber-500/15"
       >
         <span>{blocker.identifier ?? blocker.id.slice(0, 8)}</span>
         <span className="max-w-(--sz-18rem) truncate font-sans text-(length:--text-micro) text-amber-800 dark:text-amber-200">
@@ -637,16 +637,16 @@ export function IssueBlockedNotice({
                 {successfulRunHandoff.sourceRunId && successfulRunHandoff.assigneeAgentId ? (
                   <Link
                     to={`/agents/${successfulRunHandoff.assigneeAgentId}/runs/${successfulRunHandoff.sourceRunId}`}
-                    className="rounded-md border border-amber-300/70 bg-background/80 px-2 py-1 font-mono text-amber-950 hover:border-amber-500 hover:bg-amber-100 hover:underline dark:border-amber-500/40 dark:bg-background/40 dark:text-amber-100 dark:hover:bg-amber-500/15"
+                    className="rounded-md border border-amber-300/70 bg-bg/80 px-2 py-1 font-mono text-amber-950 hover:border-amber-500 hover:bg-amber-100 hover:underline dark:border-amber-500/40 dark:bg-bg/40 dark:text-amber-100 dark:hover:bg-amber-500/15"
                   >
                     run {successfulRunHandoff.sourceRunId.slice(0, 8)}
                   </Link>
                 ) : successfulRunHandoff.sourceRunId ? (
-                  <span className="rounded-md border border-amber-300/70 bg-background/80 px-2 py-1 font-mono text-amber-950 dark:border-amber-500/40 dark:bg-background/40 dark:text-amber-100">
+                  <span className="rounded-md border border-amber-300/70 bg-bg/80 px-2 py-1 font-mono text-amber-950 dark:border-amber-500/40 dark:bg-bg/40 dark:text-amber-100">
                     run {successfulRunHandoff.sourceRunId.slice(0, 8)}
                   </span>
                 ) : null}
-                <span className="rounded-md border border-amber-300/70 bg-background/80 px-2 py-1 text-amber-900 dark:border-amber-500/40 dark:bg-background/40 dark:text-amber-100">
+                <span className="rounded-md border border-amber-300/70 bg-bg/80 px-2 py-1 text-amber-900 dark:border-amber-500/40 dark:bg-bg/40 dark:text-amber-100">
                   Asked {agentName ?? "the assignee"} to choose the next step
                 </span>
               </div>

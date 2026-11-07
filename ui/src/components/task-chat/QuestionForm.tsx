@@ -149,12 +149,12 @@ function SelectOption({
       aria-checked={selected}
       disabled={disabled}
       className={cn(
-        "tc-question-option flex w-full items-start gap-2 rounded-md px-2.5 py-(--tc-mobile-option-py) text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60",
+        "tc-question-option flex w-full items-start gap-2 rounded-md px-2.5 py-(--tc-mobile-option-py) text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus disabled:cursor-not-allowed disabled:opacity-60",
         selected
-          ? "bg-foreground/5"
+          ? "bg-ink/5"
           : recommended
-            ? "bg-muted/50"
-            : "hover:bg-muted/40",
+            ? "bg-bg-3/50"
+            : "hover:bg-bg-3/40",
       )}
       data-selected={selected ? "true" : "false"}
       data-recommended={recommended ? "true" : "false"}
@@ -166,8 +166,8 @@ function SelectOption({
           "mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center border",
           multiple ? "rounded-sm" : "rounded-full",
           selected
-            ? "border-primary bg-primary text-primary-foreground"
-            : "border-muted-foreground/50",
+            ? "border-accent bg-accent text-accent-ink"
+            : "border-ink-3/50",
         )}
       >
         {selected ? (
@@ -179,18 +179,18 @@ function SelectOption({
         ) : null}
       </span>
       <span className="min-w-0 flex-1">
-        <span className="flex flex-wrap items-center gap-1.5 text-sm font-medium leading-5 text-foreground">
+        <span className="flex flex-wrap items-center gap-1.5 text-sm font-medium leading-5 text-ink">
           <InteractionInlineMarkdown className="min-w-0">
             {label}
           </InteractionInlineMarkdown>
           {recommended ? (
-            <span className="rounded-sm bg-background/70 px-1.5 py-0.5 text-(length:--text-micro) font-medium text-muted-foreground">
+            <span className="rounded-sm bg-bg/70 px-1.5 py-0.5 text-(length:--text-micro) font-medium text-ink-3">
               Recommended
             </span>
           ) : null}
         </span>
         {description ? (
-          <span className="block text-xs leading-4 text-muted-foreground">
+          <span className="block text-xs leading-4 text-ink-3">
             <InteractionInlineMarkdown>{description}</InteractionInlineMarkdown>
           </span>
         ) : null}
@@ -224,15 +224,15 @@ export function QuestionResponseSummary({
           <div key={question.id}>
             <dt>
               {question.header ? (
-                <span className="block text-xs font-medium text-muted-foreground">
+                <span className="block text-xs font-medium text-ink-3">
                   {question.header}
                 </span>
               ) : null}
-              <InteractionInlineMarkdown className="text-sm text-foreground">
+              <InteractionInlineMarkdown className="text-sm text-ink">
                 {question.prompt}
               </InteractionInlineMarkdown>
             </dt>
-            <dd className="mt-0.5 text-foreground">
+            <dd className="mt-0.5 text-ink">
               {values.length > 0 ? (
                 <InteractionInlineMarkdown>
                   {values.join(", ")}
@@ -350,7 +350,7 @@ function QuestionFormForRequest({
   );
   if (!question)
     return (
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm text-ink-3">
         No answerable questions were provided.
       </p>
     );
@@ -583,13 +583,13 @@ function QuestionFormForRequest({
           role="region"
           aria-label="Question context"
           tabIndex={0}
-          className="mb-3 max-h-(--sz-28dvh) overflow-auto overscroll-contain text-sm text-muted-foreground"
+          className="mb-3 max-h-(--sz-28dvh) overflow-auto overscroll-contain text-sm text-ink-3"
         >
           <MarkdownBody mediaMode="reference" linkIssueReferences={false}>{questionSet.description}</MarkdownBody>
         </div>
       ) : null}
       {question.answerMode === "text" ? (
-        <div className="mb-2 flex items-center gap-3 text-xs text-muted-foreground">
+        <div className="mb-2 flex items-center gap-3 text-xs text-ink-3">
           {question.answerMode === "text" ? <span>Write an answer</span> : null}
         </div>
       ) : null}
@@ -599,14 +599,14 @@ function QuestionFormForRequest({
             {pagination}
           </TaskChatComposerTakeoverControls>
         ) : (
-          <div className="mb-2 flex justify-end text-xs text-muted-foreground">
+          <div className="mb-2 flex justify-end text-xs text-ink-3">
             {pagination}
           </div>
         )
       ) : null}
       <div>
         {question.header ? (
-          <p className="mb-1 text-xs font-medium text-muted-foreground">
+          <p className="mb-1 text-xs font-medium text-ink-3">
             {question.header}
           </p>
         ) : null}
@@ -614,12 +614,12 @@ function QuestionFormForRequest({
           ref={promptRef}
           tabIndex={-1}
           id={`${id}-${question.id}-prompt`}
-          className="text-sm font-medium leading-5 text-foreground"
+          className="text-sm font-medium leading-5 text-ink"
         >
           <InteractionInlineMarkdown>{question.prompt}</InteractionInlineMarkdown>
         </div>
         {question.helpText ? (
-          <div className="mt-1 text-xs leading-4 text-muted-foreground">
+          <div className="mt-1 text-xs leading-4 text-ink-3">
             <InteractionInlineMarkdown>{question.helpText}</InteractionInlineMarkdown>
           </div>
         ) : null}
@@ -652,7 +652,7 @@ function QuestionFormForRequest({
           {(question.options?.length ?? 0) > 8 ? (
             <label className="relative mb-1 block">
               <Search
-                className="pointer-events-none absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground"
+                className="pointer-events-none absolute left-2.5 top-2.5 h-4 w-4 text-ink-3"
                 aria-hidden
               />
               <Input
@@ -735,11 +735,11 @@ function QuestionFormForRequest({
         </div>
       ) : null}
       {currentError && answerHasValue(answer) ? (
-        <p className="mt-2 text-xs text-destructive">{currentError}</p>
+        <p className="mt-2 text-xs text-bad">{currentError}</p>
       ) : null}
       <div aria-live="assertive">
         {error ? (
-          <div className="mt-2 rounded-sm border border-destructive/60 bg-destructive/10 px-2.5 py-2 text-sm text-destructive">
+          <div className="mt-2 rounded-sm border border-bad/60 bg-bad/10 px-2.5 py-2 text-sm text-bad">
             {error.message}
           </div>
         ) : null}
@@ -766,7 +766,7 @@ function QuestionFormForRequest({
           <Button
             type="button"
             size="sm"
-            variant="outline"
+            variant="secondary"
             disabled={busy}
             onClick={skipQuestion}
           >

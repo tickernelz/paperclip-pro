@@ -72,11 +72,11 @@ function MenuAction({
   topLevel = false,
 }: MenuActionProps) {
   const className =
-    "flex h-(--profile-popover-row-height) w-full items-center gap-(--profile-popover-row-gap) rounded-lg px-2.5 text-left text-(length:--text-compact) font-medium leading-(--profile-popover-label-line-height) text-foreground transition-colors hover:bg-accent";
+    "flex h-(--profile-popover-row-height) w-full items-center gap-(--profile-popover-row-gap) rounded-lg px-2.5 text-left text-(length:--text-compact) font-medium leading-(--profile-popover-label-line-height) text-ink transition-colors hover:bg-bg-3";
 
   const content = (
     <>
-      <span className="flex size-5 shrink-0 items-center justify-center text-muted-foreground">
+      <span className="flex size-5 shrink-0 items-center justify-center text-ink-3">
         <Icon className="size-4" />
       </span>
       <span className="min-w-0 flex-1 truncate">{label}</span>
@@ -170,14 +170,14 @@ export function SidebarAccountMenu({
   }
 
   return (
-    <div className="bg-border/50 px-3 py-2 dark:bg-muted">
+    <div className="bg-line/50 px-3 py-2 dark:bg-bg-3">
       <div className={cn("flex items-center gap-0.5", !rail && "px-2")}>
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
             <button
               type="button"
               className={cn(
-                "flex min-w-0 items-center gap-2.5 rounded-lg text-left text-(length:--text-compact) font-medium text-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                "flex min-w-0 items-center gap-2.5 rounded-lg text-left text-(length:--text-compact) font-medium text-ink/80 transition-colors hover:bg-bg-3 hover:text-ink",
                 rail ? "w-full px-3 py-2" : "flex-1 px-2 py-1.5",
               )}
               aria-label="Open account menu"
@@ -193,7 +193,7 @@ export function SidebarAccountMenu({
             side="top"
             align="start"
             sideOffset={10}
-            className="min-h-(--profile-popover-min-height) w-(--profile-popover-width) max-w-(--sz-calc-24) overflow-hidden rounded-xl border-border bg-popover p-0 shadow-(--shadow-profile-popover)"
+            className="min-h-(--profile-popover-min-height) w-(--profile-popover-width) max-w-(--sz-calc-24) overflow-hidden rounded-xl border-line bg-bg-2 p-0 shadow-(--shadow-profile-popover)"
           >
             {/* The profile link is a stretched overlay so the staging SHA anchor can sit beside the email without nesting anchors. */}
             <div className="relative flex h-(--profile-popover-header-height) shrink-0 items-center gap-2.5 px-3.5">
@@ -201,22 +201,22 @@ export function SidebarAccountMenu({
                 to={profileHref}
                 aria-label="View profile"
                 onClick={closeNavigationChrome}
-                className="absolute inset-0 transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+                className="absolute inset-0 transition-colors hover:bg-bg-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus"
               />
               <Avatar className="pointer-events-none relative size-9">
                 {session?.user.image ? <AvatarImage src={session.user.image} alt={displayName} /> : null}
-                <AvatarFallback className="text-xs text-foreground">{initials}</AvatarFallback>
+                <AvatarFallback className="text-xs text-ink">{initials}</AvatarFallback>
               </Avatar>
               <div className="pointer-events-none relative min-w-0 flex-1">
-                <h2 className="truncate text-sm font-semibold leading-(--profile-popover-label-line-height) text-foreground">
+                <h2 className="truncate text-sm font-semibold leading-(--profile-popover-label-line-height) text-ink">
                   {displayName}
                 </h2>
-                <p className="truncate text-(length:--text-micro) leading-(--profile-popover-meta-line-height) text-muted-foreground">
+                <p className="truncate text-(length:--text-micro) leading-(--profile-popover-meta-line-height) text-ink-3">
                   {secondaryLabel}
                 </p>
                 {stagingCommit ? (
                   <a
-                    className="pointer-events-auto block truncate font-mono text-(length:--text-micro) leading-(--profile-popover-meta-line-height) text-muted-foreground hover:underline focus-visible:underline"
+                    className="pointer-events-auto block truncate font-mono text-(length:--text-micro) leading-(--profile-popover-meta-line-height) text-ink-3 hover:underline focus-visible:underline"
                     href={`https://github.com/paperclipai/paperclip/commit/${stagingCommit}`}
                     target="_blank"
                     rel="noreferrer"
@@ -229,7 +229,7 @@ export function SidebarAccountMenu({
               </div>
             </div>
 
-            <div className="flex flex-1 flex-col gap-0.5 border-t border-border px-2.5 pb-2.5 pt-2">
+            <div className="flex flex-1 flex-col gap-0.5 border-t border-line px-2.5 pb-2.5 pt-2">
               <MenuAction
                 label="Settings"
                 icon={Settings}
@@ -258,13 +258,13 @@ export function SidebarAccountMenu({
                 <button
                   type="button"
                   className={cn(
-                    "flex h-(--profile-popover-row-height) w-full items-center gap-(--profile-popover-row-gap) rounded-lg px-2.5 text-left text-(length:--text-compact) font-medium leading-(--profile-popover-label-line-height) text-foreground transition-colors hover:bg-destructive/10",
+                    "flex h-(--profile-popover-row-height) w-full items-center gap-(--profile-popover-row-gap) rounded-lg px-2.5 text-left text-(length:--text-compact) font-medium leading-(--profile-popover-label-line-height) text-ink transition-colors hover:bg-bad/10",
                     signOutMutation.isPending && "cursor-not-allowed opacity-60",
                   )}
                   onClick={handleSignOut}
                   disabled={signOutMutation.isPending}
                 >
-                  <span className="flex size-5 shrink-0 items-center justify-center text-muted-foreground">
+                  <span className="flex size-5 shrink-0 items-center justify-center text-ink-3">
                     <LogOut className="size-4" />
                   </span>
                   <span className="min-w-0 flex-1 truncate">
@@ -284,7 +284,7 @@ export function SidebarAccountMenu({
                 target="_blank"
                 rel="noreferrer"
                 aria-label="Share feedback"
-                className="flex size-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground/50 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="flex size-8 shrink-0 items-center justify-center rounded-lg text-ink-3/50 transition-colors hover:bg-bg-3 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
               >
                 <Flag className="h-4 w-4" aria-hidden="true" />
               </a>

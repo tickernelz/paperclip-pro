@@ -133,7 +133,7 @@ for (const target of targets) {
   await page.goto(url, { waitUntil: "networkidle" });
   await page.waitForTimeout(200);
   if (target.slug === "09-sidebar-link") {
-    await page.addStyleTag({ content: "body { background: var(--sidebar); }" });
+    await page.addStyleTag({ content: "body { background: var(--bg-2); }" });
   }
   if (target.openCreateSpaceModal) {
     await page.evaluate(() => {

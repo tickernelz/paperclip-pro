@@ -108,7 +108,7 @@ function ProjectTilePicker({
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="shrink-0 rounded-lg cursor-pointer hover:ring-2 hover:ring-foreground/20 transition-(--tp-box-shadow)"
+          className="shrink-0 rounded-lg cursor-pointer hover:ring-2 hover:ring-ink/20 transition-(--tp-box-shadow)"
           aria-label="Change project icon and color"
         >
           <ProjectTile color={color} icon={icon} size="md" />
@@ -116,7 +116,7 @@ function ProjectTilePicker({
       </PopoverTrigger>
       <PopoverContent className="w-72 p-3" align="start">
         {/* Icon search + grid */}
-        <p className="text-xs font-medium text-muted-foreground mb-2">Icon</p>
+        <p className="text-xs font-medium text-ink-3 mb-2">Icon</p>
         <Input
           placeholder="Search icons..."
           value={search}
@@ -131,8 +131,8 @@ function ProjectTilePicker({
               type="button"
               onClick={() => onSelectIcon(name)}
               className={cn(
-                "flex items-center justify-center h-8 w-8 rounded hover:bg-accent transition-colors",
-                (icon ?? DEFAULT_PROJECT_ICON) === name && "bg-accent ring-1 ring-primary",
+                "flex items-center justify-center h-8 w-8 rounded hover:bg-bg-3 transition-colors",
+                (icon ?? DEFAULT_PROJECT_ICON) === name && "bg-bg-3 ring-1 ring-accent",
               )}
               title={name}
             >
@@ -140,13 +140,13 @@ function ProjectTilePicker({
             </button>
           ))}
           {filteredIcons.length === 0 && (
-            <p className="col-span-7 text-xs text-muted-foreground text-center py-2">No icons match</p>
+            <p className="col-span-7 text-xs text-ink-3 text-center py-2">No icons match</p>
           )}
         </div>
 
         {/* Color swatches */}
-        <div className="mt-3 border-t border-border pt-3">
-          <p className="text-xs font-medium text-muted-foreground mb-2">Color</p>
+        <div className="mt-3 border-t border-line pt-3">
+          <p className="text-xs font-medium text-ink-3 mb-2">Color</p>
           <div className="grid grid-cols-5 gap-1.5">
             {/* Neutral / reset-to-gray option */}
             <button
@@ -154,7 +154,7 @@ function ProjectTilePicker({
               onClick={() => onSelectColor(null)}
               className={`h-6 w-6 cursor-pointer transition-(--tp-transform-box-shadow) duration-150 hover:scale-110 ${
                 color === null
-                  ? "ring-2 ring-foreground ring-offset-1 ring-offset-background rounded-md"
+                  ? "ring-2 ring-ink ring-offset-1 ring-offset-bg rounded-md"
                   : ""
               }`}
               aria-label="Reset to neutral gray"
@@ -169,8 +169,8 @@ function ProjectTilePicker({
                 onClick={() => onSelectColor(swatch)}
                 className={`h-6 w-6 rounded-md cursor-pointer transition-(--tp-transform-box-shadow) duration-150 hover:scale-110 ${
                   swatch === color
-                    ? "ring-2 ring-foreground ring-offset-1 ring-offset-background"
-                    : "hover:ring-2 hover:ring-foreground/30"
+                    ? "ring-2 ring-ink ring-offset-1 ring-offset-bg"
+                    : "hover:ring-2 hover:ring-ink/30"
                 }`}
                 style={{ backgroundColor: swatch }}
                 aria-label={`Select color ${swatch}`}
@@ -690,7 +690,7 @@ export function ProjectDetail() {
   }
 
   if (isLoading) return <PageSkeleton variant="detail" />;
-  if (error) return <p className="text-sm text-destructive">{error.message}</p>;
+  if (error) return <p className="text-sm text-bad">{error.message}</p>;
   if (!project) return null;
   const showLeftProjectNotice =
     projectMembershipState === "left" && !dismissedLeftProjectIds.has(project.id);
@@ -783,7 +783,7 @@ export function ProjectDetail() {
             </div>
           ) : null}
           {project.managedByPlugin ? (
-            <div className="inline-flex items-center gap-2 rounded-full border border-border bg-muted px-3 py-1 text-(length:--text-micro) font-medium text-muted-foreground">
+            <div className="inline-flex items-center gap-2 rounded-full border border-line bg-bg-3 px-3 py-1 text-(length:--text-micro) font-medium text-ink-3">
               <span className="h-2 w-2 rounded-full" style={{ backgroundColor: project.color ?? "var(--project-seed)" }} />
               Managed by {project.managedByPlugin.pluginDisplayName}
             </div>
@@ -881,7 +881,7 @@ export function ProjectDetail() {
       {activeTab === "workspaces" ? (
         workspaceTabDecisionLoaded ? (
           workspaceTabError ? (
-            <p className="text-sm text-destructive">{workspaceTabError.message}</p>
+            <p className="text-sm text-bad">{workspaceTabError.message}</p>
           ) : (
             <ProjectWorkspacesContent
               companyId={resolvedCompanyId!}
@@ -891,7 +891,7 @@ export function ProjectDetail() {
             />
           )
         ) : (
-          <p className="text-sm text-muted-foreground">Loading workspaces...</p>
+          <p className="text-sm text-ink-3">Loading workspaces...</p>
         )
       ) : null}
 

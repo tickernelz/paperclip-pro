@@ -642,7 +642,7 @@ it("shows viewer_unavailable as an error and keeps takeover independent of agent
 
   const alert = container.querySelector('[role="alert"]');
   expect(alert?.textContent).toBe("The browser is not answering.");
-  expect(alert?.className).toContain("text-destructive");
+  expect(alert?.className).toContain("text-bad");
 
   await takeOver();
   expect(controlButton().getAttribute("aria-pressed")).toBe("true");

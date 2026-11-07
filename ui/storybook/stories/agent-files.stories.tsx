@@ -86,10 +86,10 @@ function AgentFilesStory({ failedSync = false, fullStorageRun = false, historica
 
   return <QueryClientProvider client={client}>
     <div className="space-y-6 p-6">
-      <div className="space-y-3 rounded-md border border-border bg-muted p-4">
+      <div className="space-y-3 rounded-md border border-line bg-bg-3 p-4">
         <p className="text-sm">Storybook simulation · Real agent instructions editor with in-memory file responses. No provider runs or files on disk. Binary download is shown as a link only.</p>
-        <Button variant="outline" onClick={() => simulateAgent.current()}>Simulate agent edit</Button>
-        <p role="status" className="text-sm text-muted-foreground">{saved ? `${saved} file save completed in this story.` : "Saved agent files are ready for the next task."}</p>
+        <Button variant="secondary" onClick={() => simulateAgent.current()}>Simulate agent edit</Button>
+        <p role="status" className="text-sm text-ink-3">{saved ? `${saved} file save completed in this story.` : "Saved agent files are ready for the next task."}</p>
       </div>
       {(failedSync || fullStorageRun) && <section aria-label="Affected run">
         <p className="text-sm font-medium">Affected run</p>
@@ -99,8 +99,8 @@ function AgentFilesStory({ failedSync = false, fullStorageRun = false, historica
       </section>}
       {ready && <PromptsTab agent={agent} companyId={agent.companyId} onDirtyChange={setDirty} onSavingChange={setSaving}
         onSaveActionChange={onSave} onCancelActionChange={onCancel} />}
-      <div className="flex items-center justify-between border-t border-border pt-4">
-        <Button variant="outline" disabled={!dirty || saving} onClick={() => cancel.current?.()}>Cancel changes</Button>
+      <div className="flex items-center justify-between border-t border-line pt-4">
+        <Button variant="secondary" disabled={!dirty || saving} onClick={() => cancel.current?.()}>Cancel changes</Button>
         <Button disabled={!dirty || saving} onClick={() => save.current?.()}>Save changes</Button>
       </div>
     </div>

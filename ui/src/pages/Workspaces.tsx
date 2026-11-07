@@ -113,7 +113,7 @@ export function Workspaces() {
   if (experimentalSettingsQuery.isLoading) return <PageSkeleton variant="detail" />;
   if (!isolatedWorkspacesEnabled) return <Navigate to="/issues" replace />;
   if (dataLoading) return <PageSkeleton variant="list" />;
-  if (error) return <p className="text-sm text-destructive">{error.message}</p>;
+  if (error) return <p className="text-sm text-bad">{error.message}</p>;
 
   return (
     <div className="space-y-6">
@@ -129,7 +129,7 @@ export function Workspaces() {
       />
 
       {groups.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No workspace activity yet.</p>
+        <p className="text-sm text-ink-3">No workspace activity yet.</p>
       ) : (
         <div className="space-y-8">
           {groups.map((group) => (
@@ -143,7 +143,7 @@ export function Workspaces() {
                     {group.projectName}
                   </Link>
                 </div>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs text-ink-3">
                   {group.summaries.length} workspace{group.summaries.length === 1 ? "" : "s"}
                 </span>
               </div>
@@ -156,13 +156,13 @@ export function Workspaces() {
             </section>
           ))}
           {overviewQuery.hasNextPage ? (
-            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
-              <p className="text-sm text-muted-foreground">
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
+              <p className="text-sm text-ink-3">
                 Showing {overviewItems.length} of {totalWorkspaceCount} workspaces.
               </p>
               <Button
                 type="button"
-                variant="outline"
+                variant="secondary"
                 size="sm"
                 onClick={() => void overviewQuery.fetchNextPage()}
                 disabled={overviewQuery.isFetchingNextPage}

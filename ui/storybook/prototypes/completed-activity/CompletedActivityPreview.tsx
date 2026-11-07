@@ -219,11 +219,11 @@ export function CompletedActivityPreview({
           ? [read, retry, { ...recovered, status: "in_progress" }]
           : [read, retry, recovered];
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-6 py-3">
+    <div className="min-h-screen bg-bg text-ink">
+      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-6 py-3">
         <div className="flex flex-col gap-1">
           <h1 className="text-sm font-semibold">Completed activity</h1>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             Completed activity · expand any summary to inspect its history
           </p>
         </div>
@@ -276,7 +276,7 @@ export function CompletedActivityPreview({
           scenarios.map((scenario) => (
             <section key={scenario.id} className="flex min-w-0 flex-col gap-2">
               <h2 className="text-sm font-medium">{scenario.title}</h2>
-              <p className="text-xs text-muted-foreground">{scenario.note}</p>
+              <p className="text-xs text-ink-3">{scenario.note}</p>
               <CompletedActivityGroup
                 item={phase(scenario.id, scenario.items)}
               />

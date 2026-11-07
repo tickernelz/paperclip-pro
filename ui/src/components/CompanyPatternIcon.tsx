@@ -189,7 +189,7 @@ export function CompanyPatternIcon({
           style={{ imageRendering: "pixelated" }}
         />
       ) : (
-        <div className="absolute inset-0 bg-muted" />
+        <div className="absolute inset-0 bg-bg-3" />
       )}
       {!logo && (
         <span className="relative z-10 drop-shadow-(--drop-shadow-extract-1)">

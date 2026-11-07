@@ -269,10 +269,10 @@ function RetryMetric({
       "rounded-sm border px-3 py-2",
       tone === "warning"
         ? "border-amber-300 bg-amber-50 text-amber-950 dark:border-amber-900/70 dark:bg-amber-950/30 dark:text-amber-100"
-        : "border-border bg-background text-foreground",
+        : "border-line bg-bg text-ink",
     )}>
       <div className="text-base font-semibold">{formatNumber(value)}</div>
-      <div className="text-xs text-muted-foreground">{label}</div>
+      <div className="text-xs text-ink-3">{label}</div>
     </div>
   );
 }
@@ -592,7 +592,7 @@ function PipelineStatusChip({ archivedAt }: { archivedAt: Date | string | null }
       className={cn(
         "font-semibold",
         paused
-          ? "border-muted-foreground/20 bg-muted text-muted-foreground"
+          ? "border-ink-3/20 bg-bg-3 text-ink-3"
           : "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/60 dark:bg-emerald-950/30 dark:text-emerald-300",
       )}
     >
@@ -660,10 +660,10 @@ export function PipelinesIndexTable({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col gap-3 border-y border-border py-4 lg:flex-row lg:items-center lg:justify-between">
+      <div className="flex flex-col gap-3 border-y border-line py-4 lg:flex-row lg:items-center lg:justify-between">
         <label className="relative block w-full max-w-md">
           <span className="sr-only">Search pipelines</span>
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-3" />
           <Input
             value={search}
             onChange={(event) => onSearchChange(event.target.value)}
@@ -672,14 +672,14 @@ export function PipelinesIndexTable({
           />
         </label>
         <div className="flex items-center gap-1 shrink-0">
-          <div className="flex items-center overflow-hidden rounded-md border border-border">
+          <div className="flex items-center overflow-hidden rounded-md border border-line">
             <button
               type="button"
               className={cn(
                 "p-1.5 transition-colors disabled:cursor-not-allowed disabled:opacity-50",
                 effectiveViewMode === "nested" && connectionsAvailable
-                  ? "bg-accent text-foreground"
-                  : "text-muted-foreground hover:text-foreground",
+                  ? "bg-bg-3 text-ink"
+                  : "text-ink-3 hover:text-ink",
               )}
               disabled={!connectionsAvailable}
               onClick={() => onViewModeChange("nested")}
@@ -692,8 +692,8 @@ export function PipelinesIndexTable({
               className={cn(
                 "p-1.5 transition-colors",
                 effectiveViewMode === "flat"
-                  ? "bg-accent text-foreground"
-                  : "text-muted-foreground hover:text-foreground",
+                  ? "bg-bg-3 text-ink"
+                  : "text-ink-3 hover:text-ink",
               )}
               onClick={() => onViewModeChange("flat")}
               title="Flat list"
@@ -704,7 +704,7 @@ export function PipelinesIndexTable({
 
           <Popover>
             <PopoverTrigger asChild>
-              <Button variant="outline" size="icon" className="h-8 w-8 shrink-0" title="Sort">
+              <Button variant="secondary" size="icon" className="h-8 w-8 shrink-0" title="Sort">
                 <ArrowUpDown className="h-3.5 w-3.5" />
               </Button>
             </PopoverTrigger>
@@ -716,13 +716,13 @@ export function PipelinesIndexTable({
                     type="button"
                     className={cn(
                       "flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-sm",
-                      sortField === field ? "bg-accent/50 text-foreground" : "text-muted-foreground hover:bg-accent/50",
+                      sortField === field ? "bg-bg-3/50 text-ink" : "text-ink-3 hover:bg-bg-3/50",
                     )}
                     onClick={() => selectSort(field)}
                   >
                     <span>{label}</span>
                     {sortField === field && (
-                      <span className="text-xs text-muted-foreground">{sortDir === "asc" ? "↑" : "↓"}</span>
+                      <span className="text-xs text-ink-3">{sortDir === "asc" ? "↑" : "↓"}</span>
                     )}
                   </button>
                 ))}
@@ -738,7 +738,7 @@ export function PipelinesIndexTable({
         <div className="overflow-x-auto">
           <table className="w-full min-w-(--sz-780px) border-collapse text-sm">
             <thead>
-              <tr className="border-b border-border text-left text-(length:--text-micro) font-semibold uppercase tracking-widest text-muted-foreground">
+              <tr className="border-b border-line text-left text-(length:--text-micro) font-semibold uppercase tracking-widest text-ink-3">
                 <th className="py-2 pl-3 pr-4">Name</th>
                 <th className="px-4 py-2">Attention</th>
                 <th className="px-4 py-2">Open items</th>
@@ -752,13 +752,13 @@ export function PipelinesIndexTable({
                 const inMotionCount = pipelineInMotionCount(row.pipeline);
                 const liveDownstreamCount = descendantActiveWorkCount(row.pipeline);
                 return (
-                  <tr key={row.pipeline.id} className="h-10 border-b border-border/70">
+                  <tr key={row.pipeline.id} className="h-10 border-b border-line/70">
                     <td className="pl-3 pr-4">
                       <div className="flex min-w-0 items-center gap-2" style={{ paddingLeft: row.depth * 28 }}>
                         {row.hasChildren ? (
                           <button
                             type="button"
-                            className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+                            className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-sm text-ink-3 hover:bg-bg-3/60 hover:text-ink"
                             aria-label={row.expanded ? `Collapse ${row.pipeline.name}` : `Expand ${row.pipeline.name}`}
                             onClick={() => togglePipeline(row.pipeline.id)}
                           >
@@ -770,14 +770,14 @@ export function PipelinesIndexTable({
                         <div className="min-w-0">
                           <Link
                             to={`/pipelines/${row.pipeline.id}`}
-                            className="font-semibold text-foreground hover:underline"
+                            className="font-semibold text-ink hover:underline"
                           >
                             {row.pipeline.name}
                           </Link>
                           {row.parentPipelineName ? (
-                            <span className="ml-2 text-muted-foreground">under {row.parentPipelineName}</span>
+                            <span className="ml-2 text-ink-3">under {row.parentPipelineName}</span>
                           ) : row.pipeline.description ? (
-                            <span className="ml-2 text-muted-foreground">- {row.pipeline.description}</span>
+                            <span className="ml-2 text-ink-3">- {row.pipeline.description}</span>
                           ) : null}
                         </div>
                       </div>
@@ -791,7 +791,7 @@ export function PipelinesIndexTable({
                           </span>
                         ) : null}
                         {inMotionCount > 0 ? (
-                          <span className="text-muted-foreground">
+                          <span className="text-ink-3">
                             {formatNumber(inMotionCount)} in motion
                           </span>
                         ) : null}
@@ -803,15 +803,15 @@ export function PipelinesIndexTable({
                         ) : null}
                       </div>
                     </td>
-                    <td className="px-4 text-muted-foreground">{formatOpenItems(pipelineOpenItemCount(row.pipeline))}</td>
+                    <td className="px-4 text-ink-3">{formatOpenItems(pipelineOpenItemCount(row.pipeline))}</td>
                     <td className="px-4"><PipelineStatusChip archivedAt={row.pipeline.archivedAt} /></td>
-                    <td className="px-4 text-muted-foreground">{formatPipelineActivity(pipelineActivityTime(row.pipeline))}</td>
+                    <td className="px-4 text-ink-3">{formatPipelineActivity(pipelineActivityTime(row.pipeline))}</td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
-          <p className="mt-4 text-sm text-muted-foreground">
+          <p className="mt-4 text-sm text-ink-3">
             Showing {formatNumber(rows.length)} of {formatNumber(filteredPipelines.length)}.
           </p>
         </div>
@@ -871,10 +871,10 @@ function NewPipelineDialog({
                 rows={3}
               />
             </label>
-            {error ? <p className="text-sm text-destructive">{error}</p> : null}
+            {error ? <p className="text-sm text-bad">{error}</p> : null}
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={pending}>
+            <Button type="button" variant="secondary" onClick={() => onOpenChange(false)} disabled={pending}>
               Cancel
             </Button>
             <Button type="submit" disabled={pending || !name.trim()}>
@@ -942,7 +942,7 @@ function PipelinesIndex() {
   });
 
   if (!selectedCompanyId) {
-    return <div className="mx-auto max-w-3xl py-10 text-sm text-muted-foreground">Select an organization to view pipelines.</div>;
+    return <div className="mx-auto max-w-3xl py-10 text-sm text-ink-3">Select an organization to view pipelines.</div>;
   }
   if (pipelinesQuery.isLoading) return <PageSkeleton />;
 
@@ -953,9 +953,9 @@ function PipelinesIndex() {
     <div className="w-full max-w-6xl px-6 py-8">
       <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">Work</p>
-          <h1 className="text-2xl font-semibold text-foreground">Pipelines</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-ink-3">Work</p>
+          <h1 className="text-2xl font-semibold text-ink">Pipelines</h1>
+          <p className="mt-1 text-sm text-ink-3">
             {formatNumber(pipelines.length)} pipeline{pipelines.length === 1 ? "" : "s"}. Connected ones are grouped from upstream work into downstream work.
           </p>
         </div>
@@ -966,7 +966,7 @@ function PipelinesIndex() {
       </div>
 
       {pipelinesQuery.error ? (
-        <p className="mb-4 text-sm text-destructive">Could not load pipelines.</p>
+        <p className="mb-4 text-sm text-bad">Could not load pipelines.</p>
       ) : null}
 
       {pipelines.length === 0 && !pipelinesQuery.error ? (
@@ -1244,7 +1244,7 @@ function PipelineCaseCard({
       {...listeners}
       className={`block px-3 py-2 text-sm ${
         isDragging && !isOverlay ? "opacity-40" : ""
-      } ${isOverlay ? "shadow-lg ring-1 ring-primary/20" : "hover:shadow-sm"}`}
+      } ${isOverlay ? "shadow-lg ring-1 ring-accent/20" : "hover:shadow-sm"}`}
     >
       <Link
         to={`/pipelines/${caseItem.pipelineId}/items/${caseItem.id}`}
@@ -1253,7 +1253,7 @@ function PipelineCaseCard({
         }}
         className="block text-inherit no-underline"
       >
-        <p className="font-medium leading-snug text-foreground">{title}</p>
+        <p className="font-medium leading-snug text-ink">{title}</p>
         <div className="mt-1.5 flex flex-wrap gap-1.5">
           {isWorking ? (
             <Badge variant="outline" className="relative border-emerald-400/40 bg-emerald-50 text-(length:--text-nano) text-emerald-700 dark:border-emerald-300/30 dark:bg-emerald-900/30 dark:text-emerald-300">
@@ -1279,7 +1279,7 @@ function PipelineCaseCard({
           ) : null}
         </div>
         {childrenSummary != null ? (
-          <p className="mt-1.5 text-xs text-muted-foreground">
+          <p className="mt-1.5 text-xs text-ink-3">
             Built from {formatNumber(childrenSummary)} {childrenSummary === 1 ? "item" : "items"}
           </p>
         ) : null}
@@ -1340,7 +1340,7 @@ function PipelineBoardColumn({
               to={settingsHref}
               aria-label={`Edit ${stage.name} stage`}
               title={`Edit ${stage.name} stage`}
-              className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded text-muted-foreground opacity-0 transition-opacity hover:text-foreground focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring group-hover/stage-header:opacity-100"
+              className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded text-ink-3 opacity-0 transition-opacity hover:text-ink focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus group-hover/stage-header:opacity-100"
             >
               <Settings className="h-3.5 w-3.5" />
             </Link>
@@ -1361,7 +1361,7 @@ function PipelineBoardColumn({
           {automationAgent && automationHref ? (
             <Link
               to={automationHref}
-              className="inline-flex max-w-full items-center gap-1 rounded-full border border-border px-2 py-0.5 text-xs font-medium text-muted-foreground hover:text-foreground"
+              className="inline-flex max-w-full items-center gap-1 rounded-full border border-line px-2 py-0.5 text-xs font-medium text-ink-3 hover:text-ink"
               title={`Edit ${stage.name} automation`}
             >
               <AgentAvatar agent={automationAgent} size={16} className="h-3.5 w-3.5 shrink-0"/>
@@ -1371,7 +1371,7 @@ function PipelineBoardColumn({
           {breakdownTarget ? (
             <Link
               to={`/pipelines/${breakdownTarget.pipelineId}`}
-              className="inline-flex max-w-full items-center gap-1 rounded-full border border-border px-2 py-0.5 text-xs font-medium text-muted-foreground hover:text-foreground"
+              className="inline-flex max-w-full items-center gap-1 rounded-full border border-line px-2 py-0.5 text-xs font-medium text-ink-3 hover:text-ink"
               title={`Breaks into ${breakdownTarget.name}`}
             >
               <span className="shrink-0">→</span>
@@ -1397,9 +1397,9 @@ function PipelineBoardColumn({
             caseGroups.map((group) => (
               <div key={group.key} className="space-y-2">
                 {groupBy === "builtFor" ? (
-                  <div className="flex items-center justify-between gap-2 px-1 pt-1 text-(length:--text-micro) font-medium text-muted-foreground">
+                  <div className="flex items-center justify-between gap-2 px-1 pt-1 text-(length:--text-micro) font-medium text-ink-3">
                     {group.href ? (
-                      <Link to={group.href} className="min-w-0 truncate hover:text-foreground hover:underline">
+                      <Link to={group.href} className="min-w-0 truncate hover:text-ink hover:underline">
                         {group.label}
                       </Link>
                     ) : (
@@ -1412,7 +1412,7 @@ function PipelineBoardColumn({
               </div>
             ))
           ) : (
-            <div className="rounded-md border border-dashed border-border px-3 py-8 text-center text-xs text-muted-foreground">
+            <div className="rounded-md border border-dashed border-line px-3 py-8 text-center text-xs text-ink-3">
               {onColumnEmpty ? onColumnEmpty(stage) : "Empty"}
             </div>
           )}
@@ -1703,16 +1703,16 @@ function PipelineBoard({ pipelineId }: { pipelineId: string }) {
 
   if (pipelineQuery.isLoading || casesQuery.isLoading) return <PageSkeleton />;
   if (!pipeline) {
-    return <div className="mx-auto max-w-3xl py-10 text-sm text-muted-foreground">Pipeline not found.</div>;
+    return <div className="mx-auto max-w-3xl py-10 text-sm text-ink-3">Pipeline not found.</div>;
   }
 
   if (orderedStages.length === 0) {
     return (
       <div className="mx-auto max-w-6xl space-y-4 px-6 py-8">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">Pipeline</p>
-          <h1 className="text-2xl font-semibold text-foreground">{pipeline.name}</h1>
-          <p className="text-sm text-muted-foreground">No stages are set up for this pipeline yet.</p>
+          <p className="text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-ink-3">Pipeline</p>
+          <h1 className="text-2xl font-semibold text-ink">{pipeline.name}</h1>
+          <p className="text-sm text-ink-3">No stages are set up for this pipeline yet.</p>
         </div>
         <EmptyState
           icon={Hexagon}
@@ -1730,17 +1730,17 @@ function PipelineBoard({ pipelineId }: { pipelineId: string }) {
     <div className="w-full space-y-4 px-6 py-8">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">Pipeline</p>
-          <h1 className="text-2xl font-semibold text-foreground">{pipeline.name}</h1>
-          {pipeline.description ? <p className="mt-1 text-sm text-muted-foreground">{pipeline.description}</p> : null}
-          <p className="mt-1 text-xs text-muted-foreground">{cases.length} total item{cases.length === 1 ? "" : "s"}</p>
+          <p className="text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-ink-3">Pipeline</p>
+          <h1 className="text-2xl font-semibold text-ink">{pipeline.name}</h1>
+          {pipeline.description ? <p className="mt-1 text-sm text-ink-3">{pipeline.description}</p> : null}
+          <p className="mt-1 text-xs text-ink-3">{cases.length} total item{cases.length === 1 ? "" : "s"}</p>
           {fedByPipelines.length > 0 ? (
             <div className="mt-2 flex flex-wrap items-center gap-1.5">
               {fedByPipelines.map((source) => (
                 <Link
                   key={source.id}
                   to={`/pipelines/${source.id}`}
-                  className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-xs font-medium text-muted-foreground hover:text-foreground"
+                  className="inline-flex items-center gap-1 rounded-full border border-line px-2 py-0.5 text-xs font-medium text-ink-3 hover:text-ink"
                   title={`Fed by ${source.name}`}
                 >
                   <span className="shrink-0">←</span>
@@ -1753,7 +1753,7 @@ function PipelineBoard({ pipelineId }: { pipelineId: string }) {
         <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
           <Select value={groupBy} onValueChange={handleGroupByChange}>
             <SelectTrigger className="h-9 w-(--sz-148px)" aria-label="Group by" title="Group by">
-              <Layers className="h-4 w-4 text-muted-foreground" />
+              <Layers className="h-4 w-4 text-ink-3" />
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -1767,7 +1767,7 @@ function PipelineBoard({ pipelineId }: { pipelineId: string }) {
               Add items
             </Link>
           </Button>
-          <Button variant="outline" size="icon" asChild>
+          <Button variant="secondary" size="icon" asChild>
             <Link to={`/pipelines/${pipelineId}/settings`} aria-label="Pipeline settings" title="Pipeline settings">
               <Settings className="h-4 w-4" />
             </Link>
@@ -1875,7 +1875,7 @@ function PipelineBoard({ pipelineId }: { pipelineId: string }) {
           <DialogFooter>
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               disabled={transitionCase.isPending}
               onClick={() => {
                 setPendingMove(null);
@@ -1901,7 +1901,7 @@ function PipelineBoard({ pipelineId }: { pipelineId: string }) {
             ) : pendingMove ? (
               <Button
                 type="button"
-                variant="destructive"
+                variant="danger"
                 disabled={transitionCase.isPending || !overrideReason.trim()}
                 onClick={() =>
                   transitionCase.mutate({
@@ -1934,7 +1934,7 @@ function NavigateToItem({ pipelineId, caseId }: { pipelineId: string; caseId: st
 }
 
 function NavigateMissingItem() {
-  return <div className="mx-auto max-w-3xl py-10 text-sm text-muted-foreground">Item not found.</div>;
+  return <div className="mx-auto max-w-3xl py-10 text-sm text-ink-3">Item not found.</div>;
 }
 
 function LinkRedirect({ to }: { to: string }) {
@@ -2732,7 +2732,7 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
 
   if (pipeline.isLoading || item.isLoading) return <PageSkeleton />;
   if (!detail || !pipeline.data) {
-    return <div className="mx-auto max-w-3xl py-10 text-sm text-muted-foreground">Item not found.</div>;
+    return <div className="mx-auto max-w-3xl py-10 text-sm text-ink-3">Item not found.</div>;
   }
 
   const workReferences = extractWorkReferences(detail.case);
@@ -2800,33 +2800,33 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
     <div className="mx-auto max-w-6xl px-6 py-8">
       <div className="mb-6 grid gap-5 lg:grid-cols-(--gtc-45) lg:items-start lg:gap-8">
         <div className="min-w-0">
-          <div className="mb-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
-            <Link to="/pipelines" className="hover:text-foreground">Pipelines</Link>
+          <div className="mb-2 flex flex-wrap items-center gap-2 text-sm text-ink-3">
+            <Link to="/pipelines" className="hover:text-ink">Pipelines</Link>
             <ChevronRight className="h-3.5 w-3.5" />
-            <Link to={`/pipelines/${pipelineId}`} className="hover:text-foreground">{pipeline.data.name}</Link>
+            <Link to={`/pipelines/${pipelineId}`} className="hover:text-ink">{pipeline.data.name}</Link>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <h1 className="min-w-0 text-2xl font-semibold text-foreground">{detail.case.title}</h1>
-            <span className="rounded-sm border border-border px-2 py-0.5 text-xs font-medium text-muted-foreground">
+            <h1 className="min-w-0 text-2xl font-semibold text-ink">{detail.case.title}</h1>
+            <span className="rounded-sm border border-line px-2 py-0.5 text-xs font-medium text-ink-3">
               {statusLabel}
             </span>
-            <div className="flex items-center gap-1 text-sm text-muted-foreground">
-              Stage: <span className="font-medium text-foreground">{detail.stage.name}</span>
+            <div className="flex items-center gap-1 text-sm text-ink-3">
+              Stage: <span className="font-medium text-ink">{detail.stage.name}</span>
             </div>
           </div>
           {detail.parentCase ? (
-            <p className="mt-2 text-sm text-muted-foreground">
+            <p className="mt-2 text-sm text-ink-3">
               Built for{" "}
               <Link
                 to={`/pipelines/${detail.parentCase.case.pipelineId}/items/${detail.parentCase.case.id}`}
-                className="font-medium text-foreground hover:underline"
+                className="font-medium text-ink hover:underline"
               >
                 {detail.parentCase.pipeline.name}: {detail.parentCase.case.title}
               </Link>
             </p>
           ) : null}
           {detail.builtFromAutomation ? (
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-sm text-ink-3">
               Built from{" "}
               <Link
                 to={detail.builtFromAutomation.stage
@@ -2835,7 +2835,7 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
                       detail.builtFromAutomation.stage.id,
                     )
                   : `/pipelines/${detail.builtFromAutomation.pipeline.id}/settings`}
-                className="font-medium text-foreground hover:underline"
+                className="font-medium text-ink hover:underline"
                 title={detail.builtFromAutomation.routine.title}
               >
                 {detail.builtFromAutomation.pipeline.name}
@@ -2849,7 +2849,7 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
             {primaryAction}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="icon" aria-label="Item actions">
+                <Button variant="secondary" size="icon" aria-label="Item actions">
                   <MoreHorizontal className="h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
@@ -2935,7 +2935,7 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
               </div>
             </div>
             <label className="block space-y-2">
-              <span className="text-sm font-medium text-foreground">Stage</span>
+              <span className="text-sm font-medium text-ink">Stage</span>
               <Select value={moveStageKey} onValueChange={setMoveStageKey}>
                 <SelectTrigger>
                   <SelectValue placeholder="Choose a stage" />
@@ -2953,7 +2953,7 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
           <DialogFooter>
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               onClick={() => setMoveDialogOpen(false)}
               disabled={moveItemToStage.isPending}
             >
@@ -2984,12 +2984,12 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
             </DialogDescription>
           </DialogHeader>
           {retryPlan.isLoading ? (
-            <div className="flex items-center gap-2 py-4 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2 py-4 text-sm text-ink-3">
               <Loader2 className="h-4 w-4 animate-spin" />
               Checking retry safety...
             </div>
           ) : retryPlan.error ? (
-            <div className="rounded-sm border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+            <div className="rounded-sm border border-bad/30 bg-bad/5 p-3 text-sm text-bad">
               {retryPlan.error instanceof ApiError && retryPlan.error.message
                 ? retryPlan.error.message
                 : "Could not check whether this automation can be retried."}
@@ -2998,11 +2998,11 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
             <div className="space-y-4 py-2">
               <div className="grid gap-3 text-sm sm:grid-cols-2">
                 <div>
-                  <div className="text-xs font-medium uppercase text-muted-foreground">From</div>
-                  <div className="mt-1 font-medium text-foreground">{retryPlan.data.currentStage.name}</div>
+                  <div className="text-xs font-medium uppercase text-ink-3">From</div>
+                  <div className="mt-1 font-medium text-ink">{retryPlan.data.currentStage.name}</div>
                 </div>
                 <div>
-                  <div id="retry-runs-at-label" className="text-xs font-medium uppercase text-muted-foreground">Runs at</div>
+                  <div id="retry-runs-at-label" className="text-xs font-medium uppercase text-ink-3">Runs at</div>
                   {retryShowTargetDropdown ? (
                     <Select
                       value={retrySelectedTargetId}
@@ -3020,12 +3020,12 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
                       </SelectContent>
                     </Select>
                   ) : (
-                    <div className="mt-1 font-medium text-foreground">{retryPlan.data.targetStage?.name ?? "No retryable step"}</div>
+                    <div className="mt-1 font-medium text-ink">{retryPlan.data.targetStage?.name ?? "No retryable step"}</div>
                   )}
                 </div>
                 <div className="sm:col-span-2">
-                  <div className="text-xs font-medium uppercase text-muted-foreground">Automation</div>
-                  <div className="mt-1 flex flex-wrap items-center gap-x-1 gap-y-1 text-foreground">
+                  <div className="text-xs font-medium uppercase text-ink-3">Automation</div>
+                  <div className="mt-1 flex flex-wrap items-center gap-x-1 gap-y-1 text-ink">
                     {retryPlan.data.routine ? (
                       <>
                         <Link
@@ -3034,7 +3034,7 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
                         >
                           {retryPlan.data.routine.title}
                         </Link>
-                        <span className="text-muted-foreground">assigned to</span>
+                        <span className="text-ink-3">assigned to</span>
                         {retryPlan.data.routine.assigneeAgent ? (
                           <Link
                             to={`/agents/${retryPlan.data.routine.assigneeAgent.id}`}
@@ -3043,7 +3043,7 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
                             {retryPlan.data.routine.assigneeAgent.name}
                           </Link>
                         ) : (
-                          <span className="font-medium text-muted-foreground">No responsible</span>
+                          <span className="font-medium text-ink-3">No responsible</span>
                         )}
                       </>
                     ) : (
@@ -3055,7 +3055,7 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
 
               <div className="relative space-y-4" aria-live="polite" aria-busy={retryPreflightRefreshing}>
                 {retryPreflightRefreshing ? (
-                  <div className="absolute inset-0 z-10 flex items-center justify-center gap-2 rounded-sm bg-background/70 text-sm text-muted-foreground">
+                  <div className="absolute inset-0 z-10 flex items-center justify-center gap-2 rounded-sm bg-bg/70 text-sm text-ink-3">
                     <Loader2 className="h-4 w-4 animate-spin" />
                     Checking retry safety...
                   </div>
@@ -3075,7 +3075,7 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
                           key={blocker.kind}
                           className={cn(
                             "flex gap-2 rounded-sm border p-3 text-sm",
-                            "border-destructive/30 bg-destructive/5 text-destructive",
+                            "border-bad/30 bg-bad/5 text-bad",
                           )}
                         >
                           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
@@ -3086,7 +3086,7 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
                   ) : null}
 
                   {retryIsNonImmediateTarget ? (
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-ink-3">
                       Re-running from an earlier step affects more downstream items.
                     </p>
                   ) : null}
@@ -3099,7 +3099,7 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
                           key={option.id}
                           className={cn(
                             "grid grid-cols-(--gtc-46) gap-3 py-1.5 text-sm",
-                            option.disabled && !option.required ? "text-muted-foreground" : "text-foreground",
+                            option.disabled && !option.required ? "text-ink-3" : "text-ink",
                           )}
                         >
                           <Checkbox
@@ -3118,7 +3118,7 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
                             <span className="block font-medium">
                               {option.label}{typeof option.count === "number" ? ` (${formatNumber(option.count)})` : ""}
                             </span>
-                            <span className="block text-xs text-muted-foreground">{option.description}</span>
+                            <span className="block text-xs text-ink-3">{option.description}</span>
                           </span>
                         </label>
                       );
@@ -3128,7 +3128,7 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
               </div>
 
               {retryDialogError ? (
-                <div className="rounded-sm border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+                <div className="rounded-sm border border-bad/30 bg-bad/5 p-3 text-sm text-bad">
                   {retryDialogError}
                 </div>
               ) : null}
@@ -3137,7 +3137,7 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
           <DialogFooter>
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               onClick={() => setRetryDialogScope(null)}
               disabled={rerunCurrentStageAutomation.isPending || retryStageAutomation.isPending}
             >
@@ -3177,10 +3177,10 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
       )}
 
       {banner.visible ? (
-        <section className="mb-5 flex flex-col gap-3 border-y border-border bg-muted/20 py-4 md:flex-row md:items-center md:justify-between">
+        <section className="mb-5 flex flex-col gap-3 border-y border-line bg-bg-3/20 py-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <h2 className="text-sm font-semibold text-foreground">Ready to move to {banner.stageName}?</h2>
-            {banner.rationale ? <p className="mt-1 text-sm text-muted-foreground">{banner.rationale}</p> : null}
+            <h2 className="text-sm font-semibold text-ink">Ready to move to {banner.stageName}?</h2>
+            {banner.rationale ? <p className="mt-1 text-sm text-ink-3">{banner.rationale}</p> : null}
           </div>
           {banner.suggestionId ? (
             <div className="flex items-center gap-2">
@@ -3194,7 +3194,7 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
               </Button>
               <Button
                 size="sm"
-                variant="outline"
+                variant="secondary"
                 onClick={() => resolveSuggestion.mutate({ resolution: "dismiss", suggestionId: banner.suggestionId! })}
                 disabled={resolveSuggestion.isPending}
               >
@@ -3217,7 +3217,7 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
           </div>
           <Button
             size="sm"
-            variant="outline"
+            variant="secondary"
             onClick={() => acknowledgeChange.mutate()}
             disabled={acknowledgeChange.isPending}
           >
@@ -3227,15 +3227,15 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
       ) : null}
 
       {(childrenGate || (breakdown?.waitForPieces ?? false)) && waitingChildren.length > 0 ? (
-        <section aria-label="Waiting child items" className="mb-5 border-y border-border px-4 py-4">
+        <section aria-label="Waiting child items" className="mb-5 border-y border-line px-4 py-4">
           <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-              <ListTree className="h-4 w-4 text-muted-foreground" />
+            <div className="flex items-center gap-2 text-sm font-semibold text-ink">
+              <ListTree className="h-4 w-4 text-ink-3" />
               {breakdown
                 ? `Waiting on ${waitingChildren.length} of ${pieceCountTotal} ${pieceLabel(pieceCountTotal)} · ${pieceCountDone} finished`
                 : `Waiting on ${waitingChildren.length} of ${pieceCountTotal} child ${pieceCountTotal === 1 ? "item" : "items"}`}
             </div>
-            <ul className="divide-y divide-border">
+            <ul className="divide-y divide-line">
               {waitingChildren.map((row) => (
                 <WaitingChildRow key={row.case.id} row={row} />
               ))}
@@ -3262,21 +3262,21 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
           />
 
           {mainPaneFields.length > 0 ? (
-            <details className="group rounded-md border border-border">
-              <summary className="flex cursor-pointer list-none items-center gap-2 px-3 py-2 text-sm font-semibold text-foreground [&::-webkit-details-marker]:hidden">
-                <ChevronRight className="h-3.5 w-3.5 text-muted-foreground transition-transform group-open:rotate-90" />
+            <details className="group rounded-md border border-line">
+              <summary className="flex cursor-pointer list-none items-center gap-2 px-3 py-2 text-sm font-semibold text-ink [&::-webkit-details-marker]:hidden">
+                <ChevronRight className="h-3.5 w-3.5 text-ink-3 transition-transform group-open:rotate-90" />
                 More details
-                <span className="text-(length:--text-micro) font-normal text-muted-foreground">
+                <span className="text-(length:--text-micro) font-normal text-ink-3">
                   {mainPaneFields.length} {mainPaneFields.length === 1 ? "field" : "fields"}
                 </span>
               </summary>
-              <div className="space-y-5 border-t border-border px-3 py-3">
+              <div className="space-y-5 border-t border-line px-3 py-3">
                 {mainPaneFields.map((field) => (
                   <div key={field.key} className="min-w-0">
-                    <h3 className="mb-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    <h3 className="mb-1 text-xs font-medium uppercase tracking-wide text-ink-3">
                       {field.label}
                     </h3>
-                    <MarkdownBody className="text-sm leading-7 text-foreground">
+                    <MarkdownBody className="text-sm leading-7 text-ink">
                       {field.value}
                     </MarkdownBody>
                   </div>
@@ -3346,9 +3346,9 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
                 />
               </div>
             ) : (
-              <div className="flex flex-col items-start gap-3 py-3 text-sm text-muted-foreground">
+              <div className="flex flex-col items-start gap-3 py-3 text-sm text-ink-3">
                 <p>No active conversation yet.</p>
-                <Button size="sm" variant="outline" onClick={() => startConversation.mutate()} disabled={startConversation.isPending}>
+                <Button size="sm" variant="secondary" onClick={() => startConversation.mutate()} disabled={startConversation.isPending}>
                   <MessageSquare className="mr-2 h-4 w-4" />
                   {startConversation.isPending ? "Starting..." : "Start a conversation"}
                 </Button>
@@ -3374,12 +3374,12 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
             }
           >
             {breakdown && pieceCountTotal > 0 ? (
-              <p className="py-2 text-sm text-muted-foreground">
+              <p className="py-2 text-sm text-ink-3">
                 {pieceCountDone} of {pieceCountTotal} {pieceLabel(pieceCountTotal)} finished
               </p>
             ) : null}
             {breakdown && pieceCountTotal === 0 ? (
-              <p className="py-2 text-sm text-muted-foreground">
+              <p className="py-2 text-sm text-ink-3">
                 Nothing was worth splitting — this case moved straight ahead without creating any {pieceNounPluralLabel}.
               </p>
             ) : (
@@ -3388,7 +3388,7 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
             {breakdown && breakdown.targetPipelineId && pieceCountTotal > 0 ? (
               <Link
                 to={`/pipelines/${breakdown.targetPipelineId}`}
-                className="mt-2 inline-block text-sm font-medium text-foreground hover:underline"
+                className="mt-2 inline-block text-sm font-medium text-ink hover:underline"
               >
                 Open all {pieceNounPluralLabel} →
               </Link>
@@ -3397,33 +3397,33 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
 
           <DetailSection title="Details">
             {itemFields.length > 0 ? (
-              <dl className="divide-y divide-border">
+              <dl className="divide-y divide-line">
                 {itemFields.map((field) => (
                   <div key={field.key} className="grid grid-cols-(--gtc-47) gap-3 py-2 text-sm">
-                    <dt className="text-muted-foreground">{field.label}</dt>
-                    <dd className="min-w-0 text-foreground [overflow-wrap:anywhere]">{field.value}</dd>
+                    <dt className="text-ink-3">{field.label}</dt>
+                    <dd className="min-w-0 text-ink [overflow-wrap:anywhere]">{field.value}</dd>
                   </div>
                 ))}
               </dl>
             ) : (
-              <p className="py-3 text-sm text-muted-foreground">No added details.</p>
+              <p className="py-3 text-sm text-ink-3">No added details.</p>
             )}
           </DetailSection>
 
           <DetailSection title="Activity">
             {eventRows.length > 0 ? (
-              <ol className="divide-y divide-border">
+              <ol className="divide-y divide-line">
                 {eventRows.map((event) => (
                   <li key={event.id} className="py-2 text-sm">
-                    <p className="text-foreground">
+                    <p className="text-ink">
                       <PipelineEventText event={event} pipelineId={pipelineId} stages={stageLookup} />
                     </p>
-                    <time className="text-xs text-muted-foreground">{formatShortDate(event.createdAt)}</time>
+                    <time className="text-xs text-ink-3">{formatShortDate(event.createdAt)}</time>
                   </li>
                 ))}
               </ol>
             ) : (
-              <p className="py-3 text-sm text-muted-foreground">No activity yet.</p>
+              <p className="py-3 text-sm text-ink-3">No activity yet.</p>
             )}
           </DetailSection>
         </aside>
@@ -3438,8 +3438,8 @@ export function PipelineItemDetailView({ pipelineId, caseId }: { pipelineId: str
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRemoveDialogOpen(false)}>Keep item</Button>
-            <Button variant="destructive" onClick={() => removeItem.mutate()} disabled={removeItem.isPending || !removeStage}>
+            <Button variant="secondary" onClick={() => setRemoveDialogOpen(false)}>Keep item</Button>
+            <Button variant="delete" onClick={() => removeItem.mutate()} disabled={removeItem.isPending || !removeStage}>
               {removeItem.isPending ? "Removing..." : "Remove item"}
             </Button>
           </DialogFooter>
@@ -3480,8 +3480,8 @@ function ActivePipelineWorkBanner({ activeWork }: { activeWork: PipelineCaseActi
       <Button
         asChild
         size="sm"
-        variant="outline"
-        className="border-blue-300 bg-transparent hover:bg-blue-100 dark:border-blue-900/70 dark:hover:bg-blue-950/40"
+        variant="secondary"
+        className="bg-transparent"
       >
         <Link to={issuePath}>
           <ExternalLink className="mr-2 h-4 w-4" />
@@ -3524,11 +3524,11 @@ function WaitingChildRow({
         to={`/pipelines/${row.case.pipelineId}/items/${row.case.id}`}
         className="grid grid-cols-(--gtc-48) items-start gap-3 py-2 text-sm"
       >
-        <GitBranch className="h-4 w-4 text-muted-foreground" />
+        <GitBranch className="h-4 w-4 text-ink-3" />
         <span className="min-w-0">
-          <span className="block font-medium text-foreground [overflow-wrap:anywhere]">{row.case.title}</span>
+          <span className="block font-medium text-ink [overflow-wrap:anywhere]">{row.case.title}</span>
           {row.activeWork || liveDownstreamCount > 0 ? (
-            <span className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
+            <span className="mt-0.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-ink-3">
               {row.activeWork ? (
                 <span className="inline-flex items-center gap-1.5 text-emerald-700 dark:text-emerald-300">
                   <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-500" aria-hidden="true" />
@@ -3541,7 +3541,7 @@ function WaitingChildRow({
             </span>
           ) : null}
         </span>
-        <span className="shrink-0 rounded-sm border border-border px-2 py-0.5 text-xs text-muted-foreground">
+        <span className="shrink-0 rounded-sm border border-line px-2 py-0.5 text-xs text-ink-3">
           {humanizePipelineItemStatus(row.case.terminalKind ?? row.stage.kind)}
         </span>
       </Link>
@@ -3563,7 +3563,7 @@ interface ReviewDecisionAction {
   targetStageName: string;
   targetStageKey: string;
   requireReason: boolean;
-  variant: "default" | "outline" | "destructive";
+  variant: "primary" | "secondary";
 }
 
 function configString(config: Record<string, unknown> | null | undefined, key: string) {
@@ -3599,7 +3599,7 @@ function reviewDecisionActions(
       targetStageKey: config.approveToStageKey,
       targetStageName: stageLookup.get(config.approveToStageKey) ?? humanizePipelineItemStatus(config.approveToStageKey),
       requireReason: false,
-      variant: "default",
+      variant: "primary",
     });
   }
   if (config.requestChangesToStageKey) {
@@ -3609,7 +3609,7 @@ function reviewDecisionActions(
       targetStageKey: config.requestChangesToStageKey,
       targetStageName: stageLookup.get(config.requestChangesToStageKey) ?? humanizePipelineItemStatus(config.requestChangesToStageKey),
       requireReason: config.requireRequestChangesReason,
-      variant: "outline",
+      variant: "secondary",
     });
   }
   if (config.rejectToStageKey) {
@@ -3619,7 +3619,7 @@ function reviewDecisionActions(
       targetStageKey: config.rejectToStageKey,
       targetStageName: stageLookup.get(config.rejectToStageKey) ?? humanizePipelineItemStatus(config.rejectToStageKey),
       requireReason: config.requireRejectReason,
-      variant: "destructive",
+      variant: "secondary",
     });
   }
   return actions;
@@ -3657,7 +3657,7 @@ function ReviewDecisionPanel({
 
   return (
     <section>
-      <h2 className="mb-3 text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">Review</h2>
+      <h2 className="mb-3 text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-ink-3">Review</h2>
       <div className="border-y border-amber-300 bg-amber-50/70 p-5 text-amber-950 dark:border-amber-900/70 dark:bg-amber-950/30 dark:text-amber-100 sm:p-6">
         <div className="space-y-5">
           <div className="flex items-start gap-3">
@@ -3677,7 +3677,7 @@ function ReviewDecisionPanel({
               onChange={(event) => onNoteChange(event.target.value)}
               rows={4}
               placeholder={requireReason ? "Required for changes or rejection." : "Optional note."}
-              className="bg-background/90 text-foreground"
+              className="bg-bg/90 text-ink"
             />
           </label>
 
@@ -3747,7 +3747,7 @@ function PipelineEventText({
             {" -> "}
             <Link
               to={issueDetailPath(issue)}
-              className="font-medium text-foreground hover:underline"
+              className="font-medium text-ink hover:underline"
             >
               {issue.identifier ?? issue.title}
             </Link>
@@ -3765,7 +3765,7 @@ function PipelineEventText({
         {stageId ? (
           <>
             {" "}
-            <Link to={pipelineStageAutomationSettingsHref(pipelineId, stageId)} className="font-medium text-foreground hover:underline">
+            <Link to={pipelineStageAutomationSettingsHref(pipelineId, stageId)} className="font-medium text-ink hover:underline">
               Fix stage settings
             </Link>
           </>
@@ -3787,11 +3787,11 @@ function DetailSection({
 }) {
   return (
     <section>
-      <h2 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
+      <h2 className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-ink-3">
         <span>{title}</span>
         {trailing}
       </h2>
-      <div className="border-y border-border">{children}</div>
+      <div className="border-y border-line">{children}</div>
     </section>
   );
 }
@@ -3864,7 +3864,7 @@ function OutputLink({
 }
 
 function OutputMetaDot() {
-  return <span className="inline-block h-(--sz-3px) w-(--sz-3px) shrink-0 rounded-full bg-muted-foreground/60" aria-hidden />;
+  return <span className="inline-block h-(--sz-3px) w-(--sz-3px) shrink-0 rounded-full bg-ink-3/60" aria-hidden />;
 }
 
 function OutputDeliverableTag({ label }: { label: string }) {
@@ -3877,7 +3877,7 @@ function OutputDeliverableTag({ label }: { label: string }) {
 
 function OutputUnverifiedTag() {
   return (
-    <Badge variant="outline" className="border-border px-1.5 text-(length:--text-nano) font-semibold uppercase text-muted-foreground">
+    <Badge variant="outline" className="border-line px-1.5 text-(length:--text-nano) font-semibold uppercase text-ink-3">
       Unverified
     </Badge>
   );
@@ -3885,7 +3885,7 @@ function OutputUnverifiedTag() {
 
 function OutputPreview({ text, dimmed }: { text: string; dimmed: boolean }) {
   return (
-    <p className={cn("mt-0.5 text-xs text-muted-foreground line-clamp-2 sm:line-clamp-1", dimmed && "opacity-70")}>
+    <p className={cn("mt-0.5 text-xs text-ink-3 line-clamp-2 sm:line-clamp-1", dimmed && "opacity-70")}>
       {text}
     </p>
   );
@@ -3895,10 +3895,10 @@ function ItemOutputMeta({ item, children }: { item: PipelineCaseOutputItem; chil
   const statusClass = issueStatusText[item.sourceIssueStatus] ?? issueStatusTextDefault;
   const roleLabel = OUTPUT_SOURCE_ROLE_LABELS[item.sourceRole] ?? humanizeOutputStatus(item.sourceRole);
   return (
-    <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-(length:--text-micro) text-muted-foreground">
+    <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-(length:--text-micro) text-ink-3">
       <Link
         to={issueDetailPath({ id: item.sourceIssueId, identifier: item.sourceIssueIdentifier })}
-        className="font-mono text-(length:--text-micro) text-muted-foreground hover:text-foreground hover:underline"
+        className="font-mono text-(length:--text-micro) text-ink-3 hover:text-ink hover:underline"
         title={item.sourceIssueTitle}
       >
         {item.sourceIssueIdentifier ?? "Source task"}
@@ -3922,13 +3922,13 @@ function ItemOutputDocumentRow({ item }: { item: PipelineCaseDocumentOutputItem 
   const lowTrust = isLowTrustOutput(item);
   const href = documentAnchorPath(item);
   return (
-    <div className="group flex items-start gap-(--sz-11px) py-2.5 hover:bg-accent/50">
+    <div className="group flex items-start gap-(--sz-11px) py-2.5 hover:bg-bg-3/50">
       <FileText
-        className={cn("mt-0.5 h-4 w-4 shrink-0", deliverable ? "text-green-600 dark:text-green-400" : "text-muted-foreground")}
+        className={cn("mt-0.5 h-4 w-4 shrink-0", deliverable ? "text-green-600 dark:text-green-400" : "text-ink-3")}
       />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
-          <Link to={href} className="truncate text-(length:--text-compact) font-medium text-foreground hover:underline" title={item.title}>
+          <Link to={href} className="truncate text-(length:--text-compact) font-medium text-ink hover:underline" title={item.title}>
             {item.title}
           </Link>
           {deliverable ? <OutputDeliverableTag label={deliverable} /> : null}
@@ -3939,7 +3939,7 @@ function ItemOutputDocumentRow({ item }: { item: PipelineCaseDocumentOutputItem 
       </div>
       <Link
         to={href}
-        className="inline-flex h-(--sz-30px) w-(--sz-30px) shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:bg-accent hover:text-foreground"
+        className="inline-flex h-(--sz-30px) w-(--sz-30px) shrink-0 items-center justify-center rounded-sm text-ink-3 hover:bg-bg-3 hover:text-ink"
         aria-label={`Open ${item.title}`}
         title="Open document"
       >
@@ -3953,11 +3953,11 @@ function ItemOutputWorkProductRow({ item }: { item: PipelineCaseWorkProductOutpu
   const lowTrust = isLowTrustOutput(item);
   const href = item.url ?? issueDetailPath({ id: item.sourceIssueId, identifier: item.sourceIssueIdentifier });
   return (
-    <div className="group flex items-start gap-(--sz-11px) py-2.5 hover:bg-accent/50">
-      <Package className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+    <div className="group flex items-start gap-(--sz-11px) py-2.5 hover:bg-bg-3/50">
+      <Package className="mt-0.5 h-4 w-4 shrink-0 text-ink-3" />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
-          <OutputLink to={href} className="truncate text-(length:--text-compact) font-medium text-foreground hover:underline" title={item.title}>
+          <OutputLink to={href} className="truncate text-(length:--text-compact) font-medium text-ink hover:underline" title={item.title}>
             {item.title}
           </OutputLink>
           {lowTrust ? <OutputUnverifiedTag /> : null}
@@ -3967,7 +3967,7 @@ function ItemOutputWorkProductRow({ item }: { item: PipelineCaseWorkProductOutpu
       </div>
       <OutputLink
         to={href}
-        className="inline-flex h-(--sz-30px) w-(--sz-30px) shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:bg-accent hover:text-foreground"
+        className="inline-flex h-(--sz-30px) w-(--sz-30px) shrink-0 items-center justify-center rounded-sm text-ink-3 hover:bg-bg-3 hover:text-ink"
         ariaLabel={`Open ${item.title}`}
         title="Open work product"
       >
@@ -3983,20 +3983,20 @@ function ItemOutputAttachmentRow({ item }: { item: PipelineCaseAttachmentOutputI
   return (
     <div
       id={`linked-attachment-${item.attachmentId}`}
-      className="group flex items-start gap-(--sz-11px) py-2.5 hover:bg-accent/50"
+      className="group flex items-start gap-(--sz-11px) py-2.5 hover:bg-bg-3/50"
     >
       {isImage ? (
         <a
           href={item.openPath}
           target="_blank"
           rel="noreferrer"
-          className="mt-0.5 block h-(--sz-30px) w-10 shrink-0 overflow-hidden rounded-sm border border-border bg-accent/10"
+          className="mt-0.5 block h-(--sz-30px) w-10 shrink-0 overflow-hidden rounded-sm border border-line bg-bg-3/10"
           aria-label={`Open ${filename}`}
         >
           <img src={item.contentPath} alt={filename} className="h-full w-full object-cover" loading="lazy" />
         </a>
       ) : (
-        <Paperclip className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+        <Paperclip className="mt-0.5 h-4 w-4 shrink-0 text-ink-3" />
       )}
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-1.5">
@@ -4004,7 +4004,7 @@ function ItemOutputAttachmentRow({ item }: { item: PipelineCaseAttachmentOutputI
             href={item.openPath}
             target="_blank"
             rel="noreferrer"
-            className="truncate text-(length:--text-compact) font-medium text-foreground hover:underline"
+            className="truncate text-(length:--text-compact) font-medium text-ink hover:underline"
             title={filename}
           >
             {filename}
@@ -4020,7 +4020,7 @@ function ItemOutputAttachmentRow({ item }: { item: PipelineCaseAttachmentOutputI
           href={item.openPath}
           target="_blank"
           rel="noreferrer"
-          className="inline-flex h-(--sz-30px) w-(--sz-30px) items-center justify-center rounded-sm text-muted-foreground hover:bg-accent hover:text-foreground"
+          className="inline-flex h-(--sz-30px) w-(--sz-30px) items-center justify-center rounded-sm text-ink-3 hover:bg-bg-3 hover:text-ink"
           aria-label={`Open ${filename}`}
           title="Open"
         >
@@ -4028,7 +4028,7 @@ function ItemOutputAttachmentRow({ item }: { item: PipelineCaseAttachmentOutputI
         </a>
         <a
           href={item.downloadPath}
-          className="inline-flex h-(--sz-30px) w-(--sz-30px) items-center justify-center rounded-sm text-muted-foreground hover:bg-accent hover:text-foreground"
+          className="inline-flex h-(--sz-30px) w-(--sz-30px) items-center justify-center rounded-sm text-ink-3 hover:bg-bg-3 hover:text-ink"
           aria-label={`Download ${filename}`}
           title="Download"
         >
@@ -4061,7 +4061,7 @@ function ItemOutputsSection({
     groups.push({
       key: "document",
       label: "Documents",
-      icon: <FileText className="h-4 w-4 text-muted-foreground" />,
+      icon: <FileText className="h-4 w-4 text-ink-3" />,
       rows: documents.map((item) => <ItemOutputDocumentRow key={item.id} item={item} />),
     });
   }
@@ -4069,7 +4069,7 @@ function ItemOutputsSection({
     groups.push({
       key: "work_product",
       label: "Work products",
-      icon: <Package className="h-4 w-4 text-muted-foreground" />,
+      icon: <Package className="h-4 w-4 text-ink-3" />,
       rows: workProducts.map((item) => <ItemOutputWorkProductRow key={item.id} item={item} />),
     });
   }
@@ -4077,7 +4077,7 @@ function ItemOutputsSection({
     groups.push({
       key: "attachment",
       label: "Attachments",
-      icon: <Paperclip className="h-4 w-4 text-muted-foreground" />,
+      icon: <Paperclip className="h-4 w-4 text-ink-3" />,
       rows: attachments.map((item) => <ItemOutputAttachmentRow key={item.id} item={item} />),
     });
   }
@@ -4087,29 +4087,29 @@ function ItemOutputsSection({
       title="Item outputs"
       trailing={
         loading ? null : (
-          <Badge variant="ghost" className="bg-muted text-(length:--text-micro) normal-case tracking-normal text-muted-foreground">
+          <Badge variant="ghost" className="bg-bg-3 text-(length:--text-micro) normal-case tracking-normal text-ink-3">
             {items.length}
           </Badge>
         )
       }
     >
       {loading ? (
-        <div className="divide-y divide-border">
+        <div className="divide-y divide-line">
           {[0, 1, 2].map((index) => (
             <div key={index} className="py-2.5">
-              <div className="h-(--sz-11px) w-1/2 rounded bg-muted" />
-              <div className="mt-1.5 h-(--sz-9px) w-1/4 rounded bg-muted opacity-70" />
+              <div className="h-(--sz-11px) w-1/2 rounded bg-bg-3" />
+              <div className="mt-1.5 h-(--sz-9px) w-1/4 rounded bg-bg-3 opacity-70" />
             </div>
           ))}
         </div>
       ) : error ? (
-        <div className="flex items-center gap-2 py-2.5 text-xs text-destructive">
+        <div className="flex items-center gap-2 py-2.5 text-xs text-bad">
           <AlertTriangle className="h-4 w-4 shrink-0" />
           <span>Couldn't load item outputs.</span>
           <button
             type="button"
             onClick={onRetry}
-            className="ml-auto rounded-sm border border-border px-2 py-0.5 text-muted-foreground hover:bg-accent hover:text-foreground"
+            className="ml-auto rounded-sm border border-line px-2 py-0.5 text-ink-3 hover:bg-bg-3 hover:text-ink"
           >
             Retry
           </button>
@@ -4117,13 +4117,13 @@ function ItemOutputsSection({
       ) : (
         <div>
           {groups.map((group, index) => (
-            <div key={group.key} className={index > 0 ? "border-t border-border" : undefined}>
-              <div className="flex items-center gap-1.5 pb-1.5 pt-2 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
+            <div key={group.key} className={index > 0 ? "border-t border-line" : undefined}>
+              <div className="flex items-center gap-1.5 pb-1.5 pt-2 text-(length:--text-micro) font-semibold uppercase tracking-wide text-ink-3">
                 {group.icon}
                 <span>{group.label}</span>
                 <span>· {group.rows.length}</span>
               </div>
-              <div className="divide-y divide-border">{group.rows}</div>
+              <div className="divide-y divide-line">{group.rows}</div>
             </div>
           ))}
         </div>
@@ -4138,26 +4138,26 @@ function BuiltFromTree({
   rows: Array<{ case: PipelineCase; stage: PipelineStage }>;
 }) {
   if (rows.length === 0) {
-    return <p className="py-3 text-sm text-muted-foreground">No built-from items.</p>;
+    return <p className="py-3 text-sm text-ink-3">No built-from items.</p>;
   }
   return (
-    <ul className="divide-y divide-border">
+    <ul className="divide-y divide-line">
       {rows.map((row) => (
         <li key={row.case.id}>
           <Link
             to={`/pipelines/${row.case.pipelineId}/items/${row.case.id}`}
-            className="grid grid-cols-(--gtc-49) items-center gap-3 py-3 text-sm hover:bg-muted/40"
+            className="grid grid-cols-(--gtc-49) items-center gap-3 py-3 text-sm hover:bg-bg-3/40"
           >
-            <GitBranch className="h-4 w-4 text-muted-foreground" />
+            <GitBranch className="h-4 w-4 text-ink-3" />
             <span className="min-w-0">
-              <span className="block truncate font-medium text-foreground">{row.case.title}</span>
+              <span className="block truncate font-medium text-ink">{row.case.title}</span>
               {(row.case.childCount ?? 0) > 0 ? (
-                <span className="block text-xs text-muted-foreground">
+                <span className="block text-xs text-ink-3">
                   {row.case.childCount} nested {(row.case.childCount ?? 0) === 1 ? "item" : "items"} hidden
                 </span>
               ) : null}
             </span>
-            <span className="rounded-sm border border-border px-2 py-0.5 text-xs text-muted-foreground">
+            <span className="rounded-sm border border-line px-2 py-0.5 text-xs text-ink-3">
               {humanizePipelineItemStatus(row.case.terminalKind ?? row.stage.kind)}
             </span>
           </Link>
@@ -4232,7 +4232,7 @@ function PipelineAddItems({ pipelineId }: { pipelineId: string }) {
 
   if (pipeline.isLoading || intake.isLoading) return <PageSkeleton />;
   if (!pipeline.data || !intake.data) {
-    return <div className="mx-auto max-w-3xl py-10 text-sm text-muted-foreground">Pipeline not found.</div>;
+    return <div className="mx-auto max-w-3xl py-10 text-sm text-ink-3">Pipeline not found.</div>;
   }
 
   const firstStageName = intake.data.stageName ?? pipeline.data.stages[0]?.name ?? "first stage";
@@ -4240,19 +4240,19 @@ function PipelineAddItems({ pipelineId }: { pipelineId: string }) {
   return (
     <div className="mx-auto max-w-6xl px-6 py-8">
       <div className="mb-6">
-        <p className="text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
+        <p className="text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-ink-3">
           Add to {pipeline.data.name}
         </p>
-        <h1 className="text-2xl font-semibold text-foreground">Build your list, then submit it all at once</h1>
-        <p className="text-sm text-muted-foreground">
+        <h1 className="text-2xl font-semibold text-ink">Build your list, then submit it all at once</h1>
+        <p className="text-sm text-ink-3">
           Items will be added to the first stage ({firstStageName}).
         </p>
       </div>
 
-      <div className="mb-5 flex items-center gap-2 border border-border bg-muted/20 px-3 py-2 text-sm text-muted-foreground">
+      <div className="mb-5 flex items-center gap-2 border border-line bg-bg-3/20 px-3 py-2 text-sm text-ink-3">
         <Info className="h-4 w-4 shrink-0" />
         <span>
-          These fields come from <span className="font-medium text-foreground">Pipeline settings -&gt; {firstStageName} stage</span>.
+          These fields come from <span className="font-medium text-ink">Pipeline settings -&gt; {firstStageName} stage</span>.
         </span>
       </div>
 
@@ -4283,7 +4283,7 @@ function PipelineAddItems({ pipelineId }: { pipelineId: string }) {
 
         <button
           type="button"
-          className="flex h-14 w-full items-center justify-center border border-dashed border-border text-sm font-semibold text-foreground hover:bg-muted/40"
+          className="flex h-14 w-full items-center justify-center border border-dashed border-line text-sm font-semibold text-ink hover:bg-bg-3/40"
           onClick={() => setRows((current) => [...current, newDraftRow(false)])}
         >
           <Plus className="mr-2 h-4 w-4" />
@@ -4291,12 +4291,12 @@ function PipelineAddItems({ pipelineId }: { pipelineId: string }) {
         </button>
       </div>
 
-      <div className="mt-10 flex items-center justify-between border-t border-border pt-5">
-        <Button variant="outline" onClick={() => navigate(`/pipelines/${pipelineId}`)}>
+      <div className="mt-10 flex items-center justify-between border-t border-line pt-5">
+        <Button variant="secondary" onClick={() => navigate(`/pipelines/${pipelineId}`)}>
           Cancel
         </Button>
         <div className="flex items-center gap-4">
-          <span className="text-sm text-muted-foreground">
+          <span className="text-sm text-ink-3">
             {rows.length === 0 ? "Add at least one item." : "Count updates live."}
           </span>
           <Button disabled={invalid || submit.isPending} onClick={() => submit.mutate()}>
@@ -4336,26 +4336,26 @@ function DraftItemRow({
     .join(" · ");
 
   return (
-    <section className={cn("border border-border bg-background", row.expanded && "border-primary")}>
+    <section className={cn("border border-line bg-bg", row.expanded && "border-accent")}>
       <div className="grid grid-cols-(--gtc-17) items-center gap-3 px-4 py-3">
         <button type="button" className="min-w-0 text-left" onClick={onToggle}>
-          <span className="block text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">Item {index + 1}</span>
-          <span className="block truncate text-sm font-semibold text-foreground">{title}</span>
-          {!row.expanded && preview ? <span className="block truncate text-xs text-muted-foreground">{preview}</span> : null}
-          {!row.expanded && row.serverError ? <span className="block text-xs text-destructive">{row.serverError}</span> : null}
+          <span className="block text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-ink-3">Item {index + 1}</span>
+          <span className="block truncate text-sm font-semibold text-ink">{title}</span>
+          {!row.expanded && preview ? <span className="block truncate text-xs text-ink-3">{preview}</span> : null}
+          {!row.expanded && row.serverError ? <span className="block text-xs text-bad">{row.serverError}</span> : null}
         </button>
         <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={onToggle} aria-label={row.expanded ? "Collapse item" : "Expand item"}>
+          <Button variant="secondary" size="icon" onClick={onToggle} aria-label={row.expanded ? "Collapse item" : "Expand item"}>
             {row.expanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
           </Button>
-          <Button variant="outline" size="icon" onClick={onRemove} aria-label="Remove item">
+          <Button variant="secondary" size="icon" onClick={onRemove} aria-label="Remove item">
             <Trash2 className="h-4 w-4" />
           </Button>
         </div>
       </div>
 
       {row.expanded ? (
-        <div className="grid gap-5 border-t border-border px-4 py-4 lg:grid-cols-(--gtc-50)">
+        <div className="grid gap-5 border-t border-line px-4 py-4 lg:grid-cols-(--gtc-50)">
           <div className="grid gap-4 md:grid-cols-2">
             {fields.map((field) => (
               <GeneratedField
@@ -4366,13 +4366,13 @@ function DraftItemRow({
                 onChange={(value) => onChange(field.key, value)}
               />
             ))}
-            {row.serverError ? <p className="md:col-span-2 text-sm text-destructive">{row.serverError}</p> : null}
+            {row.serverError ? <p className="md:col-span-2 text-sm text-bad">{row.serverError}</p> : null}
           </div>
-          <aside className="border border-border p-4 text-sm">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">Preview</p>
-            <p className="font-semibold text-foreground">{title}</p>
-            <p className="mt-3 text-xs text-muted-foreground">First stage on submit:</p>
-            <p className="font-semibold text-foreground">{intake.stageName ?? "First stage"}</p>
+          <aside className="border border-line p-4 text-sm">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-ink-3">Preview</p>
+            <p className="font-semibold text-ink">{title}</p>
+            <p className="mt-3 text-xs text-ink-3">First stage on submit:</p>
+            <p className="font-semibold text-ink">{intake.stageName ?? "First stage"}</p>
           </aside>
         </div>
       ) : null}
@@ -4394,9 +4394,9 @@ export function GeneratedField({
   const inputId = `pipeline-intake-${field.key}`;
   return (
     <label className={cn("block space-y-1", field.type === "multiline" && "md:col-span-2")}>
-      <span className="text-sm font-medium text-foreground">
+      <span className="text-sm font-medium text-ink">
         {field.label}
-        {field.required ? <span className="ml-1 font-normal text-destructive">required</span> : null}
+        {field.required ? <span className="ml-1 font-normal text-bad">required</span> : null}
       </span>
       {field.type === "select" ? (
         <Select value={value} onValueChange={onChange}>
@@ -4414,7 +4414,7 @@ export function GeneratedField({
       ) : (
         <Input id={inputId} value={value} aria-invalid={Boolean(error)} onChange={(event) => onChange(event.target.value)} />
       )}
-      {error ? <span className="text-xs text-destructive">{error}</span> : null}
+      {error ? <span className="text-xs text-bad">{error}</span> : null}
     </label>
   );
 }
@@ -4627,23 +4627,23 @@ function ReviewQueueDetailDialog({
 
         <div className="space-y-5">
           <section className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">What is being decided</p>
-            <p className="text-sm text-foreground">{row?.prompt}</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-ink-3">What is being decided</p>
+            <p className="text-sm text-ink">{row?.prompt}</p>
           </section>
 
           <section className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Item preview</p>
+            <p className="text-xs font-semibold uppercase tracking-widest text-ink-3">Item preview</p>
             {fields.length > 0 ? (
-              <div className="divide-y divide-border rounded-md border border-border">
+              <div className="divide-y divide-line rounded-md border border-line">
                 {fields.map(([key, value]) => (
                   <div key={key} className="grid grid-cols-(--gtc-51) gap-3 px-3 py-2 text-sm">
-                    <span className="text-muted-foreground">{humanizeFieldLabel(key)}</span>
-                    <span className="text-foreground">{String(value)}</span>
+                    <span className="text-ink-3">{humanizeFieldLabel(key)}</span>
+                    <span className="text-ink">{String(value)}</span>
                   </div>
                 ))}
               </div>
             ) : (
-              <p className="rounded-md border border-border px-3 py-3 text-sm text-muted-foreground">
+              <p className="rounded-md border border-line px-3 py-3 text-sm text-ink-3">
                 No preview details yet.
               </p>
             )}
@@ -4652,7 +4652,7 @@ function ReviewQueueDetailDialog({
           {row ? (
             <Link
               to={`/pipelines/${row.pipelineId}/items/${row.caseId}`}
-              className="inline-block text-sm font-medium text-primary hover:underline"
+              className="inline-block text-sm font-medium text-accent hover:underline"
               onClick={() => onOpenChange(false)}
             >
               Open the full item
@@ -4673,14 +4673,14 @@ function ReviewQueueDetailDialog({
         </div>
 
         <DialogFooter className="gap-2 sm:gap-2">
-          <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={pending}>
+          <Button type="button" variant="secondary" onClick={() => onOpenChange(false)} disabled={pending}>
             Cancel
           </Button>
           {canDecide ? (
             <>
               <Button
                 type="button"
-                variant="outline"
+                variant="secondary"
                 onClick={() => onRequestChanges(trimmedNote)}
                 disabled={pending || (requestChangesRequiresNote && !trimmedNote)}
               >
@@ -4731,11 +4731,11 @@ function ReviewQueueSection({
 
   return (
     <section className="space-y-2">
-      <div className="flex items-baseline justify-between border-b border-border pb-2">
-        <h2 className="text-sm font-semibold text-foreground">{title}</h2>
-        <span className="text-xs text-muted-foreground">{formatNumber(rows.length)} item{rows.length === 1 ? "" : "s"}</span>
+      <div className="flex items-baseline justify-between border-b border-line pb-2">
+        <h2 className="text-sm font-semibold text-ink">{title}</h2>
+        <span className="text-xs text-ink-3">{formatNumber(rows.length)} item{rows.length === 1 ? "" : "s"}</span>
       </div>
-      <div className="divide-y divide-border">
+      <div className="divide-y divide-line">
         {rows.map((row) => {
           const pending = pendingRowIds.has(row.id);
           const failed = failedRowIds.has(row.id);
@@ -4751,7 +4751,7 @@ function ReviewQueueSection({
               aria-current={active ? "true" : undefined}
               className={cn(
                 "grid min-h-10 grid-cols-(--gtc-13) items-center gap-3 px-2 py-2 text-sm outline-none transition-colors",
-                active ? "bg-accent/60" : "hover:bg-accent/40",
+                active ? "bg-bg-3/60" : "hover:bg-bg-3/40",
               )}
               onMouseEnter={() => onActivate(row.id)}
               onFocus={() => onActivate(row.id)}
@@ -4774,23 +4774,23 @@ function ReviewQueueSection({
                     disabled={!selectable || pending}
                     onClick={(event) => event.stopPropagation()}
                     onChange={() => onToggleSelected(row.id)}
-                    className="h-4 w-4 rounded border-border"
+                    className="h-4 w-4 rounded border-line"
                   />
                 ) : null}
                 <div className="min-w-0">
                   <div className="flex min-w-0 items-center gap-2">
-                    <p className="truncate font-semibold text-foreground">{row.title}</p>
-                    <Badge variant="outline" className="border-border text-(length:--text-micro) font-semibold text-muted-foreground">
+                    <p className="truncate font-semibold text-ink">{row.title}</p>
+                    <Badge variant="outline" className="border-line text-(length:--text-micro) font-semibold text-ink-3">
                       {row.pipelineName}
                     </Badge>
                     <ReviewQueueStatusChip failed={failed} />
                   </div>
-                  <p className="truncate text-muted-foreground">{row.prompt}</p>
+                  <p className="truncate text-ink-3">{row.prompt}</p>
                 </div>
               </div>
 
               <div className="flex items-center gap-2">
-                <span className="hidden whitespace-nowrap text-xs text-muted-foreground sm:inline">
+                <span className="hidden whitespace-nowrap text-xs text-ink-3 sm:inline">
                   {row.createdAt ? relativeTime(row.createdAt) : "recently"}
                 </span>
                 {row.kind === "suggestion" ? (
@@ -4801,7 +4801,7 @@ function ReviewQueueSection({
                     }}>
                       Approve
                     </Button>
-                    <Button type="button" size="sm" variant="outline" disabled={pending} onClick={(event) => {
+                    <Button type="button" size="sm" variant="secondary" disabled={pending} onClick={(event) => {
                       event.stopPropagation();
                       onDecline(row);
                     }}>
@@ -4816,7 +4816,7 @@ function ReviewQueueSection({
                     }}>
                       Approve
                     </Button>
-                    <Button type="button" size="sm" variant="outline" disabled={pending} onClick={(event) => {
+                    <Button type="button" size="sm" variant="secondary" disabled={pending} onClick={(event) => {
                       event.stopPropagation();
                       onRequestChanges(row);
                     }}>
@@ -5071,8 +5071,8 @@ export function ReviewQueue() {
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-normal text-foreground">Review queue</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <h1 className="text-2xl font-semibold tracking-normal text-ink">Review queue</h1>
+          <p className="mt-1 text-sm text-ink-3">
             Needs your attention ({formatNumber(visibleRows.length)})
           </p>
         </div>
@@ -5122,7 +5122,7 @@ export function ReviewQueue() {
         </div>
       )}
 
-      <p className="text-xs text-muted-foreground">
+      <p className="text-xs text-ink-3">
         Shortcuts: <span className="font-semibold">j</span>/<span className="font-semibold">k</span> or arrow keys move, <span className="font-semibold">Enter</span> opens item, <span className="font-semibold">a</span> approves.
       </p>
 
@@ -5199,15 +5199,15 @@ export function Learnings() {
 
   return (
     <div className="space-y-6">
-      <div className="border-b border-border pb-5">
-        <h1 className="text-2xl font-semibold tracking-normal text-foreground">Learnings</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+      <div className="border-b border-line pb-5">
+        <h1 className="text-2xl font-semibold tracking-normal text-ink">Learnings</h1>
+        <p className="mt-1 text-sm text-ink-3">
           Patterns from review decisions and hand moves, in plain words.
         </p>
       </div>
 
       <div className="flex items-center justify-end">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           {learningsQuery.isFetching
             ? "Refreshing..."
             : events.length > 0
@@ -5217,17 +5217,17 @@ export function Learnings() {
       </div>
 
       {learningsQuery.error ? (
-        <p className="text-sm text-destructive">Could not load learnings.</p>
+        <p className="text-sm text-bad">Could not load learnings.</p>
       ) : groups.length === 0 ? (
         <EmptyState icon={BookOpenText} message="No learnings yet." />
       ) : (
         <div className="space-y-6">
           {groups.map((group) => (
             <section key={group.key} className="space-y-2">
-              <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              <h2 className="text-xs font-semibold uppercase tracking-widest text-ink-3">
                 {group.label}
               </h2>
-              <div className="overflow-hidden rounded-md border border-border">
+              <div className="overflow-hidden rounded-md border border-line">
                 {group.events.map((event) => {
                   const presentation = formatLearningEvent(event);
                   const forcedMove = presentation.kind === "forced_move";
@@ -5235,21 +5235,21 @@ export function Learnings() {
                     <div
                       key={event.id}
                       className={cn(
-                        "grid min-h-11 grid-cols-(--gtc-15) items-center gap-3 border-b border-border/70 px-3 py-2 text-sm last:border-b-0",
+                        "grid min-h-11 grid-cols-(--gtc-15) items-center gap-3 border-b border-line/70 px-3 py-2 text-sm last:border-b-0",
                         forcedMove && "border-l-2 border-l-amber-400 bg-amber-50/50 dark:bg-amber-400/10",
                       )}
                     >
-                      <span className="text-xs text-muted-foreground" title={new Date(event.createdAt).toLocaleString()}>
+                      <span className="text-xs text-ink-3" title={new Date(event.createdAt).toLocaleString()}>
                         {relativeTime(event.createdAt)}
                       </span>
                       <div className="min-w-0">
                         <Link
                           to={`/pipelines/${event.pipeline.id}/items/${event.caseId}`}
-                          className="font-medium text-foreground hover:underline"
+                          className="font-medium text-ink hover:underline"
                         >
                           {presentation.sentence}
                         </Link>
-                        <span className="ml-2 text-muted-foreground">{event.pipeline.name}</span>
+                        <span className="ml-2 text-ink-3">{event.pipeline.name}</span>
                       </div>
                     </div>
                   );
@@ -5260,21 +5260,21 @@ export function Learnings() {
         </div>
       )}
 
-      <div className="flex items-center justify-between border-t border-border pt-4">
+      <div className="flex items-center justify-between border-t border-line pt-4">
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           disabled={!canGoPrevious}
           onClick={() => setOffset((current) => Math.max(0, current - LEARNINGS_PAGE_SIZE))}
         >
           Previous
         </Button>
-        <span className="text-sm text-muted-foreground">
+        <span className="text-sm text-ink-3">
           {events.length > 0 ? `${formatNumber(firstVisible)}-${formatNumber(lastVisible)}` : "No rows"}
         </span>
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           disabled={!canGoNext}
           onClick={() => setOffset((current) => pagination?.nextOffset ?? current + LEARNINGS_PAGE_SIZE)}
         >

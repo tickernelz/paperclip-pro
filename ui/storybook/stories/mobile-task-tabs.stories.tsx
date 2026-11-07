@@ -23,7 +23,7 @@ function Prototype({ initialTabs = basicTabs, activeTabId = "plan" }: { initialT
   const active = controller.tabs.find((tab) => tab.id === controller.activeTabId);
   if (closed) return <div className="p-6"><Button onClick={() => setClosed(false)}>Reopen task panel</Button></div>;
   return (
-    <div className="mx-auto flex h-dvh w-full max-w-sm flex-col bg-background text-foreground">
+    <div className="mx-auto flex h-dvh w-full max-w-sm flex-col bg-bg text-ink">
       <div className="flex h-(--side-panel-header-height) shrink-0 items-center gap-1 border-b px-2">
         <SidePanelMobileTabs
           tabs={controller.tabs.map((tab) => ({ ...tab, icon: tab.id === "properties" ? <SlidersHorizontal /> : tab.id === "plan" ? <Lightbulb /> : tab.id === "artifacts" ? <Box /> : <FileText /> }))}
@@ -37,11 +37,11 @@ function Prototype({ initialTabs = basicTabs, activeTabId = "plan" }: { initialT
       <div className="min-h-0 flex-1 overflow-auto p-6" role={active ? "tabpanel" : undefined} aria-labelledby={active ? `side-panel-tab-${active.id}` : undefined}>
         {active ? <>
           <h1 className="text-xl font-semibold">{active.label}</h1>
-          <p className="mt-2 text-xs text-muted-foreground">Revision 4 · Updated today</p>
+          <p className="mt-2 text-xs text-ink-3">Revision 4 · Updated today</p>
           <h2 className="mt-8 text-lg font-semibold">A readable mobile task panel</h2>
           <p className="mt-3 text-sm leading-relaxed">Tap the title to see all open tabs. Full document names wrap in the vertical list. The check marks your current tab, and each row has its own close button.</p>
           <p className="mt-4 text-sm leading-relaxed">The top-right X returns to the task feed. Use + to open another task document. Closing an inactive tab keeps this document selected.</p>
-        </> : <p className="text-sm text-muted-foreground">All tabs are closed. Use + to open a tab.</p>}
+        </> : <p className="text-sm text-ink-3">All tabs are closed. Use + to open a tab.</p>}
       </div>
     </div>
   );

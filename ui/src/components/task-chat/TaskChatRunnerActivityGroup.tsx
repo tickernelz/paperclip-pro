@@ -127,7 +127,7 @@ function ActivityContent({
         <span
           className={cn(
             "max-w-full shrink-0 truncate text-xs",
-            row.running && "text-foreground",
+            row.running && "text-ink",
           )}
         >
           {row.label}
@@ -136,7 +136,7 @@ function ActivityContent({
           <span
             title={row.target}
             className={cn(
-              "truncate text-xs text-muted-foreground",
+              "truncate text-xs text-ink-3",
               row.mono && "font-mono",
             )}
           >
@@ -286,7 +286,7 @@ function ExpandedActivity({
       {expandable ? (
         <button
           type="button"
-          className="flex h-8 w-full min-w-0 items-center gap-2 rounded-sm text-left text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="flex h-8 w-full min-w-0 items-center gap-2 rounded-sm text-left text-ink-3 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
           onClick={() => setOpen(!open)}
           aria-expanded={open}
           aria-controls={mounted ? detailId : undefined}
@@ -298,7 +298,7 @@ function ExpandedActivity({
           />
         </button>
       ) : (
-        <div className="flex h-8 w-full min-w-0 items-center gap-2 text-muted-foreground">
+        <div className="flex h-8 w-full min-w-0 items-center gap-2 text-ink-3">
           {content}
         </div>
       )}
@@ -308,7 +308,7 @@ function ExpandedActivity({
           hidden={!open}
           ref={detail.ref}
           onScroll={detail.onScroll}
-          className="flex max-h-(--sz-64) min-w-0 flex-col gap-2 overflow-y-auto rounded-md bg-muted/40 p-3 text-xs leading-relaxed text-muted-foreground [&>*]:shrink-0"
+          className="flex max-h-(--sz-64) min-w-0 flex-col gap-2 overflow-y-auto rounded-md bg-bg-3/40 p-3 text-xs leading-relaxed text-ink-3 [&>*]:shrink-0"
           data-testid="task-chat-runner-activity-detail"
         >
           <div className="flex min-w-0 flex-col gap-2" data-testid="task-chat-runner-activity-body">
@@ -348,7 +348,7 @@ function LiveActivities({
       {earlierCount > 0 ? (
         <button
           type="button"
-          className="flex h-8 w-full min-w-0 items-center gap-2 rounded-sm text-left text-xs text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="flex h-8 w-full min-w-0 items-center gap-2 rounded-sm text-left text-xs text-ink-3 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
           data-testid="task-chat-activity-earlier-toggle"
           onClick={() => setShowEarlier(!showEarlier)}
           aria-expanded={showEarlier}
@@ -403,7 +403,7 @@ function SettledActivities({
     <div className="min-w-0">
       <button
         type="button"
-        className="flex min-h-8 w-full min-w-0 items-center gap-2 rounded-sm text-left text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="flex min-h-8 w-full min-w-0 items-center gap-2 rounded-sm text-left text-ink-3 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
         data-testid="task-chat-activity-phase-toggle"
         onClick={() => setExpanded(!expanded)}
         aria-expanded={expanded}
@@ -472,7 +472,7 @@ export function TaskChatRunnerActivityGroup({
     >
       {item.interstitial ? (
         <div
-          className="min-w-0 px-1 text-sm text-foreground/90"
+          className="min-w-0 px-1 text-sm text-ink/90"
           data-testid="task-chat-phase-interstitial"
         >
           <MarkdownBody softBreaks linkIssueReferences>

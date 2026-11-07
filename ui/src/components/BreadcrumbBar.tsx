@@ -24,7 +24,7 @@ type GlobalToolbarContext = { companyId: string | null; companyPrefix: string | 
 function CrumbIdentifier({ identifier }: { identifier?: string }) {
   if (!identifier) return null;
   return (
-    <span data-slot="task-title-identifier" className="shrink-0 font-mono text-(length:--text-micro) text-muted-foreground">
+    <span data-slot="task-title-identifier" className="shrink-0 font-mono text-(length:--text-micro) text-ink-3">
       {identifier}
     </span>
   );
@@ -82,7 +82,7 @@ export function BreadcrumbBar({ taskDetailLayout = false }: { taskDetailLayout?:
 
   if (isMobile && mobileToolbar) {
     return (
-      <div className="h-(--sz-60px) shrink-0 flex items-center border-b border-border px-2">
+      <div className="h-(--sz-60px) shrink-0 flex items-center border-b border-line px-2">
         {mobileToolbar}
       </div>
     );
@@ -90,7 +90,7 @@ export function BreadcrumbBar({ taskDetailLayout = false }: { taskDetailLayout?:
 
   if (breadcrumbs.length === 0) {
     return (
-      <div className="h-(--sz-60px) shrink-0 flex items-center justify-end border-b border-border px-4 md:px-6">
+      <div className="h-(--sz-60px) shrink-0 flex items-center justify-end border-b border-line px-4 md:px-6">
         {globalToolbarSlots}
       </div>
     );
@@ -111,7 +111,7 @@ export function BreadcrumbBar({ taskDetailLayout = false }: { taskDetailLayout?:
   const currentCrumb = breadcrumbs[breadcrumbs.length - 1];
   if (isMobile && breadcrumbs[0]?.label === "Tasks" && currentCrumb.identifier) {
     return (
-      <div className="h-(--sz-60px) shrink-0 flex items-center border-b border-border px-4">
+      <div className="h-(--sz-60px) shrink-0 flex items-center border-b border-line px-4">
         {menuButton}
         <h1 className="flex min-w-0 flex-1 items-baseline gap-1.5 text-sm">
           {currentCrumb.leading ? (
@@ -155,7 +155,7 @@ export function BreadcrumbBar({ taskDetailLayout = false }: { taskDetailLayout?:
                           to={crumb.href} onClick={crumb.onClick}
                           className={cn(
                             "flex min-w-0 items-baseline gap-1.5",
-                            i === 0 && "font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground",
+                            i === 0 && "font-semibold uppercase tracking-wider text-ink-3 hover:text-ink",
                           )}
                         >
                           {crumb.leading && (
@@ -170,7 +170,7 @@ export function BreadcrumbBar({ taskDetailLayout = false }: { taskDetailLayout?:
                           to={crumb.href} onClick={crumb.onClick}
                           className={cn(
                             "min-w-0 truncate",
-                            i === 0 && "font-semibold uppercase tracking-wider text-muted-foreground hover:text-foreground",
+                            i === 0 && "font-semibold uppercase tracking-wider text-ink-3 hover:text-ink",
                           )}
                         >
                           {crumb.label}
@@ -192,7 +192,7 @@ export function BreadcrumbBar({ taskDetailLayout = false }: { taskDetailLayout?:
   // Other single-crumb pages keep their existing page-title presentation.
   if (breadcrumbs.length === 1 && !taskDetailLayout) {
     return (
-      <div className="h-(--sz-60px) shrink-0 flex items-center border-b border-border px-4 md:px-6">
+      <div className="h-(--sz-60px) shrink-0 flex items-center border-b border-line px-4 md:px-6">
         {menuButton}
         <div className="min-w-0 overflow-hidden flex-1">
           {breadcrumbs[0].leading || breadcrumbs[0].identifier ? (
@@ -218,7 +218,7 @@ export function BreadcrumbBar({ taskDetailLayout = false }: { taskDetailLayout?:
   return (
     <div
       className={cn(
-        "relative h-(--sz-60px) shrink-0 flex items-center border-b border-border",
+        "relative h-(--sz-60px) shrink-0 flex items-center border-b border-line",
         "px-4 md:px-6",
       )}
     >
@@ -229,7 +229,7 @@ export function BreadcrumbBar({ taskDetailLayout = false }: { taskDetailLayout?:
         <Button
           variant="ghost"
           size="icon-sm"
-          className="ml-5 size-9 shrink-0 text-muted-foreground"
+          className="ml-5 size-9 shrink-0"
           onClick={toggleTaskPanel}
           aria-label={taskPanelOpen ? "Hide properties" : "Show properties"}
           title={taskPanelOpen ? "Hide properties" : "Show properties"}

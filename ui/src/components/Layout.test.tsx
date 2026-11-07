@@ -987,7 +987,7 @@ describe("Layout", () => {
       expect(container.textContent).toContain("Main company nav");
       const secondaryRail = container.querySelector("[data-secondary-sidebar]");
       expect(secondaryRail?.classList.contains("w-60")).toBe(true);
-      expect(secondaryRail?.classList.contains("bg-background")).toBe(true);
+      expect(secondaryRail?.classList.contains("bg-bg")).toBe(true);
       const breadcrumb = Array.from(container.querySelectorAll("div")).find(
         (element) => element.textContent === "Breadcrumbs",
       );
@@ -1308,7 +1308,7 @@ describe("Layout", () => {
     const { root, rootEl } = await renderLayoutRoot();
 
     expect(rootEl.tagName).toBe("DIV");
-    expect(rootEl.className).toContain("bg-background");
+    expect(rootEl.className).toContain("bg-bg");
     // The mobile root must clip horizontal overflow to prevent a stray wide
     // descendant from making the whole viewport scroll sideways. clip (not
     // hidden) keeps overflow-y visible so body scroll keeps working.
@@ -1324,7 +1324,7 @@ describe("Layout", () => {
     mockSidebarState.isMobile = false;
     const { root, rootEl } = await renderLayoutRoot();
 
-    expect(rootEl.className).toContain("bg-background");
+    expect(rootEl.className).toContain("bg-bg");
     expect(rootEl.classList.contains("overflow-clip")).toBe(true);
 
     await act(async () => {

@@ -97,11 +97,11 @@ describe("TaskChatMarker", () => {
     const toggle = container.querySelector<HTMLButtonElement>(
       "button[aria-expanded]",
     )!;
-    expect(toggle.classList).toContain("text-muted-foreground");
-    expect(container.querySelector(".text-destructive")).toBeNull();
+    expect(toggle.classList).toContain("text-ink-3");
+    expect(container.querySelector(".text-bad")).toBeNull();
     flushSync(() => toggle.click());
     expect(container.textContent).toContain("Cancelled by you.");
-    expect(container.querySelector(".text-destructive")).toBeNull();
+    expect(container.querySelector(".text-bad")).toBeNull();
   });
 
   it("keeps Try again available without retry instructions in the detail", async () => {

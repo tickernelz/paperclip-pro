@@ -128,27 +128,27 @@ export function TweakPanel() {
 
   return (
     <div
-      className="fixed z-50 w-72 select-none rounded-lg border border-border bg-card text-card-foreground shadow-lg"
+      className="fixed z-50 w-72 select-none rounded-lg border border-line bg-bg-2 text-ink shadow-lg"
       style={{ left: pos.x, top: pos.y }}
       data-testid="task-chat-tweak-panel"
     >
       <div
-        className="flex cursor-grab items-center gap-2 rounded-t-lg border-b border-border bg-muted/50 px-2 py-1.5 text-xs font-medium active:cursor-grabbing"
+        className="flex cursor-grab items-center gap-2 rounded-t-lg border-b border-line bg-bg-3/50 px-2 py-1.5 text-xs font-medium active:cursor-grabbing"
         onPointerDown={onHeaderPointerDown}
         onPointerMove={onHeaderPointerMove}
         onPointerUp={onHeaderPointerUp}
       >
-        <GripHorizontal className="h-3.5 w-3.5 text-muted-foreground" />
+        <GripHorizontal className="h-3.5 w-3.5 text-ink-3" />
         <span>Motion tweak panel</span>
         <div className="ml-auto flex items-center gap-1">
-          <button type="button" title="Reset all" onClick={resetAll} className="rounded p-0.5 hover:bg-accent">
+          <button type="button" title="Reset all" onClick={resetAll} className="rounded p-0.5 hover:bg-bg-3">
             <RotateCcw className="h-3.5 w-3.5" />
           </button>
           <button
             type="button"
             title={minimized ? "Expand" : "Minimize"}
             onClick={() => setMinimized((m) => !m)}
-            className="rounded p-0.5 hover:bg-accent"
+            className="rounded p-0.5 hover:bg-bg-3"
           >
             {minimized ? <Plus className="h-3.5 w-3.5" /> : <Minus className="h-3.5 w-3.5" />}
           </button>
@@ -159,12 +159,12 @@ export function TweakPanel() {
         <div className="max-h-(--sz-tweak-panel-max) overflow-y-auto p-2">
           {MOTION_TOKEN_GROUPS.map((group) => (
             <div key={group} className="mb-3">
-              <p className="mb-1 text-(length:--text-nano) font-semibold uppercase tracking-wide text-muted-foreground">{group}</p>
+              <p className="mb-1 text-(length:--text-nano) font-semibold uppercase tracking-wide text-ink-3">{group}</p>
               <div className="flex flex-col gap-2">
                 {grouped[group].map((t) => (
                   <div key={t.name} data-token={t.name} className="flex flex-col gap-1">
                     <div className="flex items-center justify-between text-(length:--text-micro)">
-                      <span className="truncate font-mono text-muted-foreground">{t.name.replace("--motion-", "")}</span>
+                      <span className="truncate font-mono text-ink-3">{t.name.replace("--motion-", "")}</span>
                       <span className="ml-2 shrink-0 tabular-nums">
                         {t.kind === "time" ? `${Math.round(parseCssTimeMs(values[t.name] ?? "0"))}ms` : ""}
                       </span>
@@ -185,7 +185,7 @@ export function TweakPanel() {
                         aria-label={t.name}
                         value={values[t.name] ?? ""}
                         onChange={(e) => setToken(t.name, e.target.value)}
-                        className="w-full rounded border border-border bg-background px-1 py-0.5 text-(length:--text-micro)"
+                        className="w-full rounded border border-line bg-bg px-1 py-0.5 text-(length:--text-micro)"
                       >
                         {EASING_PRESETS.every((p) => p.value !== (values[t.name] ?? "")) && values[t.name] ? (
                           <option value={values[t.name]}>{values[t.name]}</option>
@@ -207,7 +207,7 @@ export function TweakPanel() {
             <button
               type="button"
               onClick={buildExport}
-              className="flex flex-1 items-center justify-center gap-1 rounded border border-border px-2 py-1 text-xs hover:bg-accent"
+              className="flex flex-1 items-center justify-center gap-1 rounded border border-line px-2 py-1 text-xs hover:bg-bg-3"
             >
               <Copy className="h-3.5 w-3.5" />
               Copy as @theme
@@ -219,7 +219,7 @@ export function TweakPanel() {
               <textarea
                 readOnly
                 data-testid="task-chat-tweak-export"
-                className="mt-2 h-32 w-full resize-none rounded border border-border bg-muted/40 p-2 font-mono text-(length:--text-nano)"
+                className="mt-2 h-32 w-full resize-none rounded border border-line bg-bg-3/40 p-2 font-mono text-(length:--text-nano)"
                 value={exportText}
                 onFocus={(e) => {
                   e.currentTarget.select();
@@ -227,7 +227,7 @@ export function TweakPanel() {
                 }}
               />
               {/* Focusing the box copies it silently; say so, or the click looks inert. */}
-              <p className="mt-1 text-(length:--text-nano) text-muted-foreground" aria-live="polite">
+              <p className="mt-1 text-(length:--text-nano) text-ink-3" aria-live="polite">
                 {exportCopy.copied
                   ? "Copied to clipboard"
                   : exportCopy.failed

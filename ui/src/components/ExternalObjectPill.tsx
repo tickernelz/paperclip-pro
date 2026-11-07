@@ -128,13 +128,13 @@ export function ExternalObjectPill({
   const interactive = !inert && Boolean(object.url);
   const classNames = cn(
     "paperclip-mention-chip paperclip-mention-chip--external-object",
-    "inline-flex max-w-full items-center gap-1 rounded-full border border-border px-2 py-0.5 text-xs no-underline",
+    "inline-flex max-w-full items-center gap-1 rounded-full border border-line px-2 py-0.5 text-xs no-underline",
     // Tone is applied as text classes only — the border style comes from the
     // overlay (dashed for stale/auth/unreachable).
     tone.split(" ").filter((c) => c.startsWith("text-")).join(" "),
     overlay,
     interactive
-      && "hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-(length:--rad-3) focus-visible:ring-ring",
+      && "hover:bg-bg-3/50 focus-visible:outline-none focus-visible:ring-(length:--rad-3) focus-visible:ring-focus",
     className,
   );
   const titleAttr = sourceSummary

@@ -89,18 +89,18 @@ export const NativeSelects: Story = {
     <div className="grid max-w-3xl gap-6 md:grid-cols-2">
       {(["Default", "Disabled", "Long value", "Right to left"] as const).map(label => <label key={label} className="space-y-2 text-sm" dir={label === "Right to left" ? "rtl" : undefined}>
         <span className="block">{label}</span>
-        <select className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm disabled:opacity-50" disabled={label === "Disabled"} defaultValue="live">
+        <select className="w-full rounded-md border border-line-strong bg-bg px-3 py-2 text-sm disabled:opacity-50" disabled={label === "Disabled"} defaultValue="live">
           <option value="live">{label === "Long value" ? "A longer selected value beside the inset caret" : "Live connection"}</option>
           <option value="webhook">Webhook</option>
         </select>
       </label>)}
       <label className="space-y-2 text-sm"><span className="block">Multiple selection</span>
-        <select multiple className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" defaultValue={["live"]}>
+        <select multiple className="w-full rounded-md border border-line-strong bg-bg px-3 py-2 text-sm" defaultValue={["live"]}>
           <option value="live">Live connection</option><option value="webhook">Webhook</option>
         </select>
       </label>
       <label className="space-y-2 text-sm"><span className="block">Listbox</span>
-        <select size={3} className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm" defaultValue="live">
+        <select size={3} className="w-full rounded-md border border-line-strong bg-bg px-3 py-2 text-sm" defaultValue="live">
           <option value="live">Live connection</option><option value="webhook">Webhook</option>
         </select>
       </label>
@@ -174,19 +174,19 @@ export const CollapsibleOpenClosed: Story = {
   render: () => (
     <StoryFrame>
       <div className="space-y-6">
-        <Collapsible open className="rounded-md border border-border p-3">
+        <Collapsible open className="rounded-md border border-line p-3">
           <CollapsibleTrigger className="text-sm font-medium">
             Open section
           </CollapsibleTrigger>
-          <CollapsibleContent className="pt-2 text-sm text-muted-foreground">
+          <CollapsibleContent className="pt-2 text-sm text-ink-3">
             Visible collapsible content used for snapshot coverage.
           </CollapsibleContent>
         </Collapsible>
-        <Collapsible className="rounded-md border border-border p-3">
+        <Collapsible className="rounded-md border border-line p-3">
           <CollapsibleTrigger className="text-sm font-medium">
             Closed section
           </CollapsibleTrigger>
-          <CollapsibleContent className="pt-2 text-sm text-muted-foreground">
+          <CollapsibleContent className="pt-2 text-sm text-ink-3">
             Hidden content.
           </CollapsibleContent>
         </Collapsible>
@@ -198,7 +198,7 @@ export const CollapsibleOpenClosed: Story = {
 export const CommandPaletteInline: Story = {
   render: () => (
     <StoryFrame>
-      <Command className="max-w-md rounded-lg border border-border shadow-md">
+      <Command className="max-w-md rounded-lg border border-line shadow-md">
         <CommandInput placeholder="Type a command or search…" />
         <CommandList>
           <CommandEmpty>No results found.</CommandEmpty>
@@ -258,7 +258,7 @@ export const RadioCards: Story = {
 export const ScrollAreaList: Story = {
   render: () => (
     <StoryFrame>
-      <ScrollArea className="h-40 w-64 rounded-md border border-border">
+      <ScrollArea className="h-40 w-64 rounded-md border border-line">
         <div className="p-3">
           {Array.from({ length: 12 }, (_, i) => (
             <div key={i} className="py-1.5 text-sm">
@@ -311,7 +311,7 @@ export const DropdownMenuOpen: Story = {
       <div className="flex min-h-72 items-start">
         <DropdownMenu open>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline">Task actions</Button>
+            <Button variant="secondary">Task actions</Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start">
             <DropdownMenuLabel>Actions</DropdownMenuLabel>
@@ -336,7 +336,7 @@ export const SheetOpen: Story = {
             <SheetTitle>Run details</SheetTitle>
             <SheetDescription>Inspect the run without leaving the board.</SheetDescription>
           </SheetHeader>
-          <div className="px-4 text-sm text-muted-foreground">
+          <div className="px-4 text-sm text-ink-3">
             Sheet body content for snapshot coverage.
           </div>
           <SheetFooter>

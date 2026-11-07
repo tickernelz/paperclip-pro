@@ -18,23 +18,23 @@ export function SlackCapabilitiesView({
 }) {
   return (
     <section className="space-y-3">
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm text-ink-3">
         Read, search, and act in Slack. Some actions require approval.
       </p>
       {error && (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-sm text-bad">
           {error}
         </p>
       )}
       {!capabilities && !error && (
-        <p role="status" className="text-sm text-muted-foreground">
+        <p role="status" className="text-sm text-ink-3">
           Checking Slack permissions…
         </p>
       )}
       {capabilities && (
         <>
           {capabilities.missingScopes.length > 0 && (
-            <div className="rounded-lg border border-border bg-muted p-3 space-y-2">
+            <div className="rounded-lg border border-line bg-bg-3 p-3 space-y-2">
               <p className="text-sm font-medium">
                 Add permissions to unlock more tools
               </p>
@@ -97,13 +97,13 @@ export function SlackSearchView({
   return (
     <section className="space-y-3">
       <h3 className="text-sm font-semibold">Your Slack search access</h3>
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm text-ink-3">
         Optional personal authorization enables private search on supported
         runtimes. It cannot read channels the bot hasn’t joined or let the bot
         write as you. Basic channel reading works without it.
       </p>
       {!status.nativeSearchAvailable && (
-        <p role="status" className="text-sm text-muted-foreground">
+        <p role="status" className="text-sm text-ink-3">
           {status.limitation}
         </p>
       )}
@@ -111,7 +111,7 @@ export function SlackSearchView({
         <div className="flex items-center justify-between gap-3">
           <span className="text-sm">Slack search connected</span>
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             disabled={pending}
             onClick={() => void perform(onDisconnect)}
@@ -121,7 +121,7 @@ export function SlackSearchView({
         </div>
       ) : (
         <Button
-          variant="outline"
+          variant="secondary"
           disabled={pending || !status.configured}
           onClick={() => void perform(onConnect)}
         >
@@ -129,14 +129,14 @@ export function SlackSearchView({
         </Button>
       )}
       {!status.configured && (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           A connection manager needs to configure your Slack app’s OAuth
           credentials first.
         </p>
       )}
       {status.canConfigure && (
         <details className="text-sm">
-          <summary className="cursor-pointer text-muted-foreground">
+          <summary className="cursor-pointer text-ink-3">
             OAuth app configuration for connection managers
           </summary>
           <form
@@ -190,7 +190,7 @@ export function SlackSearchView({
         </details>
       )}
       {error && (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-sm text-bad">
           {error}
         </p>
       )}
@@ -241,13 +241,13 @@ export function SlackSearchAccess({
   });
   if (query.error)
     return (
-      <p role="alert" className="text-sm text-destructive">
+      <p role="alert" className="text-sm text-bad">
         {query.error.message}
       </p>
     );
   if (!query.data)
     return (
-      <p role="status" className="text-sm text-muted-foreground">
+      <p role="status" className="text-sm text-ink-3">
         Loading search access…
       </p>
     );

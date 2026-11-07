@@ -66,14 +66,14 @@ export function TaskChatDescriptionBubble({ brief }: TaskChatDescriptionBubblePr
   if (editing) {
     return (
       <div
-        className="tc-enter-bubble w-full rounded-lg border border-border bg-card px-2 py-1"
+        className="tc-enter-bubble w-full rounded-lg border border-line bg-bg-2 px-2 py-1"
         data-testid="task-chat-description-editor"
       >
         <InlineEditor
           value={brief.description}
           onSave={brief.onSave}
           as="p"
-          className="text-sm leading-7 text-foreground"
+          className="text-sm leading-7 text-ink"
           placeholder="Add a description..."
           multiline
           defaultEditing
@@ -94,7 +94,7 @@ export function TaskChatDescriptionBubble({ brief }: TaskChatDescriptionBubblePr
     return (
       <button
         type="button"
-        className="flex w-full items-center gap-1.5 rounded-lg px-1 py-1.5 text-left text-sm text-muted-foreground/70 transition-colors hover:bg-accent/20 hover:text-muted-foreground"
+        className="flex w-full items-center gap-1.5 rounded-lg px-1 py-1.5 text-left text-sm text-ink-3/70 transition-colors hover:bg-bg-3/20 hover:text-ink-3"
         onClick={() => setEditing(true)}
         data-testid="task-chat-description-ghost"
       >
@@ -117,7 +117,7 @@ export function TaskChatDescriptionBubble({ brief }: TaskChatDescriptionBubblePr
       {!isHuman && brief.authorName ? (
         <span className="flex items-center gap-2 px-1">
           <AgentAvatar agent={brief.agent} name={brief.authorName} size={24} />
-          <span className="text-sm font-semibold text-foreground">{brief.authorName}</span>
+          <span className="text-sm font-semibold text-ink">{brief.authorName}</span>
         </span>
       ) : null}
       <div
@@ -131,7 +131,7 @@ export function TaskChatDescriptionBubble({ brief }: TaskChatDescriptionBubblePr
             "max-w-(--pct-85) break-words px-3.5 py-2 text-sm",
             isHuman
               ? "rounded-2xl rounded-br-sm bg-(--liveness-blue) text-white"
-              : "rounded-2xl rounded-bl-sm bg-(--bubble-agent) text-foreground",
+              : "rounded-2xl rounded-bl-sm bg-(--bubble-agent) text-ink",
           )}
         >
           <FoldCurtain
@@ -155,7 +155,7 @@ export function TaskChatDescriptionBubble({ brief }: TaskChatDescriptionBubblePr
         {!isHuman ? (
           <button
             type="button"
-            className="mt-1 shrink-0 rounded-md p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-accent/50 hover:text-foreground focus-visible:opacity-100 group-hover/brief:opacity-100"
+            className="mt-1 shrink-0 rounded-md p-1 text-ink-3 opacity-0 transition-opacity hover:bg-bg-3/50 hover:text-ink focus-visible:opacity-100 group-hover/brief:opacity-100"
             onClick={() => setEditing(true)}
             aria-label="Edit description"
             data-testid="task-chat-description-edit"
@@ -165,7 +165,7 @@ export function TaskChatDescriptionBubble({ brief }: TaskChatDescriptionBubblePr
         ) : null}
       </div>
       {timestamp ? (
-        <span className="px-1 text-(length:--text-micro) text-muted-foreground">{timestamp}</span>
+        <span className="px-1 text-(length:--text-micro) text-ink-3">{timestamp}</span>
       ) : null}
     </div>
   );

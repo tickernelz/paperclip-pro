@@ -59,7 +59,7 @@ export function RoutineActivityRow({ event }: { event: RoutineActivityEvent }) {
   const hasPayload = event.details != null && Object.keys(event.details).length > 0;
 
   return (
-    <div className="border-b border-border/60 last:border-b-0">
+    <div className="border-b border-line/60 last:border-b-0">
       <button
         type="button"
         disabled={!hasPayload}
@@ -67,29 +67,29 @@ export function RoutineActivityRow({ event }: { event: RoutineActivityEvent }) {
         onClick={() => setExpanded((value) => !value)}
         className={cn(
           "flex min-w-0 w-full items-center gap-2 rounded-md px-2 py-2 text-left text-xs whitespace-nowrap",
-          hasPayload ? "hover:bg-accent/30" : "cursor-default",
+          hasPayload ? "hover:bg-bg-3/30" : "cursor-default",
         )}
       >
-        <span className="w-16 shrink-0 whitespace-nowrap font-mono tabular-nums text-muted-foreground">
+        <span className="w-16 shrink-0 whitespace-nowrap font-mono tabular-nums text-ink-3">
           {formatTime(event.createdAt)}
         </span>
-        <span title={event.action} className="min-w-0 max-w-1/2 shrink-0 truncate font-medium text-foreground">
+        <span title={event.action} className="min-w-0 max-w-1/2 shrink-0 truncate font-medium text-ink">
           {actionLabel(event.action)}
         </span>
-        <span title={summarizeEvent(event)} className="min-w-0 flex-1 truncate text-muted-foreground">
+        <span title={summarizeEvent(event)} className="min-w-0 flex-1 truncate text-ink-3">
           {summarizeEvent(event)}
         </span>
         {hasPayload ? (
           <ChevronRight
             className={cn(
-              "h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform",
+              "h-3.5 w-3.5 shrink-0 text-ink-3 transition-transform",
               expanded && "rotate-90",
             )}
           />
         ) : null}
       </button>
       {expanded && hasPayload ? (
-        <pre className="mx-2 mb-2 overflow-x-auto rounded-md bg-muted p-3 font-mono text-xs text-foreground">
+        <pre className="mx-2 mb-2 overflow-x-auto rounded-md bg-bg-3 p-3 font-mono text-xs text-ink">
           {JSON.stringify(event.details, null, 2)}
         </pre>
       ) : null}

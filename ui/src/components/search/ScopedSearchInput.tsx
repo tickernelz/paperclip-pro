@@ -395,7 +395,7 @@ export function ScopedSearchInput({
     <div className={cn("relative", className)} data-testid="scoped-search">
       <div
         className={cn(
-          "flex h-8 w-full min-w-0 items-center gap-1 overflow-x-auto rounded-md border border-input bg-transparent pl-7 pr-1 shadow-xs focus-within:border-ring focus-within:ring-(length:--rad-3) focus-within:ring-ring/50 dark:bg-input/30",
+          "flex h-8 w-full min-w-0 items-center gap-1 overflow-x-auto rounded-md border border-line-strong bg-transparent pl-7 pr-1 shadow-xs focus-within:border-focus focus-within:ring-(length:--rad-3) focus-within:ring-focus/50 dark:bg-line-strong/30",
           fieldClassName,
         )}
         onMouseDown={(event) => {
@@ -405,7 +405,7 @@ export function ScopedSearchInput({
           }
         }}
       >
-        <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+        <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-3" />
         {pills.map((pill, index) => (
           <Badge
             key={`${tokens[index]}:${index}`}
@@ -416,7 +416,7 @@ export function ScopedSearchInput({
             <span className="truncate">{pill.label}</span>
             <button
               type="button"
-              className="rounded-full p-0.5 hover:bg-background/60"
+              className="rounded-full p-0.5 hover:bg-bg/60"
               aria-label={`Remove ${pill.label}`}
               onMouseDown={(event) => event.preventDefault()}
               onClick={() => removeToken(index)}
@@ -430,7 +430,7 @@ export function ScopedSearchInput({
             <span>{pending.key}:</span>
             <button
               type="button"
-              className="rounded-full p-0.5 hover:bg-accent"
+              className="rounded-full p-0.5 hover:bg-bg-3"
               aria-label={`Remove ${pending.label} field`}
               onMouseDown={(event) => event.preventDefault()}
               onClick={() => {
@@ -458,7 +458,7 @@ export function ScopedSearchInput({
           placeholder={inputPlaceholder}
           data-page-search-target={pageSearchTarget ? "true" : undefined}
           className={cn(
-            "h-full min-w-24 flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground md:text-sm",
+            "h-full min-w-24 flex-1 bg-transparent text-base outline-none placeholder:text-ink-3 md:text-sm",
             inputClassName,
           )}
           onChange={(event) => handleDraftChange(event.target.value)}
@@ -473,7 +473,7 @@ export function ScopedSearchInput({
           id={listId}
           role="listbox"
           aria-label={pending ? `${pending.label} values` : "Search fields"}
-          className="absolute left-0 top-full z-50 mt-1 max-h-64 w-full min-w-56 overflow-y-auto rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-md"
+          className="absolute left-0 top-full z-50 mt-1 max-h-64 w-full min-w-56 overflow-y-auto rounded-md border border-line bg-bg-2 p-1 text-ink shadow-md"
           data-testid="scoped-search-options"
         >
           {options.map((option, index) => (
@@ -484,7 +484,7 @@ export function ScopedSearchInput({
               aria-selected={index === activeIndex}
               className={cn(
                 "flex cursor-pointer items-center justify-between gap-3 rounded-sm px-2 py-1.5 text-sm",
-                index === activeIndex ? "bg-accent text-accent-foreground" : "hover:bg-accent/50",
+                index === activeIndex ? "bg-bg-3 text-ink" : "hover:bg-bg-3/50",
               )}
               onMouseDown={(event) => event.preventDefault()}
               onMouseEnter={() => setActiveIndex(index)}
@@ -492,7 +492,7 @@ export function ScopedSearchInput({
             >
               <span className="truncate">{option.label}</span>
               {option.description ? (
-                <span className="hidden truncate text-xs text-muted-foreground sm:inline">{option.description}</span>
+                <span className="hidden truncate text-xs text-ink-3 sm:inline">{option.description}</span>
               ) : null}
             </div>
           ))}

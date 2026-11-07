@@ -70,37 +70,37 @@ const editorLightTheme = EditorView.theme({
   ...editorBaseTheme,
   "&": {
     ...editorBaseTheme["&"],
-    backgroundColor: "color-mix(in oklab, var(--card) 92%, var(--background))",
-    color: "var(--foreground)",
+    backgroundColor: "color-mix(in oklab, var(--bg-2) 92%, var(--bg))",
+    color: "var(--ink)",
   },
   ".cm-content": {
     ...editorBaseTheme[".cm-content"],
-    caretColor: "var(--foreground)",
+    caretColor: "var(--ink)",
   },
   ".cm-gutters": {
-    backgroundColor: "color-mix(in oklab, var(--card) 96%, var(--background))",
-    color: "var(--muted-foreground)",
-    borderRight: "1px solid var(--border)",
+    backgroundColor: "color-mix(in oklab, var(--bg-2) 96%, var(--bg))",
+    color: "var(--ink-3)",
+    borderRight: "1px solid var(--line)",
   },
   ".cm-activeLine, .cm-activeLineGutter": {
-    backgroundColor: "color-mix(in oklab, var(--accent) 52%, transparent)",
+    backgroundColor: "color-mix(in oklab, var(--bg-3) 52%, transparent)",
   },
   ".cm-selectionBackground, .cm-content ::selection": {
-    backgroundColor: "color-mix(in oklab, var(--accent) 72%, transparent)",
+    backgroundColor: "color-mix(in oklab, var(--bg-3) 72%, transparent)",
   },
   "&.cm-focused .cm-selectionBackground": {
-    backgroundColor: "color-mix(in oklab, var(--accent) 84%, transparent)",
+    backgroundColor: "color-mix(in oklab, var(--bg-3) 84%, transparent)",
   },
   ".cm-cursor, .cm-dropCursor": {
-    borderLeftColor: "color-mix(in oklab, var(--foreground) 88%, transparent)",
+    borderLeftColor: "color-mix(in oklab, var(--ink) 88%, transparent)",
   },
   ".cm-matchingBracket": {
-    backgroundColor: "color-mix(in oklab, var(--accent) 45%, transparent)",
-    color: "var(--foreground)",
+    backgroundColor: "color-mix(in oklab, var(--bg-3) 45%, transparent)",
+    color: "var(--ink)",
     outline: "none",
   },
   ".cm-nonmatchingBracket": {
-    color: "var(--destructive)",
+    color: "var(--bad)",
   },
 });
 
@@ -305,8 +305,8 @@ export function FilesLink({ context }: PluginProjectSidebarItemProps) {
       aria-current={isActive ? "page" : undefined}
       className={`block px-3 py-1 text-[12px] truncate transition-colors ${
         isActive
-          ? "bg-accent text-foreground font-medium"
-          : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+          ? "bg-bg-3 text-ink font-medium"
+          : "text-ink-3 hover:text-ink hover:bg-bg-3/50"
       }`}
     >
       Files
@@ -534,11 +534,11 @@ export function FilesTab({ context }: PluginDetailTabProps) {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-lg border border-border bg-card p-4">
-        <label className="text-sm font-medium text-muted-foreground">Workspace</label>
+      <div className="rounded-lg border border-line bg-bg-2 p-4">
+        <label className="text-sm font-medium text-ink-3">Workspace</label>
         <select
           key={workspaceSelectKey}
-          className="mt-2 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+          className="mt-2 block w-full rounded-md border border-line-strong bg-bg px-3 py-2 text-sm"
           value={resolvedWorkspaceId ?? ""}
           onChange={(e) => setWorkspaceId(e.target.value || null)}
         >
@@ -565,10 +565,10 @@ export function FilesTab({ context }: PluginDetailTabProps) {
         }}
       >
         <div
-          className="flex min-h-0 flex-col overflow-hidden rounded-lg border border-border bg-card"
+          className="flex min-h-0 flex-col overflow-hidden rounded-lg border border-line bg-bg-2"
           style={{ display: isMobile && mobileView === "editor" ? "none" : "flex" }}
         >
-          <div className="border-b border-border px-3 py-2 text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+          <div className="border-b border-line px-3 py-2 text-xs font-medium uppercase tracking-[0.12em] text-ink-3">
             File Tree
           </div>
           <div className="min-h-0 flex-1 overflow-auto p-2">
@@ -591,31 +591,31 @@ export function FilesTab({ context }: PluginDetailTabProps) {
                 ariaLabel="Workspace files"
               />
             ) : (
-              <p className="px-2 py-3 text-sm text-muted-foreground">Select a workspace to browse files.</p>
+              <p className="px-2 py-3 text-sm text-ink-3">Select a workspace to browse files.</p>
             )}
           </div>
         </div>
         <div
-          className="flex min-h-0 flex-col overflow-hidden rounded-lg border border-border bg-card"
+          className="flex min-h-0 flex-col overflow-hidden rounded-lg border border-line bg-bg-2"
           style={{ display: isMobile && mobileView === "browser" ? "none" : "flex" }}
         >
-          <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-border bg-card px-4 py-2">
+          <div className="sticky top-0 z-10 flex items-center justify-between gap-3 border-b border-line bg-bg-2 px-4 py-2">
             <div className="min-w-0">
               <button
                 type="button"
-                className="mb-2 inline-flex rounded-md border border-input bg-background px-2 py-1 text-xs font-medium text-muted-foreground"
+                className="mb-2 inline-flex rounded-md border border-line-strong bg-bg px-2 py-1 text-xs font-medium text-ink-3"
                 style={{ display: isMobile ? "inline-flex" : "none" }}
                 onClick={() => setMobileView("browser")}
               >
                 Back to files
               </button>
-              <div className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">Editor</div>
-              <div className="truncate text-sm text-foreground">{selectedPath ?? "No file selected"}</div>
+              <div className="text-xs font-medium uppercase tracking-[0.12em] text-ink-3">Editor</div>
+              <div className="truncate text-sm text-ink">{selectedPath ?? "No file selected"}</div>
             </div>
             <div className="flex items-center gap-3">
               <button
                 type="button"
-                className="rounded-md border border-input bg-background px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-md border border-line-strong bg-bg px-3 py-1.5 text-sm font-medium text-ink transition-colors hover:bg-bg-3 disabled:cursor-not-allowed disabled:opacity-50"
                 disabled={!selectedWorkspace || !selectedPath || !isDirty || isSaving}
                 onClick={() => void handleSave()}
               >
@@ -624,18 +624,18 @@ export function FilesTab({ context }: PluginDetailTabProps) {
             </div>
           </div>
           {isDirty || saveMessage || saveError ? (
-            <div className="border-b border-border px-4 py-2 text-xs">
+            <div className="border-b border-line px-4 py-2 text-xs">
               {saveError ? (
-                <span className="text-destructive">{saveError}</span>
+                <span className="text-bad">{saveError}</span>
               ) : saveMessage ? (
                 <span className="text-emerald-600">{saveMessage}</span>
               ) : (
-                <span className="text-muted-foreground">Unsaved changes</span>
+                <span className="text-ink-3">Unsaved changes</span>
               )}
             </div>
           ) : null}
           {selectedPath && fileContentData?.error && fileContentData.error !== "Missing file context" ? (
-            <div className="border-b border-border px-4 py-2 text-xs text-destructive">{fileContentData.error}</div>
+            <div className="border-b border-line px-4 py-2 text-xs text-bad">{fileContentData.error}</div>
           ) : null}
           <div ref={editorRef} className="min-h-0 flex-1 overflow-auto overscroll-contain" />
         </div>
@@ -701,7 +701,7 @@ export function CommentFileLinks({ context }: PluginCommentAnnotationProps) {
 
   return (
     <div className="flex flex-wrap items-center gap-1.5">
-      <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Files:</span>
+      <span className="text-[10px] font-medium uppercase tracking-wider text-ink-3">Files:</span>
       {data.links.map((link) => {
         const href = buildFileBrowserHref(prefix, projectId, link);
         return (
@@ -709,7 +709,7 @@ export function CommentFileLinks({ context }: PluginCommentAnnotationProps) {
             key={link}
             href={href}
             onClick={(e) => navigateToFileBrowser(href, e)}
-            className="inline-flex items-center rounded-md border border-border bg-accent/30 px-1.5 py-0.5 text-xs font-mono text-primary hover:bg-accent/60 hover:underline transition-colors"
+            className="inline-flex items-center rounded-md border border-line bg-bg-3/30 px-1.5 py-0.5 text-xs font-mono text-accent hover:bg-bg-3/60 hover:underline transition-colors"
             title={`Open ${link} in file browser`}
           >
             {link}
@@ -750,7 +750,7 @@ export function CommentOpenFiles({ context }: PluginCommentContextMenuItemProps)
 
   return (
     <div>
-      <div className="px-2 py-1 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+      <div className="px-2 py-1 text-[10px] font-medium uppercase tracking-wider text-ink-3">
         Files
       </div>
       {data.links.map((link) => {
@@ -761,7 +761,7 @@ export function CommentOpenFiles({ context }: PluginCommentContextMenuItemProps)
             key={link}
             href={href}
             onClick={(e) => navigateToFileBrowser(href, e)}
-            className="flex w-full items-center gap-2 rounded px-2 py-1 text-xs text-foreground hover:bg-accent transition-colors"
+            className="flex w-full items-center gap-2 rounded px-2 py-1 text-xs text-ink hover:bg-bg-3 transition-colors"
             title={`Open ${link} in file browser`}
           >
             <span className="truncate font-mono">{fileName}</span>

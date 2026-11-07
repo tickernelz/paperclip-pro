@@ -533,7 +533,7 @@ export function WhatNeedsMe() {
   }, [handleDismiss, keyboardItems, navigate, selectedAttentionId]);
 
   if (!selectedCompanyId) {
-    return <p className="text-sm text-muted-foreground">Select an organization first.</p>;
+    return <p className="text-sm text-ink-3">Select an organization first.</p>;
   }
 
   if (isLoading) {
@@ -572,7 +572,7 @@ export function WhatNeedsMe() {
         />
       </div>
 
-      {error && <p className="text-sm text-destructive">{(error as Error).message}</p>}
+      {error && <p className="text-sm text-bad">{(error as Error).message}</p>}
 
       {!hasAnything ? (
         <ZeroState />
@@ -594,7 +594,7 @@ export function WhatNeedsMe() {
                       collapsed={collapsed}
                       onToggle={() => toggleGroupCollapse(group.key)}
                       trailing={
-                        <span className="text-xs tabular-nums text-muted-foreground">{group.items.length}</span>
+                        <span className="text-xs tabular-nums text-ink-3">{group.items.length}</span>
                       }
                     />
                   )}
@@ -713,7 +713,7 @@ export function WhatNeedsMe() {
               open={agingOpen}
               onToggle={() => setAgingOpen((prev) => !prev)}
             >
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-ink-3">
                 Idle past {ATTENTION_AGING_DAYS} days — kept off the desk. Keep any you still want surfaced.
               </p>
               {agingItems.map((item) => (
@@ -747,7 +747,7 @@ export function WhatNeedsMe() {
           onToggle={() => setDecidedOpen((prev) => !prev)}
         >
           {decidedDecisionsLoading ? (
-            <p className="text-xs text-muted-foreground">Loading decided decisions…</p>
+            <p className="text-xs text-ink-3">Loading decided decisions…</p>
           ) : (decidedDecisions?.length ?? 0) > 0 ? (
             decidedDecisions!.slice(0, DECISION_HISTORY_VISIBLE_LIMIT).map((decision) => (
               <DecisionResolver
@@ -759,7 +759,7 @@ export function WhatNeedsMe() {
               />
             ))
           ) : (
-            <p className="text-xs text-muted-foreground">No decided decisions.</p>
+            <p className="text-xs text-ink-3">No decided decisions.</p>
           )}
         </Curtain>
 
@@ -770,7 +770,7 @@ export function WhatNeedsMe() {
           onToggle={() => setExpiredOpen((prev) => !prev)}
         >
           {expiredDecisionsLoading ? (
-            <p className="text-xs text-muted-foreground">Loading expired decisions…</p>
+            <p className="text-xs text-ink-3">Loading expired decisions…</p>
           ) : (expiredDecisions?.length ?? 0) > 0 ? (
             expiredDecisions!.slice(0, DECISION_HISTORY_VISIBLE_LIMIT).map((decision) => (
               <DecisionResolver
@@ -782,7 +782,7 @@ export function WhatNeedsMe() {
               />
             ))
           ) : (
-            <p className="text-xs text-muted-foreground">No expired decisions.</p>
+            <p className="text-xs text-ink-3">No expired decisions.</p>
           )}
         </Curtain>
       </div>
@@ -813,7 +813,7 @@ export function DecisionBundleHeader({
         {agentName ?? "An agent"} proposed {count} {noun}
       </span>
       {originIssue && (originIssue.identifier || originIssue.title) && (
-        <span className="text-muted-foreground">
+        <span className="text-ink-3">
           {"· from "}
           {originIssue.href ? (
             <a href={originIssue.href} className="hover:underline">
@@ -824,20 +824,20 @@ export function DecisionBundleHeader({
           )}
         </span>
       )}
-      {title && <span className="text-muted-foreground">· {title}</span>}
-      <span className="text-muted-foreground">· {count} pending</span>
+      {title && <span className="text-ink-3">· {title}</span>}
+      <span className="text-ink-3">· {count} pending</span>
     </div>
   );
 }
 
 function CaughtUpNote({ filtered }: { filtered: boolean }) {
   return (
-    <div className="rounded-xl border border-dashed border-border py-10 text-center">
-      <p className="text-sm font-medium text-foreground">
+    <div className="rounded-xl border border-dashed border-line py-10 text-center">
+      <p className="text-sm font-medium text-ink">
         {filtered ? "No decisions match your filters." : "You're all caught up."}
       </p>
       {filtered && (
-        <p className="mt-1 text-xs text-muted-foreground">Adjust or clear the filters to see the rest.</p>
+        <p className="mt-1 text-xs text-ink-3">Adjust or clear the filters to see the rest.</p>
       )}
     </div>
   );
@@ -845,12 +845,12 @@ function CaughtUpNote({ filtered }: { filtered: boolean }) {
 
 function ZeroState() {
   return (
-    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-20 text-center">
+    <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-line py-20 text-center">
       <div className="mb-4 rounded-full bg-green-500/10 p-4">
         <CheckCircle2 className="h-10 w-10 text-green-500" />
       </div>
-      <p className="text-lg font-semibold text-foreground">You're all caught up</p>
-      <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
+      <p className="text-lg font-semibold text-ink">You're all caught up</p>
+      <p className="mt-1 flex items-center gap-1.5 text-sm text-ink-3">
         <Inbox className="h-4 w-4" />
         Nothing needs a decision from you right now.
       </p>

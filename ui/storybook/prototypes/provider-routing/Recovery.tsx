@@ -30,7 +30,7 @@ export function Recovery({ problem = "expired" }: { problem?: Problem }) {
       title="Review the release checklist"
       description="Task PC-142 · Assigned to Nova"
     >
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm text-ink-3">
         Codex · Engineering gateway · engineering-coder
       </p>
       {problem === "protocol" || problem === "quota" ? (
@@ -146,7 +146,7 @@ function GatewayCredential({
   };
   return (
     <section aria-label="Gateway credential repair" className="space-y-4">
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm text-ink-3">
         {problem === "missing"
           ? "Connect your own credential for this destination."
           : "Replace the expired credential for this destination."}{" "}

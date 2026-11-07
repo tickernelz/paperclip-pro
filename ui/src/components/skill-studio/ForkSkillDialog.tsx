@@ -157,9 +157,9 @@ export function ForkSkillDialog({
         </DialogHeader>
 
         {reusableFork ? (
-          <div className="rounded-md border border-primary/40 bg-primary/5 p-3 text-sm">
-            <p className="font-medium text-foreground">You already have a copy</p>
-            <p className="mt-0.5 text-muted-foreground">
+          <div className="rounded-md border border-accent/40 bg-accent/5 p-3 text-sm">
+            <p className="font-medium text-ink">You already have a copy</p>
+            <p className="mt-0.5 text-ink-3">
               An unedited copy of this skill already exists. Open it instead of
               making another.
             </p>
@@ -179,10 +179,10 @@ export function ForkSkillDialog({
         <div
           className={cn(
             "rounded-md border p-3",
-            agentCount > 0 ? "border-amber-500/40 bg-amber-500/5" : "border-border bg-muted/30",
+            agentCount > 0 ? "border-amber-500/40 bg-amber-500/5" : "border-line bg-bg-3/30",
           )}
         >
-          <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+          <div className="flex items-center gap-2 text-sm font-medium text-ink">
             <Users className="h-4 w-4 shrink-0" />
             <span>{agentUsageSentence(agentCount)}</span>
           </div>
@@ -193,7 +193,7 @@ export function ForkSkillDialog({
                 {usedByAgents.map((agent) => (
                   <span
                     key={agent.id}
-                    className="inline-flex items-center rounded-full border border-border bg-background px-2 py-0.5 text-xs text-foreground"
+                    className="inline-flex items-center rounded-full border border-line bg-bg px-2 py-0.5 text-xs text-ink"
                   >
                     {agent.name}
                   </span>
@@ -201,10 +201,10 @@ export function ForkSkillDialog({
               </div>
               <label className="mt-3 flex items-start justify-between gap-3">
                 <span className="text-sm">
-                  <span className="font-medium text-foreground">
+                  <span className="font-medium text-ink">
                     Switch these agents to the copy
                   </span>
-                  <span className="mt-0.5 block text-xs text-muted-foreground">
+                  <span className="mt-0.5 block text-xs text-ink-3">
                     {reassign
                       ? "These agents will run your copy instead of the original."
                       : "These agents keep running the original — your copy won't change what they do."}
@@ -219,7 +219,7 @@ export function ForkSkillDialog({
               </label>
             </>
           ) : (
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="mt-1 text-xs text-ink-3">
               Nothing is assigned to it, so your copy won't change any agent's
               behaviour.
             </p>
@@ -237,7 +237,7 @@ export function ForkSkillDialog({
           </Button>
           <Button
             type="button"
-            variant={reusableFork ? "outline" : "default"}
+            variant={reusableFork ? "secondary" : "primary"}
             onClick={() => forkMutation.mutate()}
             disabled={busy}
           >

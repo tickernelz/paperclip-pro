@@ -55,7 +55,7 @@ function Section({
 }) {
   return (
     <section className="paperclip-story__frame overflow-hidden">
-      <div className="border-b border-border px-5 py-4">
+      <div className="border-b border-line px-5 py-4">
         <div className="paperclip-story__label">{eyebrow}</div>
         <h2 className="mt-1 text-xl font-semibold">{title}</h2>
       </div>
@@ -129,7 +129,7 @@ function ProjectPropertiesMatrix() {
 
   return (
     <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_420px]">
-      <div className="rounded-lg border border-border bg-background p-4">
+      <div className="rounded-lg border border-line bg-bg p-4">
         <ProjectProperties
           project={editableProject}
           onFieldUpdate={() => undefined}
@@ -138,11 +138,11 @@ function ProjectPropertiesMatrix() {
         />
       </div>
       <div className="space-y-4">
-        <div className="rounded-lg border border-border bg-background p-4">
+        <div className="rounded-lg border border-line bg-bg p-4">
           <div className="mb-3 flex items-center justify-between gap-3">
             <div>
               <div className="text-sm font-medium">{archivedProject.name}</div>
-              <div className="text-xs text-muted-foreground">Archived, no workspace configured</div>
+              <div className="text-xs text-ink-3">Archived, no workspace configured</div>
             </div>
             <Badge variant="outline" className="gap-1">
               <Archive className="h-3 w-3" />
@@ -164,10 +164,10 @@ function ProjectPropertiesMatrix() {
           ].map((item) => {
             const Icon = item.icon;
             return (
-              <div key={item.label} className="rounded-lg border border-border bg-background p-4">
-                <Icon className="h-4 w-4 text-muted-foreground" />
+              <div key={item.label} className="rounded-lg border border-line bg-bg p-4">
+                <Icon className="h-4 w-4 text-ink-3" />
                 <div className="mt-3 text-2xl font-semibold">{item.value}</div>
-                <div className="text-xs text-muted-foreground">{item.label}</div>
+                <div className="text-xs text-ink-3">{item.label}</div>
               </div>
             );
           })}
@@ -211,7 +211,7 @@ function WorkspacesMatrix() {
           />
         ))}
       </div>
-      <div className="rounded-lg border border-dashed border-border p-5 text-sm text-muted-foreground">
+      <div className="rounded-lg border border-dashed border-line p-5 text-sm text-ink-3">
         <ProjectWorkspacesContent
           companyId={COMPANY_ID}
           projectId={archivedProject.id}
@@ -228,18 +228,18 @@ function GoalProgressRow({ goal }: { goal: Goal }) {
   const childCount = storybookGoals.filter((candidate) => candidate.parentId === goal.id).length;
 
   return (
-    <div className="rounded-lg border border-border bg-background p-3">
+    <div className="rounded-lg border border-line bg-bg p-3">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="truncate text-sm font-medium">{goal.title}</div>
-          <div className="mt-1 text-xs text-muted-foreground">
+          <div className="mt-1 text-xs text-ink-3">
             {goal.level} · {childCount} child goal{childCount === 1 ? "" : "s"}
           </div>
         </div>
-        <span className="font-mono text-xs text-muted-foreground">{progress}%</span>
+        <span className="font-mono text-xs text-ink-3">{progress}%</span>
       </div>
-      <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted" aria-label={`${progress}% complete`}>
-        <div className="h-full rounded-full bg-primary" style={{ width: `${progress}%` }} />
+      <div className="mt-3 h-2 overflow-hidden rounded-full bg-bg-3" aria-label={`${progress}% complete`}>
+        <div className="h-full rounded-full bg-accent" style={{ width: `${progress}%` }} />
       </div>
     </div>
   );
@@ -253,24 +253,24 @@ function GoalPropertiesMatrix() {
   return (
     <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_340px]">
       <div className="space-y-4">
-        <div className="rounded-lg border border-border bg-background p-5">
+        <div className="rounded-lg border border-line bg-bg p-5">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <div className="paperclip-story__label">Goal detail composition</div>
               <h3 className="mt-2 text-xl font-semibold">{selectedGoal.title}</h3>
-              <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">{selectedGoal.description}</p>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-ink-3">{selectedGoal.description}</p>
             </div>
             <Badge variant="outline">{selectedGoal.status}</Badge>
           </div>
           <div className="mt-5 grid gap-3 md:grid-cols-3">
             <GoalProgressRow goal={selectedGoal} />
-            <div className="rounded-lg border border-border bg-background p-3">
+            <div className="rounded-lg border border-line bg-bg p-3">
               <div className="text-2xl font-semibold">{childGoals.length}</div>
-              <div className="text-xs text-muted-foreground">Child goals</div>
+              <div className="text-xs text-ink-3">Child goals</div>
             </div>
-            <div className="rounded-lg border border-border bg-background p-3">
+            <div className="rounded-lg border border-line bg-bg p-3">
               <div className="text-2xl font-semibold">{linkedProjects.length}</div>
-              <div className="text-xs text-muted-foreground">Linked projects</div>
+              <div className="text-xs text-ink-3">Linked projects</div>
             </div>
           </div>
         </div>
@@ -280,7 +280,7 @@ function GoalPropertiesMatrix() {
           ))}
         </div>
       </div>
-      <div className="rounded-lg border border-border bg-background p-4">
+      <div className="rounded-lg border border-line bg-bg p-4">
         <GoalProperties goal={selectedGoal} onUpdate={() => undefined} />
       </div>
     </div>
@@ -292,24 +292,24 @@ function GoalTreeMatrix() {
 
   return (
     <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
-      <div className="overflow-hidden rounded-lg border border-border bg-background">
+      <div className="overflow-hidden rounded-lg border border-line bg-bg">
         <GoalTree
           goals={storybookGoals}
           onSelect={setSelectedGoal}
         />
       </div>
-      <div className="rounded-lg border border-border bg-background p-4">
+      <div className="rounded-lg border border-line bg-bg p-4">
         <div className="paperclip-story__label">Selected goal</div>
         {selectedGoal ? (
           <div className="mt-3 space-y-3">
             <div>
               <div className="text-sm font-medium">{selectedGoal.title}</div>
-              <div className="mt-1 text-xs text-muted-foreground">{selectedGoal.description}</div>
+              <div className="mt-1 text-xs text-ink-3">{selectedGoal.description}</div>
             </div>
             <GoalProgressRow goal={selectedGoal} />
           </div>
         ) : (
-          <p className="mt-3 text-sm text-muted-foreground">Select a goal row to inspect its progress state.</p>
+          <p className="mt-3 text-sm text-ink-3">Select a goal row to inspect its progress state.</p>
         )}
       </div>
     </div>
@@ -420,7 +420,7 @@ function WorktreeBannerMatrix() {
 
   return (
     <div className="space-y-4">
-      <div className="overflow-hidden rounded-lg border border-border bg-background">
+      <div className="overflow-hidden rounded-lg border border-line bg-bg">
         <WorktreeBanner />
       </div>
       <div className="grid gap-3 md:grid-cols-3">
@@ -431,9 +431,9 @@ function WorktreeBannerMatrix() {
         ].map((item) => {
           const Icon = item.icon;
           return (
-            <div key={item.label} className="rounded-lg border border-border bg-background p-4">
-              <Icon className="h-4 w-4 text-muted-foreground" />
-              <div className="mt-3 text-xs uppercase tracking-[0.14em] text-muted-foreground">{item.label}</div>
+            <div key={item.label} className="rounded-lg border border-line bg-bg p-4">
+              <Icon className="h-4 w-4 text-ink-3" />
+              <div className="mt-3 text-xs uppercase tracking-[0.14em] text-ink-3">{item.label}</div>
               <div className="mt-1 break-all font-mono text-xs">{item.value}</div>
             </div>
           );
@@ -453,7 +453,7 @@ function ProjectsGoalsWorkspacesStories() {
               <div>
                 <div className="paperclip-story__label">Projects, goals, and workspaces</div>
                 <h1 className="mt-2 text-3xl font-semibold tracking-tight">Hierarchical planning and runtime surfaces</h1>
-                <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
+                <p className="mt-3 max-w-3xl text-sm leading-6 text-ink-3">
                   Fixture-backed project and goal stories cover editable project properties, local and remote workspace
                   cards, cleanup failures, goal hierarchy states, and runtime command controls.
                 </p>

@@ -132,12 +132,12 @@ export function ActiveAgentsPanel({
 
   return (
     <div>
-      <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+      <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-ink-3">
         {title}
       </h3>
       {runs.length === 0 ? (
-        <div className="rounded-xl border border-border p-4">
-          <p className="text-sm text-muted-foreground">{emptyMessage}</p>
+        <div className="rounded-xl border border-line p-4">
+          <p className="text-sm text-ink-3">{emptyMessage}</p>
         </div>
       ) : (
         <div className={cn("grid grid-cols-1 items-start gap-2 sm:grid-cols-2 sm:gap-4 xl:grid-cols-4", gridClassName)}>
@@ -157,8 +157,8 @@ export function ActiveAgentsPanel({
         </div>
       )}
       {showMoreLink && runs.length > 0 && (
-        <div className="mt-3 flex justify-end text-xs text-muted-foreground">
-          <Link to="/dashboard/live" className="hover:text-foreground hover:underline">
+        <div className="mt-3 flex justify-end text-xs text-ink-3">
+          <Link to="/dashboard/live" className="hover:text-ink hover:underline">
             {hiddenRunCount > 0
               ? `${hiddenRunCount} more active/recent run${hiddenRunCount === 1 ? "" : "s"}`
               : "View all runs"}
@@ -202,15 +202,15 @@ export const AgentRunCard = memo(function AgentRunCard({
       showTranscript && "h-(--sz-320px)",
       run.status === "running"
         ? "border-(--dashboard-run-border) bg-(--dashboard-run-background) shadow-(--shadow-extract-1)"
-        : "border-border bg-background/70",
+        : "border-line bg-bg/70",
       className,
     )} data-run-status={run.status}>
-      <div className={cn("flex shrink-0 flex-col gap-3 p-3", showTranscript && "border-b border-border/60")}>
+      <div className={cn("flex shrink-0 flex-col gap-3 p-3", showTranscript && "border-b border-line/60")}>
         <Link
           to={runUrl}
           title={`${run.agentName} — ${statusLabel} · ${timestamp}`}
           aria-label={`${run.agentName} — ${statusLabel}. View run`}
-          className="flex min-w-0 items-center gap-2 rounded-md text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="flex min-w-0 items-center gap-2 rounded-md text-ink hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
         >
           <AgentIdentity agent={{ id: run.agentId, name: run.agentName, appearance: run.agentAppearance }} size="sm" className="gap-2 font-medium" />
         </Link>
@@ -218,7 +218,7 @@ export const AgentRunCard = memo(function AgentRunCard({
         {run.issueId ? (
           <Link
             to={`/issues/${issue?.identifier ?? run.issueId}`}
-            className="min-w-0 rounded-lg border border-border/60 bg-background/60 px-2.5 py-2 text-sm text-foreground transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="min-w-0 rounded-lg border border-line/60 bg-bg/60 px-2.5 py-2 text-sm text-ink transition-colors hover:bg-bg-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
             title={issue ? `${issue.title} · ${issue.identifier}` : taskTitle}
           >
             <span className="flex min-w-0 items-baseline gap-2">
@@ -231,11 +231,11 @@ export const AgentRunCard = memo(function AgentRunCard({
                 />
                 <span className="truncate">{taskTitle}</span>
               </span>
-              <span className="shrink-0 font-mono text-(length:--text-micro) text-muted-foreground">{issue?.identifier ?? run.issueId.slice(0, 8)}</span>
+              <span className="shrink-0 font-mono text-(length:--text-micro) text-ink-3">{issue?.identifier ?? run.issueId.slice(0, 8)}</span>
             </span>
           </Link>
         ) : (
-          <Link to={runUrl} className="flex items-center gap-1.5 rounded-lg border border-border/60 bg-background/60 px-2.5 py-2 text-sm text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+          <Link to={runUrl} className="flex items-center gap-1.5 rounded-lg border border-line/60 bg-bg/60 px-2.5 py-2 text-sm text-ink-3 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
             <Clock3 className="size-4 shrink-0" aria-hidden />
             <span className="truncate">{run.invocationSource === "timer" ? "Scheduled heartbeat" : "No linked task"}</span>
           </Link>
@@ -245,7 +245,7 @@ export const AgentRunCard = memo(function AgentRunCard({
         ) : null}
         <time
           dateTime={run.finishedAt ?? run.startedAt ?? run.createdAt}
-          className="text-right font-sans text-xs text-muted-foreground/70"
+          className="text-right font-sans text-xs text-ink-3/70"
         >
           {timestamp}
         </time>

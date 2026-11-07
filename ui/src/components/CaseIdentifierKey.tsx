@@ -40,7 +40,7 @@ export function CaseCopyableToken({
       <button
         type="button"
         className={cn(
-          "min-w-0 cursor-copy text-left transition-colors hover:text-foreground",
+          "min-w-0 cursor-copy text-left transition-colors hover:text-ink",
           truncate ? "truncate" : "whitespace-normal break-all",
           className,
         )}
@@ -54,7 +54,7 @@ export function CaseCopyableToken({
         <span
           role="status"
           aria-live="polite"
-          className="pointer-events-none absolute bottom-full left-1/2 mb-1.5 inline-flex -translate-x-1/2 items-center gap-1 rounded-md bg-foreground px-2 py-1 text-xs whitespace-nowrap text-background"
+          className="pointer-events-none absolute bottom-full left-1/2 mb-1.5 inline-flex -translate-x-1/2 items-center gap-1 rounded-md bg-ink px-2 py-1 text-xs whitespace-nowrap text-bg"
         >
           <Check className="h-3 w-3 shrink-0" />
           Copied
@@ -83,7 +83,7 @@ export function CaseIdentifierKey({
       <CaseCopyableToken
         value={identifier}
         label="case ID"
-        className="shrink-0 font-mono text-xs text-muted-foreground"
+        className="shrink-0 font-mono text-xs text-ink-3"
         containerClassName="shrink-0"
         stopPropagation={stopPropagation}
       />
@@ -91,7 +91,7 @@ export function CaseIdentifierKey({
         <CaseCopyableToken
           value={caseKey}
           label="case key"
-          className="font-mono text-xs text-muted-foreground"
+          className="font-mono text-xs text-ink-3"
           stopPropagation={stopPropagation}
         />
       ) : null}

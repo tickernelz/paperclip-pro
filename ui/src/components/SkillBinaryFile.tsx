@@ -9,7 +9,7 @@ export function SkillBinaryFile({ file }: { file: CompanySkillFileDetail }) {
     setUrl(href); return () => URL.revokeObjectURL(href);
   }, [file.content]);
   return <div className="flex flex-col items-start gap-3 py-6">
-    <p className="text-sm text-muted-foreground">This asset is stored in its original binary format.</p>
-    <Button asChild variant="outline" className="max-w-full"><a href={url} download={file.path.split('/').at(-1)} title={`Download ${file.path.split('/').at(-1)}`}><span className="truncate">Download {file.path.split('/').at(-1)}</span></a></Button>
+    <p className="text-sm text-ink-3">This asset is stored in its original binary format.</p>
+    <Button asChild variant="secondary" className="max-w-full"><a href={url} download={file.path.split('/').at(-1)} title={`Download ${file.path.split('/').at(-1)}`}><span className="truncate">Download {file.path.split('/').at(-1)}</span></a></Button>
   </div>;
 }

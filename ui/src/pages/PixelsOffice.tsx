@@ -287,7 +287,7 @@ export function PixelsOffice() {
   );
 
   if (!selectedCompanyId) {
-    return <div className="p-6 text-sm text-muted-foreground">Select a company to view the office.</div>;
+    return <div className="p-6 text-sm text-ink-3">Select a company to view the office.</div>;
   }
 
   if (snapshotQuery.isLoading) return <PageSkeleton />;
@@ -295,12 +295,12 @@ export function PixelsOffice() {
   if (snapshotQuery.isError) {
     return (
       <div className="space-y-3 p-6">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           {snapshotQuery.error instanceof Error
             ? snapshotQuery.error.message
             : "Could not load the office."}
         </p>
-        <Button variant="outline" size="sm" onClick={() => void snapshotQuery.refetch()}>
+        <Button variant="secondary" size="sm" onClick={() => void snapshotQuery.refetch()}>
           Retry
         </Button>
       </div>
@@ -341,8 +341,8 @@ export function PixelsOffice() {
     <div className="flex flex-col gap-3 p-3 md:gap-4 md:p-6">
       <div className="flex flex-col gap-2 md:flex-row md:flex-wrap md:items-center md:justify-between md:gap-3">
         <div className="flex items-baseline gap-3">
-          <h1 className="text-lg font-semibold text-foreground">Pixels Office</h1>
-          <span className="text-xs text-muted-foreground">
+          <h1 className="text-lg font-semibold text-ink">Pixels Office</h1>
+          <span className="text-xs text-ink-3">
             {visuals.length} agents{replaying ? " · replaying history" : ""}
           </span>
         </div>
@@ -366,7 +366,7 @@ export function PixelsOffice() {
       <div className="flex min-h-0 flex-col gap-4 xl:flex-row">
         <Card className="@container relative min-w-0 flex-1 overflow-hidden p-0">
           {armedIssueId ? (
-            <div className="absolute inset-x-2 top-2 z-10 flex items-center justify-between gap-2 rounded-md border border-border bg-popover px-3 py-2 text-xs text-popover-foreground shadow-md">
+            <div className="absolute inset-x-2 top-2 z-10 flex items-center justify-between gap-2 rounded-md border border-line bg-bg-2 px-3 py-2 text-xs text-ink shadow-md">
               <span>Tap an agent to assign the selected task.</span>
               <Button size="sm" variant="ghost" onClick={() => setArmedIssueId(null)}>
                 Cancel
@@ -404,7 +404,7 @@ export function PixelsOffice() {
           className="max-h-(--sz-80vh) gap-0 rounded-t-xl p-0 pb-(--sz-calc-safe-bottom)"
         >
           <SheetTitle className="sr-only">Office details</SheetTitle>
-          <div className="mx-auto mt-2 h-1.5 w-12 shrink-0 rounded-full bg-muted-foreground/30" aria-hidden="true" />
+          <div className="mx-auto mt-2 h-1.5 w-12 shrink-0 rounded-full bg-ink-3/30" aria-hidden="true" />
           <div className="min-h-0 flex-1 overflow-y-auto p-2">{panel}</div>
         </SheetContent>
       </Sheet>

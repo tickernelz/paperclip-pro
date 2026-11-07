@@ -185,14 +185,14 @@ export function PluginManager() {
     [installedPlugins]
   );
 
-  if (isLoading) return <div className="p-4 text-sm text-muted-foreground">Loading plugins...</div>;
-  if (error) return <div className="p-4 text-sm text-destructive">Failed to load plugins.</div>;
+  if (isLoading) return <div className="p-4 text-sm text-ink-3">Loading plugins...</div>;
+  if (error) return <div className="p-4 text-sm text-bad">Failed to load plugins.</div>;
 
   return (
     <div className="max-w-6xl space-y-6">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Puzzle className="h-6 w-6 text-muted-foreground" />
+          <Puzzle className="h-6 w-6 text-ink-3" />
           <h1 className="text-xl font-semibold">Plugin Manager</h1>
         </div>
         
@@ -222,7 +222,7 @@ export function PluginManager() {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setInstallDialogOpen(false)}>Cancel</Button>
+              <Button variant="secondary" onClick={() => setInstallDialogOpen(false)}>Cancel</Button>
               <Button
                 onClick={() => installMutation.mutate({ packageName: installPackage })}
                 disabled={!installPackage || installMutation.isPending}
@@ -238,8 +238,8 @@ export function PluginManager() {
         <div className="flex items-start gap-3">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
           <div className="space-y-1 text-sm">
-            <p className="font-medium text-foreground">Plugins are alpha.</p>
-            <p className="text-muted-foreground">
+            <p className="font-medium text-ink">Plugins are alpha.</p>
+            <p className="text-ink-3">
               The plugin runtime and API surface are still changing. Expect breaking changes while this feature settles.
             </p>
           </div>
@@ -248,23 +248,23 @@ export function PluginManager() {
 
       <section className="space-y-3">
         <div className="flex items-center gap-2">
-          <FlaskConical className="h-5 w-5 text-muted-foreground" />
+          <FlaskConical className="h-5 w-5 text-ink-3" />
           <h2 className="text-base font-semibold">Available Plugins</h2>
           <Badge variant="outline">Bundled</Badge>
         </div>
 
         {installErrorMessage && (
-          <div className="rounded-md border border-destructive/25 bg-destructive/[0.06] px-4 py-3 text-sm text-destructive whitespace-pre-wrap break-words">
+          <div className="rounded-md border border-bad/25 bg-bad/[0.06] px-4 py-3 text-sm text-bad whitespace-pre-wrap break-words">
             {installErrorMessage}
           </div>
         )}
 
         {bundledQuery.isLoading ? (
-          <div className="text-sm text-muted-foreground">Loading bundled plugins...</div>
+          <div className="text-sm text-ink-3">Loading bundled plugins...</div>
         ) : bundledQuery.error ? (
-          <div className="text-sm text-destructive">Failed to load bundled plugins.</div>
+          <div className="text-sm text-bad">Failed to load bundled plugins.</div>
         ) : bundledPlugins.length === 0 ? (
-          <div className="rounded-md border border-dashed px-4 py-3 text-sm text-muted-foreground">
+          <div className="rounded-md border border-dashed px-4 py-3 text-sm text-ink-3">
             No bundled plugins were found in this checkout.
           </div>
         ) : (
@@ -302,10 +302,10 @@ export function PluginManager() {
                           <Badge variant="secondary">Not installed</Badge>
                         )}
                       </div>
-                      <p className="mt-1 text-sm text-muted-foreground">{bundledPlugin.description}</p>
-                      <p className="mt-1 text-xs text-muted-foreground">{bundledPlugin.packageName}</p>
+                      <p className="mt-1 text-sm text-ink-3">{bundledPlugin.description}</p>
+                      <p className="mt-1 text-xs text-ink-3">{bundledPlugin.packageName}</p>
                       {installPending && !bundledPlugin.hasBuiltEntrypoints && (
-                        <p className="mt-2 text-xs text-muted-foreground">Building plugin...</p>
+                        <p className="mt-2 text-xs text-ink-3">Building plugin...</p>
                       )}
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
@@ -313,7 +313,7 @@ export function PluginManager() {
                         <>
                           {installedPlugin.status !== "ready" && (
                             <Button
-                              variant="outline"
+                              variant="secondary"
                               size="sm"
                               disabled={enableMutation.isPending}
                               onClick={() => enableMutation.mutate(installedPlugin.id)}
@@ -321,7 +321,7 @@ export function PluginManager() {
                               Enable
                             </Button>
                           )}
-                          <Button variant="outline" size="sm" asChild>
+                          <Button variant="secondary" size="sm" asChild>
                             <Link to={`/company/settings/instance/plugins/${installedPlugin.id}`}>
                               {installedPlugin.status === "ready" ? "Open Settings" : "Review"}
                             </Link>
@@ -353,16 +353,16 @@ export function PluginManager() {
 
       <section className="space-y-3">
         <div className="flex items-center gap-2">
-          <Puzzle className="h-5 w-5 text-muted-foreground" />
+          <Puzzle className="h-5 w-5 text-ink-3" />
           <h2 className="text-base font-semibold">Installed Plugins</h2>
         </div>
 
         {!installedPlugins.length ? (
-          <Card className="bg-muted/30">
+          <Card className="bg-bg-3/30">
             <CardContent className="flex flex-col items-center justify-center py-10">
-              <Puzzle className="h-10 w-10 text-muted-foreground mb-4" />
+              <Puzzle className="h-10 w-10 text-ink-3 mb-4" />
               <p className="text-sm font-medium">No plugins installed</p>
-              <p className="text-xs text-muted-foreground mt-1">
+              <p className="text-xs text-ink-3 mt-1">
                 Install a plugin to extend functionality.
               </p>
             </CardContent>
@@ -397,11 +397,11 @@ export function PluginManager() {
                       }) && <ExperimentalBadge />}
                     </div>
                     <div>
-                      <p className="text-xs text-muted-foreground mt-0.5 truncate" title={plugin.packageName}>
+                      <p className="text-xs text-ink-3 mt-0.5 truncate" title={plugin.packageName}>
                         {plugin.packageName} · v{plugin.manifestJson.version ?? plugin.version}
                       </p>
                     </div>
-                    <p className="text-sm text-muted-foreground truncate mt-0.5" title={plugin.manifestJson.description}>
+                    <p className="text-sm text-ink-3 truncate mt-0.5" title={plugin.manifestJson.description}>
                       {plugin.manifestJson.description || "No description provided."}
                     </p>
                     {plugin.status === "error" && (
@@ -420,9 +420,8 @@ export function PluginManager() {
                             </p>
                           </div>
                           <Button
-                            variant="outline"
+                            variant="danger"
                             size="sm"
-                            className="border-red-500/30 bg-background/60 text-red-700 hover:bg-red-500/10 hover:text-red-800 dark:text-red-200 dark:hover:text-red-100"
                             onClick={() => setErrorDetailsPlugin(plugin)}
                           >
                             View full error
@@ -450,7 +449,7 @@ export function PluginManager() {
                           {plugin.status}
                         </Badge>
                         <Button
-                          variant="outline"
+                          variant="secondary"
                           size="icon-sm"
                           className="h-8 w-8"
                           title={plugin.status === "ready" ? "Disable" : "Enable"}
@@ -466,9 +465,9 @@ export function PluginManager() {
                           <Power className={cn("h-4 w-4", plugin.status === "ready" ? "text-green-600" : "")} />
                         </Button>
                         <Button
-                          variant="outline"
+                          variant="danger"
                           size="icon-sm"
-                          className="h-8 w-8 text-destructive hover:text-destructive"
+                          className="h-8 w-8"
                           title="Uninstall"
                           onClick={() => {
                             setUninstallPluginId(plugin.id);
@@ -479,7 +478,7 @@ export function PluginManager() {
                           <Trash className="h-4 w-4" />
                         </Button>
                       </div>
-                      <Button variant="outline" size="sm" className="mt-2 h-8" asChild>
+                      <Button variant="secondary" size="sm" className="mt-2 h-8" asChild>
                         <Link to={`/company/settings/instance/plugins/${plugin.id}`}>
                           <Settings className="h-4 w-4" />
                           Configure
@@ -507,9 +506,9 @@ export function PluginManager() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setUninstallPluginId(null)}>Cancel</Button>
+            <Button variant="secondary" onClick={() => setUninstallPluginId(null)}>Cancel</Button>
             <Button
-              variant="destructive"
+              variant="delete"
               disabled={uninstallMutation.isPending}
               onClick={() => {
                 if (uninstallPluginId) {
@@ -552,13 +551,13 @@ export function PluginManager() {
             </div>
             <div className="space-y-2">
               <p className="text-sm font-medium">Full error output</p>
-              <pre className="max-h-(--sz-50vh) overflow-auto rounded-md border bg-muted/40 p-3 text-xs leading-5 whitespace-pre-wrap break-words">
+              <pre className="max-h-(--sz-50vh) overflow-auto rounded-md border bg-bg-3/40 p-3 text-xs leading-5 whitespace-pre-wrap break-words">
                 {errorDetailsPlugin?.lastError ?? "No stored error message."}
               </pre>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setErrorDetailsPlugin(null)}>
+            <Button variant="secondary" onClick={() => setErrorDetailsPlugin(null)}>
               Close
             </Button>
           </DialogFooter>

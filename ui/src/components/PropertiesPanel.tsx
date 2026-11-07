@@ -319,8 +319,8 @@ function ResizablePropertiesPanel({
       <aside
         ref={asideRef}
         className={cn(
-          "hidden md:flex bg-card flex-col",
-          !maximized && "border-l border-border",
+          "hidden md:flex bg-bg-2 flex-col",
+          !maximized && "border-l border-line",
           isFixed
             ? "tc-pane-glide fixed z-40 overflow-hidden"
             : cn(
@@ -361,7 +361,7 @@ function ResizablePropertiesPanel({
             <div
               className={cn(
                 "mx-auto h-full w-0.5 transition-colors",
-                dragging ? "bg-ring" : "bg-transparent group-hover:bg-ring",
+                dragging ? "bg-focus" : "bg-transparent group-hover:bg-focus",
               )}
             />
           </div>

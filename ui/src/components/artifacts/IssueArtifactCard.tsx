@@ -59,7 +59,7 @@ export function IssueArtifactFile(props: IssueArtifactFileProps) {
     originalFilename: props.filename,
   }) ? (
     <Button
-      variant="outline"
+      variant="secondary"
       size="sm"
       aria-label={`Open in tab: ${props.title}`}
       onClick={() => openTextAttachment(attachmentId, props.filename)}
@@ -141,7 +141,7 @@ export function IssueArtifactFile(props: IssueArtifactFileProps) {
           <>
             {openTextAction}
             {downloadPath ? (
-              <Button asChild size="sm" variant="outline">
+              <Button asChild size="sm" variant="secondary">
                 <a href={downloadPath} download={props.filename}>
                   Download file
                 </a>
@@ -165,7 +165,7 @@ export function IssueArtifactFile(props: IssueArtifactFileProps) {
             {openTextAction}
             {localCsv && !tooLarge && !data.isError ? (
               <Button
-                variant="outline"
+                variant="secondary"
                 size="sm"
                 disabled={data.isFetching}
                 onClick={() => setCsvRequested(true)}
@@ -177,7 +177,7 @@ export function IssueArtifactFile(props: IssueArtifactFileProps) {
         }
       />
       {csv && (tooLarge || data.isError || !localCsv) && (
-        <div className="px-2 text-xs text-muted-foreground" role="status">
+        <div className="px-2 text-xs text-ink-3" role="status">
           {tooLarge
             ? "CSV is too large to preview. Download the file to view it."
             : data.isError

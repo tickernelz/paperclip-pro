@@ -84,14 +84,14 @@ export function CatalogDialog({ connection, onClose }: { connection: ToolConnect
         ) : catalog.error ? (
           <ErrorState error={catalog.error} onRetry={() => catalog.refetch()} />
         ) : (catalog.data?.catalog ?? []).length === 0 ? (
-          <p className="py-6 text-sm text-muted-foreground">
+          <p className="py-6 text-sm text-ink-3">
             No tools discovered yet. Use “Refresh catalog” to discover tools from this connection.
           </p>
         ) : (
-          <ul className="max-h-(--sz-60vh) divide-y divide-border overflow-y-auto">
+          <ul className="max-h-(--sz-60vh) divide-y divide-line overflow-y-auto">
             {(catalog.data?.catalog ?? []).map((entry) => (
               <li key={entry.id} className="flex flex-wrap items-center gap-2 py-2.5">
-                <span className="font-mono text-sm text-foreground">{entry.toolName}</span>
+                <span className="font-mono text-sm text-ink">{entry.toolName}</span>
                 <RiskBadge risk={entry.riskLevel} />
                 <CapabilityBadges
                   isReadOnly={entry.isReadOnly}
@@ -100,7 +100,7 @@ export function CatalogDialog({ connection, onClose }: { connection: ToolConnect
                 />
                 {entry.status === "quarantined" ? <QuarantineBadge /> : null}
                 {entry.description ? (
-                  <p className="w-full truncate text-xs text-muted-foreground">{entry.description}</p>
+                  <p className="w-full truncate text-xs text-ink-3">{entry.description}</p>
                 ) : null}
               </li>
             ))}
@@ -287,10 +287,10 @@ export function AddConnectionDialog({
         </DialogHeader>
 
         <div className="space-y-3">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
-            <span className={step === 1 ? "font-medium text-foreground" : ""}>1 Application</span>
+          <div className="flex items-center gap-2 text-xs text-ink-3">
+            <span className={step === 1 ? "font-medium text-ink" : ""}>1 Application</span>
             <span>/</span>
-            <span className={step === 2 ? "font-medium text-foreground" : ""}>2 Connection</span>
+            <span className={step === 2 ? "font-medium text-ink" : ""}>2 Connection</span>
           </div>
 
           {step === 1 && !locked ? (
@@ -333,7 +333,7 @@ export function AddConnectionDialog({
                     onChange={(e) => setApplicationName(e.target.value)}
                     placeholder="e.g. GitHub Triage"
                   />
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-ink-3">
                     Application type is inferred from the transport you choose next.
                   </p>
                 </div>
@@ -344,8 +344,8 @@ export function AddConnectionDialog({
           {step === 2 || locked ? (
             <>
               {applicationMode === "new" ? (
-                <div className="rounded-md border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
-                  <span className="font-medium text-foreground">{applicationName.trim()}</span> will be created as{" "}
+                <div className="rounded-md border border-line bg-bg-3/30 px-3 py-2 text-xs text-ink-3">
+                  <span className="font-medium text-ink">{applicationName.trim()}</span> will be created as{" "}
                   {inferredType}.
                 </div>
               ) : null}
@@ -404,7 +404,7 @@ export function AddConnectionDialog({
                       ))}
                     </SelectContent>
                   </Select>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-ink-3">
                     Only board-approved command templates can run. Arbitrary commands are never accepted.
                   </p>
                 </div>
@@ -418,17 +418,17 @@ export function AddConnectionDialog({
                     {creds.map((c, i) => (
                       <li
                         key={`${c.secretId}-${i}`}
-                        className="flex items-center gap-2 rounded-md border border-border bg-muted/30 px-2 py-1.5 text-sm"
+                        className="flex items-center gap-2 rounded-md border border-line bg-bg-3/30 px-2 py-1.5 text-sm"
                       >
-                        <KeyRound className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                        <KeyRound className="h-3.5 w-3.5 shrink-0 text-ink-3" />
                         <span className="font-mono text-xs">{c.headerName}</span>
-                        <span className="truncate font-mono text-xs text-primary" title={vaultRef(secretById(c.secretId))}>
+                        <span className="truncate font-mono text-xs text-accent" title={vaultRef(secretById(c.secretId))}>
                           → {vaultRef(secretById(c.secretId))}
                         </span>
                         {!locked ? (
                           <button
                             type="button"
-                            className="ml-auto text-muted-foreground hover:text-destructive"
+                            className="ml-auto text-ink-3 hover:text-bad"
                             onClick={() => setCreds((cs) => cs.filter((_, idx) => idx !== i))}
                             aria-label={`Remove credential reference for ${secretName(c.secretId)}`}
                           >
@@ -463,17 +463,17 @@ export function AddConnectionDialog({
                         className="w-32"
                         aria-label="Header name"
                       />
-                      <Button type="button" size="sm" variant="outline" onClick={addCred} disabled={!pendingSecretId}>
+                      <Button type="button" size="sm" variant="secondary" onClick={addCred} disabled={!pendingSecretId}>
                         Add
                       </Button>
                     </div>
                     {pendingSecretId ? (
-                      <p className="flex items-center gap-1.5 font-mono text-xs text-muted-foreground">
+                      <p className="flex items-center gap-1.5 font-mono text-xs text-ink-3">
                         <Vault className="h-3 w-3" />
                         {vaultRef(secretById(pendingSecretId))}
                       </p>
                     ) : null}
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-ink-3">
                       Free-text secrets are not accepted — pick a vault entry; Paperclip stores only the
                       <span className="font-mono"> vault://</span> reference and resolves it at gateway use time.
                     </p>
@@ -486,44 +486,44 @@ export function AddConnectionDialog({
           {/* Inline probe panel — runs before activation, follows the Loading/Error rhythm. */}
           {locked ? (
             probe.isPending ? (
-              <div className="rounded-md border border-border bg-muted/40 p-3">
+              <div className="rounded-md border border-line bg-bg-3/40 p-3">
                 <LoadingState label="Probing connection…" />
               </div>
             ) : probe.isError ? (
               <ErrorState error={probe.error} onRetry={() => draft && probe.mutate(draft.id)} />
             ) : probeResult ? (
-              <div className="rounded-md border border-border bg-muted/40 p-3">
+              <div className="rounded-md border border-line bg-bg-3/40 p-3">
                 <div className="flex items-center gap-2 text-sm">
-                  <span className="font-medium text-foreground">Probe result</span>
+                  <span className="font-medium text-ink">Probe result</span>
                   <HealthBadge status={probeResult.connection.healthStatus} />
                 </div>
                 <div className="mt-2 grid grid-cols-3 gap-2">
                   <div>
-                    <p className="text-lg font-semibold tabular-nums text-foreground">
+                    <p className="text-lg font-semibold tabular-nums text-ink">
                       {probeResult.toolCount ?? "—"}
                     </p>
-                    <p className="text-xs text-muted-foreground">tools discovered</p>
+                    <p className="text-xs text-ink-3">tools discovered</p>
                   </div>
                   <div>
-                    <p className="text-lg font-semibold tabular-nums text-foreground">
+                    <p className="text-lg font-semibold tabular-nums text-ink">
                       {probeResult.latencyMs != null ? `${probeResult.latencyMs}ms` : "—"}
                     </p>
-                    <p className="text-xs text-muted-foreground">probe latency</p>
+                    <p className="text-xs text-ink-3">probe latency</p>
                   </div>
                   <div>
-                    <p className="text-lg font-semibold tabular-nums text-foreground">
+                    <p className="text-lg font-semibold tabular-nums text-ink">
                       {probeResult.quarantinedCount}
                     </p>
-                    <p className="text-xs text-muted-foreground">quarantined</p>
+                    <p className="text-xs text-ink-3">quarantined</p>
                   </div>
                 </div>
                 {probeResult.connection.healthMessage ? (
-                  <p className="mt-2 text-xs text-muted-foreground">{probeResult.connection.healthMessage}</p>
+                  <p className="mt-2 text-xs text-ink-3">{probeResult.connection.healthMessage}</p>
                 ) : null}
                 {probeResult.connection.lastError ? (
-                  <p className="mt-1 text-xs text-destructive">{probeResult.connection.lastError}</p>
+                  <p className="mt-1 text-xs text-bad">{probeResult.connection.lastError}</p>
                 ) : null}
-                <p className="mt-2 text-(length:--text-micro) text-muted-foreground">
+                <p className="mt-2 text-(length:--text-micro) text-ink-3">
                   Probe latency is a single round-trip sample. Aggregate p95 latency across traffic is tracked on
                   the Runtime tab once the connection is live.
                 </p>
@@ -533,7 +533,7 @@ export function AddConnectionDialog({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="secondary" onClick={onClose}>
             Cancel
           </Button>
           {step === 1 && !locked ? (
@@ -542,7 +542,7 @@ export function AddConnectionDialog({
             </Button>
           ) : !locked ? (
             <>
-              <Button variant="outline" onClick={() => setStep(1)}>
+              <Button variant="secondary" onClick={() => setStep(1)}>
                 Back
               </Button>
               <Button disabled={!canCreate} onClick={() => create.mutate()}>
@@ -551,7 +551,7 @@ export function AddConnectionDialog({
             </>
           ) : (
             <>
-              <Button variant="outline" disabled={probe.isPending} onClick={() => draft && probe.mutate(draft.id)}>
+              <Button variant="secondary" disabled={probe.isPending} onClick={() => draft && probe.mutate(draft.id)}>
                 <Stethoscope className="mr-1 h-3.5 w-3.5" />
                 {probe.isPending ? "Probing…" : "Re-probe"}
               </Button>

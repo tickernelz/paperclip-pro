@@ -32,7 +32,7 @@ export function IssueGroupHeader({
               the header chevron lines up exactly with the chevrons below it. */}
           <span className="inline-flex w-4 shrink-0 items-center justify-center">
             <ChevronRight
-              className={cn("h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform", !collapsed && "rotate-90")}
+              className={cn("h-3.5 w-3.5 shrink-0 text-ink-3 transition-transform", !collapsed && "rotate-90")}
             />
           </span>
           <span className="truncate text-sm font-semibold uppercase tracking-wide">

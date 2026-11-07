@@ -80,7 +80,7 @@ describe("WorkspaceServiceControlBar", () => {
     });
 
     expect(copyButton.getAttribute("aria-label")).toBe("Copy failed");
-    expect(copyButton.querySelector(".text-destructive")).not.toBeNull();
+    expect(copyButton.querySelector(".text-bad")).not.toBeNull();
   });
 
   it("reserves the desktop URL segment across service states", async () => {
@@ -189,7 +189,7 @@ describe("WorkspaceServiceControlBar", () => {
 
     expect(container.textContent).toContain("Running");
     expect(container.textContent).toContain("HTTPS cleanup pending");
-    expect(container.querySelector(".text-destructive")).not.toBeNull();
+    expect(container.querySelector(".text-bad")).not.toBeNull();
   });
 
   it.each([
@@ -224,7 +224,7 @@ describe("WorkspaceServiceControlBar", () => {
     const detail = Array.from(document.body.querySelectorAll("span"))
       .find((element) => element.textContent === exposureDetail);
     expect(detail).toBeDefined();
-    expect(detail?.classList.contains("text-destructive")).toBe(true);
+    expect(detail?.classList.contains("text-bad")).toBe(true);
     expect(detail?.classList.contains("truncate")).toBe(false);
     expect(detail?.classList.contains("whitespace-normal")).toBe(true);
   });

@@ -259,11 +259,11 @@ export function RunnerActivityPreview({
     finalResponse: legacy ? undefined : finalResponse,
   };
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-6 py-3">
+    <div className="min-h-screen bg-bg text-ink">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line px-6 py-3">
         <div className="flex flex-col gap-1">
           <h1 className="text-sm font-semibold">Runner activity</h1>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             {legacy ? "Legacy CLI transcript" : "Native runner"} ·{" "}
             {reducedMotion ? "Reduced motion" : "One activity at a time"}
           </p>
@@ -314,7 +314,7 @@ export function RunnerActivityPreview({
           narrow ? "max-w-sm" : "max-w-3xl",
         )}
       >
-        <div className="self-end rounded-xl bg-muted px-4 py-3 text-sm">
+        <div className="self-end rounded-xl bg-bg-3 px-4 py-3 text-sm">
           Can you clean up the runner’s activity feed?
         </div>
         <TaskChatExpansionState.Provider key={replay} value={memory}>

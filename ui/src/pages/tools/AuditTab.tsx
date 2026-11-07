@@ -145,8 +145,8 @@ function plainReason(event: ToolGatewayActivityEvent): string {
 function DetailFact({ label, value, mono }: { label: string; value: string; mono?: boolean }) {
   return (
     <div className="flex gap-2">
-      <span className="w-28 shrink-0 text-muted-foreground">{label}</span>
-      <span className={cn("min-w-0 break-all text-foreground", mono && "font-mono text-(length:--text-micro)")}>{value}</span>
+      <span className="w-28 shrink-0 text-ink-3">{label}</span>
+      <span className={cn("min-w-0 break-all text-ink", mono && "font-mono text-(length:--text-micro)")}>{value}</span>
     </div>
   );
 }
@@ -204,24 +204,24 @@ function ActivityRow({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-start gap-2.5 px-4 py-3 text-left hover:bg-accent/50"
+        className="flex w-full items-start gap-2.5 px-4 py-3 text-left hover:bg-bg-3/50"
       >
         {open ? (
-          <ChevronDown className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+          <ChevronDown className="mt-0.5 h-4 w-4 shrink-0 text-ink-3" />
         ) : (
-          <ChevronRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+          <ChevronRight className="mt-0.5 h-4 w-4 shrink-0 text-ink-3" />
         )}
         <span className="min-w-0 flex-1">
           {lifecycle ? (
-            <span className="block text-foreground">{lifecycle}</span>
+            <span className="block text-ink">{lifecycle}</span>
           ) : isRuntimeMcpDeliveryDiagnostic ? (
-            <span className="block text-foreground">
+            <span className="block text-ink">
               <span className="font-medium">{who}</span>'s run received 0 MCP servers —{" "}
               <span className="font-medium">{permittedNotInstalledCount ?? permittedNotInstalledConnections.length}</span>{" "}
               permitted {(permittedNotInstalledCount ?? permittedNotInstalledConnections.length) === 1 ? "connection" : "connections"} not installed
             </span>
           ) : (
-            <span className="block text-foreground">
+            <span className="block text-ink">
               <span className="font-medium">{who}</span> used <span className="font-medium">{action}</span>
               {app ? (
                 <>
@@ -234,15 +234,15 @@ function ActivityRow({
         </span>
         <span className="flex shrink-0 items-center gap-2 whitespace-nowrap">
           {event.lifecycleType ? null : <OutcomeChip outcome={event.normalizedOutcome} />}
-          <span className="text-xs text-muted-foreground">
+          <span className="text-xs text-ink-3">
             · <RelativeTime value={event.createdAt} />
           </span>
         </span>
       </button>
 
       {open ? (
-        <div className="space-y-3 border-t border-border bg-muted/30 px-4 py-3 pl-10 text-sm">
-          <p className="text-foreground">
+        <div className="space-y-3 border-t border-line bg-bg-3/30 px-4 py-3 pl-10 text-sm">
+          <p className="text-ink">
             {plainReason(event)}
             {matchedRuleName ? (
               <>
@@ -254,12 +254,12 @@ function ActivityRow({
 
           <div className="flex flex-wrap gap-3 text-xs">
             {issueId ? (
-              <Link to={`/issues/${issueId}`} className="text-primary hover:underline">
+              <Link to={`/issues/${issueId}`} className="text-accent hover:underline">
                 View task
               </Link>
             ) : null}
             {runId && agentId ? (
-              <Link to={`/agents/${agentId}/runs/${runId}`} className="text-primary hover:underline">
+              <Link to={`/agents/${agentId}/runs/${runId}`} className="text-accent hover:underline">
                 View run
               </Link>
             ) : null}
@@ -269,7 +269,7 @@ function ActivityRow({
             <button
               type="button"
               onClick={() => setDetailsOpen((v) => !v)}
-              className="flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground"
+              className="flex items-center gap-1 text-xs font-medium text-ink-3 hover:text-ink"
             >
               {detailsOpen ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
               Details
@@ -297,8 +297,8 @@ function ActivityRow({
                       const connectionName = detailString(connection, "name") ?? "Unnamed connection";
                       return connectionId ? (
                         <div key={connectionId} className="flex gap-2">
-                          <span className="shrink-0 text-muted-foreground">Not installed</span>
-                          <Link to={`/apps/${connectionId}/permissions`} className="font-medium text-primary hover:underline">
+                          <span className="shrink-0 text-ink-3">Not installed</span>
+                          <Link to={`/apps/${connectionId}/permissions`} className="font-medium text-accent hover:underline">
                             {connectionName}
                           </Link>
                         </div>
@@ -308,8 +308,8 @@ function ActivityRow({
                 ) : null}
                 {argumentsText ? (
                   <div className="space-y-1">
-                    <span className="text-muted-foreground">Parameters (redacted)</span>
-                    <pre className="whitespace-pre-wrap break-words rounded-md border border-border bg-background p-3 font-mono text-xs text-foreground">
+                    <span className="text-ink-3">Parameters (redacted)</span>
+                    <pre className="whitespace-pre-wrap break-words rounded-md border border-line bg-bg p-3 font-mono text-xs text-ink">
                       {argumentsText}
                     </pre>
                   </div>
@@ -465,14 +465,14 @@ export function AuditTab({ companyId }: { companyId: string }) {
         hasActiveFilters ? (
           <Card>
             <CardContent className="flex flex-col items-center gap-3 py-14 text-center">
-              <ScrollText className="h-10 w-10 text-muted-foreground/40" />
+              <ScrollText className="h-10 w-10 text-ink-3/40" />
               <div>
-                <p className="text-sm font-medium text-foreground">No activity matches these filters</p>
-                <p className="mt-1 max-w-md text-sm text-muted-foreground">
+                <p className="text-sm font-medium text-ink">No activity matches these filters</p>
+                <p className="mt-1 max-w-md text-sm text-ink-3">
                   Try a wider time window or different filters.
                 </p>
               </div>
-              <Button variant="outline" size="sm" onClick={clearFilters}>
+              <Button variant="secondary" size="sm" onClick={clearFilters}>
                 Clear filters
               </Button>
             </CardContent>
@@ -480,10 +480,10 @@ export function AuditTab({ companyId }: { companyId: string }) {
         ) : (
           <Card>
             <CardContent className="flex flex-col items-center gap-3 py-14 text-center">
-              <ScrollText className="h-10 w-10 text-muted-foreground/40" />
+              <ScrollText className="h-10 w-10 text-ink-3/40" />
               <div>
-                <p className="text-sm font-medium text-foreground">Nothing here yet</p>
-                <p className="mt-1 max-w-md text-sm text-muted-foreground">
+                <p className="text-sm font-medium text-ink">Nothing here yet</p>
+                <p className="mt-1 max-w-md text-sm text-ink-3">
                   As soon as your agents start using connected apps, what they do shows up here.
                 </p>
               </div>
@@ -493,7 +493,7 @@ export function AuditTab({ companyId }: { companyId: string }) {
       ) : (
         <Card>
           <CardContent className="px-0 py-0">
-            <ul className="divide-y divide-border">
+            <ul className="divide-y divide-line">
               {events.map((event) => (
                 <ActivityRow key={event.id} event={event} ruleNamesById={ruleNamesById} />
               ))}
@@ -505,7 +505,7 @@ export function AuditTab({ companyId }: { companyId: string }) {
       {activity.hasNextPage ? (
         <div className="flex justify-center">
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             onClick={() => activity.fetchNextPage()}
             disabled={activity.isFetchingNextPage}

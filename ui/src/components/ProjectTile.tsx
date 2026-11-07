@@ -41,7 +41,7 @@ export function ProjectTile({ color, icon, size = "md", className }: ProjectTile
       className={cn(
         "inline-flex shrink-0 items-center justify-center",
         dims.box,
-        tinted ? "text-white" : "bg-muted text-muted-foreground",
+        tinted ? "text-white" : "bg-bg-3 text-ink-3",
         className,
       )}
       style={tinted ? { backgroundColor: color ?? undefined } : undefined}

@@ -36,7 +36,7 @@ export function TaskTreeControlMenuItems({
   onRestore: () => void;
 }) {
   const itemClass =
-    "flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50 disabled:opacity-50 disabled:pointer-events-none";
+    "flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-bg-3/50 disabled:opacity-50 disabled:pointer-events-none";
   return (
     <>
       {canPause ? (
@@ -54,7 +54,7 @@ export function TaskTreeControlMenuItems({
       {canCancel ? (
         <button
           disabled={pending}
-          className={`${itemClass} text-destructive`}
+          className={`${itemClass} text-bad`}
           onClick={onCancel}
         >
           <XCircle className="h-3 w-3" />
@@ -134,12 +134,12 @@ export function TaskTreeControlDialog({
         </DialogHeader>
         {error ? (
           <div className="space-y-2">
-            <p role="alert" className="text-sm text-destructive">
+            <p role="alert" className="text-sm text-bad">
               {error}
             </p>
             <Button
               size="sm"
-              variant="outline"
+              variant="secondary"
               disabled={pending}
               onClick={onRetry}
             >
@@ -160,14 +160,14 @@ export function TaskTreeControlDialog({
         ) : null}
         <DialogFooter>
           <Button
-            variant="outline"
+            variant="secondary"
             disabled={pending}
             onClick={() => onOpenChange(false)}
           >
             {cancel ? "Keep tasks" : "Close"}
           </Button>
           <Button
-            variant={cancel ? "destructive" : "default"}
+            variant={cancel ? "danger" : "primary"}
             disabled={pending || loading || !!error || !valid}
             onClick={onApply}
           >
@@ -203,7 +203,7 @@ export function TaskPauseNotice({
     <div
       role="status"
       className={cn(
-        "flex items-center justify-between gap-3 rounded-md bg-muted/50 px-3 py-2 text-sm text-muted-foreground",
+        "flex items-center justify-between gap-3 rounded-md bg-bg-3/50 px-3 py-2 text-sm text-ink-3",
         className,
       )}
     >

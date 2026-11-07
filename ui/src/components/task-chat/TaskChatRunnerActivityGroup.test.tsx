@@ -433,7 +433,7 @@ describe("TaskChatRunnerActivityGroup", () => {
     act(() => rowButton("failed").click());
     expect(container.textContent).toContain("output-failed");
     expect(
-      container.querySelector(".lucide-x, .text-destructive"),
+      container.querySelector(".lucide-x, .text-bad"),
     ).toBeNull();
   });
 
@@ -495,7 +495,7 @@ describe("TaskChatRunnerActivityGroup", () => {
     expect(container.querySelectorAll("li")).toHaveLength(2);
     expect(rowButton("one").getAttribute("aria-expanded")).toBe("false");
     expect(rowButton("two").getAttribute("aria-expanded")).toBe("false");
-    expect(container.querySelector(".text-destructive, .lucide-x")).toBeNull();
+    expect(container.querySelector(".text-bad, .lucide-x")).toBeNull();
   });
 
   it("uses the compact runner group for a legacy persisted turn", () => {

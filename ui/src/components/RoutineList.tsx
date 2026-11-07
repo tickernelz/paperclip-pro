@@ -109,8 +109,8 @@ export function RoutineListRow<TRoutine extends RoutineListRowItem>({
   return (
     <Link
       to={href}
-      className={`group flex flex-col gap-3 px-3 py-3 transition-colors hover:bg-accent/50 sm:flex-row sm:items-center no-underline text-inherit${
-        divider ? " border-b border-border last:border-b-0" : ""
+      className={`group flex flex-col gap-3 px-3 py-3 transition-colors hover:bg-bg-3/50 sm:flex-row sm:items-center no-underline text-inherit${
+        divider ? " border-b border-line last:border-b-0" : ""
       }`}
     >
       {selectMode ? (
@@ -123,7 +123,7 @@ export function RoutineListRow<TRoutine extends RoutineListRowItem>({
         >
           <input
             type="checkbox"
-            className="h-4 w-4 rounded border-border"
+            className="h-4 w-4 rounded border-line"
             checked={selected}
             aria-label={`Select ${routine.title}`}
             onChange={(event) => onSelectChange?.(routine, event.target.checked)}
@@ -134,15 +134,15 @@ export function RoutineListRow<TRoutine extends RoutineListRowItem>({
         <div className="flex flex-wrap items-center gap-2">
           <span className="truncate text-sm font-medium">{routine.title}</span>
           {(isArchived || routine.status === "paused" || isDraft) ? (
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs text-ink-3">
               {isArchived ? "archived" : isDraft ? "draft" : "paused"}
             </span>
           ) : null}
           {managedByLabel ? (
-            <span className="text-xs text-muted-foreground">{managedByLabel}</span>
+            <span className="text-xs text-ink-3">{managedByLabel}</span>
           ) : null}
         </div>
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-3">
           <span className="flex items-center gap-2">
             <span
               className="h-2.5 w-2.5 shrink-0 rounded-sm"
@@ -160,14 +160,14 @@ export function RoutineListRow<TRoutine extends RoutineListRowItem>({
           </span>
         </div>
         {secondaryDetails ? (
-          <div className="text-xs text-muted-foreground">{secondaryDetails}</div>
+          <div className="text-xs text-ink-3">{secondaryDetails}</div>
         ) : null}
       </div>
 
       <div className="flex items-center gap-3" onClick={(event) => { event.preventDefault(); event.stopPropagation(); }}>
         {runNowButton ? (
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             disabled={runDisabled}
             onClick={() => onRunNow(routine)}
@@ -185,7 +185,7 @@ export function RoutineListRow<TRoutine extends RoutineListRowItem>({
             disabled={isStatusPending || isArchived || disableToggle}
             aria-label={enabled ? `Disable ${routine.title}` : `Enable ${routine.title}`}
           />
-          <span className="w-12 text-xs text-muted-foreground">
+          <span className="w-12 text-xs text-ink-3">
             {isArchived ? "Archived" : isDraft ? "Draft" : enabled ? "On" : "Off"}
           </span>
         </div>

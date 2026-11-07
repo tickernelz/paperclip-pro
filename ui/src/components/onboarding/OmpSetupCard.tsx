@@ -32,7 +32,7 @@ export const OMP_PROVIDERS_DOCS_URL = "https://omp.sh/docs/providers";
 const OMP_RECOMMENDATION = "Paperclip Pro is tuned for OMP: model fallback, live steering and thinking control.";
 
 const disclosureTriggerClass =
-  "group flex items-center gap-1.5 rounded-md text-sm font-medium text-muted-foreground transition-colors hover:text-foreground outline-none focus-visible:ring-ring/50 focus-visible:ring-(length:--rad-3)";
+  "group flex items-center gap-1.5 rounded-md text-sm font-medium text-ink-3 transition-colors hover:text-ink outline-none focus-visible:ring-focus/50 focus-visible:ring-(length:--rad-3)";
 
 function DisclosureChevron() {
   return (
@@ -46,14 +46,14 @@ function DisclosureChevron() {
 function CommandRow({ label, command }: { label: string; command: string }) {
   return (
     <li className="space-y-1">
-      <span className="block text-xs font-medium text-muted-foreground">{label}</span>
-      <div className="flex items-start gap-2 rounded-md border border-border bg-muted/40 py-1 pl-2.5 pr-1">
-        <code className="min-w-0 flex-1 break-all py-1 font-mono text-xs leading-relaxed text-foreground">{command}</code>
+      <span className="block text-xs font-medium text-ink-3">{label}</span>
+      <div className="flex items-start gap-2 rounded-md border border-line bg-bg-3/40 py-1 pl-2.5 pr-1">
+        <code className="min-w-0 flex-1 break-all py-1 font-mono text-xs leading-relaxed text-ink">{command}</code>
         <CopyText
           text={command}
           ariaLabel={`Copy command: ${command}`}
           title="Copy"
-          className="grid size-7 shrink-0 place-items-center rounded-sm text-muted-foreground hover:bg-accent"
+          className="grid size-7 shrink-0 place-items-center rounded-sm text-ink-3 hover:bg-bg-3"
         >
           <Copy aria-hidden className="size-3.5" />
         </CopyText>
@@ -75,7 +75,7 @@ function GuideActions({
 }) {
   return (
     <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
-      <Button type="button" variant="outline" size="sm" onClick={onCheckAgain} disabled={rechecking}>
+      <Button type="button" variant="secondary" size="sm" onClick={onCheckAgain} disabled={rechecking}>
         {rechecking ? <Loader2 aria-hidden className="animate-spin" /> : <RefreshCw aria-hidden />}
         {rechecking ? "Checking…" : "Check again"}
       </Button>
@@ -83,7 +83,7 @@ function GuideActions({
         href={docsHref}
         target="_blank"
         rel="noreferrer noopener"
-        className="inline-flex items-center gap-1 rounded-sm text-sm text-muted-foreground underline decoration-muted-foreground/40 underline-offset-4 transition-colors hover:text-foreground outline-none focus-visible:ring-ring/50 focus-visible:ring-(length:--rad-3)"
+        className="inline-flex items-center gap-1 rounded-sm text-sm text-ink-3 underline decoration-ink-3/40 underline-offset-4 transition-colors hover:text-ink outline-none focus-visible:ring-focus/50 focus-visible:ring-(length:--rad-3)"
       >
         {docsLabel}
         <ExternalLink aria-hidden className="size-3.5" />
@@ -95,8 +95,8 @@ function GuideActions({
 function GuideHeading({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="space-y-1">
-      <h3 className="text-sm font-semibold text-foreground">{title}</h3>
-      <p className="text-sm leading-relaxed text-muted-foreground">{children}</p>
+      <h3 className="text-sm font-semibold text-ink">{title}</h3>
+      <p className="text-sm leading-relaxed text-ink-3">{children}</p>
     </div>
   );
 }
@@ -141,7 +141,7 @@ function InstallGuide({
           <CommandRow key={entry.platform} label={entry.platform} command={entry.command} />
         ))}
       </ul>
-      <p className="text-xs leading-relaxed text-muted-foreground">
+      <p className="text-xs leading-relaxed text-ink-3">
         OMP keeps its settings, providers and sessions in <code className="font-mono">~/.omp/agent</code>.
       </p>
       <GuideActions docsHref={OMP_DOCS_URL} docsLabel="OMP docs" rechecking={rechecking} onCheckAgain={onCheckAgain} />
@@ -168,7 +168,7 @@ function ProviderGuide({
         <CommandRow label="Run OMP setup" command="omp setup" />
         <CommandRow label="Confirm OMP lists models" command="omp models" />
       </ul>
-      <p className="text-xs leading-relaxed text-muted-foreground">
+      <p className="text-xs leading-relaxed text-ink-3">
         You can also start <code className="font-mono">omp</code> and sign in with{" "}
         <code className="font-mono">/login</code>. Custom providers go in{" "}
         <code className="font-mono">~/.omp/agent/models.yml</code>.
@@ -205,7 +205,7 @@ function ModelChoice({
     <div className="space-y-5" data-testid="omp-setup-model-choice">
       <InstalledLine version={version} />
       <div className="space-y-1.5">
-        <span className="block text-sm font-medium text-foreground">
+        <span className="block text-sm font-medium text-ink">
           Model
         </span>
         <ComboboxField
@@ -218,7 +218,7 @@ function ModelChoice({
           disablePortal={disablePortal}
           testId="omp-setup-model"
         />
-        <p className="text-xs leading-relaxed text-muted-foreground">
+        <p className="text-xs leading-relaxed text-ink-3">
           Required. Your agent runs on this model; the list comes from{" "}
           <code className="font-mono">omp models</code>.
         </p>
@@ -233,7 +233,7 @@ function ModelChoice({
         </CollapsibleTrigger>
         <CollapsibleContent className="space-y-1.5 pt-3">
           <div className="flex items-center justify-between gap-2">
-            <span className="text-sm font-medium text-foreground">Fallback models</span>
+            <span className="text-sm font-medium text-ink">Fallback models</span>
             <ModelListCount count={fallbackModels.length} max={AGENT_FALLBACK_MODELS_MAX} />
           </div>
           <ModelListField
@@ -246,7 +246,7 @@ function ModelChoice({
             disablePortal={disablePortal}
             testId="omp-setup-fallbacks"
           />
-          <p className="text-xs leading-relaxed text-muted-foreground">
+          <p className="text-xs leading-relaxed text-ink-3">
             Tried in order when the main model hits a rate limit, an upstream error or a refusal.
           </p>
         </CollapsibleContent>
@@ -258,7 +258,7 @@ function ModelChoice({
 function CheckingBody() {
   return (
     <div className="space-y-3" data-testid="omp-setup-checking" aria-busy="true">
-      <p className="flex items-center gap-2 text-sm text-muted-foreground">
+      <p className="flex items-center gap-2 text-sm text-ink-3">
         <Loader2 aria-hidden className="size-4 animate-spin" />
         Checking whether OMP is installed…
       </p>
@@ -300,8 +300,8 @@ export function OmpSetupCard({
       aria-labelledby={titleId}
       data-testid="omp-setup"
       className={cn(
-        "rounded-md border bg-card transition-(--tp-border-color-background-color) duration-(--motion-duration-fast) ease-(--motion-ease-standard)",
-        selected ? "border-foreground/40" : "border-border",
+        "rounded-md border bg-bg-2 transition-(--tp-border-color-background-color) duration-(--motion-duration-fast) ease-(--motion-ease-standard)",
+        selected ? "border-ink/40" : "border-line",
       )}
     >
       <button
@@ -309,34 +309,34 @@ export function OmpSetupCard({
         aria-pressed={selected}
         onClick={onSelect}
         className={cn(
-          "flex w-full items-start gap-3 rounded-md p-4 text-left outline-none focus-visible:ring-ring/50 focus-visible:ring-(length:--rad-3)",
-          selected ? "cursor-default" : "cursor-pointer hover:bg-accent/40",
+          "flex w-full items-start gap-3 rounded-md p-4 text-left outline-none focus-visible:ring-focus/50 focus-visible:ring-(length:--rad-3)",
+          selected ? "cursor-default" : "cursor-pointer hover:bg-bg-3/40",
         )}
       >
-        <span className="flex size-(--sz-30px) shrink-0 items-center justify-center rounded-md bg-foreground text-background">
+        <span className="flex size-(--sz-30px) shrink-0 items-center justify-center rounded-md bg-ink text-bg">
           <SquareTerminal aria-hidden className="size-4" />
         </span>
         <span className="min-w-0 flex-1 space-y-1">
           <span className="flex flex-wrap items-center gap-2">
-            <span id={titleId} className="text-sm font-semibold text-foreground">
+            <span id={titleId} className="text-sm font-semibold text-ink">
               OMP
             </span>
             <Badge variant="secondary">Recommended</Badge>
           </span>
-          <span className="block text-sm leading-relaxed text-muted-foreground">{OMP_RECOMMENDATION}</span>
+          <span className="block text-sm leading-relaxed text-ink-3">{OMP_RECOMMENDATION}</span>
         </span>
         <span
           aria-hidden
           className={cn(
             "mt-1 grid size-4 shrink-0 place-items-center rounded-full border",
-            selected ? "border-foreground" : "border-border",
+            selected ? "border-ink" : "border-line",
           )}
         >
-          {selected ? <span className="size-2 rounded-full bg-foreground" /> : null}
+          {selected ? <span className="size-2 rounded-full bg-ink" /> : null}
         </span>
       </button>
       {selected ? (
-        <div className="border-t border-border p-4" aria-live="polite">
+        <div className="border-t border-line p-4" aria-live="polite">
           {status.kind === "checking" ? (
             <CheckingBody />
           ) : status.kind === "missing" || status.kind === "broken" ? (

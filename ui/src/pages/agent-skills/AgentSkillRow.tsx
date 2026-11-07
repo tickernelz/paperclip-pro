@@ -73,25 +73,25 @@ export function AgentSkillRow({
       <SkillCardIcon card={data.icon} size={32} />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <span className="truncate text-sm font-medium text-foreground">{data.name}</span>
+          <span className="truncate text-sm font-medium text-ink">{data.name}</span>
           {badge ? <span className="shrink-0">{badge}</span> : null}
           {data.chip ? (
-            <span className="hidden shrink-0 items-center rounded-full border border-border bg-muted/40 px-2 py-0.5 text-(length:--text-nano) capitalize text-muted-foreground sm:inline-flex">
+            <span className="hidden shrink-0 items-center rounded-full border border-line bg-bg-3/40 px-2 py-0.5 text-(length:--text-nano) capitalize text-ink-3 sm:inline-flex">
               {data.chip}
             </span>
           ) : null}
         </div>
         {data.summary ? (
-          <p className="mt-0.5 truncate text-xs text-muted-foreground">{data.summary}</p>
+          <p className="mt-0.5 truncate text-xs text-ink-3">{data.summary}</p>
         ) : null}
         {data.sourceMeta && SourceIcon ? (
-          <p className="mt-0.5 flex min-w-0 items-center gap-1 text-(length:--text-nano) text-muted-foreground/80">
+          <p className="mt-0.5 flex min-w-0 items-center gap-1 text-(length:--text-nano) text-ink-3/80">
             <SourceIcon className="h-3 w-3 shrink-0" aria-hidden="true" />
             <span className="truncate">{data.sourceMeta.label}</span>
           </p>
         ) : null}
         {readOnly && data.originLabel ? (
-          <p className="mt-0.5 truncate text-(length:--text-nano) text-muted-foreground/80">
+          <p className="mt-0.5 truncate text-(length:--text-nano) text-ink-3/80">
             {data.originLabel}
             {data.locationLabel ? ` · ${data.locationLabel}` : ""}
           </p>
@@ -104,14 +104,14 @@ export function AgentSkillRow({
     // Below `sm` the trailing area can't share a line with the leading content,
     // so the row wraps and the picker accessory drops onto its own full-width
     // line under the name/description (see the `order-last` accessory below).
-    "flex min-h-11 flex-wrap items-center gap-x-3 gap-y-2 border-b border-border px-3 py-2.5 last:border-b-0 sm:flex-nowrap sm:gap-y-3",
-    readOnly ? "bg-muted/20" : "transition-colors hover:bg-accent/50",
+    "flex min-h-11 flex-wrap items-center gap-x-3 gap-y-2 border-b border-line px-3 py-2.5 last:border-b-0 sm:flex-nowrap sm:gap-y-3",
+    readOnly ? "bg-bg-3/20" : "transition-colors hover:bg-bg-3/50",
   );
 
   const body = data.linkTo ? (
     <Link
       to={data.linkTo}
-      className="flex min-w-0 flex-1 items-center gap-3 no-underline outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+      className="flex min-w-0 flex-1 items-center gap-3 no-underline outline-none focus-visible:ring-2 focus-visible:ring-focus rounded-sm"
     >
       {leading}
     </Link>
@@ -120,7 +120,7 @@ export function AgentSkillRow({
   );
 
   const trailing = readOnly ? (
-    <Lock className="h-4 w-4 shrink-0 text-muted-foreground/60" aria-label="Read-only" />
+    <Lock className="h-4 w-4 shrink-0 text-ink-3/60" aria-label="Read-only" />
   ) : (
     (() => {
       const toggle = (

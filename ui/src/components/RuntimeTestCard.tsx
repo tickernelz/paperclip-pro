@@ -73,18 +73,18 @@ export function RuntimeTestCard({
   return (
     <section
       aria-label="Runtime test"
-      className="rounded-lg border border-border bg-card"
+      className="rounded-lg border border-line bg-bg-2"
     >
       <div className="flex items-start gap-3 p-4 sm:items-center">
         <span
           aria-hidden="true"
           className={cn(
-            "flex size-9 shrink-0 items-center justify-center rounded-full bg-muted",
+            "flex size-9 shrink-0 items-center justify-center rounded-full bg-bg-3",
             state === "pass"
               ? "text-green-600 dark:text-green-400"
               : state === "fail"
-                ? "text-destructive"
-                : "text-muted-foreground",
+                ? "text-bad"
+                : "text-ink-3",
           )}
         >
           <Icon
@@ -101,13 +101,13 @@ export function RuntimeTestCard({
             className="min-w-0 space-y-1"
           >
             <h3 className="text-sm font-medium">{content.title}</h3>
-            <p className="text-xs leading-relaxed text-muted-foreground">
+            <p className="text-xs leading-relaxed text-ink-3">
               {state === "fail" && error ? error : content.description}
             </p>
           </div>
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             size="sm"
             className="shrink-0 self-start sm:self-center"
             disabled={disabled || state === "running"}
@@ -120,9 +120,9 @@ export function RuntimeTestCard({
       {result && result.checks.length > 0 && (
         <details
           key={`${state}:${result.testedAt}`}
-          className="group border-t border-border"
+          className="group border-t border-line"
         >
-          <summary className="flex cursor-pointer list-none items-center gap-1.5 px-4 py-2.5 text-xs text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring">
+          <summary className="flex cursor-pointer list-none items-center gap-1.5 px-4 py-2.5 text-xs text-ink-3 outline-none hover:text-ink focus-visible:ring-2 focus-visible:ring-focus">
             <ChevronRight
               aria-hidden="true"
               className="size-3 transition-transform group-open:rotate-90"
@@ -138,23 +138,23 @@ export function RuntimeTestCard({
                 {check.level === "error" || check.level === "warn" ? (
                   <CircleAlert
                     aria-hidden="true"
-                    className="mt-0.5 size-3.5 shrink-0 text-destructive"
+                    className="mt-0.5 size-3.5 shrink-0 text-bad"
                   />
                 ) : (
                   <CircleCheck
                     aria-hidden="true"
-                    className="mt-0.5 size-3.5 shrink-0 text-muted-foreground"
+                    className="mt-0.5 size-3.5 shrink-0 text-ink-3"
                   />
                 )}
                 <div className="min-w-0 space-y-1">
-                  <p className="break-words text-foreground">{check.message}</p>
+                  <p className="break-words text-ink">{check.message}</p>
                   {check.detail && (
-                    <p className="break-all text-muted-foreground">
+                    <p className="break-all text-ink-3">
                       {check.detail}
                     </p>
                   )}
                   {check.hint && (
-                    <p className="text-muted-foreground">{check.hint}</p>
+                    <p className="text-ink-3">{check.hint}</p>
                   )}
                 </div>
               </li>

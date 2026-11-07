@@ -96,7 +96,7 @@ export function NewProjectPrototype(props: PrototypeProps) {
           {draft.connecting ? <div className="min-h-0 overflow-y-auto p-5"><GitHubConnectionPreview onComplete={draft.finishConnection} onCancel={() => draft.setConnecting(false)} /></div> : created ? (
             <div className="flex flex-col items-center gap-4 p-8">
               <Check className="size-6" /><h2 className="text-xl font-bold">{name}</h2>
-              <p role="status" className="text-sm text-muted-foreground">Project preview created with {draft.repos.length} {draft.repos.length === 1 ? "repo" : "repos"}.</p>
+              <p role="status" className="text-sm text-ink-3">Project preview created with {draft.repos.length} {draft.repos.length === 1 ? "repo" : "repos"}.</p>
               <Button type="button" onClick={() => setCreated(false)}>Back to project draft</Button>
             </div>
           ) : (
@@ -106,13 +106,13 @@ export function NewProjectPrototype(props: PrototypeProps) {
                   <DialogTitle className="text-lg font-semibold">Create project</DialogTitle>
                   <Button type="button" variant="ghost" size="icon-sm" aria-label="Close new project" onClick={() => setOpen(false)}><X className="size-4" /></Button>
                 </div>
-                <div className="flex items-center gap-3 rounded-lg border border-input px-3 focus-within:border-ring focus-within:ring-1 focus-within:ring-ring">
-                  <Folder className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                <div className="flex items-center gap-3 rounded-lg border border-line-strong px-3 focus-within:border-focus focus-within:ring-1 focus-within:ring-focus">
+                  <Folder className="size-4 shrink-0 text-ink-3" aria-hidden="true" />
                   <input ref={input} aria-label="Project name" value={name} onChange={(event) => setName(event.target.value)} placeholder="Project name" required
-                    className="h-10 w-full min-w-0 border-0 bg-transparent text-base outline-none placeholder:text-muted-foreground md:text-sm" />
+                    className="h-10 w-full min-w-0 border-0 bg-transparent text-base outline-none placeholder:text-ink-3 md:text-sm" />
                 </div>
               </div>
-              <div role="region" aria-label="Source repositories" tabIndex={0} className="min-h-0 overflow-y-auto overscroll-contain px-5 pb-1 outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-ring">
+              <div role="region" aria-label="Source repositories" tabIndex={0} className="min-h-0 overflow-y-auto overscroll-contain px-5 pb-1 outline-none focus-visible:ring-1 focus-visible:ring-inset focus-visible:ring-focus">
                 <RepositoryEditor key={draft.revision} selected={draft.repos} onChange={draft.setRepos} initialState={draft.state} personalOnly={props.personalOnly} onConnect={() => draft.setConnecting(true)} />
               </div>
               <div className="flex shrink-0 justify-end gap-2 px-5 py-5">
@@ -139,12 +139,12 @@ export function RepositoryConfigurationSection(props: PrototypeProps) {
       <section className="flex flex-col gap-4" aria-label="Repositories">
         <RepositoryEditor key={draft.revision} selected={draft.repos} onChange={(repos) => { draft.setRepos(repos); setNotice(""); }} initialState={draft.state} personalOnly={props.personalOnly} onConnect={() => draft.setConnecting(true)} />
         {props.legacyUrl && <div className="flex flex-col gap-2">
-          <span className="text-xs text-muted-foreground">Existing repo URL</span>
-          {editingLegacy ? <div className="flex flex-col gap-2"><Input aria-label="Existing repo URL" type="url" value={legacyUrl} onChange={(event) => { setLegacyUrl(event.target.value); setNotice(""); }} /><Button type="button" size="sm" variant="ghost" className="self-start" onClick={() => setEditingLegacy(false)}>Done</Button></div> : <div className="flex items-center gap-3 rounded-md border border-border px-3 py-2"><Link className="size-4 shrink-0 text-muted-foreground" /><span className="min-w-0 flex-1 break-all text-sm">{legacyUrl || "No URL set"}</span><Button type="button" variant="ghost" size="sm" onClick={() => setEditingLegacy(true)}>Edit</Button></div>}
-          <p className="text-xs text-muted-foreground">Your existing URL is preserved alongside selected GitHub repos.</p>
+          <span className="text-xs text-ink-3">Existing repo URL</span>
+          {editingLegacy ? <div className="flex flex-col gap-2"><Input aria-label="Existing repo URL" type="url" value={legacyUrl} onChange={(event) => { setLegacyUrl(event.target.value); setNotice(""); }} /><Button type="button" size="sm" variant="ghost" className="self-start" onClick={() => setEditingLegacy(false)}>Done</Button></div> : <div className="flex items-center gap-3 rounded-md border border-line px-3 py-2"><Link className="size-4 shrink-0 text-ink-3" /><span className="min-w-0 flex-1 break-all text-sm">{legacyUrl || "No URL set"}</span><Button type="button" variant="ghost" size="sm" onClick={() => setEditingLegacy(true)}>Edit</Button></div>}
+          <p className="text-xs text-ink-3">Your existing URL is preserved alongside selected GitHub repos.</p>
         </div>}
-        <div className="flex items-center justify-end gap-2 border-t border-border pt-4">
-          {notice && <span role="status" className="mr-auto text-sm text-muted-foreground">{notice}</span>}
+        <div className="flex items-center justify-end gap-2 border-t border-line pt-4">
+          {notice && <span role="status" className="mr-auto text-sm text-ink-3">{notice}</span>}
           {dirty && <Button type="button" variant="ghost" onClick={() => { draft.setRepos(saved.repos); setLegacyUrl(saved.legacyUrl); setNotice(""); }}>Discard changes</Button>}
           <Button type="button" disabled={!dirty || editingLegacy} onClick={() => { setSaved({ repos: draft.repos, legacyUrl }); setNotice("Changes saved in preview"); }}>Save changes</Button>
         </div>

@@ -936,8 +936,7 @@ describe("IssueThreadInteractionCard", () => {
     const approve = Array.from(pending.querySelectorAll("button")).find((button) =>
       button.textContent?.includes("Approve plan"),
     );
-    expect(approve?.className).toContain("bg-foreground");
-    expect(approve?.className).not.toContain("bg-primary");
+    expect(approve?.getAttribute("data-variant")).toBe("primary");
 
     act(() => root?.unmount());
     pending.remove();
@@ -1141,7 +1140,7 @@ describe("IssueThreadInteractionCard tool-action card", () => {
     const host = renderCard({ interaction: pendingToolActionDestructiveInteraction, onAcceptInteraction: vi.fn(), onRejectInteraction: vi.fn() });
     expect(host.textContent).toContain("cannot be undone");
     const approve = Array.from(host.querySelectorAll("button")).find(button => button.textContent === "Approve & run");
-    expect(approve?.getAttribute("data-variant")).toBe("destructive");
+    expect(approve?.getAttribute("data-variant")).toBe("delete");
   });
 
   it("declines in one click without an optional reason form", async () => {
@@ -1317,9 +1316,9 @@ describe("IssueThreadInteractionCard tool-action card", () => {
     expect(host.textContent).toContain("Withdrawn");
     // Withdrawn is a neutral administrative retraction — it must NOT wear the
     // cancelled/rejected costume (rose/red border + XCircle). The shell is muted
-    // (border-border), never a rose/red alarm colour (design review R2).
+    // (border-line), never a rose/red alarm colour (design review R2).
     const cardRoot = host.querySelector("div.rounded-lg.p-5.shadow-none");
-    expect(cardRoot?.className).toContain("border-border");
+    expect(cardRoot?.className).toContain("border-line");
     expect(cardRoot?.className).not.toMatch(/border-(rose|red)/);
     // The header status icon is MinusCircle ("retracted"), never XCircle ("denied").
     const statusIcon = cardRoot?.querySelector("svg");

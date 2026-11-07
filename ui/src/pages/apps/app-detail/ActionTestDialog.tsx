@@ -136,7 +136,7 @@ export function ActionTestDialog({
         </DialogHeader>
 
         {testAgentsQuery.isLoading ? (
-          <div className="flex items-center gap-2 py-6 text-sm text-muted-foreground" role="status">
+          <div className="flex items-center gap-2 py-6 text-sm text-ink-3" role="status">
             <Loader2 className="h-4 w-4 animate-spin" />
             Loading agents…
           </div>
@@ -146,21 +146,21 @@ export function ActionTestDialog({
             onRetry={() => { void testAgentsQuery.refetch(); }}
           />
         ) : agents.length === 0 ? (
-          <p className="py-6 text-sm text-muted-foreground">No agents are available to test as.</p>
+          <p className="py-6 text-sm text-ink-3">No agents are available to test as.</p>
         ) : accessQuery.isError && !accessQuery.data ? (
           <TestLoadError
             message={`We couldn't load ${selectedAgentBase?.name ?? "this agent"}'s permissions.`}
             onRetry={() => { void accessQuery.refetch(); }}
           />
         ) : !selectedAgent ? (
-          <div className="flex items-center gap-2 py-6 text-sm text-muted-foreground" role="status">
+          <div className="flex items-center gap-2 py-6 text-sm text-ink-3" role="status">
             <Loader2 className="h-4 w-4 animate-spin" />
             Loading agent permissions…
           </div>
         ) : (
           <div className="space-y-5">
-            <div className="rounded-md border border-border bg-muted/30 p-4">
-              <p className="text-xs font-medium text-muted-foreground">Act as</p>
+            <div className="rounded-md border border-line bg-bg-3/30 p-4">
+              <p className="text-xs font-medium text-ink-3">Act as</p>
               <div className="mt-1 flex flex-wrap items-center justify-between gap-2">
                 <AgentPicker
                   agents={agents}
@@ -200,7 +200,7 @@ const DECISION_META: Record<ToolConnectionTestDecision, DecisionMeta> = {
   },
   off: {
     label: "Off",
-    className: "border-border bg-muted text-muted-foreground",
+    className: "border-line bg-bg-3 text-ink-3",
   },
 };
 
@@ -221,8 +221,8 @@ function DecisionBadge({ decision }: { decision: ToolConnectionTestDecision }) {
 function TestLoadError({ message, onRetry }: { message: string; onRetry: () => void }) {
   return (
     <div className="py-8 text-center">
-      <p className="text-sm font-medium text-foreground">{message}</p>
-      <Button className="mt-3" size="sm" variant="outline" onClick={onRetry}>
+      <p className="text-sm font-medium text-ink">{message}</p>
+      <Button className="mt-3" size="sm" variant="secondary" onClick={onRetry}>
         Try again
       </Button>
     </div>
@@ -258,17 +258,17 @@ function AgentPicker({
       <PopoverTrigger asChild>
         <button
           type="button"
-          className="inline-flex items-center gap-1.5 font-semibold text-foreground underline-offset-2 outline-none hover:text-primary hover:underline focus-visible:text-primary"
+          className="inline-flex items-center gap-1.5 font-semibold text-ink underline-offset-2 outline-none hover:text-accent hover:underline focus-visible:text-accent"
           aria-label="Choose which agent to test as"
         >
           {selectedAgent.name}
-          <ChevronsUpDown className="h-3.5 w-3.5 text-muted-foreground" />
+          <ChevronsUpDown className="h-3.5 w-3.5 text-ink-3" />
         </button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-80 p-0" disablePortal>
-        <div className="border-b border-border p-2">
+        <div className="border-b border-line p-2">
           <div className="relative">
-            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-3" />
             <Input
               aria-label="Search agents"
               placeholder="Search agents…"
@@ -281,7 +281,7 @@ function AgentPicker({
         </div>
         <div className="max-h-60 overflow-y-auto p-1">
           {filtered.length === 0 ? (
-            <p className="px-3 py-4 text-center text-xs text-muted-foreground">No agents match.</p>
+            <p className="px-3 py-4 text-center text-xs text-ink-3">No agents match.</p>
           ) : (
             filtered.map((agent) => {
               const detail = agent.title?.trim() || agent.role;
@@ -295,42 +295,42 @@ function AgentPicker({
                     setSearch("");
                   }}
                   className={cn(
-                    "flex w-full items-start gap-2 rounded-md px-2 py-2 text-left hover:bg-accent",
-                    agent.id === selectedAgent.id && "bg-accent",
+                    "flex w-full items-start gap-2 rounded-md px-2 py-2 text-left hover:bg-bg-3",
+                    agent.id === selectedAgent.id && "bg-bg-3",
                   )}
                 >
                   <Check
                     className={cn(
                       "mt-0.5 h-4 w-4 shrink-0",
-                      agent.id === selectedAgent.id ? "text-primary" : "text-transparent",
+                      agent.id === selectedAgent.id ? "text-accent" : "text-transparent",
                     )}
                   />
                   <span className="min-w-0 flex-1">
-                    <span className="block truncate text-sm font-medium text-foreground">{agent.name}</span>
-                    <span className="block truncate text-xs text-muted-foreground">{detail}</span>
+                    <span className="block truncate text-sm font-medium text-ink">{agent.name}</span>
+                    <span className="block truncate text-xs text-ink-3">{detail}</span>
                   </span>
                 </button>
               );
             })
           )}
         </div>
-        <div className="border-t border-border px-3 py-2 text-(length:--text-micro) text-muted-foreground">
+        <div className="border-t border-line px-3 py-2 text-(length:--text-micro) text-ink-3">
           <p>Only agents you can assign tasks to are listed.</p>
           <p>Pick one to preview what they'd see in {appName}.</p>
         </div>
-        <div className="border-t border-border p-3">
-          <p className="text-xs font-semibold text-foreground">What the badges mean</p>
-          <ul className="mt-1.5 space-y-1 text-xs text-muted-foreground">
-            <li><span className="font-medium text-foreground">Allowed</span> — runs immediately when you press Run.</li>
-            <li><span className="font-medium text-foreground">Ask first</span> — Run is parked in Review for your OK.</li>
+        <div className="border-t border-line p-3">
+          <p className="text-xs font-semibold text-ink">What the badges mean</p>
+          <ul className="mt-1.5 space-y-1 text-xs text-ink-3">
+            <li><span className="font-medium text-ink">Allowed</span> — runs immediately when you press Run.</li>
+            <li><span className="font-medium text-ink">Ask first</span> — Run is parked in Review for your OK.</li>
             <li>
-              <span className="font-medium text-foreground">Off</span> — won't run. Change it in{" "}
-              <Link className="text-primary hover:underline" to={appTabHref(connectionId, "permissions")}>
+              <span className="font-medium text-ink">Off</span> — won't run. Change it in{" "}
+              <Link className="text-accent hover:underline" to={appTabHref(connectionId, "permissions")}>
                 Permissions
               </Link>.
             </li>
           </ul>
-          <p className="mt-2 text-(length:--text-micro) text-muted-foreground">
+          <p className="mt-2 text-(length:--text-micro) text-ink-3">
             Badges reflect this agent's current settings, not yours. Swap agents to see how an action would behave for each.
           </p>
         </div>
@@ -540,10 +540,10 @@ function ActionTester({
           advancedLabel="More options"
         />
       ) : (
-        <p className="text-xs text-muted-foreground">This action takes no inputs.</p>
+        <p className="text-xs text-ink-3">This action takes no inputs.</p>
       )}
 
-      <p className="text-xs text-muted-foreground">{GUT_CHECK[decision](appName, agent.name)}</p>
+      <p className="text-xs text-ink-3">{GUT_CHECK[decision](appName, agent.name)}</p>
 
       <div className="flex items-center gap-2">
         <Button onClick={onRun} disabled={running || !!outcome?.result.upstreamPending?.resumeTool || outcome?.result.decision === "ask_first"} size="sm">
@@ -562,14 +562,14 @@ function ActionTester({
         </Button>
       </div>
 
-      {(outcome?.result.decision === "ask_first" || outcome?.result.upstreamPending?.resumeTool) && <p className="text-xs text-muted-foreground">Finish the existing request below. Use Reset only when you intend to start a new call.</p>}
+      {(outcome?.result.decision === "ask_first" || outcome?.result.upstreamPending?.resumeTool) && <p className="text-xs text-ink-3">Finish the existing request below. Use Reset only when you intend to start a new call.</p>}
 
       {running && (
         <RunningCard entry={entry} appName={appName} agentName={agent.name} elapsedMs={elapsedMs} onCancel={onCancelRunning} />
       )}
 
       {run.isError && !running && (
-        <div className="rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+        <div className="rounded-md border border-bad/40 bg-bad/10 p-3 text-sm text-bad">
           Couldn't reach {agent.name}. {run.error instanceof Error ? run.error.message : "Please try again."}
         </div>
       )}
@@ -600,17 +600,17 @@ function RunningCard({
 }) {
   const verb = entry.isReadOnly ? "Reading from" : entry.isWrite ? "Writing to" : "Calling";
   return (
-    <div className="rounded-md border border-border bg-muted/30 p-4">
+    <div className="rounded-md border border-line bg-bg-3/30 p-4">
       <div className="flex items-center gap-2">
-        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-        <span className="text-sm font-medium text-foreground">Running…</span>
+        <Loader2 className="h-4 w-4 animate-spin text-ink-3" />
+        <span className="text-sm font-medium text-ink">Running…</span>
       </div>
-      <p className="mt-1 text-xs text-muted-foreground">
+      <p className="mt-1 text-xs text-ink-3">
         {verb} {appName} as {agentName}.
       </p>
       <div className="mt-3 flex items-center justify-between">
-        <span className="text-xs text-muted-foreground">Started {seconds(elapsedMs)} ago · Press cancel to stop</span>
-        <Button onClick={onCancel} size="sm" variant="outline">
+        <span className="text-xs text-ink-3">Started {seconds(elapsedMs)} ago · Press cancel to stop</span>
+        <Button onClick={onCancel} size="sm" variant="secondary">
           Cancel
         </Button>
       </div>
@@ -642,7 +642,7 @@ function ResultPanel({
   }
   if (result.decision === "off") {
     return (
-      <div className="rounded-md border border-border bg-muted/40 p-3 text-sm text-muted-foreground">
+      <div className="rounded-md border border-line bg-bg-3/40 p-3 text-sm text-ink-3">
         {result.error?.message ?? "This action is off and won't run."}
       </div>
     );
@@ -663,20 +663,20 @@ function ProviderPendingResult({ pending, appName, connectionId, agent }: { pend
   const stoppedByUser = resumed && resumeError?.reasonCode === "tool_error" &&
     ((resumed.action === "decline" && /request was declined by the user/i.test(resumeError.message)) ||
       (resumed.action === "cancel" && /request was cancelled by the user/i.test(resumeError.message)));
-  if (stoppedByUser) return <div role="status" className="space-y-2 rounded-md border border-border bg-muted/40 p-4 text-sm">
+  if (stoppedByUser) return <div role="status" className="space-y-2 rounded-md border border-line bg-bg-3/40 p-4 text-sm">
     <p className="font-medium">{resumed.action === "decline" ? "Request declined" : "Request cancelled"}</p>
     <p>{resumeError.message}</p>
-    <p className="text-muted-foreground">The original call was not repeated.</p>
+    <p className="text-ink-3">The original call was not repeated.</p>
     {pending.executionId && <p>Execution: <code className="break-all">{pending.executionId}</code></p>}
   </div>;
   if (resumed) return <ResultPanel outcome={resumed.outcome} entry={resumed.entry} appName={appName} connectionId={connectionId} agent={agent} />;
   return (
-    <div role="status" className="space-y-3 rounded-md border border-border bg-muted/40 p-4 text-sm">
+    <div role="status" className="space-y-3 rounded-md border border-line bg-bg-3/40 p-4 text-sm">
       <p className="font-medium">{pending.kind === "approval" ? "Approval needed" : "Authorization needed"} in {appName}</p>
-      <p className="text-muted-foreground">Paperclip allowed this call. The provider needs your input before it can continue.</p>
+      <p className="text-ink-3">Paperclip allowed this call. The provider needs your input before it can continue.</p>
       {pending.links.map((link) => {
         const checked = checkOAuthEndpointUrl(link.url);
-        return checked.ok ? <Button key={checked.url} variant="outline" asChild><a href={checked.url} target="_blank" rel="noopener noreferrer">Continue at {checked.host}</a></Button> : null;
+        return checked.ok ? <Button key={checked.url} variant="secondary" asChild><a href={checked.url} target="_blank" rel="noopener noreferrer">Continue at {checked.host}</a></Button> : null;
       })}
       {pending.message && <p className="whitespace-pre-wrap break-words">{pending.message}</p>}
       {pending.links.length === 0 && !pending.resumeTool && <p>Open the provider dashboard to complete this request.</p>}
@@ -684,7 +684,7 @@ function ProviderPendingResult({ pending, appName, connectionId, agent }: { pend
       {pending.elicitationId && <p>Request: <code className="break-all">{pending.elicitationId}</code></p>}
       {pending.expiresAt && <p>Approval expires {new Date(pending.expiresAt).toLocaleTimeString()}.</p>}
       {pending.resumeTool && agent ? <ProviderResumeControls pending={pending} connectionId={connectionId} agent={agent} onResult={setResumed} /> :
-      <p className="text-muted-foreground">{pending.resumeTool
+      <p className="text-ink-3">{pending.resumeTool
         ? `After approval, test the ${pending.resumeTool} action with this execution ID. Do not start the original action again.`
         : "After authorizing, check the provider's result before using Run again. Paperclip will not repeat the call automatically."}</p>}
     </div>
@@ -716,12 +716,12 @@ function ProviderResumeControls({ pending, connectionId, agent, onResult }: {
     if (!Object.keys(validation).length) resume.mutate(action);
   };
   return <div className="space-y-3">
-    <p className="text-muted-foreground">Review the provider's request, then resume this execution as {agent.name}. The original action will not be started again.</p>
+    <p className="text-ink-3">Review the provider's request, then resume this execution as {agent.name}. The original action will not be started again.</p>
     <div className="flex items-center gap-2"><span>Resume permission</span><DecisionBadge decision={permission} /></div>
     {Object.keys(schema.properties ?? {}).length > 0 && <JsonSchemaForm schema={schema} values={content} onChange={setContent} errors={errors} disabled={resume.isPending} />}
     <div className="flex flex-wrap gap-2">
       <Button disabled={!entry || expired || permission === "off" || resume.isPending} onClick={() => submit("accept")}>{resume.isPending ? "Resuming…" : "Approve and resume"}</Button>
-      <Button variant="outline" disabled={!entry || expired || permission === "off" || resume.isPending} onClick={() => submit("decline")}>Decline</Button>
+      <Button variant="secondary" disabled={!entry || expired || permission === "off" || resume.isPending} onClick={() => submit("decline")}>Decline</Button>
       <Button variant="ghost" disabled={!entry || expired || permission === "off" || resume.isPending} onClick={() => submit("cancel")}>Cancel request</Button>
     </div>
     {expired && <p>This provider approval expired. Check the provider before starting a new action.</p>}
@@ -863,21 +863,21 @@ function AllowedResult({
     <div className="rounded-md border border-emerald-500/40 bg-emerald-500/5 p-4">
       <div className="flex items-center gap-2">
         <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-        <span className="text-sm font-medium text-foreground">{successHeadline(preview.summary, entry, appName)}</span>
+        <span className="text-sm font-medium text-ink">{successHeadline(preview.summary, entry, appName)}</span>
       </div>
-      <p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+      <p className="mt-0.5 flex items-center gap-1.5 text-xs text-ink-3">
         <Clock className="h-3 w-3" />
         Ran as {outcome.agentName} · {seconds(outcome.durationMs)} · {relTime(outcome.ranAt)}
       </p>
 
       {preview.items.some((item) => !isEmptyResult(item.value)) && (
         <div className="mt-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Preview</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-ink-3">Preview</p>
           <div className="mt-1.5">
             <div className="space-y-2">
               {preview.items.map((item, index) => (
                 <div key={index}>
-                  {item.label && <p className="mb-1 text-xs font-medium text-muted-foreground">{item.label}</p>}
+                  {item.label && <p className="mb-1 text-xs font-medium text-ink-3">{item.label}</p>}
                   <PrettyPreview value={item.value} />
                 </div>
               ))}
@@ -888,14 +888,14 @@ function AllowedResult({
 
       <RawResponseDisclosure value={value} initiallyOpen={preview.rawFallback} />
 
-      <p className="mt-3 text-xs text-muted-foreground">
+      <p className="mt-3 text-xs text-ink-3">
         This call is in the{" "}
-        <Link className="text-primary hover:underline" to="/activity?mode=agents&action=tool_">
+        <Link className="text-accent hover:underline" to="/activity?mode=agents&action=tool_">
           Audit log
         </Link>
         .
       </p>
-      <p className="mt-1 text-xs text-muted-foreground">Last run finished in {seconds(outcome.durationMs)}.</p>
+      <p className="mt-1 text-xs text-ink-3">Last run finished in {seconds(outcome.durationMs)}.</p>
     </div>
   );
 }
@@ -914,54 +914,54 @@ function PrettyPreview({ value }: { value: unknown }) {
         <div className="space-y-2">
           {shown.map((row, index) => <PreviewRowCard key={index} row={row} index={index} />)}
           {rows.length > shown.length && (
-            <p className="text-(length:--text-micro) text-muted-foreground">… {rows.length - shown.length} more rows in the raw response</p>
+            <p className="text-(length:--text-micro) text-ink-3">… {rows.length - shown.length} more rows in the raw response</p>
           )}
         </div>
       );
     }
     return (
-      <div className="overflow-x-auto rounded-md border border-border">
+      <div className="overflow-x-auto rounded-md border border-line">
         <table className="w-full text-left text-xs">
-          <thead className="bg-muted/50 text-muted-foreground">
+          <thead className="bg-bg-3/50 text-ink-3">
             <tr>
               {columns.map((col) => (
                 <th key={col} className="px-2.5 py-1.5 font-medium">{col}</th>
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-border">
+          <tbody className="divide-y divide-line">
             {shown.map((row, i) => (
               <tr key={i}>
                 {columns.map((col) => (
-                  <td key={col} className="px-2.5 py-1.5 text-foreground">{cellText(row[col])}</td>
+                  <td key={col} className="px-2.5 py-1.5 text-ink">{cellText(row[col])}</td>
                 ))}
               </tr>
             ))}
           </tbody>
         </table>
         {rows.length > shown.length && (
-          <p className="px-2.5 py-1.5 text-(length:--text-micro) text-muted-foreground">… {rows.length - shown.length} more rows</p>
+          <p className="px-2.5 py-1.5 text-(length:--text-micro) text-ink-3">… {rows.length - shown.length} more rows</p>
         )}
       </div>
     );
   }
   if (typeof value === "string") {
-    return <pre className="max-h-64 overflow-auto whitespace-pre-wrap rounded-md border border-border bg-background p-3 text-xs text-foreground">{value}</pre>;
+    return <pre className="max-h-64 overflow-auto whitespace-pre-wrap rounded-md border border-line bg-bg p-3 text-xs text-ink">{value}</pre>;
   }
   if (value && typeof value === "object" && !Array.isArray(value)) {
     return (
-      <dl className="max-h-64 overflow-auto divide-y divide-border rounded-md border border-border bg-background text-xs">
+      <dl className="max-h-64 overflow-auto divide-y divide-line rounded-md border border-line bg-bg text-xs">
         {Object.entries(value as Record<string, unknown>).map(([key, field]) => (
           <div key={key} className="grid grid-cols-3 gap-3 px-3 py-2">
-            <dt className="min-w-0 break-words text-muted-foreground">{key}</dt>
-            <dd className="col-span-2 min-w-0 break-words whitespace-pre-wrap text-foreground">{typeof field === "object" && field !== null ? safeStringify(collapseDeep(field, 2)) : cellText(field)}</dd>
+            <dt className="min-w-0 break-words text-ink-3">{key}</dt>
+            <dd className="col-span-2 min-w-0 break-words whitespace-pre-wrap text-ink">{typeof field === "object" && field !== null ? safeStringify(collapseDeep(field, 2)) : cellText(field)}</dd>
           </div>
         ))}
       </dl>
     );
   }
   return (
-    <pre className="max-h-64 overflow-auto rounded-md border border-border bg-background p-3 text-xs text-foreground">
+    <pre className="max-h-64 overflow-auto rounded-md border border-line bg-bg p-3 text-xs text-ink">
       {safeStringify(collapseDeep(value, 2))}
     </pre>
   );
@@ -980,25 +980,25 @@ function PreviewRowCard({ row, index }: { row: Record<string, unknown>; index: n
       return (leftRank < 0 ? order.length : leftRank) - (rightRank < 0 ? order.length : rightRank);
     });
   return (
-    <div className="min-w-0 rounded-md border border-border bg-background p-3 text-xs">
+    <div className="min-w-0 rounded-md border border-line bg-bg p-3 text-xs">
       <div className="flex min-w-0 items-start justify-between gap-3">
-        <p className="min-w-0 break-words text-sm font-medium text-foreground">
+        <p className="min-w-0 break-words text-sm font-medium text-ink">
           {titleKey ? cellText(row[titleKey]) : `Result ${index + 1}`}
         </p>
-        {url && <a className="shrink-0 text-primary hover:underline" href={url} target="_blank" rel="noopener noreferrer">Open link</a>}
+        {url && <a className="shrink-0 text-accent hover:underline" href={url} target="_blank" rel="noopener noreferrer">Open link</a>}
       </div>
-      {summaryKey && <p className="mt-1 line-clamp-2 break-words text-muted-foreground">{cellText(row[summaryKey]).replace(/\*\*(.*?)\*\*/g, "$1")}</p>}
+      {summaryKey && <p className="mt-1 line-clamp-2 break-words text-ink-3">{cellText(row[summaryKey]).replace(/\*\*(.*?)\*\*/g, "$1")}</p>}
       {details.length > 0 && (
         <dl className="mt-2 space-y-1">
           {details.slice(0, 3).map(([key, field]) => (
             <div key={key} className="grid grid-cols-3 gap-2">
-              <dt className="min-w-0 break-words text-muted-foreground">{key}</dt>
-              <dd className="col-span-2 min-w-0 break-all text-foreground">{cellText(field)}</dd>
+              <dt className="min-w-0 break-words text-ink-3">{key}</dt>
+              <dd className="col-span-2 min-w-0 break-all text-ink">{cellText(field)}</dd>
             </div>
           ))}
         </dl>
       )}
-      {details.length > 3 && <p className="mt-2 text-muted-foreground">{details.length - 3} more {details.length === 4 ? "field" : "fields"} in the raw response</p>}
+      {details.length > 3 && <p className="mt-2 text-ink-3">{details.length - 3} more {details.length === 4 ? "field" : "fields"} in the raw response</p>}
     </div>
   );
 }
@@ -1029,12 +1029,12 @@ function RawResponseDisclosure({ value, initiallyOpen = false }: { value: unknow
       <button
         type="button"
         onClick={() => setShowRaw((prev) => !prev)}
-        className="text-xs font-semibold uppercase tracking-wide text-primary hover:underline"
+        className="text-xs font-semibold uppercase tracking-wide text-accent hover:underline"
       >
         {showRaw ? "Hide raw response" : "Show raw response"}
       </button>
       {showRaw && (
-        <pre className="mt-2 max-h-64 overflow-auto rounded-md border border-border bg-background p-3 text-xs text-foreground">
+        <pre className="mt-2 max-h-64 overflow-auto rounded-md border border-line bg-bg p-3 text-xs text-ink">
           {safeStringify(value)}
         </pre>
       )}
@@ -1061,32 +1061,32 @@ function ErrorResult({
     <div className="rounded-md border border-amber-500/40 bg-amber-500/5 p-4">
       <div className="flex items-center gap-2">
         <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-        <span className="text-sm font-medium text-foreground">It didn't work.</span>
+        <span className="text-sm font-medium text-ink">It didn't work.</span>
       </div>
-      <p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+      <p className="mt-0.5 flex items-center gap-1.5 text-xs text-ink-3">
         <Clock className="h-3 w-3" />
         Tried as {outcome.agentName} · {seconds(outcome.durationMs)} · {relTime(outcome.ranAt)}
       </p>
       <div className="mt-3">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">What {appName} said</p>
-        <p className="mt-1 break-words text-sm text-foreground">{error.message}</p>
-        {error.reasonCode && <p className="mt-0.5 text-xs text-muted-foreground">code: {error.reasonCode}</p>}
+        <p className="text-xs font-semibold uppercase tracking-wide text-ink-3">What {appName} said</p>
+        <p className="mt-1 break-words text-sm text-ink">{error.message}</p>
+        {error.reasonCode && <p className="mt-0.5 text-xs text-ink-3">code: {error.reasonCode}</p>}
       </div>
       <div className="mt-3">
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">What to try</p>
-        <ul className="mt-1 list-disc space-y-0.5 pl-4 text-sm text-foreground">
+        <p className="text-xs font-semibold uppercase tracking-wide text-ink-3">What to try</p>
+        <ul className="mt-1 list-disc space-y-0.5 pl-4 text-sm text-ink">
           {hints.map((hint) => (
             <li key={hint}>{hint}</li>
           ))}
         </ul>
       </div>
       {outcome.result.result !== undefined && <RawResponseDisclosure value={outcome.result.result} initiallyOpen />}
-      <p className="mt-3 text-xs text-muted-foreground">
+      <p className="mt-3 text-xs text-ink-3">
         {needsReconnect ? "After reconnecting, run this action again." : "Adjust the input above and try again."}
       </p>
-      <p className="mt-1 text-xs text-muted-foreground">
+      <p className="mt-1 text-xs text-ink-3">
         Also visible in the{" "}
-        <Link className="text-primary hover:underline" to="/activity?mode=agents&action=tool_">
+        <Link className="text-accent hover:underline" to="/activity?mode=agents&action=tool_">
           Audit log
         </Link>
         .
@@ -1202,24 +1202,24 @@ function AskFirstResult({
     <div className="rounded-md border border-amber-500/40 bg-amber-500/5 p-4">
       <div className="flex items-center gap-2">
         <ShieldQuestion className="h-4 w-4 text-amber-600 dark:text-amber-400" />
-        <span className="text-sm font-medium text-foreground">Sent for your OK.</span>
+        <span className="text-sm font-medium text-ink">Sent for your OK.</span>
       </div>
-      <p className="mt-0.5 text-xs text-muted-foreground">{outcome.agentName} needs your approval before this runs.</p>
+      <p className="mt-0.5 text-xs text-ink-3">{outcome.agentName} needs your approval before this runs.</p>
 
       <dl className="mt-3 space-y-1.5 text-sm">
         <div className="flex gap-3">
-          <dt className="w-16 shrink-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Action</dt>
-          <dd className="text-foreground">{entry.title ?? entry.toolName}</dd>
+          <dt className="w-16 shrink-0 text-xs font-semibold uppercase tracking-wide text-ink-3">Action</dt>
+          <dd className="text-ink">{entry.title ?? entry.toolName}</dd>
         </div>
         {where && (
           <div className="flex gap-3">
-            <dt className="w-16 shrink-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Where</dt>
-            <dd className="break-words text-foreground">{where}</dd>
+            <dt className="w-16 shrink-0 text-xs font-semibold uppercase tracking-wide text-ink-3">Where</dt>
+            <dd className="break-words text-ink">{where}</dd>
           </div>
         )}
         <div className="flex gap-3">
-          <dt className="w-16 shrink-0 text-xs font-semibold uppercase tracking-wide text-muted-foreground">Status</dt>
-          <dd className={cn("flex items-center gap-1.5 text-foreground", settled && "text-muted-foreground")}>
+          <dt className="w-16 shrink-0 text-xs font-semibold uppercase tracking-wide text-ink-3">Status</dt>
+          <dd className={cn("flex items-center gap-1.5 text-ink", settled && "text-ink-3")}>
             {phase === "running" && <Loader2 className="h-3 w-3 animate-spin" />}
             {statusLabel}
           </dd>
@@ -1227,9 +1227,9 @@ function AskFirstResult({
       </dl>
 
       {!settled && (
-        <p className="mt-3 text-sm text-foreground">
+        <p className="mt-3 text-sm text-ink">
           Approve it in the{" "}
-          <Link className="font-medium text-primary hover:underline" to={appTabHref(connectionId, "review")}>
+          <Link className="font-medium text-accent hover:underline" to={appTabHref(connectionId, "review")}>
             Review tab
           </Link>{" "}
           to finish the test. You can also cancel the request.
@@ -1237,7 +1237,7 @@ function AskFirstResult({
       )}
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
-        <Button asChild size="sm" variant="outline">
+        <Button asChild size="sm" variant="secondary">
           <Link to={appTabHref(connectionId, "review")}>Open Review tab</Link>
         </Button>
         {phase === "waiting" && actionRequestId && selectedCompanyId && (
@@ -1291,13 +1291,13 @@ function OffExplanation({
     <div className="grid gap-3 md:grid-cols-(--gtc-62)">
       <div className="space-y-3">
         <div className="flex items-start gap-2">
-          <Ban className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
-          <div className="text-sm text-muted-foreground">
-            <p className="font-medium text-foreground">{title} is off for {agent.name}.</p>
+          <Ban className="mt-0.5 h-4 w-4 shrink-0 text-ink-3" />
+          <div className="text-sm text-ink-3">
+            <p className="font-medium text-ink">{title} is off for {agent.name}.</p>
             <p className="mt-0.5">It won't run here, and it won't run from a task either.</p>
             <p className="mt-2">
               Want to test it? Turn it on for {agent.name} in{" "}
-              <Link className="font-medium text-primary hover:underline" to={appTabHref(connectionId, "permissions")}>
+              <Link className="font-medium text-accent hover:underline" to={appTabHref(connectionId, "permissions")}>
                 Permissions
               </Link>{" "}
               — set it to Allowed or Ask first.
@@ -1307,23 +1307,23 @@ function OffExplanation({
         <Button asChild size="sm">
           <Link to={permHref}>Open Permissions →</Link>
         </Button>
-        <p className="text-xs text-muted-foreground">No call will be made — this action is off for {agent.name}.</p>
+        <p className="text-xs text-ink-3">No call will be made — this action is off for {agent.name}.</p>
       </div>
 
       <aside>
-        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Why this is off</p>
-        <p className="mt-1.5 text-xs text-muted-foreground">{whyBody}</p>
-        {auditHint && <p className="mt-1.5 text-(length:--text-micro) text-muted-foreground">{auditHint}</p>}
+        <p className="text-xs font-semibold uppercase tracking-wide text-ink-3">Why this is off</p>
+        <p className="mt-1.5 text-xs text-ink-3">{whyBody}</p>
+        {auditHint && <p className="mt-1.5 text-(length:--text-micro) text-ink-3">{auditHint}</p>}
         {others.length > 0 && (
           <div className="mt-3">
-            <p className="text-(length:--text-micro) font-medium text-muted-foreground">Try as a different agent:</p>
+            <p className="text-(length:--text-micro) font-medium text-ink-3">Try as a different agent:</p>
             <div className="mt-1 flex flex-wrap gap-1.5">
               {others.slice(0, 4).map((other) => (
                 <button
                   key={other.id}
                   type="button"
                   onClick={() => onSelectAgent(other.id)}
-                  className="rounded-full border border-border px-2.5 py-1 text-(length:--text-micro) font-medium text-foreground hover:bg-accent"
+                  className="rounded-full border border-line px-2.5 py-1 text-(length:--text-micro) font-medium text-ink hover:bg-bg-3"
                 >
                   {other.name}
                 </button>

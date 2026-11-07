@@ -250,10 +250,10 @@ export function SkillFolderRail({
     <div className="relative hidden h-full shrink-0 md:flex" style={{ width: `${width}px` }}>
       <nav
         aria-label="Skill folders"
-        className="flex min-w-0 flex-1 flex-col overflow-y-auto border-r border-border pr-3"
+        className="flex min-w-0 flex-1 flex-col overflow-y-auto border-r border-line pr-3"
       >
       <div className="mb-2 flex items-center justify-between gap-2 pt-0.5">
-        <div className="text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">
+        <div className="text-(length:--text-micro) font-medium uppercase tracking-wide text-ink-3">
           Folders
         </div>
         <Button variant="ghost" size="icon-sm" title="New folder" onClick={() => onCreateFolder(null)}>
@@ -263,9 +263,9 @@ export function SkillFolderRail({
 
       {loading ? (
         <div className="space-y-2">
-          <div className="h-7 rounded-md bg-muted/60" />
-          <div className="h-7 rounded-md bg-muted/40" />
-          <div className="h-7 rounded-md bg-muted/30" />
+          <div className="h-7 rounded-md bg-bg-3/60" />
+          <div className="h-7 rounded-md bg-bg-3/40" />
+          <div className="h-7 rounded-md bg-bg-3/30" />
         </div>
       ) : (
         <div className="space-y-0.5">
@@ -335,7 +335,7 @@ export function SkillFolderRail({
               />
             ))
           ) : (
-            <div className="px-2 py-1 text-xs text-muted-foreground">No organization folders yet.</div>
+            <div className="px-2 py-1 text-xs text-ink-3">No organization folders yet.</div>
           )}
 
           {/* Projects — auto-managed, read-only structure */}
@@ -396,7 +396,7 @@ export function SkillFolderRail({
             />
           ) : null}
 
-          <div className="px-2 pb-1 pt-3 text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">
+          <div className="px-2 pb-1 pt-3 text-(length:--text-micro) font-medium uppercase tracking-wide text-ink-3">
             System
           </div>
           <VirtualRow
@@ -411,8 +411,8 @@ export function SkillFolderRail({
 
       {/* Tags facet — folders locate, tags describe. Filters within the subtree. */}
       {tags.length > 0 ? (
-        <div className="mt-4 border-t border-border pt-3">
-          <div className="mb-1.5 flex items-center gap-1.5 px-2 text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">
+        <div className="mt-4 border-t border-line pt-3">
+          <div className="mb-1.5 flex items-center gap-1.5 px-2 text-(length:--text-micro) font-medium uppercase tracking-wide text-ink-3">
             <Hash className="h-3 w-3" />
             Tags
           </div>
@@ -421,7 +421,7 @@ export function SkillFolderRail({
               <button
                 type="button"
                 onClick={() => onSelectTag(null)}
-                className="inline-flex items-center gap-1 rounded-full border border-border bg-accent/60 px-2 py-0.5 text-xs text-foreground"
+                className="inline-flex items-center gap-1 rounded-full border border-line bg-bg-3/60 px-2 py-0.5 text-xs text-ink"
               >
                 {activeTag}
                 <Check className="h-3 w-3" />
@@ -434,7 +434,7 @@ export function SkillFolderRail({
                   key={tag.slug}
                   type="button"
                   onClick={() => onSelectTag(tag.slug)}
-                  className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:bg-accent/40 hover:text-foreground"
+                  className="inline-flex items-center gap-1 rounded-full border border-line px-2 py-0.5 text-xs text-ink-3 transition-colors hover:bg-bg-3/40 hover:text-ink"
                 >
                   <span className="max-w-32 truncate">{tag.slug}</span>
                   <span className="text-(length:--text-micro) opacity-70">{tag.count}</span>
@@ -455,8 +455,8 @@ export function SkillFolderRail({
         className={cn(
           "absolute inset-y-0 right-0 z-20 w-3 cursor-col-resize touch-none outline-none",
           "before:absolute before:inset-y-0 before:left-1/2 before:w-px before:-translate-x-1/2 before:bg-transparent before:transition-colors",
-          "hover:before:bg-border focus-visible:before:bg-ring",
-          isResizing && "before:bg-ring",
+          "hover:before:bg-line focus-visible:before:bg-focus",
+          isResizing && "before:bg-focus",
         )}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
@@ -472,7 +472,7 @@ export function SkillFolderRail({
 function RailHeading({ label, onCreate }: { label: string; onCreate: () => void }) {
   return (
     <div className="group/heading flex items-center justify-between px-2 pb-0.5 pt-3">
-      <span className="text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">
+      <span className="text-(length:--text-micro) font-medium uppercase tracking-wide text-ink-3">
         {label}
       </span>
       <button
@@ -481,7 +481,7 @@ function RailHeading({ label, onCreate }: { label: string; onCreate: () => void 
         title={`New ${label.toLowerCase()} folder`}
         className="opacity-0 transition-opacity group-hover/heading:opacity-100"
       >
-        <Plus className="h-3 w-3 text-muted-foreground" />
+        <Plus className="h-3 w-3 text-ink-3" />
       </button>
     </div>
   );
@@ -508,8 +508,8 @@ function VirtualRow({
     <button
       type="button"
       className={cn(
-        "grid w-full grid-cols-(--gtc-folder-row-actions) items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors hover:bg-accent/40",
-        active ? "bg-accent/60 text-foreground" : muted ? "text-muted-foreground/70" : "text-muted-foreground",
+        "grid w-full grid-cols-(--gtc-folder-row-actions) items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm transition-colors hover:bg-bg-3/40",
+        active ? "bg-bg-3/60 text-ink" : muted ? "text-ink-3/70" : "text-ink-3",
       )}
       aria-current={active ? "page" : undefined}
       disabled={disabled}
@@ -517,7 +517,7 @@ function VirtualRow({
     >
       <span className="flex h-4 w-4 items-center justify-center">{icon}</span>
       <span className="truncate">{label}</span>
-      <span className="text-right text-xs tabular-nums text-muted-foreground">{count}</span>
+      <span className="text-right text-xs tabular-nums text-ink-3">{count}</span>
       <span className="h-6 w-6" aria-hidden="true" />
     </button>
   );
@@ -575,8 +575,8 @@ function TreeBranch({
     <div>
       <div
         className={cn(
-          "group grid grid-cols-(--gtc-folder-row-actions) items-center gap-2 rounded-md pr-2 text-sm transition-colors hover:bg-accent/40",
-          active ? "bg-accent/60 text-foreground" : "text-muted-foreground",
+          "group grid grid-cols-(--gtc-folder-row-actions) items-center gap-2 rounded-md pr-2 text-sm transition-colors hover:bg-bg-3/40",
+          active ? "bg-bg-3/60 text-ink" : "text-ink-3",
         )}
         style={{ paddingLeft: `${depth * 0.75}rem` }}
       >
@@ -584,7 +584,7 @@ function TreeBranch({
           type="button"
           aria-label={isOpen ? "Collapse folder" : "Expand folder"}
           className={cn(
-            "flex h-6 w-4 items-center justify-center text-muted-foreground",
+            "flex h-6 w-4 items-center justify-center text-ink-3",
             children.length === 0 && "invisible",
           )}
           onClick={() => onToggle(folder.id)}
@@ -602,7 +602,7 @@ function TreeBranch({
           onDoubleClick={() => editable && onStartRename(folder)}
         >
           {rootIcon ? (
-            <span className="flex h-4 w-4 items-center justify-center text-muted-foreground">{rootIcon}</span>
+            <span className="flex h-4 w-4 items-center justify-center text-ink-3">{rootIcon}</span>
           ) : (
             <FolderSwatch color={folder.color} />
           )}
@@ -616,14 +616,14 @@ function TreeBranch({
                 if (event.key === "Escape") onRenameCancel();
               }}
               onBlur={() => onRenameCommit(folder)}
-              className="h-6 min-w-0 flex-1 rounded-sm border border-border bg-background px-1 text-sm outline-none"
+              className="h-6 min-w-0 flex-1 rounded-sm border border-line bg-bg px-1 text-sm outline-none"
               autoFocus
             />
           ) : (
             <span className="truncate">{label}</span>
           )}
         </button>
-        <span className="text-right text-xs tabular-nums text-muted-foreground">{folder.itemCount}</span>
+        <span className="text-right text-xs tabular-nums text-ink-3">{folder.itemCount}</span>
         {editable || canNest ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -717,8 +717,8 @@ export function FolderBreadcrumb({
         type="button"
         onClick={() => onSelect("all")}
         className={cn(
-          "inline-flex items-center gap-1 rounded px-1.5 py-0.5 transition-colors hover:bg-accent/40",
-          selection === "all" ? "font-medium text-foreground" : "text-muted-foreground",
+          "inline-flex items-center gap-1 rounded px-1.5 py-0.5 transition-colors hover:bg-bg-3/40",
+          selection === "all" ? "font-medium text-ink" : "text-ink-3",
         )}
       >
         <Home className="h-3.5 w-3.5" />
@@ -726,8 +726,8 @@ export function FolderBreadcrumb({
       </button>
       {selection === "unfiled" ? (
         <>
-          <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/60" />
-          <span className="rounded px-1.5 py-0.5 font-medium text-foreground">Unfiled</span>
+          <ChevronRight className="h-3.5 w-3.5 text-ink-3/60" />
+          <span className="rounded px-1.5 py-0.5 font-medium text-ink">Unfiled</span>
         </>
       ) : null}
       {trail.map((folder, index) => {
@@ -735,13 +735,13 @@ export function FolderBreadcrumb({
         const label = index === 0 ? reservedRootLabel(folder) : folder.name;
         return (
           <span key={folder.id} className="inline-flex items-center gap-1">
-            <ChevronRight className="h-3.5 w-3.5 text-muted-foreground/60" />
+            <ChevronRight className="h-3.5 w-3.5 text-ink-3/60" />
             <button
               type="button"
               onClick={() => onSelect(folder.id)}
               className={cn(
-                "inline-flex items-center gap-1 rounded px-1.5 py-0.5 transition-colors hover:bg-accent/40",
-                isLast ? "font-medium text-foreground" : "text-muted-foreground",
+                "inline-flex items-center gap-1 rounded px-1.5 py-0.5 transition-colors hover:bg-bg-3/40",
+                isLast ? "font-medium text-ink" : "text-ink-3",
               )}
             >
               {folder.color ? <FolderSwatch color={folder.color} /> : null}
@@ -778,7 +778,7 @@ export function FolderTiles({
 
   return (
     <div className="mb-4">
-      <div className="mb-2 text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">
+      <div className="mb-2 text-(length:--text-micro) font-medium uppercase tracking-wide text-ink-3">
         Folders
       </div>
       <div className="grid gap-2 [grid-template-columns:repeat(auto-fill,minmax(11rem,1fr))]">
@@ -787,17 +787,17 @@ export function FolderTiles({
             key={node.folder.id}
             type="button"
             onClick={() => onOpen(node.folder.id)}
-            className="flex items-center gap-2 rounded-md border border-border bg-card px-3 py-2.5 text-left transition-colors hover:border-foreground/30 hover:bg-accent/30"
+            className="flex items-center gap-2 rounded-md border border-line bg-bg-2 px-3 py-2.5 text-left transition-colors hover:border-ink/30 hover:bg-bg-3/30"
           >
             {node.folder.systemKey && ["my", "projects", "bundled"].includes(node.folder.systemKey) ? (
-              <FolderIcon className="h-4 w-4 shrink-0 text-muted-foreground" />
+              <FolderIcon className="h-4 w-4 shrink-0 text-ink-3" />
             ) : (
               <FolderSwatch color={node.folder.color} className="h-3.5 w-3.5" />
             )}
-            <span className="min-w-0 flex-1 truncate text-sm font-medium text-foreground">
+            <span className="min-w-0 flex-1 truncate text-sm font-medium text-ink">
               {reservedRootLabel(node.folder)}
             </span>
-            <span className="text-xs text-muted-foreground">{node.folder.itemCount}</span>
+            <span className="text-xs text-ink-3">{node.folder.itemCount}</span>
           </button>
         ))}
       </div>
@@ -892,20 +892,20 @@ export function MoveToFolderDialog({
         <div
           className={cn(
             "group flex items-center gap-2 rounded-md px-2 py-1.5 text-sm",
-            selectable ? "cursor-pointer hover:bg-accent/40" : "cursor-not-allowed opacity-50",
-            isChosen && "bg-accent/70",
+            selectable ? "cursor-pointer hover:bg-bg-3/40" : "cursor-not-allowed opacity-50",
+            isChosen && "bg-bg-3/70",
           )}
           style={{ paddingLeft: `${0.5 + depth * 0.9}rem` }}
           onClick={() => selectable && setTarget(folder.id)}
         >
           {folder.systemKey && ["my", "projects", "bundled"].includes(folder.systemKey) ? (
-            <FolderIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+            <FolderIcon className="h-3.5 w-3.5 shrink-0 text-ink-3" />
           ) : (
             <FolderSwatch color={folder.color} />
           )}
           <span className="min-w-0 flex-1 truncate">{reservedRootLabel(folder)}</span>
-          {isCurrent ? <span className="text-xs text-muted-foreground">current</span> : null}
-          {bundled ? <span className="text-xs text-muted-foreground">read-only</span> : null}
+          {isCurrent ? <span className="text-xs text-ink-3">current</span> : null}
+          {bundled ? <span className="text-xs text-ink-3">read-only</span> : null}
           {isChosen ? <Check className="h-3.5 w-3.5" /> : null}
           {nestable ? (
             <button
@@ -918,7 +918,7 @@ export function MoveToFolderDialog({
                 setNewName("");
               }}
             >
-              <FolderPlus className="h-3.5 w-3.5 text-muted-foreground" />
+              <FolderPlus className="h-3.5 w-3.5 text-ink-3" />
             </button>
           ) : null}
         </div>
@@ -945,31 +945,31 @@ export function MoveToFolderDialog({
           {subtitle ? <DialogDescription>{subtitle}</DialogDescription> : null}
         </DialogHeader>
 
-        <div className="flex items-center gap-2 rounded-md border border-border px-2.5">
-          <Search className="h-3.5 w-3.5 text-muted-foreground" />
+        <div className="flex items-center gap-2 rounded-md border border-line px-2.5">
+          <Search className="h-3.5 w-3.5 text-ink-3" />
           <input
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search folders"
-            className="h-8 min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+            className="h-8 min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-ink-3"
           />
         </div>
 
-        <div className="max-h-72 overflow-y-auto rounded-md border border-border p-1">
+        <div className="max-h-72 overflow-y-auto rounded-md border border-line p-1">
           <div
             className={cn(
-              "flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-accent/40",
-              chosen === null && "bg-accent/70",
+              "flex cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-bg-3/40",
+              chosen === null && "bg-bg-3/70",
             )}
             onClick={() => setTarget(null)}
           >
             <FolderSwatch color={null} />
             <span className="min-w-0 flex-1 truncate">Unfiled</span>
-            {currentFolderId == null ? <span className="text-xs text-muted-foreground">current</span> : null}
+            {currentFolderId == null ? <span className="text-xs text-ink-3">current</span> : null}
             {chosen === null ? <Check className="h-3.5 w-3.5" /> : null}
           </div>
           {model.roots.map((node) => renderNode(node, 0))}
-          <div className="mt-1 border-t border-border pt-1">
+          <div className="mt-1 border-t border-line pt-1">
             {creatingParent === null ? (
               <InlineNewFolder
                 depth={0}
@@ -986,7 +986,7 @@ export function MoveToFolderDialog({
                   setCreatingParent(null);
                   setNewName("");
                 }}
-                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground hover:bg-accent/40 hover:text-foreground"
+                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm text-ink-3 hover:bg-bg-3/40 hover:text-ink"
               >
                 <Plus className="h-3.5 w-3.5" />
                 New top-level folder…
@@ -995,10 +995,10 @@ export function MoveToFolderDialog({
           </div>
         </div>
 
-        <div className="min-h-5 text-xs text-muted-foreground">
+        <div className="min-h-5 text-xs text-ink-3">
           {previewPath ? (
             <span>
-              Moving to <span className="font-mono text-foreground">{previewPath}</span>
+              Moving to <span className="font-mono text-ink">{previewPath}</span>
             </span>
           ) : (
             <span>Pick a destination folder.</span>
@@ -1043,7 +1043,7 @@ function InlineNewFolder({
 }) {
   return (
     <div className="flex items-center gap-2 py-1" style={{ paddingLeft: `${0.5 + depth * 0.9}rem` }}>
-      <FolderPlus className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+      <FolderPlus className="h-3.5 w-3.5 shrink-0 text-ink-3" />
       <Input
         value={value}
         onChange={(event) => onChange(event.target.value)}

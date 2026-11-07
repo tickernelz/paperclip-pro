@@ -483,7 +483,7 @@ export function Search() {
           <span className="flex items-center">
             {SCOPE_LABELS[value as CompanySearchScope]}
             {dashOut ? (
-              <span className="ml-1.5 text-(length:--text-nano) text-muted-foreground">—</span>
+              <span className="ml-1.5 text-(length:--text-nano) text-ink-3">—</span>
             ) : count !== null ? (
               pill(count)
             ) : null}
@@ -541,7 +541,7 @@ export function Search() {
 
   return (
     <div className="flex h-full min-h-0 flex-col" data-page="search">
-      <div className="border-b border-border px-4 py-3 sm:px-6">
+      <div className="border-b border-line px-4 py-3 sm:px-6">
         <h1 className="sr-only">Search</h1>
         <ScopedSearchInput
           value={draftQuery}
@@ -569,21 +569,21 @@ export function Search() {
                   type="button"
                   onClick={handleClear}
                   aria-label="Clear search"
-                  className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-muted-foreground hover:bg-accent/50"
+                  className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-ink-3 hover:bg-bg-3/50"
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
               ) : null}
               <kbd
                 aria-hidden
-                className="pointer-events-none shrink-0 rounded border border-border bg-muted px-1.5 py-0.5 text-(length:--text-nano) font-medium text-muted-foreground"
+                className="pointer-events-none shrink-0 rounded border border-line bg-bg-3 px-1.5 py-0.5 text-(length:--text-nano) font-medium text-ink-3"
               >
                 ⌘K
               </kbd>
             </>
           )}
         />
-        <div className="mt-2 flex min-h-6 flex-wrap items-center gap-1.5 text-(length:--text-micro) text-muted-foreground">
+        <div className="mt-2 flex min-h-6 flex-wrap items-center gap-1.5 text-(length:--text-micro) text-ink-3">
           {urlFilterPills.length > 0 ? (
             <div className="flex flex-wrap items-center gap-1.5" data-testid="search-operator-pills">
               {urlFilterPills.map((pill) => (
@@ -594,21 +594,21 @@ export function Search() {
             </div>
           ) : null}
           <span className="truncate">
-            Try <code className="rounded bg-muted px-1 py-0.5 text-(length:--text-micro)">"exact phrase"</code>,{" "}
-            <code className="rounded bg-muted px-1 py-0.5 text-(length:--text-micro)">title:auth</code>,{" "}
-            <code className="rounded bg-muted px-1 py-0.5 text-(length:--text-micro)">comment:deploy</code>{" "}
-            or <code className="rounded bg-muted px-1 py-0.5 text-(length:--text-micro)">status:todo</code>.
+            Try <code className="rounded bg-bg-3 px-1 py-0.5 text-(length:--text-micro)">"exact phrase"</code>,{" "}
+            <code className="rounded bg-bg-3 px-1 py-0.5 text-(length:--text-micro)">title:auth</code>,{" "}
+            <code className="rounded bg-bg-3 px-1 py-0.5 text-(length:--text-micro)">comment:deploy</code>{" "}
+            or <code className="rounded bg-bg-3 px-1 py-0.5 text-(length:--text-micro)">status:todo</code>.
           </span>
         </div>
       </div>
 
       <Tabs value={scope} onValueChange={handleScopeChange} className="flex h-full min-h-0 flex-col">
-        <div className="border-b border-border px-2 sm:px-4">
+        <div className="border-b border-line px-2 sm:px-4">
           <PageTabBar items={tabItems} value={scope} onValueChange={handleScopeChange} align="start" />
         </div>
 
         {!showInitialState ? (
-          <div className="flex flex-col gap-2 border-b border-border px-2 py-2 sm:px-4" data-testid="search-filters">
+          <div className="flex flex-col gap-2 border-b border-line px-2 py-2 sm:px-4" data-testid="search-filters">
             {isMobile ? (
               <div className="flex items-center gap-2">
                 <SearchFilterSheetTrigger activeCount={activeFilterCount} onClick={() => setSheetOpen(true)} />
@@ -741,24 +741,24 @@ function SearchTabContent({
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-4 py-10 sm:px-6">
         <div>
           <h2 className="text-lg font-semibold">Type to search organization memory.</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-ink-3">
             Tasks, comments, plan documents, artifacts, agents, projects — same surface, ranked by relevance.
           </p>
         </div>
         {recentSearches.length > 0 ? (
           <div>
-            <div className="mb-2 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
+            <div className="mb-2 text-(length:--text-micro) font-semibold uppercase tracking-wide text-ink-3">
               Recent searches
             </div>
-            <ul className="flex flex-col divide-y divide-border rounded-md border border-border">
+            <ul className="flex flex-col divide-y divide-line rounded-md border border-line">
               {recentSearches.map((entry) => (
                 <li key={entry}>
                   <button
                     type="button"
                     onClick={() => onRecentClick(entry)}
-                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-accent/40"
+                    className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-bg-3/40"
                   >
-                    <SearchIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                    <SearchIcon className="h-3.5 w-3.5 text-ink-3" />
                     <span className="flex-1 truncate">{entry}</span>
                   </button>
                 </li>
@@ -766,17 +766,17 @@ function SearchTabContent({
             </ul>
           </div>
         ) : null}
-        <ul className="space-y-1 text-xs text-muted-foreground">
+        <ul className="space-y-1 text-xs text-ink-3">
           <li>
-            <span className="font-medium text-foreground">Identifier lookup:</span> type{" "}
-            <code className="rounded bg-muted px-1 py-0.5 text-(length:--text-micro)">PAP-123</code> to jump straight to a task.
+            <span className="font-medium text-ink">Identifier lookup:</span> type{" "}
+            <code className="rounded bg-bg-3 px-1 py-0.5 text-(length:--text-micro)">PAP-123</code> to jump straight to a task.
           </li>
           <li>
-            <span className="font-medium text-foreground">Quoted phrases:</span> wrap a phrase in quotes to match the
+            <span className="font-medium text-ink">Quoted phrases:</span> wrap a phrase in quotes to match the
             exact sequence.
           </li>
           <li>
-            <span className="font-medium text-foreground">⌘K:</span> reopens the command palette pre-seeded with your
+            <span className="font-medium text-ink">⌘K:</span> reopens the command palette pre-seeded with your
             current query.
           </li>
         </ul>
@@ -788,17 +788,17 @@ function SearchTabContent({
     const status = apiError?.status;
     return (
       <div className="mx-auto flex w-full max-w-xl flex-col items-center justify-center gap-3 px-4 py-12 text-center">
-        <AlertTriangle className="h-10 w-10 text-destructive" aria-hidden />
+        <AlertTriangle className="h-10 w-10 text-bad" aria-hidden />
         <div className="text-base font-semibold">Couldn’t run that search</div>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           {status ? `The server returned ${status}.` : "The request failed."} Your input and filters are still here, so
           you can retry or fall back to the Tasks filter.
         </p>
         <div className="flex flex-wrap items-center justify-center gap-2">
-          <Button onClick={refetch} variant="default" size="sm">
+          <Button onClick={refetch} variant="primary" size="sm">
             Retry
           </Button>
-          <Button onClick={navigateIssuesFallback} variant="outline" size="sm">
+          <Button onClick={navigateIssuesFallback} variant="secondary" size="sm">
             Open Tasks filter view
           </Button>
         </div>
@@ -809,7 +809,7 @@ function SearchTabContent({
   if (isLoading) {
     return (
       <div className="flex flex-col gap-2 px-2 py-3 sm:px-4">
-        <div className="px-3 text-xs text-muted-foreground" data-testid="search-loading">
+        <div className="px-3 text-xs text-ink-3" data-testid="search-loading">
           Searching for &ldquo;{trimmedQuery}&rdquo;…
         </div>
         <div className="flex flex-col">
@@ -836,19 +836,19 @@ function SearchTabContent({
     if (zeroResultsSlot) return zeroResultsSlot;
     return (
       <div className="mx-auto flex w-full max-w-xl flex-col items-center justify-center gap-3 px-4 py-12 text-center">
-        <FileQuestion className="h-10 w-10 text-muted-foreground" aria-hidden />
+        <FileQuestion className="h-10 w-10 text-ink-3" aria-hidden />
         <div className="text-base font-semibold">No results for &ldquo;{trimmedQuery}&rdquo;</div>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           We couldn’t find a match in {describeScope(scope).toLowerCase()}. Try widening the scope or rephrasing your
           query.
         </p>
         <div className="flex flex-wrap items-center justify-center gap-2">
           {scope !== "all" ? (
-            <Button onClick={showAllScope} size="sm" variant="outline">
+            <Button onClick={showAllScope} size="sm" variant="secondary">
               Search all scopes
             </Button>
           ) : null}
-          <Button onClick={openNewIssue} size="sm" variant="default">
+          <Button onClick={openNewIssue} size="sm" variant="primary">
             <Plus className="mr-1.5 h-4 w-4" />
             Create task from this query
           </Button>
@@ -856,10 +856,10 @@ function SearchTabContent({
             Open Tasks filter view
           </Button>
         </div>
-        <ul className="mt-2 space-y-0.5 text-xs text-muted-foreground">
+        <ul className="mt-2 space-y-0.5 text-xs text-ink-3">
           <li>Try fewer tokens or a single distinctive term.</li>
           <li>
-            Use an identifier shortcut like <code className="rounded bg-muted px-1 py-0.5">PAP-123</code>.
+            Use an identifier shortcut like <code className="rounded bg-bg-3 px-1 py-0.5">PAP-123</code>.
           </li>
           <li>Wrap multi-word phrases in quotes.</li>
         </ul>
@@ -871,7 +871,7 @@ function SearchTabContent({
 
   return (
     <div className="flex w-full max-w-(--sz-960px) flex-col px-2 sm:px-4" data-testid="search-results">
-      <div className="flex items-center justify-between py-2 text-(length:--text-micro) uppercase tracking-wide text-muted-foreground">
+      <div className="flex items-center justify-between py-2 text-(length:--text-micro) uppercase tracking-wide text-ink-3">
         <span>
           {allMatchTotal > totalResults
             ? `${totalResults} of ${allMatchTotal} results`

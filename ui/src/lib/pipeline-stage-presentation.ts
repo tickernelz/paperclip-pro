@@ -1,9 +1,9 @@
 const defaultPipelineStageColumnTone = {
-  outer: "border-border bg-background",
-  header: "border-border text-muted-foreground",
-  meta: "border-border",
+  outer: "border-line bg-bg",
+  header: "border-line text-ink-3",
+  meta: "border-line",
   body: "",
-  bodyOver: "bg-accent/40",
+  bodyOver: "bg-bg-3/40",
 };
 
 export const pipelineStageColumnTones: Record<string, typeof defaultPipelineStageColumnTone> = {
@@ -29,11 +29,11 @@ export const pipelineStageColumnTones: Record<string, typeof defaultPipelineStag
     bodyOver: "bg-green-100/65 dark:bg-green-950/30",
   },
   cancelled: {
-    outer: "border-neutral-300/70 bg-muted/25 opacity-85 dark:border-neutral-700/70 dark:bg-neutral-900/20",
-    header: "border-border/70 text-muted-foreground/80",
-    meta: "border-border/70",
-    body: "bg-muted/20",
-    bodyOver: "bg-muted/45",
+    outer: "border-neutral-300/70 bg-bg-3/25 opacity-85 dark:border-neutral-700/70 dark:bg-neutral-900/20",
+    header: "border-line/70 text-ink-3/80",
+    meta: "border-line/70",
+    body: "bg-bg-3/20",
+    bodyOver: "bg-bg-3/45",
   },
 };
 

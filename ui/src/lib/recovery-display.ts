@@ -32,7 +32,7 @@ export const RECOVERY_CHIP_DEFAULT_TONE: Record<
     label: "Recovery in progress",
   },
   observe_only: {
-    className: "border-border bg-muted text-muted-foreground",
+    className: "border-line bg-bg-3 text-ink-3",
     icon: Eye,
     label: "Observing active run",
   },

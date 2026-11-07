@@ -202,7 +202,7 @@ export function CompanySettings() {
 
   if (!selectedCompany) {
     return (
-      <div className="text-sm text-muted-foreground">
+      <div className="text-sm text-ink-3">
         No organization selected. Select an organization from the switcher above.
       </div>
     );
@@ -218,25 +218,25 @@ export function CompanySettings() {
   return (
     <div className="max-w-6xl space-y-8">
       <div className="flex items-center gap-2">
-        <SlidersHorizontal className="h-5 w-5 text-muted-foreground" />
+        <SlidersHorizontal className="h-5 w-5 text-ink-3" />
         <h1 className="text-lg font-semibold">General</h1>
       </div>
 
       {/* General */}
       <div className="max-w-2xl space-y-4">
-        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+        <div className="text-xs font-medium text-ink-3 uppercase tracking-wide">
           General
         </div>
         <div className="space-y-3">
           <Field label="Organization name" hint="The display name for your organization.">
             <input
-              className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
+              className="w-full rounded-md border border-line bg-transparent px-2.5 py-1.5 text-sm outline-none"
               type="text"
               value={companyName}
               onChange={(e) => setCompanyName(e.target.value)}
             />
             {isCloudManaged && (
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className="mt-1 text-xs text-ink-3">
                 Renaming can change this company's task ID prefix. Existing task IDs are
                 renumbered and old task links stop resolving.
               </p>
@@ -247,7 +247,7 @@ export function CompanySettings() {
             hint="Optional description shown in the organization profile."
           >
             <input
-              className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
+              className="w-full rounded-md border border-line bg-transparent px-2.5 py-1.5 text-sm outline-none"
               type="text"
               value={description}
               placeholder="Optional organization description"
@@ -259,7 +259,7 @@ export function CompanySettings() {
 
       {/* Appearance */}
       <div className="max-w-2xl space-y-4">
-        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+        <div className="text-xs font-medium text-ink-3 uppercase tracking-wide">
           Appearance
         </div>
         <div className="space-y-3">
@@ -281,13 +281,13 @@ export function CompanySettings() {
                     type="file"
                     accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml"
                     onChange={handleLogoFileChange}
-                    className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none file:mr-4 file:rounded-md file:border-0 file:bg-muted file:px-2.5 file:py-1 file:text-xs"
+                    className="w-full rounded-md border border-line bg-transparent px-2.5 py-1.5 text-sm outline-none file:mr-4 file:rounded-md file:border-0 file:bg-bg-3 file:px-2.5 file:py-1 file:text-xs"
                   />
                   {logoUrl && (
                     <div className="flex items-center gap-2">
                       <Button
                         size="sm"
-                        variant="outline"
+                        variant="secondary"
                         onClick={handleClearLogo}
                         disabled={clearLogoMutation.isPending}
                       >
@@ -296,7 +296,7 @@ export function CompanySettings() {
                     </div>
                   )}
                   {(logoUploadMutation.isError || logoUploadError) && (
-                    <span className="text-xs text-destructive">
+                    <span className="text-xs text-bad">
                       {logoUploadError ??
                         (logoUploadMutation.error instanceof Error
                           ? logoUploadMutation.error.message
@@ -304,12 +304,12 @@ export function CompanySettings() {
                     </span>
                   )}
                   {clearLogoMutation.isError && (
-                    <span className="text-xs text-destructive">
+                    <span className="text-xs text-bad">
                       {clearLogoMutation.error.message}
                     </span>
                   )}
                   {logoUploadMutation.isPending && (
-                    <span className="text-xs text-muted-foreground">Uploading logo...</span>
+                    <span className="text-xs text-ink-3">Uploading logo...</span>
                   )}
                 </div>
               </Field>
@@ -329,10 +329,10 @@ export function CompanySettings() {
             {generalMutation.isPending ? "Saving..." : "Save changes"}
           </Button>
           {generalMutation.isSuccess && (
-            <span className="text-xs text-muted-foreground">Saved</span>
+            <span className="text-xs text-ink-3">Saved</span>
           )}
           {generalMutation.isError && (
-            <span className="text-xs text-destructive">
+            <span className="text-xs text-bad">
               {generalMutation.error instanceof Error
                   ? generalMutation.error.message
                   : "Failed to save"}
@@ -343,7 +343,7 @@ export function CompanySettings() {
 
       {/* Hiring */}
       <div className="max-w-2xl space-y-4" data-testid="company-settings-team-section">
-        <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+        <div className="text-xs font-medium text-ink-3 uppercase tracking-wide">
           Hiring
         </div>
         <div>
@@ -379,18 +379,18 @@ export function CompanySettings() {
 
       {/* Danger Zone */}
       <div className="space-y-4">
-        <div className="text-xs font-medium text-destructive uppercase tracking-wide">
+        <div className="text-xs font-medium text-bad uppercase tracking-wide">
           Danger Zone
         </div>
-        <div className="space-y-3 bg-destructive/5 px-4 py-4">
-          <p className="text-sm text-muted-foreground">
+        <div className="space-y-3 bg-bad/5 px-4 py-4">
+          <p className="text-sm text-ink-3">
             Archive this organization to hide it from the sidebar. This persists in
             the database.
           </p>
           <div className="flex items-center gap-2">
             <Button
               size="sm"
-              variant="destructive"
+              variant="danger"
               disabled={
                 archiveMutation.isPending ||
                 selectedCompany.status === "archived"
@@ -411,7 +411,7 @@ export function CompanySettings() {
                 : "Archive organization"}
             </Button>
             {archiveMutation.isError && (
-              <span className="text-xs text-destructive">
+              <span className="text-xs text-bad">
                 {archiveMutation.error instanceof Error
                   ? archiveMutation.error.message
                   : "Failed to archive organization"}

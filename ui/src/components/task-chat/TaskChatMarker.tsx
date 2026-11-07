@@ -44,18 +44,18 @@ export function TaskChatMarker({
     const { agentName, credentialName, deniedUser, settingsHref } = item.credentialAccess;
     return (
       <div role="alert" data-testid="task-chat-credential-access-notice"
-        className="tc-enter-marker flex w-full items-start gap-3 rounded-lg border border-destructive/40 bg-destructive/10 p-4 text-sm">
-        <KeyRound className="mt-0.5 size-5 shrink-0 text-destructive" aria-hidden />
+        className="tc-enter-marker flex w-full items-start gap-3 rounded-lg border border-bad/40 bg-bad/10 p-4 text-sm">
+        <KeyRound className="mt-0.5 size-5 shrink-0 text-bad" aria-hidden />
         <div className="flex min-w-0 flex-1 flex-col gap-2">
-          <p className="font-semibold text-destructive">{agentName} couldn’t start</p>
-          <p className="break-words font-medium text-foreground">
+          <p className="font-semibold text-bad">{agentName} couldn’t start</p>
+          <p className="break-words font-medium text-ink">
             {agentName} is configured to use {credentialName || "an AI credential"}, but {deniedUser === "you" ? "you don’t" : `${deniedUser} doesn’t`} have access to that credential.
           </p>
-          <p className="text-muted-foreground">
+          <p className="text-ink-3">
             Choose an AI connection {deniedUser === "you" ? "you can" : `${deniedUser} can`} use, or ask an administrator to update {agentName}’s connection. Then try again.
           </p>
           <div className="flex flex-wrap items-center gap-2 pt-1">
-            <Button asChild variant="outline" size="sm"><Link to={settingsHref}>Change AI connection</Link></Button>
+            <Button asChild variant="secondary" size="sm"><Link to={settingsHref}>Change AI connection</Link></Button>
             {item.runHref && <Button asChild variant="ghost" size="sm"><Link to={item.runHref}>View run</Link></Button>}
           </div>
         </div>
@@ -66,7 +66,7 @@ export function TaskChatMarker({
   if (item.collapsible) {
     return (
       <div
-        className="tc-enter-marker flex flex-col items-start py-1 text-xs text-muted-foreground"
+        className="tc-enter-marker flex flex-col items-start py-1 text-xs text-ink-3"
         data-testid="task-chat-collapsible-marker"
       >
         <div className="flex max-w-(--pct-85) items-center gap-1.5">
@@ -77,14 +77,14 @@ export function TaskChatMarker({
             aria-controls={detailsId}
             className={cn(
               "flex min-w-0 items-center gap-1.5 rounded-md px-2 py-0.5",
-              interrupted ? "text-destructive" : "text-muted-foreground",
-              "hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
+              interrupted ? "text-bad" : "text-ink-3",
+              "hover:bg-bg-3/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/50",
             )}
           >
             <Icon className="h-3.5 w-3.5 shrink-0" aria-hidden />
             <span className="truncate font-medium">{item.label}</span>
             {relative ? (
-              <span className="shrink-0 text-muted-foreground/70">
+              <span className="shrink-0 text-ink-3/70">
                 · {relative}
               </span>
             ) : null}
@@ -99,7 +99,7 @@ export function TaskChatMarker({
           {onTryAgain && !open ? (
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               size="xs"
               onClick={handleTryAgain}
               disabled={tryAgainPending}
@@ -113,15 +113,15 @@ export function TaskChatMarker({
           <div
             id={detailsId}
             data-testid="task-chat-collapsible-marker-details"
-            className="mt-1 w-full max-w-(--pct-85) overflow-hidden rounded-lg border border-border bg-muted/25 text-left text-sm dark:bg-muted/15"
+            className="mt-1 w-full max-w-(--pct-85) overflow-hidden rounded-lg border border-line bg-bg-3/25 text-left text-sm dark:bg-bg-3/15"
           >
             {item.detail ? (
-              <div className="px-3 py-2.5 text-foreground/90">
+              <div className="px-3 py-2.5 text-ink/90">
                 {item.detail}
               </div>
             ) : null}
             {item.runHref || item.planHref || onTryAgain ? (
-              <div className="flex items-center justify-end gap-2 border-t border-border/70 bg-background/50 px-3 py-2 dark:bg-background/30">
+              <div className="flex items-center justify-end gap-2 border-t border-line/70 bg-bg/50 px-3 py-2 dark:bg-bg/30">
                 {item.planHref ? (
                   <Button asChild variant="ghost" size="xs">
                     <Link to={item.planHref}>View saved plan</Link>
@@ -153,7 +153,7 @@ export function TaskChatMarker({
 
   return (
     <div
-      className="tc-enter-marker flex items-center gap-2 py-1 text-xs text-muted-foreground"
+      className="tc-enter-marker flex items-center gap-2 py-1 text-xs text-ink-3"
       role={streamlined ? "separator" : undefined}
       aria-label={streamlined ? item.label : undefined}
     >
@@ -161,25 +161,25 @@ export function TaskChatMarker({
         className={cn(
           "h-px flex-1",
           interrupted
-            ? "border-t border-dashed border-destructive/50"
-            : "bg-border",
+            ? "border-t border-dashed border-bad/50"
+            : "bg-line",
         )}
       />
       <span
         className={cn(
           "flex items-center gap-1.5",
-          interrupted && "text-destructive",
+          interrupted && "text-bad",
         )}
       >
         <Icon className="h-3.5 w-3.5" />
         <span className="font-medium">{item.label}</span>
         {item.detail ? (
-          <span className="text-muted-foreground">· {item.detail}</span>
+          <span className="text-ink-3">· {item.detail}</span>
         ) : null}
         {onTryAgain ? (
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             size="xs"
             onClick={handleTryAgain}
             disabled={tryAgainPending}
@@ -193,8 +193,8 @@ export function TaskChatMarker({
         className={cn(
           "h-px flex-1",
           interrupted
-            ? "border-t border-dashed border-destructive/50"
-            : "bg-border",
+            ? "border-t border-dashed border-bad/50"
+            : "bg-line",
         )}
       />
     </div>

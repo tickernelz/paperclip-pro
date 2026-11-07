@@ -255,7 +255,7 @@ export function AgentProviderConnection({
         sources={advancedConnection ? [
           { id: "subscription", label: provider, icon: <AdapterMark type={adapterType} />, credentialMode: "subscription" },
           { id: "api", label: provider, icon: <AdapterMark type={adapterType} />, credentialMode: "api" },
-          { id: "advanced", label: "Advanced", icon: <Cable className="size-6 text-muted-foreground" />, credentialMode: "advanced" },
+          { id: "advanced", label: "Advanced", icon: <Cable className="size-6 text-ink-3" />, credentialMode: "advanced" },
         ] : [
           {
             id: adapterType,
@@ -289,7 +289,7 @@ export function AgentProviderConnection({
         />
       </> : <>
       {!opened && savedKeys.options.length > 0 && (
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="mt-2 text-sm text-ink-3">
           {savedKeys.options.length} saved API{" "}
           {savedKeys.options.length === 1 ? "key available" : "keys available"}.
         </p>
@@ -400,7 +400,7 @@ export function AgentProviderConnection({
             ) : savedSubscription ? null : canUseLocalLogin && !storedLogin.data ? (
               <LocalProviderLoginInstructions adapterType={adapterType} login={{ ...localLogin, retry: () => { setError(null); localLogin.retry(); } }} />
             ) : (
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-ink-3">
                 {storedLogin.data
                   ? "Use your saved Claude subscription for this agent."
                   : canLogin
@@ -412,17 +412,17 @@ export function AgentProviderConnection({
         )}
       </motion.div>
       {method === "subscription" && storedLogin.isError && (
-        <p role="alert" className="mt-4 text-sm text-destructive">
+        <p role="alert" className="mt-4 text-sm text-bad">
           Could not check your saved Claude subscription. Try again.
         </p>
       )}
       {error && (
-        <p role="alert" className="mt-4 text-sm text-destructive">
+        <p role="alert" className="mt-4 text-sm text-bad">
           {testError ?? error}
         </p>
       )}
       {localEnvironment && health.isError && (
-        <p role="alert" className="mt-4 text-sm text-destructive">Could not prepare sign-in. Reload this page to try again.</p>
+        <p role="alert" className="mt-4 text-sm text-bad">Could not prepare sign-in. Reload this page to try again.</p>
       )}
       <FooterNav
         onBack={() => {

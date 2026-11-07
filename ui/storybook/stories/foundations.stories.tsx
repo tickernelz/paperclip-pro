@@ -37,7 +37,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
-const buttonVariants = ["default", "secondary", "outline", "ghost", "destructive", "link"] as const;
+const buttonVariants = ["primary", "secondary", "ghost", "danger", "delete", "link"] as const;
 const buttonSizes = ["xs", "sm", "default", "lg", "icon", "icon-sm"] as const;
 const badgeVariants = ["default", "secondary", "outline", "destructive", "ghost", "link"] as const;
 
@@ -52,7 +52,7 @@ function Section({
 }) {
   return (
     <section className="paperclip-story__frame overflow-hidden">
-      <div className="border-b border-border px-5 py-4">
+      <div className="border-b border-line px-5 py-4">
         <div className="paperclip-story__label">{eyebrow}</div>
         <h2 className="mt-1 text-xl font-semibold">{title}</h2>
       </div>
@@ -71,7 +71,7 @@ function FoundationsMatrix() {
         <section className="paperclip-story__frame p-6">
           <div className="paperclip-story__label">Foundations</div>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight">Primitives and interaction states</h1>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-ink-3">
             A dense pass over the base controls that Paperclip pages use for operational actions, filtering,
             approvals, and settings.
           </p>
@@ -81,8 +81,8 @@ function FoundationsMatrix() {
           <div className="space-y-6">
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
               {buttonVariants.map((variant) => (
-                <div key={variant} className="rounded-lg border border-border bg-background/70 p-4">
-                  <div className="mb-3 text-xs font-medium capitalize text-muted-foreground">{variant}</div>
+                <div key={variant} className="rounded-lg border border-line bg-bg/70 p-4">
+                  <div className="mb-3 text-xs font-medium capitalize text-ink-3">{variant}</div>
                   <div className="flex flex-wrap items-center gap-2">
                     <Button variant={variant}>
                       <Play className="h-4 w-4" />
@@ -95,11 +95,11 @@ function FoundationsMatrix() {
                 </div>
               ))}
             </div>
-            <div className="rounded-lg border border-border bg-background/70 p-4">
-              <div className="mb-3 text-xs font-medium text-muted-foreground">Sizes and icon-only actions</div>
+            <div className="rounded-lg border border-line bg-bg/70 p-4">
+              <div className="mb-3 text-xs font-medium text-ink-3">Sizes and icon-only actions</div>
               <div className="flex flex-wrap items-center gap-2">
                 {buttonSizes.map((size) => (
-                  <Button key={size} size={size} variant={size.startsWith("icon") ? "outline" : "secondary"}>
+                  <Button key={size} size={size} variant="secondary">
                     {size.startsWith("icon") ? <Settings /> : size}
                   </Button>
                 ))}
@@ -178,18 +178,18 @@ function FoundationsMatrix() {
                 <CardDescription>Switches, checkboxes, and validation copy in one compact panel.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between gap-4 rounded-lg border border-border p-3">
+                <div className="flex items-center justify-between gap-4 rounded-lg border border-line p-3">
                   <div>
                     <div className="text-sm font-medium">Auto mode</div>
-                    <div className="text-xs text-muted-foreground">Let agents continue after review approval.</div>
+                    <div className="text-xs text-ink-3">Let agents continue after review approval.</div>
                   </div>
                   <ToggleSwitch checked={autoMode} onCheckedChange={setAutoMode} />
                 </div>
-                <label className="flex items-start gap-3 rounded-lg border border-border p-3 text-sm">
+                <label className="flex items-start gap-3 rounded-lg border border-line p-3 text-sm">
                   <Checkbox checked={boardApproval} onCheckedChange={(value) => setBoardApproval(value === true)} />
                   <span>
                     <span className="font-medium">Require board approval for new agents</span>
-                    <span className="mt-1 block text-xs text-muted-foreground">
+                    <span className="mt-1 block text-xs text-ink-3">
                       Mirrors the company-level governance control.
                     </span>
                   </span>
@@ -201,19 +201,19 @@ function FoundationsMatrix() {
 
         <Section eyebrow="Navigation" title="Tabs, overlays, and modal affordances">
           <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
-            <Tabs defaultValue="details" className="rounded-lg border border-border bg-background/70 p-4">
+            <Tabs defaultValue="details" className="rounded-lg border border-line bg-bg/70 p-4">
               <TabsList variant="line">
                 <TabsTrigger value="details">Details</TabsTrigger>
                 <TabsTrigger value="activity">Activity</TabsTrigger>
                 <TabsTrigger value="budget">Budget</TabsTrigger>
               </TabsList>
-              <TabsContent value="details" className="pt-5 text-sm leading-6 text-muted-foreground">
+              <TabsContent value="details" className="pt-5 text-sm leading-6 text-ink-3">
                 The line tab style is used on dense detail pages where the content, not the tab chrome, needs to dominate.
               </TabsContent>
-              <TabsContent value="activity" className="pt-5 text-sm leading-6 text-muted-foreground">
+              <TabsContent value="activity" className="pt-5 text-sm leading-6 text-ink-3">
                 Activity copy stays compact and pairs with timestamped rows in the product stories.
               </TabsContent>
-              <TabsContent value="budget" className="pt-5 text-sm leading-6 text-muted-foreground">
+              <TabsContent value="budget" className="pt-5 text-sm leading-6 text-ink-3">
                 Budget controls surface warning and hard-stop states in the control-plane stories.
               </TabsContent>
             </Tabs>
@@ -221,7 +221,7 @@ function FoundationsMatrix() {
             <div className="space-y-3">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button variant="secondary" className="w-full justify-start">
                     <Search className="h-4 w-4" />
                     Hover for tooltip
                   </Button>
@@ -231,14 +231,14 @@ function FoundationsMatrix() {
 
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full justify-start">
+                  <Button variant="secondary" className="w-full justify-start">
                     <Copy className="h-4 w-4" />
                     Open popover
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent align="start" className="w-72">
                   <div className="text-sm font-medium">Copy-safe detail</div>
-                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                  <p className="mt-1 text-xs leading-5 text-ink-3">
                     Popovers should keep quick metadata close to the control that opened them.
                   </p>
                 </PopoverContent>
@@ -264,7 +264,7 @@ function FoundationsMatrix() {
                     <Input id="dialog-title" defaultValue="Review Storybook visual coverage" />
                   </div>
                   <DialogFooter>
-                    <Button variant="outline">Cancel</Button>
+                    <Button variant="secondary">Cancel</Button>
                     <Button>
                       <Save className="h-4 w-4" />
                       Save

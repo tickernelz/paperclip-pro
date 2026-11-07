@@ -170,7 +170,7 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
 
       <div className="min-h-0 flex-1 overflow-y-auto">
         {definitionsQuery.isError ? (
-          <div className="flex items-center gap-2 py-4 text-sm text-destructive">
+          <div className="flex items-center gap-2 py-4 text-sm text-bad">
             <AlertCircle className="h-4 w-4" /> Failed to load definitions:{" "}
             {(definitionsQuery.error as Error).message}
             <Button variant="ghost" size="sm" onClick={() => definitionsQuery.refetch()}>
@@ -189,12 +189,12 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
             {definitions.map((definition) => (
               <li
                 key={definition.id}
-                className="flex items-start gap-3 rounded-md border border-border p-3"
+                className="flex items-start gap-3 rounded-md border border-line p-3"
               >
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-medium text-foreground">{definition.name}</span>
-                    <code className="rounded bg-muted px-1.5 py-0.5 text-(length:--text-micro) text-muted-foreground">
+                    <span className="font-medium text-ink">{definition.name}</span>
+                    <code className="rounded bg-bg-3 px-1.5 py-0.5 text-(length:--text-micro) text-ink-3">
                       {definition.key}
                     </code>
                     <UserSecretChip />
@@ -206,7 +206,7 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
                     </Badge>
                   </div>
                   {definition.description ? (
-                    <p className="mt-1 text-xs text-muted-foreground">{definition.description}</p>
+                    <p className="mt-1 text-xs text-ink-3">{definition.description}</p>
                   ) : null}
                   <CoverageBadge companyId={companyId} definitionId={definition.id} />
                 </div>
@@ -217,7 +217,6 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="text-muted-foreground hover:text-destructive"
                     onClick={() => setDeleteTarget(definition)}
                   >
                     <Trash2 className="h-3.5 w-3.5" />
@@ -244,7 +243,7 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
 
           <div className="space-y-3">
             <div className="space-y-1">
-              <label className="text-xs font-medium text-foreground">Name</label>
+              <label className="text-xs font-medium text-ink">Name</label>
               <Input
                 value={form.name}
                 onChange={(event) => {
@@ -260,7 +259,7 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
               />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-medium text-foreground">Key</label>
+              <label className="text-xs font-medium text-ink">Key</label>
               <Input
                 value={form.key}
                 onChange={(event) => {
@@ -271,12 +270,12 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
                 className="font-mono text-sm"
                 disabled={Boolean(editing)}
               />
-              <p className="text-(length:--text-micro) text-muted-foreground">
+              <p className="text-(length:--text-micro) text-ink-3">
                 Stable identifier referenced by env bindings. {editing ? "Cannot be changed." : ""}
               </p>
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-medium text-foreground">Description</label>
+              <label className="text-xs font-medium text-ink">Description</label>
               <Input
                 value={form.description}
                 onChange={(event) =>
@@ -286,8 +285,8 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
               />
             </div>
             <div className="space-y-1">
-              <label className="text-xs font-medium text-foreground">
-                Usage guidance <span className="text-muted-foreground">(optional)</span>
+              <label className="text-xs font-medium text-ink">
+                Usage guidance <span className="text-ink-3">(optional)</span>
               </label>
               <Textarea
                 value={form.usageGuidance}
@@ -300,7 +299,7 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
             </div>
             {editing ? (
               <div className="space-y-1">
-                <label className="text-xs font-medium text-foreground">Status</label>
+                <label className="text-xs font-medium text-ink">Status</label>
                 <Select
                   value={form.status}
                   onValueChange={(status) =>
@@ -318,7 +317,7 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
                 </Select>
               </div>
             ) : null}
-            {error ? <p className="text-xs text-destructive">{error}</p> : null}
+            {error ? <p className="text-xs text-bad">{error}</p> : null}
           </div>
 
           <DialogFooter>
@@ -347,7 +346,7 @@ export function UserSecretDefinitionsTab({ companyId }: { companyId: string }) {
               Cancel
             </Button>
             <Button
-              variant="destructive"
+              variant="delete"
               onClick={() => deleteTarget && remove.mutate(deleteTarget)}
               disabled={remove.isPending}
             >
@@ -375,7 +374,7 @@ function CoverageBadge({
   const summary = coverageQuery.data;
   const missing = summary ? summary.missingCount : 0;
   return (
-    <p className="mt-1 inline-flex items-center gap-1 text-(length:--text-micro) text-muted-foreground">
+    <p className="mt-1 inline-flex items-center gap-1 text-(length:--text-micro) text-ink-3">
       <Users className="h-3 w-3" />
       Coverage: {coverageSummaryLabel(summary)}
       {summary && missing > 0 ? (

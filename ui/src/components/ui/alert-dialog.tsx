@@ -48,7 +48,7 @@ function AlertDialogContent({
       <AlertDialogPrimitive.Content
         data-slot="alert-dialog-content"
         className={cn(
-          "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-[0.97] data-[state=open]:zoom-in-[0.97] fixed top-(--sz-calc-26) md:top-(--pct-50) left-(--pct-50) z-50 grid w-full max-w-(--sz-calc-25) translate-x-(--pct-neg-50) translate-y-0 md:translate-y-(--pct-neg-50) gap-4 rounded-lg border p-6 shadow-lg duration-150 ease-(--e-cubic-bezier-0_16-1-0_3-1) outline-none sm:max-w-lg [&>*]:min-w-0",
+          "bg-bg data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-[0.97] data-[state=open]:zoom-in-[0.97] fixed top-(--sz-calc-26) md:top-(--pct-50) left-(--pct-50) z-50 grid w-full max-w-(--sz-calc-25) translate-x-(--pct-neg-50) translate-y-0 md:translate-y-(--pct-neg-50) gap-4 rounded-lg border p-6 shadow-lg duration-150 ease-(--e-cubic-bezier-0_16-1-0_3-1) outline-none sm:max-w-lg [&>*]:min-w-0",
           className
         )}
         {...props}
@@ -106,7 +106,7 @@ function AlertDialogDescription({
   return (
     <AlertDialogPrimitive.Description
       data-slot="alert-dialog-description"
-      className={cn("text-muted-foreground text-sm", className)}
+      className={cn("text-ink-3 text-sm", className)}
       {...props}
     />
   )
@@ -132,7 +132,7 @@ function AlertDialogCancel({
   return (
     <AlertDialogPrimitive.Cancel
       data-slot="alert-dialog-cancel"
-      className={cn(buttonVariants({ variant: "outline" }), className)}
+      className={cn(buttonVariants({ variant: "secondary" }), className)}
       {...props}
     />
   )

@@ -178,7 +178,7 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
         <h2 id={`${id}-title`} className="text-lg font-semibold">
           Local Browser
         </h2>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           Agents work in the browser already open on your machine, with your logins. You watch the
           same tab and can take over at any time. Nothing is installed on the server, and Paperclip
           never stores your passwords.
@@ -187,13 +187,13 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
 
       <div className="space-y-3">
         <h3 className="font-medium">Install the extension</h3>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           Download the extension for the browser you want Paperclip to drive. You install it once,
           then pair it from this page.
         </p>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           The extension opens a control center that shows its site access and every browser
-          permission agents can use. Press <strong className="font-medium text-foreground">Allow all</strong>{" "}
+          permission agents can use. Press <strong className="font-medium text-ink">Allow all</strong>{" "}
           there once so agents can reach every tab and tool; you can withdraw single permissions
           later from the same page, or reopen it from a live session below.
         </p>
@@ -204,7 +204,7 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
               Install in Firefox
             </a>
           </Button>
-          <Button size="sm" variant="outline" asChild>
+          <Button size="sm" variant="secondary" asChild>
             <a href="/downloads/local-browser-chromium.zip" download>
               <Download aria-hidden="true" />
               Chrome, Edge or Brave (zip)
@@ -212,43 +212,43 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
           </Button>
         </div>
 
-        <div className="space-y-3 rounded-lg border border-border p-4">
+        <div className="space-y-3 rounded-lg border border-line p-4">
           <h4 className="text-sm font-medium">Chrome, Edge or Brave</h4>
-          <ol className="list-decimal space-y-1 pl-5 text-sm text-muted-foreground">
+          <ol className="list-decimal space-y-1 pl-5 text-sm text-ink-3">
             <li>Download the zip and unzip it into a folder you will keep, for example Documents.</li>
             <li>Open <code className="font-mono text-xs">chrome://extensions</code>.</li>
-            <li>Turn on <strong className="font-medium text-foreground">Developer mode</strong> in the top right corner.</li>
-            <li>Click <strong className="font-medium text-foreground">Load unpacked</strong> and choose the unzipped folder that contains <code className="font-mono text-xs">manifest.json</code>.</li>
+            <li>Turn on <strong className="font-medium text-ink">Developer mode</strong> in the top right corner.</li>
+            <li>Click <strong className="font-medium text-ink">Load unpacked</strong> and choose the unzipped folder that contains <code className="font-mono text-xs">manifest.json</code>.</li>
             <li>Pin the Paperclip extension to the toolbar so you can see its status.</li>
-            <li>Open the extension control center and press <strong className="font-medium text-foreground">Allow all</strong>. Chrome asks once, and every tab and tool works after that.</li>
+            <li>Open the extension control center and press <strong className="font-medium text-ink">Allow all</strong>. Chrome asks once, and every tab and tool works after that.</li>
             <li>Come back to this page, start a pairing, then open the extension and paste the code.</li>
           </ol>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             The zip stays installed where you unzipped it. Do not delete that folder, because the
             browser loads the extension from it on every start.
           </p>
         </div>
 
-        <div className="space-y-3 rounded-lg border border-border p-4">
+        <div className="space-y-3 rounded-lg border border-line p-4">
           <h4 className="text-sm font-medium">Firefox</h4>
-          <ol className="list-decimal space-y-1 pl-5 text-sm text-muted-foreground">
-            <li>Click <strong className="font-medium text-foreground">Install in Firefox</strong> above. Firefox opens its own install prompt.</li>
+          <ol className="list-decimal space-y-1 pl-5 text-sm text-ink-3">
+            <li>Click <strong className="font-medium text-ink">Install in Firefox</strong> above. Firefox opens its own install prompt.</li>
             <li>Confirm the install. If Firefox asks, allow the connection to this Paperclip address.</li>
-            <li>If your Firefox does not open the prompt, save the file, open <code className="font-mono text-xs">about:addons</code>, choose <strong className="font-medium text-foreground">Install Add-on From File</strong> from the gear menu and pick the xpi.</li>
-            <li>Open the extension control center. Its <strong className="font-medium text-foreground">Site access</strong> row should read <em>all sites</em>; press <strong className="font-medium text-foreground">Allow all</strong> if it does not, or if any permission is listed as missing.</li>
+            <li>If your Firefox does not open the prompt, save the file, open <code className="font-mono text-xs">about:addons</code>, choose <strong className="font-medium text-ink">Install Add-on From File</strong> from the gear menu and pick the xpi.</li>
+            <li>Open the extension control center. Its <strong className="font-medium text-ink">Site access</strong> row should read <em>all sites</em>; press <strong className="font-medium text-ink">Allow all</strong> if it does not, or if any permission is listed as missing.</li>
             <li>Come back to this page, start a pairing, then open the extension and paste the code.</li>
           </ol>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             The xpi is signed by Mozilla, so it installs in release Firefox without a developer
             setting. Firefox may ask you to allow the connection to this Paperclip address the first
             time you pair.
           </p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             Firefox sends trusted clicks and keystrokes only through its own debug port. Everything
             else, including reading and driving the page, works without that; the extension popup
             shows the one-time command for the pages that insist on trusted input.
           </p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             The signed xpi can lag the source while a new build waits for signing.{" "}
             <a className="underline" href="/downloads/local-browser-firefox-unsigned.zip" download>
               Download the current source build
@@ -262,7 +262,7 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
       <div className="space-y-3">
         <h3 className="font-medium">Pairing</h3>
         {!pairing && (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-ink-3">
             {liveSessions.length > 0
               ? "Add another browser, or reconnect one you closed."
               : "No browser is paired yet. Install the extension, then pair it here. Each browser acts for the person who paired it, so agents pass its session id when several people pair one."}
@@ -291,19 +291,19 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
         </div>
         {pairing && (
           <div
-            className="space-y-3 rounded-lg border border-border bg-muted/40 p-4"
+            className="space-y-3 rounded-lg border border-line bg-bg-3/40 p-4"
             data-paperclip-local-browser-pairing=""
             data-origin={pairingOrigin(pairing.connectUrls)}
             data-code={pairing.code}
           >
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-ink-3">
               Copy this link, open the Local Browser extension and paste it. It stops working after{" "}
               {pairingExpiry(pairing.expiresAt)}.
             </p>
             <div className="flex flex-wrap items-center gap-2">
               <Button
                 size="sm"
-                variant="outline"
+                variant="secondary"
                 onClick={() => {
                   const link = pairingLink(pairing.connectUrls);
                   void copyTextToClipboard(link).then(
@@ -315,14 +315,14 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
                 <Copy aria-hidden="true" />
                 {copiedLink ? "Link copied" : "Copy pairing link"}
               </Button>
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs text-ink-3">
                 Or type this code in the extension:{" "}
                 <span className="font-mono font-semibold tracking-widest">{pairing.code}</span>
               </span>
             </div>
             {pairing.connectUrls.length > 0 && (
               <div className="space-y-1">
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-ink-3">
                   Connection addresses, for pasting into the extension. Opening one in a browser tab
                   does nothing, because the extension dials it itself.
                 </p>
@@ -336,24 +336,24 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
               </div>
             )}
             {pairingExpired && (
-              <p role="alert" className="text-sm text-destructive">
+              <p role="alert" className="text-sm text-bad">
                 That code expired before a browser paired. Start a new pairing.
               </p>
             )}
           </div>
         )}
         {pairedSessionId && (
-          <p role="status" className="text-sm text-muted-foreground">
+          <p role="status" className="text-sm text-ink-3">
             Browser paired. It now appears under live sessions.
           </p>
         )}
         {startPairing.isError && (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-sm text-bad">
             Could not start pairing. {UNREACHABLE}
           </p>
         )}
         {pairingStatus.isError && (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-sm text-bad">
             Could not read the pairing status. Reload this page to try again.
           </p>
         )}
@@ -362,7 +362,7 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
       <div className="space-y-3">
         <h3 className="font-medium">Live sessions</h3>
         {sessions.isError && liveSessions.length > 0 ? (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-sm text-bad">
             Could not refresh the session list, so this may be out of date. {UNREACHABLE}{" "}
             <Button size="sm" variant="ghost" onClick={() => void sessions.refetch()}>
               Retry
@@ -370,16 +370,16 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
           </p>
         ) : null}
         {sessions.isError && liveSessions.length === 0 ? (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-sm text-bad">
             {UNREACHABLE}{" "}
             <Button size="sm" variant="ghost" onClick={() => void sessions.refetch()}>
               Retry
             </Button>
           </p>
         ) : sessions.isLoading && liveSessions.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Checking paired browsers…</p>
+          <p className="text-sm text-ink-3">Checking paired browsers…</p>
         ) : liveSessions.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-ink-3">
             No browser is connected right now. A paired browser stays listed only while its
             extension is running, and agents get an empty list until one connects.
           </p>
@@ -388,7 +388,7 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
             {liveSessions.map((session) => (
               <li
                 key={session.sessionId}
-                className="space-y-3 rounded-lg border border-border p-3"
+                className="space-y-3 rounded-lg border border-line p-3"
               >
                 <div className="flex flex-wrap items-center justify-between gap-3">
                   <div className="space-y-1">
@@ -396,12 +396,12 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
                       {session.label}
                       {session.profileName ? ` · ${session.profileName}` : ""}
                     </p>
-                    <p className="text-xs text-muted-foreground">{sessionSubtitle(session)}</p>
+                    <p className="text-xs text-ink-3">{sessionSubtitle(session)}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <Button
                       size="sm"
-                      variant="outline"
+                      variant="secondary"
                       aria-expanded={watchedSessionId === session.sessionId}
                       onClick={() =>
                         setWatchedSessionId((current) =>
@@ -414,7 +414,7 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
                     </Button>
                     <Button
                       size="sm"
-                      variant="outline"
+                      variant="secondary"
                       disabled={disconnect.isPending}
                       onClick={() => disconnect.mutate(session.sessionId)}
                     >
@@ -431,7 +431,7 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
           </ul>
         )}
         {disconnect.isError && (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-sm text-bad">
             Could not disconnect that browser. {UNREACHABLE}
           </p>
         )}
@@ -446,7 +446,7 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
           options={TIER_OPTIONS}
         />
         {tier === "full" && (
-          <p role="note" className="text-sm text-destructive">
+          <p role="note" className="text-sm text-bad">
             Full power lets an agent read and change anything this browser is signed into: mail,
             banking, admin consoles, and any other account. The origin allowlist no longer applies.
             Choose it only while a task needs JavaScript, storage, network, uploads, or downloads,
@@ -467,7 +467,7 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
           onChange={(event) => setOrigins(event.target.value)}
           className="font-mono text-xs"
         />
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           {tier === "full"
             ? "Full power ignores this list because every origin is reachable. Switch to refine to limit which sites agents can touch."
             : "One origin per line. Use * for any origin, or *.example.com to cover a domain and its subdomains. Refine tier refuses any page outside this list."}
@@ -476,7 +476,7 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
 
       <div className="space-y-3">
         <h3 className="font-medium">Limits</h3>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           Caps on how much one agent call can read, return or move, and how long it may run. Raise a
           limit only when tasks keep hitting it; larger answers cost the agent more context.
         </p>
@@ -491,7 +491,7 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
       </div>
 
       {settings.isError && (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-sm text-bad">
           Could not load the saved settings. {UNREACHABLE}{" "}
           <Button size="sm" variant="ghost" onClick={() => void settings.refetch()}>
             Retry
@@ -499,17 +499,17 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
         </p>
       )}
       {saveSettings.isError && (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-sm text-bad">
           Could not save the settings. {UNREACHABLE}
         </p>
       )}
       {limitsInvalid && settings.data ? (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-sm text-bad">
           Fix the highlighted limits before saving.
         </p>
       ) : null}
       {saveSettings.isSuccess && !dirty && (
-        <p role="status" className="text-sm text-muted-foreground">
+        <p role="status" className="text-sm text-ink-3">
           Settings saved.
         </p>
       )}

@@ -77,8 +77,8 @@ export function BudgetIncidentCard({
           </div>
         </div>
 
-        <div className="rounded-xl border border-border/60 bg-background/60 p-3">
-          <label className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-muted-foreground">
+        <div className="rounded-xl border border-line/60 bg-bg/60 p-3">
+          <label className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-ink-3">
             New budget (USD)
           </label>
           <div className="mt-2 flex flex-col gap-3 sm:flex-row">
@@ -107,7 +107,7 @@ export function BudgetIncidentCard({
         </div>
 
         <div className="flex justify-end">
-          <Button variant="ghost" className="text-muted-foreground" disabled={isMutating} onClick={onKeepPaused}>
+          <Button variant="ghost" disabled={isMutating} onClick={onKeepPaused}>
             Keep paused
           </Button>
         </div>

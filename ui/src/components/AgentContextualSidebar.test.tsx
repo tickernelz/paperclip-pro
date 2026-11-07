@@ -56,7 +56,7 @@ describe("AgentContextualSidebar", () => {
 
     expect(markup).toContain("Codex Coder");
     expect(markup).toContain('data-show-header="false"');
-    expect(markup).toContain("border-r border-border bg-background");
+    expect(markup).toContain("border-r border-line bg-bg");
     expect(markup).toContain('data-slot="contextual-sidebar-nav"');
     expect(markup).toContain('href="/agents/codexcoder/overview"');
     expect(markup).toContain('href="/agents/codexcoder/permissions"');

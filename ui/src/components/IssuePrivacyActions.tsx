@@ -20,7 +20,7 @@ import { cn } from "@/lib/utils";
 import { IssueShareSheet, type ShareSheetImplicitPrincipal } from "./IssueShareSheet";
 
 const MENU_ITEM_CLASS =
-  "flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent";
+  "flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-bg-3/50 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-transparent";
 
 const NON_SETTER_TOOLTIP =
   "Only the task owner or an admin can change who can see this task.";
@@ -125,7 +125,7 @@ export function IssuePrivacyActions({
           {withTooltip(
             <button
               type="button"
-              className={cn(MENU_ITEM_CLASS, "text-destructive")}
+              className={cn(MENU_ITEM_CLASS, "text-bad")}
               disabled={!canManage || Boolean(publicBlockedReason)}
               onClick={() => {
                 closeMenu();
@@ -176,13 +176,13 @@ export function IssuePrivacyActions({
               run history. Existing private subtasks keep their privacy.{" "}
               {constraintsQuery.data?.leavesPersonalProject
                 ? "This task will also leave its personal project. " : null}
-              <span className="font-semibold text-foreground">Content already seen by others cannot be taken back.</span>
+              <span className="font-semibold text-ink">Content already seen by others cannot be taken back.</span>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Keep private</AlertDialogCancel>
             <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-bad text-accent-ink hover:bg-bad/90"
               onClick={(event) => {
                 event.preventDefault();
                 visibilityMutation.mutate("open");

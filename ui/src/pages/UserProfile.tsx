@@ -52,8 +52,8 @@ function HeroStat({ label, value, hint }: { label: string; value: string; hint?:
   return (
     <div className="min-w-0">
       <div className="text-2xl font-semibold tabular-nums sm:text-3xl">{value}</div>
-      <div className="mt-1 text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">{label}</div>
-      {hint ? <div className="mt-0.5 text-xs text-muted-foreground/70">{hint}</div> : null}
+      <div className="mt-1 text-(length:--text-micro) font-medium uppercase tracking-wide text-ink-3">{label}</div>
+      {hint ? <div className="mt-0.5 text-xs text-ink-3/70">{hint}</div> : null}
     </div>
   );
 }
@@ -61,10 +61,10 @@ function HeroStat({ label, value, hint }: { label: string; value: string; hint?:
 function WindowColumn({ stats }: { stats: UserProfileWindowStats }) {
   const tokens = totalTokens(stats);
   return (
-    <div className="flex min-w-0 flex-col gap-4 border-l border-border pl-5 first:border-l-0 first:pl-0">
+    <div className="flex min-w-0 flex-col gap-4 border-l border-line pl-5 first:border-l-0 first:pl-0">
       <div className="flex items-baseline justify-between gap-3">
-        <h2 className="text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">{stats.label}</h2>
-        <span className="text-(length:--text-micro) text-muted-foreground tabular-nums">{completionRate(stats)} done</span>
+        <h2 className="text-(length:--text-micro) font-medium uppercase tracking-wide text-ink-3">{stats.label}</h2>
+        <span className="text-(length:--text-micro) text-ink-3 tabular-nums">{completionRate(stats)} done</span>
       </div>
 
       <div className="grid grid-cols-2 gap-x-5 gap-y-3">
@@ -74,15 +74,15 @@ function WindowColumn({ stats }: { stats: UserProfileWindowStats }) {
         <Metric value={formatNumber(stats.activityCount)} label="Actions" />
       </div>
 
-      <div className="grid grid-cols-2 gap-x-5 gap-y-1.5 pt-3 text-xs tabular-nums text-muted-foreground">
+      <div className="grid grid-cols-2 gap-x-5 gap-y-1.5 pt-3 text-xs tabular-nums text-ink-3">
         <span>Tokens</span>
-        <span className="text-right text-foreground">{formatTokens(tokens)}</span>
+        <span className="text-right text-ink">{formatTokens(tokens)}</span>
         <span>Spend</span>
-        <span className="text-right text-foreground">{formatCents(stats.costCents)}</span>
+        <span className="text-right text-ink">{formatCents(stats.costCents)}</span>
         <span>Created</span>
-        <span className="text-right text-foreground">{formatNumber(stats.createdIssues)}</span>
+        <span className="text-right text-ink">{formatNumber(stats.createdIssues)}</span>
         <span>Open</span>
-        <span className="text-right text-foreground">{formatNumber(stats.assignedOpenIssues)}</span>
+        <span className="text-right text-ink">{formatNumber(stats.assignedOpenIssues)}</span>
       </div>
     </div>
   );
@@ -92,7 +92,7 @@ function Metric({ value, label }: { value: string; label: string }) {
   return (
     <div className="min-w-0">
       <div className="truncate text-xl font-semibold tabular-nums">{value}</div>
-      <div className="mt-0.5 text-(length:--text-micro) text-muted-foreground">{label}</div>
+      <div className="mt-0.5 text-(length:--text-micro) text-ink-3">{label}</div>
     </div>
   );
 }
@@ -105,10 +105,10 @@ function UsageChart({ points }: { points: UserProfileDailyPoint[] }) {
 
   return (
     <section>
-      <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-border pb-3">
+      <div className="flex flex-wrap items-baseline justify-between gap-3 border-b border-line pb-3">
         <h2 className="text-sm font-semibold">Last 14 days</h2>
-        <div className="flex items-baseline gap-4 text-xs text-muted-foreground">
-          <span className="tabular-nums text-foreground">{formatTokens(totalTokensSum)}</span>
+        <div className="flex items-baseline gap-4 text-xs text-ink-3">
+          <span className="tabular-nums text-ink">{formatTokens(totalTokensSum)}</span>
           <span>tokens total</span>
         </div>
       </div>
@@ -122,7 +122,7 @@ function UsageChart({ points }: { points: UserProfileDailyPoint[] }) {
           return (
             <div key={point.date} className="group flex h-36 flex-col justify-end">
               <div
-                className="w-full bg-foreground/80 transition-opacity group-hover:bg-foreground"
+                className="w-full bg-ink/80 transition-opacity group-hover:bg-ink"
                 style={{ height: `${heightPct}%`, minHeight: tokens === 0 ? 1 : undefined }}
                 title={`${formatShortDate(point.date)}: ${formatTokens(tokens)} tokens, ${point.completedIssues} completed`}
               />
@@ -136,16 +136,16 @@ function UsageChart({ points }: { points: UserProfileDailyPoint[] }) {
           );
         })}
       </div>
-      <div className="mt-2 grid grid-cols-(--gtc-57) gap-1.5 text-(length:--text-nano) tabular-nums text-muted-foreground sm:gap-2">
+      <div className="mt-2 grid grid-cols-(--gtc-57) gap-1.5 text-(length:--text-nano) tabular-nums text-ink-3 sm:gap-2">
         {points.map((point, index) => (
           <div key={point.date} className="text-center">
             {index === 0 || index === 6 || index === 13 ? formatShortDate(point.date) : null}
           </div>
         ))}
       </div>
-      <div className="mt-4 flex flex-wrap items-center gap-4 text-(length:--text-nano) uppercase tracking-wide text-muted-foreground">
+      <div className="mt-4 flex flex-wrap items-center gap-4 text-(length:--text-nano) uppercase tracking-wide text-ink-3">
         <span className="inline-flex items-center gap-1.5">
-          <span className="h-2 w-2 bg-foreground/80" /> tokens / day
+          <span className="h-2 w-2 bg-ink/80" /> tokens / day
         </span>
         <span className="inline-flex items-center gap-1.5">
           <span className="h-(--sz-3px) w-4 rounded-full bg-emerald-500/80" /> completions
@@ -176,22 +176,22 @@ function UsageList({
 }) {
   return (
     <section>
-      <div className="flex items-baseline justify-between gap-3 border-b border-border pb-3">
+      <div className="flex items-baseline justify-between gap-3 border-b border-line pb-3">
         <h2 className="text-sm font-semibold">{title}</h2>
-        <span className="text-xs text-muted-foreground tabular-nums">{rows.length}</span>
+        <span className="text-xs text-ink-3 tabular-nums">{rows.length}</span>
       </div>
       {rows.length === 0 ? (
-        <div className="pt-4 text-sm text-muted-foreground">{empty}</div>
+        <div className="pt-4 text-sm text-ink-3">{empty}</div>
       ) : (
-        <ul className="divide-y divide-border">
+        <ul className="divide-y divide-line">
           {rows.map((row) => (
             <li key={row.key} className="grid gap-2 py-2.5 sm:grid-cols-(--gtc-17) sm:items-center">
               <div className="min-w-0">
                 <div className="truncate text-sm font-medium">{row.label}</div>
-                <div className="truncate text-xs text-muted-foreground">{row.sublabel}</div>
+                <div className="truncate text-xs text-ink-3">{row.sublabel}</div>
               </div>
               <div className="flex items-baseline gap-4 text-xs tabular-nums sm:justify-end">
-                <span className="text-muted-foreground">{formatTokens(totalTokens(row))}</span>
+                <span className="text-ink-3">{formatTokens(totalTokens(row))}</span>
                 <span className="font-medium">{formatCents(row.costCents)}</span>
               </div>
             </li>
@@ -283,25 +283,25 @@ export function UserProfile() {
 
   return (
     <div className="space-y-10 pb-10">
-      <section className="flex flex-col gap-7 border-b border-border pb-8">
+      <section className="flex flex-col gap-7 border-b border-line pb-8">
         <div className="flex flex-wrap items-center gap-5">
-          <Avatar className="size-16 border border-border" size="lg">
+          <Avatar className="size-16 border border-line" size="lg">
             {data.user.image ? <AvatarImage src={data.user.image} alt={displayName} /> : null}
             <AvatarFallback className="text-lg font-semibold">{initials(displayName)}</AvatarFallback>
           </Avatar>
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
               <h1 className="truncate text-2xl font-semibold">{displayName}</h1>
-              <span className="text-sm text-muted-foreground">@{data.user.slug}</span>
+              <span className="text-sm text-ink-3">@{data.user.slug}</span>
             </div>
-            <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
+            <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-ink-3">
               {data.user.email ? <span className="truncate">{data.user.email}</span> : null}
               {data.user.email ? <span aria-hidden>·</span> : null}
               <span>{metaParts.join(" · ")}</span>
             </div>
           </div>
           {canEditProfile ? (
-            <Button asChild variant="outline" size="sm">
+            <Button asChild variant="secondary" size="sm">
               <Link to={PROFILE_SETTINGS_PATH}>
                 <UserRoundPen />
                 Edit profile
@@ -318,7 +318,7 @@ export function UserProfile() {
         </div>
       </section>
 
-      <section className="grid gap-8 border-b border-border pb-8 lg:grid-cols-3">
+      <section className="grid gap-8 border-b border-line pb-8 lg:grid-cols-3">
         {data.stats.map((entry) => <WindowColumn key={entry.key} stats={entry} />)}
       </section>
 
@@ -326,25 +326,25 @@ export function UserProfile() {
 
       <div className="grid gap-10 pt-2 xl:grid-cols-2">
         <section>
-          <div className="flex items-baseline justify-between gap-3 border-b border-border pb-3">
+          <div className="flex items-baseline justify-between gap-3 border-b border-line pb-3">
             <h2 className="text-sm font-semibold">Recent tasks</h2>
-            <span className="text-xs text-muted-foreground tabular-nums">{data.recentIssues.length}</span>
+            <span className="text-xs text-ink-3 tabular-nums">{data.recentIssues.length}</span>
           </div>
           {data.recentIssues.length === 0 ? (
-            <div className="pt-4 text-sm text-muted-foreground">No touched tasks yet.</div>
+            <div className="pt-4 text-sm text-ink-3">No touched tasks yet.</div>
           ) : (
-            <ul className="divide-y divide-border">
+            <ul className="divide-y divide-line">
               {data.recentIssues.map((issue) => (
                 <li key={issue.id}>
                   <Link
                     to={issueUrl(issue)}
-                    className="grid gap-2 py-2.5 transition-colors hover:bg-accent/40 sm:grid-cols-(--gtc-58) sm:items-center"
+                    className="grid gap-2 py-2.5 transition-colors hover:bg-bg-3/40 sm:grid-cols-(--gtc-58) sm:items-center"
                   >
-                    <span className="font-mono text-xs text-muted-foreground">{issue.identifier ?? issue.id.slice(0, 8)}</span>
+                    <span className="font-mono text-xs text-ink-3">{issue.identifier ?? issue.id.slice(0, 8)}</span>
                     <span className="truncate text-sm">{issue.title}</span>
                     <span className="flex items-center gap-3 sm:justify-end">
                       <IssueStatusBadge status={issue.status} />
-                      <span className="text-xs tabular-nums text-muted-foreground">{relativeTime(issue.updatedAt)}</span>
+                      <span className="text-xs tabular-nums text-ink-3">{relativeTime(issue.updatedAt)}</span>
                     </span>
                   </Link>
                 </li>
@@ -354,23 +354,23 @@ export function UserProfile() {
         </section>
 
         <section>
-          <div className="flex items-baseline justify-between gap-3 border-b border-border pb-3">
+          <div className="flex items-baseline justify-between gap-3 border-b border-line pb-3">
             <h2 className="text-sm font-semibold">Recent activity</h2>
-            <span className="text-xs text-muted-foreground tabular-nums">{data.recentActivity.length}</span>
+            <span className="text-xs text-ink-3 tabular-nums">{data.recentActivity.length}</span>
           </div>
           {data.recentActivity.length === 0 ? (
-            <div className="pt-4 text-sm text-muted-foreground">No direct user actions recorded yet.</div>
+            <div className="pt-4 text-sm text-ink-3">No direct user actions recorded yet.</div>
           ) : (
-            <ul className="divide-y divide-border">
+            <ul className="divide-y divide-line">
               {data.recentActivity.map((event) => (
                 <li key={event.id} className="grid gap-2 py-2.5 sm:grid-cols-(--gtc-17) sm:items-center">
                   <div className="min-w-0">
                     <div className="truncate text-sm">{event.action.replaceAll("_", " ")}</div>
-                    <div className="truncate text-xs text-muted-foreground">
+                    <div className="truncate text-xs text-ink-3">
                       {event.entityType} · {event.entityId.slice(0, 12)}
                     </div>
                   </div>
-                  <span className="text-xs tabular-nums text-muted-foreground sm:justify-self-end">{relativeTime(event.createdAt)}</span>
+                  <span className="text-xs tabular-nums text-ink-3 sm:justify-self-end">{relativeTime(event.createdAt)}</span>
                 </li>
               ))}
             </ul>

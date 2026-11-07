@@ -32,18 +32,18 @@ const restartWaitingForIdle: DevServerHealthStatus = {
 function DevOpsSurfacesStory() {
   return (
     <div className="space-y-6 p-6">
-      <section className="overflow-hidden border border-border bg-background">
-        <div className="border-b border-border px-5 py-4">
-          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+      <section className="overflow-hidden border border-line bg-bg">
+        <div className="border-b border-line px-5 py-4">
+          <div className="text-xs font-semibold uppercase tracking-wide text-ink-3">
             Dev server restart banner
           </div>
         </div>
         <DevRestartBanner devServer={restartRequired} />
       </section>
 
-      <section className="max-w-[390px] overflow-hidden border border-border bg-background">
-        <div className="border-b border-border px-4 py-3">
-          <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+      <section className="max-w-[390px] overflow-hidden border border-line bg-bg">
+        <div className="border-b border-line px-4 py-3">
+          <div className="text-xs font-semibold uppercase tracking-wide text-ink-3">
             Mobile waiting state
           </div>
         </div>

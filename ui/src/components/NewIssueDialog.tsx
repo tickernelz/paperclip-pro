@@ -1163,7 +1163,7 @@ export function NewIssueDialog() {
         <DialogTitle className="sr-only">{isSubIssueMode ? "New sub-task" : "New task"}</DialogTitle>
         <div
           ref={dialogBodyRef}
-          className={cn("min-h-0 overflow-y-auto overscroll-contain", isFileDragOver && "bg-accent/20")}
+          className={cn("min-h-0 overflow-y-auto overscroll-contain", isFileDragOver && "bg-bg-3/20")}
           onDragEnter={handleFileDragEnter}
           onDragOver={handleFileDragOver}
           onDragLeave={handleFileDragLeave}
@@ -1239,7 +1239,7 @@ export function NewIssueDialog() {
                           aria-label="Task title"
                           value={title}
                           disabled={createIssue.isPending}
-                          className="w-full bg-transparent text-sm text-foreground outline-none"
+                          className="w-full bg-transparent text-sm text-ink outline-none"
                           onChange={(event) => {
                             titleRef.current = event.target.value;
                             setTitle(event.target.value);
@@ -1249,14 +1249,14 @@ export function NewIssueDialog() {
                       ) : null}
                       {isSubIssueMode ? (
                         <div className="px-4 pb-2">
-                          <div className="max-w-full rounded-md border border-border bg-muted/30 px-2.5 py-1.5 text-xs text-muted-foreground">
+                          <div className="max-w-full rounded-md border border-line bg-bg-3/30 px-2.5 py-1.5 text-xs text-ink-3">
                             <div className="flex items-center gap-1.5">
                               <ListTree className="h-3.5 w-3.5 shrink-0" />
                               <span className="shrink-0">Sub-task of</span>
-                              <span className="font-medium text-foreground">{parentIssueLabel}</span>
+                              <span className="font-medium text-ink">{parentIssueLabel}</span>
                             </div>
                             {newIssueDefaults.parentTitle ? (
-                              <div className="pl-5 text-foreground/80 truncate">{newIssueDefaults.parentTitle}</div>
+                              <div className="pl-5 text-ink/80 truncate">{newIssueDefaults.parentTitle}</div>
                             ) : null}
                           </div>
                         </div>
@@ -1266,39 +1266,39 @@ export function NewIssueDialog() {
                 details: (
                   <>
                     {parentPrivacyUnresolved ? (
-                      <div role={parentPrivacyError ? "alert" : "status"} className="mb-2 flex items-center gap-2 text-xs text-muted-foreground">
+                      <div role={parentPrivacyError ? "alert" : "status"} className="mb-2 flex items-center gap-2 text-xs text-ink-3">
                         <span>{parentPrivacyError ? "Couldn't check parent access." : "Checking parent access…"}</span>
                         {parentPrivacyError ? <Button variant="ghost" size="sm" onClick={() => void refetchParentPrivacy()}>Retry</Button> : null}
                       </div>
                     ) : null}
                     {worktreeSelectionIncomplete && !worktreesLoading ? (
-                      <p role="alert" className="mb-2 text-xs text-destructive">
+                      <p role="alert" className="mb-2 text-xs text-bad">
                         {worktreesError ? "Couldn't check the selected worktree. Retry in Worktrees or choose New worktree."
                           : "The selected worktree is no longer available. Choose another worktree or start a new one."}
                       </p>
                     ) : null}
                     {stagedFiles.length > 0 ? (
-                      <div className="mt-4 space-y-3 rounded-lg border border-border/70 p-3">
+                      <div className="mt-4 space-y-3 rounded-lg border border-line/70 p-3">
                         {stagedDocuments.length > 0 ? (
                           <div className="space-y-2">
-                            <div className="text-xs font-medium text-muted-foreground">Documents</div>
+                            <div className="text-xs font-medium text-ink-3">Documents</div>
                             <div className="space-y-2">
                               {stagedDocuments.map((file) => (
                                 <div
                                   key={file.id}
-                                  className="flex items-start justify-between gap-3 rounded-md border border-border/70 px-3 py-2"
+                                  className="flex items-start justify-between gap-3 rounded-md border border-line/70 px-3 py-2"
                                 >
                                   <div className="min-w-0">
                                     <div className="flex items-center gap-2">
                                       <Badge
                                         variant="outline"
-                                        className="border-border font-mono text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow) text-muted-foreground"
+                                        className="border-line font-mono text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow) text-ink-3"
                                       >
                                         {file.documentKey}
                                       </Badge>
                                       <span className="truncate text-sm">{file.file.name}</span>
                                     </div>
-                                    <div className="mt-1 flex items-center gap-2 text-(length:--text-micro) text-muted-foreground">
+                                    <div className="mt-1 flex items-center gap-2 text-(length:--text-micro) text-ink-3">
                                       <FileText className="h-3.5 w-3.5" />
                                       <span>{file.title || file.file.name}</span>
                                       <span>•</span>
@@ -1308,7 +1308,7 @@ export function NewIssueDialog() {
                                   <Button
                                     variant="ghost"
                                     size="icon-xs"
-                                    className="shrink-0 text-muted-foreground"
+                                    className="shrink-0"
                                     onClick={() => removeStagedFile(file.id)}
                                     disabled={createIssue.isPending}
                                     title="Remove document"
@@ -1323,26 +1323,26 @@ export function NewIssueDialog() {
 
                         {stagedAttachments.length > 0 ? (
                           <div className="space-y-2">
-                            <div className="text-xs font-medium text-muted-foreground">Attachments</div>
+                            <div className="text-xs font-medium text-ink-3">Attachments</div>
                             <div className="space-y-2">
                               {stagedAttachments.map((file) => (
                                 <div
                                   key={file.id}
-                                  className="flex items-start justify-between gap-3 rounded-md border border-border/70 px-3 py-2"
+                                  className="flex items-start justify-between gap-3 rounded-md border border-line/70 px-3 py-2"
                                 >
                                   <div className="min-w-0">
                                     <div className="flex items-center gap-2">
-                                      <Paperclip className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                                      <Paperclip className="h-3.5 w-3.5 shrink-0 text-ink-3" />
                                       <span className="truncate text-sm">{file.file.name}</span>
                                     </div>
-                                    <div className="mt-1 text-(length:--text-micro) text-muted-foreground">
+                                    <div className="mt-1 text-(length:--text-micro) text-ink-3">
                                       {file.file.type || "application/octet-stream"} • {formatFileSize(file.file)}
                                     </div>
                                   </div>
                                   <Button
                                     variant="ghost"
                                     size="icon-xs"
-                                    className="shrink-0 text-muted-foreground"
+                                    className="shrink-0"
                                     onClick={() => removeStagedFile(file.id)}
                                     disabled={createIssue.isPending}
                                     title="Remove attachment"
@@ -1420,7 +1420,7 @@ export function NewIssueDialog() {
                       placeholder="Project"
                       mobileTitle="Select project"
                       modal
-                      className="h-8 min-w-0 flex-1 gap-1.5 border-0 bg-transparent px-2 text-xs shadow-none hover:bg-accent focus-visible:bg-accent focus-visible:ring-0 sm:max-w-64 sm:flex-none"
+                      className="h-8 min-w-0 flex-1 gap-1.5 border-0 bg-transparent px-2 text-xs shadow-none hover:bg-bg-3 focus-visible:bg-bg-3 focus-visible:ring-0 sm:max-w-64 sm:flex-none"
                       disabled={createIssue.isPending}
                       triggerDataSlot="new-issue-compact-control"
                       contentStyle={entityPickerViewportStyle}
@@ -1434,25 +1434,25 @@ export function NewIssueDialog() {
                           <>
                             <Folder className="size-3.5 shrink-0" style={{ color: currentProject.color ?? "var(--project-seed)" }} aria-hidden />
                             <span className="truncate">{option.label}</span>
-                            {currentProject.visibility === "private" ? <Lock className="size-3 shrink-0 text-muted-foreground" aria-label="Private project" /> : null}
-                            <ChevronDown className="size-3 shrink-0 text-muted-foreground" aria-hidden />
+                            {currentProject.visibility === "private" ? <Lock className="size-3 shrink-0 text-ink-3" aria-label="Private project" /> : null}
+                            <ChevronDown className="size-3 shrink-0 text-ink-3" aria-hidden />
                           </>
                         ) : (
                           <>
-                            <Folder className="size-3.5 shrink-0 text-muted-foreground" aria-hidden />
-                            <span className="truncate text-muted-foreground">Project</span>
-                            <ChevronDown className="size-3 shrink-0 text-muted-foreground" aria-hidden />
+                            <Folder className="size-3.5 shrink-0 text-ink-3" aria-hidden />
+                            <span className="truncate text-ink-3">Project</span>
+                            <ChevronDown className="size-3 shrink-0 text-ink-3" aria-hidden />
                           </>
                         )
                       }
                       renderOption={(option) => {
-                        if (!option.id) return <><Folder className="size-4 shrink-0 text-muted-foreground" aria-hidden /><span className="truncate">{option.label}</span></>;
+                        if (!option.id) return <><Folder className="size-4 shrink-0 text-ink-3" aria-hidden /><span className="truncate">{option.label}</span></>;
                         const project = orderedProjects.find((item) => item.id === option.id);
                         return (
                           <>
                             <Folder className="size-4 shrink-0" style={{ color: project?.color ?? "var(--project-seed)" }} aria-hidden />
                             <span className="min-w-0 flex-1 truncate">{option.label}</span>
-                            {project?.visibility === "private" ? <Lock className="size-3.5 shrink-0 text-muted-foreground" aria-label="Private project" /> : null}
+                            {project?.visibility === "private" ? <Lock className="size-3.5 shrink-0 text-ink-3" aria-label="Private project" /> : null}
                           </>
                         );
                       }}

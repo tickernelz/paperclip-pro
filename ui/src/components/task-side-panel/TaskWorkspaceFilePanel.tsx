@@ -54,11 +54,11 @@ export function TaskWorkspaceFilePanel({
   const renderedPreview = resource && (isHtmlPreview(resource.contentType, resource.displayPath || resource.title) || isCsvFile(resource.displayPath || resource.title, resource.contentType ?? "") || /\.(md|markdown|mdown|mkdn|mkd)$/i.test(resource.displayPath || resource.title) || resource.contentType?.includes("markdown"));
 
   return (
-    <div className="flex h-full min-h-0 flex-col bg-muted/20">
-      <header className="flex min-w-0 items-start gap-2 border-b border-border bg-card px-3 py-2">
+    <div className="flex h-full min-h-0 flex-col bg-bg-3/20">
+      <header className="flex min-w-0 items-start gap-2 border-b border-line bg-bg-2 px-3 py-2">
         <div className="min-w-0 flex-1">
           <h2 className="truncate text-sm font-medium" title={payload.path}>{resource?.title ?? payload.path}</h2>
-          <p className="truncate font-mono text-xs text-muted-foreground" title={payload.path}>{payload.path}</p>
+          <p className="truncate font-mono text-xs text-ink-3" title={payload.path}>{payload.path}</p>
           <FileViewerMetadataRow resolvedResource={resource} state={state} />
         </div>
         <div className="flex shrink-0 items-center gap-1">

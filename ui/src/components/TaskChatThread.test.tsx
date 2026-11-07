@@ -763,7 +763,7 @@ describe("TaskChatThread draft pass-through", () => {
     expect(dock?.classList).not.toContain("pt-1");
     expect(dock?.classList).toContain("md:pb-0");
     expect(dock?.classList).not.toContain("md:pb-4");
-    expect(dock?.classList).not.toContain("bg-background/80");
+    expect(dock?.classList).not.toContain("bg-bg/80");
     expect(dock?.classList).not.toContain("backdrop-blur");
   });
 
@@ -1696,7 +1696,7 @@ describe("TaskChatThread runtime transcript selection", () => {
     expect(container.textContent).toContain("Waiting to resume");
     expect(container.textContent).not.toContain("No user-facing response");
     expect(container.textContent).not.toContain("Run completed");
-    expect(container.querySelector(".text-destructive")).toBeNull();
+    expect(container.querySelector(".text-bad")).toBeNull();
   });
 
   it.each(["legacy", "native"] as const)("groups repeated %s pre-start holds without hiding executed work", (runtimeMode) => {
@@ -1748,8 +1748,8 @@ describe("TaskChatThread runtime transcript selection", () => {
     );
 
     expect(container.textContent).toContain("Work was in progress.");
-    expect(container.querySelector('[data-testid="task-chat-collapsible-marker"] button')?.classList).toContain("text-muted-foreground");
-    expect(container.querySelector('[data-testid="task-chat-collapsible-marker"] .text-destructive')).toBeNull();
+    expect(container.querySelector('[data-testid="task-chat-collapsible-marker"] button')?.classList).toContain("text-ink-3");
+    expect(container.querySelector('[data-testid="task-chat-collapsible-marker"] .text-bad')).toBeNull();
     expect(
       container.querySelector('[data-testid="task-chat-collapsible-marker"]')
         ?.textContent,

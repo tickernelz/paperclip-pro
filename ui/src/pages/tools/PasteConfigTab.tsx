@@ -254,14 +254,14 @@ export function PasteConfigTab({ companyId }: { companyId: string }) {
   return (
     <div className="space-y-5">
       <div className="flex max-w-2xl items-start gap-1.5">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           Paste the MCP config snippet from the tool's README and we'll turn it into a friendly setup.
         </p>
         <McpConfigHelpDialog />
       </div>
-      <p className="text-xs text-muted-foreground">
+      <p className="text-xs text-ink-3">
         Just a URL?{" "}
-        <Link to="/apps" className="text-primary hover:underline">
+        <Link to="/apps" className="text-accent hover:underline">
           Browse planned app connections
         </Link>{" "}
         instead.
@@ -284,7 +284,7 @@ export function PasteConfigTab({ companyId }: { companyId: string }) {
         {localParseError ? (
           <p className="text-xs text-amber-600">{localParseError}</p>
         ) : (
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             Paste an MCP config — the snippet a README tells you to copy.
           </p>
         )}
@@ -297,7 +297,7 @@ export function PasteConfigTab({ companyId }: { companyId: string }) {
         >
           {importMutation.isPending ? "Checking…" : "Check config"}
         </Button>
-        <span className="text-xs text-muted-foreground">
+        <span className="text-xs text-ink-3">
           We'll read it and show what we found before anything is saved.
         </span>
       </div>
@@ -306,12 +306,12 @@ export function PasteConfigTab({ companyId }: { companyId: string }) {
 
       {preview ? (
         drafts.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-border p-6 text-sm text-muted-foreground">
+          <div className="rounded-lg border border-dashed border-line p-6 text-sm text-ink-3">
             We couldn't find an app in that config. Double-check you pasted the whole snippet.
           </div>
         ) : (
           <div className="space-y-3">
-            <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+            <h3 className="flex items-center gap-2 text-sm font-semibold text-ink">
               <CheckCircle2 className="h-4 w-4 text-emerald-600" />
               We found {drafts.length} {drafts.length === 1 ? "app" : "apps"} in that config
             </h3>
@@ -337,12 +337,12 @@ export function PasteConfigTab({ companyId }: { companyId: string }) {
               );
             })}
             {drafts.some((d) => draftConnectUrl(d)) ? (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-ink-3">
                 Checking a remote app creates a draft connection, stores any header replacements as Paperclip secrets,
                 and runs health/catalog discovery before activation.
               </p>
             ) : (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-ink-3">
                 We humanized the field names from the config. These run-in-your-workspace tools stay as drafts until an
                 admin maps them to an approved template.
               </p>
@@ -394,11 +394,11 @@ function DraftCard({
   onCheck?: () => void;
 }) {
   return (
-    <div className="rounded-lg border border-border bg-card p-4">
+    <div className="rounded-lg border border-line bg-bg-2 p-4">
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <div className="font-semibold text-foreground">{draft.name}</div>
-          <div className="text-xs text-muted-foreground">{draftSummary(draft)}</div>
+          <div className="font-semibold text-ink">{draft.name}</div>
+          <div className="text-xs text-ink-3">{draftSummary(draft)}</div>
         </div>
         {onCheck ? (
           <Button size="sm" className="shrink-0" onClick={onCheck} disabled={checking || !canCheck}>
@@ -409,7 +409,7 @@ function DraftCard({
       </div>
 
       {onCheck ? (
-        <label className="mt-4 block max-w-sm space-y-1 text-xs font-medium text-foreground">
+        <label className="mt-4 block max-w-sm space-y-1 text-xs font-medium text-ink">
           Connection name
           <Input
             value={connectionName}
@@ -424,12 +424,12 @@ function DraftCard({
         <div className="mt-4 space-y-3">
           {draft.credentialFields.map((field) => (
             <div key={`${field.configPath}-${field.key}`} className="space-y-1">
-              <div className="flex items-center gap-1.5 text-xs font-medium text-foreground">
-                <KeyRound className="h-3.5 w-3.5 text-muted-foreground" />
+              <div className="flex items-center gap-1.5 text-xs font-medium text-ink">
+                <KeyRound className="h-3.5 w-3.5 text-ink-3" />
                 {humanizeKey(field.label || field.key)}
               </div>
               <div className="flex items-center gap-2">
-                <code className="rounded border border-border bg-muted/40 px-2 py-1 font-mono text-(length:--text-micro) text-muted-foreground">
+                <code className="rounded border border-line bg-bg-3/40 px-2 py-1 font-mono text-(length:--text-micro) text-ink-3">
                   {field.key}
                 </code>
                 <Input
@@ -444,15 +444,15 @@ function DraftCard({
           ))}
         </div>
       ) : draft.credentialRefs.length > 0 ? (
-        <p className="mt-3 text-xs text-muted-foreground">
+        <p className="mt-3 text-xs text-ink-3">
           Keys from this config stay draft-only until an admin maps them to an approved template.
         </p>
       ) : (
-        <p className="mt-3 text-xs text-muted-foreground">No keys needed for this one.</p>
+        <p className="mt-3 text-xs text-ink-3">No keys needed for this one.</p>
       )}
 
       {draft.warnings.length > 0 ? (
-        <ul className="mt-4 space-y-1 border-t border-border pt-3">
+        <ul className="mt-4 space-y-1 border-t border-line pt-3">
           {draft.warnings.map((warning, i) => (
             <li key={i} className="text-xs text-amber-600">
               {warning}
@@ -485,14 +485,14 @@ function CatalogReview({
   const enabledCount = Object.values(enabled).filter(Boolean).length;
   const total = result.actions.readOnly.length + result.actions.canMakeChanges.length;
   return (
-    <div className="space-y-4 border-t border-border pt-5">
+    <div className="space-y-4 border-t border-line pt-5">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h3 className="flex items-center gap-2 text-sm font-semibold text-foreground">
+          <h3 className="flex items-center gap-2 text-sm font-semibold text-ink">
             <ShieldCheck className="h-4 w-4 text-emerald-600" />
             Review actions for {result.application.name}
           </h3>
-          <p className="mt-1 text-xs text-muted-foreground">
+          <p className="mt-1 text-xs text-ink-3">
             Health and catalog checks passed. Every discovered action starts allowed; you can narrow access after activation.
           </p>
         </div>
@@ -543,7 +543,7 @@ function ActionGroup({
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between gap-3">
-        <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{title}</div>
+        <div className="text-xs font-semibold uppercase tracking-wide text-ink-3">{title}</div>
         <div className="flex gap-2">
           <Button type="button" size="sm" variant="ghost" className="h-7 px-2 text-xs" onClick={() => onBulk(true)}>
             Turn all on
@@ -553,14 +553,14 @@ function ActionGroup({
           </Button>
         </div>
       </div>
-      <div className="divide-y divide-border rounded-lg border border-border">
+      <div className="divide-y divide-line rounded-lg border border-line">
         {actions.map((action) => {
           const on = enabled[action.catalogEntryId] ?? false;
           return (
             <div key={action.catalogEntryId} className="flex items-center gap-3 px-3 py-2">
               <div className="min-w-0 flex-1">
-                <div className="truncate text-sm font-medium text-foreground">{action.title || action.toolName}</div>
-                <div className="truncate text-xs text-muted-foreground">
+                <div className="truncate text-sm font-medium text-ink">{action.title || action.toolName}</div>
+                <div className="truncate text-xs text-ink-3">
                   {askFirstLevels.includes(action.riskLevel) ? "Ask first when enabled" : action.riskLevel}
                 </div>
               </div>

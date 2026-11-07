@@ -57,15 +57,15 @@ export function ProjectWorkspaceSummaryCard({
   const actionKey = `${summary.key}:${hasRunningServices ? "stop" : "start"}`;
 
   return (
-    <div className="rounded-lg border border-border bg-background p-4 shadow-sm sm:p-5">
+    <div className="rounded-lg border border-line bg-bg p-4 shadow-sm sm:p-5">
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
           <div className="min-w-0 space-y-2">
             <div className="flex flex-wrap items-center gap-2">
-              <Badge variant="outline" className="border-border bg-background px-2.5 py-1 text-(length:--text-micro) uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
+              <Badge variant="outline" className="border-line bg-bg px-2.5 py-1 text-(length:--text-micro) uppercase tracking-(--tracking-eyebrow) text-ink-3">
                 {workspaceKindLabel(summary.kind)}
               </Badge>
-              <Badge variant="outline" className="border-border/70 bg-background px-2.5 py-1 text-muted-foreground">
+              <Badge variant="outline" className="border-line/70 bg-bg px-2.5 py-1 text-ink-3">
                 Updated {timeAgo(summary.lastUpdatedAt)}
               </Badge>
               {summary.serviceCount > 0 ? (
@@ -74,27 +74,27 @@ export function ProjectWorkspaceSummaryCard({
                     "gap-1.5 px-2.5 py-1",
                     hasRunningServices
                       ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-                      : "border-border/70 bg-background text-muted-foreground",
+                      : "border-line/70 bg-bg text-ink-3",
                   )}
                 >
                   <span
                     className={cn(
                       "h-1.5 w-1.5 rounded-full",
-                      hasRunningServices ? "bg-emerald-500" : "bg-muted-foreground/40",
+                      hasRunningServices ? "bg-emerald-500" : "bg-ink-3/40",
                     )}
                   />
                   {summary.runningServiceCount}/{summary.serviceCount} services
                 </Badge>
               ) : null}
               {summary.executionWorkspaceStatus ? (
-                <Badge variant="outline" className="border-border/70 bg-background px-2.5 py-1 text-muted-foreground">
+                <Badge variant="outline" className="border-line/70 bg-bg px-2.5 py-1 text-ink-3">
                   {summary.executionWorkspaceStatus.replace(/_/g, " ")}
                 </Badge>
               ) : null}
             </div>
             <Link
               to={workspaceHref}
-              className="block break-words text-base font-semibold leading-6 text-foreground hover:underline"
+              className="block break-words text-base font-semibold leading-6 text-ink hover:underline"
             >
               {summary.workspaceName}
             </Link>
@@ -106,7 +106,7 @@ export function ProjectWorkspaceSummaryCard({
           >
             {summary.hasRuntimeConfig ? (
               <Button
-                variant="outline"
+                variant="secondary"
                 size="sm"
                 className="h-9 justify-center px-3 text-xs"
                 disabled={runtimeActionPending}
@@ -133,7 +133,7 @@ export function ProjectWorkspaceSummaryCard({
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-9 px-3 text-xs text-muted-foreground"
+                className="h-9 px-3 text-xs"
                 onClick={() => onCloseWorkspace({
                   id: summary.executionWorkspaceId!,
                   name: summary.workspaceName,
@@ -146,18 +146,18 @@ export function ProjectWorkspaceSummaryCard({
           </div>
         </div>
 
-        <div className="rounded-lg border border-border/70 bg-background px-3 py-3">
+        <div className="rounded-lg border border-line/70 bg-bg px-3 py-3">
           <div className="space-y-2 text-sm">
             {summary.branchName ? (
               <div className="flex items-start gap-2">
-                <GitBranch className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                <GitBranch className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ink-3" />
                 <div className="min-w-0 flex-1">
-                  <div className="text-(length:--text-micro) uppercase tracking-(--tracking-eyebrow) text-muted-foreground">Branch</div>
+                  <div className="text-(length:--text-micro) uppercase tracking-(--tracking-eyebrow) text-ink-3">Branch</div>
                   <div className="flex items-start gap-2">
                     <CopyText
                       text={summary.branchName}
                       containerClassName="min-w-0"
-                      className="min-w-0 break-all text-left font-mono text-xs text-foreground"
+                      className="min-w-0 break-all text-left font-mono text-xs text-ink"
                       copiedLabel="Branch copied"
                     >
                       {summary.branchName}
@@ -165,7 +165,7 @@ export function ProjectWorkspaceSummaryCard({
                     <CopyText
                       text={summary.branchName}
                       ariaLabel="Copy branch"
-                      className="mt-0.5 shrink-0 text-muted-foreground hover:text-foreground"
+                      className="mt-0.5 shrink-0 text-ink-3 hover:text-ink"
                       copiedLabel="Branch copied"
                     >
                       <Copy className="h-3.5 w-3.5" />
@@ -182,15 +182,15 @@ export function ProjectWorkspaceSummaryCard({
             */}
             {summary.cwd && !hideHostPaths ? (
               <div className="flex items-start gap-2">
-                <FolderOpen className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                <FolderOpen className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ink-3" />
                 <div className="min-w-0 flex-1">
-                  <div className="text-(length:--text-micro) uppercase tracking-(--tracking-eyebrow) text-muted-foreground">Path</div>
+                  <div className="text-(length:--text-micro) uppercase tracking-(--tracking-eyebrow) text-ink-3">Path</div>
                   <div className="flex items-start gap-2">
                     <CopyText
                       text={summary.cwd}
                       title={summary.cwd}
                       containerClassName="min-w-0"
-                      className="min-w-0 break-all text-left font-mono text-xs text-foreground"
+                      className="min-w-0 break-all text-left font-mono text-xs text-ink"
                       copiedLabel="Path copied"
                     >
                       {truncatePath(summary.cwd)}
@@ -198,7 +198,7 @@ export function ProjectWorkspaceSummaryCard({
                     <CopyText
                       text={summary.cwd}
                       ariaLabel="Copy path"
-                      className="mt-0.5 shrink-0 text-muted-foreground hover:text-foreground"
+                      className="mt-0.5 shrink-0 text-ink-3 hover:text-ink"
                       copiedLabel="Path copied"
                     >
                       <Copy className="h-3.5 w-3.5" />
@@ -210,9 +210,9 @@ export function ProjectWorkspaceSummaryCard({
 
             {summary.primaryServiceUrl ? (
               <div className="flex items-start gap-2">
-                <ExternalLink className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                <ExternalLink className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ink-3" />
                 <div className="min-w-0">
-                  <div className="text-(length:--text-micro) uppercase tracking-(--tracking-eyebrow) text-muted-foreground">Service</div>
+                  <div className="text-(length:--text-micro) uppercase tracking-(--tracking-eyebrow) text-ink-3">Service</div>
                   <a
                     href={summary.primaryServiceUrl}
                     target="_blank"
@@ -221,7 +221,7 @@ export function ProjectWorkspaceSummaryCard({
                       "break-all font-mono text-xs hover:underline",
                       summary.primaryServiceUrlRunning
                         ? "text-emerald-700 hover:text-emerald-800 dark:text-emerald-300 dark:hover:text-emerald-200"
-                        : "text-foreground",
+                        : "text-ink",
                     )}
                   >
                     {summary.primaryServiceUrl}
@@ -234,7 +234,7 @@ export function ProjectWorkspaceSummaryCard({
 
         {summary.issues.length > 0 ? (
           <div className="space-y-2">
-            <div className="text-(length:--text-micro) font-medium uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
+            <div className="text-(length:--text-micro) font-medium uppercase tracking-(--tracking-eyebrow) text-ink-3">
               Linked tasks
             </div>
             <div className="flex flex-wrap gap-2">
@@ -244,7 +244,7 @@ export function ProjectWorkspaceSummaryCard({
               {hiddenIssueCount > 0 ? (
                 <Link
                   to={workspaceHref}
-                  className="inline-flex items-center rounded-full border border-border bg-background px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground hover:underline"
+                  className="inline-flex items-center rounded-full border border-line bg-bg px-2.5 py-1 text-xs text-ink-3 hover:text-ink hover:underline"
                 >
                   +{hiddenIssueCount} more
                 </Link>
@@ -262,7 +262,7 @@ function IssuePill({ issue }: { issue: ProjectWorkspaceLinkedIssue }) {
     <IssuesQuicklook issue={issue}>
       <Link
         to={`/issues/${issue.identifier ?? issue.id}`}
-        className="inline-flex items-center rounded-full border border-border bg-background px-2.5 py-1 font-mono text-xs text-foreground transition-colors hover:border-foreground/30 hover:text-foreground hover:underline"
+        className="inline-flex items-center rounded-full border border-line bg-bg px-2.5 py-1 font-mono text-xs text-ink transition-colors hover:border-ink/30 hover:text-ink hover:underline"
       >
         {issue.identifier ?? issue.id.slice(0, 8)}
       </Link>

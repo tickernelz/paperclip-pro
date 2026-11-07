@@ -31,8 +31,8 @@ function formatCents(cents: number): string {
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-baseline justify-between gap-3 text-sm">
-      <span className="text-muted-foreground">{label}</span>
-      <span className="font-medium text-foreground">{value}</span>
+      <span className="text-ink-3">{label}</span>
+      <span className="font-medium text-ink">{value}</span>
     </div>
   );
 }
@@ -42,22 +42,22 @@ function KanbanBody({ companyId }: { companyId: string }) {
     queryKey: queryKeys.pipelines.list(companyId),
     queryFn: () => pipelinesApi.list(companyId),
   });
-  if (isLoading) return <p className="text-sm text-muted-foreground">Loading pipelines…</p>;
+  if (isLoading) return <p className="text-sm text-ink-3">Loading pipelines…</p>;
   const pipelines = (data ?? []).filter((pipeline) => !pipeline.archivedAt);
   if (pipelines.length === 0) {
-    return <p className="text-sm text-muted-foreground">No pipelines yet.</p>;
+    return <p className="text-sm text-ink-3">No pipelines yet.</p>;
   }
   return (
     <ul className="space-y-2">
       {pipelines.map((pipeline) => (
-        <li key={pipeline.id} className="rounded-md border border-border p-3">
+        <li key={pipeline.id} className="rounded-md border border-line p-3">
           <div className="flex items-center justify-between gap-2">
-            <Link to={`/pipelines/${pipeline.id}`} className="truncate text-sm font-medium text-foreground hover:underline">
+            <Link to={`/pipelines/${pipeline.id}`} className="truncate text-sm font-medium text-ink hover:underline">
               {pipeline.name}
             </Link>
             <Badge variant="outline">{pipeline.stageCount} stages</Badge>
           </div>
-          <div className="mt-1 text-xs text-muted-foreground">
+          <div className="mt-1 text-xs text-ink-3">
             {pipeline.openCaseCount} open
             {typeof pipeline.inMotionCount === "number" ? ` · ${pipeline.inMotionCount} in motion` : ""}
             {typeof pipeline.attentionCount === "number" ? ` · ${pipeline.attentionCount} need attention` : ""}
@@ -73,22 +73,22 @@ function MailboxBody({ companyId }: { companyId: string }) {
     queryKey: queryKeys.attention(companyId),
     queryFn: () => attentionApi.list(companyId, { limit: 20 }),
   });
-  if (isLoading) return <p className="text-sm text-muted-foreground">Loading decisions…</p>;
+  if (isLoading) return <p className="text-sm text-ink-3">Loading decisions…</p>;
   const items = data?.items ?? [];
-  if (items.length === 0) return <p className="text-sm text-muted-foreground">Nothing is waiting.</p>;
+  if (items.length === 0) return <p className="text-sm text-ink-3">Nothing is waiting.</p>;
   return (
     <ul className="space-y-2">
       {items.map((item) => (
-        <li key={item.id} className="rounded-md border border-border p-3">
+        <li key={item.id} className="rounded-md border border-line p-3">
           <div className="flex items-start justify-between gap-2">
-            <span className="min-w-0 flex-1 truncate text-sm text-foreground">
+            <span className="min-w-0 flex-1 truncate text-sm text-ink">
               {item.subject.title ?? item.whyNow}
             </span>
             <Badge variant={item.severity === "critical" ? "destructive" : "secondary"}>
               {item.severity}
             </Badge>
           </div>
-          <div className="mt-1 flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="mt-1 flex items-center gap-2 text-xs text-ink-3">
             <span>{item.sourceKind.replaceAll("_", " ")}</span>
             <span>·</span>
             <span>{relativeTime(item.activityAt)}</span>
@@ -111,28 +111,28 @@ function ClockBody({ companyId }: { companyId: string }) {
   });
   const routines = data ?? [];
   const next = useMemo(() => nextRoutineRun(routines), [routines]);
-  if (isLoading) return <p className="text-sm text-muted-foreground">Loading routines…</p>;
+  if (isLoading) return <p className="text-sm text-ink-3">Loading routines…</p>;
   return (
     <div className="space-y-3">
       <Row label="Local time" value={new Date().toLocaleTimeString()} />
       {next ? (
-        <div className="rounded-md border border-border p-3">
-          <p className="text-xs uppercase tracking-(--tracking-eyebrow) text-muted-foreground">Next run</p>
-          <Link to={`/routines/${next.routineId}`} className="text-sm font-medium text-foreground hover:underline">
+        <div className="rounded-md border border-line p-3">
+          <p className="text-xs uppercase tracking-(--tracking-eyebrow) text-ink-3">Next run</p>
+          <Link to={`/routines/${next.routineId}`} className="text-sm font-medium text-ink hover:underline">
             {next.routineName}
           </Link>
-          <p className="text-xs text-muted-foreground">{relativeTime(new Date(next.atMs))}</p>
+          <p className="text-xs text-ink-3">{relativeTime(new Date(next.atMs))}</p>
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground">No scheduled routine run.</p>
+        <p className="text-sm text-ink-3">No scheduled routine run.</p>
       )}
       <ul className="space-y-1">
         {routines.slice(0, 12).map((routine) => (
           <li key={routine.id} className="flex items-center justify-between gap-2 text-sm">
-            <Link to={`/routines/${routine.id}`} className="min-w-0 truncate text-foreground hover:underline">
+            <Link to={`/routines/${routine.id}`} className="min-w-0 truncate text-ink hover:underline">
               {routine.title}
             </Link>
-            <span className="shrink-0 text-xs text-muted-foreground">
+            <span className="shrink-0 text-xs text-ink-3">
               {routine.lastRun ? relativeTime(routine.lastRun.createdAt) : "never run"}
             </span>
           </li>
@@ -151,7 +151,7 @@ function CoinsBody({ companyId }: { companyId: string }) {
     queryKey: queryKeys.budgets.overview(companyId),
     queryFn: () => budgetsApi.overview(companyId),
   });
-  if (!summary) return <p className="text-sm text-muted-foreground">Loading costs…</p>;
+  if (!summary) return <p className="text-sm text-ink-3">Loading costs…</p>;
   return (
     <div className="space-y-3">
       <Row label="Spent this month" value={formatCents(summary.costs.monthSpendCents)} />
@@ -160,7 +160,7 @@ function CoinsBody({ companyId }: { companyId: string }) {
       <Row label="Active budget incidents" value={String(summary.budgets.activeIncidents)} />
       <Row label="Paused by budget" value={`${summary.budgets.pausedAgents} agents · ${summary.budgets.pausedProjects} projects`} />
       {budgets ? (
-        <Link to="/budgets" className="block text-sm text-primary hover:underline">
+        <Link to="/budgets" className="block text-sm text-accent hover:underline">
           Budget settings
         </Link>
       ) : null}
@@ -173,21 +173,21 @@ function AlarmBody({ companyId }: { companyId: string }) {
     queryKey: queryKeys.heartbeats(companyId),
     queryFn: () => heartbeatsApi.list(companyId, undefined, 50, { summary: true }),
   });
-  if (isLoading) return <p className="text-sm text-muted-foreground">Loading runs…</p>;
+  if (isLoading) return <p className="text-sm text-ink-3">Loading runs…</p>;
   const failed = (data ?? []).filter((run: HeartbeatRun) => FAILED_RUN_STATUSES[run.status]).slice(0, 10);
-  if (failed.length === 0) return <p className="text-sm text-muted-foreground">No recent failures.</p>;
+  if (failed.length === 0) return <p className="text-sm text-ink-3">No recent failures.</p>;
   return (
     <ul className="space-y-2">
       {failed.map((run) => (
-        <li key={run.id} className="rounded-md border border-border p-3">
+        <li key={run.id} className="rounded-md border border-line p-3">
           <Link
             to={`/agents/${run.agentId}/runs/${run.id}`}
-            className="flex items-center justify-between gap-2 text-sm text-foreground hover:underline"
+            className="flex items-center justify-between gap-2 text-sm text-ink hover:underline"
           >
             <span className="min-w-0 truncate font-mono">{run.agentId.slice(0, 8)}</span>
             <Badge variant="destructive">{run.status}</Badge>
           </Link>
-          <p className="mt-1 truncate text-xs text-muted-foreground">
+          <p className="mt-1 truncate text-xs text-ink-3">
             {run.error ?? run.errorCode ?? "No error text"}
             {run.finishedAt ? ` · ${relativeTime(run.finishedAt)}` : ""}
           </p>

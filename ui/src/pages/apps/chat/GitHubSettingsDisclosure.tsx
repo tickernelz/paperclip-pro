@@ -11,7 +11,7 @@ export function GitHubSettingsDisclosure({
 }) {
   return (
     <details className="group/disclosure text-sm">
-      <summary className="flex cursor-pointer list-none items-center gap-2 rounded-sm py-2 font-medium text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring">
+      <summary className="flex cursor-pointer list-none items-center gap-2 rounded-sm py-2 font-medium text-ink-3 outline-none hover:text-ink focus-visible:ring-2 focus-visible:ring-focus">
         <ChevronRight className="size-4 shrink-0 transition-transform group-open/disclosure:rotate-90" />
         {title}
       </summary>

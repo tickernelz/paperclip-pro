@@ -71,9 +71,9 @@ function ActivityCard({
       <CardContent className="space-y-4">
         {/* Timeline run row */}
         <div className="flex items-center gap-2 text-xs">
-          <span className="font-medium text-foreground">ClaudeCoder</span>
-          <span className="text-muted-foreground">run</span>
-          <span className="rounded-md border border-border bg-accent/40 px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+          <span className="font-medium text-ink">ClaudeCoder</span>
+          <span className="text-ink-3">run</span>
+          <span className="rounded-md border border-line bg-bg-3/40 px-1.5 py-0.5 font-mono text-[10px] text-ink-3">
             3a648d1b
           </span>
           <RunStatusBadge status="cancelled" operatorInterrupted />
@@ -82,17 +82,17 @@ function ActivityCard({
         {/* Assignee change row + wake row */}
         <div className="space-y-1">
           <div className="flex flex-wrap items-center gap-1.5 text-xs">
-            <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Assignee</span>
+            <span className="text-xs font-medium uppercase tracking-wider text-ink-3">Assignee</span>
             <AssigneeChip assignee={claude} resolvers={resolvers} />
-            <ArrowRight className="h-3 w-3 text-muted-foreground" />
+            <ArrowRight className="h-3 w-3 text-ink-3" />
             <AssigneeChip assignee={to} resolvers={resolvers} />
           </div>
           <HandoffWakeRow to={to} resolvers={resolvers} interruptedRunAttached={interruptedRunAttached} />
         </div>
 
         {/* Composer footer preview */}
-        <div className="rounded-md border border-dashed border-border/70 p-2">
-          <div className="mb-1 text-[10px] uppercase tracking-wider text-muted-foreground">Composer preview</div>
+        <div className="rounded-md border border-dashed border-line/70 p-2">
+          <div className="mb-1 text-[10px] uppercase tracking-wider text-ink-3">Composer preview</div>
           <ComposerHandoffPreviewRow preview={preview} resolvers={resolvers} />
         </div>
       </CardContent>
@@ -175,29 +175,29 @@ export const AssigneePicker: Story = {
   render: () => {
     const copy = describeReassignInterrupt({ runningAgentName: "ClaudeCoder" });
     const sectionHeader = (text: string) => (
-      <div className="px-2 pb-0.5 pt-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+      <div className="px-2 pb-0.5 pt-1.5 text-[10px] font-medium uppercase tracking-wider text-ink-3">
         {text}
       </div>
     );
     return (
       <div className="flex flex-col gap-6 p-4 sm:flex-row" data-testid="interrupt-handoff-assignee-picker">
-        <div className="w-60 space-y-1 rounded-md border border-border bg-popover p-1">
+        <div className="w-60 space-y-1 rounded-md border border-line bg-bg-2 p-1">
           <div className="px-1 pt-1">
             <AssigneeRunningBanner copy={copy} />
           </div>
           {sectionHeader("Agents")}
-          <button className="flex w-full items-center gap-2 rounded bg-accent px-2 py-1.5 text-left text-xs">
+          <button className="flex w-full items-center gap-2 rounded bg-bg-3 px-2 py-1.5 text-left text-xs">
             ClaudeCoder
           </button>
-          <button className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-xs hover:bg-accent/50">
+          <button className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-xs hover:bg-bg-3/50">
             QA
           </button>
           {sectionHeader("Board users")}
-          <button className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-xs hover:bg-accent/50">
-            <User className="h-3 w-3 text-muted-foreground" /> Assign to me
+          <button className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-xs hover:bg-bg-3/50">
+            <User className="h-3 w-3 text-ink-3" /> Assign to me
           </button>
         </div>
-        <div className="w-60 rounded-md border border-border bg-popover p-1">
+        <div className="w-60 rounded-md border border-line bg-bg-2 p-1">
           <InterruptAssignConfirm
             copy={copy}
             to={qa}

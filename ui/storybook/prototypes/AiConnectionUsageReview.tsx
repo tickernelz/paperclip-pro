@@ -167,7 +167,7 @@ export function AiConnectionUsageReview({ scenarios }: { scenarios: Scenario[] }
       <main className="mx-auto max-w-4xl space-y-6 p-6">
         <div className={scenarios.length > 1 ? "grid gap-6 md:grid-cols-2" : "max-w-2xl"}>
           {scenarios.map(({ account: row }) => (
-            <section key={row.id} className="space-y-4 rounded-lg border border-border p-4" aria-label={row.name}>
+            <section key={row.id} className="space-y-4 rounded-lg border border-line p-4" aria-label={row.name}>
               <h2 className="text-lg font-semibold">{row.name}</h2>
               <ManagedAiConnectionDetails connection={connection(row)} />
             </section>

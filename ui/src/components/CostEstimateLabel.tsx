@@ -11,7 +11,7 @@ export function CostEstimateLabel({
   return (
     <Badge
       variant="outline"
-      className="font-normal text-muted-foreground"
+      className="font-normal text-ink-3"
       title={`${estimatedEventCount} estimated ${estimatedEventCount === 1 ? "charge" : "charges"}. Calculated from token usage and published rates; provider bills may differ.`}
     >
       {allEstimated ? "Estimated" : "Partially estimated"}

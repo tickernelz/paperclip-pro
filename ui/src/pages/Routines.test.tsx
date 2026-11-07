@@ -913,7 +913,7 @@ describe("Routines page", () => {
     }
 
     expect(runNowButton).toBeTruthy();
-    expect(runNowButton?.getAttribute("data-variant")).toBe("outline");
+    expect(runNowButton?.getAttribute("data-variant")).toBe("secondary");
 
     await act(async () => {
       root.unmount();

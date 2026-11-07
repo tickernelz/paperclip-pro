@@ -34,10 +34,10 @@ export function EmailConnectionAccess({
     },
   });
   if (grants.isLoading || installs.isLoading)
-    return <p className="text-sm text-muted-foreground">Loading access…</p>;
+    return <p className="text-sm text-ink-3">Loading access…</p>;
   if (grants.error || installs.error)
     return (
-      <p role="alert" className="text-sm text-destructive">
+      <p role="alert" className="text-sm text-bad">
         Connection access could not be loaded.
       </p>
     );
@@ -106,11 +106,11 @@ export function EmailConnectionAccess({
             }
           />
         )}
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-ink-3">
           Removing an assigned agent stops receiving and sending from its inbox.
         </p>
         {save.error && (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-sm text-bad">
             {save.error.message}
           </p>
         )}

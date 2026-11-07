@@ -88,7 +88,7 @@ export function MobileBottomNav({ visible }: MobileBottomNavProps) {
   return (
     <nav
       className={cn(
-        "mobile-bottom-nav fixed bottom-0 left-0 right-0 z-30 bg-muted md:hidden pb-(--sz-safe-bottom)",
+        "mobile-bottom-nav fixed bottom-0 left-0 right-0 z-30 bg-bg-3 md:hidden pb-(--sz-safe-bottom)",
       )}
       data-visible={visible}
       inert={!visible}
@@ -110,8 +110,8 @@ export function MobileBottomNav({ visible }: MobileBottomNavProps) {
                 className={cn(
                   "relative flex min-w-0 flex-col items-center justify-center gap-1 rounded-md text-(length:--text-nano) font-medium transition-colors",
                   active
-                    ? "text-foreground"
-                    : "text-muted-foreground hover:text-foreground",
+                    ? "text-ink"
+                    : "text-ink-3 hover:text-ink",
                 )}
               >
                 <Icon className="h-(--sz-18px) w-(--sz-18px)" />
@@ -130,8 +130,8 @@ export function MobileBottomNav({ visible }: MobileBottomNavProps) {
                 cn(
                   "relative flex min-w-0 flex-col items-center justify-center gap-1 rounded-md text-(length:--text-nano) font-medium transition-colors",
                   isActive
-                    ? "text-foreground"
-                    : "text-muted-foreground hover:text-foreground",
+                    ? "text-ink"
+                    : "text-ink-3 hover:text-ink",
                 )
               }
             >
@@ -140,7 +140,7 @@ export function MobileBottomNav({ visible }: MobileBottomNavProps) {
                   <span className="relative">
                     <Icon className={cn("h-(--sz-18px) w-(--sz-18px)", isActive && "stroke-(length:--sw-2_3)")} />
                     {item.badge != null && item.badge > 0 && (
-                      <Badge variant="ghost" className="absolute -right-2 -top-2 bg-primary px-1.5 text-(length:--text-nano) leading-none text-primary-foreground">
+                      <Badge variant="ghost" className="absolute -right-2 -top-2 bg-accent px-1.5 text-(length:--text-nano) leading-none text-accent-ink">
                         {item.badge > 99 ? "99+" : item.badge}
                       </Badge>
                     )}

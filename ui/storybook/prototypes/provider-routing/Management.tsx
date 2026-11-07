@@ -195,13 +195,13 @@ export function Management({
             disabled={readOnly}
             onChange={(event) => setName(event.target.value)}
           />
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-ink-3">
             {selected.method} ·{" "}
             {selected.status === "connected" ? "Connected" : "Revoked"}
           </p>
           <Button
             ref={rotateTrigger}
-            variant="outline"
+            variant="secondary"
             className="self-start"
             disabled={readOnly}
             onClick={() => setRotate(true)}
@@ -210,11 +210,11 @@ export function Management({
           </Button>
           <AdvancedOptions label="Advanced connection settings">
             <dl className="grid grid-cols-1 gap-2 text-sm sm:grid-cols-2">
-              <dt className="text-muted-foreground">Destination</dt>
+              <dt className="text-ink-3">Destination</dt>
               <dd className="break-all font-mono text-xs">
                 {selected.endpoint}
               </dd>
-              <dt className="text-muted-foreground">API format</dt>
+              <dt className="text-ink-3">API format</dt>
               <dd>
                 {selected.protocols
                   .map((format) => formatLabels[format])
@@ -230,7 +230,7 @@ export function Management({
                 Use a different endpoint
               </Button>
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-ink-3">
               A different endpoint creates a separate connection. Nova and Atlas
               keep their current destination until you select the new connection
               for them.
@@ -239,7 +239,7 @@ export function Management({
           {selected.id === "gateway" && (
             <details className="text-sm">
               <summary className="cursor-pointer">Used by 2 agents</summary>
-              <ul className="mt-3 space-y-2 text-muted-foreground">
+              <ul className="mt-3 space-y-2 text-ink-3">
                 <li>Nova · Codex · engineering-coder</li>
                 <li>Atlas · OpenCode · engineering-fast</li>
               </ul>
@@ -248,7 +248,7 @@ export function Management({
         </>
       ) : tab === "models" ? (
         <>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-ink-3">
             Add model IDs or gateway aliases this connection serves. Each agent
             chooses its own model.
           </p>
@@ -256,10 +256,10 @@ export function Management({
             {models.map((model) => (
               <div
                 key={model}
-                className="flex flex-wrap items-center justify-between gap-2 border-b border-border pb-3"
+                className="flex flex-wrap items-center justify-between gap-2 border-b border-line pb-3"
               >
                 <code className="break-all text-xs">{model}</code>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs text-ink-3">
                   {contextWindows[model] ?? "128000"} tokens · Streaming · Tools
                 </span>
               </div>
@@ -282,7 +282,7 @@ export function Management({
             hint="Use the limit supplied by your provider for this alias."
           />
           <Button
-            variant="outline"
+            variant="secondary"
             className="self-start"
             disabled={
               readOnly ||
@@ -312,7 +312,7 @@ export function Management({
             onChange={setHelper}
             options={models.map((model) => ({ value: model, label: model }))}
           />
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             Used for titles and other auxiliary requests when supported by the
             harness. Keeps those requests on this connection.
           </p>
@@ -338,7 +338,7 @@ export function Management({
           </Notice>
           <Button
             ref={revokeTrigger}
-            variant="outline"
+            variant="secondary"
             className="self-start"
             disabled={readOnly || selected.status === "expired"}
             onClick={() => setRevoke(true)}
@@ -348,7 +348,7 @@ export function Management({
         </>
       )}
       {readOnly && (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           Only the connection owner can edit these settings.
         </p>
       )}
@@ -384,7 +384,7 @@ export function Management({
             </DialogDescription>
           </DialogHeader>
           {selected.method === "Subscription" ? (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-ink-3">
               Sign in again to replace this subscription credential.
             </p>
           ) : (
@@ -447,7 +447,7 @@ export function Management({
               Cancel
             </Button>
             <Button
-              variant="destructive"
+              variant="danger"
               onClick={() => {
                 const next = { ...selected, status: "expired" as const };
                 setSelected(next);

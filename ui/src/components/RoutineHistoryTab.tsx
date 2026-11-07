@@ -198,16 +198,16 @@ export function RoutineHistoryTab({
 
   if (revisionsQuery.error) {
     return (
-      <div className="rounded-md border border-l-2 border-l-destructive border-border p-4 space-y-3">
+      <div className="rounded-md border border-l-2 border-l-bad border-line p-4 space-y-3">
         <div>
           <p className="text-sm font-medium">Could not load revisions</p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             {revisionsQuery.error instanceof Error
               ? revisionsQuery.error.message
               : "Unknown error loading revisions."}
           </p>
         </div>
-        <Button size="sm" variant="outline" onClick={() => revisionsQuery.refetch()}>
+        <Button size="sm" variant="secondary" onClick={() => revisionsQuery.refetch()}>
           Retry
         </Button>
       </div>
@@ -243,7 +243,7 @@ export function RoutineHistoryTab({
               icon={HistoryIcon}
               message="No edits yet"
             />
-            <p className="text-center text-xs text-muted-foreground">
+            <p className="text-center text-xs text-ink-3">
               Revision 1 is the only history this routine has. Saving an edit creates the first
               additional revision.
             </p>
@@ -339,13 +339,13 @@ function HistoricalPreviewBanner({
           <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
             Viewing revision {revisionNumber} (read-only)
           </p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             Restoring this revision creates a new revision {nextRevisionNumber} with the same content.
             History stays append-only.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" size="sm" onClick={onReturn} disabled={pending}>
+          <Button variant="secondary" size="sm" onClick={onReturn} disabled={pending}>
             Return to current
           </Button>
           <Button size="sm" onClick={onRestore} disabled={pending}>
@@ -376,13 +376,13 @@ function ConflictBanner({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1">
           <p className="text-sm font-medium text-amber-800 dark:text-amber-200">Unsaved routine edits</p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             You changed {fieldsText} but haven&apos;t saved yet. Save or discard before previewing or
             restoring an older revision.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Button variant="outline" size="sm" onClick={onDiscard}>
+          <Button variant="secondary" size="sm" onClick={onDiscard}>
             Discard changes
           </Button>
           <Button size="sm" onClick={onSave}>
@@ -391,7 +391,7 @@ function ConflictBanner({
         </div>
       </div>
       {dirtyFields.length > 0 && (
-        <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
+        <ul className="mt-3 space-y-1 text-xs text-ink-3">
           {dirtyFields.map((field) => (
             <li key={field.key} className="flex items-center gap-2">
               <span className="h-1 w-1 rounded-full bg-amber-400" />
@@ -428,10 +428,10 @@ function RevisionList({
   return (
     <aside className="space-y-1">
       <header className="flex items-center justify-between pb-2">
-        <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">
+        <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-ink-3">
           Revisions
         </p>
-        <span className="text-(length:--text-micro) text-muted-foreground">{totalRevisions} total</span>
+        <span className="text-(length:--text-micro) text-ink-3">{totalRevisions} total</span>
       </header>
       {revisions.map((revision) => {
         const isSelected = revision.id === selectedRevisionId;
@@ -445,10 +445,10 @@ function RevisionList({
           : isSelected && isHistorical
           ? "border-amber-500/40 bg-amber-500/10"
           : isSelected
-          ? "border-border bg-accent/40"
+          ? "border-line bg-bg-3/40"
           : blockedByEdits
           ? "border-amber-500/30 bg-amber-500/5 opacity-70 cursor-not-allowed"
-          : "border-border/60 hover:bg-accent/40";
+          : "border-line/60 hover:bg-bg-3/40";
         return (
           <button
             key={revision.id}
@@ -461,7 +461,7 @@ function RevisionList({
             <div className="flex items-center gap-2 text-sm font-medium">
               <span>rev {revision.revisionNumber}</span>
               {isCurrent && (
-                <Badge variant="outline" className="border-border px-1.5 text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
+                <Badge variant="outline" className="border-line px-1.5 text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow) text-ink-3">
                   Current
                 </Badge>
               )}
@@ -471,7 +471,7 @@ function RevisionList({
                 </Badge>
               )}
             </div>
-            <div className="text-xs text-muted-foreground truncate">
+            <div className="text-xs text-ink-3 truncate">
               {relativeTime(revision.createdAt)} • {getActorLabel(revision)}
               {revision.changeSummary ? ` • ${revision.changeSummary}` : ""}
             </div>
@@ -513,7 +513,7 @@ function RevisionPreview({
   const currentSnapshot = currentRevision?.snapshot.routine ?? null;
   const restoreLabel = isHistorical ? "Restore this revision" : "Restore this revision";
   const cardWrapper = `rounded-md border transition-colors duration-1000 ${
-    highlighted ? "border-emerald-500/40 bg-emerald-500/10" : "border-border"
+    highlighted ? "border-emerald-500/40 bg-emerald-500/10" : "border-line"
   }`;
 
   const envSummary = summarizeEnv(snapshot.env ?? null);
@@ -577,13 +577,13 @@ function RevisionPreview({
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="space-y-1 min-w-0">
             <p className="text-sm font-medium">rev {revision.revisionNumber}</p>
-            <p className="text-xs text-muted-foreground truncate">
+            <p className="text-xs text-ink-3 truncate">
               Saved {relativeTime(revision.createdAt)} by {getActorLabel(revision)}
               {revision.changeSummary ? ` · ${revision.changeSummary}` : ""}
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <Button variant="outline" size="sm" onClick={onCompare}>
+            <Button variant="secondary" size="sm" onClick={onCompare}>
               <Search className="mr-1.5 h-3.5 w-3.5" />
               Compare with current
             </Button>
@@ -592,7 +592,7 @@ function RevisionPreview({
               onClick={onRestore}
               disabled={!isHistorical || restorePending}
               aria-label={restoreLabel}
-              className={!isHistorical ? "text-muted-foreground/60" : undefined}
+              className={!isHistorical ? "" : undefined}
             >
               <RotateCcw className="mr-1.5 h-3.5 w-3.5" />
               {restoreLabel}
@@ -602,15 +602,15 @@ function RevisionPreview({
       </header>
 
       <div className={`${cardWrapper} p-3`}>
-        <p className="pb-2 text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">
+        <p className="pb-2 text-xs font-medium uppercase tracking-(--tracking-caps) text-ink-3">
           Structured fields
         </p>
-        <div className="grid gap-3 md:grid-cols-2 divide-y md:divide-y-0 divide-border">
+        <div className="grid gap-3 md:grid-cols-2 divide-y md:divide-y-0 divide-line">
           {fieldRows.map((row) => (
             <div key={row.key} className="space-y-1 p-2">
-              <p className="text-(length:--text-micro) uppercase tracking-wide text-muted-foreground">{row.label}</p>
+              <p className="text-(length:--text-micro) uppercase tracking-wide text-ink-3">{row.label}</p>
               <p className="text-sm">
-                {row.value || <span className="text-muted-foreground">—</span>}
+                {row.value || <span className="text-ink-3">—</span>}
                 {row.differs && (
                   <Badge variant="outline" className="ml-2 border-amber-500/40 bg-amber-500/10 px-1.5 text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow) text-amber-800 dark:text-amber-200">
                     differs from current
@@ -623,37 +623,37 @@ function RevisionPreview({
       </div>
 
       <div className={`${cardWrapper} p-3 space-y-2`}>
-        <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">
+        <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-ink-3">
           Description
         </p>
-        <div className="rounded-md bg-background/40 p-3 text-sm leading-7">
+        <div className="rounded-md bg-bg/40 p-3 text-sm leading-7">
           {snapshot.description ? (
             <MarkdownBody>{snapshot.description}</MarkdownBody>
           ) : (
-            <span className="text-muted-foreground">No description</span>
+            <span className="text-ink-3">No description</span>
           )}
         </div>
       </div>
 
       <div className={`${cardWrapper} p-3 space-y-2`}>
-        <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">
+        <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-ink-3">
           Triggers ({triggers.length})
         </p>
         {triggers.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No triggers in this revision.</p>
+          <p className="text-sm text-ink-3">No triggers in this revision.</p>
         ) : (
-          <ul className="divide-y divide-border">
+          <ul className="divide-y divide-line">
             {triggers.map((trigger) => (
               <li key={trigger.id} className="py-2 flex flex-wrap items-center gap-2 text-sm">
-                <Badge variant="outline" className="border-border text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
+                <Badge variant="outline" className="border-line text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow) text-ink-3">
                   {trigger.kind}
                 </Badge>
                 <span className="font-medium">{trigger.label ?? trigger.kind}</span>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs text-ink-3">
                   {summarizeTriggerSnapshot(trigger)}
                 </span>
                 <span
-                  className={`ml-auto text-xs ${trigger.enabled ? "text-emerald-400" : "text-muted-foreground"}`}
+                  className={`ml-auto text-xs ${trigger.enabled ? "text-emerald-400" : "text-ink-3"}`}
                 >
                   {trigger.enabled ? "enabled" : "disabled"}
                 </span>
@@ -661,7 +661,7 @@ function RevisionPreview({
             ))}
           </ul>
         )}
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-ink-3">
           Webhook secrets are not stored in revisions. If a restored webhook trigger needs re-creation,
           Paperclip mints fresh secret material at restore time.
         </p>
@@ -669,14 +669,14 @@ function RevisionPreview({
 
       {snapshot.variables.length > 0 && (
         <div className={`${cardWrapper} p-3 space-y-2`}>
-          <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">
+          <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-ink-3">
             Variables ({snapshot.variables.length})
           </p>
-          <ul className="divide-y divide-border">
+          <ul className="divide-y divide-line">
             {snapshot.variables.map((variable) => (
               <li key={variable.name} className="py-2 flex items-center justify-between text-sm">
                 <span className="font-mono text-xs">{variable.name}</span>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs text-ink-3">
                   default: {formatVariableDefault(variable)}
                 </span>
               </li>
@@ -758,7 +758,7 @@ function RestoreConfirmDialog({
           />
         </div>
         <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={pending}>
+          <Button variant="secondary" onClick={() => onOpenChange(false)} disabled={pending}>
             Cancel
           </Button>
           <Button onClick={onConfirm} disabled={pending}>
@@ -841,15 +841,15 @@ function RoutineRevisionDiffModal({
         </div>
         <div className="overflow-auto flex-1 space-y-4">
           <section className="space-y-2">
-            <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">
+            <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-ink-3">
               Field changes
             </p>
             {fieldChanges.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No structural field changes.</p>
+              <p className="text-sm text-ink-3">No structural field changes.</p>
             ) : (
-              <table className="w-full text-sm border border-border rounded-md overflow-hidden">
+              <table className="w-full text-sm border border-line rounded-md overflow-hidden">
                 <thead>
-                  <tr className="text-xs uppercase tracking-wide bg-muted/30 text-muted-foreground">
+                  <tr className="text-xs uppercase tracking-wide bg-bg-3/30 text-ink-3">
                     <th className="px-3 py-2 text-left">Field</th>
                     <th className="px-3 py-2 text-left">Old value</th>
                     <th className="px-3 py-2 text-left">New value</th>
@@ -857,7 +857,7 @@ function RoutineRevisionDiffModal({
                 </thead>
                 <tbody>
                   {fieldChanges.map((change) => (
-                    <tr key={change.field} className="border-t border-border/60">
+                    <tr key={change.field} className="border-t border-line/60">
                       <td className="px-3 py-2 align-top text-xs font-medium">{change.field}</td>
                       <td className="px-3 py-2 align-top text-xs text-red-700 dark:text-red-300">
                         {change.oldValue ?? "—"}
@@ -872,14 +872,14 @@ function RoutineRevisionDiffModal({
             )}
           </section>
           <section className="space-y-2">
-            <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">
+            <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-ink-3">
               Description diff
             </p>
             <DiffTable rows={descriptionDiff} />
           </section>
         </div>
         <DialogFooter className="justify-between sm:justify-between">
-          <Button variant="outline" onClick={() => onOpenChange(false)}>
+          <Button variant="secondary" onClick={() => onOpenChange(false)}>
             Close
           </Button>
           {leftIsHistorical && left && (
@@ -920,7 +920,7 @@ function RevisionPicker({
       <select
         value={value}
         onChange={(event) => onChange(event.target.value)}
-        className="h-8 min-w-(--sz-12rem) rounded-md border border-border/60 bg-background px-2 text-xs"
+        className="h-8 min-w-(--sz-12rem) rounded-md border border-line/60 bg-bg px-2 text-xs"
       >
         {revisions.map((revision) => (
           <option key={revision.id} value={revision.id}>
@@ -935,10 +935,10 @@ function RevisionPicker({
 
 function DiffTable({ rows }: { rows: DiffRow[] }) {
   if (rows.length === 0) {
-    return <p className="text-sm text-muted-foreground">No description on either revision.</p>;
+    return <p className="text-sm text-ink-3">No description on either revision.</p>;
   }
   if (rows.every((row) => row.kind === "context")) {
-    return <p className="text-sm text-muted-foreground">Descriptions are identical.</p>;
+    return <p className="text-sm text-ink-3">Descriptions are identical.</p>;
   }
   const lineClassesByKind: Record<DiffRow["kind"], string> = {
     context: "bg-transparent",
@@ -951,8 +951,8 @@ function DiffTable({ rows }: { rows: DiffRow[] }) {
     added: "+",
   };
   return (
-    <div className="rounded-md border border-border text-xs font-mono leading-6 overflow-hidden">
-      <div className="grid grid-cols-(--gtc-1) border-b border-border/60 bg-muted/30 px-3 py-2 text-(length:--text-micro) uppercase tracking-wide text-muted-foreground">
+    <div className="rounded-md border border-line text-xs font-mono leading-6 overflow-hidden">
+      <div className="grid grid-cols-(--gtc-1) border-b border-line/60 bg-bg-3/30 px-3 py-2 text-(length:--text-micro) uppercase tracking-wide text-ink-3">
         <span>Old</span>
         <span>New</span>
         <span />
@@ -961,15 +961,15 @@ function DiffTable({ rows }: { rows: DiffRow[] }) {
       {rows.map((row, index) => (
         <div
           key={`${row.kind}-${index}-${row.oldLineNumber ?? "x"}-${row.newLineNumber ?? "x"}`}
-          className={`grid grid-cols-(--gtc-1) gap-0 border-b border-border/30 px-3 ${lineClassesByKind[row.kind]}`}
+          className={`grid grid-cols-(--gtc-1) gap-0 border-b border-line/30 px-3 ${lineClassesByKind[row.kind]}`}
         >
-          <span className="select-none border-r border-border/30 pr-3 text-right text-muted-foreground">
+          <span className="select-none border-r border-line/30 pr-3 text-right text-ink-3">
             {row.oldLineNumber ?? ""}
           </span>
-          <span className="select-none border-r border-border/30 px-3 text-right text-muted-foreground">
+          <span className="select-none border-r border-line/30 px-3 text-right text-ink-3">
             {row.newLineNumber ?? ""}
           </span>
-          <span className="select-none px-3 text-center text-muted-foreground">
+          <span className="select-none px-3 text-center text-ink-3">
             {markerByKind[row.kind]}
           </span>
           <pre className="overflow-x-auto whitespace-pre-wrap break-words px-3 py-0 text-inherit">

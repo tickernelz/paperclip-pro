@@ -1,3 +1,6 @@
+@layer vendor, theme, base, utilities, components, layout, state;
+
+@import "@mdxeditor/editor/style.css" layer(vendor);
 @import "./motion-tokens.css";
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
@@ -29,6 +32,8 @@
 
 @custom-variant dark (&:is(.dark *));
 
+@layer layout {
+
 /* Shared file tree: preserve desktop indentation and leave room for labels on
    narrow screens, including deeply nested skill packages. */
 .file-tree-row {
@@ -48,56 +53,46 @@
   --file-tree-indent-step: calc(var(--spacing) * 6);
   padding-inline-start: calc(var(--file-tree-indent-base) + var(--file-tree-depth) * var(--file-tree-indent-step));
 }
+}
 
 @theme inline {
-  --font-sans: "InterVariable", "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--primary-foreground);
-  --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
-  --color-muted-foreground: var(--muted-foreground);
+  --font-sans: var(--f-sans);
+  --font-mono: var(--f-mono);
+  --font-heading: var(--f-sans);
+  --color-bg: var(--bg);
+  --color-bg-2: var(--bg-2);
+  --color-bg-3: var(--bg-3);
+  --color-line-soft: var(--line-soft);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
   --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
-  --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
-  --color-chart-1: var(--chart-1);
-  --color-chart-2: var(--chart-2);
-  --color-chart-3: var(--chart-3);
-  --color-chart-4: var(--chart-4);
-  --color-chart-5: var(--chart-5);
-  --color-sidebar: var(--sidebar);
-  --color-sidebar-foreground: var(--sidebar-foreground);
-  --color-sidebar-primary: var(--sidebar-primary);
-  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
-  --color-sidebar-accent: var(--sidebar-accent);
-  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
-  --color-sidebar-border: var(--sidebar-border);
-  --color-sidebar-ring: var(--sidebar-ring);
-  /* Multiplicative radius ladder (modern shadcn/Tailwind v4 mapping):
-     sm/md/lg/xl/2xl/3xl/4xl = 0.6/0.8/1.0/1.4/1.8/2.2/2.6 x the single
-     --radius knob (base anchor 0.5rem = 8px; rounded-lg IS the anchor).
-     Replaces the additive +/-px ladder (DECISION-SHEET B4 → Run 3 review):
-     retune the whole app's corner language by editing --radius alone. */
-  --radius-sm: calc(var(--radius) * 0.6);
-  --radius-md: calc(var(--radius) * 0.8);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) * 1.4);
-  --font-heading: var(--font-sans);
-  --radius-2xl: calc(var(--radius) * 1.8);
-  --radius-3xl: calc(var(--radius) * 2.2);
-  --radius-4xl: calc(var(--radius) * 2.6);
+  --color-accent-ink: var(--accent-ink);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-press: var(--accent-press);
+  --color-ok: var(--ok);
+  --color-ok-soft: var(--ok-soft);
+  --color-warn: var(--warn);
+  --color-warn-soft: var(--warn-soft);
+  --color-bad: var(--bad);
+  --color-bad-soft: var(--bad-soft);
+  --color-bad-hover: var(--bad-hover);
+  --color-run: var(--run);
+  --color-run-soft: var(--run-soft);
+  --color-focus: var(--focus);
+  --radius-sm: var(--r-sm);
+  --radius-md: var(--r-md);
+  --radius-lg: var(--r-lg);
+  --radius-xl: calc(var(--r-lg) * 1.4);
+  --radius-2xl: calc(var(--r-lg) * 1.8);
+  --radius-3xl: calc(var(--r-lg) * 2.2);
+  --radius-4xl: calc(var(--r-lg) * 2.6);
 }
+
+@layer base {
 
 :root {
   color-scheme: light;
@@ -113,43 +108,54 @@
   --composer-effort-hover-scale: 1.08;
   --composer-effort-press-scale: 1.16;
   --composer-effort-halo: 0 0 0 calc(var(--spacing) * 1.5) color-mix(in oklab, var(--tc-mode-ask) 14%, transparent);
-  --radius: 0.5rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  --bg: oklch(0.975 0.003 265);
+  --bg-2: oklch(1 0 0);
+  --bg-3: oklch(0.948 0.005 265);
+  --line-soft: oklch(0.925 0.005 265);
+  --line: oklch(0.885 0.007 265);
+  --line-strong: oklch(0.58 0.012 265);
+  --ink: oklch(0.225 0.014 268);
+  --ink-2: oklch(0.395 0.014 268);
+  --ink-3: oklch(0.505 0.014 268);
+  --accent: oklch(0.505 0.2 277);
+  --accent-ink: oklch(0.99 0.004 277);
+  --accent-soft: oklch(0.505 0.2 277 / 0.1);
+  --accent-hover: oklch(0.455 0.2 277);
+  --accent-press: oklch(0.41 0.19 277);
+  --ok: oklch(0.47 0.12 152);
+  --ok-soft: oklch(0.5 0.12 152 / 0.12);
+  --warn: oklch(0.49 0.11 70);
+  --warn-soft: oklch(0.62 0.13 75 / 0.14);
+  --bad: oklch(0.52 0.19 25);
+  --bad-soft: oklch(0.52 0.19 25 / 0.1);
+  --bad-hover: oklch(0.47 0.19 25);
+  --run: oklch(0.48 0.11 225);
+  --run-soft: oklch(0.51 0.11 225 / 0.12);
+  --focus: oklch(0.55 0.2 277);
+  --shadow-2: 0 12px 32px -12px oklch(0.225 0.02 268 / 0.28), 0 2px 6px -2px oklch(0.225 0.02 268 / 0.12);
+  --f-sans: "InterVariable", "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --f-mono: "Plex Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  --t-12: 12px;
+  --t-13: 13px;
+  --t-14: 14px;
+  --t-16: 16px;
+  --t-20: 20px;
+  --t-24: 24px;
+  --t-32: 32px;
+  --r-sm: 4px;
+  --r-md: 6px;
+  --r-lg: 10px;
+  --r-pill: 999px;
+  --dur-1: 120ms;
+  --dur-2: 200ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --row-h: 36px;
+  --topbar-h: 48px;
+  --nav-w: 232px;
   --scrollbar-thumb: oklch(0.7 0 0);
   --scrollbar-thumb-hover: oklch(0.6 0 0);
   --scrollbar-size: 8px;
   --scrollbar-radius: 999px;
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.88 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
   --chip-match-title-bg: oklch(0.97 0.02 265);
   --chip-match-title-fg: oklch(0.4 0.13 265);
   --chip-match-title-border: oklch(0.85 0.05 265);
@@ -159,14 +165,14 @@
   --chip-match-document-bg: oklch(0.97 0.02 295);
   --chip-match-document-fg: oklch(0.4 0.10 295);
   --chip-match-document-border: oklch(0.85 0.05 295);
-  --chip-match-identifier-bg: var(--muted);
-  --chip-match-identifier-fg: var(--muted-foreground);
-  --chip-match-identifier-border: var(--border);
+  --chip-match-identifier-bg: var(--bg-3);
+  --chip-match-identifier-fg: var(--ink-3);
+  --chip-match-identifier-border: var(--line);
   --paperclip-doc-annotation-highlight-source: oklch(0.78 0.16 89);
-  --paperclip-doc-annotation-highlight-open: color-mix(in srgb, var(--paperclip-doc-annotation-highlight-source) 58%, var(--background));
-  --paperclip-doc-annotation-highlight-focused: color-mix(in srgb, var(--paperclip-doc-annotation-highlight-source) 60%, var(--background));
-  --paperclip-doc-annotation-highlight-stale: color-mix(in srgb, var(--paperclip-doc-annotation-highlight-source) 48%, var(--background));
-  --paperclip-doc-annotation-highlight-resolved: color-mix(in srgb, var(--paperclip-doc-annotation-highlight-source) 28%, var(--background));
+  --paperclip-doc-annotation-highlight-open: color-mix(in srgb, var(--paperclip-doc-annotation-highlight-source) 58%, var(--bg));
+  --paperclip-doc-annotation-highlight-focused: color-mix(in srgb, var(--paperclip-doc-annotation-highlight-source) 60%, var(--bg));
+  --paperclip-doc-annotation-highlight-stale: color-mix(in srgb, var(--paperclip-doc-annotation-highlight-source) 48%, var(--bg));
+  --paperclip-doc-annotation-highlight-resolved: color-mix(in srgb, var(--paperclip-doc-annotation-highlight-source) 28%, var(--bg));
   --paperclip-doc-annotation-highlight-x-outset: 0.25rem;
   --paperclip-doc-annotation-highlight-y-outset: 0.125rem;
   --paperclip-doc-annotation-highlight-radius: 0.1875rem;
@@ -253,7 +259,7 @@
   --status-task-icon-cancelled: #52585d;
   --status-task-icon-in_queue: var(--status-task-icon-in_progress); /* blocked shape, same mode-aware blue */
 
-  --live-health-starting: var(--muted-foreground);
+  --live-health-starting: var(--ink-3);
   --live-health-active: var(--status-task-icon-in_progress);
   --live-health-thinking: var(--status-task-icon-in_review);
   --live-health-quiet: var(--status-task-icon-todo);
@@ -282,7 +288,7 @@
   --new-issue-dialog-top-gap: max(1rem, env(safe-area-inset-top));
   --new-issue-dialog-bottom-gap: max(1rem, env(safe-area-inset-bottom));
   --mobile-entity-picker-visual-viewport-height: 100dvh;
-  --mobile-entity-picker-backdrop: color-mix(in oklab, var(--foreground) 50%, transparent);
+  --mobile-entity-picker-backdrop: color-mix(in oklab, var(--ink) 50%, transparent);
 
   /* Deliberate scroll distances (CSS pixels) and shared nav/composer motion. */
   --mobile-nav-scroll-top-zone: 24px;
@@ -360,11 +366,11 @@
   --side-panel-tab-radius: var(--radius-xl);
   --side-panel-control-radius: var(--radius-xl);
   --side-panel-launcher-width: var(--sz-320px);
-  --side-panel-bg: var(--background);
-  --side-panel-fg: var(--foreground);
-  --streamlined-task-detail-bg: var(--background);
-  --side-panel-tab-active-bg: color-mix(in oklab, var(--accent) 88%, var(--background));
-  --side-panel-tab-hover-bg: color-mix(in oklab, var(--accent) 58%, transparent);
+  --side-panel-bg: var(--bg);
+  --side-panel-fg: var(--ink);
+  --streamlined-task-detail-bg: var(--bg);
+  --side-panel-tab-active-bg: color-mix(in oklab, var(--bg-3) 88%, var(--bg));
+  --side-panel-tab-hover-bg: color-mix(in oklab, var(--bg-3) 58%, transparent);
   --radius-task-composer: 16px;
   --tc-interaction-card-max-h: 50dvh;
   --issue-list-row-intrinsic-height: 44px;
@@ -373,8 +379,8 @@
   --tc-mobile-option-py: 8px;
   --tc-mobile-action-h: 44px;
   --tc-mobile-editor-min-h: 48px;
-  --shadow-task-composer: 0 2px 8px -2px color-mix(in oklab, var(--foreground) 7%, transparent),
-    0 12px 32px -8px color-mix(in oklab, var(--foreground) 12%, transparent);
+  --shadow-task-composer: 0 2px 8px -2px color-mix(in oklab, var(--ink) 7%, transparent),
+    0 12px 32px -8px color-mix(in oklab, var(--ink) 12%, transparent);
   --profile-popover-width: 248px;
   --profile-popover-min-height: 304px;
   --profile-popover-header-height: 76px;
@@ -428,6 +434,9 @@
   /* With the dock's pb-1, leave 12px below the card when the nav hides. */
   --tc-composer-hidden-nav-offset: calc(var(--sz-safe-bottom) + var(--spacing) * 2);
 }
+}
+
+@layer layout {
 
 /* Composed on the dock so it resolves against the --tc-composer-bottom Layout sets on <main>. */
 [data-testid="task-chat-composer-dock"] {
@@ -435,18 +444,24 @@
     var(--tc-composer-bottom) + var(--mobile-viewport-inset-bottom, 0px)
   );
 }
+}
+
+@layer components {
 
 [data-testid="task-chat-composer-takeover-body"][data-mobile] [data-slot="task-chat-takeover-actions"] {
   position: sticky;
   bottom: 0;
   z-index: 1;
   padding-top: var(--tc-mobile-card-padding);
-  background: var(--card);
+  background: var(--bg-2);
 }
 
 .dark [data-testid="task-chat-composer-takeover-body"][data-mobile] [data-slot="task-chat-takeover-actions"] {
-  background: var(--muted);
+  background: var(--bg-3);
 }
+}
+
+@layer layout {
 
 [data-keyboard-open="true"] [data-testid="task-chat-composer-dock"] {
   --tc-composer-dock-bottom: var(--mobile-viewport-inset-bottom, 0px);
@@ -474,46 +489,42 @@ html[data-keyboard-open="true"]:has([data-testid="task-chat-composer-dock"]) .mo
 html[data-keyboard-open="true"] #main-content:has([data-testid="task-chat-composer-dock"]) {
   padding-bottom: 0;
 }
+}
+
+@layer base {
 
 .dark {
-  --background: oklch(0.205 0 0);
-  --foreground: oklch(0.985 0 0);
-  --side-panel-bg: var(--background);
+  --bg: oklch(0.165 0.006 268);
+  --bg-2: oklch(0.2 0.007 268);
+  --bg-3: oklch(0.24 0.008 268);
+  --line-soft: oklch(0.265 0.008 268);
+  --line: oklch(0.31 0.009 268);
+  --line-strong: oklch(0.6 0.012 268);
+  --ink: oklch(0.962 0.004 268);
+  --ink-2: oklch(0.835 0.008 268);
+  --ink-3: oklch(0.715 0.01 268);
+  --accent: oklch(0.73 0.145 277);
+  --accent-ink: oklch(0.17 0.02 277);
+  --accent-soft: oklch(0.73 0.145 277 / 0.16);
+  --accent-hover: oklch(0.78 0.13 277);
+  --accent-press: oklch(0.83 0.11 277);
+  --ok: oklch(0.79 0.14 152);
+  --ok-soft: oklch(0.79 0.14 152 / 0.14);
+  --warn: oklch(0.83 0.125 80);
+  --warn-soft: oklch(0.83 0.125 80 / 0.14);
+  --bad: oklch(0.73 0.165 22);
+  --bad-soft: oklch(0.73 0.165 22 / 0.15);
+  --bad-hover: oklch(0.78 0.15 22);
+  --run: oklch(0.79 0.11 225);
+  --run-soft: oklch(0.79 0.11 225 / 0.14);
+  --focus: oklch(0.79 0.13 277);
+  --shadow-2: 0 16px 36px -14px oklch(0 0 0 / 0.75), 0 2px 8px -2px oklch(0 0 0 / 0.5);
+  --side-panel-bg: var(--bg);
   --side-panel-fg: oklch(0.985 0 0);
-  --streamlined-task-detail-bg: var(--background);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
+  --streamlined-task-detail-bg: var(--bg);
   --bubble-agent: oklch(0.185 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.637 0.237 25.331); /* Gallery feedback round 1: user preferred master's original dark destructive red over the preset's softer 0.704 0.191 22.216. */
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
   --scrollbar-thumb: oklch(0.4 0 0);
   --scrollbar-thumb-hover: oklch(0.5 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.32 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
   --chip-match-title-bg: oklch(0.27 0.04 265 / 0.5);
   --chip-match-title-fg: oklch(0.78 0.10 265);
   --chip-match-title-border: oklch(0.4 0.06 265);
@@ -523,9 +534,9 @@ html[data-keyboard-open="true"] #main-content:has([data-testid="task-chat-compos
   --chip-match-document-bg: oklch(0.27 0.04 295 / 0.5);
   --chip-match-document-fg: oklch(0.78 0.08 295);
   --chip-match-document-border: oklch(0.4 0.05 295);
-  --chip-match-identifier-bg: var(--muted);
-  --chip-match-identifier-fg: var(--muted-foreground);
-  --chip-match-identifier-border: var(--border);
+  --chip-match-identifier-bg: var(--bg-3);
+  --chip-match-identifier-fg: var(--ink-3);
+  --chip-match-identifier-border: var(--line);
   /* Dark-mode status-icon hues. The lighter progress blue gives bare glyphs
      contrast comparable to the neighboring gray, purple, and green icons.
      Blocked retains its base red; in_queue follows the progress icon blue. */
@@ -536,6 +547,9 @@ html[data-keyboard-open="true"] #main-content:has([data-testid="task-chat-compos
   --status-task-icon-done: #34d06f;
   --status-task-icon-cancelled: #9a958a;
 }
+}
+
+@layer components {
 
 .streamlined-task-detail-surface {
   --side-panel-bg: var(--streamlined-task-detail-bg);
@@ -587,6 +601,7 @@ html[data-keyboard-open="true"] #main-content:has([data-testid="task-chat-compos
 .paperclip-doc-annotation-highlight[data-status="resolved"]::before {
   background-color: var(--paperclip-doc-annotation-highlight-resolved);
 }
+}
 
 @layer base {
   /*
@@ -609,22 +624,22 @@ html[data-keyboard-open="true"] #main-content:has([data-testid="task-chat-compos
   input:-webkit-autofill:active,
   textarea:-webkit-autofill,
   select:-webkit-autofill {
-    -webkit-text-fill-color: var(--foreground);
-    caret-color: var(--foreground);
-    box-shadow: inset 0 0 0 1000px var(--muted);
+    -webkit-text-fill-color: var(--ink);
+    caret-color: var(--ink);
+    box-shadow: inset 0 0 0 1000px var(--bg-3);
     transition: background-color 100000s ease-in-out 0s;
   }
 
   * {
-    @apply border-border outline-ring/50;
+    @apply border-line outline-focus;
   }
   html {
     height: 100%;
-    -webkit-tap-highlight-color: color-mix(in oklab, var(--foreground) 20%, transparent);
+    -webkit-tap-highlight-color: color-mix(in oklab, var(--ink) 20%, transparent);
     @apply font-sans;
   }
   body {
-    @apply antialiased bg-background text-foreground;
+    @apply antialiased bg-bg text-ink;
     font-family: var(--font-sans);
     height: 100%;
     overflow: hidden;
@@ -661,6 +676,8 @@ html[data-keyboard-open="true"] #main-content:has([data-testid="task-chat-compos
   }
 }
 
+@layer components {
+
 /* Native single-value dropdowns share one inset caret. Padding alone does not
    move the browser's arrow. Keep native menus/keyboard behavior and leave
    listboxes and controls with their own appearance-none icon untouched.
@@ -689,6 +706,26 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
 @media (pointer: coarse) {
   /* iOS Safari zooms when focusing text smaller than 16px. Floor the small
      typography tokens on editable controls, preserving larger title sizes. */
+
+  /* Rich-text editors can inherit a smaller size from their surrounding
+     document styles rather than using a typography utility. Keep this more
+     specific than the editor's content class. */
+  html [contenteditable=""],
+  html [contenteditable="true"],
+  html [contenteditable="plaintext-only"] {
+    font-size: max(var(--text-base), 1em);
+  }
+
+  /* Small inline widgets keep their design size on touch devices —
+     forcing 44px here stretches checkboxes, chip menus, and icon buttons
+     that live inside dense rows (sidebar headers, issue rows, filter
+     popovers). The surrounding row provides the touch area. */
+}
+}
+
+@layer layout {
+
+@media (pointer: coarse) {
   input,
   select,
   textarea,
@@ -702,15 +739,6 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
     --text-sm: var(--text-base);
   }
 
-  /* Rich-text editors can inherit a smaller size from their surrounding
-     document styles rather than using a typography utility. Keep this more
-     specific than the editor's content class. */
-  html [contenteditable=""],
-  html [contenteditable="true"],
-  html [contenteditable="plaintext-only"] {
-    font-size: max(var(--text-base), 1em);
-  }
-
   button,
   [role="button"],
   input,
@@ -719,11 +747,6 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
   [data-slot="select-trigger"] {
     min-height: 44px;
   }
-
-  /* Small inline widgets keep their design size on touch devices —
-     forcing 44px here stretches checkboxes, chip menus, and icon buttons
-     that live inside dense rows (sidebar headers, issue rows, filter
-     popovers). The surrounding row provides the touch area. */
   [data-slot="toggle"],
   [data-slot="checkbox"],
   [data-slot="icon-button"],
@@ -746,6 +769,9 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
     min-height: var(--tc-mobile-action-h);
   }
 }
+}
+
+@layer layout {
 
 @media (max-width: 40rem), (max-height: 32.5rem) {
   :root {
@@ -759,6 +785,9 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
     --text-sm: var(--text-compact);
   }
 }
+}
+
+@layer components {
 
 /* Keep the nav on the compositor; the composer follows the same easing and
    duration while the page retains its reserved bottom space. */
@@ -778,22 +807,39 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
 .mobile-nav-composer {
   transition: bottom var(--mobile-nav-motion-duration, var(--motion-mobile-nav-enter)) var(--mobile-nav-motion-ease, var(--motion-ease-out-expo));
 }
+}
+
+@layer base {
 
 @media (prefers-reduced-motion: reduce) {
+  :root {
+    --dur-1: 0ms;
+    --dur-2: 0ms;
+  }
+
   :root {
     --motion-mobile-nav-enter: 0ms;
     --motion-mobile-nav-exit: 0ms;
   }
 }
+}
+
+@layer layout {
 
 .paperclip-issue-list {
   overflow-anchor: none;
 }
+}
+
+@layer components {
 
 .paperclip-issue-list-row-deferred {
   content-visibility: auto;
   contain-intrinsic-size: auto var(--issue-list-row-intrinsic-height);
 }
+}
+
+@layer layout {
 
 /* Mobile collection toolbars and square agent actions. */
 @media (width < 40rem) {
@@ -843,29 +889,34 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
     grid-row: 2;
   }
 }
+}
 
-/* Dark mode scrollbars */
+@layer base {
+
 .dark {
   color-scheme: dark;
 }
 
-.dark *::-webkit-scrollbar {
+.dark ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
 }
 
-.dark *::-webkit-scrollbar-track {
-  background: oklch(0.205 0 0);
+.dark ::-webkit-scrollbar-track {
+  background: var(--bg);
 }
 
-.dark *::-webkit-scrollbar-thumb {
-  background: oklch(0.4 0 0);
-  border-radius: 4px;
+.dark ::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: var(--r-sm);
 }
 
-.dark *::-webkit-scrollbar-thumb:hover {
-  background: oklch(0.5 0 0);
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
 }
+}
+
+@layer components {
 
 /* Auto-hide scrollbar: thin, stable gutter with the thumb visible only on hover */
 .scrollbar-auto-hide {
@@ -908,9 +959,15 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
   background: var(--scrollbar-thumb);
   border-radius: var(--scrollbar-radius);
 }
+}
+
+@layer state {
 .scrollbar-while-scrolling[data-scroll-active="true"]::-webkit-scrollbar-thumb:hover {
   background: var(--scrollbar-thumb-hover);
 }
+}
+
+@layer layout {
 
 /* The task-chat shell owns its desktop scroll viewport. Release Layout's
    otherwise-useful reserved main scrollbar gutter so that viewport can meet
@@ -924,34 +981,43 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
 .task-detail-properties [data-property-section="true"] {
   padding-bottom: calc(var(--spacing) * 6);
 }
+}
+
+@layer components {
 
 .task-detail-properties [data-property-value="true"],
 .task-detail-properties [data-property-value="true"] .text-sm {
   font-size: var(--text-xs);
   line-height: var(--text-xs--line-height);
 }
+}
+
+@layer state {
 
 /* The generic line-tab variant deliberately keeps active tabs transparent.
    The task-detail sidebar uses a filled active tab instead; the pane slot ID
    gives this contextual treatment enough specificity without affecting other
    line-tab surfaces. */
 #properties-pane-header-slot .task-detail-pane-tab[data-state="active"] {
-  background-color: var(--muted);
+  background-color: var(--bg-3);
 }
+}
+
+@layer components {
 
 /* Codex-style pane tabs soften clipped labels into the tab surface. The mask
    stays on the label itself so short names remain visually untouched. */
 .task-detail-pane-tab-label {
   -webkit-mask-image: linear-gradient(
     to right,
-    var(--foreground) 0,
-    var(--foreground) calc(100% - calc(var(--spacing) * 4)),
+    var(--ink) 0,
+    var(--ink) calc(100% - calc(var(--spacing) * 4)),
     transparent 100%
   );
   mask-image: linear-gradient(
     to right,
-    var(--foreground) 0,
-    var(--foreground) calc(100% - calc(var(--spacing) * 4)),
+    var(--ink) 0,
+    var(--ink) calc(100% - calc(var(--spacing) * 4)),
     transparent 100%
   );
 }
@@ -961,17 +1027,20 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
 .side-panel-tabs-scroll[data-scroll-end-fade="true"] {
   -webkit-mask-image: linear-gradient(
     to right,
-    var(--foreground) 0,
-    var(--foreground) calc(100% - var(--side-panel-tab-edge-fade-width)),
+    var(--ink) 0,
+    var(--ink) calc(100% - var(--side-panel-tab-edge-fade-width)),
     transparent 100%
   );
   mask-image: linear-gradient(
     to right,
-    var(--foreground) 0,
-    var(--foreground) calc(100% - var(--side-panel-tab-edge-fade-width)),
+    var(--ink) 0,
+    var(--ink) calc(100% - var(--side-panel-tab-edge-fade-width)),
     transparent 100%
   );
 }
+}
+
+@layer state {
 
 /* Light mode scrollbar on hover */
 .scrollbar-auto-hide:hover {
@@ -1000,6 +1069,9 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
 .dark .scrollbar-auto-hide:hover::-webkit-scrollbar-thumb:hover {
   background: oklch(0.5 0 0) !important;
 }
+}
+
+@layer layout {
 
 /* Typing indicator — three bouncing dots, used inside an agent chat bubble */
 .typing-dots {
@@ -1008,18 +1080,22 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
   gap: 3px;
   padding: 4px 0;
 }
-.typing-dots span {
+}
+
+@layer components {
+.typing-dot {
   width: 5px;
   height: 5px;
   border-radius: 999px;
-  background: var(--muted-foreground);
+  background: var(--ink-3);
   animation: typing-bounce 1.2s ease-in-out infinite;
 }
-.typing-dots span:nth-child(2) {
+.typing-dot:nth-child(2) {
   animation-delay: 0.15s;
 }
-.typing-dots span:nth-child(3) {
+.typing-dot:nth-child(3) {
   animation-delay: 0.3s;
+}
 }
 @keyframes typing-bounce {
   0%,
@@ -1033,12 +1109,17 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
     opacity: 1;
   }
 }
+
+@layer components {
 @media (prefers-reduced-motion: reduce) {
-  .typing-dots span {
+  .typing-dot {
     animation: none;
     opacity: 0.6;
   }
 }
+}
+
+@layer base {
 
 /* Task Chat Redesign motion tokens collapse to instant under reduced motion.
    Zeroing the primitives cascades to every scoped token that references them;
@@ -1065,6 +1146,7 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
     --motion-scroll-pill-exit: 0ms;
     --motion-pane-glide: 0ms;
   }
+}
 }
 
 /* ────────────────────────────────────────────────────────────────────────
@@ -1093,13 +1175,18 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
   0%, 100% { opacity: 0; }
   50% { opacity: 1; }
 }
+
+@layer components {
 .tc-question-option { transition-duration: var(--motion-duration-instant); }
 .tc-question-page { animation: tc-fade-in var(--motion-question-page-enter) var(--motion-ease-standard) both; }
+}
 
 @keyframes tc-cursor-blink {
   0%, 45% { opacity: 1; }
   55%, 100% { opacity: 0; }
 }
+
+@layer components {
 .tc-enter-bubble { animation: tc-fade-rise var(--motion-bubble-enter) var(--motion-ease-out-expo) both; }
 .tc-enter-marker { animation: tc-fade-in var(--motion-marker-enter) var(--motion-ease-out) both; }
 .tc-enter-tool { animation: tc-fade-rise var(--motion-tool-enter) var(--motion-ease-out-expo) both; }
@@ -1108,19 +1195,28 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
 .tc-enter-cot-line { animation: tc-fade-rise var(--motion-duration-fast) var(--motion-ease-standard) both; }
 .tc-notice-chevron { transition-duration: var(--motion-duration-fast); }
 .tc-reveal-diff { animation: tc-fade-in var(--motion-diff-reveal) var(--motion-ease-standard) both; }
+}
+
+@layer layout {
 .tc-approval { position: relative; }
+}
+
+@layer components {
 .tc-approval::after {
   content: "";
   position: absolute;
   inset: 0;
   border-radius: inherit;
   pointer-events: none;
-  box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 18%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in oklab, var(--accent) 18%, transparent);
   opacity: 0;
   animation: tc-approval-pulse var(--motion-approval-pulse) var(--motion-ease-standard) infinite;
 }
 .tc-cursor { animation: tc-cursor-blink var(--motion-streaming-cursor-blink) step-end infinite; }
 .tc-enter-plan-entry { animation: tc-fade-rise var(--motion-plan-check) var(--motion-ease-out-expo) both; }
+}
+
+@layer layout {
 
 /* ────────────────────────────────────────────────────────────────────────
    Agent-bubble treatment explorations (PAP-501). Scoped to the TaskChatLab
@@ -1138,11 +1234,20 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
 
 /* B · Hairline flush — near-page fill + a 1px hairline for gentle definition
    without any brightness lift. */
-[data-bubble-variant="hairline"] { --bubble-agent: var(--background); }
-[data-bubble-variant="hairline"] [data-testid="task-chat-agent-bubble"] {
-  border: 1px solid var(--border);
+[data-bubble-variant="hairline"] { --bubble-agent: var(--bg); }
 }
+
+@layer components {
+[data-bubble-variant="hairline"] [data-testid="task-chat-agent-bubble"] {
+  border: 1px solid var(--line);
+}
+}
+
+@layer layout {
 .dark [data-bubble-variant="hairline"] { --bubble-agent: oklch(0.17 0 0); }
+}
+
+@layer components {
 .dark [data-bubble-variant="hairline"] [data-testid="task-chat-agent-bubble"] {
   border-color: oklch(1 0 0 / 8%);
 }
@@ -1158,13 +1263,20 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
   padding-right: var(--bubble-agent-card-padding-inline);
   max-width: var(--pct-85);
 }
+}
+
+@layer layout {
 /* Live-line viewport (PAP-361): exactly one line-height tall, clipping the
    wrapped interstitial block. On wrap, the inner block translates up whole
    line-heights (set inline as translateY(-(n−1)·1lh)) so the completed line
    slides out the top — transform-only, same motion grammar as tool rows
    animating in. */
 .tc-line-scroll { display: block; height: 1lh; overflow: hidden; }
+}
+
+@layer components {
 .tc-line-scroll-inner { transition: transform var(--motion-line-scroll) var(--motion-ease-standard); will-change: transform; }
+}
 
 /* Scroll-to-latest pill (stock shadcn MessageScrollerButton motion, tokenized).
    The pill is centered with translateX(-50%), so the keyframes carry the X
@@ -1177,6 +1289,8 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
   from { opacity: 1; transform: translate(-50%, 0) scale(1); }
   to { opacity: 0; transform: translate(-50%, 8px) scale(0.9); }
 }
+
+@layer components {
 .tc-scroll-pill-in { animation: tc-pill-in var(--motion-scroll-pill-enter) var(--motion-ease-scroll-pill-in) both; }
 .tc-scroll-pill-out { animation: tc-pill-out var(--motion-scroll-pill-exit) var(--motion-ease-scroll-pill-out) both; }
 
@@ -1189,7 +1303,13 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
     opacity var(--motion-turn-fold) var(--motion-ease-standard);
 }
 .tc-turn-fold[data-folded="true"] { grid-template-rows: 0fr; opacity: 0; }
+}
+
+@layer layout {
 .tc-turn-fold > * { overflow: hidden; min-height: 0; }
+}
+
+@layer components {
 
 /* Hover-revealed activity carets remain discoverable on touch-only devices. */
 @media (hover: none) {
@@ -1205,12 +1325,18 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
   transition: grid-template-columns var(--motion-turn-meta) var(--motion-ease-standard),
     opacity var(--motion-turn-meta) var(--motion-ease-standard);
 }
+}
+
+@layer state {
 [data-testid="task-chat-turn-summary"]:hover .tc-turn-metrics,
 [data-testid="task-chat-turn-summary"]:focus-visible .tc-turn-metrics,
 .tc-turn-metrics[data-visible="true"] {
   grid-template-columns: 1fr;
   opacity: 1;
 }
+}
+
+@layer components {
 
 /* Properties-pane maximize/restore glide (left animates between docked and
    sidebar-flush while the pane is position:fixed). */
@@ -1228,30 +1354,41 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
 /* Sidebar actions cover the trailing live label without moving row content,
    fading into the row surface like the task-detail tab close control. */
 .primary-sidebar-surface {
-  --sidebar-action-rest-surface: color-mix(in srgb, var(--border) 50%, var(--background));
+  --sidebar-action-rest-surface: color-mix(in srgb, var(--line) 50%, var(--bg));
   background-color: var(--sidebar-action-rest-surface);
 }
+}
+
+@layer layout {
 .dark .primary-sidebar-surface {
-  --sidebar-action-rest-surface: var(--muted);
+  --sidebar-action-rest-surface: var(--bg-3);
 }
 .sidebar-action-row {
-  --sidebar-action-surface: var(--sidebar-action-rest-surface, var(--background));
+  --sidebar-action-surface: var(--sidebar-action-rest-surface, var(--bg));
 }
+}
+
+@layer state {
 .sidebar-action-row:is(:hover, :focus-within),
 .sidebar-action-row:has(.sidebar-action-link[aria-current="page"]),
 .sidebar-action-row:has(.sidebar-action-menu[data-state="open"]) {
-  --sidebar-action-surface: var(--sidebar-accent);
+  --sidebar-action-surface: var(--bg-3);
 }
+}
+
+@layer components {
 .sidebar-action-link {
   background-color: var(--sidebar-action-surface);
 }
-.sidebar-action-row:is(:hover, :focus-within) .sidebar-action-link,
-.sidebar-action-row:has(.sidebar-action-menu[data-state="open"]) .sidebar-action-link {
-  color: var(--sidebar-accent-foreground);
 }
+
+@layer layout {
 .sidebar-action-menu {
   isolation: isolate;
 }
+}
+
+@layer components {
 .sidebar-action-menu::before {
   content: "";
   position: absolute;
@@ -1266,6 +1403,9 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
   transition: background-color var(--default-transition-duration) var(--default-transition-timing-function);
   pointer-events: none;
 }
+}
+
+@layer state {
 
 .side-panel-tab-label-fade,
 .side-panel-tab-label-close-fade[data-truncated="true"],
@@ -1275,6 +1415,9 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
   -webkit-mask-repeat: no-repeat;
   mask-repeat: no-repeat;
 }
+}
+
+@layer components {
 
 @media (prefers-reduced-motion: reduce) {
   .tc-enter-bubble,
@@ -1293,9 +1436,7 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
   .side-panel-tab-motion,
   .side-panel-tab-close-motion { transition: none; }
   /* The pill keyframes carry the X-centering; with animation:none restore it. */
-  .tc-scroll-pill-in,
-  .tc-scroll-pill-out { transform: translate(-50%, 0); }
-  .tc-approval::after { animation: none; opacity: 1; box-shadow: 0 0 0 2px color-mix(in oklab, var(--primary) 18%, transparent); }
+  .tc-approval::after { animation: none; opacity: 1; box-shadow: 0 0 0 2px color-mix(in oklab, var(--accent) 18%, transparent); }
   .tc-cursor { animation: none; opacity: 1; }
 }
 
@@ -1303,6 +1444,17 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
 [data-slot="dialog-content"] {
   transition: max-width 200ms cubic-bezier(0.16, 1, 0.3, 1);
 }
+}
+
+@layer layout {
+
+@media (prefers-reduced-motion: reduce) {
+  .tc-scroll-pill-in,
+  .tc-scroll-pill-out { transform: translate(-50%, 0); }
+}
+}
+
+@layer base {
 
 /* ---------------------------------------------------------------------------
    Motion tokens
@@ -1335,6 +1487,7 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
      states, because at every moment progress is identical on both sides. */
   --motion-duration-swap: 150ms;
 }
+}
 
 /* ---------------------------------------------------------------------------
    Decision-card disclosure (See more / See less)
@@ -1364,9 +1517,14 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
     opacity: 0;
   }
 }
+
+@layer layout {
 [data-slot="collapsible-content"][data-decision-disclosure] {
   overflow: hidden;
 }
+}
+
+@layer state {
 [data-slot="collapsible-content"][data-decision-disclosure][data-state="open"] {
   animation: decision-disclosure-open var(--motion-duration-swap) var(--motion-ease-out);
 }
@@ -1375,6 +1533,7 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
      The two run against each other, so matched timing is what keeps the card's
      height a straight interpolation instead of a bulge. */
   animation: decision-disclosure-close var(--motion-duration-swap) var(--motion-ease-out);
+}
 }
 
 /* ---------------------------------------------------------------------------
@@ -1411,6 +1570,8 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
     transform: scale(0.96);
   }
 }
+
+@layer state {
 [data-slot="popover-content"][data-quicklook][data-state="open"] {
   animation: quicklook-open var(--motion-duration-enter) var(--motion-ease-out);
 }
@@ -1426,11 +1587,15 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
     animation: none;
   }
 }
+}
+
+@layer layout {
 
 /* Shared rhythm for dashboard activity and recent-task rows. */
 .dashboard-list-row {
   min-height: calc(var(--spacing) * 12);
   padding: calc(var(--spacing) * 3) calc(var(--spacing) * 4);
+}
 }
 
 /* Dashboard activity row entry motion */
@@ -1454,14 +1619,16 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
 
 @keyframes dashboard-activity-highlight {
   0% {
-    box-shadow: inset 2px 0 0 var(--primary);
-    background-color: color-mix(in oklab, var(--accent) 55%, transparent);
+    box-shadow: inset 2px 0 0 var(--accent);
+    background-color: color-mix(in oklab, var(--bg-3) 55%, transparent);
   }
   100% {
     box-shadow: inset 0 0 0 transparent;
     background-color: transparent;
   }
 }
+
+@layer components {
 
 .activity-row-enter {
   animation:
@@ -1473,6 +1640,7 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
   .activity-row-enter {
     animation: none;
   }
+}
 }
 
 /* Chain-of-thought reasoning line ticker animations.
@@ -1488,6 +1656,8 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
   to   { transform: translateY(-100%); }
 }
 
+@layer components {
+
 .cot-line-enter {
   animation: cot-line-slide-in 300ms cubic-bezier(0.4, 0, 0.2, 1) both;
 }
@@ -1502,6 +1672,7 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
     animation: none;
   }
 }
+}
 
 /* RunTranscriptView live-tail motion (PAP-461, A3). The experimental chat-style
    view streams its live output through RunTranscriptView; these token-driven
@@ -1513,13 +1684,18 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
   to   { opacity: 1; transform: translateY(0); }
 }
 
+@layer components {
+
 .tc-stream-block-enter {
   animation: tc-stream-block-in var(--motion-tool-enter) var(--motion-ease-standard) both;
+}
 }
 
 @keyframes tc-live-ping {
   75%, 100% { transform: scale(2); opacity: 0; }
 }
+
+@layer components {
 
 .tc-live-ping {
   animation: tc-live-ping var(--motion-approval-pulse) var(--motion-ease-standard) infinite;
@@ -1559,33 +1735,42 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
   );
 }
 
-.task-chat-expanded-line-wrap,
-.paperclip-markdown.task-chat-reasoning-markdown,
-.paperclip-markdown.task-chat-reasoning-markdown :is(p, strong, em, a, code) {
-  overflow-wrap: anywhere;
-  word-break: break-word;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .tc-stream-block-enter,
   .tc-live-ping {
     animation: none;
   }
 }
+}
+
+@layer layout {
+
+.task-chat-expanded-line-wrap,
+.paperclip-markdown.task-chat-reasoning-markdown,
+.paperclip-markdown.task-chat-reasoning-markdown :is(p, strong, em, a, code) {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+}
+
+@layer layout {
 
 [data-live-health] { --live-health: var(--live-health-active); }
 [data-live-health="starting"] { --live-health: var(--live-health-starting); }
 [data-live-health="thinking"] { --live-health: var(--live-health-thinking); }
 [data-live-health="quiet"] { --live-health: var(--live-health-quiet); }
 [data-live-health="stalled"] { --live-health: var(--live-health-stalled); }
+}
+
+@layer components {
 
 .live-now-health-dot { background-color: var(--live-health); }
 .live-now-health-pill { background-color: color-mix(in oklab, var(--live-health) 14%, transparent); }
 .live-now-quote { border-color: color-mix(in oklab, var(--live-health) 55%, transparent); }
-.live-now-card[data-live-health="quiet"] { border-color: color-mix(in oklab, var(--live-health) 35%, var(--border)); }
+.live-now-card[data-live-health="quiet"] { border-color: color-mix(in oklab, var(--live-health) 35%, var(--line)); }
 .live-now-card[data-live-health="stalled"] {
-  border-color: color-mix(in oklab, var(--live-health) 55%, var(--border));
-  background-color: color-mix(in oklab, var(--live-health) 4%, var(--card));
+  border-color: color-mix(in oklab, var(--live-health) 55%, var(--line));
+  background-color: color-mix(in oklab, var(--live-health) 4%, var(--bg-2));
 }
 
 .live-now-sweep {
@@ -1610,6 +1795,7 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
 .live-now-breathe {
   animation: live-now-breathe var(--motion-live-now-breathe) ease-in-out infinite;
 }
+}
 
 @keyframes live-now-sweep {
   from { transform: translateX(-100%); }
@@ -1619,6 +1805,8 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
 @keyframes live-now-breathe {
   50% { opacity: 0.45; }
 }
+
+@layer components {
 
 @media (prefers-reduced-motion: reduce) {
   .live-now-sweep::after,
@@ -1631,20 +1819,24 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
     opacity: 0.6;
   }
 }
+}
 
 @keyframes shimmer-text-fade {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.45; }
 }
 
+@layer components {
+
 .shimmer-text {
-  --shimmer-base: var(--foreground);
+  --shimmer-base: var(--ink);
   color: var(--shimmer-base);
   animation: shimmer-text-fade 2.5s ease-in-out infinite;
 }
 
 .paperclip-thinking-icon {
   transform-origin: 50% 50%;
+}
 }
 
 @keyframes paperclip-thinking-draw {
@@ -1675,19 +1867,25 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
   }
 }
 
+@layer components {
+
 .paperclip-thinking-icon-path {
   animation: paperclip-thinking-draw 1s linear infinite;
 }
+}
+
+@layer layout {
 
 .shimmer-text-muted {
-  --shimmer-base: var(--muted-foreground);
+  --shimmer-base: var(--ink-3);
+}
 }
 
 /* Utilities expected by shadcn base components (ui/attachment.tsx). Declared
    with @utility so variant forms (e.g. group-data-[state=uploading]:shimmer)
    compile under Tailwind v4. */
 @utility shimmer {
-  --shimmer-base: var(--foreground);
+  --shimmer-base: var(--ink);
   color: var(--shimmer-base);
   animation: shimmer-text-fade 2.5s ease-in-out infinite;
 }
@@ -1709,6 +1907,8 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
   );
 }
 
+@layer components {
+
 @media (prefers-reduced-motion: reduce) {
   .shimmer-text {
     animation: none;
@@ -1722,6 +1922,7 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
     stroke-dashoffset: 0;
   }
 }
+}
 
 /* Agent heartbeat capsule motion (PAP-75).
    `hb-pulse` marks a running agent (live); `hb-blink` marks a broken agent
@@ -1734,8 +1935,10 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
 
 @keyframes hb-blink {
   0%, 49.9% { background-color: #DC2626; }
-  50%, 100% { background-color: var(--background); }
+  50%, 100% { background-color: var(--bg); }
 }
+
+@layer components {
 
 .hb-pulse {
   animation: hb-pulse 1.6s ease-in-out infinite;
@@ -1750,6 +1953,7 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
   .hb-blink {
     animation: none;
   }
+}
 }
 
 /* Agent capsule motif (PAP-119) — "the capsule is the agent".
@@ -1780,6 +1984,8 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
   }
 }
 
+@layer components {
+
 .agent-cap-slot {
   animation: agent-cap-slot-pulse 1.6s ease-in-out infinite;
 }
@@ -1790,6 +1996,7 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
 
 .agent-cap-online {
   animation: agent-cap-online-pulse 1.8s ease-in-out infinite;
+}
 }
 
 /* Blue online-glow variant (PAP-125) — the Option 4 wizard's review step.
@@ -1804,6 +2011,8 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
     transform: scale(1.03);
   }
 }
+
+@layer components {
 
 .agent-cap-online-blue {
   animation: agent-cap-online-pulse-blue 1.8s ease-in-out infinite;
@@ -1833,34 +2042,34 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
 /* MDXEditor theme integration */
 .paperclip-mdxeditor-scope,
 .paperclip-mdxeditor {
-  --baseBase: var(--background);
+  --baseBase: var(--bg);
   --baseBg: transparent;
-  --baseBgSubtle: color-mix(in oklab, var(--accent) 35%, transparent);
-  --baseLine: var(--border);
-  --baseSolid: var(--muted-foreground);
-  --baseSolidHover: var(--foreground);
-  --baseText: var(--muted-foreground);
-  --baseBorderColor: var(--border);
-  --baseBorder: var(--border);
-  --baseBorderHover: var(--ring);
-  --baseTextContrast: var(--foreground);
-  --baseTextContrastMuted: var(--muted-foreground);
-  --baseTextEmphasis: var(--foreground);
-  --basePageBg: var(--background);
-  --baseRadius: var(--radius);
+  --baseBgSubtle: color-mix(in oklab, var(--bg-3) 35%, transparent);
+  --baseLine: var(--line);
+  --baseSolid: var(--ink-3);
+  --baseSolidHover: var(--ink);
+  --baseText: var(--ink-3);
+  --baseBorderColor: var(--line);
+  --baseBorder: var(--line);
+  --baseBorderHover: var(--focus);
+  --baseTextContrast: var(--ink);
+  --baseTextContrastMuted: var(--ink-3);
+  --baseTextEmphasis: var(--ink);
+  --basePageBg: var(--bg);
+  --baseRadius: var(--r-lg);
   --baseLineHeight: 1.5;
-  --accentBorder: color-mix(in oklab, var(--primary) 35%, var(--border));
-  --accentSolid: var(--primary);
-  --accentSolidHover: var(--primary);
-  --accentLine: color-mix(in oklab, var(--primary) 20%, transparent);
-  --accentBg: var(--accent);
-  --accentBgHover: color-mix(in oklab, var(--accent) 80%, var(--background));
-  --accentBgActive: color-mix(in oklab, var(--accent) 72%, var(--background));
-  --accentText: var(--accent-foreground);
+  --accentBorder: color-mix(in oklab, var(--accent) 35%, var(--line));
+  --accentSolid: var(--accent);
+  --accentSolidHover: var(--accent);
+  --accentLine: color-mix(in oklab, var(--accent) 20%, transparent);
+  --accentBg: var(--bg-3);
+  --accentBgHover: color-mix(in oklab, var(--bg-3) 80%, var(--bg));
+  --accentBgActive: color-mix(in oklab, var(--bg-3) 72%, var(--bg));
+  --accentText: var(--ink);
   font-family: inherit;
   font-size: 1rem;
   line-height: 1.5;
-  color: var(--foreground);
+  color: var(--ink);
 }
 
 @media (min-width: 768px) {
@@ -1886,29 +2095,15 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
   line-height: 1.5;
 }
 
-.paperclip-mdxeditor [class*="_contentEditable_"] {
-  padding: 0.375rem 0.625rem !important;
-}
-
-.paperclip-mdxeditor--borderless [class*="_contentEditable_"] {
-  padding: 0 !important;
-}
-
 .paperclip-mdxeditor [class*="_placeholder_"] {
   font-size: inherit;
   line-height: 1.5;
-  color: var(--muted-foreground);
+  color: var(--ink-3);
 }
 
 /* MDXEditor defaults placeholders to a single clipped line. The task-chat
    composer uses longer, assignee-aware copy, so keep it inside the editor by
    giving the absolutely positioned placeholder a wrapping inline size. */
-.paperclip-task-chat-composer .paperclip-mdxeditor [class*="_placeholder_"] {
-  display: block;
-  width: 100%;
-  overflow-wrap: anywhere;
-  white-space: normal;
-}
 
 .paperclip-mdxeditor-content {
   font-size: inherit;
@@ -1921,32 +2116,20 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
   line-height: 1.75rem;
 }
 
-.paperclip-mdxeditor-content > *:first-child {
-  margin-top: 0;
-}
-
-.paperclip-mdxeditor-content > *:last-child {
-  margin-bottom: 0;
-}
-
 .paperclip-mdxeditor-content p {
   margin: 0;
   line-height: inherit;
 }
 
-.paperclip-mdxeditor-content p + p {
-  margin-top: 1.1em;
-}
-
 .paperclip-mdxeditor-content a:not(.paperclip-mention-chip):not(.paperclip-project-mention-chip) {
-  color: color-mix(in oklab, var(--foreground) 76%, #0969da 24%);
+  color: color-mix(in oklab, var(--ink) 76%, #0969da 24%);
   text-decoration: underline;
   text-underline-offset: 0.15em;
   cursor: pointer;
 }
 
 .dark .paperclip-mdxeditor-content a:not(.paperclip-mention-chip):not(.paperclip-project-mention-chip) {
-  color: color-mix(in oklab, var(--foreground) 80%, #58a6ff 20%);
+  color: color-mix(in oklab, var(--ink) 80%, #58a6ff 20%);
 }
 
 .paperclip-mdxeditor-content a.paperclip-mention-chip,
@@ -1956,7 +2139,7 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
   gap: 0.25rem;
   margin: 0 0.1rem;
   padding: 2px 0.625rem;
-  border: 1px solid var(--border);
+  border: 1px solid var(--line);
   border-radius: 999px;
   font-size: 0.75rem;
   line-height: 1.25;
@@ -2002,12 +2185,6 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
   background-size: contain;
 }
 
-.paperclip-mdxeditor-content ul,
-.paperclip-mdxeditor-content ol {
-  margin: 1.1em 0;
-  padding-left: 1.6em;
-}
-
 .paperclip-mdxeditor-content ul {
   list-style: disc;
 }
@@ -2023,7 +2200,7 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
 }
 
 .paperclip-mdxeditor-content li::marker {
-  color: var(--muted-foreground);
+  color: var(--ink-3);
 }
 
 .paperclip-mdxeditor-content h1 {
@@ -2049,14 +2226,14 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
 
 .paperclip-mdxeditor-content img {
   max-height: 18rem;
-  border-radius: calc(var(--radius) - 2px);
+  border-radius: var(--r-md);
 }
 
 .paperclip-mdxeditor-content blockquote {
   margin: 1.2em 0;
   padding-left: 1em;
-  border-left: 3px solid var(--border);
-  color: var(--muted-foreground);
+  border-left: 3px solid var(--line);
+  color: var(--ink-3);
   line-height: inherit;
 }
 
@@ -2068,10 +2245,10 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
 .paperclip-mdxeditor-content pre {
   margin: 0.4rem 0;
   padding: 0;
-  border: 1px solid var(--border);
+  border: 1px solid var(--line);
   border-radius: var(--radius-lg);
-  background: var(--muted);
-  color: var(--foreground);
+  background: var(--bg-3);
+  color: var(--ink);
   overflow-x: auto;
 }
 
@@ -2111,13 +2288,10 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
 }
 
 .paperclip-mdxeditor .cm-content {
-  caret-color: #cdd6f4;
+  caret-color: #cdd6f4 !important;
 }
 
 /* MDXEditor code block language selector – show on hover only */
-.paperclip-mdxeditor-content [class*="_codeMirrorWrapper_"] {
-  position: relative;
-}
 
 .paperclip-mdxeditor-content [class*="_codeMirrorToolbar_"],
 .paperclip-mdxeditor-content [class*="_codeBlockToolbar_"] {
@@ -2144,24 +2318,24 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
 }
 
 /* Rendered markdown code blocks & inline code (prose/MarkdownBody context).
-   Theme-aware: the block rides --muted/--foreground/--border so it follows
+   Theme-aware: the block rides --bg-3/--ink/--line so it follows
    light and dark instead of pinning the old Catppuccin #1e1e2e/#cdd6f4 in
    both modes. Override prose CSS variables so prose-invert can't revert to
    defaults. */
 .paperclip-markdown {
-  --tw-prose-pre-bg: var(--muted);
-  --tw-prose-pre-code: var(--foreground);
-  --tw-prose-code: var(--foreground);
-  --tw-prose-invert-pre-bg: var(--muted);
-  --tw-prose-invert-pre-code: var(--foreground);
-  --tw-prose-invert-code: var(--foreground);
+  --tw-prose-pre-bg: var(--bg-3);
+  --tw-prose-pre-code: var(--ink);
+  --tw-prose-code: var(--ink);
+  --tw-prose-invert-pre-bg: var(--bg-3);
+  --tw-prose-invert-pre-code: var(--ink);
+  --tw-prose-invert-code: var(--ink);
 }
 
 .paperclip-markdown pre {
-  border: 1px solid var(--border) !important;
+  border: 1px solid var(--line) !important;
   border-radius: var(--radius-lg) !important;
-  background-color: var(--muted) !important;
-  color: var(--foreground) !important;
+  background-color: var(--bg-3) !important;
+  color: var(--ink) !important;
   padding: 0.5rem 0.65rem !important;
   margin: 0.4rem 0 !important;
   font-size: 1em !important;
@@ -2181,9 +2355,6 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
 }
 
 /* Actions for fenced and indented preformatted markdown blocks */
-.paperclip-markdown-codeblock {
-  position: relative;
-}
 
 .paperclip-markdown-codeblock-actions {
   position: absolute;
@@ -2203,10 +2374,10 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
   gap: 0.25rem;
   min-height: 1.55rem;
   padding: 0.2rem 0.4rem;
-  border-radius: calc(var(--radius) - 4px);
-  border: 1px solid color-mix(in oklab, var(--foreground) 14%, transparent);
-  background-color: color-mix(in oklab, var(--muted) 92%, var(--background) 8%);
-  color: var(--muted-foreground);
+  border-radius: var(--r-sm);
+  border: 1px solid color-mix(in oklab, var(--ink) 14%, transparent);
+  background-color: color-mix(in oklab, var(--bg-3) 92%, var(--bg) 8%);
+  color: var(--ink-3);
   font-size: 0.7rem;
   line-height: 1;
   cursor: pointer;
@@ -2220,18 +2391,18 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
 }
 
 .paperclip-markdown-codeblock-action:hover {
-  background-color: var(--accent);
-  color: var(--accent-foreground);
+  background-color: var(--bg-3);
+  color: var(--ink);
 }
 
 .paperclip-markdown-codeblock-action[data-active],
 .paperclip-markdown-codeblock-action[data-copied] {
-  border-color: color-mix(in oklab, var(--primary) 38%, transparent);
-  color: var(--primary);
+  border-color: color-mix(in oklab, var(--accent) 38%, transparent);
+  color: var(--accent);
 }
 
 .paperclip-markdown-codeblock-action[data-failed] {
-  color: var(--destructive);
+  color: var(--bad);
 }
 
 .paperclip-markdown-codeblock-action-label {
@@ -2246,7 +2417,7 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
 
 /* Inline code background (not inside a code block) */
 .prose :not(pre) > code {
-  background-color: color-mix(in oklab, var(--accent) 60%, transparent);
+  background-color: color-mix(in oklab, var(--bg-3) 60%, transparent);
   padding: 0.15em 0.35em;
   border-radius: 3px;
   font-weight: 500;
@@ -2262,7 +2433,7 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
 }
 
 .paperclip-markdown {
-  color: var(--foreground);
+  color: var(--ink);
   font-size: 0.9375rem;
   line-height: 1.6;
 }
@@ -2299,23 +2470,6 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
   --tw-prose-invert-td-borders: color-mix(in oklab, currentColor 22%, transparent);
 }
 
-.paperclip-markdown > :first-child {
-  margin-top: 0;
-}
-
-.paperclip-markdown > :last-child {
-  margin-bottom: 0;
-}
-
-.paperclip-markdown :where(p, ul, ol, blockquote, pre, .paperclip-markdown-table-scroll) {
-  margin-top: 0.7rem;
-  margin-bottom: 0.7rem;
-}
-
-.paperclip-markdown :where(ul, ol) {
-  padding-left: 1.5rem;
-}
-
 .paperclip-markdown ul {
   list-style-type: disc;
 }
@@ -2327,24 +2481,8 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
   padding-left: 2.5rem;
 }
 
-.paperclip-markdown li {
-  margin: 0.14rem 0;
-  padding-left: 0.2rem;
-}
-
-@media (width < 48rem) {
-  .paperclip-mobile-thread .paperclip-markdown :where(ul, ol) {
-    padding-left: calc(var(--spacing) * 5);
-  }
-}
-
-.paperclip-markdown li > :where(p, ul, ol) {
-  margin-top: 0.3rem;
-  margin-bottom: 0.3rem;
-}
-
 .paperclip-markdown li::marker {
-  color: var(--muted-foreground);
+  color: var(--ink-3);
 }
 
 .paperclip-markdown.paperclip-markdown-on-accent li::marker {
@@ -2357,7 +2495,7 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
 .paperclip-markdown h4 {
   margin-top: 1.75rem;
   margin-bottom: 0.45rem;
-  color: var(--foreground);
+  color: var(--ink);
   font-weight: 600;
   letter-spacing: -0.01em;
   line-height: 1.3;
@@ -2384,12 +2522,12 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
 }
 
 .paperclip-markdown :where(strong, b) {
-  color: var(--foreground);
+  color: var(--ink);
   font-weight: 600;
 }
 
 .paperclip-markdown a {
-  color: color-mix(in oklab, var(--foreground) 76%, #0969da 24%);
+  color: color-mix(in oklab, var(--ink) 76%, #0969da 24%);
   text-decoration: underline;
   text-underline-offset: 0.15em;
   cursor: pointer;
@@ -2410,26 +2548,18 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
 }
 
 .paperclip-markdown a.paperclip-mention-chip[data-mention-kind="issue"] {
-  border-color: color-mix(in oklab, var(--foreground) 14%, var(--border) 86%);
-  background: color-mix(in oklab, var(--accent) 42%, transparent);
+  border-color: color-mix(in oklab, var(--ink) 14%, var(--line) 86%);
+  background: color-mix(in oklab, var(--bg-3) 42%, transparent);
 }
 
 /* Inline issue references in markdown: no pill chrome, just a status icon
    beside the link label — keeps the pair from splitting across lines. */
-.paperclip-markdown-issue-ref {
-  display: inline;
-  white-space: nowrap;
-}
 
 /* External object URL decorations follow the same pattern: the host renders
    the icon prefix, the link text is left untouched (Postel's Law). */
-.paperclip-markdown-external-ref {
-  display: inline;
-  white-space: nowrap;
-}
 
 .dark .paperclip-markdown a {
-  color: color-mix(in oklab, var(--foreground) 80%, #58a6ff 20%);
+  color: color-mix(in oklab, var(--ink) 80%, #58a6ff 20%);
 }
 
 .dark .paperclip-markdown.paperclip-markdown-on-accent :where(a, a:visited) {
@@ -2439,8 +2569,8 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
 .paperclip-markdown blockquote {
   margin-left: 0;
   padding-left: 0.95rem;
-  border-left: 0.24rem solid color-mix(in oklab, var(--border) 84%, var(--muted-foreground) 16%);
-  color: var(--muted-foreground);
+  border-left: 0.24rem solid color-mix(in oklab, var(--line) 84%, var(--ink-3) 16%);
+  color: var(--ink-3);
 }
 
 .paperclip-markdown.paperclip-markdown-on-accent blockquote {
@@ -2466,12 +2596,12 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
 
 .paperclip-markdown hr {
   margin: 1.25rem 0;
-  border-color: var(--border);
+  border-color: var(--line);
 }
 
 .paperclip-markdown img {
   border-radius: calc(var(--radius) + 2px);
-  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--foreground) 10%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--ink) 10%, transparent);
 }
 
 .paperclip-markdown-table-scroll {
@@ -2482,20 +2612,8 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
 }
 
 .paperclip-markdown-table-scroll:focus-visible {
-  outline: 2px solid var(--ring);
+  outline: 2px solid var(--focus);
   outline-offset: 2px;
-}
-
-.paperclip-markdown-table-scroll table {
-  width: max-content;
-  min-width: 100%;
-  margin: 0;
-}
-
-.paperclip-markdown-table-scroll :where(th, td) {
-  min-width: 8rem;
-  max-width: 18rem;
-  vertical-align: top;
 }
 
 .paperclip-markdown th {
@@ -2506,28 +2624,20 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
 .paperclip-mermaid {
   margin: 0.5rem 0;
   padding: 0.45rem 0.55rem;
-  border: 1px solid var(--border);
+  border: 1px solid var(--line);
   border-radius: calc(var(--radius) - 3px);
-  background-color: color-mix(in oklab, var(--accent) 35%, transparent);
+  background-color: color-mix(in oklab, var(--bg-3) 35%, transparent);
   overflow-x: auto;
-}
-
-.paperclip-mermaid svg {
-  display: block;
-  width: max-content;
-  max-width: none;
-  min-width: 100%;
-  height: auto;
 }
 
 .paperclip-mermaid-status {
   margin: 0 0 0.45rem;
   font-size: 0.75rem;
-  color: var(--muted-foreground);
+  color: var(--ink-3);
 }
 
 .paperclip-mermaid-status-error {
-  color: var(--destructive);
+  color: var(--bad);
 }
 
 .paperclip-mermaid-source {
@@ -2547,7 +2657,7 @@ span.paperclip-project-mention-chip {
   gap: 0.25rem;
   margin: 0 0.1rem;
   padding: 2px 0.625rem;
-  border: 1px solid var(--border);
+  border: 1px solid var(--line);
   border-radius: 999px;
   font-size: 0.75rem;
   line-height: 1.25;
@@ -2561,6 +2671,114 @@ span.paperclip-project-mention-chip {
   top: -1px;
   white-space: nowrap;
 }
+}
+
+@layer layout {
+
+.paperclip-mdxeditor [class*="_contentEditable_"] {
+  padding: 0.375rem 0.625rem !important;
+}
+
+.paperclip-mdxeditor--borderless [class*="_contentEditable_"] {
+  padding: 0 !important;
+}
+.paperclip-task-chat-composer .paperclip-mdxeditor [class*="_placeholder_"] {
+  display: block;
+  width: 100%;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.paperclip-mdxeditor-content > *:first-child {
+  margin-top: 0;
+}
+
+.paperclip-mdxeditor-content > *:last-child {
+  margin-bottom: 0;
+}
+
+.paperclip-mdxeditor-content p + p {
+  margin-top: 1.1em;
+}
+
+.paperclip-mdxeditor-content ul,
+.paperclip-mdxeditor-content ol {
+  margin: 1.1em 0;
+  padding-left: 1.6em;
+}
+.paperclip-mdxeditor-content [class*="_codeMirrorWrapper_"] {
+  position: relative;
+}
+.paperclip-markdown-codeblock {
+  position: relative;
+}
+
+.paperclip-markdown > :first-child {
+  margin-top: 0;
+}
+
+.paperclip-markdown > :last-child {
+  margin-bottom: 0;
+}
+
+.paperclip-markdown :where(p, ul, ol, blockquote, pre, .paperclip-markdown-table-scroll) {
+  margin-top: 0.7rem;
+  margin-bottom: 0.7rem;
+}
+
+.paperclip-markdown :where(ul, ol) {
+  padding-left: 1.5rem;
+}
+
+.paperclip-markdown li {
+  margin: 0.14rem 0;
+  padding-left: 0.2rem;
+}
+
+.paperclip-markdown li > :where(p, ul, ol) {
+  margin-top: 0.3rem;
+  margin-bottom: 0.3rem;
+}
+.paperclip-markdown-issue-ref {
+  display: inline;
+  white-space: nowrap;
+}
+.paperclip-markdown-external-ref {
+  display: inline;
+  white-space: nowrap;
+}
+
+.paperclip-markdown-table-scroll table {
+  width: max-content;
+  min-width: 100%;
+  margin: 0;
+}
+
+.paperclip-markdown-table-scroll :where(th, td) {
+  min-width: 8rem;
+  max-width: 18rem;
+  vertical-align: top;
+}
+
+.paperclip-mermaid svg {
+  display: block;
+  width: max-content;
+  max-width: none;
+  min-width: 100%;
+  height: auto;
+}
+}
+
+@layer layout {
+
+@media (width < 48rem) {
+  .paperclip-mobile-thread .paperclip-markdown :where(ul, ol) {
+    padding-left: calc(var(--spacing) * 5);
+  }
+}
+}
+
+@layer layout {
 
 /* Touch target floor: WCAG 2.5.5 expects ≥24px on coarse pointers. The base
    chip is 22px; bump it on touch viewports without disturbing inline metrics. */
@@ -2572,6 +2790,9 @@ span.paperclip-project-mention-chip {
     min-height: 24px;
   }
 }
+}
+
+@layer components {
 
 /* External object pills: variant marker the host renders for known-resolved
    external URLs. Inline status icon is rendered by ExternalObjectStatusIcon. */
@@ -2593,6 +2814,9 @@ span.paperclip-mention-chip[data-mention-kind="external-object"] {
   padding: 0;
   font-size: inherit;
 }
+}
+
+@layer layout {
 
 /* Keep MDXEditor popups above app dialogs, even when they portal to <body>. */
 [class*="_popupContainer_"] {
@@ -2612,6 +2836,9 @@ span.paperclip-mention-chip[data-mention-kind="external-object"] {
 [class*="_toolbarNodeKindSelectContainer_"] {
   z-index: 81 !important;
 }
+}
+
+@layer components {
 
 /* Status chip/fill helpers.
    Each consumer sets a local `--sc` to the status' base hue (e.g.
@@ -2633,6 +2860,9 @@ span.paperclip-mention-chip[data-mention-kind="external-object"] {
 .status-fill {
   background-color: var(--sc);
 }
+}
+
+@layer base {
 
 /* ── Extracted verbatim tokens (Phase 2, design/token-extraction) ── */
 /* Batch 1/4: color literals only. Reused-from-existing-token sites (see
@@ -2935,14 +3165,14 @@ span.paperclip-mention-chip[data-mention-kind="external-object"] {
   --shadow-extract-3: 0 0 0 1px rgba(255,255,255,0.08); /* Extracted from ui/src/components/BudgetSidebarMarker.tsx (shadow-[0_0_0_1px_rgba(255,255,255,0.08)]). */
   --shadow-extract-4: 0 -12px 28px rgba(15,23,42,0.08); /* Extracted from ui/src/components/ChatComposer.test.tsx (shadow-[0_-12px_28px_rgba(15,23,42,0.08)]). */
   --shadow-extract-5: 0 -12px 28px rgba(0,0,0,0.28); /* Extracted from ui/src/components/ChatComposer.test.tsx (shadow-[0_-12px_28px_rgba(0,0,0,0.28)]). */
-  --shadow-extract-6: 0 0 0 1px var(--color-background); /* Extracted from ui/src/components/DocumentAnnotationLayer.tsx (shadow-[0_0_0_1px_var(--color-background)]). */
-  --shadow-extract-7: 0 -12px 28px rgba(15,23,42,0.08),0 0 0 1px color-mix(in oklab, var(--primary) 16%, transparent); /* Extracted from ui/src/components/IssueChatThread.tsx; corrected for full-color semantic tokens. */
+  --shadow-extract-6: 0 0 0 1px var(--color-bg); /* Extracted from ui/src/components/DocumentAnnotationLayer.tsx (shadow-[0_0_0_1px_var(--color-bg)]). */
+  --shadow-extract-7: 0 -12px 28px rgba(15,23,42,0.08),0 0 0 1px color-mix(in oklab, var(--accent) 16%, transparent); /* Extracted from ui/src/components/IssueChatThread.tsx; corrected for full-color semantic tokens. */
   --shadow-extract-8: 0 1px 0 rgba(15,23,42,0.02); /* Extracted from ui/src/components/IssueRecoveryActionCard.tsx (shadow-[0_1px_0_rgba(15,23,42,0.02)]). */
   --shadow-extract-9: 0 18px 42px rgba(15,23,42,0.06); /* Extracted from ui/src/components/IssueThreadInteractionCard.tsx (shadow-[0_18px_42px_rgba(15,23,42,0.06)]). */
-  --shadow-extract-10: 0 1px 0 1px var(--border); /* Extracted from ui/src/components/KeyboardShortcutsCheatsheet.tsx; corrected for full-color semantic tokens. */
+  --shadow-extract-10: 0 1px 0 1px var(--line); /* Extracted from ui/src/components/KeyboardShortcutsCheatsheet.tsx; corrected for full-color semantic tokens. */
   --shadow-extract-11: 0 18px 50px rgba(37,99,235,0.08); /* LiveRunWidget.tsx glow. Gallery feedback r2: liveness glow recolored cyan->status blue (value edit, site unchanged; originally extracted as rgba(6,182,212,0.08)). */
-  --shadow-extract-12: 0 0 0 2px var(--background); /* Production sidebar icon-badge outline. */
-  --shadow-sidebar-icon-badge: 0 0 0 2px var(--muted); /* Streamlined sidebar icon-badge outline; matches the sidebar surface. */
+  --shadow-extract-12: 0 0 0 2px var(--bg); /* Production sidebar icon-badge outline. */
+  --shadow-sidebar-icon-badge: 0 0 0 2px var(--bg-3); /* Streamlined sidebar icon-badge outline; matches the sidebar surface. */
   --shadow-extract-13: 0 0 0 3px rgba(245,158,11,0.18); /* Extracted from ui/src/components/environment-variables-editor/index.tsx (shadow-[0_0_0_3px_rgba(245,158,11,0.18)]). */
   --shadow-extract-14: 0 0 12px rgba(37,99,235,0.08); /* AgentDetail.tsx live-card glow. Gallery feedback r2: liveness glow recolored cyan->status blue (value edit, site unchanged; originally extracted as rgba(6,182,212,0.08)). */
   --shadow-extract-18: 0 18px 44px -28px rgba(0,0,0,0.45); /* Extracted from ui/src/pages/ProfileSettings.tsx (shadow-[0_18px_44px_-28px_rgba(0,0,0,0.45)]). */
@@ -2969,7 +3199,7 @@ span.paperclip-mention-chip[data-mention-kind="external-object"] {
    the equivalent var(--token) form the Tailwind build already
    compiles them to today (inspected byte-for-byte from the built
    storybook-static CSS before this codemod ran: theme(colors.muted.DEFAULT)
-   -> var(--muted), theme(colors.muted.foreground) -> var(--muted-foreground)).
+   -> var(--bg-3), theme(colors.muted.foreground) -> var(--ink-3)).
 
    --gradient-extract-* here CONTINUES Batch 1's counter (Batch 1 minted
    1 through 24) rather than restarting it - these 2 sites use
@@ -3092,15 +3322,18 @@ span.paperclip-mention-chip[data-mention-kind="external-object"] {
   --blur-1px: 1px; /* Extracted from ui/src/components/ChatComposer.tsx (backdrop-blur-[1px]). */
   --blur-2px: 2px; /* Extracted from ui/src/components/IssueChatThread.tsx (backdrop-blur-[2px]). */
   --drop-shadow-extract-1: 0 1px 2px rgba(0,0,0,0.65); /* Extracted from ui/src/components/CompanyPatternIcon.tsx (drop-shadow-[0_1px_2px_rgba(0,0,0,0.65)]). */
-  --code-bg-resolved: var(--paperclip-code-bg, var(--muted)); /* Extracted from ui/src/components/FileViewerSheet.tsx (bg-[var(--paperclip-code-bg,theme(colors.muted.DEFAULT))]). */
+  --code-bg-resolved: var(--paperclip-code-bg, var(--bg-3)); /* Extracted from ui/src/components/FileViewerSheet.tsx (bg-[var(--paperclip-code-bg,theme(colors.muted.DEFAULT))]). */
   --paperclip-code-highlight-bg: rgba(250,204,21,0.12); /* DECISION-SHEET.md A5: FileViewerSheet.tsx referenced this var without it ever being defined, relying on the var() fallback; minted here at exactly the former fallback value (zero pixels). */
   --paperclip-code-highlight-border: rgb(234,179,8); /* DECISION-SHEET.md A5: same as --paperclip-code-highlight-bg — minted at the former fallback value. */
   --code-highlight-bg-resolved: var(--paperclip-code-highlight-bg); /* Extracted from ui/src/components/FileViewerSheet.tsx; fallback dropped in A5 now that --paperclip-code-highlight-bg is a real token (was var(--paperclip-code-highlight-bg, rgba(250,204,21,0.12))). */
-  --code-gutter-fg-resolved: var(--paperclip-code-gutter-fg, var(--muted-foreground)); /* Extracted from ui/src/components/FileViewerSheet.tsx (text-[var(--paperclip-code-gutter-fg,theme(colors.muted.foreground))]). */
+  --code-gutter-fg-resolved: var(--paperclip-code-gutter-fg, var(--ink-3)); /* Extracted from ui/src/components/FileViewerSheet.tsx (text-[var(--paperclip-code-gutter-fg,theme(colors.muted.foreground))]). */
   --code-highlight-border-resolved: var(--paperclip-code-highlight-border); /* Extracted from ui/src/components/FileViewerSheet.tsx; fallback dropped in A5 now that --paperclip-code-highlight-border is a real token (was var(--paperclip-code-highlight-border, rgb(234,179,8))). */
-  --gradient-extract-25: linear-gradient(135deg,var(--primary) 0%,var(--accent) 55%,var(--muted) 100%); /* Extracted from ui/src/components/SidebarAccountMenu.tsx; corrected for full-color semantic tokens. */
-  --gradient-extract-26: linear-gradient(135deg,var(--primary) 0%,var(--accent) 58%,color-mix(in oklab,var(--background) 76%,white 24%) 100%); /* Extracted from ui/src/pages/ProfileSettings.tsx; corrected for full-color semantic tokens. */
+  --gradient-extract-25: linear-gradient(135deg,var(--accent) 0%,var(--bg-3) 55%,var(--bg-3) 100%); /* Extracted from ui/src/components/SidebarAccountMenu.tsx; corrected for full-color semantic tokens. */
+  --gradient-extract-26: linear-gradient(135deg,var(--accent) 0%,var(--bg-3) 58%,color-mix(in oklab,var(--bg) 76%,white 24%) 100%); /* Extracted from ui/src/pages/ProfileSettings.tsx; corrected for full-color semantic tokens. */
 }
+}
+
+@layer components {
 
 /* ── ALLOWLIST (Phase 2, design/token-extraction) ──────────────────────────
    Canonical, MACHINE-READABLE allowlist consumed by
@@ -3182,7 +3415,7 @@ span.paperclip-mention-chip[data-mention-kind="external-object"] {
   @apply my-0;
 }
 .agent-settings-form [data-config-section] > .rounded-lg {
-  @apply bg-card p-5;
+  @apply bg-bg-2 p-5;
 }
 .agent-settings-form [data-config-section] h3 {
   @apply text-sm font-semibold;
@@ -3203,7 +3436,7 @@ span.paperclip-mention-chip[data-mention-kind="external-object"] {
 .agent-settings-permissions .rounded-lg,
 .agent-settings-api-keys .rounded-lg,
 .agent-settings-revisions .rounded-md {
-  @apply bg-card;
+  @apply bg-bg-2;
 }
 .agent-settings-content > .max-w-3xl {
   @apply max-w-none;
@@ -3230,6 +3463,9 @@ span.paperclip-mention-chip[data-mention-kind="external-object"] {
   > div:has([role="switch"]) {
   @apply sm:col-span-2;
 }
+}
+
+@layer layout {
 
 /* Task feeds own their row anchor and follow position. Browser anchoring must
    not race the same correction after a prepend or transcript reconciliation. */
@@ -3241,10 +3477,16 @@ span.paperclip-mention-chip[data-mention-kind="external-object"] {
 .task-chat-window-scroll {
   overflow-anchor: none;
 }
+}
+
+@layer components {
 
 .task-chat-loading-shell .animate-pulse {
   animation: none;
 }
+}
+
+@layer layout {
 
 /* Concealed mobile history must not grow the document between responses.
    Restore normal flow and position the finished conversation before paint. */
@@ -3264,14 +3506,17 @@ span.paperclip-mention-chip[data-mention-kind="external-object"] {
   position: absolute;
   inset-inline: 0;
 }
+}
+
+@layer components {
 
 /* Connection and recovery cards share one surface and spacing scale. */
 .task-context-notice {
   padding: calc(var(--spacing) * 3);
-  border: 1px solid var(--border);
+  border: 1px solid var(--line);
   border-radius: var(--radius-lg);
-  background-color: var(--muted);
-  color: var(--foreground);
+  background-color: var(--bg-3);
+  color: var(--ink);
   font-size: var(--text-sm);
   line-height: var(--text-sm--line-height);
 }
@@ -3282,15 +3527,6 @@ span.paperclip-mention-chip[data-mention-kind="external-object"] {
    the wrapper, not the content. Offsets come from the visual viewport because iOS
    keeps the layout viewport at full height while the keyboard is up. */
 @media (max-width: 40rem) {
-  [data-radix-popper-content-wrapper]:has(> [data-mobile-entity-picker]) {
-    position: fixed !important;
-    transform: none !important;
-    will-change: auto !important;
-    inset: auto 0 var(--mobile-viewport-inset-bottom, 0px) 0 !important;
-    width: auto !important;
-    min-width: 0 !important;
-    z-index: 60;
-  }
 
   [data-radix-popper-content-wrapper]:has(> [data-mobile-entity-picker])::before {
     content: "";
@@ -3322,6 +3558,39 @@ span.paperclip-mention-chip[data-mention-kind="external-object"] {
     animation: none !important;
     pointer-events: auto;
   }
+}
+}
+
+@layer layout {
+@media (max-width: 40rem) {
+
+  [data-mobile-entity-picker] [data-slot="command-list"] [cmdk-item],
+  [data-mobile-entity-picker] [data-slot="entity-option-list"] > button,
+  [data-mobile-entity-picker] [data-slot="entity-option"] {
+    white-space: nowrap !important;
+  }
+
+  [data-mobile-entity-picker] [data-slot="command-list"] [cmdk-item] > *,
+  [data-mobile-entity-picker] [data-slot="entity-option-list"] > button > span,
+  [data-mobile-entity-picker] [data-slot="entity-option"] > span {
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+}
+}
+
+@layer layout {
+@media (max-width: 40rem) {
+  [data-radix-popper-content-wrapper]:has(> [data-mobile-entity-picker]) {
+    position: fixed !important;
+    transform: none !important;
+    will-change: auto !important;
+    inset: auto 0 var(--mobile-viewport-inset-bottom, 0px) 0 !important;
+    width: auto !important;
+    min-width: 0 !important;
+    z-index: 60;
+  }
 
   [data-mobile-entity-picker-header] {
     display: flex;
@@ -3349,21 +3618,10 @@ span.paperclip-mention-chip[data-mention-kind="external-object"] {
     overflow-y: auto !important;
     overscroll-behavior: contain;
   }
-
-  [data-mobile-entity-picker] [data-slot="command-list"] [cmdk-item],
-  [data-mobile-entity-picker] [data-slot="entity-option-list"] > button,
-  [data-mobile-entity-picker] [data-slot="entity-option"] {
-    white-space: nowrap !important;
-  }
-
-  [data-mobile-entity-picker] [data-slot="command-list"] [cmdk-item] > *,
-  [data-mobile-entity-picker] [data-slot="entity-option-list"] > button > span,
-  [data-mobile-entity-picker] [data-slot="entity-option"] > span {
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
-  }
 }
+}
+
+@layer base {
 :root {
   --announcement-width: 22rem;
   --announcement-available-width: calc(100vw - var(--spacing) * 6);
@@ -3373,22 +3631,34 @@ span.paperclip-mention-chip[data-mention-kind="external-object"] {
   --announcement-max-height: calc(100dvh - var(--spacing) * 6);
   --announcement-mobile-max-height: calc(100dvh - var(--announcement-mobile-bottom) - var(--spacing) * 3);
 }
+}
+
+@layer components {
 
 .announcement-well {
   animation: announcement-enter var(--motion-duration-fast) var(--motion-ease-standard) both;
+}
 }
 @keyframes announcement-enter {
   from { opacity: 0; }
   to { opacity: 1; }
 }
+
+@layer components {
 @media (prefers-reduced-motion: reduce) {
   .announcement-well { animation: none; }
 }
+}
+
+@layer layout {
 
 /* Native disclosure marker is replaced by the connection-health chevron. */
 .chat-connection-health-summary::-webkit-details-marker {
   display: none;
 }
+}
+
+@layer base {
 
 /* Immutable ClipLab cap-v1 artwork tokens. New artwork gets a new version. */
 :root {
@@ -3437,6 +3707,9 @@ span.paperclip-mention-chip[data-mention-kind="external-object"] {
   --plugin-shell-inset: calc(var(--spacing) * 4);
   --plugin-shell-mobile-bottom: calc(var(--sz-calc-14) + var(--sz-safe-bottom) + var(--plugin-shell-inset));
 }
+}
+
+@layer layout {
 .plugin-app-shell-overlays {
   position: fixed;
   inset-inline-end: max(var(--plugin-shell-inset), env(safe-area-inset-right));
@@ -3453,6 +3726,9 @@ span.paperclip-mention-chip[data-mention-kind="external-object"] {
 @media (max-width: 767px) {
   .plugin-app-shell-overlays { bottom: var(--plugin-shell-mobile-bottom); }
 }
+}
+
+@layer base {
 
 :root {
   /* Browser Use live viewer chrome: 30px tab strip + 40px navigation bar.
@@ -3460,6 +3736,9 @@ span.paperclip-mention-chip[data-mention-kind="external-object"] {
      Keep navigation visible; the cross-origin viewer exposes no sizing message. */
   --browser-use-viewer-chrome-height: 70px;
 }
+}
+
+@layer components {
 
 /* GitHub skill scans: real counters with a quiet indeterminate sweep until the tree is known. */
 .skill-import-enter {
@@ -3469,29 +3748,35 @@ span.paperclip-mention-chip[data-mention-kind="external-object"] {
   width: 40%;
   animation: skill-import-sweep var(--motion-approval-pulse) var(--motion-ease-standard) infinite;
 }
+}
 @keyframes skill-import-sweep {
   from { transform: translateX(-100%); }
   to { transform: translateX(350%); }
 }
+
+@layer components {
 .skill-import-progress {
   appearance: none;
   overflow: hidden;
   border: none;
   border-radius: var(--radius-sm);
-  background: var(--muted);
-  color: var(--foreground);
+  background: var(--bg-3);
+  color: var(--ink);
 }
-.skill-import-progress::-webkit-progress-bar { background: var(--muted); }
+.skill-import-progress::-webkit-progress-bar { background: var(--bg-3); }
 .skill-import-progress::-webkit-progress-value {
-  background: var(--foreground);
+  background: var(--ink);
   border-radius: var(--radius-sm);
   transition: width var(--motion-line-scroll) var(--motion-ease-standard);
 }
-.skill-import-progress::-moz-progress-bar { background: var(--foreground); }
+.skill-import-progress::-moz-progress-bar { background: var(--ink); }
 @media (prefers-reduced-motion: reduce) {
   .skill-import-enter, .skill-import-sweep { animation: none; }
   .skill-import-progress::-webkit-progress-value { transition: none; }
 }
+}
+
+@layer base {
 
 /* Agent setup handoff: the same logo stack travels from trigger to prompt. */
 :root {
@@ -3505,6 +3790,9 @@ span.paperclip-mention-chip[data-mention-kind="external-object"] {
   --agent-setup-logo-lift: calc(var(--spacing) * -1.5);
   --agent-setup-logo-tilt: 14deg;
 }
+}
+
+@layer layout {
 .agent-setup-trigger-logos {
   display: inline-flex;
   flex-shrink: 0;
@@ -3521,6 +3809,9 @@ span.paperclip-mention-chip[data-mention-kind="external-object"] {
 .agent-setup-logo-slot { display: inline-flex; position: relative; }
 .agent-setup-logo-slot + .agent-setup-logo-slot { margin-left: var(--agent-setup-logo-overlap); }
 .agent-setup-flight-layer { position: fixed; inset: 0; z-index: 51; pointer-events: none; }
+}
+
+@layer components {
 .agent-setup-flight-layer .agent-setup-flying-logo { position: absolute; transition: none; }
 .agent-setup-logo {
   display: inline-flex;
@@ -3529,11 +3820,14 @@ span.paperclip-mention-chip[data-mention-kind="external-object"] {
   width: var(--agent-setup-logo-size);
   height: var(--agent-setup-logo-size);
   border-radius: var(--radius-lg);
-  border: 1px solid var(--border);
-  background: var(--popover);
+  border: 1px solid var(--line);
+  background: var(--bg-2);
   box-shadow: var(--shadow-xs);
   transition: transform var(--motion-duration-slow) var(--motion-ease-out-expo);
 }
+}
+
+@layer state {
 .agent-setup-trigger:is(:hover, :focus-visible) .agent-setup-logo-slot:nth-child(1) .agent-setup-logo {
   transform: translateY(var(--agent-setup-logo-lift)) rotate(calc(-1 * var(--agent-setup-logo-tilt)));
 }
@@ -3543,32 +3837,57 @@ span.paperclip-mention-chip[data-mention-kind="external-object"] {
 .agent-setup-trigger:is(:hover, :focus-visible) .agent-setup-logo-slot:nth-child(3) .agent-setup-logo {
   transform: translateY(calc(var(--agent-setup-logo-lift) * 0.6)) rotate(var(--agent-setup-logo-tilt));
 }
+}
+
+@layer components {
 .agent-setup-popover {
   width: min(var(--agent-setup-popover-width), calc(100vw - var(--spacing) * 6));
   max-height: var(--radix-popover-content-available-height);
   box-shadow: var(--shadow-profile-popover);
 }
+}
+
+@layer state {
 .agent-setup-popover[data-state="open"] { animation: tc-fade-in var(--motion-duration-base) var(--motion-ease-out-expo); }
 .agent-setup-popover[data-state="closed"] { animation: none; }
+}
+
+@layer components {
 .agent-setup-preview {
   height: var(--agent-setup-preview-height);
   max-height: max(3rem, calc(var(--radix-popover-content-available-height) - 12rem));
   scrollbar-width: thin;
 }
+}
+
+@layer layout {
 .agent-setup-preview-logos { transform: translateY(-25%); }
 .agent-setup-preview-logos .agent-setup-logo-slot:first-child .agent-setup-logo { transform: rotate(calc(var(--agent-setup-logo-tilt) * -0.5)); }
 .agent-setup-preview-logos .agent-setup-logo-slot:last-child .agent-setup-logo { transform: rotate(calc(var(--agent-setup-logo-tilt) * 0.5)); }
+}
+
+@layer components {
 .agent-setup-check { animation: agent-setup-check var(--motion-duration-slow) var(--motion-ease-out-expo) both; }
 .agent-setup-confirmation { animation: tc-fade-rise var(--motion-duration-base) var(--motion-ease-out-expo) both; }
+}
+
+@layer state {
 .agent-setup-copy[aria-disabled="true"] { opacity: 0.5; }
+}
 @keyframes agent-setup-check {
   from { opacity: 0; transform: scale(0.6) rotate(-20deg); }
   to { opacity: 1; transform: scale(1) rotate(0); }
 }
+
+@layer components {
 @media (prefers-reduced-motion: reduce) {
   .agent-setup-logo { transition: none; transform: none !important; }
   .agent-setup-popover, .agent-setup-check, .agent-setup-confirmation { animation: none !important; }
 }
+}
+
+@layer layout {
 @media (max-height: 420px) {
   .agent-setup-popover { overflow-y: auto; }
+}
 }

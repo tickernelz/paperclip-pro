@@ -34,10 +34,10 @@ export function IssueReferencePill({
   const classNames = cn(
     variant === "property" || onRemove
       ? cn(badgeVariants({ variant: "outline" }), "min-w-0 max-w-full shrink font-normal no-underline")
-      : "paperclip-mention-chip paperclip-mention-chip--issue inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-xs no-underline",
-    issue.identifier && "hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-(length:--rad-3) focus-visible:ring-ring",
+      : "paperclip-mention-chip paperclip-mention-chip--issue inline-flex items-center gap-1 rounded-full border border-line px-2 py-0.5 text-xs no-underline",
+    issue.identifier && "hover:bg-bg-3/50 focus-visible:outline-none focus-visible:ring-(length:--rad-3) focus-visible:ring-focus",
     onRemove && "pr-6",
-    strikethrough && "opacity-60 line-through decoration-muted-foreground",
+    strikethrough && "opacity-60 line-through decoration-ink-3",
     className,
   );
   const content = (
@@ -62,7 +62,7 @@ export function IssueReferencePill({
         </Link>
         <button
           type="button"
-          className="absolute right-1 top-1/2 -translate-y-1/2 inline-flex h-4 w-4 items-center justify-center rounded-full text-muted-foreground opacity-0 hover:bg-destructive/10 hover:text-destructive focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring group-hover/issue-reference:opacity-100 group-focus-within/issue-reference:opacity-100 pointer-coarse:opacity-100"
+          className="absolute right-1 top-1/2 -translate-y-1/2 inline-flex h-4 w-4 items-center justify-center rounded-full text-ink-3 opacity-0 hover:bg-bad/10 hover:text-bad focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus group-hover/issue-reference:opacity-100 group-focus-within/issue-reference:opacity-100 pointer-coarse:opacity-100"
           aria-label={`Remove ${issueLabel} as blocker`}
           title={`Remove ${issueLabel} as blocker`}
           onClick={(event) => {

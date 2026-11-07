@@ -346,9 +346,9 @@ export function RoutineRunVariablesDialog({
   return (
     <Dialog open={open} onOpenChange={(next) => !isPending && onOpenChange(next)}>
       <DialogContent className="flex h-(--sz-calc-18) max-h-(--sz-calc-18) max-w-xl flex-col gap-0 overflow-hidden p-0 sm:h-auto sm:max-h-(--sz-calc-20)">
-        <DialogHeader className="shrink-0 border-b border-border/60 px-6 pb-4 pr-12 pt-6">
+        <DialogHeader className="shrink-0 border-b border-line/60 px-6 pb-4 pr-12 pt-6">
           {routineName && (
-            <p className="text-muted-foreground text-sm">{routineName}</p>
+            <p className="text-ink-3 text-sm">{routineName}</p>
           )}
           <DialogTitle>Run routine</DialogTitle>
           <DialogDescription>
@@ -378,14 +378,14 @@ export function RoutineRunVariablesDialog({
                   option ? (
                     currentAssignee ? (
                       <>
-                        <AgentAvatar agent={currentAssignee} size={16} className="h-3.5 w-3.5 shrink-0 text-muted-foreground"/>
+                        <AgentAvatar agent={currentAssignee} size={16} className="h-3.5 w-3.5 shrink-0 text-ink-3"/>
                         <span className="truncate">{option.label}</span>
                       </>
                     ) : (
                       <span className="truncate">{option.label}</span>
                     )
                   ) : (
-                    <span className="text-muted-foreground">Select an agent</span>
+                    <span className="text-ink-3">Select an agent</span>
                   )
                 }
                 renderOption={(option) => {
@@ -393,7 +393,7 @@ export function RoutineRunVariablesDialog({
                   const assignee = agents.find((agent) => agent.id === option.id);
                   return (
                     <>
-                      {assignee ? <AgentAvatar agent={assignee} size={16} className="h-3.5 w-3.5 shrink-0 text-muted-foreground"/> : null}
+                      {assignee ? <AgentAvatar agent={assignee} size={16} className="h-3.5 w-3.5 shrink-0 text-ink-3"/> : null}
                       <span className="truncate">{option.label}</span>
                     </>
                   );
@@ -434,7 +434,7 @@ export function RoutineRunVariablesDialog({
                       <span className="truncate">{option.label}</span>
                     </>
                   ) : (
-                    <span className="text-muted-foreground">No project</span>
+                    <span className="text-ink-3">No project</span>
                   )
                 }
                 renderOption={(option) => {
@@ -538,7 +538,7 @@ export function RoutineRunVariablesDialog({
 
         <DialogFooter
           showCloseButton={false}
-          className="shrink-0 border-t border-border/60 bg-background px-6 pb-(--sz-calc-19) pt-4"
+          className="shrink-0 border-t border-line/60 bg-bg px-6 pb-(--sz-calc-19) pt-4"
         >
           {!selection.assigneeAgentId ? (
             <p className="mr-auto text-xs text-amber-600">Default agent required for this run.</p>

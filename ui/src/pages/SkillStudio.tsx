@@ -402,7 +402,7 @@ function StudioCreateMode({
   return (
     <TooltipProvider delayDuration={200}>
       <div className="flex h-full min-h-0 flex-col">
-        <header className="flex items-center gap-3 border-b border-border px-3 py-2">
+        <header className="flex items-center gap-3 border-b border-line px-3 py-2">
           <SkillSwitcher
             skill={null}
             skills={skills}
@@ -519,21 +519,21 @@ function StudioNewSkillPanel({
   return (
     <div className="mx-auto flex w-full max-w-4xl flex-col gap-6 px-4 py-6">
       <div className="space-y-1">
-        <h1 className="text-lg font-semibold text-foreground">
+        <h1 className="text-lg font-semibold text-ink">
           {draft.forkedFromSkillId ? "Fork skill" : "Create a new skill"}
         </h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           Create an editable organization skill and open it directly in Studio.
         </p>
       </div>
 
       {draft.forkedFromName ? (
-        <div className="flex items-center gap-2 rounded-md border border-border bg-muted/30 px-3 py-2 text-sm text-muted-foreground">
+        <div className="flex items-center gap-2 rounded-md border border-line bg-bg-3/30 px-3 py-2 text-sm text-ink-3">
           <GitFork className="h-4 w-4" />
           Forking {draft.forkedFromName}
         </div>
       ) : forkError ? (
-        <div className="flex items-center gap-2 rounded-md border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+        <div className="flex items-center gap-2 rounded-md border border-bad/40 bg-bad/10 px-3 py-2 text-sm text-bad">
           <AlertTriangle className="h-4 w-4" />
           Fork source not found. You can still create a blank skill.
         </div>
@@ -541,8 +541,8 @@ function StudioNewSkillPanel({
 
       <section className="space-y-3">
         <div>
-          <h2 className="text-sm font-medium text-foreground">Basics</h2>
-          <p className="text-xs text-muted-foreground">Name the skill and set the route-safe slug.</p>
+          <h2 className="text-sm font-medium text-ink">Basics</h2>
+          <p className="text-xs text-ink-3">Name the skill and set the route-safe slug.</p>
         </div>
         <div className="grid gap-3 md:grid-cols-2">
           <div className="space-y-1.5">
@@ -601,14 +601,14 @@ function StudioNewSkillPanel({
 
       <section className="space-y-3">
         <div>
-          <h2 className="text-sm font-medium text-foreground">Appearance</h2>
-          <p className="text-xs text-muted-foreground">Tune how the skill appears in the store and Studio switcher.</p>
+          <h2 className="text-sm font-medium text-ink">Appearance</h2>
+          <p className="text-xs text-ink-3">Tune how the skill appears in the store and Studio switcher.</p>
         </div>
         <div className="flex items-center gap-3">
           <SkillCardIcon card={previewCard} size={48} />
           <div className="min-w-0">
             <div className="truncate text-sm font-medium">{previewCard.name}</div>
-            <div className="truncate text-xs text-muted-foreground">{draft.tagline || "No tagline yet."}</div>
+            <div className="truncate text-xs text-ink-3">{draft.tagline || "No tagline yet."}</div>
           </div>
         </div>
         <div className="space-y-2">
@@ -621,7 +621,7 @@ function StudioNewSkillPanel({
                 onClick={() => patchDraft({ color })}
                 className={cn(
                   "h-7 w-7 rounded-md border",
-                  draft.color === color ? "border-foreground" : "border-border",
+                  draft.color === color ? "border-ink" : "border-line",
                 )}
                 style={{ backgroundColor: color }}
                 aria-label={`Use ${color}`}
@@ -648,8 +648,8 @@ function StudioNewSkillPanel({
 
       <section className="space-y-3">
         <div>
-          <h2 className="text-sm font-medium text-foreground">Sharing</h2>
-          <p className="text-xs text-muted-foreground">Choose who can discover this skill inside Paperclip.</p>
+          <h2 className="text-sm font-medium text-ink">Sharing</h2>
+          <p className="text-xs text-ink-3">Choose who can discover this skill inside Paperclip.</p>
         </div>
         <div className="grid gap-2 sm:grid-cols-3">
           {(["company", "private"] as const).map((scope) => (
@@ -659,11 +659,11 @@ function StudioNewSkillPanel({
               onClick={() => patchDraft({ sharingScope: scope })}
               className={cn(
                 "rounded-md border px-3 py-2 text-left text-sm",
-                draft.sharingScope === scope ? "border-foreground bg-accent/50" : "border-border",
+                draft.sharingScope === scope ? "border-ink bg-bg-3/50" : "border-line",
               )}
             >
               <span className="block font-medium">{scope === "company" ? "Organization" : "Private"}</span>
-              <span className="mt-1 block text-xs text-muted-foreground">
+              <span className="mt-1 block text-xs text-ink-3">
                 {scope === "company" ? "Visible inside this organization." : "Only visible in your library."}
               </span>
             </button>
@@ -671,7 +671,7 @@ function StudioNewSkillPanel({
           <button
             type="button"
             disabled
-            className="rounded-md border border-dashed border-border px-3 py-2 text-left text-sm text-muted-foreground"
+            className="rounded-md border border-dashed border-line px-3 py-2 text-left text-sm text-ink-3"
           >
             <span className="block font-medium">Public</span>
             <span className="mt-1 block text-xs">Coming later.</span>
@@ -679,8 +679,8 @@ function StudioNewSkillPanel({
         </div>
       </section>
 
-      <details className="rounded-md border border-border px-3 py-2">
-        <summary className="cursor-pointer text-sm font-medium text-foreground">Starter content</summary>
+      <details className="rounded-md border border-line px-3 py-2">
+        <summary className="cursor-pointer text-sm font-medium text-ink">Starter content</summary>
         <Textarea
           value={draft.markdown}
           onChange={(event) => patchDraft({ markdown: event.target.value })}
@@ -688,7 +688,7 @@ function StudioNewSkillPanel({
         />
       </details>
 
-      <div className="flex items-center justify-end gap-2 border-t border-border pt-4">
+      <div className="flex items-center justify-end gap-2 border-t border-line pt-4">
         <Button variant="ghost" onClick={() => navigate("/skills/studio")} disabled={createSkill.isPending}>
           Cancel
         </Button>
@@ -703,7 +703,7 @@ function StudioNewSkillPanel({
 
 function StudioMessage({ message }: { message: string }) {
   return (
-    <div className="flex h-full min-h-(--sz-60vh) items-center justify-center text-sm text-muted-foreground">
+    <div className="flex h-full min-h-(--sz-60vh) items-center justify-center text-sm text-ink-3">
       {message}
     </div>
   );
@@ -723,7 +723,7 @@ function StudioEmptyState({
   return (
     <TooltipProvider delayDuration={200}>
       <div className="flex h-full min-h-0 flex-col">
-        <header className="flex items-center gap-3 border-b border-border px-3 py-2">
+        <header className="flex items-center gap-3 border-b border-line px-3 py-2">
           <SkillSwitcher
             skill={null}
             skills={skills}
@@ -796,7 +796,7 @@ function StudioLanding({
   return (
     <TooltipProvider delayDuration={200}>
       <div className="flex h-full min-h-0 flex-col">
-        <header className="flex items-center gap-3 border-b border-border px-3 py-2">
+        <header className="flex items-center gap-3 border-b border-line px-3 py-2">
           <SkillSwitcher
             skill={null}
             skills={skills}
@@ -842,10 +842,10 @@ function StudioLandingSection({
   if (skills.length === 0) return null;
   return (
     <section className="space-y-2">
-      <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+      <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-3">
         {title}
       </h2>
-      <div className="divide-y divide-border overflow-hidden rounded-md border border-border">
+      <div className="divide-y divide-line overflow-hidden rounded-md border border-line">
         {skills.map((skill) => (
           <StudioLandingRow
             key={skill.id}
@@ -870,16 +870,16 @@ function StudioLandingRow({
     <button
       type="button"
       onClick={onSelect}
-      className="flex w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-accent"
+      className="flex w-full items-center gap-3 px-3 py-2.5 text-left hover:bg-bg-3"
     >
       <SkillLandingIcon skill={skill} />
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="truncate text-sm font-medium">{skill.name}</span>
         {skill.tagline ? (
-          <span className="truncate text-xs text-muted-foreground">{skill.tagline}</span>
+          <span className="truncate text-xs text-ink-3">{skill.tagline}</span>
         ) : null}
       </span>
-      <span className="shrink-0 text-xs text-muted-foreground">
+      <span className="shrink-0 text-xs text-ink-3">
         updated {relativeTime(skill.updatedAt)}
       </span>
       {editor ? (
@@ -1070,7 +1070,7 @@ function StudioShell({
             }}
             onLayoutChanged={persistLayout}
           >
-            <ResizablePanel id="skill" minSize="280px" className="border-r border-border">
+            <ResizablePanel id="skill" minSize="280px" className="border-r border-line">
               {leftPane}
             </ResizablePanel>
             <ResizableHandle />
@@ -1079,7 +1079,7 @@ function StudioShell({
               minSize="240px"
               collapsible
               collapsedSize="40px"
-              className="border-r border-border"
+              className="border-r border-line"
             >
               {middlePane}
             </ResizablePanel>
@@ -1148,7 +1148,7 @@ function StudioHeader({
   }, [toast]);
 
   return (
-    <header className="flex items-center gap-3 border-b border-border px-3 py-2">
+    <header className="flex items-center gap-3 border-b border-line px-3 py-2">
       <SkillSwitcher
         skill={skill}
         skills={skills}
@@ -1156,7 +1156,7 @@ function StudioHeader({
         onSelectSkill={onSelectSkill}
       />
       {version !== null && (
-        <span className="font-mono text-xs text-muted-foreground">v{version}</span>
+        <span className="font-mono text-xs text-ink-3">v{version}</span>
       )}
       {skillDirty ? (
         <Badge variant="secondary">Unsaved edits</Badge>
@@ -1234,14 +1234,14 @@ function SkillSwitcher({
       onValueChange={(value) => {
         if (value !== skill?.id) onSelectSkill(value);
       }}
-      triggerClassName="h-8 w-64 border-0 bg-transparent px-0 text-base font-semibold shadow-none hover:bg-accent md:w-80"
+      triggerClassName="h-8 w-64 border-0 bg-transparent px-0 text-base font-semibold shadow-none hover:bg-bg-3 md:w-80"
       contentClassName="w-80"
       contentWidth="auto"
       renderValue={(option) => option?.label ?? skill?.name ?? emptyLabel}
       renderOption={(option, { selected }) => (
         <span className="flex min-w-0 flex-col">
           <span className={cn("truncate", selected && "font-medium")}>{option.label}</span>
-          <span className="truncate text-(length:--text-micro) text-muted-foreground">
+          <span className="truncate text-(length:--text-micro) text-ink-3">
             {option.skill.slug}
           </span>
         </span>
@@ -1455,12 +1455,12 @@ function SkillPane({
     >
       <div className="flex min-h-0 flex-1 flex-col">
         {dirty && !readOnly ? (
-          <div className="flex items-start gap-2 border-b border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+          <div className="flex items-start gap-2 border-b border-line bg-bg-3/40 px-3 py-2 text-xs text-ink-3">
             <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
             <span>Unsaved edits live only in this Studio session. Save to create the next version before running tests or switching files.</span>
           </div>
         ) : null}
-        <div className="max-h-(--sz-11_75rem) overflow-auto border-b border-border p-1">
+        <div className="max-h-(--sz-11_75rem) overflow-auto border-b border-line p-1">
           <FileTree
             nodes={nodes}
             selectedFile={selectedFile}
@@ -1480,7 +1480,7 @@ function SkillPane({
         </div>
         <SkillSourceProvenance skill={skill} />
         {readOnly && (
-          <div className="flex items-start gap-3 border-b border-border bg-muted/40 px-3 py-2.5 text-xs text-muted-foreground">
+          <div className="flex items-start gap-3 border-b border-line bg-bg-3/40 px-3 py-2.5 text-xs text-ink-3">
             <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
             <div className="min-w-0 flex-1">
               <p>
@@ -1500,7 +1500,7 @@ function SkillPane({
           </div>
         )}
         <div className="flex items-center justify-between gap-2 px-3 py-1.5">
-          <span className="truncate font-mono text-xs text-muted-foreground">
+          <span className="truncate font-mono text-xs text-ink-3">
             {selectedFile}
             {skill.currentVersion ? ` · v${skill.currentVersion.revisionNumber}` : ""}
           </span>
@@ -1788,9 +1788,9 @@ function SkillPathDialog({
             placeholder={mode === "folder" ? "references/examples" : "references/examples.md"}
           />
           {mode === "folder" ? (
-            <p className="text-xs text-muted-foreground">A README.md seed file is created so the folder appears in the file tree.</p>
+            <p className="text-xs text-ink-3">A README.md seed file is created so the folder appears in the file tree.</p>
           ) : null}
-          {error ? <p className="text-xs text-destructive">{error}</p> : null}
+          {error ? <p className="text-xs text-bad">{error}</p> : null}
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
@@ -1867,13 +1867,13 @@ function DeleteFolderDialog({
             }}
             placeholder="references/examples"
           />
-          {error ? <p className="text-xs text-destructive">{error}</p> : null}
+          {error ? <p className="text-xs text-bad">{error}</p> : null}
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button variant="destructive" disabled={pending} onClick={submit}>
+          <Button variant="delete" disabled={pending} onClick={submit}>
             Delete
           </Button>
         </DialogFooter>
@@ -2051,7 +2051,7 @@ function InputPane({
       {collapsed ? (
         <button
           type="button"
-          className="flex min-h-(--sz-32px) items-center gap-2 border-b border-border px-3 py-2 text-left text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
+          className="flex min-h-(--sz-32px) items-center gap-2 border-b border-line px-3 py-2 text-left text-xs text-ink-3 hover:bg-bg-3 hover:text-ink"
           onClick={() => setCollapsed(false)}
         >
           <ChevronRight className="h-3.5 w-3.5" />
@@ -2060,13 +2060,13 @@ function InputPane({
       ) : (
         <div className="flex min-h-0 flex-1 flex-col">
           {loading || inputs.length > 0 ? (
-            <div className="max-h-(--sz-11_75rem) overflow-auto border-b border-border p-1">
+            <div className="max-h-(--sz-11_75rem) overflow-auto border-b border-line p-1">
               {loading ? (
-                <div className="p-3 text-xs text-muted-foreground">Loading inputs…</div>
+                <div className="p-3 text-xs text-ink-3">Loading inputs…</div>
               ) : (
                 <>
                   {adHocMode && (
-                    <div className="flex items-center gap-2 rounded px-2 py-1.5 text-sm italic text-muted-foreground">
+                    <div className="flex items-center gap-2 rounded px-2 py-1.5 text-sm italic text-ink-3">
                       <FilePlus className="h-3.5 w-3.5" /> New input (not saved)
                     </div>
                   )}
@@ -2094,7 +2094,7 @@ function InputPane({
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <button
-                              className="rounded p-0.5 text-muted-foreground hover:bg-accent hover:text-foreground"
+                              className="rounded p-0.5 text-ink-3 hover:bg-bg-3 hover:text-ink"
                               aria-label={`Input actions for ${node.name}`}
                               onClick={(e) => e.stopPropagation()}
                             >
@@ -2133,11 +2133,11 @@ function InputPane({
               onChange={(event) => setDraft(event.target.value)}
               placeholder="Paste text - treated as a new issue description."
               aria-label="Skill test input"
-              className="min-h-0 flex-1 resize-none border-0 bg-transparent px-3 py-3 text-sm leading-6 outline-none placeholder:text-muted-foreground focus-visible:ring-0"
+              className="min-h-0 flex-1 resize-none border-0 bg-transparent px-3 py-3 text-sm leading-6 outline-none placeholder:text-ink-3 focus-visible:ring-0"
             />
           </div>
-          <div className="flex items-center gap-2 border-t border-border px-3 py-2">
-            <div className="mr-auto flex min-w-0 items-center gap-2 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2 border-t border-line px-3 py-2">
+            <div className="mr-auto flex min-w-0 items-center gap-2 text-xs text-ink-3">
               <span className="truncate">
                 {selectedInput ? selectedInput.name : adHocMode ? "New input" : "No input selected"}
               </span>
@@ -2158,7 +2158,7 @@ function InputPane({
                   Revert
                 </Button>
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   disabled={!canSaveSelectedInput || updateMutation.isPending}
                   onClick={() => updateMutation.mutate({ content: draft })}
@@ -2255,7 +2255,7 @@ function SaveInputDialog({
               onChange={(e) => setName(e.target.value)}
               placeholder="onboarding/happy-path"
             />
-            <p className="text-xs text-muted-foreground">Use “/” for folders, e.g. onboarding/happy-path</p>
+            <p className="text-xs text-ink-3">Use “/” for folders, e.g. onboarding/happy-path</p>
           </div>
           <div className="space-y-1">
             <Label htmlFor="input-content">Content</Label>
@@ -2574,11 +2574,11 @@ function RunsPane({
         )}
         <div className="min-h-0 flex-1 overflow-auto p-3">
           {runsQuery.isLoading ? (
-            <div className="text-xs text-muted-foreground">Loading runs…</div>
+            <div className="text-xs text-ink-3">Loading runs…</div>
           ) : runs.length === 0 ? (
             <EmptyState icon={FlaskConical} message="No test runs yet. Pick an agent and Run." />
           ) : (
-            <div className="space-y-1 rounded-md border border-border p-1">
+            <div className="space-y-1 rounded-md border border-line p-1">
               {runs.map((run) => (
                 <RunHistoryRow
                   key={run.id}
@@ -2689,10 +2689,10 @@ function RunTemplateAdvancedPanel({
   const canDelete = Boolean(selectedTemplate && !selectedTemplate.builtIn);
 
   return (
-    <div className="border-b border-border">
+    <div className="border-b border-line">
       <button
         type="button"
-        className="flex min-h-(--sz-32px) w-full items-center gap-2 px-3 py-2 text-left text-xs text-muted-foreground hover:bg-accent hover:text-foreground"
+        className="flex min-h-(--sz-32px) w-full items-center gap-2 px-3 py-2 text-left text-xs text-ink-3 hover:bg-bg-3 hover:text-ink"
         onClick={() => onOpenChange(!open)}
       >
         {open ? (
@@ -2723,7 +2723,7 @@ function RunTemplateAdvancedPanel({
                 renderOption={(option, { selected }) => (
                   <span className="flex min-w-0 flex-col">
                     <span className={cn("truncate", selected && "font-medium")}>{option.label}</span>
-                    <span className="truncate text-(length:--text-micro) text-muted-foreground">
+                    <span className="truncate text-(length:--text-micro) text-ink-3">
                       {option.description ?? (option.builtIn ? "Built in" : "Custom")}
                     </span>
                   </span>
@@ -2734,7 +2734,7 @@ function RunTemplateAdvancedPanel({
               <TooltipTrigger asChild>
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="secondary"
                   size="icon-sm"
                   aria-label="Create run template"
                   disabled={actionPending}
@@ -2786,10 +2786,9 @@ function RunTemplateAdvancedPanel({
                 <span>
                   <Button
                     type="button"
-                    variant="ghost"
+                    variant="danger"
                     size="icon-sm"
                     aria-label="Delete run template"
-                    className="text-destructive hover:text-destructive"
                     disabled={!canDelete || actionPending || deletingTemplateId === selectedTemplate?.id}
                     onClick={() => selectedTemplate && onDeleteTemplate(selectedTemplate)}
                   >
@@ -2802,22 +2801,22 @@ function RunTemplateAdvancedPanel({
           </div>
 
           {templatesError ? (
-            <p className="text-xs text-destructive">Run templates could not load.</p>
+            <p className="text-xs text-bad">Run templates could not load.</p>
           ) : selectedTemplateId === null ? (
-            <p className="text-xs text-muted-foreground">Runs will use only the input text.</p>
+            <p className="text-xs text-ink-3">Runs will use only the input text.</p>
           ) : selectedMissing ? (
-            <p className="text-xs text-destructive">Selected template is no longer available.</p>
+            <p className="text-xs text-bad">Selected template is no longer available.</p>
           ) : selectedTemplate ? (
             <div className="space-y-2">
               {selectedTemplate.description ? (
-                <p className="text-xs text-muted-foreground">{selectedTemplate.description}</p>
+                <p className="text-xs text-ink-3">{selectedTemplate.description}</p>
               ) : null}
-              <pre className="max-h-(--sz-240px) overflow-auto whitespace-pre-wrap rounded-md border border-border bg-muted/30 p-3 text-xs leading-5 text-muted-foreground">
+              <pre className="max-h-(--sz-240px) overflow-auto whitespace-pre-wrap rounded-md border border-line bg-bg-3/30 p-3 text-xs leading-5 text-ink-3">
                 {selectedTemplate.body}
               </pre>
             </div>
           ) : (
-            <p className="text-xs text-muted-foreground">Loading template...</p>
+            <p className="text-xs text-ink-3">Loading template...</p>
           )}
         </div>
       ) : null}
@@ -2891,7 +2890,7 @@ function RunTemplateDialog({
               onChange={(event) => setBody(event.target.value)}
               className="min-h-(--sz-240px) font-mono text-xs leading-5"
             />
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-ink-3">
               Placeholders: {"{{skillName}}"}, {"{{skillKey}}"}, {"{{skillInvocation}}"}, {"{{skillVersion}}"}, {"{{runId}}"}, {"{{issueId}}"}, {"{{outputDocumentKey}}"}.
             </p>
           </div>
@@ -2939,7 +2938,7 @@ function RunHistoryRow({
       title={removed ? `${name} (removed)` : name}
       subtitle={relativeTime(run.createdAt)}
       trailing={
-        <span className="font-mono text-xs text-muted-foreground">
+        <span className="font-mono text-xs text-ink-3">
           {formatCents(run.cost.costCents)}
         </span>
       }
@@ -2961,11 +2960,11 @@ function AgentPicker({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant="secondary" size="sm">
           {selectedAgent ? (
             <AgentIdentity agent={selectedAgent} size="xs" />
           ) : (
-            <span className="text-muted-foreground">Pick an agent</span>
+            <span className="text-ink-3">Pick an agent</span>
           )}
         </Button>
       </PopoverTrigger>
@@ -3098,14 +3097,14 @@ function RunDetailView({
   if (detailQuery.isLoading) {
     return (
       <PaneScaffold title="Run" action={<BackButton onBack={onBack} />}>
-        <div className="p-3 text-xs text-muted-foreground">Loading run…</div>
+        <div className="p-3 text-xs text-ink-3">Loading run…</div>
       </PaneScaffold>
     );
   }
   if (!detail) {
     return (
       <PaneScaffold title="Run" action={<BackButton onBack={onBack} />}>
-        <div className="p-3 text-xs text-muted-foreground">Run not found.</div>
+        <div className="p-3 text-xs text-ink-3">Run not found.</div>
       </PaneScaffold>
     );
   }
@@ -3125,16 +3124,16 @@ function RunDetailView({
           <StatusBadge status={runBadgeStatus(detail.status)} />
           <AgentIdentity agent={agent ?? { id: detail.agentId, name: agentName }} size="xs" />
           {removed && <Badge variant="secondary">removed</Badge>}
-          <span className="font-mono text-xs text-muted-foreground">
+          <span className="font-mono text-xs text-ink-3">
             v{detail.skillVersion.revisionNumber}
           </span>
-          <span className="ml-auto font-mono text-xs text-muted-foreground">
+          <span className="ml-auto font-mono text-xs text-ink-3">
             {formatCents(detail.cost.costCents)}
           </span>
         </div>
 
         {/* snapshot property block */}
-        <div className="rounded-md border border-border text-xs">
+        <div className="rounded-md border border-line text-xs">
           <PropRow label="Input" value={detail.inputId ? "saved input" : "ad-hoc paste"} />
           <PropRow label="Template" value={detail.templateName ?? "No template"} />
           <PropRow label="Skill version" value={`v${detail.skillVersion.revisionNumber}`} />
@@ -3142,12 +3141,12 @@ function RunDetailView({
         </div>
 
         {showRunErrorCard(detail.status) && (
-          <Card className="border-destructive/50">
+          <Card className="border-bad/50">
             <CardHeader className="flex-row items-center gap-2 space-y-0 pb-2">
-              <AlertTriangle className="h-3.5 w-3.5 text-destructive" />
+              <AlertTriangle className="h-3.5 w-3.5 text-bad" />
               <span className="text-sm font-medium">Run failed</span>
             </CardHeader>
-            <CardContent className="text-sm text-muted-foreground">
+            <CardContent className="text-sm text-ink-3">
               {detail.error ?? "The test task ended with an error."}
             </CardContent>
           </Card>
@@ -3156,15 +3155,15 @@ function RunDetailView({
         {/* Output snapshot / draft-at-failure */}
         {outputMode === "output" || outputMode === "draft" ? (
           <section className="space-y-2">
-            <h3 className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+            <h3 className="mb-1 text-xs font-semibold uppercase tracking-wide text-ink-3">
               {outputMode === "draft" ? "Draft at failure" : "Output snapshot"}
             </h3>
-            <div className="rounded-md border border-border p-3">
+            <div className="rounded-md border border-line p-3">
               <MarkdownBody>{detail.outputBody || "_No output_"}</MarkdownBody>
             </div>
           </section>
         ) : outputMode === "pending" ? (
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+          <div className="flex items-center gap-2 text-xs text-ink-3">
             <Clock className="h-3.5 w-3.5" /> Working… output will appear here.
           </div>
         ) : null}
@@ -3218,9 +3217,9 @@ function RunDetailView({
         />
 
         {/* Actions */}
-        <div className="flex flex-wrap items-center gap-2 border-t border-border pt-3">
+        <div className="flex flex-wrap items-center gap-2 border-t border-line pt-3">
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             disabled={reRunMutation.isPending}
             onClick={() => reRunMutation.mutate()}
@@ -3238,9 +3237,8 @@ function RunDetailView({
             </Button>
           ) : (
             <Button
-              variant="ghost"
+              variant="danger"
               size="sm"
-              className="text-destructive hover:text-destructive"
               disabled={deleteMutation.isPending}
               onClick={() => deleteMutation.mutate()}
             >
@@ -3254,7 +3252,7 @@ function RunDetailView({
           ) : (
             <Tooltip>
               <TooltipTrigger asChild>
-                <span className="cursor-not-allowed text-xs text-muted-foreground">
+                <span className="cursor-not-allowed text-xs text-ink-3">
                   Open test task ↗
                 </span>
               </TooltipTrigger>
@@ -3280,11 +3278,11 @@ function RunHarnessUnavailableNotice({
   copy: NonNullable<ReturnType<typeof runHarnessUnavailableCopy>>;
 }) {
   return (
-    <div className="flex items-start gap-2 rounded-md border border-border bg-muted/30 p-3 text-xs">
-      <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+    <div className="flex items-start gap-2 rounded-md border border-line bg-bg-3/30 p-3 text-xs">
+      <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ink-3" />
       <div className="min-w-0 space-y-1">
-        <p className="font-medium text-foreground">{copy.title}</p>
-        <p className="text-muted-foreground">{copy.body}</p>
+        <p className="font-medium text-ink">{copy.title}</p>
+        <p className="text-ink-3">{copy.body}</p>
       </div>
     </div>
   );
@@ -3294,15 +3292,15 @@ function RunDocumentsSection({ documents }: { documents: IssueDocument[] }) {
   return (
     <section className="space-y-2">
       <div className="flex items-center gap-2">
-        <FileText className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
-        <h3 className="text-sm font-medium text-muted-foreground">Documents</h3>
-        <span className="text-xs text-muted-foreground">{documents.length}</span>
+        <FileText className="h-3.5 w-3.5 text-ink-3" aria-hidden="true" />
+        <h3 className="text-sm font-medium text-ink-3">Documents</h3>
+        <span className="text-xs text-ink-3">{documents.length}</span>
       </div>
       <div className="space-y-2">
         {documents.map((document) => (
-          <article key={document.id} className="rounded-md border border-border p-3">
-            <div className="mb-2 flex min-w-0 items-center gap-2 text-xs text-muted-foreground">
-              <span className="truncate font-medium text-foreground">
+          <article key={document.id} className="rounded-md border border-line p-3">
+            <div className="mb-2 flex min-w-0 items-center gap-2 text-xs text-ink-3">
+              <span className="truncate font-medium text-ink">
                 {document.title ?? document.key}
               </span>
               <span className="ml-auto shrink-0">{relativeTime(document.updatedAt)}</span>
@@ -3368,7 +3366,7 @@ function InteractionSection({
 
   return (
     <section>
-      <h3 className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+      <h3 className="mb-1 text-xs font-semibold uppercase tracking-wide text-ink-3">
         Interactions
       </h3>
       <div className="space-y-2">
@@ -3476,11 +3474,11 @@ function VersionHistorySheet({
         </SheetHeader>
         <div className="mt-3 space-y-2 overflow-auto">
           {versionsQuery.isLoading ? (
-            <div className="text-xs text-muted-foreground">Loading versions…</div>
+            <div className="text-xs text-ink-3">Loading versions…</div>
           ) : versions.length === 0 ? (
             <EmptyState icon={History} message="No versions yet. Save changes to create the first." />
           ) : (
-            <div className="space-y-1 rounded-md border border-border p-1">
+            <div className="space-y-1 rounded-md border border-line p-1">
               {versions.map((v) => (
                 <EntityRow
                   key={v.id}
@@ -3499,7 +3497,7 @@ function VersionHistorySheet({
                   }}
                   trailing={
                     <Button
-                      variant="outline"
+                      variant="secondary"
                       size="xs"
                       disabled={restore.isPending || skill.editable === false}
                       onClick={(e) => {
@@ -3515,8 +3513,8 @@ function VersionHistorySheet({
             </div>
           )}
           {diff && (
-            <div className="rounded-md border border-border">
-              <div className="border-b border-border px-3 py-1.5 text-xs text-muted-foreground">
+            <div className="rounded-md border border-line">
+              <div className="border-b border-line px-3 py-1.5 text-xs text-ink-3">
                 Diff v{left?.revisionNumber} → v{right?.revisionNumber}
               </div>
               <pre className="max-h-64 overflow-auto p-2 text-xs">
@@ -3557,8 +3555,8 @@ function PaneScaffold({
 }) {
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <div className="flex items-center justify-between gap-2 border-b border-border px-3 py-2">
-        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+      <div className="flex items-center justify-between gap-2 border-b border-line px-3 py-2">
+        <span className="text-xs font-semibold uppercase tracking-wide text-ink-3">
           {title}
         </span>
         {action}
@@ -3570,8 +3568,8 @@ function PaneScaffold({
 
 function PropRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-2 border-b border-border px-3 py-1.5 last:border-b-0">
-      <span className="text-muted-foreground">{label}</span>
+    <div className="flex items-center justify-between gap-2 border-b border-line px-3 py-1.5 last:border-b-0">
+      <span className="text-ink-3">{label}</span>
       <span className="truncate">{value}</span>
     </div>
   );

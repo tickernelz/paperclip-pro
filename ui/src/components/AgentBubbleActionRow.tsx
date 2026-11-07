@@ -54,7 +54,7 @@ export function BubbleCopyButton({ copyText }: { copyText: string }) {
   return (
     <button
       type="button"
-      className="inline-flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+      className="inline-flex h-7 w-7 items-center justify-center rounded-md text-ink-3 transition-colors hover:bg-bg-3 hover:text-ink"
       title={label}
       aria-label={label}
       onClick={() => {
@@ -64,7 +64,7 @@ export function BubbleCopyButton({ copyText }: { copyText: string }) {
       {copied ? (
         <Check className="h-3.5 w-3.5" />
       ) : failed ? (
-        <X className="h-3.5 w-3.5 text-destructive" />
+        <X className="h-3.5 w-3.5 text-bad" />
       ) : (
         <Copy className="h-3.5 w-3.5" />
       )}
@@ -129,7 +129,7 @@ export function AgentBubbleActionRow({
           <TooltipTrigger asChild>
             <a
               href={anchorHref}
-              className="text-(length:--text-micro) text-muted-foreground hover:text-foreground hover:underline"
+              className="text-(length:--text-micro) text-ink-3 hover:text-ink hover:underline"
             >
               {dateLabel}
             </a>
@@ -144,7 +144,6 @@ export function AgentBubbleActionRow({
           <Button
             variant="ghost"
             size="icon-xs"
-            className="text-muted-foreground hover:text-foreground"
             title="More actions"
             aria-label="More actions"
           >
@@ -260,7 +259,7 @@ export function IssueChatFeedbackButtons({
           "inline-flex h-7 w-7 items-center justify-center rounded-md transition-colors",
           visibleVote === "up"
             ? "text-green-600 dark:text-green-400"
-            : "text-muted-foreground hover:bg-accent hover:text-foreground",
+            : "text-ink-3 hover:bg-bg-3 hover:text-ink",
         )}
         title="Helpful"
         aria-label="Helpful"
@@ -277,7 +276,7 @@ export function IssueChatFeedbackButtons({
               "inline-flex h-7 w-7 items-center justify-center rounded-md transition-colors",
               visibleVote === "down"
                 ? "text-amber-600 dark:text-amber-400"
-                : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                : "text-ink-3 hover:bg-bg-3 hover:text-ink",
             )}
             title="Needs work"
             aria-label="Needs work"
@@ -292,14 +291,14 @@ export function IssueChatFeedbackButtons({
             value={downvoteReason}
             onChange={(event) => setDownvoteReason(event.target.value)}
             placeholder="Add a short note"
-            className="min-h-20 resize-y bg-background text-sm"
+            className="min-h-20 resize-y bg-bg text-sm"
             disabled={isSaving}
           />
           <div className="mt-2 flex items-center justify-end gap-2">
             <Button
               type="button"
               size="sm"
-              variant="outline"
+              variant="secondary"
               disabled={isSaving}
               onClick={() => {
                 setReasonOpen(false);
@@ -337,12 +336,12 @@ export function IssueChatFeedbackButtons({
               answer becomes the default for future thumbs up and thumbs down votes.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-3 text-sm text-muted-foreground">
+          <div className="space-y-3 text-sm text-ink-3">
             <p>This vote is always saved locally.</p>
             <p>
-              Choose <span className="font-medium text-foreground">Always allow</span> to share
+              Choose <span className="font-medium text-ink">Always allow</span> to share
               this vote and future voted AI outputs. Choose{" "}
-              <span className="font-medium text-foreground">Don't allow</span> to keep this vote
+              <span className="font-medium text-ink">Don't allow</span> to keep this vote
               and future votes local.
             </p>
             <p>You can change this later in Settings &gt; General.</p>
@@ -351,7 +350,7 @@ export function IssueChatFeedbackButtons({
                 href={termsUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex text-sm text-foreground underline underline-offset-4"
+                className="inline-flex text-sm text-ink underline underline-offset-4"
               >
                 Read our terms of service
               </a>
@@ -360,7 +359,7 @@ export function IssueChatFeedbackButtons({
           <DialogFooter>
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               disabled={!pendingSharingDialog || isSaving}
               onClick={() => {
                 if (!pendingSharingDialog) return;

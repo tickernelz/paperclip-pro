@@ -185,9 +185,9 @@ export function ProviderQuotaCard({
         {/* rolling window consumption — always shown when data is available */}
         {windowRows.length > 0 && (
           <>
-            <div className="border-t border-border" />
+            <div className="border-t border-line" />
             <div className="space-y-2">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              <p className="text-xs font-semibold text-ink-3 uppercase tracking-wide">
                 Rolling windows
               </p>
               <div className="space-y-2.5">
@@ -201,15 +201,15 @@ export function ProviderQuotaCard({
                   return (
                     <div key={w} className="space-y-1">
                       <div className="flex items-center justify-between gap-2 text-xs">
-                        <span className="font-mono text-muted-foreground w-6 shrink-0">{w}</span>
-                        <span className="text-muted-foreground font-mono flex-1">
+                        <span className="font-mono text-ink-3 w-6 shrink-0">{w}</span>
+                        <span className="text-ink-3 font-mono flex-1">
                           {formatTokens(tokens)} tok
                         </span>
                         <span className="font-medium tabular-nums">{formatCents(cents)}</span>
                       </div>
-                      <div className="h-2 w-full border border-border overflow-hidden">
+                      <div className="h-2 w-full border border-line overflow-hidden">
                         <div
-                          className="h-full bg-primary/60 transition-(--tp-width) duration-150"
+                          className="h-full bg-accent/60 transition-(--tp-width) duration-150"
                           style={{ width: `${barPct}%` }}
                         />
                       </div>
@@ -224,33 +224,33 @@ export function ProviderQuotaCard({
         {/* subscription usage — shown when any subscription-billed runs exist */}
         {totalSubRuns > 0 && (
           <>
-            <div className="border-t border-border" />
+            <div className="border-t border-line" />
             <div className="space-y-2">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              <p className="text-xs font-semibold text-ink-3 uppercase tracking-wide">
                 Subscription
               </p>
-              <p className="text-xs text-muted-foreground">
-                <span className="font-mono text-foreground">{totalSubRuns}</span> runs
+              <p className="text-xs text-ink-3">
+                <span className="font-mono text-ink">{totalSubRuns}</span> runs
                 {" · "}
                 {totalSubTokens > 0 && (
                   <>
-                    <span className="font-mono text-foreground">{formatTokens(totalSubTokens)}</span> total
+                    <span className="font-mono text-ink">{formatTokens(totalSubTokens)}</span> total
                     {" · "}
                   </>
                 )}
-                <span className="font-mono text-foreground">{formatTokens(totalSubInputTokens)}</span> in
+                <span className="font-mono text-ink">{formatTokens(totalSubInputTokens)}</span> in
                 {" · "}
-                <span className="font-mono text-foreground">{formatTokens(totalSubOutputTokens)}</span> out
+                <span className="font-mono text-ink">{formatTokens(totalSubOutputTokens)}</span> out
               </p>
               {subSharePct > 0 && (
                 <>
-                  <div className="h-1.5 w-full border border-border overflow-hidden">
+                  <div className="h-1.5 w-full border border-line overflow-hidden">
                     <div
-                      className="h-full bg-primary/60 transition-(--tp-width) duration-150"
+                      className="h-full bg-accent/60 transition-(--tp-width) duration-150"
                       style={{ width: `${subSharePct}%` }}
                     />
                   </div>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-ink-3">
                     {Math.round(subSharePct)}% of token usage via subscription
                   </p>
                 </>
@@ -262,7 +262,7 @@ export function ProviderQuotaCard({
         {/* model breakdown — always shown, with token-share bars */}
         {rows.length > 0 && (
           <>
-            <div className="border-t border-border" />
+            <div className="border-t border-line" />
             <div className="space-y-3">
               {rows.map((row) => {
                 const rowTokens = row.inputTokens + row.cachedInputTokens + row.outputTokens;
@@ -273,30 +273,30 @@ export function ProviderQuotaCard({
                     {/* model name and cost */}
                     <div className="flex items-center justify-between gap-2">
                       <div className="min-w-0">
-                        <span className="text-xs text-muted-foreground truncate font-mono block">
+                        <span className="text-xs text-ink-3 truncate font-mono block">
                           {row.model}
                         </span>
-                        <span className="text-(length:--text-micro) text-muted-foreground truncate block">
+                        <span className="text-(length:--text-micro) text-ink-3 truncate block">
                           {providerDisplayName(row.biller)} · {billingTypeDisplayName(row.billingType)}
                         </span>
                       </div>
                       <div className="flex items-center gap-3 shrink-0 tabular-nums text-xs">
-                        <span className="text-muted-foreground">
+                        <span className="text-ink-3">
                           {formatTokens(rowTokens)} tok
                         </span>
                         <span className="font-medium">{formatCents(row.costCents)}</span>
                       </div>
                     </div>
                     {/* token share bar */}
-                    <div className="relative h-2 w-full border border-border overflow-hidden">
+                    <div className="relative h-2 w-full border border-line overflow-hidden">
                       <div
-                        className="absolute inset-y-0 left-0 bg-primary/60 transition-(--tp-width) duration-150"
+                        className="absolute inset-y-0 left-0 bg-accent/60 transition-(--tp-width) duration-150"
                         style={{ width: `${tokenPct}%` }}
                         title={`${Math.round(tokenPct)}% of provider tokens`}
                       />
                       {/* cost share overlay — narrower, opaque, shows relative cost weight */}
                       <div
-                        className="absolute inset-y-0 left-0 bg-primary/85 transition-(--tp-width) duration-150"
+                        className="absolute inset-y-0 left-0 bg-accent/85 transition-(--tp-width) duration-150"
                         style={{ width: `${costPct}%` }}
                         title={`${Math.round(costPct)}% of provider cost`}
                       />
@@ -311,14 +311,14 @@ export function ProviderQuotaCard({
         {/* subscription quota windows from provider api — shown when data is available */}
         {showSubscriptionQuotaSection && (
           <>
-            <div className="border-t border-border" />
+            <div className="border-t border-line" />
             <div className="space-y-2">
               <div className="flex items-center justify-between gap-3">
-                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                <p className="text-xs font-semibold text-ink-3 uppercase tracking-wide">
                   Subscription quota
                 </p>
                 {quotaSource && !isClaudeQuotaPanel && !isCodexQuotaPanel ? (
-                  <span className="text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
+                  <span className="text-(length:--text-nano) uppercase tracking-(--tracking-eyebrow) text-ink-3">
                     {quotaSourceDisplayName(quotaSource)}
                   </span>
                 ) : null}
@@ -334,7 +334,7 @@ export function ProviderQuotaCard({
               ) : (
                 <>
                   {quotaError ? (
-                    <p role="status" className="text-xs text-muted-foreground">
+                    <p role="status" className="text-xs text-ink-3">
                       {quotaUnavailableMessage(quotaWindows.length > 0)}
                     </p>
                   ) : null}
@@ -351,7 +351,7 @@ export function ProviderQuotaCard({
                       return (
                         <div key={qw.label} className="space-y-1">
                           <div className="flex items-center justify-between gap-2 text-xs">
-                            <span className="font-mono text-muted-foreground shrink-0">{qw.label}</span>
+                            <span className="font-mono text-ink-3 shrink-0">{qw.label}</span>
                             <span className="flex-1" />
                             {qw.valueLabel != null ? (
                               <span className="font-medium tabular-nums">{qw.valueLabel}</span>
@@ -360,7 +360,7 @@ export function ProviderQuotaCard({
                             ) : null}
                           </div>
                           {qw.usedPercent != null && fillColor != null && (
-                            <div className="h-2 w-full border border-border overflow-hidden">
+                            <div className="h-2 w-full border border-line overflow-hidden">
                               <div
                                 className={`h-full transition-(--tp-width) duration-150 ${fillColor}`}
                                 style={{ width: `${qw.usedPercent}%` }}
@@ -368,11 +368,11 @@ export function ProviderQuotaCard({
                             </div>
                           )}
                           {qw.detail ? (
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-xs text-ink-3">
                               {qw.detail}
                             </p>
                           ) : qw.resetsAt ? (
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-xs text-ink-3">
                               resets {new Date(qw.resetsAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })}
                             </p>
                           ) : null}
@@ -392,8 +392,8 @@ export function ProviderQuotaCard({
 
 function QuotaPanelSkeleton() {
   return (
-    <div className="border border-border px-4 py-4">
-      <div className="flex items-start justify-between gap-3 border-b border-border pb-3">
+    <div className="border border-line px-4 py-4">
+      <div className="flex items-start justify-between gap-3 border-b border-line pb-3">
         <div className="min-w-0 space-y-2">
           <Skeleton className="h-3 w-36" />
           <Skeleton className="h-4 w-64 max-w-full" />
@@ -404,7 +404,7 @@ function QuotaPanelSkeleton() {
         {Array.from({ length: 3 }).map((_, index) => (
           <div
             key={index}
-            className="border border-border px-3.5 py-3"
+            className="border border-line px-3.5 py-3"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 space-y-2">

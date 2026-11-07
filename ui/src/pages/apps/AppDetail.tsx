@@ -512,7 +512,7 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
   }
 
   if (!selectedCompanyId) {
-    return <div className="p-6 text-sm text-muted-foreground">Select an organization to manage apps.</div>;
+    return <div className="p-6 text-sm text-ink-3">Select an organization to manage apps.</div>;
   }
   if (connectionQuery.isLoading) {
     return (
@@ -526,8 +526,8 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
   if (!connection) {
     return (
       <div className="max-w-3xl p-6">
-        <p className="text-sm text-muted-foreground">We couldn't find that app.</p>
-        <Button className="mt-4" variant="outline" onClick={() => navigate("/apps")}>
+        <p className="text-sm text-ink-3">We couldn't find that app.</p>
+        <Button className="mt-4" variant="secondary" onClick={() => navigate("/apps")}>
           Back to connectors
         </Button>
       </div>
@@ -537,11 +537,11 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
   if (isRetiredComposioConnection(connection)) {
     return <div className="max-w-4xl space-y-6 pb-12">
       <h1 className="text-xl font-semibold">{appName}</h1>
-      <section role="status" className="space-y-3 rounded-lg border border-border bg-muted p-4">
+      <section role="status" className="space-y-3 rounded-lg border border-line bg-bg-3 p-4">
         <h2 className="text-sm font-semibold">Connection retired</h2>
-        <p className="text-sm text-muted-foreground">{RETIRED_COMPOSIO_MESSAGE}</p>
-        <p className="text-sm text-muted-foreground">Remove each obsolete connection separately. Removing this one does not remove other connections.</p>
-        <Button variant="outline" onClick={() => navigate("/apps/connect?source=composio")}>Add Composio MCP connection</Button>
+        <p className="text-sm text-ink-3">{RETIRED_COMPOSIO_MESSAGE}</p>
+        <p className="text-sm text-ink-3">Remove each obsolete connection separately. Removing this one does not remove other connections.</p>
+        <Button variant="secondary" onClick={() => navigate("/apps/connect?source=composio")}>Add Composio MCP connection</Button>
       </section>
       {grantsQuery.data?.capabilities.canConfigure === true && <DangerZone
         appName={appName}
@@ -595,7 +595,7 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
       {status.tone === "attention" && connection.requiresReauthorization === false && (
         <div role="status">
           <p>{connection.healthMessage || "GitHub access could not be checked. Try again."}</p>
-          <Button variant="outline" disabled={refreshGitHubAccess.isPending} onClick={() => refreshGitHubAccess.mutate()}>
+          <Button variant="secondary" disabled={refreshGitHubAccess.isPending} onClick={() => refreshGitHubAccess.mutate()}>
             Retry access
           </Button>
         </div>
@@ -683,10 +683,10 @@ function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectio
                 onReplaceAudience={(grant, memberUserIds) =>
                   replaceAudience.mutate({ grantId: grant.id, memberUserIds })}
               />
-              {connection.config?.sourceTemplateKey === "composio" ? <p className="text-sm text-muted-foreground">
+              {connection.config?.sourceTemplateKey === "composio" ? <p className="text-sm text-ink-3">
                 These permissions apply to all apps available through this Composio connection. Manage app accounts and sign-in in Composio.
               </p> : null}
-              {connection.config?.sourceTemplateKey !== "composio" && isRemoteMcpConnectorMethod(connection.config?.sourceTemplateKey, connection.config?.connectionMethodKey) && <p className="text-sm text-muted-foreground">Paperclip controls access to the tools listed here. App and action permissions inside these tools are managed in {baseAppName}.</p>}
+              {connection.config?.sourceTemplateKey !== "composio" && isRemoteMcpConnectorMethod(connection.config?.sourceTemplateKey, connection.config?.connectionMethodKey) && <p className="text-sm text-ink-3">Paperclip controls access to the tools listed here. App and action permissions inside these tools are managed in {baseAppName}.</p>}
               <PermissionsPanel
                 afterAgentAccess={<>{logoEntry?.agentInstructions && <ConnectionInstructionsSettings key={connection.id} connection={connection} provider={logoEntry.name} template={logoEntry.agentInstructions} canConfigure={grantsQuery.data?.capabilities?.canConfigure ?? false} />}{renderAgentSettings?.(connection)}</>}
                 actions={actionsContent}
@@ -814,7 +814,7 @@ export function AppDetailHeader({
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-7 w-7 text-muted-foreground"
+                className="h-7 w-7"
                 aria-label="Rename app"
                 disabled={!canRename}
                 onClick={onRenameStart}
@@ -826,12 +826,12 @@ export function AppDetailHeader({
           <div className="mt-2 flex flex-wrap items-center gap-2">
             <StatusBadge status={status} />
             {connection.config?.provider !== "agentmail" && actionCount !== null && (
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs text-ink-3">
                 {actionCount} {actionCount === 1 ? "action" : "actions"} available
               </span>
             )}
             {connectionDisplaySecondaryHint(connection) ? (
-              <span className="text-xs text-muted-foreground">
+              <span className="text-xs text-ink-3">
                 {connectionDisplaySecondaryHint(connection)}
               </span>
             ) : null}
@@ -846,7 +846,7 @@ export function AppDetailHeader({
 
 function ToolsLoading({ mcpActions = false }: { mcpActions?: boolean }) {
   return (
-    <div className="flex items-center gap-2 py-8 text-sm text-muted-foreground" role="status">
+    <div className="flex items-center gap-2 py-8 text-sm text-ink-3" role="status">
       <Loader2 className="h-4 w-4 animate-spin" />
       {mcpActions ? "Loading MCP actions, this may take a minute." : "Loading tools…"}
     </div>
@@ -856,8 +856,8 @@ function ToolsLoading({ mcpActions = false }: { mcpActions?: boolean }) {
 function ToolsLoadError({ onRetry }: { onRetry: () => void }) {
   return (
     <div className="space-y-3 py-8">
-      <p className="text-sm text-destructive">Couldn’t load tools for this app.</p>
-      <Button size="sm" variant="outline" onClick={onRetry}>Try again</Button>
+      <p className="text-sm text-bad">Couldn’t load tools for this app.</p>
+      <Button size="sm" variant="secondary" onClick={onRetry}>Try again</Button>
     </div>
   );
 }
@@ -900,7 +900,7 @@ function StatusBadge({ status }: { status: StatusInfo }) {
   const klass: Record<StatusInfo["tone"], string> = {
     connected: "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
     attention: "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300",
-    paused: "border-border bg-muted text-muted-foreground",
+    paused: "border-line bg-bg-3 text-ink-3",
   };
   return (
     <span

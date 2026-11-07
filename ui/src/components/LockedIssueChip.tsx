@@ -39,8 +39,8 @@ export function LockedIssueChip({
       data-testid="locked-issue-chip"
       aria-label={`${label} — ${unavailable ? "unavailable or you don't have access" : "private, you don't have access"}`}
       className={cn(
-        "inline-flex shrink-0 select-none items-center gap-1 rounded-md border border-dashed border-border px-1.5 py-0.5",
-        "font-mono text-(length:--text-nano) leading-tight text-muted-foreground sm:text-(length:--text-micro)",
+        "inline-flex shrink-0 select-none items-center gap-1 rounded-md border border-dashed border-line px-1.5 py-0.5",
+        "font-mono text-(length:--text-nano) leading-tight text-ink-3 sm:text-(length:--text-micro)",
         className,
       )}
     >

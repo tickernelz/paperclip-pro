@@ -94,7 +94,7 @@ export function successfulRunHandoffActivityTone(action: string) {
     };
   }
   return {
-    className: "border-border/60 text-muted-foreground",
-    iconClassName: "text-muted-foreground",
+    className: "border-line/60 text-ink-3",
+    iconClassName: "text-ink-3",
   };
 }

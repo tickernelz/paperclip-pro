@@ -270,11 +270,11 @@ export function GitHubChatSetup() {
       <div className="mx-auto w-full max-w-3xl space-y-6 px-4 py-6 sm:px-6">
         <h1 className="text-2xl font-semibold">Resume GitHub setup</h1>
         {current.error ? (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-sm text-bad">
             Could not load this connection. Try again to resume your draft.
           </p>
         ) : (
-          <p role="status" className="text-sm text-muted-foreground">
+          <p role="status" className="text-sm text-ink-3">
             Loading your draft…
           </p>
         )}
@@ -304,7 +304,7 @@ export function GitHubChatSetup() {
               : "Connect GitHub"}
       </h1>
       {(error || (!identityOnly && progress.error) || accounts.error) && (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-sm text-bad">
           {error ||
             (accounts.error instanceof Error
               ? accounts.error.message
@@ -370,14 +370,14 @@ export function GitHubChatSetup() {
         </>
       ) : !identityOnly && !existing && progress.isPending ? (
         <>
-          <p role="status" className="text-sm text-muted-foreground">
+          <p role="status" className="text-sm text-ink-3">
             Checking your GitHub connection…
           </p>
           {footer()}
         </>
       ) : existing ? (
         <>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-ink-3">
             {reconnect
               ? "Leave these blank to reuse this App’s stored credentials, or enter both fields to repair them."
               : "Use the credentials from this App’s GitHub settings."}
@@ -473,7 +473,7 @@ export function GitHubChatSetup() {
             </>
           ) : (
             <>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-ink-3">
                 Link your GitHub account so your mentions use your Paperclip
                 permissions.
               </p>
@@ -484,7 +484,7 @@ export function GitHubChatSetup() {
                   </Label>
                   <select
                     id="github-personal-account"
-                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                    className="w-full rounded-md border border-line-strong bg-bg px-3 py-2 text-sm"
                     value={legacyAccount}
                     onChange={(event) => {
                       setLegacyAccount(event.target.value);
@@ -552,7 +552,7 @@ export function GitHubChatSetup() {
         </>
       ) : state?.state === "install" ? (
         <>
-          <p role="status" className="text-sm text-muted-foreground">
+          <p role="status" className="text-sm text-ink-3">
             Waiting for GitHub installation or administrator approval…
           </p>
           {state.installationUrl && (
@@ -609,7 +609,7 @@ export function GitHubChatSetup() {
         </>
       ) : state?.state === "verify" ? (
         <>
-          <p role="status" className="text-sm text-muted-foreground">
+          <p role="status" className="text-sm text-ink-3">
             {deliveryVerifiedWhileChecking
               ? "GitHub delivery verified. Checking App and repository access…"
               : state.message ?? "Checking GitHub access…"}
@@ -639,7 +639,7 @@ export function GitHubChatSetup() {
             <Label htmlFor="github-owner-type">GitHub account</Label>
             <select
               id="github-owner-type"
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              className="w-full rounded-md border border-line-strong bg-bg px-3 py-2 text-sm"
               value={accountChoice}
               disabled={busy || !!state?.registration}
               onChange={(event) => {
@@ -657,7 +657,7 @@ export function GitHubChatSetup() {
               <option value="organization">Another organization</option>
             </select>
             {(repositories.isError || connectedBots.isError) && (
-              <p role="alert" className="text-sm text-destructive">
+              <p role="alert" className="text-sm text-bad">
                 Could not load some connected GitHub accounts. Choose Another organization to enter a name.
               </p>
             )}
@@ -690,7 +690,7 @@ export function GitHubChatSetup() {
             />
           </div>
           <button
-            className="text-sm text-muted-foreground underline"
+            className="text-sm text-ink-3 underline"
             onClick={() => setExisting(true)}
           >
             I already have an App

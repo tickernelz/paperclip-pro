@@ -40,7 +40,7 @@ describe("AppLogo local brand assets", () => {
     expect(images.map((image) => image.getAttribute("src"))).toEqual(["/brands/apps/notion.svg"]);
     expect(images[0]?.alt).toBe("");
     const wrapper = images[0]!.parentElement!;
-    expect(wrapper.className).toContain("rounded-lg bg-muted");
+    expect(wrapper.className).toContain("rounded-lg bg-bg-3");
     expect(wrapper.className).toContain("border");
     expect(wrapper.style.width).toBe("28px");
     expect(wrapper.style.height).toBe("28px");

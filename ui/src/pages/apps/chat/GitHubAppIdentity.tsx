@@ -48,7 +48,7 @@ export function GitHubAppBranding({
   return (
     <GitHubSettingsDisclosure title="GitHub App name and logo">
       <div className="mt-4 space-y-4">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           Change the name or upload a logo in the App’s Display information
           settings on GitHub.
         </p>
@@ -66,7 +66,7 @@ export function GitHubAppBranding({
               />
             </>
           )}
-          <Button variant="outline" asChild>
+          <Button variant="secondary" asChild>
             <a
               href={gitHubAppSettingsUrl(endpoint)}
               target="_blank"
@@ -77,7 +77,7 @@ export function GitHubAppBranding({
             </a>
           </Button>
         </div>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-ink-3">
           Renaming also changes its @mention.{" "}
           <Link
             className="underline underline-offset-4"

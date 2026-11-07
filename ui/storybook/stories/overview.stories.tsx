@@ -121,7 +121,7 @@ function StorybookGuide() {
               <h1 className="mt-3 text-3xl font-semibold tracking-tight sm:text-4xl">
                 Board UI stories for real control-plane states
               </h1>
-              <p className="mt-4 text-sm leading-6 text-muted-foreground sm:text-base">
+              <p className="mt-4 text-sm leading-6 text-ink-3 sm:text-base">
                 This Storybook is organized as a review workspace for Paperclip's operator UI: primitives first,
                 product surfaces second, and the former UX test routes as isolated fixture-backed stories.
               </p>
@@ -141,13 +141,13 @@ function StorybookGuide() {
             return (
               <Card key={group.title} className="paperclip-story__frame shadow-none">
                 <CardHeader>
-                  <div className="flex h-10 w-10 items-center justify-center border border-border bg-background">
-                    <Icon className="h-4 w-4 text-muted-foreground" />
+                  <div className="flex h-10 w-10 items-center justify-center border border-line bg-bg">
+                    <Icon className="h-4 w-4 text-ink-3" />
                   </div>
                   <CardTitle>{group.title}</CardTitle>
                   <CardDescription>{group.stories}</CardDescription>
                 </CardHeader>
-                <CardContent className="text-sm leading-6 text-muted-foreground">
+                <CardContent className="text-sm leading-6 text-ink-3">
                   {group.why}
                 </CardContent>
               </Card>
@@ -156,24 +156,24 @@ function StorybookGuide() {
         </section>
 
         <section className="paperclip-story__frame overflow-hidden">
-          <div className="border-b border-border px-5 py-4">
+          <div className="border-b border-line px-5 py-4">
             <div className="paperclip-story__label flex items-center gap-2">
               <Route className="h-4 w-4" />
               Coverage Map
             </div>
           </div>
-          <div className="divide-y divide-border">
+          <div className="divide-y divide-line">
             {coverageRows.map(([area, status, detail]) => (
               <div key={area} className="grid gap-3 px-5 py-4 text-sm sm:grid-cols-[180px_120px_minmax(0,1fr)]">
                 <div className="font-medium">{area}</div>
                 <div>
-                  <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-2 py-0.5 text-xs text-muted-foreground">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-bg px-2 py-0.5 text-xs text-ink-3">
                     {status === "Covered" ? <CheckCircle2 className="h-3 w-3 text-emerald-500" /> : null}
                     {status === "Planned" ? <Route className="h-3 w-3 text-cyan-500" /> : null}
                     {status}
                   </span>
                 </div>
-                <div className="text-muted-foreground">{detail}</div>
+                <div className="text-ink-3">{detail}</div>
               </div>
             ))}
           </div>

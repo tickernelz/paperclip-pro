@@ -45,13 +45,13 @@ function Chip({
       onClick={onClick}
       className={
         tone === "alert"
-          ? "flex min-h-8 shrink-0 items-center gap-1.5 rounded-full border border-destructive/50 bg-destructive/10 px-3 py-1 text-xs text-foreground transition-colors hover:bg-destructive/20"
-          : "flex min-h-8 shrink-0 items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1 text-xs text-foreground transition-colors hover:bg-accent/40"
+          ? "flex min-h-8 shrink-0 items-center gap-1.5 rounded-full border border-bad/50 bg-bad/10 px-3 py-1 text-xs text-ink transition-colors hover:bg-bad/20"
+          : "flex min-h-8 shrink-0 items-center gap-1.5 rounded-full border border-line bg-bg-2 px-3 py-1 text-xs text-ink transition-colors hover:bg-bg-3/40"
       }
     >
       {icon}
       <span className="font-medium">{value}</span>
-      <span className="text-muted-foreground">{label}</span>
+      <span className="text-ink-3">{label}</span>
     </button>
   );
 }
@@ -163,7 +163,7 @@ export function OfficeHud({
         />
         <p
           aria-live="polite"
-          className="min-w-0 flex-1 truncate text-xs text-muted-foreground md:text-right"
+          className="min-w-0 flex-1 truncate text-xs text-ink-3 md:text-right"
         >
           {latest ? `${latest.text} · ${relativeTime(new Date(latest.atMs))}` : "No activity yet."}
         </p>

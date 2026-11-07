@@ -61,7 +61,7 @@ export function OutputPrimaryCard({ item, creatorName, onMediaClick }: OutputPri
           </a>
         )
       ) : (
-        <div className="flex aspect-video w-full items-center justify-center bg-muted/30">
+        <div className="flex aspect-video w-full items-center justify-center bg-bg-3/30">
           <OutputFileTile contentType={contentType} sizeClassName="h-16 w-16 text-base" />
         </div>
       )}
@@ -69,13 +69,13 @@ export function OutputPrimaryCard({ item, creatorName, onMediaClick }: OutputPri
       {/* Metadata strip */}
       <div className="flex flex-col gap-2 p-3 md:flex-row md:items-center md:justify-between">
         <div className="min-w-0 flex-1">
-          <p className="break-words text-sm font-semibold text-foreground">{filename}</p>
+          <p className="break-words text-sm font-semibold text-ink">{filename}</p>
           {item.degraded ? (
-            <p className="mt-0.5 text-(length:--text-micro) text-destructive">
+            <p className="mt-0.5 text-(length:--text-micro) text-bad">
               Output metadata is unavailable — this file can’t be played or downloaded here.
             </p>
           ) : (
-            <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-(length:--text-micro) text-muted-foreground">
+            <div className="mt-0.5 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-(length:--text-micro) text-ink-3">
               {item.isPrimary && (
                 <Badge variant="secondary" className="px-1.5 py-0 text-(length:--text-nano)">
                   Primary
@@ -96,7 +96,7 @@ export function OutputPrimaryCard({ item, creatorName, onMediaClick }: OutputPri
           <div className={cn("flex shrink-0 items-center gap-2", "max-md:w-full")}>
             {isMedia && onMediaClick ? (
               <Button
-                variant="outline"
+                variant="secondary"
                 size="sm"
                 className="max-md:flex-1"
                 onClick={() => onMediaClick(item)}
@@ -106,7 +106,7 @@ export function OutputPrimaryCard({ item, creatorName, onMediaClick }: OutputPri
               </Button>
             ) : null}
             {!isMedia || !onMediaClick || isVideo ? (
-              <Button asChild variant="outline" size="sm" className="max-md:flex-1">
+              <Button asChild variant="secondary" size="sm" className="max-md:flex-1">
                 <a href={meta.openPath} target="_blank" rel="noreferrer">
                   <ExternalLink className="h-4 w-4" />
                   Open

@@ -207,7 +207,7 @@ export function SwipeToArchive({
         data-inbox-row-surface
         className={cn(
           "relative will-change-transform",
-          selected ? "rounded-lg bg-accent/50" : "bg-background",
+          selected ? "rounded-lg bg-bg-3/50" : "bg-bg",
         )}
         style={{
           transform: `translate3d(${offsetX}px, 0, 0)`,
