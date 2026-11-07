@@ -1333,13 +1333,11 @@ for this retired variable are ignored. Scalar runtime variables such as
 
 Custom instructions that read the retired variable must use the wake payload in
 the prompt instead. This transport change adds no history limits or truncation;
-existing comment windows and resume-delta rendering still apply. Gateway request
-bodies and Hermes prompt-template JSON variables remain supported.
+existing comment windows and resume-delta rendering still apply.
 
 This removes the duplicate environment entry, not every possible `E2BIG` cause.
-Legacy CLI paths that put prompts in command-line arguments (Gemini, Grok, Kimi,
-Pi, and Hermes) still have argument-size limits. ACP turns, SDK requests, and
-CLI paths that use stdin avoid that separate limit for the wake prompt.
+ACP turns, SDK requests, and CLI paths that use stdin avoid the separate
+argument-size limit for the wake prompt.
 
 ## Paperclip Runner Adapter Conversion
 
@@ -1893,38 +1891,6 @@ The board UI generates agent onboarding prompts from the add-agent modal (`+` in
 - `GET /api/skills/index` lists available skill documents.
 - `GET /api/skills/paperclip` returns the Paperclip heartbeat skill markdown.
 
-Hermes gateway agents use this same generic agent invite flow with
-`adapterType=hermes_gateway` and `agentDefaultsPayload.apiBaseUrl` /
-`agentDefaultsPayload.apiKey`. See
-[HERMES_GATEWAY_ONBOARDING.md](./HERMES_GATEWAY_ONBOARDING.md) for the full
-operator path, including Hermes credentials, invite approval, key claim, and
-fresh-state Docker smoke setup.
-
-## OpenClaw Join Smoke Test
-
-Run the end-to-end OpenClaw join smoke harness:
-
-```sh
-pnpm smoke:openclaw-join
-```
-
-What it validates:
-
-- invite creation for agent-only join
-- agent join request using `adapterType=openclaw_gateway`
-- board approval + one-time API key claim semantics
-- callback delivery on wakeup to a dockerized OpenClaw-style webhook receiver
-
-Required permissions:
-
-- This script performs board-governed actions (create invite, approve join, wakeup another agent).
-- In authenticated mode, run with board auth via `PAPERCLIP_AUTH_HEADER` or `PAPERCLIP_COOKIE`.
-
-Optional auth flags (for authenticated mode):
-
-- `PAPERCLIP_AUTH_HEADER` (for example `Bearer ...`)
-- `PAPERCLIP_COOKIE` (session cookie header value)
-
 ## PostHog MCP Live Smoke Test
 
 The PostHog smoke targets an already-running authenticated Paperclip instance.
@@ -1956,36 +1922,6 @@ Run the focused harness checks without contacting Paperclip or PostHog:
 ```sh
 node --test scripts/smoke/posthog-live.test.mjs
 ```
-
-## OpenClaw Docker UI One-Command Script
-
-To boot OpenClaw in Docker and print a host-browser dashboard URL in one command:
-
-```sh
-pnpm smoke:openclaw-docker-ui
-```
-
-This script lives at `scripts/smoke/openclaw-docker-ui.sh` and automates clone/build/config/start for Compose-based local OpenClaw UI testing.
-
-Pairing behavior for this smoke script:
-
-- default `OPENCLAW_DISABLE_DEVICE_AUTH=1` (no Control UI pairing prompt for local smoke; no extra pairing env vars required)
-- set `OPENCLAW_DISABLE_DEVICE_AUTH=0` to require standard device pairing
-
-Model behavior for this smoke script:
-
-- defaults to OpenAI models (`openai/gpt-5.2` + OpenAI fallback) so it does not require Anthropic auth by default
-
-State behavior for this smoke script:
-
-- defaults to isolated config dir `~/.openclaw-paperclip-smoke`
-- resets smoke agent state each run by default (`OPENCLAW_RESET_STATE=1`) to avoid stale provider/auth drift
-
-Networking behavior for this smoke script:
-
-- auto-detects and prints a Paperclip host URL reachable from inside OpenClaw Docker
-- default container-side host alias is `host.docker.internal` (override with `PAPERCLIP_HOST_FROM_CONTAINER` / `PAPERCLIP_HOST_PORT`)
-- if Paperclip rejects container hostnames in authenticated/private mode, allow `host.docker.internal` via `npx @tickernelz/paperclip-pro allowed-hostname host.docker.internal` and restart Paperclip
 
 ### GitHub identity for shared agents
 

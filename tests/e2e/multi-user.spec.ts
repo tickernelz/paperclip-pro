@@ -250,13 +250,13 @@ test.describe("Multi-user: API", () => {
     expect(JSON.stringify(errBody)).toContain("last active owner");
   });
 
-  test("POST /companies/:id/openclaw/invite-prompt creates agent invite", async ({
+  test("POST /companies/:id/invites creates agent invite", async ({
     request,
   }) => {
     const res = await request.post(
-      `${BASE}/api/companies/${companyId}/openclaw/invite-prompt`,
+      `${BASE}/api/companies/${companyId}/invites`,
       {
-        data: { agentMessage: "E2E test agent invite" },
+        data: { allowedJoinTypes: "agent", agentMessage: "E2E test agent invite" },
       }
     );
     expect(res.ok()).toBe(true);
@@ -471,8 +471,8 @@ test.describe("Multi-user: Agent invite flow", () => {
   }) => {
     // Create agent invite
     const res = await request.post(
-      `${BASE}/api/companies/${companyId}/openclaw/invite-prompt`,
-      { data: {} }
+      `${BASE}/api/companies/${companyId}/invites`,
+      { data: { allowedJoinTypes: "agent" } }
     );
     expect(res.ok()).toBe(true);
     const { token } = await res.json();

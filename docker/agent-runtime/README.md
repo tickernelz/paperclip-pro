@@ -10,7 +10,6 @@ Container images for running coding-agent harnesses in sandboxed environments (f
 - **`agent-runtime-codex`**: Extends base with `@openai/codex`.
 - **`agent-runtime-gemini`**: Extends base with `@google/gemini-cli` plus headless auth-mode settings.
 - **`agent-runtime-claude`**: Extends base with `@anthropic-ai/claude-code` (symlinked as `claude-code`).
-- **`agent-runtime-hermes`**: Dockerfile included in the bake group, not in the default publish scope (stub until a CLI package exists).
 
 ## Base Image Contents
 
