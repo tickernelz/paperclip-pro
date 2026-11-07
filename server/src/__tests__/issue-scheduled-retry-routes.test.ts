@@ -122,7 +122,7 @@ describeEmbeddedPostgres("issue scheduled retry routes", () => {
       name: "CodexCoder",
       role: "engineer",
       status: input.agentStatus ?? "active",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: {},
       runtimeConfig: {
         heartbeat: {
