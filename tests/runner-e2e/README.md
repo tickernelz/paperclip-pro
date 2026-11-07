@@ -1073,7 +1073,7 @@ campaign result bundle, and history entry. Suite/profile selectors narrow that
 same harness; they do not invoke a separate onboarding reporting program.
 
 `first-task` creates the organization, first agent and onboarding task through
-the API calls onboarding makes: `POST /api/companies`, an
+the API calls onboarding makes: `POST /api/companies`, an `omp_local`
 `onboardingFirstAgent` hire on `/api/companies/:id/agent-hires` (approved when
 the instance requires it), and an `onboardingFirstTask` issue in the
 `Onboarding` project. It keeps the server-seeded persona/model/permissions/skill
@@ -1085,8 +1085,10 @@ model. Configured and provider-observed model identities are reported separately
 
 There are thirteen cases on `legacy-codex`, `legacy-claude`, `runner-codex`, and
 `runner-acpx-claude`, local only (52 cells). Native profiles hire the first agent
-on its legacy provider, then change only the agent's runtime configuration via
-the public API before its first task is created. Persona, managed instructions, skills, seeded
+on `omp_local`, then change only the agent's runtime configuration via the
+public API before its first task is created. The `legacy-codex` and
+`legacy-claude` cells stop before setup: `codex_local` and `claude_local` are
+retired adapters the server refuses to hire. Persona, managed instructions, skills, seeded
 question, and task invocation are preserved. Explicit model choices are retained;
 an unset model resolves through the production runtime-switch defaults. The
 production switch removes the legacy Paperclip operational skill because Runner
@@ -1094,7 +1096,7 @@ supplies its control-plane contract through its protocol; other assigned skills,
 including `/first-task`, are retained. Native runtime permissions come from the
 existing qualified profile. Evidence labels
 this setup `post-onboarding-runtime-switch`; it does not claim a native
-onboarding path exists. Legacy setup is labeled `onboarding-api`.
+onboarding path exists.
 
 | First response / control | Complete journey |
 | --- | --- |

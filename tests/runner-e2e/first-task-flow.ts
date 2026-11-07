@@ -42,6 +42,11 @@ export async function setupFirstTaskFixtures(input: {
   observe: (fixtures: LiveFixtureValues) => void;
 }): Promise<LiveFixtureValues> {
   const { api, execution, nonce } = input;
+  if (execution.profile.generation !== "native") {
+    throw new Error(
+      `${execution.profile.adapterType} is retired; first-task setup hires omp_local and only native profiles switch from it`,
+    );
+  }
   await api.patch("/api/instance/settings/experimental", {
     enableClassicTaskInterface: false,
   });
@@ -60,7 +65,7 @@ export async function setupFirstTaskFixtures(input: {
     },
   });
   input.observe(fixtures);
-  const hireRequest = firstTaskHireRequest(execution, fixtures);
+  const hireRequest = firstTaskHireRequest(fixtures.agent.name);
   const hire = await api.post<{ agent: Row; approval?: Row | null }>(
     `/api/companies/${company.id}/agent-hires`,
     hireRequest,
@@ -72,43 +77,34 @@ export async function setupFirstTaskFixtures(input: {
   }
   const agents = await api.get<Row[]>(`/api/companies/${company.id}/agents`);
   expect(agents).toHaveLength(1);
-  const onboardingAdapter = hireRequest.adapterType;
-  expect(agents[0].adapterType).toBe(onboardingAdapter);
+  expect(agents[0].adapterType).toBe(hireRequest.adapterType);
+  const runtimePatch = firstTaskNativeRuntimePatch(
+    execution,
+    fixtures,
+    agents[0],
+  );
+  const migrated = await api.patch<Row>(
+    `/api/agents/${agents[0].id}`,
+    runtimePatch,
+  );
+  expect(migrated.adapterType).toBe("paperclip_runner");
+  expect(migrated.adapterConfig?.provider).toBe(execution.profile.provider);
+  expect(migrated.adapterConfig?.instructionsFilePath).toBe(
+    agents[0].adapterConfig?.instructionsFilePath,
+  );
+  expect(migrated.adapterConfig?.paperclipSkillSync?.desiredSkills).toEqual(
+    (
+      runtimePatch.adapterConfig.paperclipSkillSync as {
+        desiredSkills?: unknown[];
+      }
+    )?.desiredSkills,
+  );
   fixtures.onboardingRuntime = {
-    mode: "onboarding-api",
-    originalAdapterType: onboardingAdapter,
-    testedAdapterType: onboardingAdapter,
+    mode: "post-onboarding-runtime-switch",
+    originalAdapterType: hireRequest.adapterType,
+    testedAdapterType: migrated.adapterType,
     originalModel: agents[0].adapterConfig?.model ?? null,
   };
-  if (execution.profile.generation === "native") {
-    const runtimePatch = firstTaskNativeRuntimePatch(
-      execution,
-      fixtures,
-      agents[0],
-    );
-    const migrated = await api.patch<Row>(
-      `/api/agents/${agents[0].id}`,
-      runtimePatch,
-    );
-    expect(migrated.adapterType).toBe("paperclip_runner");
-    expect(migrated.adapterConfig?.provider).toBe(execution.profile.provider);
-    expect(migrated.adapterConfig?.instructionsFilePath).toBe(
-      agents[0].adapterConfig?.instructionsFilePath,
-    );
-    expect(migrated.adapterConfig?.paperclipSkillSync?.desiredSkills).toEqual(
-      (
-        runtimePatch.adapterConfig.paperclipSkillSync as {
-          desiredSkills?: unknown[];
-        }
-      )?.desiredSkills,
-    );
-    fixtures.onboardingRuntime = {
-      mode: "post-onboarding-runtime-switch",
-      originalAdapterType: onboardingAdapter,
-      testedAdapterType: migrated.adapterType,
-      originalModel: agents[0].adapterConfig?.model ?? null,
-    };
-  }
   fixtures.agent = {
     id: agents[0].id,
     companyId: company.id,

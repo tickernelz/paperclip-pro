@@ -58,20 +58,12 @@ export async function provisionFirstTaskFixtures(input: {
   };
 }
 
-export function firstTaskHireRequest(
-  execution: MatrixExecution,
-  fixtures: LiveFixtureValues,
-) {
-  const credential = execution.profile.credential;
-  const env = { [credential]: fixtures.secretRefs[credential] };
-  const codex = credential === "OPENAI_API_KEY";
+export function firstTaskHireRequest(name: string) {
   return {
-    name: fixtures.agent.name,
+    name,
     role: "general",
-    adapterType: codex ? "codex_local" : "claude_local",
-    adapterConfig: codex
-      ? { timeoutSec: 0, graceSec: 15, env, search: false, fastMode: false, dangerouslyBypassApprovalsAndSandbox: true }
-      : { timeoutSec: 0, graceSec: 15, env, maxTurnsPerRun: 1000, dangerouslySkipPermissions: true },
+    adapterType: "omp_local",
+    adapterConfig: {},
     onboardingFirstAgent: true,
     runtimeConfig: {
       heartbeat: {
