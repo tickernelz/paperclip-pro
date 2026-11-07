@@ -167,7 +167,6 @@ export async function terminateHeartbeatRunProcess(input: {
   pid: number | null | undefined;
   processGroupId: number | null | undefined;
   graceMs?: number;
-  signal?: NodeJS.Signals;
 }) {
   const pid = input.pid ?? null;
   const processGroupId = input.processGroupId ?? null;
@@ -186,7 +185,7 @@ export async function terminateHeartbeatRunProcess(input: {
           ? processGroupId
           : null,
     },
-    { forceAfterMs: input.graceMs, signal: input.signal },
+    { forceAfterMs: input.graceMs },
   );
 }
 

@@ -171,7 +171,7 @@ describe.skipIf(!support.supported)("heartbeat run-control database wiring", () 
 
   async function fixture() {
     const [company] = await db.insert(companies).values({ name: "Run control", issuePrefix: "RC" }).returning();
-    const [agent] = await db.insert(agents).values({ companyId: company.id, name: "Controlled agent", adapterType: "codex_local" }).returning();
+    const [agent] = await db.insert(agents).values({ companyId: company.id, name: "Controlled agent", adapterType: "omp_local" }).returning();
     return { company, agent };
   }
   async function liveRun(companyId: string, agentId: string) {
@@ -211,7 +211,7 @@ describe.skipIf(!support.supported)("heartbeat run-control database wiring", () 
     expect(deps.startNextQueuedRunForAgent).toHaveBeenCalledTimes(1);
     expect(deps.processRunCancellationSettlements.size).toBe(0);
     expect(runningProcesses.has(run.id)).toBe(false);
-    expect(terminateLocalService).toHaveBeenCalledWith({ pid: 424242, processGroupId: 424242 }, { forceAfterMs: 100, signal: "SIGINT" });
+    expect(terminateLocalService).toHaveBeenCalledWith({ pid: 424242, processGroupId: 424242 }, { forceAfterMs: 100 });
   });
 
   it("settles every joined Stop caller with the same termination failure", async () => {
