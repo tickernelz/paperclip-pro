@@ -347,7 +347,7 @@
       "assertCanUpdateAgent"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@agents.ts:5172",
+    "boardGuard": "assertBoard@agents.ts:5181",
     "authorityCapability": null,
     "parameters": [
       {
@@ -8079,7 +8079,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:7159",
+    "boardGuard": "assertInstanceAdmin@agents.ts:7168",
     "authorityCapability": null,
     "parameters": [
       {
@@ -14420,7 +14420,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:7297",
+    "boardGuard": "assertInstanceAdmin@agents.ts:7306",
     "authorityCapability": null,
     "parameters": [
       {
@@ -17883,7 +17883,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@agents.ts:2918",
+    "boardGuard": "assertBoard@agents.ts:2919",
     "authorityCapability": null,
     "parameters": [
       {
@@ -21158,7 +21158,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:7130",
+    "boardGuard": "assertInstanceAdmin@agents.ts:7139",
     "authorityCapability": null,
     "parameters": [
       {
@@ -27383,7 +27383,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@agents.ts:2834",
+    "boardGuard": "assertBoard@agents.ts:2835",
     "authorityCapability": null,
     "parameters": [
       {
@@ -30745,7 +30745,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:3672",
+    "boardGuard": "assertInstanceAdmin@agents.ts:3673",
     "authorityCapability": null,
     "parameters": []
   },
@@ -31864,7 +31864,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@agents.ts:2925",
+    "boardGuard": "assertBoard@agents.ts:2926",
     "authorityCapability": null,
     "parameters": [
       {
@@ -32631,7 +32631,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:6676",
+    "boardGuard": "assertInstanceAdmin@agents.ts:6685",
     "authorityCapability": null,
     "parameters": [
       {
@@ -39001,7 +39001,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@agents.ts:5451",
+    "boardGuard": "assertBoard@agents.ts:5460",
     "authorityCapability": null,
     "parameters": [
       {
@@ -39249,7 +39249,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:7222",
+    "boardGuard": "assertInstanceAdmin@agents.ts:7231",
     "authorityCapability": null,
     "parameters": [
       {
@@ -40178,7 +40178,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@agents.ts:2841",
+    "boardGuard": "assertBoard@agents.ts:2842",
     "authorityCapability": null,
     "parameters": [
       {
