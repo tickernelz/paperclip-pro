@@ -56,6 +56,7 @@ import { isCloudManagedInstance } from "../services/cloud-instance.js";
 import { getHiddenSettings } from "../services/settings-visibility.js";
 import { assertBoardOrgOrAgentAuthority, assertInstanceAdmin } from "./authz.js";
 import { BUILTIN_ADAPTER_TYPES } from "../adapters/builtin-adapter-types.js";
+import { isRetiredAdapterModule } from "../adapters/retired.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -284,7 +285,7 @@ export function adapterRoutes(options: {
     // instance-admin only because they affect the whole server runtime.
     assertBoardOrgOrAgentAuthority(_req, "work:read");
 
-    const registeredAdapters = listServerAdapters();
+    const registeredAdapters = listServerAdapters().filter((adapter) => !isRetiredAdapterModule(adapter));
     const externalRecords = new Map(
       listAdapterPlugins().map((r) => [r.type, r]),
     );
@@ -325,7 +326,6 @@ export function adapterRoutes(options: {
     }
 
     // Strip version suffix if the UI sends "pkg@1.2.3" instead of separating it
-    // e.g. "@henkey/hermes-paperclip-adapter@0.3.0" → packageName + version
     let canonicalName = packageName;
     let explicitVersion = version;
     const versionSuffix = packageName.match(/@(\d+\.\d+\.\d+.*)$/);

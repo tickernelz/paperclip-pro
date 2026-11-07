@@ -27,20 +27,8 @@ export type AgentStatus = (typeof AGENT_STATUSES)[number];
 export const AGENT_ADAPTER_TYPES = [
   "process",
   "http",
-  "claude_local",
-  "codex_local",
   "paperclip_runner",
-  "cursor_cloud",
-  "gemini_local",
-  "grok_local",
-  "hermes_gateway",
-  "hermes_local",
-  "kimi_local",
   "omp_local",
-  "opencode_local",
-  "pi_local",
-  "cursor",
-  "openclaw_gateway",
 ] as const;
 export type AgentAdapterType = (typeof AGENT_ADAPTER_TYPES)[number] | (string & {});
 
@@ -79,17 +67,7 @@ export const AGENT_DEFAULT_MAX_CONCURRENT_RUNS = 20;
 export const AGENT_MIN_MAX_CONCURRENT_RUNS = 1;
 export const AGENT_MAX_MAX_CONCURRENT_RUNS = 50;
 
-export const LOCAL_CLI_ADAPTER_TYPES = [
-  "claude_local",
-  "codex_local",
-  "gemini_local",
-  "grok_local",
-  "hermes_local",
-  "kimi_local",
-  "omp_local",
-  "opencode_local",
-  "pi_local",
-] as const;
+export const LOCAL_CLI_ADAPTER_TYPES = ["omp_local"] as const;
 
 export const INSTANCE_DEFAULT_MAX_CONCURRENT_LOCAL_RUNS = 20;
 export const INSTANCE_MAX_CONCURRENT_LOCAL_RUNS_MIN = 1;

@@ -28,12 +28,7 @@ export const ONBOARDING_SEED_PROJECT_NAME = "Onboarding";
  */
 const SEEDED_AGENT_ROLE = "ceo";
 
-/**
- * Adapter the seeded agent is created with. Mirrors the teams-catalog default
- * (`claude_local`), which is the safe adapter for agents created server-side
- * without a human running an environment test first.
- */
-const FALLBACK_SEEDED_AGENT_ADAPTER_TYPE = "claude_local";
+const FALLBACK_SEEDED_AGENT_ADAPTER_TYPE = "omp_local";
 
 function seededAgentAdapterType() {
   const configured = process.env.PAPERCLIP_ONBOARDING_SEED_ADAPTER_TYPE?.trim()

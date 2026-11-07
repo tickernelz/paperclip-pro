@@ -5,8 +5,8 @@ import { logger } from "../middleware/logger.js";
 import { createHash } from "node:crypto";
 import { eq, inArray, and } from "drizzle-orm";
 import { companySecrets, companySecretVersions, userSecretDefinitions, type Db } from "@tickernelz/paperclip-pro-db";
-import { fetchCodexQuota } from "@tickernelz/paperclip-pro-adapter-codex-local/server";
-import { fetchClaudeQuota } from "@tickernelz/paperclip-pro-adapter-claude-local/server";
+import { fetchCodexQuota } from "./ai-providers/codex/quota.js";
+import { fetchClaudeQuota } from "./ai-providers/claude/quota.js";
 import { aiConnectionService } from "./ai-connections.js";
 
 const accountRequests = new Map<string, { expires: number; result: Promise<ProviderQuotaResult> }>();

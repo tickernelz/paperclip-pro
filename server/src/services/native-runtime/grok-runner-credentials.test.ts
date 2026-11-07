@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { prepareGrokRunnerCredentials } from "./grok-runner-credentials.js";
 
 const { companyHome } = vi.hoisted(() => ({ companyHome: vi.fn() }));
-vi.mock("@tickernelz/paperclip-pro-adapter-grok-local/server", () => ({
+vi.mock("../ai-providers/grok/grok-home.js", () => ({
   resolveManagedGrokHomeDir: companyHome,
   grokHomeHasUsableAuth: async () => false,
 }));

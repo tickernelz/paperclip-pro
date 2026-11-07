@@ -11,7 +11,7 @@ import {
 import {
   codexLocalReasoningEffortsForModel,
   isCodexLocalKnownModel,
-} from "@tickernelz/paperclip-pro-adapter-codex-local";
+} from "@tickernelz/paperclip-pro-adapter-utils/provider-models/codex";
 import {
   AGENTCORE_QUALIFIED_MODEL,
   CLAUDE_MANAGED_QUALIFIED_MODEL,

@@ -1,9 +1,9 @@
 import { readLocalAiCredentialFile } from "./local-ai-credential-file.js";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { readIsolatedClaudeKeychainToken } from "@tickernelz/paperclip-pro-adapter-claude-local/server";
-import { readCodexAuthInfo, fetchCodexQuota } from "@tickernelz/paperclip-pro-adapter-codex-local/server";
-import { parseGrokAuthPayload, hasUsableGrokAuthValue } from "@tickernelz/paperclip-pro-adapter-grok-local/server";
+import { readIsolatedClaudeKeychainToken } from "./ai-providers/claude/quota.js";
+import { readCodexAuthInfo, fetchCodexQuota } from "./ai-providers/codex/quota.js";
+import { parseGrokAuthPayload, hasUsableGrokAuthValue } from "./ai-providers/grok/grok-home.js";
 import type { AiProvider } from "@tickernelz/paperclip-pro-shared";
 import { unprocessable } from "../errors.js";
 

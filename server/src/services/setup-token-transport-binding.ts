@@ -43,10 +43,7 @@ import {
   type LoginPtySession,
   type LoginPtySessionOpener,
 } from "@tickernelz/paperclip-pro-adapter-utils/login-pty-transport";
-import {
-  runSetupTokenLogin,
-  CLAUDE_SETUP_TOKEN_COMMAND,
-} from "@tickernelz/paperclip-pro-adapter-claude-local/server";
+import { runSetupTokenLogin, CLAUDE_SETUP_TOKEN_COMMAND } from "./ai-providers/claude/setup-token-runner.js";
 import { randomUUID } from "node:crypto";
 import {
   deriveLoginSessionHome,

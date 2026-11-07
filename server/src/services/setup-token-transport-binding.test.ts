@@ -19,11 +19,8 @@ import {
   type SetupTokenSessionState,
 } from "./setup-token-session.js";
 import type { LoginPtySessionOpener } from "@tickernelz/paperclip-pro-adapter-utils/login-pty-transport";
-import {
-  CLAUDE_SETUP_TOKEN_COMMAND,
-  SETUP_TOKEN_AFTER_ANCHOR,
-  SETUP_TOKEN_BEFORE_ANCHOR,
-} from "@tickernelz/paperclip-pro-adapter-claude-local/server";
+import { CLAUDE_SETUP_TOKEN_COMMAND } from "./ai-providers/claude/setup-token-runner.js";
+import { SETUP_TOKEN_AFTER_ANCHOR, SETUP_TOKEN_BEFORE_ANCHOR } from "./ai-providers/claude/setup-token-parse.js";
 
 // The owner scope for one login session. The per-owner session cap is one, so one
 // scope holds one live session.

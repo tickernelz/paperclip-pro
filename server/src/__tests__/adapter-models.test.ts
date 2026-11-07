@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { models as claudeFallbackModels } from "@tickernelz/paperclip-pro-adapter-claude-local";
+import { models as claudeFallbackModels } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/claude";
 import { resetClaudeModelsCacheForTests } from "@tickernelz/paperclip-pro-adapter-claude-local/server";
-import { models as codexFallbackModels } from "@tickernelz/paperclip-pro-adapter-codex-local";
+import { models as codexFallbackModels } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/codex";
 import { models as cursorFallbackModels } from "@tickernelz/paperclip-pro-adapter-cursor-local";
 import { models as opencodeFallbackModels } from "@tickernelz/paperclip-pro-adapter-opencode-local";
 import { resetOpenCodeModelsCacheForTests } from "@tickernelz/paperclip-pro-adapter-opencode-local/server";

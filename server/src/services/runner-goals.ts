@@ -50,8 +50,6 @@ function asRecord(value: unknown): Record<string, unknown> | null {
 
 function capabilityForAgent(agent: AgentBinding): RunnerGoalCapability {
   const config = asRecord(agent.adapterConfig) ?? {};
-  const engine = typeof config.engine === "string" ? config.engine : null;
-  const sessionMode = typeof config.mode === "string" ? config.mode : "persistent";
   if (agent.adapterType === "paperclip_runner") {
     const provider = typeof config.provider === "string" ? config.provider : "codex";
     const acpxAgent = typeof config.acpxAgent === "string" ? config.acpxAgent : "pi";
@@ -105,19 +103,7 @@ function capabilityForAgent(agent: AgentBinding): RunnerGoalCapability {
       reason,
     };
   }
-  const directAcp = (agent.adapterType === "codex_local" || agent.adapterType === "claude_local")
-    && engine !== "cli" && sessionMode !== "oneshot";
-  const reason = agent.adapterType === "opencode_local"
-    ? "Unsupported by OpenCode."
-    : directAcp
-      ? "This direct ACP adapter has no live session goal controller. Use Paperclip Runner with a supported provider."
-    : (agent.adapterType === "claude_local" || agent.adapterType === "codex_local") && sessionMode === "oneshot"
-      ? "Session goals require a persistent ACP session."
-    : agent.adapterType === "claude_local"
-      ? "Requires persistent Claude ACP."
-      : agent.adapterType === "codex_local"
-        ? "Requires persistent Codex ACP."
-        : "This runner does not expose a durable session goal lifecycle.";
+  const reason = "This runner does not expose a durable session goal lifecycle.";
   return {
     availability: "unsupported",
     verified: true,
@@ -127,9 +113,7 @@ function capabilityForAgent(agent: AgentBinding): RunnerGoalCapability {
     maxObjectiveChars: 4_000,
     tokenBudgetControl: false,
     usageReporting: false,
-    reasonCode: agent.adapterType === "opencode_local"
-      ? "opencode_structured_goals_unavailable"
-      : directAcp ? "direct_adapter_goal_controller_unavailable" : "persistent_session_goal_extension_required",
+    reasonCode: "persistent_session_goal_extension_required",
     reason,
   };
 }

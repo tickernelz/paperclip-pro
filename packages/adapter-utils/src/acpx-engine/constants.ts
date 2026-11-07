@@ -25,19 +25,3 @@ export const ACPX_HANDSHAKE_TRANSPORT_POLL_MS = 250;
 // is the host-side bound that ends the run without the agent's help. It is
 // much smaller than the whole-adapter execution timeout.
 export const ACPX_DUPLEX_LOSS_CANCEL_DEADLINE_MS = 30_000;
-
-export const ACPX_ADAPTER_AGENT_IDS = {
-  claude_local: "claude",
-  codex_local: "codex",
-  gemini_local: "gemini",
-  kimi_local: "kimi",
-  custom_acp: "custom",
-} as const;
-
-export type AcpxAdapterType = keyof typeof ACPX_ADAPTER_AGENT_IDS;
-export type AcpxAgentId = (typeof ACPX_ADAPTER_AGENT_IDS)[AcpxAdapterType];
-
-export function acpxAgentIdForAdapterType(adapterType: string | null | undefined): AcpxAgentId | null {
-  if (!adapterType) return null;
-  return ACPX_ADAPTER_AGENT_IDS[adapterType as AcpxAdapterType] ?? null;
-}

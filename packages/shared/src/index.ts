@@ -2468,7 +2468,6 @@ export {
   createAssetImageMetadataSchema,
   sanitizeAssetNamespace,
   createCompanyInviteSchema,
-  createOpenClawInvitePromptSchema,
   acceptInviteSchema,
   listCompanyInvitesQuerySchema,
   listJoinRequestsQuerySchema,
@@ -2491,7 +2490,6 @@ export {
   type UpdateBudget,
   type CreateAssetImageMetadata,
   type CreateCompanyInvite,
-  type CreateOpenClawInvitePrompt,
   type AcceptInvite,
   type ListCompanyInvitesQuery,
   type ListJoinRequestsQuery,
@@ -2937,6 +2935,7 @@ export * from "./announcements.js";
 export { REMOTE_MCP_CONNECTOR_METHODS, isRemoteMcpConnectorId, isRemoteMcpConnectorMethod, type RemoteMcpConnectorId } from "./remote-mcp-connectors.js";
 
 export { isRetiredComposioConnection, RETIRED_COMPOSIO_MESSAGE } from "./retired-composio.js";
+export { isRetiredAdapterType, RETIRED_ADAPTER_TYPES, retiredAdapterMessage } from "./retired-adapters.js";
 
 export * from "./slack-tools.js";
 export * from "./openwa-tools.js";

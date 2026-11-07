@@ -54,7 +54,6 @@ export type {
 } from "./session-compaction.js";
 export {
   ADAPTER_SESSION_MANAGEMENT,
-  LEGACY_SESSIONED_ADAPTER_TYPES,
   getAdapterSessionManagement,
   readSessionCompactionOverride,
   resolveSessionCompactionPolicy,

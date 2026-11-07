@@ -1,5 +1,5 @@
 import type { AdapterModel } from "./types.js";
-import { models as codexFallbackModels } from "@tickernelz/paperclip-pro-adapter-codex-local";
+import { models as codexFallbackModels } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/codex";
 import { readConfigFile } from "../config-file.js";
 
 const OPENAI_MODELS_ENDPOINT = "https://api.openai.com/v1/models";

@@ -9,6 +9,10 @@ export {
   registerServerAdapter,
   unregisterServerAdapter,
   requireServerAdapter,
+  findRunnerHarness,
+  requireRunnerHarness,
+  listRunnerHarnessModels,
+  refreshRunnerHarnessModels,
 } from "./registry.js";
 export type {
   ServerAdapterModule,

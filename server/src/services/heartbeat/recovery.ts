@@ -1,4 +1,3 @@
-import { preserveWorkspaceRestoreRecoveryMetadataSql } from "../legacy-workspace-restore-recovery.js";
 import { pendingNativeWorkspaceFinalizationCondition } from "../native-runtime/native-workspace-finalization-state.js";
 import { CHAT_COMPLETION_WAKE_REASON } from "../chat-completion-delivery.js";
 import {
@@ -270,21 +269,6 @@ export const HEARTBEAT_RUN_TERMINAL_STATUSES = [
   "timed_out",
 ] as const;
 
-const SESSIONED_LOCAL_ADAPTERS = new Set([
-  "claude_local",
-  "codex_local",
-  "cursor",
-  "gemini_local",
-  "hermes_local",
-  "kimi_local",
-  "opencode_local",
-  "pi_local",
-]);
-
-function isTrackedLocalChildProcessAdapter(adapterType: string) {
-  return SESSIONED_LOCAL_ADAPTERS.has(adapterType);
-}
-
 // A positive liveness check means some process currently owns the PID.
 // On Linux, PIDs can be recycled, so this is a best-effort signal rather
 // than proof that the original child is still alive.
@@ -329,36 +313,6 @@ function readHotRestartAdoptionMetadata(
   if (hotRestart.adopted !== true || typeof hotRestart.adoptedAt !== "string")
     return null;
   return hotRestart;
-}
-
-function mergeHotRestartAdoptionResultJson(
-  resultJson: Record<string, unknown> | null | undefined,
-  input: {
-    adoptedAt: Date;
-    previousServerPid: number;
-    newServerPid: number;
-    previousServerVersion: string | null;
-    newServerVersion: string;
-    processPid: number | null;
-    processGroupId: number | null;
-  },
-) {
-  const result = parseObject(resultJson);
-  const existing = parseObject(result.hotRestart);
-  return {
-    ...result,
-    hotRestart: {
-      ...existing,
-      adopted: true,
-      adoptedAt: input.adoptedAt.toISOString(),
-      previousServerPid: input.previousServerPid,
-      newServerPid: input.newServerPid,
-      previousServerVersion: input.previousServerVersion,
-      newServerVersion: input.newServerVersion,
-      processPid: input.processPid,
-      processGroupId: input.processGroupId,
-    },
-  };
 }
 
 function readNonEmptyString(value: unknown): string | null {
@@ -466,16 +420,7 @@ export function createHeartbeatRecovery(db: Db, dependencies: HeartbeatRecoveryD
     ) {
       return false;
     }
-    if (
-      !["claude_local", "codex_local", "gemini_local"].includes(
-        input.adapterType,
-      )
-    ) {
-      return false;
-    }
-    return (
-      readNonEmptyString(parseObject(input.adapterConfig).engine) !== "cli"
-    );
+    return false;
   }
 
   async function prepareHotRestartShutdown(
@@ -813,99 +758,10 @@ export function createHeartbeatRecovery(db: Db, dependencies: HeartbeatRecoveryD
         continue;
       }
 
-      if (!isTrackedLocalChildProcessAdapter(adapterType)) {
-        classify(
-          candidate,
-          "skipped",
-          "adapter_not_local_child_process",
-          patch,
-        );
-        continue;
-      }
-
-      const processPid = run.processPid ?? candidate.processPid;
-      const processGroupId = run.processGroupId ?? candidate.processGroupId;
-      const processPidAlive = isProcessAlive(processPid);
-      const processGroupAlive = isProcessGroupAlive(processGroupId);
-      if (!processPid && !processGroupId) {
-        classify(candidate, "lost", "missing_process_metadata", patch);
-        continue;
-      }
-      if (!processPidAlive && !processGroupAlive) {
-        classify(candidate, "lost", "process_not_alive", patch);
-        continue;
-      }
-
-      const resultJson = mergeHotRestartAdoptionResultJson(
-        parseObject(run.resultJson),
-        {
-          adoptedAt: now,
-          previousServerPid: intent.previousServerPid,
-          newServerPid: process.pid,
-          previousServerVersion: intent.previousServerVersion,
-          newServerVersion: serverVersion,
-          processPid,
-          processGroupId,
-        },
-      );
-      const updated = await db
-        .update(heartbeatRuns)
-        .set({
-          resultJson: preserveWorkspaceRestoreRecoveryMetadataSql(resultJson, true),
-          error:
-            run.errorCode === DETACHED_PROCESS_ERROR_CODE ? null : run.error,
-          errorCode:
-            run.errorCode === DETACHED_PROCESS_ERROR_CODE
-              ? null
-              : run.errorCode,
-          updatedAt: now,
-        })
-        .where(
-          and(
-            eq(heartbeatRuns.id, run.id),
-            eq(heartbeatRuns.status, "running"),
-          ),
-        )
-        .returning()
-        .then((rows) => rows[0] ?? null);
-
-      if (!updated) {
-        const latest = await db
-          .select({ status: heartbeatRuns.status })
-          .from(heartbeatRuns)
-          .where(eq(heartbeatRuns.id, run.id))
-          .then((rows) => rows[0] ?? null);
-        if (latest && latest.status !== "running") {
-          classify(
-            candidate,
-            "finalized_while_down",
-            `run_status_${latest.status}`,
-            patch,
-          );
-        } else {
-          classify(candidate, "lost", "adoption_update_not_applied", patch);
-        }
-        continue;
-      }
-
-      await appendRunEvent(updated, {
-        eventType: "lifecycle",
-        stream: "system",
-        level: "info",
-        message: "Adopted live child process after hot restart",
-        payload: {
-          previousServerPid: intent.previousServerPid,
-          newServerPid: process.pid,
-          previousServerVersion: intent.previousServerVersion,
-          newServerVersion: serverVersion,
-          processPid,
-          processGroupId,
-        },
-      });
       classify(
         candidate,
-        "adopted",
-        processPidAlive ? "process_pid_alive" : "process_group_alive",
+        "skipped",
+        "adapter_not_local_child_process",
         patch,
       );
     }
@@ -2283,16 +2139,11 @@ export function createHeartbeatRecovery(db: Db, dependencies: HeartbeatRecoveryD
         if (now.getTime() - refTime < staleThresholdMs) continue;
       }
 
-      const currentAdapterTracksLocalChild =
-        isTrackedLocalChildProcessAdapter(adapterType);
-      const tracksLegacyLocalChild =
-        run.runtimeMode !== "native" && currentAdapterTracksLocalChild;
       // Native runner processes also persist child metadata, but they must not
       // inherit legacy retry or termination authority. Use their PID/group only
       // for a read-only liveness check so a lost in-memory handle cannot cause
       // overlapping provider/tool execution while that child is still alive.
-      const checksPersistedChildLiveness =
-        currentAdapterTracksLocalChild || run.runtimeMode === "native";
+      const checksPersistedChildLiveness = run.runtimeMode === "native";
       const processPidAlive =
         checksPersistedChildLiveness &&
         run.processPid &&
@@ -2343,10 +2194,7 @@ export function createHeartbeatRecovery(db: Db, dependencies: HeartbeatRecoveryD
         monitorNextCheckAt !== undefined &&
         (!monitorNextCheckAt || monitorNextCheckAt.getTime() <= now.getTime());
       const shouldRetry =
-        (run.processLossRetryCount ?? 0) < 1 &&
-        ((tracksLegacyLocalChild &&
-          (!!run.processPid || !!run.processGroupId)) ||
-          monitorDispatchLostWithoutFutureWake);
+        (run.processLossRetryCount ?? 0) < 1 && monitorDispatchLostWithoutFutureWake;
       if (!(await revokeExpiredLegacyController(db, run))) continue;
       const baseMessage = buildProcessLossMessage(run);
       const processLossDiagnostic = buildProcessLossDiagnostic({

@@ -152,7 +152,7 @@ export async function heartbeatRun(opts: HeartbeatRunOptions): Promise<void> {
     }
   };
 
-  const adapterType: AdapterType = agent.adapterType ?? "claude_local";
+  const adapterType: AdapterType = agent.adapterType ?? "omp_local";
   const cliAdapter = getCLIAdapter(adapterType);
 
   const handleStreamChunk = (stream: "stdout" | "stderr" | "system", chunk: string) => {

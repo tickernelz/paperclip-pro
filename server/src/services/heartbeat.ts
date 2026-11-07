@@ -87,7 +87,6 @@ import {
   resolveLedgerScopeForRun,
   describeSessionResetReason,
   isCanonicalSessionIdForAdapter,
-  requiresCanonicalSessionIds,
   resolveNextSessionState,
   resolveCacheAdjustedCostUsd,
   resolveLedgerCostStatus,
@@ -140,7 +139,6 @@ export {
   applyRunScopedMentionedSkillKeys,
   revokeHeartbeatRunGatewayTokens,
   buildPaperclipRuntimeMcpServers,
-  createManagedMcpRunConfig,
   mergeCoalescedContextSnapshot,
   resolveExternalChatWakeProvider,
   attestReviewedExternalChatRun,
@@ -157,13 +155,11 @@ import {
   resolveRuntimeSessionParamsForWorkspace,
   buildRunWorkspaceHints,
   buildReferencedProjectRunObservability,
-  assertGitSensitiveAdapterWorkspaceValid,
   type EffectiveRunSessionConfigMetadata,
   createHeartbeatWorkspaceResolver,
 } from "./heartbeat/workspaces.js";
 export {
   WorkspaceValidationFailure,
-  requiresPushCapabilityPreflight,
   applyPersistedExecutionWorkspaceConfig,
   mergeExecutionWorkspaceMetadataForPersistence,
   resolveExecutionWorkspaceBranchOwnership,
@@ -176,9 +172,7 @@ export {
   type ResolveAdditionalProjectWorkspaceDeps,
   resolveAdditionalProjectWorkspace,
   assertGitWorktreeBaseWorkspaceReady,
-  assertPushCapabilityCheckoutValid,
   reconcileReusedExecutionWorkspaceProjectWorkspaceId,
-  assertGitSensitiveAdapterWorkspaceValid,
   type ResolvedAdditionalWorkspace,
   type WorkspaceMaterializationFailure,
   type ResolvedWorkspaceForRun,
@@ -220,7 +214,6 @@ export {
   stripPaperclipSessionMetadataFromSessionParams,
   resolveTaskSessionConfigFreshness,
 } from "./heartbeat/workspaces.js";
-import { readGitSensitiveProjectWorkspaceSourceType } from "./heartbeat/workspaces.js";
 import {
   appendExcerpt,
   boundHeartbeatRunEventPayloadForStorage,
@@ -4215,20 +4208,7 @@ export function heartbeatService(
           readNonEmptyString(runtimeSessionParams?.sessionId) ??
           runtimeSessionFallback,
       );
-      let previousSessionDisplayId = requiresCanonicalSessionIds(
-        agent.adapterType,
-      )
-        ? truncateDisplayId(
-            readNonEmptyString(previousSessionParams?.sessionId) ??
-              (isCanonicalSessionIdForAdapter(
-                agent.adapterType,
-                runtimeSessionDisplayId,
-              )
-                ? runtimeSessionDisplayId
-                : null) ??
-              runtimeSessionFallback,
-          )
-        : runtimeSessionDisplayId;
+      let previousSessionDisplayId = runtimeSessionDisplayId;
       let runtimeSessionIdForAdapter =
         readNonEmptyString(runtimeSessionParams?.sessionId) ??
         runtimeSessionFallback;
@@ -4566,31 +4546,6 @@ export function heartbeatService(
           const logEntry = formatRuntimeWorkspaceWarningLog(warning);
           await onLog(logEntry.stream, logEntry.chunk);
         }
-        const validatedProjectWorkspaceId =
-          issueRef?.projectWorkspaceId ?? resolvedWorkspace.workspaceId ?? null;
-        await assertGitSensitiveAdapterWorkspaceValid({
-          adapterType: agent.adapterType,
-          agentId: agent.id,
-          issue: issueRef
-            ? {
-                id: issueRef.id,
-                identifier: issueRef.identifier,
-                projectId: issueRef.projectId,
-                projectWorkspaceId: issueRef.projectWorkspaceId,
-              }
-            : null,
-          resolvedWorkspace,
-          projectWorkspaceSourceType: await readGitSensitiveProjectWorkspaceSourceType({
-            db,
-            adapterType: agent.adapterType,
-            projectWorkspaceId: validatedProjectWorkspaceId,
-          }),
-          executionWorkspace,
-          persistedExecutionWorkspace,
-          executionTarget,
-          environmentDriver: selectedEnvironment.driver,
-          leaseMetadata: activeEnvironmentLease.lease.metadata,
-        });
         const adapterEnv = Object.fromEntries(
           Object.entries(parseObject(runtimeConfig.env)).filter(
             (entry): entry is [string, string] =>
