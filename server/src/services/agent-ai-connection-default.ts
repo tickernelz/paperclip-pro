@@ -34,8 +34,6 @@ export function defaultAiConnectionForHire(
   const withChildAuthPrecedence = (binding: AiConnectionBinding) =>
     hasChildAuth(binding.provider) ? undefined : binding;
   if (inherited.data.mode === "router") {
-    // The host validates pool membership, access and harness compatibility for
-    // the new agent. Never silently replace an incompatible pool with local auth.
     // OpenCode also supports explicitly configured providers whose models are
     // outside the managed OpenRouter catalog. Their auth still takes precedence.
     const childProvider = adapterType === "opencode_local"

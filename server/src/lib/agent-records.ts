@@ -89,7 +89,7 @@ export type AgentHireRecord = Pick<typeof agents.$inferSelect, "id" | "companyId
 export interface CreateAgentOptions {
   responsibleUserId?: string | null;
   createdByUserId?: string | null;
-  aiConnectionInstall?: { connectionId: string; memberConnectionIds?: string[]; createdByUserId: string | null };
+  aiConnectionInstall?: { connectionId: string; createdByUserId: string | null };
   allowBuiltInAgentMetadata?: boolean;
   claudeLogin?: ClaudeLoginContext;
 }

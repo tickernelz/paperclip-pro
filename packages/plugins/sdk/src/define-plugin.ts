@@ -1,5 +1,4 @@
 import type { AgentLifecycleRequest, AgentLifecycleResult } from "@tickernelz/paperclip-pro-shared";
-import type { AiConnectionRouterRequest, AiConnectionRouterResult } from "@tickernelz/paperclip-pro-shared";
 /**
  * `definePlugin` — the top-level helper for authoring a Paperclip plugin.
  *
@@ -359,9 +358,6 @@ export interface PluginDefinition {
    * Calls can repeat. Fence older versions and make external effects idempotent.
    */
   onAgentLifecycle?(params: AgentLifecycleRequest): Promise<AgentLifecycleResult>;
-
-  /** Propose a member from host-authorized candidates. Requires ai.connections.route. */
-  onRouteAiConnection?(params: AiConnectionRouterRequest): Promise<AiConnectionRouterResult>;
 
   /**
    * Called when Paperclip needs the current normalized status for one external

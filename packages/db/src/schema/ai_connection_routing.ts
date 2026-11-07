@@ -1,5 +1,4 @@
 import { foreignKey, integer, jsonb, pgTable, text, timestamp, unique, uniqueIndex, uuid } from "drizzle-orm/pg-core";
-import type { AiConnectionPoolConfig, AiConnectionRouterSelection } from "@tickernelz/paperclip-pro-shared";
 import { companies } from "./companies.js";
 import { agents } from "./agents.js";
 import { toolConnections } from "./tool_access.js";
@@ -8,7 +7,7 @@ export const aiConnectionPools = pgTable("ai_connection_pools", {
   id: uuid("id").primaryKey().references(() => toolConnections.id, { onDelete: "cascade" }),
   companyId: uuid("company_id").notNull().references(() => companies.id, { onDelete: "cascade" }),
   pluginKey: text("plugin_key").notNull(),
-  config: jsonb("config").$type<AiConnectionPoolConfig>().notNull(),
+  config: jsonb("config").$type<Record<string, unknown>>().notNull(),
   revision: integer("revision").notNull().default(1),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
@@ -28,8 +27,8 @@ export const aiConnectionTaskPins = pgTable("ai_connection_task_pins", {
   poolId: uuid("pool_id").notNull().references(() => aiConnectionPools.id, { onDelete: "cascade" }),
   agentId: uuid("agent_id").notNull().references(() => agents.id, { onDelete: "cascade" }),
   taskKey: text("task_key").notNull(),
-  selection: jsonb("selection").$type<AiConnectionRouterSelection>().notNull(),
-  member: jsonb("member").$type<AiConnectionPoolConfig["members"][number]>().notNull(),
+  selection: jsonb("selection").$type<Record<string, unknown>>().notNull(),
+  member: jsonb("member").$type<Record<string, unknown>>().notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 }, (table) => [
   uniqueIndex("ai_connection_task_pins_affinity_uq").on(table.companyId, table.poolId, table.agentId, table.taskKey),

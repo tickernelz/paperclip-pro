@@ -1,5 +1,4 @@
 import { PrimaryAgentIndicator, SetPrimaryAgentButton } from "@/components/primary-agent/PrimaryAgentPresentation";
-import { AiConnectionPoolRunDetails } from "@/components/ai-connections/AiConnectionPoolRunDetails";
 import { AgentConnectionInstructions } from "@/features/connections/ConnectionInstructions";
 import type { AgentInstructionCandidate, AgentInstructionsBundle } from "@tickernelz/paperclip-pro-shared";
 import { InstructionHistory } from "../components/InstructionHistory";
@@ -3609,7 +3608,6 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
           git workspace it could not validate, wired to the same reconcile / repair / re-issue /
           break-glass handlers as the task detail page. */}
       <RunWorkspaceRecoverySurface run={run} />
-      <AiConnectionPoolRunDetails context={run.contextSnapshot} />
       {/* Run summary card */}
       <div className="border border-line rounded-lg overflow-hidden">
         <div className="flex flex-col sm:flex-row">

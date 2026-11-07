@@ -39,10 +39,12 @@ describe("plugin manifest validators", () => {
     expect(pluginManifestV1Schema.parse({ ...manifest, capabilities: ["agents.lifecycle.manage"] }).agentLifecycle).toBe(true);
   });
 
-  it("requires routing authority for native pooled connector declarations without a custom UI bundle", () => {
+  it("accepts and drops the removed AI connection router declaration and capability", () => {
     const manifest = { id: "example.pool", apiVersion: 1, version: "0.1.0", displayName: "Pool", description: "Pool", author: "Tests", categories: ["connector"], entrypoints: { worker: "worker.js" }, aiConnectionRouter: { name: "AI connection pool", description: "Use saved connections" } };
-    expect(pluginManifestV1Schema.safeParse({ ...manifest, capabilities: ["ui.page.register"] }).success).toBe(false);
-    expect(pluginManifestV1Schema.parse({ ...manifest, capabilities: ["ai.connections.route"] }).aiConnectionRouter).toEqual(manifest.aiConnectionRouter);
+    const parsed = pluginManifestV1Schema.parse({ ...manifest, capabilities: ["ai.connections.route", "companies.read"] });
+    expect(parsed.capabilities).toEqual(["companies.read"]);
+    expect(parsed).not.toHaveProperty("aiConnectionRouter");
+    expect(pluginManifestV1Schema.safeParse({ ...manifest, capabilities: ["ai.connections.unknown"] }).success).toBe(false);
   });
   it("accepts existing-style plugins that do not request access or authorization capabilities", () => {
     const parsed = pluginManifestV1Schema.parse({

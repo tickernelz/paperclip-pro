@@ -732,13 +732,6 @@ while preserving agent pairing, normal run admission and task authority.
 Personal grants cannot authorize Runner operations. See
 [OpenAI Dot Runner](openai-dot-runner.md) for its supported release boundary.
 
-### Experimental connection routing
-
-A virtual AI connection can rotate new task/agent allocations through an
-authorized pool while preserving session affinity. Admission, credentials and
-durable recovery remain host responsibilities; policy can be supplied by an
-opt-in plugin. See [the experimental contract](connections/AI-CONNECTION-ROUTERS.md).
-
 ## Internal agent commentary
 
 `agent_commentary` stores company-scoped, attributed complaints and suggestions
