@@ -7,21 +7,18 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { useMediaQuery } from "../hooks/useMediaQuery";
 
 interface SidebarContextValue {
-  // Mobile drawer + back-compat (existing behavior, unchanged).
   sidebarOpen: boolean;
   setSidebarOpen: (open: boolean) => void;
   toggleSidebar: () => void;
   isMobile: boolean;
-  // Back-compat collapse API. The global navigation is permanently expanded;
-  // these values remain for callers that have not removed old requests.
+  isTablet: boolean;
   collapsed: boolean;
   setCollapsed: (next: boolean) => void;
   toggleCollapsed: () => void;
-  // Retained compatibility value; always false now that the rail is retired.
   collapseLocked: boolean;
-  // Retained compatibility value; the retired rail can no longer peek.
   peeking: boolean;
   setPeeking: (next: boolean) => void;
   // Legacy requests remain observable without affecting the global nav.
@@ -34,29 +31,34 @@ interface SidebarContextValue {
 
 const SidebarContext = createContext<SidebarContextValue | null>(null);
 
-const MOBILE_BREAKPOINT = 768;
+export const PHONE_MEDIA_QUERY = "(max-width: 767px), (max-height: 430px) and (max-width: 1023px)";
+export const TABLET_MEDIA_QUERY = "(min-width: 768px) and (max-width: 1023px) and (min-height: 431px)";
+
+function matchesMedia(query: string) {
+  return typeof window.matchMedia === "function" && window.matchMedia(query).matches;
+}
 
 export function SidebarProvider({ children }: { children: ReactNode }) {
-  const [isMobile, setIsMobile] = useState(() => window.innerWidth < MOBILE_BREAKPOINT);
-  const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth >= MOBILE_BREAKPOINT);
+  const [isMobile, setIsMobile] = useState(() => matchesMedia(PHONE_MEDIA_QUERY));
+  const isTablet = useMediaQuery(TABLET_MEDIA_QUERY);
+  const [sidebarOpen, setSidebarOpen] = useState(() => !matchesMedia(PHONE_MEDIA_QUERY));
 
   const [routeRequestsCollapsed, setRouteRequestsCollapsed] = useState(false);
   const [forceCollapsed, setForceCollapsed] = useState(false);
 
   useEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
-    const onChange = (e: MediaQueryListEvent) => {
+    if (typeof window.matchMedia !== "function") return;
+    const phone = window.matchMedia(PHONE_MEDIA_QUERY);
+    const onPhoneChange = (e: MediaQueryListEvent) => {
       setIsMobile(e.matches);
       setSidebarOpen(!e.matches);
     };
-    mql.addEventListener("change", onChange);
-    return () => mql.removeEventListener("change", onChange);
+    phone.addEventListener("change", onPhoneChange);
+    return () => phone.removeEventListener("change", onPhoneChange);
   }, []);
 
-  // The icon rail has been retired. Keep the old API inert so routes and
-  // plugins compiled against it cannot collapse the global navigation.
-  const collapsed = false;
-  const collapseLocked = false;
+  const collapsed = isTablet;
+  const collapseLocked = isTablet;
   const peeking = false;
   const setCollapsed = useCallback((_next: boolean) => {}, []);
   const toggleCollapsed = useCallback(() => {}, []);
@@ -70,6 +72,7 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
       setSidebarOpen,
       toggleSidebar,
       isMobile,
+      isTablet,
       collapsed,
       setCollapsed,
       toggleCollapsed,
@@ -83,9 +86,9 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
     }),
     [
       sidebarOpen,
-      setSidebarOpen,
       toggleSidebar,
       isMobile,
+      isTablet,
       collapsed,
       setCollapsed,
       toggleCollapsed,
@@ -93,9 +96,7 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
       peeking,
       setPeeking,
       forceCollapsed,
-      setForceCollapsed,
       routeRequestsCollapsed,
-      setRouteRequestsCollapsed,
     ],
   );
 

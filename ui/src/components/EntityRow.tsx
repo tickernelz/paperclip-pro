@@ -124,7 +124,7 @@ export function EntityRow({
         </div>
       )}
       {meta && <div className={cn("flex-1", metaSpacerClassName)} />}
-      {trailing && <div className="flex items-center gap-2 shrink-0">{trailing}</div>}
+      {trailing && <div data-slot="entity-row-trailing" className="flex items-center gap-2 shrink-0">{trailing}</div>}
     </>
   );
 

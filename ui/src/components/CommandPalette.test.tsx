@@ -316,6 +316,37 @@ describe("CommandPalette", () => {
     });
   });
 
+  it("keeps Pixels Office and Conference Room reachable from Search while their features are on", async () => {
+    mockInstanceSettingsApi.getExperimental.mockResolvedValue({
+      enablePixelsOffice: true,
+      enableConferenceRoomChat: true,
+    });
+    const { root } = renderWithQueryClient(<CommandPalette />, container, (queryClient) => {
+      queryClient.setQueryData(queryKeys.instance.experimentalSettings, {
+        enablePixelsOffice: true,
+        enableConferenceRoomChat: true,
+      });
+    });
+
+    act(() => {
+      document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true, bubbles: true }));
+    });
+
+    await waitForAssertion(() => {
+      expect(container.textContent).toContain("Pixels Office");
+      expect(container.textContent).toContain("Conference Room");
+    });
+    const pixelsOffice = [...container.querySelectorAll("button")].find((item) => item.textContent?.trim() === "Pixels Office");
+    act(() => {
+      pixelsOffice!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+    expect(navigateState.navigate).toHaveBeenCalledWith("/pixels-office");
+
+    act(() => {
+      root.unmount();
+    });
+  });
+
   it("offers a Search-all command when the query is non-empty and routes Enter to /search when no issues match", async () => {
     mockIssuesApi.list.mockResolvedValue([]);
     const { root } = renderWithQueryClient(<CommandPalette />, container);

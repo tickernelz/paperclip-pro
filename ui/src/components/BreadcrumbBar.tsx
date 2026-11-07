@@ -1,5 +1,6 @@
 import { Link } from "@/lib/router";
-import { Menu, PanelRightClose, PanelRightOpen } from "lucide-react";
+import { Menu, PanelRightClose, PanelRightOpen, SquarePen } from "lucide-react";
+import { useDialogActions } from "../context/DialogContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { useSidebar } from "../context/SidebarContext";
 import { useCompany } from "../context/CompanyContext";
@@ -60,6 +61,7 @@ export function BreadcrumbBar({ taskDetailLayout = false }: { taskDetailLayout?:
     mobileToolbar,
   } = useBreadcrumbs();
   const { toggleSidebar, isMobile } = useSidebar();
+  const { openNewIssue } = useDialogActions();
   const { panelVisible, togglePanelVisible } = usePanel();
   const { selectedCompanyId, selectedCompany } = useCompany();
   const taskPanelOpen = breadcrumbPanelControl?.open ?? panelVisible;
@@ -74,10 +76,23 @@ export function BreadcrumbBar({ taskDetailLayout = false }: { taskDetailLayout?:
   );
 
   const globalToolbarSlots = (
-    <GlobalToolbar
-      context={globalToolbarSlotContext}
-      pageToolbar={isMobile ? null : breadcrumbToolbar}
-    />
+    <>
+      <GlobalToolbar
+        context={globalToolbarSlotContext}
+        pageToolbar={isMobile ? null : breadcrumbToolbar}
+      />
+      {isMobile ? (
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          className="ms-1 shrink-0"
+          onClick={() => openNewIssue()}
+          aria-label="New Task"
+        >
+          <SquarePen className="h-5 w-5" />
+        </Button>
+      ) : null}
+    </>
   );
 
   if (isMobile && mobileToolbar) {

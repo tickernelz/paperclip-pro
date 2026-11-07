@@ -14,11 +14,9 @@ import {
   Package,
   FolderOpen,
   Unplug,
-  MessagesSquare,
   MessageCircle,
   LayoutGrid,
   Users,
-  Gamepad2,
   SquareTerminal,
 } from "lucide-react";
 import { useState, type ReactNode } from "react";
@@ -43,6 +41,7 @@ import { cn, SIDEBAR_RAIL_HIDDEN_LABEL } from "../lib/utils";
 import { PluginSlotOutlet } from "@/plugins/slots";
 import { PluginLauncherOutlet } from "@/plugins/launchers";
 import { SidebarCompanyMenu } from "./SidebarCompanyMenu";
+import { MootMark } from "./MootMark";
 import { primarySidebarStyles } from "./primary-sidebar-styles";
 
 export function Sidebar({ children }: { children?: ReactNode }) {
@@ -96,7 +95,6 @@ export function Sidebar({ children }: { children?: ReactNode }) {
   const showWorkspacesLink = !chatRail && experimentalSettings?.enableIsolatedWorkspaces === true;
   const showPipelines = experimentalSettings?.enablePipelines === true;
   const showStatusCards = experimentalSettings?.enableStatusCards === true;
-  const showPixelsOffice = experimentalSettings?.enablePixelsOffice === true;
   const goalsLinkPending = !experimentalSettingsSettled;
   const showGoalsLink = experimentalSettings?.enableGoalsSidebarLink === true;
   // Decisions (attention home) is an experimental surface (PAP-13481): the nav
@@ -111,10 +109,6 @@ export function Sidebar({ children }: { children?: ReactNode }) {
   });
   const attentionCount = attentionBadge?.count ?? 0;
   const showCases = experimentalSettings?.enableCases === true;
-  // Conference Room Chat flag (PAP-136/PAP-137): the Conference Room nav item
-  // is a new surface, hidden entirely while the flag is off (same no-flash
-  // pattern as showWorkspacesLink above).
-  const conferenceRoomChatEnabled = experimentalSettings?.enableConferenceRoomChat === true;
 
   const pluginContext = {
     companyId: selectedCompanyId,
@@ -133,7 +127,8 @@ export function Sidebar({ children }: { children?: ReactNode }) {
           the header's spare width goes to the workspace/organization name,
           which is the user's orientation anchor and truncates otherwise.
           Search is the first nav item below instead. */}
-      <div className="flex h-(--sz-60px) shrink-0 items-center gap-1 px-3">
+      <div className="flex h-(--sz-60px) shrink-0 items-center gap-2 px-3">
+        {rail ? null : <MootMark className="size-5 shrink-0 text-ink" title="Paperclip" />}
         <SidebarCompanyMenu />
       </div>
 
@@ -192,12 +187,6 @@ export function Sidebar({ children }: { children?: ReactNode }) {
           ) : null}
           {showStatusCards ? (
             <SidebarNavItem to="/status" label="Status" icon={LayoutGrid} textBadge="beta" />
-          ) : null}
-          {showPixelsOffice ? (
-            <SidebarNavItem to="/pixels-office" label="Pixels Office" icon={Gamepad2} textBadge="beta" />
-          ) : null}
-          {conferenceRoomChatEnabled ? (
-            <SidebarNavItem to="/board-chat" label="Conference Room" icon={MessagesSquare} />
           ) : null}
         </div>
 
