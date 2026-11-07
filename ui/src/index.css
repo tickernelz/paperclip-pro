@@ -630,7 +630,7 @@ html[data-keyboard-open="true"] #main-content:has([data-testid="task-chat-compos
   }
 
   * {
-    @apply border-line outline-focus/50;
+    @apply border-line outline-focus;
   }
   html {
     height: 100%;
