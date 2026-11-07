@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import type { HeartbeatRun, Issue } from "@tickernelz/paperclip-pro-shared";
-import { useQueryClient } from "@tanstack/react-query";
 import {
   Archive,
   Bot,
@@ -26,7 +25,6 @@ import { CompanyPatternIcon } from "@/components/CompanyPatternIcon";
 import { EntityRow } from "@/components/EntityRow";
 import { FilterBar, type FilterValue } from "@/components/FilterBar";
 import { KanbanBoard } from "@/components/KanbanBoard";
-import { OnboardingWizard } from "@/components/OnboardingWizard";
 import {
   buildFileTree,
   collectAllPaths,
@@ -41,8 +39,6 @@ import { SwipeToArchive } from "@/components/SwipeToArchive";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useDialog } from "@/context/DialogContext";
-import { queryKeys } from "@/lib/queryKeys";
 import {
   createIssue,
   storybookAgents,
@@ -283,21 +279,6 @@ function FilterBarDemo({ empty = false }: { empty?: boolean }) {
       </Section>
     </StoryShell>
   );
-}
-
-function OpenOnboardingOnMount({ initialStep }: { initialStep: 1 | 2 }) {
-  const { openOnboarding } = useDialog();
-  const queryClient = useQueryClient();
-
-  useEffect(() => {
-    queryClient.setQueryData(queryKeys.agents.adapterModels(companyId, "claude_local"), [
-      { id: "claude-sonnet-4-5", label: "Claude Sonnet 4.5" },
-      { id: "claude-opus-4-1", label: "Claude Opus 4.1" },
-    ]);
-    openOnboarding(initialStep === 1 ? { initialStep } : { initialStep, companyId });
-  }, [initialStep, openOnboarding, queryClient]);
-
-  return <OnboardingWizard />;
 }
 
 function PackageFileTreeDemo({ empty = false }: { empty?: boolean }) {
@@ -644,16 +625,6 @@ export const FilterBarPopulated: Story = {
 export const FilterBarEmpty: Story = {
   name: "FilterBar / Empty",
   render: () => <FilterBarDemo empty />,
-};
-
-export const OnboardingWizardCompanyStep: Story = {
-  name: "OnboardingWizard / Company Step",
-  render: () => <OpenOnboardingOnMount initialStep={1} />,
-};
-
-export const OnboardingWizardAgentStep: Story = {
-  name: "OnboardingWizard / Agent Step",
-  render: () => <OpenOnboardingOnMount initialStep={2} />,
 };
 
 export const PackageFileTreePopulated: Story = {

@@ -103,6 +103,10 @@ vi.mock("../services/index.js", () => ({
   workspaceOperationService: () => mockWorkspaceOperationService,
 }));
 
+vi.mock("../services/onboarding-omp-gate.js", () => ({
+  onboardingOmpGateFailure: vi.fn(async () => null),
+}));
+
 vi.mock("../services/secrets.js", () => ({
   secretService: () => mockSecretService,
 }));

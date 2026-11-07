@@ -40,8 +40,8 @@ vi.mock("./components/Layout", async () => {
   };
 });
 
-vi.mock("./components/OnboardingWizardVariant", () => ({
-  OnboardingWizardVariant: () => null,
+vi.mock("./components/onboarding/OnboardingFlow", () => ({
+  OnboardingFlow: () => null,
 }));
 
 vi.mock("./pages/Dashboard", () => ({ Dashboard: () => <div>DASHBOARD_PAGE</div> }));

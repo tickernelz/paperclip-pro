@@ -1,4 +1,5 @@
 import { updateFastResponseSchema } from "@tickernelz/paperclip-pro-shared";
+import { onboardingOmpLoginRequestSchema, onboardingRemoteOmpRequestSchema } from "@tickernelz/paperclip-pro-shared";
 import { agentTodoSnapshotSchema } from "@tickernelz/paperclip-pro-shared";
 import { slackRegistrationSchema, slackSetupActionSchema, slackInstallAuthorizationSchema, slackRegistrationStateSchema, slackAppConfigurationSchema, slackAvatarStateSchema, slackAccountStateSchema } from "@tickernelz/paperclip-pro-shared";
 import { experimentalApiMetadata } from "./experimental-api-metadata.js";
@@ -1844,6 +1845,10 @@ const BOARD_ONLY_OPERATIONS = new Set([
 
 const INSTANCE_ADMIN_OPERATIONS = new Set([
   "POST /api/companies",
+  "GET /api/onboarding/omp",
+  "GET /api/onboarding/omp/browse",
+  "POST /api/onboarding/omp/login",
+  "POST /api/onboarding/omp/remote",
   "POST /api/plugins/install",
   "POST /api/instance/database-backups",
   "GET /api/instance/attachment-retention",
@@ -9311,6 +9316,42 @@ registry.registerPath({
   summary: "Apply the onboarding seed Paperclip Cloud collected at signup",
   request: { params: z.object({ companyId: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized, 422: r.unprocessable },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/onboarding/omp",
+  tags: ["onboarding"],
+  summary: "Check the OMP install, version gate, signed-in models and project folder for onboarding",
+  request: { query: z.object({ command: z.string().optional(), network: z.enum(["1"]).optional() }) },
+  responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/onboarding/omp/browse",
+  tags: ["onboarding"],
+  summary: "List folders and omp files to choose an offline OMP binary",
+  request: { query: z.object({ path: z.string().optional() }) },
+  responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden, 409: r.conflict },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/api/onboarding/omp/login",
+  tags: ["onboarding"],
+  summary: "Start omp login for a provider and return its sign-in link",
+  request: { body: jsonBody(onboardingOmpLoginRequestSchema) },
+  responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden, 409: r.conflict, 422: r.unprocessable },
+});
+
+registry.registerPath({
+  method: "post",
+  path: "/api/onboarding/omp/remote",
+  tags: ["onboarding"],
+  summary: "Check OMP on another machine over SSH",
+  request: { body: jsonBody(onboardingRemoteOmpRequestSchema) },
+  responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized, 403: r.forbidden },
 });
 
 registry.registerPath({

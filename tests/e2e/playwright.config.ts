@@ -79,6 +79,7 @@ export default defineConfig({
     env: {
       ...process.env,
       NODE_ENV: "test",
+      PATH: `${path.resolve(import.meta.dirname, "fixtures/omp-bin")}${path.delimiter}${process.env.PATH ?? ""}`,
       PAPERCLIP_UI_DEV_MIDDLEWARE: "false",
       NODE_OPTIONS: `${process.env.NODE_OPTIONS ?? ""} --import=${path.resolve(import.meta.dirname, "fixtures/agent-chat-github.mjs")} --import=${path.resolve(import.meta.dirname, "fixtures/ai-connection-provider.mjs")}`,
       PORT: String(PORT),

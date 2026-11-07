@@ -253,6 +253,7 @@ import {
   resolveDefaultAgentInstructionsBundleRole,
 } from "../services/default-agent-instructions.js";
 import { buildOnboardingFirstAgentInstructionsBundle } from "../services/onboarding-first-task-assets.js";
+import { onboardingOmpGateFailure } from "../services/onboarding-omp-gate.js";
 import { getTelemetryClient } from "../telemetry.js";
 import { assertEnvironmentSelectionForCompany } from "./environment-selection.js";
 import { recoveryService } from "../services/recovery/service.js";
@@ -4083,6 +4084,11 @@ export function agentRoutes(
       ...hireInput
     } = req.body;
 
+    if (hireOnboardingFirstAgent === true) {
+      const gateFailure = await onboardingOmpGateFailure(hireInput);
+      if (gateFailure) throw unprocessable(gateFailure);
+    }
+
     if (inheritRuntimeFrom === "caller") {
       if (req.actor.type !== "agent" || !req.actor.agentId) {
         throw forbidden("Only an agent can inherit native runtime settings from the caller");
@@ -4400,6 +4406,10 @@ export function agentRoutes(
       onboardingFirstAgent: createOnboardingFirstAgent,
       ...createInput
     } = req.body;
+    if (createOnboardingFirstAgent === true) {
+      const gateFailure = await onboardingOmpGateFailure(createInput);
+      if (gateFailure) throw unprocessable(gateFailure);
+    }
     createInput.adapterType = await assertSelectableAdapterType(createInput.adapterType, createInput.adapterConfig);
     const rawCreateAdapterConfig = (createInput.adapterConfig ?? {}) as Record<string, unknown>;
     assertProviderTraceSettingTransition(req, createInput.runtimeConfig);

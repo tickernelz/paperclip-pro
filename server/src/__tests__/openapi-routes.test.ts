@@ -70,6 +70,7 @@ const apiPrefixes: Record<string, string> = {
   "managed-agent-profiles.ts": "/api",
   "notifications.ts": "/api",
   "onboarding-seed.ts": "/api",
+  "onboarding-omp.ts": "/api",
   "openapi.ts": "/api",
   "paperclip-mcp.ts": "/api",
   "plugin-ui-static.ts": "/api",

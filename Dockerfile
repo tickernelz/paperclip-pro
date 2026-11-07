@@ -1,4 +1,5 @@
 # syntax=docker/dockerfile:1.20
+ARG OMP_VERSION=18.18.0
 FROM node:24-trixie-slim AS base
 ARG USER_UID=1000
 ARG USER_GID=1000
@@ -150,6 +151,11 @@ RUN mkdir -p /provider-pack \
     echo "Skipping remote provider pack: supply a full PAPERCLIP_BUILD_COMMIT to enable remote OpenCode/ACPX execution"; \
   fi
 
+FROM base AS omp
+ARG OMP_VERSION
+RUN curl -fsSL https://omp.sh/install | PI_INSTALL_DIR=/opt/omp/bin sh -s -- --binary --ref "v${OMP_VERSION}" \
+  && test "$(/opt/omp/bin/omp --version | grep -oE '[0-9]+\.[0-9]+\.[0-9]+' | head -n 1)" = "${OMP_VERSION}"
+
 FROM base AS production
 ARG USER_UID=1000
 ARG USER_GID=1000
@@ -173,6 +179,8 @@ RUN echo "cli-tools-epoch: ${CLI_TOOLS_CACHE_EPOCH}" \
 COPY scripts/docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
+COPY --from=omp /opt/omp/bin/omp /usr/local/bin/omp
+
 COPY --chown=node:node --from=build /app /app
 
 COPY --from=runner-provider-pack /provider-pack /opt/paperclip-runner/provider-pack
@@ -193,6 +201,7 @@ ENV PAPERCLIP_RUNNER_REMOTE_PROVIDER_PACK_PATH=/opt/paperclip-runner/provider-pa
 # Empty for local builds, preserving the server's normal version fallbacks.
 ARG PAPERCLIP_BUILD_VERSION=""
 ARG PAPERCLIP_BUILD_COMMIT=""
+ARG OMP_VERSION
 ENV NODE_ENV=production \
   HOME=/paperclip \
   HOST=0.0.0.0 \
@@ -207,7 +216,8 @@ ENV NODE_ENV=production \
   PAPERCLIP_CONFIG=/paperclip/instances/default/config.json \
   PAPERCLIP_DEPLOYMENT_MODE=authenticated \
   PAPERCLIP_DEPLOYMENT_EXPOSURE=private \
-  OPENCODE_ALLOW_ALL_MODELS=true
+  OPENCODE_ALLOW_ALL_MODELS=true \
+  PAPERCLIP_OMP_BUNDLED_VERSION=${OMP_VERSION}
 
 EXPOSE 3100
 

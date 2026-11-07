@@ -19,9 +19,7 @@ test("installed controller serves health and UI without creating provider work",
   const response = await page.goto(baseURL!);
   expect(response?.ok()).toBe(true);
   await expect(page.locator("#root")).not.toBeEmpty();
-  await expect(page.getByRole("heading", { name: "What is the name of your organization?", exact: true })).toBeVisible();
-  await expect(page.getByRole("textbox", { name: "Name", exact: true })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Continue", exact: true })).toBeDisabled();
+  await expect(page.getByTestId("onboarding-flow").getByRole("heading", { level: 1, name: /^(Install OMP|Update OMP|You are offline|Connect a model|What should your first agent do\?)$/ })).toBeVisible();
   expect(errors).toEqual([]);
   const after = await request.get(`${baseURL}/api/companies`);
   expect(after.ok()).toBe(true); expect(await after.json()).toEqual([]);
