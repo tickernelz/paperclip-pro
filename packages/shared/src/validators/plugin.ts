@@ -25,6 +25,7 @@ import {
   ROUTINE_TRIGGER_KINDS,
   ROUTINE_TRIGGER_SIGNING_MODES,
   ISSUE_SURFACE_VISIBILITIES,
+  type PluginCapability,
 } from "../constants.js";
 import { routineVariableSchema } from "./routine.js";
 import { externalObjectProviderKeySchema, externalObjectTypeSchema } from "./external-object.js";
@@ -759,6 +760,8 @@ export type PluginObjectReferenceProviderDeclarationInput = z.infer<
  * @see PLUGIN_SPEC.md §10.1 — Manifest shape
  * @see {@link PaperclipPluginManifestV1} — the inferred TypeScript type
  */
+const REMOVED_AI_CONNECTION_ROUTE_CAPABILITY = "ai.connections.route";
+
 export const pluginManifestV1Schema = z.object({
   id: z.string().min(1).regex(
     /^[a-z0-9][a-z0-9._-]*$/,
@@ -781,9 +784,9 @@ export const pluginManifestV1Schema = z.object({
     /^\d+\.\d+\.\d+(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$/,
     "minimumPaperclipVersion must follow semver (e.g. 1.0.0)",
   ).optional(),
-  capabilities: z.array(z.enum(PLUGIN_CAPABILITIES)).min(1),
+  capabilities: z.array(z.union([z.enum(PLUGIN_CAPABILITIES), z.literal(REMOVED_AI_CONNECTION_ROUTE_CAPABILITY)])).min(1)
+    .transform((capabilities) => capabilities.filter((capability): capability is PluginCapability => capability !== REMOVED_AI_CONNECTION_ROUTE_CAPABILITY)),
   agentLifecycle: z.literal(true).optional(),
-  aiConnectionRouter: z.object({ name: z.string().trim().min(1).max(100), description: z.string().trim().min(1).max(500) }).strict().optional(),
   entrypoints: z.object({
     worker: z.string().min(1),
     ui: z.string().min(1).optional(),
@@ -840,10 +843,6 @@ export const pluginManifestV1Schema = z.object({
   // The host enforces capabilities at install and runtime. A plugin must
   // declare every capability it needs up-front; silently having more features
   // than capabilities would cause runtime rejections.
-
-  if (manifest.aiConnectionRouter && !manifest.capabilities.includes("ai.connections.route")) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, message: "ai.connections.route is required for aiConnectionRouter", path: ["capabilities"] });
-  }
 
   // tools require agent.tools.register (PLUGIN_SPEC.md §11)
   if (manifest.tools && manifest.tools.length > 0) {

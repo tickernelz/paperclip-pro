@@ -2086,14 +2086,6 @@ agent pairing and normal run admission. Personal grants cannot authorize
 Runner operations. See [OpenAI Dot Runner](openai-dot-runner.md) for the
 self-hosted release boundary and remaining account qualification.
 
-### Experimental AI connection routing
-
-Opt-in plugin routers may represent a pool as an AI runtime binding. Core keeps
-company and credential authorization, atomically records task/agent affinity and
-a pool cursor, and persists concrete native recovery evidence. The full contract
-is in [AI-CONNECTION-ROUTERS.md](connections/AI-CONNECTION-ROUTERS.md). Disabled
-routing cannot allocate new tasks; already admitted native runs remain recoverable.
-
 ### Connection instructions
 
 Connections can store optional, versioned agent instructions independently of

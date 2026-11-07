@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { aiConnectionsApi } from "@/api/ai-connections";
 import { AiProviderSetup } from "@/components/ai-connections/AiProviderSetup";
-import { AiConnectionPoolConnector } from "@/components/ai-connections/AiConnectionPoolConnector";
 import { useEffect } from "react";
 import { isRetiredComposioConnection } from "@tickernelz/paperclip-pro-shared";
 import { findComposioCatalogApp } from "@tickernelz/paperclip-pro-shared/aggregator-app-catalog";
@@ -31,8 +30,6 @@ export function AppsConnect({ byoOnly = false, credentialSource = "paperclip_vau
   const aiReconnectRequested = Boolean(reconnectId && (preset || ["openai", "anthropic", "xai"].includes(source ?? "")));
   const aiAccounts = useQuery({ queryKey: ["ai-connections", selectedCompanyId], queryFn: () => aiConnectionsApi.list(selectedCompanyId!), enabled: Boolean(selectedCompanyId && aiReconnectRequested) });
   const aiReconnect = aiAccounts.data?.connections.find(c => c.id === reconnectId);
-  const gallery = useQuery({ queryKey: queryKeys.apps.gallery(selectedCompanyId ?? "__none__"), queryFn: () => toolsApi.listGallery(selectedCompanyId!), enabled: !!selectedCompanyId && !!source?.startsWith("ai-router-") });
-  const router = gallery.data?.apps.find(app => app.slug === source)?.aiConnectionRouter;
   const toolkit = searchParams.get("targetToolkit");
   const reuseComposio = source === "composio" && Boolean(toolkit && findComposioCatalogApp(toolkit))
     && searchParams.get("new") !== "1" && !searchParams.get("resume") && !searchParams.get("reconnect")
@@ -70,11 +67,6 @@ export function AppsConnect({ byoOnly = false, credentialSource = "paperclip_vau
       onComplete={binding => navigate(`/apps/${binding.connectionId}/permissions`)}
     />
   );
-  if (source?.startsWith("ai-router-")) {
-    if (gallery.isPending) return <p role="status">Loading connector…</p>;
-    if (!router) return <p role="alert">{gallery.error?.message ?? "This connection pool plugin is unavailable. Enable it in Plugins."}</p>;
-    return <AiConnectionPoolConnector pluginKey={router.pluginKey} />;
-  }
   return <ConnectionSetupFlow byoOnly={byoOnly} credentialSource={credentialSource} host="page"
     onComplete={returningToSkills ? returnToSkills : undefined}
     onCancel={returningToSkills ? returnToSkills : undefined} />;

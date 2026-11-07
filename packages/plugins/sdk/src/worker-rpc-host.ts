@@ -1,5 +1,4 @@
 import type { AgentLifecycleRequest, AgentLifecycleResult } from "@tickernelz/paperclip-pro-shared";
-import type { AiConnectionRouterRequest, AiConnectionRouterResult } from "@tickernelz/paperclip-pro-shared";
 import { environmentCreationCleanupErrorData } from "./environment-creation-cleanup.js";
 import { environmentSyncErrorData, withEnvironmentSyncErrorCapture } from "./environment-sync-error.js";
 import { createPluginIdleDrain } from "./idle-drain.js";
@@ -1663,9 +1662,6 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
       case "agentLifecycle":
         if (!plugin.definition.onAgentLifecycle) throw methodNotImplemented("agentLifecycle");
         return plugin.definition.onAgentLifecycle(params as AgentLifecycleRequest);
-      case "routeAiConnection":
-        if (!plugin.definition.onRouteAiConnection) throw methodNotImplemented("routeAiConnection");
-        return plugin.definition.onRouteAiConnection(params as AiConnectionRouterRequest);
       case "resolveExternalObject":
         return handleResolveExternalObject(params as ResolveExternalObjectParams);
       case "refreshExternalObjects":
@@ -1784,7 +1780,6 @@ export function startWorkerRpcHost(options: WorkerRpcHostOptions): WorkerRpcHost
     if (plugin.definition.onApiRequest) supportedMethods.push("handleApiRequest");
     if (plugin.definition.onDetectExternalObjects) supportedMethods.push("detectExternalObjects");
     if (plugin.definition.onAgentLifecycle) supportedMethods.push("agentLifecycle");
-    if (plugin.definition.onRouteAiConnection) supportedMethods.push("routeAiConnection");
     if (plugin.definition.onResolveExternalObject) supportedMethods.push("resolveExternalObject");
     if (plugin.definition.onRefreshExternalObjects) supportedMethods.push("refreshExternalObjects");
     if (plugin.definition.onEnvironmentValidateConfig) supportedMethods.push("environmentValidateConfig");

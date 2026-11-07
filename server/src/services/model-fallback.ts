@@ -241,16 +241,11 @@ export async function prepareRunModelFallback(input: {
   db: Db;
   companyId: string;
   adapterType: string;
-  routerManaged: boolean;
   config: Record<string, unknown>;
   context: Record<string, unknown>;
   now: Date;
 }): Promise<{ selection: RunModelSelection; state: RunModelFallbackState | null } | null> {
   if (!adapterSupportsFallbackModels(input.adapterType)) return null;
-  if (input.routerManaged) {
-    delete input.config.fallbackModels;
-    return null;
-  }
   const primary = text(input.config.model);
   const chain = primary ? buildModelChain(primary, input.config.fallbackModels) : [];
   if (chain.length < 2) return null;

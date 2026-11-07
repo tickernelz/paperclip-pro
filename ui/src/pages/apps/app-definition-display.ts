@@ -1,5 +1,4 @@
 import { aiConnectionCatalogSlug, aiConnectionMetadataSchema, type AppDefinition, type ToolApplication, type ToolConnection } from "@tickernelz/paperclip-pro-shared";
-import { aiConnectionRouterSlug, aiConnectionRouterPluginKey } from "@tickernelz/paperclip-pro-shared";
 
 export type AppGalleryDisplayEntry = AppDefinition & {
   key?: string;
@@ -35,8 +34,6 @@ export function appApplicationSourceSlug(application: ToolApplication | null | u
   if (typeof source === "string" && source.trim()) return source.trim();
   const key = application.applicationKey?.trim();
   if (!key) return null;
-  const router = key.match(/^plugin:(.+):ai-router$/);
-  if (router) return aiConnectionRouterSlug(router[1]);
   const galleryPrefix = "app-gallery:";
   if (key.startsWith(galleryPrefix)) {
     const slug = key.slice(galleryPrefix.length).split(":")[0] || null;
@@ -54,8 +51,6 @@ export function appConnectionSourceSlug(connection: ToolConnection | null | unde
     const metadata = aiConnectionMetadataSchema.safeParse(connection.config?.ai);
     if (metadata.success) return aiConnectionCatalogSlug(metadata.data.provider, metadata.data.routing);
   }
-  const router = aiConnectionRouterPluginKey(connection);
-  if (router) return aiConnectionRouterSlug(router);
   const source = connection.config?.sourceTemplateKey ?? connection.transportConfig?.sourceTemplateKey;
   return typeof source === "string" && source.trim() ? source.trim() : null;
 }

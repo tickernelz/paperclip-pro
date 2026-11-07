@@ -1,11 +1,10 @@
 import { and, eq } from "drizzle-orm";
 import { agents, companies, type Db } from "@tickernelz/paperclip-pro-db";
 import type { AdapterEnvironmentTestResult } from "@tickernelz/paperclip-pro-adapter-utils";
-import { ADAPTER_AUTH_MISSING_CHECK_CODE, aiRuntimeConnectionBindingSchema } from "@tickernelz/paperclip-pro-shared";
+import { ADAPTER_AUTH_MISSING_CHECK_CODE, AI_CONNECTION_ROUTER_REMOVED_MESSAGE, aiRuntimeConnectionBindingSchema } from "@tickernelz/paperclip-pro-shared";
 import { isForbiddenConfigEnvKey, parseObject } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 import { requireServerAdapter } from "../adapters/index.js";
 import { agentEnvironmentTestService } from "./agent-environment-test.js";
-import { aiConnectionRouterService } from "./ai-connection-router.js";
 import { withManagedAiProbe, stripAiAuthBindings } from "./ai-connection-runtime.js";
 import { environmentService } from "./environments.js";
 import { secretService } from "./secrets.js";
@@ -37,15 +36,9 @@ export function agentHarnessVerificationService(db: Db, manager: PluginWorkerMan
     const responsibleUserId = agent.lifecycleOperation?.responsibleUserId ?? company.defaultResponsibleUserId;
     const context = { consumerType: "agent" as const, consumerId: agent.id, actorType: "system" as const,
       actorId: "agent-lifecycle", responsibleUserId };
-    let binding = agent.runtimeConfig.aiConnection ? aiRuntimeConnectionBindingSchema.parse(agent.runtimeConfig.aiConnection) : undefined;
+    const binding = agent.runtimeConfig.aiConnection ? aiRuntimeConnectionBindingSchema.parse(agent.runtimeConfig.aiConnection) : undefined;
+    if (binding?.mode === "router") throw Object.assign(new Error(AI_CONNECTION_ROUTER_REMOVED_MESSAGE), { code: "ai_connection_router_removed" });
     let config = agent.adapterConfig;
-    if (binding?.mode === "router") {
-      const selected = await aiConnectionRouterService(db, manager).resolve({ companyId: agent.companyId,
-        poolId: binding.connectionId, agentId: agent.id, userId: responsibleUserId,
-        adapterType: agent.adapterType, taskKey: `lifecycle:${agent.lifecycleOperation!.id}` });
-      binding = selected.binding;
-      config = { ...config, ...selected.runtimeConfig };
-    }
     if (binding) config = { ...config, env: stripAiAuthBindings(config.env) };
     config = (await secrets.resolveAdapterConfigForRuntime(agent.companyId, config, context, { adapterType: agent.adapterType })).config;
     const environmentId = await tests.resolveAdapterTestEnvironmentId(agent.companyId, agent.defaultEnvironmentId);

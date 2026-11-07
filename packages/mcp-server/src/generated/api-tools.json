@@ -347,7 +347,7 @@
       "assertCanUpdateAgent"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@agents.ts:5230",
+    "boardGuard": "assertBoard@agents.ts:5163",
     "authorityCapability": null,
     "parameters": [
       {
@@ -1919,7 +1919,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@ai-connections.ts:208",
+    "boardGuard": "assertBoard@ai-connections.ts:176",
     "authorityCapability": null,
     "parameters": [
       {
@@ -4197,255 +4197,6 @@
           "name",
           "ownership",
           "provider"
-        ]
-      }
-    }
-  },
-  {
-    "name": "paperclipCreateAiConnectionPool",
-    "operationId": "POST /api/companies/{companyId}/ai-connection-pools",
-    "method": "POST",
-    "path": "/companies/{companyId}/ai-connection-pools",
-    "description": "Create or revise an experimental plugin-owned connection pool",
-    "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "handler",
-    "tags": [
-      "ai-connections"
-    ],
-    "annotations": {
-      "readOnlyHint": false,
-      "destructiveHint": false,
-      "idempotentHint": false
-    },
-    "guards": [
-      "assertBoard",
-      "assertCompanyAccess",
-      "getActorInfo"
-    ],
-    "permissions": [],
-    "boardGuard": "assertBoard@ai-connections.ts:163",
-    "authorityCapability": null,
-    "parameters": [
-      {
-        "name": "companyId",
-        "in": "path",
-        "required": true,
-        "schema": {
-          "type": "string"
-        }
-      }
-    ],
-    "body": {
-      "required": true,
-      "documented": true,
-      "mode": "merge",
-      "schema": {
-        "type": "object",
-        "properties": {
-          "config": {
-            "type": "object",
-            "properties": {
-              "enabled": {
-                "type": "boolean"
-              },
-              "members": {
-                "type": "array",
-                "items": {
-                  "type": "object",
-                  "properties": {
-                    "binding": {
-                      "anyOf": [
-                        {
-                          "type": "object",
-                          "properties": {
-                            "method": {
-                              "type": "string",
-                              "enum": [
-                                "subscription",
-                                "api_key"
-                              ]
-                            },
-                            "mode": {
-                              "type": "string",
-                              "enum": [
-                                "responsible_user"
-                              ]
-                            },
-                            "provider": {
-                              "type": "string",
-                              "enum": [
-                                "anthropic",
-                                "openai",
-                                "openrouter",
-                                "xai",
-                                "google"
-                              ]
-                            }
-                          },
-                          "required": [
-                            "method",
-                            "mode",
-                            "provider"
-                          ]
-                        },
-                        {
-                          "type": "object",
-                          "properties": {
-                            "connectionId": {
-                              "type": "string"
-                            },
-                            "grantId": {
-                              "type": "string"
-                            },
-                            "method": {
-                              "type": "string",
-                              "enum": [
-                                "subscription",
-                                "api_key"
-                              ]
-                            },
-                            "mode": {
-                              "type": "string",
-                              "enum": [
-                                "shared"
-                              ]
-                            },
-                            "provider": {
-                              "type": "string",
-                              "enum": [
-                                "anthropic",
-                                "openai",
-                                "openrouter",
-                                "xai",
-                                "google"
-                              ]
-                            }
-                          },
-                          "required": [
-                            "connectionId",
-                            "grantId",
-                            "method",
-                            "mode",
-                            "provider"
-                          ]
-                        },
-                        {
-                          "type": "object",
-                          "properties": {
-                            "connectionId": {
-                              "type": "string"
-                            },
-                            "grantId": {
-                              "type": "string"
-                            },
-                            "method": {
-                              "type": "string",
-                              "enum": [
-                                "subscription",
-                                "api_key"
-                              ]
-                            },
-                            "mode": {
-                              "type": "string",
-                              "enum": [
-                                "delegated"
-                              ]
-                            },
-                            "provider": {
-                              "type": "string",
-                              "enum": [
-                                "anthropic",
-                                "openai",
-                                "openrouter",
-                                "xai",
-                                "google"
-                              ]
-                            }
-                          },
-                          "required": [
-                            "connectionId",
-                            "grantId",
-                            "method",
-                            "mode",
-                            "provider"
-                          ]
-                        }
-                      ]
-                    },
-                    "id": {
-                      "type": "string"
-                    },
-                    "profile": {
-                      "type": "object",
-                      "properties": {
-                        "acpxAgent": {
-                          "type": "string",
-                          "enum": [
-                            "claude",
-                            "grok"
-                          ]
-                        },
-                        "effort": {
-                          "type": "string"
-                        },
-                        "model": {
-                          "type": "string"
-                        },
-                        "provider": {
-                          "type": "string",
-                          "enum": [
-                            "codex",
-                            "acpx",
-                            "opencode"
-                          ]
-                        }
-                      },
-                      "required": [
-                        "model",
-                        "provider"
-                      ]
-                    }
-                  },
-                  "required": [
-                    "binding",
-                    "id",
-                    "profile"
-                  ]
-                }
-              },
-              "mode": {
-                "type": "string",
-                "enum": [
-                  "round_robin",
-                  "usage_aware"
-                ]
-              },
-              "name": {
-                "type": "string"
-              },
-              "thresholdPercent": {
-                "type": "integer"
-              }
-            },
-            "required": [
-              "members",
-              "name"
-            ]
-          },
-          "expectedRevision": {
-            "type": "integer"
-          },
-          "id": {
-            "type": "string"
-          },
-          "pluginKey": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "config",
-          "pluginKey"
         ]
       }
     }
@@ -8328,7 +8079,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:7217",
+    "boardGuard": "assertInstanceAdmin@agents.ts:7150",
     "authorityCapability": null,
     "parameters": [
       {
@@ -12366,7 +12117,7 @@
       "assertBoard"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1840",
+    "boardGuard": "assertBoard@tool-access.ts:1838",
     "authorityCapability": null,
     "parameters": [
       {
@@ -12426,7 +12177,7 @@
       "assertCanTestAsAgent"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:2096",
+    "boardGuard": "assertBoard@tool-access.ts:2094",
     "authorityCapability": null,
     "parameters": [
       {
@@ -12692,7 +12443,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1788",
+    "boardGuard": "assertBoard@tool-access.ts:1786",
     "authorityCapability": null,
     "parameters": [
       {
@@ -14021,7 +13772,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@ai-connections.ts:199",
+    "boardGuard": "assertBoard@ai-connections.ts:167",
     "authorityCapability": null,
     "parameters": [
       {
@@ -14041,67 +13792,6 @@
         }
       }
     ]
-  },
-  {
-    "name": "paperclipDeleteAiConnectionPool",
-    "operationId": "DELETE /api/companies/{companyId}/ai-connection-pools/{poolId}",
-    "method": "DELETE",
-    "path": "/companies/{companyId}/ai-connection-pools/{poolId}",
-    "description": "Delete a connection pool while retaining task and run records",
-    "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "handler",
-    "tags": [
-      "ai-connections"
-    ],
-    "annotations": {
-      "readOnlyHint": false,
-      "destructiveHint": true,
-      "idempotentHint": true
-    },
-    "guards": [
-      "assertBoard",
-      "assertCompanyAccess",
-      "assertLocalOperator",
-      "getActorInfo"
-    ],
-    "permissions": [],
-    "boardGuard": "assertBoard@ai-connections.ts:170",
-    "authorityCapability": null,
-    "parameters": [
-      {
-        "name": "companyId",
-        "in": "path",
-        "required": true,
-        "schema": {
-          "type": "string"
-        }
-      },
-      {
-        "name": "poolId",
-        "in": "path",
-        "required": true,
-        "schema": {
-          "type": "string"
-        }
-      }
-    ],
-    "body": {
-      "required": true,
-      "documented": true,
-      "mode": "merge",
-      "schema": {
-        "type": "object",
-        "properties": {
-          "expectedRevision": {
-            "type": "integer"
-          }
-        },
-        "required": [
-          "expectedRevision"
-        ]
-      }
-    }
   },
   {
     "name": "paperclipDeleteAttachment",
@@ -14730,7 +14420,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:7355",
+    "boardGuard": "assertInstanceAdmin@agents.ts:7288",
     "authorityCapability": null,
     "parameters": [
       {
@@ -16055,7 +15745,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1865",
+    "boardGuard": "assertBoard@tool-access.ts:1863",
     "authorityCapability": null,
     "parameters": [
       {
@@ -16107,7 +15797,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1815",
+    "boardGuard": "assertBoard@tool-access.ts:1813",
     "authorityCapability": null,
     "parameters": [
       {
@@ -18193,7 +17883,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@agents.ts:2930",
+    "boardGuard": "assertBoard@agents.ts:2909",
     "authorityCapability": null,
     "parameters": [
       {
@@ -18586,7 +18276,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@ai-connections.ts:363",
+    "boardGuard": "assertBoard@ai-connections.ts:330",
     "authorityCapability": null,
     "parameters": [
       {
@@ -18599,50 +18289,6 @@
       },
       {
         "name": "sessionId",
-        "in": "path",
-        "required": true,
-        "schema": {
-          "type": "string"
-        }
-      }
-    ]
-  },
-  {
-    "name": "paperclipGetAiConnectionPoolInspection",
-    "operationId": "GET /api/companies/{companyId}/ai-connection-pools/{poolId}/inspection",
-    "method": "GET",
-    "path": "/companies/{companyId}/ai-connection-pools/{poolId}/inspection",
-    "description": "Inspect authorized pool members and fresh cached usage without probing",
-    "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "handler",
-    "tags": [
-      "ai-connections"
-    ],
-    "annotations": {
-      "readOnlyHint": true,
-      "destructiveHint": false,
-      "idempotentHint": true
-    },
-    "guards": [
-      "assertBoard",
-      "assertCompanyAccess",
-      "getActorInfo"
-    ],
-    "permissions": [],
-    "boardGuard": "assertBoard@ai-connections.ts:156",
-    "authorityCapability": null,
-    "parameters": [
-      {
-        "name": "companyId",
-        "in": "path",
-        "required": true,
-        "schema": {
-          "type": "string"
-        }
-      },
-      {
-        "name": "poolId",
         "in": "path",
         "required": true,
         "schema": {
@@ -18674,7 +18320,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@ai-connections.ts:238",
+    "boardGuard": "assertBoard@ai-connections.ts:205",
     "authorityCapability": null,
     "parameters": [
       {
@@ -21512,7 +21158,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:7188",
+    "boardGuard": "assertInstanceAdmin@agents.ts:7121",
     "authorityCapability": null,
     "parameters": [
       {
@@ -24678,7 +24324,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1521",
+    "boardGuard": "assertBoard@tool-access.ts:1519",
     "authorityCapability": null,
     "parameters": [
       {
@@ -24713,7 +24359,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:860",
+    "boardGuard": "assertBoard@tool-access.ts:858",
     "authorityCapability": null,
     "parameters": [
       {
@@ -24763,7 +24409,7 @@
       "assertBoard"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1695",
+    "boardGuard": "assertBoard@tool-access.ts:1693",
     "authorityCapability": null,
     "parameters": [
       {
@@ -24797,7 +24443,7 @@
       "assertBoard"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:2288",
+    "boardGuard": "assertBoard@tool-access.ts:2284",
     "authorityCapability": null,
     "parameters": [
       {
@@ -24839,7 +24485,7 @@
       "assertBoard"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:2281",
+    "boardGuard": "assertBoard@tool-access.ts:2277",
     "authorityCapability": null,
     "parameters": [
       {
@@ -24874,7 +24520,7 @@
       "assertBoardAnyToolPermission"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:2121",
+    "boardGuard": "assertBoard@tool-access.ts:2119",
     "authorityCapability": null,
     "parameters": [
       {
@@ -24916,7 +24562,7 @@
       "assertBoard"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1894",
+    "boardGuard": "assertBoard@tool-access.ts:1892",
     "authorityCapability": null,
     "parameters": [
       {
@@ -24963,7 +24609,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:813",
+    "boardGuard": "assertBoard@tool-access.ts:811",
     "authorityCapability": null,
     "parameters": [
       {
@@ -25103,7 +24749,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:2331",
+    "boardGuard": "assertBoard@tool-access.ts:2327",
     "authorityCapability": null,
     "parameters": [
       {
@@ -25146,7 +24792,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:2543",
+    "boardGuard": "assertBoard@tool-access.ts:2539",
     "authorityCapability": null,
     "parameters": [
       {
@@ -25184,7 +24830,7 @@
       "hasCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1236",
+    "boardGuard": "assertBoard@tool-access.ts:1234",
     "authorityCapability": null,
     "parameters": []
   },
@@ -27506,7 +27152,6 @@
     "guards": [
       "assertCompanyAccess",
       "assertKnownAdapterType",
-      "getActorInfo",
       "requireRunnerHarness"
     ],
     "permissions": [],
@@ -27523,14 +27168,6 @@
       },
       {
         "name": "environmentId",
-        "in": "query",
-        "required": false,
-        "schema": {
-          "type": "string"
-        }
-      },
-      {
-        "name": "poolId",
         "in": "query",
         "required": false,
         "schema": {
@@ -27746,7 +27383,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@agents.ts:2855",
+    "boardGuard": "assertBoard@agents.ts:2834",
     "authorityCapability": null,
     "parameters": [
       {
@@ -27897,41 +27534,6 @@
       },
       {
         "name": "connectionId",
-        "in": "path",
-        "required": true,
-        "schema": {
-          "type": "string"
-        }
-      }
-    ]
-  },
-  {
-    "name": "paperclipListAiConnectionPools",
-    "operationId": "GET /api/companies/{companyId}/ai-connection-pools",
-    "method": "GET",
-    "path": "/companies/{companyId}/ai-connection-pools",
-    "description": "List company AI connection pools for connection managers",
-    "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "handler",
-    "tags": [
-      "ai-connections"
-    ],
-    "annotations": {
-      "readOnlyHint": true,
-      "destructiveHint": false,
-      "idempotentHint": true
-    },
-    "guards": [
-      "assertBoard",
-      "assertCompanyAccess"
-    ],
-    "permissions": [],
-    "boardGuard": "assertBoard@ai-connections.ts:149",
-    "authorityCapability": null,
-    "parameters": [
-      {
-        "name": "companyId",
         "in": "path",
         "required": true,
         "schema": {
@@ -31143,7 +30745,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:3728",
+    "boardGuard": "assertInstanceAdmin@agents.ts:3663",
     "authorityCapability": null,
     "parameters": []
   },
@@ -32262,7 +31864,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@agents.ts:2937",
+    "boardGuard": "assertBoard@agents.ts:2916",
     "authorityCapability": null,
     "parameters": [
       {
@@ -33029,7 +32631,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:6734",
+    "boardGuard": "assertInstanceAdmin@agents.ts:6667",
     "authorityCapability": null,
     "parameters": [
       {
@@ -34031,7 +33633,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1528",
+    "boardGuard": "assertBoard@tool-access.ts:1526",
     "authorityCapability": null,
     "parameters": [
       {
@@ -34084,7 +33686,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1590",
+    "boardGuard": "assertBoard@tool-access.ts:1588",
     "authorityCapability": null,
     "parameters": [
       {
@@ -34182,7 +33784,7 @@
       "assertBoard"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1720",
+    "boardGuard": "assertBoard@tool-access.ts:1718",
     "authorityCapability": null,
     "parameters": [
       {
@@ -34216,7 +33818,7 @@
       "assertBoard"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1903",
+    "boardGuard": "assertBoard@tool-access.ts:1901",
     "authorityCapability": null,
     "parameters": [
       {
@@ -34251,7 +33853,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1655",
+    "boardGuard": "assertBoard@tool-access.ts:1653",
     "authorityCapability": null,
     "parameters": [
       {
@@ -34287,7 +33889,7 @@
       "assertCanTestAsAgent"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:2015",
+    "boardGuard": "assertBoard@tool-access.ts:2013",
     "authorityCapability": null,
     "parameters": [
       {
@@ -34331,7 +33933,7 @@
       "assertCanTestAsAgent"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1974",
+    "boardGuard": "assertBoard@tool-access.ts:1972",
     "authorityCapability": null,
     "parameters": [
       {
@@ -34366,7 +33968,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1514",
+    "boardGuard": "assertBoard@tool-access.ts:1512",
     "authorityCapability": null,
     "parameters": [
       {
@@ -34493,7 +34095,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:2564",
+    "boardGuard": "assertBoard@tool-access.ts:2560",
     "authorityCapability": null,
     "parameters": [
       {
@@ -34527,7 +34129,7 @@
       "assertBoard"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:2304",
+    "boardGuard": "assertBoard@tool-access.ts:2300",
     "authorityCapability": null,
     "parameters": [
       {
@@ -34562,7 +34164,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:2297",
+    "boardGuard": "assertBoard@tool-access.ts:2293",
     "authorityCapability": null,
     "parameters": [
       {
@@ -34597,7 +34199,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:2550",
+    "boardGuard": "assertBoard@tool-access.ts:2546",
     "authorityCapability": null,
     "parameters": [
       {
@@ -34708,7 +34310,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:2557",
+    "boardGuard": "assertBoard@tool-access.ts:2553",
     "authorityCapability": null,
     "parameters": [
       {
@@ -39399,7 +39001,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@agents.ts:5509",
+    "boardGuard": "assertBoard@agents.ts:5442",
     "authorityCapability": null,
     "parameters": [
       {
@@ -39647,7 +39249,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:7280",
+    "boardGuard": "assertInstanceAdmin@agents.ts:7213",
     "authorityCapability": null,
     "parameters": [
       {
@@ -40576,7 +40178,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@agents.ts:2862",
+    "boardGuard": "assertBoard@agents.ts:2841",
     "authorityCapability": null,
     "parameters": [
       {
@@ -40693,7 +40295,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@ai-connections.ts:336",
+    "boardGuard": "assertBoard@ai-connections.ts:303",
     "authorityCapability": null,
     "parameters": [
       {
@@ -43722,7 +43324,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1756",
+    "boardGuard": "assertBoard@tool-access.ts:1754",
     "authorityCapability": null,
     "parameters": [
       {
@@ -43786,7 +43388,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1913",
+    "boardGuard": "assertBoard@tool-access.ts:1911",
     "authorityCapability": null,
     "parameters": [
       {
@@ -44434,7 +44036,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1561",
+    "boardGuard": "assertBoard@tool-access.ts:1559",
     "authorityCapability": null,
     "parameters": [
       {
@@ -44478,7 +44080,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:1707",
+    "boardGuard": "assertBoard@tool-access.ts:1705",
     "authorityCapability": null,
     "parameters": [
       {
@@ -45728,7 +45330,7 @@
       "assertCompanyAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@tool-access.ts:2800",
+    "boardGuard": "assertBoard@tool-access.ts:2796",
     "authorityCapability": null,
     "parameters": [
       {

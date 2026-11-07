@@ -455,6 +455,4 @@ export type { PluginEnvironmentCreationCleanup, PluginEnvironmentAcquisitionDiag
 export { preserveEnvironmentSyncErrorDiagnostic, environmentSyncErrorData, readEnvironmentSyncErrorDiagnostic, withEnvironmentSyncErrorCapture, withEnvironmentSyncTransferStep, recordEnvironmentSyncError } from "./environment-sync-error.js";
 export type { PluginEnvironmentSyncErrorDiagnostic } from "./environment-sync-error.js";
 
-export type { AiConnectionPool, AiConnectionPoolConfig, AiConnectionPoolMember, AiConnectionRouterRequest, AiConnectionRouterResult, AiConnectionRouterSelection } from "@tickernelz/paperclip-pro-shared";
-
 export type { AgentLifecycleRequest, AgentLifecycleResult } from "@tickernelz/paperclip-pro-shared";
