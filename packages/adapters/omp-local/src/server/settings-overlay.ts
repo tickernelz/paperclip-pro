@@ -7,6 +7,7 @@ import {
 } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
 import { asBoolean } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 import { stringify as stringifyYaml } from "yaml";
+import { isWellFormedOmpSettingKey } from "@tickernelz/paperclip-pro-shared";
 import { ompFallbackChain } from "./model-fallback.js";
 
 export interface OmpSettingsOverlay {
@@ -16,7 +17,54 @@ export interface OmpSettingsOverlay {
 
 export const OMP_CONTEXT_MANAGEMENT_MIN_VERSION = "18.1.16";
 
+const ADAPTER_OWNED_OMP_SETTINGS = new Set([
+  "advisor.enabled",
+  "prewalk.enabled",
+  "lsp.enabled",
+  "skills.enabled",
+  "omitThinking",
+  "compaction.experimentalContextManagement",
+  "tools.approvalMode",
+  "task.maxRecursionDepth",
+]);
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+export function agentOmpSettings(config: Record<string, unknown>): Array<[string, unknown]> {
+  if (!isRecord(config.ompSettings)) return [];
+  return Object.entries(config.ompSettings).filter(([key, value]) =>
+    value !== undefined &&
+    isWellFormedOmpSettingKey(key) &&
+    !ADAPTER_OWNED_OMP_SETTINGS.has(key) &&
+    !/^(auth|secrets)\./.test(key) &&
+    !/(^|\.)(token|apiKey|api_key|secret|password|credentials?)$/i.test(key));
+}
+
+function setDotted(target: Record<string, unknown>, key: string, value: unknown): void {
+  const parts = key.split(".");
+  let node = target;
+  for (const part of parts.slice(0, -1)) {
+    const child = Object.hasOwn(node, part) ? node[part] : undefined;
+    if (isRecord(child)) {
+      node = child;
+      continue;
+    }
+    const created: Record<string, unknown> = {};
+    Object.defineProperty(node, part, { value: created, enumerable: true, writable: true, configurable: true });
+    node = created;
+  }
+  Object.defineProperty(node, parts[parts.length - 1]!, { value, enumerable: true, writable: true, configurable: true });
+}
+
 export function buildOmpSettingsOverlay(config: Record<string, unknown>): Record<string, unknown> {
+  const overlay = buildAdapterSettingsOverlay(config);
+  for (const [key, value] of agentOmpSettings(config)) setDotted(overlay, key, value);
+  return overlay;
+}
+
+function buildAdapterSettingsOverlay(config: Record<string, unknown>): Record<string, unknown> {
   const noPrewalk = asBoolean(config.noPrewalk, false);
   const fallback = ompFallbackChain(config);
   return {

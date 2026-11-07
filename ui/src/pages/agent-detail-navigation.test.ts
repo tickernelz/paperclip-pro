@@ -11,6 +11,7 @@ describe("agent detail navigation", () => {
   it("exposes the complete local information architecture", () => {
     expect(AGENT_DETAIL_NAVIGATION.flatMap((section) => section.items.map((item) => item.value))).toEqual([
       "overview",
+      "setup",
       "instructions",
       "skills",
       "runtime",
@@ -25,6 +26,7 @@ describe("agent detail navigation", () => {
 
   it("canonicalizes legacy local paths", () => {
     expect(parseAgentDetailView("dashboard")).toBe("overview");
+    expect(parseAgentDetailView("setup")).toBe("setup");
     expect(parseAgentDetailView("configuration")).toBe("runtime");
     expect(parseAgentDetailView("prompts")).toBe("instructions");
     expect(agentDetailHref("codexcoder", "permissions")).toBe("/agents/codexcoder/permissions");

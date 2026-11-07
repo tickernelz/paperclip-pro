@@ -100,6 +100,9 @@ import {
   planAgentAdapterConfigBatch,
   type AgentAdapterConfigBatchValue,
 } from "../services/agent-adapter-config-batch.js";
+import { listOmpSettingsCatalog, OmpSettingsUnavailableError } from "@tickernelz/paperclip-pro-adapter-omp-local/server";
+import { planAgentDefaultsApply, validateOmpSettingsMap, OMP_SETTINGS_KEY, OMP_SETTINGS_PATH_PREFIX } from "@tickernelz/paperclip-pro-shared";
+import { agentDefaultsService, validateAgentDefaults, withAgentDefaults } from "../services/agent-defaults.js";
 import {
   agentService,
   agentInstructionsService,
@@ -2204,6 +2207,13 @@ export function agentRoutes(
     );
   }
 
+  async function assertValidOmpSettings(adapterType: string | null | undefined, adapterConfig: Record<string, unknown>) {
+    if (adapterType !== "omp_local" || adapterConfig[OMP_SETTINGS_KEY] === undefined) return;
+    const catalog = await listOmpSettingsCatalog().catch(() => undefined);
+    const errors = validateOmpSettingsMap(adapterConfig[OMP_SETTINGS_KEY], catalog);
+    if (errors.length > 0) throw unprocessable(errors.join(" "));
+  }
+
   function applyCreateDefaultsByAdapterType(
     adapterType: string | null | undefined,
     adapterConfig: Record<string, unknown>,
@@ -2467,6 +2477,7 @@ export function agentRoutes(
     "cwd",
     "env",
     "filesystemSandboxCommand",
+    "ompSettings",
   ] as const;
 
   function assertNoAgentLocalAdapterHostCommandMutation(
@@ -2814,6 +2825,111 @@ export function agentRoutes(
       next();
     } catch (err) {
       next(err);
+    }
+  });
+
+  const agentDefaultsSvc = agentDefaultsService(db);
+
+  router.get("/companies/:companyId/agent-defaults", async (req, res) => {
+    const companyId = req.params.companyId as string;
+    assertBoard(req);
+    assertCompanyAccess(req, companyId);
+    res.json({ values: await agentDefaultsSvc.getDefaults(companyId) });
+  });
+
+  router.put("/companies/:companyId/agent-defaults", async (req, res) => {
+    const companyId = req.params.companyId as string;
+    assertBoard(req);
+    assertCompanyAccess(req, companyId);
+    const values = asRecord(req.body?.values);
+    if (!values) throw unprocessable("Send the defaults as { values: { <setting path>: <value> } }.");
+    let errors = validateAgentDefaults(values);
+    if (errors.length === 0 && Object.keys(values).some((path) => path.startsWith(OMP_SETTINGS_PATH_PREFIX))) {
+      try {
+        errors = validateAgentDefaults(values, await listOmpSettingsCatalog());
+      } catch (error) {
+        if (!(error instanceof OmpSettingsUnavailableError)) throw error;
+        res.status(503).json({ error: `OMP settings could not be checked: ${error.message}` });
+        return;
+      }
+    }
+    if (errors.length > 0) {
+      res.status(422).json({ error: "Defaults were not saved.", details: errors });
+      return;
+    }
+    const previous = await agentDefaultsSvc.getDefaults(companyId);
+    const ompAgents = await agentDefaultsSvc.listOmpAgents(companyId);
+    const plan = planAgentDefaultsApply(ompAgents, previous, values);
+    const actor = getActorInfo(req);
+    const revision = (source: string) => ({
+      recordRevision: {
+        createdByAgentId: actor.agentId,
+        createdByUserId: actor.actorType === "user" ? actor.actorId : null,
+        source,
+      },
+    });
+    const writes: Array<{ agentId: string; appliedPaths: string[]; adapterConfig: Record<string, unknown>; previousConfig: Record<string, unknown> }> = [];
+    for (const entry of plan.entries) {
+      if (entry.appliedPaths.length === 0) continue;
+      writes.push({
+        agentId: entry.agentId,
+        appliedPaths: entry.appliedPaths,
+        adapterConfig: await normalizeMediatedAdapterConfigForPersistence({ companyId, adapterType: "omp_local", adapterConfig: entry.adapterConfig }),
+        previousConfig: ompAgents.find((agent) => agent.id === entry.agentId)?.adapterConfig ?? {},
+      });
+    }
+    const moved: typeof writes = [];
+    try {
+      for (const write of writes) {
+        if (await svc.update(write.agentId, { adapterConfig: write.adapterConfig }, revision("agent_defaults"))) moved.push(write);
+      }
+      await agentDefaultsSvc.setDefaults(companyId, values);
+    } catch (error) {
+      for (const write of moved.reverse()) {
+        await svc.update(write.agentId, { adapterConfig: write.previousConfig }, revision("agent_defaults_rollback")).catch((rollbackError) =>
+          logger.error({ err: rollbackError, agentId: write.agentId }, "agent defaults rollback failed"));
+      }
+      throw error;
+    }
+    for (const write of moved) {
+      await logActivity(db, {
+        companyId,
+        actorType: actor.actorType,
+        actorId: actor.actorId,
+        agentId: actor.agentId,
+        runId: actor.runId,
+        agentApiKeyId: actor.agentApiKeyId,
+        action: "agent.updated",
+        entityType: "agent",
+        entityId: write.agentId,
+        details: { changedTopLevelKeys: ["adapterConfig"], changedAdapterConfigKeys: write.appliedPaths, agentDefaults: true },
+      });
+    }
+    res.json({
+      values,
+      changedPaths: plan.changedPaths,
+      following: plan.following,
+      ownValues: plan.ownValues,
+      sessionKept: plan.sessionKept,
+    });
+  });
+
+  router.get("/companies/:companyId/agent-defaults/preset-usage", async (req, res) => {
+    const companyId = req.params.companyId as string;
+    assertBoard(req);
+    assertCompanyAccess(req, companyId);
+    res.json({ days: 7, rows: await agentDefaultsSvc.presetUsage(companyId, 7) });
+  });
+
+  router.get("/companies/:companyId/omp/settings", async (req, res) => {
+    const companyId = req.params.companyId as string;
+    assertBoard(req);
+    assertCompanyAccess(req, companyId);
+    try {
+      res.json({ settings: await listOmpSettingsCatalog() });
+    } catch (error) {
+      if (!(error instanceof OmpSettingsUnavailableError)) throw error;
+      res.status(503).json({ error: error.message });
     }
   });
 
@@ -4061,10 +4177,12 @@ export function agentRoutes(
       if (gateFailure) throw unprocessable(gateFailure);
     }
     const hiredAgentId = randomUUID();
-    const requestedAdapterConfig = applyCreateDefaultsByAdapterType(
+    const requestedAdapterConfig = withAgentDefaults(
       hireInput.adapterType,
-      rawHireAdapterConfig,
+      applyCreateDefaultsByAdapterType(hireInput.adapterType, rawHireAdapterConfig),
+      await agentDefaultsSvc.getDefaults(companyId),
     );
+    await assertValidOmpSettings(hireInput.adapterType, requestedAdapterConfig);
     assertExternalInstructionsAdmin(req, {
       id: hiredAgentId,
       companyId,
@@ -4359,10 +4477,12 @@ export function agentRoutes(
       if (gateFailure) throw unprocessable(gateFailure);
     }
     const agentId = randomUUID();
-    const requestedAdapterConfig = applyCreateDefaultsByAdapterType(
+    const requestedAdapterConfig = withAgentDefaults(
       createInput.adapterType,
-      rawCreateAdapterConfig,
+      applyCreateDefaultsByAdapterType(createInput.adapterType, rawCreateAdapterConfig),
+      await agentDefaultsSvc.getDefaults(companyId),
     );
+    await assertValidOmpSettings(createInput.adapterType, requestedAdapterConfig);
     assertExternalInstructionsAdmin(req, {
       id: agentId,
       companyId,
@@ -5252,6 +5372,7 @@ export function agentRoutes(
         requestedAdapterType,
         rawEffectiveAdapterConfig,
       );
+      await assertValidOmpSettings(requestedAdapterType, effectiveAdapterConfig);
       const normalizedEffectiveAdapterConfig = await normalizeMediatedAdapterConfigForPersistence({
         companyId: existing.companyId,
         adapterType: requestedAdapterType,

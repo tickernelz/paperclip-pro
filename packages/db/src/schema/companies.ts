@@ -23,6 +23,7 @@ export const companies = pgTable(
       .$type<InteractionResolverGovernance>()
       .notNull()
       .default({}),
+    agentDefaults: jsonb("agent_defaults").$type<Record<string, unknown>>().notNull().default({}),
     feedbackDataSharingEnabled: boolean("feedback_data_sharing_enabled")
       .notNull()
       .default(false),

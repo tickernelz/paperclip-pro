@@ -98,6 +98,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Input } from "@/components/ui/input";
 import { RunTranscriptView, type TranscriptMode } from "../components/transcript/RunTranscriptView";
 import { AgentToolsTab } from "./AgentToolsTab";
+import { AgentSetupTab } from "./AgentSetupTab";
 import { AgentChannelsPanel } from "../components/chat/AgentChannelsPanel";
 import {
   appendCapped,
@@ -1418,6 +1419,10 @@ export function AgentDetail() {
           skillNames={overviewSkillNames}
           agentRouteId={canonicalAgentRef}
         />
+      )}
+
+      {activeView === "setup" && resolvedCompanyId && (
+        <AgentSetupTab agent={agent} companyId={resolvedCompanyId} />
       )}
 
       {activeView === "instructions" && (

@@ -2229,6 +2229,35 @@ describe("effective run session config freshness", () => {
       }
     });
 
+    it("resumes an omp_local session when a named Model or Thinking choice rewrites its role models and default level", async () => {
+      const decision = await freshness({
+        adapterType: "omp_local",
+        first: ompConfig({ ompSettings: { "retry.maxRetries": 3 } }),
+        next: ompConfig({
+          model: "nutaraline/muse-spark-1.3",
+          smolModel: "nutaraline/muse-mini",
+          slowModel: "nutaraline/muse-spark-1.3",
+          planModel: "nutaraline/muse-spark-1.3",
+          stylePreset: "balanced",
+          fallbackMode: "automatic",
+          ompSettings: { "retry.maxRetries": 3, defaultThinkingLevel: "high" },
+        }),
+      });
+
+      expect(decision).toMatchObject({ reset: false, reasons: [], changedCategories: [] });
+    });
+
+    it("still resets an omp_local session when a pinned OMP setting outside model and thinking changes", async () => {
+      const decision = await freshness({
+        adapterType: "omp_local",
+        first: ompConfig({ ompSettings: { "retry.maxRetries": 3 } }),
+        next: ompConfig({ ompSettings: { "retry.maxRetries": 5 } }),
+      });
+
+      expect(decision.reset).toBe(true);
+      expect(decision.changedCategories).toEqual(["adapterConfig"]);
+    });
+
     it("resumes an omp_local session when a per-task model override changes", async () => {
       const decision = await freshness({
         adapterType: "omp_local",
@@ -2353,23 +2382,23 @@ describe("effective run session config freshness", () => {
       expect(decision).toMatchObject({ reset: false, reasons: [], changedCategories: ["runtimeSkills"] });
     });
 
-    it("still resets an omp_local session when a model-bearing setting changes alongside its instructions", async () => {
+    it("still resets an omp_local session when a session-defining setting changes alongside its instructions", async () => {
       const decision = await instructionsEdit({
         adapterType: "omp_local",
-        next: { smolModel: "vendor/smol" },
+        next: { noPty: true },
       });
 
       expect(decision.reset).toBe(true);
       expect(decision.changedCategories).toEqual(["adapterConfig", "instructions"]);
       expect(decision.reasons).toEqual([
-        "effective run configuration changed: adapter config, instructions (smolModel)",
+        "effective run configuration changed: adapter config, instructions (noPty)",
       ]);
     });
 
-    it("still resets an omp_local session when a model-bearing setting changes alongside its runtime skills", async () => {
+    it("still resets an omp_local session when a session-defining setting changes alongside its runtime skills", async () => {
       const decision = await runtimeSkillsEdit({
         adapterType: "omp_local",
-        next: { slowModel: "vendor/slow" },
+        next: { noPty: true },
       });
 
       expect(decision.reset).toBe(true);
@@ -2461,16 +2490,16 @@ describe("effective run session config freshness", () => {
         expect(decision).toMatchObject({ reset: false, reasons: [], changedCategories: ["adapter", "agentRuntimeConfig"] });
       });
 
-      it("still resets an omp_local session when a new config revision changes a model-bearing setting", async () => {
+      it("still resets an omp_local session when a new config revision changes a session-defining setting", async () => {
         const decision = await revisionEdit({
           adapterType: "omp_local",
-          next: { effectiveAdapterConfig: ompConfig({ smolModel: "vendor/smol" }) },
+          next: { effectiveAdapterConfig: ompConfig({ noPty: true }) },
         });
 
         expect(decision.reset).toBe(true);
         expect(decision.changedCategories).toEqual(["adapter", "adapterConfig"]);
         expect(decision.reasons).toEqual([
-          "effective run configuration changed: adapter, adapter config (smolModel)",
+          "effective run configuration changed: adapter, adapter config (noPty)",
         ]);
       });
 
@@ -2572,13 +2601,13 @@ describe("effective run session config freshness", () => {
       const decision = await freshness({
         adapterType: "omp_local",
         first: ompConfig(),
-        next: ompConfig({ smolModel: "vendor/smol" }),
+        next: ompConfig({ noPty: true }),
       });
 
       expect(decision.reset).toBe(true);
       expect(decision.changedCategories).toEqual(["adapterConfig"]);
       expect(decision.reasons).toEqual([
-        "effective run configuration changed: adapter config (smolModel)",
+        "effective run configuration changed: adapter config (noPty)",
       ]);
     });
 
@@ -2586,12 +2615,12 @@ describe("effective run session config freshness", () => {
       const decision = await freshness({
         adapterType: "omp_local",
         first: ompConfig(),
-        next: ompConfig({ smolModel: "vendor/smol", slowModel: "vendor/slow" }),
+        next: ompConfig({ noPty: true, noRules: true }),
       });
 
       expect(decision.reset).toBe(true);
       expect(decision.reasons).toEqual([
-        "effective run configuration changed: adapter config (slowModel, smolModel)",
+        "effective run configuration changed: adapter config (noPty, noRules)",
       ]);
     });
 
@@ -2602,7 +2631,7 @@ describe("effective run session config freshness", () => {
       });
       const next = await buildSessionConfigMetadata({
         adapterType: "omp_local",
-        effectiveAdapterConfig: ompConfig({ smolModel: "vendor/smol" }),
+        effectiveAdapterConfig: ompConfig({ noPty: true }),
       });
       const legacyParams = { ...sessionParamsWithConfigMetadata(base) };
       delete legacyParams.__paperclipAdapterConfigKeyFingerprints;
@@ -2625,7 +2654,7 @@ describe("effective run session config freshness", () => {
       const decision = await freshness({
         adapterType: "omp_local",
         first: ompConfig(),
-        next: ompConfig({ model: "nutaraline/muse-spark-1.3", smolModel: "vendor/smol" }),
+        next: ompConfig({ model: "nutaraline/muse-spark-1.3", noPty: true }),
       });
 
       expect(decision.reset).toBe(true);

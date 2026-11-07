@@ -92,6 +92,9 @@ import { Secrets } from "./pages/Secrets";
 import { CompanyImport } from "./pages/CompanyImport";
 import { DesignGuide } from "./pages/DesignGuide";
 import { InstanceFeatures } from "./pages/InstanceFeatures";
+import { AgentDefaults } from "./pages/AgentDefaults";
+import { OmpAllSettingsPage } from "./pages/OmpAllSettings";
+import { ModelsAndProviders } from "./pages/ModelsAndProviders";
 import { InstanceAdvanced } from "./pages/InstanceAdvanced";
 import { InstanceAccess } from "./pages/InstanceAccess";
 import { ProfileSettings } from "./pages/ProfileSettings";
@@ -150,6 +153,9 @@ function boardRoutes(combinedInboxTasksEnabled: boolean) {
       <Route path="companies" element={<Companies />} />
       <Route path="company/settings" element={<CompanySettings />} />
       <Route path="company/settings/connections" element={<CompanyConnections />} />
+      <Route path="company/settings/agent-defaults" element={<AgentDefaults />} />
+      <Route path="company/settings/agent-defaults/all" element={<OmpAllSettingsPage />} />
+      <Route path="company/settings/models" element={<ModelsAndProviders />} />
       <Route path="company/settings/environments" element={<Navigate to="/company/settings/instance/environments" replace />} />
       <Route path="company/settings/cloud-upstream" element={<Navigate to="/company/export" replace />} />
       <Route element={<HiddenSettingsPageGate pageKey="company.members" />}>

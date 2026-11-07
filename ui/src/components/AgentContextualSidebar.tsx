@@ -11,6 +11,7 @@ import {
   ReceiptText,
   Settings2,
   ShieldCheck,
+  SlidersHorizontal,
   Sparkles,
   Wrench,
 } from "lucide-react";
@@ -29,6 +30,7 @@ import {
 
 const localIcons = {
   overview: Sparkles,
+  setup: SlidersHorizontal,
   instructions: BookOpenText,
   skills: Library,
   runtime: Settings2,

@@ -1,6 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 import {
   ArrowLeft,
+  Bot,
+  Boxes,
   Cpu,
   Download,
   KeyRound,
@@ -135,6 +137,8 @@ export function CompanySettingsSidebar() {
                 end
               />
             ))}
+          <SidebarNavItem to="/company/settings/agent-defaults" label="Agent defaults" icon={Bot} />
+          <SidebarNavItem to="/company/settings/models" label="Models and providers" icon={Boxes} end />
           {showPage("company.secrets") && (
             <SidebarNavItem to="/company/settings/secrets" label="Secrets" icon={KeyRound} end />
           )}

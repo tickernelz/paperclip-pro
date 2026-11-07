@@ -4951,6 +4951,45 @@ registry.registerPath({
 
 registry.registerPath({
   method: "get",
+  path: "/api/companies/{companyId}/agent-defaults",
+  tags: ["agents"],
+  summary: "Read the company's OMP agent defaults",
+  request: { params: z.object({ companyId: z.string() }) },
+  responses: { 200: r.ok(), 401: r.unauthorized, 403: r.forbidden },
+});
+
+registry.registerPath({
+  method: "put",
+  path: "/api/companies/{companyId}/agent-defaults",
+  tags: ["agents"],
+  summary: "Save the company's OMP agent defaults and apply them to agents that follow them",
+  request: {
+    params: z.object({ companyId: z.string() }),
+    body: { content: { "application/json": { schema: z.object({ values: z.record(z.string(), z.unknown()) }) } } },
+  },
+  responses: { 200: r.ok(), 401: r.unauthorized, 403: r.forbidden, 422: r.unprocessable, 503: { description: "OMP is not reachable" } },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/companies/{companyId}/agent-defaults/preset-usage",
+  tags: ["agents"],
+  summary: "Runs, cost and duration per Style preset over the last 7 days",
+  request: { params: z.object({ companyId: z.string() }) },
+  responses: { 200: r.ok(), 401: r.unauthorized, 403: r.forbidden },
+});
+
+registry.registerPath({
+  method: "get",
+  path: "/api/companies/{companyId}/omp/settings",
+  tags: ["adapters"],
+  summary: "List the OMP settings an agent may pin, without credential values",
+  request: { params: z.object({ companyId: z.string() }) },
+  responses: { 200: r.ok(), 401: r.unauthorized, 403: r.forbidden, 503: { description: "OMP is not reachable" } },
+});
+
+registry.registerPath({
+  method: "get",
   path: "/api/companies/{companyId}/adapters/{type}/models",
   tags: ["adapters"],
   summary: "List models for an adapter type and runner provider",

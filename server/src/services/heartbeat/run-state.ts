@@ -1,13 +1,6 @@
 import { deriveTaskKey } from "./run-preparation.js";
 
-const MODEL_SWITCH_ADAPTER_CONFIG_KEYS = [
-  "model",
-  "fallbackModels",
-  "modelEfforts",
-  "thinking",
-  "thinkingEffort",
-  "effort",
-] as const;
+const MODEL_SWITCH_ADAPTER_CONFIG_KEYS = [...OMP_MODEL_SWITCH_ADAPTER_CONFIG_KEYS, ...OMP_SESSION_NEUTRAL_ADAPTER_CONFIG_KEYS];
 import { retryIdempotentDatabaseOperation } from "../../database-retry.js";
 import { jsonbRecordFields } from "../jsonb-projection.js";
 import { isConversation } from "../agent-conversations.js";
@@ -24,6 +17,9 @@ import {
 } from "drizzle-orm";
 import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
+  OMP_MODEL_SWITCH_ADAPTER_CONFIG_KEYS,
+  OMP_MODEL_SWITCH_OMP_SETTINGS,
+  OMP_SESSION_NEUTRAL_ADAPTER_CONFIG_KEYS,
   type BillingType,
   type CostStatus,
 } from "@tickernelz/paperclip-pro-shared";
@@ -1006,6 +1002,12 @@ export function createHeartbeatRunState(db: Db) {
     options?: { ignoreModelSwitchOnly?: boolean },
   ) {
     const modelSwitchKeys = sql.raw(`'{${MODEL_SWITCH_ADAPTER_CONFIG_KEYS.join(",")}}'::text[]`);
+    const modelSwitchSettings = sql.raw(`'{${OMP_MODEL_SWITCH_OMP_SETTINGS.join(",")}}'::text[]`);
+    const modelSwitchSettingPaths = sql.raw(OMP_MODEL_SWITCH_OMP_SETTINGS.map((key) => ` #- '{ompSettings,${key}}'`).join(""));
+    const sessionShape = (column: typeof agentConfigRevisions.afterConfig | typeof agentConfigRevisions.beforeConfig) => {
+      const config = sql`(coalesce(${column} -> 'adapterConfig', '{}'::jsonb) - ${modelSwitchKeys})`;
+      return sql`((${config}${modelSwitchSettingPaths}) - (case when (${config} -> 'ompSettings') - ${modelSwitchSettings} = '{}'::jsonb then 'ompSettings' else '' end))`;
+    };
     return db
       .select({
         id: agentConfigRevisions.id,
@@ -1020,8 +1022,7 @@ export function createHeartbeatRunState(db: Db) {
           options?.ignoreModelSwitchOnly
             ? sql`not (
               ${agentConfigRevisions.changedKeys} = '["adapterConfig"]'::jsonb
-              and coalesce(${agentConfigRevisions.afterConfig} -> 'adapterConfig', '{}'::jsonb) - ${modelSwitchKeys}
-                = coalesce(${agentConfigRevisions.beforeConfig} -> 'adapterConfig', '{}'::jsonb) - ${modelSwitchKeys}
+              and ${sessionShape(agentConfigRevisions.afterConfig)} = ${sessionShape(agentConfigRevisions.beforeConfig)}
             )`
             : undefined,
         ),

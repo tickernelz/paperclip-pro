@@ -1,0 +1,1 @@
+ALTER TABLE "companies" ADD COLUMN "agent_defaults" jsonb DEFAULT '{}'::jsonb NOT NULL;

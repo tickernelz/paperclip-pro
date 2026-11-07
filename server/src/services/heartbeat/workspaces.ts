@@ -30,6 +30,9 @@ import {
 } from "drizzle-orm";
 import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
+  OMP_MODEL_SWITCH_ADAPTER_CONFIG_KEYS,
+  OMP_MODEL_SWITCH_OMP_SETTINGS,
+  OMP_SESSION_NEUTRAL_ADAPTER_CONFIG_KEYS,
   type ExecutionWorkspace,
   type ExecutionWorkspaceConfig,
 } from "@tickernelz/paperclip-pro-shared";
@@ -1920,14 +1923,8 @@ type ResumeNeutralizedSessionConfigCategory =
 const SCHEDULING_AGENT_RUNTIME_CONFIG_KEYS = ["heartbeat"] as const;
 
 const MODEL_SWITCHING_RESUME_ADAPTER_TYPES = new Set(["omp_local"]);
-const MODEL_SWITCH_ADAPTER_CONFIG_KEYS = [
-  "model",
-  "fallbackModels",
-  "modelEfforts",
-  "thinking",
-  "thinkingEffort",
-  "effort",
-] as const;
+const MODEL_SWITCH_ADAPTER_CONFIG_KEYS = OMP_MODEL_SWITCH_ADAPTER_CONFIG_KEYS;
+const MODEL_SWITCH_OMP_SETTINGS = OMP_MODEL_SWITCH_OMP_SETTINGS;
 
 function adapterResumesAcrossModelSwitch(adapterType: string | null | undefined) {
   return adapterType != null && MODEL_SWITCHING_RESUME_ADAPTER_TYPES.has(adapterType);
@@ -1936,6 +1933,13 @@ function adapterResumesAcrossModelSwitch(adapterType: string | null | undefined)
 function withoutModelSwitchKeys(config: Record<string, unknown>) {
   const next = { ...config };
   for (const key of MODEL_SWITCH_ADAPTER_CONFIG_KEYS) delete next[key];
+  const ompSettings = parseObject(next.ompSettings);
+  if (Object.keys(ompSettings).length > 0) {
+    const kept = { ...ompSettings };
+    for (const key of MODEL_SWITCH_OMP_SETTINGS) delete kept[key];
+    if (Object.keys(kept).length > 0) next.ompSettings = kept;
+    else delete next.ompSettings;
+  }
   return next;
 }
 
@@ -1951,6 +1955,7 @@ function issueOverridesWithoutModelSwitchKeys(issueOverrides: unknown) {
 }
 
 const RESUME_NEUTRAL_ADAPTER_CONFIG_KEYS = [
+  ...OMP_SESSION_NEUTRAL_ADAPTER_CONFIG_KEYS,
   "instructionsBundleMode",
   "instructionsRootPath",
   "instructionsEntryFile",

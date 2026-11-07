@@ -75,6 +75,26 @@ Templates support variables like `{{agent.id}}`, `{{agent.name}}`, and run conte
 
 > **Note:** `bootstrapPromptTemplate` is deprecated and should not be used for new agents. Existing configs that use it will continue to work but should be migrated to the managed instructions bundle system.
 
+## 3.5 OMP agent defaults and Setup
+
+OMP agents are set with six named choices in two layers:
+
+- **Settings > Agent defaults** holds the company layer. Saving writes a changed default into every `omp_local` agent whose value still equals the previous default; agents with their own value keep it. New OMP agents start from these defaults.
+- **Agent > Setup** overrides the defaults for one agent. A row that differs from the default is marked "Changed from default" and has a Reset button.
+
+| Choice | Options | Keys written |
+|---|---|---|
+| Style | Balanced, Fast, Thorough | `stylePreset`, `thinking`, `advisor`, `prewalk`, `ompSettings.retry.maxRetries` |
+| Model | any model `omp models` reports | `model`, `smolModel`, `slowModel`, `planModel` (same provider) |
+| Thinking | Quick, Balanced, Deep, Max (low, medium, high, xhigh) | `thinking`, `modelEfforts`, `ompSettings.defaultThinkingLevel` |
+| Backup models | Automatic, Custom list | `fallbackMode`, `fallbackModels`, `ompSettings.retry.fallbackOn` |
+| Tools | Standard, Read only, Everything | `tools`, `approvalMode`, `noLsp`, `ompSettings.{bash,browser,web_search,github,ask}.enabled`, `ompSettings.tools.approval` |
+| Stop a run after | 30 min, 1 hour, 2 hours, No limit | `maxTime`, `timeoutSec` (`maxTime` + 60 s grace; No limit sets `timeoutSec: 0`) |
+
+`ompSettings` pins any other OMP setting for one agent; **All settings** lists them from `omp config list` with Essential and Changed filters. The map is merged into the per-run settings overlay, so precedence stays: OMP config < `PAPERCLIP_OMP_CONFIG_FILES` < run overlay (with `ompSettings`) < the agent's `configFiles` < CLI flags. Credential keys (`auth.*`, `secrets.*`, `*token`, `*apiKey`) and `task.maxRecursionDepth` are refused. Agent API keys cannot write `ompSettings`.
+
+Changing Model or Thinking keeps the agent's session; other choices start a new one on the next run.
+
 ## 4. Session resume behavior
 
 Paperclip stores session IDs for resumable adapters.

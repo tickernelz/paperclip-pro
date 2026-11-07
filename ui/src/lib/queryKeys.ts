@@ -227,6 +227,11 @@ export const queryKeys = {
     installed: (companyId: string) =>
       ["team-catalog", "installed", companyId] as const,
   },
+  agentDefaults: {
+    values: (companyId: string) => ["agent-defaults", companyId] as const,
+    presetUsage: (companyId: string) => ["agent-defaults", companyId, "preset-usage"] as const,
+    ompSettings: (companyId: string) => ["agent-defaults", companyId, "omp-settings"] as const,
+  },
   agents: {
     identity: (id: string) => ["agents", "identity", id] as const,
     list: (companyId: string) => ["agents", companyId] as const,
