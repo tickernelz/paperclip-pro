@@ -341,7 +341,7 @@ function findRawButtonFillIssues(content) {
   }));
 }
 
-const PACKAGE_CSS_IMPORT_RE = /^\s*import\s+["'](?![./]|@\/)([^"']+\.css)["']/gm;
+const PACKAGE_CSS_IMPORT_RE = /(?:^\s*import\s+(?:[^"'`;]*?\s+from\s+)?|\bimport\s*\(\s*)["'`](?![./]|@\/)([^"'`?]+\.css)(?:\?[^"'`]*)?["'`]/gm;
 const UNLAYERED_CSS_IMPORT_RE = /^\s*@import\s+(?:url\()?["'](?![./])(?!tailwindcss["'])([^"']+)["']\)?(?![^;]*\blayer\()[^;]*;/gm;
 
 function findVendorCssImportIssues() {

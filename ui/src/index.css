@@ -1,4 +1,4 @@
-@layer vendor, theme, base, utilities, layout, components, state;
+@layer vendor, theme, base, utilities, components, layout, state;
 
 @import "@mdxeditor/editor/style.css" layer(vendor);
 @import "./motion-tokens.css";
