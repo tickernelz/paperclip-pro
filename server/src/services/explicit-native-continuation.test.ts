@@ -157,7 +157,7 @@ const support = await getEmbeddedPostgresTestSupport();
     const fails = scenario === "failed";
     const protectedLease = scenario === "shared" || scenario === "retained";
     const f = await seed(), other = await seed();
-    await db.update(agents).set({ adapterType: "claude_local" }).where(eq(agents.id, f.agentId));
+    await db.update(agents).set({ adapterType: "omp_local" }).where(eq(agents.id, f.agentId));
     await db.delete(nativeRunFinalizations).where(eq(nativeRunFinalizations.runId, f.sourceRunId));
     await db.update(heartbeatRuns).set({ runtimeMode: "legacy", nativeIssueId: null, processPid: null })
       .where(eq(heartbeatRuns.id, f.sourceRunId));
@@ -212,7 +212,7 @@ const support = await getEmbeddedPostgresTestSupport();
   });
   it("a durable queue interrupt authorizes older legacy messages but still requires the provider to stop", async () => {
     const f = await seed();
-    await db.update(agents).set({ adapterType: "claude_local" }).where(eq(agents.id, f.agentId));
+    await db.update(agents).set({ adapterType: "omp_local" }).where(eq(agents.id, f.agentId));
     await db.delete(nativeRunFinalizations).where(eq(nativeRunFinalizations.runId, f.sourceRunId));
     await db.update(heartbeatRuns).set({ runtimeMode: "legacy", nativeIssueId: null,
       processPid: process.pid,
@@ -242,7 +242,7 @@ const support = await getEmbeddedPostgresTestSupport();
   });
   it("dispatches another user's queued legacy message using the consumed board interrupt receipt", async () => {
     const f = await seed();
-    await db.update(agents).set({ adapterType: "claude_local" }).where(eq(agents.id, f.agentId));
+    await db.update(agents).set({ adapterType: "omp_local" }).where(eq(agents.id, f.agentId));
     await db.delete(nativeRunFinalizations).where(eq(nativeRunFinalizations.runId, f.sourceRunId));
     await db.update(heartbeatRuns).set({ runtimeMode: "legacy", nativeIssueId: null })
       .where(eq(heartbeatRuns.id, f.sourceRunId));
@@ -292,7 +292,7 @@ const support = await getEmbeddedPostgresTestSupport();
   });
   it.each(["valid", "stale_retry_context", "wrong_actor", "wrong_run", "wrong_company", "discarded"])("verifies another author's queued Interrupt at execution setup: %s", async kind => {
     const f = await seed();
-    await db.update(agents).set({ adapterType: "claude_local" }).where(eq(agents.id, f.agentId));
+    await db.update(agents).set({ adapterType: "omp_local" }).where(eq(agents.id, f.agentId));
     await db.delete(nativeRunFinalizations).where(eq(nativeRunFinalizations.runId, f.sourceRunId));
     await db.update(heartbeatRuns).set({ runtimeMode: "legacy", nativeIssueId: null })
       .where(eq(heartbeatRuns.id, f.sourceRunId));
@@ -331,7 +331,7 @@ const support = await getEmbeddedPostgresTestSupport();
 
   it.each(["valid", "provider_cancel", "pending_tool", "unknown_cancel", "wrong_actor", "consumed", "discarded", "operator_stop", "already_delivered", "earlier_delivered", "unstarted_cancelled", "unstarted_cancelled_metadata", "foreign_queue"])("validates automatic saved-message delivery: %s", async kind => {
     const f = await seed();
-    await db.update(agents).set({ adapterType: "claude_local" }).where(eq(agents.id, f.agentId));
+    await db.update(agents).set({ adapterType: "omp_local" }).where(eq(agents.id, f.agentId));
     await db.delete(nativeRunFinalizations).where(eq(nativeRunFinalizations.runId, f.sourceRunId));
     await db.update(heartbeatRuns).set({ runtimeMode: "legacy", nativeIssueId: null,
       status: ["operator_stop", "provider_cancel", "pending_tool", "unknown_cancel"].includes(kind) ? "cancelled" : "failed",
@@ -453,7 +453,7 @@ const support = await getEmbeddedPostgresTestSupport();
     expect(explicitUserContinuation).not.toBeNull();
     const [receipt] = await db.select().from(issueRecoveryActions)
       .where(eq(issueRecoveryActions.sourceIssueId, f.issueId));
-    await db.update(agents).set({ adapterType: "claude_local" }).where(eq(agents.id, f.agentId));
+    await db.update(agents).set({ adapterType: "omp_local" }).where(eq(agents.id, f.agentId));
     const now = new Date();
     const [parent] = await db.update(heartbeatRuns).set({ runtimeMode: "legacy", status: "timed_out",
       errorCode: "timeout", startedAt: now, finishedAt: now,
@@ -671,7 +671,7 @@ const support = await getEmbeddedPostgresTestSupport();
 
   it("delivers saved messages once after provider cancellation, preserving source history", async () => {
     const f = await seed();
-    await db.update(agents).set({ adapterType: "claude_local" }).where(eq(agents.id, f.agentId));
+    await db.update(agents).set({ adapterType: "omp_local" }).where(eq(agents.id, f.agentId));
     // Hold agent capacity so the test observes durable admission without launching a provider.
     await db.insert(heartbeatRuns).values({ companyId: f.companyId, agentId: f.agentId, status: "running" });
     await db.delete(nativeRunFinalizations).where(eq(nativeRunFinalizations.runId, f.sourceRunId));
@@ -1188,7 +1188,7 @@ const support = await getEmbeddedPostgresTestSupport();
 
   it.each(["issue_commented", "retry_failed_run"])("does not bypass an unsafe restore hold through %s", async reason => {
     const f = await seed();
-    await db.update(agents).set({ adapterType: "grok_local" }).where(eq(agents.id, f.agentId));
+    await db.update(agents).set({ adapterType: "omp_local" }).where(eq(agents.id, f.agentId));
     await db.update(heartbeatRuns).set({ runtimeMode: "legacy", processPid: null,
       errorCode: "workspace_restore_failed", resultJson: { workspaceRestoreFailure: "restore_unsafe_archive", conversationContinuation: "continue_conversation_v1" },
     }).where(eq(heartbeatRuns.id, f.sourceRunId));
@@ -1206,7 +1206,7 @@ const support = await getEmbeddedPostgresTestSupport();
 
   it.each(["issue_commented", "retry_failed_run"])("continues a legacy Daytona run lost before adapter.invoke: %s", async reason => {
     const f = await seed();
-    await db.update(agents).set({ adapterType: "claude_local" }).where(eq(agents.id, f.agentId));
+    await db.update(agents).set({ adapterType: "omp_local" }).where(eq(agents.id, f.agentId));
     await db.update(heartbeatRuns).set({ runtimeMode: "legacy", processPid: null,
       errorCode: "process_lost" }).where(eq(heartbeatRuns.id, f.sourceRunId));
     await db.delete(nativeRunFinalizations).where(eq(nativeRunFinalizations.runId, f.sourceRunId));
@@ -1231,7 +1231,7 @@ const support = await getEmbeddedPostgresTestSupport();
 
   it.each(["claim", "invocation"])("does not convert a known process run after switching the agent to Claude: %s", async evidence => {
     const f = await seed();
-    await db.update(agents).set({ adapterType: "claude_local" }).where(eq(agents.id, f.agentId));
+    await db.update(agents).set({ adapterType: "omp_local" }).where(eq(agents.id, f.agentId));
     await db.update(heartbeatRuns).set({ runtimeMode: "legacy", errorCode: "process_lost",
       runnerProfileJson: evidence === "claim" ? { adapterDispatch: { adapterType: "process" } } : null,
     }).where(eq(heartbeatRuns.id, f.sourceRunId));
@@ -1354,12 +1354,12 @@ const support = await getEmbeddedPostgresTestSupport();
 
   it.each([true, false])("acknowledges a legacy remote Stop only after confirmed lease cleanup: %s", async confirmed => {
     const f = await seed();
-    await db.update(agents).set({ adapterType: "claude_local" }).where(eq(agents.id, f.agentId));
+    await db.update(agents).set({ adapterType: "omp_local" }).where(eq(agents.id, f.agentId));
     await db.update(heartbeatRuns).set({ runtimeMode: "legacy", status: "cancelled", processPid: null,
       resultJson: { executionCancellation: { state: "requested" } },
     }).where(eq(heartbeatRuns.id, f.sourceRunId));
     await db.insert(heartbeatRunEvents).values({ companyId: f.companyId, runId: f.sourceRunId,
-      agentId: f.agentId, seq: 1, eventType: "adapter.invoke", payload: { adapterType: "claude_local" } });
+      agentId: f.agentId, seq: 1, eventType: "adapter.invoke", payload: { adapterType: "omp_local" } });
     await db.update(issueRecoveryActions).set({ cause: "legacy_execution_requires_reconciliation" })
       .where(eq(issueRecoveryActions.sourceIssueId, f.issueId));
     const [environment] = await db.insert(environments).values({ name: `Remote ${f.sourceRunId}`, driver: "sandbox" }).returning();
@@ -1408,14 +1408,14 @@ const support = await getEmbeddedPostgresTestSupport();
   ])("resumes a user message after confirmed cleanup: %j", async ({ runtime, retry }) => {
     const f = await seed();
     if (runtime.startsWith("legacy")) {
-      await db.update(agents).set({ adapterType: "claude_local" }).where(eq(agents.id, f.agentId));
+      await db.update(agents).set({ adapterType: "omp_local" }).where(eq(agents.id, f.agentId));
       await db.update(heartbeatRuns).set({ runtimeMode: "legacy", status: "cancelled", processPid: null,
         resultJson: { executionCancellation: { state: "requested" } } }).where(eq(heartbeatRuns.id, f.sourceRunId));
       if (runtime === "legacy_startup") {
         await db.update(heartbeatRuns).set({ status: "failed", resultJson: null, errorCode: "process_lost" })
           .where(eq(heartbeatRuns.id, f.sourceRunId));
       } else await db.insert(heartbeatRunEvents).values({ companyId: f.companyId, runId: f.sourceRunId,
-        agentId: f.agentId, seq: 1, eventType: "adapter.invoke", payload: { adapterType: "claude_local" } });
+        agentId: f.agentId, seq: 1, eventType: "adapter.invoke", payload: { adapterType: "omp_local" } });
       await db.update(issueRecoveryActions).set({ cause: "legacy_execution_requires_reconciliation" })
         .where(eq(issueRecoveryActions.sourceIssueId, f.issueId));
     }

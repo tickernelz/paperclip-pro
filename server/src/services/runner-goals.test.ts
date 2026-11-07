@@ -81,7 +81,7 @@ describeEmbeddedPostgres("runner goal service", () => {
     return { companyId, agentId, issueId };
   }
 
-  it.each(["codex_local", "claude_local"])("does not convert %s into another execution path for goals", async (adapterType) => {
+  it.each(["process"])("does not convert %s into another execution path for goals", async (adapterType) => {
     const binding = await seed();
     await db.update(agents).set({ adapterType, adapterConfig: { engine: "acp", mode: "persistent" } });
     const enqueueOfflineControl = vi.fn(async () => {});
@@ -89,7 +89,7 @@ describeEmbeddedPostgres("runner goal service", () => {
     const projection = await service.projection(binding.companyId, binding.issueId);
     expect(projection?.capability).toMatchObject({
       availability: "unsupported",
-      reasonCode: "direct_adapter_goal_controller_unavailable",
+      reasonCode: "persistent_session_goal_extension_required",
       actions: [],
     });
     await expect(service.act(binding.companyId, binding.issueId, {

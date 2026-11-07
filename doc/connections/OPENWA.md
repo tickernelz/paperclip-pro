@@ -418,28 +418,16 @@ The runtime half of `read_only` depends on the adapter's
 `instruction_only`, `server/src/routes/adapters.ts:191`). With `instruction_only`
 the Paperclip seams above still apply, but the adapter's own file-writing tools
 are not blocked and the run relies on the agent following its instructions.
-`bash` stays available in every `read_only` run and is instruction-bound except
-under Codex's read-only sandbox (accepted risk D32).
+`bash` stays available in every `read_only` run and is instruction-bound
+(accepted risk D32).
 
 | Adapter type | Read-only | Mechanism | Source |
 | --- | --- | --- | --- |
 | `omp_local` | enforced | Per-run tool-guard extension blocks `edit`, `apply_patch`, `ast_edit`, `write` (except `xd://` devices), memory/skill/agent tools, LSP applies, non-read `github` ops, `hub` send and isolated tasks; `bash` kept | `packages/adapters/omp-local/src/server/tool-guard.ts:14-18`, `packages/adapters/omp-local/src/server/index.ts:104` |
-| `codex_local` (CLI engine) | enforced | `--sandbox read-only -c approval_policy="never"`; configured bypass ignored and widening `extraArgs` removed; `bash` confined by the sandbox | `packages/adapters/codex-local/src/server/codex-args.ts:13`, `:82`, `server/src/adapters/registry.ts:355` |
-| `codex_local` (ACP engine) | enforced | ACP session mode `read-only` plus a permission hook that allows only read/search/fetch/think kinds and MCP tool approvals | `packages/adapter-utils/src/acpx-engine/execute.ts:1478-1495` |
-| `claude_local` (CLI engine) | enforced | `--disallowedTools Edit,Write,MultiEdit,NotebookEdit`; Bash kept | `packages/adapters/claude-local/src/server/permissions.ts:3`, `:21`, `server/src/adapters/registry.ts:279` |
-| `claude_local` (ACP engine) | enforced | ACP session mode `default` plus a permission hook that rejects edit/delete/move kinds and the same four tools | `packages/adapter-utils/src/acpx-engine/execute.ts:1475-1493` |
-| `pi_local` | enforced | `--tools read,bash,grep,find,ls`; operator `--tools`/`-t` removed | `packages/adapters/pi-local/src/server/execute.ts:233-236`, `server/src/adapters/registry.ts:848` |
-| `gemini_local` | instruction only | On the ACP engine the shared hook still rejects edit/delete/move requests | `server/src/adapters/registry.ts:730` |
-| `kimi_local` | instruction only | Same ACP note as Gemini | `server/src/adapters/registry.ts:784` |
-| `opencode_local` | instruction only | | `server/src/adapters/registry.ts:827` |
-| `cursor` | instruction only | | `server/src/adapters/registry.ts:686` |
-| `grok_local` | instruction only | | `server/src/adapters/registry.ts:751` |
-| `hermes_local` | instruction only | | `packages/adapters/hermes/src/index.ts:166` |
 | `process` | instruction only | Arbitrary command | `server/src/adapters/process/index.ts:12` |
 
 Adapters without signed run tokens cannot be bound to OpenWA:
-`cursor_cloud`, `paperclip_runner`, `hermes_gateway`, `openclaw_gateway` and the
-retired `acpx_local` (`supportsLocalAgentJwt: false`). Switching the endpoint's agent
+`paperclip_runner` and every retired adapter (`supportsLocalAgentJwt: false`). Switching the endpoint's agent
 to such an adapter puts the endpoint in Attention and stops admission.
 
 ## Approvals and grants

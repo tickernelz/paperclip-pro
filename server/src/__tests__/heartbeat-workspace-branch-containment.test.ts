@@ -375,7 +375,7 @@ async function seedBranchContainmentRun(
     name: "CodexCoder",
     role: "engineer",
     status: "idle",
-    adapterType: "codex_local",
+    adapterType: "omp_local",
     adapterConfig: {},
     runtimeConfig: {
       heartbeat: {
@@ -978,7 +978,7 @@ describeEmbeddedPostgres("heartbeat workspace branch containment", () => {
       { id: oldWorkspaceId, companyId, projectId, name: "Original", cwd: owner, repoUrl: kind === "unproven" ? null : repoUrl, isPrimary: true },
       { id: newWorkspaceId, companyId, projectId, name: "Replacement", cwd: replacement, repoUrl: replacementUrl, isPrimary: false },
     ]);
-    await db.insert(agents).values({ id: agentId, companyId, name: "Source tester", role: "engineer", status: "idle", adapterType: "codex_local",
+    await db.insert(agents).values({ id: agentId, companyId, name: "Source tester", role: "engineer", status: "idle", adapterType: "omp_local",
       adapterConfig: {}, runtimeConfig: { heartbeat: { wakeOnDemand: true, maxConcurrentRuns: 1 } }, permissions: {} });
     await db.insert(executionWorkspaces).values({ id: executionWorkspaceId, companyId, projectId, projectWorkspaceId: oldWorkspaceId,
       mode: "isolated_workspace", strategyType: "git_worktree", name: branch, status: "active", cwd: worktree, providerRef: worktree,
@@ -1079,7 +1079,7 @@ describeEmbeddedPostgres("heartbeat workspace branch containment", () => {
       name: "CodexCoder",
       role: "engineer",
       status: "idle",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: {},
       runtimeConfig: {
         heartbeat: {

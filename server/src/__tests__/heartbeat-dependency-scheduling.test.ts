@@ -202,7 +202,7 @@ describeEmbeddedPostgres("heartbeat dependency-aware queued run selection", () =
       issuePrefix: `N${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false, defaultResponsibleUserId: "responsible-user" });
     await db.insert(agents).values({ id: agentId, companyId, name: "Parent", role: "engineer",
-      status: "active", adapterType: "codex_local", adapterConfig: {}, permissions: {},
+      status: "active", adapterType: "omp_local", adapterConfig: {}, permissions: {},
       runtimeConfig: { heartbeat: { wakeOnDemand: true, maxConcurrentRuns: 1 } } });
     await db.insert(issues).values([
       { id: issueId, companyId, title: "Deliver the revised ZIP", status: "todo",
@@ -273,7 +273,7 @@ describeEmbeddedPostgres("heartbeat dependency-aware queued run selection", () =
       name: "NativeWakeRunner",
       role: "engineer",
       status: "active",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: {},
       runtimeConfig: { heartbeat: { wakeOnDemand: true, maxConcurrentRuns: 1 } },
       permissions: {},
@@ -371,7 +371,7 @@ describeEmbeddedPostgres("heartbeat dependency-aware queued run selection", () =
       issuePrefix: `F${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
       requireBoardApprovalForNewAgents: false, defaultResponsibleUserId: "responsible-user" });
     await db.insert(agents).values({ id: agentId, companyId, name: "FanInParent", role: "engineer",
-      status: "active", adapterType: "codex_local", adapterConfig: {}, permissions: {},
+      status: "active", adapterType: "omp_local", adapterConfig: {}, permissions: {},
       runtimeConfig: { heartbeat: { wakeOnDemand: true, maxConcurrentRuns: 1 } } });
     await db.insert(issues).values([
       { id: issueId, companyId, title: "Coordinate the children", status: "blocked",
@@ -424,7 +424,7 @@ describeEmbeddedPostgres("heartbeat dependency-aware queued run selection", () =
   it.each(["onboarding", "ordinary", "cancelled"])("dispatches only a verified completed onboarding report: %s", async kind => {
     const companyId = randomUUID(), agentId = randomUUID(), issueId = randomUUID(), childId = randomUUID();
     await db.insert(companies).values({ id: companyId, name: "Completion", issuePrefix: `R${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}` });
-    await db.insert(agents).values({ id: agentId, companyId, name: "Lead", role: "engineer", status: "active", adapterType: "codex_local",
+    await db.insert(agents).values({ id: agentId, companyId, name: "Lead", role: "engineer", status: "active", adapterType: "omp_local",
       adapterConfig: {}, runtimeConfig: { heartbeat: { wakeOnDemand: true, maxConcurrentRuns: 1 } }, permissions: {} });
     await db.insert(issues).values({ id: issueId, companyId, title: "Parent", status: kind === "cancelled" ? "cancelled" : "done",
       originKind: kind === "ordinary" ? "manual" : "onboarding_first_task", assigneeAgentId: agentId, responsibleUserId: "responsible-user" });
@@ -466,7 +466,7 @@ describeEmbeddedPostgres("heartbeat dependency-aware queued run selection", () =
       name: "NativeWakeRunner",
       role: "engineer",
       status: "active",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: {},
       runtimeConfig: { heartbeat: { wakeOnDemand: true, maxConcurrentRuns: 1 } },
       permissions: {},
@@ -562,7 +562,7 @@ describeEmbeddedPostgres("heartbeat dependency-aware queued run selection", () =
       name: "CodexCoder",
       role: "engineer",
       status: "active",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: {},
       runtimeConfig: {
         heartbeat: {
@@ -815,7 +815,7 @@ describeEmbeddedPostgres("heartbeat dependency-aware queued run selection", () =
       });
       await db.insert(agents).values({
         id: agentId, companyId, name: "AnswerReader", role: "engineer", status: "active",
-        adapterType: "codex_local", adapterConfig: {},
+        adapterType: "omp_local", adapterConfig: {},
         runtimeConfig: { heartbeat: { wakeOnDemand: true, maxConcurrentRuns: 1 } }, permissions: {},
       });
       await db.insert(issues).values([
@@ -894,7 +894,7 @@ describeEmbeddedPostgres("heartbeat dependency-aware queued run selection", () =
       name: "CodexCoder",
       role: "engineer",
       status: "active",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: {},
       runtimeConfig: {
         heartbeat: {
@@ -1027,7 +1027,7 @@ describeEmbeddedPostgres("heartbeat dependency-aware queued run selection", () =
       name: "CodexCoder",
       role: "engineer",
       status: "active",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: {},
       runtimeConfig: {
         heartbeat: {
@@ -1164,7 +1164,7 @@ describeEmbeddedPostgres("heartbeat dependency-aware queued run selection", () =
       name: "QAChecker",
       role: "qa",
       status: "active",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: {},
       runtimeConfig: {
         heartbeat: {
@@ -1364,7 +1364,7 @@ describeEmbeddedPostgres("heartbeat dependency-aware queued run selection", () =
       name: "SecurityEngineer",
       role: "engineer",
       status: "active",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: {},
       runtimeConfig: {
         heartbeat: {
@@ -1496,7 +1496,7 @@ describeEmbeddedPostgres("heartbeat dependency-aware queued run selection", () =
       name: "SecurityEngineer",
       role: "engineer",
       status: "active",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: {},
       runtimeConfig: {
         heartbeat: {
@@ -1584,7 +1584,7 @@ describeEmbeddedPostgres("heartbeat dependency-aware queued run selection", () =
       name: "BlockedRetryRunner",
       role: "engineer",
       status: "active",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: {},
       runtimeConfig: { heartbeat: { wakeOnDemand: true, maxConcurrentRuns: 1 } },
       permissions: {},
@@ -1669,7 +1669,7 @@ describeEmbeddedPostgres("heartbeat dependency-aware queued run selection", () =
       name: "AdmittedRetryRunner",
       role: "engineer",
       status: "active",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: {},
       runtimeConfig: { heartbeat: { wakeOnDemand: true, maxConcurrentRuns: 1 } },
       permissions: {},

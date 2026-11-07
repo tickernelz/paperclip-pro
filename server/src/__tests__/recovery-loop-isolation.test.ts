@@ -101,7 +101,7 @@ describeEmbeddedPostgres("recovery loop per-candidate isolation", () => {
       name: "Coder",
       role: "engineer",
       status: "idle",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: {},
       runtimeConfig: {},
       permissions: {},

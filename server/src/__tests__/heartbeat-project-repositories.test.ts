@@ -75,7 +75,7 @@ suite("task project repository provisioning", () => {
     }
     await db.insert(environments).values({ id: environmentId, name: "Email sandbox", driver: "sandbox", status: "active", config: { provider: "fake", image: "fake:test" } });
     await db.insert(agents).values({
-      id: agentId, companyId, name: "Email agent", role: "engineer", status: "idle", adapterType: "codex_local",
+      id: agentId, companyId, name: "Email agent", role: "engineer", status: "idle", adapterType: "omp_local",
       defaultEnvironmentId: environmentId, adapterConfig: {}, runtimeConfig: {},
       permissions: { trustPreset: "low_trust_review", authorizationPolicy: {
         trustPreset: "low_trust_review", trustBoundary: { mode: "low_trust_review", companyId, projectIds: [projectId, referencedProjectId] },
@@ -163,7 +163,7 @@ suite("task project repository provisioning", () => {
         id: randomUUID(), companyId, projectId, name: "Research repository", sourceType: "local_path", cwd: source, isPrimary: true,
       });
     }
-    await db.insert(agents).values({ id: agentId, companyId, name: "Researcher", role: "engineer", status: "idle", adapterType: "codex_local", adapterConfig: {}, runtimeConfig: {}, permissions: {} });
+    await db.insert(agents).values({ id: agentId, companyId, name: "Researcher", role: "engineer", status: "idle", adapterType: "omp_local", adapterConfig: {}, runtimeConfig: {}, permissions: {} });
     await db.insert(issues).values({
       id: issueId, companyId, projectId, title: "Write a report", status: "todo", assigneeAgentId: agentId,
       executionWorkspaceSettings: explicitIsolation === "issue" ? { mode: "isolated_workspace" } : null,
@@ -217,7 +217,7 @@ suite("task project repository provisioning", () => {
       { id: randomUUID(), companyId, projectId, name: "Anchor", sourceType: "local_path", cwd: source, isPrimary: true, createdAt: new Date(Date.now() - 1000) },
       { id: randomUUID(), companyId, projectId, name: "Source copy", sourceType: "git_repo", repoUrl: pathToFileURL(source).href, cwd: source, isPrimary: false },
     ]);
-    await db.insert(agents).values({ id: agentId, companyId, name: "Test", role: "engineer", status: "idle", adapterType: "codex_local", adapterConfig: {}, runtimeConfig: {}, permissions: {} });
+    await db.insert(agents).values({ id: agentId, companyId, name: "Test", role: "engineer", status: "idle", adapterType: "omp_local", adapterConfig: {}, runtimeConfig: {}, permissions: {} });
     await db.insert(issues).values({ id: issueId, companyId, projectId, title: "Recover startup and use existing work", status: "todo", assigneeAgentId: agentId });
     let inject = true;
     const canonicalSource = await realpath(source);
@@ -315,7 +315,7 @@ suite("task project repository provisioning", () => {
     await db.insert(companies).values({ id: companyId, name: "Repo test", issuePrefix: `R${companyId.slice(0, 6)}`, defaultResponsibleUserId: "responsible-user" });
     await db.insert(projects).values({ id: projectId, companyId, name: "Multi-repo", status: "in_progress" });
     await db.insert(projectWorkspaces).values(repositoryRows);
-    await db.insert(agents).values({ id: agentId, companyId, name: "Test", role: "engineer", status: "idle", adapterType: "codex_local", adapterConfig: {}, runtimeConfig: {}, permissions: {} });
+    await db.insert(agents).values({ id: agentId, companyId, name: "Test", role: "engineer", status: "idle", adapterType: "omp_local", adapterConfig: {}, runtimeConfig: {}, permissions: {} });
     await db.insert(issues).values({ id: issueId, companyId, projectId, title: "Use project repositories", status: "todo", assigneeAgentId: agentId });
     const run = await heartbeat.wakeup(agentId, { source: "on_demand", triggerDetail: "manual", contextSnapshot: { issueId, projectId } });
     expect(run).not.toBeNull();

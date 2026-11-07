@@ -3,7 +3,7 @@
 - Characterized: 2026-08-12
 - Claude Code: `2.1.205`
 - Environment: Daytona sandbox (Ubuntu, kernel 6.8), headless, no browser.
-- Intended repository path: `packages/adapters/claude-local/src/server/__fixtures__/setup-token-success.md`
+- Intended repository path: `server/src/services/ai-providers/claude/__fixtures__/setup-token-success.md`
 - Safety: no real authorization URL, browser code, or token is recorded here. Every
   secret is replaced by a `<REDACTED_*>` placeholder. The raw PTY capture that
   produced this document was written only to a sandbox-local file and shredded

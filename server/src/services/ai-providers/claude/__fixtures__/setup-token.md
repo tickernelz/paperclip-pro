@@ -2,7 +2,7 @@
 
 - Characterized: 2026-08-11
 - Claude Code: `2.1.205`
-- Intended repository path: `packages/adapters/claude-local/src/server/__fixtures__/setup-token.md`
+- Intended repository path: `server/src/services/ai-providers/claude/__fixtures__/setup-token.md`
 - Safety: no real authorization URL, browser code, or token is recorded here.
 
 ## Pipe stdio
