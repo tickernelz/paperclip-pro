@@ -1106,6 +1106,63 @@ describe("agent routes adapter validation", () => {
     expect(res.status, JSON.stringify(res.body)).toBe(200);
     expect(mockAgentService.update).toHaveBeenCalledOnce();
   });
+
+  it("refuses to create or hire an agent on a retired adapter", async () => {
+    const app = await createApp();
+    for (const endpoint of ["agents", "agent-hires"]) {
+      const res = await requestApp(app, (baseUrl) =>
+        request(baseUrl)
+          .post(`/api/companies/company-1/${endpoint}`)
+          .send({ name: "Old Claude", role: "engineer", adapterType: "claude_local", adapterConfig: {} }),
+      );
+      expect(res.status, `${endpoint}: ${JSON.stringify(res.body)}`).toBe(422);
+      expect(res.body.details).toMatchObject({ code: "adapter_retired" });
+    }
+    expect(mockAgentService.create).not.toHaveBeenCalled();
+  });
+
+  it("refuses to switch an omp_local agent onto a retired adapter", async () => {
+    mockAgentService.getById.mockResolvedValue({
+      ...(await mockAgentService.getById()),
+      adapterType: "omp_local",
+      adapterConfig: {},
+    });
+    const app = await createApp();
+    const res = await requestApp(app, (baseUrl) =>
+      request(baseUrl)
+        .patch("/api/agents/11111111-1111-4111-8111-111111111111")
+        .send({ adapterType: "claude_local", adapterConfig: {} }),
+    );
+
+    expect(res.status, JSON.stringify(res.body)).toBe(422);
+    expect(res.body.details).toMatchObject({ code: "adapter_retired" });
+    expect(mockAgentService.update).not.toHaveBeenCalled();
+  });
+
+  it("moves an agent off a retired adapter onto omp_local and makes it invokable again", async () => {
+    const retired = {
+      ...(await mockAgentService.getById()),
+      adapterType: "claude_local",
+      adapterConfig: { model: "claude-sonnet-5" },
+    };
+    mockAgentService.getById.mockResolvedValue(retired);
+    const app = await createApp();
+    const { evaluateAgentInvokability } = await import("../services/agent-invokability.js");
+    expect(evaluateAgentInvokability(retired, [retired])).toMatchObject({
+      invokable: false,
+      reason: "adapter_retired",
+    });
+
+    const res = await requestApp(app, (baseUrl) =>
+      request(baseUrl)
+        .patch("/api/agents/11111111-1111-4111-8111-111111111111")
+        .send({ adapterType: "omp_local", adapterConfig: {} }),
+    );
+
+    expect(res.status, JSON.stringify(res.body)).toBe(200);
+    expect(res.body.adapterType).toBe("omp_local");
+    expect(evaluateAgentInvokability(res.body, [res.body])).toEqual({ invokable: true });
+  });
 });
 
 vi.mock("../services/agent-lifecycle.js", async (importOriginal) => {
