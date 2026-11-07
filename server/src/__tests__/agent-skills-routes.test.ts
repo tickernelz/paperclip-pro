@@ -729,7 +729,7 @@ describe("agent skill routes", () => {
       }));
 
     expect(res.status, JSON.stringify(res.body)).toBe(400);
-    expect(res.body.error).toContain("Beta skills experimental setting");
+    expect(res.body.error).toContain("Beta skills to be turned on in Settings > Features");
     expect(mockAgentService.update).not.toHaveBeenCalled();
   });
 
@@ -796,7 +796,7 @@ describe("agent skill routes", () => {
       }));
 
     expect(res.status, JSON.stringify(res.body)).toBe(400);
-    expect(res.body.error).toContain("Beta skills experimental setting");
+    expect(res.body.error).toContain("Beta skills to be turned on in Settings > Features");
     expect(mockAgentService.update).not.toHaveBeenCalled();
   });
 
@@ -1098,7 +1098,7 @@ describe("agent skill routes", () => {
       }));
 
     expect(res.status, JSON.stringify(res.body)).toBe(400);
-    expect(res.body.error).toContain("Beta skills experimental setting");
+    expect(res.body.error).toContain("Beta skills to be turned on in Settings > Features");
     expect(mockAgentService.create).not.toHaveBeenCalled();
   });
 
@@ -1525,7 +1525,7 @@ describe("agent skill routes", () => {
       });
 
     expect(res.status, JSON.stringify(res.body)).toBe(400);
-    expect(res.body.error).toContain("Beta skills experimental setting");
+    expect(res.body.error).toContain("Beta skills to be turned on in Settings > Features");
     expect(mockAgentService.create).not.toHaveBeenCalled();
     expect(mockApprovalService.create).not.toHaveBeenCalled();
   });

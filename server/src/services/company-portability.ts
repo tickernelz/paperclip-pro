@@ -5207,12 +5207,12 @@ export function companyPortabilityService(db: Db, storage?: StorageService) {
           const config = input.adapterOverrides?.[agent.slug]?.adapterConfig ?? agent.adapterConfig;
           if (config.provider === "openai_dot") {
             if (experimental.enableOpenAiDot !== true) throw unprocessable(
-              "OpenAI Dot is experimental and disabled on this instance.",
+              "OpenAI Dot is turned off on this instance. Turn it on in Settings > Features.",
               { code: "paperclip_runner_dot_disabled" },
             );
           } else if (experimental.enableNativeRunner !== true) {
             throw unprocessable(
-              "Paperclip Runner is experimental and disabled on this instance.",
+              "The native runner is turned off on this instance. Turn it on in Settings > Advanced.",
               { code: "paperclip_runner_rollout_disabled" },
             );
           }

@@ -36,7 +36,7 @@ export function dotInvitationService(db: Db) {
       return agent ? describe(agent) : null;
     },
     async create(companyId: string, operatorId: string) {
-      if (!await dotRunnerBroker(db).enabled()) throw unprocessable("Enable OpenAI Dot and Assistant connections (MCP) in experimental settings.");
+      if (!await dotRunnerBroker(db).enabled()) throw unprocessable("Turn on OpenAI Dot and Assistant connections in Settings > Features.");
       const database = db;
       const lockKey = `paperclip:dot-invitation:${companyId}:${operatorId}`;
       return withDedicatedDbConnection(db, lockDb => lockDb.transaction(async lock => {

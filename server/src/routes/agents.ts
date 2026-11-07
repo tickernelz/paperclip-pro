@@ -1831,12 +1831,12 @@ export function agentRoutes(
       const experimental = await instanceSettings.getExperimental();
       if (asRecord(config)?.provider === "openai_dot") {
         if (experimental.enableOpenAiDot !== true) throw unprocessable(
-          "OpenAI Dot is experimental and disabled on this instance.",
+          "OpenAI Dot is turned off on this instance. Turn it on in Settings > Features.",
           { code: "paperclip_runner_dot_disabled" },
         );
       } else if (experimental.enableNativeRunner !== true) {
         throw unprocessable(
-          "Paperclip Runner is experimental and disabled on this instance.",
+          "The native runner is turned off on this instance. Turn it on in Settings > Advanced.",
           { code: "paperclip_runner_rollout_disabled" },
         );
       }
@@ -2651,7 +2651,7 @@ export function agentRoutes(
     )) {
       const betaSkillsEnabled = (await instanceSettings.getExperimental()).enableBetaSkills === true;
       if (!betaSkillsEnabled) {
-        throw badRequest("Beta skill version pins require the Beta skills experimental setting to be enabled.");
+        throw badRequest("Beta skill version pins require Beta skills to be turned on in Settings > Features.");
       }
     }
 
@@ -3033,7 +3033,7 @@ export function agentRoutes(
         }
         const controllerAvailable = !managedOnly || environment?.driver === "sandbox";
         const checks: AdapterEnvironmentCheck[] = [
-          { code: "dot_enabled", level: dotEnabled ? "info" : "error", message: dotEnabled ? "Dot is enabled." : "Enable OpenAI Dot and Assistant connections (MCP) in experimental settings." },
+          { code: "dot_enabled", level: dotEnabled ? "info" : "error", message: dotEnabled ? "Dot is enabled." : "Turn on OpenAI Dot and Assistant connections in Settings > Features." },
           { code: "dot_public_endpoint", level: resource?.origin.startsWith("https://") ? "info" : "error", message: resource?.origin.startsWith("https://") ? "Public HTTPS MCP origin is configured." : "Configure a stable public HTTPS PAPERCLIP_PUBLIC_URL." },
           { code: "dot_unmetered", level: inputAdapterConfig.allowUnmeteredProvider === true ? "info" : "error", message: "Dot usage and provider cost are unavailable. Explicit externally billed provider acknowledgement is required." },
           { code: "dot_binding", level: binding?.status === "ready" && binding.subscriptionVerified && binding.id === inputAdapterConfig.dotBindingId ? "info" : "warn", message: binding?.status === "ready" && binding.subscriptionVerified ? "Binding has a verified event subscription and completed readiness challenge." : "Save this agent, pair it, subscribe to mailbox events and complete the event test." },

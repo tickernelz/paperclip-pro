@@ -12685,7 +12685,7 @@ export function issueService(db: Db) {
       if (!issue) throw notFound("Issue not found");
 
       if (issue.conversationAgentId && actor.userId && !(await instanceSettingsService(dbOrTx).getExperimental()).enableAgentChat) {
-        throw unprocessable("Agent Chat is disabled in Experimental settings");
+        throw unprocessable("Agent chat is off in Settings > Features");
       }
       const currentUserRedactionOptions = {
         // Keep every read on the caller's transaction connection. Re-entering

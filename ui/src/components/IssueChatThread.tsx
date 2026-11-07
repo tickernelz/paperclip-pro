@@ -568,12 +568,6 @@ interface IssueChatThreadProps {
   feedbackTermsUrl?: string | null;
   linkedRuns?: IssueChatLinkedRun[];
   timelineEvents?: IssueTimelineEvent[];
-  /**
-   * Work-mode switch history from the activity feed. Only the chat-style
-   * TaskChatThread consumes this to tag each agent reply with the mode its
-   * request ran under; this thread — the classic task view behind
-   * enableClassicTaskInterface — ignores it.
-   */
   workModeChanges?: IssueWorkModeChange[];
   liveRuns?: LiveRunForIssue[];
   activeRun?: ActiveRunForIssue | null;

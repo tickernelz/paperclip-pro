@@ -76,7 +76,7 @@ export function AgentChat() {
   if (!enabled && !chat.data)
     return (
       <p className="text-sm text-muted-foreground">
-        Agent Chat is disabled. Enable it in Experimental settings. Existing
+        Agent chat is off. Turn it on in Settings &gt; Features. Existing
         history remains available through task links.
       </p>
     );

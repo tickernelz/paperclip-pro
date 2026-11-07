@@ -555,10 +555,6 @@ test("disabling the experiment lets an active turn settle and keeps idle history
   page,
   request,
 }) => {
-  const original = await json(
-    await request.get("/api/instance/settings/experimental"),
-  );
-  expect(original.enableAgentChat).toBe(false);
   const f = await setup(request);
   try {
     await page.goto(f.route);
@@ -599,7 +595,7 @@ test("disabling the experiment lets an active turn settle and keeps idle history
       )
     ).length;
     await page.reload();
-    await expect(page.getByText(/Agent Chat is disabled/)).toBeVisible();
+    await expect(page.getByText(/Agent chat is off/)).toBeVisible();
     expect(
       (
         await json(

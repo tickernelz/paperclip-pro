@@ -1,5 +1,5 @@
 import { WorkspaceBaseRefRecoveryProvider } from "../components/WorkspaceBaseRefRecovery";
-import { isLockedIssueStub, LockedIssueChip } from "@/components/LockedIssueChip";
+import { isLockedIssueStub } from "@/components/LockedIssueChip";
 import { canManageIssuePrivacy } from "../lib/issuePrivacy";
 import { TextAttachmentContext } from "../context/TextAttachmentContext";
 import { AgentTodoPanelContext } from "../context/AgentTodoPanelContext";
@@ -18,7 +18,6 @@ import { agentDetailHref } from "./agent-detail-navigation";
 import { ExecutionBlockerNotice } from "../components/ExecutionBlockerNotice";
 import type { TaskComposerPause } from "../components/task-chat/TaskChatPausedTakeover";
 import { TaskDetailTasksPanel } from "@/components/task-detail/TaskDetailTasksPanel";
-import { IssueCreatedFromNote } from "@/components/task-detail/IssueCreatedFromNote";
 import { EmailThreadProvider } from "../components/EmailMessageCard";
 import { EmailTaskActivity } from "../components/EmailTaskActivity";
 import { TaskChatScrollNavigation, taskChatScrollEntry } from "@/components/task-chat/scroll-navigation";
@@ -30,12 +29,9 @@ import {
   useMemo,
   useRef,
   useState,
-  type ChangeEvent,
-  type DragEvent,
   type ReactNode,
   type Ref,
 } from "react";
-import { pickTextColorForPillBg } from "@/lib/color-contrast";
 import {
   Link,
   useLocation,
@@ -129,8 +125,6 @@ import { prefetchIssueThread } from "../lib/issue-thread-queries";
 import { getIssueDetailQueryOptions } from "../lib/issueDetailCache";
 import {
   beginIssueDetailNavigation,
-  ISSUE_DETAIL_CONTENT_MEASURE,
-  ISSUE_DETAIL_CONTENT_PAINT_MARK,
   ISSUE_DETAIL_HEADER_MEASURE,
   ISSUE_DETAIL_HEADER_PAINT_MARK,
   reportIssueDetailWebVitals,
@@ -194,33 +188,22 @@ import { ApprovalCard } from "../components/ApprovalCard";
 import { ProjectTile } from "../components/ProjectTile";
 import { InlineEditor } from "../components/InlineEditor";
 import {
-  IssueChatThread,
   type IssueChatComposerHandle,
   type IssueChatRunFinalizationAction,
 } from "../components/IssueChatThread";
 import { TaskChatThread } from "../components/TaskChatThread";
 import type { TaskChatIssueBrief } from "../components/task-chat/TaskChatDescriptionBubble";
-import { useClassicTaskInterfaceEnabled } from "../hooks/useClassicTaskInterfaceEnabled";
-import { useStreamlinedUiEnabled } from "../hooks/useStreamlinedUiEnabled";
-import { workModeMetaFor } from "../lib/work-mode-meta";
 import { IssueContinuationHandoff } from "../components/IssueContinuationHandoff";
-import { IssueAttachmentsSection } from "../components/IssueAttachmentsSection";
 import { IssueShareControl } from "../components/IssueShareControl";
 import { IssueAutonomyWindowBadge } from "../components/IssueAutonomyWindowBadge";
 import { issueShareApi } from "../api/issue-share";
-import { IssueDocumentsSection } from "../components/IssueDocumentsSection";
-import { IssuePlanDecompositionsSection } from "../components/IssuePlanDecompositionsSection";
-import { IssueOutputSection } from "../components/issue-output/IssueOutputSection";
 import { isImageAttachment, isVideoAttachment } from "../lib/issue-attachments";
 import {
   getIssueOutputs,
-  getPromotedOutputAttachmentIds,
   isImageLikeOutput,
   isVideoLikeOutput,
 } from "../lib/issue-output";
-import { IssueSiblingNavigation } from "../components/IssueSiblingNavigation";
 import type { MarkdownExternalReferenceMap } from "../components/MarkdownBody";
-import { IssuesList } from "../components/IssuesList";
 import { IssueReferenceActivitySummary } from "../components/IssueReferenceActivitySummary";
 import { IssueFieldChangeReceipt } from "../components/IssueFieldChangeReceipt";
 import { IssueWriteDenialNotice } from "../components/IssueWriteDenialNotice";
@@ -234,7 +217,6 @@ import {
 import { IssueScheduledRetryCard } from "../components/IssueScheduledRetryCard";
 import { ExternallyConnectedTaskBanner } from "../components/chat/ExternallyConnectedTaskBanner";
 import {
-  IssueProperties,
   type IssuePropertiesDocumentDeepLink,
 } from "../components/IssueProperties";
 import { TaskSidePanel, type TaskSidePanelProps } from "../components/task-side-panel";
@@ -249,8 +231,6 @@ import { IssueGalleryContext } from "../context/IssueGalleryContext";
 import { useIssuePlanDocument } from "../hooks/useIssuePlanDocument";
 import { useTaskArtifactArrival } from "../hooks/useTaskArtifactArrival";
 import { IssueRunLedger } from "../components/IssueRunLedger";
-import { AgentTodoCard } from "../components/AgentTodoCard";
-import { IssueWorkspaceCard } from "../components/IssueWorkspaceCard";
 import type { MentionOption } from "../components/MarkdownEditor";
 import {
   ImageGalleryModal,
@@ -261,7 +241,6 @@ import {
   useRequiredFileViewer,
 } from "../context/FileViewerContext";
 import { FileViewerSheet } from "../components/FileViewerSheet";
-import { ArtifactFileChip } from "../components/ArtifactFileChip";
 import { ScrollToBottom } from "../components/ScrollToBottom";
 import { StatusIcon } from "../components/StatusIcon";
 import { PriorityIcon } from "../components/PriorityIcon";
@@ -273,7 +252,6 @@ import {
   usePluginSlots,
 } from "@/plugins/slots";
 import { PluginLauncherOutlet } from "@/plugins/launchers";
-import { Separator } from "@/components/ui/separator";
 import {
   Popover,
   PopoverTrigger,
@@ -299,8 +277,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -320,10 +297,6 @@ import {
   buildIssueThreadInteractionSummary,
 } from "../lib/issue-thread-interactions";
 import { resolveIssueDocumentDeepLink, sameIssueDocumentHash } from "../lib/issue-document-deep-link";
-import {
-  buildIssueSiblingNavigation,
-  shouldRenderRichSubIssuesSection,
-} from "../lib/issue-detail-subissues";
 import { filterIssueDescendants } from "../lib/issue-tree";
 import { buildSubIssueDefaultsForViewer } from "../lib/subIssueDefaults";
 import {
@@ -333,22 +306,17 @@ import {
 } from "../lib/successful-run-handoff";
 import { hasAssignedBacklogBlocker } from "../lib/issue-blockers";
 import {
-  Activity as ActivityIcon,
   AlertTriangle,
   Archive,
   ArrowLeft,
   Check,
-  ChevronRight,
   Copy,
   EyeOff,
   ScanEye,
   Flag,
   FileCode2,
-  ListTree,
-  MessageSquare,
   MoreHorizontal,
   MoreVertical,
-  Paperclip,
   Plus,
   Repeat,
   SlidersHorizontal,
@@ -380,8 +348,6 @@ import {
   type RequestItemVerdictValue,
   type SuggestTasksInteraction,
   type IssueTreeControlMode,
-  type WorkspaceFileRef,
-  workspaceFileRefSchema,
 } from "@tickernelz/paperclip-pro-shared";
 
 // Stable empty array for React Query `data` defaults. A literal `= []` default
@@ -571,14 +537,6 @@ function asRecord(value: unknown): Record<string, unknown> | null {
   return value as Record<string, unknown>;
 }
 
-function extractWorkspaceFileRefFromWorkProduct(workProduct: {
-  metadata: Record<string, unknown> | null;
-}): WorkspaceFileRef | null {
-  const metadata = asRecord(workProduct.metadata);
-  if (!metadata) return null;
-  const parsed = workspaceFileRefSchema.safeParse(metadata.resourceRef);
-  return parsed.success ? parsed.data : null;
-}
 
 function usageNumber(usage: Record<string, unknown> | null, ...keys: string[]) {
   if (!usage) return 0;
@@ -589,40 +547,10 @@ function usageNumber(usage: Record<string, unknown> | null, ...keys: string[]) {
   return 0;
 }
 
-function truncate(text: string, max: number): string {
-  if (text.length <= max) return text;
-  return text.slice(0, max - 1) + "\u2026";
-}
 
-function isMarkdownFile(file: File) {
-  const name = file.name.toLowerCase();
-  return (
-    name.endsWith(".md") ||
-    name.endsWith(".markdown") ||
-    file.type === "text/markdown"
-  );
-}
 
-function fileBaseName(filename: string) {
-  return filename.replace(/\.[^.]+$/, "");
-}
 
-function slugifyDocumentKey(input: string) {
-  const slug = input
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
-  return slug || "document";
-}
 
-function titleizeFilename(input: string) {
-  return input
-    .split(/[-_ ]+/g)
-    .filter(Boolean)
-    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-    .join(" ");
-}
 
 function mergeOptimisticFeedbackVote(
   previousVotes: FeedbackVote[] | undefined,
@@ -965,25 +893,6 @@ function IssueChatSkeleton() {
   );
 }
 
-function useTaskDetailInterfaceMode(conversationMode = false) {
-  const {
-    enabled: classicTaskInterfacePreferenceEnabled,
-    loaded: classicTaskInterfaceLoaded,
-  } = useClassicTaskInterfaceEnabled();
-  const { enabled: streamlinedUiEnabled, loaded: streamlinedUiLoaded } =
-    useStreamlinedUiEnabled();
-  const classicTaskInterfaceEnabled = classicTaskInterfacePreferenceEnabled && !conversationMode;
-  const taskChatShellEnabled = !classicTaskInterfaceEnabled;
-
-  return {
-    classicTaskInterfaceEnabled,
-    taskChatShellEnabled,
-    streamlinedTaskDetailEnabled: streamlinedUiEnabled && taskChatShellEnabled,
-    streamlinedUiEnabled,
-    loaded: classicTaskInterfaceLoaded && streamlinedUiLoaded,
-  };
-}
-
 function IssueDetailLoadingState({
   headerSeed,
 }: {
@@ -991,14 +900,11 @@ function IssueDetailLoadingState({
 }) {
   const identifier =
     headerSeed?.identifier ?? headerSeed?.id.slice(0, 8) ?? null;
-  const { taskChatShellEnabled } = useTaskDetailInterfaceMode();
 
   return (
     <div
       className={
-        taskChatShellEnabled
-          ? "task-chat-loading-shell mx-auto flex min-h-0 w-full max-w-(--tc-shell-max-w) flex-1 flex-col gap-6"
-          : "max-w-3xl space-y-6"
+        "task-chat-loading-shell mx-auto flex min-h-0 w-full max-w-(--tc-shell-max-w) flex-1 flex-col gap-6"
       }
     >
       <div className="space-y-3">
@@ -1075,29 +981,10 @@ function IssueDetailLoadingState({
         )}
       </div>
 
-      {taskChatShellEnabled ? (
-        // Chat shell: the thread is the whole surface — alternating bubble
-        // placeholders followed by the docked composer, no tab strip or
-        // properties-card chrome (those don't exist in the chat layout).
-        <div className="flex min-h-0 flex-1 flex-col justify-between gap-6 overflow-hidden">
+      <div className="flex min-h-0 flex-1 flex-col justify-between gap-6 overflow-hidden">
           <IssueChatSkeleton />
           <IssueChatComposerSkeleton />
         </div>
-      ) : (
-        <>
-          <Skeleton className="h-28 w-full rounded-lg border border-border" />
-
-          <div className="space-y-3">
-            <div className="flex items-center gap-2">
-              <Skeleton className="h-8 w-20" />
-              <Skeleton className="h-8 w-20" />
-            </div>
-            <IssueChatSkeleton />
-          </div>
-
-          <IssueSectionSkeleton titleWidth="w-24" rows={3} />
-        </>
-      )}
     </div>
   );
 }
@@ -1265,11 +1152,6 @@ type IssueDetailChatTabProps = {
   composerRef: Ref<IssueChatComposerHandle>;
   /** Optional node rendered inline directly above the reply composer (e.g. the monitor strip). */
   composerAccessory?: ReactNode;
-  /**
-   * Issue header (title row, badges, plugin toolbars) that the chat-style
-   * thread renders inside its scroll viewport so it scrolls away with the
-   * messages. Ignored by the classic thread (flag: enableClassicTaskInterface).
-   */
   threadHeader?: ReactNode;
   /**
    * The task description rendered as the requester's first chat bubble in the
@@ -1469,13 +1351,7 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
   externalReferences,
   linkCaseReferences,
 }: IssueDetailChatTabProps) {
-  // Preserve master's Classic Task Interface seam: Streamlined UI changes the
-  // TaskChatThread presentation but never swaps it for IssueChatThread.
-  const { classicTaskInterfaceEnabled, streamlinedTaskDetailEnabled } =
-    useTaskDetailInterfaceMode(!!conversationMode);
-  const ThreadComponent = classicTaskInterfaceEnabled
-    ? IssueChatThread
-    : TaskChatThread;
+  const ThreadComponent = TaskChatThread;
   const queryClient = useQueryClient();
   const issueQueryRef = queryIssueId ?? issueId;
   const scrollLocation = useLocation();
@@ -1545,7 +1421,6 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
   const runtimeSelectionKnown =
     liveRunsFetched && (!activeRunQueryEnabled || activeRunFetched);
   const queuedCommentQueueEnabled =
-    !classicTaskInterfaceEnabled &&
     runtimeSelectionKnown &&
     Boolean(liveRuntimeRun || issueAssigneeAgentId);
   const { data: authoritativeQueuedCommentQueue } = useQuery({
@@ -1991,9 +1866,7 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
     const serverQueuedInteractionIds = queuedInteractionResponseIds(
       authoritativeQueuedCommentQueue,
     );
-    const responseComments = classicTaskInterfaceEnabled
-      ? []
-      : interactions.flatMap((interaction): IssueDetailComment[] => {
+    const responseComments = interactions.flatMap((interaction): IssueDetailComment[] => {
           if (serverQueuedInteractionIds.has(interaction.id)) return [];
           const answeredQuestions =
             interaction.kind === "ask_user_questions" &&
@@ -2065,20 +1938,7 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
           ];
         });
     return [...projectedComments, ...responseComments];
-  }, [
-    comments,
-    classicTaskInterfaceEnabled,
-    interactions,
-    liveRunIds,
-    localSteeringPlacements,
-    localInterruptPlacements,
-    locallyQueuedCommentRunIds,
-    queuedCommentReason,
-    resolvedActivity,
-    resolvedLinkedRuns,
-    interruptibleIssueRun,
-    authoritativeQueuedCommentQueue,
-  ]);
+  }, [comments, interactions, liveRunIds, localSteeringPlacements, localInterruptPlacements, locallyQueuedCommentRunIds, queuedCommentReason, resolvedActivity, resolvedLinkedRuns, interruptibleIssueRun, authoritativeQueuedCommentQueue]);
   const effectiveQueuedCommentQueue = useMemo(() => {
     if (!queuedCommentQueueEnabled) return null;
     const visibleAuthoritativeQueue = authoritativeQueuedCommentQueue
@@ -2339,20 +2199,10 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
           for (const id of ids) next.delete(id);
           return next;
         });
-        if (classicTaskInterfaceEnabled) {
-          setClassicQueuedDeliveryError("Couldn’t interrupt. Message is still queued.");
-          return;
-        }
         await refreshQueueAfterConflict(error);
       }
     },
-    [
-      effectiveQueuedCommentQueue,
-      commentsWithRunMeta,
-      onInterruptQueued,
-      refreshQueueAfterConflict,
-      classicTaskInterfaceEnabled,
-    ],
+    [effectiveQueuedCommentQueue, commentsWithRunMeta, onInterruptQueued, refreshQueueAfterConflict],
   );
 
   const discardQueuedComment = useCallback(
@@ -2457,22 +2307,12 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
   return (
     <div
       className={
-        classicTaskInterfaceEnabled
-          ? "space-y-3"
-          : "flex min-h-0 flex-1 flex-col"
+        "flex min-h-0 flex-1 flex-col"
       }
     >
       {/* Chat-style: the button rides inside the thread's scroll viewport with
           the header so nothing sits above the thread in the page flow. */}
-      {classicTaskInterfaceEnabled ? <AgentTodoCard issueId={issueId} /> : null}
-      {classicTaskInterfaceEnabled ? loadOlderButton : null}
-      {classicTaskInterfaceEnabled &&
-      commentsInitialLoading &&
-      commentsWithRunMeta.length === 0 &&
-      interactions.length === 0 ? (
-        <IssueChatSkeleton />
-      ) : (
-        <TaskChatScrollNavigation.Provider
+      <TaskChatScrollNavigation.Provider
           value={{
             ...taskChatScrollEntry(scrollLocation),
             restore: scrollNavigationType === "POP",
@@ -2481,7 +2321,7 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
           <EmailThreadProvider companyId={companyId} issueId={issueId}>
           <ThreadComponent
             key={conversationMode ? draftKey : issueId}
-            {...(!classicTaskInterfaceEnabled ? { creationActivity: resolvedActivity } : {})}
+            {...({ creationActivity: resolvedActivity })}
             onOpenSkill={onOpenSkill}
             browsers={browsers}
             onOpenBrowser={onOpenBrowser}
@@ -2514,7 +2354,6 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
             composerRef={composerRef}
             composerAccessory={composerAccessory}
             threadHeader={
-              !classicTaskInterfaceEnabled &&
               (threadHeader || loadOlderButton) ? (
                 <>
                   {threadHeader}
@@ -2656,7 +2495,6 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
           />
           </EmailThreadProvider>
         </TaskChatScrollNavigation.Provider>
-      )}
     </div>
   );
 });
@@ -3039,22 +2877,10 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
   const draftIssue = useMemo(() => conversation ? agentChatDraft(conversation.agent, draftWorkMode) : undefined, [conversation?.agent, draftWorkMode]);
   const pendingDraftWorkMode = useRef<IssueWorkMode | null>(null);
   const { companies, selectedCompanyId } = useCompany();
-  // Classic Task Interface remains the sole task-chat-vs-pre-chat switch from
-  // master. Streamlined UI only layers the new task-detail presentation onto
-  // master's default task-chat shell.
-  const {
-    classicTaskInterfaceEnabled,
-    taskChatShellEnabled,
-    streamlinedTaskDetailEnabled,
-    streamlinedUiEnabled,
-    loaded: taskInterfaceSettingsLoaded,
-  } = useTaskDetailInterfaceMode(!!conversation);
   // Chat-style: the page wrapper spans the full center pane so the thread's
   // scroll viewport (and its scrollbar) reaches the properties-pane border;
   // every non-thread section re-centers itself at the 60rem shell cap instead.
-  const shellSectionClass = taskChatShellEnabled
-    ? "mx-auto w-full max-w-(--tc-shell-max-w)"
-    : undefined;
+  const shellSectionClass = "mx-auto w-full max-w-(--tc-shell-max-w)";
   const { openNewIssue } = useDialogActions();
   const {
     openPanel,
@@ -3097,13 +2923,12 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
   const [detailTab, setDetailTab] = useState("chat");
   // Redesign: the center tab strip is hidden, so chat is the only surface —
   // deep links that would switch tabs (e.g. #document- hashes) stay on chat.
-  const resolvedDetailTab = taskChatShellEnabled ? "chat" : detailTab;
+  const resolvedDetailTab = "chat";
   const [handoffFocusSignal, setHandoffFocusSignal] = useState(0);
   const [pendingApprovalAction, setPendingApprovalAction] = useState<{
     approvalId: string;
     action: "approve" | "reject";
   } | null>(null);
-  const [attachmentError, setAttachmentError] = useState<string | null>(null);
   const [attachmentDragActive, setAttachmentDragActive] = useState(false);
   const [galleryOpen, setGalleryOpen] = useState(false);
   const [galleryIndex, setGalleryIndex] = useState(0);
@@ -3131,7 +2956,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
   }, []);
   const [pendingCommentComposerFocusKey, setPendingCommentComposerFocusKey] =
     useState(0);
-  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const lastMarkedReadIssueIdRef = useRef<string | null>(null);
   const lastScrollIssueIdRef = useRef<string | undefined>(undefined);
   const commentComposerRef = useRef<IssueChatComposerHandle | null>(null);
@@ -3144,7 +2968,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
   );
   const relationIssueLinkState = useMemo(() => {
     const sourceState = resolvedIssueDetailState ?? location.state;
-    if (!streamlinedTaskDetailEnabled) return sourceState;
     if (typeof sourceState !== "object" || sourceState === null)
       return sourceState;
     return {
@@ -3154,7 +2977,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       // but do not let that one-row archive affordance leak to the relation.
       issueDetailInboxQuickArchiveArmed: false,
     };
-  }, [location.state, resolvedIssueDetailState, streamlinedTaskDetailEnabled]);
+  }, [location.state, resolvedIssueDetailState]);
   const preferInboxHistoryBack = useMemo(
     () =>
       readIssueDetailLocationState(null, location.state)?.issueDetailSource ===
@@ -3286,13 +3109,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     );
   }, [issue?.id]);
 
-  useEffect(() => {
-    if (!classicTaskInterfaceEnabled || !issue || commentsLoading) return;
-    scheduleIssueDetailPaintMeasure(
-      ISSUE_DETAIL_CONTENT_PAINT_MARK,
-      ISSUE_DETAIL_CONTENT_MEASURE,
-    );
-  }, [classicTaskInterfaceEnabled, commentsLoading, issue?.id]);
   const linkedCommentId = location.hash.startsWith("#comment-")
     ? location.hash.slice("#comment-".length)
     : null;
@@ -3434,13 +3250,12 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       createdFromIssueId: issue!.id,
       includeRoutineExecutions: true,
     }),
-    enabled: streamlinedTaskDetailEnabled && !!resolvedCompanyId && !!issue?.id && !tasksTab,
+    enabled: !!resolvedCompanyId && !!issue?.id && !tasksTab,
   });
 
   const {
     data: rawSiblingIssuesData,
     isLoading: siblingIssuesLoading,
-    isError: siblingIssuesError,
   } = useQuery({
     queryKey:
       issue?.parentId && resolvedCompanyId
@@ -3453,7 +3268,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       }),
     enabled: !!resolvedCompanyId && !!issue?.parentId,
   });
-  const rawSiblingIssues: Issue[] = rawSiblingIssuesData ?? EMPTY_ISSUES;
   const companyLiveRunsQueryKey = resolvedCompanyId
     ? queryKeys.liveRuns(resolvedCompanyId)
     : (["live-runs", "pending"] as const);
@@ -3523,9 +3337,9 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
   });
   const currentUserId = session?.user?.id ?? session?.session?.userId ?? null;
   useEffect(() => {
-    if (!streamlinedUiEnabled || !issue || !sessionResolved) return;
+    if (!issue || !sessionResolved) return;
     recordRecentTask(issue, currentUserId);
-  }, [issue, currentUserId, sessionResolved, streamlinedUiEnabled]);
+  }, [issue, currentUserId, sessionResolved]);
   const { data: boardAccess } = useQuery({
     queryKey: queryKeys.access.currentBoardAccess,
     queryFn: () => accessApi.getCurrentBoardAccess(),
@@ -3566,10 +3380,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
   const casesChipsEnabled = instanceExperimentalSettings?.enableCases === true;
   const feedbackDataSharingPreference =
     instanceGeneralSettings?.feedbackDataSharingPreference ?? "prompt";
-  const showPlanDecompositionsSection =
-    instanceExperimentalSettings?.enableIssuePlanDecompositions === true;
-  const fileViewerEnabled =
-    instanceExperimentalSettings?.enableExperimentalFileViewer === true;
   const { orderedProjects } = useProjectOrder({
     projects: projects ?? [],
     companyId: selectedCompanyId,
@@ -3620,21 +3430,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     queryFn: () => issuesApi.getTreeControlState(issueId!),
     enabled: !!issueId,
     retry: false,
-  });
-  const { data: activeRootPauseHolds = [] } = useQuery({
-    queryKey: [
-      "issues",
-      "tree-holds",
-      issueId ?? "pending",
-      "active-pause-with-members",
-    ],
-    queryFn: () =>
-      issuesApi.listTreeHolds(issueId!, {
-        status: "active",
-        mode: "pause",
-        includeMembers: true,
-      }),
-    enabled: !!issueId && treeControlState?.activePauseHold?.isRoot === true,
   });
   const { data: activeCancelHolds = [] } = useQuery({
     queryKey: ["issues", "tree-holds", issueId ?? "pending", "active-cancel"],
@@ -3720,7 +3515,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
   }, [issue?.id, rawChildIssues]);
   const resolvedTasksTab = useMemo(() => {
     if (tasksTab) return tasksTab;
-    if (!streamlinedTaskDetailEnabled) return undefined;
     const createdTasks = createdTasksQuery.data ?? EMPTY_ISSUES;
     const hasError = createdTasksQuery.isError || childIssuesError;
     return {
@@ -3748,23 +3542,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         />
       ),
     };
-  }, [
-    tasksTab,
-    issue?.ancestors,
-    issue?.createdFrom,
-    resolvedIssueDetailState,
-    location.state,
-    streamlinedTaskDetailEnabled,
-    childIssues,
-    childIssuesLoading,
-    childIssuesError,
-    refetchChildIssues,
-    projects,
-    createdTasksQuery.data,
-    createdTasksQuery.isError,
-    createdTasksQuery.isLoading,
-    createdTasksQuery.refetch,
-  ]);
+  }, [tasksTab, issue?.ancestors, issue?.createdFrom, resolvedIssueDetailState, location.state, childIssues, childIssuesLoading, childIssuesError, refetchChildIssues, projects, createdTasksQuery.data, createdTasksQuery.isError, createdTasksQuery.isLoading, createdTasksQuery.refetch]);
   const liveIssueIds = useMemo(
     () =>
       collectLiveIssueIds(
@@ -3788,10 +3566,8 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
   // button, which sets a per-issue override (keyed on the issue id so it resets
   // across navigations).
   const isOnboardingFirstTask =
-    taskChatShellEnabled &&
     issue?.originKind === ONBOARDING_FIRST_TASK_ORIGIN_KIND;
   const shouldDeferPanelUntilPlan =
-    taskChatShellEnabled &&
     (isOnboardingFirstTask || issue?.workMode === "planning");
   const { data: deferredPanelPlanDoc } = useIssuePlanDocument(
     shouldDeferPanelUntilPlan ? issue?.id : null,
@@ -3857,7 +3633,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       ? { ...request, handled: true } : request);
   }, []);
   useTaskArtifactArrival({
-    issueId: taskChatShellEnabled ? issue?.id : undefined,
+    issueId: issue?.id,
     attachments,
     workProducts,
     documents: issue?.documentSummaries,
@@ -3875,27 +3651,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     setPanelVisible,
     suppressPanelUntilPlan,
   ]);
-  const showRichSubIssuesSection = shouldRenderRichSubIssuesSection(
-    childIssuesLoading,
-    childIssues.length,
-  );
-  const siblingNavigation = useMemo(
-    () =>
-      issue &&
-      !childIssuesLoading &&
-      !siblingIssuesLoading &&
-      !siblingIssuesError
-        ? buildIssueSiblingNavigation(issue, rawSiblingIssues, childIssues)
-        : null,
-    [
-      childIssues,
-      childIssuesLoading,
-      issue,
-      rawSiblingIssues,
-      siblingIssuesError,
-      siblingIssuesLoading,
-    ],
-  );
   const openNewSubIssue = useCallback(() => {
     if (!issue) return;
     openNewIssue(buildSubIssueDefaultsForViewer(issue, currentUserId));
@@ -4268,7 +4023,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       const issueRefs = new Set<string>([issueId!, nextIssue.id]);
       if (nextIssue.identifier) issueRefs.add(nextIssue.identifier);
       mergeIssueResponseIntoCaches(issueRefs, nextIssue);
-      if (streamlinedUiEnabled && sessionResolved) {
+      if (sessionResolved) {
         recordRecentTask(nextIssue, currentUserId);
       }
       queryClient.invalidateQueries({
@@ -4576,81 +4331,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     [updateIssue.mutate],
   );
 
-  const updateChildIssue = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) =>
-      issuesApi.update(id, data),
-    onSuccess: () => {
-      if (resolvedCompanyId) {
-        queryClient.invalidateQueries({
-          queryKey: ["issues", resolvedCompanyId],
-        });
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.sidebarBadges(resolvedCompanyId),
-        });
-      }
-    },
-    onError: (err) => {
-      pushToast({
-        title: "Task update failed",
-        body:
-          err instanceof Error
-            ? err.message
-            : "Unable to save sub-task changes",
-        tone: "error",
-      });
-    },
-  });
-  const handleChildIssueUpdate = useCallback(
-    (id: string, data: Record<string, unknown>) => {
-      updateChildIssue.mutate({ id, data });
-    },
-    [updateChildIssue.mutate],
-  );
 
-  const subTasksTree = useMemo(
-    () =>
-      taskChatShellEnabled &&
-      !streamlinedTaskDetailEnabled &&
-      issue &&
-      showRichSubIssuesSection ? (
-        <IssuesList
-          issues={childIssues}
-          isLoading={childIssuesLoading}
-          agents={agents}
-          projects={projects}
-          liveIssueIds={liveIssueIds}
-          projectId={issue.projectId ?? undefined}
-          viewStateKey={`paperclip:issue-detail:${issue.id}:subissues-view`}
-          issueLinkState={resolvedIssueDetailState ?? location.state}
-          searchFilters={{ descendantOf: issue.id, includeBlockedBy: true }}
-          searchWithinLoadedIssues
-          baseCreateIssueDefaults={buildSubIssueDefaultsForViewer(
-            issue,
-            currentUserId,
-          )}
-          createIssueLabel="Sub-task"
-          defaultSortField="workflow"
-          showProgressSummary
-          parentIssueIdForCostSummary={issue.id}
-          onUpdateIssue={handleChildIssueUpdate}
-        />
-      ) : null,
-    [
-      taskChatShellEnabled,
-      streamlinedTaskDetailEnabled,
-      issue,
-      showRichSubIssuesSection,
-      childIssues,
-      childIssuesLoading,
-      agents,
-      projects,
-      liveIssueIds,
-      resolvedIssueDetailState,
-      location.state,
-      currentUserId,
-      handleChildIssueUpdate,
-    ],
-  );
 
   const cancelIssueMonitor = useMutation({
     mutationKey: ["cancel-issue-monitor", issueId],
@@ -4878,7 +4559,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
           ),
         );
       }
-      if (streamlinedUiEnabled && issue && sessionResolved) {
+      if (issue && sessionResolved) {
         recordRecentTask(
           issue,
           currentUserId,
@@ -5543,63 +5224,15 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       );
     },
     onSuccess: (result) => {
-      setAttachmentError(null);
       queryClient.invalidateQueries({
         queryKey: queryKeys.issues.attachments(issueQueryId ?? result.issueId),
       });
       invalidateIssueDetail();
       if (!issueId) void queryClient.invalidateQueries({ queryKey: queryKeys.issues.detail(result.issueId) });
     },
-    onError: (err) => {
-      setAttachmentError(err instanceof Error ? err.message : "Upload failed");
-    },
   });
 
-  const importMarkdownDocument = useMutation({
-    mutationFn: async (file: File) => {
-      const baseName = fileBaseName(file.name);
-      const key = slugifyDocumentKey(baseName);
-      const existing =
-        (issue?.documentSummaries ?? []).find((doc) => doc.key === key) ?? null;
-      const body = await file.text();
-      const inferredTitle = titleizeFilename(baseName);
-      const nextTitle = existing?.title ?? inferredTitle ?? null;
-      return issuesApi.upsertDocument(await resolveWritableIssueId(), key, {
-        title: key === "plan" ? null : nextTitle,
-        format: "markdown",
-        body,
-        baseRevisionId: existing?.latestRevisionId ?? null,
-      });
-    },
-    onSuccess: (result) => {
-      setAttachmentError(null);
-      invalidateIssueDetail();
-      if (!issueId) void queryClient.invalidateQueries({ queryKey: queryKeys.issues.detail(result.issueId) });
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.issues.documents(issueQueryId ?? result.issueId),
-      });
-    },
-    onError: (err) => {
-      setAttachmentError(
-        err instanceof Error ? err.message : "Document import failed",
-      );
-    },
-  });
 
-  const deleteAttachment = useMutation({
-    mutationFn: (attachmentId: string) =>
-      issuesApi.deleteAttachment(attachmentId),
-    onSuccess: () => {
-      setAttachmentError(null);
-      queryClient.invalidateQueries({
-        queryKey: queryKeys.issues.attachments(issueQueryId!),
-      });
-      invalidateIssueDetail();
-    },
-    onError: (err) => {
-      setAttachmentError(err instanceof Error ? err.message : "Delete failed");
-    },
-  });
 
   const archiveFromInbox = useMutation({
     mutationFn: (id: string) => issuesApi.archiveFromInbox(id),
@@ -5707,7 +5340,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
   ]);
 
   useEffect(() => {
-    if (!streamlinedTaskDetailEnabled || !taskChatShellEnabled || !issue?.id) {
+    if (!issue?.id) {
       setBreadcrumbPanelControl(null);
       return;
     }
@@ -5718,23 +5351,11 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     });
 
     return () => setBreadcrumbPanelControl(null);
-  }, [
-    issue?.id,
-    panelVisible,
-    setBreadcrumbPanelControl,
-    streamlinedTaskDetailEnabled,
-    suppressPanelUntilPlan,
-    taskChatShellEnabled,
-    toggleTaskSidePanel,
-  ]);
+  }, [issue?.id, panelVisible, setBreadcrumbPanelControl, suppressPanelUntilPlan, toggleTaskSidePanel]);
 
   useEffect(() => {
     const showTaskPanelLauncher =
-      taskChatShellEnabled &&
-      !streamlinedTaskDetailEnabled &&
-      !isMobile &&
-      Boolean(issue?.id) &&
-      (!panelVisible || suppressPanelUntilPlan);
+      false;
 
     setBreadcrumbToolbar(
       showTaskPanelLauncher ? (
@@ -5750,16 +5371,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     );
 
     return () => setBreadcrumbToolbar(null);
-  }, [
-    isMobile,
-    issue?.id,
-    openTaskSidePanel,
-    panelVisible,
-    setBreadcrumbToolbar,
-    streamlinedTaskDetailEnabled,
-    suppressPanelUntilPlan,
-    taskChatShellEnabled,
-  ]);
+  }, [isMobile, issue?.id, openTaskSidePanel, panelVisible, setBreadcrumbToolbar, suppressPanelUntilPlan]);
 
   const isFromInbox = resolvedIssueDetailState?.issueDetailSource === "inbox";
 
@@ -5929,9 +5541,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     const sharedProps = {
       issue: panelIssue,
       childIssues: panelChildIssues,
-      issueLinkState: streamlinedTaskDetailEnabled
-        ? relationIssueLinkState
-        : undefined,
+      issueLinkState: relationIssueLinkState,
       onAddSubIssue: openNewSubIssue,
       onUpdate: handleIssuePropertiesUpdate,
       hasActiveRun: resolvedHasActiveRun,
@@ -5957,7 +5567,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       openSkillName: openSkill?.name ?? null,
       onSkillOpened: handleSkillOpened,
     };
-    if (taskChatShellEnabled) {
+    {
       openPanel(
         <IssueGalleryContext.Provider value={openIssueGallery}>
           <TaskSidePanel
@@ -5966,9 +5576,9 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
             key={panelIssue.id}
             {...sharedProps}
             accountScope={currentUserId ?? "anonymous"}
-            fileTabsEnabled={fileViewerEnabled}
-            streamlinedTabs={streamlinedTaskDetailEnabled}
-            showSubtasksTab={streamlinedTaskDetailEnabled}
+            fileTabsEnabled={true}
+            streamlinedTabs={true}
+            showSubtasksTab={true}
             tasksTab={resolvedTasksTab}
             artifactsOpenRequestId={!isMobile && !artifactsOpenRequest?.handled && artifactsOpenRequest?.issueId === panelIssue.id
               ? artifactsOpenRequest.requestId : undefined}
@@ -5979,51 +5589,9 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         </IssueGalleryContext.Provider>,
         { contentMode: "full-bleed" },
       );
-    } else {
-      openPanel(
-        <IssueGalleryContext.Provider value={openIssueGallery}>
-          <IssueProperties {...sharedProps} />
-        </IssueGalleryContext.Provider>,
-      );
     }
     return () => closePanel();
-  }, [
-    openBrowserId,
-    handleBrowserOpened,
-    closePanel,
-    openIssueGallery,
-    handleIssuePropertiesUpdate,
-    issuePanelKey,
-    openNewSubIssue,
-    openPanel,
-    openAttachment,
-    handleAttachmentOpened,
-    openSkill,
-    handleSkillOpened,
-    panelChildIssues,
-    panelIssue,
-    suppressPanelUntilPlan,
-    relationIssueLinkState,
-    streamlinedTaskDetailEnabled,
-    resolvedHasActiveRun,
-    checkIssueMonitorNow.isPending,
-    checkIssueMonitorNow.mutate,
-    externalObjectsState.isEnabled,
-    externalObjectsState.groups,
-    externalObjectsState.isLoading,
-    externalObjectsState.isError,
-    externalObjectsState.refetch,
-    documentDeepLink,
-    taskChatShellEnabled,
-    currentUserId,
-    fileViewerEnabled,
-    resolvedTasksTab,
-    artifactsOpenRequest,
-    handleArtifactsOpened,
-    agentTodoOpenRequest,
-    handleAgentTodoOpened,
-    isMobile,
-  ]);
+  }, [openBrowserId, handleBrowserOpened, closePanel, openIssueGallery, handleIssuePropertiesUpdate, issuePanelKey, openNewSubIssue, openPanel, openAttachment, handleAttachmentOpened, openSkill, handleSkillOpened, panelChildIssues, panelIssue, suppressPanelUntilPlan, relationIssueLinkState, resolvedHasActiveRun, checkIssueMonitorNow.isPending, checkIssueMonitorNow.mutate, externalObjectsState.isEnabled, externalObjectsState.groups, externalObjectsState.isLoading, externalObjectsState.isError, externalObjectsState.refetch, documentDeepLink, currentUserId, resolvedTasksTab, artifactsOpenRequest, handleArtifactsOpened, agentTodoOpenRequest, handleAgentTodoOpened, isMobile]);
 
   const goToInboxShortcutArmedRef = useRef(false);
   const goToInboxShortcutTimeoutRef = useRef<number | null>(null);
@@ -6128,7 +5696,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         setPendingCommentComposerFocusKey((current) => current + 1);
       }
       if (action === "open_file_viewer") {
-        if (!fileViewerEnabled) return;
         event.preventDefault();
         event.stopPropagation();
         setFileViewerPromptOpen(true);
@@ -6144,11 +5711,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       document.removeEventListener("focusin", handleFocusIn, true);
       document.removeEventListener("keydown", handleKeyDown, true);
     };
-  }, [
-    fileViewerEnabled,
-    navigate,
-    sourceBreadcrumb.href,
-  ]);
+  }, [navigate, sourceBreadcrumb.href]);
 
   // One maximize request per issue + `viewer=full` hash: routing re-runs
   // whenever a callback dependency changes identity, and re-requesting then
@@ -6170,7 +5733,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
 
       // The classic interface owns document links in its center-column
       // Documents section. Do not open its tab-less properties panel.
-      if (!taskInterfaceSettingsLoaded || !taskChatShellEnabled) return false;
 
       if (isMobile) {
         setMobilePropsOpen(true);
@@ -6200,16 +5762,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       }));
       return true;
     },
-    [
-      taskInterfaceSettingsLoaded,
-      isMobile,
-      issue?.id,
-      issueId,
-      setPanelVisible,
-      requestPanelMaximize,
-      suppressPanelUntilPlan,
-      taskChatShellEnabled,
-    ],
+    [isMobile, issue?.id, issueId, setPanelVisible, requestPanelMaximize, suppressPanelUntilPlan],
   );
 
   useEffect(() => {
@@ -6260,7 +5813,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       const hash = sameIssueDocumentHash(rawHref, currentUrl, [issue?.id, issue?.identifier, issueId].filter((id): id is string => !!id));
       if (!hash) return;
       const route = resolveIssueDocumentDeepLink(hash);
-      if (route?.kind === "properties-pane" && (!taskInterfaceSettingsLoaded || !taskChatShellEnabled)) return;
+      if (route?.kind === "properties-pane" && (false)) return;
       event.preventDefault();
       // Let link handlers close any hovered task preview. Router links and
       // popover triggers honor defaultPrevented and skip their navigation.
@@ -6280,20 +5833,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     document.addEventListener("click", handleDocumentClick, true);
     return () =>
       document.removeEventListener("click", handleDocumentClick, true);
-  }, [
-    issue?.id,
-    issue?.identifier,
-    issueId,
-    navigate,
-    location.hash,
-    location.key,
-    location.pathname,
-    location.search,
-    location.state,
-    taskChatShellEnabled,
-    taskInterfaceSettingsLoaded,
-    routeIssueDocumentDeepLink,
-  ]);
+  }, [issue?.id, issue?.identifier, issueId, navigate, location.hash, location.key, location.pathname, location.search, location.state, routeIssueDocumentDeepLink]);
 
   // Scroll + briefly highlight work-product / direct-attachment anchors so the
   // company Artifacts page (PAP-10359) can deep-link to a specific artifact in
@@ -6341,7 +5881,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
   }, [detailTab, pendingCommentComposerFocusKey]);
 
   useEffect(() => {
-    if (!fileViewerEnabled) return;
     const handleOpenFileViewer = () => {
       setFileViewerPromptOpen(true);
     };
@@ -6355,22 +5894,11 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         handleOpenFileViewer as EventListener,
       );
     };
-  }, [fileViewerEnabled]);
+  }, []);
 
-  const promotedOutputAttachmentIds = useMemo(
-    () => getPromotedOutputAttachmentIds(workProducts),
-    [workProducts],
-  );
   const purgedAttachmentPaths = useMemo(
     () => purgedContentPaths(attachments ?? []),
     [attachments],
-  );
-  const attachmentList = useMemo(
-    () =>
-      (attachments ?? []).filter(
-        (attachment) => !promotedOutputAttachmentIds.has(attachment.id),
-      ),
-    [attachments, promotedOutputAttachmentIds],
   );
   const copyIssueToClipboard = async () => {
     if (!issue) return;
@@ -6447,7 +5975,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     setMobileToolbar(
       <InboxMobileToolbar
         backHref={backHref}
-        preferHistoryBack={streamlinedUiEnabled ? preferInboxHistoryBack : true}
+        preferHistoryBack={preferInboxHistoryBack}
         issueId={issue?.id}
         issueHidden={issueHidden}
         archivePending={archivePending}
@@ -6459,19 +5987,8 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     );
 
     return () => setMobileToolbar(null);
-  }, [
-    showInboxToolbar,
-    backHref,
-    preferInboxHistoryBack,
-    streamlinedUiEnabled,
-    issue?.id,
-    issueHidden,
-    archivePending,
-    setMobileToolbar,
-  ]);
+  }, [showInboxToolbar, backHref, preferInboxHistoryBack, issue?.id, issueHidden, archivePending, setMobileToolbar]);
 
-  const attachmentsInitialLoading =
-    attachmentsLoading && attachments === undefined;
   const loadOlderComments = useCallback(() => {
     void fetchOlderComments();
   }, [fetchOlderComments]);
@@ -6991,35 +6508,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     [treeControlPreview],
   );
   const activePauseHold = treeControlState?.activePauseHold ?? null;
-  const activeRootPauseHoldsForDisplay = useMemo(
-    () => (activePauseHold?.isRoot === true ? activeRootPauseHolds : []),
-    [activePauseHold?.isRoot, activeRootPauseHolds],
-  );
-  const heldIssueIds = useMemo(() => {
-    const ids = new Set<string>();
-    for (const hold of activeRootPauseHoldsForDisplay) {
-      for (const member of hold.members ?? []) {
-        if (member.skipped) continue;
-        ids.add(member.issueId);
-      }
-    }
-    return ids;
-  }, [activeRootPauseHoldsForDisplay]);
-  const mutedChildIssueIds = useMemo(() => {
-    const ids = new Set<string>();
-    for (const child of childIssues) {
-      if (heldIssueIds.has(child.id)) ids.add(child.id);
-    }
-    return ids;
-  }, [childIssues, heldIssueIds]);
-  const childPauseBadgeById = useMemo(() => {
-    const badges = new Map<string, string>();
-    for (const child of childIssues) {
-      if (!heldIssueIds.has(child.id)) continue;
-      badges.set(child.id, "Paused");
-    }
-    return badges;
-  }, [childIssues, heldIssueIds]);
   const activePauseHoldRoot = useMemo(() => {
     if (!activePauseHold) return null;
     if (activePauseHold.rootIssueId === issue?.id) return issue ?? null;
@@ -7038,7 +6526,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
   // branch: its input can be detached before the chosen file is returned.
   // Keep the existing metadata/header skeleton until the canonical view owns
   // the interaction; comments may then load without another route-key change.
-  if (!taskRouteReady || !taskInterfaceSettingsLoaded)
+  if (!taskRouteReady)
     return (
       <IssueDetailLoadingState
         headerSeed={
@@ -7069,36 +6557,8 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
       href: createIssueDetailPath(ref),
     };
   })();
-  const handleFilePicked = async (evt: ChangeEvent<HTMLInputElement>) => {
-    const files = evt.target.files;
-    if (!files || files.length === 0) return;
-    for (const file of Array.from(files)) {
-      if (isMarkdownFile(file)) {
-        await importMarkdownDocument.mutateAsync(file);
-      } else {
-        await uploadAttachment.mutateAsync(file);
-      }
-    }
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
 
-  const handleAttachmentDrop = async (evt: DragEvent<HTMLDivElement>) => {
-    evt.preventDefault();
-    setAttachmentDragActive(false);
-    const files = evt.dataTransfer.files;
-    if (!files || files.length === 0) return;
-    for (const file of Array.from(files)) {
-      if (isMarkdownFile(file)) {
-        await importMarkdownDocument.mutateAsync(file);
-      } else {
-        await uploadAttachment.mutateAsync(file);
-      }
-    }
-  };
 
-  const hasAttachments = attachmentList.length > 0;
   const canShowSubtreeControls = canManageTreeControl && childIssues.length > 0;
   const canResumeSubtree =
     canShowSubtreeControls && activePauseHold?.isRoot === true;
@@ -7133,39 +6593,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     Boolean(treeControlPreview) &&
     !treeControlPreviewLoading &&
     !treeControlPreviewError;
-  const attachmentUploadButton = (
-    <>
-      <input
-        ref={fileInputRef}
-        type="file"
-        className="hidden"
-        onChange={handleFilePicked}
-        multiple
-      />
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => fileInputRef.current?.click()}
-        disabled={
-          uploadAttachment.isPending || importMarkdownDocument.isPending
-        }
-        className={cn(
-          "shadow-none",
-          attachmentDragActive && "border-primary bg-primary/5",
-        )}
-      >
-        <Paperclip className="h-3.5 w-3.5 mr-1.5" />
-        {uploadAttachment.isPending || importMarkdownDocument.isPending ? (
-          "Uploading..."
-        ) : (
-          <>
-            <span className="hidden sm:inline">Upload attachment</span>
-            <span className="sm:hidden">Upload</span>
-          </>
-        )}
-      </Button>
-    </>
-  );
 
   // Task Chat Redesign ("not sticky" header): the parent breadcrumb, the
   // title/badge block, and the plugin toolbars render INSIDE the thread's
@@ -7173,49 +6600,11 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
   // stays near the viewport bottom. Flag OFF renders the same nodes in the
   // page flow, in their original order relative to the alert banners.
   const ancestorsNav =
-    !streamlinedTaskDetailEnabled && ancestors.length > 0 ? (
-      <nav
-        className={cn(
-          "flex items-center gap-1 text-xs text-muted-foreground flex-wrap",
-          shellSectionClass,
-        )}
-      >
-        {[...ancestors].reverse().map((ancestor, i) => (
-          <span key={ancestor.id} className="flex items-center gap-1">
-            {i > 0 && <ChevronRight className="h-3 w-3 shrink-0" />}
-            {isLockedIssueStub(ancestor) ? <LockedIssueChip identifier={ancestor.identifier} /> : <Link
-              to={createIssueDetailPath(ancestor.identifier ?? ancestor.id)}
-              state={resolvedIssueDetailState ?? location.state}
-              onClickCapture={() =>
-                rememberIssueDetailLocationState(
-                  ancestor.identifier ?? ancestor.id,
-                  resolvedIssueDetailState ?? location.state,
-                  location.search,
-                )
-              }
-              className="hover:text-foreground transition-colors truncate max-w-(--sz-200px)"
-              title={ancestor.title}
-            >
-              {ancestor.title}
-            </Link>}
-          </span>
-        ))}
-        <ChevronRight className="h-3 w-3 shrink-0" />
-        <span className="text-foreground/60 truncate max-w-(--sz-200px)">
-          {issue.title}
-        </span>
-      </nav>
-    ) : null;
+    null;
   // Creation provenance ("Created from PAP-168 by Paperclip QA"). Distinct from
   // the parent chain above; the streamlined Tasks tab renders it instead.
   const createdFromNote =
-    !streamlinedTaskDetailEnabled && issue.createdFrom ? (
-      <IssueCreatedFromNote
-        createdFrom={issue.createdFrom}
-        issueLinkState={resolvedIssueDetailState ?? location.state}
-        className={shellSectionClass}
-      />
-    ) : null;
+    null;
 
   const issueStatusControl = (
     <StatusIcon
@@ -7230,12 +6619,11 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     <div
       data-testid="issue-detail-header"
       className={cn(
-        streamlinedTaskDetailEnabled ? "relative space-y-2" : "space-y-3",
+        "relative space-y-2",
         shellSectionClass,
       )}
     >
-      {streamlinedTaskDetailEnabled ? (
-        <div className="flex min-w-0 items-start gap-2 pr-14 md:items-center md:pr-32">
+      <div className="flex min-w-0 items-start gap-2 pr-14 md:items-center md:pr-32">
           <div className="hidden md:block">{issueStatusControl}</div>
           <div
             data-slot="task-detail-title"
@@ -7255,28 +6643,22 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
             </span>
           </div>
         </div>
-      ) : null}
 
       <div
         className={cn(
           "flex min-w-0 flex-wrap items-center gap-2",
-          streamlinedTaskDetailEnabled && "gap-x-3 gap-y-2 md:gap-x-6 md:pl-7",
+          "gap-x-3 gap-y-2 md:gap-x-6 md:pl-7",
         )}
       >
-        {streamlinedTaskDetailEnabled ? (
-          <div className="md:hidden">{issueStatusControl}</div>
-        ) : null}
-        {streamlinedTaskDetailEnabled ? (
-          <span className="shrink-0 font-mono text-sm text-muted-foreground md:hidden">
+        <div className="md:hidden">{issueStatusControl}</div>
+        <span className="shrink-0 font-mono text-sm text-muted-foreground md:hidden">
             {issue.identifier ?? issue.id.slice(0, 8)}
           </span>
-        ) : null}
         {canManageTreeControl && issue?.id ? (
           <div className="order-last ml-auto shrink-0 md:hidden">
             <IssueShareControl issueId={issue.id} />
           </div>
         ) : null}
-        {!streamlinedTaskDetailEnabled ? issueStatusControl : null}
         {/* PAP-411: priority UI hidden behind SHOW_TASK_PRIORITY_UI. */}
         {SHOW_TASK_PRIORITY_UI && (
           <PriorityIcon
@@ -7284,11 +6666,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
             onChange={(priority) => updateIssue.mutate({ priority })}
           />
         )}
-        {!streamlinedTaskDetailEnabled ? (
-          <span className="shrink-0 font-mono text-sm text-muted-foreground">
-            {issue.identifier ?? issue.id.slice(0, 8)}
-          </span>
-        ) : null}
         {hasLiveRuns && (
           <Badge
             variant="outline"
@@ -7331,26 +6708,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
               per-request choice made in the composer, and each agent reply
               carries its own mode chip; a header chip would misread as a
               task-global setting. Flag OFF keeps the legacy badge. */}
-        {!taskChatShellEnabled &&
-        (issue.workMode === "ask" || issue.workMode === "planning")
-          ? (() => {
-              const workModeMeta = workModeMetaFor(issue.workMode);
-              const WorkModeIcon = workModeMeta.icon;
-              return (
-                <Badge
-                  variant="outline"
-                  className={cn(
-                    "text-(length:--text-nano)",
-                    workModeMeta.classes.badge,
-                  )}
-                  title={`This task is in ${workModeMeta.label.toLowerCase()}.`}
-                >
-                  <WorkModeIcon className="h-3 w-3" aria-hidden />
-                  {workModeMeta.label}
-                </Badge>
-              );
-            })()
-          : null}
 
         {hasAssignedBacklogBlocker(issue.blockedBy) ? (
           <Badge
@@ -7400,73 +6757,10 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
           userLabelMap={userLabelMap}
         />
 
-        {!streamlinedTaskDetailEnabled && (issue.labels ?? []).length > 0 && (
-          <div className="hidden sm:flex items-center gap-1">
-            {(issue.labels ?? []).slice(0, 4).map((label) => (
-              <Badge
-                variant="outline"
-                key={label.id}
-                className="text-(length:--text-nano)"
-                style={{
-                  borderColor: label.color,
-                  color: pickTextColorForPillBg(label.color, 0.12),
-                  backgroundColor: `${label.color}1f`,
-                }}
-              >
-                {label.name}
-              </Badge>
-            ))}
-            {(issue.labels ?? []).length > 4 && (
-              <span className="text-(length:--text-nano) text-muted-foreground">
-                +{(issue.labels ?? []).length - 4}
-              </span>
-            )}
-          </div>
-        )}
 
-        {!streamlinedTaskDetailEnabled && !(isMobile && isFromInbox) && (
-          <div className="flex items-center gap-0.5 md:hidden shrink-0">
-            <Button
-              variant="ghost"
-              size="icon-xs"
-              onClick={copyIssueToClipboard}
-              title="Copy task as markdown"
-            >
-              {copied ? (
-                <Check className="h-4 w-4 text-green-500" />
-              ) : (
-                <Copy className="h-4 w-4" />
-              )}
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon-xs"
-              onClick={() => setMobilePropsOpen(true)}
-              title="Properties"
-            >
-              <SlidersHorizontal className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
 
         <div className="hidden md:flex items-center md:ml-auto shrink-0">
-          {!streamlinedTaskDetailEnabled && canArchiveFromInbox && (
-            <Button
-              variant="ghost"
-              size="icon-xs"
-              onClick={() => {
-                if (!archivePending && issue?.id)
-                  archiveFromInbox.mutate(issue.id);
-              }}
-              disabled={archivePending}
-              title="Archive from inbox"
-              aria-label="Archive from inbox"
-            >
-              <Archive className="h-4 w-4" />
-            </Button>
-          )}
-          {fileViewerEnabled ? (
-            <Button
+          <Button
               variant="ghost"
               size="icon-xs"
               onClick={() => setFileViewerPromptOpen(true)}
@@ -7475,38 +6769,10 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
             >
               <FileCode2 className="h-4 w-4" />
             </Button>
-          ) : null}
-          {!streamlinedTaskDetailEnabled ? (
-            <Button
-              variant="ghost"
-              size="icon-xs"
-              onClick={copyIssueToClipboard}
-              title="Copy task as markdown"
-            >
-              {copied ? (
-                <Check className="h-4 w-4 text-green-500" />
-              ) : (
-                <Copy className="h-4 w-4" />
-              )}
-            </Button>
-          ) : null}
-          {!streamlinedTaskDetailEnabled &&
-          !taskChatShellEnabled &&
-          (!panelVisible || suppressPanelUntilPlan) ? (
-            <TooltipProvider>
-              <SidePanelToggleButton
-                open={false}
-                onToggle={openTaskSidePanel}
-                shortcut="]"
-                className="shrink-0"
-              />
-            </TooltipProvider>
-          ) : null}
           <div
             data-slot="task-title-actions"
             className={cn(
-              streamlinedTaskDetailEnabled &&
-                "absolute right-0 top-0 flex h-7 items-center",
+              "absolute right-0 top-0 flex h-7 items-center",
             )}
           >
             {canManageTreeControl && issue?.id ? (
@@ -7539,8 +6805,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-52 p-1" align="end">
-                {streamlinedTaskDetailEnabled ? (
-                  <>
+                <>
                     <button
                       className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs hover:bg-accent/50"
                       onClick={() => {
@@ -7580,7 +6845,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                       </button>
                     ) : null}
                   </>
-                ) : null}
                 {privacyMenuItems}
                 <TaskTreeControlMenuItems
                   scope={treeControlScope}
@@ -7645,22 +6909,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         </div>
       </div>
 
-      {!streamlinedTaskDetailEnabled ? (
-        <InlineEditor
-          value={issue.title}
-          onSave={(title) => updateIssue.mutateAsync({ title })}
-          as="h2"
-          className={
-            taskChatShellEnabled
-              ? "text-base font-semibold"
-              : "text-xl font-bold"
-          }
-        />
-      ) : null}
 
-      {taskChatShellEnabled && !streamlinedTaskDetailEnabled
-        ? subTasksTree
-        : null}
 
       <IssueMonitorBanner
         key={issue.id}
@@ -7672,30 +6921,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         checkingNow={checkIssueMonitorNow.isPending}
       />
 
-      {taskChatShellEnabled ? null : (
-        <InlineEditor
-          value={issue.description ?? ""}
-          onSave={(description) => updateIssue.mutateAsync({ description })}
-          as="p"
-          className="text-sm leading-7 text-foreground"
-          placeholder="Add a description..."
-          multiline
-          foldable
-          mentions={mentionOptions}
-          externalReferences={
-            externalObjectsState.isEnabled
-              ? externalObjectsState.markdownReferences
-              : undefined
-          }
-          imageUploadHandler={async (file) => {
-            const attachment = await uploadAttachment.mutateAsync(file);
-            return attachment.contentPath;
-          }}
-          onDropFile={async (file) => {
-            await uploadAttachment.mutateAsync(file);
-          }}
-        />
-      )}
     </div>
   );
 
@@ -7744,23 +6969,22 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     </>
   );
 
-  const taskChatThreadHeader = taskChatShellEnabled ? (
+  const taskChatThreadHeader = (
     <>
       {ancestorsNav}
       {createdFromNote}
       {issueHeaderBlock}
       {pluginOutletsBlock}
     </>
-  ) : undefined;
+  );
 
   return (
-    <FileViewerProvider issueId={conversation && !conversation.issue ? "" : issue.id} enabled={fileViewerEnabled}>
-      <AgentTodoPanelContext.Provider value={taskChatShellEnabled ? handleOpenAgentTodo : null}><TextAttachmentContext.Provider value={taskChatShellEnabled ? handleOpenTextAttachment : null}><IssueGalleryContext.Provider value={openIssueGallery}><PurgedAttachmentsContext.Provider value={purgedAttachmentPaths}>
+    <FileViewerProvider issueId={conversation && !conversation.issue ? "" : issue.id} enabled={true}>
+      <AgentTodoPanelContext.Provider value={handleOpenAgentTodo}><TextAttachmentContext.Provider value={handleOpenTextAttachment}><IssueGalleryContext.Provider value={openIssueGallery}><PurgedAttachmentsContext.Provider value={purgedAttachmentPaths}>
         <div
-          data-task-chat-shell={taskChatShellEnabled ? "" : undefined}
+          data-task-chat-shell={""}
           className={
-            taskChatShellEnabled
-              ? isMobile
+            isMobile
                 ? // Mobile shell scrolls the DOCUMENT (main is overflow-visible,
                   // auto height) — the thread renders in normal flow (PAP-360).
                   "flex w-full flex-col gap-6"
@@ -7770,16 +6994,13 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                   // gap here shortens the pinned message viewport enough to
                   // leave its first visible bubble sliced at the top edge.
                   "flex h-full min-h-0 w-full flex-col gap-3"
-              : "max-w-3xl space-y-6"
           }
         >
           {/* Parent chain breadcrumb (redesign: rendered inside the thread viewport) */}
-          {taskChatShellEnabled ? null : ancestorsNav}
-          {taskChatShellEnabled ? null : createdFromNote}
 
           <ExternallyConnectedTaskBanner
             key={issue.id}
-            className={cn(shellSectionClass, taskChatShellEnabled && (isMobile ? "mt-4" : "mt-3"))}
+            className={cn(shellSectionClass, (isMobile ? "mt-4" : "mt-3"))}
             attachments={attachments ?? []}
             companyId={issue.companyId}
             issueId={issue.id}
@@ -7804,7 +7025,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
               className={cn(
                 "flex items-center gap-2 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive",
                 shellSectionClass,
-                taskChatShellEnabled && (isMobile ? "mt-4" : "mt-3"),
+                (isMobile ? "mt-4" : "mt-3"),
               )}
             >
               <EyeOff className="h-4 w-4 shrink-0" />
@@ -7830,155 +7051,14 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
               </p>
             )}
 
-          {taskChatShellEnabled ? null : issueHeaderBlock}
 
-          {taskChatShellEnabled ? null : pluginOutletsBlock}
 
-          {taskChatShellEnabled ? null : showRichSubIssuesSection ? (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between gap-2">
-                <h3 className="text-sm font-medium text-muted-foreground">
-                  Sub-tasks
-                </h3>
-              </div>
-              <IssuesList
-                issues={childIssues}
-                isLoading={childIssuesLoading}
-                agents={agents}
-                projects={projects}
-                liveIssueIds={liveIssueIds}
-                mutedIssueIds={mutedChildIssueIds}
-                issueBadgeById={childPauseBadgeById}
-                projectId={issue.projectId ?? undefined}
-                viewStateKey={`paperclip:issue-detail:${issue.id}:subissues-view`}
-                issueLinkState={resolvedIssueDetailState ?? location.state}
-                searchFilters={{
-                  descendantOf: issue.id,
-                  includeBlockedBy: true,
-                }}
-                searchWithinLoadedIssues
-                baseCreateIssueDefaults={buildSubIssueDefaultsForViewer(
-                  issue,
-                  currentUserId,
-                )}
-                createIssueLabel="Sub-task"
-                defaultSortField="workflow"
-                showProgressSummary
-                parentIssueIdForCostSummary={issue.id}
-                onUpdateIssue={handleChildIssueUpdate}
-              />
-            </div>
-          ) : (
-            <div className="flex flex-wrap items-center justify-end gap-2 min-w-0">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={openNewSubIssue}
-                className="shrink-0 shadow-none"
-              >
-                <Plus className="mr-1.5 h-3.5 w-3.5" />
-                New Sub-task
-              </Button>
-            </div>
-          )}
 
-          {!taskChatShellEnabled && showPlanDecompositionsSection ? (
-            <IssuePlanDecompositionsSection
-              issueId={issue.id}
-              issueIdentifier={issue.identifier}
-              agentMap={agentMap}
-            />
-          ) : null}
 
           {/* Flag ON: attachments/work products/workspace live in the properties
           pane (Artifacts tab) — the center column belongs to the thread. */}
-          {taskChatShellEnabled ? null : (
-            <IssueDocumentsSection
-              issue={issue}
-              canDeleteDocuments={Boolean(session?.user?.id)}
-              canManageDocumentLocks={Boolean(session?.user?.id)}
-              feedbackVotes={feedbackVotes}
-              feedbackDataSharingPreference={feedbackDataSharingPreference}
-              feedbackTermsUrl={FEEDBACK_TERMS_URL}
-              mentions={mentionOptions}
-              externalReferences={
-                externalObjectsState.isEnabled
-                  ? externalObjectsState.markdownReferences
-                  : undefined
-              }
-              imageUploadHandler={async (file) => {
-                const attachment = await uploadAttachment.mutateAsync(file);
-                return attachment.contentPath;
-              }}
-              onVote={async (revisionId, vote, options) => {
-                await feedbackVoteMutation.mutateAsync({
-                  targetType: "issue_document_revision",
-                  targetId: revisionId,
-                  vote,
-                  reason: options?.reason,
-                  allowSharing: options?.allowSharing,
-                  sharingPreferenceAtSubmit: feedbackDataSharingPreference,
-                });
-              }}
-              extraActions={!hasAttachments ? attachmentUploadButton : null}
-              agentMap={agentMap}
-              userProfileMap={userProfileMap}
-            />
-          )}
 
-          {taskChatShellEnabled ? null : (
-            <IssueOutputSection
-              workProducts={workProducts}
-              onMediaClick={(item) => {
-                const meta = item.metadata;
-                if (!meta) return;
-                const idx = mediaGalleryItems.findIndex(
-                  (galleryItem) =>
-                    galleryItem.contentPath === meta.contentPath ||
-                    galleryItem.id === `work-product-${item.id}` ||
-                    galleryItem.id === meta.attachmentId,
-                );
-                setGalleryIndex(idx >= 0 ? idx : 0);
-                setGalleryOpen(true);
-              }}
-            />
-          )}
 
-          {taskChatShellEnabled ? null : attachmentsInitialLoading ? (
-            <IssueSectionSkeleton titleWidth="w-24" rows={2} />
-          ) : hasAttachments ? (
-            <IssueAttachmentsSection
-              attachments={attachmentList}
-              uploadButton={attachmentUploadButton}
-              error={attachmentError}
-              dragActive={attachmentDragActive}
-              deletePending={deleteAttachment.isPending}
-              onDelete={(attachmentId) => deleteAttachment.mutate(attachmentId)}
-              onImageClick={(attachment) => {
-                const idx = mediaGalleryItems.findIndex(
-                  (a) => a.id === attachment.id,
-                );
-                setGalleryIndex(idx >= 0 ? idx : 0);
-                setGalleryOpen(true);
-              }}
-              onDragEnter={(evt) => {
-                evt.preventDefault();
-                setAttachmentDragActive(true);
-              }}
-              onDragOver={(evt) => {
-                evt.preventDefault();
-                setAttachmentDragActive(true);
-              }}
-              onDragLeave={(evt) => {
-                if (
-                  evt.currentTarget.contains(evt.relatedTarget as Node | null)
-                )
-                  return;
-                setAttachmentDragActive(false);
-              }}
-              onDrop={(evt) => void handleAttachmentDrop(evt)}
-            />
-          ) : null}
 
           <ImageGalleryModal
             items={mediaGalleryItems}
@@ -7987,99 +7067,20 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
             onOpenChange={setGalleryOpen}
           />
 
-          {taskChatShellEnabled ? null : (
-            <IssueWorkspaceCard
-              issue={issue}
-              project={resolvedProject}
-              onUpdate={(data) => updateIssue.mutate(data)}
-              onBrowseFiles={
-                fileViewerEnabled
-                  ? () => setFileViewerPromptOpen(true)
-                  : undefined
-              }
-              onOpenFileByPath={
-                fileViewerEnabled
-                  ? () => setFileViewerPromptOpen(true)
-                  : undefined
-              }
-            />
-          )}
 
-          {!taskChatShellEnabled &&
-            fileViewerEnabled &&
-            issue.workProducts &&
-            issue.workProducts.length > 0 &&
-            (() => {
-              const workProductsWithFileRefs = issue.workProducts
-                .map((product) => ({
-                  product,
-                  fileRef: extractWorkspaceFileRefFromWorkProduct(product),
-                }))
-                .filter(({ fileRef }) => fileRef !== null);
 
-              if (workProductsWithFileRefs.length === 0) return null;
-
-              return (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <h3 className="text-sm font-medium text-muted-foreground">
-                      Artifacts
-                    </h3>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {workProductsWithFileRefs.map(({ product, fileRef }) => (
-                      <ArtifactFileChip
-                        key={product.id}
-                        workspaceFileRef={fileRef!}
-                        title={product.title}
-                      />
-                    ))}
-                  </div>
-                </div>
-              );
-            })()}
-
-          {taskChatShellEnabled ? null : (
-            <Separator className={shellSectionClass} />
-          )}
 
           <Tabs
             value={resolvedDetailTab}
             onValueChange={setDetailTab}
             className={
-              taskChatShellEnabled
-                ? isMobile
+              isMobile
                   ? undefined
                   : "min-h-0 flex-1"
-                : "space-y-3"
             }
           >
             {/* Redesign: the chat IS the page — the Chat/Activity/Related-work tab
             strip is hidden and the thread renders as the only surface. */}
-            {taskChatShellEnabled ? null : (
-              <TabsList
-                variant="line"
-                className={cn("w-full justify-start gap-1", shellSectionClass)}
-              >
-                <TabsTrigger value="chat" className="gap-1.5">
-                  <MessageSquare className="h-3.5 w-3.5" />
-                  Chat
-                </TabsTrigger>
-                <TabsTrigger value="activity" className="gap-1.5">
-                  <ActivityIcon className="h-3.5 w-3.5" />
-                  Activity
-                </TabsTrigger>
-                <TabsTrigger value="related-work" className="gap-1.5">
-                  <ListTree className="h-3.5 w-3.5" />
-                  Related work
-                </TabsTrigger>
-                {issuePluginTabItems.map((item) => (
-                  <TabsTrigger key={item.value} value={item.value}>
-                    {item.label}
-                  </TabsTrigger>
-                ))}
-              </TabsList>
-            )}
 
             {/* The chat shell keeps the page's responsive 16px/24px gutters so
             thread content and the composer do not touch either sidebar. */}
@@ -8087,15 +7088,9 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
               data-testid="issue-detail-content"
               value="chat"
               className={
-                taskChatShellEnabled
-                  ? isMobile
-                    ? streamlinedTaskDetailEnabled
-                      ? undefined
-                      : "-mx-4"
-                    : streamlinedTaskDetailEnabled
-                      ? "flex min-h-0 flex-col"
-                      : "-mx-4 -mt-4 md:-mx-6 md:-mt-6 flex min-h-0 flex-col"
-                  : undefined
+                isMobile
+                    ? undefined
+                    : "flex min-h-0 flex-col"
               }
             >
               {resolvedDetailTab === "chat" ? (
@@ -8130,7 +7125,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                     // Suppress the seeded-description bubble for the onboarding first
                     // task: its description is agent instructions, not something the
                     // user typed. The user lands on a seeded agent greeting instead.
-                    taskChatShellEnabled && !issue.conversationAgentId &&
+                    !issue.conversationAgentId &&
                     issue.originKind !== ONBOARDING_FIRST_TASK_ORIGIN_KIND
                       ? {
                           description: issue.description ?? "",
@@ -8242,12 +7237,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                     ) : null
                   }
                   footer={
-                    !taskChatShellEnabled && siblingNavigation ? (
-                      <IssueSiblingNavigation
-                        navigation={siblingNavigation}
-                        linkState={resolvedIssueDetailState ?? location.state}
-                      />
-                    ) : null
+                    null
                   }
                   feedbackVotes={feedbackVotes}
                   feedbackDataSharingPreference={feedbackDataSharingPreference}
@@ -8274,7 +7264,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                     } : undefined,
                     resumeHref: !activePauseHold.isRoot ? createIssueDetailPath(activePauseHoldRoot?.identifier ?? activePauseHold.rootIssueId) : undefined,
                   } : null}
-                  composerDisabledReason={issue.conversationAgentId && !instanceExperimentalSettings?.enableAgentChat ? "Agent Chat is disabled in Experimental settings." : treeControlStateError ? "Couldn’t check whether this task is paused. Refresh to try again." : null}
+                  composerDisabledReason={issue.conversationAgentId && !instanceExperimentalSettings?.enableAgentChat ? "Agent chat is off in Settings > Features." : treeControlStateError ? "Couldn’t check whether this task is paused. Refresh to try again." : null}
                   composerHint={composerHint}
                   queuedCommentReason={queuedCommentReason}
                   onVote={handleCommentVote}
@@ -8497,30 +7487,17 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
           <Sheet open={mobilePropsOpen} onOpenChange={setMobilePropsOpen}>
             <SheetContent
               side={
-                taskChatShellEnabled
-                  ? "bottom"
-                  : documentDeepLink?.documentKey === "plan"
-                    ? "right"
-                    : "bottom"
+                "bottom"
               }
-              showCloseButton={!taskChatShellEnabled}
+              showCloseButton={false}
               className={cn(
-                taskChatShellEnabled
-                  ? "mobile-task-side-panel inset-0 h-dvh max-h-dvh w-full max-w-none gap-0 border-0 p-0 pt-(--sz-safe-top) pb-(--sz-safe-bottom)"
-                  : documentDeepLink?.documentKey === "plan"
-                    ? "inset-0 h-dvh w-screen max-w-none gap-0 border-0 p-0 sm:max-w-none"
-                    : "max-h-(--sz-85dvh) pb-(--sz-safe-bottom)",
+                "mobile-task-side-panel inset-0 h-dvh max-h-dvh w-full max-w-none gap-0 border-0 p-0 pt-(--sz-safe-top) pb-(--sz-safe-bottom)",
               )}
               data-testid={
-                taskChatShellEnabled
-                  ? "mobile-task-side-panel"
-                  : documentDeepLink?.documentKey === "plan"
-                    ? "mobile-plan-panel"
-                    : undefined
+                "mobile-task-side-panel"
               }
             >
-              {taskChatShellEnabled ? (
-                <>
+              <>
                   <SheetHeader className="sr-only">
                     <SheetTitle>Task side panel</SheetTitle>
                   </SheetHeader>
@@ -8532,9 +7509,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                     accountScope={currentUserId ?? "anonymous"}
                     childIssues={childIssues}
                     issueLinkState={
-                      streamlinedTaskDetailEnabled
-                        ? relationIssueLinkState
-                        : undefined
+                      relationIssueLinkState
                     }
                     onAddSubIssue={openNewSubIssue}
                     onUpdate={(data) => updateIssue.mutate(data)}
@@ -8563,9 +7538,9 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                     }
                     onCheckMonitorNow={() => checkIssueMonitorNow.mutate()}
                     checkingMonitorNow={checkIssueMonitorNow.isPending}
-                    fileTabsEnabled={fileViewerEnabled}
-                    streamlinedTabs={streamlinedTaskDetailEnabled}
-                    showSubtasksTab={streamlinedTaskDetailEnabled}
+                    fileTabsEnabled={true}
+                    streamlinedTabs={true}
+                    showSubtasksTab={true}
                     tasksTab={resolvedTasksTab}
                     artifactsOpenRequestId={isMobile && !artifactsOpenRequest?.handled && artifactsOpenRequest?.issueId === issue.id
                       ? artifactsOpenRequest.requestId : undefined}
@@ -8585,72 +7560,15 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                     onRequestClose={() => setMobilePropsOpen(false)}
                   />
                 </>
-              ) : (
-                <>
-                  <SheetHeader>
-                    <SheetTitle className="text-sm">
-                      {documentDeepLink?.documentKey === "plan"
-                        ? "Plan"
-                        : "Properties"}
-                    </SheetTitle>
-                  </SheetHeader>
-                  <ScrollArea className="flex-1 overflow-y-auto">
-                    <div className="px-4 pb-4">
-                      <IssueProperties
-                        issue={issue}
-                        childIssues={childIssues}
-                        issueLinkState={
-                          streamlinedTaskDetailEnabled
-                            ? relationIssueLinkState
-                            : undefined
-                        }
-                        onAddSubIssue={openNewSubIssue}
-                        onUpdate={(data) => updateIssue.mutate(data)}
-                        inline
-                        hasActiveRun={resolvedHasActiveRun}
-                        externalObjects={
-                          externalObjectsState.isEnabled
-                            ? externalObjectsState.groups
-                            : undefined
-                        }
-                        externalObjectsLoading={
-                          externalObjectsState.isEnabled
-                            ? externalObjectsState.isLoading
-                            : undefined
-                        }
-                        externalObjectsError={
-                          externalObjectsState.isEnabled
-                            ? externalObjectsState.isError
-                            : undefined
-                        }
-                        onRetryExternalObjects={
-                          externalObjectsState.isEnabled
-                            ? externalObjectsState.refetch
-                            : undefined
-                        }
-                        onCheckMonitorNow={() => checkIssueMonitorNow.mutate()}
-                        checkingMonitorNow={checkIssueMonitorNow.isPending}
-                        documentDeepLink={
-                          documentDeepLink?.issueId === issue.id
-                            ? documentDeepLink
-                            : null
-                        }
-                      />
-                    </div>
-                  </ScrollArea>
-                </>
-              )}
             </SheetContent>
           </Sheet>
-          {fileViewerEnabled ? (
-            <IssueFileViewer
+          <IssueFileViewer
               issueId={issue.id}
               companyId={issue.companyId}
               promptOpen={fileViewerPromptOpen}
               onPromptOpenChange={setFileViewerPromptOpen}
-              useSidePanel={taskChatShellEnabled}
+              useSidePanel={true}
             />
-          ) : null}
           <ScrollToBottom />
         </div>
       </PurgedAttachmentsContext.Provider></IssueGalleryContext.Provider></TextAttachmentContext.Provider></AgentTodoPanelContext.Provider>

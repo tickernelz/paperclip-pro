@@ -323,6 +323,7 @@ vi.mock("../services/index.js", () => ({
   issueThreadInteractionService: issueThreadInteractionServiceFactoryMock,
   issueService: vi.fn(() => ({ update: vi.fn(async () => null) })),
   instanceSettingsService: vi.fn(() => ({
+    seedNewInstallFeatureDefaults: vi.fn(async () => false),
     getExperimental: vi.fn(async () => ({
       enableExternalObjects: true,
       enableStatusCards: false,

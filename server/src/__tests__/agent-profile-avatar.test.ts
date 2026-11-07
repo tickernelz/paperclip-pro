@@ -144,7 +144,7 @@ it("lets a paired Dot upload without an assignment, with feature and current gra
   expect(await tools.callTool(principal, "paperclip_dot_set_avatar", { imageBase64 })).toMatchObject({ outcome: "completed", result: { agentId: f.agent.id } });
   await expect(tools.callTool(principal, "paperclip_dot_set_avatar", { imageBase64, agentId: randomUUID() })).rejects.toThrow();
   await instanceSettingsService(db).updateExperimental({ enableOpenAiDot: false });
-  try { await expect(tools.callTool(principal, "paperclip_dot_set_avatar", { imageBase64 })).rejects.toThrow("disabled"); }
+  try { await expect(tools.callTool(principal, "paperclip_dot_set_avatar", { imageBase64 })).rejects.toThrow("turned off"); }
   finally { await instanceSettingsService(db).updateExperimental({ enableOpenAiDot: true }); }
   await db.update(mcpOauthGrants).set({ revokedAt: new Date() }).where(eq(mcpOauthGrants.id, grant!.id));
   await expect(tools.callTool(principal, "paperclip_dot_set_avatar", { imageBase64 })).rejects.toThrow("authority");

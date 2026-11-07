@@ -19,7 +19,6 @@ import { TaskViewsMenu } from "../components/TaskViewsMenu";
 import { Button } from "@/components/ui/button";
 import { CircleDot, Plus } from "lucide-react";
 import type { Issue } from "@tickernelz/paperclip-pro-shared";
-import { useStreamlinedUiEnabled } from "../hooks/useStreamlinedUiEnabled";
 import { useCombinedInboxTasksEnabled } from "../hooks/useCombinedInboxTasksEnabled";
 import { useDialogActions } from "../context/DialogContext";
 import { useInboxBadge } from "../hooks/useInboxBadge";
@@ -39,12 +38,6 @@ const WORKSPACE_FILTER_ISSUE_LIMIT = 1000;
 const ISSUES_PAGE_SIZE = 100;
 export const ISSUES_ROW_PRESENTATION = "task" as const;
 export const ISSUES_TOOLBAR_PRESENTATION = "collection" as const;
-
-export function resolveIssuesPresentation(streamlinedUiEnabled: boolean) {
-  return streamlinedUiEnabled
-    ? { rowPresentation: ISSUES_ROW_PRESENTATION, toolbarPresentation: ISSUES_TOOLBAR_PRESENTATION }
-    : { rowPresentation: "legacy" as const, toolbarPresentation: "legacy" as const };
-}
 
 export function getNextIssuesPageOffset(
   loadedPageSize: number,
@@ -107,11 +100,8 @@ export function useIssuesSearchSync(urlSearch: string, locationSearch: string) {
  * get the same Views control in their toolbar, so the switch reads as one page.
  */
 export function Issues() {
-  const { enabled: streamlinedUiEnabled } = useStreamlinedUiEnabled();
   const { enabled: combinedInboxTasksEnabled } = useCombinedInboxTasksEnabled();
-  // The merged surface is Combined Inbox + Task List only. With the flag off, and always in
-  // the legacy shell, Tasks is the plain task list and Inbox keeps its pages.
-  return streamlinedUiEnabled && combinedInboxTasksEnabled ? <StreamlinedTasks /> : <OrganizationIssues />;
+  return combinedInboxTasksEnabled ? <StreamlinedTasks /> : <OrganizationIssues />;
 }
 
 function StreamlinedTasks() {
@@ -179,8 +169,7 @@ function OrganizationIssues({
   toolbarContext,
   initialStatuses,
 }: { toolbarContext?: ReactNode; initialStatuses?: string[] } = {}) {
-  const { enabled: streamlinedUiEnabled } = useStreamlinedUiEnabled();
-  const issuesPresentation = resolveIssuesPresentation(streamlinedUiEnabled);
+  const issuesPresentation = { rowPresentation: ISSUES_ROW_PRESENTATION, toolbarPresentation: ISSUES_TOOLBAR_PRESENTATION };
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const location = useLocation();
@@ -298,9 +287,7 @@ function OrganizationIssues({
     return (
       <EmptyState
         icon={CircleDot}
-        message={streamlinedUiEnabled
-          ? "Select an organization to view tasks."
-          : "Select a company to view tasks."}
+        message={"Select an organization to view tasks."}
       />
     );
   }

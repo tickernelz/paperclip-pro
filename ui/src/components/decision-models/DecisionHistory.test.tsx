@@ -15,7 +15,7 @@ describe("model history setup links", () => {
     [false, true, "/ACM/company/settings/connections", "Configure a decision model"],
     [false, false, "/ACM/company/settings", "Configure a decision model"],
     [true, true, "/ACM/company/settings/connections", "Configure fast response"],
-    [true, false, "/ACM/company/settings/instance/experimental", "Enable experimental fast responses"],
+    [true, false, "/ACM/company/settings/instance/features", "Turn on fast replies"],
   ] as const)("routes setup with fast response %s and experiment %s", (fastResponse, connectionsEnabled, href, label) => {
     const container = document.createElement("div");
     const root = createRoot(container);

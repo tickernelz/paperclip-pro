@@ -33,10 +33,16 @@ import {
 } from "@tickernelz/paperclip-pro-shared";
 import {
   INSTANCE_FEATURE_CATALOG,
+  NEW_INSTALL_FEATURE_DEFAULTS,
+  PERMANENT_FEATURE_KEYS,
+  REMOVED_FEATURE_KEYS,
+  withDependentsDisabled,
+  withRequirementsEnabled,
+  withUnmetRequirementsDisabled,
   applyOperatorGeneralDefaults,
   stripOperatorGeneralEchoes,
 } from "@tickernelz/paperclip-pro-shared";
-import { eq } from "drizzle-orm";
+import { and, eq, notExists, sql } from "drizzle-orm";
 import { logger } from "../middleware/logger.js";
 import { setAttachmentLimitSetting } from "../attachment-types.js";
 import { getManagedInstanceConfig, type ManagedInstanceConfig } from "./managed-config.js";
@@ -46,6 +52,7 @@ const DEFAULT_SINGLETON_KEY = "default";
 const instanceGeneralSettingsStorageSchema = instanceGeneralSettingsSchema.strip();
 const instanceExperimentalSettingsStorageSchema = instanceExperimentalSettingsSchema.strip();
 const TRUTHY_RUNTIME_ENV_VALUES = new Set(["1", "true", "yes", "on"]);
+const FIXED_FEATURE_KEYS: ReadonlySet<string> = new Set([...PERMANENT_FEATURE_KEYS, ...REMOVED_FEATURE_KEYS]);
 
 interface InstanceSettingsServiceOptions {
   runtimeEnv?: Record<string, string | undefined>;
@@ -100,7 +107,9 @@ export function applyExperimentalSettingsPatch(
   options: InstanceSettingsServiceOptions = {},
 ): InstanceExperimentalSettings {
   const previousExperimental = normalizeExperimentalSettings(current);
-  const patchable = stripServerManagedExperimentalPatchFields(patch);
+  const patchable = withDependentsDisabled(
+    withRequirementsEnabled(stripServerManagedExperimentalPatchFields(patch)),
+  ) as PatchInstanceExperimentalSettings;
   const nextExperimental = normalizeExperimentalSettings({
     ...previousExperimental,
     ...patchable,
@@ -249,12 +258,12 @@ export function normalizeExperimentalSettings(raw: unknown): InstanceExperimenta
     return {
       enableEnvironments: parsed.data.enableEnvironments ?? false,
       enableNativeRunner: parsed.data.enableNativeRunner ?? true,
-      enableAiConnectionRouters: parsed.data.enableAiConnectionRouters ?? false,
+      enableAiConnectionRouters: false,
       enableManagedSandboxOnly: parsed.data.enableManagedSandboxOnly ?? false,
       enableIsolatedWorkspaces: parsed.data.enableIsolatedWorkspaces ?? false,
       enableIsolatedWorkspacesByDefault: parsed.data.enableIsolatedWorkspacesByDefault ?? false,
-      enableStreamlinedLeftNavigation: parsed.data.enableStreamlinedLeftNavigation ?? true,
-      enableStreamlinedUi: parsed.data.enableStreamlinedUi ?? true,
+      enableStreamlinedLeftNavigation: true,
+      enableStreamlinedUi: true,
       // Apps graduated from Experimental. Ignore historical off values while
       // continuing to accept the compatibility key in stored settings.
       enableApps: true,
@@ -269,9 +278,9 @@ export function normalizeExperimentalSettings(raw: unknown): InstanceExperimenta
       enableAgentChat: parsed.data.enableAgentChat ?? false,
       enableCombinedInboxTasks: parsed.data.enableCombinedInboxTasks ?? false,
       enableConferenceRoomChat: parsed.data.enableConferenceRoomChat ?? false,
-      enableClassicTaskInterface: parsed.data.enableClassicTaskInterface ?? false,
+      enableClassicTaskInterface: false,
       enableIssuePlanDecompositions: parsed.data.enableIssuePlanDecompositions ?? false,
-      enableExperimentalFileViewer: parsed.data.enableExperimentalFileViewer ?? false,
+      enableExperimentalFileViewer: true,
       enableExternalObjects: parsed.data.enableExternalObjects ?? false,
       enableSmokeLab: parsed.data.enableSmokeLab ?? false,
       enableBuiltInAgents: parsed.data.enableBuiltInAgents ?? false,
@@ -291,7 +300,7 @@ export function normalizeExperimentalSettings(raw: unknown): InstanceExperimenta
       enableWorkspaceDirtyQuarantineRepair: parsed.data.enableWorkspaceDirtyQuarantineRepair ?? true,
       enableOwnerInstanceAdmin: parsed.data.enableOwnerInstanceAdmin ?? false,
       enableSandboxDuplexBridge: parsed.data.enableSandboxDuplexBridge ?? false,
-      enableRunnerPreviewIngress: parsed.data.enableRunnerPreviewIngress ?? false,
+      enableRunnerPreviewIngress: false,
       enableWorktreeRunExecution: parsed.data.enableWorktreeRunExecution ?? false,
       worktreeRunExecutionActivatedAt: parsed.data.worktreeRunExecutionActivatedAt ?? null,
       worktreeRunExecutionActivationInstanceId:
@@ -321,7 +330,7 @@ export function normalizeExperimentalSettings(raw: unknown): InstanceExperimenta
     enableConferenceRoomChat: false,
     enableClassicTaskInterface: false,
     enableIssuePlanDecompositions: false,
-    enableExperimentalFileViewer: false,
+    enableExperimentalFileViewer: true,
     enableExternalObjects: false,
     enableSmokeLab: false,
     enableBuiltInAgents: false,
@@ -367,18 +376,20 @@ export function applyManagedExperimentalOverlay(
   managedConfig: ManagedInstanceConfig | null,
 ): { experimental: InstanceExperimentalSettings; managedKeys: ManagedExperimentalKeyMetadata } {
   if (!managedConfig) return { experimental, managedKeys: {} };
-  const next: InstanceExperimentalSettings = { ...experimental };
+  const managed: Partial<Record<ManagedExperimentalFeatureKey, boolean>> = {};
   const managedKeys: ManagedExperimentalKeyMetadata = {};
   for (const [key, value] of Object.entries(managedConfig.features) as Array<
     [ManagedExperimentalFeatureKey, boolean]
   >) {
-    // Existing Cloud stack configs may still carry retired flags. Accept the
-    // document during rollout, but never let retired flags disable Apps or MCP aggregators.
-    if (key === "enableApps" || key === "enableMcpAggregators") continue;
-    next[key] = value;
+    if (FIXED_FEATURE_KEYS.has(key)) continue;
+    managed[key] = value;
     managedKeys[key] = { managed: true, managedBy: PAPERCLIP_CLOUD_MANAGED_BY };
   }
-  return { experimental: next, managedKeys };
+  const next = {
+    ...experimental,
+    ...withDependentsDisabled(withRequirementsEnabled(managed)),
+  } as InstanceExperimentalSettings;
+  return { experimental: withUnmetRequirementsDisabled(next), managedKeys };
 }
 
 /**
@@ -612,6 +623,23 @@ export function instanceSettingsService(db: Db, options: InstanceSettingsService
         .where(eq(instanceSettings.id, current.id))
         .returning();
       return toInstanceSettings(updated ?? current);
+    },
+
+    seedNewInstallFeatureDefaults: async (): Promise<boolean> => {
+      if (managedConfig) return false;
+      await getOrCreateRow();
+      const seeded = await db
+        .update(instanceSettings)
+        .set({ experimental: { ...NEW_INSTALL_FEATURE_DEFAULTS }, updatedAt: new Date() })
+        .where(
+          and(
+            eq(instanceSettings.singletonKey, DEFAULT_SINGLETON_KEY),
+            sql`${instanceSettings.experimental} = '{}'::jsonb`,
+            notExists(db.select({ id: companies.id }).from(companies)),
+          ),
+        )
+        .returning({ id: instanceSettings.id });
+      return seeded.length > 0;
     },
 
     listCompanyIds: async (): Promise<string[]> =>

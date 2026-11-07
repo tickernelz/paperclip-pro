@@ -53,7 +53,7 @@ export interface AdapterDisplayInfo {
 const adapterDisplayMap: Record<string, AdapterDisplayInfo> = {
   paperclip_runner: {
     label: "Paperclip Runner",
-    description: "Experimental Rust runner with a Codex provider",
+    description: "Rust runner with a Codex provider",
     icon: Cpu,
     experimental: true,
   },

@@ -16,7 +16,8 @@ const items = [
   { value: "instance-environments", label: "Environments", href: `${INSTANCE_SETTINGS_PATH_PREFIX}/environments` },
   { value: "connections", label: "Connections", href: "/company/settings/connections" },
   { value: "instance-access", label: "Access", href: `${INSTANCE_SETTINGS_PATH_PREFIX}/access` },
-  { value: "instance-experimental", label: "Experimental", href: `${INSTANCE_SETTINGS_PATH_PREFIX}/experimental` },
+  { value: "instance-features", label: "Features", href: `${INSTANCE_SETTINGS_PATH_PREFIX}/features` },
+  { value: "instance-advanced", label: "Advanced", href: `${INSTANCE_SETTINGS_PATH_PREFIX}/advanced` },
   { value: "instance-plugins", label: "Plugins", href: `${INSTANCE_SETTINGS_PATH_PREFIX}/plugins` },
   { value: "instance-adapters", label: "Adapters", href: `${INSTANCE_SETTINGS_PATH_PREFIX}/adapters` },
 ] as const;
@@ -32,7 +33,8 @@ const hiddenSettingKeyByTab: Partial<Record<CompanySettingsTab, string>> = {
   "instance-profile": "instance.profile",
   "instance-environments": "instance.environments",
   "instance-access": "instance.access",
-  "instance-experimental": "instance.experimental",
+  "instance-features": "instance.experimental",
+  "instance-advanced": "instance.experimental",
   "instance-plugins": "instance.plugins",
   "instance-adapters": "instance.adapters",
 };
@@ -54,8 +56,12 @@ export function getCompanySettingsTab(pathname: string): CompanySettingsTab {
     return "instance-access";
   }
 
-  if (pathname.includes(`${INSTANCE_SETTINGS_PATH_PREFIX}/experimental`)) {
-    return "instance-experimental";
+  if (pathname.includes(`${INSTANCE_SETTINGS_PATH_PREFIX}/features`)) {
+    return "instance-features";
+  }
+
+  if (pathname.includes(`${INSTANCE_SETTINGS_PATH_PREFIX}/advanced`)) {
+    return "instance-advanced";
   }
 
   if (pathname.includes(`${INSTANCE_SETTINGS_PATH_PREFIX}/plugins`)) {

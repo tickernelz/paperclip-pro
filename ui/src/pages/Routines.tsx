@@ -1,5 +1,5 @@
 import { AgentAvatar } from "@/components/AgentAvatar";
-import { startTransition, useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link, Navigate, useNavigate, useSearchParams } from "@/lib/router";
 import { ArrowUpDown, Check, ChevronDown, ChevronRight, Layers, Plus, Repeat } from "lucide-react";
@@ -7,7 +7,6 @@ import { routinesApi } from "../api/routines";
 import { foldersApi } from "../api/folders";
 import { agentsApi } from "../api/agents";
 import { projectsApi } from "../api/projects";
-import { issuesApi } from "../api/issues";
 import { heartbeatsApi } from "../api/heartbeats";
 import { accessApi } from "../api/access";
 import { useCompany } from "../context/CompanyContext";
@@ -17,14 +16,10 @@ import { buildMarkdownMentionOptions } from "../lib/company-members";
 import { cn } from "../lib/utils";
 import { queryKeys } from "../lib/queryKeys";
 import { groupBy } from "../lib/groupBy";
-import { createIssueDetailLocationState } from "../lib/issueDetailBreadcrumb";
-import { collectLiveIssueIds } from "../lib/liveIssueIds";
 import { getRecentAssigneeIds, sortAgentsByRecency, trackRecentAssignee } from "../lib/recent-assignees";
 import { getRecentProjectIds, trackRecentProject } from "../lib/recent-projects";
 import { EmptyState } from "../components/EmptyState";
-import { IssuesList } from "../components/IssuesList";
 import { PageSkeleton } from "../components/PageSkeleton";
-import { PageTabBar } from "../components/PageTabBar";
 import { InlineEntitySelector, type InlineEntityOption } from "../components/InlineEntitySelector";
 import { MarkdownEditor, type MarkdownEditorRef, type MentionOption } from "../components/MarkdownEditor";
 import { RoutineListRow, nextRoutineStatus } from "../components/RoutineList";
@@ -48,10 +43,8 @@ import {
 import { auditSectionHref } from "./audit/audit-navigation";
 import { routineDetailHref } from "../components/RoutineContextualSidebar";
 import { usePublishSharedQueryData, useSharedPollingQuery } from "../hooks/useSharedPolling";
-import { useStreamlinedUiEnabled } from "../hooks/useStreamlinedUiEnabled";
 import type { RoutineListItem, RoutineVariable } from "@tickernelz/paperclip-pro-shared";
 import type { FolderListItem } from "@tickernelz/paperclip-pro-shared";
-import { Tabs } from "@/components/ui/tabs";
 import {
   AllUnfiledBanner,
   BulkBar,
@@ -334,9 +327,8 @@ export function Routines() {
   const [runDialogRoutine, setRunDialogRoutine] = useState<RoutineListItem | null>(null);
   const [composerOpen, setComposerOpen] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
-  const { enabled: streamlinedUiEnabled } = useStreamlinedUiEnabled();
   const legacyRunsRequested = searchParams.get("tab") === "runs";
-  const activeTab: RoutinesTab = !streamlinedUiEnabled && legacyRunsRequested ? "runs" : "routines";
+  const activeTab: RoutinesTab = "routines";
   const [draft, setDraft] = useState<{
     title: string;
     description: string;
@@ -397,17 +389,12 @@ export function Routines() {
     queryFn: () => accessApi.listUserDirectory(selectedCompanyId!),
     enabled: !!selectedCompanyId,
   });
-  const { data: routineExecutionIssues, isLoading: recentRunsLoading, error: recentRunsError } = useQuery({
-    queryKey: [...queryKeys.issues.list(selectedCompanyId!), "routine-executions"],
-    queryFn: () => issuesApi.list(selectedCompanyId!, { originKind: "routine_execution" }),
-    enabled: !!selectedCompanyId && !streamlinedUiEnabled && activeTab === "runs",
-  });
   const liveRunsQueryKey = queryKeys.liveRuns(selectedCompanyId!);
   const sharedLiveRuns = useSharedPollingQuery({
     companyId: selectedCompanyId,
     resourceKey: "live-runs",
     queryKey: liveRunsQueryKey,
-    enabled: !!selectedCompanyId && !streamlinedUiEnabled && activeTab === "runs",
+    enabled: !!selectedCompanyId && false && activeTab === "runs",
     refetchInterval: false,
     leaderOnly: true,
   });
@@ -646,29 +633,7 @@ export function Routines() {
     () => (routines ?? []).filter((routine) => routine.status !== "archived"),
     [routines],
   );
-  const liveIssueIds = useMemo(
-    () => collectLiveIssueIds(liveRuns, routineExecutionIssues),
-    [liveRuns, routineExecutionIssues],
-  );
-  const recentRunsIssueLinkState = useMemo(
-    () => createIssueDetailLocationState("Recent Runs", "/routines?tab=runs", "issues"),
-    [],
-  );
-  const updateIssue = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) => issuesApi.update(id, data),
-    onSuccess: async () => {
-      await queryClient.invalidateQueries({
-        queryKey: [...queryKeys.issues.list(selectedCompanyId!), "routine-executions"],
-      });
-    },
-  });
 
-  function handleLegacyTabChange(tab: string) {
-    const nextTab: RoutinesTab = tab === "runs" ? "runs" : "routines";
-    startTransition(() => {
-      navigate(nextTab === "runs" ? "/routines?tab=runs" : "/routines");
-    });
-  }
   const folderFilteredRoutines = useMemo(() => {
     if (routineViewState.groupBy !== "folder") return visibleRoutines;
     if (folderSelection === "all") return visibleRoutines;
@@ -792,7 +757,7 @@ export function Routines() {
     return <EmptyState icon={Repeat} message="Select an organization to view routines." />;
   }
 
-  if (streamlinedUiEnabled && legacyRunsRequested) {
+  if (legacyRunsRequested) {
     return <Navigate to={auditSectionHref("runs", {})} replace />;
   }
 
@@ -800,46 +765,6 @@ export function Routines() {
     return <PageSkeleton variant="issues-list" />;
   }
 
-  if (!streamlinedUiEnabled && activeTab === "runs") {
-    return (
-      <div className="space-y-6">
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-          <div className="space-y-1">
-            <h1 className="text-2xl font-semibold tracking-tight">Routines</h1>
-            <p className="text-sm text-muted-foreground">
-              Recurring work definitions that materialize into auditable execution tasks.
-            </p>
-          </div>
-          <Button onClick={openCreateRoutine}>
-            <Plus className="mr-2 h-4 w-4" />
-            Create routine
-          </Button>
-        </div>
-        <Tabs value={activeTab} onValueChange={handleLegacyTabChange}>
-          <PageTabBar
-            align="start"
-            value={activeTab}
-            onValueChange={handleLegacyTabChange}
-            items={[
-              { value: "routines", label: "Routines" },
-              { value: "runs", label: "Recent Runs" },
-            ]}
-          />
-        </Tabs>
-        <IssuesList
-          issues={routineExecutionIssues ?? []}
-          isLoading={recentRunsLoading}
-          error={recentRunsError as Error | null}
-          agents={agents}
-          projects={projects}
-          liveIssueIds={liveIssueIds}
-          viewStateKey="paperclip:routine-recent-runs-view"
-          issueLinkState={recentRunsIssueLinkState}
-          onUpdateIssue={(id, data) => updateIssue.mutate({ id, data })}
-        />
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">
@@ -851,11 +776,9 @@ export function Routines() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          {streamlinedUiEnabled ? (
-            <Button variant="outline" asChild>
+          <Button variant="outline" asChild>
               <Link to={auditSectionHref("runs", {})}>View all runs</Link>
             </Button>
-          ) : null}
           <Button onClick={openCreateRoutine}>
             <Plus className="mr-2 h-4 w-4" />
             Create routine
@@ -863,19 +786,6 @@ export function Routines() {
         </div>
       </div>
 
-      {!streamlinedUiEnabled ? (
-        <Tabs value={activeTab} onValueChange={handleLegacyTabChange}>
-          <PageTabBar
-            align="start"
-            value={activeTab}
-            onValueChange={handleLegacyTabChange}
-            items={[
-              { value: "routines", label: "Routines" },
-              { value: "runs", label: "Recent Runs" },
-            ]}
-          />
-        </Tabs>
-      ) : null}
 
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between gap-3">

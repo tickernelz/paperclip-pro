@@ -52,7 +52,7 @@ function AgentChatsContent({ companyId, userId, enabled, loaded, agents, chats, 
     if (entryPath) navigate(entryPath, { replace: true });
   }, [navigate, entryPath]);
   if (!loaded) return <p role="status" className="text-sm text-muted-foreground">Loading chat…</p>;
-  if (!enabled) return <p className="text-sm text-muted-foreground">Agent Chat is disabled. Enable it in Experimental settings.</p>;
+  if (!enabled) return <p className="text-sm text-muted-foreground">Agent chat is off. Turn it on in Settings &gt; Features.</p>;
   if (!companyId) return <p className="text-sm text-muted-foreground">Select a company to start a conversation.</p>;
   if (resolvingRecent || entryPath || primary?.loading) return <p role="status" className="text-sm text-muted-foreground">Opening chat…</p>;
   const error = blockingError ?? (recentIds.length > 0 ? chats.error : null);

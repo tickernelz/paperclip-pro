@@ -70,8 +70,8 @@ describe("durable Dot Runner integration", () => {
       try {
         vi.stubEnv("PAPERCLIP_ENABLE_OPENAI_DOT", "1");
         expect(await broker.enabled()).toBe(false);
-        await expect(broker.createPairing({ companyId: randomUUID(), agentId: randomUUID(), operatorId: randomUUID() })).rejects.toThrow("experimental settings");
-      } finally { await settings.updateExperimental({ [key]: true }); }
+        await expect(broker.createPairing({ companyId: randomUUID(), agentId: randomUUID(), operatorId: randomUUID() })).rejects.toThrow("Settings > Features");
+      } finally { await settings.updateExperimental({ enablePublicMcp: true, enableOpenAiDot: true }); }
     }
     vi.stubEnv("PAPERCLIP_ENABLE_OPENAI_DOT", "0");
     expect(await broker.enabled()).toBe(true);
@@ -87,11 +87,11 @@ describe("durable Dot Runner integration", () => {
       target: { kind: "local" },
       workspaceId: null,
     };
-    expect(() => resolveNativeRuntimeMode(input)).toThrow("experimental settings");
+    expect(() => resolveNativeRuntimeMode(input)).toThrow("Settings > Features");
     expect(resolveNativeRuntimeMode({ ...input, enabled: false, dotEnabled: true })).toMatchObject({ kind: "native", profile: { backend: "openai_dot_mcp" } });
     expect(() => resolveNativeRuntimeMode({ ...input, enabled: false, dotEnabled: true,
       adapterConfig: { provider: "codex" },
-    })).toThrow("Paperclip Runner is experimental and disabled");
+    })).toThrow("The native runner is turned off");
     expect(resolveHeartbeatNativeRuntimeMode({ ...input, enabled: false, dotEnabled: false,
       persisted: { runtimeMode: "native", runtimeModeReason: null, runtimeModeResolvedAt: new Date(), driverKind: "openai_dot_mcp" },
     })).toMatchObject({ kind: "native", profile: { backend: "openai_dot_mcp" } });

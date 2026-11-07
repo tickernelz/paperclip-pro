@@ -8,8 +8,8 @@ import express from "express";
 import request from "supertest";
 import { and, eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { activityLog, agents, companies, companyMemberships, createDb, closeRegisteredClients, heartbeatRuns, issues, plugins, principalPermissionGrants, toolConnectionInstalls } from "@tickernelz/paperclip-pro-db";
-import { type AiConnectionBinding, type AiConnectionPoolMember, type PaperclipPluginManifestV1 } from "@tickernelz/paperclip-pro-shared";
+import { agents, companies, companyMemberships, createDb, closeRegisteredClients, heartbeatRuns, issues, principalPermissionGrants, toolConnectionInstalls } from "@tickernelz/paperclip-pro-db";
+import { type AiConnectionBinding } from "@tickernelz/paperclip-pro-shared";
 import { startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";
 import { agentRoutes } from "../routes/agents.js";
 import { errorHandler } from "../middleware/index.js";
@@ -18,11 +18,9 @@ import { heartbeatService } from "../services/heartbeat.js";
 import { getServerAdapter, registerServerAdapter, unregisterServerAdapter } from "../adapters/index.js";
 import { prepareManagedAiRuntime } from "../services/ai-connection-runtime.js";
 import { secretService } from "../services/secrets.js";
-import { aiConnectionRouterService } from "../services/ai-connection-router.js";
-import { instanceSettingsService } from "../services/instance-settings.js";
-import { toolAccessService } from "../services/tool-access.js";
 import { waitForPendingRunFailureReports } from "../services/run-failure-report.js";
 import { configureAgentLifecycle } from "../services/agent-lifecycle.js";
+import { instanceSettingsService } from "../services/instance-settings.js";
 
 const captureRunFailure = vi.hoisted(() => vi.fn());
 vi.mock("../sentry.js", async (importOriginal) => ({
@@ -96,68 +94,7 @@ function hired(response: request.Response) {
   return response.body.agent ?? response.body;
 }
 
-async function poolFixture(f: Awaited<ReturnType<typeof fixture>>, extraMembers: AiConnectionPoolMember[] = []) {
-  await instanceSettingsService(db).updateExperimental({ enableAiConnectionRouters: true });
-  const pluginKey = `fixture.pool-${f.companyId}`;
-  const manifest: PaperclipPluginManifestV1 = { id: pluginKey, apiVersion: 1, version: "0.1.0", displayName: "Pool fixture", description: "Fixture", author: "Tests", categories: ["connector"], capabilities: ["ai.connections.route"], aiConnectionRouter: { name: "AI connection pool", description: "Fixture" }, entrypoints: { worker: "worker.js" } };
-  await db.insert(plugins).values({ pluginKey, packageName: pluginKey, version: "0.1.0", manifestJson: manifest, status: "ready" });
-  const member: AiConnectionPoolMember = { id: randomUUID(), binding: { ...f.account, provider: "openai", method: "api_key", mode: "delegated" }, profile: { provider: "codex", model: "gpt-5.6-sol" } };
-  const pool = await aiConnectionRouterService(db).save(pluginKey, { companyId: f.companyId, config: { name: "Fixture pool", enabled: true, mode: "round_robin", thresholdPercent: 90, members: [member, ...extraMembers] } }, f.userId);
-  return { pool, binding: { mode: "router", connectionId: pool.id } as const, member };
-}
-
 describe("agent-created hires use managed AI connections", () => {
-  it.each(["agent-hires", "agents"])("%s inherits a manager's pool without copying legacy credentials", async (endpoint) => {
-    const f = await fixture("openai");
-    const p = await poolFixture(f);
-    const secret = await secretService(db).create(f.companyId, {
-      name: "Stale manager credential", provider: "local_encrypted", value: "fixture-legacy-key",
-    });
-    await db.update(agents).set({
-      runtimeConfig: { aiConnection: p.binding },
-      adapterConfig: { env: { OPENAI_API_KEY: { type: "secret_ref", secretId: secret.id } } },
-    }).where(eq(agents.id, f.agentId));
-    const agent = hired(await request(f.app).post(`/api/companies/${f.companyId}/${endpoint}`).send({
-      name: "Inherited pool teammate", role: "engineer", adapterType: f.adapterType, adapterConfig: f.adapterConfig,
-    }));
-    expect(agent.runtimeConfig.aiConnection).toEqual(p.binding);
-    expect(agent.adapterConfig.env?.OPENAI_API_KEY).toBeUndefined();
-    const installs = await db.select().from(toolConnectionInstalls).where(and(eq(toolConnectionInstalls.companyId, f.companyId), eq(toolConnectionInstalls.targetType, "agent"), eq(toolConnectionInstalls.targetId, agent.id)));
-    expect(installs.map(i => i.connectionId).sort()).toEqual([p.pool.id, f.account.connectionId].sort());
-  });
-
-  it("keeps an inherited pool when copying the caller's native runtime settings", async () => {
-    const f = await fixture("openai");
-    const p = await poolFixture(f);
-    await db.update(agents).set({ adapterType: "paperclip_runner", adapterConfig: { provider: "codex", model: "gpt-5.6-sol", lifecycleMode: "per_turn" }, runtimeConfig: { aiConnection: p.binding } }).where(eq(agents.id, f.agentId));
-    const agent = hired(await request(f.app).post(`/api/companies/${f.companyId}/agent-hires`).send({
-      name: "Native pool teammate", role: "engineer", adapterType: "paperclip_runner", inheritRuntimeFrom: "caller",
-    }));
-    expect(agent.runtimeConfig.aiConnection).toEqual(p.binding);
-    expect(agent.adapterConfig).toMatchObject({ provider: "codex", model: "gpt-5.6-sol", lifecycleMode: "per_turn" });
-  });
-
-  it.each(["OPENAI_API_KEY", "ANTHROPIC_API_KEY"])("pool inheritance honors only the child's own provider auth override (%s)", async (key) => {
-    const f = await fixture("openai");
-    const p = await poolFixture(f);
-    await db.update(agents).set({ runtimeConfig: { aiConnection: p.binding } }).where(eq(agents.id, f.agentId));
-    const agent = hired(await request(f.app).post(`/api/companies/${f.companyId}/agent-hires`).send({ name: "Explicit auth teammate", role: "engineer", adapterType: f.adapterType, adapterConfig: { env: { [key]: "fixture-explicit-key" } } }));
-    expect(agent.runtimeConfig.aiConnection).toEqual(key === "OPENAI_API_KEY" ? undefined : p.binding);
-    expect(agent.adapterConfig.env[key]).toEqual({ type: "plain", value: "fixture-explicit-key" });
-  });
-
-  it("rejects a saved pool binding when no member is installed for that agent", async () => {
-    const f = await fixture("openai");
-    const p = await poolFixture(f);
-    await db.insert(principalPermissionGrants).values({ companyId: f.companyId, principalType: "user", principalId: f.userId, permissionKey: "agents:configure" });
-    await db.delete(toolConnectionInstalls).where(eq(toolConnectionInstalls.connectionId, f.account.connectionId));
-    const response = await request(f.app).patch(`/api/agents/${f.agentId}`).send({ runtimeConfig: { aiConnection: p.binding } });
-    expect(response.status, JSON.stringify(response.body)).toBe(422);
-    expect(response.body.details).toMatchObject({ code: "ai_connection_pool_no_eligible_member" });
-    const [saved] = await db.select().from(agents).where(eq(agents.id, f.agentId));
-    expect(saved.runtimeConfig.aiConnection).toEqual(f.binding);
-  });
-
   for (const endpoint of ["agent-hires", "agents"]) {
     it.each([
       ["anthropic", "api_key"], ["anthropic", "subscription"],

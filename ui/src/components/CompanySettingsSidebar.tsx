@@ -3,16 +3,17 @@ import {
   ArrowLeft,
   Cpu,
   Download,
-  FlaskConical,
   KeyRound,
   Link2,
   MonitorCog,
   Puzzle,
   Shield,
   SlidersHorizontal,
+  ToggleRight,
   Upload,
   UserRoundPen,
   Users,
+  Wrench,
 } from "lucide-react";
 import type { PluginRecord } from "@tickernelz/paperclip-pro-shared";
 import { sidebarBadgesApi } from "@/api/sidebarBadges";
@@ -163,11 +164,18 @@ export function CompanySettingsSidebar() {
             <SidebarNavItem to="/company/import" label="Import" icon={Upload} end />
           )}
           {showPage("instance.experimental") && (
-            <SidebarNavItem
-              to={`${INSTANCE_SETTINGS_PATH_PREFIX}/experimental`}
-              label="Experimental"
-              icon={FlaskConical}
-            />
+            <>
+              <SidebarNavItem
+                to={`${INSTANCE_SETTINGS_PATH_PREFIX}/features`}
+                label="Features"
+                icon={ToggleRight}
+              />
+              <SidebarNavItem
+                to={`${INSTANCE_SETTINGS_PATH_PREFIX}/advanced`}
+                label="Advanced"
+                icon={Wrench}
+              />
+            </>
           )}
           {showPlugins && (
             <SidebarNavItem
