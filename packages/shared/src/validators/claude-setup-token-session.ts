@@ -1,6 +1,6 @@
 import { aiConnectionLoginIntentSchema } from "../ai-connections.js";
 import { z } from "zod";
-import { AGENT_ADAPTER_TYPES } from "../constants.js";
+import { ADAPTER_LOGIN_TYPES } from "../constants.js";
 import { ADAPTER_AUTH_PANEL_MODES, SETUP_TOKEN_TRANSPORT_ADVISORY_CODE } from "../types/agent.js";
 import {
   adapterAuthSessionFailureSchema,
@@ -46,7 +46,7 @@ export type ClaudeSetupTokenOverwrite =
 export const startClaudeSetupTokenSessionRequestSchema = z.object({
   aiConnection: aiConnectionLoginIntentSchema.optional(),
   environmentId: z.string().guid(),
-  adapterType: z.enum(AGENT_ADAPTER_TYPES),
+  adapterType: z.enum(ADAPTER_LOGIN_TYPES),
   overwrite: claudeSetupTokenOverwriteSchema.optional(),
 }).strict();
 export type StartClaudeSetupTokenSessionRequest =

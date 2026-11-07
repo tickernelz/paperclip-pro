@@ -32,6 +32,9 @@ export const AGENT_ADAPTER_TYPES = [
 ] as const;
 export type AgentAdapterType = (typeof AGENT_ADAPTER_TYPES)[number] | (string & {});
 
+export const RUNNER_HARNESS_LOGIN_ADAPTER_TYPES = ["claude_local", "codex_local", "grok_local"] as const;
+export const ADAPTER_LOGIN_TYPES = [...AGENT_ADAPTER_TYPES, ...RUNNER_HARNESS_LOGIN_ADAPTER_TYPES] as const;
+
 export const AGENT_ROLES = [
   "ceo",
   "cto",
