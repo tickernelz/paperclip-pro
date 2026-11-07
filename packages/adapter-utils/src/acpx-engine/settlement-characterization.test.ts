@@ -1110,25 +1110,6 @@ describe("ACP settlement — Layer B: restoreWorkspace order + native-sync selec
   });
 });
 
-// ===========================================================================
-// Layer C — sync-back registration at the engine seam.
-//
-// The three real adapters each register a restoreWorkspace-backed teardown via
-// their managed-home seam: codex packages/adapters/codex-local/src/server/acp.ts
-// (teardown ~:239-258, wired by withCodexAcpDefaults ~:277); claude
-// packages/adapters/claude-local/src/server/acp.ts (registerWorkspaceSyncBack
-// ~:201-215, wired by withClaudeAcpDefaults ~:292); gemini
-// packages/adapters/gemini-local/src/server/acp.ts (registerWorkspaceSyncBack
-// ~:163-177, wired by withGeminiAcpDefaults ~:249). Those adapter packages are
-// NOT dependencies of adapter-utils and resolve only to the canonical app
-// checkout (not this worktree), and the plugin-sdk env-sync-negotiation helpers
-// (definePlugin/startWorkerRpcHost) are not public exports — importing them from
-// an adapter-utils test is infeasible/fragile. So this pins the adapter-agnostic
-// sync-back at the engine seam: `prepareRemoteManagedHome` returns a `teardown`
-// (the same shape each adapter registers), and the engine fires it exactly once
-// on the exit/cleanup path (mirrors execute.test.ts
-// test_remote_seam_teardown_fires_once_on_exit :2556).
-// ===========================================================================
 describe("ACP settlement — Layer C: per-adapter sync-back teardown fires once at the engine seam", () => {
   beforeEach(() => {
     vi.clearAllMocks();

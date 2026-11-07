@@ -261,10 +261,7 @@ export async function prepareConnectorSkillDelivery(
   config: Record<string, unknown> & Awaited<ReturnType<typeof applyConnectorSkills>>,
   adapterType: string,
 ) {
-  const scopedFiles =
-    adapterType === "paperclip_runner" ||
-    (config.engine === "cli" &&
-      ["codex_local", "claude_local", "kimi_local"].includes(adapterType));
+  const scopedFiles = adapterType === "paperclip_runner";
   if (scopedFiles) {
     // Runner models with semantic tools cannot necessarily read staged skill
     // files. Supply Slack and Speko contracts and verified source IDs in their input;

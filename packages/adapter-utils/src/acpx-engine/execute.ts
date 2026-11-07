@@ -841,12 +841,6 @@ function resolveManagedCodexApiKeyHomeDir(companyId: string, agentId: string): s
   return path.join(defaultStateDir(companyId, agentId), "codex-home");
 }
 
-// Mirrors `resolveManagedGrokHomeDir` in
-// `packages/adapters/grok-local/src/server/grok-home.ts` — this package
-// cannot import that adapter package (it would invert the dependency
-// direction), so the path scheme is duplicated here, the same way
-// `resolveManagedCodexHomeDir` above duplicates the Codex adapter's own
-// helper.
 function resolveManagedGrokHomeDir(companyId: string): string {
   return path.join(defaultPaperclipInstanceDir(), "companies", companyId, "grok-home");
 }

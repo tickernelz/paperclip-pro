@@ -12,47 +12,11 @@ import {
 } from "./grok-home.js";
 import { USE_SOURCE_EXIT, decideGrokAuthMerge } from "./grok-auth-merge-decision.js";
 
-// The Grok device-login credential promotion. It runs after a successful
-// device login, on the exact credential the login sandbox produced. It mirrors
-// the fixed order the Codex promotion uses (see
-// `packages/adapters/codex-local/src/server/adapter-auth-promotion.ts`):
-// readiness check, credential validation, a user-initiated gate, a
-// sole-active-owner gate, then the write.
-//
-// Grok needs no per-identity cache, but it does need a "strictly newer" merge
-// decision: a completed device login is NOT always the newest state for the
-// account it logs in, because a teardown copy-back can install a fresher
-// same-identity credential (see `grok-auth-copyback.ts`) while this session
-// is still logging in. So the write step seeds an empty home, keeps the home
-// untouched when a DIFFERENT account already occupies it, and for the SAME
-// account runs the shared freshness predicate (`grok-auth-merge-decision.ts`)
-// so it replaces the existing credential only when the login is strictly
-// newer. The helper never writes the instance-global home, only the
-// company-scoped one.
-//
-// The comparison-and-install step runs under `withDirectoryMergeLock` on the
-// company Grok home, the same lock `copyBackGrokAuth` (see
-// `grok-auth-copyback.ts`) takes on the same directory at teardown. Both
-// resolve the lock key from the directory's canonical real path, so a
-// promotion and a teardown copy-back for the same company can never
-// interleave their read-decide-write sections.
-//
-// The helper treats the whole credential value as a secret: it never logs a
-// token, a refresh token, or a personal field (email, name, user id).
 
 const AUTH_FILE_NAME = "auth.json";
-// A private directory (owner rwx only), reused from
-// packages/adapters/codex-local/src/server/adapter-auth-promotion.ts:37-38.
 const PRIVATE_DIR_MODE = 0o700;
-// A private file (owner rw only). The write calls `chmod` after the write, so
-// the process umask can never widen it — the same pattern
-// packages/adapters/codex-local/src/server/codex-home.ts:524-526 uses for a
-// staged credential file.
 const PRIVATE_FILE_MODE = 0o600;
 
-// A bounded size for the credential payload, mirroring
-// packages/adapters/codex-local/src/server/device-login-export.ts's
-// `MAX_AUTH_JSON_BYTES`. A real `auth.json` is a few kilobytes.
 const MAX_AUTH_JSON_BYTES = 64 * 1024;
 
 /** The independent readiness result for the exact staged credential. */
