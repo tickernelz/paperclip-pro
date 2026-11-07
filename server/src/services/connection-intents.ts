@@ -8,12 +8,11 @@ import { createHash } from "node:crypto";
 import { logActivity } from "./activity-log.js";
 import { aiConnectionService } from "./ai-connections.js";
 import { aiConnectionBindingSchema, aiConnectionRouterBindingSchema } from "@tickernelz/paperclip-pro-shared";
-import { aiBindingForAuthRecovery, isAiAuthenticationFailure, isAiAuthenticationRepairable } from "./ai-auth-failure.js";
+import { aiBindingForAuthRecovery, isAiAuthenticationRepairable } from "./ai-auth-failure.js";
 import { and, eq, desc, isNull, sql } from "drizzle-orm";
 import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
   agents,
-  aiConnectionTaskPins,
   companies,
   toolConnections,
   toolCatalogEntries,
@@ -242,20 +241,7 @@ export function connectionIntentService(db: Db) {
   async function managedAgent(companyId: string, agentId: string, serviceSlug: string, options: { fallback?: AiConnectionBinding; sourceRunId?: string | null } = {}, client = db) {
     const [agent] = await client.select().from(agents).where(and(eq(agents.companyId, companyId), eq(agents.id, agentId)));
     if (!agent) return null;
-    const router = aiConnectionRouterBindingSchema.safeParse(agent.runtimeConfig.aiConnection).data;
-    if (router) {
-      // Repair the durable task allocation, without adopting a personal default
-      // or replacing the agent's pool. A changed pool invalidates the old card.
-      if (!options.sourceRunId) return null;
-      const [source] = await client.select().from(heartbeatRuns).where(and(eq(heartbeatRuns.companyId, companyId), eq(heartbeatRuns.agentId, agentId), eq(heartbeatRuns.id, options.sourceRunId)));
-      const taskKey = text(source?.contextSnapshot?.aiRouterTaskKey);
-      const evidence = record(source?.contextSnapshot?.aiRouterSelection);
-      if (!source || !isAiAuthenticationFailure(source.errorCode) || source.status !== "failed" || evidence?.poolId !== router.connectionId || !taskKey) return null;
-      const [pin] = await client.select().from(aiConnectionTaskPins).where(and(eq(aiConnectionTaskPins.companyId, companyId), eq(aiConnectionTaskPins.poolId, router.connectionId), eq(aiConnectionTaskPins.agentId, agentId), eq(aiConnectionTaskPins.taskKey, taskKey)));
-      const binding = pin?.selection.binding;
-      if (!pin || binding?.provider !== serviceSlug || JSON.stringify(evidence.binding) !== JSON.stringify(binding)) return null;
-      return { agent, binding, adapterConfig: { ...agent.adapterConfig, ...pin.selection.runtimeConfig }, requiresAdoption: false };
-    }
+    if (aiConnectionRouterBindingSchema.safeParse(agent.runtimeConfig.aiConnection).success) return null;
     const saved = aiConnectionBindingSchema.safeParse(agent.runtimeConfig.aiConnection).data;
     const binding = saved ?? options.fallback;
     return binding?.provider === serviceSlug ? { agent, binding, adapterConfig: agent.adapterConfig, requiresAdoption: !saved } : null;
@@ -1211,15 +1197,13 @@ export function connectionIntentService(db: Db) {
       if (latest?.id !== run.id) return null;
       const [agent] = await db.select().from(agents).where(and(eq(agents.id, run.agentId), eq(agents.companyId, run.companyId)));
       if (!agent) return null;
+      if (aiConnectionRouterBindingSchema.safeParse(agent.runtimeConfig.aiConnection).success) return null;
       const saved = aiConnectionBindingSchema.safeParse(agent.runtimeConfig.aiConnection).data;
-      const router = aiConnectionRouterBindingSchema.safeParse(agent.runtimeConfig.aiConnection).data;
-      const selected = router ? record(run.contextSnapshot?.aiRouterSelection) : null;
-      const managed = router && selected ? await managedAgent(run.companyId, run.agentId, String(record(selected.binding)?.provider), { sourceRunId: run.id }) : null;
-      const binding = router ? managed?.binding : saved ?? aiBindingForAuthRecovery(agent.adapterType, agent.adapterConfig, run);
+      const binding = saved ?? aiBindingForAuthRecovery(agent.adapterType, agent.adapterConfig, run);
       if (!binding) return null;
       const attribution = record(run.contextSnapshot?.aiConnection);
       if (attribution && attribution.provider !== binding.provider) return null;
-      if ((saved || managed) && attribution && typeof attribution.identity === "string" && typeof attribution.connectionId === "string" && typeof attribution.grantId === "string") {
+      if (saved && attribution && typeof attribution.identity === "string" && typeof attribution.connectionId === "string" && typeof attribution.grantId === "string") {
         await aiConnectionService(db).markAuthenticationFailed({ companyId: run.companyId, runId: run.id, agentId: run.agentId,
           runStartedAt: run.startedAt ?? run.createdAt,
           attribution: attribution as unknown as AiConnectionAttribution & { identity: string } });

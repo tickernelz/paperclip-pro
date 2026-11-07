@@ -29,9 +29,19 @@ The file viewer, the streamlined shell, the streamlined navigation, Apps, and MC
 | `enableRunnerPreviewIngress` | `false` |
 | `enableAiConnectionRouters` | `false` |
 
+## AI connection pools removed
+
+AI connection pools (plugin routers that rotated tasks between accounts) are gone: the pool routes under `/api/companies/:companyId/ai-connection-pools` and their MCP tools (`paperclipListAiConnectionPools`, `paperclipCreateAiConnectionPool`, `paperclipDeleteAiConnectionPool`, `paperclipGetAiConnectionPoolInspection`), the `poolId` filter on adapter models, the pool screens in Apps, and the plugin SDK hook `onRouteAiConnection`.
+
+- An agent that still has a pool binding (`runtimeConfig.aiConnection.mode: "router"`) keeps it. Its runs stop before work with "AI connection pools were removed. Choose an account in the agent settings." Saving a new pool binding is rejected with the same sentence.
+- A plugin manifest that still declares `aiConnectionRouter` or the `ai.connections.route` capability installs as before; both are ignored.
+- Existing pool connections stay listed in Apps and can be removed there like any other connection.
+
 ## Removed in the next release
 
 The eight keys in the table above leave the settings schema, the feature catalog artifact, and the API response. A `PATCH` that still sends one is then stripped without effect, and a managed config (`PAPERCLIP_MANAGED_CONFIG`) that names one fails validation and the server refuses to start, so remove them from scripts and managed configs during this release.
+
+The tables `ai_connection_pools`, `ai_connection_router_cursors`, and `ai_connection_task_pins` are dropped, together with the `aiConnectionRouter` manifest field and the `ai.connections.route` capability that are only tolerated in this release.
 
 ## Upgrade
 

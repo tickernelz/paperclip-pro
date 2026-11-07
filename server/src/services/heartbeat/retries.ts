@@ -63,7 +63,6 @@ import {
   MAX_TURN_CONTINUATION_RETRY_REASON,
   WORKSPACE_BUSY_RETRY_REASON,
   AI_CONNECTION_BUSY_RETRY_REASON,
-  AI_CONNECTION_POOL_WAIT_RETRY_REASON,
   INTERACTION_CONTINUATION_INFRA_RETRY_REASON,
   INTERACTION_CONTINUATION_INFRA_WAKE_REASON,
   isNonAssigneeWorkspaceBusyRetry,
@@ -679,7 +678,7 @@ export function createHeartbeatRetries(db: Db, dependencies: HeartbeatRetryDepen
     const requiresIssueGate =
       isTransientWorkspaceGitScanCode(run.errorCode) ||
       hasConversationContinuationPolicy(run.resultJson) ||
-      (retryReason === AI_CONNECTION_BUSY_RETRY_REASON || retryReason === AI_CONNECTION_POOL_WAIT_RETRY_REASON) ||
+      retryReason === AI_CONNECTION_BUSY_RETRY_REASON ||
       retryReason === MAX_TURN_CONTINUATION_RETRY_REASON ||
       retryReason === INTERACTION_CONTINUATION_INFRA_RETRY_REASON;
     if (requiresIssueGate) {
@@ -789,7 +788,7 @@ export function createHeartbeatRetries(db: Db, dependencies: HeartbeatRetryDepen
                 executionFailureRetryCount(run),
             }
           : {}),
-        ...((retryReason === AI_CONNECTION_BUSY_RETRY_REASON || retryReason === AI_CONNECTION_POOL_WAIT_RETRY_REASON)
+        ...(retryReason === AI_CONNECTION_BUSY_RETRY_REASON
           ? { failureRetriesBeforeAiConnectionWait: executionFailureRetryCount(run) }
           : {}),
         ...(retryReason === PROCESS_LOSS_RETRY_REASON
@@ -1143,7 +1142,7 @@ export function createHeartbeatRetries(db: Db, dependencies: HeartbeatRetryDepen
         }
 
         if (
-          (retryReason === AI_CONNECTION_BUSY_RETRY_REASON || retryReason === AI_CONNECTION_POOL_WAIT_RETRY_REASON) && issueId &&
+          retryReason === AI_CONNECTION_BUSY_RETRY_REASON && issueId &&
           !isNonAssigneeWorkspaceBusyRetry(retryReason, contextSnapshot)
         ) {
           // The issue row is locked above. Recheck after the preflight gate so

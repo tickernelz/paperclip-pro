@@ -66,6 +66,13 @@ export const aiConnectionBindingSchema = z.discriminatedUnion("mode", [
     .strict(),
 ]);
 export type AiConnectionBinding = z.infer<typeof aiConnectionBindingSchema>;
+export const aiConnectionRouterBindingSchema = z.object({
+  mode: z.literal("router"),
+  connectionId: z.string().uuid(),
+}).strict();
+export const aiRuntimeConnectionBindingSchema = z.union([aiConnectionBindingSchema, aiConnectionRouterBindingSchema]);
+export type AiRuntimeConnectionBinding = z.infer<typeof aiRuntimeConnectionBindingSchema>;
+export const AI_CONNECTION_ROUTER_REMOVED_MESSAGE = "AI connection pools were removed. Choose an account in the agent settings.";
 export const aiConnectionMetadataSchema = z.object({ ...requirement, routing: aiProviderRoutingSchema.optional() }).strict();
 export type AiConnectionMetadata = z.infer<typeof aiConnectionMetadataSchema>;
 
@@ -176,7 +183,6 @@ export interface AiManagedConnectionSummary {
 }
 export interface AiConnectionList {
   currentUserId: string;
-  pools?: import("./ai-connection-router.js").AiConnectionPool[];
   canManageConnections: boolean;
   connections: AiManagedConnectionSummary[];
 }

@@ -9,7 +9,7 @@ import request from "supertest";
 import { and, eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { agents, companies, companyMemberships, createDb, closeRegisteredClients, heartbeatRuns, issues, principalPermissionGrants, toolConnectionInstalls } from "@tickernelz/paperclip-pro-db";
-import { type AiConnectionBinding } from "@tickernelz/paperclip-pro-shared";
+import { AI_CONNECTION_ROUTER_REMOVED_MESSAGE, type AiConnectionBinding } from "@tickernelz/paperclip-pro-shared";
 import { startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";
 import { agentRoutes } from "../routes/agents.js";
 import { errorHandler } from "../middleware/index.js";
@@ -231,6 +231,14 @@ describe("agent-created hires use managed AI connections", () => {
     expect(response.body.details.code).toBe("ai_connection_incompatible");
     expect(await db.select().from(agents).where(eq(agents.companyId, f.companyId))).toHaveLength(1);
   });
+
+  it("rejects a removed connection-pool binding without creating a hire", async () => {
+    const f = await fixture("anthropic");
+    const response = await request(f.app).post(`/api/companies/${f.companyId}/agent-hires`).send({ name: "Pool teammate", role: "engineer", adapterType: "omp_local", runtimeConfig: { aiConnection: { mode: "router", connectionId: randomUUID() } } });
+    expect(response.status).toBe(422);
+    expect(response.body).toMatchObject({ error: AI_CONNECTION_ROUTER_REMOVED_MESSAGE, details: { code: "ai_connection_router_removed" } });
+    expect(await db.select().from(agents).where(eq(agents.companyId, f.companyId))).toHaveLength(1);
+  });
 });
 
 describe("hired agents sharing a subscription", () => {
@@ -283,4 +291,26 @@ describe("hired agents sharing a subscription", () => {
     }
   });
 
+  it("stops a run before provider work when the agent still has a removed connection-pool binding", async () => {
+    const f = await fixture("anthropic", "subscription");
+    const [agent] = await db.insert(agents).values({ companyId: f.companyId, name: "Former pool teammate", role: "engineer", adapterType: "omp_local", adapterConfig: { cwd: home }, runtimeConfig: { heartbeat: { enabled: false }, aiConnection: { mode: "router", connectionId: randomUUID() } } }).returning();
+    const [issue] = await db.insert(issues).values({ companyId: f.companyId, title: "Task for a former pool agent", status: "todo", assigneeAgentId: agent.id, responsibleUserId: f.userId, createdByUserId: f.userId }).returning();
+    const execute = vi.fn(async () => ({ exitCode: 0, signal: null, timedOut: false, resultJson: {} }));
+    registerServerAdapter({ ...getServerAdapter("omp_local"), execute });
+    const heartbeat = heartbeatService(db);
+    try {
+      const run = await heartbeat.invoke(agent.id, "assignment", { issueId: issue.id, wakeReason: "issue_assigned", responsibleUserId: f.userId }, "system");
+      expect(run).not.toBeNull();
+      await expect.poll(async () => (await heartbeat.getRun(run!.id))?.status, { timeout: 20_000 }).not.toMatch(/^(queued|running)$/);
+      await heartbeat.drainActiveRunExecutions();
+      const finished = await heartbeat.getRun(run!.id);
+      expect(finished?.error).toBe(AI_CONNECTION_ROUTER_REMOVED_MESSAGE);
+      expect(execute).not.toHaveBeenCalled();
+      const [saved] = await db.select().from(agents).where(eq(agents.id, agent.id));
+      expect(saved.runtimeConfig.aiConnection).toMatchObject({ mode: "router" });
+    } finally {
+      await heartbeat.drainActiveRunExecutions();
+      unregisterServerAdapter("omp_local");
+    }
+  });
 });
