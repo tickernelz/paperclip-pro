@@ -45394,9 +45394,6 @@
               "ANTHROPIC_API_KEY": {
                 "type": "string"
               },
-              "API_SERVER_KEY": {
-                "type": "string"
-              },
               "CURSOR_API_KEY": {
                 "type": "string"
               },
@@ -45407,9 +45404,6 @@
                 "type": "string"
               },
               "KIMI_API_KEY": {
-                "type": "string"
-              },
-              "KIMI_MODEL_API_KEY": {
                 "type": "string"
               },
               "MINIMAX_API_KEY": {

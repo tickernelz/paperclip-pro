@@ -215,9 +215,9 @@ describeEmbeddedPostgres("issue queued-comment routes", () => {
       .toMatchObject({ status: "done" });
   });
 
-  it("delivers a saved Grok interrupt exactly once after remote cleanup, including concurrent restart sweeps", async () => {
+  it("delivers a saved interrupt exactly once after remote cleanup, including concurrent restart sweeps", async () => {
     const seeded = await seedQueue();
-    await db.update(agents).set({ adapterType: "grok_local", runtimeConfig: { heartbeat: { maxConcurrentRuns: 1 } } })
+    await db.update(agents).set({ adapterType: "omp_local", runtimeConfig: { heartbeat: { maxConcurrentRuns: 1 } } })
       .where(eq(agents.id, seeded.agentId));
     await db.update(heartbeatRuns).set({ runtimeMode: "legacy", status: "cancelled", errorCode: "operator_interrupted",
       finishedAt: new Date("2026-08-22T15:03:00.000Z"),
@@ -314,7 +314,7 @@ describeEmbeddedPostgres("issue queued-comment routes", () => {
       const seeded = await seedQueue();
       await db.delete(agentWakeupRequests).where(eq(agentWakeupRequests.id, seeded.wakeId));
       if (runtime === "legacy") {
-        await db.update(agents).set({ adapterType: "codex_local" }).where(eq(agents.id, seeded.agentId));
+        await db.update(agents).set({ adapterType: "omp_local" }).where(eq(agents.id, seeded.agentId));
         await db.update(heartbeatRuns).set({ runtimeMode: "legacy" }).where(eq(heartbeatRuns.id, seeded.runId));
       }
       const child = spawn(process.execPath, ["-e", "setInterval(() => {}, 1000)"], { stdio: "ignore" });
@@ -623,7 +623,7 @@ describeEmbeddedPostgres("issue queued-comment routes", () => {
       mutation: "interaction", interactionId, interactionStatus: "accepted", _paperclipWakeContext: context },
     }).where(eq(agentWakeupRequests.id, seeded.wakeId));
     if (!native) {
-      await db.update(agents).set({ adapterType: "claude_local",
+      await db.update(agents).set({ adapterType: "omp_local",
         runtimeConfig: { heartbeat: { maxConcurrentRuns: 1 } },
       }).where(eq(agents.id, seeded.agentId));
       await db.update(heartbeatRuns).set({ runtimeMode: "legacy" }).where(eq(heartbeatRuns.id, seeded.runId));
@@ -877,7 +877,7 @@ describeEmbeddedPostgres("issue queued-comment routes", () => {
     async (scenario) => {
       const seeded = await seedQueue();
       if (scenario !== "native run") {
-        await db.update(agents).set({ adapterType: "codex_local" }).where(eq(agents.id, seeded.agentId));
+        await db.update(agents).set({ adapterType: "omp_local" }).where(eq(agents.id, seeded.agentId));
         await db.update(heartbeatRuns).set({ runtimeMode: "legacy" }).where(eq(heartbeatRuns.id, seeded.runId));
       }
       const client = app(seeded.companyId);
@@ -895,7 +895,7 @@ describeEmbeddedPostgres("issue queued-comment routes", () => {
 
   it("does not accept interruption authority from an agent wake payload", async () => {
     const seeded = await seedQueue();
-    await db.update(agents).set({ adapterType: "claude_local",
+    await db.update(agents).set({ adapterType: "omp_local",
       runtimeConfig: { heartbeat: { maxConcurrentRuns: 1 } },
     }).where(eq(agents.id, seeded.agentId));
     await db.update(heartbeatRuns).set({ runtimeMode: "legacy" }).where(eq(heartbeatRuns.id, seeded.runId));
@@ -933,7 +933,7 @@ describeEmbeddedPostgres("issue queued-comment routes", () => {
     if (target === "system-receipt") await db.update(agentWakeupRequests).set({
       requestedByActorType: "system", requestedByActorId: "heartbeat",
     }).where(eq(agentWakeupRequests.id, seeded.wakeId));
-    await db.update(agents).set({ adapterType: "claude_local",
+    await db.update(agents).set({ adapterType: "omp_local",
       runtimeConfig: { heartbeat: { maxConcurrentRuns: 1 } },
     }).where(eq(agents.id, seeded.agentId));
     await db.update(heartbeatRuns).set({ runtimeMode: "legacy", status: "succeeded",
@@ -973,7 +973,7 @@ describeEmbeddedPostgres("issue queued-comment routes", () => {
     ["same", "running"], ["same", "queued"], ["same", "scheduled_retry"],
   ] as const)("scopes interrupted queue successors to its agent: %s agent %s", async (owner, status) => {
     const seeded = await seedQueue();
-    await db.update(agents).set({ adapterType: "claude_local",
+    await db.update(agents).set({ adapterType: "omp_local",
       runtimeConfig: { heartbeat: { maxConcurrentRuns: 1 } },
     }).where(eq(agents.id, seeded.agentId));
     await db.update(heartbeatRuns).set({ runtimeMode: "legacy", status: "succeeded",
@@ -992,7 +992,7 @@ describeEmbeddedPostgres("issue queued-comment routes", () => {
     const successorAgentId = owner === "same" ? seeded.agentId : randomUUID();
     if (owner === "other") await db.insert(agents).values({ id: successorAgentId,
       companyId: seeded.companyId, name: "Independent agent", role: "engineer",
-      status: "idle", adapterType: "claude_local",
+      status: "idle", adapterType: "omp_local",
     });
     const [existingRun] = await db.insert(heartbeatRuns).values({ companyId: seeded.companyId, agentId: successorAgentId,
       status, contextSnapshot: { issueId: seeded.issueId },
@@ -1027,7 +1027,7 @@ describeEmbeddedPostgres("issue queued-comment routes", () => {
     const seeded = await seedQueue();
     await db.update(agentWakeupRequests).set({ requestedByActorType: actorType })
       .where(eq(agentWakeupRequests.id, seeded.wakeId));
-    await db.update(agents).set({ adapterType: "claude_local",
+    await db.update(agents).set({ adapterType: "omp_local",
       runtimeConfig: { heartbeat: { maxConcurrentRuns: 1 } },
     }).where(eq(agents.id, seeded.agentId));
     await db.update(heartbeatRuns).set({ runtimeMode: "legacy", status: "failed",
@@ -1076,7 +1076,7 @@ describeEmbeddedPostgres("issue queued-comment routes", () => {
         payload: { ...saved.payload, manualUserWake: true },
       }).where(eq(agentWakeupRequests.id, seeded.wakeId));
     }
-    await db.update(agents).set({ adapterType: "claude_local",
+    await db.update(agents).set({ adapterType: "omp_local",
       runtimeConfig: { heartbeat: { maxConcurrentRuns: 1 } },
     }).where(eq(agents.id, seeded.agentId));
     await db.update(heartbeatRuns).set({ runtimeMode: "legacy", status: "failed",
@@ -1137,7 +1137,7 @@ describeEmbeddedPostgres("issue queued-comment routes", () => {
 
   it("recovers a message deferred after legacy finalization released the task lock", async () => {
     const seeded = await seedQueue();
-    await db.update(agents).set({ adapterType: "claude_local",
+    await db.update(agents).set({ adapterType: "omp_local",
       runtimeConfig: { heartbeat: { maxConcurrentRuns: 1 } },
     }).where(eq(agents.id, seeded.agentId));
     await db.update(heartbeatRuns).set({ runtimeMode: "legacy", status: "succeeded",
@@ -1738,7 +1738,7 @@ describeEmbeddedPostgres("issue queued-comment routes", () => {
     });
   });
 
-  it.each(["paperclip_runner", "codex_local"])("keeps Steer during native preparation even after agent settings change to %s", async adapterType => {
+  it.each(["paperclip_runner", "omp_local"])("keeps Steer during native preparation even after agent settings change to %s", async adapterType => {
     const seeded = await seedQueue();
     const steeringCalls = steerNativeSessionMock.mock.calls.length;
     await db.update(heartbeatRuns).set({ runtimeMode: "legacy", runtimeModeResolvedAt: null,
