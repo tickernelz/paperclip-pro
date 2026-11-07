@@ -286,7 +286,7 @@ export function OmpAllSettings({ scope, onBack }: { scope: AllSettingsScope; onB
 
       {catalog.error ? (
         <div role="alert" className="rounded-md border border-warn px-3 py-2 text-sm text-ink-2">
-          OMP settings could not be read: {catalog.error.message}. Only Paperclip's own agent settings are listed.
+          OMP settings could not be read: {catalog.error.message}. Only Wardmote's own agent settings are listed.
         </div>
       ) : null}
 

@@ -3,6 +3,7 @@ import { agents, heartbeatRuns, type Db } from "@tickernelz/paperclip-pro-db";
 import { and, eq } from "drizzle-orm";
 import { agentAuthorityCapabilities, isCompanyOwnerAgent } from "@tickernelz/paperclip-pro-shared";
 import {
+  canonicalToolName,
   OpenwaMcpToolError,
   paperclipToolCatalog,
   parseToolsets,
@@ -194,7 +195,8 @@ export function paperclipMcpRoutes(db: Db) {
 
     if (method === "tools/list") return send(allListing);
 
-    const tool = allDefinitions.find((entry) => entry.name === params?.name);
+    const requestedName = canonicalToolName(params?.name ?? "");
+    const tool = allDefinitions.find((entry) => entry.name === requestedName);
     if (!tool) {
       return send({
         isError: true,

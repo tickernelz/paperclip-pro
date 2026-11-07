@@ -576,7 +576,7 @@ function Setup({
                   ·{" "}
                   {runnerProvider === "codex"
                     ? "Native app server runner"
-                    : "Paperclip Runner"}
+                    : "Wardmote Runner"}
                 </span>
               )}
             </div>
@@ -770,7 +770,7 @@ function Setup({
                         {isDot && <>
                           <p className="text-sm text-ink-3">Create this agent, then copy its pairing prompt to your Dot.</p>
                           {experimental.data?.enablePublicMcp !== true && <p className="text-sm text-ink-3">Turn on Assistant connections in Settings &gt; Features before pairing.</p>}
-                          <ToggleField label="Allow externally billed provider" hint="Dot does not report token usage or cost. Paperclip cannot enforce a provider spend ceiling; known company and agent budget limits still apply."
+                          <ToggleField label="Allow externally billed provider" hint="Dot does not report token usage or cost. Wardmote cannot enforce a provider spend ceiling; known company and agent budget limits still apply."
                             checked={allowUnmeteredProvider} onChange={value => { setAllowUnmeteredProvider(value); resetTest(); }} />
                         </>}
                         {!connectionAdapter && aiProviderForAdapter(brandType) && (

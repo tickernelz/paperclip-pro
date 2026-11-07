@@ -218,7 +218,7 @@ describe("update command", () => {
     const runCommand = vi.fn(async () => ({ stdout: '"2.0.0"\n', stderr: "" }));
 
     await expect(updateCommand({}, { paths, executablePath: executable, runCommand, backup, hasInstanceData: () => true })).rejects.toThrow(
-      "Start the service with `paperclip-pro service start` and retry, or skip the backup with `paperclip-pro update --no-backup`.",
+      "Start the service with `wardmote service start` and retry, or skip the backup with `wardmote update --no-backup`.",
     );
     expect(backup).toHaveBeenCalledOnce();
     expect(readInstallManifest(paths)?.version).toBe("1.0.0");

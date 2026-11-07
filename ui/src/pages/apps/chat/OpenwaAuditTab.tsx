@@ -11,7 +11,7 @@ import { openwaSelectClass } from "./openwa-fields";
 import { AUDIT_KIND_LABELS, auditFields, datetimeLocalToIso } from "./openwa-settings-model";
 
 const actorLabels: Record<ChatAuditActorKind, string> = {
-  user: "Paperclip user",
+  user: "Wardmote user",
   agent: "Agent",
   chat_principal: "WhatsApp sender",
   system: "System",

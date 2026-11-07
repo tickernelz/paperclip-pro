@@ -467,7 +467,7 @@ function RevealedSecret({ label, value, onDismiss }: { label: string; value: str
   const { pushToast } = useToast();
   return (
     <div role="alert" className="space-y-2 rounded-md border border-line bg-bg-3 p-2">
-      <p className="text-xs">{label} Paperclip does not store it and will not show it again.</p>
+      <p className="text-xs">{label} Wardmote does not store it and will not show it again.</p>
       <p className="break-all font-mono text-xs">{value}</p>
       <div className="flex gap-2">
         <Button

@@ -17,7 +17,7 @@ Paperclip no longer uses release branches or Changesets for publishing.
 
 ## Why the CLI needs special packaging
 
-The CLI package, `paperclip-pro`, imports code from workspace packages such as:
+The CLI package, `wardmote`, imports code from workspace packages such as:
 
 - `@tickernelz/paperclip-pro-server`
 - `@tickernelz/paperclip-pro-db`

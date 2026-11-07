@@ -828,7 +828,7 @@ async function pathWithoutPaperclipCli(ambientPath: string) {
   const mirrors: string[] = [];
   const entries: string[] = [];
   for (const directory of ambientPath.split(path.delimiter)) {
-    if (!directory || !existsSync(path.join(directory, "paperclip-pro"))) {
+    if (!directory || !existsSync(path.join(directory, "wardmote"))) {
       entries.push(directory);
       continue;
     }
@@ -836,7 +836,7 @@ async function pathWithoutPaperclipCli(ambientPath: string) {
     mirrors.push(mirror);
     const absoluteDirectory = path.resolve(directory);
     for (const name of await fs.readdir(absoluteDirectory)) {
-      if (name === "paperclip-pro") continue;
+      if (name === "wardmote") continue;
       await fs.symlink(path.join(absoluteDirectory, name), path.join(mirror, name)).catch(() => undefined);
     }
     entries.push(mirror);
@@ -2390,7 +2390,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
         fakePnpmPath,
         [
           "#!/bin/sh",
-          "if [ \"$1\" = \"paperclip-pro\" ] && [ \"$2\" = \"--help\" ]; then",
+          "if [ \"$1\" = \"wardmote\" ] && [ \"$2\" = \"--help\" ]; then",
           "  exit 1",
           "fi",
           "if [ \"$1\" = \"install\" ] && [ \"$2\" = \"--prod=false\" ] && [ \"$3\" = \"--frozen-lockfile\" ]; then",
@@ -2459,10 +2459,10 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
         fakePnpmPath,
         [
           "#!/bin/sh",
-          "if [ \"$1\" = \"paperclip-pro\" ] && [ \"$2\" = \"--help\" ]; then",
+          "if [ \"$1\" = \"wardmote\" ] && [ \"$2\" = \"--help\" ]; then",
           "  exit 0",
           "fi",
-          "if [ \"$1\" = \"paperclip-pro\" ] && [ \"$2\" = \"worktree\" ] && [ \"$3\" = \"init\" ]; then",
+          "if [ \"$1\" = \"wardmote\" ] && [ \"$2\" = \"worktree\" ] && [ \"$3\" = \"init\" ]; then",
           "  echo \"simulated init failure\" >&2",
           "  exit 42",
           "fi",
@@ -2553,10 +2553,10 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
         fakePnpmPath,
         [
           "#!/bin/sh",
-          "if [ \"$1\" = \"paperclip-pro\" ] && [ \"$2\" = \"--help\" ]; then",
+          "if [ \"$1\" = \"wardmote\" ] && [ \"$2\" = \"--help\" ]; then",
           "  exit 0",
           "fi",
-          "if [ \"$1\" = \"paperclip-pro\" ] && [ \"$2\" = \"worktree\" ] && [ \"$3\" = \"init\" ]; then",
+          "if [ \"$1\" = \"wardmote\" ] && [ \"$2\" = \"worktree\" ] && [ \"$3\" = \"init\" ]; then",
           "  mkdir -p \"$PWD/.paperclip\"",
           "  printf '%s\\n' '{\"database\":{\"embeddedPostgresDataDir\":\"'$PWD'/.paperclip/runtime/db\"}}' > \"$PWD/.paperclip/config.json\"",
           "  printf '%s\\n' \"PAPERCLIP_HOME=$PWD/.paperclip/runtime\" \"PAPERCLIP_INSTANCE_ID=healthy\" \"PAPERCLIP_CONFIG=$PWD/.paperclip/config.json\" > \"$PWD/.paperclip/.env\"",
@@ -2626,7 +2626,7 @@ process.stderr.write(${JSON.stringify(stderr)}, () => { process.exitCode = ${cod
         fakePnpmPath,
         [
           "#!/bin/sh",
-          "if [ \"$1\" = \"paperclip-pro\" ] && [ \"$2\" = \"--help\" ]; then",
+          "if [ \"$1\" = \"wardmote\" ] && [ \"$2\" = \"--help\" ]; then",
           "  exit 1",
           "fi",
           "if [ \"$1\" = \"install\" ] && [ \"$2\" = \"--prod=false\" ] && [ \"$3\" = \"--frozen-lockfile\" ]; then",

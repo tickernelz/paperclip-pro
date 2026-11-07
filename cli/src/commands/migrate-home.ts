@@ -1,0 +1,117 @@
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+import { execFile } from "node:child_process";
+import { promisify } from "node:util";
+import pc from "picocolors";
+import { LEGACY_HOME_DIRNAME, WARDMOTE_HOME_DIRNAME } from "@tickernelz/paperclip-pro-shared/home-paths";
+
+const execFileAsync = promisify(execFile);
+
+type MigrateHomeOptions = { dryRun?: boolean };
+
+export type MigrateHomeDependencies = {
+  userHomeDir: string;
+  env: NodeJS.ProcessEnv;
+  platform: NodeJS.Platform;
+  isUnitActive: (unit: string) => Promise<boolean>;
+  reloadUnits: () => Promise<void>;
+  log: (message: string) => void;
+};
+
+const SYSTEMD_UNIT_PATTERN = /^paperclip-pro(?:-.+)?\.service$/;
+const LAUNCHD_PLIST_PATTERN = /^ing\.paperclip\.paperclip-pro(?:\..+)?\.plist$/;
+
+async function systemctl(args: string[]): Promise<string> {
+  return (await execFileAsync("systemctl", ["--user", ...args], { encoding: "utf8" })).stdout.trim();
+}
+
+const defaultDependencies: MigrateHomeDependencies = {
+  userHomeDir: os.homedir(),
+  env: process.env,
+  platform: process.platform,
+  isUnitActive: async (unit) => (await systemctl(["is-active", unit]).catch(() => "inactive")) === "active",
+  reloadUnits: async () => {
+    await systemctl(["daemon-reload"]).catch(() => undefined);
+  },
+  log: (message) => console.log(message),
+};
+
+function serviceDefinitions(platform: NodeJS.Platform, userHomeDir: string): string[] {
+  const [directory, pattern] = platform === "darwin"
+    ? [path.join(userHomeDir, "Library", "LaunchAgents"), LAUNCHD_PLIST_PATTERN]
+    : [path.join(userHomeDir, ".config", "systemd", "user"), SYSTEMD_UNIT_PATTERN];
+  if (!fs.existsSync(directory)) return [];
+  return fs.readdirSync(directory).filter((name) => pattern.test(name)).map((name) => path.join(directory, name));
+}
+
+function liveEmbeddedPostgres(source: string): string[] {
+  const instancesDir = path.join(source, "instances");
+  if (!fs.existsSync(instancesDir)) return [];
+  const live: string[] = [];
+  for (const instanceId of fs.readdirSync(instancesDir)) {
+    const pidFile = path.join(instancesDir, instanceId, "db", "postmaster.pid");
+    if (!fs.existsSync(pidFile)) continue;
+    const pid = Number.parseInt(fs.readFileSync(pidFile, "utf8").split("\n")[0] ?? "", 10);
+    if (!Number.isInteger(pid) || pid <= 0) continue;
+    try {
+      process.kill(pid, 0);
+      live.push(`${instanceId} (postgres pid ${pid})`);
+    } catch (error) {
+      if ((error as NodeJS.ErrnoException).code === "EPERM") live.push(`${instanceId} (postgres pid ${pid})`);
+    }
+  }
+  return live;
+}
+
+export async function migrateHomeCommand(
+  options: MigrateHomeOptions = {},
+  overrides: Partial<MigrateHomeDependencies> = {},
+): Promise<void> {
+  const deps = { ...defaultDependencies, ...overrides };
+  const source = path.join(deps.userHomeDir, LEGACY_HOME_DIRNAME);
+  const target = path.join(deps.userHomeDir, WARDMOTE_HOME_DIRNAME);
+  const pinned = deps.env.PAPERCLIP_HOME?.trim();
+  if (pinned) {
+    throw new Error(`WARDMOTE_HOME/PAPERCLIP_HOME is set to ${pinned}. Unset it before migrating the default home.`);
+  }
+  const sourceStat = fs.lstatSync(source, { throwIfNoEntry: false });
+  if (!sourceStat) throw new Error(`Nothing to migrate: ${source} does not exist.`);
+  if (sourceStat.isSymbolicLink()) throw new Error(`${source} is already a link; the home was migrated before.`);
+  if (!sourceStat.isDirectory()) throw new Error(`Refusing to migrate ${source}: it is not a directory.`);
+  if (fs.lstatSync(target, { throwIfNoEntry: false })) throw new Error(`Refusing to migrate: ${target} already exists.`);
+
+  const live = liveEmbeddedPostgres(source);
+  const definitions = serviceDefinitions(deps.platform, deps.userHomeDir);
+  if (deps.platform === "linux") {
+    for (const definition of definitions) {
+      const unit = path.basename(definition);
+      if (await deps.isUnitActive(unit)) live.push(`service ${unit}`);
+    }
+  }
+  if (live.length > 0) {
+    throw new Error(`Stop Wardmote before migrating the home; still running: ${live.join(", ")}.`);
+  }
+
+  const pinnedDefinitions = definitions.filter((definition) => fs.readFileSync(definition, "utf8").includes(source));
+  if (options.dryRun) {
+    deps.log(`Would move ${source} to ${target}, link ${source} -> ${target}, and update ${pinnedDefinitions.length} service definition(s).`);
+    return;
+  }
+
+  try {
+    fs.renameSync(source, target);
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "EXDEV") {
+      throw new Error(`${source} and ${target} are on different filesystems; move it yourself and rerun.`);
+    }
+    throw error;
+  }
+  fs.symlinkSync(target, source, "dir");
+  for (const definition of pinnedDefinitions) {
+    fs.writeFileSync(definition, fs.readFileSync(definition, "utf8").replaceAll(source, target));
+  }
+  if (pinnedDefinitions.length > 0 && deps.platform === "linux") await deps.reloadUnits();
+  deps.log(pc.green(`Moved ${source} to ${target}.`));
+  deps.log(`${source} now links to ${target}, so paths recorded in the database and scripts keep working.`);
+}

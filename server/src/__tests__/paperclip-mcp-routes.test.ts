@@ -212,6 +212,17 @@ describeEmbeddedPostgres("server-hosted Paperclip MCP endpoint", () => {
     expect(payload.title).toBe("Hosted MCP round trip");
   });
 
+  it("answers the wardmote* name like the advertised paperclip* name without listing it", async () => {
+    actor = agentActor(seeded.agentId);
+    const call = (name: string) => rpc({ method: "tools/call", params: { name, arguments: { issueId: seeded.issueId } } });
+    const legacy = await call("paperclipGetIssue");
+    const renamed = await call("wardmoteGetIssue");
+    expect(renamed.body).toEqual(legacy.body);
+    expect(legacy.body.result!.isError).toBeFalsy();
+    const { body } = await rpc({ method: "tools/list" });
+    expect(body.result!.tools!.some((tool) => tool.name.startsWith("wardmote"))).toBe(false);
+  });
+
   it("denies a tool call that reaches across companies", async () => {
     actor = agentActor(seeded.agentId);
     const { body } = await rpc(

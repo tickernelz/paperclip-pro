@@ -59,7 +59,7 @@ export function secretsCheck(config: PaperclipConfig, configPath?: string): Chec
       status: "fail",
       message: `${provider} is configured, but this build only supports local_encrypted and aws_secrets_manager`,
       canRepair: false,
-      repairHint: "Run `paperclip-pro configure --section secrets` and choose local_encrypted or aws_secrets_manager",
+      repairHint: "Run `wardmote configure --section secrets` and choose local_encrypted or aws_secrets_manager",
     };
   }
 
@@ -169,7 +169,7 @@ function awsSecretsManagerCheck(): CheckResult {
       message: `AWS Secrets Manager provider is missing non-secret config: ${missingConfig.join(", ")}`,
       canRepair: false,
       repairHint:
-        `Set ${missingConfig.join(", ")} in the Paperclip server runtime. ${AWS_CREDENTIAL_SOURCE_HINT}. Do not store AWS root credentials or long-lived IAM user keys in Paperclip secrets.`,
+        `Set ${missingConfig.join(", ")} in the Wardmote server runtime. ${AWS_CREDENTIAL_SOURCE_HINT}. Do not store AWS root credentials or long-lived IAM user keys in Wardmote secrets.`,
     };
   }
 
@@ -187,7 +187,7 @@ function awsSecretsManagerCheck(): CheckResult {
       message,
       canRepair: false,
       repairHint:
-        "AWS static environment credentials are visible. Use only short-lived shell credentials locally; prefer IAM role/workload identity for hosted deployments and never store AWS access keys in Paperclip company secrets.",
+        "AWS static environment credentials are visible. Use only short-lived shell credentials locally; prefer IAM role/workload identity for hosted deployments and never store AWS access keys in Wardmote company secrets.",
     };
   }
 

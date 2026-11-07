@@ -470,7 +470,7 @@ function EmailEndpointSetupForm({ companyId }: { companyId: string }) {
             candidatesLoading={projects.isPending || boundaryIssues.isPending}
           />
           <p className="text-xs text-ink-3">
-            Low trust limits Paperclip access; it does not sandbox the runtime.
+            Low trust limits Wardmote access; it does not sandbox the runtime.
             Review filesystem, tool, and secret access separately.
           </p>
           {(trust.error || projects.error || boundaryIssues.error) && (
@@ -733,7 +733,7 @@ export function EmailEndpointSettings({
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="space-y-1">
             <h2 id="email-disconnect-heading" className="text-sm font-semibold">Disconnect inbox</h2>
-            <p className="text-sm text-ink-3">Stop receiving email in Paperclip. The inbox stays in AgentMail.</p>
+            <p className="text-sm text-ink-3">Stop receiving email in Wardmote. The inbox stays in AgentMail.</p>
           </div>
           <Button variant="secondary" size="sm" disabled={control.isPending}
             onClick={() => control.mutate("remove")}>

@@ -17,14 +17,14 @@ export function buildAgentOnboardingPrompt(input: AgentOnboardingPromptInput) {
 
   const connectivityBlock =
     candidateUrls.length === 0
-      ? `No candidate URLs are available. Ask the operator to configure a reachable Paperclip hostname, then retry.
+      ? `No candidate URLs are available. Ask the operator to configure a reachable Wardmote hostname, then retry.
 Suggested steps for the operator:
-- choose a hostname that resolves to the Paperclip host from your runtime
+- choose a hostname that resolves to the Wardmote host from your runtime
 - run: npx @tickernelz/paperclip-pro allowed-hostname <host>
-- restart Paperclip
+- restart Wardmote
 - verify with: curl -fsS http://<host>:3100/api/health
 - regenerate this agent onboarding prompt`
-      : `If none are reachable, ask the operator to add a reachable Paperclip hostname, restart, and retry.
+      : `If none are reachable, ask the operator to add a reachable Wardmote hostname, restart, and retry.
 Suggested command for the operator:
 - npx @tickernelz/paperclip-pro allowed-hostname <host>
 Then verify with: curl -fsS <base-url>/api/health`;
@@ -33,15 +33,15 @@ Then verify with: curl -fsS <base-url>/api/health`;
     ? `\nIf your runtime exposes a callback or gateway URL, test Paperclip-to-agent reachability with: ${resolutionTestUrl}?url=<urlencoded-agent-url>.`
     : "";
 
-  return `You're invited to join a Paperclip company as an agent.
+  return `You're invited to join a Wardmote company as an agent.
 
-First, respond to your user that you understand the request and are going to onboard into Paperclip. Then work through the steps below.
+First, respond to your user that you understand the request and are going to onboard into Wardmote. Then work through the steps below.
 
-Paperclip onboarding documents to try:
+Wardmote onboarding documents to try:
 ${candidateList}
 
 Connectivity guidance:
-Paperclip must be reachable from your runtime. Verify a base URL with: GET <base-url>/api/health
+Wardmote must be reachable from your runtime. Verify a base URL with: GET <base-url>/api/health
 ${connectivityBlock}${resolutionLine}
 
 Join flow:
@@ -49,14 +49,14 @@ Join flow:
 2. Submit an agent join request to the invite registration endpoint.
 3. Use your own agent name for \`agentName\`.
 4. Include a concise \`capabilities\` summary so the board knows what work to assign you.
-5. Set \`adapterType\` to the Paperclip adapter that matches your runtime when one exists.
+5. Set \`adapterType\` to the Wardmote adapter that matches your runtime when one exists.
 6. Put runtime-specific settings in \`agentDefaultsPayload\`.
 7. Wait for board approval before claiming the API key.
-8. Claim the Paperclip API key once through the standard claim endpoint, store it securely, and use it for future Paperclip API calls. Store the parsed \`token\` field from the raw HTTP JSON response before printing or summarizing it; do not copy token values from chat, transcript, or tool-output previews. A token value containing literal \`...\` or \`[redacted]\` is a masked display preview, not a valid key. Do not rotate or invent a Paperclip key manually.
+8. Claim the Wardmote API key once through the standard claim endpoint, store it securely, and use it for future Wardmote API calls. Store the parsed \`token\` field from the raw HTTP JSON response before printing or summarizing it; do not copy token values from chat, transcript, or tool-output previews. A token value containing literal \`...\` or \`[redacted]\` is a masked display preview, not a valid key. Do not rotate or invent a Wardmote key manually.
 
-After you have connected to Paperclip, review and follow the full onboarding instructions in onboarding.txt.
+After you have connected to Wardmote, review and follow the full onboarding instructions in onboarding.txt.
 
-Working through Paperclip:
+Working through Wardmote:
 ${EXTERNAL_AGENT_TOOL_GUIDANCE}
 `;
 }

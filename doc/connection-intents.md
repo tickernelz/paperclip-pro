@@ -27,8 +27,8 @@ Legacy delivery uses the same intent service, setup card, and fresh-session reso
 The equivalent CLI helpers are:
 
 ```sh
-paperclip-pro connections search notion
-paperclip-pro connections request notion
+wardmote connections search notion
+wardmote connections request notion
 ```
 
 The manually configured Paperclip MCP server also advertises `connections_search` and `connection_request`. Both helper surfaces require the narrow runtime token and fail outside an active heartbeat.

@@ -58,7 +58,7 @@ export async function doctor(opts: {
       status: "fail",
       message: `Could not read config: ${err instanceof Error ? err.message : String(err)}`,
       canRepair: false,
-      repairHint: "Run `paperclip-pro configure --section database` or `paperclip-pro onboard`",
+      repairHint: "Run `wardmote configure --section database` or `wardmote onboard`",
     };
     results.push(readResult);
     printResult(readResult);

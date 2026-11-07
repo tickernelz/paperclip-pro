@@ -1908,7 +1908,7 @@ export function PipelineSettings() {
     onError: async (error) => {
       pushToast({
         title: "Failed to save stage",
-        body: error instanceof Error ? error.message : "Paperclip could not save the stage.",
+        body: error instanceof Error ? error.message : "Wardmote could not save the stage.",
         tone: "error",
       });
     },
@@ -1941,7 +1941,7 @@ export function PipelineSettings() {
           ? error.message
           : error instanceof Error
             ? error.message
-            : "Paperclip could not save the stage secrets.",
+            : "Wardmote could not save the stage secrets.",
         tone: "error",
       });
     },
@@ -2018,7 +2018,7 @@ export function PipelineSettings() {
     onError: (error) => {
       pushToast({
         title: "Failed to delete stage",
-        body: error instanceof Error ? error.message : "Paperclip could not delete the stage.",
+        body: error instanceof Error ? error.message : "Wardmote could not delete the stage.",
         tone: "error",
       });
     },
@@ -2050,7 +2050,7 @@ export function PipelineSettings() {
       setStrictTransitionsEnabled(pipeline?.enforceTransitions ?? false);
       pushToast({
         title: "Failed to update transition rules",
-        body: error instanceof Error ? error.message : "Paperclip could not update transition rules.",
+        body: error instanceof Error ? error.message : "Wardmote could not update transition rules.",
         tone: "error",
       });
     },
@@ -2312,7 +2312,7 @@ export function PipelineSettings() {
         <div className="space-y-1">
           <h3 className="text-sm font-semibold text-ink">Break into smaller pieces</h3>
           <p className="max-w-md text-sm text-ink-3">
-            The agent decides what the pieces are. Paperclip creates and tracks them.
+            The agent decides what the pieces are. Wardmote creates and tracks them.
           </p>
         </div>
         <ToggleSwitch
@@ -3004,7 +3004,7 @@ export function PipelineSettings() {
                               </div>
                               {selectedAutomationProject && !selectedAutomationProjectWorkspace ? (
                                 <p className="mt-2 text-xs text-ink-3">
-                                  This project has no saved workspace default. Paperclip will use the project fallback when automation runs.
+                                  This project has no saved workspace default. Wardmote will use the project fallback when automation runs.
                                 </p>
                               ) : null}
                             </FieldRow>

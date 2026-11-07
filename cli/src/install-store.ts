@@ -36,6 +36,7 @@ export type InstallStorePaths = {
   lockPath: string;
   currentPath: string;
   shimPath: string;
+  wardmoteShimPath: string;
 };
 
 function ensurePrivateDirectory(directoryPath: string): void {
@@ -74,6 +75,7 @@ export function resolveInstallStorePaths(options: {
   const paperclipHome = path.resolve(options.paperclipHome ?? resolvePaperclipHomeDir());
   const homeDir = path.resolve(options.homeDir ?? process.env.HOME ?? path.dirname(paperclipHome));
   const cliRoot = path.join(paperclipHome, "cli");
+  const shimPath = process.env.PAPERCLIP_SHIM_PATH?.trim() || path.join(homeDir, ".local", "bin", "paperclip-pro");
   return {
     paperclipHome,
     cliRoot,
@@ -82,7 +84,8 @@ export function resolveInstallStorePaths(options: {
     markerPath: path.join(cliRoot, ".managed-install"),
     lockPath: path.join(cliRoot, ".install.lock"),
     currentPath: path.join(cliRoot, "current"),
-    shimPath: process.env.PAPERCLIP_SHIM_PATH?.trim() || path.join(homeDir, ".local", "bin", "paperclip-pro"),
+    shimPath,
+    wardmoteShimPath: path.join(path.dirname(shimPath), "wardmote"),
   };
 }
 
@@ -407,18 +410,33 @@ export function writeManagedShim(paths = resolveInstallStorePaths()): void {
   // runtime too, even when systemd/launchd supplies a different PATH.
   const contents = `#!/bin/sh\n# ${MANAGED_SHIM_MARKER}\nset -eu\nexport PATH=${shellQuote(path.dirname(process.execPath))}:"\${PATH:-/usr/local/bin:/usr/bin:/bin}"\nexec ${shellQuote(process.execPath)} ${shellQuote(entrypoint)} "\$@"\n`;
   writeFileAtomic(paths.shimPath, contents, 0o755);
+  if (isReplaceableWardmoteShim(paths)) writeFileAtomic(paths.wardmoteShimPath, contents, 0o755);
 }
 
-export function removeManagedShim(paths = resolveInstallStorePaths()): boolean {
+function isReplaceableWardmoteShim(paths: InstallStorePaths): boolean {
   try {
-    const contents = fs.readFileSync(paths.shimPath, "utf8");
+    assertManagedShimWritable({ ...paths, shimPath: paths.wardmoteShimPath });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function removeShimFile(shimPath: string): boolean {
+  try {
+    const contents = fs.readFileSync(shimPath, "utf8");
     if (!isManagedShimContents(contents)) return false;
-    fs.rmSync(paths.shimPath, { force: true });
+    fs.rmSync(shimPath, { force: true });
     return true;
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") return true;
     throw error;
   }
+}
+
+export function removeManagedShim(paths = resolveInstallStorePaths()): boolean {
+  const removedWardmote = removeShimFile(paths.wardmoteShimPath);
+  return removeShimFile(paths.shimPath) && removedWardmote;
 }
 
 export function managedPathBlock(): string {

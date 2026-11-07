@@ -20,13 +20,13 @@ First-party Paperclip sandbox-provider plugin for Kubernetes.
 ## Installation
 
 ```bash
-paperclip-pro plugin install @tickernelz/paperclip-pro-plugin-kubernetes
+wardmote plugin install @tickernelz/paperclip-pro-plugin-kubernetes
 ```
 
 Or, for local development:
 
 ```bash
-paperclip-pro plugin install --local /path/to/paperclip/packages/plugins/sandbox-providers/kubernetes
+wardmote plugin install --local /path/to/paperclip/packages/plugins/sandbox-providers/kubernetes
 ```
 
 ## Backends

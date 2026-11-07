@@ -12,12 +12,12 @@ pnpm dev
 
 That's it. On first start the server:
 
-1. Creates a `~/.paperclip-pro/instances/default/db/` directory for storage
+1. Creates a `~/.wardmote/instances/default/db/` directory for storage
 2. Ensures the `paperclip` database exists
 3. Runs migrations automatically for empty databases
 4. Starts serving requests
 
-Data persists across restarts in `~/.paperclip-pro/instances/default/db/`. To reset local dev data, delete that directory.
+Data persists across restarts in `~/.wardmote/instances/default/db/`. To reset local dev data, delete that directory.
 
 Subscription reporting adds `ai_subscriptions` (company-scoped account identity),
 `ai_subscription_prices` (immutable price revisions), and
@@ -225,7 +225,7 @@ The database mode is controlled by `DATABASE_URL`:
 
 | `DATABASE_URL` | Mode |
 |---|---|
-| Not set | Embedded PostgreSQL (`~/.paperclip-pro/instances/default/db/`) |
+| Not set | Embedded PostgreSQL (`~/.wardmote/instances/default/db/`) |
 | `postgres://...localhost...` | Local Docker PostgreSQL |
 | `postgres://...supabase.com...` | Hosted Supabase |
 
@@ -457,7 +457,7 @@ The plugin runtime tracks plugin-owned database namespaces and migrations in `pl
 Paperclip supports automatic and manual logical database backups. These dumps include
 non-system database schemas such as `public`, the Drizzle migration journal, and
 plugin-owned database schemas. See `doc/DEVELOPING.md` for the current
-`paperclip-pro db:backup` / `pnpm db:backup` commands and backup retention
+`wardmote db:backup` / `pnpm db:backup` commands and backup retention
 configuration.
 
 Database backups do not include non-database instance files such as local-disk
@@ -488,8 +488,8 @@ Secret-aware env bindings are supported by agents, projects, and routines. Routi
 For local/default installs, the active provider is `local_encrypted`:
 
 - Secret material is encrypted at rest with a local master key.
-- Default key file: `~/.paperclip-pro/instances/default/secrets/master.key` (auto-created if missing).
-- CLI config location: `~/.paperclip-pro/instances/default/config.json` under `secrets.localEncrypted.keyFilePath`.
+- Default key file: `~/.wardmote/instances/default/secrets/master.key` (auto-created if missing).
+- CLI config location: `~/.wardmote/instances/default/config.json` under `secrets.localEncrypted.keyFilePath`.
 - Backup/restore requires both the database metadata and the local master key file; either artifact alone is insufficient.
 - The server best-effort enforces `0600` key file permissions and provider health reports permission warnings.
 - User-scoped values use the same local encrypted provider path. Database
@@ -511,7 +511,7 @@ PAPERCLIP_SECRETS_STRICT_MODE=true
 You can set strict mode and provider defaults via:
 
 ```sh
-pnpm paperclip-pro configure --section secrets
+pnpm wardmote configure --section secrets
 ```
 
 Inline secret migration command:

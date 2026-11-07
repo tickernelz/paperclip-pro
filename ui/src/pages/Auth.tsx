@@ -108,11 +108,11 @@ export function AuthPage() {
       <div className="w-full md:w-1/2 flex flex-col overflow-y-auto">
         <div className="w-full max-w-md mx-auto my-auto px-8 py-12">
           <div className="mb-8">
-            <MootMark className="size-8 text-ink" title="Paperclip" />
+            <MootMark className="size-8 text-ink" title="Wardmote" />
           </div>
 
           <h1 className="text-xl font-semibold">
-            {mode === "sign_in" ? "Sign in to Paperclip" : "Create your Paperclip account"}
+            {mode === "sign_in" ? "Sign in to Wardmote" : "Create your Wardmote account"}
           </h1>
           <p className="mt-1 text-sm text-ink-3">
             {mode === "sign_in"

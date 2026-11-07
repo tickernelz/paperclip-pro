@@ -527,7 +527,7 @@ export function DesignGuide() {
       <div>
         <h2 className="text-xl font-bold">Design Guide</h2>
         <p className="text-sm text-ink-3 mt-1">
-          Every component, style, and pattern used across Paperclip.
+          Every component, style, and pattern used across Wardmote.
         </p>
       </div>
 
@@ -1245,7 +1245,7 @@ export function DesignGuide() {
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbLink href="#">Paperclip App</BreadcrumbLink>
+              <BreadcrumbLink href="#">Wardmote App</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbSeparator />
             <BreadcrumbItem>
@@ -1270,7 +1270,7 @@ export function DesignGuide() {
                   status, adapterType: "omp_local", invocationSource: "on_demand", triggerDetail: "manual",
                   startedAt: null, finishedAt: null, createdAt: "2026-09-11T12:00:00Z", issueId: "design-guide-task",
                 }}
-                issue={{ identifier: "PAP-559", title: "Recreate this wireframe on pages Paperclip", status: status === "succeeded" ? "done" : "in_progress" }}
+                issue={{ identifier: "PAP-559", title: "Recreate this wireframe on pages Wardmote", status: status === "succeeded" ? "done" : "in_progress" }}
               />
             ))}
           </div>
@@ -2409,7 +2409,7 @@ export function DesignGuide() {
             title="Built-in agent"
             actions={<Button variant="secondary" size="sm">Reset to defaults</Button>}
           >
-            Ships with Paperclip and powers <strong>Briefs</strong>. It can be paused but not deleted.
+            Ships with Wardmote and powers <strong>Briefs</strong>. It can be paused but not deleted.
           </InlineBanner>
           <InlineBanner
             tone="warning"

@@ -617,7 +617,7 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
 
             {hasAdditionalLegacyWorkspaces && (
               <div className="text-(length:--text-micro) text-ink-3">
-                Additional legacy workspace records exist on this project. Paperclip is using the primary workspace as the codebase view.
+                Additional legacy workspace records exist on this project. Wardmote is using the primary workspace as the codebase view.
               </div>
             )}
 

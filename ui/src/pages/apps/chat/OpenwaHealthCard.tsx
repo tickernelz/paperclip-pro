@@ -75,7 +75,7 @@ export function OpenwaHealthCard({ endpoint }: { endpoint: Pick<ChatEndpoint, "i
           </dl>
           {health.data.gatewayVersion !== null && health.data.gatewayVersion !== health.data.pinnedVersion ? (
             <p className="text-xs text-ink-3">
-              Paperclip is tested with OpenWA <span className="font-mono">{health.data.pinnedVersion}</span>; some operations may behave differently.
+              Wardmote is tested with OpenWA <span className="font-mono">{health.data.pinnedVersion}</span>; some operations may behave differently.
             </p>
           ) : null}
           {endpoint.status === "attention" && (endpoint.lastError ?? endpoint.healthMessage) ? (

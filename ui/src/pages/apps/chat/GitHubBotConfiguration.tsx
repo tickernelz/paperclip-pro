@@ -207,10 +207,10 @@ function GitHubPassingScore({
       <p id={`${id}-help`} className="text-xs text-ink-3">
         {value === null
           ? "Publishes a neutral check without a score requirement. GitHub can accept neutral checks for merging."
-          : "Paperclip passes the check when a complete review of the latest commit meets this score. Lower scores fail. This does not approve the PR."}
+          : "Wardmote passes the check when a complete review of the latest commit meets this score. Lower scores fail. This does not approve the PR."}
       </p>
       <p className="text-xs text-ink-3">
-        To block merging, require the <strong>Paperclip Review</strong> check from this App in your GitHub branch rules.{" "}
+        To block merging, require the <strong>Wardmote Review</strong> check from this App in your GitHub branch rules.{" "}
         <a className="underline hover:text-ink"
           href="https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-rulesets/creating-rulesets-for-a-repository"
           target="_blank" rel="noreferrer">Configure on GitHub</a>
@@ -922,7 +922,7 @@ export function GitHubAccessEditor({
             </>
           )}
           <p className="text-xs text-ink-3">
-            The member accountable for automatically created Paperclip tasks.
+            The member accountable for automatically created Wardmote tasks.
             GitHub authors remain recorded separately. This grants no access to
             the member’s personal credentials.
           </p>

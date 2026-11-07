@@ -93,7 +93,7 @@ export function StandaloneBrowserControls({
     const url = window.location.href;
     try {
       if (navigator.share) {
-        await navigator.share({ title: document.title || "Paperclip", url });
+        await navigator.share({ title: document.title || "Wardmote", url });
         return;
       }
       await copyTextToClipboard(url);

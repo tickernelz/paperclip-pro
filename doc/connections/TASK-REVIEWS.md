@@ -98,7 +98,7 @@ settings come from the existing runner catalog. This flag does not expand the
 normal hosted/Daytona matrix. The fixture MCP provider is real HTTP but is not
 Notion; live Notion evidence must be reported separately.
 
-For a real Notion test, start `paperclip-pro test-drive` from this checkout using
+For a real Notion test, start `wardmote test-drive` from this checkout using
 valid provider credentials, verify its process checkout/port ownership, connect
 Notion normally, set an available read-only search/list action to Ask human, and
 perform the same approve/decline/always-allow journeys for all four profiles.

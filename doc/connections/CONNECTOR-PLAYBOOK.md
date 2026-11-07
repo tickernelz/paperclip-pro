@@ -394,7 +394,7 @@ The durable pieces are:
   HTTP header name and prefix.
 
 On the default local provider, values are encrypted with the instance master
-key under `~/.paperclip-pro/instances/<instance>/secrets/master.key`. A usable
+key under `~/.wardmote/instances/<instance>/secrets/master.key`. A usable
 backup requires both the database and this key. Hosted provider-vault behavior
 is configured under Company Settings; the connection contract remains refs,
 not raw values.
@@ -1072,7 +1072,7 @@ Use a worktree-local instance; never point two worktrees at the same embedded
 database.
 
 ```sh
-paperclip-pro worktree init
+wardmote worktree init
 pnpm dev
 ```
 

@@ -120,7 +120,7 @@ export function describeUnreachableInstance(endpoint: InstanceEndpoint, verb: st
   const origin = endpoint.source === "runtime-info"
     ? `the running server (pid ${endpoint.pid}) reported ${endpoint.apiBase}`
     : `the configured address ${endpoint.apiBase}`;
-  return `Refusing to ${verb} Paperclip: it is running but its API is unreachable at ${endpoint.apiBase}, so live agent runs cannot be counted (${origin}). Check the service logs, or pass --force to ${verb} anyway and interrupt whatever is running.`;
+  return `Refusing to ${verb} Wardmote: it is running but its API is unreachable at ${endpoint.apiBase}, so live agent runs cannot be counted (${origin}). Check the service logs, or pass --force to ${verb} anyway and interrupt whatever is running.`;
 }
 
 export function createInstanceRunControl(
@@ -157,7 +157,7 @@ export function createInstanceRunControl(
       throw new InstanceUnreachableError(describeUnreachableInstance(endpoint, verb), endpoint, { cause: error });
     }
     if (!response.ok) {
-      throw new Error(`Paperclip API ${method} ${path} failed with HTTP ${response.status}.`);
+      throw new Error(`Wardmote API ${method} ${path} failed with HTTP ${response.status}.`);
     }
     return await response.json().catch(() => null);
   }
@@ -187,7 +187,7 @@ export function formatLiveRunsBlocker(verb: string, snapshot: LiveRunsSnapshot):
   const issueLabel = issueIds.length > 0 ? ` on issue${issueIds.length === 1 ? "" : "s"} ${issueIds.join(", ")}` : "";
   const detail = describeLiveRuns(snapshot);
   const pending = snapshot.pendingWakes > 0 ? `\n${snapshot.pendingWakes} queued wake(s) are also still pending.` : "";
-  return `Refusing to ${verb} Paperclip: ${snapshot.count} live agent run(s)${issueLabel} would be interrupted.${detail ? `\n${detail}` : ""}${pending}\nWait for them to finish, run "paperclip-pro service restart --drain" to stop admitting new runs and wait, or pass --force to interrupt them now.`;
+  return `Refusing to ${verb} Wardmote: ${snapshot.count} live agent run(s)${issueLabel} would be interrupted.${detail ? `\n${detail}` : ""}${pending}\nWait for them to finish, run "wardmote service restart --drain" to stop admitting new runs and wait, or pass --force to interrupt them now.`;
 }
 
 export async function assertNoLiveRuns(input: {
@@ -220,7 +220,7 @@ export async function waitForInstanceQuiescent(input: {
   while (snapshot.count > 0 || snapshot.pendingWakes > 0) {
     if (now() >= deadline) {
       throw new DrainTimeoutError(
-        `Paperclip still has ${snapshot.count} live agent run(s) after waiting ${Math.round(input.timeoutMs / 1000)}s; the service was not restarted.${describeLiveRuns(snapshot) ? `\n${describeLiveRuns(snapshot)}` : ""}`,
+        `Wardmote still has ${snapshot.count} live agent run(s) after waiting ${Math.round(input.timeoutMs / 1000)}s; the service was not restarted.${describeLiveRuns(snapshot) ? `\n${describeLiveRuns(snapshot)}` : ""}`,
         snapshot,
       );
     }
@@ -254,7 +254,7 @@ export async function assertAdmissionRestored(control: InstanceRunControl): Prom
   await control.stopDrain();
   const cleared = await control.liveRuns();
   if (cleared.draining) {
-    throw new Error("Paperclip restarted but is still refusing new runs: the task drain did not clear.");
+    throw new Error("Wardmote restarted but is still refusing new runs: the task drain did not clear.");
   }
   return cleared;
 }

@@ -1,11 +1,11 @@
 # CLI Reference
 
-> **Fork notice.** This is the `paperclip-pro` CLI from
+> **Fork notice.** This is the `wardmote` CLI from
 > [`tickernelz/paperclip-pro`](https://github.com/tickernelz/paperclip-pro), a hard fork of
 > `paperclipai/paperclip` at `7b7c4d417`. Nothing is published to npm, so every
 > `npx @tickernelz/paperclip-pro …` and `npm install -g paperclip-pro` example below is
 > inherited from upstream and will fail with a 404. Run the installed
-> `paperclip-pro` shim, or the direct-exec form
+> `wardmote` shim, or the direct-exec form
 > `node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts <command> <args>` from a source
 > checkout; both take the same arguments and the same inert-`argv` guarantees
 > `npx` provides. See
@@ -24,10 +24,10 @@ semi-trusted content. Untrusted content includes issue text, comment bodies,
 Markdown, pasted snippets, and model output. `npx` runs the CLI binary directly.
 It passes the argument as an inert `argv` value. It does not run a shell over the
 value. `npx @tickernelz/paperclip-pro` works on any machine with Node: it runs a local install
-of the `paperclip-pro` package, and it fetches the published package when no local
+of the `wardmote` package, and it fetches the published package when no local
 install is present.
 
-Do not use `pnpm paperclip-pro` for a content-bearing argument. `pnpm paperclip-pro`
+Do not use `pnpm wardmote` for a content-bearing argument. `pnpm wardmote`
 is a `package.json` script. `pnpm` builds a `/bin/sh` command string and appends
 the argument to it, so the shell reads the argument first. The shell interprets
 these spans before the CLI starts:
@@ -47,19 +47,19 @@ Safe forms:
   `argv` value and runs on any machine.
 - `node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts <command> <args>` —
   the safe form to run the local source from a monorepo checkout. It is the exact
-  command that the `pnpm paperclip-pro` script wraps, but it runs directly, so no
+  command that the `pnpm wardmote` script wraps, but it runs directly, so no
   shell reads the argument. Use it when you must test your local `cli/src`
   changes with a content-bearing argument.
 
 Unsafe or broken forms:
 
-- `pnpm paperclip-pro <command> <args>` — unsafe. `pnpm` runs the argument through a
+- `pnpm wardmote <command> <args>` — unsafe. `pnpm` runs the argument through a
   shell first.
 - `pnpm run <script> -- <args>`, or any `package.json` script that wraps the CLI —
   unsafe for the same reason.
-- `pnpm exec paperclip-pro <command> <args>` — broken. The root workspace does not
-  depend on the `paperclip-pro` package, so `pnpm` does not link its binary into
-  `node_modules/.bin`. The command fails with `Command "paperclip-pro" not found`,
+- `pnpm exec wardmote <command> <args>` — broken. The root workspace does not
+  depend on the `wardmote` package, so `pnpm` does not link its binary into
+  `node_modules/.bin`. The command fails with `Command "wardmote" not found`,
   even after a build. Do not use it.
 
 Static placeholders only: a document must show a static placeholder such as
@@ -67,7 +67,7 @@ Static placeholders only: a document must show a static placeholder such as
 own shell expands such a span on paste, before any CLI or `npx` receives argv, so
 a direct-exec form does not stop it.
 
-`pnpm paperclip-pro` stays acceptable only for a fully literal local lifecycle or
+`pnpm wardmote` stays acceptable only for a fully literal local lifecycle or
 setup command. A fully literal command carries no substitutable value. It has no
 placeholder, no example value the reader replaces, no interpolation, no path, no
 ref, no id, and no name. It holds the subcommand and, at most, flags that take no
@@ -75,7 +75,7 @@ value.
 
 The allowlist of literal commands lives in one place:
 `server/src/__tests__/cli-invocation-safety.test.ts`. A guard test enforces it
-fail-closed. Any `pnpm paperclip-pro` line whose command string is not an exact
+fail-closed. Any `pnpm wardmote` line whose command string is not an exact
 allowlist entry is an offender. The allowlist holds commands such as `run`,
 `onboard`, `onboard --yes`, `doctor`, `configure --section <name>`, `connect`,
 `env-lab up`, `env-lab down`, `context show`, `context list`,
@@ -106,7 +106,7 @@ is in neither place.
 
 To force cache-only resolution and block any network attempt, run
 `npx --offline paperclip-pro <command> <args>`. Use `npx --prefer-offline
-paperclip-pro` when you accept a fetch only for a missing package.
+wardmote` when you accept a fetch only for a missing package.
 
 To prepare an air-gapped host, install the package one time while the host is
 online. Run `npm install -g paperclip-pro`, or run the documented `install.sh`
@@ -117,7 +117,7 @@ To move the package without a registry, run `npm pack paperclip-pro` on an onlin
 host. Copy the tarball to the air-gapped host. Run `npm install -g
 ./tickernelz-paperclip-pro-<version>.tgz`.
 
-Do not use `pnpm paperclip-pro` as an offline fallback for a content-bearing
+Do not use `pnpm wardmote` as an offline fallback for a content-bearing
 argument. It runs the argument through a shell first, offline or online. It also
 resolves only inside a monorepo checkout.
 
@@ -131,14 +131,14 @@ local source.
 Use repo script in development:
 
 ```sh
-pnpm paperclip-pro --help
+pnpm wardmote --help
 ```
 
 Recommended installation and interactive onboarding:
 
 ```sh
 npx @tickernelz/paperclip-pro@latest install --yes
-paperclip-pro onboard --yes
+wardmote onboard --yes
 ```
 
 `install` with no source flag installs the published `latest` release from npm.
@@ -150,18 +150,18 @@ installs upstream Paperclip, not this fork.
 First-time local bootstrap from a source checkout:
 
 ```sh
-pnpm paperclip-pro run
+pnpm wardmote run
 ```
 
 Choose local instance:
 
 ```sh
-paperclip-pro run --instance dev
+wardmote run --instance dev
 ```
 
 ## Isolated Manual Test Drives
 
-`paperclip-pro test-drive` creates or reuses an isolated local data directory,
+`wardmote test-drive` creates or reuses an isolated local data directory,
 ensures one usable CEO agent exists in a fresh database, starts Paperclip in the
 foreground, and opens the browser after initialization succeeds. It never
 installs a background service and never creates a goal, project, issue, task,
@@ -245,24 +245,24 @@ opening it.
 
 ## Install, Update, And Uninstall
 
-Managed installs keep CLI payloads under `~/.paperclip-pro/cli`, expose a stable
+Managed installs keep CLI payloads under `~/.wardmote/cli`, expose a stable
 `~/.local/bin/paperclip-pro` shim, switch versions atomically, and retain two
 previous payloads for rollback.
 
 ```sh
-paperclip-pro install
-paperclip-pro install --canary
-paperclip-pro install --version <version>
-paperclip-pro install --ref <branch|tag|sha> [--repo owner/repo]
-paperclip-pro update
-paperclip-pro update --latest|--canary|--version <version>
-paperclip-pro update --rollback
-paperclip-pro upgrade
-paperclip-pro uninstall
+wardmote install
+wardmote install --canary
+wardmote install --version <version>
+wardmote install --ref <branch|tag|sha> [--repo owner/repo]
+wardmote update
+wardmote update --latest|--canary|--version <version>
+wardmote update --rollback
+wardmote upgrade
+wardmote uninstall
 ```
 
 `upgrade` aliases `update`. `uninstall` removes managed code and the shim but
-preserves instance data under `~/.paperclip-pro/instances/`. See
+preserves instance data under `~/.wardmote/instances/`. See
 `doc/INSTALLING.md` for installation methods, security notes, PATH setup, and
 the complete update and rollback behavior.
 
@@ -272,29 +272,29 @@ Interactive onboarding offers to install a background service on supported
 platforms. `--yes` never installs it implicitly; automation must opt in.
 
 ```sh
-paperclip-pro onboard
-paperclip-pro onboard --yes
-paperclip-pro onboard --yes --install-service
-paperclip-pro onboard --yes --no-install-service
+wardmote onboard
+wardmote onboard --yes
+wardmote onboard --yes --install-service
+wardmote onboard --yes --no-install-service
 ```
 
 Service lifecycle commands remain under the `service` namespace:
 
 ```sh
-paperclip-pro service install [--no-start-now] [--no-start-on-login]
-paperclip-pro service uninstall
-paperclip-pro service start
-paperclip-pro service stop
-paperclip-pro service restart [--wait]
-paperclip-pro service status [--json]
-paperclip-pro service logs [-f]
+wardmote service install [--no-start-now] [--no-start-on-login]
+wardmote service uninstall
+wardmote service start
+wardmote service stop
+wardmote service restart [--wait]
+wardmote service status [--json]
+wardmote service logs [-f]
 ```
 
 Every service verb supports `--instance <id>` and `--json`. Linux and WSL2 use
 a systemd user unit when available; macOS uses a LaunchAgent. Unsupported
-environments receive foreground `paperclip-pro run` guidance.
+environments receive foreground `wardmote run` guidance.
 
-`paperclip-pro doctor` includes managed-install and service-health diagnostics in
+`wardmote doctor` includes managed-install and service-health diagnostics in
 addition to configuration, storage, database, logging, and port checks.
 
 ## Deployment Modes
@@ -303,11 +303,11 @@ Mode taxonomy and design intent are documented in `doc/DEPLOYMENT-MODES.md`.
 
 Current CLI behavior:
 
-- `paperclip-pro onboard` and `paperclip-pro configure --section server` set deployment mode in config
+- `wardmote onboard` and `wardmote configure --section server` set deployment mode in config
 - server onboarding/configure ask for reachability intent and write `server.bind`
-- `paperclip-pro run --bind <loopback|lan|tailnet>` passes a quickstart bind preset into first-run onboarding when config is missing
+- `wardmote run --bind <loopback|lan|tailnet>` passes a quickstart bind preset into first-run onboarding when config is missing
 - runtime can override mode with `PAPERCLIP_DEPLOYMENT_MODE`
-- `paperclip-pro run` and `paperclip-pro doctor` still do not expose a direct low-level `--mode` flag
+- `wardmote run` and `wardmote doctor` still do not expose a direct low-level `--mode` flag
 
 Canonical behavior is documented in `doc/DEPLOYMENT-MODES.md`.
 
@@ -320,10 +320,10 @@ npx @tickernelz/paperclip-pro allowed-hostname dotta-macbook-pro
 Bring up the default local SSH fixture for environment testing:
 
 ```sh
-pnpm paperclip-pro env-lab up
-pnpm paperclip-pro env-lab doctor
-pnpm paperclip-pro env-lab status --json
-pnpm paperclip-pro env-lab down
+pnpm wardmote env-lab up
+pnpm wardmote env-lab doctor
+pnpm wardmote env-lab status --json
+pnpm wardmote env-lab down
 ```
 
 All client commands support:
@@ -350,7 +350,7 @@ Connection failures include the attempted URL and a `GET /api/health` check hint
 ## Connect Wizard
 
 ```sh
-pnpm paperclip-pro connect
+pnpm wardmote connect
 ```
 
 `connect` confirms the resolved API base, verifies `GET /api/health`, authenticates board access when needed, and saves a persona-aware profile:
@@ -360,7 +360,7 @@ pnpm paperclip-pro connect
 
 Profiles store token env-var names, not plaintext tokens. The wizard prints shell exports for the newly created token.
 
-Use `--data-dir` on any CLI command to isolate all default local state (config/context/db/logs/storage/secrets) away from `~/.paperclip-pro`:
+Use `--data-dir` on any CLI command to isolate all default local state (config/context/db/logs/storage/secrets) away from `~/.wardmote`:
 
 ```sh
 npx @tickernelz/paperclip-pro run --data-dir ./tmp/paperclip-dev
@@ -369,13 +369,13 @@ npx @tickernelz/paperclip-pro issue list --data-dir ./tmp/paperclip-dev
 
 ## Context Profiles
 
-Store local defaults in `~/.paperclip-pro/context.json`:
+Store local defaults in `~/.wardmote/context.json`:
 
 ```sh
 npx @tickernelz/paperclip-pro context set --api-base http://localhost:3100 --company-id <company-id>
 npx @tickernelz/paperclip-pro context set --persona agent --agent-id <agent-id> --api-key-env-var-name PAPERCLIP_API_KEY
-pnpm paperclip-pro context show
-pnpm paperclip-pro context list
+pnpm wardmote context show
+pnpm wardmote context list
 npx @tickernelz/paperclip-pro context use default
 ```
 
@@ -609,7 +609,7 @@ npx @tickernelz/paperclip-pro token board revoke <key-id>
 
 ## Run Commands
 
-`paperclip-pro run` without a subcommand still bootstraps and starts a local Paperclip instance. The subcommands below inspect and control API heartbeat runs.
+`wardmote run` without a subcommand still bootstraps and starts a local Paperclip instance. The subcommands below inspect and control API heartbeat runs.
 
 ```sh
 npx @tickernelz/paperclip-pro run list --company-id <company-id> [--agent-id <agent-id>] [--limit 50]
@@ -626,7 +626,7 @@ npx @tickernelz/paperclip-pro run watchdog-decision <run-id> --decision continue
 
 ## Routine Commands
 
-`paperclip-pro routines disable-all` remains the local maintenance command. The singular `routine` group maps to the REST API.
+`wardmote routines disable-all` remains the local maintenance command. The singular `routine` group maps to the REST API.
 
 ```sh
 npx @tickernelz/paperclip-pro routine list --company-id <company-id> [--project-id <project-id>]
@@ -659,7 +659,7 @@ By default the command creates a `todo` issue assigned to the target agent and w
 
 ## Skills Commands
 
-`paperclip-pro skills` covers three distinct operations:
+`wardmote skills` covers three distinct operations:
 
 1. **Company install** — adds or updates a row in `company_skills` for the
    whole company. This is what `skills install`, `skills import`, `skills create`,
@@ -787,7 +787,7 @@ still enforced by the server in both cases.
 
 ## Teams Commands
 
-`paperclip-pro teams` works with the app-shipped team catalog in
+`wardmote teams` works with the app-shipped team catalog in
 `@tickernelz/paperclip-pro-teams-catalog`. Browse, search, inspect, and file reads do not
 change company state. `preview` runs the company import planner, and `install`
 imports the catalog team into an existing company.
@@ -802,8 +802,8 @@ npx @tickernelz/paperclip-pro teams install <catalog-id-or-key-or-slug> --compan
 
 Preview/install options:
 
-- Under agent authentication, use `paperclip-pro company list --json`,
-  `paperclip-pro company current --json`, or `PAPERCLIP_COMPANY_ID` to select the
+- Under agent authentication, use `wardmote company list --json`,
+  `wardmote company current --json`, or `PAPERCLIP_COMPANY_ID` to select the
   target company. `company list` falls back to the scoped current company when
   board-wide listing is forbidden. `teams install` creates agents and therefore
   requires board authentication, an `agents:create` grant, or an agent with the
@@ -1124,7 +1124,7 @@ npx @tickernelz/paperclip-pro heartbeat run --agent-id <agent-id> [--api-base ht
 Local Paperclip data lives under the selected instance root. `PAPERCLIP_HOME` chooses the home directory and `PAPERCLIP_INSTANCE_ID` chooses the instance.
 
 ```text
-~/.paperclip-pro/                                     # PAPERCLIP_HOME
+~/.wardmote/                                     # PAPERCLIP_HOME
 └── instances/
     └── default/                                  # instance root (PAPERCLIP_INSTANCE_ID)
         ├── config.json                           # runtime config
@@ -1144,16 +1144,16 @@ Local Paperclip data lives under the selected instance root. `PAPERCLIP_HOME` ch
 
 Default paths for the canonical install:
 
-- config: `~/.paperclip-pro/instances/default/config.json`
-- embedded db: `~/.paperclip-pro/instances/default/db`
-- logs: `~/.paperclip-pro/instances/default/logs`
-- storage: `~/.paperclip-pro/instances/default/data/storage`
-- secrets key: `~/.paperclip-pro/instances/default/secrets/master.key`
+- config: `~/.wardmote/instances/default/config.json`
+- embedded db: `~/.wardmote/instances/default/db`
+- logs: `~/.wardmote/instances/default/logs`
+- storage: `~/.wardmote/instances/default/data/storage`
+- secrets key: `~/.wardmote/instances/default/secrets/master.key`
 
 Override base home or instance with env vars:
 
 ```sh
-PAPERCLIP_HOME=/custom/home PAPERCLIP_INSTANCE_ID=dev pnpm paperclip-pro run
+PAPERCLIP_HOME=/custom/home PAPERCLIP_INSTANCE_ID=dev pnpm wardmote run
 ```
 
 ## Storage Configuration
@@ -1161,7 +1161,7 @@ PAPERCLIP_HOME=/custom/home PAPERCLIP_INSTANCE_ID=dev pnpm paperclip-pro run
 Configure storage provider and settings:
 
 ```sh
-pnpm paperclip-pro configure --section storage
+pnpm wardmote configure --section storage
 ```
 
 Supported providers:

@@ -3082,7 +3082,7 @@ describe("IssueChatThread", () => {
     });
   });
 
-  it("renders the transcript directly from stable Paperclip messages", () => {
+  it("renders the transcript directly from stable Wardmote messages", () => {
     const root = createRoot(container);
 
     act(() => {

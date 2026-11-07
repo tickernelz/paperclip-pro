@@ -296,7 +296,7 @@ export function NotificationSettingsSection({ userId }: { userId: string | null 
 
         <div className="flex items-center justify-between gap-4">
           <div className="min-w-0">
-            <div className="text-sm font-medium">Push when Paperclip is closed</div>
+            <div className="text-sm font-medium">Push when Wardmote is closed</div>
             <div className="text-xs text-ink-3">
               {canPush ? PUSH_STATUS_LABELS[pushState.status] : PUSH_STATUS_LABELS.unsupported}
               {pushState.error ? `: ${pushState.error}` : ""}
@@ -306,19 +306,19 @@ export function NotificationSettingsSection({ userId }: { userId: string | null 
             checked={settings.pushEnabled}
             onCheckedChange={(pushEnabled) => void setPushEnabled(pushEnabled)}
             disabled={masterDisabled || !canPush}
-            aria-label="Push when Paperclip is closed"
+            aria-label="Push when Wardmote is closed"
           />
         </div>
 
         {settings.enabled && !pushActive ? (
           <p className="rounded-md bg-bg-3 px-3 py-2 text-xs text-ink-3">
-            Push is off on this device, so background alerts only work while a Paperclip tab is visible.
+            Push is off on this device, so background alerts only work while a Wardmote tab is visible.
           </p>
         ) : null}
 
         {isIosWithoutHomeScreenInstall() ? (
           <p className="rounded-md bg-bg-3 px-3 py-2 text-xs text-ink-3">
-            On iPhone and iPad, push notifications need Paperclip added to the Home Screen (Share, then Add to Home
+            On iPhone and iPad, push notifications need Wardmote added to the Home Screen (Share, then Add to Home
             Screen) and opened from there.
           </p>
         ) : null}
@@ -349,7 +349,7 @@ export function NotificationSettingsSection({ userId }: { userId: string | null 
           ))}
         </div>
         <p className="text-xs text-ink-3">
-          Custom sounds must be audio files of 512 KB or less. They play only while Paperclip is open; push
+          Custom sounds must be audio files of 512 KB or less. They play only while Wardmote is open; push
           notifications use your system sound.
         </p>
 

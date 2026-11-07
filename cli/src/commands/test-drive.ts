@@ -58,7 +58,7 @@ const NON_PAPERCLIP_ISOLATED_ENV_KEYS = [
 
 function requiredApiResult<T>(value: T | null, action: string): T {
   if (value === null) {
-    throw new Error(`Paperclip returned no result while ${action}.`);
+    throw new Error(`Wardmote returned no result while ${action}.`);
   }
   return value;
 }
@@ -216,7 +216,7 @@ export async function reconcileTestDriveWorktreeExecution(
   );
   if (!worktreeExecutionArmed(verified, instanceId)) {
     throw new Error(
-      `Could not arm “Run tasks in this worktree” for Paperclip instance ${instanceId}. ` +
+      `Could not arm “Run tasks in this worktree” for Wardmote instance ${instanceId}. ` +
         "Check that PAPERCLIP_IN_WORKTREE=true and retry the command.",
     );
   }
@@ -295,7 +295,7 @@ export async function testDriveCommand(
   const instanceId = process.env.PAPERCLIP_INSTANCE_ID ?? "default";
 
   p.log.message(pc.dim(`Data directory: ${dataDir}`));
-  p.log.message(pc.dim("The data directory is retained when Paperclip exits."));
+  p.log.message(pc.dim("The data directory is retained when Wardmote exits."));
 
   await dependencies.run({
     repair: true,
@@ -303,7 +303,7 @@ export async function testDriveCommand(
     bind: "loopback",
     installService: false,
     skipServiceManagerCheck: !options.dataDir?.trim(),
-    introLabel: "paperclip-pro test-drive",
+    introLabel: "wardmote test-drive",
     afterStart: async (server) => {
       const api = dependencies.createApi(server.apiUrl);
       const result = await bootstrapTestDrive({
@@ -327,14 +327,14 @@ export async function testDriveCommand(
 
       const url = dashboardUrl(server);
       if (options.browser === false) {
-        p.log.success(`Paperclip is ready at ${pc.cyan(url)}.`);
+        p.log.success(`Wardmote is ready at ${pc.cyan(url)}.`);
         return;
       }
       const opened = await dependencies.openBrowser(url);
       if (opened) {
-        p.log.success(`Paperclip is ready and opened at ${pc.cyan(url)}.`);
+        p.log.success(`Wardmote is ready and opened at ${pc.cyan(url)}.`);
       } else {
-        p.log.warn(`Paperclip is ready, but the browser could not be opened. Visit ${url}.`);
+        p.log.warn(`Wardmote is ready, but the browser could not be opened. Visit ${url}.`);
       }
     },
   });
@@ -343,8 +343,8 @@ export async function testDriveCommand(
 export function registerTestDriveCommand(program: Command): void {
   program
     .command("test-drive")
-    .description("Start an isolated, initialized Paperclip instance for manual testing")
-    .option("-d, --data-dir <path>", "Paperclip data directory to create or reuse")
+    .description("Start an isolated, initialized Wardmote instance for manual testing")
+    .option("-d, --data-dir <path>", "Wardmote data directory to create or reuse")
     .option("--company-name <name>", "Initial company name", "Test Company")
     .option("--agent-name <name>", "Initial CEO agent name", "CEO")
     .option("--model <model-id>", "Initial agent model")

@@ -567,7 +567,7 @@ describe("worktree helpers", () => {
       availableMigrations: ["0001_initial.sql", "0002_current.sql"],
       appliedMigrations: ["0001_initial.sql", "0003_unknown.sql"],
       journalEntryCount: 3,
-    }, "sourcePrefix")).toThrow("Migration journal is not a prefix of this Paperclip checkout");
+    }, "sourcePrefix")).toThrow("Migration journal is not a prefix of this Wardmote checkout");
   });
 
   it("accepts a current source whose migration application order differs from filename order", () => {
@@ -1193,7 +1193,7 @@ describe("worktree helpers", () => {
     try {
       await db.insert(companies).values({
         id: companyId,
-        name: "Paperclip",
+        name: "Wardmote",
         issuePrefix: "WTQ",
         requireBoardApprovalForNewAgents: false,
       });
@@ -2001,7 +2001,7 @@ describe("worktree helpers", () => {
     }
   });
 
-  it("defaults the seed source config to the current repo-local Paperclip config", () => {
+  it("defaults the seed source config to the current repo-local Wardmote config", () => {
     const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-worktree-source-config-"));
     const repoRoot = path.join(tempRoot, "repo");
     const localConfigPath = path.join(repoRoot, ".paperclip", "config.json");
@@ -2026,7 +2026,7 @@ describe("worktree helpers", () => {
     }
   });
 
-  it("resolves --from-instance against the configured Paperclip home, not the real user home", () => {
+  it("resolves --from-instance against the configured Wardmote home, not the real user home", () => {
     const isolatedHome = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-worktree-home-"));
     const previous = process.env.PAPERCLIP_HOME;
     process.env.PAPERCLIP_HOME = isolatedHome;
@@ -2131,7 +2131,7 @@ describe("worktree helpers", () => {
         resolveWorktreeReseedTargetPaths({
           configPath,
           rootPath: worktreeRoot,
-        })).toThrow("does not look like a worktree-local Paperclip instance");
+        })).toThrow("does not look like a worktree-local Wardmote instance");
     } finally {
       fs.rmSync(tempRoot, { recursive: true, force: true });
     }
@@ -2464,7 +2464,7 @@ describe("worktree helpers", () => {
     }
   });
 
-  it("repairs the current linked worktree when Paperclip metadata is missing", async () => {
+  it("repairs the current linked worktree when Wardmote metadata is missing", async () => {
     const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-worktree-repair-current-"));
     const repoRoot = path.join(tempRoot, "repo");
     const worktreePath = path.join(repoRoot, ".paperclip", "worktrees", "repair-me");
@@ -2563,7 +2563,7 @@ describeEmbeddedPostgres("pauseSeededScheduledRoutines", () => {
     try {
       await db.insert(companies).values({
         id: companyId,
-        name: "Paperclip",
+        name: "Wardmote",
         issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
         requireBoardApprovalForNewAgents: false,
       });

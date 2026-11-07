@@ -7,7 +7,7 @@ import type { Command } from "commander";
 /** Resolve the public server dependency, without importing/starting the server. */
 export async function resolvePiProvisioner(serverUrl: string): Promise<string> {
   const url = new URL(serverUrl);
-  if (url.protocol !== "file:" || url.search || url.hash) throw new Error("Pi setup requires an installed Paperclip server");
+  if (url.protocol !== "file:" || url.search || url.hash) throw new Error("Pi setup requires an installed Wardmote server");
   const entry = await realpath(fileURLToPath(url));
   if (!entry.endsWith("/dist/index.js")) throw new Error("Pi setup requires the published server layout");
   const root = resolve(dirname(entry), "..");
@@ -61,7 +61,7 @@ export async function setupPiRuntime(): Promise<void> {
 /** Resolve the installed public dependency without importing or starting it. */
 export async function resolveCursorProvisioner(serverUrl: string): Promise<string> {
   const url = new URL(serverUrl);
-  if (url.protocol !== "file:" || url.search || url.hash) throw new Error("Cursor setup requires an installed Paperclip server");
+  if (url.protocol !== "file:" || url.search || url.hash) throw new Error("Cursor setup requires an installed Wardmote server");
   const entry = await realpath(fileURLToPath(url));
   if (!entry.endsWith("/dist/index.js")) throw new Error("Cursor setup requires the published server layout");
   const root = resolve(dirname(entry), "..");
@@ -116,6 +116,6 @@ export function registerRuntimeCommands(program: Command): void {
     .action(async (provider: string) => {
       if (provider === "pi") await setupPiRuntime();
       else if (provider === "cursor") await setupCursorRuntime();
-      else throw new Error("Supported runtime setup: paperclip-pro runtime setup pi or cursor");
+      else throw new Error("Supported runtime setup: wardmote runtime setup pi or cursor");
     });
 }

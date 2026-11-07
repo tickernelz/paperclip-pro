@@ -10,7 +10,7 @@ import { ScopedSearchInput, type ScopedSearchValue } from "./ScopedSearchInput";
 const context = {
   currentUserId: "user-1",
   agents: [{ id: "agent-1", name: "Codex Coder" }],
-  projects: [{ id: "11111111-1111-4111-8111-111111111111", name: "Paperclip App" }],
+  projects: [{ id: "11111111-1111-4111-8111-111111111111", name: "Wardmote App" }],
   labels: [{ id: "22222222-2222-4222-8222-222222222222", name: "bug" }],
 };
 

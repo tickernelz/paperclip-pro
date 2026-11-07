@@ -3,14 +3,14 @@ import { createInterface } from "node:readline";
 import { loginMcpDevice, mcpAccessToken, mcpResource, mcpRpc } from "../client/mcp-auth.js";
 
 export function registerMcpCommands(program: Command) {
-  const mcp = program.command("mcp").description("Connect an assistant to Paperclip as a consenting human");
+  const mcp = program.command("mcp").description("Connect an assistant to Wardmote as a consenting human");
   mcp.command("login").requiredOption("--device", "Authorize in a browser without a callback listener")
-    .requiredOption("--url <url>", "Canonical Paperclip MCP URL").option("--company <id>", "Restrict consent to this organization")
+    .requiredOption("--url <url>", "Canonical Wardmote MCP URL").option("--company <id>", "Restrict consent to this organization")
     .action(async (options: { url: string; company?: string }) => {
       const result = await loginMcpDevice(options.url, options.company);
       console.log(`Connected to ${result.resource}\nOrganization: ${result.companyId}`);
     });
-  mcp.command("proxy").description("Expose the authorized Paperclip tools over local MCP stdio")
+  mcp.command("proxy").description("Expose the authorized Wardmote tools over local MCP stdio")
     .requiredOption("--url <url>", "The exact MCP URL used during login")
     .action(async (options: { url: string }) => {
       const resource = mcpResource(options.url);
@@ -30,7 +30,7 @@ export function registerMcpCommands(program: Command) {
           process.stdout.write(JSON.stringify({ jsonrpc: "2.0", id: message.id, result }) + "\n");
         } catch (error) {
           // Never log request arguments, raw provider responses, or credentials.
-          const text = "Paperclip connection failed. Check access before retrying; a write may already have completed.";
+          const text = "Wardmote connection failed. Check access before retrying; a write may already have completed.";
           process.stdout.write(JSON.stringify({ jsonrpc: "2.0", id: message.id, error: { code: -32603, message: text } }) + "\n");
         }
       }

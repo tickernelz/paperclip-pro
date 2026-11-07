@@ -28,7 +28,7 @@ packages/adapters/<name>/
       build-config.ts   # CreateConfigValues -> adapterConfig JSON for agent creation form
     cli/
       index.ts          # CLI exports: formatStdoutEvent
-      format-event.ts   # Colored terminal output for `paperclip-pro run --watch`
+      format-event.ts   # Colored terminal output for `wardmote run --watch`
   package.json
   tsconfig.json
 ```
@@ -393,7 +393,7 @@ The component must support both `create` mode (using `values`/`set`) and `edit` 
 
 #### `cli/format-event.ts` — Terminal Formatter
 
-Pretty-prints stdout lines for `paperclip-pro run --watch`. Use `picocolors` for coloring.
+Pretty-prints stdout lines for `wardmote run --watch`. Use `picocolors` for coloring.
 
 ```ts
 import pc from "picocolors";

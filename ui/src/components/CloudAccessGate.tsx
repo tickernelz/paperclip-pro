@@ -31,7 +31,7 @@ export function CloudAccessError({
       <RefreshCw className="size-6 text-ink-3" aria-hidden="true" />
       <div className="flex flex-col gap-2" role="status">
         <h1 className="text-xl font-semibold">
-          {temporary ? "Reconnecting to Paperclip" : "Unable to load Paperclip"}
+          {temporary ? "Reconnecting to Wardmote" : "Unable to load Wardmote"}
         </h1>
         <p className="text-sm text-ink-3">
           {temporary
@@ -55,7 +55,7 @@ function NoBoardAccessPage() {
         <h1 className="text-xl font-semibold">No organization access</h1>
         <p className="mt-2 text-sm text-ink-3">
           This account is signed in, but it does not have an active organization membership or instance-admin access on
-          this Paperclip instance.
+          this Wardmote instance.
         </p>
         <p className="mt-2 text-sm text-ink-3">
           Use an organization invite or sign in with an account that already belongs to this org.

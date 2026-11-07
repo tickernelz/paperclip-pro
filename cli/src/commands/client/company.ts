@@ -421,7 +421,7 @@ async function promptForImportSelection(preview: CompanyPortabilityPreviewResult
 
   while (true) {
     const choice = await p.select<ImportSelectableGroup | "company" | "confirm">({
-      message: "Select what Paperclip should import",
+      message: "Select what Wardmote should import",
       options: [
         {
           value: "company",
@@ -2022,7 +2022,7 @@ async function createCompanyForContext(ctx: {
   } catch (error) {
     if (isBoardAccessRequiredError(error) || isInstanceAdminRequiredError(error)) {
       throw new Error(
-        "Creating companies requires board/instance-admin authentication. Agent API keys are scoped to one company; use `paperclip-pro company list --json` or `paperclip-pro company current --json` to select the scoped company, or rerun create with a board token/login.",
+        "Creating companies requires board/instance-admin authentication. Agent API keys are scoped to one company; use `wardmote company list --json` or `wardmote company current --json` to select the scoped company, or rerun create with a board token/login.",
       );
     }
     throw error;

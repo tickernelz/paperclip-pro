@@ -63,7 +63,7 @@ describe("shipped teams catalog", () => {
     expect(issues).toEqual([]);
   });
 
-  it("uses canonical paperclip-pro keys derived from kind/category/slug", () => {
+  it("uses canonical wardmote keys derived from kind/category/slug", () => {
     const violations: string[] = [];
     for (const team of catalogTeams) {
       const expectedKey = `paperclipai/${team.kind}/${team.category}/${team.slug}`;

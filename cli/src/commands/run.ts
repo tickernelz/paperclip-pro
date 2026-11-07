@@ -64,7 +64,7 @@ export async function runCommand(opts: RunOptions): Promise<void> {
   loadPaperclipEnvFile(configPath);
   await printUpdateNotice(configPath);
 
-  p.intro(pc.bgCyan(pc.black(` ${opts.introLabel ?? "paperclip-pro run"} `)));
+  p.intro(pc.bgCyan(pc.black(` ${opts.introLabel ?? "wardmote run"} `)));
   p.log.message(pc.dim(`Home: ${paths.homeDir}`));
   p.log.message(pc.dim(`Instance: ${paths.instanceId}`));
   p.log.message(pc.dim(`Config: ${configPath}`));
@@ -72,7 +72,7 @@ export async function runCommand(opts: RunOptions): Promise<void> {
   if (!configExists(configPath)) {
     if ((!process.stdin.isTTY || !process.stdout.isTTY) && !opts.yes) {
       p.log.error("No config found and terminal is non-interactive.");
-      p.log.message(`Run ${pc.cyan("paperclip-pro onboard")} once, then retry ${pc.cyan("paperclip-pro run")}.`);
+      p.log.message(`Run ${pc.cyan("wardmote onboard")} once, then retry ${pc.cyan("wardmote run")}.`);
       process.exit(1);
     }
 
@@ -109,7 +109,7 @@ export async function runCommand(opts: RunOptions): Promise<void> {
     process.exit(1);
   }
 
-  p.log.step("Starting Paperclip server...");
+  p.log.step("Starting Wardmote server...");
   const startedServer = await importServerEntry();
   writeRuntimeInfo({
     schemaVersion: 1,
@@ -208,13 +208,13 @@ function ensureDevWorkspaceBuildDeps(projectRoot: string): void {
 
   if (result.error) {
     throw new Error(
-      `Failed to prepare workspace build artifacts before starting the Paperclip dev server.\n${formatError(result.error)}`,
+      `Failed to prepare workspace build artifacts before starting the Wardmote dev server.\n${formatError(result.error)}`,
     );
   }
 
   if ((result.status ?? 1) !== 0) {
     throw new Error(
-      "Failed to prepare workspace build artifacts before starting the Paperclip dev server.",
+      "Failed to prepare workspace build artifacts before starting the Wardmote dev server.",
     );
   }
 }
@@ -239,13 +239,13 @@ async function importServerEntry(): Promise<StartedServer> {
     const missingServerEntrypoint = !missingSpecifier || missingSpecifier === "@tickernelz/paperclip-pro-server";
     if (isModuleNotFoundError(err) && missingServerEntrypoint) {
       throw new Error(
-        `Could not locate a Paperclip server entrypoint.\n` +
+        `Could not locate a Wardmote server entrypoint.\n` +
           `Tried: ${devEntry}, @tickernelz/paperclip-pro-server\n` +
           `${formatError(err)}`,
       );
     }
     throw new Error(
-      `Paperclip server failed to start.\n` +
+      `Wardmote server failed to start.\n` +
         `${formatError(err)}`,
     );
   }
@@ -258,7 +258,7 @@ function shouldGenerateBootstrapInviteAfterStart(config: PaperclipConfig): boole
 async function startServerFromModule(mod: unknown, label: string): Promise<StartedServer> {
   const startServer = (mod as { startServer?: () => Promise<StartedServer> }).startServer;
   if (typeof startServer !== "function") {
-    throw new Error(`Paperclip server entrypoint did not export startServer(): ${label}`);
+    throw new Error(`Wardmote server entrypoint did not export startServer(): ${label}`);
   }
   return await startServer();
 }

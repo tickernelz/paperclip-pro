@@ -1,7 +1,8 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
-import { paperclipToolCatalog } from "./catalog.js";
+import type { Transport } from "@modelcontextprotocol/sdk/shared/transport.js";
+import { canonicalToolName, paperclipToolCatalog } from "./catalog.js";
 import { PaperclipApiClient } from "./client.js";
 import { hasManagementAuthority, readConfigFromEnv, type PaperclipMcpConfig } from "./config.js";
 import { sharedToolNotes } from "./generated-tools.js";
@@ -64,9 +65,18 @@ export function createPaperclipMcpServer(
   };
 }
 
+export async function connectPaperclipMcpServer(server: McpServer, transport: Transport): Promise<void> {
+  await server.connect(transport);
+  const deliver = transport.onmessage;
+  transport.onmessage = (message, extra) => {
+    const params = "method" in message && message.method === "tools/call" ? message.params : undefined;
+    const name = typeof params?.name === "string" ? params.name : null;
+    deliver?.(name && params ? { ...message, params: { ...params, name: canonicalToolName(name) } } : message, extra);
+  };
+}
+
 export async function runServer(config: PaperclipMcpConfig = readConfigFromEnv()) {
   const management = await resolveManagementAuthority(new PaperclipApiClient(config), config);
   const { server } = createPaperclipMcpServer(config, management);
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
+  await connectPaperclipMcpServer(server, new StdioServerTransport());
 }

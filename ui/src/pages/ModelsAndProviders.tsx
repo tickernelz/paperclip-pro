@@ -47,7 +47,7 @@ export function ModelsAndProviders() {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="space-y-1">
           <h1 className="text-lg font-semibold">Models and providers</h1>
-          <p className="text-sm text-ink-3">Imported from OMP. Keys stay in OMP's credential store; Paperclip never reads or keeps them.</p>
+          <p className="text-sm text-ink-3">Imported from OMP. Keys stay in OMP's credential store; Wardmote never reads or keeps them.</p>
         </div>
         <div className="flex shrink-0 gap-2">
           <Button type="button" variant="secondary" size="sm" disabled={checking} onClick={checkAgain}>

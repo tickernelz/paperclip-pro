@@ -46,7 +46,7 @@ export function DecisionModelSettingsView({ settings, choices, saving, testing, 
       <h2 id="decision-model-heading" className="text-lg font-semibold">Decision model</h2>
       <Link to="/activity/costs?tab=decisions" className="text-sm underline underline-offset-4">View usage</Link>
     </div>
-    <p className="text-sm text-ink-3">Choose the shared connection Paperclip uses for optional decision features. API usage is charged to this connection.</p>
+    <p className="text-sm text-ink-3">Choose the shared connection Wardmote uses for optional decision features. API usage is charged to this connection.</p>
     <ConnectionChoiceList selectedId={draft.grantId ?? undefined} disabled={saving || testing}
       choices={choices.map(row => ({ id: row.grantId, name: row.name,
         description: `${row.decisionModel} · ${row.status === "connected" ? "Connected" : "Needs attention"}`,
@@ -63,7 +63,7 @@ export function DecisionModelSettingsView({ settings, choices, saving, testing, 
       <ToggleField label="Enable decisions" checked={draft.enabled} onChange={enabled => setDraft(value => ({ ...value, enabled }))} />
       <div className="space-y-2">
         <ToggleField label="Allow company-sponsored background decisions" checked={draft.allowBackground} onChange={allowBackground => setDraft(value => ({ ...value, allowBackground }))} />
-        <p className="text-xs text-ink-3">Background features can charge this connection without a responsible person. These requests appear as Paperclip services.</p>
+        <p className="text-xs text-ink-3">Background features can charge this connection without a responsible person. These requests appear as Wardmote services.</p>
       </div>
     </fieldset>}
     {error && <p role="alert" className="text-sm text-bad">{error}</p>}

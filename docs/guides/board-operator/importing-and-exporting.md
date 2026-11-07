@@ -3,7 +3,7 @@ title: Importing & Exporting Companies
 summary: Export companies to portable packages and import them from local paths or GitHub
 ---
 
-Paperclip companies can be exported to portable markdown packages and imported from local directories or GitHub repositories. This lets you share company configurations, duplicate setups, and version-control your agent teams.
+Wardmote companies can be exported to portable markdown packages and imported from local directories or GitHub repositories. This lets you share company configurations, duplicate setups, and version-control your agent teams.
 
 ## Package Format
 
@@ -44,7 +44,7 @@ The **Import** page previews the package, lets you resolve name collisions and a
 Export a company into a portable folder:
 
 ```sh
-paperclip-pro company export <company-id> --out ./my-export
+wardmote company export <company-id> --out ./my-export
 ```
 
 ### Options
@@ -63,13 +63,13 @@ paperclip-pro company export <company-id> --out ./my-export
 
 ```sh
 # Export company with agents and projects
-paperclip-pro company export abc123 --out ./backup --include company,agents,projects
+wardmote company export abc123 --out ./backup --include company,agents,projects
 
 # Export everything including tasks and skills
-paperclip-pro company export abc123 --out ./full-export --include company,agents,projects,tasks,skills
+wardmote company export abc123 --out ./full-export --include company,agents,projects,tasks,skills
 
 # Export only specific skills
-paperclip-pro company export abc123 --out ./skills-only --include skills --skills review,deploy
+wardmote company export abc123 --out ./skills-only --include skills --skills review,deploy
 ```
 
 ### What Gets Exported
@@ -89,17 +89,17 @@ Import from a local directory, GitHub URL, or GitHub shorthand:
 
 ```sh
 # From a local folder
-paperclip-pro company import ./my-export
+wardmote company import ./my-export
 
 # From a GitHub URL
-paperclip-pro company import https://github.com/org/repo
+wardmote company import https://github.com/org/repo
 
 # From a GitHub subfolder
-paperclip-pro company import https://github.com/org/repo/tree/main/companies/acme
+wardmote company import https://github.com/org/repo/tree/main/companies/acme
 
 # From GitHub shorthand
-paperclip-pro company import org/repo
-paperclip-pro company import org/repo/companies/acme
+wardmote company import org/repo
+wardmote company import org/repo/companies/acme
 ```
 
 ### Options
@@ -122,7 +122,7 @@ paperclip-pro company import org/repo/companies/acme
 - **`new`** — Creates a fresh company from the package. Good for duplicating a company template.
 - **`existing`** — Merges the package into an existing company. Use `--company-id` to specify the target.
 
-If `--target` is not specified, Paperclip infers it: if a `--company-id` is provided (or one exists in context), it defaults to `existing`; otherwise `new`.
+If `--target` is not specified, Wardmote infers it: if a `--company-id` is provided (or one exists in context), it defaults to `existing`; otherwise `new`.
 
 ### Collision Strategies
 
@@ -141,7 +141,7 @@ When running interactively (no `--yes` or `--json` flags), the import command sh
 Always preview first with `--dry-run`:
 
 ```sh
-paperclip-pro company import org/repo --target existing --company-id abc123 --dry-run
+wardmote company import org/repo --target existing --company-id abc123 --dry-run
 ```
 
 The preview shows:
@@ -159,7 +159,7 @@ Imports can additionally request `pauseAutomations` (the default in the app's Im
 **Clone a company template from GitHub:**
 
 ```sh
-paperclip-pro company import org/company-templates/engineering-team \
+wardmote company import org/company-templates/engineering-team \
   --target new \
   --new-company-name "My Engineering Team"
 ```
@@ -167,7 +167,7 @@ paperclip-pro company import org/company-templates/engineering-team \
 **Add agents from a package into your existing company:**
 
 ```sh
-paperclip-pro company import ./shared-agents \
+wardmote company import ./shared-agents \
   --target existing \
   --company-id abc123 \
   --include agents \
@@ -177,13 +177,13 @@ paperclip-pro company import ./shared-agents \
 **Import a specific branch or tag:**
 
 ```sh
-paperclip-pro company import org/repo --ref v2.0.0 --dry-run
+wardmote company import org/repo --ref v2.0.0 --dry-run
 ```
 
 **Non-interactive import (CI/scripts):**
 
 ```sh
-paperclip-pro company import ./package \
+wardmote company import ./package \
   --target new \
   --yes \
   --json
@@ -208,7 +208,7 @@ CEO agents can also use the safe import routes (`/imports/preview` and `/imports
 
 ## GitHub Sources
 
-Paperclip supports several GitHub URL formats:
+Wardmote supports several GitHub URL formats:
 
 - Full URL: `https://github.com/org/repo`
 - Subfolder URL: `https://github.com/org/repo/tree/main/path/to/company`

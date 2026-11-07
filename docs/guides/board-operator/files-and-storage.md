@@ -7,7 +7,7 @@ Instance admins manage file limits and cleanup in **Instance Settings > General 
 
 ## Upload size limit
 
-The limit applies to every upload (task attachments, images, company logos, case files) and to files that chat channels and agents hand to Paperclip.
+The limit applies to every upload (task attachments, images, company logos, case files) and to files that chat channels and agents hand to Wardmote.
 
 - Set a whole number of megabytes from 1 to 500. A change takes effect on the next upload, without a restart.
 - Leave the field blank to use the default: `PAPERCLIP_ATTACHMENT_MAX_BYTES` when the server sets it, otherwise 100 MB.

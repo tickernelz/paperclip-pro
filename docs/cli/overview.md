@@ -3,12 +3,12 @@ title: CLI Overview
 summary: CLI installation and setup
 ---
 
-The Paperclip CLI handles instance setup, diagnostics, and control-plane operations.
+The Wardmote CLI handles instance setup, diagnostics, and control-plane operations.
 
 ## Usage
 
 ```sh
-pnpm paperclip-pro --help
+pnpm wardmote --help
 ```
 
 ## Global Options
@@ -17,7 +17,7 @@ All commands support:
 
 | Flag | Description |
 |------|-------------|
-| `--data-dir <path>` | Local Paperclip data root (isolates from `~/.paperclip-pro`) |
+| `--data-dir <path>` | Local Wardmote data root (isolates from `~/.wardmote`) |
 | `--api-base <url>` | API base URL |
 | `--api-key <token>` | API authentication token |
 | `--context <path>` | Context file path |
@@ -41,10 +41,10 @@ Store defaults to avoid repeating flags:
 npx @tickernelz/paperclip-pro context set --api-base http://localhost:3100 --company-id <id>
 
 # View current context
-pnpm paperclip-pro context show
+pnpm wardmote context show
 
 # List profiles
-pnpm paperclip-pro context list
+pnpm wardmote context list
 
 # Switch profile
 npx @tickernelz/paperclip-pro context use default
@@ -57,7 +57,7 @@ npx @tickernelz/paperclip-pro context set --api-key-env-var-name PAPERCLIP_API_K
 export PAPERCLIP_API_KEY=...
 ```
 
-Secret operations are available under `paperclip-pro secrets`:
+Secret operations are available under `wardmote secrets`:
 
 ```sh
 npx @tickernelz/paperclip-pro secrets declarations --company-id <company-id> --kind secret
@@ -67,7 +67,7 @@ npx @tickernelz/paperclip-pro secrets doctor --company-id <company-id>
 npx @tickernelz/paperclip-pro secrets migrate-inline-env --company-id <company-id> --apply
 ```
 
-Context is stored at `~/.paperclip-pro/context.json`.
+Context is stored at `~/.wardmote/context.json`.
 
 ## Command Categories
 

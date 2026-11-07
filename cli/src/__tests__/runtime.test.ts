@@ -28,7 +28,7 @@ it("rejects foreign package identity and a setup entrypoint outside that package
 });
 it("rejects unsupported runtime setup providers before resolution", async () => {
   const program = new Command(); registerRuntimeCommands(program);
-  await expect(program.parseAsync(["node", "paperclip-pro", "runtime", "setup", "untrusted"])).rejects.toThrow("Supported runtime setup: paperclip-pro runtime setup pi or cursor");
+  await expect(program.parseAsync(["node", "wardmote", "runtime", "setup", "untrusted"])).rejects.toThrow("Supported runtime setup: wardmote runtime setup pi or cursor");
 });
 
 it("resolves the companion importer only inside the actual public server tar layout", async () => {
@@ -41,7 +41,7 @@ it("resolves the companion importer only inside the actual public server tar lay
 });
 it("requires an explicit digest for the companion import command", async () => {
   const program = new Command(); program.exitOverride().configureOutput({ writeErr() {} }); registerRuntimeCommands(program);
-  await expect(program.parseAsync(["node", "paperclip-pro", "runtime", "import-remote", "/unused"])).rejects.toThrow("sha256");
+  await expect(program.parseAsync(["node", "wardmote", "runtime", "import-remote", "/unused"])).rejects.toThrow("sha256");
 });
 
 it("passes explicit setup network settings without provider keys or ambient Node/npm configuration", () => {

@@ -392,22 +392,22 @@ describe("GitHub App wizard", () => {
       ], connectionCount: 1, failedConnectionCount: 0,
     });
     vi.mocked(chatEndpointsApi.list).mockResolvedValue([
-      { ...fixture.endpoint, id: "connected", status: "active", setup: { github: { ownerType: "organization", ownerLogin: "paperclip-pro" } } },
+      { ...fixture.endpoint, id: "connected", status: "active", setup: { github: { ownerType: "organization", ownerLogin: "wardmote" } } },
       { ...fixture.endpoint, id: "unconnected", setup: { github: { ownerType: "organization", ownerLogin: "unfinished" } } },
     ]);
     await render("resume=draft-1");
     const select = container.querySelector("#github-owner-type") as HTMLSelectElement;
     expect([...select.options].map(option => option.textContent)).toEqual([
-      "My account", "ACME", "paperclip-pro", "Another organization",
+      "My account", "ACME", "wardmote", "Another organization",
     ]);
     await act(async () => {
-      select.value = "organization:paperclip-pro";
+      select.value = "organization:wardmote";
       select.dispatchEvent(new Event("change", { bubbles: true }));
     });
     expect(container.querySelector("#github-owner-login")).toBeNull();
     await click("Continue to GitHub");
     expect(githubChatApi.registration).toHaveBeenCalledWith("draft-1", {
-      name: "Reviewer", ownerType: "organization", ownerLogin: "paperclip-pro",
+      name: "Reviewer", ownerType: "organization", ownerLogin: "wardmote",
     });
   });
   it("keeps Another organization editable even when the typed name is already known", async () => {

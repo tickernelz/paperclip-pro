@@ -186,7 +186,7 @@ describe("Wardmote install contract", () => {
     expect(manifest.prefer_related_applications ?? false).toBe(false);
   });
 
-  it("keeps id, scope and start_url of earlier Paperclip installs so they update instead of reinstalling", () => {
+  it("keeps id, scope and start_url of earlier Wardmote installs so they update instead of reinstalling", () => {
     expect(manifest.id).toBe("/");
     expect(manifest.scope).toBe("/");
     expect(manifest.start_url).toBe("/?source=pwa");

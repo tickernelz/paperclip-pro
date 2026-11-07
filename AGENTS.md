@@ -37,7 +37,7 @@ submission.
 - `packages/plugins/`: plugin system packages
 - `packages/skills-catalog/`: app-shipped skills catalog (`@tickernelz/paperclip-pro-skills-catalog`)
 - `packages/teams-catalog/`: app-shipped teams catalog (`@tickernelz/paperclip-pro-teams-catalog`)
-- `cli/`: `paperclip-pro` CLI package (published bin, agent-facing commands)
+- `cli/`: `wardmote` CLI package (published bin, agent-facing commands)
 - `skills/`: Paperclip runtime/operational skills (not part of the app catalog)
 - `doc/`: operational and product docs
 

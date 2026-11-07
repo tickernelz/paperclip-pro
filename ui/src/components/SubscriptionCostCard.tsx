@@ -56,7 +56,7 @@ function SubscriptionEditor({ account, accounts, companyId, onDone }: {
     {targets.length > 0 && <div className="space-y-2 border-t border-line pt-4">
       <Label htmlFor="subscription-link">Same subscription as another account?</Label>
       <select id="subscription-link" className={selectClass} value={targetId} onChange={event => setTargetId(event.target.value)}><option value="">Choose an account</option>{targets.map(row => <option key={row.id} value={row.id}>{row.name} · {row.price.plan}</option>)}</select>
-      <p className="text-xs text-ink-3">Linking counts these accounts once, combines their Paperclip usage, and keeps the selected account’s price. Only link the same subscription or paid seat.</p>
+      <p className="text-xs text-ink-3">Linking counts these accounts once, combines their Wardmote usage, and keeps the selected account’s price. Only link the same subscription or paid seat.</p>
       {link.error && <p role="alert" className="text-sm text-bad">Could not link these accounts. Reopen their details and try again.</p>}
       <Button type="button" variant="secondary" disabled={!targetId || busy} onClick={() => link.mutate()}>Link accounts</Button>
     </div>}
@@ -109,7 +109,7 @@ export function SubscriptionCostCard({ companyId, report, error, onChanged }: {
             {account.canEdit && <div><Button variant="secondary" size="sm" onClick={() => setEditing(account)}>Edit price</Button></div>}
           </div>)}
           {!!report?.unattributedSubscription.eventCount && <p className="text-xs text-ink-3">Some subscription usage has no recorded account. It is included in the subscription token total.</p>}
-          <p className="text-xs text-ink-3">Monthly fees cover the whole account, including use outside Paperclip. They are separate from recorded charges and agent budgets. Currencies are totaled separately.</p>
+          <p className="text-xs text-ink-3">Monthly fees cover the whole account, including use outside Wardmote. They are separate from recorded charges and agent budgets. Currencies are totaled separately.</p>
         </div>}
       </DialogContent>
     </Dialog>

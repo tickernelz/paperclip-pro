@@ -492,7 +492,7 @@ function ActionRow({
                 glance to spot and one click to move. */}
             <span
               className="rounded-full border border-line px-1.5 py-px text-xs font-medium uppercase tracking-wide text-ink-3"
-              title={`Paperclip classified this action as ${action.riskLevel}`}
+              title={`Wardmote classified this action as ${action.riskLevel}`}
             >
               {action.riskLevel}
             </span>

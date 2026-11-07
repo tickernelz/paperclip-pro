@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+ROOT="$(mktemp -d "${TMPDIR:-/tmp}/wardmote-upgrade-path.XXXXXX")"
+export HOME="$ROOT/home"
+export npm_config_cache="$ROOT/npm-cache"
+export npm_config_userconfig="$HOME/.npmrc"
+export PATH="$HOME/.local/bin:$PATH"
+unset PAPERCLIP_HOME WARDMOTE_HOME
+REPO="${UPGRADE_REPO:?UPGRADE_REPO is required}"
+SHA="${UPGRADE_SHA:?UPGRADE_SHA is required}"
+PORT="${UPGRADE_PORT:-3197}"
+mkdir -p "$HOME"
+server_pid=""
+
+stop_server() {
+  [ -n "$server_pid" ] || return 0
+  kill "$server_pid" 2>/dev/null || true
+  wait "$server_pid" 2>/dev/null || true
+  server_pid=""
+}
+trap 'stop_server; rm -rf "$ROOT"' EXIT
+
+start_server() {
+  local label="$1"
+  PORT="$PORT" paperclip-pro run >"$ROOT/$label.log" 2>&1 &
+  server_pid=$!
+  for _ in $(seq 1 120); do
+    if curl -fsS "http://127.0.0.1:$PORT/api/health" >"$ROOT/$label-health.json" 2>/dev/null; then
+      echo "$label health: $(cat "$ROOT/$label-health.json")"
+      return 0
+    fi
+    sleep 2
+  done
+  tail -n 80 "$ROOT/$label.log"
+  return 1
+}
+
+OLD_VERSION="$(npm view @tickernelz/paperclip-pro version)"
+echo "==> Installing the published release $OLD_VERSION the way an existing user has it"
+npm install --prefix "$ROOT/bootstrap" "@tickernelz/paperclip-pro@$OLD_VERSION" --no-audit --no-fund >/dev/null
+"$ROOT/bootstrap/node_modules/.bin/paperclip-pro" install --version "$OLD_VERSION" --yes
+paperclip-pro --version
+paperclip-pro onboard --yes >/dev/null
+test -d "$HOME/.paperclip-pro/instances/default"
+
+start_server before
+curl -fsS -X POST -H 'Content-Type: application/json' -d '{"name":"Upgrade path marker"}' "http://127.0.0.1:$PORT/api/companies" >/dev/null
+stop_server
+
+echo "==> Upgrading with the old CLI to $REPO@$SHA"
+paperclip-pro install --repo "$REPO" --ref "$SHA" --yes
+paperclip-pro --version
+"$HOME/.paperclip-pro/cli/current/node_modules/.bin/wardmote" --version
+test ! -e "$HOME/.wardmote"
+
+start_server after
+curl -fsS "http://127.0.0.1:$PORT/api/companies" | grep -q '"Upgrade path marker"'
+echo "after upgrade: legacy home kept, marker company still listed"
+stop_server
+
+echo "==> Re-running install with the new CLI writes the wardmote shim"
+paperclip-pro install --repo "$REPO" --ref "$SHA" --yes
+wardmote --version
+test ! -e "$HOME/.wardmote"
+echo "upgrade path ok: $OLD_VERSION -> $SHA"

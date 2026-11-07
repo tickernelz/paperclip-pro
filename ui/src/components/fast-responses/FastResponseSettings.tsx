@@ -201,7 +201,7 @@ export function FastResponseSettingsView({
             />
             <p className="text-xs text-ink-3">
               Covers accepted external messages from people without a linked
-              Paperclip account.
+              Wardmote account.
             </p>
           </div>
         </fieldset>

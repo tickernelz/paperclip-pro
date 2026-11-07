@@ -185,7 +185,7 @@ function token(value: string) {
 function installIconFont(fallsThroughToBundledFont: boolean) {
   let resolveLoaded: () => void = () => {};
   const face = {
-    family: '"Paperclip Symbols Nerd Font Mono"',
+    family: '"Wardmote Symbols Nerd Font Mono"',
     status: "unloaded" as FontFaceLoadStatus,
     loaded: new Promise<void>((resolve) => { resolveLoaded = resolve; }),
     load: vi.fn(),
@@ -309,7 +309,7 @@ describe("TerminalView", () => {
     await mount();
 
     const families = String(xterm.terminals[0]!.options.fontFamily).split(", ");
-    const bundled = families.indexOf("Paperclip Symbols Nerd Font Mono");
+    const bundled = families.indexOf("Wardmote Symbols Nerd Font Mono");
     expect(families.indexOf("JetBrainsMono Nerd Font")).toBeGreaterThanOrEqual(0);
     expect(bundled).toBeGreaterThan(families.indexOf("JetBrainsMono Nerd Font"));
     expect(bundled).toBeGreaterThan(families.indexOf("Symbols Nerd Font Mono"));

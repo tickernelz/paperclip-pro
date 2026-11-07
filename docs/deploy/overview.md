@@ -3,7 +3,7 @@ title: Deployment Overview
 summary: Deployment modes at a glance
 ---
 
-Paperclip supports three deployment configurations, from zero-friction local to internet-facing production.
+Wardmote supports three deployment configurations, from zero-friction local to internet-facing production.
 
 ## Deployment Modes
 
@@ -38,18 +38,18 @@ Paperclip supports three deployment configurations, from zero-friction local to 
 
 ## Choosing a Mode
 
-- **Just trying Paperclip?** Use `local_trusted` (the default)
+- **Just trying Wardmote?** Use `local_trusted` (the default)
 - **Sharing with a team on private network?** Use `authenticated` + `private`
 - **Deploying to the cloud?** Use `authenticated` + `public` — see [AWS ECS Fargate guide](aws-ecs.md)
 
 Set the mode during onboarding:
 
 ```sh
-pnpm paperclip-pro onboard
+pnpm wardmote onboard
 ```
 
 Or update it later:
 
 ```sh
-pnpm paperclip-pro configure --section server
+pnpm wardmote configure --section server
 ```

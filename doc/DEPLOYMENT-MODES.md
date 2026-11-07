@@ -109,7 +109,7 @@ temporarily stale. Self-hosted deployments continue to use their configured
 Default onboarding remains interactive and flagless:
 
 ```sh
-pnpm paperclip-pro onboard
+pnpm wardmote onboard
 ```
 
 Server prompt behavior:
@@ -126,7 +126,7 @@ Server prompt behavior:
 Examples:
 
 ```sh
-pnpm paperclip-pro onboard --yes
+pnpm wardmote onboard --yes
 npx @tickernelz/paperclip-pro onboard --yes --bind lan
 npx @tickernelz/paperclip-pro run --bind tailnet
 ```
@@ -138,7 +138,7 @@ npx @tickernelz/paperclip-pro run --bind tailnet
 Default doctor remains flagless:
 
 ```sh
-pnpm paperclip-pro doctor
+pnpm wardmote doctor
 ```
 
 Doctor reads configured mode/exposure and applies mode-aware checks. Optional override flags are secondary.
@@ -194,7 +194,7 @@ not an account-recovery or public-deployment mechanism.
 The CLI fallback remains supported in all authenticated setup states:
 
 ```sh
-pnpm paperclip-pro auth bootstrap-ceo
+pnpm wardmote auth bootstrap-ceo
 ```
 
 That command prints a one-time first-admin invite URL. Browser claim and
