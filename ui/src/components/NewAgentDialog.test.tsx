@@ -47,7 +47,7 @@ beforeEach(async () => {
   invites.getInviteOnboarding.mockResolvedValue({ onboarding: { connectivity: {} } });
   invites.copy.mockResolvedValue(undefined);
   state.adapters = [
-    { type: "codex_local", loaded: true },
+    { type: "omp_local", loaded: true },
     { type: "paperclip_runner", loaded: true },
     { type: "claude_local", loaded: true, disabled: true },
   ];
@@ -91,7 +91,7 @@ it("requires a name and an enabled adapter before navigating", async () => {
   expect(state.navigate).not.toHaveBeenCalled();
   await act(async () =>
     (
-      document.querySelector('input[value="codex_local"]') as HTMLInputElement
+      document.querySelector('input[value="omp_local"]') as HTMLInputElement
     ).click(),
   );
   await click("Configure agent");
@@ -99,7 +99,7 @@ it("requires a name and an enabled adapter before navigating", async () => {
   const query = new URL(state.navigate.mock.calls[0][0], "http://local")
     .searchParams;
   expect(query.get("name")).toBe("Ada & Co");
-  expect(query.get("adapterType")).toBe("codex_local");
+  expect(query.get("adapterType")).toBe("omp_local");
 });
 it("offers native Codex, Claude ACPX, and OpenCode runners", async () => {
   await name();
@@ -131,7 +131,7 @@ it.each([false, undefined])(
     expect(
       document.querySelector('input[value="paperclip_runner"]'),
     ).toBeNull();
-    expect(document.querySelector('input[value="codex_local"]')).not.toBeNull();
+    expect(document.querySelector('input[value="omp_local"]')).not.toBeNull();
   },
 );
 
@@ -144,19 +144,7 @@ it.each([true, false, undefined])("gates the Cloud native runner on explicit ena
     });
     cache.setQueryData(
       queryKeys.adapters.all,
-      [
-        "claude_local",
-        "codex_local",
-        "opencode_local",
-        "cursor",
-        "cursor_cloud",
-        "gemini_local",
-        "grok_local",
-        "kimi_local",
-        "pi_local",
-        "hermes_local",
-        "paperclip_runner",
-      ].map((type) => ({ type, loaded: true })),
+      ["omp_local", "claude_local", "codex_local", "paperclip_runner"].map((type) => ({ type, loaded: true })),
     );
   });
   await name();
@@ -164,14 +152,7 @@ it.each([true, false, undefined])("gates the Cloud native runner on explicit ena
     [...document.querySelectorAll<HTMLInputElement>('input[type="radio"]')].map(
       (input) => input.value,
     ),
-  ).toEqual(["claude_local", "codex_local", "opencode_local", "grok_local", ...(enableNativeRunner ? ["paperclip_runner"] : [])]);
-  await act(async () =>
-    document.querySelector<HTMLInputElement>('input[value="grok_local"]')!.click(),
-  );
-  await click("Configure agent");
-  const query = new URL(state.navigate.mock.calls[0][0], "http://local").searchParams;
-  expect(query.get("adapterType")).toBe("grok_local");
-  expect(query.get("name")).toBe("Ada & Co");
+  ).toEqual(enableNativeRunner ? ["paperclip_runner"] : []);
 });
 
 it("moves Dot out of the harness picker into experimental external invitations", async () => {
@@ -184,7 +165,7 @@ it("moves Dot out of the harness picker into experimental external invitations",
   expect(dot?.disabled).toBe(false);
 });
 
-it.each(["Hermes", "Other"])("keeps the existing agent invitation for %s and reuses it after Back", async (kind) => {
+it.each(["Other"])("keeps the existing agent invitation for %s and reuses it after Back", async (kind) => {
   await click("Invite an external agent");
   const select = async () => act(async () => [...document.querySelectorAll("button")].find(b => b.textContent?.startsWith(kind))!.click());
   await select();

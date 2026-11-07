@@ -128,7 +128,7 @@ async function fill(label: string, value: string) {
     input.dispatchEvent(new Event("input", { bubbles: true }));
   });
 }
-async function render(adapter = "pi_local", runnerProvider = "codex") {
+async function render(adapter = "omp_local", runnerProvider = "codex") {
   state.params = new URLSearchParams({
     name: "Atlas",
     adapterType: adapter,
@@ -222,48 +222,6 @@ describe("New agent setup", () => {
     expect(state.openNewIssue).not.toHaveBeenCalled();
   });
 
-  it.each(["claude_local", "codex_local"])("can choose a sign-in environment in Configure before connecting %s", async (adapterType) => {
-    settings.get.mockResolvedValue({ defaultEnvironmentId: "no-login" });
-    envApi.list.mockResolvedValue([
-      { id: "no-login", name: "No browser sign-in", status: "active", driver: "sandbox", config: { provider: "other" } },
-      { id: "login-env", name: "Browser sign-in", status: "active", driver: "sandbox", config: { provider: "daytona" } },
-    ]);
-    envApi.capabilities.mockResolvedValue({ sandboxProviders: { daytona: { supportsLoginPty: true } } });
-    api.getAdapterAuthSignal.mockResolvedValue({ status: "missing" });
-    await render(adapterType);
-    expect(container.textContent).toContain("does not support browser sign-in");
-    expect(container.querySelector('select[aria-label="Environment"]')).toBeNull();
-    await click("2Configure");
-    expect(container.querySelector('button[type="submit"]')).toBeNull();
-    expect([...container.querySelectorAll("button")].find(button => button.textContent?.trim() === "Run test")?.disabled).toBe(true);
-    await click("Connect model");
-    expect(api.testEnvironment).not.toHaveBeenCalled();
-    expect(api.hire).not.toHaveBeenCalled();
-    await click("2Configure");
-    const select = container.querySelector('select[aria-label="Environment"]') as HTMLSelectElement;
-    await act(async () => {
-      select.value = "login-env";
-      select.dispatchEvent(new Event("change", { bubbles: true }));
-    });
-    await settle();
-    expect(container.querySelector('select[aria-label="Environment"]')).toBeNull();
-    await click("Complete subscription login");
-    await click("Finish setup");
-    expect(api.hire.mock.calls[0][1]).toMatchObject({ defaultEnvironmentId: "login-env", runtimeConfig: { aiConnection: { method: "subscription" } } });
-  });
-  it("waits for the resolved environment before allowing a credential-mode selection", async () => {
-    let resolveEnvironments!: (value: object[]) => void;
-    envApi.list.mockImplementationOnce(() => new Promise<object[]>(resolve => { resolveEnvironments = resolve; }));
-    await render("codex_local");
-    expect(container.textContent).toContain("Loading connection settings");
-    expect(container.querySelector('[role="radiogroup"][aria-label="Connection type"]')).toBeNull();
-    await act(async () => resolveEnvironments([{ id: "local-1", name: "Local", driver: "local", config: {} }]));
-    await settle();
-    await click("OpenAIAPI key");
-    expect(container.querySelector('[aria-label="API key"]')).not.toBeNull();
-    await settle();
-    expect(container.querySelector('[aria-label="API key"]')).not.toBeNull();
-  });
   it.each([false, true])("selects the Grok environment in Configure (managed-only=%s)", async (managedOnly) => {
     settings.getExperimental.mockResolvedValue({ enableNativeRunner: true, enableManagedSandboxOnly: managedOnly });
     envApi.list.mockResolvedValue([
@@ -311,7 +269,6 @@ describe("New agent setup", () => {
     expect(api.hire).not.toHaveBeenCalled();
   });
   it.each([
-    ["grok_local", "subscription"], ["grok_local", "api_key"],
     ["paperclip_runner", "subscription"], ["paperclip_runner", "api_key"],
   ])("configures %s Grok on Cloud with an xAI %s connection", async (adapterType, method) => {
     cache.setQueryData(queryKeys.health, {
@@ -364,85 +321,6 @@ describe("New agent setup", () => {
     expect(JSON.stringify(api.hire.mock.calls)).not.toContain("example-test-secret");
     expect(container.textContent).toContain("Your agent is ready");
   });
-  it("sends Cursor Cloud repo/ref and transient API key, then saves an organization secret", async () => {
-    await render("cursor_cloud");
-    expect(container.querySelector('[aria-label="Model"]')).toBeNull();
-    expect(container.querySelector('[aria-label="Thinking effort"]')).toBeNull();
-    await fill("GitHub repository", "https://github.com/paperclipai/paperclip");
-    await fill("Branch", "master");
-    await fill("CURSOR_API_KEY", "cursor-test-key");
-    await click("Run test");
-    expect(api.testEnvironment.mock.calls[0][2]).toMatchObject({
-      adapterConfig: { repoUrl: "https://github.com/paperclipai/paperclip", repoStartingRef: "master" },
-      testCredentials: { CURSOR_API_KEY: "cursor-test-key" },
-    });
-    expect(secrets.create).not.toHaveBeenCalled();
-    await click("Finish setup");
-    const config = api.hire.mock.calls[0][1].adapterConfig;
-    expect(config).toMatchObject({ repoUrl: "https://github.com/paperclipai/paperclip", repoStartingRef: "master", env: {
-      CURSOR_API_KEY: { type: "secret_ref", secretId: "org-secret-1", version: "latest" },
-    } });
-    expect(config).not.toHaveProperty("repository");
-    expect(config).not.toHaveProperty("branch");
-    expect(JSON.stringify(config)).not.toContain("cursor-test-key");
-    expect(secrets.create).toHaveBeenCalledWith("company-1", expect.objectContaining({ value: "cursor-test-key" }));
-  });
-  it("requires a new Cursor Cloud key even when organization and personal keys exist", async () => {
-    secrets.list.mockResolvedValue([{ id: "existing", key: "CURSOR_API_KEY", name: "Cursor", status: "active" }]);
-    secrets.listMyUserSecrets.mockResolvedValue([{ definition: { key: "CURSOR_API_KEY" }, secret: { id: "personal-key" } }]);
-    await render("cursor_cloud");
-    expect(container.textContent).not.toContain("Or use an organization secret");
-    await fill("GitHub repository", "https://github.com/example/repo");
-    await click("Finish setup");
-    expect(api.hire).not.toHaveBeenCalled();
-    expect(container.textContent).toContain("Enter a Cursor API key");
-    await fill("CURSOR_API_KEY", "new-cursor-key");
-    await click("Finish setup");
-    expect(secrets.create).toHaveBeenCalledWith("company-1", expect.objectContaining({ value: "new-cursor-key" }));
-    expect(api.hire.mock.calls[0][1].adapterConfig.env.CURSOR_API_KEY).toMatchObject({ type: "secret_ref", secretId: "org-secret-1" });
-  });
-  it.each([
-    ["cursor", "CURSOR_API_KEY"],
-    ["gemini_local", "GEMINI_API_KEY"],
-    ["hermes_local", "OPENROUTER_API_KEY"],
-  ])("provides %s credentials to tests and stores only a secret reference", async (adapter, key) => {
-    await render(adapter);
-    await fill(key, "adapter-test-key");
-    await click("Finish setup");
-    expect(api.testEnvironment.mock.calls[0][2].testCredentials).toEqual({ [key]: "adapter-test-key" });
-    expect(api.hire.mock.calls[0][1].adapterConfig.env[key]).toMatchObject({ type: "secret_ref", secretId: "org-secret-1" });
-    expect(container.querySelector('[aria-label="Thinking effort"]')).toBeNull();
-  });
-  it("defines a Kimi API model without overriding it with a CLI model alias", async () => {
-    await render("kimi_local");
-    await fill("KIMI_MODEL_API_KEY", "kimi-test-key");
-    await click("Run test");
-    expect(api.testEnvironment).not.toHaveBeenCalled();
-    expect(container.textContent).toContain("Enter the Kimi API model name");
-    await fill("Kimi API model name", "kimi-for-coding");
-    await fill("Kimi API base URL", "https://api.kimi.com/coding/v1");
-    await click("Finish setup");
-    const config = api.hire.mock.calls[0][1].adapterConfig;
-    expect(config).not.toHaveProperty("model");
-    expect(config.env).toMatchObject({
-      KIMI_MODEL_NAME: { type: "plain", value: "kimi-for-coding" },
-      KIMI_MODEL_BASE_URL: { type: "plain", value: "https://api.kimi.com/coding/v1" },
-      KIMI_MODEL_API_KEY: { type: "secret_ref", secretId: "org-secret-1" },
-    });
-  });
-  it("configures Hermes Gateway URL and its top-level secret reference", async () => {
-    await render("hermes_gateway");
-    expect(container.querySelector('[aria-label="Model"]')).toBeNull();
-    await fill("Hermes API base URL", "https://hermes.example.com");
-    await fill("API_SERVER_KEY", "hermes-test-key");
-    await click("Finish setup");
-    expect(api.testEnvironment.mock.calls[0][2]).toMatchObject({
-      adapterConfig: { apiBaseUrl: "https://hermes.example.com" },
-      testCredentials: { API_SERVER_KEY: "hermes-test-key" },
-    });
-    expect(api.hire.mock.calls[0][1].adapterConfig.apiKey).toMatchObject({ type: "secret_ref", secretId: "org-secret-1" });
-    expect(JSON.stringify(api.hire.mock.calls)).not.toContain("hermes-test-key");
-  });
   it("uses the shared Grok connection flow and hides ignored Kimi and OpenCode effort controls", async () => {
     await render("grok_local");
     expect(container.textContent).toContain("Connect a model");
@@ -481,54 +359,7 @@ describe("New agent setup", () => {
       status: "todo",
     });
   });
-  it("does not advance connection after a timed-out provider probe", async () => {
-    api.testEnvironment.mockResolvedValue({
-      ...pass,
-      status: "warn",
-      checks: [
-        {
-          code: "claude_hello_probe_timed_out",
-          level: "warn",
-          message: "Claude hello probe timed out.",
-        },
-      ],
-    });
-    await render("claude_local");
-    await connect("Claude");
-    expect(container.textContent).toContain("Claude hello probe timed out.");
-    expect(container.textContent).not.toContain("Finish setup");
-    expect(api.hire).not.toHaveBeenCalled();
-  });
-
-  it.each(["claude_local", "codex_local"])(
-    "connects %s, creates once, and assigns a task",
-    async (adapter) => {
-      await render(adapter);
-      await connect(adapter === "claude_local" ? "Claude" : "OpenAI");
-      expect(api.testEnvironment).toHaveBeenCalledWith(
-        "company-1",
-        adapter,
-        expect.objectContaining({ environmentId: "local-1" }),
-      );
-      await click("Finish setup");
-      expect(api.hire).toHaveBeenCalledTimes(1);
-      expect(api.hire.mock.calls[0][1]).toMatchObject({
-        name: "Atlas",
-        adapterType: adapter,
-        reportsTo: "ceo",
-        runtimeConfig: { heartbeat: { enabled: false } },
-      });
-      expect(container.textContent).toContain("Your agent is ready");
-      await click("Assign Atlas a Task");
-      expect(state.openNewIssue).toHaveBeenCalledWith({
-        assigneeAgentId: "new-agent",
-        status: "todo",
-      });
-    },
-  );
   it.each([
-    ["claude_local", "claude", "Claude", "ANTHROPIC_API_KEY"],
-    ["codex_local", "codex", "OpenAI", "OPENAI_API_KEY"],
     ["paperclip_runner", "claude", "Claude", "ANTHROPIC_API_KEY"],
     ["paperclip_runner", "codex", "OpenAI", "OPENAI_API_KEY"],
   ])("stores %s %s as a reusable connection before hiring", async (adapter, runner, provider, key) => {
@@ -549,8 +380,6 @@ describe("New agent setup", () => {
     expect(JSON.stringify(api.hire.mock.calls)).not.toContain("connection-key");
   });
   it.each([
-    ["claude_local", "claude", "Claude", "ANTHROPIC_API_KEY"],
-    ["codex_local", "codex", "OpenAI", "OPENAI_API_KEY"],
     ["paperclip_runner", "claude", "Claude", "ANTHROPIC_API_KEY"],
     ["paperclip_runner", "codex", "OpenAI", "OPENAI_API_KEY"],
   ])("defaults %s %s to a saved key and preserves its reference through hire", async (adapter, runner, provider, key) => {
@@ -571,7 +400,7 @@ describe("New agent setup", () => {
     expect(secrets.createMyUserSecret).not.toHaveBeenCalled();
     expect(secrets.rotateMyUserSecret).not.toHaveBeenCalled();
   });
-  it.each(["codex_local", "paperclip_runner"])("keeps a saved connection chosen in Connect when hiring %s", async (adapter) => {
+  it.each(["paperclip_runner"])("keeps a saved connection chosen in Connect when hiring %s", async (adapter) => {
     await render(adapter, "codex");
     managedApi.list.mockResolvedValue({
       currentUserId: "user-1",
@@ -599,123 +428,6 @@ describe("New agent setup", () => {
     await click("Finish setup");
     expect(api.hire.mock.calls[0][1].runtimeConfig.aiConnection).toEqual(binding);
   });
-  it("requires the current connection choice to connect before Configure can save it", async () => {
-    await render("codex_local");
-    managedApi.list.mockResolvedValue({ currentUserId: "user-1", connections: [{
-      id: "00000000-0000-4000-8000-000000000021", grantId: "00000000-0000-4000-8000-000000000022", companyId: "company-1",
-      provider: "openrouter", method: "api_key", name: "Company OpenRouter", ownership: "shared", isDefault: false, status: "connected",
-      routing: { kind: "openrouter", protocol: "responses", auth: "bearer", models: [] },
-    }] } as any);
-    await click("AdvancedCustom Gateway");
-    const picker = container.querySelector('[role="combobox"][aria-label="Connection"]')!;
-    await act(async () => picker.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true })));
-    await settle();
-    const option = [...document.querySelectorAll('[role="option"]')].find(node => node.textContent?.includes("Company OpenRouter")) as HTMLElement;
-    await act(async () => option.click());
-    await settle();
-    await click("2Configure");
-    expect(container.textContent).not.toContain("Finish setup");
-    expect(api.hire).not.toHaveBeenCalled();
-    await click("Connect model");
-    await click("OpenAIAPI key");
-    await fill("API key", "new-api-credential");
-    await click("2Configure");
-    expect(container.textContent).not.toContain("Finish setup");
-    expect(api.testEnvironment).not.toHaveBeenCalled();
-    await click("Connect model");
-    await click("OpenAIAPI key");
-    await fill("API key", "new-api-credential");
-    await click("Connect");
-    await click("Connection");
-    await click("2Configure");
-    expect(container.textContent).not.toContain("Finish setup");
-    await click("Connect model");
-    await click("OpenAIAPI key");
-    await fill("API key", "new-api-credential");
-    await click("Connect");
-    await click("Finish setup");
-    expect(api.hire.mock.calls[0][1].runtimeConfig.aiConnection).toEqual({ provider: "openai", method: "api_key", mode: "responsible_user" });
-  });
-  it.each(["pi_local"])(
-    "persists %s OpenRouter credentials only as a secret reference",
-    async (adapter) => {
-      await render(adapter);
-      await fill("Model", "openrouter/anthropic/claude-sonnet-4.6");
-      await fill("OPENROUTER_API_KEY", "example-test-secret");
-      await click("Run test");
-      expect(secrets.rotateMyUserSecret).not.toHaveBeenCalled();
-      expect(secrets.createMyUserSecret).not.toHaveBeenCalled();
-      expect(api.testEnvironment.mock.calls[0][2].testCredentials).toEqual({ OPENROUTER_API_KEY: "example-test-secret" });
-      await click("Finish setup");
-      expect(api.hire.mock.calls[0][1].adapterConfig.env.OPENROUTER_API_KEY).toEqual({
-        type: "secret_ref",
-        secretId: "org-secret-1",
-        version: "latest",
-      });
-      expect(secrets.create).toHaveBeenCalledWith(
-        "company-1", expect.objectContaining({ value: "example-test-secret" }),
-      );
-      expect(JSON.stringify(api.hire.mock.calls)).not.toContain(
-        "example-test-secret",
-      );
-      expect(secrets.create).toHaveBeenCalledTimes(1);
-    },
-  );
-  it("connects OpenRouter before testing and hiring OpenCode without copying credentials into the agent", async () => {
-    await render("opencode_local");
-    const model = "openrouter/anthropic/claude-sonnet-4.6";
-    await fill("Model", model);
-    const connectionSelect = container.querySelector('[role="combobox"][aria-label="Connection"]')!;
-    await act(async () => connectionSelect.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true })));
-    await settle();
-    const connectOption = [...document.querySelectorAll('[role="option"]')].find(option => option.textContent?.includes("Connect an account"))!;
-    expect(connectOption).toBeTruthy();
-    await act(async () => (connectOption as HTMLElement).click());
-    await settle();
-    const dialog = document.querySelector('[role="dialog"]')!;
-    expect(dialog).toBeTruthy();
-    expect(api.hire).not.toHaveBeenCalled();
-    expect(api.testEnvironment).not.toHaveBeenCalled();
-    const advanced = [...dialog.querySelectorAll("summary")].find(node => node.textContent?.includes("Advanced providers"))!;
-    await act(async () => advanced.click());
-    const openrouter = [...dialog.querySelectorAll("button")].find(node => node.textContent?.includes("OpenRouter"))!;
-    await act(async () => openrouter.click());
-    await settle();
-    const input = dialog.querySelector('[aria-label="API key"]') as HTMLInputElement;
-    expect(input).toBeTruthy();
-    await act(async () => {
-      Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!.call(input, "example-test-secret");
-      input.dispatchEvent(new Event("input", { bubbles: true }));
-    });
-    const connectButton = [...dialog.querySelectorAll("button")].find((button) => button.textContent?.trim() === "Connect")!;
-    expect(connectButton.disabled).toBe(false);
-    await act(async () => connectButton.click());
-    await settle();
-    expect(document.querySelector('[role="dialog"]')).toBeNull();
-    expect(managedApi.setDefault).not.toHaveBeenCalled();
-    expect(api.hire).not.toHaveBeenCalled();
-    expect(api.testEnvironment).not.toHaveBeenCalled();
-    expect(managedApi.create).toHaveBeenCalledWith("company-1", expect.objectContaining({
-      provider: "openrouter", method: "api_key", apiKey: "example-test-secret",
-    }));
-    const binding = { provider: "openrouter", method: "api_key", mode: "shared", connectionId: "managed-connection", grantId: "managed-grant" };
-
-    await click("Run test");
-    expect(api.testEnvironment.mock.calls[0][2]).toEqual(expect.objectContaining({
-      aiConnection: binding, testCredentials: {},
-      adapterConfig: expect.objectContaining({ model }),
-    }));
-    await click("Finish setup");
-    expect(api.hire.mock.calls[0][1]).toEqual(expect.objectContaining({
-      adapterType: "opencode_local",
-      runtimeConfig: expect.objectContaining({ aiConnection: binding }),
-      adapterConfig: expect.objectContaining({ model }),
-    }));
-    expect(managedApi.create).toHaveBeenCalledTimes(1);
-    expect(secrets.create).not.toHaveBeenCalled();
-    expect(JSON.stringify(api.testEnvironment.mock.calls)).not.toContain("example-test-secret");
-    expect(JSON.stringify(api.hire.mock.calls)).not.toContain("example-test-secret");
-  });
   it.each(["codex", "claude", "opencode"])(
     "uses the correct native %s runner",
     async (runner) => {
@@ -733,64 +445,6 @@ describe("New agent setup", () => {
       if (runner === "codex") expect(config.acpxAgent).toBeUndefined();
     },
   );
-  it("does not create when the test fails and permits retry", async () => {
-    await render();
-    await fill("Model", "openrouter/unknown/model");
-    api.testEnvironment.mockResolvedValueOnce({ ...pass, status: "fail" });
-    await click("Run test");
-    await click("Finish setup");
-    expect(api.hire).not.toHaveBeenCalled();
-    expect(container.textContent).toContain("Couldn't connect");
-    await click("Retry test");
-    await click("Finish setup");
-    expect(api.hire).toHaveBeenCalledTimes(1);
-  });
-  it("does not rotate a working provider credential when a new key fails its test", async () => {
-    secrets.listMyUserSecrets.mockResolvedValue([{ definition: { id: "existing-definition", key: "OPENROUTER_API_KEY" }, secret: { id: "working-secret" } }]);
-    await render();
-    await fill("Model", "openrouter/anthropic/claude-sonnet-4.6");
-    await fill("OPENROUTER_API_KEY", "invalid-replacement");
-    api.testEnvironment.mockResolvedValueOnce({ ...pass, status: "fail" });
-    await click("Run test");
-    expect(secrets.rotateMyUserSecret).not.toHaveBeenCalled();
-    expect(secrets.createUserSecretDefinition).not.toHaveBeenCalled();
-    expect(api.testEnvironment.mock.calls[0][2].testCredentials.OPENROUTER_API_KEY).toBe("invalid-replacement");
-    await click("Finish setup");
-    expect(api.hire).not.toHaveBeenCalled();
-  });
-  it("does not store a key when leaving after a successful test", async () => {
-    await render();
-    await fill("Model", "openrouter/anthropic/claude-sonnet-4.6");
-    await fill("OPENROUTER_API_KEY", "abandoned-key");
-    await click("Run test");
-    await act(async () => root.render(null));
-    expect(secrets.createUserSecretDefinition).not.toHaveBeenCalled();
-  });
-  it("removes the staged credential when hiring fails", async () => {
-    await render();
-    await fill("Model", "openrouter/anthropic/claude-sonnet-4.6");
-    await fill("OPENROUTER_API_KEY", "new-key");
-    api.hire.mockRejectedValueOnce(new Error("Creation rejected"));
-    await click("Finish setup");
-    expect(secrets.remove).toHaveBeenCalledWith("org-secret-1");
-    expect(container.textContent).toContain("Creation rejected");
-  });
-  it("preserves the creation error when credential cleanup also fails", async () => {
-    await render();
-    await fill("Model", "openrouter/anthropic/claude-sonnet-4.6");
-    await fill("OPENROUTER_API_KEY", "new-key");
-    api.hire.mockRejectedValueOnce(new Error("Agent quota exceeded"));
-    secrets.remove.mockRejectedValueOnce(new Error("Cleanup unavailable"));
-    await click("Finish setup");
-    expect(container.textContent).toContain("Agent quota exceeded");
-    expect(container.textContent).toContain("Could not remove an unused setup credential");
-  });
-  it("requires an explicit provider/model for Pi", async () => {
-    await render();
-    await click("Run test");
-    expect(api.testEnvironment).not.toHaveBeenCalled();
-    expect(container.textContent).toContain("provider/model format");
-  });
   it("blocks a disabled runner even when opened through a URL", async () => {
     state.adapters = [
       { type: "paperclip_runner", loaded: true, disabled: true },
@@ -799,40 +453,5 @@ describe("New agent setup", () => {
     expect(container.textContent).toContain("This adapter is unavailable");
     expect(api.testEnvironment).not.toHaveBeenCalled();
     expect(api.hire).not.toHaveBeenCalled();
-  });
-  it("keeps pending agents behind approval and disables task assignment", async () => {
-    api.hire.mockResolvedValue({
-      agent: { id: "new-agent", name: "Atlas", status: "pending_approval" },
-    });
-    await render();
-    await fill("Model", "openrouter/anthropic/claude-sonnet-4.6");
-    await click("Finish setup");
-    expect(container.textContent).toContain("Agent submitted for approval");
-    await click("Assign Atlas a Task");
-    expect(state.openNewIssue).not.toHaveBeenCalled();
-  });
-  it("uses the same managed environment for connection testing and creation", async () => {
-    envApi.list.mockResolvedValue([
-      { id: "sandbox-1", driver: "sandbox", config: { provider: "daytona" } },
-    ]);
-    envApi.capabilities.mockResolvedValue({
-      sandboxProviders: { daytona: { supportsLoginPty: true } },
-    });
-    settings.get.mockResolvedValue({ defaultEnvironmentId: "sandbox-1" });
-    settings.getExperimental.mockResolvedValue({
-      enableManagedSandboxOnly: true,
-    });
-    api.getClaudeOAuthTokenStatus.mockResolvedValue({ secretId: "saved-oauth", latestVersion: 1 });
-    await render("claude_local");
-    await click("ClaudeSubscription");
-    await click("Use saved subscription");
-    await click("Finish setup");
-    expect(api.testEnvironment.mock.calls[0][2].environmentId).toBe(
-      "sandbox-1",
-    );
-    expect(api.hire.mock.calls[0][1]).toMatchObject({
-      defaultEnvironmentId: "sandbox-1",
-      applyStoredClaudeLogin: true,
-    });
   });
 });

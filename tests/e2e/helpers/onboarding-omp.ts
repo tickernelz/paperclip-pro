@@ -21,7 +21,7 @@ export async function mockOnboardingOmp(page: Page) {
 
 /** Pick the mocked OMP model on the connect step and continue to the review step. */
 export async function chooseOnboardingOmpModel(page: Page) {
-  await page.getByRole("button", { name: "Model", exact: true }).click();
+  await page.getByRole("combobox", { name: "Model", exact: true }).click();
   await page.getByRole("option", { name: ONBOARDING_OMP_MODEL }).click();
   const next = page.getByRole("button", { name: "Continue", exact: true });
   await expect(next).toBeEnabled({ timeout: 30_000 });

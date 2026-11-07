@@ -180,7 +180,7 @@ describe("OnboardingWizard — which step it lands on", () => {
     dialogState.onboardingRouteDismissed = false;
     mockAdaptersApi.list.mockResolvedValue([]);
     mockGoalsApi.list.mockResolvedValue([]);
-    mockAgentsApi.adapterModels.mockResolvedValue([]);
+    mockAgentsApi.adapterModels.mockResolvedValue([{ id: "e2e/model", label: "e2e/model" }]);
     // The hire step lists the company's agents first so it can adopt one that
     // already carries the typed name instead of hiring a duplicate.
     mockAgentsApi.list.mockResolvedValue([]);
@@ -188,9 +188,9 @@ describe("OnboardingWizard — which step it lands on", () => {
     mockAgentsApi.instructionsBundle.mockResolvedValue({ entryFile: "AGENTS.md" });
     mockAgentsApi.saveInstructionsFile.mockResolvedValue({});
     mockAgentsApi.testEnvironment.mockResolvedValue({
-      adapterType: "claude_local",
+      adapterType: "omp_local",
       status: "pass",
-      checks: [],
+      checks: [{ code: "omp_version_ok", level: "info", message: "omp 15.0.0 is installed." }],
       testedAt: new Date("2026-03-02T00:00:00Z").toISOString(),
     });
     // Onboarding applies a stored Claude login automatically; this suite is
@@ -569,27 +569,19 @@ describe("OnboardingWizard — which step it lands on", () => {
     function stepCta(): HTMLButtonElement {
       const cta = [...document.body.querySelectorAll("button")].find((b) => {
         const text = b.textContent?.trim();
-        return text === "Next" || text === "Connect";
+        return text === "Next" || text === "Connect" || text === "Continue";
       });
       expect(cta, "the step should render its forward button").toBeTruthy();
       return cta as HTMLButtonElement;
     }
 
-    /**
-     * Pick a model source. The connect step arrives with nothing chosen, so its
-     * CTA stays disabled until a tile is pressed — found by `aria-checked`
-     * rather than by label, because this suite mocks the display registry and
-     * the tiles carry whatever it happens to return.
-     */
     async function pickModelSource() {
-      const otherAdapters = [...document.body.querySelectorAll("button")].find(
-        (b) => b.textContent?.trim() === "Use another adapter",
-      );
-      expect(otherAdapters, "the real registry carries OMP, so the tiles sit behind the disclosure").toBeTruthy();
-      await press(otherAdapters!);
-      const tiles = [...document.body.querySelectorAll("button[aria-checked]")];
-      expect(tiles.length, "the connect step should offer a source").toBeGreaterThan(0);
-      await press(tiles[0]!);
+      const trigger = document.body.querySelector<HTMLElement>('[data-testid="omp-setup-model-trigger"]');
+      expect(trigger, "the connect step should offer the OMP model picker").toBeTruthy();
+      await press(trigger!);
+      const option = document.body.querySelector<HTMLElement>('[data-testid="omp-setup-model-option"]');
+      expect(option, "the OMP model list should offer the detected model").toBeTruthy();
+      await press(option!);
     }
 
     it("hires under the neutral role, with the name the customer typed", async () => {
