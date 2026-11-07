@@ -1,3 +1,1 @@
-@layer vendor, theme, base, utilities, layout, components, state;
-
 @import "@xterm/xterm/css/xterm.css" layer(vendor);

@@ -60,10 +60,9 @@ function MobileBottomNavStub({ visible }: { visible: boolean }) {
   return (
     <nav
       data-testid="mobile-bottom-nav"
-      className={cn(
-        "fixed bottom-0 left-0 right-0 z-30 bg-line/50 transition-transform duration-200 ease-out dark:bg-bg-3 md:hidden pb-(--sz-safe-bottom)",
-        visible ? "translate-y-0" : "translate-y-full",
-      )}
+      className="mobile-bottom-nav fixed bottom-0 left-0 right-0 z-30 bg-line/50 dark:bg-bg-3 md:hidden pb-(--sz-safe-bottom)"
+      data-visible={visible}
+      inert={!visible}
       aria-label="Mobile navigation"
     >
       <div className="grid h-16 grid-cols-5 px-1">
