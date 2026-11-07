@@ -490,8 +490,8 @@ whether remote work may have been accepted.
   identifiers, untyped terminal failures, and timeouts after accepted work remain
   reportable. Stream/poll errors retain their existing retry and logging behavior.
 
-Expected pre-provider waits for a shared project workspace, a credential rotation
-lock, or an exhausted AI connection pool carry a server-owned expected
+Expected pre-provider waits for a shared project workspace or a credential rotation
+lock carry a server-owned expected
 cancellation receipt. They retain existing retry and lock behavior without a
 Sentry cancellation event. A later failed retry still reports its actual error;
 the wait code alone is not sufficient to suppress an event.
