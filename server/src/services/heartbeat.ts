@@ -283,8 +283,7 @@ import {
   isAiConnectionBusy,
   AI_AUTH_ENV_KEYS,
 } from "./ai-connection-runtime.js";
-import { aiConnectionBindingSchema, aiRuntimeConnectionBindingSchema, type AiConnectionRouterSelection } from "@tickernelz/paperclip-pro-shared";
-import { aiConnectionRouterService, AiConnectionPoolExhausted, applyAiConnectionRouterTaskSettings } from "./ai-connection-router.js";
+import { AI_CONNECTION_ROUTER_REMOVED_MESSAGE, aiConnectionBindingSchema, aiRuntimeConnectionBindingSchema } from "@tickernelz/paperclip-pro-shared";
 import { aiConnectionSessionCompatibilityInputs, managedAiSessionIdentityCompatible } from "./ai-connection-session.js";
 import {
   getExecutionBlocker,
@@ -353,7 +352,6 @@ import {
 } from "@tickernelz/paperclip-pro-shared";
 import {
   agents,
-  agentConfigRevisions,
   agentWakeupRequests,
   chatActions,
   heartbeatRuns,
@@ -532,7 +530,6 @@ import {
   MAX_TURN_CONTINUATION_RETRY_REASON,
   WORKSPACE_BUSY_RETRY_REASON,
   AI_CONNECTION_BUSY_RETRY_REASON,
-  AI_CONNECTION_POOL_WAIT_RETRY_REASON,
   INTERACTION_CONTINUATION_INFRA_RETRY_REASON,
   INTERACTION_CONTINUATION_INFRA_WAKE_REASON,
   isNonAssigneeWorkspaceBusyRetry,
@@ -2877,67 +2874,11 @@ export function heartbeatService(
             taskKey,
           )
         : null;
-      const routerHasPersistedInput = Object.keys(parseObject(parseObject(run.runnerProfileJson).nativeExecutionInput)).length > 0;
-      const persistedRouterPoolId = routerHasPersistedInput ? readNonEmptyString(parseObject(context.aiRouterSelection).poolId) : null;
-      const requestedAiBinding = persistedRouterPoolId ? { mode: "router" as const, connectionId: persistedRouterPoolId } : agent.runtimeConfig?.aiConnection ? aiRuntimeConnectionBindingSchema.parse(agent.runtimeConfig.aiConnection) : undefined;
-      let aiBinding = requestedAiBinding?.mode === "router" ? undefined : requestedAiBinding;
-      const originalAiIssueOverrides = issueAssigneeOverrides;
+      const requestedAiBinding = agent.runtimeConfig?.aiConnection ? aiRuntimeConnectionBindingSchema.parse(agent.runtimeConfig.aiConnection) : undefined;
       if (requestedAiBinding?.mode === "router") {
-        try {
-          const routerTaskKey = readNonEmptyString(context.aiRouterTaskKey) ?? taskKey ?? run.id;
-          // A retry must retain the original run-key affinity even if the host
-          // crashes after committing a pin but before recording its selection.
-          if (routerTaskKey !== run.contextSnapshot?.aiRouterTaskKey) {
-            await db.update(heartbeatRuns).set({ contextSnapshot: sql`coalesce(${heartbeatRuns.contextSnapshot}, '{}'::jsonb) || ${JSON.stringify({ aiRouterTaskKey: routerTaskKey })}::jsonb` }).where(and(eq(heartbeatRuns.id, run.id), eq(heartbeatRuns.companyId, agent.companyId)));
-          }
-          context.aiRouterTaskKey = routerTaskKey;
-          const savedIdentity = taskSession?.sessionParamsJson?.paperclipAiCredentialIdentity;
-          const selection = await aiConnectionRouterService(db, options.pluginWorkerManager).resolve({
-            companyId: agent.companyId, poolId: requestedAiBinding.connectionId, agentId: agent.id,
-            userId: responsibleUserId, adapterType: agent.adapterType, taskKey: String(context.aiRouterTaskKey),
-            overrides: issueAssigneeOverrides?.adapterConfig ?? {},
-            existingGrantId: typeof savedIdentity === "string" ? savedIdentity.split(":")[0] : undefined,
-            requireExisting: Boolean(taskSession?.sessionDisplayId) && !shouldResetTaskSessionForWake(context),
-            persisted: routerHasPersistedInput ? context.aiRouterSelection as AiConnectionRouterSelection | undefined : undefined,
-          });
-          aiBinding = selection.binding;
-          // Provider-specific fields from the configured harness must not leak into the selected member.
-          config = applyAiConnectionRouterTaskSettings(config, selection);
-          if (issueAssigneeOverrides) issueAssigneeOverrides = { ...issueAssigneeOverrides, adapterConfig: applyAiConnectionRouterTaskSettings(issueAssigneeOverrides.adapterConfig ?? {}, selection) };
-          agent = { ...agent, adapterConfig: config };
-          context.aiRouterSelection = selection;
-          await db.update(heartbeatRuns).set({ contextSnapshot: sql`coalesce(${heartbeatRuns.contextSnapshot}, '{}'::jsonb) || ${JSON.stringify({ aiRouterTaskKey: context.aiRouterTaskKey, aiRouterSelection: selection })}::jsonb` }).where(eq(heartbeatRuns.id, run.id));
-          await appendRunEvent(run, { eventType: "lifecycle", stream: "system", level: "info", message: "Using task-pinned pool account", payload: { poolId: selection.poolId, memberId: selection.memberId, provider: aiBinding.provider, model: config.model, notes: selection.notes } });
-        } catch (error) {
-          if (error instanceof AiConnectionPoolExhausted && !routerHasPersistedInput) {
-            const now = new Date();
-            context.aiConnectionBusyDeferredWhileAssignee = issueContext?.assigneeAgentId === agent.id;
-            const cancelled = await setRunStatusIfRunning(run.id, "cancelled", {
-              error: error.message, errorCode: error.code, finishedAt: now,
-              resultJson: {
-                executionRecovery: { kind: "ai_connection_wait", providerWorkStarted: false },
-                cancellation: {
-                  source: "control_plane",
-                  expected: true,
-                  initiator: { type: "system" },
-                  reason: "Waiting for an AI connection pool account",
-                  recordedAt: now.toISOString(),
-                },
-                retryAt: error.retryAt,
-              },
-              contextSnapshot: context,
-            });
-            if (cancelled.updated) {
-              await setWakeupStatus(run.wakeupRequestId, "cancelled", { finishedAt: now, error: error.message });
-              const retry = await scheduleBoundedRetryForRun(cancelled.run ?? run, agent, { now, retryReason: AI_CONNECTION_POOL_WAIT_RETRY_REASON, wakeReason: "ai_connection_pool_retry", maxAttempts: (run.scheduledRetryAttempt ?? 0) + 1, delayMs: Math.max(1000, Date.parse(error.retryAt) - Date.now()) });
-              if (retry.outcome !== "scheduled") await releaseIssueExecutionAndPromote(cancelled.run ?? run);
-              await finalizeAgentStatus(run.agentId, "cancelled");
-            }
-            return;
-          }
-          throw new ConfigurationIncompleteFailure(error instanceof Error ? error.message : "Configure this connection pool", { configurationIncomplete: { reason: "ai_connection_unavailable", companyId: agent.companyId, agentId: agent.id, responsibleUserId, actionUrl: `/agents/${agent.id}/runtime`, fingerprint: `ai-router:${requestedAiBinding.connectionId}` } });
-        }
+        throw new ConfigurationIncompleteFailure(AI_CONNECTION_ROUTER_REMOVED_MESSAGE, { configurationIncomplete: { reason: "ai_connection_unavailable", companyId: agent.companyId, agentId: agent.id, responsibleUserId, actionUrl: `/agents/${agent.id}/runtime`, fingerprint: `ai-router-removed:${agent.id}` } });
       }
+      const aiBinding = requestedAiBinding;
       if (isConversation(issueContext)) {
         delete context.resumeSessionParams;
         delete context.resumeSessionDisplayId;
@@ -3411,7 +3352,7 @@ export function heartbeatService(
       });
       const { config: issueRunConfig, modelOverride: runModelOverride } =
         buildIssueRunAdapterConfig(workspaceManagedConfig, {
-          adapterConfig: Object.fromEntries(Object.entries(issueAssigneeOverrides?.adapterConfig ?? {}).filter(([key]) => requestedAiBinding?.mode !== "router" || !["provider", "acpxAgent", "model", "modelReasoningEffort", "reasoningEffort", "effort", "variant"].includes(key))),
+          adapterConfig: { ...(issueAssigneeOverrides?.adapterConfig ?? {}) },
         });
       if (runModelOverride.model || runModelOverride.thinking) {
         context.paperclipRunModelOverride = runModelOverride;
@@ -3420,13 +3361,11 @@ export function heartbeatService(
       }
       const mergedConfig = {
         ...issueRunConfig,
-        ...(requestedAiBinding?.mode === "router" ? parseObject(parseObject(context.aiRouterSelection).runtimeConfig) : {}),
         // The base below is already task-owned. Keep directory transport while
         // preserving isolated mode and the mandatory sandbox preflight.
         ...(useIsolatedTaskDirectory ? { workspaceStrategy: { type: "project_primary" } } : {}),
       };
       await runModelFallback.applyRunModelFallback(run, agent, mergedConfig, context, {
-        routerManaged: requestedAiBinding?.mode === "router",
         issueId,
       });
       const configSnapshot = buildExecutionWorkspaceConfigSnapshot(
@@ -3528,7 +3467,7 @@ export function heartbeatService(
         Object.assign(resolvedConfig, managedAiRuntime.config);
         for (const key of AI_AUTH_ENV_KEYS) secretKeys.add(key);
         context.aiConnection = { ...managedAiRuntime.attribution, accountName: managedAiRuntime.accountName, identity: managedAiRuntime.identity, sessionIdentity: managedAiRuntime.sessionIdentity };
-        await db.update(heartbeatRuns).set({ contextSnapshot: sql`coalesce(${heartbeatRuns.contextSnapshot}, '{}'::jsonb) || ${JSON.stringify({ aiConnection: context.aiConnection, ...(context.aiRouterTaskKey ? { aiRouterTaskKey: context.aiRouterTaskKey } : {}), ...(context.aiRouterSelection ? { aiRouterSelection: context.aiRouterSelection } : {}) })}::jsonb` }).where(eq(heartbeatRuns.id, run.id));
+        await db.update(heartbeatRuns).set({ contextSnapshot: sql`coalesce(${heartbeatRuns.contextSnapshot}, '{}'::jsonb) || ${JSON.stringify({ aiConnection: context.aiConnection })}::jsonb` }).where(eq(heartbeatRuns.id, run.id));
       }
       if (secretManifest.length > 0) {
         context.paperclipSecrets = {
@@ -3674,16 +3613,12 @@ export function heartbeatService(
       let compatibleConfigMetadata: EffectiveRunSessionConfigMetadata[] = [];
       if (managedAiRuntime && aiBinding && taskSession &&
         readConfigFingerprintFromSessionParams(taskSession.sessionParamsJson)?.fingerprint !== sessionConfigMetadata.fingerprint) {
-        const revisions = requestedAiBinding?.mode === "router"
-          ? await db.select().from(agentConfigRevisions).where(and(eq(agentConfigRevisions.companyId, agent.companyId), eq(agentConfigRevisions.agentId, agent.id))).orderBy(desc(agentConfigRevisions.createdAt), desc(agentConfigRevisions.id)).limit(21)
-          : [];
         const candidates = aiConnectionSessionCompatibilityInputs({
           effectiveAdapterConfig: runtimeConfig, agentRuntimeConfig: agent.runtimeConfig,
           agentConfigRevision: sessionConfigMetadataInput.agentConfigRevision,
-          issueOverrides: issueAssigneeOverrides, originalIssueOverrides: originalAiIssueOverrides,
-          binding: aiBinding, router: requestedAiBinding?.mode === "router",
+          issueOverrides: issueAssigneeOverrides,
           storedIdentity: taskSession.sessionParamsJson?.paperclipAiCredentialIdentity,
-          sessionIdentity: managedAiRuntime.sessionIdentity, credentialIdentity: managedAiRuntime.identity, revisions,
+          sessionIdentity: managedAiRuntime.sessionIdentity, credentialIdentity: managedAiRuntime.identity,
         });
         compatibleConfigMetadata = await Promise.all(candidates.map(candidate => buildEffectiveRunSessionConfigMetadata({ ...sessionConfigMetadataInput, ...candidate })));
       }

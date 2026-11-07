@@ -51,7 +51,7 @@ export interface RunModelFallback {
     agent: typeof agents.$inferSelect,
     config: Record<string, unknown>,
     context: Record<string, unknown>,
-    options: { routerManaged: boolean; issueId: string | null },
+    options: { issueId: string | null },
   ) => Promise<void>;
   handleAdapterModelFallbackEvent: (run: Run, event: AdapterModelFallbackEvent) => Promise<void>;
   noteModelFallbackRunFailure: (run: Run) => Promise<void>;
@@ -127,7 +127,7 @@ export function createRunModelFallback(dependencies: RunModelFallbackDependencie
     agent: typeof agents.$inferSelect,
     config: Record<string, unknown>,
     context: Record<string, unknown>,
-    options: { routerManaged: boolean; issueId: string | null },
+    options: { issueId: string | null },
   ) {
     const hadFallbackContext =
       context[MODEL_FALLBACK_PRIMARY_KEY] !== undefined ||
@@ -136,7 +136,6 @@ export function createRunModelFallback(dependencies: RunModelFallbackDependencie
       db,
       companyId: run.companyId,
       adapterType: agent.adapterType,
-      routerManaged: options.routerManaged,
       config,
       context,
       now: new Date(),
