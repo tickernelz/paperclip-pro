@@ -32,7 +32,7 @@ export function voiceSessionRoutes(db: Db, service: VoiceSessionService) {
   const router = Router(), settings = instanceSettingsService(db);
   const starts = createInviteRateLimiter({ windowMs: 60_000, maxRequests: 10 });
   async function enabled() {
-    if (!(await settings.getExperimental()).enableChatConnectors) throw forbidden("Enable experimental chat connectors to use voice");
+    if (!(await settings.getExperimental()).enableChatConnectors) throw forbidden("Turn on Chat channels in Settings > Features to use voice");
   }
   router.use("/companies/:companyId/voice-sessions", (_req, res, next) => { res.setHeader("Cache-Control", "no-store"); next(); });
   router.get("/companies/:companyId/voice-callbacks/:endpointId", async (req, res) => {

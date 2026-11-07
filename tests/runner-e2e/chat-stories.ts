@@ -141,7 +141,7 @@ export async function runChatSettingsLifecycle(context: Context) {
   // Full document navigation clears the client query cache. Unlike SPA
   // navigation, this verifies the disabled entry page without cached history.
   await input.page.goto(route, { waitUntil: "domcontentloaded" });
-  await expect(input.page.getByText(/Agent Chat is disabled/)).toBeVisible();
+  await expect(input.page.getByText(/Agent chat is off/)).toBeVisible();
   const blocked = await input.api.request.post(`/api/issues/${before.issue.id}/comments`, { data: { body: `DISABLED${marker}` } });
   expect(blocked.status()).toBe(404);
   expect(await comments()).toEqual(before.comments);
