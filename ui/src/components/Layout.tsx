@@ -91,6 +91,7 @@ export function Layout({ sidebarSections }: { sidebarSections?: ReactNode }) {
     peeking,
     setPeeking,
     isMobile,
+    isTablet,
   } = useSidebar();
   const { openNewIssue, openOnboarding } = useDialogActions();
   const { togglePanelVisible } = usePanel();
@@ -209,7 +210,8 @@ export function Layout({ sidebarSections }: { sidebarSections?: ReactNode }) {
     || isAppsRoute
     || isToolsRoute
   );
-  const replacesPrimarySidebar = hasSecondarySidebar && !keepsPrimarySidebar;
+  const showsInlineSettingsNav = isCompanySettingsRoute && (isMobile || isTablet);
+  const replacesPrimarySidebar = hasSecondarySidebar && !keepsPrimarySidebar && !(isTablet && isCompanySettingsRoute);
   const showsAdjacentSecondarySidebar = keepsPrimarySidebar;
   const contextualSurface: ContextualSidebarSurface | null = !hasSecondarySidebar
     ? null
@@ -556,6 +558,7 @@ export function Layout({ sidebarSections }: { sidebarSections?: ReactNode }) {
   return (
     <ChatSetupSidebarProvider>
       <div
+      data-app-shell=""
       className={cn(
         "bg-bg text-ink pt-(--sz-safe-top)",
         // overflow-x-clip on mobile keeps a stray wide descendant from making the
@@ -647,14 +650,14 @@ export function Layout({ sidebarSections }: { sidebarSections?: ReactNode }) {
           >
             <StandaloneBrowserControls mobile={isMobile} onNavigateHome={() => navigate("/dashboard")} />
             <BreadcrumbBar />
-            {isMobile && isCompanySettingsRoute ? (
+            {showsInlineSettingsNav ? (
               <div className="border-b border-line px-4 pb-3">
                 <CompanySettingsNav />
               </div>
             ) : null}
           </div>
           <div className={cn(
-            isMobile ? "block" : "flex flex-1 min-h-0",
+            isMobile ? "block" : "relative flex flex-1 min-h-0",
             !isMobile && useStreamlinedTaskDetailShell && "streamlined-task-detail-surface",
           )}>
             {!isMobile && keepsPrimarySidebar ? (

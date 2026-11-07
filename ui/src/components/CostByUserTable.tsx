@@ -12,7 +12,7 @@ export function CostByUserTable({ report }: { report: CostByUserReport }) {
       </CardHeader>
       <CardContent className="px-5">
         <div className="overflow-x-auto">
-          <table aria-label="Costs by user" className="w-full text-sm">
+          <table aria-label="Costs by user" className="stack-table w-full text-sm">
             <thead className="text-ink-3">
               <tr className="border-b border-line">
                 <th scope="col" className="py-2 pr-4 text-left font-medium">User</th>
@@ -24,20 +24,20 @@ export function CostByUserTable({ report }: { report: CostByUserReport }) {
             </thead>
             <tbody>
               {report.rows.length === 0 && (
-                <tr><td colSpan={5} className="py-3 text-ink-3">No user-attributed costs yet.</td></tr>
+                <tr><td colSpan={5} data-cell="title" className="py-3 text-ink-3">No user-attributed costs yet.</td></tr>
               )}
               {report.rows.map(row => (
                 <tr key={row.userId ?? "unattributed"} className="border-b border-line last:border-0">
-                  <th scope="row" className="py-3 pr-4 text-left font-normal">
+                  <th scope="row" data-cell="title" className="py-3 pr-4 text-left font-normal">
                     {row.userId ? <Identity name={row.userName ?? "Unknown user"} avatarUrl={row.userImage} /> : "Unattributed"}
                   </th>
-                  <td className="px-4 py-3 text-right tabular-nums">{row.runCount.toLocaleString()}</td>
-                  <td className="px-4 py-3 text-right tabular-nums">
+                  <td data-cell="meta" data-label="Runs" className="px-4 py-3 text-right tabular-nums">{row.runCount.toLocaleString()}</td>
+                  <td data-cell="meta" data-label="Input" className="px-4 py-3 text-right tabular-nums">
                     {formatTokens(row.inputTokens + row.cachedInputTokens)}
                     {row.cachedInputTokens > 0 && <div className="whitespace-nowrap text-xs text-ink-3">{formatTokens(row.cachedInputTokens)} cached</div>}
                   </td>
-                  <td className="px-4 py-3 text-right tabular-nums">{formatTokens(row.outputTokens)}</td>
-                  <td className="py-3 pl-4 text-right tabular-nums">
+                  <td data-cell="meta" data-label="Output" className="px-4 py-3 text-right tabular-nums">{formatTokens(row.outputTokens)}</td>
+                  <td data-cell="end" className="py-3 pl-4 text-right tabular-nums">
                     <CostAmount costCents={row.costCents} eventCount={row.eventCount} estimatedEventCount={row.estimatedEventCount} unpricedEventCount={row.unpricedEventCount} />
                     {row.unpricedEventCount > 0 && <div className="whitespace-nowrap text-xs text-ink-3">{row.unpricedEventCount} unpriced {row.unpricedEventCount === 1 ? "charge" : "charges"}</div>}
                   </td>

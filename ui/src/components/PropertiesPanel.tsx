@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { usePanel } from "../context/PanelContext";
 import { cn } from "../lib/utils";
+import { useMediaQuery } from "../hooks/useMediaQuery";
+import { TABLET_MEDIA_QUERY } from "../context/SidebarContext";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { SidePanelFrame, SidePanelWindowControls } from "@/components/side-panel";
 
@@ -49,7 +51,7 @@ export const PROPERTIES_PANE_FOOTER_SLOT_ID = "properties-pane-footer-slot";
 
 const WIDTH_STORAGE_KEY = "taskChatRedesign.propertiesPaneWidth";
 const TASK_DETAIL_WIDTH_STORAGE_KEY = "taskChatRedesign.taskDetailPropertiesPaneWidth";
-const DEFAULT_PANE_WIDTH = 322;
+const DEFAULT_PANE_WIDTH = 320;
 const TASK_DETAIL_DEFAULT_PANE_WIDTH = 434;
 const MIN_PANE_WIDTH = 260;
 /** ~236px sidebar + ~420px minimum center column stay usable while resizing. */
@@ -304,6 +306,8 @@ function ResizablePropertiesPanel({
   );
 
   const isFixed = fixedPane !== null;
+  const fullPage = useMediaQuery(TABLET_MEDIA_QUERY);
+  const paneWidth = fullPage ? "100%" : width;
 
   return (
     <>
@@ -324,7 +328,7 @@ function ResizablePropertiesPanel({
           isFixed
             ? "tc-pane-glide fixed z-40 overflow-hidden"
             : cn(
-                "relative h-full shrink-0",
+                fullPage ? "absolute inset-0 z-30 h-full" : "relative h-full shrink-0",
                 panelVisible ? "overflow-visible" : "overflow-hidden",
                 // The width/opacity transition would fight pointer-driven
                 // resizing, so it is suspended while dragging.
@@ -339,11 +343,11 @@ function ResizablePropertiesPanel({
                 left: fixedPane.left,
                 right: fixedPane.rightInset,
               }
-            : { width: panelVisible ? width : 0, opacity: panelVisible ? 1 : 0 }
+            : { width: panelVisible ? paneWidth : 0, opacity: panelVisible ? 1 : 0 }
         }
         onTransitionEnd={handleTransitionEnd}
       >
-        {!isFixed && panelVisible ? (
+        {!isFixed && !fullPage && panelVisible ? (
           <div
             role="separator"
             aria-orientation="vertical"
@@ -368,7 +372,7 @@ function ResizablePropertiesPanel({
         ) : null}
         <div
           className={cn("flex-1 flex flex-col min-h-0", isFixed && "w-full")}
-          style={isFixed ? undefined : { width, minWidth: width }}
+          style={isFixed ? undefined : { width: paneWidth, minWidth: paneWidth }}
         >
           <SidePanelFrame
             presentation="docked"

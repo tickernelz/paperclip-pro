@@ -11,6 +11,7 @@ import { issuesApi } from "../api/issues";
 import { authApi } from "../api/auth";
 import { agentsApi } from "../api/agents";
 import { projectsApi } from "../api/projects";
+import { instanceSettingsApi } from "../api/instanceSettings";
 import { queryKeys } from "../lib/queryKeys";
 import {
   CommandDialog,
@@ -36,6 +37,8 @@ import {
   Search,
   ToggleRight,
   Wrench,
+  Gamepad2,
+  MessagesSquare,
 } from "lucide-react";
 import { Identity } from "./Identity";
 import { agentUrl, projectUrl } from "../lib/utils";
@@ -109,6 +112,11 @@ export function CommandPalette() {
   const { enabled: combinedInboxTasksEnabled } = useCombinedInboxTasksEnabled();
   const { hidden: hiddenSettings } = useHiddenSettings();
   const showFeatureSettings = !hiddenSettings.has("instance.experimental");
+  const { data: experimentalSettings } = useQuery({
+    queryKey: queryKeys.instance.experimentalSettings,
+    queryFn: () => instanceSettingsApi.getExperimental(),
+    enabled: open,
+  });
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -420,6 +428,18 @@ export function CommandPalette() {
             <History className="mr-2 h-4 w-4" />
             Activity
           </CommandItem>
+          {experimentalSettings?.enablePixelsOffice === true ? (
+            <CommandItem onSelect={() => go("/pixels-office")}>
+              <Gamepad2 className="mr-2 h-4 w-4" />
+              Pixels Office
+            </CommandItem>
+          ) : null}
+          {experimentalSettings?.enableConferenceRoomChat === true ? (
+            <CommandItem onSelect={() => go("/board-chat")}>
+              <MessagesSquare className="mr-2 h-4 w-4" />
+              Conference Room
+            </CommandItem>
+          ) : null}
           {showFeatureSettings ? (
             <>
               <CommandItem onSelect={() => go("/company/settings/instance/features")}>

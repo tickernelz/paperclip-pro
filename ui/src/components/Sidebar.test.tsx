@@ -563,42 +563,18 @@ describe("Sidebar", () => {
     });
   });
 
-  it("shows the Conference Room nav item when conference room chat is enabled (PAP-137)", async () => {
+  it("keeps Pixels Office and Conference Room out of the navigation while their features are on", async () => {
     mockInstanceSettingsApi.getExperimental.mockResolvedValue({
       enableIsolatedWorkspaces: false,
       enableConferenceRoomChat: true,
+      enablePixelsOffice: true,
     });
     const root = await renderSidebar();
 
-    const link = [...container.querySelectorAll("nav a")].find(
-      (anchor) => anchor.textContent?.trim() === "Conference Room",
-    );
-    expect(link?.getAttribute("href")).toBe("/board-chat");
-
-    flushSync(() => {
-      root.unmount();
-    });
-  });
-
-  it("hides the Conference Room nav item when conference room chat is off (PAP-137)", async () => {
-    mockInstanceSettingsApi.getExperimental.mockResolvedValue({
-      enableIsolatedWorkspaces: false,
-      enableConferenceRoomChat: false,
-    });
-    const root = await renderSidebar();
-
+    expect(container.querySelector('a[href="/board-chat"]')).toBeNull();
+    expect(container.querySelector('a[href="/pixels-office"]')).toBeNull();
     expect(container.textContent).not.toContain("Conference Room");
-
-    flushSync(() => {
-      root.unmount();
-    });
-  });
-
-  it("does not flash the Conference Room item while experimental settings are loading (PAP-137)", async () => {
-    mockInstanceSettingsApi.getExperimental.mockImplementation(() => new Promise(() => {}));
-    const root = await renderSidebar();
-
-    expect(container.textContent).not.toContain("Conference Room");
+    expect(container.textContent).not.toContain("Pixels Office");
 
     flushSync(() => {
       root.unmount();

@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useState, type ReactNode } from "react";
 import type { SidePanelContentMode } from "@/components/side-panel";
+import { TABLET_MEDIA_QUERY } from "./SidebarContext";
 
 const STORAGE_KEY = "paperclip:panel-visible";
 
@@ -24,7 +25,12 @@ interface PanelContextValue {
 
 const PanelContext = createContext<PanelContextValue | null>(null);
 
+function fullPagePanel() {
+  return typeof window.matchMedia === "function" && window.matchMedia(TABLET_MEDIA_QUERY).matches;
+}
+
 function readPreference(): boolean {
+  if (fullPagePanel()) return false;
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     return raw === null ? true : raw === "true";
@@ -34,6 +40,7 @@ function readPreference(): boolean {
 }
 
 function writePreference(visible: boolean) {
+  if (fullPagePanel()) return;
   try {
     localStorage.setItem(STORAGE_KEY, String(visible));
   } catch {
