@@ -67,7 +67,7 @@ test.describe("Onboarding", () => {
     mock.status = ompStatus({ models: [], recommendedModel: null });
     await expect(page.getByRole("heading", { name: "Connect a model" })).toBeVisible({ timeout: 10_000 });
     const popup = page.context().waitForEvent("page");
-    await counter.click(page.getByRole("radio", { name: /OpenAI/ }), { decision: true });
+    await counter.click(page.getByRole("radio", { name: /^OpenAI/ }), { decision: true });
     await counter.click(page.getByRole("button", { name: "Sign in with OpenAI" }));
     counter.step("connect-model");
     await (await popup).close();
@@ -114,7 +114,7 @@ test.describe("Onboarding", () => {
     await openOnboarding(page);
     await expect(page.getByRole("heading", { name: "What should your first agent do?" })).toBeVisible({ timeout: 10_000 });
     await expect(page.getByText("Atlas, general assistant")).toBeVisible();
-    await expect(page.getByText(process.cwd(), { exact: true })).toBeVisible();
+    await expect(page.getByRole("region", { name: "First agent" }).getByText(process.cwd(), { exact: true })).toBeVisible();
   });
 
   test("an outdated OMP never gets past Check OMP", async ({ page }) => {

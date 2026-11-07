@@ -57,13 +57,13 @@ test("captures planning mode UI for desktop and mobile", async ({ page }) => {
   const issueLinkSelector = `a[href$="/issues/${issueIdentifier}"]`;
 
   const setMode = async (mode: "standard" | "planning") => {
-    const patchRes = await page.request.patch(`${baseOrigin}/api/issues/${issue.id}`, {
+    const patchRes = await page.request.patch(`/api/issues/${issue.id}`, {
       data: { workMode: mode },
     });
     expect(patchRes.ok()).toBe(true);
     await expect
       .poll(async () => {
-        const currentRes = await page.request.get(`${baseOrigin}/api/issues/${issue.id}`);
+        const currentRes = await page.request.get(`/api/issues/${issue.id}`);
         expect(currentRes.ok()).toBe(true);
         const current = await currentRes.json();
         return current.workMode;
