@@ -40,7 +40,7 @@ import {
   applyOperatorGeneralDefaults,
   stripOperatorGeneralEchoes,
 } from "@tickernelz/paperclip-pro-shared";
-import { eq } from "drizzle-orm";
+import { and, eq, notExists, sql } from "drizzle-orm";
 import { logger } from "../middleware/logger.js";
 import { setAttachmentLimitSetting } from "../attachment-types.js";
 import { getManagedInstanceConfig, type ManagedInstanceConfig } from "./managed-config.js";
@@ -511,7 +511,7 @@ export function instanceSettingsService(db: Db, options: InstanceSettingsService
       .values({
         singletonKey: DEFAULT_SINGLETON_KEY,
         general: {},
-        experimental: managedConfig ? {} : { ...NEW_INSTALL_FEATURE_DEFAULTS },
+        experimental: {},
         createdAt: now,
         updatedAt: now,
       })
@@ -617,6 +617,23 @@ export function instanceSettingsService(db: Db, options: InstanceSettingsService
         .where(eq(instanceSettings.id, current.id))
         .returning();
       return toInstanceSettings(updated ?? current);
+    },
+
+    seedNewInstallFeatureDefaults: async (): Promise<boolean> => {
+      if (managedConfig) return false;
+      await getOrCreateRow();
+      const seeded = await db
+        .update(instanceSettings)
+        .set({ experimental: { ...NEW_INSTALL_FEATURE_DEFAULTS }, updatedAt: new Date() })
+        .where(
+          and(
+            eq(instanceSettings.singletonKey, DEFAULT_SINGLETON_KEY),
+            sql`${instanceSettings.experimental} = '{}'::jsonb`,
+            notExists(db.select({ id: companies.id }).from(companies)),
+          ),
+        )
+        .returning({ id: instanceSettings.id });
+      return seeded.length > 0;
     },
 
     listCompanyIds: async (): Promise<string[]> =>

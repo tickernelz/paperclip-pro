@@ -817,6 +817,9 @@ async function startServerWithDatabaseTeardown(
     shareClient: createFeedbackTraceShareClientFromConfig(config),
   });
   const backupSettingsSvc = instanceSettingsService(db);
+  if (await backupSettingsSvc.seedNewInstallFeatureDefaults()) {
+    logger.info("Started a new install on the Standard feature preset");
+  }
   setPaperclipBridgeAttachmentMaxBytesSource(getMaxAttachmentBytes);
   await backupSettingsSvc.getGeneral().catch((err: unknown) => {
     logger.warn({ err }, "could not read the attachment size limit from instance settings at boot");
