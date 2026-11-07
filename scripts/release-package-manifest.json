@@ -5,68 +5,8 @@
     "publishFromCi": true
   },
   {
-    "dir": "packages/adapters/claude-local",
-    "name": "@tickernelz/paperclip-pro-adapter-claude-local",
-    "publishFromCi": true
-  },
-  {
-    "dir": "packages/adapters/codex-local",
-    "name": "@tickernelz/paperclip-pro-adapter-codex-local",
-    "publishFromCi": true
-  },
-  {
-    "dir": "packages/adapters/cursor-cloud",
-    "name": "@tickernelz/paperclip-pro-adapter-cursor-cloud",
-    "publishFromCi": true
-  },
-  {
-    "dir": "packages/adapters/cursor-local",
-    "name": "@tickernelz/paperclip-pro-adapter-cursor-local",
-    "publishFromCi": true
-  },
-  {
-    "dir": "packages/adapters/gemini-local",
-    "name": "@tickernelz/paperclip-pro-adapter-gemini-local",
-    "publishFromCi": true
-  },
-  {
-    "dir": "packages/adapters/grok-local",
-    "name": "@tickernelz/paperclip-pro-adapter-grok-local",
-    "publishFromCi": true
-  },
-  {
-    "dir": "packages/adapters/hermes",
-    "name": "@tickernelz/paperclip-pro-hermes-paperclip-adapter",
-    "publishFromCi": true
-  },
-  {
-    "dir": "packages/adapters/hermes-gateway",
-    "name": "@tickernelz/paperclip-pro-adapter-hermes-gateway",
-    "publishFromCi": false
-  },
-  {
-    "dir": "packages/adapters/kimi-local",
-    "name": "@tickernelz/paperclip-pro-adapter-kimi-local",
-    "publishFromCi": true
-  },
-  {
     "dir": "packages/adapters/omp-local",
     "name": "@tickernelz/paperclip-pro-adapter-omp-local",
-    "publishFromCi": true
-  },
-  {
-    "dir": "packages/adapters/opencode-local",
-    "name": "@tickernelz/paperclip-pro-adapter-opencode-local",
-    "publishFromCi": true
-  },
-  {
-    "dir": "packages/adapters/pi-local",
-    "name": "@tickernelz/paperclip-pro-adapter-pi-local",
-    "publishFromCi": true
-  },
-  {
-    "dir": "packages/adapters/openclaw-gateway",
-    "name": "@tickernelz/paperclip-pro-adapter-openclaw-gateway",
     "publishFromCi": true
   },
   {

@@ -271,16 +271,6 @@ export const accessApi = {
   ) =>
     api.post<CompanyInviteCreated>(`/companies/${companyId}/invites`, input),
 
-  createOpenClawInvitePrompt: (
-    companyId: string,
-    input: {
-      agentMessage?: string | null;
-    } = {},
-  ) =>
-    api.post<CompanyInviteCreated>(
-      `/companies/${companyId}/openclaw/invite-prompt`,
-      input,
-    ),
 
   getInvite: (token: string) => api.get<InviteSummary>(`/invites/${token}`),
   getInviteOnboarding: (token: string) =>

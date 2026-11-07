@@ -51,15 +51,11 @@ test("release package list keeps runtime workspace dependencies ahead of consume
   }
 });
 
-test("Hermes release surface publishes the unified built-in package and keeps gateway as a shim", () => {
-  const packages = buildReleasePackagePlan();
-  const hermes = packages.find((pkg) => pkg.name === "@tickernelz/paperclip-pro-hermes-paperclip-adapter");
-  const gatewayShim = packages.find((pkg) => pkg.name === "@tickernelz/paperclip-pro-adapter-hermes-gateway");
-
-  assert.equal(hermes?.dir, "packages/adapters/hermes");
-  assert.equal(hermes?.publishFromCi, true);
-  assert.equal(gatewayShim?.dir, "packages/adapters/hermes-gateway");
-  assert.equal(gatewayShim?.publishFromCi, false);
+test("release surface publishes omp-local as the only agent adapter package", () => {
+  const adapterPackages = buildReleasePackagePlan()
+    .filter((pkg) => pkg.dir.startsWith("packages/adapters/"))
+    .map((pkg) => pkg.name);
+  assert.deepEqual(adapterPackages, ["@tickernelz/paperclip-pro-adapter-omp-local"]);
 });
 
 test("release package configuration validates successfully", () => {

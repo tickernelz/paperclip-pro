@@ -1454,7 +1454,7 @@ export function agentRoutes(
   // type. Return null when the adapter declares no capability, so a guard fails
   // closed on the absent case.
   function getRegistryLoginCapability(type: string) {
-    return findActiveServerAdapter(type)?.loginCapability ?? null;
+    return findActiveServerAdapter(type)?.loginCapability ?? findRunnerHarness(type)?.loginCapability ?? null;
   }
 
   // The device-login route drives a login that shows a one-time code on a real

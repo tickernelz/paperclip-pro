@@ -26,11 +26,11 @@ import { adapterCuratesModelOrder } from "../lib/model-utils";
 
 /** Adapters whose config completeness is keyed on a non-empty `model`. */
 function isModelBasedAdapter(adapterType: string): boolean {
-  return !["process", "command", "http", "openclaw_gateway", "hermes_gateway"].includes(adapterType);
+  return !["process", "command", "http"].includes(adapterType);
 }
 
 function defaultAdapterType(state: BuiltInAgentState): string {
-  return state.definition.defaultAdapterType ?? state.definition.allowedAdapterTypes?.[0] ?? "codex_local";
+  return state.definition.defaultAdapterType ?? state.definition.allowedAdapterTypes?.[0] ?? "omp_local";
 }
 
 function parseBudgetMonthlyCents(value: string): number | undefined {
@@ -182,7 +182,7 @@ export function ConfigureBuiltInAgentModal({
               onChange={setModel}
               open={modelOpen}
               onOpenChange={setModelOpen}
-              allowDefault={adapterType !== "opencode_local"}
+              allowDefault
               required
               groupByProvider={false}
               preserveOrder={adapterCuratesModelOrder(adapterType)}

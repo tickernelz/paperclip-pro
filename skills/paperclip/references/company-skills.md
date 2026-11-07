@@ -169,7 +169,7 @@ Use the same company skill keys or references in `desiredSkills` when hiring wit
 {
   "name": "QA Browser Agent",
   "role": "qa",
-  "adapterType": "codex_local",
+  "adapterType": "omp_local",
   "adapterConfig": { "cwd": "/abs/path/to/repo" },
   "desiredSkills": ["agent-browser"]
 }

@@ -38,7 +38,7 @@ Arguments match the agent create shape:
   "reportsTo": "uuid-or-null",
   "capabilities": "Owns architecture and engineering execution",
   "desiredSkills": ["vercel-labs/agent-browser/agent-browser"],
-  "adapterType": "claude_local",
+  "adapterType": "omp_local",
   "adapterConfig": {
     "cwd": "/absolute/path",
     "model": "claude-sonnet-4-5-20250929"

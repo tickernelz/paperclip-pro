@@ -62,7 +62,7 @@ The adapter documents are plain text, not JSON tools, so read them with
 `paperclipApiRequest`:
 
 - all adapters: `method: "GET"`, `path: "/llms/agent-configuration.txt"`
-- the specific adapter you plan to use: `method: "GET"`, `path: "/llms/agent-configuration/claude_local.txt"`
+- the specific adapter you plan to use: `method: "GET"`, `path: "/llms/agent-configuration/omp_local.txt"`
 
 ### 3. Compare existing agent configurations
 
@@ -126,7 +126,7 @@ icon: "crown"
 reportsTo: "<ceo-agent-id>"
 capabilities: "Owns technical roadmap, architecture, staffing, execution"
 desiredSkills: ["vercel-labs/agent-browser/agent-browser"]
-adapterType: "codex_local"
+adapterType: "omp_local"
 adapterConfig: {"cwd": "/abs/path/to/repo", "model": "o4-mini"}
 instructionsBundle: {"files": {"AGENTS.md": "You are the CTO..."}}
 runtimeConfig: {"heartbeat": {"enabled": false, "wakeOnDemand": true}}

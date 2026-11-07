@@ -35,7 +35,6 @@ export const PausedAgent: Story = { name: "Recovery · Connected agent paused", 
 export const RetryEvent: Story = { name: "Recovery · Retry the test event", args: { initialScreen: "setup", initialConnection: { phase: "testing", problem: "event_timeout" } } };
 export const RefreshingPrompt: Story = { name: "Setup · Preparing a fresh prompt automatically", args: { initialScreen: "setup", preparing: true, simulate: false } };
 export const WatchingInterrupted: Story = { name: "Recovery · Connection updates interrupted", args: { initialScreen: "setup", initialConnection: { phase: "connected", problem: "offline" } } };
-export const Hermes: Story = { name: "Hermes · Existing invitation prompt", args: { initialScreen: "setup", initialPreset: "hermes" } };
 export const Other: Story = { name: "Other · Existing invitation prompt", args: { initialScreen: "setup", initialPreset: "other" } };
 export const Mobile: Story = { name: "Mobile · Give the prompt to Dot", args: { initialScreen: "setup" }, globals: { viewport: { value: "mobile1", isRotated: false } } };
 export const MobilePicker: Story = { name: "Mobile · Choose an agent", args: { initialScreen: "picker" }, globals: { viewport: { value: "mobile1", isRotated: false } } };

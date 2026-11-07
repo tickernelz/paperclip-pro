@@ -9,6 +9,9 @@ import type { AdapterLoginCapability } from "@tickernelz/paperclip-pro-adapter-u
 import { runAdapterExecutionTargetShellCommand } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
 import { CODEX_DEVICE_LOGIN_COMMAND } from "../services/ai-providers/codex/device-login-runner.js";
 import { parseDeviceLoginPrompt } from "../services/ai-providers/codex/device-login-parse.js";
+import { CLAUDE_SETUP_TOKEN_COMMAND } from "../services/ai-providers/claude/setup-token-runner.js";
+import { parseSetupTokenCredential, parseSetupTokenPrompt } from "../services/ai-providers/claude/setup-token-parse.js";
+import { GROK_DEVICE_LOGIN_COMMAND, parseGrokDeviceLoginPrompt } from "../services/ai-providers/grok/device-login-parse.js";
 import { models as codexModels } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/codex";
 import { testEnvironment as codexTestEnvironment } from "../services/ai-providers/codex/test.js";
 import { listCodexSkills, syncCodexSkills } from "../services/ai-providers/codex/skills.js";
@@ -80,6 +83,31 @@ const codexLoginCapability: AdapterLoginCapability = {
   getCommand: () => CODEX_DEVICE_LOGIN_COMMAND,
   parsePrompt: (output) => {
     const prompt = parseDeviceLoginPrompt(output);
+    return prompt ? { url: prompt.url, code: prompt.code } : null;
+  },
+};
+
+const claudeLoginCapability: AdapterLoginCapability = {
+  panelMode: "submitted_browser_code",
+  timeoutPolicy: "fixed",
+  getCommand: () => CLAUDE_SETUP_TOKEN_COMMAND,
+  parsePrompt: (output) => {
+    const prompt = parseSetupTokenPrompt(output);
+    return prompt ? { url: prompt.url } : null;
+  },
+  captureCredential: (output) => {
+    const token = parseSetupTokenCredential(output);
+    return token === null ? null : Buffer.from(token, "utf8");
+  },
+  completionClaim: "storedSessionId",
+};
+
+const grokLoginCapability: AdapterLoginCapability = {
+  panelMode: "displayed_code",
+  timeoutPolicy: "caller_bounded",
+  getCommand: () => GROK_DEVICE_LOGIN_COMMAND,
+  parsePrompt: (output) => {
+    const prompt = parseGrokDeviceLoginPrompt(output);
     return prompt ? { url: prompt.url, code: prompt.code } : null;
   },
 };
@@ -639,13 +667,13 @@ export async function refreshAdapterModels(type: string): Promise<{ id: string; 
 }
 
 type RunnerHarness = Required<Pick<ServerAdapterModule, "models" | "testEnvironment">>
-  & Pick<ServerAdapterModule, "listModels" | "refreshModels">;
+  & Pick<ServerAdapterModule, "listModels" | "refreshModels" | "loginCapability">;
 
 const runnerHarnesses = new Map<string, RunnerHarness>([
-  ["codex_local", { models: codexModels, testEnvironment: codexTestEnvironment }],
-  ["claude_local", { models: claudeModels, listModels: listClaudeModels, refreshModels: refreshClaudeModels, testEnvironment: claudeTestEnvironment }],
+  ["codex_local", { models: codexModels, testEnvironment: codexTestEnvironment, loginCapability: codexLoginCapability }],
+  ["claude_local", { models: claudeModels, listModels: listClaudeModels, refreshModels: refreshClaudeModels, testEnvironment: claudeTestEnvironment, loginCapability: claudeLoginCapability }],
   ["opencode_local", { models: openCodeModels, listModels: listOpenCodeModels, testEnvironment: openCodeTestEnvironment }],
-  ["grok_local", { models: grokModels, testEnvironment: grokTestEnvironment }],
+  ["grok_local", { models: grokModels, testEnvironment: grokTestEnvironment, loginCapability: grokLoginCapability }],
 ]);
 
 export function findRunnerHarness(type: string): RunnerHarness | null {

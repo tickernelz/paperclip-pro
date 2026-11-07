@@ -1,7 +1,7 @@
 import express from "express";
 import request from "supertest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { DEFAULT_OPENCODE_LOCAL_MODEL } from "@tickernelz/paperclip-pro-adapter-opencode-local";
+import { DEFAULT_OPENCODE_LOCAL_MODEL } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/opencode";
 import { LOW_TRUST_REVIEW_PRESET } from "@tickernelz/paperclip-pro-shared";
 import { hoistModuleGraph } from "./helpers/hoist-module-graph.js";
 
@@ -124,8 +124,8 @@ const mockInstanceSettingsService = vi.hoisted(() => ({
 }));
 
 function registerModuleMocks() {
-  vi.doMock("@tickernelz/paperclip-pro-adapter-opencode-local/server", async () => {
-    const actual = await vi.importActual<typeof import("@tickernelz/paperclip-pro-adapter-opencode-local/server")>("@tickernelz/paperclip-pro-adapter-opencode-local/server");
+  vi.doMock("../services/ai-providers/opencode/models.js", async () => {
+    const actual = await vi.importActual<typeof import("../services/ai-providers/opencode/models.js")>("../services/ai-providers/opencode/models.js");
     return {
       ...actual,
       ensureOpenCodeModelConfiguredAndAvailable: mockEnsureOpenCodeModelConfiguredAndAvailable,

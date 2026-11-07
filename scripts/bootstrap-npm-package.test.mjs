@@ -11,17 +11,17 @@ import {
 } from "./bootstrap-npm-package.mjs";
 
 test("parseArgs recognizes the publish flag", () => {
-  assert.deepEqual(parseArgs(["@tickernelz/paperclip-pro-adapter-kimi-local", "--publish"]), {
+  assert.deepEqual(parseArgs(["@tickernelz/paperclip-pro-adapter-omp-local", "--publish"]), {
     help: false,
-    packageName: "@tickernelz/paperclip-pro-adapter-kimi-local",
+    packageName: "@tickernelz/paperclip-pro-adapter-omp-local",
     publish: true,
   });
 });
 
 test("parseArgs defaults to a dry run", () => {
-  assert.deepEqual(parseArgs(["@tickernelz/paperclip-pro-adapter-kimi-local"]), {
+  assert.deepEqual(parseArgs(["@tickernelz/paperclip-pro-adapter-omp-local"]), {
     help: false,
-    packageName: "@tickernelz/paperclip-pro-adapter-kimi-local",
+    packageName: "@tickernelz/paperclip-pro-adapter-omp-local",
     publish: false,
   });
 });
@@ -36,21 +36,21 @@ test("parseArgs rejects unknown options", () => {
 });
 
 test("validatePackageName accepts @tickernelz scoped names", () => {
-  validatePackageName("@tickernelz/paperclip-pro-adapter-kimi-local");
+  validatePackageName("@tickernelz/paperclip-pro-adapter-omp-local");
   validatePackageName("@tickernelz/paperclip-pro-plugin-workspace-diff");
 });
 
 test("validatePackageName rejects names outside the @tickernelz scope", () => {
   assert.throws(() => validatePackageName("left-pad"), /@tickernelz scope/);
-  assert.throws(() => validatePackageName("@evil/adapter-kimi-local"), /@tickernelz scope/);
+  assert.throws(() => validatePackageName("@evil/adapter-omp-local"), /@tickernelz scope/);
   assert.throws(() => validatePackageName("@tickernelz/paperclip-pro-UPPER"), /@tickernelz scope/);
 });
 
 test("buildPlaceholderFiles produces a publishable manifest at the placeholder version", () => {
-  const files = buildPlaceholderFiles("@tickernelz/paperclip-pro-adapter-kimi-local");
+  const files = buildPlaceholderFiles("@tickernelz/paperclip-pro-adapter-omp-local");
   const manifest = JSON.parse(files["package.json"]);
 
-  assert.equal(manifest.name, "@tickernelz/paperclip-pro-adapter-kimi-local");
+  assert.equal(manifest.name, "@tickernelz/paperclip-pro-adapter-omp-local");
   assert.equal(manifest.version, PLACEHOLDER_VERSION);
   assert.equal(manifest.publishConfig.access, "public");
   assert.deepEqual(manifest.files, ["index.js"]);
@@ -58,18 +58,18 @@ test("buildPlaceholderFiles produces a publishable manifest at the placeholder v
 });
 
 test("buildPlaceholderFiles entry point throws with a pointer to the repo", () => {
-  const files = buildPlaceholderFiles("@tickernelz/paperclip-pro-adapter-kimi-local");
+  const files = buildPlaceholderFiles("@tickernelz/paperclip-pro-adapter-omp-local");
 
   assert.match(files["index.js"], /^throw new Error\(/);
   assert.match(files["index.js"], /placeholder/);
-  assert.match(files["index.js"], /github\.com\/paperclip-pro\/paperclip/);
+  assert.match(files["index.js"], /github\.com\/tickernelz\/paperclip-pro/);
   // The entry point must be valid JS: evaluating it should throw our message,
   // not a SyntaxError.
   assert.throws(() => new Function(files["index.js"])(), /placeholder that reserves/);
 });
 
 test("buildPlaceholderFiles README explains the placeholder", () => {
-  const files = buildPlaceholderFiles("@tickernelz/paperclip-pro-adapter-kimi-local");
+  const files = buildPlaceholderFiles("@tickernelz/paperclip-pro-adapter-omp-local");
   assert.match(files["README.md"], /placeholder publish/);
   assert.match(files["README.md"], /release-bootstrap CI gate/);
 });

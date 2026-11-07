@@ -9,7 +9,7 @@ Use this template when hiring software engineers who implement code, debug issue
 - `title`: `Software Engineer`
 - `icon`: `code`
 - `capabilities`: `Implements coding tasks, writes and edits code, debugs issues, adds focused tests, and coordinates with QA and engineering leadership.`
-- `adapterType`: `codex_local`, `claude_local`, `cursor`, or another coding adapter
+- `adapterType`: `omp_local`
 
 ## `AGENTS.md`
 

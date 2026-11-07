@@ -13,7 +13,6 @@ import { useQuery, useMutation, useQueryClient, type QueryClient } from "@tansta
 import {
   agentsApi,
   type AgentKey,
-  type ClaudeLoginResult,
   type AgentPermissionUpdate,
 } from "../api/agents";
 import { builtInAgentsApi, type BuiltInManagedResourceKind } from "../api/builtInAgents";
@@ -1265,9 +1264,6 @@ export function AgentDetail() {
           <div className="min-w-0 space-y-1">
             <div className="flex items-center gap-2"><h1 className="truncate text-2xl font-semibold tracking-tight">{agent.name}</h1><PrimaryAgentIndicator agentId={agent.id} companyId={agent.companyId} /></div>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              {agent.adapterType === "claude_local" || agent.adapterType === "codex_local"
-                ? <img src={`/brands/${agent.adapterType === "claude_local" ? "claude" : "codex"}-color.svg`} className="size-4" alt="" />
-                : null}
               <span>{getAdapterDisplay(agent.adapterType === "paperclip_runner" && agent.adapterConfig.provider === "openai_dot" ? "openai_dot" : agent.adapterType).label}</span><span>·</span>
               <span>{agent.title || roleLabels[agent.role] || agent.role}</span>
             </div>
@@ -3455,11 +3451,6 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
   const responsibleDenialCode = isResponsibleUserDenialCode(run.errorCode) ? run.errorCode : null;
   const [sessionOpen, setSessionOpen] = useState(false);
   const [inspectorOpen, setInspectorOpen] = useState(false);
-  const [claudeLoginResult, setClaudeLoginResult] = useState<ClaudeLoginResult | null>(null);
-
-  useEffect(() => {
-    setClaudeLoginResult(null);
-  }, [run.id]);
 
   const cancelRun = useMutation({
     mutationFn: () => heartbeatsApi.cancel(run.id),
@@ -3569,13 +3560,6 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
       queryClient.invalidateQueries({ queryKey: queryKeys.agents.runtimeState(run.agentId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.agents.taskSessions(run.agentId) });
       queryClient.invalidateQueries({ queryKey: queryKeys.runIssues(run.id) });
-    },
-  });
-
-  const runClaudeLogin = useMutation({
-    mutationFn: () => agentsApi.loginWithClaude(run.agentId, run.companyId),
-    onSuccess: (data) => {
-      setClaudeLoginResult(data);
     },
   });
 
@@ -3776,53 +3760,6 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
               <div className="text-xs">
                 <span className="text-red-600 dark:text-red-400">{run.error}</span>
                 {run.errorCode && <span className="text-muted-foreground ml-1">({run.errorCode})</span>}
-              </div>
-            )}
-            {run.errorCode === "claude_auth_required" && adapterType === "claude_local" && (
-              <div className="space-y-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-7 px-2 text-xs"
-                  onClick={() => runClaudeLogin.mutate()}
-                  disabled={runClaudeLogin.isPending}
-                >
-                  {runClaudeLogin.isPending ? "Running claude login..." : "Login to Claude Code"}
-                </Button>
-                {runClaudeLogin.isError && (
-                  <p className="text-xs text-destructive">
-                    {runClaudeLogin.error instanceof Error
-                      ? runClaudeLogin.error.message
-                      : "Failed to run Claude login"}
-                  </p>
-                )}
-                {claudeLoginResult?.loginUrl && (
-                  <p className="text-xs">
-                    Login URL:
-                    <a
-                      href={claudeLoginResult.loginUrl}
-                      className="text-blue-600 underline underline-offset-2 ml-1 break-all dark:text-blue-400"
-                      target="_blank"
-                      rel="noreferrer"
-                    >
-                      {claudeLoginResult.loginUrl}
-                    </a>
-                  </p>
-                )}
-                {claudeLoginResult && (
-                  <>
-                    {!!claudeLoginResult.stdout && (
-                      <pre className="bg-neutral-100 dark:bg-neutral-950 rounded-md p-3 text-xs font-mono text-foreground overflow-x-auto whitespace-pre-wrap">
-                        {claudeLoginResult.stdout}
-                      </pre>
-                    )}
-                    {!!claudeLoginResult.stderr && (
-                      <pre className="bg-neutral-100 dark:bg-neutral-950 rounded-md p-3 text-xs font-mono text-red-700 dark:text-red-300 overflow-x-auto whitespace-pre-wrap">
-                        {claudeLoginResult.stderr}
-                      </pre>
-                    )}
-                  </>
-                )}
               </div>
             )}
             {responsibleDenialCode && (

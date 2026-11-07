@@ -74,7 +74,7 @@ Then require board approval for hires with `paperclipUpdateResource` (`extended`
 
 Discover the instance's adapter and icon documents with `paperclipApiRequest` — they are plain text, not JSON tools:
 - all adapters: `method: "GET"`, `path: "/llms/agent-configuration.txt"`
-- one adapter: `method: "GET"`, `path: "/llms/agent-configuration/claude_local.txt"`
+- one adapter: `method: "GET"`, `path: "/llms/agent-configuration/omp_local.txt"`
 - icons: `method: "GET"`, `path: "/llms/agent-icons.txt"`
 
 Submit the hire with `paperclipCreateAgentHire` (`extended`):
@@ -84,7 +84,7 @@ role: "ceo"
 title: "Chief Executive Officer"
 icon: "crown"
 capabilities: "Strategic planning, team management, task delegation"
-adapterType: "claude_local"
+adapterType: "omp_local"
 adapterConfig: {"cwd": "/path/to/working/directory", "model": "sonnet"}
 runtimeConfig: {"heartbeat": {"enabled": true, "intervalSec": 300, "wakeOnDemand": true}}
 permissions: {"canCreateAgents": true}
@@ -94,7 +94,7 @@ budgetMonthlyCents: 10000
 Guide the user through:
 - CEO name and icon (show available icons)
 - Working directory (where the CEO will operate)
-- Adapter type (default: `claude_local`)
+- Adapter type (default: `omp_local`)
 - Budget
 
 Generate the CEO's system prompt using the Agent System Prompt Template below.
@@ -184,7 +184,7 @@ title: "Role Title"
 icon: "icon-name"
 reportsTo: "{ceo-or-manager-agent-id}"
 capabilities: "What this agent can do"
-adapterType: "claude_local"
+adapterType: "omp_local"
 adapterConfig: {"cwd": "/path/to/working/directory", "model": "sonnet", "systemPrompt": "... the full system prompt from the template ..."}
 runtimeConfig: {"heartbeat": {"enabled": true, "intervalSec": 300, "wakeOnDemand": true}}
 budgetMonthlyCents: 5000

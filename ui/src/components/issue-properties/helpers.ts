@@ -2,7 +2,6 @@ import type { AdapterModel } from "../../api/agents";
 import type { Issue, Project } from "@tickernelz/paperclip-pro-shared";
 import { extractProviderIdWithFallback } from "../../lib/model-utils";
 import type { IssueModelLane } from "../../lib/issue-assignee-overrides";
-import { codexReasoningEffortOptions } from "../../lib/codex-reasoning-effort";
 
 export function defaultProjectWorkspaceIdForProject(project: {
   workspaces?: Array<{ id: string; isPrimary: boolean }>;
@@ -53,23 +52,12 @@ export function toDateTimeLocalValue(value: string | null | undefined) {
   return new Date(date.getTime() - offsetMs).toISOString().slice(0, 16);
 }
 
-export const ISSUE_THINKING_EFFORT_OPTIONS = {
-  claude_local: [
-    { value: "", label: "Default" },
-    { value: "low", label: "Low" },
-    { value: "medium", label: "Medium" },
-    { value: "high", label: "High" },
-  ],
-  opencode_local: [
-    { value: "", label: "Default" },
-    { value: "minimal", label: "Minimal" },
-    { value: "low", label: "Low" },
-    { value: "medium", label: "Medium" },
-    { value: "high", label: "High" },
-    { value: "xhigh", label: "X-High" },
-    { value: "max", label: "Max" },
-  ],
-} as const;
+export const ISSUE_THINKING_EFFORT_OPTIONS = [
+  { value: "", label: "Default" },
+  { value: "low", label: "Low" },
+  { value: "medium", label: "Medium" },
+  { value: "high", label: "High" },
+] as const;
 
 export function asRecord(value: unknown): Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value)
@@ -84,27 +72,17 @@ export function compactRecord(record: Record<string, unknown>) {
 }
 
 export function thinkingEffortOptionsFor(
-  adapterType: string | null | undefined,
-  model?: string | null,
+  _adapterType: string | null | undefined,
+  _model?: string | null,
 ) {
-  if (adapterType === "codex_local") return codexReasoningEffortOptions(model);
-  if (adapterType === "opencode_local") return ISSUE_THINKING_EFFORT_OPTIONS.opencode_local;
-  return ISSUE_THINKING_EFFORT_OPTIONS.claude_local;
+  return ISSUE_THINKING_EFFORT_OPTIONS;
 }
 
-export function thinkingEffortKeyFor(adapterType: string | null | undefined) {
-  if (adapterType === "codex_local") return "modelReasoningEffort";
-  if (adapterType === "opencode_local") return "variant";
+export function thinkingEffortKeyFor(_adapterType: string | null | undefined) {
   return "effort";
 }
 
-export function thinkingEffortValueFor(adapterType: string | null | undefined, adapterConfig: Record<string, unknown>) {
-  if (adapterType === "codex_local") {
-    return String(adapterConfig.modelReasoningEffort ?? adapterConfig.reasoningEffort ?? adapterConfig.effort ?? "");
-  }
-  if (adapterType === "opencode_local") {
-    return String(adapterConfig.variant ?? "");
-  }
+export function thinkingEffortValueFor(_adapterType: string | null | undefined, adapterConfig: Record<string, unknown>) {
   return String(adapterConfig.effort ?? "");
 }
 

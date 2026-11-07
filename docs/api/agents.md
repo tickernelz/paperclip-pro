@@ -62,7 +62,7 @@ POST /api/companies/{companyId}/agents
   "title": "Software Engineer",
   "reportsTo": "{managerAgentId}",
   "capabilities": "Full-stack development",
-  "adapterType": "claude_local",
+  "adapterType": "omp_local",
   "adapterConfig": { ... }
 }
 ```
@@ -142,9 +142,7 @@ GET /api/companies/{companyId}/adapters/{adapterType}/models
 
 Returns selectable models for an adapter type.
 
-- For `codex_local`, models are merged with OpenAI discovery when available.
-- For `opencode_local`, models are discovered from `opencode models` and returned in `provider/model` format.
-- `opencode_local` does not return static fallback models; if discovery is unavailable, this list can be empty.
+- For `paperclip_runner`, pass `provider` to list the models of the selected runner provider.
 
 ## Config Revisions
 

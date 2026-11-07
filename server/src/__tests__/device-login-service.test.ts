@@ -3,7 +3,7 @@ import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest
 import { eq } from "drizzle-orm";
 import { adapterAuthSessions, companies, createDb, environmentLeases, environments } from "@tickernelz/paperclip-pro-db";
 import type { AgentAdapterType } from "@tickernelz/paperclip-pro-shared";
-import { DEVICE_LOGIN_URL } from "@tickernelz/paperclip-pro-adapter-codex-local/server";
+import { DEVICE_LOGIN_URL } from "../services/ai-providers/codex/device-login-parse.js";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

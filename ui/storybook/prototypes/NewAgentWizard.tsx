@@ -27,18 +27,14 @@ import type { AdapterEnvironmentTestResult, Agent } from "@tickernelz/paperclip-
 import { storybookAgents, storybookHiredAgent } from "../fixtures/paperclipData";
 import { PREVIEW_AGENT_ID, PREVIEW_COMPANY_ID, runtimeTestResult, useNewAgentFixtures, type TestOutcome, type TestState } from "./new-agent-fixtures";
 import { stepMotion } from "@/components/onboarding/onboarding-motion";
-import { models as claudeModels } from "@tickernelz/paperclip-pro-adapter-claude-local";
-import { models as codexModels } from "@tickernelz/paperclip-pro-adapter-codex-local";
-import { models as openCodeModels } from "@tickernelz/paperclip-pro-adapter-opencode-local";
-import { models as cursorModels } from "@tickernelz/paperclip-pro-adapter-cursor-local";
-import { models as geminiModels } from "@tickernelz/paperclip-pro-adapter-gemini-local";
-import { models as grokModels } from "@tickernelz/paperclip-pro-adapter-grok-local";
-import { models as kimiModels } from "@tickernelz/paperclip-pro-adapter-kimi-local";
+import { models as claudeModels } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/claude";
+import { models as codexModels } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/codex";
+import { models as openCodeModels } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/opencode";
+import { models as grokModels } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/grok";
 
 const modelLists = {
   claude_local: claudeModels, codex_local: codexModels, opencode_local: openCodeModels,
-  cursor: cursorModels, gemini_local: geminiModels, grok_local: grokModels, kimi_local: kimiModels,
-  cursor_cloud: [], pi_local: [], hermes_local: [],
+  grok_local: grokModels,
 };
 
 // Review-only flow. All edits and the simulated hire live in React state;

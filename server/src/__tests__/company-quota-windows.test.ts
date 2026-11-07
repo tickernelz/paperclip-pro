@@ -18,10 +18,10 @@ vi.mock("../services/ai-connections.js", () => ({
 vi.mock("../adapters/registry.js", () => ({
   listServerAdapters: mocks.adapters,
 }));
-vi.mock("@tickernelz/paperclip-pro-adapter-codex-local/server", () => ({
+vi.mock("../services/ai-providers/codex/quota.js", () => ({
   fetchCodexQuota: mocks.codex,
 }));
-vi.mock("@tickernelz/paperclip-pro-adapter-claude-local/server", () => ({
+vi.mock("../services/ai-providers/claude/quota.js", () => ({
   fetchClaudeQuota: mocks.claude,
 }));
 import { fetchCompanyQuotaWindows } from "../services/quota-windows.js";

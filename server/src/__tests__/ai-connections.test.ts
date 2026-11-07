@@ -22,7 +22,7 @@ import { quotaCredentialRecoveryPath, quotaCredentialRecovery, quotaCredentialHa
 import { readAiConnectionConfigurationFailure } from "../services/ai-connection-configuration-failure.js";
 import { aiConnectionService } from "../services/ai-connections.js";
 import { syncConnectionCredentialBindings } from "../services/connection-credential-bindings.js";
-import * as codexAdapter from "@tickernelz/paperclip-pro-adapter-codex-local/server";
+import * as codexAdapter from "../services/ai-providers/codex/codex-auth-cache.js";
 import { WORKSPACE_RESTORE_LOCK_TIMEOUT_CODE } from "@tickernelz/paperclip-pro-adapter-utils/workspace-restore-merge";
 import * as executionTarget from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
 import { prepareManagedAiRuntime, withManagedAiProbe, assertManagedAiProjectAuth, isAiConnectionBusy } from "../services/ai-connection-runtime.js";

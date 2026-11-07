@@ -415,7 +415,7 @@ One-time owner setup before the first publish:
 
 ## 10. Local CLI run concurrency
 
-Local CLI adapters (`codex_local`, `omp_local`, `pi_local`, ...) are memory-hungry
+Local CLI adapters such as `omp_local` are memory-hungry
 while they boot: each child loads its extensions, plugins and MCP servers before
 it can accept a turn. On 2026-09-25 nine `omp` children started at once, exhausted
 WSL memory and stalled the server for 64 seconds. The instance therefore applies
@@ -507,19 +507,6 @@ actually mounted.
 | Adapter | Mounts the Paperclip MCP | How |
 | --- | --- | --- |
 | `omp_local` | yes | per-run `--extension <tmpdir>` package with one `.mcp.json` |
-| `claude_local` (CLI) | yes | run-scoped `mcp-config.json` plus `--mcp-config … --strict-mcp-config` |
-| `codex_local` (CLI) | yes | managed `CODEX_HOME/config.toml` `[mcp_servers."paperclip"]` block |
-| ACP engine (`claude_local`, `codex_local`, `gemini_local`, `kimi_local` with `engine: acp`) | yes | ACP `session/new` `mcpServers` entry from the shared acpx engine |
-| `gemini_local` (CLI) | yes | per-run `settings.json` behind `GEMINI_CLI_SYSTEM_SETTINGS_PATH` |
-| `opencode_local` | yes | per-run `opencode.json` behind `OPENCODE_CONFIG` |
-| `grok_local` | yes | per-run `config.toml` overlay behind `GROK_CONFIG_PATH` |
-| `cursor` (local) | yes | run-scoped `<workspace>/.cursor/mcp.json` plus `--approve-mcps` |
-| `kimi_local` (`engine: cli`) | no | `KIMI_CODE_HOME` relocates OAuth state and sessions; project `mcp.json` needs a trust prompt |
-| `pi_local` | no | upstream Pi ships no MCP client |
-| `hermes` (local) | no | the only surface is `$HERMES_HOME/config.yaml`, and `HERMES_HOME` relocates sessions, skills and credentials |
-| `hermes_gateway` | no | the remote `POST /v1/runs` body carries no runtime configuration |
-| `openclaw_gateway` | no | the remote `agent` WebSocket request carries no runtime configuration |
-| `cursor_cloud` | no | the pinned `@cursor/sdk` inline `mcpServers` option is unverified here |
 
 Adapters that cannot mount, and every run with `paperclipMcp` off, get
 `paperclipRestGuidance()` instead: `curl` with `$PAPERCLIP_API_URL`,

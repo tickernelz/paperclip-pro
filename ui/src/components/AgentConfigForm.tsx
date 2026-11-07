@@ -3,7 +3,6 @@ import { aiRoutingHarness } from "@tickernelz/paperclip-pro-shared";
 import { AiConnectionField } from "./ai-connections/AiConnectionField";
 import { aiConnectionBindingSchema, aiRuntimeConnectionBindingSchema } from "@tickernelz/paperclip-pro-shared";
 import { testAgentSetup } from "@/lib/test-agent-setup";
-import { setupEfforts } from "../lib/agent-setup-fields";
 import { RuntimeTestCard } from "./RuntimeTestCard";
 import { useState, useEffect, useRef, useMemo, useCallback, Children, isValidElement, type ReactNode } from "react";
 import type { AdapterConfigSection } from "../adapters/types";
@@ -32,12 +31,7 @@ import { assetsApi } from "../api/assets";
 import {
   DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX,
   DEFAULT_CODEX_LOCAL_MODEL,
-} from "@tickernelz/paperclip-pro-adapter-codex-local";
-import { DEFAULT_CLAUDE_LOCAL_MODEL } from "@tickernelz/paperclip-pro-adapter-claude-local";
-import { DEFAULT_CURSOR_LOCAL_MODEL } from "@tickernelz/paperclip-pro-adapter-cursor-local";
-import { DEFAULT_GEMINI_LOCAL_MODEL } from "@tickernelz/paperclip-pro-adapter-gemini-local";
-import { DEFAULT_KIMI_LOCAL_MODEL } from "@tickernelz/paperclip-pro-adapter-kimi-local";
-import { DEFAULT_OPENCODE_LOCAL_MODEL } from "@tickernelz/paperclip-pro-adapter-opencode-local";
+} from "@tickernelz/paperclip-pro-adapter-utils/provider-models/codex";
 import {
   Popover,
   PopoverContent,
@@ -86,7 +80,6 @@ import {
 } from "./agent-config-primitives";
 import { defaultCreateValues } from "./agent-config-defaults";
 import { getUIAdapter } from "../adapters";
-import { ClaudeLocalAdvancedFields } from "../adapters/claude-local/config-fields";
 import { MarkdownEditor } from "./MarkdownEditor";
 import { ChoosePathButton } from "./PathInstructionsModal";
 import { ReportsToPicker } from "./ReportsToPicker";
@@ -105,7 +98,6 @@ import { useDisabledAdaptersSync } from "../adapters/use-disabled-adapters";
 import { buildAgentUpdatePatch, omitUndefinedEntries, type AgentConfigOverlay } from "../lib/agent-config-patch";
 import { useAdapterCapabilities } from "../adapters/use-adapter-capabilities";
 import { resolveForcedKubernetesEnvironment } from "../lib/forced-kubernetes-environment";
-import { codexReasoningEffortOptions } from "../lib/codex-reasoning-effort";
 
 /* ---- Create mode values ---- */
 
@@ -185,7 +177,7 @@ const emptyOverlay: AgentConfigOverlay = {
 const EMPTY_ENV: Record<string, EnvBinding> = {};
 
 export function supportsAdapterModelRefresh(adapterType: string): boolean {
-  return adapterType === "claude_local" || adapterType === "codex_local" || adapterType === "paperclip_runner" || adapterType === "opencode_local";
+  return adapterType === "paperclip_runner";
 }
 
 export function resolvePaperclipRunnerTransitionModel(
@@ -305,15 +297,6 @@ const claudeThinkingEffortOptions = [
   { id: "low", label: "Low" },
   { id: "medium", label: "Medium" },
   { id: "high", label: "High" },
-] as const;
-
-// Kimi exposes low/high/max (no "medium") via each model's support_efforts;
-// the kimi_local adapter maps a legacy "medium" onto "high" at runtime.
-const kimiThinkingEffortOptions = [
-  { id: "", label: "Auto" },
-  { id: "low", label: "Low" },
-  { id: "high", label: "High" },
-  { id: "max", label: "Max" },
 ] as const;
 
 const MAX_TURN_CONTINUATION_DEFAULT_MAX_ATTEMPTS = 2;
@@ -907,9 +890,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
     ? String(isCreate ? props.values.adapterSchemaValues?.provider ?? "codex"
       : eff("adapterConfig", "provider", config.provider === "acpx" && config.acpxAgent === "codex" ? "codex" : config.provider ?? "codex"))
     : undefined;
-  const modelProvider = adapterType === "opencode_local" && aiConnectionBindingSchema.safeParse(
-    (overlay.runtime.runtimeConfig as Record<string, unknown> | undefined)?.aiConnection ?? runtimeConfig.aiConnection,
-  ).data?.provider === "openrouter" ? "openrouter" : runnerProvider;
+  const modelProvider = runnerProvider;
   const connectionModels = useConnectionModels(selectedCompanyId, isCreate ? undefined : aiConnectionBindingSchema.safeParse((overlay.runtime.runtimeConfig as Record<string, unknown> | undefined)?.aiConnection ?? runtimeConfig.aiConnection).data, aiRoutingHarness(adapterType, runnerProvider, eff("adapterConfig", "acpxAgent", config.acpxAgent)));
   // Fetch adapter models for the effective provider, including unsaved changes.
   const modelQueryKey = selectedCompanyId
@@ -945,7 +926,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
       }
       return agentsApi.detectModel(selectedCompanyId, adapterType);
     },
-    enabled: Boolean(selectedCompanyId && isLocal && adapterType !== "opencode_local" && adapterType !== "paperclip_runner"),
+    enabled: Boolean(selectedCompanyId && isLocal && adapterType !== "paperclip_runner"),
   });
   const detectedModel = detectedModelData?.model ?? null;
   const detectedModelCandidates = detectedModelData?.candidates ?? [];
@@ -986,7 +967,6 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
   const configSchema = useConfigSchema(adapterType);
   const renderAdapterFields = (section: AdapterConfigSection) => (
     <>
-      {adapterType === "claude_local" && <ClaudeLocalAdvancedFields {...adapterFieldProps} section={section} />}
       <uiAdapter.ConfigFields {...adapterFieldProps} section={section} hideModel={isLocal} />
     </>
   );
@@ -1288,53 +1268,13 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
     }
   }
 
-  const thinkingEffortKey =
-    adapterType === "codex_local"
-      ? "modelReasoningEffort"
-      : adapterType === "cursor"
-        ? "mode"
-        : adapterType === "opencode_local"
-          ? "variant"
-          : adapterType === "grok_local" ? "reasoningEffort"
-          : adapterType === "pi_local" || adapterType === "omp_local" ? "thinking" : "effort";
-  const thinkingEffortOptions =
-    adapterType === "codex_local"
-      ? codexReasoningEffortOptions(currentModelId, "Auto").map((option) => ({
-          id: option.value,
-          label: option.label,
-        }))
-      : adapterType === "cursor"
-        ? cursorModeOptions
-        : adapterType === "opencode_local"
-          ? openCodeThinkingEffortOptions
-          : adapterType === "kimi_local"
-            ? kimiThinkingEffortOptions
-            : adapterType === "pi_local"
-              ? [{ id: "", label: "Auto" }, ...["off", "minimal", "low", "medium", "high", "xhigh"].map(id => ({ id, label: id }))]
-              : adapterType === "claude_local" || adapterType === "grok_local"
-                ? [{ id: "", label: "Auto" }, ...setupEfforts(adapterType, currentModelId).map((id) => ({
-                    id,
-                    label: id === "xhigh" ? "X-High" : id[0].toUpperCase() + id.slice(1),
-                  }))]
-                : claudeThinkingEffortOptions;
+  const thinkingEffortKey = adapterType === "omp_local" ? "thinking" : "effort";
+  const thinkingEffortOptions = claudeThinkingEffortOptions;
   const mergesEffortIntoModel = adapterType === "omp_local";
   const currentThinkingEffort = isCreate
     ? mergesEffortIntoModel ? String(val!.adapterSchemaValues?.thinking ?? "") : val!.thinkingEffort
-    : adapterType === "codex_local"
-      ? eff(
-          "adapterConfig",
-          "modelReasoningEffort",
-          String(config.modelReasoningEffort ?? config.reasoningEffort ?? ""),
-        )
-      : adapterType === "cursor"
-        ? eff("adapterConfig", "mode", String(config.mode ?? ""))
-        : adapterType === "opencode_local"
-          ? eff("adapterConfig", "variant", String(config.variant ?? ""))
-          : eff("adapterConfig", thinkingEffortKey, String(config[thinkingEffortKey] ?? ""));
-  const showThinkingEffort = adapterType !== "gemini_local"
-    && adapterType !== "cursor_cloud"
-    && adapterType !== "paperclip_runner"
-    && !mergesEffortIntoModel;
+    : eff("adapterConfig", thinkingEffortKey, String(config[thinkingEffortKey] ?? ""));
+  const showThinkingEffort = adapterType !== "paperclip_runner" && !mergesEffortIntoModel;
   const setThinkingEffort = (effort: string | null) => {
     if (isCreate) {
       if (mergesEffortIntoModel) {
@@ -1346,9 +1286,6 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
     }
     mark("adapterConfig", thinkingEffortKey, effort || undefined);
   };
-  const codexSearchEnabled = adapterType === "codex_local"
-    ? (isCreate ? Boolean(val!.search) : eff("adapterConfig", "search", Boolean(config.search)))
-    : false;
   const effectiveRuntimeConfig = useMemo(() => {
     if (isCreate) {
       return {
@@ -1643,18 +1580,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                     // Reset all adapter-specific fields to defaults when switching adapter type
                     const { adapterType: _at, ...defaults } = defaultCreateValues;
                     const nextValues: CreateConfigValues = { ...defaults, adapterType: t };
-                    if (t === "codex_local") {
-                      nextValues.dangerouslyBypassSandbox =
-                        DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX;
-                    } else if (t === "gemini_local") {
-                      nextValues.model = DEFAULT_GEMINI_LOCAL_MODEL;
-                    } else if (t === "kimi_local") {
-                      nextValues.model = DEFAULT_KIMI_LOCAL_MODEL;
-                    } else if (t === "cursor") {
-                      nextValues.model = DEFAULT_CURSOR_LOCAL_MODEL;
-                    } else if (t === "opencode_local") {
-                      nextValues.model = DEFAULT_OPENCODE_LOCAL_MODEL;
-                    } else if (t === "paperclip_runner") {
+                    if (t === "paperclip_runner") {
                       nextValues.model = DEFAULT_CODEX_LOCAL_MODEL;
                     }
                     if (dot) {
@@ -1670,15 +1596,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                       adapterType: t,
                       adapterConfig: {
                         model:
-                          t === "gemini_local"
-                            ? DEFAULT_GEMINI_LOCAL_MODEL
-                            : t === "kimi_local"
-                              ? DEFAULT_KIMI_LOCAL_MODEL
-                            : t === "opencode_local"
-                              ? DEFAULT_OPENCODE_LOCAL_MODEL
-                            : t === "cursor"
-                              ? DEFAULT_CURSOR_LOCAL_MODEL
-                            : dot ? ""
+                          dot ? ""
                             : t === "paperclip_runner"
                               ? resolvePaperclipRunnerTransitionModel(adapterType, config.model)
                               : "",
@@ -1686,12 +1604,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                         modelReasoningEffort: "",
                         variant: "",
                         mode: "",
-                        ...(t === "codex_local"
-                          ? {
-                              dangerouslyBypassApprovalsAndSandbox:
-                                DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX,
-                            }
-                          : dot
+                        ...(dot
                             ? { provider: "openai_dot", lifecycleMode: "per_turn", allowUnmeteredProvider: false, dotAttachmentAccess: false, dotWorkspaceAccess: false }
                           : t === "paperclip_runner"
                             ? {
@@ -1774,34 +1687,22 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                   if (mergesEffortIntoModel && !keepsEffort(currentThinkingEffort, v, models.map((model) => modelPickerOption(model, false)))) {
                     setThinkingEffort(null);
                   }
-                  const supportedEfforts = setupEfforts(adapterType, v);
-                  const clearUnsupportedEffort = ["codex_local", "claude_local", "grok_local"].includes(adapterType)
-                    && Boolean(currentThinkingEffort)
-                    && !supportedEfforts.includes(String(currentThinkingEffort));
                   if (isCreate) {
-                    set!({
-                      model: v,
-                      ...(clearUnsupportedEffort ? { thinkingEffort: "" } : {}),
-                    });
+                    set!({ model: v });
                     return;
                   }
                   mark("adapterConfig", "model", connectionModels?.resolveModel(v) || v || undefined);
-                  if (clearUnsupportedEffort) {
-                    mark("adapterConfig", thinkingEffortKey, undefined);
-                    mark("adapterConfig", "reasoningEffort", undefined);
-                  }
                 }}
                 open={modelOpen}
                 onOpenChange={setModelOpen}
-                defaultLabel={adapterType === "claude_local" ? `Default (${DEFAULT_CLAUDE_LOCAL_MODEL})` : undefined}
-                allowDefault={adapterType !== "opencode_local" && adapterType !== "pi_local" && adapterType !== "paperclip_runner"}
-                required={adapterType === "opencode_local" || adapterType === "pi_local"}
-                groupByProvider={!connectionModels && (adapterType === "opencode_local" || adapterType === "pi_local")}
+                allowDefault={adapterType !== "paperclip_runner"}
+                required={false}
+                groupByProvider={false}
                 preserveOrder={Boolean(connectionModels) || adapterCuratesModelOrder(adapterType)}
                 creatable
                 detectedModel={connectionModels ? undefined : detectedModel}
                 detectedModelCandidates={[]}
-                onDetectModel={connectionModels || adapterType === "opencode_local" || adapterType === "paperclip_runner"
+                onDetectModel={connectionModels || adapterType === "paperclip_runner"
                   ? undefined
                   : async () => {
                       const result = await refetchDetectedModel();
@@ -1824,15 +1725,6 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                       : "Failed to load adapter models.")}
                 </p>
               )}
-              {adapterType === "opencode_local"
-                && !connectionModels
-                && currentDefaultEnvironment
-                && currentDefaultEnvironment.driver !== "local" && (
-                <p className="text-xs text-muted-foreground">
-                  Live OpenCode model discovery only runs for Local environments. Using the curated list and manual entry for {currentDefaultEnvironment.name}.
-                </p>
-              )}
-
               {showThinkingEffort && (
                 <>
                   <ThinkingEffortDropdown
@@ -1846,13 +1738,6 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                     open={thinkingEffortOpen}
                     onOpenChange={setThinkingEffortOpen}
                   />
-                  {adapterType === "codex_local" &&
-                    codexSearchEnabled &&
-                    currentThinkingEffort === "minimal" && (
-                      <p className="text-xs text-amber-400">
-                        Codex may reject `minimal` thinking when search is enabled.
-                      </p>
-                    )}
                 </>
               )}
           </>)}
@@ -1934,17 +1819,7 @@ export function AgentConfigForm(props: AgentConfigFormProps) {
                     }
                     immediate
                     className={inputClass}
-                    placeholder={
-                      ({
-                        claude_local: "claude",
-                        codex_local: "codex",
-                        gemini_local: "gemini",
-                        kimi_local: "kimi",
-                        pi_local: "pi",
-                        cursor: "agent",
-                        opencode_local: "opencode",
-                      } as Record<string, string>)[adapterType] ?? adapterType.replace(/_local$/, "")
-                    }
+                    placeholder={adapterType.replace(/_local$/, "")}
                   />
                 </Field>
               )}
@@ -2368,24 +2243,8 @@ export type AdapterLoginPanelProps = AdapterLoginDescriptor & {
 // The login panel dispatcher. It picks the panel from the projected panel mode,
 // not from the adapter name. The `submitted_browser_code` mode shows the
 // submitted-browser-code panel; every other mode shows the displayed-code panel.
-/**
- * The account a source signs in to, named where one is known.
- *
- * "Sign in to the environment" describes the plumbing — a login performed inside
- * a sandbox — and is the honest label when the provider is unknown. But for the
- * two sources onboarding offers, the customer is signing in to Anthropic or to
- * OpenAI, and naming that is what tells them which password manager entry to
- * reach for. The generic wording stays for anything not listed, where a guess
- * would be worse than a description.
- */
-const ADAPTER_LOGIN_PROVIDER: Record<string, string> = {
-  claude_local: "Anthropic",
-  codex_local: "OpenAI",
-};
-
-function adapterLoginTitle(adapterType: string): string {
-  const provider = ADAPTER_LOGIN_PROVIDER[adapterType];
-  return provider ? `Sign in to ${provider}` : "Sign in to the environment";
+function adapterLoginTitle(_adapterType: string): string {
+  return "Sign in to the environment";
 }
 
 export function AdapterLoginPanel(props: AdapterLoginPanelProps) {

@@ -9,7 +9,7 @@ Use this template when hiring QA engineers who reproduce bugs, validate fixes, c
 - `title`: `QA Engineer`
 - `icon`: `bug`
 - `capabilities`: `Owns manual and automated QA workflows, reproduces defects, validates fixes end-to-end, captures evidence, and reports concise actionable findings.`
-- `adapterType`: `claude_local` or another browser-capable adapter
+- `adapterType`: `omp_local`
 
 ## `AGENTS.md`
 

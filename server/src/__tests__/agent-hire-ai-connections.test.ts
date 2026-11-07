@@ -1,4 +1,4 @@
-import * as codexAdapter from "@tickernelz/paperclip-pro-adapter-codex-local/server";
+import * as codexAdapter from "../services/ai-providers/codex/codex-auth-cache.js";
 import { WORKSPACE_RESTORE_LOCK_TIMEOUT_CODE } from "@tickernelz/paperclip-pro-adapter-utils/workspace-restore-merge";
 import { randomUUID } from "node:crypto";
 import { mkdtemp, rm } from "node:fs/promises";

@@ -17,7 +17,7 @@ import {
   CODEX_LOCAL_FAST_MODE_SUPPORTED_MODELS,
   isCodexLocalFastModeSupported,
   isCodexLocalManualModel,
-} from "@tickernelz/paperclip-pro-adapter-codex-local";
+} from "@tickernelz/paperclip-pro-adapter-utils/provider-models/codex";
 import {
   PAPERCLIP_RUNNER_IDLE_TIMEOUT_DEFAULT_MS,
   PAPERCLIP_RUNNER_IDLE_TIMEOUT_MAX_MS,

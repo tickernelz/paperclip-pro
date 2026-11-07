@@ -10,10 +10,10 @@ import {
   storybookIssues,
   storybookSecrets,
 } from "../../fixtures/paperclipData";
-import { models as claudeModels } from "@tickernelz/paperclip-pro-adapter-claude-local";
-import { models as openCodeModels } from "@tickernelz/paperclip-pro-adapter-opencode-local";
+import { models as claudeModels } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/claude";
+import { models as openCodeModels } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/opencode";
 import { storybookEnvironments } from "../../fixtures/onboardingEnvironment";
-import { models as codexModels } from "@tickernelz/paperclip-pro-adapter-codex-local";
+import { models as codexModels } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/codex";
 import { runtimeTestResult, type TestOutcome } from "../new-agent-fixtures";
 export const COMPANY = "company-storybook";
 export const ID = "agent-settings-preview";

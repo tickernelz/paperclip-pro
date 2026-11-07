@@ -9,14 +9,11 @@ import {
   bootstrapTestDrive,
   prepareTestDriveEnvironment,
   reconcileTestDriveWorktreeExecution,
-  redactTestDriveArgv,
-  redactTestDriveText,
   resolveTestDriveBootstrap,
   resolveTestDriveDataDir,
   resolveTestDriveServerPort,
   testDriveCommand,
   type TestDriveApi,
-  type TestDriveHarness,
 } from "../commands/test-drive.js";
 import type { RunOptions, StartedServer } from "../commands/run.js";
 import type { PaperclipConfig } from "../config/schema.js";
@@ -136,17 +133,16 @@ describe("test-drive data isolation", () => {
     expect(fs.readFileSync(marker, "utf8")).toBe("keep");
   });
 
-  it("discards inherited Paperclip routing while preserving a custom key source", async () => {
+  it("discards inherited Paperclip routing", async () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-test-drive-env-"));
     cleanupDirectories.push(root);
     process.env.PAPERCLIP_HOME = "/normal/home";
     process.env.PAPERCLIP_CONFIG = "/normal/config.json";
     process.env.PAPERCLIP_IN_WORKTREE = "true";
-    process.env.PAPERCLIP_TEST_PROVIDER_KEY = "secret-value";
     process.env.DATABASE_URL = "postgres://normal-instance";
 
     const prepared = await prepareTestDriveEnvironment(
-      { dataDir: root, apiKeyEnv: "PAPERCLIP_TEST_PROVIDER_KEY" },
+      { dataDir: root },
       os.tmpdir(),
     );
 
@@ -162,7 +158,6 @@ describe("test-drive data isolation", () => {
     expect(process.env.PAPERCLIP_DEPLOYMENT_EXPOSURE).toBe("private");
     expect(process.env.PAPERCLIP_BIND).toBe("loopback");
     expect(process.env.HOST).toBe("127.0.0.1");
-    expect(process.env.PAPERCLIP_TEST_PROVIDER_KEY).toBe("secret-value");
     expect(process.env.DATABASE_URL).toBeUndefined();
     expect(Number(process.env.PORT)).toBeGreaterThanOrEqual(3100);
   });
@@ -204,126 +199,26 @@ describe("test-drive data isolation", () => {
 });
 
 describe("test-drive bootstrap validation", () => {
-  it("uses Claude defaults and the canonical environment credential", () => {
-    const resolved = resolveTestDriveBootstrap({}, { ANTHROPIC_API_KEY: "anthropic-secret" });
-    expect(resolved).toMatchObject({
-      companyName: "Test Company",
-      agentName: "CEO",
-      adapterType: "claude_local",
-      credentialTarget: "ANTHROPIC_API_KEY",
-      credential: "anthropic-secret",
-    });
-    expect(resolved.model).toBeUndefined();
+  it("uses default names and leaves the OMP model optional", () => {
+    expect(resolveTestDriveBootstrap({})).toEqual({ companyName: "Test Company", agentName: "CEO" });
+    expect(resolveTestDriveBootstrap({ model: "anthropic/claude-sonnet-5" }).model).toBe("anthropic/claude-sonnet-5");
   });
 
-  it("maps all harnesses and leaves Claude/Codex models optional", () => {
-    const cases: Array<[TestDriveHarness, string, string]> = [
-      ["claude", "claude_local", "ANTHROPIC_API_KEY"],
-      ["codex", "codex_local", "OPENAI_API_KEY"],
-      ["opencode", "opencode_local", "OPENROUTER_API_KEY"],
-    ];
-    for (const [harness, adapterType, credentialTarget] of cases) {
-      const resolved = resolveTestDriveBootstrap(
-        {
-          harness,
-          ...(harness === "opencode" ? { model: "openrouter/anthropic/claude-sonnet-4.5" } : {}),
-        },
-        { [credentialTarget]: "provider-secret" },
-      );
-      expect(resolved.adapterType).toBe(adapterType);
-      expect(resolved.credentialTarget).toBe(credentialTarget);
-    }
-  });
-
-  it("requires an OpenRouter OpenCode model and preserves every model path segment", () => {
-    expect(() => resolveTestDriveBootstrap(
-      { harness: "opencode" },
-      { OPENROUTER_API_KEY: "secret" },
-    )).toThrow(/require --model openrouter/);
-    for (const model of ["anthropic/claude", "openrouter/", "openrouter//claude", "openrouter/a/"]) {
-      expect(() => resolveTestDriveBootstrap(
-        { harness: "opencode", model },
-        { OPENROUTER_API_KEY: "secret" },
-      )).toThrow(/require --model openrouter/);
-    }
-
-    const model = "openrouter/publisher/family/model";
-    expect(resolveTestDriveBootstrap(
-      { harness: "opencode", model },
-      { OPENROUTER_API_KEY: "secret" },
-    ).model).toBe(model);
-  });
-
-  it("supports custom source variables while retaining the canonical target", () => {
-    const resolved = resolveTestDriveBootstrap(
-      {
-        harness: "opencode",
-        model: "openrouter/anthropic/claude-sonnet-4.5",
-        apiKeyEnv: "MY_OPENROUTER_KEY",
-      },
-      { MY_OPENROUTER_KEY: "custom-secret" },
-    );
-    expect(resolved.credential).toBe("custom-secret");
-    expect(resolved.credentialSource).toBe("MY_OPENROUTER_KEY");
-    expect(resolved.credentialTarget).toBe("OPENROUTER_API_KEY");
-  });
-
-  it("accepts a literal key and gives it precedence over canonical environment lookup", () => {
-    const resolved = resolveTestDriveBootstrap(
-      { apiKey: "literal-secret" },
-      { ANTHROPIC_API_KEY: "environment-secret" },
-    );
-    expect(resolved.credential).toBe("literal-secret");
-    expect(resolved.credentialSource).toBe("--api-key");
-  });
-
-  it("rejects mutually exclusive key inputs", () => {
-    expect(() => resolveTestDriveBootstrap({
-      apiKey: "literal-secret",
-      apiKeyEnv: "ANTHROPIC_API_KEY",
-    }, { ANTHROPIC_API_KEY: "environment-secret" })).toThrow(/mutually exclusive/);
-  });
-
-  it("rejects invalid key variable names and redacts credentials", () => {
-    expect(() => resolveTestDriveBootstrap({
-      apiKeyEnv: "NOT-A-VALID-NAME",
-    }, { ANTHROPIC_API_KEY: "env-secret" })).toThrow(/valid environment variable/);
-    expect(redactTestDriveText(
-      "literal-secret, custom-secret, and env-secret must never appear",
-      ["literal-secret", "custom-secret", "env-secret"],
-    )).toBe("[REDACTED], [REDACTED], and [REDACTED] must never appear");
-  });
-
-  it("removes literal keys from the JavaScript argv view", () => {
-    const splitArgv = ["node", "paperclip-pro", "test-drive", "--api-key", "literal-secret"];
-    const joinedArgv = ["node", "paperclip-pro", "test-drive", "--api-key=literal-secret"];
-
-    redactTestDriveArgv("literal-secret", splitArgv);
-    redactTestDriveArgv("literal-secret", joinedArgv);
-
-    expect(splitArgv).toEqual(["node", "paperclip-pro", "test-drive", "--api-key", "[REDACTED]"]);
-    expect(joinedArgv).toEqual(["node", "paperclip-pro", "test-drive", "--api-key=[REDACTED]"]);
+  it("rejects empty names and padded models", () => {
+    expect(() => resolveTestDriveBootstrap({ companyName: " " })).toThrow(/--company-name/);
+    expect(() => resolveTestDriveBootstrap({ agentName: "" })).toThrow(/--agent-name/);
+    expect(() => resolveTestDriveBootstrap({ model: " x" })).toThrow(/--model/);
   });
 });
 
 describe("test-drive API bootstrap", () => {
-  it.each([
-    ["claude", "claude_local", "ANTHROPIC_API_KEY", undefined],
-    ["codex", "codex_local", "OPENAI_API_KEY", undefined],
-    ["opencode", "opencode_local", "OPENROUTER_API_KEY", "openrouter/anthropic/claude-sonnet-4.5"],
-  ] as const)("creates exactly one company and one CEO for %s", async (
-    harness,
-    adapterType,
-    credentialTarget,
-    model,
-  ) => {
+  it("creates exactly one company and one OMP CEO", async () => {
     const { api, calls } = freshBootstrapApi();
     const result = await bootstrapTestDrive({
       api,
-      options: { harness, ...(model ? { model } : {}) },
+      options: { model: "anthropic/claude-sonnet-5" },
       linkedWorktree: false,
       instanceId: "default",
-      env: { [credentialTarget]: "secret" },
     });
 
     expect(result.reused).toBe(false);
@@ -331,43 +226,18 @@ describe("test-drive API bootstrap", () => {
     expect(calls.map((call) => `${call.method} ${call.path}`)).toEqual([
       "GET /api/companies",
       "POST /api/companies",
-      "POST /api/companies/company-1/user-secret-definitions",
-      "POST /api/companies/company-1/me/user-secrets",
       "POST /api/companies/company-1/agents",
     ]);
-    const secretValueCall = calls.find((call) => call.path.endsWith("/me/user-secrets"));
-    expect(secretValueCall?.body).toEqual({ definitionKey: credentialTarget, value: "secret" });
     const agentCall = calls.find((call) => call.path.endsWith("/agents"));
     expect(agentCall?.body).toEqual({
       name: "CEO",
       role: "ceo",
-      adapterType,
-      adapterConfig: {
-        ...(model ? { model } : {}),
-        env: {
-          [credentialTarget]: {
-            type: "user_secret_ref",
-            key: credentialTarget,
-            version: "latest",
-            required: true,
-          },
-        },
-      },
+      adapterType: "omp_local",
+      adapterConfig: { model: "anthropic/claude-sonnet-5" },
     });
     expect(calls.some((call) => /issues|projects|goals|tasks|heartbeat/.test(call.path))).toBe(false);
   });
 
-  it("rejects invalid OpenCode configuration before creating a company", async () => {
-    const { api, calls } = freshBootstrapApi();
-    await expect(bootstrapTestDrive({
-      api,
-      options: { harness: "opencode" },
-      linkedWorktree: false,
-      instanceId: "default",
-      env: { OPENROUTER_API_KEY: "secret" },
-    })).rejects.toThrow(/require --model openrouter/);
-    expect(calls).toEqual([{ method: "GET", path: "/api/companies" }]);
-  });
 
   it("preserves seeded data and ignores every bootstrap flag", async () => {
     const get = vi.fn(async <T>(requestPath: string) => {
@@ -383,10 +253,9 @@ describe("test-drive API bootstrap", () => {
 
     const result = await bootstrapTestDrive({
       api,
-      options: { harness: "opencode", companyName: "Ignored" },
+      options: { companyName: "Ignored" },
       linkedWorktree: false,
       instanceId: "default",
-      env: {},
     });
 
     expect(result).toMatchObject({ reused: true, company: { id: "existing" }, agent: null });
@@ -402,7 +271,6 @@ describe("test-drive API bootstrap", () => {
       options: {},
       linkedWorktree: false,
       instanceId: "default",
-      env: { ANTHROPIC_API_KEY: "secret" },
     })).rejects.toThrow("agent setup failed");
     expect(calls.at(-1)).toEqual({ method: "DELETE", path: "/api/companies/company-1" });
   });
@@ -487,7 +355,6 @@ describe("test-drive foreground lifecycle", () => {
     process.env.PAPERCLIP_HOME = "/tmp/test-drive-lifecycle";
     process.env.PAPERCLIP_INSTANCE_ID = "default";
     process.env.PAPERCLIP_IN_WORKTREE = "false";
-    process.env.ANTHROPIC_API_KEY = "secret";
     const events: string[] = [];
     let runOptions: RunOptions | undefined;
     const api = {
@@ -545,66 +412,6 @@ describe("test-drive foreground lifecycle", () => {
     });
 
     expect(runOptions?.skipServiceManagerCheck).toBe(false);
-  });
-
-  it("uses the credential snapshot captured before downstream server initialization", async () => {
-    const root = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-test-drive-credential-"));
-    cleanupDirectories.push(root);
-    process.env.PAPERCLIP_HOME = root;
-    process.env.PAPERCLIP_INSTANCE_ID = "default";
-    process.env.PAPERCLIP_IN_WORKTREE = "false";
-    process.env.ANTHROPIC_API_KEY = "upstream-secret";
-    const { api, calls } = freshBootstrapApi();
-
-    await testDriveCommand({ browser: false }, {
-      run: async (options) => {
-        delete process.env.ANTHROPIC_API_KEY;
-        await options.afterStart?.(server);
-      },
-      createApi: () => api,
-      openBrowser: vi.fn(async () => true),
-    });
-
-    const secretValueCall = calls.find((call) => call.path.endsWith("/me/user-secrets"));
-    expect(secretValueCall?.body).toEqual({
-      definitionKey: "ANTHROPIC_API_KEY",
-      value: "upstream-secret",
-    });
-  });
-
-  it("redacts a literal key from downstream errors", async () => {
-    process.env.PAPERCLIP_HOME = "/tmp/test-drive-redaction";
-    process.env.PAPERCLIP_INSTANCE_ID = "default";
-    process.env.PAPERCLIP_IN_WORKTREE = "false";
-
-    await expect(testDriveCommand({
-      apiKey: "literal-secret",
-      browser: false,
-    }, {
-      run: async () => {
-        throw new Error("downstream rejected literal-secret");
-      },
-      createApi: () => freshBootstrapApi().api,
-      openBrowser: vi.fn(async () => true),
-    })).rejects.toThrow("downstream rejected [REDACTED]");
-  });
-
-  it("redacts a custom environment key when its option name has whitespace", async () => {
-    process.env.PAPERCLIP_HOME = "/tmp/test-drive-custom-env-redaction";
-    process.env.PAPERCLIP_INSTANCE_ID = "default";
-    process.env.PAPERCLIP_IN_WORKTREE = "false";
-    process.env.CUSTOM_TEST_DRIVE_KEY = "custom-secret";
-
-    await expect(testDriveCommand({
-      apiKeyEnv: " CUSTOM_TEST_DRIVE_KEY ",
-      browser: false,
-    }, {
-      run: async () => {
-        throw new Error("downstream rejected custom-secret");
-      },
-      createApi: () => freshBootstrapApi().api,
-      openBrowser: vi.fn(async () => true),
-    })).rejects.toThrow("downstream rejected [REDACTED]");
   });
 
   it("honors --no-browser after successful initialization", async () => {

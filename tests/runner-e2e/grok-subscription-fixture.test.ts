@@ -2,7 +2,7 @@ import { mkdtemp, mkdir, readFile, realpath, stat, symlink, rm } from "node:fs/p
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { afterEach, expect, it } from "vitest";
-import { resolveManagedGrokHomeDir } from "../../packages/adapters/grok-local/src/server/grok-home.js";
+import { resolveManagedGrokHomeDir } from "../../server/src/services/ai-providers/grok/grok-home.js";
 import { stageGrokSubscriptionFixture } from "./grok-subscription-fixture.js";
 import { findSecretLeak, normalizedSecrets, sanitizeJson } from "./redaction.js";
 import { buildPaperclipServerEnvironment } from "./harness-env.js";

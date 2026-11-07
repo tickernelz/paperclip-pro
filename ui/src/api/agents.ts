@@ -64,15 +64,6 @@ export interface DetectedAdapterModel {
   candidates?: string[];
 }
 
-export interface ClaudeLoginResult {
-  exitCode: number | null;
-  signal: string | null;
-  timedOut: boolean;
-  loginUrl: string | null;
-  stdout: string;
-  stderr: string;
-}
-
 export interface OrgNode {
   id: string;
   name: string;
@@ -323,8 +314,6 @@ export const agentsApi = {
     }
     throw new Error(result.message ?? "Retry was skipped.");
   },
-  loginWithClaude: (id: string, companyId?: string) =>
-    api.post<ClaudeLoginResult>(agentPath(id, companyId, "/claude-login"), {}),
   startAdapterAuthLogin: (
     companyId: string,
     type: string,

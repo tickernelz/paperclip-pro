@@ -45,7 +45,6 @@ describe("stock harness prerequisite coverage", () => {
   });
   it("rejects a requested file absent from Vitest discovery even when required names pass", () => {
     expect(gradeGate({ ...gate, files: [...gate.files, "undiscovered.test.ts"] }, report(), 0).passed).toBe(false);
-    expect(stockHarnessGates.find(gate => gate.id === "SH-3-hermes").cwd).toBe("packages/adapters/hermes");
   });
 });
 

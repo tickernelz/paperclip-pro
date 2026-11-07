@@ -24,15 +24,7 @@ type AuthFeedback = { tone: "error" | "info"; message: string };
 const joinAdapterOptions: AgentAdapterType[] = AGENT_ADAPTER_TYPES.filter(
   (type) => type !== "paperclip_runner",
 );
-const ENABLED_INVITE_ADAPTERS = new Set([
-  "claude_local",
-  "codex_local",
-  "gemini_local",
-  "kimi_local",
-  "opencode_local",
-  "pi_local",
-  "cursor",
-]);
+const ENABLED_INVITE_ADAPTERS = new Set(["omp_local"]);
 
 function readNestedString(value: unknown, path: string[]): string | null {
   let current: unknown = value;
@@ -217,7 +209,7 @@ export function InviteLandingPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [agentName, setAgentName] = useState("");
-  const [adapterType, setAdapterType] = useState<AgentAdapterType>("claude_local");
+  const [adapterType, setAdapterType] = useState<AgentAdapterType>("omp_local");
   const [capabilities, setCapabilities] = useState("");
   const [result, setResult] = useState<{ kind: "bootstrap" | "join"; payload: unknown } | null>(null);
   const [error, setError] = useState<string | null>(null);

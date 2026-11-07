@@ -337,10 +337,8 @@ function AgentRequestPreview() {
       </label>
       <label className="block text-sm">
         <span className="mb-1 block text-zinc-400">Adapter type</span>
-        <select className={fieldClassName} defaultValue="codex_local" disabled>
-          <option value="codex_local">Codex</option>
-          <option value="claude_local">Claude Code</option>
-          <option value="cursor">Cursor</option>
+        <select className={fieldClassName} defaultValue="omp_local" disabled>
+          <option value="omp_local">OMP</option>
         </select>
       </label>
       <label className="block text-sm">

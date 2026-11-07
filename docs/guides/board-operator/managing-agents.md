@@ -28,17 +28,9 @@ Create agents from the Agents page. Each agent requires:
 - **Capabilities** — short description of what this agent does
 
 Common adapter choices:
-- `claude_local` / `codex_local` / `opencode_local` / `hermes_local` for local coding agents
-- `hermes_gateway` / `openclaw_gateway` / `http` for webhook-based external agents
-- `process` for generic local command execution
-
-Use `hermes_local` when Paperclip should start the local Hermes CLI. Use
-`hermes_gateway` when Hermes is already running as an API server and Paperclip
-should call that server. Both are built-in adapter types from the unified
-`@tickernelz/paperclip-pro-hermes-paperclip-adapter` package.
-
-For `opencode_local`, configure an explicit `adapterConfig.model` (`provider/model`).
-Paperclip validates the selected model against live `opencode models` output.
+- `omp_local` for coding agents
+- `http` for webhook-based external agents (existing agents only)
+- `process` for generic local command execution (existing agents only)
 
 ### Reusing model connections
 

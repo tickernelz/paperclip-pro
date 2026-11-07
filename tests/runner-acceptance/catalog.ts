@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 
-import { DEFAULT_CODEX_LOCAL_MODEL } from "../../packages/adapters/codex-local/src/index.js";
+import { DEFAULT_CODEX_LOCAL_MODEL } from "../../packages/adapter-utils/src/provider-models/codex.js";
 import { ACPX_QUALIFICATION_MODELS } from "../acpx-qualification-models.js";
 import { QUALIFIED_OPENCODE_MODEL } from "../../packages/paperclip-runner/src/drivers/opencode/opencode-server-driver.js";
 import { BUILTIN_ADAPTER_TYPES } from "../../server/src/adapters/builtin-adapter-types.js";

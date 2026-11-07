@@ -18,7 +18,7 @@ import { ApiError } from "../api/client";
 import { aiConnectionsApi } from "../api/ai-connections";
 import { CodexLocalConfigFields } from "../adapters/codex-local/config-fields";
 import type { AdapterConfigFieldsProps } from "../adapters/types";
-import { DEFAULT_CODEX_LOCAL_MODEL } from "@tickernelz/paperclip-pro-adapter-codex-local";
+import { DEFAULT_CODEX_LOCAL_MODEL } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/codex";
 
 const mockAgentsApi = vi.hoisted(() => ({
   get: vi.fn(),

@@ -9,7 +9,7 @@ Use this template when hiring security engineers who own security posture: threa
 - `title`: `Security Engineer`
 - `icon`: `shield`
 - `capabilities`: `Owns security posture across code, architecture, APIs, deployments, dependencies, and agent tool use; threat-models early, reviews concretely, and drives remediations with evidence.`
-- `adapterType`: `claude_local`, `codex_local`, or another adapter with repo and browser context
+- `adapterType`: `omp_local`
 
 Recommended `desiredSkills` when the company has installed them:
 
