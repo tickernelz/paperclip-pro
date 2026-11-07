@@ -67,7 +67,7 @@ const PNPM_ALLOWLIST = new Set<string>([
   "pnpm wardmote auth bootstrap-ceo",
   "pnpm wardmote connect",
   "pnpm wardmote migrate",
-  "pnpm paperclip-pro db:backup",
+  "pnpm wardmote db:backup",
   "pnpm wardmote configure --section server",
   "pnpm wardmote configure --section secrets",
   "pnpm wardmote configure --section storage",
@@ -297,22 +297,24 @@ function extractCommand(relPath: string, text: string, at: number): string {
 
 function findOffenders(relPath: string, text: string): string[] {
   const offenders: string[] = [];
-  const marker = "pnpm wardmote";
-  let from = 0;
-  for (;;) {
-    const at = text.indexOf(marker, from);
-    if (at < 0) break;
-    from = at + marker.length;
-    const before = text.slice(0, at);
-    const wrapped = /\$\(\s*$/.test(before);
-    const command = extractCommand(relPath, text, at);
-    if (wrapped) {
+  for (const marker of ["pnpm wardmote", "pnpm paperclip-pro"]) {
+    let from = 0;
+    for (;;) {
+      const at = text.indexOf(marker, from);
+      if (at < 0) break;
+      from = at + marker.length;
+      const before = text.slice(0, at);
+      const wrapped = /\$\(\s*$/.test(before);
+      const command = extractCommand(relPath, text, at);
+      if (wrapped) {
+        offenders.push(command);
+        continue;
+      }
+      const canonical = command.replace(/^pnpm paperclip-pro/, "pnpm wardmote");
+      if (PNPM_ALLOWLIST.has(canonical)) continue;
+      if (DOC_PHRASES.has(canonical)) continue;
       offenders.push(command);
-      continue;
     }
-    if (PNPM_ALLOWLIST.has(command)) continue;
-    if (DOC_PHRASES.has(command)) continue;
-    offenders.push(command);
   }
   return offenders;
 }
@@ -462,7 +464,7 @@ function scanForOffenders(): string[] {
 // names the broken form on purpose to tell the reader not to use it. Skip such a
 // line, so the note itself does not trip the ban.
 function recommendsBrokenExecForm(line: string): boolean {
-  if (!line.includes("pnpm exec wardmote")) return false;
+  if (!line.includes("pnpm exec wardmote") && !line.includes("pnpm exec paperclip-pro")) return false;
   const lower = line.toLowerCase();
   const warns =
     lower.includes("broken") ||
@@ -934,7 +936,7 @@ describe("wardmote CLI invocation safety", () => {
     const skill = read("skills/paperclip/SKILL.md");
     expect(skill).toContain("CLI safety");
     expect(skill).toContain("npx @tickernelz/paperclip-pro");
-    expect(skill).toContain("Do not use `pnpm wardmote`");
+    expect(skill).toContain("Do not use `pnpm paperclip-pro`");
   });
 
   // ── Backslash line continuation ──────────────────────────────────────────

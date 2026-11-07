@@ -1734,7 +1734,7 @@ pnpm wardmote configure --section database
 Run a one-off backup manually:
 
 ```sh
-pnpm paperclip-pro db:backup
+pnpm wardmote db:backup
 # or:
 pnpm db:backup
 ```
