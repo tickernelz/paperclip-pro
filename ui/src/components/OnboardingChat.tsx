@@ -446,18 +446,16 @@ function WelcomeMessage({
       {/* Chips — fade in after message */}
       {showChips && (
         <div className="flex gap-2 ml-auto justify-end animate-in fade-in duration-500">
-          <button
-            className="rounded-full border border-line px-3 py-1 text-xs hover:bg-bg-3/50 transition-colors text-ink-3 hover:text-ink"
+          <Button variant="secondary" size="sm" className="rounded-full"
             onClick={onDiscuss}
           >
             Let's discuss first
-          </button>
-          <button
-            className="rounded-full border border-ink bg-ink text-bg px-3 py-1 text-xs hover:opacity-90 transition-opacity"
+          </Button>
+          <Button variant="primary" size="sm" className="rounded-full"
             onClick={onStart}
           >
             Yes, get started!
-          </button>
+          </Button>
         </div>
       )}
 

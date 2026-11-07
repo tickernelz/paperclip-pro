@@ -462,14 +462,13 @@ export function AgentSkillsTab({ agent, companyId }: { agent: Agent; companyId?:
               <span className="min-w-0 truncate">
                 <span className="font-medium">{key}</span> is enabled but missing from the organization library.
               </span>
-              <button
+              <Button variant="secondary" size="xs" className="shrink-0"
                 type="button"
                 onClick={() => toggleSkill(key, false)}
-                className="inline-flex shrink-0 items-center gap-1 rounded-md border border-amber-400/50 px-2 py-0.5 font-medium transition-colors hover:bg-amber-100/60 dark:hover:bg-amber-900/30"
               >
                 <X className="h-3 w-3" />
                 Remove
-              </button>
+              </Button>
             </div>
           ))}
         </div>

@@ -332,6 +332,15 @@ function findCascadeLayerIssues(css) {
   return issues;
 }
 
+const RAW_BUTTON_FILL_RE = /<button\b[^>]*?className=(?:"[^"]*|\{[^}]*?)(?<![\w:/-])(?:hover:)?bg-(?:accent|bad|ink|(?:red|orange|amber|yellow|green|emerald|teal|sky|blue|indigo|violet|purple|pink|rose)-[5-9]00)(?![\w/-])/g;
+
+function findRawButtonFillIssues(content) {
+  return Array.from(content.matchAll(RAW_BUTTON_FILL_RE), (match) => ({
+    index: match.index,
+    snippet: match[0].replace(/\s+/g, " ").slice(0, 120),
+  }));
+}
+
 function lineNumberAt(content, index) {
   return content.slice(0, index).split("\n").length;
 }
@@ -340,7 +349,7 @@ function main() {
   const allowlist = loadAllowlist(CSS_PATH);
   const files = listFiles();
 
-  const violations = { gate1: [], gate2: [], gate3: [], gate4: [], gate5: [] };
+  const violations = { gate1: [], gate2: [], gate3: [], gate4: [], gate5: [], gate6: [] };
   let allowlistedSkips = 0;
 
   for (const filePath of files) {
@@ -352,6 +361,9 @@ function main() {
     const g1 = findColorLiteralIssues(content);
     const g2 = findArbitraryBracketIssues(content);
     const g3 = findFontSizeIssues(content);
+    for (const issue of relPathPosix.startsWith("ui/src/components/ui/") ? [] : findRawButtonFillIssues(content)) {
+      violations.gate6.push({ file: relPathPosix, line: lineNumberAt(content, issue.index), snippet: issue.snippet });
+    }
 
     if (allowed) {
       allowlistedSkips += g1.length + g2.length + g3.length;
@@ -398,6 +410,7 @@ function main() {
   console.log(`  Gate 3 (raw font-size):        ${violations.gate3.length === 0 ? "CLEAN" : `${violations.gate3.length} violation(s)`}`);
   console.log(`  Gate 4 (legacy hsl(var())):    ${violations.gate4.length === 0 ? "CLEAN" : `${violations.gate4.length} violation(s)`}`);
   console.log(`  Gate 5 (cascade layers):       ${violations.gate5.length === 0 ? "CLEAN" : `${violations.gate5.length} violation(s)`}`);
+  console.log(`  Gate 6 (raw action buttons):   ${violations.gate6.length === 0 ? "CLEAN" : `${violations.gate6.length} violation(s)`}`);
 
   if (totalViolations > 0) {
     console.log("\nViolations:\n");

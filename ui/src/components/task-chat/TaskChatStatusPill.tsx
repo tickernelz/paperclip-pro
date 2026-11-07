@@ -5,6 +5,7 @@ import type { TaskChatStatusItem } from "./task-chat-model";
 import { statusLabelIcon, toolTaxonomy } from "./tool-taxonomy";
 import { isGenericStatusLabel, whimsyWord } from "./status-whimsy";
 import { parseCssTimeMs } from "./motion-tokens";
+import { Button } from "@/components/ui/button";
 
 function elapsedLabel(ms?: number): string | null {
   if (ms == null) return null;
@@ -433,19 +434,13 @@ export function TaskChatStatusPill({
           {item.approval.options.map((opt) => {
             const reject = opt.kind.startsWith("reject");
             return (
-              <button
+              <Button variant={reject ? "secondary" : "primary"} size="xs"
                 key={opt.id}
                 type="button"
                 onClick={() => onApprovalDecision?.(opt.id)}
-                className={cn(
-                  "rounded-md border px-2.5 py-1 text-xs font-medium transition-colors",
-                  reject
-                    ? "border-line text-ink-3 hover:bg-bg-3/50 hover:text-ink"
-                    : "border-accent bg-accent text-accent-ink hover:bg-accent/90",
-                )}
               >
                 {opt.label}
-              </button>
+              </Button>
             );
           })}
         </div>

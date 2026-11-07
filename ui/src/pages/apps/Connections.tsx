@@ -51,6 +51,7 @@ import {
   connectionOwnerProfile,
   type ConnectionOwnerProfile,
 } from "./connection-owner";
+import { Chip } from "@/components/ui/chip";
 
 const BROWSE_HREF = "/apps";
 
@@ -637,22 +638,12 @@ function FilterChip({
   children: ReactNode;
 }) {
   return (
-    <button
-      type="button"
+    <Chip selected={active} className="rounded-full"
       disabled={disabled}
       onClick={onClick}
-      className={cn(
-        "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
-        disabled && "cursor-not-allowed opacity-50",
-        active
-          ? tone === "danger"
-            ? "border-red-500/40 bg-red-500/10 text-red-700 dark:text-red-300"
-            : "border-ink/30 bg-ink/[0.06] text-ink"
-          : "border-line bg-bg text-ink-3 hover:border-ink/30 hover:text-ink",
-      )}
     >
       {children}
-    </button>
+    </Chip>
   );
 }
 

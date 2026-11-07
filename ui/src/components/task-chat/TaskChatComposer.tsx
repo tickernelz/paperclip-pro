@@ -1690,7 +1690,7 @@ export function TaskChatComposer({
               </button>
             ) : null}
 
-            <button
+            <Button variant={showStop ? "danger" : "primary"} size="icon-sm" className="size-8 min-h-8 min-w-8 shrink-0 aspect-square rounded-full"
               type="button"
               onClick={() => void (showStop ? stopControl.stop() : submit())}
               disabled={
@@ -1732,12 +1732,6 @@ export function TaskChatComposer({
                     : creation?.submitLabel ?? "Send"
               }
               aria-busy={submitting}
-              className={cn(
-                "flex size-8 min-h-8 min-w-8 shrink-0 aspect-square items-center justify-center rounded-full transition-transform hover:scale-105 disabled:scale-100",
-                streamlined
-                  ? "bg-ink text-bg disabled:bg-ink disabled:text-bg disabled:opacity-100"
-                  : "bg-accent text-accent-ink disabled:bg-bg-3 disabled:text-ink-3",
-              )}
               data-testid={
                 showStop ? "task-chat-composer-stop" : "task-chat-composer-send"
               }
@@ -1750,7 +1744,7 @@ export function TaskChatComposer({
               ) : (
                 <ArrowUp className="h-4 w-4" aria-hidden />
               )}
-            </button>
+            </Button>
             </div>
           </div>
           {stopControl.error ? (

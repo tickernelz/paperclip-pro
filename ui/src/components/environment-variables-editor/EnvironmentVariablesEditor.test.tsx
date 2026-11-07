@@ -326,7 +326,7 @@ describe("EnvironmentVariablesEditor", () => {
     expect(unsavedBar?.className).toContain("bg-amber-500/10");
     expect(valueCell?.className).toContain("border-amber-500/70");
     expect(save.className).toContain("h-9");
-    expect(save.className).toContain("px-4");
+    expect(save.getAttribute("data-variant")).toBe("primary");
     expect(revert.className).toContain("h-9");
   });
 

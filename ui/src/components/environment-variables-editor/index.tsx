@@ -28,6 +28,7 @@ import {
   type EnvRow,
 } from "./model";
 import type { EnvironmentVariableDirtyFields } from "./Row";
+import { Button } from "@/components/ui/button";
 
 const DEFAULT_RESERVED_PREFIXES = ["PAPERCLIP_"];
 
@@ -538,22 +539,20 @@ export const EnvironmentVariablesEditor = forwardRef<EnvironmentVariablesEditorH
             ) : null}
           </div>
           <div className="flex items-center gap-2">
-            <button
+            <Button variant="secondary" size="sm" className="h-9"
               type="button"
               onClick={revertDraft}
-              className="inline-flex h-9 items-center gap-1.5 rounded-md border border-amber-500/30 bg-bg px-3 text-sm font-medium text-ink transition-colors hover:bg-amber-500/10 dark:bg-bg/80"
             >
               <RotateCcw className="size-4" />
               Revert
-            </button>
-            <button
+            </Button>
+            <Button variant="primary" size="sm" className="h-9"
               type="button"
               onClick={saveDraft}
-              className="inline-flex h-9 items-center gap-1.5 rounded-md bg-accent px-4 text-sm font-medium text-accent-ink transition-colors hover:bg-accent/90"
             >
               <Save className="size-4" />
               Save
-            </button>
+            </Button>
           </div>
         </div>
       ) : null}

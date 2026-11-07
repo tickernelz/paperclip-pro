@@ -11,6 +11,7 @@ import {
 } from "react";
 import { AlertTriangle, Check, Loader2, Paperclip, Send } from "lucide-react";
 import { cn } from "../lib/utils";
+import { Button } from "@/components/ui/button";
 
 /**
  * Shared chat composer (PAP-95a / PAP-96).
@@ -357,7 +358,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(fu
 
         {trailingTools}
 
-        <button
+        <Button variant="primary" size="icon-sm" className="h-7 w-7 shrink-0"
           type="button"
           onClick={() => {
             if (canSend) onSubmit();
@@ -365,15 +366,9 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(fu
           disabled={!canSend}
           aria-label={sendLabel}
           title={sendLabel}
-          className={cn(
-            "grid h-7 w-7 shrink-0 place-items-center rounded-md transition-colors duration-150 disabled:cursor-not-allowed",
-            canSend
-              ? "bg-ink text-bg hover:opacity-90"
-              : "bg-bg-3 text-ink-3",
-          )}
         >
           {submitting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
-        </button>
+        </Button>
       </div>
     </div>
   );
