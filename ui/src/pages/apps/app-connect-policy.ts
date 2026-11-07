@@ -68,11 +68,6 @@ export function canEnterAppsConnect(
   }
   const source = searchParams.get("source") ?? "";
   if (["google-ai", "gateway"].includes(source)) return true;
-  // Router connectors are registered by installed plugins, not the static
-  // catalog. AppsConnect resolves this reserved slug against the host gallery
-  // before rendering the pool wizard; unknown/uninstalled routers show its
-  // actionable unavailable state rather than bouncing back to the catalog.
-  if (/^ai-router-(?:[a-f0-9]{2})+$/.test(source)) return true;
   const entry = getAppStoreDefinition(source);
   const channelEnabled = source === "github-code-review-bot" ? githubReviewBotsEnabled : chatConnectorsEnabled;
   if (

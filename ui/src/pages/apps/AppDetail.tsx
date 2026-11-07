@@ -1,5 +1,3 @@
-import { AiConnectionPoolConnector } from "@/components/ai-connections/AiConnectionPoolConnector";
-import { aiConnectionRouterPluginKey } from "@tickernelz/paperclip-pro-shared";
 import { ConnectionInstructionsSettings } from "@/features/connections/ConnectionInstructions";
 import { HonchoWorkspaceSettings } from "@/features/connections/HonchoWorkspaceSettings";
 import { BrowserUseSettingsPanel } from "./app-detail/BrowserUseSettingsPanel";
@@ -82,8 +80,7 @@ export function AppDetail(props: { renderActions?: (connection: ToolConnection) 
   const connection = useQuery({ queryKey: queryKeys.tools.connection(connectionId), queryFn: () => toolsApi.getConnection(connectionId), enabled: !!connectionId });
   if (connection.isPending) return <p role="status">Loading connection…</p>;
   if (connection.error) return <p role="alert">{connection.error.message}</p>;
-  const pluginKey = connection.data && aiConnectionRouterPluginKey(connection.data);
-  return pluginKey ? <AiConnectionPoolConnector pluginKey={pluginKey} connection={connection.data} /> : <StandardAppDetail {...props} />;
+  return <StandardAppDetail {...props} />;
 }
 
 function StandardAppDetail({ renderActions, renderAgentSettings, renderConnectionSettings, onReconnect }: {

@@ -27,7 +27,6 @@ export async function testAgentSetup(input: {
     payload,
   );
   if (
-    input.aiConnection?.mode === "router" ||
     runtime.status === "fail" ||
     runtime.checks.some(
       (check) => check.code === ADAPTER_AUTH_MISSING_CHECK_CODE,

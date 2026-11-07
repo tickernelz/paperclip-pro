@@ -65,12 +65,11 @@ export async function initializeAgentHire(txDb: Db, created: AgentHireRecord, op
   }
   if (options?.aiConnectionInstall) {
     const install = options.aiConnectionInstall;
-    const connectionIds = [...new Set([install.connectionId, ...(install.memberConnectionIds ?? [])])];
-    await tx.insert(toolConnectionInstalls).values(connectionIds.map(connectionId => ({
-      companyId, connectionId,
-      targetType: "agent" as const, targetId: created.id,
+    await tx.insert(toolConnectionInstalls).values({
+      companyId, connectionId: install.connectionId,
+      targetType: "agent", targetId: created.id,
       createdByUserId: install.createdByUserId,
-    }))).onConflictDoNothing();
+    }).onConflictDoNothing();
   }
   await agentCredentialService(txDb).syncAgentSecretBindings(created, txDb);
   if (options?.createdByUserId && !readBuiltInAgentMarker(created.metadata)) {

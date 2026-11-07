@@ -2948,7 +2948,6 @@ export * from "./validators/voice-sessions.js";
 export * from "./agent-appearance.js";
 export * from "./agent-todo.js";
 export * from "./ai-connections.js";
-export * from "./ai-connection-router.js";
 export * from "./ai-connection-usage.js";
 export * from "./subscriptions.js";
 export * from "./types/email.js";
@@ -2994,7 +2993,6 @@ export * from "./mcp-setup.js";
 export * from "./money.js";
 export * from "./accounting.js";
 export * from "./ai-provider-routing.js";
-export { aiConnectionRouterSlug, aiConnectionRouterAppDefinition, aiConnectionRouterPluginKey } from "./ai-connection-router.js";
 export { isAppAggregator, aggregatorManagementUrl, aggregatorAppsSyncSchema, aggregatorAppsRefreshSchema, arcadeDiscoverySetupSchema, type AggregatorAppSnapshot, type AggregatorAppsResponse, type ArcadeDiscoverySetupInput } from "./aggregator-apps.js";
 
 export * from "./connection-instructions.js";

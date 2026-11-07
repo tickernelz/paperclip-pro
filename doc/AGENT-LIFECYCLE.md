@@ -230,7 +230,6 @@ The current UI can also run a test before the hire.
 Some adapters can charge for these tests.
 It uses the saved responsible user for managed credentials.
 The host does not grant new credential access for this test.
-A connection pool selects an account for a separate lifecycle test operation.
 An external controller must complete its existing readiness test.
 
 Task requests can enter the durable run queue during preparation, verification,

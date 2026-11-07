@@ -670,7 +670,6 @@ function Setup({
                             value={aiBinding}
                             preferAdvanced
                             onChange={binding => {
-                              if (binding.mode === "router") return;
                               setConnection(null);
                               setRuntimeAiBinding(binding);
                               resetTest();
@@ -776,7 +775,7 @@ function Setup({
                         </>}
                         {!connectionAdapter && aiProviderForAdapter(brandType) && (
                           <AiConnectionField companyId={companyId} agentName={name} adapterType={brandType} model={model} environmentId={environmentId ?? undefined} value={aiBinding}
-                            onChange={binding => { binding.mode !== "router" && setRuntimeAiBinding(binding); resetTest(); }} />
+                            onChange={binding => { setRuntimeAiBinding(binding); resetTest(); }} />
                         )}
                         {(connectionModels ? connectionModels.error : models.error) && <p role="alert" className="text-sm text-bad">Could not load models. Retry or enter a model ID manually.</p>}
                         {showModel && (
