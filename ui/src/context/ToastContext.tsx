@@ -35,6 +35,7 @@ export interface ToastInput {
   body?: string;
   tone?: ToastTone;
   ttlMs?: number;
+  persistent?: boolean;
   action?: ToastAction;
   actor?: ToastActor;
 }
@@ -45,6 +46,7 @@ export interface ToastItem {
   body?: string;
   tone: ToastTone;
   ttlMs: number;
+  persistent?: boolean;
   action?: ToastAction;
   actor?: ToastActor;
   createdAt: number;
@@ -144,6 +146,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           body: input.body,
           tone,
           ttlMs,
+          persistent: input.persistent,
           action: input.action,
           actor: input.actor,
           createdAt: now,
@@ -153,10 +156,12 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         return [nextToast, ...withoutCurrent].slice(0, MAX_TOASTS);
       });
 
-      const timeout = window.setTimeout(() => {
-        dismissToast(id);
-      }, ttlMs);
-      timersRef.current.set(id, timeout);
+      if (!input.persistent) {
+        const timeout = window.setTimeout(() => {
+          dismissToast(id);
+        }, ttlMs);
+        timersRef.current.set(id, timeout);
+      }
       return id;
     },
     [clearTimer, dismissToast],

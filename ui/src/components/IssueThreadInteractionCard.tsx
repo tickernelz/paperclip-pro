@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useOffline } from "../lib/online-status";
 import type { Agent } from "@tickernelz/paperclip-pro-shared";
 import { AlertTriangle, ArrowUpRight, Bot, Check, CheckCircle2, ChevronDown, ChevronRight, ChevronUp, CircleDashed, Clock, ExternalLink, FileText, GitBranch, ImagePlus, KeyRound, Loader2, MessageSquareQuote, MinusCircle, ShieldAlert, ThumbsUp, TriangleAlert, Wrench, X, XCircle } from "lucide-react";
 import { Link } from "@/lib/router";
@@ -779,6 +780,7 @@ function SuggestTasksCard({
     reason?: string,
   ) => Promise<void> | void;
 }) {
+  const offline = useOffline();
   const [rejecting, setRejecting] = useState(false);
   const [working, setWorking] = useState<"accept" | "reject" | null>(null);
   const [rejectReason, setRejectReason] = useState(
@@ -954,7 +956,7 @@ function SuggestTasksCard({
             <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
               <Button
                 size="sm"
-                disabled={!onAcceptInteraction || working !== null || selectedCount === 0}
+                disabled={!onAcceptInteraction || (working !== null || offline) || selectedCount === 0}
                 onClick={() => void handleAccept()}
               >
                 {working === "accept" ? (
@@ -969,7 +971,7 @@ function SuggestTasksCard({
               <Button
                 size="sm"
                 variant="secondary"
-                disabled={!onRejectInteraction || working !== null}
+                disabled={!onRejectInteraction || (working !== null || offline)}
                 onClick={() => setRejecting((current) => !current)}
               >
                 Reject
@@ -978,7 +980,7 @@ function SuggestTasksCard({
                 <Button
                   size="sm"
                   variant="ghost"
-                  disabled={working !== null}
+                  disabled={(working !== null || offline)}
                   onClick={() => setSelectedClientKeys(new Set(interaction.payload.tasks.map((task) => task.clientKey)))}
                 >
                   Reset selection
@@ -999,7 +1001,7 @@ function SuggestTasksCard({
                 <Button
                   size="sm"
                   variant="secondary"
-                  disabled={!onRejectInteraction || working !== null}
+                  disabled={!onRejectInteraction || (working !== null || offline)}
                   onClick={() => void handleReject()}
                 >
                   {working === "reject" ? (
@@ -1852,6 +1854,7 @@ function RequestToolActionCard({
   onRejectInteraction?: (interaction: RequestConfirmationInteraction, reason?: string) => Promise<void> | void;
   externalReferences?: MarkdownExternalReferenceMap;
 }) {
+  const offline = useOffline();
   const payload = interaction.payload.toolAction!;
   const [working, setWorking] = useState<"accept" | "always" | "reject" | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -1889,17 +1892,17 @@ function RequestToolActionCard({
       </div>
       {isPending ? (
         <div className="mt-3 flex justify-end gap-2">
-          <Button size="sm" variant="ghost" disabled={!onRejectInteraction || working !== null} onClick={() => void decide("reject")}>
+          <Button size="sm" variant="ghost" disabled={!onRejectInteraction || (working !== null || offline)} onClick={() => void decide("reject")}>
             {working === "reject" ? "Declining…" : "Decline"}
           </Button>
           <div className="inline-flex" role="group" aria-label="Approve request">
-            <Button size="sm" variant={variant} className={payload.rememberActionScope ? "rounded-r-none" : undefined} disabled={!onAcceptInteraction || working !== null} onClick={() => void decide("accept")}>
+            <Button size="sm" variant={variant} className={payload.rememberActionScope ? "rounded-r-none" : undefined} disabled={!onAcceptInteraction || (working !== null || offline)} onClick={() => void decide("accept")}>
               {working === "accept" || working === "always" ? <><Loader2 className="h-3.5 w-3.5 animate-spin" />{working === "always" ? "Saving…" : "Approving…"}</> : "Approve & run"}
             </Button>
             {payload.rememberActionScope ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button size="icon-sm" variant={variant} className="rounded-l-none border-l" aria-label="Approval options" disabled={!onAcceptInteraction || working !== null}>
+                  <Button size="icon-sm" variant={variant} className="rounded-l-none border-l" aria-label="Approval options" disabled={!onAcceptInteraction || (working !== null || offline)}>
                     <ChevronDown className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -2277,6 +2280,7 @@ function ConfirmationActionRow({
    * hierarchy instead of relying on opportunistic flex wrapping. */
   stackActionsOnMobile?: boolean;
 }) {
+  const offline = useOffline();
   const [revising, setRevising] = useState(false);
   const [reason, setReason] = useState("");
   const [attempted, setAttempted] = useState(false);
@@ -2314,7 +2318,7 @@ function ConfirmationActionRow({
           size="sm"
           variant={revising ? "secondary" : approveVariant}
           className={stackActionsOnMobile ? "col-span-2 w-full sm:col-auto sm:w-auto" : undefined}
-          disabled={!canApprove || working !== null || approveDisabled || preparingApproval}
+          disabled={!canApprove || (working !== null || offline) || approveDisabled || preparingApproval}
           onClick={onApprove}
         >
           {working === "accept" ? (
@@ -2331,7 +2335,7 @@ function ConfirmationActionRow({
             size="sm"
             variant="secondary"
             className={stackActionsOnMobile ? "w-full sm:w-auto" : undefined}
-            disabled={!canReject || working !== null}
+            disabled={!canReject || (working !== null || offline)}
             onClick={() => {
               setAttempted(false);
               setRevising((current) => !current);
@@ -2345,7 +2349,7 @@ function ConfirmationActionRow({
             size="sm"
             variant="ghost"
             className={stackActionsOnMobile ? "w-full sm:w-auto" : undefined}
-            disabled={!canReject || working !== null || rejectDisabled}
+            disabled={!canReject || (working !== null || offline) || rejectDisabled}
             onClick={() => onReject(undefined)}
           >
             {working === "reject" && !revising ? (
@@ -2380,7 +2384,7 @@ function ConfirmationActionRow({
             <Button
               size="sm"
               variant="ghost"
-              disabled={working !== null}
+              disabled={(working !== null || offline)}
               onClick={() => {
                 setRevising(false);
                 setAttempted(false);
@@ -2391,7 +2395,7 @@ function ConfirmationActionRow({
             <Button
               size="sm"
               variant="secondary"
-              disabled={!canReject || working !== null || rejectDisabled}
+              disabled={!canReject || (working !== null || offline) || rejectDisabled}
               onClick={submitRevision}
             >
               {working === "reject" ? (
@@ -2695,6 +2699,7 @@ function RequestConfirmationCard({
   onUploadImage?: (file: File) => Promise<string>;
   externalReferences?: MarkdownExternalReferenceMap;
 }) {
+  const offline = useOffline();
   const notesEnabled = interactionAcceptsNote(interaction);
   const [note, setNote] = useState(() =>
     notesEnabled ? loadInteractionCardDraft<{ note: string }>(interaction).note ?? "" : "",
@@ -2842,7 +2847,7 @@ function RequestConfirmationCard({
                 value={note}
                 onChange={setNote}
                 imageUploadHandler={onUploadImage}
-                disabled={working !== null}
+                disabled={(working !== null || offline)}
                 onUploadingChange={setNoteUploading}
               />
             ) : null
@@ -2893,7 +2898,7 @@ function RequestConfirmationCard({
                   type="button"
                   size="sm"
                   variant="secondary"
-                  disabled={working !== null || uploading}
+                  disabled={(working !== null || offline) || uploading}
                   onClick={() => fileInputRef.current?.click()}
                 >
                   {uploading ? (
@@ -3079,6 +3084,7 @@ function RequestCheckboxConfirmationCard({
   onUploadImage?: (file: File) => Promise<string>;
   externalReferences?: MarkdownExternalReferenceMap;
 }) {
+  const offline = useOffline();
   const [restoredDraft] = useState(() =>
     loadInteractionCardDraft<{ selected: string[]; note: string }>(interaction),
   );
@@ -3276,7 +3282,7 @@ function RequestCheckboxConfirmationCard({
             <Button
               size="sm"
               variant="ghost"
-              disabled={working !== null || selectedCount === totalOptions || (maxSelected != null && selectedCount >= maxSelected)}
+              disabled={(working !== null || offline) || selectedCount === totalOptions || (maxSelected != null && selectedCount >= maxSelected)}
               onClick={handleSelectAll}
             >
               Select all
@@ -3284,7 +3290,7 @@ function RequestCheckboxConfirmationCard({
             <Button
               size="sm"
               variant="ghost"
-              disabled={working !== null || selectedCount === 0}
+              disabled={(working !== null || offline) || selectedCount === 0}
               onClick={handleClearSelection}
             >
               Clear selection
@@ -3306,7 +3312,7 @@ function RequestCheckboxConfirmationCard({
                 label={option.label}
                 description={option.description}
                 checked={checked}
-                disabled={working !== null || (!checked && atMax)}
+                disabled={(working !== null || offline) || (!checked && atMax)}
                 onToggle={(value) => toggleOption(option.id, value)}
               />
             );
@@ -3339,7 +3345,7 @@ function RequestCheckboxConfirmationCard({
               value={note}
               onChange={setNote}
               imageUploadHandler={onUploadImage}
-              disabled={working !== null}
+              disabled={(working !== null || offline)}
               onUploadingChange={setNoteUploading}
             />
           }

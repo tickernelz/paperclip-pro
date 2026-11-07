@@ -1,14 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { startServiceWorkerUpdates } from "./service-worker-updates";
+import { SKIP_WAITING_MESSAGE, startServiceWorkerUpdates } from "./service-worker-updates";
 
 type Listener = () => void;
 
-function fakeContainer(opts: { controlled: boolean }) {
+function emitter() {
   const listeners = new Map<string, Set<Listener>>();
-  const registration = { update: vi.fn(() => Promise.resolve()) };
-  const container = {
-    controller: opts.controlled ? ({} as ServiceWorker) : null,
-    register: vi.fn(() => Promise.resolve(registration)),
+  return {
     addEventListener: vi.fn((type: string, listener: Listener) => {
       if (!listeners.has(type)) listeners.set(type, new Set());
       listeners.get(type)!.add(listener);
@@ -16,29 +13,46 @@ function fakeContainer(opts: { controlled: boolean }) {
     removeEventListener: vi.fn((type: string, listener: Listener) => {
       listeners.get(type)?.delete(listener);
     }),
+    emit(type: string) {
+      for (const listener of listeners.get(type) ?? []) listener();
+    },
   };
-  const emit = (type: string) => {
-    for (const listener of listeners.get(type) ?? []) listener();
-  };
-  return { container: container as unknown as ServiceWorkerContainer, registration, emit, listeners };
 }
 
-function fakeDocument(initialVisibility: DocumentVisibilityState = "visible") {
-  const listeners = new Map<string, Set<Listener>>();
-  const doc = {
-    visibilityState: initialVisibility,
-    addEventListener: (type: string, listener: Listener) => {
-      if (!listeners.has(type)) listeners.set(type, new Set());
-      listeners.get(type)!.add(listener);
-    },
-    removeEventListener: (type: string, listener: Listener) => {
-      listeners.get(type)?.delete(listener);
-    },
-  };
-  const emit = (type: string) => {
-    for (const listener of listeners.get(type) ?? []) listener();
-  };
-  return { doc: doc as unknown as Document & { visibilityState: DocumentVisibilityState }, emit, listeners };
+function fakeWorker() {
+  const events = emitter();
+  return Object.assign(events, { state: "installing" as ServiceWorkerState, postMessage: vi.fn() });
+}
+
+function fakeContainer(opts: { controlled: boolean; waiting?: ReturnType<typeof fakeWorker> }) {
+  const regEvents = emitter();
+  const registration = Object.assign(regEvents, {
+    update: vi.fn(() => Promise.resolve()),
+    waiting: opts.waiting ?? null,
+    installing: null as ReturnType<typeof fakeWorker> | null,
+  });
+  const events = emitter();
+  const container = Object.assign(events, {
+    controller: opts.controlled ? ({} as ServiceWorker) : null,
+    register: vi.fn(() => Promise.resolve(registration)),
+  });
+  return { container, registration };
+}
+
+function fakeDocument() {
+  return Object.assign(emitter(), { visibilityState: "visible" as DocumentVisibilityState });
+}
+
+function start(container: ReturnType<typeof fakeContainer>["container"], doc = fakeDocument()) {
+  const reload = vi.fn();
+  const onUpdateReady = vi.fn();
+  const stop = startServiceWorkerUpdates({
+    container: container as unknown as ServiceWorkerContainer,
+    documentRef: doc as unknown as Document,
+    reload,
+    onUpdateReady,
+  });
+  return { reload, onUpdateReady, stop, doc };
 }
 
 describe("startServiceWorkerUpdates", () => {
@@ -50,121 +64,95 @@ describe("startServiceWorkerUpdates", () => {
     vi.useRealTimers();
   });
 
-  it("registers /sw.js", async () => {
+  it("registers /sw.js", () => {
     const { container } = fakeContainer({ controlled: false });
-    const { doc } = fakeDocument();
-    startServiceWorkerUpdates({ container, documentRef: doc, reload: vi.fn() });
+    start(container);
     expect(container.register).toHaveBeenCalledWith("/sw.js");
   });
 
-  it("reloads once when a new worker takes over a hidden, already-controlled page", async () => {
-    const { container, emit } = fakeContainer({ controlled: true });
-    const { doc } = fakeDocument("hidden");
-    const reload = vi.fn();
-    startServiceWorkerUpdates({ container, documentRef: doc, reload });
-
-    emit("controllerchange");
-    emit("controllerchange");
-    expect(reload).toHaveBeenCalledTimes(1);
-  });
-
-  it("defers the reload to the next hidden transition when the takeover lands mid-session", async () => {
-    const { container, emit } = fakeContainer({ controlled: true });
-    const docState = fakeDocument("visible");
-    const reload = vi.fn();
-    startServiceWorkerUpdates({ container, documentRef: docState.doc, reload });
-
-    emit("controllerchange");
-    // The user is looking at the page: never yank it out from under them.
-    expect(reload).not.toHaveBeenCalled();
-
-    docState.doc.visibilityState = "hidden";
-    docState.emit("visibilitychange");
-    expect(reload).toHaveBeenCalledTimes(1);
-
-    docState.emit("visibilitychange");
-    expect(reload).toHaveBeenCalledTimes(1);
-  });
-
-  it("does not reload on a first-ever install", async () => {
-    const { container, emit } = fakeContainer({ controlled: false });
-    const { doc } = fakeDocument("hidden");
-    const reload = vi.fn();
-    startServiceWorkerUpdates({ container, documentRef: doc, reload });
-
-    emit("controllerchange");
-    expect(reload).not.toHaveBeenCalled();
-  });
-
-  it("reloads when a later deploy replaces the worker a first-visit tab installed", async () => {
-    const { container, emit } = fakeContainer({ controlled: false });
-    const { doc } = fakeDocument("hidden");
-    const reload = vi.fn();
-    startServiceWorkerUpdates({ container, documentRef: doc, reload });
-
-    // First takeover: the fresh install controls the page, no reload.
-    emit("controllerchange");
-    expect(reload).not.toHaveBeenCalled();
-
-    // A deploy lands while the same tab is still open: now the controller
-    // change means newer code, and the hidden tab reloads onto it.
-    emit("controllerchange");
-    expect(reload).toHaveBeenCalledTimes(1);
-  });
-
-  it("checks for updates when the tab becomes visible", async () => {
-    const { container, registration, emit } = fakeContainer({ controlled: true });
-    const docState = fakeDocument("hidden");
-    startServiceWorkerUpdates({ container, documentRef: docState.doc, reload: vi.fn() });
-    await vi.waitFor(() => expect(container.register).toHaveBeenCalled());
-    // Let the register() promise settle so the registration is captured.
-    await Promise.resolve();
-
-    docState.emit("visibilitychange");
-    expect(registration.update).not.toHaveBeenCalled();
-
-    docState.doc.visibilityState = "visible";
-    docState.emit("visibilitychange");
-    expect(registration.update).toHaveBeenCalledTimes(1);
-  });
-
-  it("checks for updates on the timer", async () => {
+  it("offers a worker that finished installing over a controlled page and never reloads by itself", async () => {
     const { container, registration } = fakeContainer({ controlled: true });
-    const { doc } = fakeDocument();
-    startServiceWorkerUpdates({
-      container,
-      documentRef: doc,
-      reload: vi.fn(),
-      updateIntervalMs: 1000,
-    });
-    await Promise.resolve();
-
-    vi.advanceTimersByTime(3000);
-    expect(registration.update).toHaveBeenCalledTimes(3);
-  });
-
-  it("stops listening and ticking after cleanup", async () => {
-    const { container, registration, emit, listeners } = fakeContainer({ controlled: true });
-    const docState = fakeDocument();
-    const reload = vi.fn();
-    const stop = startServiceWorkerUpdates({
-      container,
-      documentRef: docState.doc,
-      reload,
-      updateIntervalMs: 1000,
-    });
-    await Promise.resolve();
-
-    stop();
-    emit("controllerchange");
-    docState.emit("visibilitychange");
-    vi.advanceTimersByTime(5000);
+    const { reload, onUpdateReady, doc } = start(container);
+    await vi.runOnlyPendingTimersAsync();
+    const worker = fakeWorker();
+    registration.installing = worker;
+    registration.emit("updatefound");
+    worker.state = "installed";
+    worker.emit("statechange");
+    doc.visibilityState = "hidden";
+    doc.emit("visibilitychange");
+    await vi.advanceTimersByTimeAsync(60_000);
+    expect(onUpdateReady).toHaveBeenCalledOnce();
     expect(reload).not.toHaveBeenCalled();
-    expect(registration.update).not.toHaveBeenCalled();
-    expect(listeners.get("controllerchange")?.size ?? 0).toBe(0);
   });
 
-  it("is a no-op without a service worker container", () => {
-    expect(() => startServiceWorkerUpdates({ reload: vi.fn() })()).not.toThrow();
+  it("applies an offered update by activating the waiting worker, then reloads once on takeover", async () => {
+    const waiting = fakeWorker();
+    const { container } = fakeContainer({ controlled: true, waiting });
+    const { reload, onUpdateReady } = start(container);
+    await vi.runOnlyPendingTimersAsync();
+    expect(onUpdateReady).toHaveBeenCalledOnce();
+    onUpdateReady.mock.calls[0]![0]();
+    expect(waiting.postMessage).toHaveBeenCalledWith({ type: SKIP_WAITING_MESSAGE });
+    container.emit("controllerchange");
+    container.emit("controllerchange");
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(reload).toHaveBeenCalledOnce();
+  });
+
+  it("still reloads when the activated worker never takes control", async () => {
+    const waiting = fakeWorker();
+    const { container } = fakeContainer({ controlled: true, waiting });
+    const { reload, onUpdateReady } = start(container);
+    await vi.runOnlyPendingTimersAsync();
+    onUpdateReady.mock.calls[0]![0]();
+    expect(reload).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(3000);
+    expect(reload).toHaveBeenCalledOnce();
+  });
+
+  it("offers a reload instead of reloading when another tab activated the new worker", async () => {
+    const { container } = fakeContainer({ controlled: true });
+    const { reload, onUpdateReady } = start(container);
+    await vi.runOnlyPendingTimersAsync();
+    container.emit("controllerchange");
+    expect(reload).not.toHaveBeenCalled();
+    expect(onUpdateReady).toHaveBeenCalledOnce();
+    onUpdateReady.mock.calls[0]![0]();
+    expect(reload).toHaveBeenCalledOnce();
+  });
+
+  it("offers nothing on the first install of an uncontrolled page", async () => {
+    const waiting = fakeWorker();
+    const { container } = fakeContainer({ controlled: false, waiting });
+    const { reload, onUpdateReady } = start(container);
+    await vi.runOnlyPendingTimersAsync();
+    container.emit("controllerchange");
+    expect(onUpdateReady).not.toHaveBeenCalled();
+    expect(reload).not.toHaveBeenCalled();
+  });
+
+  it("checks for a new worker when the tab becomes visible and hourly", async () => {
+    const { container, registration } = fakeContainer({ controlled: true });
+    const { doc } = start(container);
+    await Promise.resolve();
+    await Promise.resolve();
+    doc.emit("visibilitychange");
+    expect(registration.update).toHaveBeenCalledTimes(1);
+    await vi.advanceTimersByTimeAsync(60 * 60 * 1000);
+    expect(registration.update).toHaveBeenCalledTimes(2);
+  });
+
+  it("stops listening after cleanup", async () => {
+    const { container, registration } = fakeContainer({ controlled: true });
+    const { stop, doc, onUpdateReady } = start(container);
+    await Promise.resolve();
+    await Promise.resolve();
+    stop();
+    doc.emit("visibilitychange");
+    container.emit("controllerchange");
+    await vi.advanceTimersByTimeAsync(2 * 60 * 60 * 1000);
+    expect(registration.update).not.toHaveBeenCalled();
+    expect(onUpdateReady).not.toHaveBeenCalled();
   });
 });

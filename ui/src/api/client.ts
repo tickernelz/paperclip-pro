@@ -1,6 +1,8 @@
 import { getPageVisibility, getVisibilityHeaderValue } from "@/lib/page-visibility";
 import { tenantSessionRecovery } from "@/lib/tenant-session-recovery";
 import { attachmentTooLargeMessage, exceedsAttachmentLimit } from "@/lib/attachment-limit";
+import { isDecisionRequest, noteDecisionMade } from "@/lib/decision-events";
+import { isOffline, OFFLINE_ACTION_REASON } from "@/lib/online-status";
 import { readApiJson } from "./response";
 
 const BASE = "/api";
@@ -57,6 +59,10 @@ function applyObservabilityHeaders(headers: Headers) {
 }
 
 export async function requestResponse(path: string, init?: RequestInit): Promise<Response> {
+  const method = (init?.method ?? "GET").toUpperCase();
+  if (method !== "GET" && method !== "HEAD" && isOffline()) {
+    throw new ApiError(OFFLINE_ACTION_REASON, 0, null);
+  }
   const headers = new Headers(init?.headers ?? undefined);
   const body = init?.body;
   if (!(body instanceof FormData) && !headers.has("Content-Type")) {
@@ -75,6 +81,7 @@ export async function requestResponse(path: string, init?: RequestInit): Promise
     if (recovery) return recovery;
     throw new ApiError(errorMessage(res.status, errorBody), res.status, errorBody);
   }
+  if (isDecisionRequest(method, path)) noteDecisionMade();
   return res;
 }
 
