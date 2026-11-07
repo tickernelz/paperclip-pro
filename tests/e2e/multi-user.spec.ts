@@ -58,7 +58,7 @@ async function createCompanyViaWizard(
         name: "CEO",
         role: "ceo",
         title: "CEO",
-        adapterType: "claude_local",
+        adapterType: "omp_local",
       },
     }
   );
@@ -484,7 +484,7 @@ test.describe("Multi-user: Agent invite flow", () => {
         data: {
           requestType: "agent",
           agentName: "TestAgent",
-          adapterType: "claude_local",
+          adapterType: "omp_local",
         },
       }
     );

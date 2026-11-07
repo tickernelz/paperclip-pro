@@ -8,7 +8,7 @@ for (const workMode of ["standard", "planning", "ask"] as const) {
     expect(companyResponse.ok()).toBe(true);
     const company = await companyResponse.json();
     const agentResponse = await request.post(`/api/companies/${company.id}/agents`, { data: {
-      name: "Paused composer fixture", role: "engineer", adapterType: "codex_local",
+      name: "Paused composer fixture", role: "engineer", adapterType: "omp_local",
       runtimeConfig: { heartbeat: { enabled: false } },
     } });
     expect(agentResponse.ok()).toBe(true);

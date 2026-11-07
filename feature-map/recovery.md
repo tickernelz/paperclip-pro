@@ -72,14 +72,10 @@ Automated: [recovery actions](../server/src/__tests__/issue-recovery-actions.tes
 covers source scoping, bounded attempts, operator stops, quota monitoring,
 ownership, stale action retirement, and continuation deduplication.
 [Recovery cards](../ui/src/components/IssueRecoveryActionCard.test.tsx) cover
-diagnosis, retry progress, exhaustion, and action availability. The fixture-backed
-[execution-recovery journeys](../tests/e2e/execution-recovery/recovery.spec.ts)
-start their own test-drive instances and exercise safe, uncertain, restart,
-manager-lineage, and legacy-unknown paths:
+diagnosis, retry progress, exhaustion, and action availability.
 
 ```sh
 pnpm exec vitest run server/src/__tests__/issue-recovery-actions.test.ts ui/src/components/IssueRecoveryActionCard.test.tsx
-pnpm exec playwright test -c tests/e2e/execution-recovery/playwright.config.ts recovery.spec.ts
 ```
 
 Manual: open a stopped task through each affected navigation path. Confirm its
@@ -123,8 +119,7 @@ action paths. A changed card label is insufficient proof of workspace integrity.
 Automated: [legacy continuation](../server/src/services/recovery/legacy-continuation.test.ts),
 [queue routes](../server/src/__tests__/issue-queued-comments-routes.test.ts), and
 [native restart recovery](../server/src/services/native-runtime/native-restart-recovery.test.ts)
-cover their respective recovery paths. [Legacy failure continuation](../tests/e2e/legacy-failure-continuation.spec.ts)
-adds a browser journey; it is not native runtime proof.
+cover their respective recovery paths.
 
 Manual: stop a disposable run, submit a distinguishable follow-up, and observe
 any cleanup wait. After confirmed stop, verify the follow-up reaches one eligible

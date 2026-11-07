@@ -70,8 +70,7 @@ pnpm exec vitest run ui/src/components/task-chat/TaskChatQueuedMessages.test.tsx
 
 Automated stop coverage is separate:
 [composer stop](../tests/e2e/composer-stop.spec.ts) with
-[its configuration](../tests/e2e/playwright-composer-stop.config.ts) and
-[ACP stop/continuation](../tests/e2e/acp-stop-continuation.spec.ts). Inspect their
+[its configuration](../tests/e2e/playwright-composer-stop.config.ts). Inspect its
 fixture and opt-in prerequisites; skipped native cases are not native proof.
 
 Manual: queue three distinguishable messages. Edit one, reorder them, reload,

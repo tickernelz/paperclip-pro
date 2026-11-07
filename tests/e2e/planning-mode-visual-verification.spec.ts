@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { mockOnboardingLocalAiConnection } from "./helpers/onboarding-ai-connection";
+import { chooseOnboardingOmpModel, mockOnboardingOmp } from "./helpers/onboarding-omp";
 import {
   expectLandsOnFirstTaskWithoutDashboardBounce,
   instrumentNavLog,
@@ -31,14 +31,7 @@ test("captures planning mode UI for desktop and mobile", async ({ page }) => {
   const screenshotDir = "test-results/planning-mode";
 
   await instrumentNavLog(page);
-  await mockOnboardingLocalAiConnection(page);
-
-  await page.route("**/test-environment", (route) =>
-    route.fulfill({
-      contentType: "application/json",
-      body: JSON.stringify({ status: "pass", checks: [] }),
-    }),
-  );
+  await mockOnboardingOmp(page);
 
   await page.route("**/agent-hires", async (route) => {
     const req = route.request();
@@ -86,21 +79,7 @@ test("captures planning mode UI for desktop and mobile", async ({ page }) => {
 
   await page.getByRole("button", { name: /^Next$/ }).click();
 
-  // The connect step arrives with no source selected — the tile row is a
-  // question, not a confirmation — so its CTA stays disabled until one is
-  // pressed. It reads "Connect", not "Next": the button starts the sign-in
-  // where there is one to start. The test simulates successful local account
-  // connection, then exercises the real first-task creation flow.
-  //
-  // Waited on for enabled rather than visible: it is already on screen, and
-  // clicking a disabled button raises nothing and does nothing.
-  await page.getByRole("button", { name: "Use another adapter" }).click();
-  const source = page.getByRole("radio").first();
-  await source.waitFor({ timeout: 30_000 });
-  await source.click();
-  const connectNext = page.getByRole("button", { name: /^Connect$/ });
-  await expect(connectNext).toBeEnabled({ timeout: 30_000 });
-  await connectNext.click();
+  await chooseOnboardingOmpModel(page);
 
   // The review step names the agent rather than the step.
   await expect(
