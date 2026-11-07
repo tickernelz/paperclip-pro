@@ -400,7 +400,7 @@ describeEmbeddedPostgres("process-loss continuation session resume", () => {
 
   it("still starts a fresh omp_local session when another adapter setting changes with the model", async () => {
     const seeded = await seedAgentWithSavedSession("omp_local");
-    await changeAdapterConfigThroughRevision(seeded.agentId, { model: "model-b", smolModel: "vendor/smol" });
+    await changeAdapterConfigThroughRevision(seeded.agentId, { model: "model-b", noPty: true });
 
     const turn = await wakeOnComment(seeded);
 
