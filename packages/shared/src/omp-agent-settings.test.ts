@@ -14,6 +14,7 @@ import {
   readOmpChoices,
   readOmpSetting,
   resetToDefaultsPatch,
+  validateOmpSettingsMap,
   type OmpChoiceModel,
 } from "./omp-agent-settings.js";
 
@@ -161,6 +162,20 @@ describe("six named choices", () => {
     expect(ompSettingPath("lsp.enabled")).toBe("noLsp");
     expect(ompSettingPath("retry.maxRetries")).toBe("ompSettings.retry.maxRetries");
     expect(readAgentSetting({ ompSettings: { "retry.maxRetries": 4 } }, "ompSettings.retry.maxRetries")).toBe(4);
+  });
+});
+
+describe("OMP setting keys that reach object prototypes", () => {
+  it.each(["__proto__.polluted", "a.constructor.b", "prototype", "x.__proto__"])("rejects %s even without OMP's catalog", (key) => {
+    expect(validateOmpSettingsMap({ [key]: true })).toEqual([`"${key}" is not an OMP setting key.`]);
+  });
+
+  it("ignores a patch path that would replace the settings map's prototype", () => {
+    const patch = JSON.parse('{"ompSettings.__proto__": {"polluted": true}, "__proto__": {"polluted": true}, "ompSettings.retry.maxRetries": 3}');
+    const config = applyAgentSettingsPatch({}, patch);
+    expect(config).toEqual({ ompSettings: { "retry.maxRetries": 3 } });
+    expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+    expect(Object.getPrototypeOf(config.ompSettings)).toBe(Object.prototype);
   });
 });
 

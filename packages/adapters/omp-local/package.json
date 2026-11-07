@@ -52,11 +52,11 @@
   "dependencies": {
     "@tickernelz/paperclip-pro-adapter-utils": "workspace:*",
     "@tickernelz/paperclip-pro-mcp-server": "workspace:*",
+    "@tickernelz/paperclip-pro-shared": "workspace:*",
     "picocolors": "^1.1.1",
     "yaml": "^2.9.0"
   },
   "devDependencies": {
-    "@tickernelz/paperclip-pro-shared": "workspace:*",
     "@types/node": "^24.0.0",
     "typescript": "^7.0.2"
   },

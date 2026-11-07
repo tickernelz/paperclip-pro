@@ -2859,28 +2859,40 @@ export function agentRoutes(
       return;
     }
     const previous = await agentDefaultsSvc.getDefaults(companyId);
-    const plan = planAgentDefaultsApply(await agentDefaultsSvc.listOmpAgents(companyId), previous, values);
+    const ompAgents = await agentDefaultsSvc.listOmpAgents(companyId);
+    const plan = planAgentDefaultsApply(ompAgents, previous, values);
     const actor = getActorInfo(req);
+    const revision = (source: string) => ({
+      recordRevision: {
+        createdByAgentId: actor.agentId,
+        createdByUserId: actor.actorType === "user" ? actor.actorId : null,
+        source,
+      },
+    });
+    const writes: Array<{ agentId: string; appliedPaths: string[]; adapterConfig: Record<string, unknown>; previousConfig: Record<string, unknown> }> = [];
     for (const entry of plan.entries) {
       if (entry.appliedPaths.length === 0) continue;
-      const updated = await svc.update(
-        entry.agentId,
-        {
-          adapterConfig: await normalizeMediatedAdapterConfigForPersistence({
-            companyId,
-            adapterType: "omp_local",
-            adapterConfig: entry.adapterConfig,
-          }),
-        },
-        {
-          recordRevision: {
-            createdByAgentId: actor.agentId,
-            createdByUserId: actor.actorType === "user" ? actor.actorId : null,
-            source: "agent_defaults",
-          },
-        },
-      );
-      if (!updated) continue;
+      writes.push({
+        agentId: entry.agentId,
+        appliedPaths: entry.appliedPaths,
+        adapterConfig: await normalizeMediatedAdapterConfigForPersistence({ companyId, adapterType: "omp_local", adapterConfig: entry.adapterConfig }),
+        previousConfig: ompAgents.find((agent) => agent.id === entry.agentId)?.adapterConfig ?? {},
+      });
+    }
+    const moved: typeof writes = [];
+    try {
+      for (const write of writes) {
+        if (await svc.update(write.agentId, { adapterConfig: write.adapterConfig }, revision("agent_defaults"))) moved.push(write);
+      }
+      await agentDefaultsSvc.setDefaults(companyId, values);
+    } catch (error) {
+      for (const write of moved.reverse()) {
+        await svc.update(write.agentId, { adapterConfig: write.previousConfig }, revision("agent_defaults_rollback")).catch((rollbackError) =>
+          logger.error({ err: rollbackError, agentId: write.agentId }, "agent defaults rollback failed"));
+      }
+      throw error;
+    }
+    for (const write of moved) {
       await logActivity(db, {
         companyId,
         actorType: actor.actorType,
@@ -2890,11 +2902,10 @@ export function agentRoutes(
         agentApiKeyId: actor.agentApiKeyId,
         action: "agent.updated",
         entityType: "agent",
-        entityId: updated.id,
-        details: { changedTopLevelKeys: ["adapterConfig"], changedAdapterConfigKeys: entry.appliedPaths, agentDefaults: true },
+        entityId: write.agentId,
+        details: { changedTopLevelKeys: ["adapterConfig"], changedAdapterConfigKeys: write.appliedPaths, agentDefaults: true },
       });
     }
-    await agentDefaultsSvc.setDefaults(companyId, values);
     res.json({
       values,
       changedPaths: plan.changedPaths,

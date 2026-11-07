@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import request from "supertest";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { expect, it } from "vitest";
 import { activityLog, agentConfigRevisions, agents, companies } from "@tickernelz/paperclip-pro-db";
 import { agentRoutes } from "../routes/agents.js";
@@ -56,17 +56,40 @@ describeEmbeddedPostgres("agent defaults routes", () => {
     expect(stored.body.values).toEqual({ model: "vendor/new", thinking: "high" });
   });
 
+  it("puts moved agents back and keeps the old defaults when a later agent update fails", async () => {
+    const company = await seedCompanyWithBoardAccess(ctx.db, "Defaults rollback");
+    await ctx.db.update(companies).set({ agentDefaults: { model: "vendor/old" } }).where(eq(companies.id, company.companyId));
+    const first = await seedAgent(company, "A first", { model: "vendor/old" });
+    const boom = await seedAgent(company, "Z boom", { model: "vendor/old" });
+    await ctx.db.execute(sql.raw(`create or replace function zha5110_fail_update() returns trigger language plpgsql as $$ begin if new.id = '${boom}' then raise exception 'injected update failure'; end if; return new; end $$`));
+    await ctx.db.execute(sql.raw("create trigger zha5110_fail_update before update on agents for each row execute function zha5110_fail_update()"));
+    try {
+      await request(appFor(company.actor))
+        .put(`/api/companies/${company.companyId}/agent-defaults`)
+        .send({ values: { model: "vendor/new" } })
+        .expect(500);
+    } finally {
+      await ctx.db.execute(sql.raw("drop trigger if exists zha5110_fail_update on agents"));
+      await ctx.db.execute(sql.raw("drop function if exists zha5110_fail_update()"));
+    }
+    expect(await configOf(first)).toEqual({ model: "vendor/old" });
+    expect(await configOf(boom)).toEqual({ model: "vendor/old" });
+    const stored = await ctx.db.select({ agentDefaults: companies.agentDefaults }).from(companies).where(eq(companies.id, company.companyId));
+    expect(stored[0]?.agentDefaults).toEqual({ model: "vendor/old" });
+  });
+
   it("rejects credential keys, the subagent gate and wrong types without touching any agent", async () => {
     const company = await seedCompanyWithBoardAccess(ctx.db, "Defaults reject");
     const agent = await seedAgent(company, "Agent", { model: "vendor/old" });
     const res = await request(appFor(company.actor))
       .put(`/api/companies/${company.companyId}/agent-defaults`)
-      .send({ values: { model: "vendor/new", env: { A: "1" }, thinking: "huge", timeoutSec: -5 } })
+      .send(JSON.parse('{"values": {"model": "vendor/new", "env": {"A": "1"}, "thinking": "huge", "timeoutSec": -5, "ompSettings.__proto__": {"x": 1}}}'))
       .expect(422);
     expect(res.body.details).toEqual([
       "env is not an agent default.",
       "thinking must be one of: off, minimal, low, medium, high, xhigh, max.",
       "timeoutSec must be a whole number of seconds, 0 for no limit.",
+      "\"__proto__\" is not an OMP setting key.",
     ]);
     expect(await configOf(agent)).toEqual({ model: "vendor/old" });
   });

@@ -118,6 +118,14 @@ describe("agent OMP settings in the overlay", () => {
     expect(get(overlay, "providers")).toBeUndefined();
   });
 
+  it("never writes through a prototype key into Object.prototype", () => {
+    const ompSettings = JSON.parse('{"__proto__.zzPolluted": true, "a.constructor.prototype.zzPolluted": true, "__proto__": {"zzPolluted": true}, "retry.maxRetries": 2}');
+    const overlay = buildOmpSettingsOverlay({ ompSettings });
+    expect(({} as Record<string, unknown>).zzPolluted).toBeUndefined();
+    expect(get(overlay, "retry.maxRetries")).toBe(2);
+    expect(Object.keys(overlay)).not.toContain("a");
+  });
+
   it("keeps the overlay below every configured config file, so overlay precedence is unchanged", () => {
     const args = buildOmpArgs({ ...base, config: { configFiles: ["/a.yml", "/b.yml"], ompSettings: { "retry.maxRetries": 4 } }, settingsOverlayPath: "/run/overlay.yml" });
     const configs = args.flatMap((arg, index) => (arg === "--config" ? [args[index + 1]] : []));

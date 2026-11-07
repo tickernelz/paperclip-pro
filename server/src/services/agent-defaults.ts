@@ -1,4 +1,4 @@
-import { and, eq, ne, sql } from "drizzle-orm";
+import { and, asc, eq, ne, sql } from "drizzle-orm";
 import { agents, companies, type Db } from "@tickernelz/paperclip-pro-db";
 import {
   OMP_ADAPTER_ALIASES,
@@ -67,7 +67,7 @@ function adapterValueError(path: string, value: unknown, values: AgentSettingsVa
 export function validateAgentDefaults(values: unknown, catalog: readonly OmpSettingsCatalogEntry[]): string[] {
   if (!isRecord(values)) return ["Defaults must be a map of setting paths to values."];
   const errors: string[] = [];
-  const ompSettings: Record<string, unknown> = {};
+  const ompSettings: Record<string, unknown> = Object.create(null);
   for (const [path, value] of Object.entries(values)) {
     if (path.startsWith(OMP_SETTINGS_PATH_PREFIX)) {
       ompSettings[path.slice(OMP_SETTINGS_PATH_PREFIX.length)] = value;
@@ -115,6 +115,7 @@ export function agentDefaultsService(db: Db) {
       .select({ id: agents.id, name: agents.name, adapterConfig: agents.adapterConfig })
       .from(agents)
       .where(and(eq(agents.companyId, companyId), eq(agents.adapterType, OMP_DEFAULTS_ADAPTER_TYPE), ne(agents.status, "terminated")))
+      .orderBy(asc(agents.name), asc(agents.id))
       .then((rows) => rows.map((row) => ({ ...row, adapterConfig: isRecord(row.adapterConfig) ? row.adapterConfig : {} })));
   }
 

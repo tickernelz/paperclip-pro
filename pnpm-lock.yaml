@@ -148,6 +148,9 @@ importers:
       '@tickernelz/paperclip-pro-mcp-server':
         specifier: workspace:*
         version: link:../../mcp-server
+      '@tickernelz/paperclip-pro-shared':
+        specifier: workspace:*
+        version: link:../../shared
       picocolors:
         specifier: ^1.1.1
         version: 1.1.1
@@ -155,9 +158,6 @@ importers:
         specifier: ^2.9.0
         version: 2.9.1
     devDependencies:
-      '@tickernelz/paperclip-pro-shared':
-        specifier: workspace:*
-        version: link:../../shared
       '@types/node':
         specifier: ^24.0.0
         version: 24.13.3

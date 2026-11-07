@@ -7,6 +7,7 @@ import {
 } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
 import { asBoolean } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 import { stringify as stringifyYaml } from "yaml";
+import { isWellFormedOmpSettingKey } from "@tickernelz/paperclip-pro-shared";
 import { ompFallbackChain } from "./model-fallback.js";
 
 export interface OmpSettingsOverlay {
@@ -35,7 +36,7 @@ export function agentOmpSettings(config: Record<string, unknown>): Array<[string
   if (!isRecord(config.ompSettings)) return [];
   return Object.entries(config.ompSettings).filter(([key, value]) =>
     value !== undefined &&
-    /^[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]+)*$/.test(key) &&
+    isWellFormedOmpSettingKey(key) &&
     !ADAPTER_OWNED_OMP_SETTINGS.has(key) &&
     !/^(auth|secrets)\./.test(key) &&
     !/(^|\.)(token|apiKey|api_key|secret|password|credentials?)$/i.test(key));
@@ -45,10 +46,16 @@ function setDotted(target: Record<string, unknown>, key: string, value: unknown)
   const parts = key.split(".");
   let node = target;
   for (const part of parts.slice(0, -1)) {
-    if (!isRecord(node[part])) node[part] = {};
-    node = node[part] as Record<string, unknown>;
+    const child = Object.hasOwn(node, part) ? node[part] : undefined;
+    if (isRecord(child)) {
+      node = child;
+      continue;
+    }
+    const created: Record<string, unknown> = {};
+    Object.defineProperty(node, part, { value: created, enumerable: true, writable: true, configurable: true });
+    node = created;
   }
-  node[parts[parts.length - 1]!] = value;
+  Object.defineProperty(node, parts[parts.length - 1]!, { value, enumerable: true, writable: true, configurable: true });
 }
 
 export function buildOmpSettingsOverlay(config: Record<string, unknown>): Record<string, unknown> {

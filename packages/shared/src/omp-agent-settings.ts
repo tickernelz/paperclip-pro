@@ -8,7 +8,7 @@ export const OMP_RUN_GRACE_SEC = 60;
 
 export const OMP_SESSION_NEUTRAL_ADAPTER_CONFIG_KEYS = [OMP_STYLE_KEY, OMP_FALLBACK_MODE_KEY] as const;
 
-export const OMP_SESSION_KEEPING_ADAPTER_CONFIG_KEYS: readonly string[] = [
+export const OMP_MODEL_SWITCH_ADAPTER_CONFIG_KEYS = [
   "model",
   "fallbackModels",
   "modelEfforts",
@@ -18,9 +18,21 @@ export const OMP_SESSION_KEEPING_ADAPTER_CONFIG_KEYS: readonly string[] = [
   "smolModel",
   "slowModel",
   "planModel",
-  `${OMP_SETTINGS_PATH_PREFIX}defaultThinkingLevel`,
+] as const;
+
+export const OMP_MODEL_SWITCH_OMP_SETTINGS = ["defaultThinkingLevel"] as const;
+
+export const OMP_SESSION_KEEPING_ADAPTER_CONFIG_KEYS: readonly string[] = [
+  ...OMP_MODEL_SWITCH_ADAPTER_CONFIG_KEYS,
+  ...OMP_MODEL_SWITCH_OMP_SETTINGS.map((key) => `${OMP_SETTINGS_PATH_PREFIX}${key}`),
   ...OMP_SESSION_NEUTRAL_ADAPTER_CONFIG_KEYS,
 ];
+
+const UNSAFE_KEY_SEGMENTS = new Set(["__proto__", "prototype", "constructor"]);
+
+export function isWellFormedOmpSettingKey(key: string): boolean {
+  return /^[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]+)*$/.test(key) && !key.split(".").some((segment) => UNSAFE_KEY_SEGMENTS.has(segment));
+}
 
 export type AgentSettingValue = unknown;
 export type AgentSettingsPatch = Record<string, AgentSettingValue | undefined>;
@@ -154,7 +166,7 @@ export function validateOmpSettingsMap(value: unknown, catalog?: readonly OmpSet
   const byKey = catalog ? new Map(catalog.map((entry) => [entry.key, entry])) : null;
   const errors: string[] = [];
   for (const [key, item] of Object.entries(value)) {
-    if (!/^[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]+)*$/.test(key)) errors.push(`"${key}" is not an OMP setting key.`);
+    if (!isWellFormedOmpSettingKey(key)) errors.push(`"${key}" is not an OMP setting key.`);
     else if (isBlockedOmpSettingKey(key)) errors.push(`${key} holds credentials and stays in OMP's own store.`);
     else if (OMP_LOCKED_SETTINGS[key]) errors.push(`${key}: ${OMP_LOCKED_SETTINGS[key]}`);
     else if (OMP_ADAPTER_ALIASES[key]) errors.push(`Set ${key} through the agent's ${OMP_ADAPTER_ALIASES[key]!.path} setting.`);
@@ -197,6 +209,7 @@ export function applyAgentSettingsPatch(
   const settings: Record<string, unknown> = isRecord(next[OMP_SETTINGS_KEY]) ? { ...(next[OMP_SETTINGS_KEY] as Record<string, unknown>) } : {};
   let settingsTouched = false;
   for (const [path, value] of Object.entries(patch)) {
+    if (path.split(".").some((segment) => UNSAFE_KEY_SEGMENTS.has(segment))) continue;
     if (path.startsWith(OMP_SETTINGS_PATH_PREFIX)) {
       settingsTouched = true;
       const key = path.slice(OMP_SETTINGS_PATH_PREFIX.length);
