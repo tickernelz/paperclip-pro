@@ -4,7 +4,7 @@ import { AgentConnectionInstructions } from "@/features/connections/ConnectionIn
 import type { AgentInstructionCandidate, AgentInstructionsBundle } from "@tickernelz/paperclip-pro-shared";
 import { InstructionHistory } from "../components/InstructionHistory";
 import { AgentCharacter } from "../components/AgentCharacter";
-import { characterStateForAgent } from "@tickernelz/paperclip-pro-shared";
+import { characterStateForAgent, isRetiredAdapterType, retiredAdapterMessage } from "@tickernelz/paperclip-pro-shared";
 import { mergeRunLogChunks, readChunkSeq } from "../lib/run-log-chunks";
 import { getPageVisibility, usePageVisibility } from "../lib/page-visibility";
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
@@ -1176,6 +1176,7 @@ export function AgentDetail() {
     ? { ...agent, ...lifecycle.data } : agent;
   const isPendingApproval = currentAgent.status === "pending_approval";
   const hasInvalidOrgChain = agent.orgChainHealth?.status === "invalid_org_chain";
+  const retiredAdapterNotice = isRetiredAdapterType(agent.adapterType) ? retiredAdapterMessage(agent.adapterType) : null;
   const pausedEscalationWarning = !hasInvalidOrgChain ? agent.orgChainHealth?.escalationWarning ?? null : null;
   const showConfigActionBar = (
     activeView === "runtime" || activeView === "instructions" || activeView === "secrets"
@@ -1231,6 +1232,15 @@ export function AgentDetail() {
           <div className="min-w-0 space-y-1">
             <p className="font-medium">Escalation path is paused</p>
             <p className="text-amber-900/90 dark:text-amber-100/90">{pausedEscalationWarning}</p>
+          </div>
+        </div>
+      ) : null}
+      {retiredAdapterNotice ? (
+        <div role="status" className="flex items-start gap-3 border border-amber-300/35 bg-amber-300/10 px-3 py-2 text-sm text-amber-900 dark:text-amber-100">
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+          <div className="min-w-0 space-y-1">
+            <p className="font-medium">Adapter removed</p>
+            <p className="text-amber-900/90 dark:text-amber-100/90">{retiredAdapterNotice}</p>
           </div>
         </div>
       ) : null}
@@ -1291,8 +1301,8 @@ export function AgentDetail() {
             showStatus={false}
             canRunWithProviderTrace={canUseProviderTrace}
             actionsDisabled={agentAction.isPending}
-            workActionsDisabled={hasInvalidOrgChain}
-            workActionsDisabledReason="Repair this agent's reporting chain before assigning tasks or starting runs"
+            workActionsDisabled={hasInvalidOrgChain || retiredAdapterNotice !== null}
+            workActionsDisabledReason={retiredAdapterNotice ?? "Repair this agent's reporting chain before assigning tasks or starting runs"}
             hasPendingNavigationChanges={configDirty}
             onBeforeNavigate={prepareAgentNavigation}
             onActionError={setActionError}
