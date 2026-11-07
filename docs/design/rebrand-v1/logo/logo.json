@@ -1,0 +1,50 @@
+{
+ "font": "Inter 640 (OFL 1.1), outlined; tracking -0.012em",
+ "colors": {
+  "light": {
+   "ink": "#191c22",
+   "accent": "#4f4dd3",
+   "bg": "#ffffff",
+   "page": "#f6f7f9"
+  },
+  "dark": {
+   "ink": "#f1f2f5",
+   "accent": "#919dff",
+   "bg": "#0d0e11",
+   "page": "#151619"
+  }
+ },
+ "concepts": {
+  "moot": {
+   "title": "Lingkar Moot",
+   "shapes": 7,
+   "colors": 2,
+   "inkContrast_light": 17.07,
+   "accentContrast_light": 6.3,
+   "inkContrast_dark": 17.24,
+   "accentContrast_dark": 7.79
+  },
+  "gate": {
+   "title": "Gerbang W",
+   "shapes": 2,
+   "colors": 2,
+   "inkContrast_light": 17.07,
+   "accentContrast_light": 6.3,
+   "inkContrast_dark": 17.24,
+   "accentContrast_dark": 7.79
+  },
+  "bubble": {
+   "title": "Balon Perisai",
+   "shapes": 2,
+   "colors": 2,
+   "inkContrast_light": 17.07,
+   "accentContrast_light": 6.3,
+   "inkContrast_dark": 17.24,
+   "accentContrast_dark": 7.79
+  }
+ },
+ "wordmark": {
+  "width": 147.79,
+  "capHeight": 21.83
+ }
+}
