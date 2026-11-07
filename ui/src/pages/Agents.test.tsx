@@ -9,7 +9,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ToastProvider } from "../context/ToastContext";
 import type { BuiltInAgentState } from "../api/builtInAgents";
 import { Agents } from "./Agents";
-import { Agents as ProductionAgents } from "./Agents.production";
 import type { AgentOrgChainHealth } from "@tickernelz/paperclip-pro-shared";
 
 const mockRouterState = vi.hoisted(() => ({
@@ -365,7 +364,6 @@ describe("Agents", () => {
 
   it.each([
     ["streamlined", Agents],
-    ["production", ProductionAgents],
   ] as const)("omits the action bar from %s agent list rows", async (_mode, AgentList) => {
     mockAgentsApi.list.mockResolvedValue([
       makeAgent({ name: "Alpha", status: "active" }),
@@ -1012,7 +1010,6 @@ describe("Agents", () => {
 
   it.each([
     ["streamlined", Agents],
-    ["production", ProductionAgents],
   ] as const)("omits star and leave/join actions from %s agent index list and org views", async (_mode, AgentList) => {
     root = createRoot(container);
     await act(async () => {

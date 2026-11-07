@@ -5,7 +5,6 @@ import { cn } from "@/lib/utils";
 interface TaskChatComposerDockProps {
   children: ReactNode;
   mobile: boolean;
-  streamlined: boolean;
   reserve?: number;
   concealed?: boolean;
 }
@@ -15,7 +14,7 @@ export const TaskChatComposerDock = forwardRef<
   HTMLDivElement,
   TaskChatComposerDockProps
 >(function TaskChatComposerDock(
-  { children, mobile, streamlined, reserve, concealed = false },
+  { children, mobile, reserve, concealed = false },
   ref,
 ) {
   return (
@@ -28,7 +27,6 @@ export const TaskChatComposerDock = forwardRef<
       className={cn(
         composerDockClassName({
           isMobile: mobile,
-          streamlinedUiEnabled: streamlined,
         }),
         concealed && "invisible",
       )}

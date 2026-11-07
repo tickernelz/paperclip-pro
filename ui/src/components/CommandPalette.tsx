@@ -10,7 +10,6 @@ import { issuesApi } from "../api/issues";
 import { authApi } from "../api/auth";
 import { agentsApi } from "../api/agents";
 import { projectsApi } from "../api/projects";
-import { instanceSettingsApi } from "../api/instanceSettings";
 import { queryKeys } from "../lib/queryKeys";
 import {
   CommandDialog,
@@ -104,13 +103,7 @@ export function CommandPalette() {
   const { isMobile, setSidebarOpen } = useSidebar();
   const searchQuery = query.trim();
   const onIssueDetail = isOnIssueDetail(location.pathname);
-  const { data: experimentalSettings } = useQuery({
-    queryKey: queryKeys.instance.experimentalSettings,
-    queryFn: () => instanceSettingsApi.getExperimental(),
-    retry: false,
-  });
   const { enabled: combinedInboxTasksEnabled } = useCombinedInboxTasksEnabled();
-  const fileViewerEnabled = experimentalSettings?.enableExperimentalFileViewer === true;
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -360,7 +353,7 @@ export function CommandPalette() {
             Create new task
             <span className="ml-auto text-xs text-muted-foreground">C</span>
           </CommandItem>
-          {onIssueDetail && fileViewerEnabled && (
+          {onIssueDetail && (
             <CommandItem
               onSelect={() => {
                 setOpen(false);

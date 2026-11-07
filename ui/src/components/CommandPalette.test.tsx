@@ -288,24 +288,6 @@ describe("CommandPalette", () => {
     });
   });
 
-  it("hides the issue file viewer command by default", async () => {
-    locationState.location.pathname = "/issues/PAP-1";
-    const { root } = renderWithQueryClient(<CommandPalette />, container);
-
-    act(() => {
-      document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", metaKey: true, bubbles: true }));
-    });
-
-    await waitForAssertion(() => {
-      expect(container.textContent).toContain("Create new task");
-    });
-    expect(container.textContent).not.toContain("Open file in this issue");
-
-    act(() => {
-      root.unmount();
-    });
-  });
-
   it("shows the issue file viewer command when the experimental flag is enabled", async () => {
     locationState.location.pathname = "/issues/PAP-1";
     mockInstanceSettingsApi.getExperimental.mockResolvedValue({

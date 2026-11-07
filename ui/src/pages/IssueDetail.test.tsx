@@ -1918,75 +1918,6 @@ describe("IssueDetail", () => {
     expect(container.textContent).toContain("Issue detail smoke");
   });
 
-  it("preserves hierarchy breadcrumbs and label chips when Streamlined UI is off", async () => {
-    mockInstanceSettingsApi.getExperimental.mockResolvedValue({
-      enableIssuePlanDecompositions: false,
-      enableExperimentalFileViewer: false,
-      enableExternalObjects: false,
-      enableStreamlinedUi: false,
-    });
-    mockIssuesApi.get.mockResolvedValue(
-      createIssue({
-        ancestors: [
-          {
-            id: "parent-1",
-            identifier: "PAP-0",
-            title: "Parent task breadcrumb",
-          },
-        ] as Issue["ancestors"],
-        labels: [
-          {
-            id: "label-1",
-            companyId: "company-1",
-            name: "Legacy label",
-            color: "#22c55e",
-            createdAt: new Date("2026-04-21T00:00:00.000Z"),
-            updatedAt: new Date("2026-04-21T00:00:00.000Z"),
-          },
-        ],
-        labelIds: ["label-1"],
-      }),
-    );
-
-    await act(async () => {
-      root.render(
-        <QueryClientProvider client={queryClient}>
-          <IssueDetail />
-        </QueryClientProvider>,
-      );
-    });
-    await flushReact();
-
-    expect(container.textContent).toContain("Parent task breadcrumb");
-    expect(container.textContent).toContain("Legacy label");
-  });
-
-  it("lifts the redesigned desktop thread into the side-panel header band", async () => {
-    mockInstanceSettingsApi.getExperimental.mockResolvedValue({
-      enableIssuePlanDecompositions: false,
-      enableExperimentalFileViewer: false,
-      enableExternalObjects: false,
-      enableStreamlinedUi: false,
-    });
-    mockIssuesApi.get.mockResolvedValue(createIssue());
-
-    await act(async () => {
-      root.render(
-        <QueryClientProvider client={queryClient}>
-          <IssueDetail />
-        </QueryClientProvider>,
-      );
-    });
-    await waitForAssertion(() => {
-      const content = container.querySelector(
-        '[data-testid="issue-detail-content"]',
-      );
-      expect(content).not.toBeNull();
-      expect(content!.className).toContain("-mt-4");
-      expect(content!.className).toContain("md:-mt-6");
-    });
-  });
-
   it("does not register a redundant breadcrumb side-panel toggle in Streamlined UI", async () => {
     mockIssuesApi.get.mockResolvedValue(createIssue());
     mockPanelState.panelVisible = false;
@@ -2002,35 +1933,6 @@ describe("IssueDetail", () => {
     expect(
       mockSetBreadcrumbToolbar.mock.calls.every(([node]) => node === null),
     ).toBe(true);
-  });
-
-  it("retains the production breadcrumb side-panel toggle when Streamlined UI is off", async () => {
-    mockIssuesApi.get.mockResolvedValue(createIssue());
-    mockPanelState.panelVisible = false;
-    mockInstanceSettingsApi.getExperimental.mockResolvedValue({
-      enableIssuePlanDecompositions: false,
-      enableExperimentalFileViewer: false,
-      enableExternalObjects: false,
-      enableStreamlinedUi: false,
-    });
-
-    await act(async () => {
-      root.render(
-        <QueryClientProvider client={queryClient}>
-          <IssueDetail />
-        </QueryClientProvider>,
-      );
-    });
-    await flushReact();
-
-    const toolbar = mockSetBreadcrumbToolbar.mock.calls
-      .map(([node]) => node)
-      .find((node) => node !== null) as ReactElement<{
-      children: ReactElement<{ onToggle: () => void }>;
-    }>;
-    expect(toolbar).toBeDefined();
-    toolbar.props.children.props.onToggle();
-    expect(mockSetPanelVisible).toHaveBeenCalledWith(true);
   });
 
   it("uses task activity for recency and ignores passive revisits", async () => {
@@ -2125,36 +2027,6 @@ describe("IssueDetail", () => {
         tab: "document",
         documentKey: "qa-evidence",
       });
-    });
-  });
-
-  it("leaves ordinary document links to the classic center-column surface", async () => {
-    mockPanelState.panelVisible = false;
-    mockLocation.hash = "#document-qa-evidence";
-    mockInstanceSettingsApi.getExperimental.mockResolvedValue({
-      enableIssuePlanDecompositions: false,
-      enableExperimentalFileViewer: false,
-      enableExternalObjects: false,
-      enableClassicTaskInterface: true,
-    });
-    mockIssuesApi.get.mockResolvedValue(createIssue());
-
-    await act(async () => {
-      root.render(
-        <QueryClientProvider client={queryClient}>
-          <IssueDetail />
-        </QueryClientProvider>,
-      );
-    });
-
-    await waitForAssertion(() => {
-      expect(
-        container.querySelector('[data-testid="issue-chat-thread"]'),
-      ).not.toBeNull();
-      expect(mockSetPanelVisible).not.toHaveBeenCalled();
-      const panel = mockOpenPanel.mock.calls.at(-1)?.[0]?.props.children as
-        { props?: Record<string, unknown> } | undefined;
-      expect(panel?.props?.documentDeepLink).toBeNull();
     });
   });
 
@@ -4649,25 +4521,6 @@ describe("IssueDetail", () => {
     expect(mockIssuesApi.listAcceptedPlanDecompositions).not.toHaveBeenCalled();
   });
 
-  it("hides file viewer entry points by default", async () => {
-    mockIssuesApi.get.mockResolvedValue(createIssue());
-
-    await act(async () => {
-      root.render(
-        <QueryClientProvider client={queryClient}>
-          <IssueDetail />
-        </QueryClientProvider>,
-      );
-    });
-
-    await flushReact();
-    await flushReact();
-
-    expect(
-      container.querySelector('[aria-label="Open file in this issue"]'),
-    ).toBeNull();
-  });
-
   it("shows file viewer entry points when the experimental flag is enabled", async () => {
     mockIssuesApi.get.mockResolvedValue(createIssue());
     mockInstanceSettingsApi.getExperimental.mockResolvedValue({
@@ -5607,128 +5460,6 @@ describe("IssueDetail", () => {
     expect(mockIssueChatThreadRender).toHaveBeenCalled();
   });
 
-  it("renders the legacy issue chat thread when the classic task interface flag is on", async () => {
-    mockInstanceSettingsApi.getExperimental.mockResolvedValue({
-      enableIssuePlanDecompositions: false,
-      enableExperimentalFileViewer: false,
-      enableExternalObjects: false,
-      enableStreamlinedUi: true,
-      enableClassicTaskInterface: true,
-    });
-    mockIssuesApi.get.mockResolvedValue(createIssue());
-    mockIssuesApi.listInteractions.mockResolvedValue([
-      {
-        id: "classic-question",
-        companyId: "company-1",
-        issueId: "issue-1",
-        kind: "ask_user_questions",
-        status: "answered",
-        sourceRunId: "legacy-run",
-        resolvedByUserId: "user-1",
-        resolvedAt: "2026-04-21T00:00:04.000Z",
-        createdAt: "2026-04-21T00:00:01.000Z",
-        updatedAt: "2026-04-21T00:00:04.000Z",
-        payload: {
-          version: 1,
-          questions: [
-            {
-              id: "runtime",
-              prompt: "Which runtime?",
-              selectionMode: "single",
-              options: [{ id: "node", label: "Node.js" }],
-            },
-          ],
-        },
-        result: {
-          version: 1,
-          answers: [{ questionId: "runtime", optionIds: ["node"] }],
-        },
-      },
-    ]);
-
-    await act(async () => {
-      root.render(
-        <QueryClientProvider client={queryClient}>
-          <IssueDetail />
-        </QueryClientProvider>,
-      );
-    });
-    await flushReact();
-    await flushReact();
-
-    expect(
-      container.querySelector('[data-testid="issue-chat-thread"]'),
-    ).not.toBeNull();
-    expect(
-      container.querySelector('[data-testid="task-chat-thread"]'),
-    ).toBeNull();
-    expect(mockIssueChatThreadRender).toHaveBeenCalled();
-    const classicProps = mockIssueChatThreadRender.mock.calls.at(-1)?.[0] as {
-      comments?: Array<{ id: string }>;
-    };
-    expect(
-      classicProps.comments?.some(
-        (comment) => comment.id === "interaction-response:classic-question",
-      ),
-    ).toBe(false);
-  });
-
-  it("restores master's task chat thread when Streamlined UI is off", async () => {
-    mockInstanceSettingsApi.getExperimental.mockResolvedValue({
-      enableIssuePlanDecompositions: false,
-      enableExperimentalFileViewer: false,
-      enableExternalObjects: false,
-      enableStreamlinedUi: false,
-      enableClassicTaskInterface: false,
-    });
-    mockIssuesApi.get.mockResolvedValue(createIssue());
-
-    await act(async () => {
-      root.render(
-        <QueryClientProvider client={queryClient}>
-          <IssueDetail />
-        </QueryClientProvider>,
-      );
-    });
-    await flushReact();
-    await flushReact();
-
-    expect(
-      container.querySelector('[data-testid="issue-chat-thread"]'),
-    ).toBeNull();
-    expect(
-      container.querySelector('[data-testid="task-chat-thread"]'),
-    ).not.toBeNull();
-  });
-
-  it("still honors Classic Task Interface when Streamlined UI is off", async () => {
-    mockInstanceSettingsApi.getExperimental.mockResolvedValue({
-      enableIssuePlanDecompositions: false,
-      enableExperimentalFileViewer: false,
-      enableExternalObjects: false,
-      enableStreamlinedUi: false,
-      enableClassicTaskInterface: true,
-    });
-    mockIssuesApi.get.mockResolvedValue(createIssue());
-
-    await act(async () => {
-      root.render(
-        <QueryClientProvider client={queryClient}>
-          <IssueDetail />
-        </QueryClientProvider>,
-      );
-    });
-    await flushReact();
-    await flushReact();
-
-    expect(
-      container.querySelector('[data-testid="issue-chat-thread"]'),
-    ).not.toBeNull();
-    expect(
-      container.querySelector('[data-testid="task-chat-thread"]'),
-    ).toBeNull();
-  });
-
   it("passes @task mention options to the thread by default", async () => {
     const mentionPoolIssue = {
       ...createIssue(),
@@ -6503,38 +6234,6 @@ describe("IssueDetail", () => {
       const final = mockIssueChatThreadRender.mock.calls.at(-1)?.[0] as Props;
       if (outcome === "failure") expect(final.queuedCommentQueue?.entries).toHaveLength(2);
       else expect(final.queuedCommentQueue).toBeNull();
-    });
-    expect(mockPushToast).not.toHaveBeenCalled();
-  });
-
-  it("restores a failed classic interrupt inline without a toast or an unhandled rejection", async () => {
-    mockInstanceSettingsApi.getExperimental.mockResolvedValue({ enableStreamlinedUi: true, enableClassicTaskInterface: true });
-    mockIssuesApi.get.mockResolvedValue(createIssue({ status: "in_progress", assigneeAgentId: "agent-1", executionRunId: "run-active-1" }));
-    mockAgentsApi.list.mockResolvedValue([createAgent({ adapterType: "codex_local" })]);
-    mockIssuesApi.listComments.mockResolvedValue([createIssueComment({ id: "queued-comment-1", body: "Next direction", createdAt: new Date("2026-04-21T00:00:05.000Z") })]);
-    mockHeartbeatsApi.activeRunForIssue.mockResolvedValue({
-      id: "run-active-1", runtimeMode: "legacy", status: "running", invocationSource: "issue",
-      startedAt: "2026-04-21T00:00:00.000Z", finishedAt: null, createdAt: "2026-04-21T00:00:00.000Z",
-      agentId: "agent-1", agentName: "Coder", adapterType: "codex_local", issueId: "issue-1",
-    });
-    mockIssuesApi.getQueuedComments.mockResolvedValue(createQueuedCommentQueue({ protocol: "legacy", steeringDisposition: "unsupported" }));
-    const delivery = createDeferred<IssueQueuedCommentQueue>();
-    mockIssuesApi.interruptQueuedComments.mockReturnValue(delivery.promise);
-    await act(async () => { root.render(<QueryClientProvider client={queryClient}><IssueDetail /></QueryClientProvider>); });
-    type Props = { onInterruptQueued: (runId: string | null) => Promise<void>; comments: Array<{ id: string; queueState?: string }> };
-    let props!: Props;
-    await waitForAssertion(() => {
-      props = mockIssueChatThreadRender.mock.calls.at(-1)?.[0] as Props;
-      expect(props.comments).toContainEqual(expect.objectContaining({ id: "queued-comment-1", queueState: "queued" }));
-    });
-    let pending!: Promise<unknown>;
-    await act(async () => { pending = props.onInterruptQueued("run-active-1").catch(error => error); });
-    expect(mockIssueChatThreadRender.mock.calls.at(-1)?.[0]?.comments).toContainEqual(expect.objectContaining({ id: "queued-comment-1", queueState: undefined }));
-    await act(async () => { delivery.reject(new Error("Connection lost")); await pending; });
-    expect(await pending).toBeUndefined();
-    await waitForAssertion(() => {
-      expect(container.textContent).toContain("Couldn’t interrupt. Message is still queued.");
-      expect(mockIssueChatThreadRender.mock.calls.at(-1)?.[0]?.comments).toContainEqual(expect.objectContaining({ id: "queued-comment-1", queueState: "queued" }));
     });
     expect(mockPushToast).not.toHaveBeenCalled();
   });
