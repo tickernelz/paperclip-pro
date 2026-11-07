@@ -2842,18 +2842,16 @@ export function agentRoutes(
     assertCompanyAccess(req, companyId);
     const values = asRecord(req.body?.values);
     if (!values) throw unprocessable("Send the defaults as { values: { <setting path>: <value> } }.");
-    const needsCatalog = Object.keys(values).some((path) => path.startsWith(OMP_SETTINGS_PATH_PREFIX));
-    let catalog: Awaited<ReturnType<typeof listOmpSettingsCatalog>> = [];
-    if (needsCatalog) {
+    let errors = validateAgentDefaults(values);
+    if (errors.length === 0 && Object.keys(values).some((path) => path.startsWith(OMP_SETTINGS_PATH_PREFIX))) {
       try {
-        catalog = await listOmpSettingsCatalog();
+        errors = validateAgentDefaults(values, await listOmpSettingsCatalog());
       } catch (error) {
         if (!(error instanceof OmpSettingsUnavailableError)) throw error;
         res.status(503).json({ error: `OMP settings could not be checked: ${error.message}` });
         return;
       }
     }
-    const errors = validateAgentDefaults(values, catalog);
     if (errors.length > 0) {
       res.status(422).json({ error: "Defaults were not saved.", details: errors });
       return;

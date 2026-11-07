@@ -64,7 +64,7 @@ function adapterValueError(path: string, value: unknown, values: AgentSettingsVa
   }
 }
 
-export function validateAgentDefaults(values: unknown, catalog: readonly OmpSettingsCatalogEntry[]): string[] {
+export function validateAgentDefaults(values: unknown, catalog?: readonly OmpSettingsCatalogEntry[]): string[] {
   if (!isRecord(values)) return ["Defaults must be a map of setting paths to values."];
   const errors: string[] = [];
   const ompSettings: Record<string, unknown> = Object.create(null);
