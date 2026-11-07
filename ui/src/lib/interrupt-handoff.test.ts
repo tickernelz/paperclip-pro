@@ -45,7 +45,7 @@ describe("resolveRunStatusPresentation", () => {
   it("renders a plain cancel as muted 'cancelled'", () => {
     const p = resolveRunStatusPresentation("cancelled");
     expect(p.label).toBe("cancelled");
-    expect(p.className).toContain("muted");
+    expect(p.className).toContain("text-ink-3");
     expect(p.srHint).toBeNull();
   });
 

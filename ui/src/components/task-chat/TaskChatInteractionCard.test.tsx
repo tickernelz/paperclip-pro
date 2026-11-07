@@ -777,8 +777,8 @@ describe("TaskChatInteractionCard", () => {
     const rejectOnFirstItem = Array.from(
       container.querySelectorAll("button"),
     ).find((button) => button.textContent?.trim() === "reject");
-    expect(approve?.className).toContain("text-emerald-700");
-    expect(rejectOnFirstItem?.className).toContain("text-bad");
+    expect(approve?.getAttribute("data-slot")).toBe("segmented-item");
+    expect(rejectOnFirstItem?.getAttribute("data-slot")).toBe("segmented-item");
     expect(approve?.querySelector("svg")).not.toBeNull();
     expect(rejectOnFirstItem?.querySelector("svg")).not.toBeNull();
     await act(async () => approve?.click());

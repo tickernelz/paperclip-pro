@@ -131,7 +131,7 @@ describe("SidePanelTabs", () => {
     expect(propertiesWrapper?.className).toContain("h-7");
     expect(propertiesWrapper?.className).toContain("text-ink");
     expect(propertiesWrapper?.className).toContain("hover:bg-bg-3/50");
-    expect(propertiesWrapper?.className).not.toContain("bg-bg-3");
+    expect(propertiesWrapper?.className.split(/\s+/)).not.toContain("bg-bg-3");
     expect(propertiesWrapper?.style.width).toBe("");
     expect(propertiesWrapper?.parentElement?.className)
       .toContain("min-w-(--side-panel-streamlined-tab-min-width)");

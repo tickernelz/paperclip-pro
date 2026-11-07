@@ -7,7 +7,7 @@ export const AGENT_AVATAR_SIZES = [16, 20, 24, 32, 40, 48, 64, 96, 128, 256, 512
 export type AgentAvatarSize = typeof AGENT_AVATAR_SIZES[number];
 export type AgentAvatarBackground = "transparent" | "paperclip-dark";
 /** sRGB PNG equivalent of index.css .dark --background: oklch(0.205 0 0). */
-export const PAPERCLIP_DARK_AVATAR_BACKGROUND = "#171717";
+export const PAPERCLIP_DARK_AVATAR_BACKGROUND = "#0d0e11";
 export const CHARACTER_STATES = ["rest", "idle", "listening", "thinking", "working", "success", "confused", "sleepy", "loading"] as const;
 export type CharacterState = typeof CHARACTER_STATES[number];
 export const agentAppearanceSchema = z.object({

@@ -126,11 +126,20 @@ describe("on-demand agent avatars", () => {
   }, 20_000);
   it("serves Slack exports on the Paperclip dark-mode color in a separate cache", async () => {
     const css = await readFile(new URL("../../../ui/src/index.css", import.meta.url), "utf8");
-    const lightness = Number(css.match(/\.dark\s*\{\s*--background:\s*oklch\(([\d.]+) 0 0\)/)?.[1]);
-    // Neutral OKLCH converts to equal sRGB channels; PNG rounds to 8-bit color.
-    const linear = lightness ** 3;
-    const channel = Math.round((linear <= 0.0031308 ? 12.92 * linear : 1.055 * linear ** (1 / 2.4) - 0.055) * 255);
-    expect(PAPERCLIP_DARK_AVATAR_BACKGROUND).toBe(`#${channel.toString(16).padStart(2, "0").repeat(3)}`);
+    const [lightness, chroma, hue] = (css.match(/\n\.dark\s*\{[^}]*?--bg:\s*oklch\(([\d.]+) ([\d.]+) ([\d.]+)\)/)?.slice(1) ?? []).map(Number);
+    const a = chroma * Math.cos((hue * Math.PI) / 180);
+    const b = chroma * Math.sin((hue * Math.PI) / 180);
+    const l = (lightness + 0.3963377774 * a + 0.2158037573 * b) ** 3;
+    const m = (lightness - 0.1055613458 * a - 0.0638541728 * b) ** 3;
+    const s = (lightness - 0.0894841775 * a - 1.291485548 * b) ** 3;
+    const linear = [
+      4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
+      -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
+      -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s,
+    ];
+    const channels = linear.map((x) => Math.round((x <= 0.0031308 ? 12.92 * x : 1.055 * x ** (1 / 2.4) - 0.055) * 255));
+    const hex = channels.map((channel) => channel.toString(16).padStart(2, "0")).join("");
+    expect(PAPERCLIP_DARK_AVATAR_BACKGROUND).toBe(`#${hex}`);
     const service = createAgentAvatarService(await storage()); cleanups.push(() => service.close());
     const url = await serve(service);
     const clear = await fetch(url + "?size=512&scale=1");
@@ -140,7 +149,7 @@ describe("on-demand agent avatars", () => {
     const clearPixels = await sharp(Buffer.from(await clear.arrayBuffer())).ensureAlpha().raw().toBuffer();
     const darkPixels = await sharp(Buffer.from(await dark.arrayBuffer())).ensureAlpha().raw().toBuffer();
     expect(Array.from(clearPixels.subarray(0, 4))).toEqual([0, 0, 0, 0]);
-    expect(Array.from(darkPixels.subarray(0, 4))).toEqual([channel, channel, channel, 255]);
+    expect(Array.from(darkPixels.subarray(0, 4))).toEqual([...channels, 255]);
     expect(avatarCacheKey({ ...request, background: "paperclip-dark" })).not.toBe(avatarCacheKey(request));
     const invalid = await fetch(url + "?background=white");
     expect(invalid.status).toBe(400); await invalid.text();

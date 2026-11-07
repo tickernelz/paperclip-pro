@@ -705,6 +705,26 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
 @media (pointer: coarse) {
   /* iOS Safari zooms when focusing text smaller than 16px. Floor the small
      typography tokens on editable controls, preserving larger title sizes. */
+
+  /* Rich-text editors can inherit a smaller size from their surrounding
+     document styles rather than using a typography utility. Keep this more
+     specific than the editor's content class. */
+  html [contenteditable=""],
+  html [contenteditable="true"],
+  html [contenteditable="plaintext-only"] {
+    font-size: max(var(--text-base), 1em);
+  }
+
+  /* Small inline widgets keep their design size on touch devices —
+     forcing 44px here stretches checkboxes, chip menus, and icon buttons
+     that live inside dense rows (sidebar headers, issue rows, filter
+     popovers). The surrounding row provides the touch area. */
+}
+}
+
+@layer layout {
+
+@media (pointer: coarse) {
   input,
   select,
   textarea,
@@ -718,15 +738,6 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
     --text-sm: var(--text-base);
   }
 
-  /* Rich-text editors can inherit a smaller size from their surrounding
-     document styles rather than using a typography utility. Keep this more
-     specific than the editor's content class. */
-  html [contenteditable=""],
-  html [contenteditable="true"],
-  html [contenteditable="plaintext-only"] {
-    font-size: max(var(--text-base), 1em);
-  }
-
   button,
   [role="button"],
   input,
@@ -735,11 +746,6 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
   [data-slot="select-trigger"] {
     min-height: 44px;
   }
-
-  /* Small inline widgets keep their design size on touch devices —
-     forcing 44px here stretches checkboxes, chip menus, and icon buttons
-     that live inside dense rows (sidebar headers, issue rows, filter
-     popovers). The surrounding row provides the touch area. */
   [data-slot="toggle"],
   [data-slot="checkbox"],
   [data-slot="icon-button"],
@@ -1429,8 +1435,6 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
   .side-panel-tab-motion,
   .side-panel-tab-close-motion { transition: none; }
   /* The pill keyframes carry the X-centering; with animation:none restore it. */
-  .tc-scroll-pill-in,
-  .tc-scroll-pill-out { transform: translate(-50%, 0); }
   .tc-approval::after { animation: none; opacity: 1; box-shadow: 0 0 0 2px color-mix(in oklab, var(--accent) 18%, transparent); }
   .tc-cursor { animation: none; opacity: 1; }
 }
@@ -1438,6 +1442,14 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
 /* Expandable dialog transition for max-width changes */
 [data-slot="dialog-content"] {
   transition: max-width 200ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+}
+
+@layer layout {
+
+@media (prefers-reduced-motion: reduce) {
+  .tc-scroll-pill-in,
+  .tc-scroll-pill-out { transform: translate(-50%, 0); }
 }
 }
 
@@ -1722,18 +1734,21 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
   );
 }
 
-.task-chat-expanded-line-wrap,
-.paperclip-markdown.task-chat-reasoning-markdown,
-.paperclip-markdown.task-chat-reasoning-markdown :is(p, strong, em, a, code) {
-  overflow-wrap: anywhere;
-  word-break: break-word;
-}
-
 @media (prefers-reduced-motion: reduce) {
   .tc-stream-block-enter,
   .tc-live-ping {
     animation: none;
   }
+}
+}
+
+@layer layout {
+
+.task-chat-expanded-line-wrap,
+.paperclip-markdown.task-chat-reasoning-markdown,
+.paperclip-markdown.task-chat-reasoning-markdown :is(p, strong, em, a, code) {
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 }
 
@@ -2079,14 +2094,6 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
   line-height: 1.5;
 }
 
-.paperclip-mdxeditor [class*="_contentEditable_"] {
-  padding: 0.375rem 0.625rem !important;
-}
-
-.paperclip-mdxeditor--borderless [class*="_contentEditable_"] {
-  padding: 0 !important;
-}
-
 .paperclip-mdxeditor [class*="_placeholder_"] {
   font-size: inherit;
   line-height: 1.5;
@@ -2096,12 +2103,6 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
 /* MDXEditor defaults placeholders to a single clipped line. The task-chat
    composer uses longer, assignee-aware copy, so keep it inside the editor by
    giving the absolutely positioned placeholder a wrapping inline size. */
-.paperclip-task-chat-composer .paperclip-mdxeditor [class*="_placeholder_"] {
-  display: block;
-  width: 100%;
-  overflow-wrap: anywhere;
-  white-space: normal;
-}
 
 .paperclip-mdxeditor-content {
   font-size: inherit;
@@ -2114,21 +2115,9 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
   line-height: 1.75rem;
 }
 
-.paperclip-mdxeditor-content > *:first-child {
-  margin-top: 0;
-}
-
-.paperclip-mdxeditor-content > *:last-child {
-  margin-bottom: 0;
-}
-
 .paperclip-mdxeditor-content p {
   margin: 0;
   line-height: inherit;
-}
-
-.paperclip-mdxeditor-content p + p {
-  margin-top: 1.1em;
 }
 
 .paperclip-mdxeditor-content a:not(.paperclip-mention-chip):not(.paperclip-project-mention-chip) {
@@ -2193,12 +2182,6 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
   background-position: center;
   background-repeat: no-repeat;
   background-size: contain;
-}
-
-.paperclip-mdxeditor-content ul,
-.paperclip-mdxeditor-content ol {
-  margin: 1.1em 0;
-  padding-left: 1.6em;
 }
 
 .paperclip-mdxeditor-content ul {
@@ -2308,9 +2291,6 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
 }
 
 /* MDXEditor code block language selector – show on hover only */
-.paperclip-mdxeditor-content [class*="_codeMirrorWrapper_"] {
-  position: relative;
-}
 
 .paperclip-mdxeditor-content [class*="_codeMirrorToolbar_"],
 .paperclip-mdxeditor-content [class*="_codeBlockToolbar_"] {
@@ -2374,9 +2354,6 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
 }
 
 /* Actions for fenced and indented preformatted markdown blocks */
-.paperclip-markdown-codeblock {
-  position: relative;
-}
 
 .paperclip-markdown-codeblock-actions {
   position: absolute;
@@ -2492,23 +2469,6 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
   --tw-prose-invert-td-borders: color-mix(in oklab, currentColor 22%, transparent);
 }
 
-.paperclip-markdown > :first-child {
-  margin-top: 0;
-}
-
-.paperclip-markdown > :last-child {
-  margin-bottom: 0;
-}
-
-.paperclip-markdown :where(p, ul, ol, blockquote, pre, .paperclip-markdown-table-scroll) {
-  margin-top: 0.7rem;
-  margin-bottom: 0.7rem;
-}
-
-.paperclip-markdown :where(ul, ol) {
-  padding-left: 1.5rem;
-}
-
 .paperclip-markdown ul {
   list-style-type: disc;
 }
@@ -2518,22 +2478,6 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
      when markdown lists sit flush against an overflow-constrained container. */
   list-style-type: decimal;
   padding-left: 2.5rem;
-}
-
-.paperclip-markdown li {
-  margin: 0.14rem 0;
-  padding-left: 0.2rem;
-}
-
-@media (width < 48rem) {
-  .paperclip-mobile-thread .paperclip-markdown :where(ul, ol) {
-    padding-left: calc(var(--spacing) * 5);
-  }
-}
-
-.paperclip-markdown li > :where(p, ul, ol) {
-  margin-top: 0.3rem;
-  margin-bottom: 0.3rem;
 }
 
 .paperclip-markdown li::marker {
@@ -2609,17 +2553,9 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
 
 /* Inline issue references in markdown: no pill chrome, just a status icon
    beside the link label — keeps the pair from splitting across lines. */
-.paperclip-markdown-issue-ref {
-  display: inline;
-  white-space: nowrap;
-}
 
 /* External object URL decorations follow the same pattern: the host renders
    the icon prefix, the link text is left untouched (Postel's Law). */
-.paperclip-markdown-external-ref {
-  display: inline;
-  white-space: nowrap;
-}
 
 .dark .paperclip-markdown a {
   color: color-mix(in oklab, var(--ink) 80%, #58a6ff 20%);
@@ -2679,18 +2615,6 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
   outline-offset: 2px;
 }
 
-.paperclip-markdown-table-scroll table {
-  width: max-content;
-  min-width: 100%;
-  margin: 0;
-}
-
-.paperclip-markdown-table-scroll :where(th, td) {
-  min-width: 8rem;
-  max-width: 18rem;
-  vertical-align: top;
-}
-
 .paperclip-markdown th {
   font-weight: 600;
   text-align: left;
@@ -2703,14 +2627,6 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
   border-radius: calc(var(--radius) - 3px);
   background-color: color-mix(in oklab, var(--bg-3) 35%, transparent);
   overflow-x: auto;
-}
-
-.paperclip-mermaid svg {
-  display: block;
-  width: max-content;
-  max-width: none;
-  min-width: 100%;
-  height: auto;
 }
 
 .paperclip-mermaid-status {
@@ -2753,6 +2669,111 @@ span.paperclip-project-mention-chip {
   position: relative;
   top: -1px;
   white-space: nowrap;
+}
+}
+
+@layer layout {
+
+.paperclip-mdxeditor [class*="_contentEditable_"] {
+  padding: 0.375rem 0.625rem !important;
+}
+
+.paperclip-mdxeditor--borderless [class*="_contentEditable_"] {
+  padding: 0 !important;
+}
+.paperclip-task-chat-composer .paperclip-mdxeditor [class*="_placeholder_"] {
+  display: block;
+  width: 100%;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.paperclip-mdxeditor-content > *:first-child {
+  margin-top: 0;
+}
+
+.paperclip-mdxeditor-content > *:last-child {
+  margin-bottom: 0;
+}
+
+.paperclip-mdxeditor-content p + p {
+  margin-top: 1.1em;
+}
+
+.paperclip-mdxeditor-content ul,
+.paperclip-mdxeditor-content ol {
+  margin: 1.1em 0;
+  padding-left: 1.6em;
+}
+.paperclip-mdxeditor-content [class*="_codeMirrorWrapper_"] {
+  position: relative;
+}
+.paperclip-markdown-codeblock {
+  position: relative;
+}
+
+.paperclip-markdown > :first-child {
+  margin-top: 0;
+}
+
+.paperclip-markdown > :last-child {
+  margin-bottom: 0;
+}
+
+.paperclip-markdown :where(p, ul, ol, blockquote, pre, .paperclip-markdown-table-scroll) {
+  margin-top: 0.7rem;
+  margin-bottom: 0.7rem;
+}
+
+.paperclip-markdown :where(ul, ol) {
+  padding-left: 1.5rem;
+}
+
+.paperclip-markdown li {
+  margin: 0.14rem 0;
+  padding-left: 0.2rem;
+}
+
+.paperclip-markdown li > :where(p, ul, ol) {
+  margin-top: 0.3rem;
+  margin-bottom: 0.3rem;
+}
+.paperclip-markdown-issue-ref {
+  display: inline;
+  white-space: nowrap;
+}
+.paperclip-markdown-external-ref {
+  display: inline;
+  white-space: nowrap;
+}
+
+.paperclip-markdown-table-scroll table {
+  width: max-content;
+  min-width: 100%;
+  margin: 0;
+}
+
+.paperclip-markdown-table-scroll :where(th, td) {
+  min-width: 8rem;
+  max-width: 18rem;
+  vertical-align: top;
+}
+
+.paperclip-mermaid svg {
+  display: block;
+  width: max-content;
+  max-width: none;
+  min-width: 100%;
+  height: auto;
+}
+}
+
+@layer layout {
+
+@media (width < 48rem) {
+  .paperclip-mobile-thread .paperclip-markdown :where(ul, ol) {
+    padding-left: calc(var(--spacing) * 5);
+  }
 }
 }
 
@@ -3505,15 +3526,6 @@ span.paperclip-mention-chip[data-mention-kind="external-object"] {
    the wrapper, not the content. Offsets come from the visual viewport because iOS
    keeps the layout viewport at full height while the keyboard is up. */
 @media (max-width: 40rem) {
-  [data-radix-popper-content-wrapper]:has(> [data-mobile-entity-picker]) {
-    position: fixed !important;
-    transform: none !important;
-    will-change: auto !important;
-    inset: auto 0 var(--mobile-viewport-inset-bottom, 0px) 0 !important;
-    width: auto !important;
-    min-width: 0 !important;
-    z-index: 60;
-  }
 
   [data-radix-popper-content-wrapper]:has(> [data-mobile-entity-picker])::before {
     content: "";
@@ -3545,6 +3557,39 @@ span.paperclip-mention-chip[data-mention-kind="external-object"] {
     animation: none !important;
     pointer-events: auto;
   }
+}
+}
+
+@layer layout {
+@media (max-width: 40rem) {
+
+  [data-mobile-entity-picker] [data-slot="command-list"] [cmdk-item],
+  [data-mobile-entity-picker] [data-slot="entity-option-list"] > button,
+  [data-mobile-entity-picker] [data-slot="entity-option"] {
+    white-space: nowrap !important;
+  }
+
+  [data-mobile-entity-picker] [data-slot="command-list"] [cmdk-item] > *,
+  [data-mobile-entity-picker] [data-slot="entity-option-list"] > button > span,
+  [data-mobile-entity-picker] [data-slot="entity-option"] > span {
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+}
+}
+
+@layer layout {
+@media (max-width: 40rem) {
+  [data-radix-popper-content-wrapper]:has(> [data-mobile-entity-picker]) {
+    position: fixed !important;
+    transform: none !important;
+    will-change: auto !important;
+    inset: auto 0 var(--mobile-viewport-inset-bottom, 0px) 0 !important;
+    width: auto !important;
+    min-width: 0 !important;
+    z-index: 60;
+  }
 
   [data-mobile-entity-picker-header] {
     display: flex;
@@ -3571,20 +3616,6 @@ span.paperclip-mention-chip[data-mention-kind="external-object"] {
     max-height: none !important;
     overflow-y: auto !important;
     overscroll-behavior: contain;
-  }
-
-  [data-mobile-entity-picker] [data-slot="command-list"] [cmdk-item],
-  [data-mobile-entity-picker] [data-slot="entity-option-list"] > button,
-  [data-mobile-entity-picker] [data-slot="entity-option"] {
-    white-space: nowrap !important;
-  }
-
-  [data-mobile-entity-picker] [data-slot="command-list"] [cmdk-item] > *,
-  [data-mobile-entity-picker] [data-slot="entity-option-list"] > button > span,
-  [data-mobile-entity-picker] [data-slot="entity-option"] > span {
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    white-space: nowrap !important;
   }
 }
 }

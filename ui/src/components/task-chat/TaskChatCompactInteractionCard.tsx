@@ -32,6 +32,7 @@ import { ConnectionIntentInteractionBody } from "@/features/connections/Connecti
 import { MarkdownBody } from "@/components/MarkdownBody";
 import type { MentionOption } from "@/components/MarkdownEditor";
 import { Button } from "@/components/ui/button";
+import { Segmented, SegmentedItem } from "@/components/ui/segmented";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -1946,30 +1947,16 @@ function ItemVerdictsCard({
           {resolved.reason ? ` · ${resolved.reason}` : ""}
         </p>
       ) : (
-        <div
-          className="mt-3 flex flex-wrap gap-1.5"
-          role="group"
+        <Segmented
+          className="mt-3 flex-wrap"
           aria-label={`Verdict for ${item.label}`}
         >
           {enabledVerdicts.map((verdict) => (
-            <Button
+            <SegmentedItem
               key={verdict}
-              type="button"
-              size="sm"
-              variant="danger"
-              aria-pressed={draft?.verdict === verdict}
+              selected={draft?.verdict === verdict}
               onClick={() => setVerdict(verdict)}
-              className={cn(
-                "min-w-24 justify-center capitalize",
-                verdict === "approve" &&
-                  (draft?.verdict === verdict
-                    ? " "
-                    : " "),
-                verdict === "reject" &&
-                  (draft?.verdict === verdict
-                    ? " "
-                    : " "),
-              )}
+              className="min-w-24 capitalize"
             >
               {verdict === "approve" ? (
                 <Check aria-hidden className="h-4 w-4" />
@@ -1978,9 +1965,9 @@ function ItemVerdictsCard({
                 <X aria-hidden className="h-4 w-4" />
               ) : null}
               {verdict}
-            </Button>
+            </SegmentedItem>
           ))}
-        </div>
+        </Segmented>
       )}
       {!resolved && draft && requireReasonOn.has(draft.verdict) ? (
         <div className="mt-2 space-y-1.5">
