@@ -530,9 +530,9 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
                 <Network className="h-3.5 w-3.5" />
               </Button>
           </div> : null}
-          <Button size="sm" variant="ghost" onClick={() => navigate("/company/settings/agent-defaults")}>
-            <SlidersHorizontal className="h-3.5 w-3.5 mr-1.5" />
-            Agent defaults
+          <Button size="sm" variant="ghost" aria-label="Agent defaults" title="Agent defaults" onClick={() => navigate("/company/settings/agent-defaults")}>
+            <SlidersHorizontal className="h-3.5 w-3.5 sm:mr-1.5" />
+            <span className="hidden sm:inline">Agent defaults</span>
           </Button>
           <Button size="sm" variant="secondary" onClick={openNewAgent}>
             <Plus className="h-3.5 w-3.5 mr-1.5" />
