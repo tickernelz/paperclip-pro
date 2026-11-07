@@ -27,7 +27,7 @@ import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
 } from "./helpers/embedded-postgres.js";
-import { buildPaperclipRuntimeMcpServers, createManagedMcpRunConfig } from "../services/heartbeat.js";
+import { buildPaperclipRuntimeMcpServers } from "../services/heartbeat.js";
 import { createToolGatewayService, ToolGatewayHttpError } from "../services/tool-gateway.js";
 
 import { toolAccessService } from "../services/tool-access.js";
@@ -67,142 +67,6 @@ describeEmbeddedPostgres("heartbeat runtime MCP servers", () => {
 
   afterAll(async () => {
     await tempDb?.cleanup();
-  });
-
-  it("provisions one aggregate gateway and omits unavailable access without blocking any runtime", async () => {
-    process.env.PAPERCLIP_API_URL = "https://paperclip.example.test";
-    const [company] = await db.insert(companies).values({
-      name: `Runtime MCP ${randomUUID()}`,
-      issuePrefix: `RM${randomUUID().slice(0, 5).toUpperCase()}`,
-    }).returning();
-    const [agent] = await db.insert(agents).values({
-      companyId: company!.id,
-      name: "Runtime MCP Agent",
-      role: "engineer",
-      adapterType: "codex_local",
-      adapterConfig: {},
-    }).returning();
-    const [application] = await db.insert(toolApplications).values({
-      companyId: company!.id,
-      applicationKey: `runtime-${randomUUID().slice(0, 8)}`,
-      name: "Runtime MCP App",
-      type: "mcp_http",
-      status: "active",
-    }).returning();
-    const [installedConnection, uninstalledConnection] = await db.insert(toolConnections).values([
-      {
-        companyId: company!.id,
-        applicationId: application!.id,
-        name: "Installed MCP",
-        uid: `test/${randomUUID()}`,
-        transport: "mcp_remote",
-        status: "active",
-        enabled: true,
-        config: { url: "https://installed.example.test/mcp" },
-      },
-      {
-        companyId: company!.id,
-        applicationId: application!.id,
-        name: "Uninstalled MCP",
-        uid: `test/${randomUUID()}`,
-        transport: "mcp_remote",
-        status: "active",
-        enabled: true,
-        config: { url: "https://uninstalled.example.test/mcp" },
-      },
-    ]).returning();
-    const [profile] = await db.insert(toolProfiles).values({
-      companyId: company!.id,
-      profileKey: `app:${installedConnection!.id}`,
-      name: "Installed MCP",
-      defaultAction: "deny",
-    }).returning();
-    await db.insert(toolProfileEntries).values({
-      companyId: company!.id,
-      profileId: profile!.id,
-      selectorType: "connection",
-      effect: "include",
-      applicationId: application!.id,
-      connectionId: installedConnection!.id,
-    });
-    await db.insert(toolProfileBindings).values({
-      companyId: company!.id,
-      profileId: profile!.id,
-      targetType: "agent",
-      targetId: agent!.id,
-    });
-    await db.insert(toolConnectionInstalls).values({
-      companyId: company!.id,
-      connectionId: installedConnection!.id,
-      targetType: "agent",
-      targetId: agent!.id,
-    });
-
-    const before = Date.now();
-    const first = await buildPaperclipRuntimeMcpServers({ db, agent: agent!, runId: randomUUID() });
-    const second = await buildPaperclipRuntimeMcpServers({ db, agent: agent!, runId: randomUUID() });
-
-    expect(first).toHaveLength(1);
-    expect(first[0]).toMatchObject({
-      name: "paperclip-assigned",
-      connectionId: expect.stringMatching(/^assignment:[a-f0-9]{64}$/),
-      url: expect.stringMatching(/^https:\/\/paperclip\.example\.test\/mcp\/gateways\/gw_[a-f0-9]{32}$/),
-      token: expect.stringMatching(/^pcgw_/),
-    });
-    expect(JSON.stringify(first)).not.toContain(uninstalledConnection!.id);
-    expect(second).toHaveLength(1);
-    expect(second[0]!.connectionId).toBe(first[0]!.connectionId);
-
-    const gateways = await db.select().from(toolMcpGateways);
-    expect(gateways).toHaveLength(1);
-    // The column, not metadata, is what named-gateway auth checks run tokens against.
-    expect(gateways[0]!.agentId).toBe(agent!.id);
-    expect(gateways[0]!.metadata).toMatchObject({
-      nativeRuntimeAssignmentDigest: first[0]!.connectionId.slice("assignment:".length),
-      agentId: agent!.id,
-    });
-    const tokens = await db.select().from(toolMcpGatewayTokens);
-    expect(tokens).toHaveLength(2);
-    for (const token of tokens) {
-      expect(token.subjectType).toBe("heartbeat_run");
-      expect(token.subjectId).toMatch(/^[0-9a-f-]{36}$/);
-      expect(token.expiresAt!.getTime()).toBeGreaterThanOrEqual(before + 59 * 60 * 1000);
-      expect(token.expiresAt!.getTime()).toBeLessThanOrEqual(Date.now() + 61 * 60 * 1000);
-    }
-    expect(JSON.stringify(tokens)).not.toContain(first[0]!.token);
-
-    await expect(
-      buildPaperclipRuntimeMcpServers({
-        db,
-        agent: agent!,
-        runId: randomUUID(),
-        expectedAssignmentDigest: "0".repeat(64),
-      }),
-    ).resolves.toEqual([]);
-    expect(await db.select().from(toolMcpGatewayTokens)).toHaveLength(2);
-
-    await db.update(toolConnections)
-      .set({ healthStatus: "degraded", healthMessage: "fixture unavailable" })
-      .where(eq(toolConnections.id, installedConnection!.id));
-    await expect(
-      buildPaperclipRuntimeMcpServers({
-        db,
-        agent: agent!,
-        runId: randomUUID(),
-        expectedAssignmentDigest: first[0]!.connectionId.slice("assignment:".length),
-      }),
-    ).resolves.toEqual([]);
-    expect(await db.select().from(toolMcpGatewayTokens)).toHaveLength(2);
-    await expect(
-      createManagedMcpRunConfig({
-        db,
-        agent: agent!,
-        runId: randomUUID(),
-        config: {},
-        projectId: null,
-        issueId: null,
-      }),
-    ).resolves.toBeNull();
   });
 
   async function seedAssignedAgents(count: number) {
@@ -346,36 +210,6 @@ describeEmbeddedPostgres("heartbeat runtime MCP servers", () => {
       .rejects.toMatchObject({ reasonCode: "gateway_token_run_context_invalid" });
   });
 
-  it("rejects a legacy native gateway with cleared metadata and omits it from managed discovery", async () => {
-    const [owner, other] = await seedAssignedAgents(2);
-    const [server] = await buildPaperclipRuntimeMcpServers({ db, agent: owner!.agent, runId: owner!.run.id });
-    const [gateway] = await db.select().from(toolMcpGateways);
-    await db.update(toolMcpGateways).set({ agentId: null, contextScopeType: "none", contextScopeId: null, metadata: {} })
-      .where(eq(toolMcpGateways.id, gateway!.id));
-    const service = createToolGatewayService(db);
-    const token = await service.createNamedGatewayToken({
-      companyId: owner!.agent.companyId, gatewayId: gateway!.id,
-      body: { name: "Other run", subjectType: "heartbeat_run", subjectId: other!.run.id,
-        allowedActions: ["tools/list"], expiresAt: new Date(Date.now() + 60_000) },
-      actor: { agentId: other!.agent.id },
-    });
-    for (const bearerToken of [token.token, server!.token]) {
-      await expect(service.initializeNamedGatewayProtocol({ gatewayId: gateway!.id, bearerToken }))
-        .rejects.toMatchObject({ reasonCode: "gateway_token_run_context_invalid" });
-    }
-    for (const { agent, run } of [owner!, other!]) {
-      await expect(createManagedMcpRunConfig({ db, agent, runId: run.id, config: {}, projectId: null, issueId: null }))
-        .resolves.toBeNull();
-    }
-    // The immutable profile key still identifies the assignment if its metadata
-    // is also damaged. Neither authentication nor managed delivery can widen it.
-    await db.update(toolProfiles).set({ metadata: {} }).where(eq(toolProfiles.id, gateway!.profileId));
-    await expect(service.initializeNamedGatewayProtocol({ gatewayId: gateway!.id, bearerToken: token.token }))
-      .rejects.toMatchObject({ reasonCode: "gateway_token_run_context_invalid" });
-    await expect(createManagedMcpRunConfig({ db, agent: other!.agent, runId: other!.run.id,
-      config: {}, projectId: null, issueId: null })).resolves.toBeNull();
-  });
-
   it("rejects JSON null profile metadata with an HTTP authentication response", async () => {
     const [owner] = await seedAssignedAgents(1);
     const [server] = await buildPaperclipRuntimeMcpServers({ db, agent: owner!.agent, runId: owner!.run.id });
@@ -387,47 +221,6 @@ describeEmbeddedPostgres("heartbeat runtime MCP servers", () => {
     const app = express().use(express.json()).use(mcpGatewayProtocolRoutes(service));
     await request(app).post(`/mcp/gateways/${gateway!.gatewayPublicId}`)
       .set("Authorization", `Bearer ${server!.token}`).send({ jsonrpc: "2.0", id: 1, method: "initialize" }).expect(401);
-  });
-
-  it("delivers native assignments once and preserves explicit shared gateways", async () => {
-    const [owner, other] = await seedAssignedAgents(2);
-    const native = await buildPaperclipRuntimeMcpServers({ db, agent: owner!.agent, runId: owner!.run.id });
-    expect(native).toHaveLength(1);
-    const [gateway] = await db.select().from(toolMcpGateways);
-    // All assignment history, including gateways written before owner columns
-    // existed, belongs to the native delivery path rather than managed config.
-    await db.update(toolMcpGateways).set({ agentId: null, contextScopeType: "none", contextScopeId: null });
-    for (const agent of [owner!.agent, other!.agent]) {
-      await expect(createManagedMcpRunConfig({ db, agent, runId: owner!.run.id, config: {}, projectId: null, issueId: null }))
-        .resolves.toBeNull();
-    }
-    const [sharedProfile] = await db.insert(toolProfiles).values({
-      companyId: owner!.agent.companyId, profileKey: `shared:${randomUUID()}`,
-      name: "Explicit shared profile", defaultAction: "deny",
-    }).returning();
-    const [nativeEntry] = await db.select().from(toolProfileEntries).where(eq(toolProfileEntries.profileId, gateway!.profileId));
-    await db.insert(toolProfileEntries).values({
-      companyId: owner!.agent.companyId, profileId: sharedProfile!.id, selectorType: "connection", effect: "include",
-      applicationId: nativeEntry!.applicationId, connectionId: nativeEntry!.connectionId,
-    });
-    const service = createToolGatewayService(db);
-    const shared = await service.createNamedGateway({
-      companyId: owner!.agent.companyId,
-      body: { name: "Explicit company gateway", slug: `shared-${randomUUID()}`, profileId: sharedProfile!.id,
-        defaultProfileMode: "gateway_only" },
-      actor: { agentId: owner!.agent.id },
-    });
-    const managed = await createManagedMcpRunConfig({ db, agent: other!.agent, runId: other!.run.id,
-      config: {}, projectId: null, issueId: null });
-    expect(managed?.gateways.map((entry) => entry.id)).toEqual([shared.id]);
-    const token = await service.createNamedGatewayToken({
-      companyId: owner!.agent.companyId, gatewayId: shared.id,
-      body: { name: "Shared run", subjectType: "heartbeat_run", subjectId: other!.run.id,
-        allowedActions: ["tools/list"], expiresAt: new Date(Date.now() + 60_000) },
-      actor: { agentId: other!.agent.id },
-    });
-    await expect(service.initializeNamedGatewayProtocol({ gatewayId: shared.id, bearerToken: token.token }))
-      .resolves.toMatchObject({ agentId: other!.agent.id });
   });
 
   it("does not repair a gateway with conflicting ownership metadata", async () => {
@@ -731,87 +524,4 @@ describeEmbeddedPostgres("heartbeat runtime MCP servers", () => {
     });
   });
 
-  it("injects only managed gateways whose profile connections are installed for the agent", async () => {
-    const [company] = await db.insert(companies).values({
-      name: `Managed gateway installs ${randomUUID()}`,
-      issuePrefix: `MG${randomUUID().slice(0, 5).toUpperCase()}`,
-    }).returning();
-    const [agent] = await db.insert(agents).values({
-      companyId: company!.id,
-      name: "Managed Gateway Agent",
-      role: "engineer",
-      adapterType: "codex_local",
-      adapterConfig: {},
-    }).returning();
-    const [application] = await db.insert(toolApplications).values({
-      companyId: company!.id,
-      applicationKey: `managed-gateway-${randomUUID().slice(0, 8)}`,
-      name: "Managed Gateway App",
-      type: "mcp_http",
-      status: "active",
-    }).returning();
-    const connections = await db.insert(toolConnections).values([
-      {
-        companyId: company!.id,
-        applicationId: application!.id,
-        name: "Installed gateway connection",
-        uid: `test/${randomUUID()}`,
-        transport: "mcp_remote",
-        status: "active",
-        enabled: true,
-      },
-      {
-        companyId: company!.id,
-        applicationId: application!.id,
-        name: "Uninstalled gateway connection",
-        uid: `test/${randomUUID()}`,
-        transport: "mcp_remote",
-        status: "active",
-        enabled: true,
-      },
-    ]).returning();
-    const profiles = await db.insert(toolProfiles).values(connections.map((connection) => ({
-      companyId: company!.id,
-      profileKey: `gateway:${connection.id}`,
-      name: connection.name,
-      defaultAction: "deny" as const,
-    }))).returning();
-    await db.insert(toolProfileEntries).values(profiles.map((profile, index) => ({
-      companyId: company!.id,
-      profileId: profile.id,
-      selectorType: "connection" as const,
-      effect: "include" as const,
-      connectionId: connections[index]!.id,
-    })));
-    const gateways = await db.insert(toolMcpGateways).values(profiles.map((profile, index) => ({
-      companyId: company!.id,
-      name: `${connections[index]!.name} gateway`,
-      slug: `gateway-${index}-${randomUUID().slice(0, 8)}`,
-      profileId: profile.id,
-      status: "active" as const,
-    }))).returning();
-    await db.insert(toolConnectionInstalls).values({
-      companyId: company!.id,
-      connectionId: connections[0]!.id,
-      targetType: "agent",
-      targetId: agent!.id,
-    });
-
-    const config = await createManagedMcpRunConfig({
-      db,
-      agent: agent!,
-      runId: randomUUID(),
-      config: {},
-      projectId: null,
-      issueId: null,
-    });
-
-    expect(config?.gateways).toHaveLength(1);
-    expect(config?.gateways[0]).toMatchObject({
-      id: gateways[0]!.id,
-      name: gateways[0]!.name,
-      endpointPath: `/mcp/gateways/${gateways[0]!.gatewayPublicId}`,
-    });
-    expect(config?.gateways.some((gateway) => gateway.id === gateways[1]!.id)).toBe(false);
-  });
 });

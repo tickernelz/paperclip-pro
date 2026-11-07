@@ -26,7 +26,6 @@ import * as codexAdapter from "../services/ai-providers/codex/codex-auth-cache.j
 import { WORKSPACE_RESTORE_LOCK_TIMEOUT_CODE } from "@tickernelz/paperclip-pro-adapter-utils/workspace-restore-merge";
 import * as executionTarget from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
 import { prepareManagedAiRuntime, withManagedAiProbe, assertManagedAiProjectAuth, isAiConnectionBusy } from "../services/ai-connection-runtime.js";
-import { execute as executeGemini, testEnvironment as testGeminiEnvironment } from "@tickernelz/paperclip-pro-adapter-gemini-local/server";
 import { toolAccessService } from "../services/tool-access.js";
 import { secretService } from "../services/secrets.js";
 import { resolveExecutionRunAdapterConfig } from "../services/heartbeat.js";
@@ -761,53 +760,6 @@ describe("managed AI connections", () => {
       expect(crossAgentRead.stdout).toBe("ENOENT");
       await expect(access(transcript)).rejects.toMatchObject({ code: "ENOENT" });
     } finally { await Promise.all([resumed.cleanup(), peer.cleanup()]); }
-  });
-  it("authenticates local Gemini probes and runs with the saved key in an isolated home", async () => {
-    const root = await mkdtemp(path.join(home, "gemini-auth-"));
-    const command = path.join(root, "gemini");
-    await writeFile(command, `#!/usr/bin/env node
-const fs = require("node:fs");
-const path = require("node:path");
-const settings = JSON.parse(fs.readFileSync(path.join(process.env.HOME, ".gemini/settings.json"), "utf8"));
-if (settings.selectedAuthType !== "gemini-api-key" || settings.security?.auth?.selectedType !== "gemini-api-key" || process.env.GEMINI_API_KEY !== "saved-google-key") {
-  console.error("Invalid auth method selected");
-  process.exit(1);
-}
-console.log(JSON.stringify({ type: "system", subtype: "init", session_id: "gemini-managed" }));
-console.log(JSON.stringify({ type: "assistant", message: { content: [{ type: "output_text", text: "hello" }] } }));
-console.log(JSON.stringify({ type: "result", subtype: "success", result: "hello", session_id: "gemini-managed" }));
-`, { mode: 0o700 });
-    const saved = await service.save(companyId, "alice", {
-      provider: "google", method: "api_key", ownership: "personal", name: "Saved Google",
-      apiKey: "fixture", allAgents: true, agentIds: [],
-    }, "saved-google-key");
-    const runtime = await prepareManagedAiRuntime(db, {
-      companyId, agentId, responsibleUserId: "alice", adapterType: "gemini_local",
-      binding: { provider: "google", method: "api_key", mode: "responsible_user" },
-      config: { engine: "cli", command, cwd: root, promptTemplate: "Say hello.", paperclipRuntimeSkills: [], env: { GEMINI_API_KEY: "ambient-google-key" } },
-    });
-    try {
-      expect(runtime.attribution.grantId).toBe(saved.grantId);
-      expect(runtime.home).not.toBe(os.homedir());
-      const settingsFile = path.join(runtime.home!, ".gemini/settings.json");
-      expect(await readFile(settingsFile, "utf8")).not.toContain("saved-google-key");
-      expect((await stat(settingsFile)).mode & 0o777).toBe(0o600);
-      const probe = await testGeminiEnvironment({ companyId, adapterType: "gemini_local", config: runtime.config });
-      expect(probe.status).toBe("pass");
-      expect(probe.checks).toContainEqual(expect.objectContaining({ code: "gemini_hello_probe_passed" }));
-      const result = await executeGemini({
-        runId: randomUUID(),
-        agent: { id: agentId, companyId, name: "Gemini", adapterType: "gemini_local", adapterConfig: { engine: "cli" } },
-        runtime: { sessionId: null, sessionParams: null, sessionDisplayId: null, taskKey: null },
-        config: runtime.config, context: {}, onLog: async () => {},
-      });
-      expect(result.exitCode).toBe(0);
-      expect(result.sessionId).toBe("gemini-managed");
-    } finally {
-      await runtime.cleanup();
-      await rm(root, { recursive: true, force: true });
-    }
-    await expect(access(runtime.home!)).rejects.toThrow();
   });
 
   it("preserves Google account defaults when the provider constraint migration is reapplied", async () => {

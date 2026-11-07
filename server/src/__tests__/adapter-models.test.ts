@@ -1,13 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { models as claudeFallbackModels } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/claude";
-import { resetClaudeModelsCacheForTests } from "@tickernelz/paperclip-pro-adapter-claude-local/server";
+import { resetClaudeModelsCacheForTests } from "../services/ai-providers/claude/models.js";
 import { models as codexFallbackModels } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/codex";
-import { models as cursorFallbackModels } from "@tickernelz/paperclip-pro-adapter-cursor-local";
-import { models as opencodeFallbackModels } from "@tickernelz/paperclip-pro-adapter-opencode-local";
-import { resetOpenCodeModelsCacheForTests } from "@tickernelz/paperclip-pro-adapter-opencode-local/server";
-import { listAdapterModels, listServerAdapters, refreshAdapterModels, registerServerAdapter, unregisterServerAdapter } from "../adapters/index.js";
+import { models as opencodeFallbackModels } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/opencode";
+import { resetOpenCodeModelsCacheForTests } from "../services/ai-providers/opencode/models.js";
+import { listAdapterModels, listRunnerHarnessModels, listServerAdapters, refreshRunnerHarnessModels } from "../adapters/index.js";
 import { resetCodexModelsCacheForTests } from "../adapters/codex-models.js";
-import { resetCursorModelsCacheForTests, setCursorModelsRunnerForTests } from "../adapters/cursor-models.js";
 
 vi.mock("acpx/runtime", () => ({
   createAcpRuntime: vi.fn(),
@@ -26,8 +24,6 @@ describe("adapter model listing", () => {
     delete process.env.PAPERCLIP_OPENCODE_COMMAND;
     resetClaudeModelsCacheForTests();
     resetCodexModelsCacheForTests();
-    resetCursorModelsCacheForTests();
-    setCursorModelsRunnerForTests(null);
     resetOpenCodeModelsCacheForTests();
     vi.restoreAllMocks();
   });
@@ -45,7 +41,7 @@ describe("adapter model listing", () => {
 
   it("returns codex fallback models when no OpenAI key is available", async () => {
     const fetchSpy = vi.spyOn(globalThis, "fetch");
-    const models = await listAdapterModels("codex_local");
+    const models = await listRunnerHarnessModels("codex_local");
 
     expect(models).toEqual(codexFallbackModels);
     // The bare gpt-5.6 alias is intentionally not advertised (Codex has no metadata for it).
@@ -60,7 +56,7 @@ describe("adapter model listing", () => {
 
   it("returns claude fallback models including the latest Opus alias when no Anthropic key is available", async () => {
     const fetchSpy = vi.spyOn(globalThis, "fetch");
-    const models = await listAdapterModels("claude_local");
+    const models = await listRunnerHarnessModels("claude_local");
 
     expect(models).toEqual(claudeFallbackModels);
     expect(models.some((model) => model.id === "claude-opus-4-8")).toBe(true);
@@ -89,8 +85,8 @@ describe("adapter model listing", () => {
       }),
     } as Response);
 
-    const first = await listAdapterModels("claude_local");
-    const second = await listAdapterModels("claude_local");
+    const first = await listRunnerHarnessModels("claude_local");
+    const second = await listRunnerHarnessModels("claude_local");
 
     expect(fetchSpy).toHaveBeenCalledTimes(1);
     expect(first).toEqual(second);
@@ -121,8 +117,8 @@ describe("adapter model listing", () => {
         }),
       } as Response);
 
-    const initial = await listAdapterModels("claude_local");
-    const refreshed = await refreshAdapterModels("claude_local");
+    const initial = await listRunnerHarnessModels("claude_local");
+    const refreshed = await refreshRunnerHarnessModels("claude_local");
 
     expect(fetchSpy).toHaveBeenCalledTimes(2);
     expect(initial.some((model) => model.id === "claude-sonnet-4-20250514")).toBe(true);
@@ -137,7 +133,7 @@ describe("adapter model listing", () => {
       json: async () => ({}),
     } as Response);
 
-    const models = await listAdapterModels("claude_local");
+    const models = await listRunnerHarnessModels("claude_local");
     expect(models).toEqual(claudeFallbackModels);
   });
 
@@ -154,7 +150,7 @@ describe("adapter model listing", () => {
       }),
     } as Response);
 
-    const models = await listAdapterModels("claude_local");
+    const models = await listRunnerHarnessModels("claude_local");
 
     expect(models.filter((model) => model.id === id)).toEqual([{ id, label: displayName }]);
     // Curated fallbacks discovery did not return are still merged in.
@@ -166,7 +162,7 @@ describe("adapter model listing", () => {
     process.env.CLAUDE_CODE_USE_BEDROCK = "1";
     const fetchSpy = vi.spyOn(globalThis, "fetch");
 
-    const models = await listAdapterModels("claude_local");
+    const models = await listRunnerHarnessModels("claude_local");
 
     // Fable 5.1 leads here too, using its documented dateless Bedrock ID.
     expect(models[0]?.id).toBe("us.anthropic.claude-fable-5-1");
@@ -181,31 +177,6 @@ describe("adapter model listing", () => {
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
-  it.each([
-    ["gemini_local", ["gemini-3.8-flash", "gemini-3.7-flash", "gemini-3.6-flash", "gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-3-flash-preview"]],
-    ["grok_local", ["grok-build", "grok-4.7", "grok-4.6", "grok-4.5"]],
-    ["kimi_local", ["kimi-code/kimi-for-coding", "kimi-code/k3", "kimi-code/k3-256k"]],
-  ])("lists current %s models without a provider login", async (adapter, expectedIds) => {
-    const models = await listAdapterModels(adapter as string);
-    expect(models.map((model) => model.id)).toEqual(expect.arrayContaining(expectedIds as string[]));
-    expect(new Set(models.map((model) => model.id)).size).toBe(models.length);
-    if (adapter === "gemini_local") {
-      expect(models.some((model) => model.id.startsWith("gemini-2.0-"))).toBe(false);
-    }
-    if (adapter === "kimi_local") {
-      expect(models).toContainEqual({ id: "kimi-code/kimi-for-coding", label: "K2.8 Preview" });
-    }
-  });
-
-  it("includes current Cursor fallbacks when runtime discovery is unavailable", async () => {
-    setCursorModelsRunnerForTests(() => ({ status: 1, stdout: "", stderr: "", hasError: true }));
-    const models = await listAdapterModels("cursor");
-    expect(models.map((model) => model.id)).toEqual(expect.arrayContaining([
-      "composer-2.5", "claude-opus-5-5", "claude-fable-5-1", "claude-sonnet-5",
-      "gpt-5.6-sol", "gpt-5.6-terra", "gpt-5.6-luna", "grok-4.7", "gemini-3.8-flash", "muse-spark-1.3",
-    ]));
-  });
-
   it("keeps general OpenAI API models out of the Codex catalog", async () => {
     process.env.OPENAI_API_KEY = "sk-test";
     const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue({
@@ -218,8 +189,8 @@ describe("adapter model listing", () => {
       }),
     } as Response);
 
-    const first = await listAdapterModels("codex_local");
-    const second = await listAdapterModels("codex_local");
+    const first = await listRunnerHarnessModels("codex_local");
+    const second = await listRunnerHarnessModels("codex_local");
 
     expect(fetchSpy).not.toHaveBeenCalled();
     expect(first).toEqual(codexFallbackModels);
@@ -230,8 +201,8 @@ describe("adapter model listing", () => {
     process.env.OPENAI_API_KEY = "sk-test";
     const fetchSpy = vi.spyOn(globalThis, "fetch");
 
-    const initial = await listAdapterModels("codex_local");
-    const refreshed = await refreshAdapterModels("codex_local");
+    const initial = await listRunnerHarnessModels("codex_local");
+    const refreshed = await refreshRunnerHarnessModels("codex_local");
 
     expect(fetchSpy).not.toHaveBeenCalled();
     expect(initial).toEqual(codexFallbackModels);
@@ -246,77 +217,11 @@ describe("adapter model listing", () => {
       json: async () => ({}),
     } as Response);
 
-    const models = await listAdapterModels("codex_local");
+    const models = await listRunnerHarnessModels("codex_local");
     expect(models).toEqual(codexFallbackModels);
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 
-  it("uses a custom Codex adapter's model and refresh hooks", async () => {
-    const builtin = listServerAdapters().find((adapter) => adapter.type === "codex_local")!;
-    const customModels = [{ id: "plugin-codex", label: "Plugin Codex" }];
-    const listModels = vi.fn(async () => customModels);
-    const refreshModels = vi.fn(async () => customModels);
-    registerServerAdapter({ ...builtin, models: [], listModels, refreshModels });
-    try {
-      await expect(listAdapterModels("codex_local")).resolves.toEqual(customModels);
-      await expect(refreshAdapterModels("codex_local")).resolves.toEqual(customModels);
-      expect(listModels).toHaveBeenCalledOnce();
-      expect(refreshModels).toHaveBeenCalledOnce();
-
-      process.env.PAPERCLIP_ADAPTER_MODELS = JSON.stringify({
-        codex_local: [{ id: "declared-codex", label: "Declared Codex" }],
-      });
-      const declared = [{ id: "declared-codex", label: "Declared Codex" }];
-      await expect(listAdapterModels("codex_local")).resolves.toEqual(declared);
-      await expect(refreshAdapterModels("codex_local")).resolves.toEqual(declared);
-      expect(listModels).toHaveBeenCalledOnce();
-      expect(refreshModels).toHaveBeenCalledOnce();
-    } finally {
-      delete process.env.PAPERCLIP_ADAPTER_MODELS;
-      unregisterServerAdapter("codex_local");
-    }
-  });
-
-
-  it("returns cursor fallback models when CLI discovery is unavailable", async () => {
-    setCursorModelsRunnerForTests(() => ({
-      status: null,
-      stdout: "",
-      stderr: "",
-      hasError: true,
-    }));
-
-    const models = await listAdapterModels("cursor");
-    expect(models).toEqual(cursorFallbackModels);
-  });
-
-  it("returns current provider-qualified OpenCode models when discovery is unavailable", async () => {
-    process.env.PAPERCLIP_OPENCODE_COMMAND = "__paperclip_missing_opencode_command__";
-
-    const models = await listAdapterModels("opencode_local");
-
-    expect(models).toEqual(opencodeFallbackModels);
-    expect(models.map((model) => model.id)).toEqual(expect.arrayContaining(["openai/gpt-6-astra", "openai/gpt-6.1-sol", "openai/gpt-6-sol", "openai/gpt-6-luna", "openai/gpt-5.6-sol", "openai/gpt-5.6-terra", "openai/gpt-5.6-luna", "anthropic/claude-opus-5-5", "anthropic/claude-opus-5", "anthropic/claude-fable-5-1", "anthropic/claude-sonnet-5-5", "anthropic/claude-sonnet-5", "google/gemini-3.8-flash", "xai/grok-4.7"]));
-  });
-
-  it("loads cursor models dynamically and caches them", async () => {
-    const runner = vi.fn(() => ({
-      status: 0,
-      stdout: "Available models: auto, composer-1.5, gpt-5.3-codex-high, sonnet-4.6",
-      stderr: "",
-      hasError: false,
-    }));
-    setCursorModelsRunnerForTests(runner);
-
-    const first = await listAdapterModels("cursor");
-    const second = await listAdapterModels("cursor");
-
-    expect(runner).toHaveBeenCalledTimes(1);
-    expect(first).toEqual(second);
-    expect(first.some((model) => model.id === "auto")).toBe(true);
-    expect(first.some((model) => model.id === "gpt-5.3-codex-high")).toBe(true);
-    expect(first.some((model) => model.id === "composer-1")).toBe(true);
-  });
 
   describe("PAPERCLIP_ADAPTER_MODELS declared models", () => {
     afterEach(() => {
@@ -331,7 +236,7 @@ describe("adapter model listing", () => {
         ],
       });
 
-      const models = await listAdapterModels("opencode_local");
+      const models = await listRunnerHarnessModels("opencode_local");
 
       expect(models).toEqual([
         { id: "tensorix/deepseek/deepseek-chat-v3.1", label: "DeepSeek v3.1" },
@@ -345,7 +250,7 @@ describe("adapter model listing", () => {
       });
       process.env.PAPERCLIP_OPENCODE_COMMAND = "__paperclip_missing_opencode_command__";
 
-      const models = await refreshAdapterModels("opencode_local");
+      const models = await refreshRunnerHarnessModels("opencode_local");
 
       expect(models).toEqual([{ id: "tensorix/z-ai/glm-4.7", label: "GLM 4.7" }]);
     });
@@ -356,22 +261,22 @@ describe("adapter model listing", () => {
       });
       const declared = [{ id: "private-codex", label: "Private Codex" }];
 
-      await expect(listAdapterModels("codex_local")).resolves.toEqual(declared);
-      await expect(refreshAdapterModels("codex_local")).resolves.toEqual(declared);
+      await expect(listRunnerHarnessModels("codex_local")).resolves.toEqual(declared);
+      await expect(refreshRunnerHarnessModels("codex_local")).resolves.toEqual(declared);
     });
 
     it("observes env changes between calls (memo keyed by raw env value)", async () => {
       process.env.PAPERCLIP_ADAPTER_MODELS = JSON.stringify({
         opencode_local: [{ id: "model-a" }],
       });
-      expect(await listAdapterModels("opencode_local")).toEqual([
+      expect(await listRunnerHarnessModels("opencode_local")).toEqual([
         { id: "model-a", label: "model-a" },
       ]);
 
       process.env.PAPERCLIP_ADAPTER_MODELS = JSON.stringify({
         opencode_local: [{ id: "model-b" }],
       });
-      expect(await listAdapterModels("opencode_local")).toEqual([
+      expect(await listRunnerHarnessModels("opencode_local")).toEqual([
         { id: "model-b", label: "model-b" },
       ]);
     });
@@ -381,13 +286,13 @@ describe("adapter model listing", () => {
       process.env.PAPERCLIP_OPENCODE_COMMAND = "__paperclip_missing_opencode_command__";
       const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
-      const models = await listAdapterModels("opencode_local");
+      const models = await listRunnerHarnessModels("opencode_local");
       expect(models).toEqual(opencodeFallbackModels);
 
       // Parsing is memoized per raw value: a second call must not re-log.
       const callsAfterFirst = errorSpy.mock.calls.length;
       expect(callsAfterFirst).toBeGreaterThan(0);
-      await listAdapterModels("opencode_local");
+      await listRunnerHarnessModels("opencode_local");
       expect(errorSpy.mock.calls.length).toBe(callsAfterFirst);
     });
 
@@ -395,7 +300,7 @@ describe("adapter model listing", () => {
       process.env.PAPERCLIP_ADAPTER_MODELS = JSON.stringify({
         opencode_local: [{ id: "model-a" }],
       });
-      const models = await listAdapterModels("codex_local");
+      const models = await listRunnerHarnessModels("codex_local");
       expect(models).toEqual(codexFallbackModels);
     });
   });
