@@ -1,8 +1,7 @@
 import { expect, test, type APIRequestContext } from "@playwright/test";
 
 const expectedVersion = process.env.PAPERCLIPAI_VERSION!;
-const companyName = `Canary Smoke ${Date.now()}`;
-const agentName = "Canary Smoke Lead";
+const ONBOARDING_HEADINGS = /^(Install OMP|Update OMP|You are offline|Connect a model|What should your first agent do\?)$/;
 
 async function getJson<T>(request: APIRequestContext, url: string): Promise<T> {
   const response = await request.get(url);
@@ -10,33 +9,11 @@ async function getJson<T>(request: APIRequestContext, url: string): Promise<T> {
   return (await response.json()) as T;
 }
 
-test("the exact published canary installs and reaches Connect a model", async ({
+test("the exact published canary installs and opens onboarding without creating anything", async ({
   page,
 }) => {
   const pageErrors: string[] = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
-
-  // Browser storage is scoped to the Paperclip origin, not to a data directory.
-  // A customer can therefore start a freshly installed server with an existing
-  // onboarding draft. Creating the organization invalidates the company list;
-  // this release check must prove that a refetch does not remount the wizard
-  // from that old draft and leave the customer on the name screen.
-  await page.addInitScript(() => {
-    localStorage.setItem("paperclip-onboarding-state", JSON.stringify({
-      step: 1,
-      companyName: "",
-      createdCompanyId: null,
-    }));
-  });
-  let delayCompanyListRefetch = false;
-  await page.route("**/api/companies", async (route) => {
-    if (delayCompanyListRefetch && route.request().method() === "GET") {
-      // Make the invalidation window observable. The previous implementation
-      // unmounted the live wizard for this entire request.
-      await new Promise((resolve) => setTimeout(resolve, 250));
-    }
-    await route.continue();
-  });
 
   const health = await getJson<{
     status: string;
@@ -47,55 +24,17 @@ test("the exact published canary installs and reaches Connect a model", async ({
   expect(health.version).toBe(expectedVersion);
   expect(health.serverVersion).toBe(expectedVersion);
 
+  const companiesBefore = await getJson<Array<{ id: string }>>(page.request, "/api/companies");
+
   await page.goto("/onboarding");
-  await expect(
-    page.getByRole("heading", { name: "What is the name of your organization?" }),
-  ).toBeVisible();
-  await page.getByRole("textbox").fill(companyName);
-  delayCompanyListRefetch = true;
-  await page.getByRole("button", { name: "Continue", exact: true }).click();
+  const flow = page.getByTestId("onboarding-flow");
+  const start = page.getByRole("button", { name: /Start Onboarding/ });
+  await expect(flow.or(start.first())).toBeVisible({ timeout: 30_000 });
+  if (!(await flow.isVisible())) await start.first().click();
+  await expect(flow.getByRole("heading", { level: 1, name: ONBOARDING_HEADINGS })).toBeVisible({ timeout: 30_000 });
 
-  const agentNameField = page.locator("#onboarding-agent-name");
-  await expect(agentNameField).toBeVisible({ timeout: 30_000 });
-
-  const companies = await getJson<Array<{ id: string; name: string }>>(
-    page.request,
-    "/api/companies",
-  );
-  const company = companies.find((candidate) => candidate.name === companyName);
-  expect(company, `organization ${companyName} should exist through the API`).toBeTruthy();
-
-  expect(
-    await getJson<Array<{ id: string }>>(
-      page.request,
-      `/api/companies/${company!.id}/agents`,
-    ),
-  ).toEqual([]);
-  expect(
-    await getJson<Array<{ id: string }>>(
-      page.request,
-      `/api/companies/${company!.id}/issues`,
-    ),
-  ).toEqual([]);
-
-  await agentNameField.fill(agentName);
-  await page.getByRole("button", { name: "Next", exact: true }).click();
-  await expect(page.getByRole("heading", { name: "Connect a model" })).toBeVisible();
-
-  // Stop before Connect: a public-repository gate must not require a Claude or
-  // Codex credential, and reaching this screen has not hired an agent or made
-  // a first task.
-  expect(
-    await getJson<Array<{ id: string }>>(
-      page.request,
-      `/api/companies/${company!.id}/agents`,
-    ),
-  ).toEqual([]);
-  expect(
-    await getJson<Array<{ id: string }>>(
-      page.request,
-      `/api/companies/${company!.id}/issues`,
-    ),
-  ).toEqual([]);
+  const omp = await getJson<{ minVersion: string }>(page.request, "/api/onboarding/omp");
+  expect(omp.minVersion).toBe("18.1.16");
+  expect(await getJson<Array<{ id: string }>>(page.request, "/api/companies")).toHaveLength(companiesBefore.length);
   expect(pageErrors, pageErrors.join("\n")).toEqual([]);
 });

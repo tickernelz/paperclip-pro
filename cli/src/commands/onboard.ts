@@ -58,6 +58,11 @@ import {
   shouldOfferForegroundStart,
 } from "../onboard-service.js";
 import { readInstallManifest, isManagedExecutable } from "../install-store.js";
+import {
+  bundledOmpVersion,
+  ompGateFailure,
+  probeOmpInstall,
+} from "@tickernelz/paperclip-pro-adapter-omp-local/readiness";
 
 type SetupMode = "quickstart" | "advanced";
 
@@ -380,6 +385,28 @@ function printManagedInstallHint(): void {
   );
 }
 
+async function checkOmpForOnboard(): Promise<boolean> {
+  const bundled = bundledOmpVersion();
+  if (bundled) {
+    p.log.message(pc.dim(`Using the OMP ${bundled} bundled with this image`));
+    return true;
+  }
+  const probe = await probeOmpInstall();
+  const failure = ompGateFailure(probe);
+  if (failure) {
+    p.log.error(failure);
+    p.outro("");
+    process.exitCode = 1;
+    return false;
+  }
+  p.log.success(`OMP ${probe.version} at ${probe.path}`);
+  const older = probe.copies.slice(1).filter((copy) => copy.version !== probe.version);
+  for (const copy of older) {
+    p.log.warn(`Another omp ${copy.version ?? "of unknown version"} is installed at ${copy.path}; ${probe.path} runs first.`);
+  }
+  return true;
+}
+
 export async function onboard(opts: OnboardOptions): Promise<void> {
   if (opts.bind && !["loopback", "lan", "tailnet"].includes(opts.bind)) {
     throw new Error(`Unsupported bind preset for onboard: ${opts.bind}. Use loopback, lan, or tailnet.`);
@@ -394,6 +421,7 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
       `Local home: ${instance.homeDir} | instance: ${instance.instanceId} | config: ${configPath}`,
     ),
   );
+  if (!(await checkOmpForOnboard())) return;
 
   let existingConfig: PaperclipConfig | null = null;
   let invalidBackupPath: string | undefined;

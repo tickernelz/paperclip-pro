@@ -253,6 +253,7 @@ import {
   resolveDefaultAgentInstructionsBundleRole,
 } from "../services/default-agent-instructions.js";
 import { buildOnboardingFirstAgentInstructionsBundle } from "../services/onboarding-first-task-assets.js";
+import { onboardingOmpGateFailure } from "../services/onboarding-omp-gate.js";
 import { getTelemetryClient } from "../telemetry.js";
 import { assertEnvironmentSelectionForCompany } from "./environment-selection.js";
 import { recoveryService } from "../services/recovery/service.js";
@@ -4055,6 +4056,10 @@ export function agentRoutes(
     assertNoAgentAdapterConfigMutation(req, rawHireAdapterConfig);
     assertNoAgentLocalAdapterHostCommandMutation(req, hireInput.adapterType, rawHireAdapterConfig);
     assertNoAgentProcessAdapterMutation(req, hireInput.adapterType, Object.keys(rawHireAdapterConfig).length > 0);
+    if (hireOnboardingFirstAgent === true && req.actor.type === "board") {
+      const gateFailure = await onboardingOmpGateFailure(hireInput);
+      if (gateFailure) throw unprocessable(gateFailure);
+    }
     const hiredAgentId = randomUUID();
     const requestedAdapterConfig = applyCreateDefaultsByAdapterType(
       hireInput.adapterType,
@@ -4349,6 +4354,10 @@ export function agentRoutes(
     assertNoAgentAdapterConfigMutation(req, rawCreateAdapterConfig);
     assertNoAgentLocalAdapterHostCommandMutation(req, createInput.adapterType, rawCreateAdapterConfig);
     assertNoAgentProcessAdapterMutation(req, createInput.adapterType, Object.keys(rawCreateAdapterConfig).length > 0);
+    if (createOnboardingFirstAgent === true && req.actor.type === "board") {
+      const gateFailure = await onboardingOmpGateFailure(createInput);
+      if (gateFailure) throw unprocessable(gateFailure);
+    }
     const agentId = randomUUID();
     const requestedAdapterConfig = applyCreateDefaultsByAdapterType(
       createInput.adapterType,

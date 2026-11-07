@@ -20,7 +20,7 @@ import {
 import { useHiddenSettings } from "./hooks/useHiddenSettings";
 import { Cases } from "./pages/Cases";
 import { CaseDetail } from "./pages/CaseDetail";
-import { OnboardingWizardVariant } from "./components/OnboardingWizardVariant";
+import { OnboardingFlow } from "./components/onboarding/OnboardingFlow";
 import { IosInstallHelpDialog } from "./components/InstallAppMenuAction";
 import { NewTaskShortcut } from "./components/NewTaskShortcut";
 import { CloudAccessGate } from "./components/CloudAccessGate";
@@ -884,7 +884,7 @@ export function App() {
           <Route path="*" element={<NotFoundPage scope="global" />} />
         </Route>
       </Routes>
-      <OnboardingWizardVariant />
+      <OnboardingFlow />
       <IosInstallHelpDialog />
     </>
   );

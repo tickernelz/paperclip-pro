@@ -103,6 +103,12 @@ vi.mock("../services/index.js", () => ({
   workspaceOperationService: () => mockWorkspaceOperationService,
 }));
 
+const onboardingOmpGateFailureMock = vi.hoisted(() => vi.fn(async (_input: unknown): Promise<string | null> => null));
+
+vi.mock("../services/onboarding-omp-gate.js", () => ({
+  onboardingOmpGateFailure: onboardingOmpGateFailureMock,
+}));
+
 vi.mock("../services/secrets.js", () => ({
   secretService: () => mockSecretService,
 }));
@@ -1366,6 +1372,29 @@ describe("agent skill routes", () => {
     await vi.waitFor(() => expect(mockAgentInstructionsService.materializeManagedBundle).toHaveBeenCalled());
     expect(mockAgentInstructionsService.materializeManagedBundle.mock.calls[0][1]["AGENTS.md"])
       .not.toContain("chief of staff");
+  });
+
+  it.each(["agents", "agent-hires"])("never probes an agent-supplied OMP command before the host-command guard via %s", async (route) => {
+    mockAgentService.getById.mockResolvedValue(makeAgent("omp_local"));
+    const res = await request(await createApp(createDb(), {
+      type: "agent", agentId: "11111111-1111-4111-8111-111111111111", companyId: "company-1",
+    }))
+      .post(`/api/companies/company-1/${route}`)
+      .send({ name: "Biff", role: "general", adapterType: "omp_local", adapterConfig: { command: "/tmp/not-omp" }, onboardingFirstAgent: true });
+    expect(res.status, JSON.stringify(res.body)).toBe(403);
+    expect(onboardingOmpGateFailureMock).not.toHaveBeenCalled();
+    expect(mockAgentService.create).not.toHaveBeenCalled();
+  });
+
+  it.each(["agents", "agent-hires"])("refuses the board's onboarding first agent when the OMP gate fails via %s", async (route) => {
+    onboardingOmpGateFailureMock.mockResolvedValueOnce("OMP 18.1.15 is older than 18.1.16. Update it with: omp update");
+    const res = await request(await createApp())
+      .post(`/api/companies/company-1/${route}`)
+      .send({ name: "Atlas", role: "general", adapterType: "omp_local", adapterConfig: {}, onboardingFirstAgent: true });
+    expect(res.status, JSON.stringify(res.body)).toBe(422);
+    expect(res.body.error).toBe("OMP 18.1.15 is older than 18.1.16. Update it with: omp update");
+    expect(onboardingOmpGateFailureMock).toHaveBeenCalledWith(expect.objectContaining({ adapterType: "omp_local" }));
+    expect(mockAgentService.create).not.toHaveBeenCalled();
   });
 
   it("creates nothing for rejected Biff payloads and exactly one approval-gated hire after correction", async () => {

@@ -9,7 +9,7 @@ import type {
   ChatConversation,
   ChatIdentityLink,
 } from "@/api/chatEndpoints";
-import { STORYBOOK_COMPANY_ID } from "../../fixtures/onboardingDraft";
+import { STORYBOOK_COMPANY_ID } from "../../fixtures/storybook-ids";
 import { storybookAgents } from "../../fixtures/paperclipData";
 
 export const agent = { ...storybookAgents[0], name: "Maya" };
