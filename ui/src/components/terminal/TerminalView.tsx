@@ -15,7 +15,7 @@ import { SearchAddon } from "@xterm/addon-search";
 import { ClipboardAddon } from "@xterm/addon-clipboard";
 import { ImageAddon } from "@xterm/addon-image";
 import { Unicode11Addon } from "@xterm/addon-unicode11";
-import "@xterm/xterm/css/xterm.css";
+import "./xterm-vendor.css";
 import { ArrowDown, ArrowUp, ClipboardPaste, Copy, Download, Eraser, RotateCw, Search, TextSelect, Upload, X } from "lucide-react";
 import {
   clampTerminalCols,

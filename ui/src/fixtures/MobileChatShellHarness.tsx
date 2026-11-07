@@ -18,7 +18,6 @@ import { useMobileNavAutoHide } from "@/hooks/useMobileNavAutoHide";
 import { useMobileViewportInsets } from "@/hooks/useMobileViewportInsets";
 import { TaskChatWindowScroll } from "@/components/task-chat/useWindowAutoFollow";
 import { cn } from "@/lib/utils";
-import "@mdxeditor/editor/style.css";
 import "@/index.css";
 
 const TASK_PATH = "/PAP/issues/PAP-1";

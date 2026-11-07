@@ -6,7 +6,7 @@ import { Slot } from "radix-ui"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md border text-(length:--t-13) font-medium transition-(--tp-color-background-color-border-color-box-shadow-opacity) outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:pointer-events-none disabled:border-line-strong disabled:bg-bg-3 disabled:text-ink-3 aria-busy:cursor-progress data-[active=true]:border-accent data-[active=true]:bg-accent-soft data-[active=true]:text-accent [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 aria-invalid:border-bad",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md border text-(length:--t-13) font-medium transition-(--tp-color-background-color-border-color-box-shadow-opacity) outline-hidden focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:pointer-events-none disabled:border-line-strong disabled:bg-bg-3 disabled:text-ink-3 aria-busy:cursor-progress data-[active=true]:border-accent data-[active=true]:bg-accent-soft data-[active=true]:text-accent [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 aria-invalid:border-bad",
   {
     variants: {
       variant: {
