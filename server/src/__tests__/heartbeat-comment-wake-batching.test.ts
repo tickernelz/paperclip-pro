@@ -1,7 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { createServer } from "node:http";
 import { and, asc, eq, sql } from "drizzle-orm";
-import { WebSocketServer } from "ws";
 import { FAST_RESPONSE_AGENT_GUIDANCE } from "@tickernelz/paperclip-pro-shared";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import {
@@ -30,7 +28,17 @@ import {
   toolApplications,
   toolConnections,
 } from "@tickernelz/paperclip-pro-db";
-import { runningProcesses } from "../adapters/index.js";
+import { runningProcesses, registerServerAdapter, unregisterServerAdapter } from "../adapters/index.js";
+import {
+  hydrateFreshSessionHandoff,
+  joinPromptSections,
+  paperclipWakeCommentsArePromptOwned,
+  selectInitialCommunicationGuidance,
+  selectPaperclipPromptSections,
+  stringifyPaperclipWakePayload,
+} from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+
+const GATEWAY_ADAPTER = "acme_gateway";
 import { heartbeatService } from "../services/heartbeat.ts";
 import { issueThreadInteractionService } from "../services/issue-thread-interactions.js";
 import { isRetiredExternalChatQuestionSource, questionResponseDeliveryService } from "../services/question-response-delivery.js";
@@ -70,117 +78,54 @@ async function closeDbClient(db: ReturnType<typeof createDb> | undefined) {
 }
 
 async function createControlledGatewayServer(beforeComplete?: (turn: number) => Promise<void>) {
-  const server = createServer();
-  const wss = new WebSocketServer({ server });
   const agentPayloads: Array<Record<string, unknown>> = [];
   let firstWaitRelease: (() => void) | null = null;
   let firstWaitGate = new Promise<void>((resolve) => {
     firstWaitRelease = resolve;
   });
-  let waitCount = 0;
+  let turn = 0;
+  const url = `ws://gateway.test/${randomUUID()}`;
 
-  wss.on("connection", (socket) => {
-    socket.send(
-      JSON.stringify({
-        type: "event",
-        event: "connect.challenge",
-        payload: { nonce: "nonce-123" },
-      }),
-    );
-
-    socket.on("message", async (raw) => {
-      const text = Buffer.isBuffer(raw) ? raw.toString("utf8") : String(raw);
-      const frame = JSON.parse(text) as {
-        type: string;
-        id: string;
-        method: string;
-        params?: Record<string, unknown>;
-      };
-
-      if (frame.type !== "req") return;
-
-      if (frame.method === "connect") {
-        socket.send(
-          JSON.stringify({
-            type: "res",
-            id: frame.id,
-            ok: true,
-            payload: {
-              type: "hello-ok",
-              protocol: 3,
-              server: { version: "test", connId: "conn-1" },
-              features: {
-                methods: ["connect", "agent", "agent.wait"],
-                events: ["agent"],
-              },
-              snapshot: { version: 1, ts: Date.now() },
-              policy: {
-                maxPayload: 1_000_000,
-                maxBufferedBytes: 1_000_000,
-                tickIntervalMs: 30_000,
-              },
-            },
-          }),
-        );
-        return;
+  registerServerAdapter({
+    type: GATEWAY_ADAPTER,
+    runtimeToolDelivery: "invocation_context",
+    supportsLocalAgentJwt: false,
+    async execute(ctx) {
+      if (ctx.config.url !== url) {
+        return { exitCode: 1, signal: null, timedOut: false, errorMessage: "gateway unreachable" };
       }
-
-      if (frame.method === "agent") {
-        agentPayloads.push((frame.params ?? {}) as Record<string, unknown>);
-        const runId =
-          typeof frame.params?.idempotencyKey === "string"
-            ? frame.params.idempotencyKey
-            : `run-${agentPayloads.length}`;
-
-        socket.send(
-          JSON.stringify({
-            type: "res",
-            id: frame.id,
-            ok: true,
-            payload: {
-              runId,
-              status: "accepted",
-              acceptedAt: Date.now(),
-            },
-          }),
-        );
-        return;
-      }
-
-      if (frame.method === "agent.wait") {
-        waitCount += 1;
-        if (waitCount === 1) {
-          await firstWaitGate;
-        }
-        await beforeComplete?.(waitCount);
-        socket.send(
-          JSON.stringify({
-            type: "res",
-            id: frame.id,
-            ok: true,
-            payload: {
-              runId: frame.params?.runId,
-              status: "ok",
-              startedAt: 1,
-              endedAt: 2,
-            },
-          }),
-        );
-      }
-    });
+      const resumedSession = Boolean(ctx.runtime?.sessionId);
+      await hydrateFreshSessionHandoff(ctx, { resumedSession });
+      const { taskContextNote, wakePrompt } = selectPaperclipPromptSections(ctx.context, {
+        resumedSession,
+        includeExecutionContract: true,
+        includeCommunicationGuidance: false,
+        paperclipAccess: "rest",
+      });
+      const wakeJson = paperclipWakeCommentsArePromptOwned(ctx.context)
+        ? null
+        : stringifyPaperclipWakePayload(ctx.context.paperclipWake, {
+            omitIssueDescription: Boolean(taskContextNote),
+          });
+      const message = joinPromptSections([
+        selectInitialCommunicationGuidance(ctx.context, { resumedSession }),
+        taskContextNote,
+        wakePrompt,
+        wakeJson ? ["Structured wake payload JSON:", "```json", wakeJson, "```"].join("\n") : null,
+      ]);
+      agentPayloads.push({ idempotencyKey: ctx.runId, message });
+      turn += 1;
+      if (turn === 1) await firstWaitGate;
+      await beforeComplete?.(turn);
+      return { exitCode: 0, signal: null, timedOut: false, provider: "acme", resultJson: { runId: ctx.runId, status: "ok", startedAt: 1, endedAt: 2 } };
+    },
+    async testEnvironment() {
+      return { adapterType: GATEWAY_ADAPTER, status: "pass", checks: [], testedAt: new Date(0).toISOString() };
+    },
   });
-
-  await new Promise<void>((resolve) => {
-    server.listen(0, "127.0.0.1", () => resolve());
-  });
-
-  const address = server.address();
-  if (!address || typeof address === "string") {
-    throw new Error("Failed to resolve test server address");
-  }
 
   return {
-    url: `ws://127.0.0.1:${address.port}`,
+    url,
     getAgentPayloads: () => agentPayloads,
     releaseFirstWait: () => {
       firstWaitRelease?.();
@@ -188,8 +133,7 @@ async function createControlledGatewayServer(beforeComplete?: (turn: number) => 
       firstWaitGate = Promise.resolve();
     },
     close: async () => {
-      await new Promise<void>((resolve) => wss.close(() => resolve()));
-      await new Promise<void>((resolve) => server.close(() => resolve()));
+      unregisterServerAdapter(GATEWAY_ADAPTER);
     },
   };
 }
@@ -512,11 +456,11 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
         name: "Gateway Agent",
         role: "engineer",
         status: "idle",
-        adapterType: "omp_local",
+        adapterType: GATEWAY_ADAPTER,
         adapterConfig: {
           url: gateway.url,
           headers: {
-            "x-openclaw-token": "gateway-token",
+            "x-gateway-token": "gateway-token",
           },
           payloadTemplate: {
             message: "wake now",
@@ -748,10 +692,10 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
         name: "Gateway Agent",
         role: "engineer",
         status: "idle",
-        adapterType: "omp_local",
+        adapterType: GATEWAY_ADAPTER,
         adapterConfig: {
           url: gateway.url,
-          headers: { "x-openclaw-token": "gateway-token" },
+          headers: { "x-gateway-token": "gateway-token" },
           payloadTemplate: { message: "wake now" },
           waitTimeoutMs: 2_000,
         },
@@ -905,11 +849,11 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
         name: "Gateway Agent",
         role: "engineer",
         status: "idle",
-        adapterType: "omp_local",
+        adapterType: GATEWAY_ADAPTER,
         adapterConfig: {
           url: gateway.url,
           headers: {
-            "x-openclaw-token": "gateway-token",
+            "x-gateway-token": "gateway-token",
           },
           payloadTemplate: {
             message: "wake now",
@@ -1050,11 +994,11 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
         name: "Gateway Agent",
         role: "engineer",
         status: "idle",
-        adapterType: "omp_local",
+        adapterType: GATEWAY_ADAPTER,
         adapterConfig: {
           url: gateway.url,
           headers: {
-            "x-openclaw-token": "gateway-token",
+            "x-gateway-token": "gateway-token",
           },
           payloadTemplate: {
             message: "wake now",
@@ -1261,11 +1205,11 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
           name: "Primary Agent",
           role: "engineer",
           status: "idle",
-          adapterType: "omp_local",
+          adapterType: GATEWAY_ADAPTER,
           adapterConfig: {
             url: gateway.url,
             headers: {
-              "x-openclaw-token": "gateway-token",
+              "x-gateway-token": "gateway-token",
             },
             payloadTemplate: {
               message: "wake now",
@@ -1281,11 +1225,11 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
           name: "Mentioned Agent",
           role: "engineer",
           status: "idle",
-          adapterType: "omp_local",
+          adapterType: GATEWAY_ADAPTER,
           adapterConfig: {
             url: gateway.url,
             headers: {
-              "x-openclaw-token": "gateway-token",
+              "x-gateway-token": "gateway-token",
             },
             payloadTemplate: {
               message: "wake now",
@@ -1501,11 +1445,11 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
         name: "Local CLI Agent",
         role: "engineer",
         status: "idle",
-        adapterType: "omp_local",
+        adapterType: GATEWAY_ADAPTER,
         adapterConfig: {
           url: gateway.url,
           headers: {
-            "x-openclaw-token": "gateway-token",
+            "x-gateway-token": "gateway-token",
           },
           payloadTemplate: {
             message: "wake now",
@@ -1698,11 +1642,11 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
         name: "Local CLI Agent",
         role: "engineer",
         status: "idle",
-        adapterType: "omp_local",
+        adapterType: GATEWAY_ADAPTER,
         adapterConfig: {
           url: gateway.url,
           headers: {
-            "x-openclaw-token": "gateway-token",
+            "x-gateway-token": "gateway-token",
           },
           payloadTemplate: {
             message: "wake now",
@@ -1913,10 +1857,10 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
           name: "Local CLI Agent",
           role: "engineer",
           status: "running",
-          adapterType: "omp_local",
+          adapterType: GATEWAY_ADAPTER,
           adapterConfig: {
             url: gateway.url,
-            headers: { "x-openclaw-token": "gateway-token" },
+            headers: { "x-gateway-token": "gateway-token" },
             payloadTemplate: { message: "wake now" },
             waitTimeoutMs: 2_000,
           },
@@ -2398,11 +2342,11 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
         name: "Local CLI Agent",
         role: "engineer",
         status: "idle",
-        adapterType: "omp_local",
+        adapterType: GATEWAY_ADAPTER,
         adapterConfig: {
           url: gateway.url,
           headers: {
-            "x-openclaw-token": "gateway-token",
+            "x-gateway-token": "gateway-token",
           },
           payloadTemplate: {
             message: "wake now",
@@ -2617,11 +2561,11 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
         name: "Gateway Agent",
         role: "engineer",
         status: "idle",
-        adapterType: "omp_local",
+        adapterType: GATEWAY_ADAPTER,
         adapterConfig: {
           url: gateway.url,
           headers: {
-            "x-openclaw-token": "gateway-token",
+            "x-gateway-token": "gateway-token",
           },
           payloadTemplate: {
             message: "wake now",
@@ -2805,11 +2749,11 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
         name: "Local CLI Agent",
         role: "engineer",
         status: "idle",
-        adapterType: "omp_local",
+        adapterType: GATEWAY_ADAPTER,
         adapterConfig: {
           url: gateway.url,
           headers: {
-            "x-openclaw-token": "gateway-token",
+            "x-gateway-token": "gateway-token",
           },
           payloadTemplate: {
             message: "wake now",
@@ -2991,11 +2935,11 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
         name: "Local CLI Agent",
         role: "engineer",
         status: "idle",
-        adapterType: "omp_local",
+        adapterType: GATEWAY_ADAPTER,
         adapterConfig: {
           url: gateway.url,
           headers: {
-            "x-openclaw-token": "gateway-token",
+            "x-gateway-token": "gateway-token",
           },
           payloadTemplate: {
             message: "wake now",
@@ -3156,11 +3100,11 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
         name: "Gateway Agent",
         role: "engineer",
         status: "idle",
-        adapterType: "omp_local",
+        adapterType: GATEWAY_ADAPTER,
         adapterConfig: {
           url: gateway.url,
           headers: {
-            "x-openclaw-token": "gateway-token",
+            "x-gateway-token": "gateway-token",
           },
           payloadTemplate: {
             message: "wake now",
@@ -3322,11 +3266,11 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
           name: "Primary Agent",
           role: "engineer",
           status: "idle",
-          adapterType: "omp_local",
+          adapterType: GATEWAY_ADAPTER,
           adapterConfig: {
             url: gateway.url,
             headers: {
-              "x-openclaw-token": "gateway-token",
+              "x-gateway-token": "gateway-token",
             },
             payloadTemplate: {
               message: "wake now",
@@ -3342,11 +3286,11 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
           name: "Mentioned Agent",
           role: "engineer",
           status: "idle",
-          adapterType: "omp_local",
+          adapterType: GATEWAY_ADAPTER,
           adapterConfig: {
             url: gateway.url,
             headers: {
-              "x-openclaw-token": "gateway-token",
+              "x-gateway-token": "gateway-token",
             },
             payloadTemplate: {
               message: "wake now",
@@ -3502,11 +3446,11 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
           name: "Primary Agent",
           role: "engineer",
           status: "idle",
-          adapterType: "omp_local",
+          adapterType: GATEWAY_ADAPTER,
           adapterConfig: {
             url: gateway.url,
             headers: {
-              "x-openclaw-token": "gateway-token",
+              "x-gateway-token": "gateway-token",
             },
             payloadTemplate: {
               message: "wake now",
@@ -3522,11 +3466,11 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
           name: "Mentioned Agent",
           role: "engineer",
           status: "idle",
-          adapterType: "omp_local",
+          adapterType: GATEWAY_ADAPTER,
           adapterConfig: {
             url: gateway.url,
             headers: {
-              "x-openclaw-token": "gateway-token",
+              "x-gateway-token": "gateway-token",
             },
             payloadTemplate: {
               message: "wake now",
@@ -3629,11 +3573,11 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
         name: "Gateway Agent",
         role: "engineer",
         status: "idle",
-        adapterType: "omp_local",
+        adapterType: GATEWAY_ADAPTER,
         adapterConfig: {
           url: gateway.url,
           headers: {
-            "x-openclaw-token": "gateway-token",
+            "x-gateway-token": "gateway-token",
           },
           payloadTemplate: {
             message: "wake now",

@@ -100,7 +100,6 @@ const COMING_SOON_SECRET_PROVIDERS: ReadonlySet<SecretProvider> = new Set([
   "gcp_secret_manager",
   "vault",
 ]);
-const FALLBACK_ADAPTER_SCHEMA_SECRET_FIELDS: Readonly<Record<string, readonly string[]>> = {};
 const USER_SECRET_DEFINITION_KEY_UNIQUE_CONSTRAINT = "user_secret_definitions_company_key_uq";
 const USER_SECRET_VALUE_UNIQUE_CONSTRAINT = "company_secrets_user_definition_owner_uq";
 // The unique index on (secretId, version). A concurrent rotation that inserts the
@@ -1956,19 +1955,15 @@ export function secretService(db: Db | DbTransaction) {
   async function listAdapterSchemaSecretFieldKeys(adapterType: string | null | undefined): Promise<string[]> {
     if (!adapterType) return [];
     const adapter = findActiveServerAdapter(adapterType);
-    const fallback = [...(FALLBACK_ADAPTER_SCHEMA_SECRET_FIELDS[adapterType] ?? [])];
-    if (!adapter?.getConfigSchema) return fallback;
+    if (!adapter?.getConfigSchema) return [];
     try {
       const schema = await adapter.getConfigSchema();
-      return [...new Set([
-        ...fallback,
-        ...schema.fields
+      return [...new Set(schema.fields
         .filter((field) => field.meta?.secret === true)
-        .map((field) => field.key),
-      ])];
+        .map((field) => field.key))];
     } catch (err) {
       logger.warn({ err, adapterType }, "adapter config schema unavailable while normalizing secret fields");
-      return fallback;
+      return [];
     }
   }
 

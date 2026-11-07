@@ -1,8 +1,6 @@
 import { randomUUID } from "node:crypto";
-import { createServer } from "node:http";
 import express from "express";
 import request from "supertest";
-import { WebSocketServer } from "ws";
 import { and, eq } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import {
@@ -54,6 +52,17 @@ import { issueRoutes } from "../routes/issues.js";
 import { issueService } from "../services/issues.js";
 import { heartbeatService } from "../services/heartbeat.js";
 import { LOW_TRUST_QUARANTINED_BODY } from "../services/source-trust.js";
+import { registerServerAdapter, unregisterServerAdapter } from "../adapters/index.js";
+import {
+  hydrateFreshSessionHandoff,
+  joinPromptSections,
+  paperclipWakeCommentsArePromptOwned,
+  selectInitialCommunicationGuidance,
+  selectPaperclipPromptSections,
+  stringifyPaperclipWakePayload,
+} from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+
+const GATEWAY_ADAPTER = "acme_gateway";
 
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
 const describeEmbeddedPostgres = embeddedPostgresSupport.supported
@@ -207,113 +216,55 @@ function createApp(db: Db, actor: Express.Request["actor"]) {
   return app;
 }
 
-async function createControlledGatewayServer() {
-  const server = createServer();
-  const wss = new WebSocketServer({ server });
+async function createControlledGatewayServer(beforeComplete?: (turn: number) => Promise<void>) {
   const agentPayloads: Array<Record<string, unknown>> = [];
   let firstWaitRelease: (() => void) | null = null;
   let firstWaitGate = new Promise<void>((resolve) => {
     firstWaitRelease = resolve;
   });
-  let waitCount = 0;
+  let turn = 0;
+  const url = `ws://gateway.test/${randomUUID()}`;
 
-  wss.on("connection", (socket) => {
-    socket.send(
-      JSON.stringify({
-        type: "event",
-        event: "connect.challenge",
-        payload: { nonce: "nonce-123" },
-      }),
-    );
-
-    socket.on("message", async (raw) => {
-      const text = Buffer.isBuffer(raw) ? raw.toString("utf8") : String(raw);
-      const frame = JSON.parse(text) as {
-        type: string;
-        id: string;
-        method: string;
-        params?: Record<string, unknown>;
-      };
-
-      if (frame.type !== "req") return;
-
-      if (frame.method === "connect") {
-        socket.send(
-          JSON.stringify({
-            type: "res",
-            id: frame.id,
-            ok: true,
-            payload: {
-              type: "hello-ok",
-              protocol: 3,
-              server: { version: "test", connId: "conn-1" },
-              features: {
-                methods: ["connect", "agent", "agent.wait"],
-                events: ["agent"],
-              },
-              snapshot: { version: 1, ts: Date.now() },
-              policy: {
-                maxPayload: 1_000_000,
-                maxBufferedBytes: 1_000_000,
-                tickIntervalMs: 30_000,
-              },
-            },
-          }),
-        );
-        return;
+  registerServerAdapter({
+    type: GATEWAY_ADAPTER,
+    runtimeToolDelivery: "invocation_context",
+    supportsLocalAgentJwt: false,
+    async execute(ctx) {
+      if (ctx.config.url !== url) {
+        return { exitCode: 1, signal: null, timedOut: false, errorMessage: "gateway unreachable" };
       }
-
-      if (frame.method === "agent") {
-        agentPayloads.push((frame.params ?? {}) as Record<string, unknown>);
-        socket.send(
-          JSON.stringify({
-            type: "res",
-            id: frame.id,
-            ok: true,
-            payload: {
-              runId:
-                typeof frame.params?.idempotencyKey === "string"
-                  ? frame.params.idempotencyKey
-                  : `run-${agentPayloads.length}`,
-              status: "accepted",
-              acceptedAt: Date.now(),
-            },
-          }),
-        );
-        return;
-      }
-
-      if (frame.method === "agent.wait") {
-        waitCount += 1;
-        if (waitCount === 1) await firstWaitGate;
-        socket.send(
-          JSON.stringify({
-            type: "res",
-            id: frame.id,
-            ok: true,
-            payload: {
-              runId: frame.params?.runId,
-              status: "ok",
-              startedAt: 1,
-              endedAt: 2,
-            },
-          }),
-        );
-      }
-    });
+      const resumedSession = Boolean(ctx.runtime?.sessionId);
+      await hydrateFreshSessionHandoff(ctx, { resumedSession });
+      const { taskContextNote, wakePrompt } = selectPaperclipPromptSections(ctx.context, {
+        resumedSession,
+        includeExecutionContract: true,
+        includeCommunicationGuidance: false,
+        paperclipAccess: "rest",
+      });
+      const wakeJson = paperclipWakeCommentsArePromptOwned(ctx.context)
+        ? null
+        : stringifyPaperclipWakePayload(ctx.context.paperclipWake, {
+            omitIssueDescription: Boolean(taskContextNote),
+          });
+      const message = joinPromptSections([
+        selectInitialCommunicationGuidance(ctx.context, { resumedSession }),
+        taskContextNote,
+        wakePrompt,
+        wakeJson ? ["Structured wake payload JSON:", "```json", wakeJson, "```"].join("\n") : null,
+      ]);
+      agentPayloads.push({ idempotencyKey: ctx.runId, message });
+      turn += 1;
+      if (turn === 1) await firstWaitGate;
+      await beforeComplete?.(turn);
+      return { exitCode: 0, signal: null, timedOut: false, provider: "acme", resultJson: { runId: ctx.runId, status: "ok", startedAt: 1, endedAt: 2 } };
+    },
+    async testEnvironment() {
+      return { adapterType: GATEWAY_ADAPTER, status: "pass", checks: [], testedAt: new Date(0).toISOString() };
+    },
   });
-
-  await new Promise<void>((resolve) => {
-    server.listen(0, "127.0.0.1", () => resolve());
-  });
-
-  const address = server.address();
-  if (!address || typeof address === "string") {
-    throw new Error("Failed to resolve test server address");
-  }
 
   return {
-    url: `ws://127.0.0.1:${address.port}`,
+    url,
     getAgentPayloads: () => agentPayloads,
     releaseFirstWait: () => {
       firstWaitRelease?.();
@@ -321,8 +272,7 @@ async function createControlledGatewayServer() {
       firstWaitGate = Promise.resolve();
     },
     close: async () => {
-      await new Promise<void>((resolve) => wss.close(() => resolve()));
-      await new Promise<void>((resolve) => server.close(() => resolve()));
+      unregisterServerAdapter(GATEWAY_ADAPTER);
     },
   };
 }
@@ -2059,11 +2009,11 @@ describeEmbeddedPostgres(
           .update(agents)
           .set({
             status: "idle",
-            adapterType: "omp_local",
+            adapterType: GATEWAY_ADAPTER,
             adapterConfig: {
               url: gateway.url,
               headers: {
-                "x-openclaw-token": "gateway-token",
+                "x-gateway-token": "gateway-token",
               },
               payloadTemplate: {
                 message: "wake now",

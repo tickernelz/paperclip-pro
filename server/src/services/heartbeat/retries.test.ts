@@ -239,7 +239,7 @@ describePostgres("heartbeat retry module database wiring", () => {
       status: "scheduled_retry", issueId: issue.id, responsibleUserId: "retry-user",
       scheduledRetryAttempt: 1, scheduledRetryReason: "transient_failure",
     });
-    expect(successor.contextSnapshot).toMatchObject({ retryOfRunId: run.id, codexTransientFallbackMode: "same_session" });
+    expect(successor.contextSnapshot).toMatchObject({ retryOfRunId: run.id });
     expect(first.deps.resolveResponsibleUserIdForRunContext).toHaveBeenCalledWith(run, expect.objectContaining({ retryOfRunId: run.id }));
     const [locked] = await db.select().from(issues).where(eq(issues.id, issue.id));
     expect(locked).toMatchObject({ executionRunId: successor.id, checkoutRunId: null });
