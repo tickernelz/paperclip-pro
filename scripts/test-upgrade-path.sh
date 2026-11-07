@@ -23,7 +23,8 @@ trap 'stop_server; rm -rf "$ROOT"' EXIT
 
 start_server() {
   local label="$1"
-  PORT="$PORT" paperclip-pro run >"$ROOT/$label.log" 2>&1 &
+  shift
+  PORT="$PORT" "$@" >"$ROOT/$label.log" 2>&1 &
   server_pid=$!
   for _ in $(seq 1 120); do
     if curl -fsS "http://127.0.0.1:$PORT/api/health" >"$ROOT/$label-health.json" 2>/dev/null; then
@@ -41,10 +42,8 @@ echo "==> Installing the published release $OLD_VERSION the way an existing user
 npm install --prefix "$ROOT/bootstrap" "@tickernelz/paperclip-pro@$OLD_VERSION" --no-audit --no-fund >/dev/null
 "$ROOT/bootstrap/node_modules/.bin/paperclip-pro" install --version "$OLD_VERSION" --yes
 paperclip-pro --version
-paperclip-pro onboard --yes >/dev/null
+start_server before paperclip-pro onboard --yes
 test -d "$HOME/.paperclip-pro/instances/default"
-
-start_server before
 curl -fsS -X POST -H 'Content-Type: application/json' -d '{"name":"Upgrade path marker"}' "http://127.0.0.1:$PORT/api/companies" >/dev/null
 stop_server
 
@@ -54,7 +53,7 @@ paperclip-pro --version
 "$HOME/.paperclip-pro/cli/current/node_modules/.bin/wardmote" --version
 test ! -e "$HOME/.wardmote"
 
-start_server after
+start_server after paperclip-pro run
 curl -fsS "http://127.0.0.1:$PORT/api/companies" | grep -q '"Upgrade path marker"'
 echo "after upgrade: legacy home kept, marker company still listed"
 stop_server
