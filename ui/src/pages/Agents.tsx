@@ -28,7 +28,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { BulkAgentAdapterConfigDialog } from "../components/BulkAgentAdapterConfigDialog";
 import { BulkAgentRoleDialog } from "../components/agents-table/BulkAgentRoleDialog";
 import { AgentRoleEditor } from "../components/agent-role/AgentRoleEditor";
-import { AlertTriangle, Bot, Plus, List, Network } from "lucide-react";
+import { AlertTriangle, Bot, Plus, List, Network, SlidersHorizontal } from "lucide-react";
 import { AGENT_ROLE_LABELS, type Agent, type Environment, type EnvironmentCapabilities } from "@tickernelz/paperclip-pro-shared";
 import {
   resourceMembershipState,
@@ -530,6 +530,10 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
                 <Network className="h-3.5 w-3.5" />
               </Button>
           </div> : null}
+          <Button size="sm" variant="ghost" onClick={() => navigate("/company/settings/agent-defaults")}>
+            <SlidersHorizontal className="h-3.5 w-3.5 mr-1.5" />
+            Agent defaults
+          </Button>
           <Button size="sm" variant="secondary" onClick={openNewAgent}>
             <Plus className="h-3.5 w-3.5 mr-1.5" />
             New Agent

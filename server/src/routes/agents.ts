@@ -100,7 +100,7 @@ import {
   planAgentAdapterConfigBatch,
   type AgentAdapterConfigBatchValue,
 } from "../services/agent-adapter-config-batch.js";
-import { listOmpSettingsCatalog } from "@tickernelz/paperclip-pro-adapter-omp-local/server";
+import { listOmpSettingsCatalog, OmpSettingsUnavailableError } from "@tickernelz/paperclip-pro-adapter-omp-local/server";
 import { planAgentDefaultsApply, validateOmpSettingsMap, OMP_SETTINGS_KEY, OMP_SETTINGS_PATH_PREFIX } from "@tickernelz/paperclip-pro-shared";
 import { agentDefaultsService, validateAgentDefaults, withAgentDefaults } from "../services/agent-defaults.js";
 import {
@@ -2864,7 +2864,17 @@ export function agentRoutes(
     const values = asRecord(req.body?.values);
     if (!values) throw unprocessable("Send the defaults as { values: { <setting path>: <value> } }.");
     const needsCatalog = Object.keys(values).some((path) => path.startsWith(OMP_SETTINGS_PATH_PREFIX));
-    const errors = validateAgentDefaults(values, needsCatalog ? await listOmpSettingsCatalog() : []);
+    let catalog: Awaited<ReturnType<typeof listOmpSettingsCatalog>> = [];
+    if (needsCatalog) {
+      try {
+        catalog = await listOmpSettingsCatalog();
+      } catch (error) {
+        if (!(error instanceof OmpSettingsUnavailableError)) throw error;
+        res.status(503).json({ error: `OMP settings could not be checked: ${error.message}` });
+        return;
+      }
+    }
+    const errors = validateAgentDefaults(values, catalog);
     if (errors.length > 0) {
       res.status(422).json({ error: "Defaults were not saved.", details: errors });
       return;
@@ -2926,7 +2936,12 @@ export function agentRoutes(
     const companyId = req.params.companyId as string;
     assertBoard(req);
     assertCompanyAccess(req, companyId);
-    res.json({ settings: await listOmpSettingsCatalog() });
+    try {
+      res.json({ settings: await listOmpSettingsCatalog() });
+    } catch (error) {
+      if (!(error instanceof OmpSettingsUnavailableError)) throw error;
+      res.status(503).json({ error: error.message });
+    }
   });
 
   router.get("/companies/:companyId/adapters/:type/models", async (req, res) => {

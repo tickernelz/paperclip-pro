@@ -4967,7 +4967,7 @@ registry.registerPath({
     params: z.object({ companyId: z.string() }),
     body: { content: { "application/json": { schema: z.object({ values: z.record(z.string(), z.unknown()) }) } } },
   },
-  responses: { 200: r.ok(), 401: r.unauthorized, 403: r.forbidden, 422: r.unprocessable },
+  responses: { 200: r.ok(), 401: r.unauthorized, 403: r.forbidden, 422: r.unprocessable, 503: { description: "OMP is not reachable" } },
 });
 
 registry.registerPath({
@@ -4985,7 +4985,7 @@ registry.registerPath({
   tags: ["adapters"],
   summary: "List the OMP settings an agent may pin, without credential values",
   request: { params: z.object({ companyId: z.string() }) },
-  responses: { 200: r.ok(), 401: r.unauthorized, 403: r.forbidden },
+  responses: { 200: r.ok(), 401: r.unauthorized, 403: r.forbidden, 503: { description: "OMP is not reachable" } },
 });
 
 registry.registerPath({

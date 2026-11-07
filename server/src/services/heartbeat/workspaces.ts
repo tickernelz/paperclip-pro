@@ -1927,7 +1927,11 @@ const MODEL_SWITCH_ADAPTER_CONFIG_KEYS = [
   "thinking",
   "thinkingEffort",
   "effort",
+  "smolModel",
+  "slowModel",
+  "planModel",
 ] as const;
+const MODEL_SWITCH_OMP_SETTINGS = ["defaultThinkingLevel"] as const;
 
 function adapterResumesAcrossModelSwitch(adapterType: string | null | undefined) {
   return adapterType != null && MODEL_SWITCHING_RESUME_ADAPTER_TYPES.has(adapterType);
@@ -1936,6 +1940,13 @@ function adapterResumesAcrossModelSwitch(adapterType: string | null | undefined)
 function withoutModelSwitchKeys(config: Record<string, unknown>) {
   const next = { ...config };
   for (const key of MODEL_SWITCH_ADAPTER_CONFIG_KEYS) delete next[key];
+  const ompSettings = parseObject(next.ompSettings);
+  if (Object.keys(ompSettings).length > 0) {
+    const kept = { ...ompSettings };
+    for (const key of MODEL_SWITCH_OMP_SETTINGS) delete kept[key];
+    if (Object.keys(kept).length > 0) next.ompSettings = kept;
+    else delete next.ompSettings;
+  }
   return next;
 }
 

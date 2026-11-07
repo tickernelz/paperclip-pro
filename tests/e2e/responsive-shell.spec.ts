@@ -3,7 +3,7 @@ import { expect, test, type APIRequestContext, type Page } from "@playwright/tes
 import { json } from "./agent-chat.shared";
 import { hasOverflow, probeResponsive, RESPONSIVE_SIZES, TOUCH_TARGET_BREAKPOINT, type ResponsiveFinding } from "./helpers/responsive-probe";
 
-type Seed = { prefix: string; issue: string; agent: string; restore: (request: APIRequestContext) => Promise<void> };
+type Seed = { prefix: string; issue: string; agent: string; ompAgent: string; restore: (request: APIRequestContext) => Promise<void> };
 
 const THEMES = ["light", "dark"] as const;
 const SCREENS = [
@@ -18,6 +18,10 @@ const SCREENS = [
   ["Projects", "projects"],
   ["Costs", "activity/costs"],
   ["Settings", "company/settings"],
+  ["Agent defaults", "company/settings/agent-defaults"],
+  ["All settings", "company/settings/agent-defaults/all"],
+  ["Models and providers", "company/settings/models"],
+  ["Agent setup", "agents/:ompAgent/setup"],
 ] as const;
 
 let seed: Seed;
@@ -36,6 +40,9 @@ async function seedCompany(request: APIRequestContext): Promise<Seed> {
       runtimeConfig: { heartbeat: { enabled: false, wakeOnDemand: false } },
     },
   }));
+  const ompAgent = await json(await request.post(`/api/companies/${company.id}/agents`, {
+    data: { name: "Responsive OMP Agent", adapterType: "omp_local", runtimeConfig: { heartbeat: { enabled: false, wakeOnDemand: false } } },
+  }));
   await json(await request.post(`/api/companies/${company.id}/projects`, { data: { name: "Responsive project with a long descriptive name" } }));
   const issue = await json(await request.post(`/api/companies/${company.id}/issues`, {
     data: { title: "Check every core screen from a narrow phone to a wide desktop monitor", status: "backlog" },
@@ -47,6 +54,7 @@ async function seedCompany(request: APIRequestContext): Promise<Seed> {
     prefix: company.issuePrefix,
     issue: issue.identifier,
     agent: agent.id,
+    ompAgent: ompAgent.id,
     restore: async (request) => {
       await json(await request.patch("/api/instance/settings/experimental", {
         data: { enableAgentChat: original.enableAgentChat, enableDecisions: original.enableDecisions },
@@ -65,7 +73,7 @@ async function settle(page: Page) {
 }
 
 function screenUrl(route: string) {
-  return `/${seed.prefix}/${route.replace(":issue", seed.issue).replace(":agent", seed.agent)}`;
+  return `/${seed.prefix}/${route.replace(":issue", seed.issue).replace(":ompAgent", seed.ompAgent).replace(":agent", seed.agent)}`;
 }
 
 test.beforeAll(async ({ request }) => {

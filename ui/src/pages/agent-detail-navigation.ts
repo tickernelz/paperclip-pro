@@ -2,6 +2,7 @@ import { auditSectionHref, type AuditSection } from "./audit/audit-navigation";
 
 export type AgentDetailView =
   | "overview"
+  | "setup"
   | "instructions"
   | "skills"
   | "runtime"
@@ -23,6 +24,7 @@ export const AGENT_DETAIL_NAVIGATION: ReadonlyArray<{
     label: "Agent",
     items: [
       { value: "overview", label: "Overview" },
+      { value: "setup", label: "Setup" },
       { value: "instructions", label: "Instructions" },
       { value: "skills", label: "Skills" },
     ],
@@ -47,6 +49,7 @@ export const AGENT_DETAIL_NAVIGATION: ReadonlyArray<{
 ] as const;
 
 export function parseAgentDetailView(value: string | null): AgentLocalDetailView {
+  if (value === "setup") return "setup";
   if (value === "instructions" || value === "prompts") return "instructions";
   if (value === "skills") return "skills";
   if (value === "runtime" || value === "configure" || value === "configuration") return "runtime";

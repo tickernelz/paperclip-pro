@@ -9,6 +9,9 @@ const MODEL_SWITCH_ADAPTER_CONFIG_KEYS = [
   "effort",
   "stylePreset",
   "fallbackMode",
+  "smolModel",
+  "slowModel",
+  "planModel",
 ] as const;
 import { retryIdempotentDatabaseOperation } from "../../database-retry.js";
 import { jsonbRecordFields } from "../jsonb-projection.js";
@@ -1008,6 +1011,12 @@ export function createHeartbeatRunState(db: Db) {
     options?: { ignoreModelSwitchOnly?: boolean },
   ) {
     const modelSwitchKeys = sql.raw(`'{${MODEL_SWITCH_ADAPTER_CONFIG_KEYS.join(",")}}'::text[]`);
+    const sessionShape = (column: typeof agentConfigRevisions.afterConfig | typeof agentConfigRevisions.beforeConfig) => sql`(
+      with stripped as (
+        select (coalesce(${column} -> 'adapterConfig', '{}'::jsonb) - ${modelSwitchKeys}) #- '{ompSettings,defaultThinkingLevel}' as config
+      )
+      select case when config -> 'ompSettings' = '{}'::jsonb then config - 'ompSettings' else config end from stripped
+    )`;
     return db
       .select({
         id: agentConfigRevisions.id,
@@ -1022,8 +1031,7 @@ export function createHeartbeatRunState(db: Db) {
           options?.ignoreModelSwitchOnly
             ? sql`not (
               ${agentConfigRevisions.changedKeys} = '["adapterConfig"]'::jsonb
-              and coalesce(${agentConfigRevisions.afterConfig} -> 'adapterConfig', '{}'::jsonb) - ${modelSwitchKeys}
-                = coalesce(${agentConfigRevisions.beforeConfig} -> 'adapterConfig', '{}'::jsonb) - ${modelSwitchKeys}
+              and ${sessionShape(agentConfigRevisions.afterConfig)} = ${sessionShape(agentConfigRevisions.beforeConfig)}
             )`
             : undefined,
         ),

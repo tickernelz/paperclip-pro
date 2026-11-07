@@ -28,6 +28,19 @@ describe("omp model options", () => {
     ]);
   });
 
+  it("keeps the model's input and output price and drops unusable cost fields", () => {
+    const envelope = JSON.stringify({
+      models: [
+        { provider: "p", id: "m1", selector: "p/m1", cost: { input: 3, output: 15, cacheRead: 0.3 } },
+        { provider: "p", id: "m2", selector: "p/m2", cost: { input: "free", output: -1 } },
+      ],
+    });
+    expect(parseOmpModelsOutput(envelope)).toEqual([
+      { id: "p/m1", label: "p/m1", provider: "p", cost: { input: 3, output: 15 } },
+      { id: "p/m2", label: "p/m2", provider: "p" },
+    ]);
+  });
+
   it("keeps the provider from the catalog row", () => {
     expect(parseOmpModelsOutput(catalog)).toEqual([
       { id: "sub2api-claude/claude-opus-5-5", label: "Claude Opus 5.5", provider: "sub2api-claude" },

@@ -46,6 +46,7 @@ import "./settings.css";
 
 const descriptions: Record<AgentLocalDetailView, string> = {
   overview: "A snapshot of Nova’s work, capabilities, and current setup.",
+  setup: "Pick the model, style, tools and run limit; change only what differs from the defaults.",
   instructions: "The files that guide how your agent thinks and works.",
   skills: "Choose the skills your agent brings to each task.",
   runtime:

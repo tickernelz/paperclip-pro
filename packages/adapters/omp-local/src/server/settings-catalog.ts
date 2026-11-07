@@ -11,6 +11,13 @@ export interface OmpSettingsCatalogEntry {
   value?: boolean | number | string;
 }
 
+export class OmpSettingsUnavailableError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "OmpSettingsUnavailableError";
+  }
+}
+
 const CATALOG_TTL_MS = 5 * 60_000;
 const LINE_RE = /^\s{2}([A-Za-z0-9_.-]+) = (.*) \(([^()]*)\)$/;
 const SECTION_RE = /^\[([a-z]+)\]$/;
@@ -72,9 +79,11 @@ export async function listOmpSettingsCatalog(): Promise<OmpSettingsCatalogEntry[
   const [listText, listJson] = await Promise.all([
     configProbe(command, ["config", "list"], env),
     configProbe(command, ["config", "list", "--json"], env),
-  ]);
+  ]).catch(() => {
+    throw new OmpSettingsUnavailableError(`OMP did not start ("${command}"); check that it is installed and on the server's PATH.`);
+  });
   if (listText.timedOut || (listText.exitCode ?? 1) !== 0) {
-    throw new Error("omp config list failed; check that OMP is installed and on PATH.");
+    throw new OmpSettingsUnavailableError("omp config list failed; check that OMP is installed and on the server's PATH.");
   }
   const entries = parseOmpSettingsCatalog(listText.stdout, listJson.timedOut ? "" : listJson.stdout);
   cache = { expiresAt: Date.now() + CATALOG_TTL_MS, entries };

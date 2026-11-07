@@ -15,6 +15,10 @@ export const OMP_SESSION_KEEPING_ADAPTER_CONFIG_KEYS: readonly string[] = [
   "thinking",
   "thinkingEffort",
   "effort",
+  "smolModel",
+  "slowModel",
+  "planModel",
+  `${OMP_SETTINGS_PATH_PREFIX}defaultThinkingLevel`,
   ...OMP_SESSION_NEUTRAL_ADAPTER_CONFIG_KEYS,
 ];
 
