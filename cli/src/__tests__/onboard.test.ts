@@ -11,6 +11,14 @@ vi.mock("../commands/run.js", () => ({
   runCommand: runCommandMock,
 }));
 
+const READY_OMP = { state: "ready", version: "18.18.0", path: "/usr/local/bin/omp", copies: [], minVersion: "18.1.16" } as const;
+const probeOmpInstallMock = vi.hoisted(() => vi.fn());
+
+vi.mock("@tickernelz/paperclip-pro-adapter-omp-local/readiness", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@tickernelz/paperclip-pro-adapter-omp-local/readiness")>()),
+  probeOmpInstall: probeOmpInstallMock,
+}));
+
 const ORIGINAL_ENV = { ...process.env };
 const ORIGINAL_CWD = process.cwd();
 const ORIGINAL_PATH = process.env.PATH;
@@ -113,6 +121,41 @@ describe("onboard", () => {
     delete process.env.PAPERCLIP_NO_BROWSER;
     delete process.env.HOST;
     runCommandMock.mockReset();
+    probeOmpInstallMock.mockReset();
+    probeOmpInstallMock.mockResolvedValue(READY_OMP);
+    delete process.env.PAPERCLIP_OMP_BUNDLED_VERSION;
+  });
+
+  it("refuses to onboard with an OMP older than 18.1.16 and writes nothing", async () => {
+    probeOmpInstallMock.mockResolvedValue({ ...READY_OMP, state: "too_old", version: "18.1.15" });
+    const configPath = createFreshConfigPath();
+
+    await onboard({ config: configPath, yes: true, invokedByRun: true });
+
+    expect(process.exitCode).toBe(1);
+    expect(fs.existsSync(configPath)).toBe(false);
+    expect(runCommandMock).not.toHaveBeenCalled();
+  });
+
+  it("refuses to onboard without OMP", async () => {
+    probeOmpInstallMock.mockResolvedValue({ ...READY_OMP, state: "missing", version: null, path: null });
+    const configPath = createFreshConfigPath();
+
+    await onboard({ config: configPath, yes: true, invokedByRun: true });
+
+    expect(process.exitCode).toBe(1);
+    expect(fs.existsSync(configPath)).toBe(false);
+  });
+
+  it("does not gate the Docker image on the local OMP", async () => {
+    process.env.PAPERCLIP_OMP_BUNDLED_VERSION = "18.18.0";
+    probeOmpInstallMock.mockResolvedValue({ ...READY_OMP, state: "missing", version: null, path: null });
+    const configPath = createFreshConfigPath();
+
+    await onboard({ config: configPath, yes: true, invokedByRun: true });
+
+    expect(probeOmpInstallMock).not.toHaveBeenCalled();
+    expect(fs.existsSync(configPath)).toBe(true);
   });
 
   afterEach(() => {
