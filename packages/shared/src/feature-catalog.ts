@@ -872,6 +872,38 @@ export function withDependentsDisabled(
   return result;
 }
 
+export function withRequirementsEnabled(
+  patch: Partial<Record<InstanceFeatureKey, boolean>>,
+): Partial<Record<InstanceFeatureKey, boolean>> {
+  const result: Partial<Record<InstanceFeatureKey, boolean>> = { ...patch };
+  const enable = (key: InstanceFeatureKey) => {
+    for (const required of featureRequirements(key)) {
+      if (result[required] !== undefined) continue;
+      result[required] = true;
+      enable(required);
+    }
+  };
+  for (const [key, value] of Object.entries(patch) as Array<[InstanceFeatureKey, boolean | undefined]>) {
+    if (value === true) enable(key);
+  }
+  return result;
+}
+
+export function withUnmetRequirementsDisabled<T extends Partial<Record<InstanceFeatureKey, boolean>>>(settings: T): T {
+  const result = { ...settings };
+  let changed = true;
+  while (changed) {
+    changed = false;
+    for (const key of INSTANCE_FEATURE_KEYS) {
+      if (result[key] === true && missingFeatureRequirements(key, result).length > 0) {
+        (result as Partial<Record<InstanceFeatureKey, boolean>>)[key] = false;
+        changed = true;
+      }
+    }
+  }
+  return result;
+}
+
 export function missingFeatureRequirements(
   key: InstanceFeatureKey,
   settings: Partial<Record<InstanceFeatureKey, boolean>>,

@@ -1186,7 +1186,7 @@ describe("IssueProperties", () => {
 
   it("exposes the add-subtask action from the relationships picker", async () => {
     mockInstanceSettingsApi.getExperimental.mockResolvedValue({
-      enableClassicTaskInterface: true,
+      enableClassicTaskInterface: false,
     });
     const onAddSubIssue = vi.fn();
     const root = renderProperties(container, {
@@ -2109,7 +2109,7 @@ describe("IssueProperties", () => {
   it("hides related task references already covered by blockers, blocking, and sub-issues", async () => {
     mockInstanceSettingsApi.getExperimental.mockResolvedValue({
       enableTaskWatchdogs: false,
-      enableClassicTaskInterface: true,
+      enableClassicTaskInterface: false,
     });
     const root = renderProperties(container, {
       issue: createIssue({

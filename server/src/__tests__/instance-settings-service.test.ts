@@ -26,13 +26,15 @@ describe("instance settings service", () => {
     mockLoggerWarn.mockReset();
   });
 
-  it("keeps OpenAI Dot opt-in and persists its setting independently of its prerequisites", () => {
+  it("keeps OpenAI Dot opt-in and turns Assistant connections on with it", () => {
     expect(normalizeExperimentalSettings({}).enableOpenAiDot).toBe(false);
     const enabled = applyExperimentalSettingsPatch({}, { enableOpenAiDot: true });
     expect(normalizeExperimentalSettings(JSON.parse(JSON.stringify(enabled)))).toMatchObject({
-      enableOpenAiDot: true, enablePublicMcp: false,
+      enableOpenAiDot: true, enablePublicMcp: true,
     });
-    expect(applyExperimentalSettingsPatch(enabled, { enableOpenAiDot: false }).enableOpenAiDot).toBe(false);
+    expect(applyExperimentalSettingsPatch(enabled, { enableOpenAiDot: false })).toMatchObject({
+      enableOpenAiDot: false, enablePublicMcp: true,
+    });
   });
 
   it("keeps chat connectors opt-in across legacy storage and patches without disabling Apps", () => {
@@ -131,6 +133,13 @@ describe("instance settings service", () => {
     }
     const patched = applyExperimentalSettingsPatch({}, storedOff);
     for (const key of permanent) expect(patched[key]).toBe(true);
+  });
+
+  it("turns on a feature's requirements when a patch turns the feature on", () => {
+    const patched = applyExperimentalSettingsPatch({ enableCases: false, enableSummaries: false }, { enablePipelines: true, enableStatusCards: true });
+    expect(patched).toMatchObject({ enablePipelines: true, enableCases: true, enableStatusCards: true, enableSummaries: true });
+    const conflicting = applyExperimentalSettingsPatch({}, { enablePipelines: true, enableCases: false });
+    expect(conflicting).toMatchObject({ enablePipelines: false, enableCases: false });
   });
 
   it("accepts the three removed keys and reads them as off", () => {

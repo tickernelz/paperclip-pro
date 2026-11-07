@@ -2836,6 +2836,8 @@ export {
   featureRequirements,
   missingFeatureRequirements,
   withDependentsDisabled,
+  withRequirementsEnabled,
+  withUnmetRequirementsDisabled,
   buildFeatureCatalogArtifact,
   featureCatalogArtifactSchema,
   renderFeatureCatalogArtifact,

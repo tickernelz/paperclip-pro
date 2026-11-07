@@ -1,5 +1,6 @@
 import { AgentIdentity } from "@/components/AgentIdentity";
 import { useCombinedInboxTasksEnabled } from "@/hooks/useCombinedInboxTasksEnabled";
+import { useHiddenSettings } from "@/hooks/useHiddenSettings";
 import { useState, useEffect, useMemo } from "react";
 import { useLocation, useNavigate } from "@/lib/router";
 import { useQuery } from "@tanstack/react-query";
@@ -106,6 +107,8 @@ export function CommandPalette() {
   const searchQuery = query.trim();
   const onIssueDetail = isOnIssueDetail(location.pathname);
   const { enabled: combinedInboxTasksEnabled } = useCombinedInboxTasksEnabled();
+  const { hidden: hiddenSettings } = useHiddenSettings();
+  const showFeatureSettings = !hiddenSettings.has("instance.experimental");
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -417,14 +420,18 @@ export function CommandPalette() {
             <History className="mr-2 h-4 w-4" />
             Activity
           </CommandItem>
-          <CommandItem onSelect={() => go("/company/settings/instance/features")}>
-            <ToggleRight className="mr-2 h-4 w-4" />
-            Features
-          </CommandItem>
-          <CommandItem onSelect={() => go("/company/settings/instance/advanced")}>
-            <Wrench className="mr-2 h-4 w-4" />
-            Advanced settings
-          </CommandItem>
+          {showFeatureSettings ? (
+            <>
+              <CommandItem onSelect={() => go("/company/settings/instance/features")}>
+                <ToggleRight className="mr-2 h-4 w-4" />
+                Features
+              </CommandItem>
+              <CommandItem onSelect={() => go("/company/settings/instance/advanced")}>
+                <Wrench className="mr-2 h-4 w-4" />
+                Advanced settings
+              </CommandItem>
+            </>
+          ) : null}
         </CommandGroup>
 
         {visibleIssues.length > 0 && (

@@ -37,6 +37,8 @@ import {
   PERMANENT_FEATURE_KEYS,
   REMOVED_FEATURE_KEYS,
   withDependentsDisabled,
+  withRequirementsEnabled,
+  withUnmetRequirementsDisabled,
   applyOperatorGeneralDefaults,
   stripOperatorGeneralEchoes,
 } from "@tickernelz/paperclip-pro-shared";
@@ -106,7 +108,7 @@ export function applyExperimentalSettingsPatch(
 ): InstanceExperimentalSettings {
   const previousExperimental = normalizeExperimentalSettings(current);
   const patchable = withDependentsDisabled(
-    stripServerManagedExperimentalPatchFields(patch),
+    withRequirementsEnabled(stripServerManagedExperimentalPatchFields(patch)),
   ) as PatchInstanceExperimentalSettings;
   const nextExperimental = normalizeExperimentalSettings({
     ...previousExperimental,
@@ -374,16 +376,20 @@ export function applyManagedExperimentalOverlay(
   managedConfig: ManagedInstanceConfig | null,
 ): { experimental: InstanceExperimentalSettings; managedKeys: ManagedExperimentalKeyMetadata } {
   if (!managedConfig) return { experimental, managedKeys: {} };
-  const next: InstanceExperimentalSettings = { ...experimental };
+  const managed: Partial<Record<ManagedExperimentalFeatureKey, boolean>> = {};
   const managedKeys: ManagedExperimentalKeyMetadata = {};
   for (const [key, value] of Object.entries(managedConfig.features) as Array<
     [ManagedExperimentalFeatureKey, boolean]
   >) {
     if (FIXED_FEATURE_KEYS.has(key)) continue;
-    next[key] = value;
+    managed[key] = value;
     managedKeys[key] = { managed: true, managedBy: PAPERCLIP_CLOUD_MANAGED_BY };
   }
-  return { experimental: next, managedKeys };
+  const next = {
+    ...experimental,
+    ...withDependentsDisabled(withRequirementsEnabled(managed)),
+  } as InstanceExperimentalSettings;
+  return { experimental: withUnmetRequirementsDisabled(next), managedKeys };
 }
 
 /**
