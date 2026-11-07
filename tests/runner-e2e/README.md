@@ -1164,8 +1164,8 @@ of arbitrary external side effects from a provider process.
 pnpm test:e2e:runner:unit
 pnpm test:e2e:runner:typecheck
 # Two paid smoke cases, after keys are available:
-pnpm test:e2e:runner -- --suite first-task --profile legacy-codex --case clear-task-first-response
-pnpm test:e2e:runner -- --suite first-task --profile legacy-claude --case clear-task-first-response
+pnpm test:e2e:runner -- --suite first-task --profile runner-codex --case clear-task-first-response
+pnpm test:e2e:runner -- --suite first-task --profile runner-acpx-claude --case clear-task-first-response
 # Expand after reviewing the smoke evidence:
 pnpm test:e2e:runner -- --suite first-task
 ```
