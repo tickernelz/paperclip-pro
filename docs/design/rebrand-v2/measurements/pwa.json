@@ -1,0 +1,156 @@
+{
+ "pass": 28,
+ "total": 28,
+ "checks": [
+  {
+   "check": "field id",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "field name",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "field short_name",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "field start_url",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "field scope",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "field display",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "field icons",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "field theme_color",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "field background_color",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "start_url inside scope",
+   "pass": true,
+   "detail": "/?source=pwa in /"
+  },
+  {
+   "check": "icon 192 any",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "icon 512 any",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "icon maskable",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "icon monochrome",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "size /icon-any-192.png",
+   "pass": true,
+   "detail": "(192, 192) vs (192, 192)"
+  },
+  {
+   "check": "size /icon-any-512.png",
+   "pass": true,
+   "detail": "(512, 512) vs (512, 512)"
+  },
+  {
+   "check": "size /icon-maskable-192.png",
+   "pass": true,
+   "detail": "(192, 192) vs (192, 192)"
+  },
+  {
+   "check": "size /icon-maskable-512.png",
+   "pass": true,
+   "detail": "(512, 512) vs (512, 512)"
+  },
+  {
+   "check": "size /icon-monochrome-512.png",
+   "pass": true,
+   "detail": "(512, 512) vs (512, 512)"
+  },
+  {
+   "check": "file /favicon.svg",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "size /screenshot-wide.jpg",
+   "pass": true,
+   "detail": "(1800, 1125) vs (1800, 1125)"
+  },
+  {
+   "check": "size /screenshot-narrow.jpg",
+   "pass": true,
+   "detail": "(780, 1688) vs (780, 1688)"
+  },
+  {
+   "check": "maskable mark inside 80% safe circle",
+   "pass": true,
+   "detail": "farthest mark pixel at 0.75 of radius"
+  },
+  {
+   "check": "wide and narrow screenshots",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "shortcut Decisions",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "sw.js fetch handler",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "sw.js push and notificationclick",
+   "pass": true,
+   "detail": ""
+  },
+  {
+   "check": "launch_handler navigate-existing",
+   "pass": true,
+   "detail": ""
+  }
+ ],
+ "themeLight": "#f6f7f9",
+ "themeDark": "#0d0e11",
+ "oldName": "Paperclip",
+ "oldTheme": "#18181b",
+ "oldShortcuts": [
+  "Inbox",
+  "Tasks",
+  "Dashboard"
+ ],
+ "markOnBgDark": 17.24
+}

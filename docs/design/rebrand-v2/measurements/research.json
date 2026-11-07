@@ -1,0 +1,128 @@
+[
+ {
+  "key": "linear",
+  "name": "Linear",
+  "url": "https://linear.app",
+  "learn": "Satu warna aksen hanya untuk keadaan terpilih dan aksi utama; status memakai ikon plus teks, bukan warna saja.",
+  "skip": "Gradien dan efek cahaya di halaman pemasaran; tidak membawa informasi di produk."
+ },
+ {
+  "key": "linear-docs",
+  "name": "Linear Docs",
+  "url": "https://linear.app/docs/conceptual-model",
+  "learn": "Konsep dijelaskan sekali dengan bahasa biasa sebelum istilah; dipakai untuk kalimat penjelas tiap fitur di Features.",
+  "skip": "Navigasi dokumentasi tiga kolom; terlalu berat untuk halaman Settings."
+ },
+ {
+  "key": "vercel",
+  "name": "Vercel",
+  "url": "https://vercel.com",
+  "learn": "Netral hampir monokrom dengan kontras tinggi dan tombol utama hitam-putih membuat aksi utama jelas tanpa warna.",
+  "skip": "Tombol utama hitam pekat; kita pakai indigo agar aksi utama tidak tertukar dengan segmen terpilih."
+ },
+ {
+  "key": "vercel-docs",
+  "name": "Vercel project configuration",
+  "url": "https://vercel.com/docs/projects/project-configuration",
+  "learn": "Deteksi otomatis lebih dulu, file konfigurasi hanya untuk menimpa; pola yang sama dipakai untuk default agent.",
+  "skip": "Mengharuskan pengguna menulis file JSON; di Wardmote semuanya pilihan di layar."
+ },
+ {
+  "key": "supabase",
+  "name": "Supabase",
+  "url": "https://supabase.com",
+  "learn": "Kartu fitur berkelompok dengan satu kalimat manfaat; dipakai untuk kelompok di Features.",
+  "skip": "Hijau sebagai warna merek; di Wardmote hijau berarti selesai."
+ },
+ {
+  "key": "railway",
+  "name": "Railway",
+  "url": "https://railway.com",
+  "learn": "Onboarding yang langsung menjalankan sesuatu dan baru menanyakan detail sesudahnya.",
+  "skip": "Ilustrasi latar penuh; dekorasi tanpa informasi."
+ },
+ {
+  "key": "raycast",
+  "name": "Raycast",
+  "url": "https://www.raycast.com",
+  "learn": "Palet perintah sebagai jalan cepat ke semua aksi; dasar untuk Ctrl K dan pencarian setting.",
+  "skip": "Kaca buram (blur) sebagai gaya utama."
+ },
+ {
+  "key": "notion",
+  "name": "Notion",
+  "url": "https://www.notion.com",
+  "learn": "Keadaan kosong yang mengajari langkah pertama dengan satu tombol.",
+  "skip": "Ilustrasi tangan pada setiap keadaan kosong."
+ },
+ {
+  "key": "github",
+  "name": "GitHub",
+  "url": "https://github.com/features/copilot",
+  "learn": "Pengaturan dengan label 'changed' dan satu tombol reset per baris di pengaturan organisasi.",
+  "skip": "Halaman pengaturan yang sangat panjang tanpa pengelompokan."
+ },
+ {
+  "key": "stripe",
+  "name": "Stripe Docs",
+  "url": "https://docs.stripe.com",
+  "learn": "Tabel yang berubah jadi daftar bertumpuk di ponsel, bukan gulir horizontal.",
+  "skip": "Gradien merek."
+ },
+ {
+  "key": "cursor",
+  "name": "Cursor",
+  "url": "https://cursor.com/features",
+  "learn": "Pilihan model disajikan dengan nama manusia dan satu label kecepatan atau biaya.",
+  "skip": "Daftar model panjang di satu menu tanpa rekomendasi."
+ },
+ {
+  "key": "zed",
+  "name": "Zed",
+  "url": "https://zed.dev",
+  "learn": "Tema terang dan gelap diperlakukan setara, bukan gelap sebagai tambalan.",
+  "skip": "Tipografi display besar di dalam produk."
+ },
+ {
+  "key": "attio",
+  "name": "Attio",
+  "url": "https://attio.com",
+  "learn": "Kepadatan tabel tinggi dengan tinggi baris tetap dan angka tabular.",
+  "skip": "Banyak warna label pada satu tabel."
+ },
+ {
+  "key": "resend",
+  "name": "Resend",
+  "url": "https://resend.com",
+  "learn": "Satu halaman pengaturan per topik dengan bilah simpan yang muncul hanya saat ada perubahan.",
+  "skip": "Latar hitam murni sebagai satu-satunya tema."
+ },
+ {
+  "key": "tailscale",
+  "name": "Tailscale",
+  "url": "https://tailscale.com",
+  "learn": "Mesin terdeteksi otomatis lalu tampil sebagai daftar dengan status; dipakai untuk daftar mesin OMP.",
+  "skip": "Istilah jaringan teknis di layar utama."
+ },
+ {
+  "key": "posthog",
+  "name": "PostHog",
+  "url": "https://posthog.com",
+  "learn": "Feature flags dengan nama manusia, penjelasan singkat, dan keadaan on/off yang jelas.",
+  "skip": "Gaya ilustrasi kartun di produk."
+ },
+ {
+  "key": "sentry",
+  "name": "Sentry",
+  "url": "https://sentry.io/welcome",
+  "learn": "Galat dijelaskan dengan apa yang terjadi dan apa langkah berikutnya, dengan ID yang bisa disalin.",
+  "skip": "Ungu jenuh sebagai warna latar besar."
+ },
+ {
+  "key": "planetscale",
+  "name": "PlanetScale",
+  "url": "https://planetscale.com",
+  "learn": "Hampir tanpa dekorasi: hierarki dari ukuran dan berat huruf, bukan kotak dan bayangan.",
+  "skip": "Teks abu muda di atas putih yang kontrasnya tipis."
+ }
+]

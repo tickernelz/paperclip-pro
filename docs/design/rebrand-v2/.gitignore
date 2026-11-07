@@ -1,0 +1,5 @@
+shots/
+logo/render/
+src/doc.html
+*.pdf
+__pycache__/

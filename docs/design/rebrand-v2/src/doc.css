@@ -1,0 +1,110 @@
+@page{size:297mm 210mm;margin:0}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body{margin:0;font:400 9.6pt/1.5 "Inter",sans-serif;color:#1d2027;background:#fff;font-feature-settings:"cv11"}
+.pg{width:297mm;height:210mm;padding:13mm 15mm 12mm;position:relative;page-break-after:always;overflow:hidden;display:flex;flex-direction:column}
+.pg:last-child{page-break-after:auto}
+.pg.dark{background:#15171c;color:#f1f2f5}
+.run{position:absolute;left:15mm;right:15mm;bottom:5.5mm;display:flex;justify-content:space-between;font:400 6.8pt "Plex Mono",Inter,monospace;color:#5d6270}
+.dark .run{color:#a5a9b3}
+h1{font:640 25pt/1.1 "Inter";letter-spacing:-0.022em;margin:0 0 4mm}
+h2{font:620 15.5pt/1.2 "Inter";letter-spacing:-0.012em;margin:0}
+h3{font:600 10pt/1.3 "Inter";margin:0 0 1.4mm}
+p{margin:0 0 2mm;max-width:170mm}
+.lede{font-size:11pt;color:#3f4350;max-width:190mm}
+.dark .lede{color:#cdd0d8}
+.mute{color:#5d6270}
+.dark .mute{color:#a5a9b3}
+.mono,code{font-family:"Plex Mono",Inter,monospace;font-size:7.8pt}
+code{background:#f0f1f4;padding:0 .8mm;border-radius:.6mm}
+.dark code{background:#262a33}
+.head{display:flex;align-items:baseline;gap:5mm;margin-bottom:4mm}
+.head .sec{font:600 8pt "Plex Mono",Inter;color:#4c47c4;letter-spacing:.02em}
+.dark .head .sec{color:#a6a3ff}
+.head .where{font:400 7.4pt "Plex Mono",Inter;color:#5d6270;margin-left:auto;text-align:right}
+.dark .head .where{color:#a5a9b3}
+.shot{display:block;width:100%;height:auto;border-radius:1.2mm;box-shadow:0 0 0 .25mm #b9bcc5}
+.dark .shot{box-shadow:0 0 0 .25mm #3a3e48}
+.split{display:grid;grid-template-columns:1fr 76mm;gap:7mm;flex:1;min-height:0}
+.split.w{grid-template-columns:1fr 62mm}
+.split.r{grid-template-columns:80mm 1fr}
+.half{display:grid;grid-template-columns:1fr 1fr;gap:6mm}
+.thirds{display:grid;grid-template-columns:repeat(3,1fr);gap:5mm}
+.quad{display:grid;grid-template-columns:1fr 1fr;gap:4mm 6mm}
+.notes{font-size:8.8pt;line-height:1.5}
+.notes h3{margin-top:3mm}
+.notes h3:first-child{margin-top:0}
+.notes p{margin-bottom:1.6mm}
+.notes ul,.notes ol{margin:0 0 2mm;padding-left:4mm}
+.notes li{margin:0 0 .9mm}
+figure{margin:0}
+.cap{font-size:7.8pt;color:#5d6270;margin-top:1.4mm;line-height:1.4}
+.dark .cap{color:#a5a9b3}
+.cap b{font-weight:600;color:#1d2027}
+.dark .cap b{color:#f1f2f5}
+table{border-collapse:collapse;width:100%;font-size:8pt}
+th{text-align:left;font-weight:600;color:#5d6270;padding:0 2.6mm 1.4mm 0;border-bottom:.3mm solid #b9bcc5;vertical-align:bottom}
+td{padding:1.2mm 2.6mm 1.2mm 0;border-bottom:.2mm solid #dcdee3;vertical-align:top}
+td.n,th.n{text-align:right;font-family:"Plex Mono",Inter;font-size:7.6pt;white-space:nowrap}
+td.k{font-family:"Plex Mono",Inter;font-size:7.4pt}
+.dark th{color:#a5a9b3;border-color:#3a3e48}
+.dark td{border-color:#2a2e36}
+tr.hl td{background:#eeedff}
+.dark tr.hl td{background:#2a2950}
+.pass{color:#1e7a45;font-weight:600}
+.fail{color:#b4232a;font-weight:600}
+.tag{display:inline-block;font:600 6.8pt "Plex Mono",Inter;padding:.2mm 1.4mm;border-radius:.8mm;box-shadow:inset 0 0 0 .25mm currentColor;margin-right:1mm;white-space:nowrap}
+.tag.acc{color:#4c47c4}
+.tag.ok{color:#1e7a45}
+.tag.warn{color:#8a5a00}
+.tag.bad{color:#b4232a}
+.box{border:.3mm solid #c9ccd4;border-radius:1.6mm;padding:3mm 3.6mm}
+.box.acc{border-color:#4c47c4;background:#f5f4ff}
+.box.warn{border-color:#c79a2c;background:#fff9ea}
+.dark .box{border-color:#3a3e48}
+.big{font:640 22pt/1 "Inter";letter-spacing:-0.02em}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:4mm}
+.kpis .box .l{font-size:7.6pt;color:#5d6270}
+.kpis .box .s{font-size:7.6pt;color:#5d6270;margin-top:1mm}
+.toc{display:grid;grid-template-columns:9mm 1fr 14mm;gap:1.2mm 2mm;font-size:9pt}
+.toc span:nth-child(3n+1){font:600 7.6pt "Plex Mono",Inter;color:#4c47c4}
+.toc span:nth-child(3n){font:400 7.6pt "Plex Mono",Inter;color:#5d6270;text-align:right}
+.sw{display:grid;grid-template-columns:repeat(7,1fr);gap:2mm}
+.sw div{font:400 6.4pt/1.25 "Plex Mono",Inter;color:#5d6270}
+.dark .sw div{color:#a5a9b3}
+.sw i{display:block;height:9mm;border-radius:1mm;box-shadow:inset 0 0 0 .25mm rgba(0,0,0,.18);margin-bottom:.8mm}
+.sw b{display:block;font-weight:500;color:#1d2027}
+.dark .sw b{color:#f1f2f5}
+.logo-tile{border-radius:1.6mm;display:flex;align-items:center;justify-content:center;padding:4mm}
+.logo-tile.l{background:#fff;box-shadow:inset 0 0 0 .25mm #d5d7dd}
+.logo-tile.d{background:#15171c}
+.logo-tile img{display:block}
+.px{image-rendering:pixelated}
+.sizes{display:flex;align-items:flex-end;gap:5mm}
+.sizes figure{display:flex;flex-direction:column;align-items:center;gap:1mm;font:400 6.4pt "Plex Mono",Inter;color:#5d6270}
+.flow{display:flex;align-items:stretch;gap:2mm;font-size:8pt}
+.flow .st{flex:1;border:.3mm solid #c9ccd4;border-radius:1.4mm;padding:2mm 2.4mm}
+.flow .st b{display:block;font-weight:600;font-size:8.6pt;margin-bottom:.6mm}
+.flow .ar{display:flex;align-items:center;color:#8a8f9c}
+.dec{border:.3mm solid #c9ccd4;border-radius:1.6mm;padding:2.4mm 3.2mm;break-inside:avoid}
+.dec h3{margin:0 0 1mm;display:flex;gap:2mm;align-items:baseline}
+.dec p{margin:0 0 1mm;font-size:8.4pt;max-width:none}
+.dec .rec{color:#3d38b0;font-weight:600}
+.cols2{columns:2;column-gap:8mm}
+.cols2>*{break-inside:avoid}
+.pre{font:400 7.4pt/1.5 "Plex Mono",Inter;background:#f3f4f6;border-radius:1.2mm;padding:2.4mm 3mm;white-space:pre;overflow:hidden}
+.dark .pre{background:#20232a}
+.quad .shot{max-height:76mm;width:auto;max-width:100%}
+.tall .shot{max-height:78mm;width:auto;max-width:100%}
+.dense td{padding:.5mm 2mm .5mm 0}
+.dense h3{margin:0 0 .6mm}
+
+.fit{display:flex;flex-direction:column;align-items:center;margin:0;min-width:0}
+.fit img{max-height:100%;max-width:100%;object-fit:contain;display:block;border-radius:1mm;box-shadow:0 0 0 .25mm #b9bcc5;min-height:0;flex:1 1 auto}
+.fit .cap{flex:none;text-align:center}
+.sp4{display:flex;flex-direction:column;gap:3mm;flex:1;min-height:0}
+.sp4 .d{display:grid;grid-template-columns:1fr 1fr;gap:4mm}
+.sp4 .m{display:grid;grid-template-columns:auto auto auto 1fr;gap:4mm;align-items:start}
+.dense td{padding:.6mm 2mm .6mm 0}
+.dense th{padding:0 2mm 1mm 0}
+.split{display:grid;grid-template-columns:1fr 76mm;gap:7mm;flex:1;min-height:0}
