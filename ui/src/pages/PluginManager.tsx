@@ -63,7 +63,7 @@ function ExperimentalBadge() {
       variant="outline"
       className="border-amber-500/30 bg-amber-500/10 text-amber-700 hover:bg-amber-500/10 dark:text-amber-200"
     >
-      Experimental
+      Beta
     </Badge>
   );
 }

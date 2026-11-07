@@ -77,8 +77,6 @@ import { IssueFiltersPopover } from "./IssueFiltersPopover";
 import { IssueRow, type IssueRowPresentation } from "./IssueRow";
 import { RestorePrimaryModelControl } from "./task-chat/RestorePrimaryModelControl";
 import { CollectionToolbar, type CollectionToolbarProps } from "./CollectionToolbar";
-import { IssuesList as LegacyIssuesList } from "./LegacyIssuesList";
-import { useStreamlinedUiEnabled } from "../hooks/useStreamlinedUiEnabled";
 import { PageSkeleton } from "./PageSkeleton";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
@@ -812,8 +810,7 @@ function SubIssueProgressSummaryStrip({
 const MOBILE_TREE_INDENT = ["", "pl-4 sm:pl-0", "pl-8 sm:pl-0", "pl-12 sm:pl-0", "pl-16 sm:pl-0"];
 
 export function IssuesList(props: IssuesListProps) {
-  const { enabled: streamlinedUiEnabled } = useStreamlinedUiEnabled();
-  return streamlinedUiEnabled ? <StreamlinedIssuesList {...props} /> : <LegacyIssuesList {...props} />;
+  return <StreamlinedIssuesList {...props} />;
 }
 
 function StreamlinedIssuesList({

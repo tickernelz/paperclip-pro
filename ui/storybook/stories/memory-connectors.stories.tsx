@@ -6,7 +6,7 @@ import { getConnectableAppDefinition, MEMORY_CONNECTOR_IDS, INSTANCE_FEATURE_KEY
 import { queryKeys } from "@/lib/queryKeys";
 import { ConnectionSetupCompletionScreen, ConnectionSetupFlow, OAuthConnectStateScreen } from "@/features/connections/ConnectionSetupFlow";
 import { ConnectorCard } from "@/pages/apps/Browse";
-import { InstanceExperimentalSettings } from "@/pages/InstanceExperimentalSettings";
+import { InstanceFeatures } from "@/pages/InstanceFeatures";
 import { Button } from "@/components/ui/button";
 
 const COMPANY = "company-storybook";
@@ -74,8 +74,8 @@ function MemoryReview({ provider = "mem0", scenario = "catalog" }: { provider?: 
   const app = selection ? getConnectableAppDefinition(selection)! : null;
   return <QueryClientProvider client={client}>
     <div className="min-h-screen bg-bg text-ink">
-      <p role="note" className="border-b border-line bg-bg-3 p-4 text-sm">Storybook simulation · Production catalog, setup, and experimental controls. Use fake credentials. Sign-in and tool discovery are simulated; no provider calls or secret storage.</p>
-      {scenario === "settings" ? <InstanceExperimentalSettings /> : <div className="mx-auto max-w-4xl space-y-4 p-6">
+      <p role="note" className="border-b border-line bg-bg-3 p-4 text-sm">Storybook simulation · Production catalog, setup, and feature controls. Use fake credentials. Sign-in and tool discovery are simulated; no provider calls or secret storage.</p>
+      {scenario === "settings" ? <InstanceFeatures /> : <div className="mx-auto max-w-4xl space-y-4 p-6">
         {completed && app ? <ConnectionSetupCompletionScreen appName={app.name} logoUrl={app.branding.logoUrl} darkLogoUrl={app.branding.darkLogoUrl} summary={[{ label: "Identity", value: identity }, { label: "Available to", value: availableTo }, { label: "Actions", value: "All tools allowed" }]} onDone={() => { setCompleted(false); setSelection(null); }} />
           : (scenario === "waiting" || scenario === "oauth-error") && app ? <OAuthConnectStateScreen entry={app} resuming={false} phase={scenario === "oauth-error" ? "error" : "redirecting"} error={scenario === "oauth-error" ? "The provider did not authorize this connection. Check your account access and try again." : null} onRetry={() => setSelection(null)} onBack={() => setSelection(null)} onCancel={() => setSelection(null)} />
           : selection && ready ? <>
@@ -95,7 +95,7 @@ const meta = { title: "Apps/Connections/Memory", component: MemoryReview, parame
 export default meta;
 type Story = StoryObj<typeof meta>;
 export const CatalogAndSetup: Story = { args: { scenario: "catalog" } };
-export const ExperimentalToggle: Story = { args: { scenario: "settings" } };
+export const FeatureToggle: Story = { args: { scenario: "settings" } };
 export const DisabledSetup: Story = { args: { scenario: "disabled" } };
 export const Mem0: Story = { args: { scenario: "setup", provider: "mem0" } };
 export const Zep: Story = { args: { scenario: "setup", provider: "zep" } };

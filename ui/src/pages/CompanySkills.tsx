@@ -42,7 +42,6 @@ import { CopyText } from "../components/CopyText";
 import { Identity } from "../components/Identity";
 import { AgentMultiSelect } from "../components/AgentMultiSelect";
 import { useAdapterCapabilities } from "../adapters/use-adapter-capabilities";
-import { useStreamlinedUiEnabled } from "../hooks/useStreamlinedUiEnabled";
 import {
   SkillPolicyDenialNotice,
   useSkillPolicyDenial,
@@ -4024,7 +4023,6 @@ export function CompanySkills() {
   const { setBreadcrumbs } = useBreadcrumbs();
   const { pushToast } = useToastActions();
   const adapterCaps = useAdapterCapabilities();
-  const { enabled: streamlinedUiEnabled } = useStreamlinedUiEnabled();
   const policyDenial = useSkillPolicyDenial();
   // Route a failed skill mutation to the persistent policy banner when it is an
   // explicit-policy (State B) or platform-safety (State C) denial; otherwise keep
@@ -4097,16 +4095,7 @@ export function CompanySkills() {
   const selectedCatalogRef = searchParams.get("catalog");
   const tabParam = searchParams.get("tab");
   const discoveryTab = resolveDiscoveryTab(tabParam ?? (viewParam === "catalog" ? "catalog" : null));
-  const legacyDiscoveryTab = (["all", "installed", "catalog", "bundled"] as const).includes(
-    tabParam as "all" | "installed" | "catalog" | "bundled",
-  )
-    ? (tabParam as "all" | "installed" | "catalog" | "bundled")
-    : "installed";
-  const effectiveDiscoveryTab: DiscoveryTab = streamlinedUiEnabled
-    ? discoveryTab
-    : legacyDiscoveryTab === "installed"
-      ? "installed"
-      : "discover";
+  const effectiveDiscoveryTab: DiscoveryTab = discoveryTab;
   const detailTab: SkillDetailTab = (["overview", "files", "versions", "agents"] as SkillDetailTab[]).includes(tabParam as SkillDetailTab)
     ? (tabParam as SkillDetailTab)
     : parsedRoute.hasExplicitFilePath || selectedPath !== "SKILL.md"
@@ -4119,23 +4108,12 @@ export function CompanySkills() {
   // selected; selecting either drops into the existing master/detail surfaces.
   const isDiscovery = !isStudioNew && !routeSkillToken && !selectedCatalogRef;
   const folderSelection = normalizeFolderSelection(searchParams.get("folder"));
-  const browseRailsEnabled = !streamlinedUiEnabled;
+  const browseRailsEnabled = false;
   const visibleDiscoveryCategory = browseRailsEnabled ? discoveryCategory : null;
   const visibleFolderSelection: FolderSelection = browseRailsEnabled ? folderSelection : "all";
 
   function setDiscoveryTab(tab: DiscoveryTab) {
     setSearchParams((current) => withDiscoveryTab(current, tab));
-  }
-
-  function setLegacyDiscoveryTab(tab: "all" | "installed" | "catalog" | "bundled") {
-    setSearchParams((current) => {
-      const params = new URLSearchParams(current);
-      if (tab === "installed") params.delete("tab");
-      else params.set("tab", tab);
-      params.delete("category");
-      if (tab !== "installed") params.delete("folder");
-      return params;
-    });
   }
 
   function setFolderSelection(selection: FolderSelection) {
@@ -4202,7 +4180,6 @@ export function CompanySkills() {
   // Canonicalize the old split-view and multi-tab URLs into the single Discover
   // destination while keeping every stale deep link useful.
   useEffect(() => {
-    if (!streamlinedUiEnabled) return;
     const legacyTab = searchParams.get("tab");
     const hasLegacyDiscoveryTab = isDiscovery && ["all", "catalog", "bundled"].includes(legacyTab ?? "");
     const hasRetiredBrowseFilter = isDiscovery && (searchParams.has("category") || searchParams.has("folder"));
@@ -4222,13 +4199,12 @@ export function CompanySkills() {
       },
       { replace: true },
     );
-  }, [isDiscovery, searchParams, setSearchParams, streamlinedUiEnabled]);
+  }, [isDiscovery, searchParams, setSearchParams]);
 
   useEffect(() => {
-    if (!streamlinedUiEnabled) return;
     setSelectMode(false);
     setSelectedSkillIds([]);
-  }, [streamlinedUiEnabled]);
+  }, []);
 
   const skillsQuery = useQuery({
     queryKey: queryKeys.companySkills.list(selectedCompanyId ?? ""),
@@ -4630,14 +4606,8 @@ export function CompanySkills() {
     [installedSkills, catalogListQuery.data],
   );
   const discoveryTabCards = useMemo(
-    () => {
-      if (streamlinedUiEnabled) return cardsForTab(discoveryCards, discoveryTab);
-      if (legacyDiscoveryTab === "installed") return discoveryCards.filter((card) => card.installed);
-      if (legacyDiscoveryTab === "catalog") return discoveryCards.filter((card) => card.catalogRef != null);
-      if (legacyDiscoveryTab === "bundled") return discoveryCards.filter((card) => card.required);
-      return discoveryCards;
-    },
-    [discoveryCards, discoveryTab, legacyDiscoveryTab, streamlinedUiEnabled],
+    () => cardsForTab(discoveryCards, discoveryTab),
+    [discoveryCards, discoveryTab],
   );
   const discoveryCategoryCounts = useMemo<DiscoveryCategory[]>(() => {
     const counts = new Map<string, number>();
@@ -5133,7 +5103,7 @@ export function CompanySkills() {
 
   const skillFolderResult = skillFoldersQuery.data ?? null;
   const showInstalledFolders = isDiscovery && effectiveDiscoveryTab === "installed";
-  const showInstalledBulkSelection = showInstalledFolders && !streamlinedUiEnabled;
+  const showInstalledBulkSelection = showInstalledFolders && false;
   // Rail counts reflect the current category/search scope, never the folder
   // filter itself (ux-spec §5.3).
   const railSkillFolderResult = useMemo(() => {
@@ -5472,18 +5442,6 @@ export function CompanySkills() {
         </div>
       ) : isDiscovery ? (
         <>
-        {!streamlinedUiEnabled ? (
-          <div className="px-4 pt-4">
-            <Tabs value={legacyDiscoveryTab} onValueChange={(value) => setLegacyDiscoveryTab(value as "all" | "installed" | "catalog" | "bundled")}>
-              <TabsList variant="line" aria-label="Skills view">
-                <TabsTrigger value="all">All</TabsTrigger>
-                <TabsTrigger value="installed">Installed</TabsTrigger>
-                <TabsTrigger value="catalog">Catalog</TabsTrigger>
-                <TabsTrigger value="bundled">Bundled</TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </div>
-        ) : null}
         <DiscoveryGrid
           tab={effectiveDiscoveryTab}
           categories={discoveryCategoryCounts}
@@ -5502,7 +5460,7 @@ export function CompanySkills() {
           onCreate={() => void openNewSkill()}
           onImport={() => setImportDialogOpen(true)}
           onImportFromProject={() => setImportFromProjectOpen(true)}
-          onBrowseDiscover={() => streamlinedUiEnabled ? setDiscoveryTab("discover") : setLegacyDiscoveryTab("catalog")}
+          onBrowseDiscover={() => setDiscoveryTab("discover")}
           onScan={(projectId) => scanProjects.mutate(projectId)}
           scanPending={scanProjects.isPending}
           scanStatus={scanStatusMessage}

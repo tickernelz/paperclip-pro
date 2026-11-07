@@ -128,11 +128,11 @@ export function resolveNativeRuntimeMode(input: {
   }
   // Dot has its own rollout; enabling it does not opt in other Runner providers.
   if (runnerProfile.provider === "openai_dot") {
-    if (input.dotEnabled !== true) throw ineligible("paperclip_runner_dot_disabled", "Enable OpenAI Dot and Assistant connections (MCP) in experimental settings before assigning new work.");
+    if (input.dotEnabled !== true) throw ineligible("paperclip_runner_dot_disabled", "Turn on OpenAI Dot and Assistant connections in Settings > Features before assigning new work.");
   } else if (!input.enabled) {
     throw ineligible(
       "paperclip_runner_rollout_disabled",
-      "Paperclip Runner is experimental and disabled on this instance.",
+      "The native runner is turned off on this instance. Turn it on in Settings > Advanced.",
     );
   }
   if (

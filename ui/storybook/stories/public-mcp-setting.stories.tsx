@@ -1,19 +1,18 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, within, waitFor } from "storybook/test";
-import { InstanceExperimentalSettings } from "@/pages/InstanceExperimentalSettings";
+import { InstanceFeatures } from "@/pages/InstanceFeatures";
 import { installPublicMcpFixture } from "../fixtures/publicMcp";
 const meta = {
-  title: "Assistant connections/Experimental setting", component: InstanceExperimentalSettings,
-  parameters: { layout: "padded", initialEntries: ["/PAP/company/settings/instance/experimental"], docs: { description: { component: "The production Experimental page, including surrounding settings. Changes are local to this story." } } },
+  title: "Assistant connections/Features setting", component: InstanceFeatures,
+  parameters: { layout: "padded", initialEntries: ["/PAP/company/settings/instance/features"], docs: { description: { component: "The production Features page, including surrounding settings. Changes are local to this story." } } },
   beforeEach: ({ parameters }) => installPublicMcpFixture(parameters.fixture),
-} satisfies Meta<typeof InstanceExperimentalSettings>;
+} satisfies Meta<typeof InstanceFeatures>;
 export default meta;
 type Story = StoryObj<typeof meta>;
-const name = "Toggle assistant connections experimental setting";
+const name = "Assistant connections";
 export const DisabledByDefault: Story = { play: async ({ canvasElement }) => {
   const c = within(canvasElement);
   await expect(await c.findByRole("switch", { name })).not.toBeChecked();
-  await expect(c.getByRole("switch", { name: "Toggle Paperclip Runner experimental setting" })).toBeChecked();
 } };
 export const Enabled: Story = { parameters: { fixture: { enabled: true } } };
 export const ManagedByCloud: Story = { parameters: { fixture: { enabled: true, managed: true } }, play: async ({ canvasElement }) => {

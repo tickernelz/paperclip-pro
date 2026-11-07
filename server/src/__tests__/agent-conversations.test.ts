@@ -980,7 +980,7 @@ const support = await getEmbeddedPostgresTestSupport();
         issueService(db).addComment(issue.id, "/new", {
           userId: "local-board",
         }),
-      ).rejects.toThrow(/disabled/);
+      ).rejects.toThrow(/Agent chat is off/);
       expect(
         isWaitingConversation(
           (await db.select().from(issues).where(eq(issues.id, issue.id)))[0],

@@ -59,9 +59,9 @@ test('a completion tool does not cut off a delayed final answer', async ({ page 
     expect(await api(`/companies/${company.id}/heartbeat-runs`)).toEqual([]);
     const prefix = `/${company.issuePrefix}`;
     await page.goto(base + prefix + '/dashboard');
-    await page.goto(base + prefix + '/company/settings/instance/experimental');
+    await page.goto(base + prefix + '/company/settings/instance/advanced');
     if (!(await api('/instance/settings/experimental')).enableNativeRunner) {
-      await page.getByRole('switch', { name: 'Toggle Paperclip Runner experimental setting' }).click();
+      await page.getByRole('switch', { name: 'Native runner' }).click();
     }
     await expect.poll(async () => (await api('/instance/settings/experimental')).enableNativeRunner).toBe(true);
     await page.goto(base + prefix + `/agents/${agent.id}/configuration`);

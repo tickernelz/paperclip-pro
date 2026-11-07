@@ -208,129 +208,122 @@ test.describe("chat destination partial updates", () => {
 });
 
 test.describe("Board send delivery refresh", () => {
-  for (const classic of [false, true]) {
-    for (const entry of [
-      "uuid",
-      "uppercase-uuid",
-      "wrong-prefix-identifier",
-    ] as const) {
-      test(`opens external task links in their own organization and uploads safely (${entry}, classic=${classic})`, async ({
-        page,
-        request,
-      }) => {
-        const selected = await seedCompanyAndAgent(request);
-        const target = await seedCompanyAndAgent(request);
-        const issue = await json<{ id: string; identifier: string }>(
-          await request.post(`/api/companies/${target.companyId}/issues`, {
-            data: { title: "Organization-bound task link", status: "backlog" },
-          }),
-          "create linked task in another organization",
-        );
-        await page.route("**/api/instance/settings/experimental", (route) =>
-          fulfill(route, {
-            enableChatConnectors: true,
-            enableClassicTaskInterface: classic,
-          }),
-        );
-        await page.goto(`/${selected.prefix}/issues`);
-        await expect
-          .poll(() =>
-            page.evaluate(() =>
-              localStorage.getItem("paperclip.selectedCompanyId"),
-            ),
-          )
-          .toBe(selected.companyId);
-        await page.goto(
-          entry === "uuid"
-            ? `/issues/${issue.id}`
-            : entry === "uppercase-uuid"
-              ? `/issues/${issue.id.toUpperCase()}`
-              : `/${selected.prefix}/issues/${issue.identifier}?external=chat#files`,
-        );
-        await expect(
-          page.getByRole("heading", {
-            name: "Organization-bound task link",
-            exact: true,
-          }),
-        ).toBeVisible();
-        await expect
-          .soft(page)
-          .toHaveURL(
-            new RegExp(
-              `/${target.prefix}/issues/${issue.identifier}${
-                entry === "wrong-prefix-identifier"
-                  ? "\\?external=chat#files"
-                  : ""
-              }$`,
-            ),
-            { timeout: 4_000 },
-          );
-        const file = {
-          name: classic ? "task-link-report.txt" : "task-link-image.png",
-          mimeType: classic ? "text/plain" : "image/png",
-          buffer: classic
-            ? Buffer.from("Synthetic cross-organization upload proof.\n")
-            : Buffer.from(
-                "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jfFoAAAAASUVORK5CYII=",
-                "base64",
-              ),
-        };
-        if (!classic) {
-          await page.getByRole("button", { name: "Add to composer" }).click();
-        }
-        const chooserPromise = page.waitForEvent("filechooser");
-        await (classic
-          ? page.getByRole("button", { name: "Upload attachment", exact: true })
-          : page.getByRole("menuitem", { name: "Files and images", exact: true })
-        ).click();
-        const responsePromise = page.waitForResponse(
-          (response) =>
-            response.request().method() === "POST" &&
-            /\/api\/companies\/[^/]+\/issues\/[^/]+\/attachments$/.test(
-              new URL(response.url()).pathname,
-            ),
-        );
-        await (await chooserPromise).setFiles(file);
-        const response = await responsePromise;
-        expect.soft(response.status(), await response.text()).toBe(201);
-        expect
-          .soft(new URL(response.url()).pathname)
-          .toBe(
-            `/api/companies/${target.companyId}/issues/${issue.id}/attachments`,
-          );
-        const attachments = await json<
-          {
-            originalFilename: string;
-            contentPath: string;
-            issueCommentId: string | null;
-          }[]
-        >(
-          await request.get(`/api/issues/${issue.id}/attachments`),
-          "read linked task attachments",
-        );
-        expect(attachments).toHaveLength(1);
-        expect(attachments[0]).toMatchObject({
-          originalFilename: file.name,
-          issueCommentId: null,
-        });
-        expect(
-          await (await request.get(attachments[0].contentPath)).body(),
-        ).toEqual(file.buffer);
-        expect(
-          await json<unknown[]>(
-            await request.get(`/api/issues/${issue.id}/comments`),
-            "read linked task comments",
+  for (const entry of [
+    "uuid",
+    "uppercase-uuid",
+    "wrong-prefix-identifier",
+  ] as const) {
+    test(`opens external task links in their own organization and uploads safely (${entry})`, async ({
+      page,
+      request,
+    }) => {
+      const selected = await seedCompanyAndAgent(request);
+      const target = await seedCompanyAndAgent(request);
+      const issue = await json<{ id: string; identifier: string }>(
+        await request.post(`/api/companies/${target.companyId}/issues`, {
+          data: { title: "Organization-bound task link", status: "backlog" },
+        }),
+        "create linked task in another organization",
+      );
+      await page.route("**/api/instance/settings/experimental", (route) =>
+        fulfill(route, {
+          enableChatConnectors: true,
+        }),
+      );
+      await page.goto(`/${selected.prefix}/issues`);
+      await expect
+        .poll(() =>
+          page.evaluate(() =>
+            localStorage.getItem("paperclip.selectedCompanyId"),
           ),
-        ).toHaveLength(0);
-        await expect
-          .poll(() =>
-            page.evaluate(() =>
-              localStorage.getItem("paperclip.selectedCompanyId"),
+        )
+        .toBe(selected.companyId);
+      await page.goto(
+        entry === "uuid"
+          ? `/issues/${issue.id}`
+          : entry === "uppercase-uuid"
+            ? `/issues/${issue.id.toUpperCase()}`
+            : `/${selected.prefix}/issues/${issue.identifier}?external=chat#files`,
+      );
+      await expect(
+        page.getByRole("heading", {
+          name: "Organization-bound task link",
+          exact: true,
+        }),
+      ).toBeVisible();
+      await expect
+        .soft(page)
+        .toHaveURL(
+          new RegExp(
+            `/${target.prefix}/issues/${issue.identifier}${
+              entry === "wrong-prefix-identifier"
+                ? "\\?external=chat#files"
+                : ""
+            }$`,
+          ),
+          { timeout: 4_000 },
+        );
+      const file = {
+        name: "task-link-image.png",
+        mimeType: "image/png",
+        buffer: Buffer.from(
+              "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jfFoAAAAASUVORK5CYII=",
+              "base64",
             ),
-          )
-          .toBe(target.companyId);
+      };
+      {
+        await page.getByRole("button", { name: "Add to composer" }).click();
+      }
+      const chooserPromise = page.waitForEvent("filechooser");
+      await (page.getByRole("menuitem", { name: "Files and images", exact: true })
+      ).click();
+      const responsePromise = page.waitForResponse(
+        (response) =>
+          response.request().method() === "POST" &&
+          /\/api\/companies\/[^/]+\/issues\/[^/]+\/attachments$/.test(
+            new URL(response.url()).pathname,
+          ),
+      );
+      await (await chooserPromise).setFiles(file);
+      const response = await responsePromise;
+      expect.soft(response.status(), await response.text()).toBe(201);
+      expect
+        .soft(new URL(response.url()).pathname)
+        .toBe(
+          `/api/companies/${target.companyId}/issues/${issue.id}/attachments`,
+        );
+      const attachments = await json<
+        {
+          originalFilename: string;
+          contentPath: string;
+          issueCommentId: string | null;
+        }[]
+      >(
+        await request.get(`/api/issues/${issue.id}/attachments`),
+        "read linked task attachments",
+      );
+      expect(attachments).toHaveLength(1);
+      expect(attachments[0]).toMatchObject({
+        originalFilename: file.name,
+        issueCommentId: null,
       });
-    }
+      expect(
+        await (await request.get(attachments[0].contentPath)).body(),
+      ).toEqual(file.buffer);
+      expect(
+        await json<unknown[]>(
+          await request.get(`/api/issues/${issue.id}/comments`),
+          "read linked task comments",
+        ),
+      ).toHaveLength(0);
+      await expect
+        .poll(() =>
+          page.evaluate(() =>
+            localStorage.getItem("paperclip.selectedCompanyId"),
+          ),
+        )
+        .toBe(target.companyId);
+    });
   }
 
   test("keeps the connected-task banner readable in narrow task panes", async ({
@@ -1296,7 +1289,7 @@ test.describe("Exact failed chat run retry", () => {
     );
   });
 
-  for (const surface of ["agent run", "Inbox", "Legacy Inbox"] as const) {
+  for (const surface of ["agent run", "Inbox"] as const) {
     for (const outcome of ["queued", "deferred", "denied"] as const) {
       test(`${surface}: selected run ${outcome} preserves exact retry authority and truthful feedback`, async ({
         page,
@@ -1356,7 +1349,6 @@ test.describe("Exact failed chat run retry", () => {
           if (pathname === "/api/instance/settings/experimental") {
             await fulfill(route, {
               enableChatConnectors: true,
-              enableStreamlinedUi: surface !== "Legacy Inbox",
             });
             return;
           }

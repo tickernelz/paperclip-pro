@@ -1,7 +1,4 @@
 /**
- * Normalized presentation model for the chat-style task thread (the default
- * task view; the classic legacy view sits behind enableClassicTaskInterface).
- *
  * This is a deliberately small, protocol-agnostic model that the new render
  * layer consumes. Two producers feed it:
  *   1. The dev harness, via synthetic fixtures (task-chat-fixtures.ts).

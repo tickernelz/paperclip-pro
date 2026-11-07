@@ -257,10 +257,10 @@ for (const journey of [
         return;
       }
       await page.goto(
-        base + prefix + "/company/settings/instance/experimental",
+        base + prefix + "/company/settings/instance/advanced",
       );
       const nativeRunnerToggle = page.getByRole("switch", {
-        name: "Toggle Paperclip Runner experimental setting",
+        name: "Native runner",
       });
       // Fresh instances may already enable the native runner. Configure the
       // desired state instead of blindly toggling the current default off.
