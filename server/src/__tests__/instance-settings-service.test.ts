@@ -8,7 +8,12 @@ vi.mock("../middleware/logger.js", () => ({
   logger: { warn: mockLoggerWarn },
 }));
 
-import type { InstanceExperimentalSettings } from "@tickernelz/paperclip-pro-shared";
+import {
+  FEATURE_PRESETS,
+  INSTANCE_FEATURE_KEYS,
+  INSTANCE_FEATURE_PLACEMENT,
+  type InstanceExperimentalSettings,
+} from "@tickernelz/paperclip-pro-shared";
 import {
   applyExperimentalSettingsPatch,
   normalizeExperimentalSettings,
@@ -111,27 +116,75 @@ describe("instance settings service", () => {
     });
   });
 
-  it("defaults streamlined UI on without inheriting the retired navigation preference", () => {
-    expect(normalizeExperimentalSettings(undefined).enableStreamlinedUi).toBe(true);
-    expect(normalizeExperimentalSettings({}).enableStreamlinedUi).toBe(true);
-    expect(
-      normalizeExperimentalSettings({ enableStreamlinedLeftNavigation: false }).enableStreamlinedUi,
-    ).toBe(true);
-    expect(normalizeExperimentalSettings({ enableStreamlinedUi: false }).enableStreamlinedUi).toBe(false);
+  it("reads the five permanent keys as on, whatever is stored", () => {
+    const permanent = [
+      "enableApps",
+      "enableExperimentalFileViewer",
+      "enableMcpAggregators",
+      "enableStreamlinedLeftNavigation",
+      "enableStreamlinedUi",
+    ] as const;
+    const storedOff = Object.fromEntries(permanent.map((key) => [key, false]));
+    for (const stored of [undefined, {}, storedOff]) {
+      const normalized = normalizeExperimentalSettings(stored);
+      for (const key of permanent) expect(normalized[key]).toBe(true);
+    }
+    const patched = applyExperimentalSettingsPatch({}, storedOff);
+    for (const key of permanent) expect(patched[key]).toBe(true);
   });
 
-  it("keeps Apps on for empty, legacy, and explicitly disabled stored settings", () => {
-    expect(normalizeExperimentalSettings(undefined).enableApps).toBe(true);
-    expect(normalizeExperimentalSettings({}).enableApps).toBe(true);
-    expect(normalizeExperimentalSettings({ enablePipelines: true }).enableApps).toBe(true);
-    expect(normalizeExperimentalSettings({ enableApps: false }).enableApps).toBe(true);
+  it("accepts the three removed keys and reads them as off", () => {
+    const removed = ["enableAiConnectionRouters", "enableClassicTaskInterface", "enableRunnerPreviewIngress"] as const;
+    const storedOn = Object.fromEntries(removed.map((key) => [key, true]));
+    const normalized = normalizeExperimentalSettings(storedOn);
+    const patched = applyExperimentalSettingsPatch({}, storedOn);
+    for (const key of removed) {
+      expect(normalized[key]).toBe(false);
+      expect(patched[key]).toBe(false);
+    }
   });
 
-  it("retains the deprecated ingress key for stored-settings compatibility", () => {
-    expect(
-      normalizeExperimentalSettings({ enableRunnerPreviewIngress: true })
-        .enableRunnerPreviewIngress,
-    ).toBe(true);
+  it("migrates the production instance without turning any switch off", () => {
+    const zhafronInstance: Record<string, boolean | null> = {
+      enableEnvironments: false, enableNativeRunner: true, enableAiConnectionRouters: false,
+      enableManagedSandboxOnly: false, enableIsolatedWorkspaces: false, enableIsolatedWorkspacesByDefault: false,
+      enableStreamlinedLeftNavigation: true, enableStreamlinedUi: true, enableApps: true,
+      enableMcpAggregators: true, enablePublicMcp: false, enableOpenAiDot: false,
+      enableChatConnectors: true, enableGitHubReviewBots: false, enableMemoryConnectors: false,
+      enablePipelines: false, enableCases: true, enableAgentChat: true,
+      enableCombinedInboxTasks: false, enableConferenceRoomChat: false, enableClassicTaskInterface: false,
+      enableIssuePlanDecompositions: false, enableExperimentalFileViewer: true, enableExternalObjects: true,
+      enableSmokeLab: false, enableBuiltInAgents: false, enableBetaSkills: false,
+      enableSummaries: true, enableStatusCards: true, enableDecisions: true,
+      enableFastResponses: false, enableGoalsSidebarLink: false, enableServerInfoDebugView: false,
+      enablePaperclipDeveloperMode: true, enableSimplifiedEnglishInteractions: false, enableFirstTaskPlanProposal: false,
+      enablePixelsOffice: true, autoRestartDevServerWhenIdle: false, enableWorkspaceBranchReconcileForward: true,
+      enableWorkspaceDirtyQuarantineRepair: true, enableOwnerInstanceAdmin: false, enableSandboxDuplexBridge: false,
+      enableRunnerPreviewIngress: false, enableWorktreeRunExecution: false,
+      worktreeRunExecutionActivatedAt: null, worktreeRunExecutionActivationInstanceId: null,
+    };
+    const flags = INSTANCE_FEATURE_KEYS;
+    const on = flags.filter((key) => zhafronInstance[key] === true);
+    expect(on).toHaveLength(17);
+    expect(flags.length - on.length).toBe(27);
+
+    const migrated = normalizeExperimentalSettings(zhafronInstance);
+    const byDestination = (destination: string) =>
+      on.filter((key) => INSTANCE_FEATURE_PLACEMENT[key].destination === destination);
+    expect(byDestination("features")).toHaveLength(8);
+    expect(byDestination("advanced")).toHaveLength(4);
+    expect(byDestination("permanent")).toHaveLength(5);
+    for (const key of on) expect(migrated[key]).toBe(true);
+    for (const key of flags) expect(migrated[key]).toBe(zhafronInstance[key]);
+    expect(byDestination("features").sort()).toEqual([...FEATURE_PRESETS.standard].sort());
+  });
+
+  it("turns dependents off when a patch turns their requirement off", () => {
+    const current = applyExperimentalSettingsPatch({}, { enableCases: true, enablePipelines: true });
+    expect(applyExperimentalSettingsPatch(current, { enableCases: false })).toMatchObject({
+      enableCases: false,
+      enablePipelines: false,
+    });
   });
 
   it("defaults enableConferenceRoomChat to false for empty and legacy stored settings", () => {
@@ -141,20 +194,6 @@ describe("instance settings service", () => {
     expect(
       normalizeExperimentalSettings({ enableStreamlinedLeftNavigation: true }).enableConferenceRoomChat,
     ).toBe(false);
-  });
-
-  it("defaults enableClassicTaskInterface to false for empty and legacy stored settings", () => {
-    expect(normalizeExperimentalSettings(undefined).enableClassicTaskInterface).toBe(false);
-    expect(normalizeExperimentalSettings({}).enableClassicTaskInterface).toBe(false);
-    // The retired enableTaskChatRedesign key must not bleed into the new flag:
-    // an install that had the chat redesign ON opted into chat-style, which is
-    // now the default — not into the classic view.
-    expect(
-      normalizeExperimentalSettings({ enableTaskChatRedesign: true }).enableClassicTaskInterface,
-    ).toBe(false);
-    expect(
-      normalizeExperimentalSettings({ enableClassicTaskInterface: true }).enableClassicTaskInterface,
-    ).toBe(true);
   });
 
   it("defaults enableSimplifiedEnglishInteractions to false for empty and legacy stored settings", () => {

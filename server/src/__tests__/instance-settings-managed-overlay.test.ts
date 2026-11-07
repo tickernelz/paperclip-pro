@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Db } from "@tickernelz/paperclip-pro-db";
+import { FEATURE_PRESETS, featureKeysWithDestination } from "@tickernelz/paperclip-pro-shared";
 import {
   applyManagedExperimentalOverlay,
   instanceSettingsService,
@@ -187,5 +188,45 @@ describe("instanceSettingsService managed overlay", () => {
     expect(persistedSets).toHaveLength(1);
     expect(persistedSets[0]!.experimental).not.toHaveProperty("managedKeys");
     expect(Object.prototype.hasOwnProperty.call(updated.experimental, "managedKeys")).toBe(false);
+  });
+});
+
+function emptyDb() {
+  const inserted: Array<Record<string, unknown>> = [];
+  const db = {
+    select: () => ({ from: () => ({ where: () => Promise.resolve([]) }) }),
+    insert: () => ({
+      values: (values: Record<string, unknown>) => {
+        inserted.push(values);
+        return {
+          onConflictDoUpdate: () => ({
+            returning: () => Promise.resolve([{ id: "row-1", defaultEnvironmentId: null, ...values }]),
+          }),
+        };
+      },
+    }),
+  } as unknown as Db;
+  return { db, inserted };
+}
+
+describe("instanceSettingsService new installs", () => {
+  it("starts a self-hosted install on the Standard preset", async () => {
+    const { db, inserted } = emptyDb();
+    const experimental = await instanceSettingsService(db, { runtimeEnv: {} }).getExperimental();
+    expect(inserted).toHaveLength(1);
+    const on = featureKeysWithDestination("features").filter((key) => experimental[key] === true);
+    expect(on.sort()).toEqual([...FEATURE_PRESETS.standard].sort());
+  });
+
+  it("leaves an existing row exactly as stored", async () => {
+    const { db } = stubDb(settingsRow({}));
+    const experimental = await instanceSettingsService(db, { runtimeEnv: {} }).getExperimental();
+    expect(featureKeysWithDestination("features").filter((key) => experimental[key] === true)).toEqual([]);
+  });
+
+  it("keeps a managed install on its catalog defaults", async () => {
+    const { db, inserted } = emptyDb();
+    await instanceSettingsService(db, { runtimeEnv: managedEnv() }).getExperimental();
+    expect(inserted[0]?.experimental).toEqual({});
   });
 });
