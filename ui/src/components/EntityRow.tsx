@@ -133,7 +133,7 @@ export function EntityRow({
   // leading capsule). Without it, `content` is rendered directly (unchanged).
   const body = secondaryRow ? (
     <>
-      <div className="flex items-center gap-3">{content}</div>
+      <div data-slot="entity-row-main" className="flex items-center gap-3">{content}</div>
       <div className={cn("mt-1 pl-5", secondaryRowClassName)}>{secondaryRow}</div>
     </>
   ) : (
@@ -142,14 +142,14 @@ export function EntityRow({
 
   if (to) {
     return (
-      <Link to={to} className={cn("no-underline text-inherit", shellClasses)} onClick={onClick}>
+      <Link to={to} data-slot="entity-row" className={cn("no-underline text-inherit", shellClasses)} onClick={onClick}>
         {body}
       </Link>
     );
   }
 
   return (
-    <div className={shellClasses} onClick={onClick}>
+    <div data-slot="entity-row" className={shellClasses} onClick={onClick}>
       {body}
     </div>
   );

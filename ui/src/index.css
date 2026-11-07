@@ -3963,7 +3963,7 @@ span.paperclip-mention-chip[data-mention-kind="external-object"] {
 }
 
 @media (max-width: 599px) {
-  :has(> [data-slot="entity-row-trailing"]) {
+  :is([data-slot="entity-row"], [data-slot="entity-row-main"]):has(> [data-slot="entity-row-trailing"]) {
     flex-wrap: wrap;
     row-gap: 4px;
   }

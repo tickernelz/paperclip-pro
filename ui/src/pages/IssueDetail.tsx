@@ -6651,7 +6651,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         )}
       >
         <div className="md:hidden">{issueStatusControl}</div>
-        <span className="shrink-0 font-mono text-sm text-ink-3 md:hidden">
+        <span className="min-w-0 max-w-full truncate font-mono text-sm text-ink-3 md:hidden">
             {issue.identifier ?? issue.id.slice(0, 8)}
           </span>
         {canManageTreeControl && issue?.id ? (

@@ -7,6 +7,7 @@ import { SIDEBAR_SCROLL_RESET_STATE } from "../lib/navigation-scroll";
 import { cn } from "../lib/utils";
 import { useInboxBadge } from "../hooks/useInboxBadge";
 import { useAgentChatEnabled } from "@/hooks/useAgentChatEnabled";
+import { useCombinedInboxTasksEnabled } from "@/hooks/useCombinedInboxTasksEnabled";
 import { Badge } from "@/components/ui/badge";
 
 interface MobileBottomNavProps {
@@ -28,15 +29,16 @@ export function MobileBottomNav({ visible }: MobileBottomNavProps) {
   const { sidebarOpen, setSidebarOpen } = useSidebar();
   const inboxBadge = useInboxBadge(selectedCompanyId);
   const { enabled: agentChatEnabled } = useAgentChatEnabled();
+  const { enabled: combinedInboxTasksEnabled } = useCombinedInboxTasksEnabled();
 
   const links = useMemo<MobileNavLinkItem[]>(
     () => [
       { to: "/dashboard", label: "Home", icon: House },
-      { to: "/inbox", label: "Inbox", icon: Inbox, badge: inboxBadge.inbox },
-      { to: "/issues", label: "Tasks", icon: CircleCheck },
+      ...(combinedInboxTasksEnabled ? [] : [{ to: "/inbox", label: "Inbox", icon: Inbox, badge: inboxBadge.inbox }]),
+      { to: "/issues", label: "Tasks", icon: CircleCheck, badge: combinedInboxTasksEnabled ? inboxBadge.inbox : undefined },
       ...(agentChatEnabled ? [{ to: "/chats", label: "Chat", icon: MessageCircle }] : []),
     ],
-    [inboxBadge.inbox, agentChatEnabled],
+    [inboxBadge.inbox, agentChatEnabled, combinedInboxTasksEnabled],
   );
 
   return (
