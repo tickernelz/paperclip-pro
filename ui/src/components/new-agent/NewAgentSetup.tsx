@@ -4,12 +4,6 @@ import { useAgentAppearanceDraft } from "../../hooks/useAgentAppearanceDraft";
 import { AiConnectionField, aiProviderForAdapter } from "../ai-connections/AiConnectionField";
 import type { AiConnectionBinding } from "@tickernelz/paperclip-pro-shared";
 import { DEFAULT_CODEX_LOCAL_MODEL } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/codex";
-import {
-  SETUP_CREDENTIAL_KEYS,
-  SETUP_LOGIN_HINTS,
-  setupEfforts,
-  setupProviderKeys,
-} from "@/lib/agent-setup-fields";
 import { testAgentSetup } from "@/lib/test-agent-setup";
 import { useCloudInstance } from "@/hooks/useCloudInstance";
 import { isNewAgentAdapterAllowed } from "@/lib/new-agent-adapters";
@@ -55,7 +49,7 @@ import { Field, ToggleField } from "../agent-config-primitives";
 import { SecretPicker } from "../environment-variables-editor/SecretPicker";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { NativeSelect, nativeSelectClassName } from "../ui/select";
+import { nativeSelectClassName } from "../ui/select";
 import {
   OnboardingCard,
   OnboardingHeading,
@@ -128,17 +122,13 @@ function Setup({
       ? brandType
       : null;
   const multiProvider = brandType === "opencode_local";
-  const providerKeys = setupProviderKeys(brandType);
   const chooseProvider = multiProvider;
-  const hasCredentialField =
-    chooseProvider || Boolean(SETUP_CREDENTIAL_KEYS[adapterType]);
   const showModel = !isDot;
   const [allowUnmeteredProvider, setAllowUnmeteredProvider] = useState(false);
   const [screen, setScreen] = useState<"connect" | "runtime" | "saved">(
     createdAgentId ? "saved" : connectionAdapter ? "connect" : "runtime",
   );
   const [model, setModel] = useState("");
-  const efforts = isRunner ? [] : setupEfforts(adapterType, model);
   const [effort, setEffort] = useState("");
   const [modelOpen, setModelOpen] = useState(false);
   const [environmentOverride, setEnvironmentOverride] = useState("");
@@ -228,12 +218,12 @@ function Setup({
   const companySecrets = useQuery({
     queryKey: queryKeys.secrets.list(companyId),
     queryFn: () => secretsApi.list(companyId),
-    enabled: hasCredentialField,
+    enabled: chooseProvider,
   });
   const userSecrets = useQuery({
     queryKey: queryKeys.secrets.myUserSecrets(companyId),
     queryFn: () => secretsApi.listMyUserSecrets(companyId),
-    enabled: hasCredentialField,
+    enabled: chooseProvider,
     retry: false,
   });
   const forced = resolveForcedKubernetesEnvironment(
@@ -273,8 +263,7 @@ function Setup({
   const canLogin =
     environment?.driver === "sandbox" &&
     caps.data?.sandboxProviders?.[sandboxProvider]?.supportsLoginPty === true;
-  const envKey =
-    SETUP_CREDENTIAL_KEYS[adapterType] ?? providerKeys[provider] ?? "API_KEY";
+  const envKey = PROVIDER_ENV_KEYS[provider] ?? "API_KEY";
   const savedKey = userSecrets.data?.find(
     (entry) => entry.definition.key === envKey && entry.secret,
   );
@@ -362,7 +351,7 @@ function Setup({
         ...((runnerProvider === "claude" || runnerProvider === "grok") ? { acpxAgent: runnerProvider } : {}),
         ...(model ? { model } : {}),
       });
-    if (!aiBinding && !nextConnection?.aiConnection && hasCredentialField && binding) {
+    if (!aiBinding && !nextConnection?.aiConnection && chooseProvider && binding) {
       config.env = { ...((config.env as object) ?? {}), [envKey]: binding };
     }
     return config;
@@ -377,7 +366,7 @@ function Setup({
     if (aiBinding || nextConnection?.aiConnection) return {};
     return {
       ...nextConnection?.credentials,
-      ...(hasCredentialField && apiKey.trim()
+      ...(chooseProvider && apiKey.trim()
         ? { [envKey]: apiKey.trim() }
         : {}),
     };
@@ -790,8 +779,7 @@ function Setup({
                             onChange={binding => { binding.mode !== "router" && setRuntimeAiBinding(binding); resetTest(); }} />
                         )}
                         {(connectionModels ? connectionModels.error : models.error) && <p role="alert" className="text-sm text-destructive">Could not load models. Retry or enter a model ID manually.</p>}
-                        {(showModel ||
-                          efforts.length > 0) && (
+                        {showModel && (
                           <div className="grid items-start gap-5 sm:grid-cols-2">
                             {showModel && (
                               <ModelDropdown
@@ -803,7 +791,7 @@ function Setup({
                                   setModel(connectionModels?.resolveModel(value) ?? value);
                                   const dropEffort = adapterType === "omp_local"
                                     ? !keepsEffort(effort, value, (models.data ?? []).map((entry) => modelPickerOption(entry, false)))
-                                    : Boolean(effort) && !setupEfforts(adapterType, value).includes(effort);
+                                    : Boolean(effort);
                                   if (dropEffort) setEffort("");
                                   const nextProvider = value.split("/")[0];
                                   if (
@@ -829,33 +817,9 @@ function Setup({
                                   : undefined}
                               />
                             )}
-                            {efforts.length > 0 && adapterType !== "omp_local" && (
-                              <Field label="Thinking effort">
-                                <NativeSelect
-                                  aria-label="Thinking effort"
-                                  value={effort}
-                                  onChange={(event) => {
-                                    setEffort(event.target.value);
-                                    resetTest();
-                                  }}
-                                >
-                                  <option value="">Auto</option>
-                                  {efforts.map((value) => (
-                                    <option key={value} value={value}>
-                                      {value}
-                                    </option>
-                                  ))}
-                                </NativeSelect>
-                              </Field>
-                            )}
                           </div>
                         )}
-                        {!aiBinding && SETUP_LOGIN_HINTS[adapterType] && (
-                          <p className="text-sm text-muted-foreground">
-                            {SETUP_LOGIN_HINTS[adapterType]}
-                          </p>
-                        )}
-                        {hasCredentialField && !aiBinding && (
+                        {chooseProvider && !aiBinding && (
                           <div className="grid gap-5 sm:grid-cols-2">
                             {chooseProvider && (
                               <Field label="API key provider">
@@ -871,7 +835,7 @@ function Setup({
                                     resetTest();
                                   }}
                                 >
-                                  {Object.keys(providerKeys).map((key) => (
+                                  {Object.keys(PROVIDER_ENV_KEYS).map((key) => (
                                     <option key={key} value={key}>
                                       {key === "openrouter"
                                         ? "OpenRouter"

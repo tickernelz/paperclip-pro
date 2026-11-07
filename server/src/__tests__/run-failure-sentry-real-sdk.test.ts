@@ -241,7 +241,7 @@ describe.skipIf(!sentryPackage)("run failure context with the real Sentry SDK", 
     const { AdapterStopTimeoutError } = await import("../services/adapter-stop-timeout.js");
     await sentryReady;
     const timeout = Object.assign(new AdapterStopTimeoutError(60_000, {
-      runId: "11111111-1111-4111-8111-111111111111", adapterType: "cursor",
+      runId: "11111111-1111-4111-8111-111111111111", adapterType: "omp_local",
       runtimeMode: "legacy", abortRequested: true,
       phase, phaseElapsedMs,
     }), {
@@ -259,7 +259,7 @@ describe.skipIf(!sentryPackage)("run failure context with the real Sentry SDK", 
     expect(captured(timeout.message)).toMatchObject({
       tags: { error_code: "adapter_stop_unconfirmed" }, fingerprint: ["{{ default }}"],
       contexts: { adapter_stop: {
-        runId: "11111111-1111-4111-8111-111111111111", adapterType: "cursor",
+        runId: "11111111-1111-4111-8111-111111111111", adapterType: "omp_local",
         runtimeMode: "legacy", abortRequested: true, timeoutMs: 60_000,
         phase: expectedPhase, phaseElapsedMs: expectedElapsedMs,
       } },

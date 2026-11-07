@@ -99,7 +99,7 @@ describe("heartbeat retry module callbacks", () => {
     const deps = callbacks();
     const run = unitRun();
     const retry = await extracted.createHeartbeatRetries(database.db, deps).scheduleBoundedRetryForRun(
-      run, { adapterType: "codex_local" } as Agent,
+      run, { adapterType: "omp_local" } as Agent,
       { retryReason: legacy.INTERACTION_CONTINUATION_INFRA_RETRY_REASON, maxAttempts: 0 },
     );
     expect(retry).toMatchObject({ outcome: "retry_exhausted", attempt: 1, maxAttempts: 0 });
@@ -205,7 +205,7 @@ describePostgres("heartbeat retry module database wiring", () => {
   async function fixture() {
     const companyId = randomUUID();
     await db.insert(companies).values({ id: companyId, name: "Retries", issuePrefix: `R${companyId.slice(0, 8)}` });
-    const [agent] = await db.insert(agents).values({ companyId, name: "Retry agent", adapterType: "codex_local", status: "active" }).returning();
+    const [agent] = await db.insert(agents).values({ companyId, name: "Retry agent", adapterType: "omp_local", status: "active" }).returning();
     const [issue] = await db.insert(issues).values({ companyId, title: "Retry task", status: "in_progress", assigneeAgentId: agent.id }).returning();
     const [run] = await db.insert(heartbeatRuns).values({
       companyId, agentId: agent.id, scopeKind: "issue", issueId: issue.id,

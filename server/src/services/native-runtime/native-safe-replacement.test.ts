@@ -414,7 +414,7 @@ const support = externalDatabaseUrl
       });
       const [run] = await db.update(heartbeatRuns).set({
         runtimeMode: "legacy", errorCode: "workspace_restore_failed", scheduledRetryAttempt: 1, scheduledRetryReason: "transient_failure",
-        runnerProfileJson: { adapterDispatch: { adapterType: "grok_local" } },
+        runnerProfileJson: { adapterDispatch: { adapterType: "omp_local" } },
         resultJson: { workspaceRestoreFailure: "restore_unsafe_archive", conversationContinuation: "continue_conversation_v1", summary: "The plan is saved.", workspaceRestorePath: "/tmp/private-clone/file", savedPlanRevisionId: randomUUID() },
       }).where(eq(heartbeatRuns.id, source.runId)).returning();
       const [resetComment] = await db.insert(issueComments).values({ companyId: source.companyId, issueId: source.issueId, authorUserId: "board-user", body: "/new" }).returning();
@@ -443,7 +443,7 @@ const support = externalDatabaseUrl
       await markExecutionReconciliation(db, action, verified, "operator");
       // Occupy the only agent slot. Exercise real admission without a provider.
       await instanceSettingsService(db).updateExperimental({ enableAgentChat: true });
-      await db.update(agents).set({ status: "active", adapterType: "grok_local", runtimeConfig: { heartbeat: { wakeOnDemand: true, maxConcurrentRuns: 1 } } }).where(eq(agents.id, source.agentId));
+      await db.update(agents).set({ status: "active", adapterType: "omp_local", runtimeConfig: { heartbeat: { wakeOnDemand: true, maxConcurrentRuns: 1 } } }).where(eq(agents.id, source.agentId));
       await db.update(issues).set({ responsibleUserId: "board-user" }).where(eq(issues.id, source.issueId));
       await db.insert(heartbeatRuns).values({ companyId: source.companyId, agentId: source.agentId, status: "running" });
       const heartbeat = heartbeatService(db);

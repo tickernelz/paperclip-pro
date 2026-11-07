@@ -230,7 +230,7 @@ describeEmbeddedPostgres("secretService", () => {
       companyId,
       name: "Secret reader",
       role: "engineer",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: {},
       permissions,
       status: "idle",
@@ -1159,7 +1159,7 @@ describeEmbeddedPostgres("secretService", () => {
     const normalizeCall = svc.normalizeAdapterConfigForPersistence(
       companyId,
       { apiKey: accountHomeDir },
-      { adapterType: "hermes_gateway" },
+      { adapterType: "omp_local" },
     );
     // The queued create must stay blocked behind the held lock.
     await new Promise((resolve) => setTimeout(resolve, 20));
@@ -1180,7 +1180,7 @@ describeEmbeddedPostgres("secretService", () => {
     const normalized = await svc.normalizeAdapterConfigForPersistence(
       companyId,
       { apiKey: `plain-api-key-${randomUUID()}` },
-      { adapterType: "hermes_gateway" },
+      { adapterType: "omp_local" },
     );
     const apiKeyBinding = (normalized as Record<string, unknown>).apiKey as { type: string; secretId: string };
     expect(apiKeyBinding.type).toBe("secret_ref");
@@ -1446,7 +1446,7 @@ describeEmbeddedPostgres("secretService", () => {
         companyId,
         name: "CodexCoder",
         role: "engineer",
-        adapterType: "codex_local",
+        adapterType: "omp_local",
         adapterConfig: {},
       })
       .returning();
@@ -1939,7 +1939,7 @@ describeEmbeddedPostgres("secretService", () => {
     };
 
     await expect(
-      svc.resolveAdapterConfigForRuntime(companyId, adapterConfig, undefined, { adapterType: "hermes_gateway" }),
+      svc.resolveAdapterConfigForRuntime(companyId, adapterConfig, undefined, { adapterType: "omp_local" }),
     ).rejects.toMatchObject({
       status: 422,
       details: { code: "responsible_user_missing" },
@@ -1949,7 +1949,7 @@ describeEmbeddedPostgres("secretService", () => {
       companyId,
       adapterConfig,
       undefined,
-      { adapterType: "hermes_gateway", skipUserSecrets: true },
+      { adapterType: "omp_local", skipUserSecrets: true },
     );
 
     expect(resolved.config).not.toHaveProperty("apiKey");
@@ -4566,7 +4566,7 @@ describeEmbeddedPostgres("secretService", () => {
       companyId,
       name: "JWT Agent",
       role: "engineer",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: {},
       status: "idle",
       createdAt: new Date(),

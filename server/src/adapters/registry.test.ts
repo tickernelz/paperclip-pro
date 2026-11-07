@@ -1,8 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { assertValidAdapterLoginCapability } from "@tickernelz/paperclip-pro-adapter-utils";
-import { listServerAdapters, requireServerAdapter } from "./registry.js";
+import { listServerAdapters, requireRunnerHarness, requireServerAdapter } from "./registry.js";
 import * as executionTarget from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
 import { BUILTIN_ADAPTER_TYPES } from "./builtin-adapter-types.js";
+import { RETIRED_ADAPTER_TYPES } from "@tickernelz/paperclip-pro-shared";
 
 const { probeInstallation, probeGrokInstallation, probePiInstallation } = vi.hoisted(() => ({
   probeInstallation: vi.fn(),
@@ -23,7 +24,7 @@ vi.mock("../vendor/paperclip-runner/live/index.js", () => ({
 
 describe("built-in adapter login capabilities", () => {
   it("registers the Codex device-login capability", () => {
-    const capability = requireServerAdapter("codex_local").loginCapability;
+    const capability = requireRunnerHarness("codex_local").loginCapability;
     expect(capability).toBeDefined();
     if (!capability) return;
     expect(capability.panelMode).toBe("displayed_code");
@@ -35,7 +36,7 @@ describe("built-in adapter login capabilities", () => {
   });
 
   it("registers the Grok device-login capability", () => {
-    const capability = requireServerAdapter("grok_local").loginCapability;
+    const capability = requireRunnerHarness("grok_local").loginCapability;
     expect(capability).toBeDefined();
     if (!capability) return;
     expect(capability.panelMode).toBe("displayed_code");
@@ -47,7 +48,7 @@ describe("built-in adapter login capabilities", () => {
   });
 
   it("registers the Claude setup-token capability", () => {
-    const capability = requireServerAdapter("claude_local").loginCapability;
+    const capability = requireRunnerHarness("claude_local").loginCapability;
     expect(capability).toBeDefined();
     if (!capability) return;
     expect(capability.panelMode).toBe("submitted_browser_code");
@@ -61,25 +62,13 @@ describe("built-in adapter login capabilities", () => {
 });
 
 describe("built-in runtime connection tool delivery", () => {
-  const expectedStrategies = new Map([
-    ["acpx_local", "environment"],
-    ["claude_local", "native_mcp"],
-    ["codex_local", "native_mcp"],
-    ["cursor_cloud", "invocation_context"],
-    ["cursor", "environment"],
-    ["gemini_local", "environment"],
-    ["grok_local", "environment"],
-    ["hermes_gateway", "invocation_context"],
-    ["hermes_local", "environment"],
-    ["kimi_local", "environment"],
+  const expectedStrategies = new Map<string, string>([
+    ...RETIRED_ADAPTER_TYPES.map((type) => [type, "environment"] as const),
     ["omp_local", "environment"],
-    ["openclaw_gateway", "invocation_context"],
-    ["opencode_local", "environment"],
     ["paperclip_runner", "environment"],
-    ["pi_local", "environment"],
     ["process", "environment"],
     ["http", "invocation_context"],
-  ] as const);
+  ]);
 
   it("requires every built-in adapter to declare its expected delivery strategy", () => {
     const builtIns = listServerAdapters().filter((adapter) => BUILTIN_ADAPTER_TYPES.has(adapter.type));

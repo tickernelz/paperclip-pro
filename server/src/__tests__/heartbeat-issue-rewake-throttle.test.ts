@@ -130,7 +130,7 @@ describeEmbeddedPostgres("heartbeat issue rewake throttle", () => {
       name: "CodexCoder",
       role: "engineer",
       status: "active",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: {},
       runtimeConfig: {
         heartbeat: {

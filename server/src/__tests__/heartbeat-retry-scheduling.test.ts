@@ -196,8 +196,8 @@ describeEmbeddedPostgres("heartbeat bounded retry scheduling", () => {
     adapterType?: string;
     agentName?: string;
   }) {
-    const adapterType = input.adapterType ?? "codex_local";
-    const agentName = input.agentName ?? (adapterType === "claude_local" ? "ClaudeCoder" : "CodexCoder");
+    const adapterType = input.adapterType ?? "omp_local";
+    const agentName = input.agentName ?? "Coder";
     await db.insert(companies).values({
       id: input.companyId,
       name: "Paperclip",
@@ -431,7 +431,7 @@ describeEmbeddedPostgres("heartbeat bounded retry scheduling", () => {
       name: "ClaudeCoder",
       role: "engineer",
       status: "active",
-      adapterType: "claude_local",
+      adapterType: "omp_local",
       adapterConfig: {},
       runtimeConfig: input?.runtimeConfig ?? {
         heartbeat: {
@@ -661,7 +661,7 @@ describeEmbeddedPostgres("heartbeat bounded retry scheduling", () => {
       name: "CodexCoder",
       role: "engineer",
       status: "active",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: {},
       runtimeConfig: {
         heartbeat: {
@@ -1796,7 +1796,7 @@ describeEmbeddedPostgres("heartbeat bounded retry scheduling", () => {
         name: "ClaudeCoder",
         role: "engineer",
         status: "active",
-        adapterType: "claude_local",
+        adapterType: "omp_local",
         adapterConfig: {},
         runtimeConfig: {
           heartbeat: {
@@ -1812,7 +1812,7 @@ describeEmbeddedPostgres("heartbeat bounded retry scheduling", () => {
         name: "CodexCoder",
         role: "engineer",
         status: "active",
-        adapterType: "codex_local",
+        adapterType: "omp_local",
         adapterConfig: {},
         runtimeConfig: {
           heartbeat: {
@@ -1963,7 +1963,7 @@ describeEmbeddedPostgres("heartbeat bounded retry scheduling", () => {
       name: "CodexCoder",
       role: "engineer",
       status: "active",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: {},
       runtimeConfig: {
         heartbeat: {
@@ -2217,7 +2217,7 @@ describeEmbeddedPostgres("heartbeat bounded retry scheduling", () => {
       now,
       errorCode: "adapter_failed",
       errorFamily: "transient_upstream",
-      adapterType: "claude_local",
+      adapterType: "omp_local",
       retryNotBefore: retryNotBefore.toISOString(),
     });
 
@@ -2473,7 +2473,7 @@ describeEmbeddedPostgres("heartbeat bounded retry scheduling", () => {
         name: "OtherCoder",
         role: "engineer",
         status: "active",
-        adapterType: "codex_local",
+        adapterType: "omp_local",
         adapterConfig: {},
         runtimeConfig: { heartbeat: { wakeOnDemand: true, maxConcurrentRuns: 1 } },
         permissions: {},
@@ -2586,7 +2586,7 @@ describeEmbeddedPostgres("heartbeat bounded retry scheduling", () => {
         name: "CodexCoder",
         role: "engineer",
         status: "active",
-        adapterType: "codex_local",
+        adapterType: "omp_local",
         adapterConfig: {},
         runtimeConfig: { heartbeat: { wakeOnDemand: true, maxConcurrentRuns: 1 } },
         permissions: {},

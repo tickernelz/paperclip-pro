@@ -162,7 +162,7 @@ describeEmbeddedPostgres("heartbeat resolved dependency wake reconciliation", ()
         name: "CTO",
         role: "cto",
         status: "idle",
-        adapterType: "codex_local",
+        adapterType: "omp_local",
         adapterConfig: {},
         runtimeConfig: { heartbeat: { wakeOnDemand: false } },
         permissions: {},
@@ -174,7 +174,7 @@ describeEmbeddedPostgres("heartbeat resolved dependency wake reconciliation", ()
         role: "engineer",
         status: "idle",
         reportsTo: managerId,
-        adapterType: "codex_local",
+        adapterType: "omp_local",
         adapterConfig: {},
         runtimeConfig: { heartbeat: { wakeOnDemand: false } },
         permissions: {},
@@ -482,7 +482,7 @@ describeEmbeddedPostgres("heartbeat resolved dependency wake reconciliation", ()
       name: "Review Agent",
       role: "engineer",
       status: "idle",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: {},
       runtimeConfig: { heartbeat: { wakeOnDemand: true, maxConcurrentRuns: 1 } },
       permissions: {},
@@ -596,7 +596,7 @@ describeEmbeddedPostgres("heartbeat resolved dependency wake reconciliation", ()
       const agentId = randomUUID();
       const issueId = randomUUID();
       await db.insert(companies).values({ id: companyId, name: "Review Co", issuePrefix: `R${companyId.slice(0, 6)}` });
-      await db.insert(agents).values({ id: agentId, companyId, name: "Reviewer", role: "engineer", adapterType: "codex_local" });
+      await db.insert(agents).values({ id: agentId, companyId, name: "Reviewer", role: "engineer", adapterType: "omp_local" });
       await db.insert(issues).values({ id: issueId, companyId, title: "Async review", status: "in_review", assigneeAgentId: agentId });
       const [run] = await db.insert(heartbeatRuns).values({
         companyId, agentId, status: "succeeded", issueId,
@@ -609,7 +609,7 @@ describeEmbeddedPostgres("heartbeat resolved dependency wake reconciliation", ()
         await issueService(db).update(issueId, { status: "done" });
       } else if (change === "reassigned") {
         const nextAgentId = randomUUID();
-        await db.insert(agents).values({ id: nextAgentId, companyId, name: "New reviewer", role: "engineer", adapterType: "codex_local" });
+        await db.insert(agents).values({ id: nextAgentId, companyId, name: "New reviewer", role: "engineer", adapterType: "omp_local" });
         await issueService(db).update(issueId, { assigneeAgentId: nextAgentId });
       } else if (change === "newer_run") {
         await db.insert(heartbeatRuns).values({ companyId, agentId, issueId, status: "succeeded", contextSnapshot: { issueId } });
@@ -631,7 +631,7 @@ describeEmbeddedPostgres("heartbeat resolved dependency wake reconciliation", ()
     const agentId = randomUUID();
     const issueId = randomUUID();
     await db.insert(companies).values({ id: companyId, name: "Review Co", issuePrefix: `R${companyId.slice(0, 6)}` });
-    await db.insert(agents).values({ id: agentId, companyId, name: "Reviewer", role: "engineer", adapterType: "codex_local" });
+    await db.insert(agents).values({ id: agentId, companyId, name: "Reviewer", role: "engineer", adapterType: "omp_local" });
     await db.insert(issues).values({ id: issueId, companyId, title: "Failed review repair", status: "in_review", assigneeAgentId: agentId });
     const [run] = await db.insert(heartbeatRuns).values({
       companyId, agentId, issueId, status: "failed",
@@ -654,7 +654,7 @@ describeEmbeddedPostgres("heartbeat resolved dependency wake reconciliation", ()
     const issueId = randomUUID();
     const wakeId = randomUUID();
     await db.insert(companies).values({ id: companyId, name: "Review Co", issuePrefix: `R${companyId.slice(0, 6)}`, defaultResponsibleUserId: "responsible-user" });
-    await db.insert(agents).values({ id: agentId, companyId, name: "Reviewer", role: "engineer", adapterType: "codex_local", runtimeConfig: { heartbeat: { wakeOnDemand: true, maxConcurrentRuns: 1 } } });
+    await db.insert(agents).values({ id: agentId, companyId, name: "Reviewer", role: "engineer", adapterType: "omp_local", runtimeConfig: { heartbeat: { wakeOnDemand: true, maxConcurrentRuns: 1 } } });
     await db.insert(issues).values({ id: issueId, companyId, title: "Repair finalized before restart", status: "in_review", assigneeAgentId: agentId, responsibleUserId: "responsible-user" });
     await db.insert(agentWakeupRequests).values({
       id: wakeId, companyId, agentId, source: "automation", status: "completed",

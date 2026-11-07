@@ -1,34 +1,19 @@
 import { describe, expect, it } from "vitest";
 
+import { RETIRED_ADAPTER_TYPES, retiredAdapterMessage } from "@tickernelz/paperclip-pro-shared";
 import { getAdapterDisplay, getAdapterLabel, getAdapterLabels } from "./adapter-display-registry";
 
 describe("adapter display registry", () => {
-  it("uses user-facing labels without the legacy local qualifier for built-in adapters", () => {
-    expect(getAdapterLabel("codex_local")).toBe("Codex");
-    expect(getAdapterLabel("claude_local")).toBe("Claude Code");
-    expect(getAdapterLabel("acpx_local")).toBe("ACPX (retired)");
-    expect(getAdapterLabel("cursor")).toBe("Cursor");
-    expect(getAdapterLabel("gemini_local")).toBe("Gemini CLI");
-    expect(getAdapterLabel("grok_local")).toBe("Grok Build");
-    expect(getAdapterLabel("kimi_local")).toBe("Kimi Code");
-    expect(getAdapterLabel("hermes_local")).toBe("Hermes");
-    expect(getAdapterLabel("hermes_gateway")).toBe("Hermes Gateway");
-    expect(getAdapterLabel("opencode_local")).toBe("OpenCode");
-    expect(getAdapterLabel("pi_local")).toBe("Pi");
-
-    expect(getAdapterLabels()).toMatchObject({
-      codex_local: "Codex",
-      claude_local: "Claude Code",
-      acpx_local: "ACPX (retired)",
-      cursor: "Cursor",
-      gemini_local: "Gemini CLI",
-      grok_local: "Grok Build",
-      kimi_local: "Kimi Code",
-      hermes_local: "Hermes",
-      hermes_gateway: "Hermes Gateway",
-      opencode_local: "OpenCode",
-      pi_local: "Pi",
-    });
+  it("shows every retired adapter as removed, disabled, and hidden from selection", () => {
+    for (const type of RETIRED_ADAPTER_TYPES) {
+      expect(getAdapterLabel(type)).toMatch(/ \(removed\)$/);
+      expect(getAdapterDisplay(type)).toMatchObject({
+        comingSoon: true,
+        disabledLabel: retiredAdapterMessage(type),
+        hideFromVisualSelection: true,
+      });
+      expect(getAdapterLabels()).not.toHaveProperty(type);
+    }
   });
 
   it("drops local suffixes for unknown plugin adapter labels", () => {

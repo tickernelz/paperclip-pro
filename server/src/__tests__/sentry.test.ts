@@ -158,7 +158,7 @@ describe("captureException", () => {
     await sentryReady;
     const error = new AdapterStopTimeoutError(60_000, {
       runId: "11111111-1111-4111-8111-111111111111",
-      adapterType: "cursor", runtimeMode: "legacy", abortRequested: true,
+      adapterType: "omp_local", runtimeMode: "legacy", abortRequested: true,
       phase: "instruction_collection", phaseElapsedMs: 60_321,
     });
     Object.assign(error, { providerResponse: "private fixture payload" });
@@ -168,7 +168,7 @@ describe("captureException", () => {
     expect(sdk.captureException.mock.calls[0]).toEqual([
       expect.objectContaining({ message: error.message, stack: error.stack }),
       { tags: { error_code: "adapter_stop_unconfirmed" }, fingerprint: ["{{ default }}"], contexts: {
-        adapter_stop: { runId: "11111111-1111-4111-8111-111111111111", adapterType: "cursor", runtimeMode: "legacy", abortRequested: true, timeoutMs: 60_000,
+        adapter_stop: { runId: "11111111-1111-4111-8111-111111111111", adapterType: "omp_local", runtimeMode: "legacy", abortRequested: true, timeoutMs: 60_000,
           phase: "instruction_collection", phaseElapsedMs: 60_321 },
       } },
     ]);

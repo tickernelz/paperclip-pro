@@ -109,7 +109,7 @@ describe("OpenWA activation through the owner test DM (embedded Postgres + fake 
       name: "OpenWA Agent",
       role: "engineer",
       status: "idle",
-      adapterType: "claude_local",
+      adapterType: "omp_local",
       adapterConfig: {},
       runtimeConfig: {},
       permissions: {},

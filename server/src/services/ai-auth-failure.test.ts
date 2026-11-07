@@ -22,7 +22,7 @@ describe("AI authentication failure recovery", () => {
     expect(aiBindingForAuthRecovery("opencode_local", { model: "anthropic/claude" })).toBeUndefined();
     expect(aiBindingForAuthRecovery("paperclip_runner", { provider: "acpx", acpxAgent: "custom" })).toBeUndefined();
   });
-  it("offers Google's supported API-key method for Gemini recovery", () => {
-    expect(aiBindingForAuthRecovery("gemini_local", {})).toEqual({ provider: "google", method: "api_key", mode: "responsible_user" });
+  it("offers no AI connection recovery for a retired adapter", () => {
+    expect(aiBindingForAuthRecovery("gemini_local", {})).toBeUndefined();
   });
 });

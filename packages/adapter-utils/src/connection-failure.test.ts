@@ -14,21 +14,6 @@ describe("readConnectionFailure", () => {
     expect(readConnectionFailure(input)).toEqual(input);
   });
 
-  it.each(["endpoint_missing", "endpoint_invalid", "insecure_transport", "credentials_missing"])(
-    "accepts the gateway configuration reason %s", (reason) => {
-      const input = { ...gateway, operation: "configuration", reason };
-      expect(readConnectionFailure(input)).toEqual(input);
-    },
-  );
-
-  it.each([
-    "authentication_failed", "endpoint_not_found", "rate_limited", "remote_unavailable", "connection_refused",
-    "dns_failure", "network_unreachable", "connection_reset", "connection_timeout", "tls_failure",
-  ])("accepts the gateway request reason %s", (reason) => {
-    const input = { ...gateway, reason };
-    expect(readConnectionFailure(input)).toEqual(input);
-  });
-
   it.each([
     "authentication_failed", "endpoint_not_found", "rate_limited", "remote_unavailable", "connection_refused",
     "dns_failure", "network_unreachable", "connection_reset", "connection_timeout", "tls_failure",
@@ -41,6 +26,8 @@ describe("readConnectionFailure", () => {
     { ...git, operation: "fetch" },
     { ...git, operation: "create_run" },
     { ...git, reason: "endpoint_not_found" },
+    gateway,
+    { ...gateway, operation: "configuration", reason: "endpoint_missing" },
     { ...gateway, operation: "clone" },
     { ...gateway, operation: "poll_status" },
     { ...gateway, operation: "stop_run" },
@@ -64,15 +51,15 @@ describe("readConnectionFailure", () => {
   });
 
   it.each([
-    undefined, null, false, 1, "connection_refused", [], [gateway], {},
-    { ...gateway, schemaVersion: 0 }, { ...gateway, schemaVersion: 2 }, { ...gateway, schemaVersion: "1" },
-    { ...gateway, schemaVersion: null }, { ...gateway, schemaVersion: undefined },
-    { ...gateway, provider: null }, { ...gateway, provider: ["hermes_gateway"] },
-    { ...gateway, operation: null }, { ...gateway, operation: 1 },
-    { ...gateway, reason: null }, { ...gateway, reason: 1 }, { ...gateway, reason: ["connection_refused"] },
-    { ...gateway, reason: { code: "ECONNREFUSED" } },
-    { provider: "hermes_gateway", operation: "create_run", reason: "connection_refused" },
-    { ...gateway, reason: "connection_refused " }, { ...gateway, reason: "CONNECTION_REFUSED" },
+    undefined, null, false, 1, "connection_refused", [], [mcp], {},
+    { ...mcp, schemaVersion: 0 }, { ...mcp, schemaVersion: 2 }, { ...mcp, schemaVersion: "1" },
+    { ...mcp, schemaVersion: null }, { ...mcp, schemaVersion: undefined },
+    { ...mcp, provider: null }, { ...mcp, provider: ["mcp_http"] },
+    { ...mcp, operation: null }, { ...mcp, operation: 1 },
+    { ...mcp, reason: null }, { ...mcp, reason: 1 }, { ...mcp, reason: ["connection_refused"] },
+    { ...mcp, reason: { code: "ECONNREFUSED" } },
+    { provider: "mcp_http", operation: "discover_tools", reason: "connection_refused" },
+    { ...mcp, reason: "connection_refused " }, { ...mcp, reason: "CONNECTION_REFUSED" },
   ])("rejects unknown versions or malformed values: %j", (input) => {
     expect(readConnectionFailure(input)).toBeNull();
   });
@@ -86,20 +73,20 @@ describe("readConnectionFailure", () => {
     { details: { message: "private diagnostics" } },
     { extra: undefined },
   ])("rejects extra metadata instead of broadening the bounded marker: %j", (extra) => {
-    expect(readConnectionFailure({ ...gateway, ...extra })).toBeNull();
+    expect(readConnectionFailure({ ...mcp, ...extra })).toBeNull();
   });
 
   it("rejects unknown own fields even when a prototype supplies a valid descriptor", () => {
-    const input = Object.assign(Object.create(gateway), { a: 1, b: 2, c: 3, d: 4 });
+    const input = Object.assign(Object.create(mcp), { a: 1, b: 2, c: 3, d: 4 });
     expect(readConnectionFailure(input)).toBeNull();
   });
 
   it("returns an independent bounded value without mutating its producer's input", () => {
-    const input = Object.freeze({ ...gateway });
+    const input = Object.freeze({ ...mcp });
     const output = readConnectionFailure(input);
-    expect(output).toEqual(gateway);
+    expect(output).toEqual(mcp);
     expect(output).not.toBe(input);
-    expect(input).toEqual(gateway);
+    expect(input).toEqual(mcp);
     expect(Object.keys(output ?? {}).sort()).toEqual(["operation", "provider", "reason", "schemaVersion"]);
   });
 });

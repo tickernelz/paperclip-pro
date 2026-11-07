@@ -512,7 +512,7 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
         name: "Gateway Agent",
         role: "engineer",
         status: "idle",
-        adapterType: "openclaw_gateway",
+        adapterType: "omp_local",
         adapterConfig: {
           url: gateway.url,
           headers: {
@@ -748,7 +748,7 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
         name: "Gateway Agent",
         role: "engineer",
         status: "idle",
-        adapterType: "openclaw_gateway",
+        adapterType: "omp_local",
         adapterConfig: {
           url: gateway.url,
           headers: { "x-openclaw-token": "gateway-token" },
@@ -905,7 +905,7 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
         name: "Gateway Agent",
         role: "engineer",
         status: "idle",
-        adapterType: "openclaw_gateway",
+        adapterType: "omp_local",
         adapterConfig: {
           url: gateway.url,
           headers: {
@@ -1050,7 +1050,7 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
         name: "Gateway Agent",
         role: "engineer",
         status: "idle",
-        adapterType: "openclaw_gateway",
+        adapterType: "omp_local",
         adapterConfig: {
           url: gateway.url,
           headers: {
@@ -1261,7 +1261,7 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
           name: "Primary Agent",
           role: "engineer",
           status: "idle",
-          adapterType: "openclaw_gateway",
+          adapterType: "omp_local",
           adapterConfig: {
             url: gateway.url,
             headers: {
@@ -1281,7 +1281,7 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
           name: "Mentioned Agent",
           role: "engineer",
           status: "idle",
-          adapterType: "openclaw_gateway",
+          adapterType: "omp_local",
           adapterConfig: {
             url: gateway.url,
             headers: {
@@ -1501,7 +1501,7 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
         name: "Local CLI Agent",
         role: "engineer",
         status: "idle",
-        adapterType: "openclaw_gateway",
+        adapterType: "omp_local",
         adapterConfig: {
           url: gateway.url,
           headers: {
@@ -1698,7 +1698,7 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
         name: "Local CLI Agent",
         role: "engineer",
         status: "idle",
-        adapterType: "openclaw_gateway",
+        adapterType: "omp_local",
         adapterConfig: {
           url: gateway.url,
           headers: {
@@ -1913,7 +1913,7 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
           name: "Local CLI Agent",
           role: "engineer",
           status: "running",
-          adapterType: "openclaw_gateway",
+          adapterType: "omp_local",
           adapterConfig: {
             url: gateway.url,
             headers: { "x-openclaw-token": "gateway-token" },
@@ -2398,7 +2398,7 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
         name: "Local CLI Agent",
         role: "engineer",
         status: "idle",
-        adapterType: "openclaw_gateway",
+        adapterType: "omp_local",
         adapterConfig: {
           url: gateway.url,
           headers: {
@@ -2617,7 +2617,7 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
         name: "Gateway Agent",
         role: "engineer",
         status: "idle",
-        adapterType: "openclaw_gateway",
+        adapterType: "omp_local",
         adapterConfig: {
           url: gateway.url,
           headers: {
@@ -2805,7 +2805,7 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
         name: "Local CLI Agent",
         role: "engineer",
         status: "idle",
-        adapterType: "openclaw_gateway",
+        adapterType: "omp_local",
         adapterConfig: {
           url: gateway.url,
           headers: {
@@ -2991,7 +2991,7 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
         name: "Local CLI Agent",
         role: "engineer",
         status: "idle",
-        adapterType: "openclaw_gateway",
+        adapterType: "omp_local",
         adapterConfig: {
           url: gateway.url,
           headers: {
@@ -3156,7 +3156,7 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
         name: "Gateway Agent",
         role: "engineer",
         status: "idle",
-        adapterType: "openclaw_gateway",
+        adapterType: "omp_local",
         adapterConfig: {
           url: gateway.url,
           headers: {
@@ -3322,7 +3322,7 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
           name: "Primary Agent",
           role: "engineer",
           status: "idle",
-          adapterType: "openclaw_gateway",
+          adapterType: "omp_local",
           adapterConfig: {
             url: gateway.url,
             headers: {
@@ -3342,7 +3342,7 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
           name: "Mentioned Agent",
           role: "engineer",
           status: "idle",
-          adapterType: "openclaw_gateway",
+          adapterType: "omp_local",
           adapterConfig: {
             url: gateway.url,
             headers: {
@@ -3502,7 +3502,7 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
           name: "Primary Agent",
           role: "engineer",
           status: "idle",
-          adapterType: "openclaw_gateway",
+          adapterType: "omp_local",
           adapterConfig: {
             url: gateway.url,
             headers: {
@@ -3522,7 +3522,7 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
           name: "Mentioned Agent",
           role: "engineer",
           status: "idle",
-          adapterType: "openclaw_gateway",
+          adapterType: "omp_local",
           adapterConfig: {
             url: gateway.url,
             headers: {
@@ -3629,7 +3629,7 @@ describeEmbeddedPostgres("heartbeat comment wake batching", () => {
         name: "Gateway Agent",
         role: "engineer",
         status: "idle",
-        adapterType: "openclaw_gateway",
+        adapterType: "omp_local",
         adapterConfig: {
           url: gateway.url,
           headers: {

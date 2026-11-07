@@ -425,26 +425,6 @@ describe("agent test-environment route", () => {
     expect(testEnvironmentSpy.mock.calls[0]?.[0].config.env).toEqual({ [key]: "probe-only-key" });
   });
 
-  it("maps the Hermes gateway probe key without passing it to persistence", async () => {
-    const { registerServerAdapter, getServerAdapter, unregisterServerAdapter } = await import("../adapters/index.js");
-    const previous = getServerAdapter("hermes_gateway");
-    unregisterServerAdapter("hermes_gateway");
-    registerServerAdapter({ ...externalAdapter, type: "hermes_gateway" });
-    try {
-      const app = await createApp();
-      const res = await request(app)
-        .post("/api/companies/company-1/adapters/hermes_gateway/test-environment")
-        .send({ adapterConfig: { apiBaseUrl: "https://hermes.example.com" }, testCredentials: { API_SERVER_KEY: "gateway-probe-key" } });
-      expect(res.status).toBe(200);
-      expect(mockSecretService.normalizeAdapterConfigForPersistence.mock.calls[0]?.[1]).toEqual({ apiBaseUrl: "https://hermes.example.com" });
-      expect(testEnvironmentSpy.mock.calls[0]?.[0].config.apiKey).toBe("gateway-probe-key");
-      expect(JSON.stringify(res.body)).not.toContain("gateway-probe-key");
-    } finally {
-      unregisterServerAdapter("hermes_gateway");
-      if (previous) registerServerAdapter(previous);
-    }
-  });
-
   // The managed-adoption verdict, all three ways. An api_key account is
   // re-verified against the provider's endpoint at adoption — the same check
   // its save performed, catching a key revoked since — but never through the
@@ -457,16 +437,14 @@ describe("agent test-environment route", () => {
     // A sentinel in claude_local's slot: the forced CLI-lane fallback would
     // land here, so the fix is proven by this never being consulted — not by
     // whatever verdict the host machine's real adapter would return.
-    const { registerServerAdapter, getServerAdapter, unregisterServerAdapter } = await import("../adapters/index.js");
-    const previous = getServerAdapter("claude_local");
-    unregisterServerAdapter("claude_local");
+    const adapters = await import("../adapters/index.js");
     const cliProbeSpy = vi.fn(async () => ({
       adapterType: "claude_local",
       status: "fail" as const,
       checks: [{ code: "adapter_command_missing", level: "error" as const, message: 'Command not found in PATH: "claude"' }],
       testedAt: new Date(0).toISOString(),
     }));
-    registerServerAdapter({ ...externalAdapter, type: "claude_local", testEnvironment: cliProbeSpy });
+    const harness = vi.spyOn(adapters, "requireRunnerHarness").mockImplementation(() => ({ testEnvironment: cliProbeSpy }) as never);
     try {
       const app = await createApp();
       const res = await request(app)
@@ -483,8 +461,7 @@ describe("agent test-environment route", () => {
       expect(testEnvironmentSpy).toHaveBeenCalledTimes(1);
       expect(cliProbeSpy).not.toHaveBeenCalled();
     } finally {
-      unregisterServerAdapter("claude_local");
-      if (previous) registerServerAdapter(previous);
+      harness.mockRestore();
     }
   });
 
@@ -512,16 +489,14 @@ describe("agent test-environment route", () => {
 
   it("still fails subscription adoption when no hello probe can run", async () => {
     mockManagedRuntime("subscription");
-    const { registerServerAdapter, getServerAdapter, unregisterServerAdapter } = await import("../adapters/index.js");
-    const previous = getServerAdapter("claude_local");
-    unregisterServerAdapter("claude_local");
+    const adapters = await import("../adapters/index.js");
     const cliProbeSpy = vi.fn(async () => ({
       adapterType: "claude_local",
       status: "fail" as const,
       checks: [{ code: "adapter_command_missing", level: "error" as const, message: 'Command not found in PATH: "claude"' }],
       testedAt: new Date(0).toISOString(),
     }));
-    registerServerAdapter({ ...externalAdapter, type: "claude_local", testEnvironment: cliProbeSpy });
+    const harness = vi.spyOn(adapters, "requireRunnerHarness").mockImplementation(() => ({ testEnvironment: cliProbeSpy }) as never);
     try {
       const app = await createApp();
       const res = await request(app)
@@ -536,8 +511,7 @@ describe("agent test-environment route", () => {
       expect(cliProbeSpy).toHaveBeenCalledTimes(1);
       expect(cliProbeSpy.mock.calls[0]?.[0]?.config.engine).toBe("cli");
     } finally {
-      unregisterServerAdapter("claude_local");
-      if (previous) registerServerAdapter(previous);
+      harness.mockRestore();
     }
   });
 

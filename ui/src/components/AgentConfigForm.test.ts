@@ -7,15 +7,9 @@ import {
 import { resolveForcedKubernetesEnvironment } from "../lib/forced-kubernetes-environment";
 
 describe("supportsAdapterModelRefresh", () => {
-  it("enables the model refresh action for Claude and Codex adapters", () => {
-    expect(supportsAdapterModelRefresh("claude_local")).toBe(true);
-    expect(supportsAdapterModelRefresh("codex_local")).toBe(true);
-    expect(supportsAdapterModelRefresh("acpx_local")).toBe(false);
-  });
-
-  it("keeps the refresh action hidden for adapters without a live refresh hook", () => {
-    expect(supportsAdapterModelRefresh("opencode_local")).toBe(true);
+  it("enables the model refresh action only for the Paperclip Runner", () => {
     expect(supportsAdapterModelRefresh("paperclip_runner")).toBe(true);
+    expect(supportsAdapterModelRefresh("codex_local")).toBe(false);
     expect(supportsAdapterModelRefresh("process")).toBe(false);
   });
 });

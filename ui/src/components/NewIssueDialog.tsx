@@ -136,10 +136,6 @@ interface IssueDraft {
   assigneeId?: string;
   projectId: string;
   projectWorkspaceId?: string;
-  assigneeModelLane?: IssueModelLane;
-  assigneeModelOverride: string;
-  assigneeThinkingEffort: string;
-  assigneeChrome: boolean;
   executionWorkspaceMode?: string;
   selectedExecutionWorkspaceId?: string;
   useIsolatedExecutionWorkspace?: boolean;
@@ -156,7 +152,6 @@ type StagedIssueFile = {
 };
 
 import { Badge } from "@/components/ui/badge";
-import { buildAssigneeAdapterOverrides, type IssueModelLane } from "../lib/issue-assignee-overrides";
 
 function loadDraft(): IssueDraft | null {
   try {
@@ -309,10 +304,6 @@ export function NewIssueDialog() {
   const [watchdogInstructions, setWatchdogInstructions] = useState("");
   const [projectId, setProjectId] = useState("");
   const [projectWorkspaceId, setProjectWorkspaceId] = useState("");
-  const [assigneeModelLane, setAssigneeModelLane] = useState<IssueModelLane>("primary");
-  const [assigneeModelOverride, setAssigneeModelOverride] = useState("");
-  const [assigneeThinkingEffort, setAssigneeThinkingEffort] = useState("");
-  const [assigneeChrome, setAssigneeChrome] = useState(false);
   const runSettings = useComposerRunSettingsStaging();
   const clearRunSettings = runSettings.clear;
   const setRunSetting = runSettings.set;
@@ -430,7 +421,6 @@ export function NewIssueDialog() {
     () => (agents ?? []).find((agent) => agent.id === selectedAssigneeAgentId) ?? null,
     [agents, selectedAssigneeAgentId],
   );
-  const assigneeAdapterType = selectedAssigneeAgent?.adapterType ?? null;
   const mentionOptions = useMemo<MentionOption[]>(() => {
     return buildMarkdownMentionOptions({
       agents,
@@ -545,10 +535,6 @@ export function NewIssueDialog() {
         watchdogInstructions,
         projectId,
         projectWorkspaceId,
-        assigneeModelLane,
-        assigneeModelOverride,
-        assigneeThinkingEffort,
-        assigneeChrome,
         executionWorkspaceMode,
         selectedExecutionWorkspaceId,
         workMode,
@@ -568,9 +554,6 @@ export function NewIssueDialog() {
       watchdogInstructions,
       projectId,
       projectWorkspaceId,
-      assigneeModelOverride,
-      assigneeThinkingEffort,
-      assigneeChrome,
       executionWorkspaceMode,
       selectedExecutionWorkspaceId,
       workMode,
@@ -603,10 +586,6 @@ export function NewIssueDialog() {
     watchdogInstructions,
     projectId,
     projectWorkspaceId,
-    assigneeModelLane,
-    assigneeModelOverride,
-    assigneeThinkingEffort,
-    assigneeChrome,
     executionWorkspaceMode,
     selectedExecutionWorkspaceId,
     workMode,
@@ -651,10 +630,6 @@ export function NewIssueDialog() {
       setProjectId(defaultProjectId);
       setProjectWorkspaceId(defaultProjectWorkspaceId);
       setAssigneeValue(assigneeValueFromSelection(newIssueDefaults));
-      setAssigneeModelLane("primary");
-      setAssigneeModelOverride("");
-      setAssigneeThinkingEffort("");
-      setAssigneeChrome(false);
       setExecutionWorkspaceMode(defaultExecutionWorkspaceMode);
       setWorkMode(nextWorkMode);
       setSelectedExecutionWorkspaceId(newIssueDefaults.executionWorkspaceId ?? "");
@@ -677,9 +652,6 @@ export function NewIssueDialog() {
       setWatchdogAgentId("");
       setWatchdogInstructions("");
 
-      setAssigneeModelOverride("");
-      setAssigneeThinkingEffort("");
-      setAssigneeChrome(false);
       setExecutionWorkspaceMode(defaultExecutionWorkspaceModeForIssueDefaults(newIssueDefaults, defaultProject));
       setWorkMode(nextWorkMode);
       setSelectedExecutionWorkspaceId(newIssueDefaults.executionWorkspaceId ?? "");
@@ -720,10 +692,6 @@ export function NewIssueDialog() {
           ? (newIssueDefaults.projectWorkspaceId ?? "")
           : (draft.projectWorkspaceId ?? defaultProjectWorkspaceIdForProject(restoredProject)),
       );
-      setAssigneeModelLane(draft.assigneeModelLane ?? "primary");
-      setAssigneeModelOverride(draft.assigneeModelOverride ?? "");
-      setAssigneeThinkingEffort(draft.assigneeThinkingEffort ?? "");
-      setAssigneeChrome(draft.assigneeChrome ?? false);
       setExecutionWorkspaceMode(
         hasExplicitExecutionWorkspaceId || hasExplicitExecutionWorkspaceMode
           ? defaultExecutionWorkspaceModeForIssueDefaults(newIssueDefaults, restoredProject)
@@ -759,9 +727,6 @@ export function NewIssueDialog() {
       setWatchdogAgentId("");
       setWatchdogInstructions("");
 
-      setAssigneeModelOverride("");
-      setAssigneeThinkingEffort("");
-      setAssigneeChrome(false);
       setExecutionWorkspaceMode(defaultExecutionWorkspaceModeForIssueDefaults(newIssueDefaults, defaultProject));
       setSelectedExecutionWorkspaceId(newIssueDefaults.executionWorkspaceId ?? "");
       executionWorkspaceDefaultProjectId.current =
@@ -792,10 +757,6 @@ export function NewIssueDialog() {
 
     setProjectId("");
     setProjectWorkspaceId("");
-    setAssigneeModelLane("primary");
-    setAssigneeModelOverride("");
-    setAssigneeThinkingEffort("");
-    setAssigneeChrome(false);
     clearRunSettings();
     setModelOverrideInherit(true);
     setModelOverrideSubtaskScope("new");
@@ -816,13 +777,6 @@ export function NewIssueDialog() {
     const currentTitle = titleRef.current.trim();
     const currentDescription = body.trim();
     if (!effectiveCompanyId || (!currentTitle && !currentDescription) || createIssue.isPending || worktreeSelectionIncomplete || parentPrivacyUnresolved) return;
-    const inheritedOverrides = buildAssigneeAdapterOverrides({
-      adapterType: assigneeAdapterType,
-      lane: assigneeChrome ? "custom" : assigneeModelLane,
-      modelOverride: assigneeModelOverride,
-      thinkingEffortOverride: assigneeThinkingEffort,
-      chrome: assigneeChrome,
-    });
     const draftModel = settings.model ?? null;
     const draftThinking = settings.thinking ?? null;
     const modelOverride =
@@ -863,7 +817,6 @@ export function NewIssueDialog() {
       reviewerValues: reviewerValue ? [reviewerValue] : [],
       approverValues: approverValue ? [approverValue] : [],
     });
-    const assigneeAdapterOverrides = inheritedOverrides;
     const createData = {
       companyId: effectiveCompanyId,
       stagedFiles,
@@ -879,7 +832,6 @@ export function NewIssueDialog() {
       ...(newIssueDefaults.goalId ? { goalId: newIssueDefaults.goalId } : {}),
       ...(projectId ? { projectId } : {}),
       ...(requestedProjectWorkspaceId ? { projectWorkspaceId: requestedProjectWorkspaceId } : {}),
-      ...(assigneeAdapterOverrides ? { assigneeAdapterOverrides } : {}),
       ...(modelOverride ? { modelOverride } : {}),
       ...(executionWorkspacePolicy?.enabled ? { executionWorkspacePreference: executionWorkspaceMode } : {}),
       ...(canChooseWorktrees &&
@@ -1197,10 +1149,6 @@ export function NewIssueDialog() {
                 if (next.assigneeUserId) trackRecentAssigneeUser(next.assigneeUserId, effectiveCompanyId ?? undefined);
                 setAssigneeValue(value);
                 clearRunSettings();
-                setAssigneeModelLane("primary");
-                setAssigneeModelOverride("");
-                setAssigneeThinkingEffort("");
-                setAssigneeChrome(false);
                 if (value && status === "backlog") setStatus("todo");
               }}
               creation={{

@@ -193,7 +193,7 @@ describe("OnboardingWizard adapter selection", () => {
     const saved = JSON.parse(
       window.localStorage.getItem(ONBOARDING_STORAGE_KEY) ?? "{}",
     );
-    expect(saved.adapterType).toBe("claude_local");
+    expect(saved.adapterType).toBe("omp_local");
 
     await act(async () => {
       root.unmount();
@@ -235,7 +235,7 @@ describe("OnboardingWizard adapter selection", () => {
 
   it("normalizes a saved Paperclip Runner draft before adapter discovery resolves", async () => {
     mockAdapterRegistry.loaded = false;
-    mockAdapterRegistry.list = [{ type: "codex_local" }];
+    mockAdapterRegistry.list = [{ type: "omp_local" }];
     window.localStorage.setItem(
       ONBOARDING_STORAGE_KEY,
       JSON.stringify({
@@ -253,7 +253,7 @@ describe("OnboardingWizard adapter selection", () => {
     const saved = JSON.parse(
       window.localStorage.getItem(ONBOARDING_STORAGE_KEY) ?? "{}",
     );
-    expect(saved.adapterType).toBe("claude_local");
+    expect(saved.adapterType).toBe("omp_local");
     expect(saved.model).toBe("");
     expect(saved.command).toBe("");
     expect(saved.args).toBe("");
@@ -274,7 +274,7 @@ describe("OnboardingWizard adapter selection", () => {
       JSON.stringify({ step: 0, adapterType: "acme_external" }),
     );
     mockAdapterRegistry.loaded = false;
-    mockAdapterRegistry.list = [{ type: "codex_local" }];
+    mockAdapterRegistry.list = [{ type: "omp_local" }];
 
     const { root } = await mount();
 

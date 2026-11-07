@@ -2059,7 +2059,7 @@ describeEmbeddedPostgres(
           .update(agents)
           .set({
             status: "idle",
-            adapterType: "openclaw_gateway",
+            adapterType: "omp_local",
             adapterConfig: {
               url: gateway.url,
               headers: {

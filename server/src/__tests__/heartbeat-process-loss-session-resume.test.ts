@@ -47,7 +47,7 @@ vi.mock("../adapters/index.ts", async () => {
     "../adapters/index.ts",
   );
   const adapter = {
-    type: "codex_local",
+    type: "omp_local",
     supportsLocalAgentJwt: false,
     execute: mockAdapterExecute,
   };
@@ -109,7 +109,7 @@ describeEmbeddedPostgres("process-loss continuation session resume", () => {
     if (paperclipHome) await fs.rm(paperclipHome, { recursive: true, force: true });
   });
 
-  async function seedAgentWithSavedSession(adapterType = "codex_local") {
+  async function seedAgentWithSavedSession(adapterType = "omp_local") {
     mockAdapterExecute.mockImplementation(async () => savedSessionResult);
     const companyId = randomUUID();
     const agentId = randomUUID();
@@ -243,7 +243,7 @@ describeEmbeddedPostgres("process-loss continuation session resume", () => {
       runId,
       seq: 1,
       eventType: "adapter.invoke",
-      payload: { adapterType: "codex_local" },
+      payload: { adapterType: "omp_local" },
     });
     await db.update(agents).set({ status: "running" }).where(eq(agents.id, input.agentId));
     await db
@@ -412,7 +412,7 @@ describeEmbeddedPostgres("process-loss continuation session resume", () => {
     );
   });
 
-  it("starts a fresh codex_local session after its model changes", async () => {
+  it("starts a fresh omp_local session after its model changes", async () => {
     const seeded = await seedAgentWithSavedSession();
     await changeAdapterConfigThroughRevision(seeded.agentId, { model: "model-b" });
 

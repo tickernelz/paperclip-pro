@@ -190,7 +190,7 @@ async function seedRunTarget(db: Db, repoRoot: string) {
     name: "CodexCoder",
     role: "engineer",
     status: "idle",
-    adapterType: "codex_local",
+    adapterType: "omp_local",
     adapterConfig: {},
     runtimeConfig: {
       heartbeat: {

@@ -111,7 +111,7 @@ describe("P6-25 pre-result native session recovery", () => {
       id: agentId,
       companyId,
       name: "Native resume agent",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       status: "running",
     });
     await db.insert(issues).values({
@@ -1378,7 +1378,7 @@ describe.each(["unchanged", "newer_active", "stale_idle"] as const)(
       // fresh run ignores the stale native profile and stays on the legacy path.
       await db
         .update(agents)
-        .set({ adapterType: "codex_local" })
+        .set({ adapterType: "omp_local" })
         .where(eq(agents.id, agentId));
       await db.insert(issues).values({
         id: freshIssueId,

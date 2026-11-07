@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { requireServerAdapter } from "../adapters/registry.js";
+import { requireRunnerHarness } from "../adapters/registry.js";
 import {
   deriveLoginSessionHome,
   isLoginCommandKey,
@@ -30,7 +30,7 @@ describe("resolveLoginCommandKey", () => {
     // only, never from the adapter's own login capability. Mutating the
     // registered `grok_local` capability's `getCommand` member must not change
     // the key this function returns for the same adapter type.
-    const capability = requireServerAdapter("grok_local").loginCapability;
+    const capability = requireRunnerHarness("grok_local").loginCapability;
     expect(capability).toBeDefined();
     if (!capability) return;
     const original = capability.getCommand;

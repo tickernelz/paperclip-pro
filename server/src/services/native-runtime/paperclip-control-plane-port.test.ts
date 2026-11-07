@@ -91,7 +91,7 @@ describe("PaperclipControlPlanePort conformance", () => {
       id: identity.agentId,
       companyId: identity.companyId,
       name: "Native conformance",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       status: "running",
     });
     await db.insert(issues).values({
@@ -1238,7 +1238,7 @@ describe("PaperclipControlPlanePort conformance", () => {
     });
     await db.insert(agents).values({
       id: reviewerAgentId, companyId: identity.companyId, name: "Review lead",
-      adapterType: "codex_local", status: "idle",
+      adapterType: "omp_local", status: "idle",
     });
     await db.insert(issues).values({
       id: issueId,
@@ -1730,7 +1730,7 @@ describe("PaperclipControlPlanePort conformance", () => {
     async function preparedRun(parentId: string | null) {
       const agentId = randomUUID();
       await db.insert(agents).values({ id: agentId, companyId: identity.companyId,
-        name: parentId ? "Child worker" : "Parent lead", adapterType: "codex_local", status: "running" });
+        name: parentId ? "Child worker" : "Parent lead", adapterType: "omp_local", status: "running" });
       const issueId = randomUUID();
       const runId = randomUUID();
       const localContractId = randomUUID();

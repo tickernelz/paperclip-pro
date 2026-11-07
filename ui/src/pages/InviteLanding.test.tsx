@@ -129,7 +129,7 @@ describe("InviteLandingPage", () => {
     vi.clearAllMocks();
   });
 
-  it("keeps agent-invite onboarding on legacy adapters", async () => {
+  it("offers OMP for agent-invite onboarding without the Paperclip Runner", async () => {
     getInviteMock.mockResolvedValue({
       id: "invite-1",
       companyId: "company-1",
@@ -162,7 +162,7 @@ describe("InviteLandingPage", () => {
     await flushReact();
 
     const adapterSelect = Array.from(container.querySelectorAll("select")).find((select) =>
-      Array.from(select.options).some((option) => option.value === "claude_local"),
+      Array.from(select.options).some((option) => option.value === "omp_local"),
     );
     expect(adapterSelect).toBeTruthy();
     expect(Array.from(adapterSelect!.options).map((option) => option.value))

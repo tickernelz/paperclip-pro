@@ -2359,128 +2359,6 @@ describe("IssueProperties", () => {
     act(() => root.unmount());
   });
 
-  it("edits existing custom assignee model options from the properties pane", async () => {
-    const onUpdate = vi.fn();
-    mockAgentsApi.list.mockResolvedValue([
-      {
-        id: "agent-1",
-        name: "Senior Product Engineer",
-        role: "engineer",
-        title: null,
-        status: "active",
-        adapterType: "codex_local",
-        icon: null,
-      },
-    ]);
-    mockAgentsApi.adapterModels.mockResolvedValue([
-      { id: "gpt-6-astra", label: "gpt-6-astra" },
-      { id: "gpt-5.4", label: "GPT-5.4" },
-    ]);
-
-    const root = renderProperties(container, {
-      issue: createIssue({
-        assigneeAgentId: "agent-1",
-        assigneeAdapterOverrides: {
-          adapterConfig: {
-            model: "gpt-5.4",
-            modelReasoningEffort: "high",
-          },
-        },
-      }),
-      childIssues: [],
-      onUpdate,
-    });
-    await flush();
-    await flush();
-
-    expect(container.textContent).toContain("Override · gpt-5.4 · high");
-    expect(container.textContent).toContain("Model lane");
-
-    // Wait for the adapter-models query to resolve so the model options render.
-    let modelButton: HTMLButtonElement | undefined;
-    await waitForAssertion(() => {
-      modelButton = Array.from(container.querySelectorAll("button"))
-        .find((button) => button.textContent?.includes("gpt-6-astra"));
-      expect(modelButton).not.toBeUndefined();
-    });
-
-    await act(async () => {
-      modelButton!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    });
-
-    expect(onUpdate).toHaveBeenCalledWith({
-      assigneeAdapterOverrides: {
-        adapterConfig: {
-          model: "gpt-6-astra",
-          modelReasoningEffort: "high",
-        },
-      },
-    });
-
-    act(() => root.unmount());
-  });
-
-  it("keeps Astra-only task efforts when the task inherits the agent model", async () => {
-    const onUpdate = vi.fn();
-    mockAgentsApi.list.mockResolvedValue([
-      {
-        id: "agent-1",
-        name: "Senior Product Engineer",
-        role: "engineer",
-        title: null,
-        status: "active",
-        adapterType: "codex_local",
-        adapterConfig: { model: "gpt-6-astra" },
-        icon: null,
-      },
-    ]);
-    mockAgentsApi.adapterModels.mockResolvedValue([
-      { id: "gpt-6-astra", label: "gpt-6-astra" },
-      { id: "gpt-5.4", label: "GPT-5.4" },
-    ]);
-
-    const root = renderProperties(container, {
-      issue: createIssue({
-        assigneeAgentId: "agent-1",
-        assigneeAdapterOverrides: {
-          adapterConfig: { modelReasoningEffort: "ultra" },
-        },
-      }),
-      childIssues: [],
-      onUpdate,
-    });
-    await flush();
-    await flush();
-
-    expect(container.textContent).toContain("Ultra");
-    expect(container.textContent).toContain("Max");
-    expect(container.textContent).not.toContain("Minimal");
-
-    const defaultModelButton = Array.from(container.querySelectorAll("button"))
-      .find((button) => button.textContent?.includes("Default model"));
-    expect(defaultModelButton).not.toBeUndefined();
-    await act(async () => {
-      defaultModelButton!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    });
-    await flush();
-
-    const defaultModelOption = Array.from(document.body.querySelectorAll("button"))
-      .filter((button) => button.textContent?.trim() === "Default model")
-      .at(-1);
-    expect(defaultModelOption).not.toBeUndefined();
-    await act(async () => {
-      defaultModelOption!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    });
-
-    expect(onUpdate).toHaveBeenCalledWith({
-      assigneeAdapterOverrides: {
-        adapterConfig: { modelReasoningEffort: "ultra" },
-      },
-    });
-
-    act(() => root.unmount());
-  });
-
   it("clears existing assignee adapter overrides from the properties pane", async () => {
     const onUpdate = vi.fn();
     mockAgentsApi.list.mockResolvedValue([
@@ -2490,7 +2368,7 @@ describe("IssueProperties", () => {
         role: "engineer",
         title: null,
         status: "active",
-        adapterType: "codex_local",
+        adapterType: "omp_local",
         icon: null,
       },
     ]);
@@ -2509,8 +2387,6 @@ describe("IssueProperties", () => {
     });
     await flush();
 
-    // The trailing "clear" X was removed (ux-spec: one trailing-action style).
-    // Clearing now happens by selecting the "Primary" model lane inside the picker.
     const optionsTrigger = findRowTrigger(container, "Model");
     expect(optionsTrigger).toBeTruthy();
     await act(async () => {
@@ -2518,12 +2394,12 @@ describe("IssueProperties", () => {
     });
     await flush();
 
-    const primaryLane = Array.from(container.querySelectorAll('button[role="radio"]'))
-      .find((button) => button.textContent?.trim() === "Primary");
-    expect(primaryLane).not.toBeUndefined();
+    const clearButton = Array.from(container.querySelectorAll("button"))
+      .find((button) => button.textContent?.trim() === "Clear adapter options");
+    expect(clearButton).not.toBeUndefined();
 
     await act(async () => {
-      primaryLane!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      clearButton!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
 
     expect(onUpdate).toHaveBeenCalledWith({ assigneeAdapterOverrides: null });

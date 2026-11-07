@@ -258,16 +258,14 @@ describe("resolveEnvironmentExecutionTarget", () => {
     });
   });
 
-  it("resolves sandbox targets for every remote-managed adapter, including grok_local and kimi_local", async () => {
+  it("resolves sandbox targets for every remote-managed adapter and runner harness", async () => {
     for (const adapterType of [
+      "omp_local",
+      "paperclip_runner",
       "claude_local",
       "codex_local",
-      "cursor",
-      "gemini_local",
       "grok_local",
-      "kimi_local",
       "opencode_local",
-      "pi_local",
     ]) {
       mockResolveEnvironmentDriverConfigForRuntime.mockResolvedValue({
         driver: "sandbox",
@@ -359,7 +357,7 @@ describe("resolveEnvironmentExecutionTarget", () => {
     });
   });
 
-  it("resolves SSH execution targets for kimi_local", async () => {
+  it("resolves SSH execution targets for omp_local", async () => {
     mockResolveEnvironmentDriverConfigForRuntime.mockResolvedValue({
       driver: "ssh",
       config: {
@@ -376,7 +374,7 @@ describe("resolveEnvironmentExecutionTarget", () => {
     const target = await resolveEnvironmentExecutionTarget({
       db: {} as never,
       companyId: "company-1",
-      adapterType: "kimi_local",
+      adapterType: "omp_local",
       environment: {
         id: "env-ssh-1",
         driver: "ssh",
