@@ -1,6 +1,7 @@
 import { AgentIdentity } from "@/components/AgentIdentity";
 import { CheckCircle2, XCircle, Clock } from "lucide-react";
 import { Link } from "@/lib/router";
+import { OFFLINE_ACTION_REASON, useOffline } from "@/lib/online-status";
 import { Badge } from "@/components/ui/badge";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Identity } from "./Identity";
@@ -43,6 +44,7 @@ export function ApprovalCard({
   isPending?: boolean;
   pendingAction?: "approve" | "reject" | null;
 }) {
+  const offline = useOffline();
   const payload = approval.payload as Record<string, unknown> | null;
   const Icon = typeIcon[approval.type] ?? defaultTypeIcon;
   const kindLabel = typeLabel[approval.type] ?? approval.type;
@@ -111,7 +113,11 @@ export function ApprovalCard({
 
       {hasFooter ? (
         <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-line/60 pt-4">
-          <div className="flex flex-wrap items-center gap-2">
+          <fieldset
+            disabled={offline}
+            title={offline ? OFFLINE_ACTION_REASON : undefined}
+            className="m-0 flex min-w-0 flex-wrap items-center gap-2 border-0 p-0"
+          >
             {showResolutionButtons && (
               <>
                 <Button
@@ -131,7 +137,7 @@ export function ApprovalCard({
                 </Button>
               </>
             )}
-          </div>
+          </fieldset>
           {(detailLink || onOpen) ? (
             detailLink ? (
               <Link

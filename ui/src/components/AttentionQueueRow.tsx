@@ -1,4 +1,5 @@
 import { memo, useState, type KeyboardEvent, type ReactNode } from "react";
+import { OFFLINE_ACTION_REASON, useOffline } from "../lib/online-status";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   AlarmClock,
@@ -838,10 +839,17 @@ function InlineResolver({
 
 /** Footer shared by the resolvers that own their verbs: toggle left, verbs right. */
 function ResolverFooter({ toggle, children }: { toggle: ReactNode; children: ReactNode }) {
+  const offline = useOffline();
   return (
     <div className="flex flex-wrap items-center justify-between gap-2" data-attention-actions="true">
       {toggle ?? <span />}
-      <div className="flex flex-wrap items-center gap-2">{children}</div>
+      <fieldset
+        disabled={offline}
+        title={offline ? OFFLINE_ACTION_REASON : undefined}
+        className="m-0 flex min-w-0 flex-wrap items-center gap-2 border-0 p-0"
+      >
+        {children}
+      </fieldset>
     </div>
   );
 }

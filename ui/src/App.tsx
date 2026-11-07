@@ -22,6 +22,7 @@ import { Cases } from "./pages/Cases";
 import { CaseDetail } from "./pages/CaseDetail";
 import { OnboardingWizardVariant } from "./components/OnboardingWizardVariant";
 import { IosInstallHelpDialog } from "./components/InstallAppMenuAction";
+import { NewTaskShortcut } from "./components/NewTaskShortcut";
 import { CloudAccessGate } from "./components/CloudAccessGate";
 import { PaperclipLoading } from "./components/AnimatedPaperclipIcon";
 import { Dashboard } from "./pages/Dashboard";
@@ -300,6 +301,7 @@ function boardRoutes(combinedInboxTasksEnabled: boolean) {
       <Route path="terminal" element={<ProductionSurface><TerminalPage /></ProductionSurface>} />
       <Route path="issues" element={<Issues />} />
       <Route path="tasks" element={<Navigate to="/issues" replace />} />
+      <Route path="tasks/new" element={<NewTaskShortcut />} />
       <Route path="search" element={<Search />} />
       {mergedTasks ? (
         <>
@@ -816,6 +818,7 @@ export function App() {
           <Route path="inbox/*" element={<UnprefixedBoardRedirect />} />
           <Route path="issues" element={<UnprefixedBoardRedirect />} />
           <Route path="tasks" element={<UnprefixedBoardRedirect />} />
+          <Route path="tasks/new" element={<UnprefixedBoardRedirect />} />
           <Route path="issues/:issueId" element={<UnprefixedBoardRedirect />} />
           <Route path="routines" element={<UnprefixedBoardRedirect />} />
           <Route path="routines/:routineId" element={<UnprefixedBoardRedirect />} />

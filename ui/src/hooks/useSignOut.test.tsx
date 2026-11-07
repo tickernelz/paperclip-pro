@@ -53,6 +53,26 @@ describe("useSignOut", () => {
     return root;
   }
 
+  it.each([
+    ["self-hosted", { status: "ok", deploymentMode: "authenticated" }],
+    ["Cloud", { status: "ok", cloud: { managed: true, managedBy: "paperclip-cloud", stackSlug: "acme", cloudBaseUrl: "https://cloud.example.test" } }],
+  ])("deletes this account's offline copies on %s sign-out and keeps the app shell", async (_mode, health) => {
+    const names = new Set(["wardmote-data-0123abcd", "wardmote-shell-build-1"]);
+    vi.stubGlobal("caches", {
+      keys: async () => [...names],
+      delete: async (name: string) => names.delete(name),
+    });
+    mockAuthApi.signOut.mockResolvedValue(undefined);
+    queryClient.setQueryData(queryKeys.health, health);
+    const root = renderHarness();
+
+    flushSync(() => captured?.mutate());
+
+    await vi.waitFor(() => expect([...names]).toEqual(["wardmote-shell-build-1"]));
+    vi.unstubAllGlobals();
+    flushSync(() => root.unmount());
+  });
+
   it("closes caller chrome and navigates through Cloud without local sign-out", async () => {
     const onSignedOut = vi.fn();
     queryClient.setQueryData(queryKeys.health, {

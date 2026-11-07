@@ -1,24 +1,34 @@
-/**
- * Registers `/sw.js` and keeps the installed worker fresh on a long-lived tab.
- *
- * Browsers only re-fetch a service-worker script on navigation or on a ~24h
- * timer. Paperclip is a parked-tab SPA — a tab can stay open for weeks without
- * a single navigation — so without explicit update checks an old worker (and
- * the app shell it cached) can outlive a deploy indefinitely. The symptom is
- * invisible: the tab just keeps running the old bundle.
- *
- * Two behaviors close the gap:
- * - `registration.update()` runs when the tab becomes visible and on an
- *   hourly timer, so parked tabs learn about new workers without navigating.
- * - When a new worker takes control (`controllerchange`), the page reloads
- *   once so the fresh shell actually replaces the running bundle — but only
- *   while the tab is hidden, so an update landing mid-session never yanks
- *   the page out from under the user; a takeover while visible defers the
- *   reload to the next time the tab is hidden. First-ever installs skip the
- *   reload entirely: an uncontrolled page is already running the code the
- *   server just handed it.
- */
+import { useSyncExternalStore } from "react";
+
 const DEFAULT_UPDATE_INTERVAL_MS = 60 * 60 * 1000;
+const APPLY_FALLBACK_MS = 3000;
+export const SKIP_WAITING_MESSAGE = "wardmote.skip-waiting";
+
+export type ApplyServiceWorkerUpdate = () => void;
+
+let readyUpdate: ApplyServiceWorkerUpdate | null = null;
+const listeners = new Set<() => void>();
+
+function publishUpdate(apply: ApplyServiceWorkerUpdate) {
+  readyUpdate = apply;
+  for (const listener of listeners) listener();
+}
+
+function subscribe(listener: () => void) {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
+}
+
+export function useServiceWorkerUpdate(): ApplyServiceWorkerUpdate | null {
+  return useSyncExternalStore(subscribe, () => readyUpdate, () => null);
+}
+
+export function resetServiceWorkerUpdateForTests() {
+  readyUpdate = null;
+  listeners.clear();
+}
 
 export function startServiceWorkerUpdates(
   options: {
@@ -26,6 +36,7 @@ export function startServiceWorkerUpdates(
     documentRef?: Document;
     reload?: () => void;
     updateIntervalMs?: number;
+    onUpdateReady?: (apply: ApplyServiceWorkerUpdate) => void;
   } = {},
 ): () => void {
   const container =
@@ -39,46 +50,48 @@ export function startServiceWorkerUpdates(
   const documentRef = options.documentRef ?? document;
   const reload = options.reload ?? (() => window.location.reload());
   const updateIntervalMs = options.updateIntervalMs ?? DEFAULT_UPDATE_INTERVAL_MS;
+  const onUpdateReady = options.onUpdateReady ?? publishUpdate;
 
-  // Only a page that is already worker-controlled is running
-  // potentially-stale code when the controller changes; a first-ever
-  // install taking control is caching the very bundle the page is running,
-  // so reloading would be a no-op. The flag is promoted on that first
-  // takeover: any later controller change on this (possibly weeks-old) tab
-  // does mean newer code exists.
   let wasControlled = Boolean(container.controller);
+  let applyRequested = false;
   let reloaded = false;
-  let reloadPending = false;
-  const applyUpdate = () => {
+  let fallbackTimer: ReturnType<typeof setTimeout> | undefined;
+  const reloadOnce = () => {
     if (reloaded) return;
     reloaded = true;
+    if (fallbackTimer !== undefined) clearTimeout(fallbackTimer);
     reload();
+  };
+  const offerWaiting = (worker: ServiceWorker) => {
+    onUpdateReady(() => {
+      applyRequested = true;
+      worker.postMessage({ type: SKIP_WAITING_MESSAGE });
+      fallbackTimer = setTimeout(reloadOnce, APPLY_FALLBACK_MS);
+    });
   };
   const onControllerChange = () => {
     if (!wasControlled) {
       wasControlled = true;
       return;
     }
-    if (documentRef.visibilityState === "hidden") {
-      applyUpdate();
-    } else {
-      reloadPending = true;
-    }
+    if (applyRequested) reloadOnce();
+    else onUpdateReady(reloadOnce);
   };
   container.addEventListener("controllerchange", onControllerChange);
 
   let registration: ServiceWorkerRegistration | undefined;
+  const watchInstalling = () => {
+    const worker = registration?.installing;
+    if (!worker) return;
+    worker.addEventListener("statechange", () => {
+      if (worker.state === "installed" && container.controller) offerWaiting(worker);
+    });
+  };
   const checkForUpdates = () => {
-    // update() rejects while offline or mid-deploy; the next visibility
-    // change or timer tick retries, so failures are deliberately swallowed.
     void registration?.update().catch(() => {});
   };
   const onVisibilityChange = () => {
-    if (documentRef.visibilityState === "visible") {
-      checkForUpdates();
-    } else if (reloadPending) {
-      applyUpdate();
-    }
+    if (documentRef.visibilityState === "visible") checkForUpdates();
   };
   documentRef.addEventListener("visibilitychange", onVisibilityChange);
   const intervalId = setInterval(checkForUpdates, updateIntervalMs);
@@ -87,15 +100,16 @@ export function startServiceWorkerUpdates(
     .register("/sw.js")
     .then((reg) => {
       registration = reg;
+      if (reg.waiting && container.controller) offerWaiting(reg.waiting);
+      reg.addEventListener("updatefound", watchInstalling);
     })
-    .catch(() => {
-      // Registration can fail in private windows or hardened browsers; the
-      // app works without a worker, it just loses the offline fallback.
-    });
+    .catch(() => {});
 
   return () => {
     container.removeEventListener("controllerchange", onControllerChange);
     documentRef.removeEventListener("visibilitychange", onVisibilityChange);
+    registration?.removeEventListener("updatefound", watchInstalling);
     clearInterval(intervalId);
+    if (fallbackTimer !== undefined) clearTimeout(fallbackTimer);
   };
 }

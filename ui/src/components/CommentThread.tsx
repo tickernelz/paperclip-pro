@@ -13,6 +13,7 @@ import type {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Check, Copy, Paperclip } from "lucide-react";
+import { OFFLINE_ACTION_REASON, useOffline } from "../lib/online-status";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Identity } from "./Identity";
 import { InlineEntitySelector, type InlineEntityOption } from "./InlineEntitySelector";
@@ -937,7 +938,8 @@ export function CommentThread({
     }
   }
 
-  const canSubmit = !submitting && !!body.trim();
+  const offline = useOffline();
+  const canSubmit = !offline && !submitting && !!body.trim();
 
   return (
     <div className="space-y-4">
@@ -1072,7 +1074,7 @@ export function CommentThread({
                 }}
               />
             )}
-            <Button size="sm" disabled={!canSubmit} onClick={handleSubmit}>
+            <Button size="sm" disabled={!canSubmit} title={offline ? OFFLINE_ACTION_REASON : undefined} onClick={handleSubmit}>
               {submitting ? "Posting..." : "Comment"}
             </Button>
           </div>

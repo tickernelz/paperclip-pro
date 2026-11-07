@@ -5,6 +5,7 @@ import {
   type CurrentUserProfile,
   type UpdateCurrentUserProfile,
 } from "@tickernelz/paperclip-pro-shared";
+import { clearOfflineData } from "@/lib/offline-data";
 import { redactUrlSecrets } from "@/lib/redact-url-secrets";
 import { tenantSessionRecovery } from "@/lib/tenant-session-recovery";
 import { readApiJson } from "./response";
@@ -162,7 +163,10 @@ export const authApi = {
     if (!res.ok) {
       const recovery = tenantSessionRecovery.recoverIfNeeded(res.status, payload);
       if (recovery) return recovery;
-      if (res.status === 401) return null;
+      if (res.status === 401) {
+        await clearOfflineData();
+        return null;
+      }
       throw extractAuthError(payload as AuthErrorBody, res.status);
     }
     const direct = toSession(payload);

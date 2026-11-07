@@ -4,6 +4,9 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   captureInstallPrompt,
   installAvailability,
+  installNudgeVisible,
+  recordAppVisit,
+  snoozeInstallNudge,
   isIosSafariLike,
   promptInstall,
   resetInstallPromptForTests,
@@ -53,5 +56,47 @@ describe("PWA install prompt", () => {
     expect(isIosSafariLike("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)", 5)).toBe(true);
     expect(isIosSafariLike("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)", 0)).toBe(false);
     expect(isIosSafariLike("Mozilla/5.0 (Linux; Android 15; Pixel 9)", 5)).toBe(false);
+  });
+});
+
+describe("install nudge", () => {
+  const DAY = 24 * 60 * 60 * 1000;
+
+  function visit(times: number) {
+    for (let i = 0; i < times; i++) {
+      window.sessionStorage.clear();
+      recordAppVisit();
+    }
+  }
+
+  afterEach(() => {
+    window.localStorage.clear();
+    window.sessionStorage.clear();
+  });
+
+  it("appears from the third visit, counting each browser session once", () => {
+    visit(2);
+    recordAppVisit();
+    recordAppVisit();
+    expect(installNudgeVisible("prompt", "/WAR/dashboard")).toBe(false);
+    visit(1);
+    expect(installNudgeVisible("prompt", "/WAR/dashboard")).toBe(true);
+    expect(installNudgeVisible("ios-manual", "/WAR/dashboard")).toBe(true);
+  });
+
+  it("stays away from onboarding and from browsers that cannot install", () => {
+    visit(5);
+    expect(installNudgeVisible("prompt", "/onboarding")).toBe(false);
+    expect(installNudgeVisible("prompt", "/WAR/onboarding/agent")).toBe(false);
+    expect(installNudgeVisible("unavailable", "/WAR/dashboard")).toBe(false);
+    expect(installNudgeVisible("installed", "/WAR/dashboard")).toBe(false);
+  });
+
+  it("hides for 30 days after Not now", () => {
+    visit(3);
+    const now = Date.UTC(2026, 10, 7);
+    snoozeInstallNudge(now);
+    expect(installNudgeVisible("prompt", "/WAR/dashboard", now + 29 * DAY)).toBe(false);
+    expect(installNudgeVisible("prompt", "/WAR/dashboard", now + 30 * DAY)).toBe(true);
   });
 });

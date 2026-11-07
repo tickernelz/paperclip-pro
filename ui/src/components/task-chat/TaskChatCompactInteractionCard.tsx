@@ -1,3 +1,4 @@
+import { OFFLINE_ACTION_REASON, useOffline } from "@/lib/online-status";
 import {
   useEffect,
   useMemo,
@@ -264,9 +265,12 @@ function ActionRow({
   children: ReactNode;
   hint?: string | null;
 }) {
+  const offline = useOffline();
   return (
-    <div
-      className="mt-3 flex flex-wrap items-center gap-2"
+    <fieldset
+      disabled={offline}
+      title={offline ? OFFLINE_ACTION_REASON : undefined}
+      className="m-0 mt-3 flex min-w-0 flex-wrap items-center gap-2 border-0 p-0"
       data-slot="task-chat-takeover-actions"
     >
       {hint ? (
@@ -275,7 +279,7 @@ function ActionRow({
         <span className="mr-auto" />
       )}
       {children}
-    </div>
+    </fieldset>
   );
 }
 

@@ -9,6 +9,7 @@ import { SentryGate } from "./components/SentryGate";
 import { CompanyProvider, useCompany } from "./context/CompanyContext";
 import { LiveUpdatesProvider } from "./context/LiveUpdatesProvider";
 import { NotificationRuntime } from "./components/NotificationRuntime";
+import { PwaRuntime } from "./components/PwaRuntime";
 import { BreadcrumbProvider } from "./context/BreadcrumbContext";
 import { PanelProvider } from "./context/PanelContext";
 import { SidebarProvider } from "./context/SidebarContext";
@@ -23,7 +24,7 @@ import { PluginLauncherProvider } from "./plugins/launchers";
 import { startPerfMeasureReaper } from "./lib/perf-measure-reaper";
 import { getOrCreatePaperclipReactRoot } from "./lib/react-root";
 import { startServiceWorkerUpdates } from "./lib/service-worker-updates";
-import { captureInstallPrompt } from "./lib/pwa-install-prompt";
+import { captureInstallPrompt, recordAppVisit } from "./lib/pwa-install-prompt";
 import "./index.css";
 
 initPluginBridge(React, ReactDOM);
@@ -33,11 +34,8 @@ initPluginBridge(React, ReactDOM);
 // accumulate into millions of native objects (GBs). Reap them periodically.
 startPerfMeasureReaper();
 
-// Parked SPA tabs never navigate, so beyond registering the worker this also
-// re-checks /sw.js on tab focus and hourly, and applies a discovered update
-// with one reload while the tab is hidden — otherwise an old worker and its
-// cached shell can outlive a deploy indefinitely.
 captureInstallPrompt();
+recordAppVisit();
 window.addEventListener("load", () => {
   startServiceWorkerUpdates();
 });
@@ -51,6 +49,10 @@ const queryClient = new QueryClient({
       // tuning point if we need to trim the cache footprint further.
       gcTime: 5 * 60_000,
       refetchOnWindowFocus: true,
+      networkMode: "offlineFirst",
+    },
+    mutations: {
+      networkMode: "always",
     },
   },
 });
@@ -76,6 +78,7 @@ getOrCreatePaperclipReactRoot(window, rootElement).render(
                   <PrimaryAgentProvider>
                   <LiveUpdatesProvider>
                     <NotificationRuntime />
+                    <PwaRuntime />
                     <TooltipProvider>
                       <CompanyAwareBreadcrumbProvider>
                         <SidebarProvider>

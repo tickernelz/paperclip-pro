@@ -46,6 +46,7 @@ export default defineConfig({
   use: {
     baseURL: BASE_URL,
     headless: true,
+    serviceWorkers: "block",
     screenshot: "only-on-failure",
     trace: "on-first-retry",
   },

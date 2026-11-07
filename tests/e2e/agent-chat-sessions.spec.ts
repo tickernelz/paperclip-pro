@@ -4,7 +4,7 @@ import { createLocalAgentJwt } from "../../server/src/agent-auth-jwt";
 
 import { idle, json, send, setup } from "./agent-chat.shared";
 
-test.use({ trace: "retain-on-failure" });
+test.use({ serviceWorkers: "allow", trace: "retain-on-failure" });
 test.setTimeout(120_000);
 
 /**
