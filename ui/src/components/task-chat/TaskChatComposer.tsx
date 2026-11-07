@@ -8,6 +8,7 @@ import {
   type ReactNode,
 } from "react";
 import { cn } from "@/lib/utils";
+import { OFFLINE_ACTION_REASON, useOffline } from "@/lib/online-status";
 import { useComposerStop } from "@/hooks/useComposerStop";
 import { useStreamlinedTaskChatPresentation } from "./presentation-mode";
 import {
@@ -401,6 +402,7 @@ export function TaskChatComposer({
   onRunnerGoalCommand,
   onRunnerGoalReassign,
 }: TaskChatComposerProps) {
+  const offline = useOffline();
   const streamlined = useStreamlinedTaskChatPresentation();
   const stopControl = useComposerStop(onStop, stopPending);
   const [localBody, setBody] = useState(() => (draftKey ? loadDraft(draftKey) : ""));
@@ -1694,7 +1696,8 @@ export function TaskChatComposer({
               type="button"
               onClick={() => void (showStop ? stopControl.stop() : submit())}
               disabled={
-                showStop
+                offline ||
+                (showStop
                   ? disabled || stopControl.stopping
                   : disabled ||
                     (Boolean(pause) && !canResetPausedConversation) ||
@@ -1703,10 +1706,12 @@ export function TaskChatComposer({
                     uploadPending ||
                     uploadFailed ||
                     Boolean(creation?.submitDisabled) ||
-                    (body.trim().length === 0 && attachedRefs.length === 0 && !creation?.canSubmitWithoutBody)
+                    (body.trim().length === 0 && attachedRefs.length === 0 && !creation?.canSubmitWithoutBody))
               }
               title={
-                showStop
+                offline
+                  ? OFFLINE_ACTION_REASON
+                  : showStop
                   ? stopControl.stopping
                     ? "Stopping…"
                     : "Stop response"

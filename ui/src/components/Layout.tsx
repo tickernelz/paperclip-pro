@@ -26,6 +26,8 @@ import { MobileBottomNav } from "./MobileBottomNav";
 import { WorktreeBanner } from "./WorktreeBanner";
 import { DevRestartBanner } from "./DevRestartBanner";
 import { StandaloneBrowserControls } from "./StandaloneBrowserControls";
+import { OfflineBanner } from "./OfflineBanner";
+import { WindowTitleBar } from "./WindowTitleBar";
 import { RouteErrorBoundary } from "./RouteErrorBoundary";
 import { AgentConversationsSidebar } from "./AgentConversationsSidebar";
 import { useAgentChatEnabled } from "../hooks/useAgentChatEnabled";
@@ -572,8 +574,10 @@ export function Layout({ sidebarSections }: { sidebarSections?: ReactNode }) {
       >
         Skip to Main Content
       </a>
+      <WindowTitleBar />
       <WorktreeBanner />
       <DevRestartBanner devServer={health?.devServer} />
+      <OfflineBanner />
       <div className={cn("min-h-0 flex-1", isMobile ? "w-full" : "flex overflow-clip")}>
         {isMobile && sidebarOpen && (
           <button

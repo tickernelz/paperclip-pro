@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { authApi } from "@/api/auth";
 import { navigateTopLevel } from "@/lib/browserNavigation";
+import { clearOfflineData } from "@/lib/offline-data";
 import { queryKeys } from "@/lib/queryKeys";
 import { useCloudInstance } from "./useCloudInstance";
 
@@ -46,6 +47,7 @@ export function useSignOut({ onSignedOut }: UseSignOutOptions = {}) {
 
   return useMutation({
     mutationFn: async () => {
+      await clearOfflineData();
       if (cloud) {
         onSignedOut?.();
         navigateTopLevel(CLOUD_SIGN_OUT_PATH);

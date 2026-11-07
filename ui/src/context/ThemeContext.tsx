@@ -17,8 +17,8 @@ interface ThemeContextValue {
 }
 
 const THEME_STORAGE_KEY = "paperclip.theme";
-const DARK_THEME_COLOR = "#18181b";
-const LIGHT_THEME_COLOR = "#ffffff";
+const DARK_THEME_COLOR = "#0d0e11";
+const LIGHT_THEME_COLOR = "#f6f7f9";
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 function resolveThemeFromDocument(): Theme {
@@ -42,8 +42,7 @@ function applyTheme(theme: Theme) {
   const root = document.documentElement;
   root.classList.toggle("dark", isDark);
   root.style.colorScheme = isDark ? "dark" : "light";
-  const themeColorMeta = document.querySelector('meta[name="theme-color"]');
-  if (themeColorMeta instanceof HTMLMetaElement) {
+  for (const themeColorMeta of document.querySelectorAll('meta[name="theme-color"]')) {
     themeColorMeta.setAttribute("content", isDark ? DARK_THEME_COLOR : LIGHT_THEME_COLOR);
   }
 }

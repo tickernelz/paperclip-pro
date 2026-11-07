@@ -252,6 +252,8 @@ const VITE_DEV_STATIC_PATHS = new Set([
   "/pwa-maskable-192x192.png",
   "/pwa-maskable-512x512.png",
   "/pwa-monochrome-512x512.png",
+  "/screenshot-narrow.jpg",
+  "/screenshot-wide.jpg",
   "/site.webmanifest",
   "/sw.js",
 ]);

@@ -3,6 +3,8 @@ import {
   createTenantSessionRecoveryCoordinator,
   tenantSessionRecovery,
 } from "@/lib/tenant-session-recovery";
+import { onDecisionMade } from "@/lib/decision-events";
+import { OFFLINE_ACTION_REASON } from "@/lib/online-status";
 import { __inflightGetCount, api, detachInflightGet } from "./client";
 import { toolsApi } from "./tools";
 
@@ -235,3 +237,29 @@ describe("managed-account request isolation", () => {
     expect(await previousUser).toEqual({ apps: ["previous-user-account"] });
   });
 });
+
+describe("offline actions (no offline queue)", () => {
+  it("refuses a mutation while offline without sending it, and still lets reads reach the worker", async () => {
+    vi.stubGlobal("navigator", { onLine: false });
+    await expect(api.post("/approvals/a1/approve", {})).rejects.toMatchObject({ status: 0, message: OFFLINE_ACTION_REASON });
+    expect(fetchMock).not.toHaveBeenCalled();
+    fetchMock.mockResolvedValueOnce(jsonResponse([{ id: "issue-1" }]));
+    await expect(api.get("/companies/c1/issues")).resolves.toEqual([{ id: "issue-1" }]);
+    expect(fetchMock).toHaveBeenCalledOnce();
+  });
+
+  it("announces a decision only after the server accepted it", async () => {
+    const decided = vi.fn();
+    const stop = onDecisionMade(decided);
+    fetchMock.mockResolvedValueOnce(errorResponse({ error: "conflict" }, 409));
+    await expect(api.post("/issues/i1/interactions/x1/accept", {})).rejects.toMatchObject({ status: 409 });
+    fetchMock.mockResolvedValueOnce(jsonResponse({ id: "c1" }));
+    await api.post("/issues/i1/comments", { body: "hi" });
+    expect(decided).not.toHaveBeenCalled();
+    fetchMock.mockResolvedValueOnce(jsonResponse({ id: "a1" }));
+    await api.post("/approvals/a1/reject", {});
+    expect(decided).toHaveBeenCalledOnce();
+    stop();
+  });
+});
+
