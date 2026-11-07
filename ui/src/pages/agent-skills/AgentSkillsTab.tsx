@@ -304,15 +304,8 @@ export function AgentSkillsTab({ agent, companyId }: { agent: Agent; companyId?:
 
   const unsupportedMessage = useMemo(() => {
     if (!unsupported) return null;
-    if (
-      agent.adapterType === "acpx_local" &&
-      typeof agent.adapterConfig.agent === "string" &&
-      agent.adapterConfig.agent === "custom"
-    ) {
-      return "Paperclip cannot manage skills for custom ACP commands yet.";
-    }
     return "Paperclip cannot manage skills for this adapter yet. Manage them in the adapter directly.";
-  }, [agent.adapterConfig.agent, agent.adapterType, unsupported]);
+  }, [unsupported]);
 
   const hasUnsavedChanges = !sameSkillSelection(skillDraft, lastSavedSkills);
 
