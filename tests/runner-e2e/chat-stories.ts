@@ -19,8 +19,8 @@ export async function enableChatThroughSettings(input: ChatFlowInput) {
 }
 
 async function setChatEnabled(input: ChatFlowInput, enabled: boolean) {
-  await input.page.goto(`/${input.fixtures.company.issuePrefix}/company/settings/instance/experimental`, { waitUntil: "domcontentloaded" });
-  const toggle = input.page.getByRole("switch", { name: "Toggle agent chat experimental setting" });
+  await input.page.goto(`/${input.fixtures.company.issuePrefix}/company/settings/instance/features`, { waitUntil: "domcontentloaded" });
+  const toggle = input.page.getByRole("switch", { name: "Agent chat" });
   await setSettingsToggle(toggle, enabled);
   await expect.poll(async () => (await input.api.get<{ enableAgentChat: boolean }>("/api/instance/settings/experimental")).enableAgentChat).toBe(enabled);
 }

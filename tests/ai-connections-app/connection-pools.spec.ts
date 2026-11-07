@@ -38,7 +38,7 @@ test("operator-enabled routing has no experimental settings control", async ({ p
   const response = await request.get("/api/instance/settings/experimental");
   expect(response.ok()).toBe(true);
   expect(await response.json()).toMatchObject({ enableAiConnectionRouters: true });
-  await page.goto(`/${prefix}/company/settings/instance/experimental`);
+  await page.goto(`/${prefix}/company/settings/instance/advanced`);
   await expect(page.getByRole("heading", { name: "Experimental", exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Experimental features", exact: true })).toBeVisible();
   await expect(page.getByText("AI connection routers", { exact: true })).toHaveCount(0);
