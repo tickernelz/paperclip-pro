@@ -68,6 +68,7 @@ import {
   writeStoredImportJob,
 } from "../lib/import-job-watch";
 import { Badge } from "@/components/ui/badge";
+import { Chip } from "@/components/ui/chip";
 
 // ── Import-specific helpers ───────────────────────────────────────────
 
@@ -526,14 +527,7 @@ function ConflictResolutionList({
 
                 {/* Confirm rename button on the right */}
                 {!isSkipped && (
-                  <button
-                    type="button"
-                    className={cn(
-                      "ml-auto shrink-0 rounded-md border px-2.5 py-1 text-xs transition-colors inline-flex items-center gap-1.5",
-                      isConfirmed
-                        ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-500"
-                        : "border-line text-ink-3 hover:bg-bg-3/50",
-                    )}
+                  <Chip selected={isConfirmed} className="ml-auto shrink-0"
                     onClick={() => onToggleConfirm(item.slug)}
                   >
                     {isConfirmed ? (
@@ -544,7 +538,7 @@ function ConflictResolutionList({
                     ) : (
                       "confirm rename"
                     )}
-                  </button>
+                  </Chip>
                 )}
               </div>
             );

@@ -8,7 +8,7 @@
 @font-face {
   font-family: "InterVariable";
   src: url("/fonts/InterVariable.woff2") format("woff2");
-  font-display: swap;
+  font-display: block;
   font-style: normal;
   font-weight: 100 900;
 }
@@ -16,9 +16,25 @@
 @font-face {
   font-family: "InterVariable";
   src: url("/fonts/InterVariable-Italic.woff2") format("woff2");
-  font-display: swap;
+  font-display: block;
   font-style: italic;
   font-weight: 100 900;
+}
+
+@font-face {
+  font-family: "Plex Mono";
+  src: url("/fonts/IBMPlexMono-Regular-Latin1.woff2") format("woff2");
+  font-display: block;
+  font-style: normal;
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "Plex Mono";
+  src: url("/fonts/IBMPlexMono-Medium-Latin1.woff2") format("woff2");
+  font-display: block;
+  font-style: normal;
+  font-weight: 500 700;
 }
 
 @font-face {

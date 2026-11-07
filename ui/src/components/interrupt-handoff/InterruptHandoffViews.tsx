@@ -10,6 +10,7 @@ import {
   type ReassignInterruptCopy,
   type TimelineAssigneeLike,
 } from "../../lib/interrupt-handoff";
+import { Button } from "@/components/ui/button";
 
 /**
  * Presentational views for the interrupt-handoff UX clarity surfaces (PAP-10669).
@@ -206,14 +207,13 @@ export function ComposerMentionCoach({
         Did you mean <span className="font-medium">@{candidate.matchedText}</span>? Plain text won't
         notify or assign an agent.
       </span>
-      <button
+      <Button variant="secondary" size="xs" className="shrink-0"
         type="button"
         onClick={onInsert}
-        className="shrink-0 rounded border border-amber-400/50 px-1.5 py-0.5 font-medium hover:bg-amber-100/60 dark:hover:bg-amber-500/20"
         aria-label={`Insert mention for ${agentDisplayName} into your comment`}
       >
         Insert mention
-      </button>
+      </Button>
       <button
         type="button"
         onClick={onDismiss}
@@ -283,21 +283,19 @@ export function InterruptAssignConfirm({
         </div>
       </div>
       <div className="flex justify-end gap-2">
-        <button
+        <Button variant="secondary" size="xs"
           type="button"
           onClick={onCancel}
-          className="rounded border border-amber-400/50 px-2 py-0.5 font-medium hover:bg-amber-100/60 dark:hover:bg-amber-500/20"
         >
           {copy.cancelAction}
-        </button>
-        <button
+        </Button>
+        <Button variant="primary" size="xs"
           type="button"
           onClick={onConfirm}
           data-testid="interrupt-assign-confirm-action"
-          className="rounded bg-amber-600 px-2 py-0.5 font-medium text-white hover:bg-amber-700 dark:bg-amber-500 dark:hover:bg-amber-400"
         >
           {copy.confirmAction}
-        </button>
+        </Button>
       </div>
     </div>
   );

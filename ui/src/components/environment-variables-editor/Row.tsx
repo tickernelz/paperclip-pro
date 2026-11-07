@@ -30,6 +30,7 @@ import {
   type NameIssue,
   type RowSource,
 } from "./model";
+import { Chip } from "@/components/ui/chip";
 
 const nameInputClass =
   "w-full rounded-md border border-line px-2.5 py-1.5 bg-transparent outline-none text-sm font-mono placeholder:text-ink-3/40 focus-visible:ring-2 focus-visible:ring-focus/40";
@@ -359,8 +360,7 @@ export function EnvironmentVariableRow({
                   {boundSecret && boundSecret.status === "active" ? (
                     <Popover open={versionOpen} onOpenChange={setVersionOpen}>
                       <PopoverAnchor asChild>
-                        <button
-                          type="button"
+                        <Chip selected={versionPinned} className="absolute right-8 top-1/2 z-10 h-5 -translate-y-1/2 px-1.5"
                           disabled={disabled}
                           onClick={(event) => {
                             event.preventDefault();
@@ -368,15 +368,9 @@ export function EnvironmentVariableRow({
                             setVersionOpen((prev) => !prev);
                           }}
                           aria-label="Version"
-                          className={cn(
-                            "absolute right-8 top-1/2 z-10 -translate-y-1/2 rounded px-1.5 py-0.5 text-(length:--text-nano) font-medium",
-                            versionPinned
-                              ? "bg-amber-500/15 text-amber-700 dark:text-amber-400"
-                              : "text-ink-3 hover:bg-bg-3",
-                          )}
                         >
                           {versionTagLabel}
-                        </button>
+                        </Chip>
                       </PopoverAnchor>
                       <PopoverContent align="end" className="w-44 p-1" role="radiogroup" aria-label="Secret version">
                         <button

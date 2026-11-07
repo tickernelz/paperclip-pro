@@ -1113,9 +1113,7 @@ describe("TaskChatComposer", () => {
     expect(send.classList).toContain("aspect-square");
     expect(send.classList).toContain("shrink-0");
     expect(send.classList).toContain("min-w-8");
-    expect(send.classList).toContain("bg-ink");
-    expect(send.classList).toContain("text-bg");
-    expect(send.classList).toContain("disabled:opacity-100");
+    expect(send.getAttribute("data-variant")).toBe("primary");
   });
 
   it("passes reopen=true when the issue resumes-to-todo and the assignee is an agent", async () => {

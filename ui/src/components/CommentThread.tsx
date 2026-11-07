@@ -259,16 +259,8 @@ function CopyMarkdownButton({ text }: { text: string }) {
   const label = status === "copied" ? "Copied" : status === "failed" ? "Copy failed" : "Copy";
 
   return (
-    <button
+    <Button variant="ghost" size="xs" className="min-h-8"
       type="button"
-      className={cn(
-        "inline-flex min-h-8 items-center gap-1.5 rounded-md px-2.5 text-xs font-medium transition-colors",
-        status === "copied"
-          ? "bg-green-100 text-green-700 dark:bg-green-500/15 dark:text-green-300"
-          : status === "failed"
-            ? "bg-bad/10 text-bad"
-            : "text-ink-3 hover:bg-bg-3/60 hover:text-ink",
-      )}
       title={label}
       aria-label="Copy comment as markdown"
       onClick={() => {
@@ -290,7 +282,7 @@ function CopyMarkdownButton({ text }: { text: string }) {
       <span className="sr-only" aria-live="polite">
         {label}
       </span>
-    </button>
+    </Button>
   );
 }
 

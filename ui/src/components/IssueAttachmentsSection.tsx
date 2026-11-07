@@ -350,9 +350,8 @@ export function IssueAttachmentsSection({
                 >
                   <p className="text-xs font-medium text-white">Delete?</p>
                   <div className="flex gap-1.5">
-                    <button
+                    <Button variant="delete" size="xs"
                       type="button"
-                      className="rounded bg-bad px-2 py-0.5 text-xs text-white hover:bg-bad/80"
                       onClick={(event) => {
                         event.stopPropagation();
                         confirmDelete(attachment.id);
@@ -360,7 +359,7 @@ export function IssueAttachmentsSection({
                       disabled={deletePending}
                     >
                       Yes
-                    </button>
+                    </Button>
                     <button
                       type="button"
                       className="rounded bg-bg-3 px-2 py-0.5 text-xs hover:bg-bg-3/80"
@@ -374,17 +373,20 @@ export function IssueAttachmentsSection({
                   </div>
                 </div>
               ) : onDelete ? (
-                <button
+                <Button
                   type="button"
-                  className="absolute right-1.5 top-1.5 rounded-md bg-black/50 p-1 text-white opacity-0 transition-opacity hover:bg-bad group-hover:opacity-100"
+                  variant="delete"
+                  size="icon-xs"
+                  className="absolute right-1.5 top-1.5 opacity-0 group-hover:opacity-100 focus-visible:opacity-100"
                   onClick={(event) => {
                     event.stopPropagation();
                     requestDelete(attachment.id);
                   }}
                   title="Delete attachment"
+                  aria-label="Delete attachment"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
-                </button>
+                </Button>
               ) : null}
             </div>
           ))}
