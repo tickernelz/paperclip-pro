@@ -3906,3 +3906,7 @@ span.paperclip-mention-chip[data-mention-kind="external-object"] {
   .agent-setup-popover { overflow-y: auto; }
 }
 }
+
+[data-gallery-surface] button {
+  color: var(--ink-2);
+}
