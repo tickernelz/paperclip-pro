@@ -27,9 +27,9 @@ export function ExternalAgentInviteDialog({ companyId, onClose, onBack }: {
   const attemptedAutomaticPairing = useRef(false);
   const experimental = useQuery({ queryKey: queryKeys.instance.experimentalSettings, queryFn: instanceSettingsApi.getExperimental });
   const dotDisabledReason = experimental.isPending ? "Loading available agents…"
-    : experimental.error ? "Unable to load experimental settings. Try again after refreshing."
+    : experimental.error ? "Unable to load feature settings. Try again after refreshing."
     : !experimental.data?.enableOpenAiDot || !experimental.data.enablePublicMcp
-      ? "Enable OpenAI Dot and Assistant connections (MCP) in experimental settings." : undefined;
+      ? "Turn on OpenAI Dot and Assistant connections in Settings > Features." : undefined;
   const key = ["dot-binding", companyId, invitation?.agent.id];
   const state = useQuery({ queryKey: key,
     queryFn: ({ signal }) => dotInvitationsApi.connection(companyId, invitation!.agent.id, signal),

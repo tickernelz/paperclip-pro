@@ -149,7 +149,7 @@ test("feature flag blocks new sends and resets while preserving existing history
         ).status(),
       ).toBe(404);
     await page.reload();
-    await expect(page.getByText(/Agent Chat is disabled/)).toBeVisible();
+    await expect(page.getByText(/Agent chat is off/)).toBeVisible();
     expect(
       (await json(await request.get(`/api/issues/${issue.id}/comments`))).some(
         (c: any) => c.body.includes("Visible history"),

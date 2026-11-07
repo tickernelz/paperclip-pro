@@ -19,8 +19,8 @@ export async function enableChatThroughSettings(input: ChatFlowInput) {
 }
 
 async function setChatEnabled(input: ChatFlowInput, enabled: boolean) {
-  await input.page.goto(`/${input.fixtures.company.issuePrefix}/company/settings/instance/experimental`, { waitUntil: "domcontentloaded" });
-  const toggle = input.page.getByRole("switch", { name: "Toggle agent chat experimental setting" });
+  await input.page.goto(`/${input.fixtures.company.issuePrefix}/company/settings/instance/features`, { waitUntil: "domcontentloaded" });
+  const toggle = input.page.getByRole("switch", { name: "Agent chat" });
   await setSettingsToggle(toggle, enabled);
   await expect.poll(async () => (await input.api.get<{ enableAgentChat: boolean }>("/api/instance/settings/experimental")).enableAgentChat).toBe(enabled);
 }
@@ -141,7 +141,7 @@ export async function runChatSettingsLifecycle(context: Context) {
   // Full document navigation clears the client query cache. Unlike SPA
   // navigation, this verifies the disabled entry page without cached history.
   await input.page.goto(route, { waitUntil: "domcontentloaded" });
-  await expect(input.page.getByText(/Agent Chat is disabled/)).toBeVisible();
+  await expect(input.page.getByText(/Agent chat is off/)).toBeVisible();
   const blocked = await input.api.request.post(`/api/issues/${before.issue.id}/comments`, { data: { body: `DISABLED${marker}` } });
   expect(blocked.status()).toBe(404);
   expect(await comments()).toEqual(before.comments);

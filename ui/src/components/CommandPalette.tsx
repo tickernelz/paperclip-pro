@@ -1,5 +1,6 @@
 import { AgentIdentity } from "@/components/AgentIdentity";
 import { useCombinedInboxTasksEnabled } from "@/hooks/useCombinedInboxTasksEnabled";
+import { useHiddenSettings } from "@/hooks/useHiddenSettings";
 import { useState, useEffect, useMemo } from "react";
 import { useLocation, useNavigate } from "@/lib/router";
 import { useQuery } from "@tanstack/react-query";
@@ -10,7 +11,6 @@ import { issuesApi } from "../api/issues";
 import { authApi } from "../api/auth";
 import { agentsApi } from "../api/agents";
 import { projectsApi } from "../api/projects";
-import { instanceSettingsApi } from "../api/instanceSettings";
 import { queryKeys } from "../lib/queryKeys";
 import {
   CommandDialog,
@@ -34,6 +34,8 @@ import {
   FileCode2,
   Plus,
   Search,
+  ToggleRight,
+  Wrench,
 } from "lucide-react";
 import { Identity } from "./Identity";
 import { agentUrl, projectUrl } from "../lib/utils";
@@ -104,13 +106,9 @@ export function CommandPalette() {
   const { isMobile, setSidebarOpen } = useSidebar();
   const searchQuery = query.trim();
   const onIssueDetail = isOnIssueDetail(location.pathname);
-  const { data: experimentalSettings } = useQuery({
-    queryKey: queryKeys.instance.experimentalSettings,
-    queryFn: () => instanceSettingsApi.getExperimental(),
-    retry: false,
-  });
   const { enabled: combinedInboxTasksEnabled } = useCombinedInboxTasksEnabled();
-  const fileViewerEnabled = experimentalSettings?.enableExperimentalFileViewer === true;
+  const { hidden: hiddenSettings } = useHiddenSettings();
+  const showFeatureSettings = !hiddenSettings.has("instance.experimental");
 
   useEffect(() => {
     function handleKeyDown(e: KeyboardEvent) {
@@ -360,7 +358,7 @@ export function CommandPalette() {
             Create new task
             <span className="ml-auto text-xs text-muted-foreground">C</span>
           </CommandItem>
-          {onIssueDetail && fileViewerEnabled && (
+          {onIssueDetail && (
             <CommandItem
               onSelect={() => {
                 setOpen(false);
@@ -422,6 +420,18 @@ export function CommandPalette() {
             <History className="mr-2 h-4 w-4" />
             Activity
           </CommandItem>
+          {showFeatureSettings ? (
+            <>
+              <CommandItem onSelect={() => go("/company/settings/instance/features")}>
+                <ToggleRight className="mr-2 h-4 w-4" />
+                Features
+              </CommandItem>
+              <CommandItem onSelect={() => go("/company/settings/instance/advanced")}>
+                <Wrench className="mr-2 h-4 w-4" />
+                Advanced settings
+              </CommandItem>
+            </>
+          ) : null}
         </CommandGroup>
 
         {visibleIssues.length > 0 && (

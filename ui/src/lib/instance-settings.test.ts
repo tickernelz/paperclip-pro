@@ -11,7 +11,10 @@ describe("normalizeRememberedInstanceSettingsPath", () => {
       "/company/settings/instance/general",
     );
     expect(normalizeRememberedInstanceSettingsPath("/instance/settings/experimental")).toBe(
-      "/company/settings/instance/experimental",
+      "/company/settings/instance/features",
+    );
+    expect(normalizeRememberedInstanceSettingsPath("/company/settings/instance/advanced")).toBe(
+      "/company/settings/instance/advanced",
     );
     expect(normalizeRememberedInstanceSettingsPath("/instance/settings/environments")).toBe(
       "/company/settings/instance/environments",
@@ -68,8 +71,8 @@ describe("filterHiddenInstanceSettingsPath", () => {
 
   it("keeps visible pages and non-settings paths untouched", () => {
     expect(
-      filterHiddenInstanceSettingsPath("/company/settings/instance/experimental", hidden),
-    ).toBe("/company/settings/instance/experimental");
+      filterHiddenInstanceSettingsPath("/company/settings/instance/features", hidden),
+    ).toBe("/company/settings/instance/features");
     expect(filterHiddenInstanceSettingsPath("/dashboard", hidden)).toBe("/dashboard");
     expect(
       filterHiddenInstanceSettingsPath("/company/settings/instance/plugins", new Set()),

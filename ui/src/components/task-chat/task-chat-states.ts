@@ -1,7 +1,4 @@
 /**
- * Canonical state inventory for the chat-style task thread (the default task
- * view; the classic legacy view sits behind enableClassicTaskInterface).
- *
  * This list is the single source of truth for:
  *   - the dev harness state switcher (/dev/task-chat-lab), and
  *   - the finish-line test that asserts every state renders without error.

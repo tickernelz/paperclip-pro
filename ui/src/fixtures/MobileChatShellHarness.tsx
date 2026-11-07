@@ -373,7 +373,7 @@ function Harness() {
         </div>
         {showComposer ? (
           <>
-            <TaskChatComposerDock ref={dockRef} mobile streamlined reserve={reserve}>
+            <TaskChatComposerDock ref={dockRef} mobile reserve={reserve}>
               {TAKEOVER ? <HarnessTakeoverComposer /> : null}
               <div className={cn("relative isolate flex flex-col", TAKEOVER && "hidden")}>
                 <textarea

@@ -28,11 +28,9 @@ import { instanceSettingsApi } from "../../api/instanceSettings";
 import { issuesApi } from "../../api/issues";
 import { useIssuePlanDocument } from "@/hooks/useIssuePlanDocument";
 import { useIssueDocuments } from "@/hooks/useIssueDocuments";
-import { useStreamlinedUiEnabled } from "@/hooks/useStreamlinedUiEnabled";
 import { selectAgentArtifactAttachments } from "@/lib/issue-artifacts";
 import { projectsApi } from "../../api/projects";
 import { useCompany } from "../../context/CompanyContext";
-import { useSidebar } from "../../context/SidebarContext";
 import { queryKeys } from "../../lib/queryKeys";
 import { buildCompanyUserInlineOptions, buildCompanyUserLabelMap, buildCompanyUserProfileMap, isAgentTaskTarget } from "../../lib/company-members";
 import { ISSUE_OVERRIDE_ADAPTER_TYPES, type IssueModelLane } from "../../lib/issue-assignee-overrides";
@@ -74,7 +72,6 @@ import { Button } from "@/components/ui/button";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -125,7 +122,7 @@ import {
 } from "../../lib/reusable-execution-workspaces";
 import { issueReviewPolicyBadge } from "../../lib/review-policy";
 import { IssueCasesPanel } from "../IssueCasesPanel";
-import { ExpandRelationListButton, RemovableIssueReferencePill } from "./relation-controls";
+import { ExpandRelationListButton } from "./relation-controls";
 import { Badge } from "@/components/ui/badge";
 import {
   TaskDetailReferencesPanel,
@@ -154,8 +151,7 @@ function TruncatedCopyable({ value, icon: Icon }: { value: string; icon: Compone
       timerRef.current = setTimeout(() => setCopied(false), 1500);
     } catch { /* noop */ }
   }, [value]);
-  const { enabled: streamlinedUiEnabled } = useStreamlinedUiEnabled();
-  const middle = streamlinedUiEnabled ? splitMiddleTruncation(value) : null;
+  const middle = splitMiddleTruncation(value);
 
   return (
     <div className="flex items-center gap-1.5 min-w-0 flex-1" title={value}>
@@ -164,13 +160,13 @@ function TruncatedCopyable({ value, icon: Icon }: { value: string; icon: Compone
         type="button"
         className={cn(
           "cursor-pointer text-left font-mono text-sm transition-colors hover:text-foreground",
-          streamlinedUiEnabled ? "min-w-0 flex-1" : "min-w-0 truncate",
+          "min-w-0 flex-1",
         )}
         onClick={handleCopy}
         title={value}
         aria-label={`Copy ${value} to clipboard`}
       >
-        {!streamlinedUiEnabled ? value : middle ? (
+        {middle ? (
           <span className="flex min-w-0" data-middle-truncate="true">
             <span className="min-w-0 truncate">{middle.prefix}</span>
             <span className="max-w-1/2 shrink-0 truncate">{middle.suffix}</span>
@@ -251,7 +247,6 @@ export function IssueProperties({
   const policyAvailable = policyResult.success;
   const executionPolicy = policyResult.success ? policyResult.data : null;
   const { selectedCompanyId } = useCompany();
-  const { isMobile } = useSidebar();
   const queryClient = useQueryClient();
   const companyId = issue.companyId ?? selectedCompanyId;
   const { data: experimentalSettings } = useQuery({
@@ -265,43 +260,32 @@ export function IssueProperties({
   // the folder the policy exists to hide.
   const hideHostPaths =
     experimentalSettings === undefined || experimentalSettings.enableManagedSandboxOnly === true;
-  const { enabled: streamlinedUiEnabled } = useStreamlinedUiEnabled();
-  // Classic Task Interface: gate the Properties | Plans | Artifacts tab shell.
-  // Flag ON renders the legacy stacked sections verbatim (no Tabs wrapper);
-  // flag OFF — including while settings load — renders the chat-style tab
-  // shell. This pane is always task-scoped, so the flag alone is a sufficient
-  // gate.
-  // Classic Task Interface alone controls the production tabbed-vs-stacked
-  // boundary. Streamlined UI layers new relationship tabs and visual treatment
-  // onto master's tabbed task-chat pane without changing that boundary.
-  const taskChatShellEnabled = experimentalSettings?.enableClassicTaskInterface !== true;
-  const streamlinedPropertiesEnabled = streamlinedUiEnabled && taskChatShellEnabled;
   // When hosted by the resizable PropertiesPanel, the tab strip portals into
   // the pane's header bar (left of the window controls). The slot only exists
   // once the panel has committed, hence the effect; inline hosts (mobile sheet)
   // keep the tab strip in place.
   const [paneHeaderSlot, setPaneHeaderSlot] = useState<HTMLElement | null>(null);
   useEffect(() => {
-    if (!taskChatShellEnabled || inline) {
+    if (inline) {
       setPaneHeaderSlot(null);
       return;
     }
     setPaneHeaderSlot(document.getElementById(PROPERTIES_PANE_HEADER_SLOT_ID));
-  }, [taskChatShellEnabled, inline]);
+  }, [inline]);
   // A Plan tab represents materialized plan content, not merely planning mode.
   // Same query keys as the tab bodies, so these share their cached fetches.
   const { data: paneTabPlanDocument } = useIssuePlanDocument(
-    taskChatShellEnabled ? issue.id : null,
+    issue.id,
   );
   const { data: paneTabAcceptedPlans } = useQuery({
     queryKey: queryKeys.issues.acceptedPlanDecompositions(issue.id),
     queryFn: () => issuesApi.listAcceptedPlanDecompositions(issue.id),
-    enabled: taskChatShellEnabled,
+    enabled: true,
   });
   const { data: paneTabAttachments } = useQuery({
     queryKey: queryKeys.issues.attachments(issue.id),
     queryFn: () => issuesApi.listAttachments(issue.id),
-    enabled: taskChatShellEnabled,
+    enabled: true,
   });
   const { data: paneTabWorkProducts, isError: workProductsError, refetch: refetchWorkProducts } = useIssueWorkProducts(issue.id);
   const pullRequests = useMemo(() => getIssuePullRequests(paneTabWorkProducts), [paneTabWorkProducts]);
@@ -309,7 +293,7 @@ export function IssueProperties({
     const identities = new Set(pullRequests.map((product) => pullRequestIdentity(pullRequestHref(product))).filter(Boolean));
     return externalObjects?.filter((entry) => !identities.has(pullRequestIdentity(entry.pill.url)));
   }, [externalObjects, pullRequests]);
-  const { data: paneTabDocuments } = useIssueDocuments(taskChatShellEnabled ? issue.id : null);
+  const { data: paneTabDocuments } = useIssueDocuments(issue.id);
   // Proxy `artifact-review-*` documents surface only through their Work
   // product row, so they must not summon the Plan or Documents surfaces.
   const paneTabStandaloneDocuments = (paneTabDocuments ?? []).filter(
@@ -376,11 +360,8 @@ export function IssueProperties({
   const [workspaceSearch, setWorkspaceSearch] = useState("");
   const [blockedByOpen, setBlockedByOpen] = useState(false);
   const [blockedBySearch, setBlockedBySearch] = useState("");
-  const [blockedByExpanded, setBlockedByExpanded] = useState(false);
   const [blockingExpanded, setBlockingExpanded] = useState(false);
-  const [subTasksExpanded, setSubTasksExpanded] = useState(false);
   const [subtasksOpen, setSubtasksOpen] = useState(false);
-  const [relatedTasksExpanded, setRelatedTasksExpanded] = useState(false);
   const [parentOpen, setParentOpen] = useState(false);
   const [parentSearch, setParentSearch] = useState("");
   const [reviewersOpen, setReviewersOpen] = useState(false);
@@ -409,10 +390,7 @@ export function IssueProperties({
   const normalizedParentSearch = parentSearch.trim();
 
   useEffect(() => {
-    setBlockedByExpanded(false);
     setBlockingExpanded(false);
-    setSubTasksExpanded(false);
-    setRelatedTasksExpanded(false);
   }, [issue.id]);
 
   const { data: session } = useQuery({
@@ -659,29 +637,6 @@ export function IssueProperties({
   });
   const pendingWorkspaceRuntimeAction = controlWorkspaceRuntime.isPending ? controlWorkspaceRuntime.variables ?? null : null;
   const referencedIssueIdentifiers = issue.referencedIssueIdentifiers ?? [];
-  const relatedTasks = useMemo(() => {
-    const excluded = new Set<string>();
-    const addExcluded = (candidate: { id: string; identifier?: string | null }) => {
-      excluded.add(candidate.id);
-      if (candidate.identifier) excluded.add(candidate.identifier);
-    };
-
-    for (const blocker of issue.blockedBy ?? []) addExcluded(blocker);
-    for (const blocked of issue.blocks ?? []) addExcluded(blocked);
-    for (const child of childIssues) addExcluded(child);
-
-    const referencedIssues = issue.relatedWork?.outbound.map((item) => item.issue) ?? [];
-    if (referencedIssues.length > 0) {
-      return referencedIssues.filter((referenced) => {
-        const label = referenced.identifier ?? referenced.id;
-        return !excluded.has(referenced.id) && !excluded.has(label);
-      });
-    }
-
-    return referencedIssueIdentifiers
-      .filter((identifier) => !excluded.has(identifier))
-      .map((identifier) => ({ id: identifier, identifier, title: identifier }));
-  }, [childIssues, issue.blockedBy, issue.blocks, issue.relatedWork?.outbound, referencedIssueIdentifiers]);
   const panelReferencedTasks = useMemo<TaskDetailRelationItem[]>(() => {
     const outbound = issue.relatedWork?.outbound.map(({ issue: referenced }) => ({
       id: referenced.id,
@@ -1169,18 +1124,7 @@ export function IssueProperties({
   ) : (
     <span className="text-sm text-muted-foreground">None</span>
   );
-  const labelsExtra = !streamlinedPropertiesEnabled && (issue.labelIds ?? []).length > 0 ? (
-    <button
-      type="button"
-      className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
-      onClick={() => setLabelsOpen(true)}
-      aria-label="Add label"
-      title="Add label"
-    >
-      <Plus className="h-3 w-3" />
-      Add label
-    </button>
-  ) : undefined;
+  const labelsExtra = undefined;
   const watchdogContent = (
     <div className="space-y-3 p-2">
       <div className="space-y-1.5">
@@ -2047,14 +1991,6 @@ export function IssueProperties({
 
   const blockedByIds = issue.blockedBy?.map((relation) => relation.id) ?? [];
   const blockedByRelations = issue.blockedBy ?? [];
-  const visibleBlockedByRelations = blockedByExpanded
-    ? blockedByRelations
-    : blockedByRelations.slice(0, ISSUE_PROPERTY_RELATION_PREVIEW_COUNT);
-  const hiddenBlockedByCount = blockedByRelations.length - visibleBlockedByRelations.length;
-  const visibleChildIssues = subTasksExpanded
-    ? childIssues
-    : childIssues.slice(0, ISSUE_PROPERTY_RELATION_PREVIEW_COUNT);
-  const hiddenChildIssueCount = childIssues.length - visibleChildIssues.length;
   const blockingIssues = issue.blocks ?? [];
   const visibleBlockingIssues = blockingExpanded
     ? blockingIssues
@@ -2092,10 +2028,6 @@ export function IssueProperties({
   ) : (
     <span className="text-sm text-muted-foreground">None</span>
   );
-  const visibleRelatedTasks = relatedTasksExpanded
-    ? relatedTasks
-    : relatedTasks.slice(0, ISSUE_PROPERTY_RELATION_PREVIEW_COUNT);
-  const hiddenRelatedTaskCount = relatedTasks.length - visibleRelatedTasks.length;
   const descendantIssueIds = useMemo(() => {
     if (!allIssues?.length) return new Set<string>();
     const childrenByParentId = new Map<string, string[]>();
@@ -2205,18 +2137,14 @@ export function IssueProperties({
   const blockerSearchActive = normalizedBlockedBySearch.length > 0;
   const blockerSourceIssues = blockerSearchActive
     ? searchedBlockedByIssues
-    : streamlinedPropertiesEnabled
-      ? [...(issue.blockedBy ?? []), ...(allIssues ?? [])]
-      : allIssues;
-  const blockerOptions = streamlinedPropertiesEnabled
-    ? Array.from(
+    : [...(issue.blockedBy ?? []), ...(allIssues ?? [])];
+  const blockerOptions = Array.from(
         new Map(
           (blockerSourceIssues ?? [])
             .filter((candidate) => candidate.id !== issue.id)
             .map((candidate) => [candidate.id, candidate]),
         ).values(),
-      )
-    : (blockerSourceIssues ?? []).filter((candidate) => candidate.id !== issue.id);
+      );
   if (!blockerSearchActive) {
     blockerOptions.sort((a, b) => {
       const aLabel = `${a.identifier ?? ""} ${a.title}`.trim();
@@ -2235,9 +2163,6 @@ export function IssueProperties({
     onUpdate({ blockedByIssueIds: nextBlockedByIds });
     setBlockedByOpen(false);
     setBlockedBySearch("");
-  };
-  const removeBlockedBy = (blockedByIssueId: string) => {
-    onUpdate({ blockedByIssueIds: blockedByIds.filter((candidate) => candidate !== blockedByIssueId) });
   };
   const blockedByContent = (
     <>
@@ -2291,16 +2216,6 @@ export function IssueProperties({
       </div>
     </>
   );
-  const renderAddBlockedByButton = (onClick?: () => void) => (
-    <button
-      type="button"
-      className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
-      onClick={onClick}
-    >
-      <Plus className="h-3 w-3" />
-      Add blocker
-    </button>
-  );
   const subtasksContent = (
     <>
       <div className="max-h-48 overflow-y-auto overscroll-contain">
@@ -2341,11 +2256,11 @@ export function IssueProperties({
   );
 
   const propertiesBody = (
-    <div className={cn(streamlinedPropertiesEnabled && "task-detail-properties pl-4")}>
+    <div className={cn("task-detail-properties pl-4")}>
       <PropertySection
-        title={streamlinedPropertiesEnabled ? "Work" : "Triage"}
+        title={"Work"}
         first
-        streamlined={streamlinedPropertiesEnabled}
+        streamlined
       >
         <PropertyRow label="Status">
           <StatusIcon
@@ -2439,7 +2354,7 @@ export function IssueProperties({
         </PropertyPicker>
       </PropertySection>
 
-      <PropertySection title="Relationships" streamlined={streamlinedPropertiesEnabled}>
+      <PropertySection title="Relationships" streamlined>
         <PropertyPicker
           inline={inline}
           label="Parent"
@@ -2456,8 +2371,7 @@ export function IssueProperties({
           {parentContent}
         </PropertyPicker>
 
-        {streamlinedPropertiesEnabled ? (
-          <PropertyPicker
+        <PropertyPicker
             inline={inline}
             label="Blocked by"
             open={blockedByOpen}
@@ -2473,59 +2387,6 @@ export function IssueProperties({
           >
             {blockedByContent}
           </PropertyPicker>
-        ) : inline ? (
-          <div>
-            <PropertyRow label="Blocked by" wrap>
-              {visibleBlockedByRelations.map((relation) => (
-                <RemovableIssueReferencePill
-                  key={relation.id}
-                  issue={relation}
-                  onRemove={removeBlockedBy}
-                  isMobile={isMobile}
-                />
-              ))}
-              <ExpandRelationListButton
-                hiddenCount={hiddenBlockedByCount}
-                expanded={blockedByExpanded}
-                onClick={() => setBlockedByExpanded((expanded) => !expanded)}
-              />
-              {renderAddBlockedByButton(() => setBlockedByOpen((open) => !open))}
-            </PropertyRow>
-            {blockedByOpen ? (
-              <div className="rounded-md border border-border bg-popover p-1 mb-2">
-                {blockedByContent}
-              </div>
-            ) : null}
-          </div>
-        ) : (
-          <PropertyRow label="Blocked by" wrap>
-            {visibleBlockedByRelations.map((relation) => (
-              <RemovableIssueReferencePill
-                key={relation.id}
-                issue={relation}
-                onRemove={removeBlockedBy}
-                isMobile={isMobile}
-              />
-            ))}
-            <ExpandRelationListButton
-              hiddenCount={hiddenBlockedByCount}
-              expanded={blockedByExpanded}
-              onClick={() => setBlockedByExpanded((expanded) => !expanded)}
-            />
-            <Popover
-              open={blockedByOpen}
-              onOpenChange={(open) => {
-                setBlockedByOpen(open);
-                if (!open) setBlockedBySearch("");
-              }}
-            >
-              <PopoverTrigger asChild>{renderAddBlockedByButton()}</PopoverTrigger>
-              <PopoverContent className="w-72 p-1" align="end" collisionPadding={16}>
-                {blockedByContent}
-              </PopoverContent>
-            </Popover>
-          </PropertyRow>
-        )}
 
         <PropertyRow label="Blocking" wrap>
           {blockingIssues.length > 0 ? (
@@ -2544,8 +2405,7 @@ export function IssueProperties({
           )}
         </PropertyRow>
 
-        {streamlinedPropertiesEnabled ? (
-          <PropertyPicker
+        <PropertyPicker
             inline={inline}
             label="Subtasks"
             open={subtasksOpen}
@@ -2558,45 +2418,7 @@ export function IssueProperties({
           >
             {subtasksContent}
           </PropertyPicker>
-        ) : !taskChatShellEnabled ? (
-          <PropertyRow label="Sub-tasks" wrap>
-            <div className="flex flex-col items-start gap-1.5">
-              {visibleChildIssues.map((child) => (
-                <IssueReferencePill key={child.id} issue={child} />
-              ))}
-              <ExpandRelationListButton
-                hiddenCount={hiddenChildIssueCount}
-                expanded={subTasksExpanded}
-                onClick={() => setSubTasksExpanded((expanded) => !expanded)}
-              />
-              {onAddSubIssue ? (
-                <button
-                  type="button"
-                  className="inline-flex items-center gap-1 rounded-full border border-border px-2 py-0.5 text-xs text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
-                  onClick={onAddSubIssue}
-                >
-                  <Plus className="h-3 w-3" />
-                  Add sub-task
-                </button>
-              ) : null}
-            </div>
-          </PropertyRow>
-        ) : null}
 
-        {(!streamlinedPropertiesEnabled || !taskChatShellEnabled) && relatedTasks.length > 0 ? (
-          <PropertyRow label={streamlinedPropertiesEnabled ? "Referenced" : "Related tasks"} wrap>
-            <div className="flex flex-col items-start gap-1.5">
-              {visibleRelatedTasks.map((related) => (
-                <IssueReferencePill key={related.id} issue={related} />
-              ))}
-              <ExpandRelationListButton
-                hiddenCount={hiddenRelatedTaskCount}
-                expanded={relatedTasksExpanded}
-                onClick={() => setRelatedTasksExpanded((expanded) => !expanded)}
-              />
-            </div>
-          </PropertyRow>
-        ) : null}
 
         {pullRequests.length > 0 || workProductsError ? (
           <PropertyRow label="Pull requests" wrap>
@@ -2618,7 +2440,7 @@ export function IssueProperties({
         />
       </PropertySection>
 
-      <PropertySection title="Execution" streamlined={streamlinedPropertiesEnabled}>
+      <PropertySection title="Execution" streamlined>
         {/* Read-only: agents set the policy, the board does not. */}
         {reviewPolicyBadge ? (
           <PropertyRow label="Approvals">
@@ -2739,7 +2561,7 @@ export function IssueProperties({
       </PropertySection>
 
       {workspacePickerEligible || hasWorkspaceRuntimeControls || issue.currentExecutionWorkspace?.branchName || issue.currentExecutionWorkspace?.cwd || issue.executionWorkspaceId ? (
-        <PropertySection title="Workspace" streamlined={streamlinedPropertiesEnabled}>
+        <PropertySection title="Workspace" streamlined>
           {workspacePickerEligible ? (
             <PropertyPicker
               inline={inline}
@@ -2908,7 +2730,7 @@ export function IssueProperties({
         </PropertySection>
       ) : null}
 
-      <PropertySection title="About" streamlined={streamlinedPropertiesEnabled}>
+      <PropertySection title="About" streamlined>
         {originatingActor ? (
           <PropertyRow label="Originating">
             {originatingActor.kind === "agent" ? (
@@ -2937,29 +2759,29 @@ export function IssueProperties({
         {issue.startedAt && (
           <PropertyRow label="Started">
             <span
-              className={streamlinedPropertiesEnabled ? "min-w-0 truncate whitespace-nowrap text-sm" : "text-sm"}
-              title={streamlinedPropertiesEnabled ? formatDateTime(issue.startedAt) : undefined}
+              className={"min-w-0 truncate whitespace-nowrap text-sm"}
+              title={formatDateTime(issue.startedAt)}
             >{formatDateTime(issue.startedAt)}</span>
           </PropertyRow>
         )}
         {issue.completedAt && (
           <PropertyRow label="Completed">
             <span
-              className={streamlinedPropertiesEnabled ? "min-w-0 truncate whitespace-nowrap text-sm" : "text-sm"}
-              title={streamlinedPropertiesEnabled ? formatDateTime(issue.completedAt) : undefined}
+              className={"min-w-0 truncate whitespace-nowrap text-sm"}
+              title={formatDateTime(issue.completedAt)}
             >{formatDateTime(issue.completedAt)}</span>
           </PropertyRow>
         )}
         <PropertyRow label="Created">
           <span
-            className={streamlinedPropertiesEnabled ? "min-w-0 truncate whitespace-nowrap text-sm" : "text-sm"}
-            title={streamlinedPropertiesEnabled ? formatDateTime(issue.createdAt) : undefined}
+            className={"min-w-0 truncate whitespace-nowrap text-sm"}
+            title={formatDateTime(issue.createdAt)}
           >{formatDateTime(issue.createdAt)}</span>
         </PropertyRow>
         <PropertyRow label="Updated">
           <span
-            className={streamlinedPropertiesEnabled ? "min-w-0 truncate whitespace-nowrap text-sm" : "text-sm"}
-            title={streamlinedPropertiesEnabled ? timeAgo(issue.updatedAt) : undefined}
+            className={"min-w-0 truncate whitespace-nowrap text-sm"}
+            title={timeAgo(issue.updatedAt)}
           >{timeAgo(issue.updatedAt)}</span>
         </PropertyRow>
         {issue.archivedAt && issue.archivedByActorType === "agent" && issue.archivedByAgentId ? (
@@ -3023,12 +2845,10 @@ export function IssueProperties({
     </div>
   );
 
-  // Classic Task Interface ON: the legacy stacked pane, byte-for-byte.
-  if (!taskChatShellEnabled || sidePanelContentOnly) return propertiesBody;
+  if (sidePanelContentOnly) return propertiesBody;
 
-  const hasSubtasksTab = streamlinedPropertiesEnabled && childIssues.length > 0;
-  const hasReferencesTab = streamlinedPropertiesEnabled
-    && (panelReferencedTasks.length > 0 || panelMentionedInTasks.length > 0);
+  const hasSubtasksTab = childIssues.length > 0;
+  const hasReferencesTab = (panelReferencedTasks.length > 0 || panelMentionedInTasks.length > 0);
   const availablePaneTabs: IssuePaneTabDescriptor[] = [
     { value: "properties", label: "Properties", closable: false },
     ...(hasSubtasksTab
@@ -3055,7 +2875,7 @@ export function IssueProperties({
     return (
       <>
         {paneHeaderSlot
-          ? streamlinedPropertiesEnabled ? createPortal(
+          ? createPortal(
               <div className="flex items-center" role="tablist" aria-label="Properties panel sections">
                 <button
                   type="button"
@@ -3070,7 +2890,7 @@ export function IssueProperties({
                 </button>
               </div>,
               paneHeaderSlot,
-            ) : createPortal(<span className="text-sm font-medium">Properties</span>, paneHeaderSlot)
+            )
           : null}
         {propertiesBody}
       </>
@@ -3116,16 +2936,14 @@ export function IssueProperties({
     });
     setPaneTab(value);
   };
-  const codexStylePaneTabs = Boolean(paneHeaderSlot && streamlinedPropertiesEnabled);
+  const codexStylePaneTabs = Boolean(paneHeaderSlot);
   // Production keeps the master underline treatment. Streamlined task detail
   // uses the compact, truncating Codex-inspired pane-tab treatment instead.
   const paneTabTriggerClass = paneHeaderSlot
-    ? streamlinedPropertiesEnabled
-      ? cn(
+    ? cn(
           STREAMLINED_PANE_TAB_CLASS,
           "min-w-0 flex-1 justify-start overflow-hidden after:hidden",
         )
-      : "h-full group-data-[orientation=horizontal]/tabs:after:bottom-0"
     : undefined;
   const paneTabs = codexStylePaneTabs ? visiblePaneTabs : availablePaneTabs;
   const tabList = (
@@ -3133,9 +2951,7 @@ export function IssueProperties({
       variant="line"
       className={
         paneHeaderSlot
-          ? streamlinedPropertiesEnabled
-            ? "min-w-0 flex-1 items-center justify-start gap-0 overflow-hidden p-0 group-data-[orientation=horizontal]/tabs:h-full"
-            : "items-stretch justify-start gap-1 p-0 group-data-[orientation=horizontal]/tabs:h-full"
+          ? "min-w-0 flex-1 items-center justify-start gap-0 overflow-hidden p-0 group-data-[orientation=horizontal]/tabs:h-full"
           : "w-full justify-start gap-1"
       }
     >

@@ -731,8 +731,7 @@ function CasesEmptyHero() {
         </p>
       </div>
       <p className="text-xs text-muted-foreground">
-        Feature is gated by the <code className="font-mono">enableCases</code> experimental flag
-        (Settings → Experimental).
+        Turn Cases on or off in Settings → Features.
       </p>
     </div>
   );
@@ -1203,7 +1202,7 @@ export function Cases() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <h1 className="text-xl font-bold">Cases</h1>
-          <Badge variant="secondary">Experimental</Badge>
+          <Badge variant="secondary">Beta</Badge>
         </div>
       </div>
 

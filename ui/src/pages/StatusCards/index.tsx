@@ -119,7 +119,7 @@ export function StatusCards() {
           <h1 className="text-xl font-bold">Status</h1>
           <Badge variant="secondary" className="gap-1">
             <FlaskConical className="h-3 w-3" />
-            Experimental
+            Beta
           </Badge>
         </div>
         <div className="flex items-center gap-4">

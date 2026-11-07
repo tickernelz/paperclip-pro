@@ -71,13 +71,23 @@ describe("applyManagedExperimentalOverlay", () => {
     expect(experimental.enableApps).toBe(true);
     // managed overlay > schema default
     expect(experimental.enablePipelines).toBe(true);
-    // unmanaged keys keep their stored/default values
-    expect(experimental.enableCases).toBe(false);
+    expect(experimental.enableCases).toBe(true);
+    expect(experimental.enableDecisions).toBe(stored.enableDecisions);
     expect(managedKeys).toEqual({
       enablePipelines: { managed: true, managedBy: "paperclip-cloud" },
     });
     // input is not mutated
     expect(stored.enableApps).toBe(true);
+  });
+
+  it("keeps a managed requirement off by turning its managed dependent off", () => {
+    const config = parseManagedConfigEnv(managedEnv(JSON.stringify({
+      v: 1, mode: "cloud", catalogVersion: "2026.720.0",
+      features: { enablePipelines: true, enableCases: false }, plugins: { autoInstall: [] },
+    })))!;
+    const stored = normalizeExperimentalSettings({ enableStatusCards: true, enableSummaries: false });
+    const { experimental } = applyManagedExperimentalOverlay(stored, config);
+    expect(experimental).toMatchObject({ enablePipelines: false, enableCases: false, enableStatusCards: false, enableSummaries: false });
   });
 });
 

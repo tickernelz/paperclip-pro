@@ -85,7 +85,8 @@ describe("CompanySettingsNav", () => {
     expect(getCompanySettingsTab("/company/settings/instance/environments")).toBe("instance-environments");
     expect(getCompanySettingsTab("/company/settings/instance/access")).toBe("instance-access");
     expect(getCompanySettingsTab("/PAP/company/settings/instance/access")).toBe("instance-access");
-    expect(getCompanySettingsTab("/company/settings/instance/experimental")).toBe("instance-experimental");
+    expect(getCompanySettingsTab("/company/settings/instance/features")).toBe("instance-features");
+    expect(getCompanySettingsTab("/PAP/company/settings/instance/advanced")).toBe("instance-advanced");
     expect(getCompanySettingsTab("/PAP/company/settings/instance/plugins/example")).toBe("instance-plugins");
     expect(getCompanySettingsTab("/company/settings/instance/adapters")).toBe("instance-adapters");
   });
@@ -139,7 +140,8 @@ describe("CompanySettingsNav", () => {
           { value: "instance-environments", label: "Environments" },
           { value: "connections", label: "Connections" },
           { value: "instance-access", label: "Access" },
-          { value: "instance-experimental", label: "Experimental" },
+          { value: "instance-features", label: "Features" },
+          { value: "instance-advanced", label: "Advanced" },
           { value: "instance-plugins", label: "Plugins" },
           { value: "instance-adapters", label: "Adapters" },
         ],
@@ -181,7 +183,8 @@ describe("CompanySettingsNav", () => {
       "instance-environments",
       "connections",
       "instance-access",
-      "instance-experimental",
+      "instance-features",
+      "instance-advanced",
       "instance-adapters",
     ]);
 
