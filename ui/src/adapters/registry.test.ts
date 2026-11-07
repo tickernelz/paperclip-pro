@@ -52,24 +52,24 @@ describe("ui adapter registry", () => {
     expect(fallback.ConfigFields).toBe(SchemaConfigFields);
   });
 
-  it("restores built-in Hermes adapters when external overrides are paused or removed", () => {
-    for (const type of ["hermes_local", "hermes_gateway"]) {
+  it("restores the built-in OMP adapter when an external override is paused or removed", () => {
+    for (const type of ["omp_local"]) {
       const builtin = getUIAdapter(type);
 
-      syncExternalAdapters([{ type, label: "External Hermes" }]);
+      syncExternalAdapters([{ type, label: "External OMP" }]);
 
       const overridden = getUIAdapter(type);
       expect(overridden).not.toBe(builtin);
       expect(overridden.type).toBe(type);
-      expect(overridden.label).toBe("External Hermes");
+      expect(overridden.label).toBe("External OMP");
       expect(overridden.ConfigFields).toBe(builtin.ConfigFields);
       expect(overridden.buildAdapterConfig).toBe(builtin.buildAdapterConfig);
 
-      syncExternalAdapters([{ type, label: "External Hermes", overrideDisabled: true }]);
+      syncExternalAdapters([{ type, label: "External OMP", overrideDisabled: true }]);
 
       expect(getUIAdapter(type)).toBe(builtin);
 
-      syncExternalAdapters([{ type, label: "External Hermes" }]);
+      syncExternalAdapters([{ type, label: "External OMP" }]);
       expect(getUIAdapter(type)).not.toBe(builtin);
 
       syncExternalAdapters([]);

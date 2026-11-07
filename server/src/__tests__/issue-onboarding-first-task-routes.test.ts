@@ -138,7 +138,7 @@ describeEmbeddedPostgres("issue create onboarding first-task routes", () => {
       name: "CEO",
       role: "engineer",
       status: "running",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: {},
       runtimeConfig: {},
       permissions: {},
