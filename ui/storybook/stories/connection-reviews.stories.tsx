@@ -84,7 +84,7 @@ function TaskScreen({
       rows.map((row) => (row.id === id ? { ...row, ...patch } : row)),
     );
   return (
-    <div className="flex h-screen flex-col bg-background text-foreground">
+    <div className="flex h-screen flex-col bg-bg text-ink">
       <TaskChatThread
         comments={[]}
         timelineEvents={[]}
@@ -99,7 +99,7 @@ function TaskScreen({
             <h1 className="text-xl font-semibold">
               Find our recent Notion pages
             </h1>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-ink-3">
               {interactions.some((row) => row.status === "pending")
                 ? "The agent needs your permission to continue."
                 : "Connection review history"}

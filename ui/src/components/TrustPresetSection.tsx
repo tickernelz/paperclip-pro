@@ -20,7 +20,7 @@ import {
 import { cn } from "../lib/utils";
 
 const inputClass =
-  "w-full rounded-md border border-border px-2.5 py-1.5 bg-transparent outline-none text-sm font-mono placeholder:text-muted-foreground/40";
+  "w-full rounded-md border border-line px-2.5 py-1.5 bg-transparent outline-none text-sm font-mono placeholder:text-ink-3/40";
 
 function formatCount(value: readonly unknown[] | undefined, singular: string, plural: string) {
   const count = value?.length ?? 0;
@@ -31,8 +31,8 @@ function formatCount(value: readonly unknown[] | undefined, singular: string, pl
 function PolicyRow({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-start justify-between gap-3 py-1.5 text-sm">
-      <span className="shrink-0 text-xs text-muted-foreground">{label}</span>
-      <span className={cn("min-w-0 text-right", value === "-" && "text-muted-foreground")}>{value}</span>
+      <span className="shrink-0 text-xs text-ink-3">{label}</span>
+      <span className={cn("min-w-0 text-right", value === "-" && "text-ink-3")}>{value}</span>
     </div>
   );
 }
@@ -107,7 +107,7 @@ export function TrustPresetSection({
   return (
     <div>
       <h3 className="mb-3 text-sm font-medium">Trust</h3>
-      <div className="rounded-lg border border-border p-4 space-y-3">
+      <div className="rounded-lg border border-line p-4 space-y-3">
         <Field label="Trust preset" hint="Choose how broadly this agent can read and act on Paperclip work objects.">
           <select
             className={inputClass}
@@ -119,7 +119,7 @@ export function TrustPresetSection({
             <option value="low_trust_review">{TRUST_PRESET_LABELS.low_trust_review}</option>
           </select>
         </Field>
-        <p className="text-xs text-muted-foreground">{TRUST_PRESET_DESCRIPTIONS[preset]}</p>
+        <p className="text-xs text-ink-3">{TRUST_PRESET_DESCRIPTIONS[preset]}</p>
 
         {lowTrust ? (
           <div
@@ -129,7 +129,7 @@ export function TrustPresetSection({
               "rounded-md border px-3 py-2.5 text-sm flex gap-2",
               hasScope
                 ? "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-100"
-                : "border-destructive/30 bg-destructive/10 text-destructive",
+                : "border-bad/30 bg-bad/10 text-bad",
             )}
           >
             {hasScope ? (
@@ -149,7 +149,7 @@ export function TrustPresetSection({
                 </p>
               </div>
               {boundaryEditable ? (
-                <div className="rounded-md border border-border/70 bg-background/70 p-3 text-foreground space-y-3">
+                <div className="rounded-md border border-line/70 bg-bg/70 p-3 text-ink space-y-3">
                   <div className="grid gap-3 sm:grid-cols-(--gtc-12)">
                     <Field label="Boundary type">
                       <select
@@ -186,14 +186,14 @@ export function TrustPresetSection({
                     </Field>
                   </div>
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-ink-3">
                       CE saves one containment boundary at a time. Saved policies include this organization id.
                     </p>
                     {boundaryTarget ? (
                       <Button
                         type="button"
                         size="sm"
-                        variant="outline"
+                        variant="secondary"
                         className="h-7 px-2.5 text-xs"
                         onClick={handleClearBoundary}
                         disabled={disabled}
@@ -204,17 +204,17 @@ export function TrustPresetSection({
                   </div>
                 </div>
               ) : (
-                <div className="rounded-md border border-border/70 bg-background/70 p-3 text-foreground">
+                <div className="rounded-md border border-line/70 bg-bg/70 p-3 text-ink">
                   <p className="text-sm font-medium">Managed by EE/API</p>
-                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                  <p className="mt-1 text-xs leading-5 text-ink-3">
                     This policy has {summarizeLowTrustBoundaryTarget(boundary).toLowerCase()} and cannot be edited by the CE single-boundary editor.
                   </p>
                 </div>
               )}
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-ink-3">
                 Want to set more than one containment boundary?{" "}
                 <a
-                  className="underline underline-offset-2 hover:text-foreground"
+                  className="underline underline-offset-2 hover:text-ink"
                   href="https://paperclip.ing/ee"
                   target="_blank"
                   rel="noreferrer"
@@ -227,7 +227,7 @@ export function TrustPresetSection({
                 open={policyOpen}
                 onToggle={() => setPolicyOpen((open) => !open)}
               >
-                <div className="divide-y divide-border/60 text-foreground">
+                <div className="divide-y divide-line/60 text-ink">
                   <PolicyRow label="Preset" value="Low-trust review v1" />
                   <PolicyRow label="Raw output" value="Quarantined from higher-trust agents" />
                   <PolicyRow label="Projects" value={formatCount(boundary?.projectIds, "project", "projects")} />
@@ -250,7 +250,7 @@ export function TrustPresetSection({
         ) : null}
 
         {managedPermissions.authorizationPolicy?.reviewPreset ? null : (
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             Advanced permissions remain editable through the EE permissions extension when installed.
           </p>
         )}

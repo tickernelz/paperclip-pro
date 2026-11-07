@@ -141,10 +141,10 @@ function DocumentCommentsMatrix() {
     <div className="paperclip-story">
       <main className="paperclip-story__inner">
         <section className="paperclip-story__frame overflow-hidden">
-          <div className="border-b border-border px-5 py-4">
+          <div className="border-b border-line px-5 py-4">
             <div className="paperclip-story__label">Document comments · PAP-10960</div>
             <h2 className="mt-1 text-xl font-semibold">Simplified annotation panel</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-sm text-ink-3">
               No header, no filter chips, no empty-state copy. Revision indicator sits top-right.
               The composer shows the author avatar + name, two-line clamped quote, and a plain
               "Reply" affordance.

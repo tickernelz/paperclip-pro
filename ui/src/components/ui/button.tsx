@@ -1,25 +1,23 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
+import { Loader2 } from "lucide-react"
 import { Slot } from "radix-ui"
 
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-(--tp-color-background-color-border-color-box-shadow-opacity) disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-(length:--rad-3) aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md border text-(length:--t-13) font-medium transition-(--tp-color-background-color-border-color-box-shadow-opacity) outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus disabled:pointer-events-none disabled:border-line-strong disabled:bg-bg-3 disabled:text-ink-3 aria-busy:cursor-progress data-[active=true]:border-accent data-[active=true]:bg-accent-soft data-[active=true]:text-accent [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 aria-invalid:border-bad",
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
-        cta: "bg-foreground text-background hover:bg-foreground/90",
-        destructive:
-          "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
-        outline:
-          "border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50",
-        secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        primary: "border-transparent bg-accent text-accent-ink hover:bg-accent-hover active:bg-accent-press",
+        secondary: "border-line-strong bg-bg-2 text-ink hover:bg-bg-3 active:bg-line-soft",
         ghost:
-          "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
-        link: "text-primary underline-offset-4 hover:underline",
+          "border-transparent bg-transparent text-ink-2 hover:bg-bg-3 hover:text-ink active:bg-line-soft disabled:border-transparent disabled:bg-transparent data-[active=true]:border-transparent data-[state=open]:bg-bg-3 data-[state=open]:text-ink",
+        danger: "border-line-strong bg-bg-2 text-bad hover:bg-bg-3 active:bg-line-soft",
+        delete: "border-transparent bg-bad text-accent-ink hover:bg-bad-hover active:bg-bad-hover",
+        link:
+          "border-transparent bg-transparent text-accent underline underline-offset-4 hover:text-accent-hover active:text-accent-press disabled:border-transparent disabled:bg-transparent",
       },
       size: {
         default: "h-10 px-4 py-2 has-[>svg]:px-3",
@@ -33,26 +31,34 @@ const buttonVariants = cva(
       },
     },
     defaultVariants: {
-      variant: "default",
+      variant: "primary",
       size: "default",
     },
   }
 )
 
-const Button = React.forwardRef<
-  HTMLButtonElement,
-  React.ComponentProps<"button"> &
-    VariantProps<typeof buttonVariants> & {
-      asChild?: boolean
-    }
->(function Button({
+type ButtonProps = React.ComponentProps<"button"> &
+  VariantProps<typeof buttonVariants> & {
+    asChild?: boolean
+    loading?: boolean
+    active?: boolean
+  }
+
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(function Button({
   className,
-  variant = "default",
+  variant = "primary",
   size = "default",
   asChild = false,
+  loading = false,
+  active,
+  children,
+  onClick,
   ...props
 }, ref) {
   const Comp = asChild ? Slot.Root : "button"
+  const handleClick = loading
+    ? (event: React.MouseEvent<HTMLButtonElement>) => event.preventDefault()
+    : onClick
 
   return (
     <Comp
@@ -60,9 +66,22 @@ const Button = React.forwardRef<
       data-slot="button"
       data-variant={variant}
       data-size={size}
+      data-active={active || undefined}
+      aria-busy={loading || undefined}
+      aria-disabled={loading || undefined}
       className={cn(buttonVariants({ variant, size, className }))}
+      onClick={handleClick}
       {...props}
-    />
+    >
+      {loading && !asChild ? (
+        <>
+          <Loader2 aria-hidden="true" className="animate-spin" />
+          {children}
+        </>
+      ) : (
+        children
+      )}
+    </Comp>
   )
 })
 

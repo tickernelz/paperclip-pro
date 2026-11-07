@@ -50,13 +50,13 @@ export function ThemeToggle({ className, variant = "icon", onAfterToggle }: Them
       <button
         type="button"
         className={cn(
-          "flex h-(--profile-popover-row-height) w-full items-center gap-(--profile-popover-row-gap) rounded-lg px-2.5 text-left text-(length:--text-compact) font-medium leading-(--profile-popover-label-line-height) text-foreground transition-colors hover:bg-accent",
+          "flex h-(--profile-popover-row-height) w-full items-center gap-(--profile-popover-row-gap) rounded-lg px-2.5 text-left text-(length:--text-compact) font-medium leading-(--profile-popover-label-line-height) text-ink transition-colors hover:bg-bg-3",
           className,
         )}
         onClick={handleClick}
         aria-label={label}
       >
-        <span className="flex size-5 shrink-0 items-center justify-center text-muted-foreground">
+        <span className="flex size-5 shrink-0 items-center justify-center text-ink-3">
           <Icon className="size-4" />
         </span>
         <span className="min-w-0 flex-1 truncate">{label}</span>
@@ -69,18 +69,18 @@ export function ThemeToggle({ className, variant = "icon", onAfterToggle }: Them
       <button
         type="button"
         className={cn(
-          "flex w-full items-start gap-3 rounded-xl px-3 py-3 text-left transition-colors hover:bg-accent/60",
+          "flex w-full items-start gap-3 rounded-xl px-3 py-3 text-left transition-colors hover:bg-bg-3/60",
           className,
         )}
         onClick={handleClick}
         aria-label={label}
       >
-        <span className="mt-0.5 rounded-lg border border-border bg-background/70 p-2 text-muted-foreground">
+        <span className="mt-0.5 rounded-lg border border-line bg-bg/70 p-2 text-ink-3">
           <Icon className="size-4" />
         </span>
         <span className="min-w-0 flex-1">
-          <span className="block text-sm font-medium text-foreground">{label}</span>
-          <span className="block text-xs text-muted-foreground">{MENU_ACTION_DESCRIPTION}</span>
+          <span className="block text-sm font-medium text-ink">{label}</span>
+          <span className="block text-xs text-ink-3">{MENU_ACTION_DESCRIPTION}</span>
         </span>
       </button>
     );
@@ -94,7 +94,7 @@ export function ThemeToggle({ className, variant = "icon", onAfterToggle }: Them
       onClick={handleClick}
       aria-label={label}
       title={label}
-      className={cn("text-muted-foreground", className)}
+      className={cn("", className)}
     >
       <Icon />
     </Button>

@@ -58,20 +58,20 @@ export function AgentSelect({
         <Button
           id={id}
           type="button"
-          variant="outline"
+          variant="secondary"
           size="sm"
           className={cn("w-full justify-between", triggerClassName)}
           disabled={disabled}
         >
-          <span className={cn("flex min-w-0 items-center gap-2", !selectedAgent && "text-muted-foreground")}>
+          <span className={cn("flex min-w-0 items-center gap-2", !selectedAgent && "text-ink-3")}>
             {selectedAgent && <AgentAvatar agent={selectedAgent} size={20} />}
             <span className="truncate">{selectedAgent?.name ?? placeholder}</span>
           </span>
-          <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+          <ChevronRight className="h-4 w-4 shrink-0 text-ink-3" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-(--radix-popover-trigger-width) p-0" align="start">
-        <div className="border-b border-border p-3">
+        <div className="border-b border-line p-3">
           <Input
             value={filter}
             onChange={(event) => setFilter(event.target.value)}
@@ -81,14 +81,14 @@ export function AgentSelect({
           />
         </div>
         {agents.length === 0 ? (
-          <div className="px-3 py-4 text-sm text-muted-foreground">{emptyMessage}</div>
+          <div className="px-3 py-4 text-sm text-ink-3">{emptyMessage}</div>
         ) : (
           <div className="max-h-60 overflow-y-auto py-1">
             {filteredAgents.map((agent) => (
               <button
                 key={agent.id}
                 type="button"
-                className="flex w-full items-start gap-2 px-3 py-2 text-left hover:bg-accent/30"
+                className="flex w-full items-start gap-2 px-3 py-2 text-left hover:bg-bg-3/30"
                 aria-label={`Select ${agent.name}`}
                 onClick={() => {
                   onChange(agent.id);
@@ -97,13 +97,13 @@ export function AgentSelect({
               >
                 <AgentAvatar agent={agent} size={20} className="shrink-0" />
                 <span className="flex min-w-0 flex-col">
-                  <span className="truncate text-sm font-medium text-foreground">{agent.name}</span>
-                  {agent.title ? <span className="truncate text-xs text-muted-foreground">{agent.title}</span> : null}
+                  <span className="truncate text-sm font-medium text-ink">{agent.name}</span>
+                  {agent.title ? <span className="truncate text-xs text-ink-3">{agent.title}</span> : null}
                 </span>
               </button>
             ))}
             {filteredAgents.length === 0 ? (
-              <div className="px-3 py-4 text-sm text-muted-foreground">No matches.</div>
+              <div className="px-3 py-4 text-sm text-ink-3">No matches.</div>
             ) : null}
           </div>
         )}
@@ -125,7 +125,7 @@ export function AgentMultiSelect({
   renderNameSuffix,
   triggerLabel,
   triggerIcon,
-  triggerVariant = "outline",
+  triggerVariant = "secondary",
   triggerSize = "default",
   triggerFullWidth = true,
   triggerClassName,
@@ -217,11 +217,11 @@ export function AgentMultiSelect({
                   : `${selectedCount} ${selectedCount === 1 ? "agent" : "agents"} selected`)}
               </span>
             </span>
-            <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <ChevronRight className="h-4 w-4 shrink-0 text-ink-3" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-80 p-0" align={contentAlign}>
-        <div className="border-b border-border p-3">
+        <div className="border-b border-line p-3">
           <Input
             value={filter}
             onChange={(event) => setFilter(event.target.value)}
@@ -237,7 +237,7 @@ export function AgentMultiSelect({
             <Skeleton className="h-6 w-full" />
           </div>
         ) : agents.length === 0 ? (
-          <div className="px-3 py-4 text-sm text-muted-foreground">{emptyMessage}</div>
+          <div className="px-3 py-4 text-sm text-ink-3">{emptyMessage}</div>
         ) : (
           <div className="max-h-60 overflow-y-auto py-1">
             {filteredAgents.map((agent) => {
@@ -247,7 +247,7 @@ export function AgentMultiSelect({
                 <label
                   key={agent.id}
                   className={cn(
-                    "flex items-start gap-2 px-3 py-2 hover:bg-accent/30",
+                    "flex items-start gap-2 px-3 py-2 hover:bg-bg-3/30",
                     optionDisabled ? "opacity-60" : "cursor-pointer",
                   )}
                 >
@@ -262,24 +262,24 @@ export function AgentMultiSelect({
                       setSelection(next);
                     }}
                   />
-                  <AgentAvatar agent={agent} size={16} className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground"/>
+                  <AgentAvatar agent={agent} size={16} className="mt-0.5 h-4 w-4 shrink-0 text-ink-3"/>
                   <span className="flex min-w-0 flex-col">
-                    <span className="flex items-center gap-1.5 text-sm font-medium text-foreground">
+                    <span className="flex items-center gap-1.5 text-sm font-medium text-ink">
                       <span className="truncate">{agent.name}</span>
                       {renderNameSuffix?.(agent)}
                     </span>
-                    {description ? <span className="truncate text-xs text-muted-foreground">{description}</span> : null}
+                    {description ? <span className="truncate text-xs text-ink-3">{description}</span> : null}
                   </span>
                 </label>
               );
             })}
             {filteredAgents.length === 0 ? (
-              <div className="px-3 py-4 text-sm text-muted-foreground">No matches.</div>
+              <div className="px-3 py-4 text-sm text-ink-3">No matches.</div>
             ) : null}
           </div>
         )}
-          <div className="flex items-center justify-between border-t border-border px-3 py-2">
-            <span className="text-xs text-muted-foreground">
+          <div className="flex items-center justify-between border-t border-line px-3 py-2">
+            <span className="text-xs text-ink-3">
               {workingAgentIds.size === 0 ? "No agents selected" : `${workingAgentIds.size} selected`}
             </span>
             <div className="flex items-center gap-2">
@@ -307,12 +307,12 @@ export function AgentMultiSelect({
         <div className="space-y-0.5">
           {selectedAgents.slice(0, 3).map((agent) => (
             <div key={agent.id} className="flex items-center gap-2 px-1.5 py-1 text-sm">
-              <AgentAvatar agent={agent} size={16} className="h-4 w-4 shrink-0 text-muted-foreground"/>
-              <span className="min-w-0 flex-1 truncate text-foreground">{agent.name}</span>
+              <AgentAvatar agent={agent} size={16} className="h-4 w-4 shrink-0 text-ink-3"/>
+              <span className="min-w-0 flex-1 truncate text-ink">{agent.name}</span>
             </div>
           ))}
           {selectedAgents.length > 3 ? (
-            <p className="px-1.5 pt-0.5 text-xs text-muted-foreground">and {selectedAgents.length - 3} more</p>
+            <p className="px-1.5 pt-0.5 text-xs text-ink-3">and {selectedAgents.length - 3} more</p>
           ) : null}
         </div>
       ) : null}

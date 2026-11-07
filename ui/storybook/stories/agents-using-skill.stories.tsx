@@ -132,9 +132,9 @@ export const HeaderBadge: Story = {
     const skill = makeSkill();
     return (
       <Seed skill={skill}>
-        <div className="flex items-center gap-3 rounded-md border border-border bg-card px-3 py-2">
+        <div className="flex items-center gap-3 rounded-md border border-line bg-bg-2 px-3 py-2">
           <span className="text-base font-semibold">Code Review</span>
-          <span className="font-mono text-xs text-muted-foreground">v3</span>
+          <span className="font-mono text-xs text-ink-3">v3</span>
           <AgentsUsingSkillBadge companyId={COMPANY_ID} skill={skill} />
         </div>
       </Seed>
@@ -147,9 +147,9 @@ export const HeaderBadgeEmpty: Story = {
     const skill = makeSkill({ usedByAgents: [], attachedAgentCount: 0 });
     return (
       <Seed skill={skill}>
-        <div className="flex items-center gap-3 rounded-md border border-border bg-card px-3 py-2">
+        <div className="flex items-center gap-3 rounded-md border border-line bg-bg-2 px-3 py-2">
           <span className="text-base font-semibold">Code Review</span>
-          <span className="font-mono text-xs text-muted-foreground">v3</span>
+          <span className="font-mono text-xs text-ink-3">v3</span>
           <AgentsUsingSkillBadge companyId={COMPANY_ID} skill={skill} />
         </div>
       </Seed>

@@ -340,7 +340,7 @@ export function AsciiArtAnimation() {
         color: "#f2efe6",
         overflow: "hidden",
         borderRadius: "12px",
-        border: "1px solid color-mix(in srgb, var(--border) 75%, transparent)",
+        border: "1px solid color-mix(in srgb, var(--line) 75%, transparent)",
       }}
     >
       <pre

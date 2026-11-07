@@ -159,8 +159,8 @@ describe("SidebarSection", () => {
     const staticLabelControl = workLabel?.parentElement;
 
     expect(staticLabelControl?.tagName).toBe("DIV");
-    expect(staticLabelControl?.getAttribute("class")).not.toContain("hover:bg-accent/50");
-    expect(staticLabelControl?.getAttribute("class")).not.toContain("focus-visible:bg-accent/50");
+    expect(staticLabelControl?.getAttribute("class")).not.toContain("hover:bg-bg-3/50");
+    expect(staticLabelControl?.getAttribute("class")).not.toContain("focus-visible:bg-bg-3/50");
   });
 
   it("keeps section labels visible inside an expanded contextual pane", async () => {
@@ -184,7 +184,7 @@ describe("SidebarSection", () => {
 
     expect(settingsLabel).toBeTruthy();
     expect(settingsLabel?.getAttribute("class")).toContain("uppercase");
-    expect(container.querySelector(".bg-border\\/60")).toBeNull();
+    expect(container.querySelector(".bg-line\\/60")).toBeNull();
   });
 
   it("keeps the header action outside the label menu hit area", async () => {
@@ -217,7 +217,7 @@ describe("SidebarSection", () => {
 
     expect(sectionMenuTrigger?.textContent).toContain("Projects");
     expect(sectionMenuTrigger?.querySelector("svg")).toBeNull();
-    expect(sectionMenuTrigger?.getAttribute("class")).toContain("hover:bg-accent/50");
+    expect(sectionMenuTrigger?.getAttribute("class")).toContain("hover:bg-bg-3/50");
     expect(newProjectButton).toBeTruthy();
 
     await act(async () => {

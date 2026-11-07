@@ -502,7 +502,7 @@ describe("TaskSidePanel", () => {
     const addButton = container.querySelector<HTMLButtonElement>('button[aria-label="Open a new tab"]');
     expect(addButton?.className).toContain("h-(--side-panel-tab-height)");
     expect(addButton?.className).toContain("w-(--side-panel-tab-height)");
-    expect(addButton?.className).toContain("hover:bg-accent");
+    expect(addButton?.className).toContain("hover:bg-bg-3");
   });
 
   it("shows an uncounted Subtasks tab only when Streamlined UI has child tasks", async () => {

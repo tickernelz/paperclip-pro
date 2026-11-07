@@ -51,8 +51,8 @@ function ProviderTabLabel({ provider, rows }: { provider: string; rows: CostByPr
   return (
     <span className="flex items-center gap-1.5">
       <span>{providerDisplayName(provider)}</span>
-      <span className="font-mono text-xs text-muted-foreground">{formatTokens(totalTokens)}</span>
-      <span className="text-xs text-muted-foreground">{formatCents(totalCost)}</span>
+      <span className="font-mono text-xs text-ink-3">{formatTokens(totalTokens)}</span>
+      <span className="text-xs text-ink-3">{formatCents(totalCost)}</span>
     </span>
   );
 }
@@ -63,8 +63,8 @@ function BillerTabLabel({ biller, rows }: { biller: string; rows: CostByBiller[]
   return (
     <span className="flex items-center gap-1.5">
       <span>{providerDisplayName(biller)}</span>
-      <span className="font-mono text-xs text-muted-foreground">{formatTokens(totalTokens)}</span>
-      <span className="text-xs text-muted-foreground">{formatCents(totalCost)}</span>
+      <span className="font-mono text-xs text-ink-3">{formatTokens(totalTokens)}</span>
+      <span className="text-xs text-ink-3">{formatCents(totalCost)}</span>
     </span>
   );
 }
@@ -84,12 +84,12 @@ function MetricTile({
     <Card className="block p-4">
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <div className="text-(length:--text-micro) uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{label}</div>
+          <div className="text-(length:--text-micro) uppercase tracking-(--tracking-eyebrow) text-ink-3">{label}</div>
           <div className="mt-2 text-2xl font-semibold tabular-nums">{value}</div>
-          <div className="mt-1 text-xs leading-5 text-muted-foreground">{subtitle}</div>
+          <div className="mt-1 text-xs leading-5 text-ink-3">{subtitle}</div>
         </div>
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border">
-          <Icon className="h-4 w-4 text-muted-foreground" />
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-line">
+          <Icon className="h-4 w-4 text-ink-3" />
         </div>
       </div>
     </Card>
@@ -468,8 +468,8 @@ export function Costs() {
             <span>All providers</span>
             {providerKeys.length > 0 ? (
               <>
-                <span className="font-mono text-xs text-muted-foreground">{formatTokens(allTokens)}</span>
-                <span className="text-xs text-muted-foreground">{formatCents(allCents)}</span>
+                <span className="font-mono text-xs text-ink-3">{formatTokens(allTokens)}</span>
+                <span className="text-xs text-ink-3">{formatCents(allCents)}</span>
               </>
             ) : null}
           </span>
@@ -500,8 +500,8 @@ export function Costs() {
             <span>All billers</span>
             {billerKeys.length > 0 ? (
               <>
-                <span className="font-mono text-xs text-muted-foreground">{formatTokens(allTokens)}</span>
-                <span className="text-xs text-muted-foreground">{formatCents(allCents)}</span>
+                <span className="font-mono text-xs text-ink-3">{formatTokens(allTokens)}</span>
+                <span className="text-xs text-ink-3">{formatCents(allCents)}</span>
               </>
             ) : null}
           </span>
@@ -543,7 +543,7 @@ export function Costs() {
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
                 <h1 className="text-3xl font-semibold tracking-tight">Costs</h1>
-                <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
+                <p className="mt-2 max-w-2xl text-sm leading-6 text-ink-3">
                   Inference spend, platform fees, credits, and live quota windows.
                 </p>
             </div>
@@ -564,19 +564,19 @@ export function Costs() {
           </div>
 
           {preset === "custom" ? (
-            <div className="flex flex-wrap items-center gap-2 border border-border p-3">
+            <div className="flex flex-wrap items-center gap-2 border border-line p-3">
               <input
                 type="date"
                 value={customFrom}
                 onChange={(event) => setCustomFrom(event.target.value)}
-                className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground"
+                className="h-9 rounded-md border border-line-strong bg-bg px-3 text-sm text-ink"
               />
-              <span className="text-sm text-muted-foreground">to</span>
+              <span className="text-sm text-ink-3">to</span>
               <input
                 type="date"
                 value={customTo}
                 onChange={(event) => setCustomTo(event.target.value)}
-                className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground"
+                className="h-9 rounded-md border border-line-strong bg-bg px-3 text-sm text-ink"
               />
             </div>
           ) : null}
@@ -630,11 +630,11 @@ export function Costs() {
 
         <TabsContent value="overview" className="mt-4 space-y-4">
           {showCustomPrompt ? (
-            <p className="text-sm text-muted-foreground">Select a start and end date to load data.</p>
+            <p className="text-sm text-ink-3">Select a start and end date to load data.</p>
           ) : showOverviewLoading ? (
             <PageSkeleton variant="costs" />
           ) : overviewError ? (
-            <p className="text-sm text-destructive">{(overviewError as Error).message}</p>
+            <p className="text-sm text-bad">{(overviewError as Error).message}</p>
           ) : (
             <>
               {activeBudgetIncidents.length > 0 ? (
@@ -670,14 +670,14 @@ export function Costs() {
                         <div className="text-3xl font-semibold tabular-nums">
                           {formatCents(spendData?.summary.spendCents ?? 0)}
                         </div>
-                        <div className="mt-1 text-sm text-muted-foreground">
+                        <div className="mt-1 text-sm text-ink-3">
                           {spendData?.summary.budgetCents && spendData.summary.budgetCents > 0
                             ? `Budget ${formatCents(spendData.summary.budgetCents)}`
                             : "Unlimited budget"}
                         </div>
                       </div>
-                      <div className="border border-border px-4 py-3 text-right">
-                        <div className="text-(length:--text-micro) uppercase tracking-(--tracking-eyebrow) text-muted-foreground">usage</div>
+                      <div className="border border-line px-4 py-3 text-right">
+                        <div className="text-(length:--text-micro) uppercase tracking-(--tracking-eyebrow) text-ink-3">usage</div>
                         <div className="mt-1 text-lg font-medium tabular-nums">
                           {formatTokens(inferenceTokenTotal)}
                         </div>
@@ -685,7 +685,7 @@ export function Costs() {
                     </div>
                     {spendData?.summary.budgetCents && spendData.summary.budgetCents > 0 ? (
                       <div className="space-y-2">
-                        <div className="h-2 overflow-hidden bg-muted">
+                        <div className="h-2 overflow-hidden bg-bg-3">
                           <div
                             className={cn(
                               "h-full transition-(--tp-width-background-color) duration-150",
@@ -698,7 +698,7 @@ export function Costs() {
                             style={{ width: `${Math.min(100, spendData.summary.utilizationPercent)}%` }}
                           />
                         </div>
-                        <div className="text-xs text-muted-foreground">
+                        <div className="text-xs text-ink-3">
                           {spendData.summary.utilizationPercent}% of monthly budget consumed in this range.
                         </div>
                       </div>
@@ -723,14 +723,14 @@ export function Costs() {
                   </CardHeader>
                   <CardContent className="space-y-2 px-5 pb-5 pt-2">
                     {(spendData?.byAgent.length ?? 0) === 0 ? (
-                      <p className="text-sm text-muted-foreground">No cost events yet.</p>
+                      <p className="text-sm text-ink-3">No cost events yet.</p>
                     ) : (
                       spendData?.byAgent.map((row) => {
                         const modelRows = agentModelRows.get(row.agentId) ?? [];
                         const isExpanded = expandedAgents.has(row.agentId);
                         const hasBreakdown = modelRows.length > 0;
                         return (
-                          <div key={row.agentId} className="border border-border px-4 py-3">
+                          <div key={row.agentId} className="border border-line px-4 py-3">
                             <div
                               className={cn("flex items-start justify-between gap-3", hasBreakdown ? "cursor-pointer select-none" : "")}
                               onClick={() => hasBreakdown && toggleAgent(row.agentId)}
@@ -738,8 +738,8 @@ export function Costs() {
                               <div className="flex min-w-0 items-center gap-2">
                                 {hasBreakdown ? (
                                   isExpanded
-                                    ? <ChevronDown className="h-3 w-3 shrink-0 text-muted-foreground" />
-                                    : <ChevronRight className="h-3 w-3 shrink-0 text-muted-foreground" />
+                                    ? <ChevronDown className="h-3 w-3 shrink-0 text-ink-3" />
+                                    : <ChevronRight className="h-3 w-3 shrink-0 text-ink-3" />
                                 ) : (
                                   <span className="h-3 w-3 shrink-0" />
                                 )}
@@ -748,11 +748,11 @@ export function Costs() {
                               </div>
                               <div className="text-right text-sm tabular-nums">
                                 <div className="font-medium">{formatCents(row.costCents)}</div>
-                                <div className="text-xs text-muted-foreground">
+                                <div className="text-xs text-ink-3">
                                   in {formatTokens(row.inputTokens + row.cachedInputTokens)} · out {formatTokens(row.outputTokens)}
                                 </div>
                                 {(row.apiRunCount > 0 || row.subscriptionRunCount > 0) ? (
-                                  <div className="text-xs text-muted-foreground">
+                                  <div className="text-xs text-ink-3">
                                     {row.apiRunCount > 0 ? `${row.apiRunCount} api` : "0 api"}
                                     {" · "}
                                     {row.subscriptionRunCount > 0
@@ -764,7 +764,7 @@ export function Costs() {
                             </div>
 
                             {isExpanded && modelRows.length > 0 ? (
-                              <div className="mt-3 space-y-2 border-l border-border pl-4">
+                              <div className="mt-3 space-y-2 border-l border-line pl-4">
                                 {modelRows.map((modelRow) => {
                                   const sharePct = row.costCents > 0 ? Math.round((modelRow.costCents / row.costCents) * 100) : 0;
                                   return (
@@ -773,21 +773,21 @@ export function Costs() {
                                       className="flex items-start justify-between gap-3 text-xs"
                                     >
                                       <div className="min-w-0">
-                                        <div className="truncate font-medium text-foreground">
+                                        <div className="truncate font-medium text-ink">
                                           {providerDisplayName(modelRow.provider)}
-                                          <span className="mx-1 text-border">/</span>
+                                          <span className="mx-1 text-line">/</span>
                                           <span className="font-mono">{modelRow.model}</span>
                                         </div>
-                                        <div className="truncate text-muted-foreground">
+                                        <div className="truncate text-ink-3">
                                           {providerDisplayName(modelRow.biller)} · {billingTypeDisplayName(modelRow.billingType)}
                                         </div>
                                       </div>
                                       <div className="text-right tabular-nums">
                                         <div className="font-medium">
                                           {formatCents(modelRow.costCents)}
-                                          <span className="ml-1 font-normal text-muted-foreground">({sharePct}%)</span>
+                                          <span className="ml-1 font-normal text-ink-3">({sharePct}%)</span>
                                         </div>
-                                        <div className="text-muted-foreground">
+                                        <div className="text-ink-3">
                                           {formatTokens(modelRow.inputTokens + modelRow.cachedInputTokens + modelRow.outputTokens)} tok
                                         </div>
                                       </div>
@@ -811,12 +811,12 @@ export function Costs() {
                     </CardHeader>
                     <CardContent className="space-y-2 px-5 pb-5 pt-2">
                       {(spendData?.byProject.length ?? 0) === 0 ? (
-                        <p className="text-sm text-muted-foreground">No project-attributed run costs yet.</p>
+                        <p className="text-sm text-ink-3">No project-attributed run costs yet.</p>
                       ) : (
                         spendData?.byProject.map((row, index) => (
                           <div
                             key={row.projectId ?? `unattributed-${index}`}
-                            className="flex items-center justify-between gap-3 border border-border px-3 py-2 text-sm"
+                            className="flex items-center justify-between gap-3 border border-line px-3 py-2 text-sm"
                           >
                             <span className="truncate">{row.projectName ?? row.projectId ?? "Unattributed"}</span>
                             <span className="font-medium tabular-nums">{formatCents(row.costCents)}</span>
@@ -837,10 +837,10 @@ export function Costs() {
           {budgetLoading ? (
             <PageSkeleton variant="costs" />
           ) : budgetError ? (
-            <p className="text-sm text-destructive">{(budgetError as Error).message}</p>
+            <p className="text-sm text-bad">{(budgetError as Error).message}</p>
           ) : (
             <>
-              <Card className="border-border/70 bg-(image:--gradient-extract-2)">
+              <Card className="border-line/70 bg-(image:--gradient-extract-2)">
                 <CardHeader className="px-5 pt-5 pb-3">
                   <CardTitle className="text-base">Budget control plane</CardTitle>
                   <CardDescription>
@@ -879,7 +879,7 @@ export function Costs() {
                 <div className="space-y-3">
                   <div>
                     <h2 className="text-lg font-semibold">Active incidents</h2>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-ink-3">
                       Resolve hard stops here by raising the budget or explicitly keeping the scope paused.
                     </p>
                   </div>
@@ -910,7 +910,7 @@ export function Costs() {
                     <section key={scopeType} className="space-y-3">
                       <div>
                         <h2 className="text-lg font-semibold capitalize">{scopeType} budgets</h2>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-ink-3">
                           {scopeType === "company"
                             ? "Company-wide monthly policy."
                             : scopeType === "agent"
@@ -940,7 +940,7 @@ export function Costs() {
 
                 {budgetPolicies.length === 0 ? (
                   <Card>
-                    <CardContent className="px-5 py-8 text-sm text-muted-foreground">
+                    <CardContent className="px-5 py-8 text-sm text-ink-3">
                       No budget policies yet. Set agent and project budgets from their detail pages, or use the existing company monthly budget control.
                     </CardContent>
                   </Card>
@@ -952,7 +952,7 @@ export function Costs() {
 
         <TabsContent value="providers" className="mt-4 space-y-4">
           {showCustomPrompt ? (
-            <p className="text-sm text-muted-foreground">Select a start and end date to load data.</p>
+            <p className="text-sm text-ink-3">Select a start and end date to load data.</p>
           ) : (
             <>
               <Tabs value={effectiveProvider} onValueChange={setActiveProvider}>
@@ -960,7 +960,7 @@ export function Costs() {
 
                 <TabsContent value="all" className="mt-4">
                   {providers.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No cost events in this period.</p>
+                    <p className="text-sm text-ink-3">No cost events in this period.</p>
                   ) : (
                     <div className="grid gap-4 md:grid-cols-2">
                       {providers.map((provider) => (
@@ -1007,7 +1007,7 @@ export function Costs() {
 
         <TabsContent value="billers" className="mt-4 space-y-4">
           {showCustomPrompt ? (
-            <p className="text-sm text-muted-foreground">Select a start and end date to load data.</p>
+            <p className="text-sm text-ink-3">Select a start and end date to load data.</p>
           ) : (
             <>
               <Tabs value={effectiveBiller} onValueChange={setActiveBiller}>
@@ -1015,7 +1015,7 @@ export function Costs() {
 
                 <TabsContent value="all" className="mt-4">
                   {billers.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No billable events in this period.</p>
+                    <p className="text-sm text-ink-3">No billable events in this period.</p>
                   ) : (
                     <div className="grid gap-4 md:grid-cols-2">
                       {billers.map((biller) => {
@@ -1060,11 +1060,11 @@ export function Costs() {
 
         <TabsContent value="finance" className="mt-4 space-y-4">
           {showCustomPrompt ? (
-            <p className="text-sm text-muted-foreground">Select a start and end date to load data.</p>
+            <p className="text-sm text-ink-3">Select a start and end date to load data.</p>
           ) : financeLoading ? (
             <PageSkeleton variant="costs" />
           ) : financeError ? (
-            <p className="text-sm text-destructive">{(financeError as Error).message}</p>
+            <p className="text-sm text-bad">{(financeError as Error).message}</p>
           ) : (
             <>
               <FinanceSummaryCard
@@ -1084,7 +1084,7 @@ export function Costs() {
                     </CardHeader>
                     <CardContent className="grid gap-4 px-5 pb-5 pt-2 md:grid-cols-2">
                       {(financeData?.byBiller.length ?? 0) === 0 ? (
-                        <p className="text-sm text-muted-foreground">No finance events yet.</p>
+                        <p className="text-sm text-ink-3">No finance events yet.</p>
                       ) : (
                         financeData?.byBiller.map((row) => <FinanceBillerCard key={row.biller} row={row} />)
                       )}

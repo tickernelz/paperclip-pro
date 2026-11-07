@@ -80,21 +80,21 @@ export function AppDetailSidebar(props: AppDetailSidebarProps) {
     ((attentionItem?.quarantinedCatalogEntryCount ?? 0) > 0 ? 1 : 0);
 
   return (
-    <aside className="flex h-full min-h-0 w-full flex-col border-r border-border bg-background">
+    <aside className="flex h-full min-h-0 w-full flex-col border-r border-line bg-bg">
       <div className="flex shrink-0 flex-col gap-3 px-3 py-3">
         <Link
           to="/apps/connections"
           onClick={() => {
             if (isMobile) setSidebarOpen(false);
           }}
-          className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
+          className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-ink-3 transition-colors hover:bg-bg-3/50 hover:text-ink"
         >
           <ChevronLeft className="h-3.5 w-3.5 shrink-0" />
           <span className="truncate">All apps</span>
         </Link>
         <div className="flex min-w-0 items-center gap-2 px-2 py-1">
           <AppLogo name={appName} logoUrl={appDefinitionLogoUrl(logoEntry)} size={28} />
-          <span className="flex-1 truncate text-sm font-bold text-foreground">{appName}</span>
+          <span className="flex-1 truncate text-sm font-bold text-ink">{appName}</span>
         </div>
       </div>
 

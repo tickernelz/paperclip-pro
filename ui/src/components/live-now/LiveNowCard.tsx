@@ -123,7 +123,7 @@ export function LiveNowCard({
       data-live-now-issue-id={entry.issueId}
       data-live-health={signal.health}
       className={cn(
-        "live-now-card relative flex w-(--live-now-card-peek) shrink-0 snap-start flex-col overflow-hidden rounded-xl border border-border bg-card text-card-foreground sm:w-auto",
+        "live-now-card relative flex w-(--live-now-card-peek) shrink-0 snap-start flex-col overflow-hidden rounded-xl border border-line bg-bg-2 text-ink sm:w-auto",
         hiddenOnWide && "sm:hidden",
       )}
     >
@@ -138,7 +138,7 @@ export function LiveNowCard({
           <span
             aria-hidden="true"
             className={cn(
-              "live-now-health-dot absolute right-0 bottom-0 size-2.5 rounded-full ring-2 ring-card",
+              "live-now-health-dot absolute right-0 bottom-0 size-2.5 rounded-full ring-2 ring-bg-2",
               (signal.health === "active" || signal.health === "thinking") && "live-now-breathe",
             )}
           />
@@ -151,7 +151,7 @@ export function LiveNowCard({
             {otherAgents.length > 0 ? (
               <span className="flex shrink-0 items-center" data-slot="tasks-live-now-other-agents">
                 {otherAgents.map((run) => (
-                  <span key={run.agentId} title={run.agentName} className="-ml-1 rounded-full bg-card ring-2 ring-card first:ml-0">
+                  <span key={run.agentId} title={run.agentName} className="-ml-1 rounded-full bg-bg-2 ring-2 ring-bg-2 first:ml-0">
                     <AgentAvatar agent={{ id: run.agentId, name: run.agentName, appearance: run.agentAppearance }} size={20} label={run.agentName} />
                   </span>
                 ))}
@@ -160,14 +160,14 @@ export function LiveNowCard({
             <time
               dateTime={entry.earliestStartedAt ?? entry.latestStartAt}
               title="Time since the run started"
-              className="ml-auto shrink-0 font-mono text-xs tabular-nums text-muted-foreground"
+              className="ml-auto shrink-0 font-mono text-xs tabular-nums text-ink-3"
             >
               {elapsed}
             </time>
           </div>
           <span
             data-slot="tasks-live-now-health"
-            className="live-now-health-pill mt-1 inline-flex max-w-full items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium text-foreground"
+            className="live-now-health-pill mt-1 inline-flex max-w-full items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium text-ink"
           >
             <span aria-hidden="true" className="live-now-health-dot size-1.5 shrink-0 rounded-full" />
             <span className="truncate">{signal.label}</span>
@@ -183,7 +183,7 @@ export function LiveNowCard({
           <nav
             aria-label="Parent tasks"
             data-slot="tasks-live-now-path"
-            className="mb-0.5 flex min-w-0 items-center gap-1 overflow-hidden whitespace-nowrap text-xs text-muted-foreground"
+            className="mb-0.5 flex min-w-0 items-center gap-1 overflow-hidden whitespace-nowrap text-xs text-ink-3"
           >
             {truncatedAncestors ? <span aria-hidden="true">… ›</span> : null}
             {ancestors.map((ancestor, index) => (
@@ -192,7 +192,7 @@ export function LiveNowCard({
                 <Link
                   to={createIssueDetailPath(ancestor.identifier ?? ancestor.id)}
                   title={ancestor.title}
-                  className="truncate font-mono text-muted-foreground no-underline hover:text-foreground hover:underline"
+                  className="truncate font-mono text-ink-3 no-underline hover:text-ink hover:underline"
                 >
                   {ancestor.identifier ?? ancestor.id.slice(0, 8)}
                 </Link>
@@ -207,21 +207,21 @@ export function LiveNowCard({
           issuePrefetch={issue}
           disableIssueQuicklook
           onClickCapture={detailState ? () => rememberIssueDetailLocationState(pathId, detailState) : undefined}
-          className="line-clamp-2 rounded-sm text-sm leading-5 font-medium text-foreground no-underline outline-none hover:underline focus-visible:ring-2 focus-visible:ring-ring"
+          className="line-clamp-2 rounded-sm text-sm leading-5 font-medium text-ink no-underline outline-none hover:underline focus-visible:ring-2 focus-visible:ring-focus"
         >
-          <span className="mr-1.5 font-mono text-xs font-normal text-muted-foreground">{identifier}</span>
+          <span className="mr-1.5 font-mono text-xs font-normal text-ink-3">{identifier}</span>
           {title}
         </Link>
       </div>
 
       <blockquote
         data-slot="tasks-live-now-snippet"
-        className="live-now-quote mx-3 mt-2.5 line-clamp-2 min-h-10 border-l-2 pl-2.5 text-sm leading-5 text-muted-foreground"
+        className="live-now-quote mx-3 mt-2.5 line-clamp-2 min-h-10 border-l-2 pl-2.5 text-sm leading-5 text-ink-3"
       >
         {snippet ?? (nextAction ? `Next: ${nextAction}` : signal.health === "starting" ? "Warming up…" : "No message yet")}
       </blockquote>
 
-      <div data-slot="tasks-live-now-status" className="mx-3 mt-2 flex h-5 min-w-0 items-center gap-1.5 text-xs text-muted-foreground">
+      <div data-slot="tasks-live-now-status" className="mx-3 mt-2 flex h-5 min-w-0 items-center gap-1.5 text-xs text-ink-3">
         {ActivityIcon ? <ActivityIcon aria-hidden="true" className="size-3.5 shrink-0" /> : null}
         <span className="min-w-0 truncate">{activity?.text ?? "Waiting for the first event"}</span>
         {lastActivityMs !== null ? (
@@ -247,14 +247,14 @@ export function LiveNowCard({
       {feedback || stop.error ? (
         <p
           role={stop.error ? "alert" : "status"}
-          className={cn("mx-3 mt-2 text-xs", stop.error ? "text-destructive" : "text-muted-foreground")}
+          className={cn("mx-3 mt-2 text-xs", stop.error ? "text-bad" : "text-ink-3")}
         >
           {stop.error ? errorMessage(stop.error, "Couldn’t stop the run.") : feedback}
         </p>
       ) : null}
 
       <div className="mt-auto pt-2.5">
-        <div className="flex flex-wrap items-center gap-0.5 border-t border-border px-1.5 py-1.5">
+        <div className="flex flex-wrap items-center gap-0.5 border-t border-line px-1.5 py-1.5">
           <Link
             to={taskPath}
             state={detailState}
@@ -296,7 +296,7 @@ export function LiveNowCard({
             type="button"
             variant="ghost"
             size="xs"
-            className="ml-auto text-muted-foreground hover:bg-destructive/10 hover:text-destructive focus-visible:text-destructive"
+            className="ml-auto"
             disabled={stop.isPending}
             aria-label={`Stop ${primary.agentName}'s run on ${identifier}`}
             onClick={() => setConfirmingStop(true)}
@@ -318,7 +318,7 @@ export function LiveNowCard({
           <AlertDialogFooter>
             <AlertDialogCancel>Keep running</AlertDialogCancel>
             <AlertDialogAction
-              className={buttonVariants({ variant: "destructive" })}
+              className={buttonVariants({ variant: "danger" })}
               onClick={() => {
                 setFeedback(null);
                 stop.mutate();
@@ -351,7 +351,7 @@ function LiveNowModelFallbackPill({
       <TriangleAlert aria-hidden="true" className="mt-0.5 size-3.5 shrink-0 text-amber-500 dark:text-amber-400" />
       <span className="min-w-0 whitespace-normal break-words">
         {modelValueText(describeFallbackModel(fallback.activeModel, options))}
-        <span className="text-muted-foreground">{" · primary: "}{modelFallbackReasonLabel(fallback.reason)}</span>
+        <span className="text-ink-3">{" · primary: "}{modelFallbackReasonLabel(fallback.reason)}</span>
       </span>
     </span>
   );
@@ -420,12 +420,12 @@ function LiveNowSteerForm({
         onKeyDown={onKeyDown}
       />
       {send.error ? (
-        <p role="alert" className="text-xs text-destructive">
+        <p role="alert" className="text-xs text-bad">
           {errorMessage(send.error, "Couldn’t send the message.")}
         </p>
       ) : null}
       <div className="flex items-center justify-end gap-1.5">
-        <span className="mr-auto text-xs text-muted-foreground">Enter to send · Esc to cancel</span>
+        <span className="mr-auto text-xs text-ink-3">Enter to send · Esc to cancel</span>
         <Button type="button" variant="ghost" size="xs" onClick={onCancel}>
           Cancel
         </Button>

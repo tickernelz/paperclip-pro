@@ -70,7 +70,7 @@ function Section({
 }) {
   return (
     <section className="paperclip-story__frame overflow-hidden">
-      <div className="border-b border-border px-5 py-4">
+      <div className="border-b border-line px-5 py-4">
         <div className="paperclip-story__label">{eyebrow}</div>
         <h2 className="mt-1 text-xl font-semibold">{title}</h2>
       </div>
@@ -267,14 +267,14 @@ function FilterBarDemo({ empty = false }: { empty?: boolean }) {
   return (
     <StoryShell>
       <Section eyebrow="FilterBar" title={empty ? "No active filters" : "Active removable filter chips"}>
-        <div className="rounded-lg border border-dashed border-border bg-background/70 p-4">
+        <div className="rounded-lg border border-dashed border-line bg-bg/70 p-4">
           <FilterBar
             filters={filters}
             onRemove={(key) => setFilters((current) => current.filter((filter) => filter.key !== key))}
             onClear={() => setFilters([])}
           />
           {filters.length === 0 && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2 text-sm text-ink-3">
               <ListFilter className="h-4 w-4" />
               No filters are active.
             </div>
@@ -348,13 +348,13 @@ function PackageFileTreeDemo({ empty = false }: { empty?: boolean }) {
     <StoryShell>
       <Section eyebrow="PackageFileTree" title={empty ? "Empty package export" : "Selectable company package tree"}>
         {empty ? (
-          <div className="rounded-lg border border-dashed border-border bg-background/70 p-6 text-sm text-muted-foreground">
+          <div className="rounded-lg border border-dashed border-line bg-bg/70 p-6 text-sm text-ink-3">
             No files are included in this package preview.
           </div>
         ) : (
           <div className="grid gap-4 lg:grid-cols-[minmax(280px,0.9fr)_minmax(0,1.1fr)]">
-            <div className="overflow-hidden rounded-lg border border-border bg-background/70">
-              <div className="flex items-center justify-between border-b border-border px-4 py-3 text-sm">
+            <div className="overflow-hidden rounded-lg border border-line bg-bg/70">
+              <div className="flex items-center justify-between border-b border-line px-4 py-3 text-sm">
                 <span className="font-medium">Package contents</span>
                 <Badge variant="outline">{countFiles(nodes)} files</Badge>
               </div>
@@ -387,14 +387,14 @@ function PackageFileTreeDemo({ empty = false }: { empty?: boolean }) {
                 {frontmatter ? (
                   <div className="grid gap-2 sm:grid-cols-2">
                     {Object.entries(frontmatter.data).map(([key, value]) => (
-                      <div key={key} className="rounded-md border border-border bg-background/70 p-2">
-                        <div className="text-[10px] uppercase text-muted-foreground">{key}</div>
+                      <div key={key} className="rounded-md border border-line bg-bg/70 p-2">
+                        <div className="text-[10px] uppercase text-ink-3">{key}</div>
                         <div className="mt-1 text-sm">{Array.isArray(value) ? value.join(", ") : value}</div>
                       </div>
                     ))}
                   </div>
                 ) : null}
-                <pre className="max-h-56 overflow-auto rounded-md bg-muted/40 p-3 text-xs leading-5">
+                <pre className="max-h-56 overflow-auto rounded-md bg-bg-3/40 p-3 text-xs leading-5">
                   {frontmatter?.body.trim() || selectedContent}
                 </pre>
               </CardContent>
@@ -449,7 +449,7 @@ function EntityRowsDemo({ empty = false }: { empty?: boolean }) {
   return (
     <StoryShell>
       <Section eyebrow="EntityRow" title={empty ? "Empty list container" : "Generic list rows"}>
-        <div className="overflow-hidden rounded-lg border border-border bg-background/70">
+        <div className="overflow-hidden rounded-lg border border-line bg-bg/70">
           {rows.map((row) => (
             <EntityRow
               key={row.id}
@@ -463,7 +463,7 @@ function EntityRowsDemo({ empty = false }: { empty?: boolean }) {
             />
           ))}
           {rows.length === 0 && (
-            <div className="p-6 text-sm text-muted-foreground">No entities match this view.</div>
+            <div className="p-6 text-sm text-ink-3">No entities match this view.</div>
           )}
         </div>
       </Section>
@@ -477,12 +477,12 @@ function SwipeToArchiveDemo({ disabled = false }: { disabled?: boolean }) {
   return (
     <StoryShell>
       <Section eyebrow="SwipeToArchive" title={disabled ? "Disabled mobile gesture" : "Mobile archive gesture"}>
-        <div className="mx-auto w-full max-w-sm overflow-hidden rounded-2xl border border-border bg-background shadow-sm">
-          <div className="border-b border-border px-4 py-3 text-xs uppercase tracking-wide text-muted-foreground">
+        <div className="mx-auto w-full max-w-sm overflow-hidden rounded-2xl border border-line bg-bg shadow-sm">
+          <div className="border-b border-line px-4 py-3 text-xs uppercase tracking-wide text-ink-3">
             Inbox
           </div>
           {archived ? (
-            <div className="flex items-center justify-center gap-2 p-8 text-sm text-muted-foreground">
+            <div className="flex items-center justify-center gap-2 p-8 text-sm text-ink-3">
               <Archive className="h-4 w-4" />
               Archived
             </div>
@@ -551,9 +551,9 @@ function AsciiArtAnimationDemo({ loading = false }: { loading?: boolean }) {
   return (
     <StoryShell>
       <Section eyebrow="AsciiArtAnimation" title={loading ? "Loading art surface" : "Animated ASCII paperclip field"}>
-        <div className="h-[360px] overflow-hidden rounded-xl border border-border bg-background">
+        <div className="h-[360px] overflow-hidden rounded-xl border border-line bg-bg">
           {loading ? (
-            <div className="flex h-full items-center justify-center gap-3 text-sm text-muted-foreground">
+            <div className="flex h-full items-center justify-center gap-3 text-sm text-ink-3">
               <Loader2 className="h-4 w-4 animate-spin" />
               Preparing animation canvas
             </div>

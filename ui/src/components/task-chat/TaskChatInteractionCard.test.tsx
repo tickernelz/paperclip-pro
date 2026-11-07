@@ -529,10 +529,10 @@ describe("TaskChatInteractionCard", () => {
     );
     expect(receipt?.querySelectorAll("summary svg")).toHaveLength(2);
     expect(receipt?.className).not.toContain("border");
-    expect(receipt?.className).not.toContain("bg-card");
+    expect(receipt?.className).not.toContain("bg-bg-2");
     expect(receipt?.querySelector("summary")?.className).toContain("px-1");
     expect(receipt?.querySelector("summary")?.className).toContain(
-      "text-muted-foreground",
+      "text-ink-3",
     );
     expect(receipt?.querySelector("summary")?.className).toContain("leading-5");
     expect(receipt?.querySelector("summary span")?.className).not.toContain(
@@ -628,7 +628,7 @@ describe("TaskChatInteractionCard", () => {
     for (const receipt of receipts) {
       expect(receipt.open).toBe(false);
       expect(receipt.className).not.toContain("border");
-      expect(receipt.className).not.toContain("bg-card");
+      expect(receipt.className).not.toContain("bg-bg-2");
     }
     expect(container.textContent).not.toContain("Asked by:");
     expect(container.textContent).not.toContain("Outcome:");
@@ -778,7 +778,7 @@ describe("TaskChatInteractionCard", () => {
       container.querySelectorAll("button"),
     ).find((button) => button.textContent?.trim() === "reject");
     expect(approve?.className).toContain("text-emerald-700");
-    expect(rejectOnFirstItem?.className).toContain("text-destructive");
+    expect(rejectOnFirstItem?.className).toContain("text-bad");
     expect(approve?.querySelector("svg")).not.toBeNull();
     expect(rejectOnFirstItem?.querySelector("svg")).not.toBeNull();
     await act(async () => approve?.click());

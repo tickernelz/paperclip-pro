@@ -68,7 +68,7 @@ function AuthAttempt({
     >
       <div className="flex flex-col gap-1">
         <h3 className="text-sm font-semibold">Connect {info.name}</h3>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-ink-3">
           {aiMethodLabel(provider, method)}
         </p>
       </div>
@@ -82,7 +82,7 @@ function AuthAttempt({
       ) : (
         <>
           {unsupported ? (
-            <p role="status" className="text-sm text-muted-foreground">
+            <p role="status" className="text-sm text-ink-3">
               {state.phase === "unsupported"
                 ? state.message
                 : "This provider does not offer a subscription connection."}
@@ -90,12 +90,12 @@ function AuthAttempt({
           ) : (
             <>
               {(state.phase === "error" || state.phase === "expired") && (
-                <p role="alert" className="text-sm text-destructive">
+                <p role="alert" className="text-sm text-bad">
                   {state.message}
                 </p>
               )}
               {state.phase === "cancelled" && (
-                <p role="status" className="text-sm text-muted-foreground">
+                <p role="status" className="text-sm text-ink-3">
                   Sign-in cancelled. No connection was created.
                 </p>
               )}
@@ -142,7 +142,7 @@ function AuthAttempt({
                   )}
                 </ProviderSubscriptionCard>
               ) : (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-ink-3">
                   Sign in with your {info.subscriptionName}.
                 </p>
               )}
@@ -169,7 +169,7 @@ function AuthAttempt({
                     Submit code
                   </Button>
                 ) : (
-                  <span role="status" className="text-sm text-muted-foreground">
+                  <span role="status" className="text-sm text-ink-3">
                     Waiting for sign-in…
                   </span>
                 )

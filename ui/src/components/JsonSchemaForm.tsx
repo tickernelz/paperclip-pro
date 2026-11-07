@@ -394,18 +394,18 @@ const FieldWrapper = React.memo(({
         {label && (
           <Label className="text-sm font-medium">
             {label}
-            {required && <span className="ml-1 text-destructive">*</span>}
+            {required && <span className="ml-1 text-bad">*</span>}
           </Label>
         )}
       </div>
       {children}
       {description && (
-        <p className="text-xs text-muted-foreground leading-relaxed">
+        <p className="text-xs text-ink-3 leading-relaxed">
           {description}
         </p>
       )}
       {error && (
-        <p className="text-xs font-medium text-destructive">{error}</p>
+        <p className="text-xs font-medium text-bad">{error}</p>
       )}
     </div>
   );
@@ -461,14 +461,14 @@ const BooleanField = React.memo(({
           className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
         >
           {label}
-          {isRequired && <span className="ml-1 text-destructive">*</span>}
+          {isRequired && <span className="ml-1 text-bad">*</span>}
         </Label>
       )}
       {description && (
-        <p className="text-xs text-muted-foreground">{description}</p>
+        <p className="text-xs text-ink-3">{description}</p>
       )}
       {error && (
-        <p className="text-xs font-medium text-destructive">{error}</p>
+        <p className="text-xs font-medium text-bad">{error}</p>
       )}
     </div>
   </div>
@@ -558,7 +558,7 @@ const EnumField = React.memo(({
         <SelectContent>
           {showUnsetOption && (
             <SelectItem value={ENUM_UNSET_VALUE} textValue="None">
-              <span className="text-muted-foreground">None</span>
+              <span className="text-ink-3">None</span>
             </SelectItem>
           )}
           {options.map((option) => (
@@ -673,7 +673,7 @@ const SecretField = React.memo(({
           readOnly
           placeholder={String(defaultValue ?? "")}
           disabled={disabled}
-          className="min-h-(--sz-140px) pr-10 font-mono text-xs italic text-muted-foreground"
+          className="min-h-(--sz-140px) pr-10 font-mono text-xs italic text-ink-3"
           aria-invalid={!!error}
         />
       )}
@@ -686,9 +686,9 @@ const SecretField = React.memo(({
         disabled={disabled}
       >
         {isVisible ? (
-          <EyeOff className="h-4 w-4 text-muted-foreground" />
+          <EyeOff className="h-4 w-4 text-ink-3" />
         ) : (
-          <Eye className="h-4 w-4 text-muted-foreground" />
+          <Eye className="h-4 w-4 text-ink-3" />
         )}
         <span className="sr-only">
           {isVisible ? "Hide secret" : "Show secret"}
@@ -717,9 +717,9 @@ const SecretField = React.memo(({
         disabled={disabled}
       >
         {isVisible ? (
-          <EyeOff className="h-4 w-4 text-muted-foreground" />
+          <EyeOff className="h-4 w-4 text-ink-3" />
         ) : (
-          <Eye className="h-4 w-4 text-muted-foreground" />
+          <Eye className="h-4 w-4 text-ink-3" />
         )}
         <span className="sr-only">
           {isVisible ? "Hide secret" : "Show secret"}
@@ -756,7 +756,7 @@ const SecretField = React.memo(({
               {!hasRawValue ? (
                 <button
                   type="button"
-                  className="text-(length:--text-micro) text-muted-foreground hover:text-foreground"
+                  className="text-(length:--text-micro) text-ink-3 hover:text-ink"
                   onClick={() => {
                     setShowRawInput(false);
                     setIsVisible(false);
@@ -770,7 +770,7 @@ const SecretField = React.memo(({
           ) : (
             <button
               type="button"
-              className="text-(length:--text-micro) text-muted-foreground hover:text-foreground"
+              className="text-(length:--text-micro) text-ink-3 hover:text-ink"
               onClick={() => setShowRawInput(true)}
               disabled={disabled}
             >
@@ -955,14 +955,14 @@ const ArrayField = React.memo(({
         <div>
           <Label className="text-sm font-medium">{label}</Label>
           {propSchema.description && (
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-ink-3">
               {propSchema.description}
             </p>
           )}
         </div>
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           size="sm"
           disabled={
             disabled ||
@@ -986,7 +986,7 @@ const ArrayField = React.memo(({
             className="group relative flex items-start space-x-2 rounded-lg border p-3"
           >
             <div className="flex-1">
-              <div className="mb-2 text-xs font-medium text-muted-foreground">
+              <div className="mb-2 text-xs font-medium text-ink-3">
                 Item {index + 1}
               </div>
               <FormField
@@ -1007,7 +1007,7 @@ const ArrayField = React.memo(({
               type="button"
               variant="ghost"
               size="icon"
-              className="h-8 w-8 text-muted-foreground hover:text-destructive"
+              className="h-8 w-8"
               disabled={
                 disabled ||
                 (propSchema.minItems !== undefined &&
@@ -1025,13 +1025,13 @@ const ArrayField = React.memo(({
           </div>
         ))}
         {items.length === 0 && (
-          <div className="rounded-lg border border-dashed p-4 text-center text-xs text-muted-foreground">
+          <div className="rounded-lg border border-dashed p-4 text-center text-xs text-ink-3">
             No items added yet.
           </div>
         )}
       </div>
       {error && (
-        <p className="text-xs font-medium text-destructive">{error}</p>
+        <p className="text-xs font-medium text-bad">{error}</p>
       )}
     </div>
   );
@@ -1062,8 +1062,8 @@ function JsonObjectField({ value, onChange, disabled, label, error }: {
   };
   return <div className="space-y-2">
     <Textarea aria-label={`${label} JSON`} aria-invalid={!!error} value={text} onChange={(event) => change(event.target.value)} disabled={disabled} rows={5} className="font-mono text-sm" />
-    <p className="text-xs text-muted-foreground">Enter a JSON object using the action's argument names.</p>
-    {error && <p role="alert" className="text-xs text-destructive">{error}</p>}
+    <p className="text-xs text-ink-3">Enter a JSON object using the action's argument names.</p>
+    {error && <p role="alert" className="text-xs text-bad">{error}</p>}
   </div>;
 }
 
@@ -1104,15 +1104,15 @@ const ObjectField = React.memo(({
             {label}
           </Label>
           {propSchema.description && (
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-ink-3">
               {propSchema.description}
             </p>
           )}
         </div>
         {isCollapsed ? (
-          <ChevronRight className="h-4 w-4 text-muted-foreground" />
+          <ChevronRight className="h-4 w-4 text-ink-3" />
         ) : (
-          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          <ChevronDown className="h-4 w-4 text-ink-3" />
         )}
       </button>
 
@@ -1385,7 +1385,7 @@ export function JsonSchemaForm({
     return (
       <div
         className={cn(
-          "py-4 text-center text-sm text-muted-foreground",
+          "py-4 text-center text-sm text-ink-3",
           className,
         )}
       >
@@ -1431,9 +1431,9 @@ export function JsonSchemaForm({
           >
             <span className="text-sm font-medium">{advancedLabel}</span>
             {isAdvancedOpen ? (
-              <ChevronDown className="h-4 w-4 text-muted-foreground" />
+              <ChevronDown className="h-4 w-4 text-ink-3" />
             ) : (
-              <ChevronRight className="h-4 w-4 text-muted-foreground" />
+              <ChevronRight className="h-4 w-4 text-ink-3" />
             )}
           </button>
 
@@ -1441,7 +1441,7 @@ export function JsonSchemaForm({
             <div className="space-y-6 px-4 pb-4">
               {advancedGroups.map(({ group, fields }) => (
                 <div key={group} className="space-y-4">
-                  <div className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  <div className="text-xs font-semibold uppercase tracking-wide text-ink-3">
                     {group}
                   </div>
                   <div className="space-y-6">

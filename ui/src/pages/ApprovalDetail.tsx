@@ -143,7 +143,7 @@ export function ApprovalDetail() {
   });
 
   if (isLoading) return <PageSkeleton variant="detail" />;
-  if (!approval) return <p className="text-sm text-muted-foreground">Approval not found.</p>;
+  if (!approval) return <p className="text-sm text-ink-3">Approval not found.</p>;
 
   const payload = approval.payload as Record<string, unknown>;
   const linkedAgentId = typeof payload.agentId === "string" ? payload.agentId : null;
@@ -190,8 +190,7 @@ export function ApprovalDetail() {
             </div>
             <Button
               size="sm"
-              variant="outline"
-              className="border-green-400 dark:border-green-600/50 text-green-800 dark:text-green-100 hover:bg-green-100 dark:hover:bg-green-900/30"
+              variant="secondary"
               onClick={() => navigate(resolvedCta.to)}
             >
               {resolvedCta.label}
@@ -199,13 +198,13 @@ export function ApprovalDetail() {
           </div>
         </div>
       )}
-      <div className="border border-border rounded-lg p-4 space-y-3">
+      <div className="border border-line rounded-lg p-4 space-y-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <TypeIcon className="h-5 w-5 text-muted-foreground shrink-0" />
+            <TypeIcon className="h-5 w-5 text-ink-3 shrink-0" />
             <div>
               <h2 className="text-lg font-semibold">{approvalLabel(approval.type, approval.payload as Record<string, unknown> | null)}</h2>
-              <p className="text-xs text-muted-foreground font-mono">{approval.id}</p>
+              <p className="text-xs text-ink-3 font-mono">{approval.id}</p>
             </div>
           </div>
           <StatusBadge status={approval.status} />
@@ -213,7 +212,7 @@ export function ApprovalDetail() {
         <div className="text-sm space-y-1">
           {approval.requestedByAgentId && (
             <div className="flex items-center gap-2">
-              <span className="text-muted-foreground text-xs">Requested by</span>
+              <span className="text-ink-3 text-xs">Requested by</span>
               <AgentIdentity
                 agent={agents?.find((agent) => agent.id === approval.requestedByAgentId) ?? { id: approval.requestedByAgentId, name: "Agent" }}
                 size="sm"
@@ -223,40 +222,40 @@ export function ApprovalDetail() {
           <ApprovalPayloadRenderer type={approval.type} payload={payload} />
           <button
             type="button"
-            className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors mt-2"
+            className="flex items-center gap-1 text-xs text-ink-3 hover:text-ink transition-colors mt-2"
             onClick={() => setShowRawPayload((v) => !v)}
           >
             <ChevronRight className={`h-3 w-3 transition-transform ${showRawPayload ? "rotate-90" : ""}`} />
             See full request
           </button>
           {showRawPayload && (
-            <pre className="text-xs bg-muted/40 rounded-md p-3 overflow-x-auto">
+            <pre className="text-xs bg-bg-3/40 rounded-md p-3 overflow-x-auto">
               {JSON.stringify(payload, null, 2)}
             </pre>
           )}
           {approval.decisionNote && (
-            <p className="text-xs text-muted-foreground">Decision note: {approval.decisionNote}</p>
+            <p className="text-xs text-ink-3">Decision note: {approval.decisionNote}</p>
           )}
         </div>
-        {error && <p className="text-sm text-destructive">{error}</p>}
+        {error && <p className="text-sm text-bad">{error}</p>}
         {linkedIssues && linkedIssues.length > 0 && (
-          <div className="pt-2 border-t border-border/60">
-            <p className="text-xs text-muted-foreground mb-1.5">Linked Tasks</p>
+          <div className="pt-2 border-t border-line/60">
+            <p className="text-xs text-ink-3 mb-1.5">Linked Tasks</p>
             <div className="space-y-1.5">
               {linkedIssues.map((issue) => (
                 <Link
                   key={issue.id}
                   to={`/issues/${issue.identifier ?? issue.id}`}
-                  className="block text-xs rounded border border-border/70 px-2 py-1.5 hover:bg-accent/20"
+                  className="block text-xs rounded border border-line/70 px-2 py-1.5 hover:bg-bg-3/20"
                 >
-                  <span className="font-mono text-muted-foreground mr-2">
+                  <span className="font-mono text-ink-3 mr-2">
                     {issue.identifier ?? issue.id.slice(0, 8)}
                   </span>
                   <span>{issue.title}</span>
                 </Link>
               ))}
             </div>
-            <p className="text-(length:--text-micro) text-muted-foreground mt-2">
+            <p className="text-(length:--text-micro) text-ink-3 mt-2">
               Linked tasks remain open until the requesting agent follows up and closes them.
             </p>
           </div>
@@ -266,14 +265,13 @@ export function ApprovalDetail() {
             <>
               <Button
                 size="sm"
-                className="bg-green-700 hover:bg-green-600 text-white"
                 onClick={() => approveMutation.mutate()}
                 disabled={approveMutation.isPending}
               >
                 Approve
               </Button>
               <Button
-                variant="destructive"
+                variant="secondary"
                 size="sm"
                 onClick={() => rejectMutation.mutate()}
                 disabled={rejectMutation.isPending}
@@ -283,14 +281,14 @@ export function ApprovalDetail() {
             </>
           )}
           {isBudgetApproval && approval.status === "pending" && (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-ink-3">
               Resolve this budget stop from the budget controls on <Link to="/costs" className="underline underline-offset-2">/costs</Link>.
             </p>
           )}
           {approval.status === "pending" && (
             <Button
               size="sm"
-              variant="outline"
+              variant="secondary"
               onClick={() => revisionMutation.mutate()}
               disabled={revisionMutation.isPending}
             >
@@ -300,7 +298,7 @@ export function ApprovalDetail() {
           {approval.status === "revision_requested" && (
             <Button
               size="sm"
-              variant="outline"
+              variant="secondary"
               onClick={() => resubmitMutation.mutate()}
               disabled={resubmitMutation.isPending}
             >
@@ -310,8 +308,7 @@ export function ApprovalDetail() {
           {approval.status === "rejected" && approval.type === "hire_agent" && linkedAgentId && (
             <Button
               size="sm"
-              variant="outline"
-              className="text-destructive border-destructive/40"
+              variant="danger"
               onClick={() => {
                 if (!window.confirm("Delete this disapproved agent? This cannot be undone.")) return;
                 deleteAgentMutation.mutate(linkedAgentId);
@@ -324,11 +321,11 @@ export function ApprovalDetail() {
         </div>
       </div>
 
-      <div className="border border-border rounded-lg p-4 space-y-3">
+      <div className="border border-line rounded-lg p-4 space-y-3">
         <h3 className="text-sm font-medium">Comments ({comments?.length ?? 0})</h3>
         <div className="space-y-2">
           {(comments ?? []).map((comment: ApprovalComment) => (
-            <div key={comment.id} className="border border-border/60 rounded-md p-3">
+            <div key={comment.id} className="border border-line/60 rounded-md p-3">
               <div className="flex items-center justify-between mb-1">
                 {comment.authorAgentId ? (
                   <Link to={`/agents/${comment.authorAgentId}`} className="hover:underline">
@@ -340,7 +337,7 @@ export function ApprovalDetail() {
                 ) : (
                   <Identity name="Board" size="sm" />
                 )}
-                <span className="text-xs text-muted-foreground">
+                <span className="text-xs text-ink-3">
                   {new Date(comment.createdAt).toLocaleString()}
                 </span>
               </div>

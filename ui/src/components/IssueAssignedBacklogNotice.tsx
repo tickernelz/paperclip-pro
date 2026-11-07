@@ -44,8 +44,8 @@ export function IssueAssignedBacklogNotice({
             <div className="pt-0.5">
               <Button
                 size="sm"
-                variant="outline"
-                className="h-7 border-amber-400/70 bg-background/80 text-amber-950 hover:bg-amber-100 dark:border-amber-500/40 dark:bg-background/40 dark:text-amber-100 dark:hover:bg-amber-500/15"
+                variant="secondary"
+                className="h-7"
                 onClick={onResume}
                 disabled={resuming}
                 data-testid="issue-assigned-backlog-resume"

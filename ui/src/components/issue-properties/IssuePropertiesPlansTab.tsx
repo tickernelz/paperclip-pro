@@ -52,7 +52,7 @@ export function IssuePropertiesPlansTab({ issue }: IssuePropertiesPlansTabProps)
 
   if (!planDocument && !hasPlans) {
     return (
-      <div className="px-1 py-6 text-sm text-muted-foreground">
+      <div className="px-1 py-6 text-sm text-ink-3">
         {planDocumentLoading ? (
           "Loading plan…"
         ) : issue.workMode === "planning" ? (
@@ -79,7 +79,7 @@ export function IssuePropertiesPlansTab({ issue }: IssuePropertiesPlansTabProps)
           approve from. */}
       {planDocument ? (
         <section data-testid="issue-plan-document" className="space-y-2">
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1 text-xs text-ink-3">
             {`Revision ${planDocument.latestRevisionNumber ?? 1} · updated ${new Date(planDocument.updatedAt).toLocaleString([], {
               month: "short",
               day: "numeric",

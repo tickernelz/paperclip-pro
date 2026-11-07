@@ -104,7 +104,7 @@ export function AiConnectionSelect({
   };
   return (
     <div className="space-y-2">
-      <label className="text-xs text-muted-foreground" htmlFor={selectId}>
+      <label className="text-xs text-ink-3" htmlFor={selectId}>
         Connection
       </label>
       <Select
@@ -157,33 +157,33 @@ export function AiConnectionSelect({
         </SelectContent>
       </Select>
       {!readOnly && onReconnect && !loading && !error && (
-        <Button type="button" variant="outline" onClick={onReconnect}>Reconnect account</Button>
+        <Button type="button" variant="secondary" onClick={onReconnect}>Reconnect account</Button>
       )}
       {error && (
         <div className="space-y-2">
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-sm text-bad">
             {error}
           </p>
-          <Button type="button" variant="outline" onClick={onRetry}>
+          <Button type="button" variant="secondary" onClick={onRetry}>
             Retry connections
           </Button>
         </div>
       )}
       {value?.mode === "responsible_user" && !personal && !loading && !error ? (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-sm text-bad">
           You have no default account for this provider. Connect an account or choose another connection.
         </p>
       ) : unavailable ? (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-sm text-bad">
           This connection is unavailable. Choose another connection.
         </p>
       ) : incompatible ? (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-sm text-bad">
           This connection does not support the selected harness. Choose a
           compatible connection.
         </p>
       ) : selected && aiConnectionProblem(selected) ? (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-sm text-bad">
           {aiConnectionProblem(selected)}
         </p>
       ) : null}

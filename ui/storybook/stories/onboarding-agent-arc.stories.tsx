@@ -319,7 +319,7 @@ export const PillStates: StoryObj = {
       {(["dormant", "alive"] as const).map((state) => (
         <div key={state} className="flex flex-col items-center gap-3">
           <PillGuy state={state} className="size-(--sz-72px)" />
-          <span className="text-(length:--text-micro) uppercase tracking-widest text-muted-foreground">
+          <span className="text-(length:--text-micro) uppercase tracking-widest text-ink-3">
             {state}
           </span>
         </div>
@@ -353,7 +353,7 @@ export const PillMorph: StoryObj = {
         <button
           type="button"
           onClick={() => setAlive((v) => !v)}
-          className="text-(length:--text-micro) uppercase tracking-widest text-muted-foreground hover:text-foreground"
+          className="text-(length:--text-micro) uppercase tracking-widest text-ink-3 hover:text-ink"
         >
           {alive ? "alive" : "dormant"} — click to toggle
         </button>

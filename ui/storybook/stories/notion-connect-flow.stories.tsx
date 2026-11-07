@@ -228,7 +228,7 @@ function ConnectedHost() {
           />
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Notion</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-sm text-ink-3">
               Connected app setup
             </p>
           </div>
@@ -293,7 +293,7 @@ function ReconnectRequiredHost() {
     <div className="mx-auto max-w-3xl p-6">
       <header className="mb-6">
         <h1 className="text-2xl font-bold tracking-tight">Notion</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="mt-1 text-sm text-ink-3">
           Connection needs attention
         </p>
       </header>

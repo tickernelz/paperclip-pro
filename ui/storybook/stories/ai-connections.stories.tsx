@@ -78,7 +78,7 @@ export const ReviewIndex: Story = {
       <a className="text-sm underline underline-offset-2" href="/?path=/story/ai-connections-provider-routing-00-overview--start-here" target="_top">
         Review the proposed provider routing flows: onboarding, connections, agents, management, and recovery
       </a>
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm text-ink-3">
         Milestone 1: shared UI, simulated accounts, no live authentication.
         Start with the existing Connectors page, then account details, provider
         sign-in and agent connection selection. Use the Storybook toolbar for light/dark themes and narrow
@@ -104,7 +104,7 @@ export const ReviewIndex: Story = {
           ))}
         </section>
       ))}
-      <p className="text-xs text-muted-foreground">
+      <p className="text-xs text-ink-3">
         Additional stories cover read-only, loading, denied access,
         reauthorization, revocation, mobile, and unsupported environments.
         Runtime enforcement and data migration follow UI review.

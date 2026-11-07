@@ -115,19 +115,19 @@ export function SetMyUserSecretDialog({
 
         {definition ? (
           <div className="space-y-3">
-            <div className="rounded-md border border-border bg-muted/20 p-3 text-xs">
-              <div className="font-medium text-foreground">{definition.name}</div>
+            <div className="rounded-md border border-line bg-bg-3/20 p-3 text-xs">
+              <div className="font-medium text-ink">{definition.name}</div>
               {definition.description ? (
-                <p className="mt-1 text-muted-foreground">{definition.description}</p>
+                <p className="mt-1 text-ink-3">{definition.description}</p>
               ) : null}
               {definition.usageGuidance ? (
-                <p className="mt-1 text-muted-foreground">{definition.usageGuidance}</p>
+                <p className="mt-1 text-ink-3">{definition.usageGuidance}</p>
               ) : null}
             </div>
 
             {isExternal ? (
               <div className="space-y-1">
-                <label className="text-xs font-medium text-foreground">External reference</label>
+                <label className="text-xs font-medium text-ink">External reference</label>
                 <Input
                   value={externalRef}
                   onChange={(event) => setExternalRef(event.target.value)}
@@ -135,14 +135,14 @@ export function SetMyUserSecretDialog({
                   className="font-mono text-sm"
                   autoFocus
                 />
-                <p className="text-(length:--text-micro) text-muted-foreground">
+                <p className="text-(length:--text-micro) text-ink-3">
                   Points at your own credential in the configured provider. Paperclip stores the
                   reference, not the value.
                 </p>
               </div>
             ) : (
               <div className="space-y-1">
-                <label className="text-xs font-medium text-foreground">Your value</label>
+                <label className="text-xs font-medium text-ink">Your value</label>
                 <Textarea
                   value={value}
                   onChange={(event) => setValue(event.target.value)}
@@ -150,13 +150,13 @@ export function SetMyUserSecretDialog({
                   className="font-mono text-sm min-h-(--sz-80px)"
                   autoFocus
                 />
-                <p className="text-(length:--text-micro) text-muted-foreground">
+                <p className="text-(length:--text-micro) text-ink-3">
                   Stored encrypted. Never shown back to anyone, including admins.
                 </p>
               </div>
             )}
 
-            {error ? <p className="text-xs text-destructive">{error}</p> : null}
+            {error ? <p className="text-xs text-bad">{error}</p> : null}
           </div>
         ) : null}
 

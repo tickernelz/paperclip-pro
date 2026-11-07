@@ -34,10 +34,10 @@ export function AgentPreview({
           delay: previewVisible ? PREVIEW_REVEAL_DURATION * 0.25 : 0,
         }}
       >
-        <span className="flex h-6 items-center text-base font-semibold tracking-tight text-foreground">
+        <span className="flex h-6 items-center text-base font-semibold tracking-tight text-ink">
           {agentName || " "}
         </span>
-        <span className="flex h-4 items-center text-xs text-muted-foreground">
+        <span className="flex h-4 items-center text-xs text-ink-3">
           {agentRole || " "}
         </span>
       </motion.div>

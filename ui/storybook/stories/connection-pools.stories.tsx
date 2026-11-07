@@ -29,7 +29,7 @@ type Scenario = "overview" | "selector" | "legacy" | "adoption" | "unavailable" 
 
 function PoolComposer({ scenario }: { scenario: Scenario }) {
   const staging = useComposerRunSettingsStaging();
-  return <div className="space-y-3 rounded-xl border bg-card p-4">
+  return <div className="space-y-3 rounded-xl border bg-bg-2 p-4">
     <p className="text-sm">Choose settings for the next turn. The task keeps its account and harness.</p>
     <ComposerRunSettingsPicker companyId={companyId} draft assigneeValue={`agent:${agentId}`} currentAssigneeValue={`agent:${agentId}`}
       options={[{ id: `agent:${agentId}`, label: agent.name }]} staging={staging}
@@ -61,7 +61,7 @@ function PoolSurfaces({ scenario = "overview" }: { scenario?: Scenario }) {
   const [binding, setBinding] = useState<AiRuntimeConnectionBinding | undefined>(scenario === "adoption" ? undefined : { mode: "router", connectionId: poolId });
   const overview = scenario === "overview";
   return <QueryClientProvider client={client}><main className="mx-auto max-w-3xl space-y-6 p-6">
-    {scenario !== "adoption" && <header className="space-y-2"><h1 className="text-xl font-semibold">Experimental connection pools</h1><a className="text-sm text-primary underline" href="http://127.0.0.1:6010/?path=/story/plugins-connection-pools--in-connectors">Connection pool connector in Cloud Storybook</a></header>}
+    {scenario !== "adoption" && <header className="space-y-2"><h1 className="text-xl font-semibold">Experimental connection pools</h1><a className="text-sm text-accent underline" href="http://127.0.0.1:6010/?path=/story/plugins-connection-pools--in-connectors">Connection pool connector in Cloud Storybook</a></header>}
     {(overview || ["selector", "legacy", "adoption", "unavailable", "read-only"].includes(scenario)) && <section className="space-y-2"><h2 className="text-sm font-semibold">Agent connection</h2><AiConnectionField companyId={companyId} agentId={agentId} agentName={agent.name}
       adapterType={scenario === "legacy" ? "claude_local" : "codex_local"} routerAdapterType={scenario === "legacy" ? "claude_local" : "paperclip_runner"}
       value={binding} onChange={setBinding} legacy={scenario === "adoption"} readOnly={scenario === "read-only"} /></section>}

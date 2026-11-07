@@ -301,7 +301,7 @@ export function ChatEndpointDetail() {
     return <Navigate replace to={`/apps/chat/${endpointId}/settings`} />;
   if (endpointQuery.isLoading)
     return (
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+      <div className="flex items-center gap-2 text-sm text-ink-3">
         <Loader2 className="h-4 w-4 animate-spin" />
         Loading connection…
       </div>
@@ -309,10 +309,10 @@ export function ChatEndpointDetail() {
   if (endpointQuery.isError || !endpoint)
     return (
       <div className="space-y-3">
-        <p className="text-sm text-destructive">
+        <p className="text-sm text-bad">
           This chat connection could not be loaded.
         </p>
-        <Button variant="outline" onClick={() => endpointQuery.refetch()}>
+        <Button variant="secondary" onClick={() => endpointQuery.refetch()}>
           Try again
         </Button>
       </div>
@@ -338,7 +338,7 @@ export function ChatEndpointDetail() {
           <h1 ref={heading} tabIndex={-1} className="text-xl font-bold">
             {endpoint.provider === "github" ? (endpoint.botLabel ?? endpoint.assignedAgentName) : endpoint.assignedAgentName}
           </h1>
-          <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+          <p className="mt-1 flex flex-wrap items-center gap-2 text-sm text-ink-3">
             {endpoint.provider === "github" ? <><AppLogo name="GitHub" brandKey="github" compact className="size-4! rounded-sm bg-transparent" /><Link to={`/agents/${endpoint.assignedAgentId}`} className="hover:underline">{endpoint.assignedAgentName}</Link>{endpoint.providerAccountLabel && <span>· {endpoint.providerAccountLabel}</span>}</> : endpoint.providerAccountLabel ?? (endpoint.provider === "agentmail" ? endpoint.botExternalId ?? "Email connection" : "Chat connection")}
           </p>
           {endpoint.provider === "github" && <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
@@ -352,16 +352,16 @@ export function ChatEndpointDetail() {
                 try { await copyTextToClipboard(endpoint.botExternalId!); setCopyStatus("Number copied"); }
                 catch { setCopyStatus("Could not copy the number. Select and copy it manually."); }
               }}><Copy className="size-4" />Copy number</Button>
-              <span role="status" className="text-muted-foreground">{copyStatus}</span>
+              <span role="status" className="text-ink-3">{copyStatus}</span>
             </div>
           )}
           </div>
         </div>
         <div className="flex items-center gap-2">
-          {slackUrl && <Button asChild variant="outline"><a href={slackUrl} target="_blank" rel="noopener noreferrer">Open Slack <ExternalLink className="size-4" /></a></Button>}
+          {slackUrl && <Button asChild variant="secondary"><a href={slackUrl} target="_blank" rel="noopener noreferrer">Open Slack <ExternalLink className="size-4" /></a></Button>}
           {setupIncomplete ? (
             <Button
-              variant="outline"
+              variant="secondary"
               onClick={() =>
                 navigate(
                   `/apps/chat/connect?provider=${endpoint.provider}&purpose=chat&resume=${endpoint.id}`,
@@ -425,16 +425,16 @@ function EmailAccess({ endpoint }: { endpoint: ChatEndpoint }) {
   });
   if (!endpoint.connectionId || agents.isError || connection.isError) return (
     <div className="space-y-3">
-      <p role="alert" className="text-sm text-destructive">Connection access could not be loaded.</p>
-      <Button variant="outline" onClick={() => { void agents.refetch(); void connection.refetch(); }}>Try again</Button>
+      <p role="alert" className="text-sm text-bad">Connection access could not be loaded.</p>
+      <Button variant="secondary" onClick={() => { void agents.refetch(); void connection.refetch(); }}>Try again</Button>
     </div>
   );
-  if (agents.isPending || connection.isPending) return <p role="status" className="text-sm text-muted-foreground">Loading access…</p>;
+  if (agents.isPending || connection.isPending) return <p role="status" className="text-sm text-ink-3">Loading access…</p>;
   const sourceId = connection.data.config?.credentialConnectionId;
   const credentialId = typeof sourceId === "string" ? sourceId : endpoint.connectionId;
   return <section className="max-w-3xl space-y-4">
     <h2 className="text-lg font-semibold">Access</h2>
-    {credentialId !== endpoint.connectionId && <p className="text-sm text-muted-foreground">These settings apply to the saved AgentMail account and all inboxes using it.</p>}
+    {credentialId !== endpoint.connectionId && <p className="text-sm text-ink-3">These settings apply to the saved AgentMail account and all inboxes using it.</p>}
     <EmailConnectionAccess key={credentialId} companyId={endpoint.companyId} connectionId={credentialId} agents={agents.data} />
   </section>;
 }
@@ -498,17 +498,17 @@ function Settings({
     saveResources.mutate({ id: resource.id, enabled });
   return (
     <section className="max-w-3xl space-y-7">
-      {endpoint.provider === "imessage-photon" && <p className="text-sm text-muted-foreground">{endpoint.photonAllocation === "shared" ? "Shared Photon project · direct messages only. Enroll senders in Photon and link their Messages identities in Access. Groups cannot be enabled." : "Enable each group individually. Agent replies are visible to everyone in that group; only authorized senders can start work."}</p>}
+      {endpoint.provider === "imessage-photon" && <p className="text-sm text-ink-3">{endpoint.photonAllocation === "shared" ? "Shared Photon project · direct messages only. Enroll senders in Photon and link their Messages identities in Access. Groups cannot be enabled." : "Enable each group individually. Agent replies are visible to everyone in that group; only authorized senders can start work."}</p>}
       {endpoint.provider === "telegram" && (
         <div className="space-y-2">
           <h2 className="text-lg font-semibold">Telegram group command</h2>
-          <div className="rounded-lg border border-border p-3 text-sm">
+          <div className="rounded-lg border border-line p-3 text-sm">
             <code>
               /task@
               {endpoint.botUsername?.replace(/^@/, "") ?? "bot_username"}{" "}
               &lt;request&gt;
             </code>
-            <p className="mt-2 text-muted-foreground">
+            <p className="mt-2 text-ink-3">
               Telegram&apos;s default privacy mode does not deliver ordinary
               mentions to bots. Use this command to start or continue group
               work, or reply directly to a message from the bot.
@@ -518,26 +518,26 @@ function Settings({
       )}
       <div className="space-y-2">
         <h3 className="text-sm font-semibold">{endpoint.provider === "slack" ? "Allowed Channels" : "Destinations"}</h3>
-        {resourcesQuery.isError ? <p role="alert" className="text-sm text-destructive">Couldn't load channels. <button className="underline" onClick={() => void resourcesQuery.refetch()}>Try again</button></p> : resourcesQuery.isLoading ? (
-          <p className="text-sm text-muted-foreground">Loading destinations…</p>
+        {resourcesQuery.isError ? <p role="alert" className="text-sm text-bad">Couldn't load channels. <button className="underline" onClick={() => void resourcesQuery.refetch()}>Try again</button></p> : resourcesQuery.isLoading ? (
+          <p className="text-sm text-ink-3">Loading destinations…</p>
         ) : destinationResources.length === 0 && endpoint.provider !== "slack" ? (
-          <p className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
+          <p className="rounded-lg border border-dashed border-line p-4 text-sm text-ink-3">
             No destinations yet.
           </p>
         ) : (
-          <div className="divide-y divide-border border-y border-border">
+          <div className="divide-y divide-line border-y border-line">
             {destinationResources.map((resource) => (
               <div key={resource.id} className="flex items-center gap-3 py-3">
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">
                     {resource.label}
                   </p>
-                  {(resource.availability !== "available" || resource.detail) && <p className="text-xs text-muted-foreground">
+                  {(resource.availability !== "available" || resource.detail) && <p className="text-xs text-ink-3">
                     {resource.availability === "available"
                       ? resource.detail
                       : "Unavailable at the provider"}
                   </p>}
-                  {resource.participants?.length ? <p className="mt-1 break-words text-xs text-muted-foreground">Participants: {resource.participants.join(", ")}</p> : null}
+                  {resource.participants?.length ? <p className="mt-1 break-words text-xs text-ink-3">Participants: {resource.participants.join(", ")}</p> : null}
                 </div>
                 <ToggleSwitch
                   aria-label={`Enable ${resource.label}`}
@@ -554,7 +554,7 @@ function Settings({
               </div>
             ))}
             {endpoint.provider === "slack" && (
-              <p className="py-3 text-sm text-muted-foreground">
+              <p className="py-3 text-sm text-ink-3">
                 Invite {endpoint.assignedAgentName} to a channel to add it
               </p>
             )}
@@ -611,7 +611,7 @@ function Settings({
       {endpoint.provider === "slack" && (
         <SlackSetupAdvanced label="Message in a channel"><div className="space-y-2 text-sm">
           <p>Invite the bot to a channel, then mention it to start a conversation.</p>
-          <div className="flex items-center justify-between gap-3 rounded-lg border border-border p-3">
+          <div className="flex items-center justify-between gap-3 rounded-lg border border-line p-3">
             <code>{mentionMessage}</code>
             <Button size="icon" variant="ghost" aria-label={messageCopied ? "Message copied" : "Copy message"} onClick={() => {
               void copyTextToClipboard(mentionMessage).then(() => setMessageCopied(true), () => pushToast({ title: "Couldn’t copy the message", body: "Select and copy it manually.", tone: "error" }));
@@ -620,8 +620,8 @@ function Settings({
         </div></SlackSetupAdvanced>
       )}
       {endpoint.provider === "slack" && <SlackSetupAdvanced label="Agent avatar">
-        {avatarAgent.isPending ? <p role="status" className="text-sm text-muted-foreground">Loading agent avatar…</p>
-          : avatarAgent.isError ? <p role="alert" className="text-sm text-destructive">Couldn’t load the agent’s avatar. <button className="underline" onClick={() => void avatarAgent.refetch()}>Try again</button></p>
+        {avatarAgent.isPending ? <p role="status" className="text-sm text-ink-3">Loading agent avatar…</p>
+          : avatarAgent.isError ? <p role="alert" className="text-sm text-bad">Couldn’t load the agent’s avatar. <button className="underline" onClick={() => void avatarAgent.refetch()}>Try again</button></p>
           : <SlackAvatarSettings
               agentName={avatarAgent.data?.name ?? endpoint.assignedAgentName}
               appName={endpoint.setup?.slackApp?.appName ?? defaultSlackAppName(avatarAgent.data?.name ?? endpoint.assignedAgentName)}
@@ -647,10 +647,10 @@ function SettingToggle({
   onChange: (value: boolean) => void;
 }) {
   return (
-    <div className="flex items-center gap-3 border-y border-border py-3">
+    <div className="flex items-center gap-3 border-y border-line py-3">
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium">{label}</p>
-        {detail && <p className="text-xs text-muted-foreground">{detail}</p>}
+        {detail && <p className="text-xs text-ink-3">{detail}</p>}
       </div>
       <ToggleSwitch
         aria-label={label}
@@ -733,7 +733,7 @@ function Access({
                 <li>Open the bot’s private link and sign in to Paperclip to confirm your Slack account.</li>
                 <li>If you’re new to this organization, request access and wait for an admin to approve.</li>
               </ol>
-              <p className="text-muted-foreground">The confirmation link is personal and expires after 15 minutes.</p>
+              <p className="text-ink-3">The confirmation link is personal and expires after 15 minutes.</p>
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <Button variant="ghost" onClick={() => {
                   void copyTextToClipboard(joinCommand).then(() => setJoinCommandCopied(true), () => pushToast({ title: "Couldn't copy the command", tone: "error" }));
@@ -747,17 +747,17 @@ function Access({
           </DialogContent>
         </Dialog>}
       </div>
-      <p className="text-sm text-muted-foreground">People with linked accounts use their own Paperclip permissions. <Link className="underline underline-offset-4" to="/company/settings/members">Manage members</Link></p>
+      <p className="text-sm text-ink-3">People with linked accounts use their own Paperclip permissions. <Link className="underline underline-offset-4" to="/company/settings/members">Manage members</Link></p>
       {confirmationUrl && (
-        <div className="space-y-2 border-y border-border py-3">
+        <div className="space-y-2 border-y border-line py-3">
           <p className="text-sm font-medium">Confirm {confirmationFor ?? "this account"}</p>
-          <p className="text-xs text-muted-foreground">Share only with this person. They must sign in and confirm their own account.</p>
-          <p className="break-all text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">Share only with this person. They must sign in and confirm their own account.</p>
+          <p className="break-all text-xs text-ink-3">
             {confirmationUrl}
           </p>
           <Button
             size="sm"
-            variant="outline"
+            variant="secondary"
             onClick={() => {
               void copyTextToClipboard(confirmationUrl).then(
                 () =>
@@ -780,12 +780,12 @@ function Access({
         </div>
       )}
       <div className="space-y-2">
-        {linksQuery.isPending ? <p role="status" className="text-sm text-muted-foreground">Loading people…</p> : linksQuery.isError ? <p role="alert" className="text-sm text-destructive">Couldn't load people. <button className="underline" onClick={() => void linksQuery.refetch()}>Try again</button></p> : links.length === 0 ? (
-          <p className="rounded-lg border border-dashed border-border p-4 text-sm text-muted-foreground">
+        {linksQuery.isPending ? <p role="status" className="text-sm text-ink-3">Loading people…</p> : linksQuery.isError ? <p role="alert" className="text-sm text-bad">Couldn't load people. <button className="underline" onClick={() => void linksQuery.refetch()}>Try again</button></p> : links.length === 0 ? (
+          <p className="rounded-lg border border-dashed border-line p-4 text-sm text-ink-3">
             No linked accounts yet. Invite someone to connect.
           </p>
         ) : (
-          <div role="list" aria-label="People" className="divide-y divide-border border-y border-border">
+          <div role="list" aria-label="People" className="divide-y divide-line border-y border-line">
             {links.map((link) => (
               <div
                 key={link.id}
@@ -794,7 +794,7 @@ function Access({
               >
                 <div className="min-w-0 flex-1">
                   <Identity name={link.paperclipUserLabel ?? link.externalLabel} size="default" className="gap-2" />
-                  {(link.status !== "linked" || link.externalLabel !== link.paperclipUserLabel) && <p className="pl-10 text-xs text-muted-foreground">
+                  {(link.status !== "linked" || link.externalLabel !== link.paperclipUserLabel) && <p className="pl-10 text-xs text-ink-3">
                     {link.status === "revoked" ? "Disconnected" : link.status === "linked"
                       ? link.externalLabel
                       : "Waiting for account confirmation"}
@@ -813,7 +813,7 @@ function Access({
                 ) : (
                   <Button
                     size="sm"
-                    variant="outline"
+                    variant="secondary"
                     disabled={createIntent.isPending}
                     onClick={() => { setConfirmationUrl(null); setConfirmationFor(link.externalLabel); createIntent.mutate(link.principalId); }}
                   >
@@ -849,10 +849,10 @@ function Conversations({
   });
   return (
     <section className="space-y-4">
-      {query.isPending ? <p role="status" className="text-sm text-muted-foreground">Loading conversations…</p> : query.isError ? (
+      {query.isPending ? <p role="status" className="text-sm text-ink-3">Loading conversations…</p> : query.isError ? (
         <div className="space-y-3">
-          <p role="alert" className="text-sm text-destructive">Conversations could not be loaded.</p>
-          <Button variant="outline" onClick={() => void query.refetch()}>Try again</Button>
+          <p role="alert" className="text-sm text-bad">Conversations could not be loaded.</p>
+          <Button variant="secondary" onClick={() => void query.refetch()}>Try again</Button>
         </div>
       ) : <ChatConversationList rows={query.data} provider={provider} />}
     </section>
@@ -1010,7 +1010,7 @@ function Activity({
       <h2 className="text-lg font-semibold">Connection activity</h2>
       {((status !== "active" && health.message) || health.error) && (
         <div
-          className={`flex items-start gap-2 rounded-lg border p-3 text-sm ${status === "attention" || status === "revoked" ? "border-destructive/40 bg-destructive/5 text-destructive" : "border-border bg-muted/30 text-foreground"}`}
+          className={`flex items-start gap-2 rounded-lg border p-3 text-sm ${status === "attention" || status === "revoked" ? "border-bad/40 bg-bad/5 text-bad" : "border-line bg-bg-3/30 text-ink"}`}
         >
           {(status === "attention" || status === "revoked") && (
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
@@ -1032,30 +1032,30 @@ function Activity({
           </div>
         </div>
       )}
-      <details className="group rounded-lg border border-border">
+      <details className="group rounded-lg border border-line">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 text-sm font-medium chat-connection-health-summary">
           <span>Connection health and controls</span>
           <span className="flex items-center gap-2">
             {endpoint.setup?.callbacksNeedUpdate && <span className="text-xs text-(--status-task-blocked)">Callback URLs need attention</span>}
-            <ChevronDown className="size-4 text-muted-foreground transition-transform group-open:rotate-180" />
+            <ChevronDown className="size-4 text-ink-3 transition-transform group-open:rotate-180" />
           </span>
         </summary>
-        <div className="space-y-5 border-t border-border p-4">
+        <div className="space-y-5 border-t border-line p-4">
       {endpoint.provider === "slack" && callbackSurfaceRows.length > 0 && (
         <div
           className="space-y-3 text-sm"
         >
           <p className="font-medium">Slack callback health</p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             {endpoint.setup?.callbacksNeedUpdate
               ? "Slack callback URLs need an update. Save the current App Manifest, then exercise Events, Interactivity, and the registered command again."
               : "Paperclip records each callback surface independently after Slack successfully calls it."}
           </p>
-          <div className="divide-y divide-border border-y border-border">
+          <div className="divide-y divide-line border-y border-line">
             {callbackSurfaceRows.map(([label, surface]) => (
               <div key={label} className="flex flex-wrap items-center justify-between gap-3 py-2">
                 <p className="text-xs font-medium">{label}</p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-ink-3">
                   {surface.status === "current"
                     ? "Current"
                     : surface.status === "stale"
@@ -1063,7 +1063,7 @@ function Activity({
                       : "Not observed"}
                 </p>
                 {surface.observedAt && (
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-ink-3">
                     Last observed{" "}
                     <time
                       dateTime={surface.observedAt}
@@ -1086,7 +1086,7 @@ function Activity({
           <div className="flex flex-wrap items-center gap-2">
             {status === "active" && (
               <Button
-                variant="outline"
+                variant="secondary"
                 disabled={lifecycle.isPending}
                 onClick={() => lifecycle.mutate("pause")}
               >
@@ -1100,7 +1100,7 @@ function Activity({
             )}
             {status === "paused" && (
               <Button
-                variant="outline"
+                variant="secondary"
                 disabled={lifecycle.isPending}
                 onClick={() => lifecycle.mutate("resume")}
               >
@@ -1121,7 +1121,7 @@ function Activity({
               "verifying",
             ].includes(status) && (
               <Button
-                variant="outline"
+                variant="secondary"
                 disabled={lifecycle.isPending}
                 onClick={() =>
                   navigate(
@@ -1138,8 +1138,7 @@ function Activity({
               </Button>
             )}
             <Button
-              variant="ghost"
-              className="text-destructive hover:text-destructive"
+              variant="danger"
               disabled={lifecycle.isPending}
               onClick={() => setRemoveOpen(true)}
             >
@@ -1148,7 +1147,7 @@ function Activity({
             </Button>
           </div>
           {status !== "draft" && status !== "verifying" && (
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-ink-3">
               {providerLifecycleGuidance[endpoint.provider].reconnect}
             </p>
           )}
@@ -1161,26 +1160,26 @@ function Activity({
           Recent activity
         </h3>
         {endpoint.provider === "agentmail" && rows.some((item) => item.kind === "publication" && item.status === "delivery_unknown") && (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-ink-3">
             Review unconfirmed email delivery in the{" "}
             <Link to={`/apps/chat/${endpointId}/conversations`} className="underline underline-offset-4">conversation’s task</Link>.
           </p>
         )}
-        <div className="divide-y divide-border border-y border-border">
+        <div className="divide-y divide-line border-y border-line">
           {query.isLoading && (
-            <div className="flex items-center gap-2 py-5 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2 py-5 text-sm text-ink-3">
               <Loader2 className="h-4 w-4 animate-spin" />
               Loading activity…
             </div>
           )}
           {query.isError && (
             <div className="flex flex-wrap items-center justify-between gap-3 py-4">
-              <p className="text-sm text-destructive" role="alert">
+              <p className="text-sm text-bad" role="alert">
                 Connection activity could not be loaded.
               </p>
               <Button
                 size="sm"
-                variant="outline"
+                variant="secondary"
                 onClick={() => query.refetch()}
               >
                 Try again
@@ -1192,29 +1191,29 @@ function Activity({
             rows.map((item) => (
               <div
                 key={item.id}
-                className="flex items-start gap-3 px-2 py-3 transition-colors hover:bg-accent/50"
+                className="flex items-start gap-3 px-2 py-3 transition-colors hover:bg-bg-3/50"
               >
-                <span className="mt-0.5 text-muted-foreground" aria-hidden="true">
+                <span className="mt-0.5 text-ink-3" aria-hidden="true">
                   {item.kind === "delivery" ? <ArrowDownLeft className="size-4" /> : item.kind === "publication" ? <ArrowUpRight className="size-4" /> : <ActivityIcon className="size-4" />}
                 </span>
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                     <p className="min-w-0 flex-1 text-sm font-medium">{item.summary}</p>
                     <StatusBadge status={item.status} />
-                    <time dateTime={item.createdAt} title={item.createdAt} className="shrink-0 text-xs tabular-nums text-muted-foreground">
+                    <time dateTime={item.createdAt} title={item.createdAt} className="shrink-0 text-xs tabular-nums text-ink-3">
                       {formatDateTime(item.createdAt, { includeSeconds: true })}
                     </time>
                   </div>
-                  <p className="mt-1 text-xs text-muted-foreground">{activityKindLabels[item.kind]}</p>
+                  <p className="mt-1 text-xs text-ink-3">{activityKindLabels[item.kind]}</p>
                   {item.fileTransfer && (
-                    <p className="mt-1 text-xs text-muted-foreground">
+                    <p className="mt-1 text-xs text-ink-3">
                       {item.fileTransfer.filename} —{" "}
                       {item.fileTransfer.phase.replaceAll("_", " ")}
                     </p>
                   )}
                   {item.detail && (
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      <span className="font-medium text-foreground">
+                    <p className="mt-1 text-xs text-ink-3">
+                      <span className="font-medium text-ink">
                         {activityDetailLabel(item)}:
                       </span>{" "}
                       {item.detail}
@@ -1224,7 +1223,7 @@ function Activity({
                 {endpoint.provider !== "agentmail" && isReplayEligible(item) && (
                   <Button
                     size="sm"
-                    variant="outline"
+                    variant="secondary"
                     aria-label={`Replay failed ${item.kind}`}
                     disabled={replay.isPending}
                     onClick={() => replay.mutate(item)}
@@ -1240,7 +1239,7 @@ function Activity({
                 {endpoint.provider !== "agentmail" && isResolutionEligible(item) && (
                   <Button
                     size="sm"
-                    variant="outline"
+                    variant="secondary"
                     onClick={() => setResolutionItem(item)}
                   >
                     Resolve
@@ -1249,17 +1248,17 @@ function Activity({
               </div>
             ))}
           {!query.isLoading && !query.isError && rows.length === 0 && (
-            <p className="py-5 text-sm text-muted-foreground">
+            <p className="py-5 text-sm text-ink-3">
               No connection activity yet.
             </p>
           )}
         </div>
       </div>
       <nav aria-label="Activity pagination" className="flex items-center justify-between gap-3">
-        <span className="text-xs text-muted-foreground">Page {cursors.length}</span>
+        <span className="text-xs text-ink-3">Page {cursors.length}</span>
         <div className="flex items-center gap-2">
-          <Button size="sm" variant="outline" disabled={cursors.length === 1 || query.isFetching} onClick={() => setCursors((pages) => pages.slice(0, -1))}>Previous</Button>
-          <Button size="sm" variant="outline" disabled={!query.data?.nextCursor || query.isFetching || query.isError} onClick={() => { if (query.data?.nextCursor) setCursors((pages) => [...pages, query.data.nextCursor!]); }}>Next</Button>
+          <Button size="sm" variant="secondary" disabled={cursors.length === 1 || query.isFetching} onClick={() => setCursors((pages) => pages.slice(0, -1))}>Previous</Button>
+          <Button size="sm" variant="secondary" disabled={!query.data?.nextCursor || query.isFetching || query.isError} onClick={() => { if (query.data?.nextCursor) setCursors((pages) => [...pages, query.data.nextCursor!]); }}>Next</Button>
         </div>
       </nav>
       <AlertDialog
@@ -1292,7 +1291,7 @@ function Activity({
             {resolutionItem &&
               activityResolutionActions(resolutionItem).includes("cancel") && (
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   disabled={resolveActivity.isPending}
                   onClick={() =>
                     resolutionItem &&
@@ -1316,7 +1315,7 @@ function Activity({
                 "retry_anyway",
               ) && (
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   disabled={resolveActivity.isPending}
                   onClick={() =>
                     resolutionItem &&
@@ -1375,7 +1374,7 @@ function Activity({
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-bad text-accent-ink hover:bg-bad/90"
               disabled={lifecycle.isPending}
               onClick={() => lifecycle.mutate("remove")}
             >

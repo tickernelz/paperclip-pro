@@ -76,7 +76,7 @@ function RecentActivity({
   return (
     <section className="space-y-5">
       <div>
-        <h2 className="text-lg font-semibold text-foreground">Recent activity</h2>
+        <h2 className="text-lg font-semibold text-ink">Recent activity</h2>
       </div>
       {loading ? (
         <div className="space-y-2 py-4">
@@ -84,21 +84,21 @@ function RecentActivity({
           <Skeleton className="h-4 w-2/3" />
         </div>
       ) : rows.length === 0 ? (
-        <p className="py-5 text-sm text-muted-foreground">No activity yet.</p>
+        <p className="py-5 text-sm text-ink-3">No activity yet.</p>
       ) : (
-        <ul className="divide-y divide-border">
+        <ul className="divide-y divide-line">
           {rows.map((row) => (
             <li key={row.key} className="flex items-start gap-3 py-3 text-sm">
               <span className={cn("mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full", row.dotClass)} aria-hidden />
               <span className="min-w-0 flex-1">
-                <span className="block text-foreground">{row.primary}</span>
-                <span className="block truncate text-xs text-muted-foreground">
+                <span className="block text-ink">{row.primary}</span>
+                <span className="block truncate text-xs text-ink-3">
                   {row.issue ? (
                     <>
                       while working on{" "}
                       <Link
                         to={`/issues/${row.issue.identifier}`}
-                        className="font-medium text-muted-foreground hover:text-foreground hover:underline"
+                        className="font-medium text-ink-3 hover:text-ink hover:underline"
                       >
                         {row.issue.identifier}
                       </Link>
@@ -111,7 +111,7 @@ function RecentActivity({
                       {" · "}
                       <Link
                         to={row.link.to}
-                        className="font-medium text-muted-foreground hover:text-foreground hover:underline"
+                        className="font-medium text-ink-3 hover:text-ink hover:underline"
                       >
                         {row.link.label}
                       </Link>

@@ -746,7 +746,7 @@ function AttributionAvatar({
       <TooltipTrigger asChild>
         <span aria-label={accessibleLabel} data-testid={`issue-${testIdLabel}-avatar`}>
           {actor.kind === "agent" ? <AgentAvatar agent={actor} size={20} /> : (
-            <Avatar size="xs" className="ring-2 ring-background">
+            <Avatar size="xs" className="ring-2 ring-bg">
               {actor.avatarUrl ? <AvatarImage src={actor.avatarUrl} alt="" /> : null}
               <AvatarFallback>{attributionInitials(actor.name)}</AvatarFallback>
             </Avatar>
@@ -759,20 +759,20 @@ function AttributionAvatar({
           data-testid={`issue-${testIdLabel}-tooltip`}
         >
           {actor.kind === "agent" ? <AgentAvatar agent={actor} size={32} /> : (
-            <Avatar size="sm" className="ring-1 ring-background/30">
+            <Avatar size="sm" className="ring-1 ring-bg/30">
               {actor.avatarUrl ? <AvatarImage src={actor.avatarUrl} alt="" /> : null}
               <AvatarFallback>{attributionInitials(actor.name)}</AvatarFallback>
             </Avatar>
           )}
           <div className="min-w-0">
-            <div className="text-(length:--text-nano) font-medium uppercase leading-none text-background/70">
+            <div className="text-(length:--text-nano) font-medium uppercase leading-none text-bg/70">
               {label}
             </div>
-            <div className="max-w-48 truncate text-xs font-medium leading-4 text-background">
+            <div className="max-w-48 truncate text-xs font-medium leading-4 text-bg">
               {actor.name}
             </div>
             {via ? (
-              <div className="max-w-48 truncate text-(length:--text-nano) leading-3 text-background/60">
+              <div className="max-w-48 truncate text-(length:--text-nano) leading-3 text-bg/60">
                 via {via}
               </div>
             ) : null}
@@ -875,7 +875,7 @@ function IssueSectionSkeleton({
   rows?: number;
 }) {
   return (
-    <div className="space-y-3 rounded-lg border border-border p-3">
+    <div className="space-y-3 rounded-lg border border-line p-3">
       <Skeleton className={cn("h-4", titleWidth)} />
       <div className="space-y-2">
         {Array.from({ length: rows }).map((_, index) => (
@@ -932,7 +932,7 @@ function ChatBubbleSkeleton({
 function IssueChatComposerSkeleton({ className }: { className?: string }) {
   return (
     <div
-      className={cn("rounded-xl border border-input bg-card p-2", className)}
+      className={cn("rounded-xl border border-line-strong bg-bg-2 p-2", className)}
       data-testid="issue-chat-composer-skeleton"
     >
       <div className="min-h-(--sz-48px) space-y-2 px-1 py-1">
@@ -1016,7 +1016,7 @@ function IssueDetailLoadingState({
                 <PriorityIcon priority={headerSeed.priority} />
               )}
               {identifier ? (
-                <span className="text-sm font-mono text-muted-foreground shrink-0">
+                <span className="text-sm font-mono text-ink-3 shrink-0">
                   {identifier}
                 </span>
               ) : null}
@@ -1034,14 +1034,14 @@ function IssueDetailLoadingState({
               {/* Seeded header — same anatomy as the resolved one below, so the
                   eyebrow does not change shape when the real issue arrives. */}
               {headerSeed.projectId ? (
-                <span className="inline-flex items-center gap-1 text-xs text-muted-foreground rounded px-1 -mx-1 py-0.5 min-w-0">
+                <span className="inline-flex items-center gap-1 text-xs text-ink-3 rounded px-1 -mx-1 py-0.5 min-w-0">
                   <ProjectTile size="xs" />
                   <span className="truncate">
                     {headerSeed.projectName ?? headerSeed.projectId.slice(0, 8)}
                   </span>
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 text-xs text-muted-foreground opacity-50 px-1 -mx-1 py-0.5">
+                <span className="inline-flex items-center gap-1 text-xs text-ink-3 opacity-50 px-1 -mx-1 py-0.5">
                   <ProjectTile size="xs" />
                   No project
                 </span>
@@ -1085,7 +1085,7 @@ function IssueDetailLoadingState({
         </div>
       ) : (
         <>
-          <Skeleton className="h-28 w-full rounded-lg border border-border" />
+          <Skeleton className="h-28 w-full rounded-lg border border-line" />
 
           <div className="space-y-3">
             <div className="flex items-center gap-2">
@@ -1169,7 +1169,7 @@ function InboxMobileToolbar({
           </PopoverTrigger>
           <PopoverContent className="w-44 p-1" align="end">
             <button
-              className="flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50"
+              className="flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-bg-3/50"
               onClick={() => {
                 onCopy();
                 setMenuOpen(false);
@@ -1179,7 +1179,7 @@ function InboxMobileToolbar({
               Copy as markdown
             </button>
             <button
-              className="flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50"
+              className="flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-bg-3/50"
               onClick={() => {
                 onProperties();
                 setMenuOpen(false);
@@ -1190,7 +1190,7 @@ function InboxMobileToolbar({
             </button>
             {issueIdProp && (
               <button
-                className="flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50 text-destructive"
+                className="flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-bg-3/50 text-bad"
                 onClick={() => {
                   onHide();
                   setMenuOpen(false);
@@ -2442,7 +2442,7 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
     <div className="flex justify-center">
       <Button
         type="button"
-        variant="outline"
+        variant="secondary"
         size="sm"
         disabled={commentsLoadingOlder}
         onClick={onLoadOlderComments}
@@ -2645,7 +2645,7 @@ const IssueDetailChatTab = memo(function IssueDetailChatTab({
             }
             footer={classicQueuedDeliveryError ? (
               <>
-                <p role="status" className="text-sm text-destructive">
+                <p role="status" className="text-sm text-bad">
                   {classicQueuedDeliveryError}
                 </p>
                 {footer}
@@ -2830,22 +2830,22 @@ function IssueDetailActivityTab({
   return (
     <>
       {shouldShowCostSummary && (
-        <div className="mb-3 px-3 py-2 rounded-lg border border-border">
-          <div className="text-sm font-medium text-muted-foreground mb-1">
+        <div className="mb-3 px-3 py-2 rounded-lg border border-line">
+          <div className="text-sm font-medium text-ink-3 mb-1">
             Cost Summary
           </div>
           {!issueCostSummary.hasCost &&
           !issueCostSummary.hasTokens &&
           !hasIssueTreeCost ? (
-            <div className="text-xs text-muted-foreground">
+            <div className="text-xs text-ink-3">
               No cost data yet.
             </div>
           ) : (
-            <div className="space-y-1 text-xs text-muted-foreground tabular-nums">
+            <div className="space-y-1 text-xs text-ink-3 tabular-nums">
               <div className="flex flex-wrap gap-3">
-                <span className="font-medium text-foreground">This task</span>
+                <span className="font-medium text-ink">This task</span>
                 {issueCostSummary.hasCost ? (
-                  <span className="font-medium text-foreground">
+                  <span className="font-medium text-ink">
                     ${issueCostSummary.cost.toFixed(4)}
                   </span>
                 ) : null}
@@ -2871,7 +2871,7 @@ function IssueDetailActivityTab({
               </div>
               {hasIssueTreeCost && issueTreeCostSummary ? (
                 <div className="flex flex-wrap gap-3">
-                  <span className="font-medium text-foreground">
+                  <span className="font-medium text-ink">
                     Including sub-tasks{" "}
                     {(issueTreeCostSummary.costCents / 100).toLocaleString(
                       undefined,
@@ -6316,12 +6316,12 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         return;
       }
       element.scrollIntoView({ behavior: "smooth", block: "center" });
-      element.classList.add("ring-2", "ring-primary/50", "transition-shadow");
+      element.classList.add("ring-2", "ring-accent/50", "transition-shadow");
       timer = setTimeout(
         () =>
           element.classList.remove(
             "ring-2",
-            "ring-primary/50",
+            "ring-accent/50",
             "transition-shadow",
           ),
         3000,
@@ -7032,7 +7032,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
 
   if (isLoading)
     return <IssueDetailLoadingState headerSeed={issueHeaderSeed} />;
-  if (error) return <p className="text-sm text-destructive">{error.message}</p>;
+  if (error) return <p className="text-sm text-bad">{error.message}</p>;
   if (!issue) return null;
   // Do not expose a file chooser on the outgoing UUID/company/interface
   // branch: its input can be detached before the chosen file is returned.
@@ -7143,7 +7143,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         multiple
       />
       <Button
-        variant="outline"
+        variant="secondary"
         size="sm"
         onClick={() => fileInputRef.current?.click()}
         disabled={
@@ -7151,7 +7151,6 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         }
         className={cn(
           "shadow-none",
-          attachmentDragActive && "border-primary bg-primary/5",
         )}
       >
         <Paperclip className="h-3.5 w-3.5 mr-1.5" />
@@ -7176,7 +7175,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     !streamlinedTaskDetailEnabled && ancestors.length > 0 ? (
       <nav
         className={cn(
-          "flex items-center gap-1 text-xs text-muted-foreground flex-wrap",
+          "flex items-center gap-1 text-xs text-ink-3 flex-wrap",
           shellSectionClass,
         )}
       >
@@ -7193,7 +7192,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                   location.search,
                 )
               }
-              className="hover:text-foreground transition-colors truncate max-w-(--sz-200px)"
+              className="hover:text-ink transition-colors truncate max-w-(--sz-200px)"
               title={ancestor.title}
             >
               {ancestor.title}
@@ -7201,7 +7200,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
           </span>
         ))}
         <ChevronRight className="h-3 w-3 shrink-0" />
-        <span className="text-foreground/60 truncate max-w-(--sz-200px)">
+        <span className="text-ink/60 truncate max-w-(--sz-200px)">
           {issue.title}
         </span>
       </nav>
@@ -7249,7 +7248,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
             />
             <span
               data-slot="task-title-identifier"
-              className="hidden shrink-0 font-mono text-sm text-muted-foreground md:inline"
+              className="hidden shrink-0 font-mono text-sm text-ink-3 md:inline"
             >
               {issue.identifier ?? issue.id.slice(0, 8)}
             </span>
@@ -7267,7 +7266,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
           <div className="md:hidden">{issueStatusControl}</div>
         ) : null}
         {streamlinedTaskDetailEnabled ? (
-          <span className="shrink-0 font-mono text-sm text-muted-foreground md:hidden">
+          <span className="shrink-0 font-mono text-sm text-ink-3 md:hidden">
             {issue.identifier ?? issue.id.slice(0, 8)}
           </span>
         ) : null}
@@ -7285,7 +7284,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
           />
         )}
         {!streamlinedTaskDetailEnabled ? (
-          <span className="shrink-0 font-mono text-sm text-muted-foreground">
+          <span className="shrink-0 font-mono text-sm text-ink-3">
             {issue.identifier ?? issue.id.slice(0, 8)}
           </span>
         ) : null}
@@ -7374,7 +7373,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         {issue.projectId ? (
           <Link
             to={`/projects/${issue.projectId}`}
-            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors rounded px-1 -mx-1 py-0.5 min-w-0"
+            className="inline-flex items-center gap-1 text-xs text-ink-3 hover:text-ink transition-colors rounded px-1 -mx-1 py-0.5 min-w-0"
           >
             <ProjectTile
               size="xs"
@@ -7387,7 +7386,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
             </span>
           </Link>
         ) : (
-          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground opacity-50 px-1 -mx-1 py-0.5">
+          <span className="inline-flex items-center gap-1 text-xs text-ink-3 opacity-50 px-1 -mx-1 py-0.5">
             <ProjectTile size="xs" />
             No project
           </span>
@@ -7417,7 +7416,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
               </Badge>
             ))}
             {(issue.labels ?? []).length > 4 && (
-              <span className="text-(length:--text-nano) text-muted-foreground">
+              <span className="text-(length:--text-nano) text-ink-3">
                 +{(issue.labels ?? []).length - 4}
               </span>
             )}
@@ -7542,7 +7541,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                 {streamlinedTaskDetailEnabled ? (
                   <>
                     <button
-                      className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs hover:bg-accent/50"
+                      className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs hover:bg-bg-3/50"
                       onClick={() => {
                         openNewSubIssue();
                         setMoreOpen(false);
@@ -7552,7 +7551,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                       Add subtask
                     </button>
                     <button
-                      className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs hover:bg-accent/50"
+                      className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs hover:bg-bg-3/50"
                       onClick={() => {
                         void copyIssueToClipboard();
                         setMoreOpen(false);
@@ -7567,7 +7566,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                     </button>
                     {canArchiveFromInbox ? (
                       <button
-                        className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs hover:bg-accent/50 disabled:opacity-50"
+                        className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs hover:bg-bg-3/50 disabled:opacity-50"
                         disabled={archivePending}
                         onClick={() => {
                           if (!archivePending && issue?.id)
@@ -7625,7 +7624,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                   }}
                 />
                 <button
-                  className="flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent/50 text-destructive"
+                  className="flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-bg-3/50 text-bad"
                   onClick={() => {
                     updateIssue.mutate(
                       { hiddenAt: new Date().toISOString() },
@@ -7677,7 +7676,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
           value={issue.description ?? ""}
           onSave={(description) => updateIssue.mutateAsync({ description })}
           as="p"
-          className="text-sm leading-7 text-foreground"
+          className="text-sm leading-7 text-ink"
           placeholder="Add a description..."
           multiline
           foldable
@@ -7738,7 +7737,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
           entityType: "issue",
         }}
         className={cn("space-y-3", shellSectionClass)}
-        itemClassName="rounded-lg border border-border p-3"
+        itemClassName="rounded-lg border border-line p-3"
         missingBehavior="placeholder"
       />
     </>
@@ -7796,13 +7795,13 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
           )}
 
           {issue.status === "in_review" && issue.externalConversationState === "waiting" && (
-            <p role="status" className="text-sm text-muted-foreground">Reply sent. Send a message to continue.</p>
+            <p role="status" className="text-sm text-ink-3">Reply sent. Send a message to continue.</p>
           )}
 
           {issue.hiddenAt && (
             <div
               className={cn(
-                "flex items-center gap-2 rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive",
+                "flex items-center gap-2 rounded-md border border-bad/30 bg-bad/10 px-3 py-2 text-sm text-bad",
                 shellSectionClass,
                 taskChatShellEnabled && (isMobile ? "mt-4" : "mt-3"),
               )}
@@ -7814,7 +7813,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
           {treeControlWakeWarning ? (
             <p
               role="alert"
-              className={cn("text-sm text-muted-foreground", shellSectionClass)}
+              className={cn("text-sm text-ink-3", shellSectionClass)}
             >
               {treeControlWakeWarning}
             </p>
@@ -7824,7 +7823,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
             executeTreeControl.variables?.feedback !== "composer" && (
               <p
                 role="alert"
-                className={cn("text-sm text-destructive", shellSectionClass)}
+                className={cn("text-sm text-bad", shellSectionClass)}
               >
                 {executeTreeControl.error.message}
               </p>
@@ -7837,7 +7836,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
           {taskChatShellEnabled ? null : showRichSubIssuesSection ? (
             <div className="space-y-3">
               <div className="flex items-center justify-between gap-2">
-                <h3 className="text-sm font-medium text-muted-foreground">
+                <h3 className="text-sm font-medium text-ink-3">
                   Sub-tasks
                 </h3>
               </div>
@@ -7871,7 +7870,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
           ) : (
             <div className="flex flex-wrap items-center justify-end gap-2 min-w-0">
               <Button
-                variant="outline"
+                variant="secondary"
                 size="sm"
                 onClick={openNewSubIssue}
                 className="shrink-0 shadow-none"
@@ -8022,7 +8021,7 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
               return (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between gap-2">
-                    <h3 className="text-sm font-medium text-muted-foreground">
+                    <h3 className="text-sm font-medium text-ink-3">
                       Artifacts
                     </h3>
                   </div>

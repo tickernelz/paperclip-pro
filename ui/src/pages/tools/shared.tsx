@@ -116,9 +116,9 @@ export function DecisionBadge({ decision }: { decision: ToolPolicyDecision | str
 
 /** Compact relative time, falling back to absolute. */
 export function RelativeTime({ value }: { value: Date | string | null | undefined }) {
-  if (!value) return <span className="text-muted-foreground">never</span>;
+  if (!value) return <span className="text-ink-3">never</span>;
   const date = typeof value === "string" ? new Date(value) : value;
-  if (Number.isNaN(date.getTime())) return <span className="text-muted-foreground">—</span>;
+  if (Number.isNaN(date.getTime())) return <span className="text-ink-3">—</span>;
   const diffMs = Date.now() - date.getTime();
   const abs = Math.abs(diffMs);
   const mins = Math.round(abs / 60000);
@@ -131,7 +131,7 @@ export function RelativeTime({ value }: { value: Date | string | null | undefine
     text = isFuture ? `in ${value}` : `${value} ago`;
   }
   return (
-    <span title={date.toLocaleString()} className="text-muted-foreground">
+    <span title={date.toLocaleString()} className="text-ink-3">
       {text}
     </span>
   );
@@ -149,8 +149,8 @@ export function ToolsPageHeader({
   return (
     <div className="flex flex-wrap items-start justify-between gap-3">
       <div className="space-y-1">
-        <h2 className="text-lg font-semibold text-foreground">{title}</h2>
-        {description ? <p className="max-w-2xl text-sm text-muted-foreground">{description}</p> : null}
+        <h2 className="text-lg font-semibold text-ink">{title}</h2>
+        {description ? <p className="max-w-2xl text-sm text-ink-3">{description}</p> : null}
       </div>
       {actions ? <div className="flex shrink-0 gap-2">{actions}</div> : null}
     </div>
@@ -159,8 +159,8 @@ export function ToolsPageHeader({
 
 export function LoadingState({ label = "Loading…" }: { label?: string }) {
   return (
-    <div className="flex items-center gap-2 py-10 text-sm text-muted-foreground">
-      <span className="h-4 w-4 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground" />
+    <div className="flex items-center gap-2 py-10 text-sm text-ink-3">
+      <span className="h-4 w-4 animate-spin rounded-full border-2 border-ink-3/30 border-t-ink-3" />
       {label}
     </div>
   );
@@ -184,20 +184,20 @@ export function ErrorState({ error, onRetry }: { error: unknown; onRetry?: () =>
     message = "Something went wrong.";
   }
   return (
-    <Card className="border-destructive/40">
+    <Card className="border-bad/40">
       <CardContent className="flex flex-col gap-3 py-6">
-        <div className="flex items-start gap-2 text-sm text-destructive">
+        <div className="flex items-start gap-2 text-sm text-bad">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
           <div>
             <p className="font-medium">Could not load this view</p>
-            <p className="text-destructive/80">{message}</p>
+            <p className="text-bad/80">{message}</p>
           </div>
         </div>
         {onRetry ? (
           <button
             type="button"
             onClick={onRetry}
-            className="self-start rounded-md border border-border px-3 py-1.5 text-xs font-medium hover:bg-accent"
+            className="self-start rounded-md border border-line px-3 py-1.5 text-xs font-medium hover:bg-bg-3"
           >
             Retry
           </button>
@@ -224,13 +224,13 @@ export function PendingBackendNotice({
   return (
     <Card className="border-dashed">
       <CardContent className="flex flex-col gap-2 py-8">
-        <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+        <div className="flex items-center gap-2 text-sm font-medium text-ink">
           <AlertTriangle className="h-4 w-4 text-amber-500" />
           {title}
         </div>
-        <p className="max-w-2xl text-sm text-muted-foreground">{body}</p>
+        <p className="max-w-2xl text-sm text-ink-3">{body}</p>
         {issue ? (
-          <a href={issue.href} className="text-sm font-medium text-primary hover:underline">
+          <a href={issue.href} className="text-sm font-medium text-accent hover:underline">
             Tracked in {issue.identifier} →
           </a>
         ) : null}

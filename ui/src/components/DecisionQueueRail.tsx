@@ -78,17 +78,17 @@ function Chip({
       className={cn(
         "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition-colors",
         active
-          ? "border-primary bg-primary/10 text-primary"
-          : "border-border text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+          ? "border-accent bg-accent/10 text-accent"
+          : "border-line text-ink-3 hover:bg-bg-3/50 hover:text-ink",
       )}
       aria-current={active ? "page" : undefined}
     >
       {recent && (
-        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-primary" aria-label="Recent activity" />
+        <span className="h-1.5 w-1.5 shrink-0 rounded-full bg-accent" aria-label="Recent activity" />
       )}
       <span className="truncate">{label}</span>
       {count != null && count > 0 && (
-        <span className="tabular-nums text-(length:--text-nano) text-muted-foreground">{count}</span>
+        <span className="tabular-nums text-(length:--text-nano) text-ink-3">{count}</span>
       )}
     </Link>
   );

@@ -334,10 +334,10 @@ export const codeBlockActionStyle: React.CSSProperties = {
   gap: "0.25rem",
   minHeight: "1.55rem",
   padding: "0.2rem 0.4rem",
-  borderRadius: "calc(var(--radius) - 4px)",
-  border: "1px solid color-mix(in oklab, var(--foreground) 14%, transparent)",
-  backgroundColor: "var(--background)",
-  color: "var(--muted-foreground)",
+  borderRadius: "var(--r-sm)",
+  border: "1px solid color-mix(in oklab, var(--ink) 14%, transparent)",
+  backgroundColor: "var(--bg)",
+  color: "var(--ink-3)",
   fontSize: "var(--text-micro)",
   lineHeight: 1,
   cursor: "pointer",
@@ -713,8 +713,8 @@ function CodeBlock({
           style={wrapLines
             ? {
                 ...codeBlockWrapActionStyle,
-                borderColor: "color-mix(in oklab, var(--primary) 38%, transparent)",
-                color: "var(--primary)",
+                borderColor: "color-mix(in oklab, var(--accent) 38%, transparent)",
+                color: "var(--accent)",
               }
             : codeBlockWrapActionStyle}
           aria-pressed={wrapLines}

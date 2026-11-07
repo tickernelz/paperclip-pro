@@ -259,15 +259,15 @@ export function RichWorkProductCard({ workProduct, href, variant = "card" }: Ric
   return (
     <article
       className={cn(
-        "@container relative flex min-w-0 rounded-md border border-border bg-card/60",
-        (mediaPath || actionHref) && "hover:bg-accent/50",
+        "@container relative flex min-w-0 rounded-md border border-line bg-bg-2/60",
+        (mediaPath || actionHref) && "hover:bg-bg-3/50",
         compact ? "items-center gap-2 px-2.5 py-1.5" : "items-start gap-3 px-3 py-2.5",
       )}
       data-testid={`task-chat-rich-work-product-${workProduct.type}`}
       data-variant={variant}
     >
       <div className={cn(
-        "flex shrink-0 items-center justify-center overflow-hidden rounded-sm bg-muted/60 text-muted-foreground",
+        "flex shrink-0 items-center justify-center overflow-hidden rounded-sm bg-bg-3/60 text-ink-3",
         mediaPath ? "w-20" : compact ? "h-8 w-8" : "h-10 w-10",
       )}>
         {mediaPath ? (
@@ -277,17 +277,17 @@ export function RichWorkProductCard({ workProduct, href, variant = "card" }: Ric
         )}
       </div>
       <div className="min-w-0 flex-1">
-        <strong className={cn("block text-sm font-medium text-foreground", expandable ? detailsOpen ? "break-words" : "line-clamp-2 break-words" : "truncate")}>{workProduct.title}</strong>
-        {visibleMeta.length > 0 ? <p className="mt-1 truncate text-xs text-muted-foreground">{visibleMeta.join(" · ")}</p> : null}
-        {statsLabel ? <p className="mt-1 whitespace-nowrap text-xs text-muted-foreground">{statsLabel}</p> : null}
-        {!compact && summary && !linklessBranch ? <p className={cn("mt-1 text-xs text-muted-foreground", detailsOpen ? "whitespace-pre-wrap break-words" : "line-clamp-2")}>{summary}</p> : null}
+        <strong className={cn("block text-sm font-medium text-ink", expandable ? detailsOpen ? "break-words" : "line-clamp-2 break-words" : "truncate")}>{workProduct.title}</strong>
+        {visibleMeta.length > 0 ? <p className="mt-1 truncate text-xs text-ink-3">{visibleMeta.join(" · ")}</p> : null}
+        {statsLabel ? <p className="mt-1 whitespace-nowrap text-xs text-ink-3">{statsLabel}</p> : null}
+        {!compact && summary && !linklessBranch ? <p className={cn("mt-1 text-xs text-ink-3", detailsOpen ? "whitespace-pre-wrap break-words" : "line-clamp-2")}>{summary}</p> : null}
         {expandable && detailsOpen ? (
-          <div className="mt-2 flex flex-col gap-1 text-xs text-muted-foreground">
+          <div className="mt-2 flex flex-col gap-1 text-xs text-ink-3">
             {workProduct.type !== "branch" ? <p>No link was provided for this work product.</p> : null}
             <p>{workProduct.provider} · {workProduct.status.replaceAll("_", " ")} · Updated {formatDateTime(workProduct.updatedAt)}</p>
             {linklessBranch && summary ? (
               <details className="relative z-10 mt-1">
-                <summary className="w-fit cursor-pointer font-medium text-foreground">Saved description</summary>
+                <summary className="w-fit cursor-pointer font-medium text-ink">Saved description</summary>
                 <p className="mt-1 whitespace-pre-wrap break-words">{summary}</p>
               </details>
             ) : null}
@@ -301,17 +301,17 @@ export function RichWorkProductCard({ workProduct, href, variant = "card" }: Ric
             type="button"
             onClick={() => openText!(textMetadata!.attachmentId, textMetadata!.originalFilename ?? workProduct.title)}
             aria-label={`Open in tab: ${workProduct.title}`}
-            className="inline-flex items-center gap-1 text-xs font-medium text-foreground after:absolute after:inset-0 after:rounded-md focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-ring"
+            className="inline-flex items-center gap-1 text-xs font-medium text-ink after:absolute after:inset-0 after:rounded-md focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-focus"
           >
             {compact ? null : <span className="hidden @sm:inline">Open in tab</span>}<FileText aria-hidden className="h-3 w-3" />
           </button>
         ) : null}
         {mediaPath ? (
-          <button type="button" onClick={openGallery} aria-label={`${action}: ${workProduct.title}`} className="inline-flex items-center gap-1 text-xs font-medium text-foreground after:absolute after:inset-0 after:rounded-md focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-ring">
+          <button type="button" onClick={openGallery} aria-label={`${action}: ${workProduct.title}`} className="inline-flex items-center gap-1 text-xs font-medium text-ink after:absolute after:inset-0 after:rounded-md focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-focus">
             {compact ? null : <span className="hidden @sm:inline">{action}</span>}<Maximize2 aria-hidden className="h-3 w-3" />
           </button>
         ) : actionHref ? (
-          <a href={actionHref} aria-label={`${action}: ${workProduct.title}`} className={cn("inline-flex items-center gap-1 text-xs font-medium text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", canOpenText ? "relative z-10" : "after:absolute after:inset-0 after:rounded-md focus-visible:after:ring-2 focus-visible:after:ring-ring")} target={actionHref.startsWith("http") ? "_blank" : undefined} rel={actionHref.startsWith("http") ? "noreferrer" : undefined}>
+          <a href={actionHref} aria-label={`${action}: ${workProduct.title}`} className={cn("inline-flex items-center gap-1 text-xs font-medium text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus", canOpenText ? "relative z-10" : "after:absolute after:inset-0 after:rounded-md focus-visible:after:ring-2 focus-visible:after:ring-focus")} target={actionHref.startsWith("http") ? "_blank" : undefined} rel={actionHref.startsWith("http") ? "noreferrer" : undefined}>
             {compact ? null : <span className="hidden @sm:inline">{action}</span>}<ExternalLink aria-hidden className="h-3 w-3" />
           </a>
         ) : expandable ? (
@@ -320,7 +320,7 @@ export function RichWorkProductCard({ workProduct, href, variant = "card" }: Ric
             onClick={() => setDetailsOpen((open) => !open)}
             aria-label={`${detailsOpen ? "Hide" : "Show"} details: ${workProduct.title}`}
             aria-expanded={detailsOpen}
-            className="inline-flex cursor-pointer items-center gap-1 text-xs font-medium text-foreground after:absolute after:inset-0 after:rounded-md focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-ring"
+            className="inline-flex cursor-pointer items-center gap-1 text-xs font-medium text-ink after:absolute after:inset-0 after:rounded-md focus-visible:outline-none focus-visible:after:ring-2 focus-visible:after:ring-focus"
           >
             <span>{detailsOpen ? "Hide details" : "Show details"}</span>
             <ChevronDown aria-hidden className={cn("h-4 w-4", detailsOpen && "rotate-180")} />

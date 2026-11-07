@@ -35,7 +35,7 @@ const meta = {
   },
   decorators: [
     (Story) => (
-      <div className="w-96 max-w-full bg-background text-foreground">
+      <div className="w-96 max-w-full bg-bg text-ink">
         <Story />
       </div>
     ),
@@ -77,7 +77,7 @@ function InteractiveFooter() {
   };
   return (
     <>
-      <p className="p-3 text-xs text-muted-foreground" role="status">
+      <p className="p-3 text-xs text-ink-3" role="status">
         {lastAction}
       </p>
       <TaskBrowserFooter

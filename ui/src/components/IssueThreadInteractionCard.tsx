@@ -44,6 +44,7 @@ import {
   interactionNoteValue,
 } from "./InteractionNoteField";
 import { Button } from "./ui/button";
+import { Segmented, SegmentedItem } from "./ui/segmented";
 import { Checkbox } from "./ui/checkbox";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "./ui/collapsible";
 import { PriorityIcon } from "./PriorityIcon";
@@ -125,7 +126,7 @@ function InteractionActionError({ message }: { message: string | null }) {
   return (
     <div aria-live="assertive" data-testid="interaction-action-error">
       {message ? (
-        <div className="rounded-sm border border-destructive/60 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+        <div className="rounded-sm border border-bad/60 bg-bad/10 px-3 py-2 text-sm text-bad">
           {message}
         </div>
       ) : null}
@@ -547,11 +548,11 @@ function toolActionStatusClasses(state: ToolActionCardState): {
         dimmed: true,
       };
     case "cancelled":
-      return { shell: "border-2 border-border bg-transparent", badge: "border-border bg-muted text-muted-foreground", label: "Cancelled", Icon: XCircle, dimmed: true };
+      return { shell: "border-2 border-line bg-transparent", badge: "border-line bg-bg-3 text-ink-3", label: "Cancelled", Icon: XCircle, dimmed: true };
     case "expired":
       return {
-        shell: "border-2 border-border bg-transparent",
-        badge: "border-border bg-muted/60 text-muted-foreground",
+        shell: "border-2 border-line bg-transparent",
+        badge: "border-line bg-bg-3/60 text-ink-3",
         label: "Expired",
         Icon: Clock,
         dimmed: true,
@@ -580,8 +581,8 @@ function TaskField({
       className={cn(
         "inline-flex items-center rounded-sm border px-2 py-0.5 text-(length:--text-nano) font-medium uppercase tracking-(--tracking-eyebrow)",
         tone === "default"
-          ? "border-border/70 bg-transparent text-foreground"
-          : "border-border/60 bg-transparent text-muted-foreground",
+          ? "border-line/70 bg-transparent text-ink"
+          : "border-line/60 bg-transparent text-ink-3",
       )}
     >
       {label}: {value}
@@ -647,8 +648,8 @@ function TaskTreeNode({
     <>
       <div
         className={cn(
-          "relative border-b border-border/60 px-3 py-2.5 last:border-b-0",
-          depth > 0 && "before:absolute before:left-3 before:top-0 before:h-full before:w-px before:bg-border/70",
+          "relative border-b border-line/60 px-3 py-2.5 last:border-b-0",
+          depth > 0 && "before:absolute before:left-3 before:top-0 before:h-full before:w-px before:bg-line/70",
         )}
         style={depth > 0 ? { paddingLeft: `${depth * 24 + 12}px` } : undefined}
       >
@@ -672,17 +673,17 @@ function TaskTreeNode({
                       className="mt-px"
                     />
                   ) : null}
-                  <div className="min-w-0 truncate text-sm font-medium text-foreground">
+                  <div className="min-w-0 truncate text-sm font-medium text-ink">
                     {node.task.title}
                   </div>
                 </div>
                 {depth > 0 ? (
-                  <div className="mt-0.5 text-(length:--text-nano) font-medium uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
+                  <div className="mt-0.5 text-(length:--text-nano) font-medium uppercase tracking-(--tracking-eyebrow) text-ink-3">
                     Child task
                   </div>
                 ) : null}
                 {node.task.description ? (
-                  <p className="mt-0.5 text-sm leading-5 text-muted-foreground">
+                  <p className="mt-0.5 text-sm leading-5 text-ink-3">
                     {node.task.description}
                   </p>
                 ) : null}
@@ -883,14 +884,14 @@ function SuggestTasksCard({
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+      <div className="flex flex-wrap items-center gap-2 text-xs text-ink-3">
         <span>{totalTasks === 1 ? "1 draft issue" : `${totalTasks} draft issues`}</span>
         {interaction.payload.defaultParentId ? (
           <TaskField label="Default parent" value={interaction.payload.defaultParentId} tone="subtle" />
         ) : null}
       </div>
 
-      <div className="overflow-hidden border border-border/70">
+      <div className="overflow-hidden border border-line/70">
         {roots.map((root) => (
           <TaskTreeNode
             key={root.task.clientKey}
@@ -937,7 +938,7 @@ function SuggestTasksCard({
       {interaction.status === "pending" ? (
         <div className="space-y-3">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-2 text-xs text-ink-3">
               <span>
                 {selectedCount === totalTasks
                   ? `All ${totalTasks} draft ${totalTasks === 1 ? "issue" : "issues"} selected`
@@ -967,7 +968,7 @@ function SuggestTasksCard({
               </Button>
               <Button
                 size="sm"
-                variant="outline"
+                variant="secondary"
                 disabled={!onRejectInteraction || working !== null}
                 onClick={() => setRejecting((current) => !current)}
               >
@@ -992,12 +993,12 @@ function SuggestTasksCard({
                 value={rejectReason}
                 onChange={(event) => setRejectReason(event.target.value)}
                 placeholder="Add a short reason for rejecting this suggestion"
-                className="min-h-24 bg-background text-sm"
+                className="min-h-24 bg-bg text-sm"
               />
               <div className="flex justify-end">
                 <Button
                   size="sm"
-                  variant="outline"
+                  variant="secondary"
                   disabled={!onRejectInteraction || working !== null}
                   onClick={() => void handleReject()}
                 >
@@ -1042,10 +1043,10 @@ function QuestionOptionButton({
       role={selectionMode === "single" ? "radio" : "checkbox"}
       aria-checked={selected}
       className={cn(
-        "w-full rounded-sm border px-4 py-3 text-left transition-colors outline-none focus-visible:border-ring focus-visible:ring-(length:--rad-3) focus-visible:ring-ring/50",
+        "w-full rounded-sm border px-4 py-3 text-left transition-colors outline-none focus-visible:border-focus focus-visible:ring-(length:--rad-3) focus-visible:ring-focus/50",
         selected
           ? "border-sky-500/80 bg-sky-500/10 text-sky-950 dark:border-sky-400/80 dark:bg-sky-400/15 dark:text-sky-50"
-          : "border-border/70 bg-transparent text-foreground hover:border-sky-500/70 hover:bg-sky-500/10 dark:hover:border-sky-400/70 dark:hover:bg-sky-400/10",
+          : "border-line/70 bg-transparent text-ink hover:border-sky-500/70 hover:bg-sky-500/10 dark:hover:border-sky-400/70 dark:hover:bg-sky-400/10",
       )}
       id={id}
       onClick={onClick}
@@ -1053,7 +1054,7 @@ function QuestionOptionButton({
       <div
         className={cn(
           "text-sm font-medium",
-          selected ? "text-sky-950 dark:text-sky-50" : "text-foreground",
+          selected ? "text-sky-950 dark:text-sky-50" : "text-ink",
         )}
       >
         <InteractionInlineMarkdown>{label}</InteractionInlineMarkdown>
@@ -1064,7 +1065,7 @@ function QuestionOptionButton({
             "mt-1 text-sm leading-6",
             selected
               ? "text-sky-900/80 dark:text-sky-100/80"
-              : "text-muted-foreground",
+              : "text-ink-3",
           )}
         >
           <InteractionInlineMarkdown>{description}</InteractionInlineMarkdown>
@@ -1257,8 +1258,8 @@ function AskUserQuestionsCard({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-        <Badge variant="outline" className="border-border/70 bg-background/70 px-2.5 py-1 uppercase tracking-(--tracking-eyebrow) text-foreground/70">
+      <div className="flex flex-wrap items-center gap-2 text-xs text-ink-3">
+        <Badge variant="outline" className="border-line/70 bg-bg/70 px-2.5 py-1 uppercase tracking-(--tracking-eyebrow) text-ink/70">
           <MessageSquareQuote className="h-3 w-3" />
           Ask user questions
         </Badge>
@@ -1317,21 +1318,21 @@ function AskUserQuestionsCard({
             return (
             <div
               key={question.id}
-              className="rounded-2xl border border-border/70 bg-background/82 p-4 shadow-(--shadow-extract-9)"
+              className="rounded-2xl border border-line/70 bg-bg/82 p-4 shadow-(--shadow-extract-9)"
             >
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <div className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
+                  <div className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-ink-3">
                     Question {index + 1}
                   </div>
                   <div
                     id={`${interaction.id}-${question.id}-prompt`}
-                    className="mt-1 text-sm font-semibold text-foreground"
+                    className="mt-1 text-sm font-semibold text-ink"
                   >
                     <InteractionInlineMarkdown>{question.prompt}</InteractionInlineMarkdown>
                   </div>
                   {question.helpText ? (
-                    <div className="mt-1 text-sm leading-6 text-muted-foreground">
+                    <div className="mt-1 text-sm leading-6 text-ink-3">
                       <InteractionInlineMarkdown>{question.helpText}</InteractionInlineMarkdown>
                     </div>
                   ) : null}
@@ -1375,7 +1376,7 @@ function AskUserQuestionsCard({
                                 [question.id]: event.target.value,
                               }))}
                             placeholder="Type your answer"
-                            className="min-h-24 bg-background text-sm"
+                            className="min-h-24 bg-bg text-sm"
                             autoFocus
                           />
                         ) : null}
@@ -1396,10 +1397,10 @@ function AskUserQuestionsCard({
                       id={`${interaction.id}-${question.id}-other`}
                       aria-expanded={otherActiveQuestions[question.id] === true}
                       className={cn(
-                        "text-sm font-medium underline underline-offset-4 transition-colors outline-none focus-visible:ring-(length:--rad-3) focus-visible:ring-ring/50",
+                        "text-sm font-medium underline underline-offset-4 transition-colors outline-none focus-visible:ring-(length:--rad-3) focus-visible:ring-focus/50",
                         otherActiveQuestions[question.id]
                           ? "text-sky-700 hover:text-sky-800 dark:text-sky-300 dark:hover:text-sky-200"
-                          : "text-muted-foreground hover:text-foreground",
+                          : "text-ink-3 hover:text-ink",
                       )}
                       onClick={() =>
                         toggleOption(question.id, OTHER_ANSWER_ID, question.selectionMode)}
@@ -1416,7 +1417,7 @@ function AskUserQuestionsCard({
                             [question.id]: event.target.value,
                           }))}
                         placeholder="Type your answer"
-                        className="min-h-24 bg-background text-sm"
+                        className="min-h-24 bg-bg text-sm"
                       />
                     ) : null}
                   </>
@@ -1440,15 +1441,15 @@ function AskUserQuestionsCard({
             );
           })}
 
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border/70 bg-background/75 p-4">
-            <div className="text-sm text-muted-foreground">
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-line/70 bg-bg/75 p-4">
+            <div className="text-sm text-ink-3">
               Submit once after you finish the full form.
             </div>
             <div className="flex flex-wrap items-center gap-2">
               {onCancelInteraction ? (
                 <Button
                   size="sm"
-                  variant="outline"
+                  variant="secondary"
                   disabled={working || cancelling}
                   onClick={() => void handleCancel()}
                 >
@@ -1539,9 +1540,9 @@ function AskUserQuestionsCard({
             return (
               <div
                 key={question.id}
-                className="rounded-2xl border border-border/70 bg-background/82 p-4"
+                className="rounded-2xl border border-line/70 bg-bg/82 p-4"
               >
-                <div className="text-sm font-semibold text-foreground">
+                <div className="text-sm font-semibold text-ink">
                   <InteractionInlineMarkdown>{question.prompt}</InteractionInlineMarkdown>
                 </div>
                 <div className="mt-2 flex flex-wrap gap-2">
@@ -1554,7 +1555,7 @@ function AskUserQuestionsCard({
                       />
                     ))
                   ) : (
-                    <span className="text-sm text-muted-foreground">No answer recorded.</span>
+                    <span className="text-sm text-ink-3">No answer recorded.</span>
                   )}
                 </div>
                 <InteractionNoteReceipt
@@ -1619,8 +1620,8 @@ function RequestConfirmationTargetChip({
   const className = cn(
     "inline-flex max-w-full items-center gap-1.5 rounded-sm border px-2 py-0.5 text-(length:--text-nano) font-medium uppercase tracking-(--tracking-eyebrow)",
     tone === "default"
-      ? "border-border/70 bg-transparent text-foreground"
-      : "border-border/60 bg-transparent text-muted-foreground",
+      ? "border-line/70 bg-transparent text-ink"
+      : "border-line/60 bg-transparent text-ink-3",
     href && "transition-colors hover:border-sky-500/70 hover:bg-sky-500/10",
   );
   const content = (
@@ -1664,7 +1665,7 @@ function RequestConfirmationResolution({
     if (resumeFailure) {
       return (
         <div className="space-y-2">
-          <div className="flex flex-wrap items-center gap-2 text-sm leading-6 text-foreground">
+          <div className="flex flex-wrap items-center gap-2 text-sm leading-6 text-ink">
             <span className="font-medium">Confirmed</span>
             <RequestConfirmationTargetChip interaction={interaction} target={target} />
           </div>
@@ -1688,7 +1689,7 @@ function RequestConfirmationResolution({
     }
     return (
       <div className="space-y-2">
-        <div className="flex flex-wrap items-center gap-2 text-sm leading-6 text-foreground">
+        <div className="flex flex-wrap items-center gap-2 text-sm leading-6 text-ink">
           <span className="font-medium">Confirmed</span>
           <RequestConfirmationTargetChip interaction={interaction} target={target} />
         </div>
@@ -1700,7 +1701,7 @@ function RequestConfirmationResolution({
   if (interaction.status === "rejected") {
     return (
       <div className="space-y-2">
-        <div className="flex flex-wrap items-center gap-2 text-sm leading-6 text-foreground">
+        <div className="flex flex-wrap items-center gap-2 text-sm leading-6 text-ink">
           <span className="font-medium">Declined</span>
           <RequestConfirmationTargetChip interaction={interaction} target={target} />
         </div>
@@ -1720,7 +1721,7 @@ function RequestConfirmationResolution({
     // reason, so this body only anchors the target chip — no rose/red styling
     // and no duplicated reason text.
     return (
-      <div className="flex flex-wrap items-center gap-2 text-sm leading-6 text-foreground">
+      <div className="flex flex-wrap items-center gap-2 text-sm leading-6 text-ink">
         <span className="font-medium">Withdrawn</span>
         <RequestConfirmationTargetChip interaction={interaction} target={target} />
       </div>
@@ -1752,7 +1753,7 @@ function RequestConfirmationResolution({
               : "The requested target changed before this confirmation was resolved."}
         </p>
         {expiredByComment && interaction.result?.commentId ? (
-          <Button asChild size="sm" variant="ghost" className="h-7 px-2 text-amber-950 hover:bg-amber-500/15 dark:text-amber-50">
+          <Button asChild size="sm" variant="ghost" className="h-7 px-2">
             <a href={`#comment-${interaction.result.commentId}`}>Jump to comment</a>
           </Button>
         ) : null}
@@ -1775,7 +1776,7 @@ function RequestConfirmationResolution({
 
   if (interaction.status === "failed") {
     return (
-      <p className="text-sm leading-6 text-muted-foreground">
+      <p className="text-sm leading-6 text-ink-3">
         This request could not be resolved. Try again or create a new request.
       </p>
     );
@@ -1812,27 +1813,27 @@ function ToolActionResolution({
     : state === "declined" ? interaction.result?.reason?.trim()
     : null;
   const status = <>
-    <Icon className={cn("h-3.5 w-3.5 shrink-0", state === "running" && "animate-spin", state === "failed" && "text-destructive")} />
+    <Icon className={cn("h-3.5 w-3.5 shrink-0", state === "running" && "animate-spin", state === "failed" && "text-bad")} />
     {labels[state]}
     {result?.rememberedAction ? " · Always allowed" : ""}
   </>;
   return (
-    <div className="space-y-1 text-sm text-muted-foreground" aria-live="polite">
+    <div className="space-y-1 text-sm text-ink-3" aria-live="polite">
       {output ? (
         <Collapsible open={resultOpen} onOpenChange={setResultOpen}>
           <CollapsibleTrigger asChild>
-            <button type="button" className="flex items-center gap-1.5 rounded-sm hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" aria-label={resultOpen ? "Hide result details" : "Show result details"}>
+            <button type="button" className="flex items-center gap-1.5 rounded-sm hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus" aria-label={resultOpen ? "Hide result details" : "Show result details"}>
               {status}<ChevronDown className={cn("h-3 w-3", resultOpen && "rotate-180")} />
             </button>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap break-words rounded-md bg-muted p-3 font-mono text-xs text-foreground">{formattedOutput}</pre>
+            <pre className="mt-2 max-h-64 overflow-auto whitespace-pre-wrap break-words rounded-md bg-bg-3 p-3 font-mono text-xs text-ink">{formattedOutput}</pre>
           </CollapsibleContent>
         </Collapsible>
       ) : <p className="flex items-center gap-1.5">{status}</p>}
-      {detail ? <p className={cn("break-words", state === "failed" && "text-destructive")}>{detail}</p> : null}
+      {detail ? <p className={cn("break-words", state === "failed" && "text-bad")}>{detail}</p> : null}
       {state === "executed" && result?.resultHref?.trim() ? (
-        <a className="inline-flex items-center gap-1 underline underline-offset-4 hover:text-foreground" href={result.resultHref} target="_blank" rel="noreferrer">View result<ExternalLink className="h-3 w-3" /></a>
+        <a className="inline-flex items-center gap-1 underline underline-offset-4 hover:text-ink" href={result.resultHref} target="_blank" rel="noreferrer">View result<ExternalLink className="h-3 w-3" /></a>
       ) : null}
     </div>
   );
@@ -1856,7 +1857,7 @@ function RequestToolActionCard({
   const [actionError, setActionError] = useState<string | null>(null);
   const resolutionErrorMessage = useResolutionErrorMessage();
   const isPending = state === "pending";
-  const variant = payload.risk === "destructive" ? "destructive" : "cta";
+  const variant = payload.risk === "destructive" ? "delete" : "primary";
 
   useEffect(() => {
     if (!isPending) setWorking(null);
@@ -1876,7 +1877,7 @@ function RequestToolActionCard({
   }
 
   return (
-    <div className="text-foreground">
+    <div className="text-ink">
       <div className="flex items-start gap-3">
         <span role="img" aria-label={payload.appDisplayName || payload.toolDisplayName}>
           <AppLogo name={payload.appDisplayName || payload.toolDisplayName} size={36} />
@@ -1898,7 +1899,7 @@ function RequestToolActionCard({
             {payload.rememberActionScope ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button size="icon-sm" variant={variant} className="rounded-l-none border-l border-background/30" aria-label="Approval options" disabled={!onAcceptInteraction || working !== null}>
+                  <Button size="icon-sm" variant={variant} className="rounded-l-none border-l" aria-label="Approval options" disabled={!onAcceptInteraction || working !== null}>
                     <ChevronDown className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -1960,12 +1961,12 @@ function SecretProposalIdentityHeader({
     <div className={cn("flex items-start gap-3", dimmed && "opacity-60 grayscale")}>
       <div
         aria-hidden
-        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border/70 bg-muted/60 text-foreground"
+        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-line/70 bg-bg-3/60 text-ink"
       >
         <KeyRound className="h-5 w-5" />
       </div>
       <div className="min-w-0 flex-1">
-        <div className="text-base font-bold leading-tight text-foreground">
+        <div className="text-base font-bold leading-tight text-ink">
           Bind an existing secret
         </div>
       </div>
@@ -1979,24 +1980,24 @@ function SecretProposalDetails({
   payload: NonNullable<RequestConfirmationInteraction["payload"]["secretProposal"]>;
 }) {
   return (
-    <dl className="grid gap-3 rounded-sm border border-border/70 bg-muted/30 p-3 sm:grid-cols-2">
+    <dl className="grid gap-3 rounded-sm border border-line/70 bg-bg-3/30 p-3 sm:grid-cols-2">
       <div className="min-w-0 space-y-1">
-        <dt className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
+        <dt className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-ink-3">
           Source secret
         </dt>
-        <dd className="truncate text-sm font-medium text-foreground">{payload.sourceSecretLabel}</dd>
+        <dd className="truncate text-sm font-medium text-ink">{payload.sourceSecretLabel}</dd>
       </div>
       <div className="min-w-0 space-y-1">
-        <dt className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
+        <dt className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-ink-3">
           Target agent
         </dt>
-        <dd className="truncate text-sm font-medium text-foreground">{payload.targetAgentName}</dd>
+        <dd className="truncate text-sm font-medium text-ink">{payload.targetAgentName}</dd>
       </div>
       <div className="min-w-0 space-y-1 sm:col-span-2">
-        <dt className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
+        <dt className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-ink-3">
           New config path
         </dt>
-        <dd className="break-all font-mono text-sm text-foreground">{payload.configPath}</dd>
+        <dd className="break-all font-mono text-sm text-ink">{payload.configPath}</dd>
       </div>
     </dl>
   );
@@ -2063,11 +2064,11 @@ function SecretProposalResolution({
           </div>
         </div>
         {errorCode ? (
-          <div className="rounded-sm border border-red-500/50 bg-background/60 px-3 py-2">
+          <div className="rounded-sm border border-red-500/50 bg-bg/60 px-3 py-2">
             <span className="text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-eyebrow)">
               Error code
             </span>{" "}
-            <code className="font-mono text-foreground">{errorCode}</code>
+            <code className="font-mono text-ink">{errorCode}</code>
           </div>
         ) : null}
       </div>
@@ -2086,7 +2087,7 @@ function SecretProposalResolution({
           </div>
         </div>
         {reason ? (
-          <div className="rounded-sm border border-red-500/40 bg-background/60 px-3 py-2 text-foreground">
+          <div className="rounded-sm border border-red-500/40 bg-bg/60 px-3 py-2 text-ink">
             <MarkdownBody>{reason}</MarkdownBody>
           </div>
         ) : null}
@@ -2095,10 +2096,10 @@ function SecretProposalResolution({
   }
 
   return (
-    <div className="flex items-start gap-2 rounded-sm border border-border bg-muted/50 px-4 py-3 text-sm text-muted-foreground">
+    <div className="flex items-start gap-2 rounded-sm border border-line bg-bg-3/50 px-4 py-3 text-sm text-ink-3">
       <Clock className="mt-0.5 h-4 w-4 shrink-0" />
       <div>
-        <div className="font-medium text-foreground">Proposal expired{when ? ` · ${when}` : ""}</div>
+        <div className="font-medium text-ink">Proposal expired{when ? ` · ${when}` : ""}</div>
         <p className="mt-1">The binding was not created. A fresh proposal is required.</p>
       </div>
     </div>
@@ -2163,7 +2164,7 @@ function RequestSecretProposalCard({
       <SecretProposalIdentityHeader state={state} />
       <SecretProposalDetails payload={payload} />
       <ProposalJustification justification={payload.justification} />
-      <div className="flex items-center gap-2 text-(length:--text-micro) text-muted-foreground">
+      <div className="flex items-center gap-2 text-(length:--text-micro) text-ink-3">
         <Clock className="h-3.5 w-3.5" />
         Expires {formatDateTime(payload.expiresAt)}
       </div>
@@ -2174,7 +2175,7 @@ function RequestSecretProposalCard({
           approveLabel={interaction.payload.acceptLabel ?? "Approve & bind"}
           reviseLabel="Add reason…"
           rejectLabel={interaction.payload.rejectLabel ?? "Reject"}
-          approveVariant="cta"
+          approveVariant="primary"
           allowRevise={interaction.payload.allowDeclineReason !== false}
           rejectRequiresReason={interaction.payload.rejectRequiresReason === true}
           reasonPlaceholder={interaction.payload.declineReasonPlaceholder ?? "Optional: explain why this binding should not be created."}
@@ -2223,7 +2224,7 @@ function ConfirmationActionRow({
   approveLabel,
   reviseLabel = CONFIRMATION_REVISE_LABEL,
   rejectLabel,
-  approveVariant = "default",
+  approveVariant = "primary",
   primaryActionOnRight = false,
   allowRevise,
   rejectRequiresReason,
@@ -2311,7 +2312,7 @@ function ConfirmationActionRow({
       >
         <Button
           size="sm"
-          variant={revising ? "outline" : approveVariant}
+          variant={revising ? "secondary" : approveVariant}
           className={stackActionsOnMobile ? "col-span-2 w-full sm:col-auto sm:w-auto" : undefined}
           disabled={!canApprove || working !== null || approveDisabled || preparingApproval}
           onClick={onApprove}
@@ -2328,7 +2329,7 @@ function ConfirmationActionRow({
         {allowRevise ? (
           <Button
             size="sm"
-            variant="outline"
+            variant="secondary"
             className={stackActionsOnMobile ? "w-full sm:w-auto" : undefined}
             disabled={!canReject || working !== null}
             onClick={() => {
@@ -2360,19 +2361,19 @@ function ConfirmationActionRow({
       </div>
 
       {revising ? (
-        <div className="space-y-3 rounded-sm border border-border/70 bg-background/75 p-3">
+        <div className="space-y-3 rounded-sm border border-line/70 bg-bg/75 p-3">
           <Textarea
             value={reason}
             onChange={(event) => setReason(event.target.value)}
             placeholder={reasonPlaceholder}
             aria-invalid={attempted && reasonMissing}
             className={cn(
-              "min-h-24 bg-background text-sm",
+              "min-h-24 bg-bg text-sm",
               attempted && reasonMissing && "border-rose-500 focus-visible:ring-rose-500/25",
             )}
           />
           {attempted && reasonMissing ? (
-            <p className="text-xs text-destructive">Add a note describing the changes you want.</p>
+            <p className="text-xs text-bad">Add a note describing the changes you want.</p>
           ) : null}
           {revisePanelChildren}
           <div className="flex flex-wrap justify-end gap-2">
@@ -2389,7 +2390,7 @@ function ConfirmationActionRow({
             </Button>
             <Button
               size="sm"
-              variant="outline"
+              variant="secondary"
               disabled={!canReject || working !== null || rejectDisabled}
               onClick={submitRevision}
             >
@@ -2432,8 +2433,8 @@ function connectionAuthorizationStatusClasses(
       // Not a warning and not a failure: someone else's decision is simply
       // outstanding. The calm inert lane keeps it out of the reader's queue.
       return {
-        shell: "border-border bg-transparent",
-        badge: "border-border bg-muted/60 text-muted-foreground",
+        shell: "border-line bg-transparent",
+        badge: "border-line bg-bg-3/60 text-ink-3",
         label: `Waiting for ${copy.addresseeLabel}`,
         Icon: Clock,
       };
@@ -2446,16 +2447,16 @@ function connectionAuthorizationStatusClasses(
       };
     case "declined":
       return {
-        shell: "border-border bg-transparent",
-        badge: "border-border bg-muted/60 text-muted-foreground",
+        shell: "border-line bg-transparent",
+        badge: "border-line bg-bg-3/60 text-ink-3",
         label: "Not connected",
         Icon: MinusCircle,
       };
     case "expired":
     default:
       return {
-        shell: "border-border bg-transparent",
-        badge: "border-border bg-muted/60 text-muted-foreground",
+        shell: "border-line bg-transparent",
+        badge: "border-line bg-bg-3/60 text-ink-3",
         label: "Authorization expired",
         Icon: CircleDashed,
       };
@@ -2552,7 +2553,7 @@ function RequestConnectionAuthorizationCard({
   return (
     <div className="space-y-4">
       <p
-        className="max-w-3xl text-sm leading-6 text-muted-foreground"
+        className="max-w-3xl text-sm leading-6 text-ink-3"
         data-testid="connection-authorization-body"
       >
         {consentSentence ? `${lead} ${consentSentence}` : lead}
@@ -2565,7 +2566,7 @@ function RequestConnectionAuthorizationCard({
               data-testid="connection-authorization-actions"
               className="grid grid-cols-1 items-stretch gap-2 sm:flex sm:flex-wrap sm:items-center sm:justify-end"
             >
-              <Button asChild size="sm" variant="cta" className="w-full sm:w-auto">
+              <Button asChild size="sm" variant="primary" className="w-full sm:w-auto">
                 <a href={href} target="_blank" rel="noreferrer">
                   Connect {providerName}
                   <ArrowUpRight className="ml-1.5 h-3.5 w-3.5" />
@@ -2615,7 +2616,7 @@ function RequestConnectionAuthorizationCard({
           detail={
             <>
               Connected by{" "}
-              <span className="font-medium text-foreground">
+              <span className="font-medium text-ink">
                 {/* "You" is display-cased for a badge; this is mid-sentence. */}
                 {(resolvedByLabel ?? addresseeLabel) === "You" ? "you" : resolvedByLabel ?? addresseeLabel}
               </span>
@@ -2656,12 +2657,12 @@ function ConnectionAuthorizationStatusLine({
   return (
     <div
       data-testid={testId}
-      className="flex items-start gap-2 rounded-sm border border-border/70 bg-muted/30 p-3"
+      className="flex items-start gap-2 rounded-sm border border-line/70 bg-bg-3/30 p-3"
     >
-      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+      <Icon className="mt-0.5 h-4 w-4 shrink-0 text-ink-3" />
       <div className="min-w-0 space-y-0.5 text-sm">
-        <div className="font-medium text-foreground">{headline}</div>
-        <div className="leading-6 text-muted-foreground">{detail}</div>
+        <div className="font-medium text-ink">{headline}</div>
+        <div className="leading-6 text-ink-3">{detail}</div>
       </div>
     </div>
   );
@@ -2800,12 +2801,12 @@ function RequestConfirmationCard({
   return (
     <div className="space-y-4">
       {interaction.status === "pending" ? (
-        <div className="space-y-3 rounded-sm border border-border/70 bg-background/75 p-4">
-          <div className="text-sm leading-6 text-foreground">
+        <div className="space-y-3 rounded-sm border border-line/70 bg-bg/75 p-4">
+          <div className="text-sm leading-6 text-ink">
             <InteractionInlineMarkdown>{interaction.payload.prompt}</InteractionInlineMarkdown>
           </div>
           {interaction.payload.detailsMarkdown ? (
-            <div className="border-t border-border/60 pt-3 text-sm">
+            <div className="border-t border-line/60 pt-3 text-sm">
               <MarkdownBody externalReferences={externalReferences}>{interaction.payload.detailsMarkdown}</MarkdownBody>
             </div>
           ) : null}
@@ -2821,7 +2822,7 @@ function RequestConfirmationCard({
           resetKey={`${interaction.id}:${interaction.status}`}
           approveLabel={interaction.payload.acceptLabel ?? CONFIRMATION_APPROVE_LABEL}
           rejectLabel={CONFIRMATION_REJECT_LABEL}
-          approveVariant={isPlan ? "cta" : "default"}
+          approveVariant="primary"
           primaryActionOnRight={primaryActionOnRight}
           allowRevise={allowRevise}
           rejectRequiresReason={rejectRequiresReason}
@@ -2856,7 +2857,7 @@ function RequestConfirmationCard({
                     {shots.map((shot, index) => (
                       <div
                         key={`${shot.url}-${index}`}
-                        className="group relative h-16 w-16 overflow-hidden rounded-sm border border-border/70"
+                        className="group relative h-16 w-16 overflow-hidden rounded-sm border border-line/70"
                       >
                         <img
                           src={shot.url}
@@ -2866,7 +2867,7 @@ function RequestConfirmationCard({
                         <button
                           type="button"
                           aria-label={`Remove ${shot.name}`}
-                          className="absolute right-0.5 top-0.5 rounded-full bg-background/90 p-0.5 text-foreground opacity-0 transition-opacity group-hover:opacity-100"
+                          className="absolute right-0.5 top-0.5 rounded-full bg-bg/90 p-0.5 text-ink opacity-0 transition-opacity group-hover:opacity-100"
                           onClick={() =>
                             setShots((current) => current.filter((_, i) => i !== index))
                           }
@@ -2891,7 +2892,7 @@ function RequestConfirmationCard({
                 <Button
                   type="button"
                   size="sm"
-                  variant="outline"
+                  variant="secondary"
                   disabled={working !== null || uploading}
                   onClick={() => fileInputRef.current?.click()}
                 >
@@ -2908,7 +2909,7 @@ function RequestConfirmationCard({
                   )}
                 </Button>
                 {uploadError ? (
-                  <p className="text-xs text-destructive">{uploadError}</p>
+                  <p className="text-xs text-bad">{uploadError}</p>
                 ) : null}
               </div>
             ) : null
@@ -2946,11 +2947,11 @@ function RequestCheckboxConfirmationResolution({
     const hiddenCount = selectedLabels.length - CHECKBOX_SUMMARY_LABEL_LIMIT;
     const hasHiddenLabels = hiddenCount > 0;
     const chipClassName =
-      "inline-flex items-center rounded-sm border border-border/60 bg-transparent px-2 py-0.5 text-(length:--text-nano) font-medium uppercase tracking-(--tracking-eyebrow) text-muted-foreground";
+      "inline-flex items-center rounded-sm border border-line/60 bg-transparent px-2 py-0.5 text-(length:--text-nano) font-medium uppercase tracking-(--tracking-eyebrow) text-ink-3";
 
     return (
       <div className="space-y-3">
-        <div className="flex flex-wrap items-center gap-2 text-sm leading-6 text-foreground">
+        <div className="flex flex-wrap items-center gap-2 text-sm leading-6 text-ink">
           <span className="font-medium">
             {selectedCount === 0
               ? "Confirmed with no options selected"
@@ -2969,7 +2970,7 @@ function RequestCheckboxConfirmationResolution({
                 onClick={() => setExpanded((current) => !current)}
                 className={cn(
                   chipClassName,
-                  "cursor-pointer transition-colors hover:border-border hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1",
+                  "cursor-pointer transition-colors hover:border-line hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-1",
                 )}
                 aria-expanded={expanded}
               >
@@ -2998,7 +2999,7 @@ function RequestCheckboxConfirmationResolution({
 
   if (interaction.status === "failed") {
     return (
-      <p className="text-sm leading-6 text-muted-foreground">
+      <p className="text-sm leading-6 text-ink-3">
         This request could not be resolved. Try again or create a new request.
       </p>
     );
@@ -3026,7 +3027,7 @@ function CheckboxOptionRow({
     <label
       htmlFor={id}
       className={cn(
-        "flex cursor-pointer items-start gap-2.5 border-b border-border/60 px-3 py-2 last:border-b-0 transition-colors",
+        "flex cursor-pointer items-start gap-2.5 border-b border-line/60 px-3 py-2 last:border-b-0 transition-colors",
         checked ? "bg-sky-500/10" : "hover:bg-sky-500/5",
         disabled && "cursor-not-allowed opacity-60",
       )}
@@ -3040,11 +3041,11 @@ function CheckboxOptionRow({
         className="mt-0.5"
       />
       <div className="min-w-0 flex-1">
-        <div className="text-sm font-medium leading-5 text-foreground">
+        <div className="text-sm font-medium leading-5 text-ink">
           <InteractionInlineMarkdown>{label}</InteractionInlineMarkdown>
         </div>
         {description ? (
-          <div className="mt-0.5 text-sm leading-5 text-muted-foreground">
+          <div className="mt-0.5 text-sm leading-5 text-ink-3">
             <InteractionInlineMarkdown>{description}</InteractionInlineMarkdown>
           </div>
         ) : null}
@@ -3246,16 +3247,16 @@ function RequestCheckboxConfirmationCard({
 
   return (
     <div className="space-y-4">
-      <div className="space-y-3 rounded-sm border border-border/70 bg-background/75 p-4">
+      <div className="space-y-3 rounded-sm border border-line/70 bg-bg/75 p-4">
         {/* Show each piece of state once: a connection-authorization prompt is
             the same sentence as the card title, so repeating it here is noise. */}
         {interaction.payload.prompt === interaction.title ? null : (
-          <div className="text-sm leading-6 text-foreground">
+          <div className="text-sm leading-6 text-ink">
             <InteractionInlineMarkdown>{interaction.payload.prompt}</InteractionInlineMarkdown>
           </div>
         )}
         {interaction.payload.detailsMarkdown ? (
-          <div className="border-t border-border/60 pt-3 text-sm">
+          <div className="border-t border-line/60 pt-3 text-sm">
             <MarkdownBody externalReferences={externalReferences}>{interaction.payload.detailsMarkdown}</MarkdownBody>
           </div>
         ) : null}
@@ -3267,7 +3268,7 @@ function RequestCheckboxConfirmationCard({
 
       <div className="space-y-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-ink-3">
             <span>{selectionSummary}</span>
             {boundsHint ? <span>{boundsHint}</span> : null}
           </div>
@@ -3294,7 +3295,7 @@ function RequestCheckboxConfirmationCard({
         <div
           role="group"
           aria-label="Selectable options"
-          className="max-h-80 overflow-y-auto rounded-sm border border-border/70"
+          className="max-h-80 overflow-y-auto rounded-sm border border-line/70"
         >
           {options.map((option) => {
             const checked = selectedOptionIds.has(option.id);
@@ -3313,7 +3314,7 @@ function RequestCheckboxConfirmationCard({
         </div>
 
         {acceptAttempted && validationMessage ? (
-          <p className="text-xs text-destructive">{validationMessage}</p>
+          <p className="text-xs text-bad">{validationMessage}</p>
         ) : null}
 
         <ConfirmationActionRow
@@ -3370,7 +3371,7 @@ function verdictChipClasses(verdict: RequestItemVerdictValue) {
     case "reject":
       return "border-rose-500/60 bg-rose-500/10 text-rose-900 dark:bg-rose-500/15 dark:text-rose-100";
     default:
-      return "border-border/70 bg-muted/40 text-muted-foreground";
+      return "border-line/70 bg-bg-3/40 text-ink-3";
   }
 }
 
@@ -3394,7 +3395,7 @@ function ItemVerdictDeepLink({ item }: { item: RequestItemVerdictsItem }) {
   if (!href) return null;
   const isInternal = href.startsWith("/") || href.startsWith("#");
   const className =
-    "inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1";
+    "inline-flex items-center gap-1 text-xs font-medium text-accent hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-1";
   const label = (
     <>
       Open
@@ -3429,27 +3430,15 @@ function ItemVerdictSegmentedControl({
   onSelect: (verdict: RequestItemVerdictValue) => void;
 }) {
   return (
-    <div
-      role="group"
-      aria-label="Choose a verdict"
-      className="flex shrink-0 flex-wrap items-center gap-2"
-    >
+    <Segmented aria-label="Choose a verdict" className="shrink-0 flex-wrap">
       {verdicts.map((verdict) => {
         const active = value === verdict;
-        const variant = verdict === "reject"
-          ? (active ? "destructive" : "outline")
-          : verdict === "approve"
-            ? (active ? "default" : "outline")
-            : (active ? "secondary" : "outline");
         const Icon = verdict === "approve" ? Check : verdict === "reject" ? X : MinusCircle;
         return (
-          <Button
+          <SegmentedItem
             key={verdict}
-            type="button"
-            size="sm"
-            variant={variant}
+            selected={active}
             disabled={disabled}
-            aria-pressed={active}
             aria-label={`${VERDICT_LABEL[verdict]} this item`}
             className="min-h-11 min-w-24"
             onClick={() => onSelect(verdict)}
@@ -3459,10 +3448,10 @@ function ItemVerdictSegmentedControl({
           >
             <Icon className="h-4 w-4" aria-hidden />
             {VERDICT_LABEL[verdict]}
-          </Button>
+          </SegmentedItem>
         );
       })}
-    </div>
+    </Segmented>
   );
 }
 
@@ -3609,13 +3598,13 @@ function RequestItemVerdictsCard({
   return (
     <div className="space-y-4">
       {/* Prompt + details (S1) */}
-      <div className="space-y-3 rounded-sm border border-border/70 bg-background/75 p-4">
+      <div className="space-y-3 rounded-sm border border-line/70 bg-bg/75 p-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="text-sm leading-6 text-foreground">{payload.prompt}</div>
+          <div className="text-sm leading-6 text-ink">{payload.prompt}</div>
           <VerdictProgressBadge progress={progress} pendingReason={invalidDraftIds.size > 0} />
         </div>
         {payload.detailsMarkdown ? (
-          <div className="border-t border-border/60 pt-3 text-sm">
+          <div className="border-t border-line/60 pt-3 text-sm">
             <MarkdownBody externalReferences={externalReferences}>{payload.detailsMarkdown}</MarkdownBody>
           </div>
         ) : null}
@@ -3654,8 +3643,8 @@ function RequestItemVerdictsCard({
             <li
               key={item.id}
               className={cn(
-                "rounded-sm border border-border/70 bg-background/60 p-3",
-                draft && !resolved && "border-border",
+                "rounded-sm border border-line/70 bg-bg/60 p-3",
+                draft && !resolved && "border-line",
               )}
               data-item-id={item.id}
               data-item-state={resolved ? "resolved" : applying ? "applying" : draft ? "draft" : "pending"}
@@ -3663,20 +3652,20 @@ function RequestItemVerdictsCard({
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div className="min-w-0 flex-1 basis-64">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="text-sm font-medium leading-5 text-foreground">{item.label}</span>
+                    <span className="text-sm font-medium leading-5 text-ink">{item.label}</span>
                     <ItemVerdictDeepLink item={item} />
                   </div>
                   {item.description ? (
-                    <p className="mt-0.5 text-sm leading-5 text-muted-foreground">{item.description}</p>
+                    <p className="mt-0.5 text-sm leading-5 text-ink-3">{item.description}</p>
                   ) : null}
                   {item.previewMarkdown ? (
-                    <div className="mt-2 rounded-sm border border-border/50 bg-muted/20 px-2.5 py-2 text-xs">
+                    <div className="mt-2 rounded-sm border border-line/50 bg-bg-3/20 px-2.5 py-2 text-xs">
                       <MarkdownBody externalReferences={externalReferences}>{item.previewMarkdown}</MarkdownBody>
                     </div>
                   ) : null}
                   {resolved?.reason ? (
-                    <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                      <span className="font-medium text-foreground">{reasonLabel}: </span>
+                    <p className="mt-2 text-xs leading-5 text-ink-3">
+                      <span className="font-medium text-ink">{reasonLabel}: </span>
                       {resolved.reason}
                     </p>
                   ) : null}
@@ -3686,12 +3675,12 @@ function RequestItemVerdictsCard({
                   {resolved ? (
                     <VerdictConsequenceChip verdict={resolved.verdict} />
                   ) : applying ? (
-                    <span className="inline-flex items-center gap-1.5 rounded-sm border border-border/70 bg-muted/40 px-2 py-0.5 text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
+                    <span className="inline-flex items-center gap-1.5 rounded-sm border border-line/70 bg-bg-3/40 px-2 py-0.5 text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-ink-3">
                       <Loader2 className="h-3.5 w-3.5 motion-safe:animate-spin" aria-hidden />
                       Applying…
                     </span>
                   ) : isTerminal ? (
-                    <span className="inline-flex items-center gap-1 rounded-sm border border-border/70 bg-muted/30 px-2 py-0.5 text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
+                    <span className="inline-flex items-center gap-1 rounded-sm border border-line/70 bg-bg-3/30 px-2 py-0.5 text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow) text-ink-3">
                       <CircleDashed className="h-3.5 w-3.5" aria-hidden />
                       Not decided
                     </span>
@@ -3712,7 +3701,7 @@ function RequestItemVerdictsCard({
                 <div className="mt-3 space-y-1.5">
                   <label
                     htmlFor={`${interaction.id}-${item.id}-reason`}
-                    className="text-xs font-medium text-foreground"
+                    className="text-xs font-medium text-ink"
                   >
                     {reasonLabel}
                   </label>
@@ -3723,12 +3712,12 @@ function RequestItemVerdictsCard({
                     placeholder="Give the agent a reason so it can act on this item."
                     aria-invalid={attempted && invalidDraftIds.has(item.id)}
                     className={cn(
-                      "min-h-16 bg-background text-sm",
+                      "min-h-16 bg-bg text-sm",
                       attempted && invalidDraftIds.has(item.id) && "border-rose-500 focus-visible:ring-rose-500/25",
                     )}
                   />
                   {attempted && invalidDraftIds.has(item.id) ? (
-                    <p className="text-xs text-destructive">A reason is required to {VERDICT_LABEL[draft.verdict].toLowerCase()} this item.</p>
+                    <p className="text-xs text-bad">A reason is required to {VERDICT_LABEL[draft.verdict].toLowerCase()} this item.</p>
                   ) : null}
                 </div>
               ) : null}
@@ -3750,8 +3739,8 @@ function RequestItemVerdictsCard({
 
       {/* Pinned batch bar (S1/S2) — only while items remain actionable */}
       {!isTerminal && progress.pendingItemIds.length > 0 ? (
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border/60 pt-3">
-          <div className="text-xs text-muted-foreground">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-line/60 pt-3">
+          <div className="text-xs text-ink-3">
             {draftCount > 0
               ? `${draftCount} draft verdict${draftCount === 1 ? "" : "s"} ready to apply`
               : "Mark verdicts, then apply them in one pass."}
@@ -3761,7 +3750,7 @@ function RequestItemVerdictsCard({
               <Button
                 type="button"
                 size="sm"
-                variant="outline"
+                variant="secondary"
                 disabled={working || progress.pendingItemIds.length === 0}
                 onClick={handleApproveAll}
               >
@@ -3772,7 +3761,7 @@ function RequestItemVerdictsCard({
             <Button
               type="button"
               size="sm"
-              variant="default"
+              variant="primary"
               aria-disabled={!canApply}
               disabled={!hasDrafts}
               onClick={() => void handleApply()}
@@ -3820,13 +3809,13 @@ function VerdictProgressBadge({
         aria-valuenow={progress.decided}
         aria-label={`${progress.decided} of ${progress.total} decided`}
       >
-        <div className="h-1.5 w-16 overflow-hidden rounded-full bg-muted">
+        <div className="h-1.5 w-16 overflow-hidden rounded-full bg-bg-3">
           <div
-            className="h-full rounded-full bg-primary transition-[width] motion-reduce:transition-none"
+            className="h-full rounded-full bg-accent transition-[width] motion-reduce:transition-none"
             style={{ width: `${pct}%` }}
           />
         </div>
-        <span className="whitespace-nowrap text-xs font-medium text-muted-foreground">
+        <span className="whitespace-nowrap text-xs font-medium text-ink-3">
           {progress.decided} of {progress.total} decided
         </span>
       </div>
@@ -3930,7 +3919,7 @@ export function IssueThreadInteractionCard({
   // so a withdrawn plan or confirmation reads "closed", not "changes requested".
   const withdrawnStyles =
     adminOutcome === "withdrawn"
-      ? { shell: "border-border bg-transparent", badge: "border-border bg-muted/60 text-muted-foreground" }
+      ? { shell: "border-line bg-transparent", badge: "border-line bg-bg-3/60 text-ink-3" }
       : null;
   const StatusIcon = withdrawnStyles
     ? MinusCircle
@@ -4062,7 +4051,7 @@ export function IssueThreadInteractionCard({
               ) : null}
             </div>
 
-            <div className="mt-3 text-lg font-bold text-foreground">
+            <div className="mt-3 text-lg font-bold text-ink">
               {interaction.title
                 ? <InteractionInlineMarkdown>{interaction.title}</InteractionInlineMarkdown>
                 : (interaction.kind === "suggest_tasks"
@@ -4095,7 +4084,7 @@ export function IssueThreadInteractionCard({
                 reader is the person who may consent. Rendering the summary here
                 as well would be the second body PAP-17859 removed. */}
             {interaction.summary && !connectionAuthorization && interaction.kind !== "connection_intent" ? (
-              <div className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
+              <div className="mt-2 max-w-3xl text-sm leading-6 text-ink-3">
                 <InteractionInlineMarkdown>{interaction.summary}</InteractionInlineMarkdown>
               </div>
             ) : null}
@@ -4107,8 +4096,8 @@ export function IssueThreadInteractionCard({
           <div className="flex items-start gap-2">
             <Tooltip>
               <TooltipTrigger asChild>
-                <div className="rounded-sm border border-border/70 bg-transparent px-3 py-2 text-right text-xs text-muted-foreground">
-                  <div className="font-medium text-foreground">{formatShortDate(interaction.createdAt)}</div>
+                <div className="rounded-sm border border-line/70 bg-transparent px-3 py-2 text-right text-xs text-ink-3">
+                  <div className="font-medium text-ink">{formatShortDate(interaction.createdAt)}</div>
                   <div>proposed by {createdByLabel}</div>
                 </div>
               </TooltipTrigger>
@@ -4121,7 +4110,6 @@ export function IssueThreadInteractionCard({
                 type="button"
                 size="icon-xs"
                 variant="ghost"
-                className="text-muted-foreground hover:text-foreground"
                 aria-label={hidden ? "Show" : "Hide"}
                 aria-expanded={!hidden}
                 data-testid="interaction-card-visibility-toggle"
@@ -4210,35 +4198,35 @@ export function IssueThreadInteractionCard({
 
         {adminOutcome === "withdrawn" ? (
           <div
-            className="mt-4 border-t border-border/60 pt-3 text-xs text-muted-foreground"
+            className="mt-4 border-t border-line/60 pt-3 text-xs text-ink-3"
             data-testid="interaction-withdrawn-footer"
           >
             <div>
               Withdrawn by{" "}
-              <span className="font-medium text-foreground">{resolvedByLabel ?? "an agent"}</span>
+              <span className="font-medium text-ink">{resolvedByLabel ?? "an agent"}</span>
               {resolvedByAgent ? <ResolvedByAgentChip /> : null}
               {interaction.resolvedAt ? ` on ${formatShortDate(interaction.resolvedAt)}` : ""}
             </div>
             {adminReason ? (
-              <div className="mt-1 italic text-muted-foreground/90">"{adminReason}"</div>
+              <div className="mt-1 italic text-ink-3/90">"{adminReason}"</div>
             ) : null}
           </div>
         ) : adminOutcome === "issue_closed" && interaction.resolvedAt ? (
           // The header badge + body already explain the issue-closed expiry;
           // the footer is just the audit timestamp.
           <div
-            className="mt-4 border-t border-border/60 pt-3 text-xs text-muted-foreground"
+            className="mt-4 border-t border-line/60 pt-3 text-xs text-ink-3"
             data-testid="interaction-issue-closed-footer"
           >
             {formatShortDate(interaction.resolvedAt)}
           </div>
         ) : autonomyWindowResolution ? (
           <div
-            className="mt-4 flex flex-wrap items-center gap-x-1 gap-y-0.5 border-t border-border/60 pt-3 text-xs text-muted-foreground"
+            className="mt-4 flex flex-wrap items-center gap-x-1 gap-y-0.5 border-t border-line/60 pt-3 text-xs text-ink-3"
             data-testid="interaction-autonomy-window-footer"
           >
             Accepted by{" "}
-            <span className="font-medium text-foreground">
+            <span className="font-medium text-ink">
               autonomy window ({resolveActorLabel({ userId: autonomyWindowResolution.grantedByUserId, currentUserId, userLabelMap })}, until{" "}
               {formatClockTime(autonomyWindowResolution.expiresAt)})
             </span>
@@ -4246,13 +4234,13 @@ export function IssueThreadInteractionCard({
           </div>
         ) : ownerRelay && resolvedByLabel ? (
           <div
-            className="mt-4 flex flex-wrap items-center gap-x-1 gap-y-0.5 border-t border-border/60 pt-3 text-xs text-muted-foreground"
+            className="mt-4 flex flex-wrap items-center gap-x-1 gap-y-0.5 border-t border-line/60 pt-3 text-xs text-ink-3"
             data-testid="interaction-owner-relay-footer"
           >
-            Answered by <span className="font-medium text-foreground">{resolvedByLabel}</span>
+            Answered by <span className="font-medium text-ink">{resolvedByLabel}</span>
             {ownerRelay.channel === "whatsapp" ? " via WhatsApp" : " via a Paperclip message"}
             {" (relayed by "}
-            <span className="font-medium text-foreground">{ownerRelayAgentLabel ?? "an agent"}</span>
+            <span className="font-medium text-ink">{ownerRelayAgentLabel ?? "an agent"}</span>
             {")"}
             {interaction.resolvedAt ? ` on ${formatShortDate(interaction.resolvedAt)}` : ""}
           </div>
@@ -4261,10 +4249,10 @@ export function IssueThreadInteractionCard({
           // timestamp inside the "Gmail connected" block, so the shared footer
           // would repeat it.
           <div
-            className="mt-4 flex flex-wrap items-center gap-x-1 gap-y-0.5 border-t border-border/60 pt-3 text-xs text-muted-foreground"
+            className="mt-4 flex flex-wrap items-center gap-x-1 gap-y-0.5 border-t border-line/60 pt-3 text-xs text-ink-3"
             data-testid="interaction-resolved-footer"
           >
-            Resolved by <span className="font-medium text-foreground">{resolvedByLabel}</span>
+            Resolved by <span className="font-medium text-ink">{resolvedByLabel}</span>
             {resolvedByAgent ? <ResolvedByAgentChip /> : null}
             {interaction.resolvedAt ? ` on ${formatShortDate(interaction.resolvedAt)}` : ""}
           </div>

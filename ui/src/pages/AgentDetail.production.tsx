@@ -455,30 +455,30 @@ export function RunInvocationCard({
     || payload.env !== undefined;
 
   return (
-    <div className="rounded-lg border border-border bg-background/60 p-3 space-y-2">
-      <div className="text-xs font-medium text-muted-foreground">Invocation</div>
+    <div className="rounded-lg border border-line bg-bg/60 p-3 space-y-2">
+      <div className="text-xs font-medium text-ink-3">Invocation</div>
       {typeof payload.adapterType === "string" && (
-        <div className="text-xs"><span className="text-muted-foreground">Adapter: </span>{payload.adapterType}</div>
+        <div className="text-xs"><span className="text-ink-3">Adapter: </span>{payload.adapterType}</div>
       )}
       {typeof payload.cwd === "string" && (
-        <div className="text-xs break-all"><span className="text-muted-foreground">Working dir: </span><span className="font-mono">{payload.cwd}</span></div>
+        <div className="text-xs break-all"><span className="text-ink-3">Working dir: </span><span className="font-mono">{payload.cwd}</span></div>
       )}
       {hasAdvancedDetails && (
         <Collapsible>
-          <CollapsibleTrigger className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors group">
+          <CollapsibleTrigger className="flex items-center gap-1 text-xs text-ink-3 hover:text-ink transition-colors group">
             <ChevronRight className="h-3 w-3 transition-transform group-data-[state=open]:rotate-90" />
             Details
           </CollapsibleTrigger>
           <CollapsibleContent className="pt-2 space-y-2">
             {commandLine && (
               <div className="text-xs break-all">
-                <span className="text-muted-foreground">Command: </span>
+                <span className="text-ink-3">Command: </span>
                 <span className="font-mono">{commandLine}</span>
               </div>
             )}
             {Array.isArray(payload.commandNotes) && payload.commandNotes.length > 0 && (
               <div>
-                <div className="text-xs text-muted-foreground mb-1">Command notes</div>
+                <div className="text-xs text-ink-3 mb-1">Command notes</div>
                 <ul className="list-disc pl-5 space-y-1">
                   {payload.commandNotes
                     .filter((value): value is string => typeof value === "string" && value.trim().length > 0)
@@ -492,7 +492,7 @@ export function RunInvocationCard({
             )}
             {payload.prompt !== undefined && (
               <div>
-                <div className="text-xs text-muted-foreground mb-1">Prompt</div>
+                <div className="text-xs text-ink-3 mb-1">Prompt</div>
                 <pre className="bg-neutral-100 dark:bg-neutral-950 rounded-md p-2 text-xs overflow-x-auto whitespace-pre-wrap">
                   {typeof payload.prompt === "string"
                     ? redactPathText(payload.prompt, censorUsernameInLogs)
@@ -502,7 +502,7 @@ export function RunInvocationCard({
             )}
             {payload.context !== undefined && (
               <div>
-                <div className="text-xs text-muted-foreground mb-1">Context</div>
+                <div className="text-xs text-ink-3 mb-1">Context</div>
                 <pre className="bg-neutral-100 dark:bg-neutral-950 rounded-md p-2 text-xs overflow-x-auto whitespace-pre-wrap">
                   {JSON.stringify(redactPathValue(payload.context, censorUsernameInLogs), null, 2)}
                 </pre>
@@ -510,7 +510,7 @@ export function RunInvocationCard({
             )}
             {payload.env !== undefined && (
               <div>
-                <div className="text-xs text-muted-foreground mb-1">Environment</div>
+                <div className="text-xs text-ink-3 mb-1">Environment</div>
                 <pre className="bg-neutral-100 dark:bg-neutral-950 rounded-md p-2 text-xs overflow-x-auto whitespace-pre-wrap font-mono">
                   {formatEnvForDisplay(payload.env, censorUsernameInLogs)}
                 </pre>
@@ -571,7 +571,7 @@ function workspaceOperationStatusTone(status: WorkspaceOperation["status"]) {
     case "skipped":
       return "border-yellow-500/20 bg-yellow-500/10 text-yellow-700 dark:text-yellow-300";
     default:
-      return "border-border bg-muted/40 text-muted-foreground";
+      return "border-line bg-bg-3/40 text-ink-3";
   }
 }
 
@@ -612,21 +612,21 @@ function WorkspaceOperationLogViewer({
     <div className="space-y-2">
       <button
         type="button"
-        className="text-(length:--text-micro) text-muted-foreground underline underline-offset-2 hover:text-foreground"
+        className="text-(length:--text-micro) text-ink-3 underline underline-offset-2 hover:text-ink"
         onClick={() => setOpen((value) => !value)}
       >
         {open ? "Hide full log" : "Show full log"}
       </button>
       {open && (
-        <div className="rounded-md border border-border bg-background/70 p-2">
-          {isLoading && <div className="text-xs text-muted-foreground">Loading log...</div>}
+        <div className="rounded-md border border-line bg-bg/70 p-2">
+          {isLoading && <div className="text-xs text-ink-3">Loading log...</div>}
           {error && (
-            <div className="text-xs text-destructive">
+            <div className="text-xs text-bad">
               {error instanceof Error ? error.message : "Failed to load workspace operation log"}
             </div>
           )}
           {!isLoading && !error && chunks.length === 0 && (
-            <div className="text-xs text-muted-foreground">No persisted log lines.</div>
+            <div className="text-xs text-ink-3">No persisted log lines.</div>
           )}
           {chunks.length > 0 && (
             <div className="max-h-64 overflow-y-auto rounded bg-neutral-100 p-2 font-mono text-xs dark:bg-neutral-950">
@@ -642,7 +642,7 @@ function WorkspaceOperationLogViewer({
                         ? "text-red-600 dark:text-red-300"
                         : chunk.stream === "system"
                           ? "text-blue-600 dark:text-blue-300"
-                          : "text-muted-foreground",
+                          : "text-ink-3",
                     )}
                   >
                     [{chunk.stream}]
@@ -668,32 +668,32 @@ function WorkspaceOperationsSection({
   if (operations.length === 0) return null;
 
   return (
-    <div className="rounded-lg border border-border bg-background/60 p-3 space-y-3">
-      <div className="text-xs font-medium text-muted-foreground">
+    <div className="rounded-lg border border-line bg-bg/60 p-3 space-y-3">
+      <div className="text-xs font-medium text-ink-3">
         Workspace ({operations.length})
       </div>
       <div className="space-y-3">
         {operations.map((operation) => {
           const metadata = asRecord(operation.metadata);
           return (
-            <div key={operation.id} className="rounded-md border border-border/70 bg-background/70 p-3 space-y-2">
+            <div key={operation.id} className="rounded-md border border-line/70 bg-bg/70 p-3 space-y-2">
               <div className="flex flex-wrap items-center gap-2">
                 <div className="text-sm font-medium">{workspaceOperationPhaseLabel(operation.phase)}</div>
                 <WorkspaceOperationStatusBadge status={operation.status} />
-                <div className="text-(length:--text-micro) text-muted-foreground">
+                <div className="text-(length:--text-micro) text-ink-3">
                   {relativeTime(operation.startedAt)}
                   {operation.finishedAt && ` to ${relativeTime(operation.finishedAt)}`}
                 </div>
               </div>
               {operation.command && (
                 <div className="text-xs break-all">
-                  <span className="text-muted-foreground">Command: </span>
+                  <span className="text-ink-3">Command: </span>
                   <span className="font-mono">{operation.command}</span>
                 </div>
               )}
               {operation.cwd && (
                 <div className="text-xs break-all">
-                  <span className="text-muted-foreground">Working dir: </span>
+                  <span className="text-ink-3">Working dir: </span>
                   <span className="font-mono">{operation.cwd}</span>
                 </div>
               )}
@@ -704,24 +704,24 @@ function WorkspaceOperationsSection({
                 || asNonEmptyString(metadata?.cleanupAction)) && (
                 <div className="grid gap-1 text-xs sm:grid-cols-2">
                   {asNonEmptyString(metadata?.branchName) && (
-                    <div><span className="text-muted-foreground">Branch: </span><span className="font-mono">{metadata?.branchName as string}</span></div>
+                    <div><span className="text-ink-3">Branch: </span><span className="font-mono">{metadata?.branchName as string}</span></div>
                   )}
                   {asNonEmptyString(metadata?.baseRef) && (
-                    <div><span className="text-muted-foreground">Base ref: </span><span className="font-mono">{metadata?.baseRef as string}</span></div>
+                    <div><span className="text-ink-3">Base ref: </span><span className="font-mono">{metadata?.baseRef as string}</span></div>
                   )}
                   {asNonEmptyString(metadata?.worktreePath) && (
-                    <div className="break-all"><span className="text-muted-foreground">Worktree: </span><span className="font-mono">{metadata?.worktreePath as string}</span></div>
+                    <div className="break-all"><span className="text-ink-3">Worktree: </span><span className="font-mono">{metadata?.worktreePath as string}</span></div>
                   )}
                   {asNonEmptyString(metadata?.repoRoot) && (
-                    <div className="break-all"><span className="text-muted-foreground">Repo root: </span><span className="font-mono">{metadata?.repoRoot as string}</span></div>
+                    <div className="break-all"><span className="text-ink-3">Repo root: </span><span className="font-mono">{metadata?.repoRoot as string}</span></div>
                   )}
                   {asNonEmptyString(metadata?.cleanupAction) && (
-                    <div><span className="text-muted-foreground">Cleanup: </span><span className="font-mono">{metadata?.cleanupAction as string}</span></div>
+                    <div><span className="text-ink-3">Cleanup: </span><span className="font-mono">{metadata?.cleanupAction as string}</span></div>
                   )}
                 </div>
               )}
               {typeof metadata?.created === "boolean" && (
-                <div className="text-xs text-muted-foreground">
+                <div className="text-xs text-ink-3">
                   {metadata.created ? "Created by this run" : "Reused existing workspace"}
                 </div>
               )}
@@ -735,7 +735,7 @@ function WorkspaceOperationsSection({
               )}
               {operation.stdoutExcerpt && operation.stdoutExcerpt.trim() && (
                 <div>
-                  <div className="mb-1 text-xs text-muted-foreground">stdout excerpt</div>
+                  <div className="mb-1 text-xs text-ink-3">stdout excerpt</div>
                   <pre className="rounded-md bg-neutral-100 p-2 text-xs whitespace-pre-wrap break-all dark:bg-neutral-950">
                     {redactPathText(operation.stdoutExcerpt, censorUsernameInLogs)}
                   </pre>
@@ -1194,7 +1194,7 @@ export function AgentDetail() {
   }, [configDirty, prepareAgentNavigation]);
 
   if (isLoading) return <PageSkeleton variant="detail" />;
-  if (error) return <p className="text-sm text-destructive">{error.message}</p>;
+  if (error) return <p className="text-sm text-bad">{error.message}</p>;
   if (!agent) return null;
   if (!urlRunId && !urlTab) {
     return <Navigate to={`/agents/${canonicalAgentRef}/dashboard`} replace />;
@@ -1293,7 +1293,7 @@ export function AgentDetail() {
             <div className="flex items-center gap-2">
               <h2 className="text-2xl font-bold truncate">{agent.name}</h2>
             </div>
-            <p className="text-sm text-muted-foreground truncate">
+            <p className="text-sm text-ink-3 truncate">
               {roleLabels[agent.role] ?? agent.role}
               {agent.title ? ` - ${agent.title}` : ""}
             </p>
@@ -1362,7 +1362,7 @@ export function AgentDetail() {
           title="Built-in agent"
           actions={
             <Button
-              variant="outline"
+              variant="secondary"
               size="sm"
               onClick={() => resetBuiltIn.mutate()}
               disabled={resetBuiltIn.isPending}
@@ -1417,12 +1417,12 @@ export function AgentDetail() {
         </Tabs>
       )}
 
-      {actionError && <p className="text-sm text-destructive">{actionError}</p>}
+      {actionError && <p className="text-sm text-bad">{actionError}</p>}
       {isPendingApproval && (
         <div className="flex flex-wrap items-center gap-3 rounded-md border border-amber-300/60 bg-amber-50 px-3 py-2 text-sm text-amber-900 dark:border-amber-400/40 dark:bg-amber-950/30 dark:text-amber-200">
           <span>This agent is pending board approval and cannot be invoked yet.</span>
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             onClick={() => agentAction.mutate("approve")}
             disabled={agentAction.isPending}
@@ -1436,7 +1436,7 @@ export function AgentDetail() {
       {/* Floating Save/Cancel (desktop) */}
       {!isMobile && showConfigActionBar && (
         <div className="fixed bottom-6 right-6 z-30">
-          <div className="flex items-center gap-2 bg-background/90 backdrop-blur-sm border border-border rounded-lg px-3 py-1.5 shadow-lg">
+          <div className="flex items-center gap-2 bg-bg/90 backdrop-blur-sm border border-line rounded-lg px-3 py-1.5 shadow-lg">
             <Button
               variant="ghost"
               size="sm"
@@ -1458,7 +1458,7 @@ export function AgentDetail() {
 
       {/* Mobile bottom Save/Cancel bar */}
       {isMobile && showConfigActionBar && (
-        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background/95 backdrop-blur-sm">
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-line bg-bg/95 backdrop-blur-sm">
           <div
             className="flex items-center justify-end gap-2 px-3 py-2"
             style={{ paddingBottom: "max(env(safe-area-inset-bottom), 0.5rem)" }}
@@ -1583,7 +1583,7 @@ export function AgentDetail() {
 function SummaryRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex items-center justify-between">
-      <span className="text-muted-foreground text-xs">{label}</span>
+      <span className="text-ink-3 text-xs">{label}</span>
       <div className="flex items-center gap-1">{children}</div>
     </div>
   );
@@ -1708,7 +1708,7 @@ function LatestRunCard({
           to={runHref}
           className="no-underline"
         >
-          <h3 className="flex items-center gap-2 text-sm font-medium transition-colors hover:text-foreground">
+          <h3 className="flex items-center gap-2 text-sm font-medium transition-colors hover:text-ink">
             {isLive && (
               <span className="relative flex h-2 w-2">
                 <span className="animate-pulse absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75" />
@@ -1716,7 +1716,7 @@ function LatestRunCard({
               </span>
             )}
             <span>{isLive ? "Live Run" : "Latest Run"}</span>
-            <span className="font-mono text-xs font-normal text-muted-foreground">
+            <span className="font-mono text-xs font-normal text-ink-3">
               &middot; {run.id.slice(0, 8)}
             </span>
           </h3>
@@ -1726,8 +1726,8 @@ function LatestRunCard({
       <Link
         to={rowHref}
         className={cn(
-          "block border rounded-lg p-4 space-y-2 w-full no-underline transition-colors hover:bg-muted/50 cursor-pointer",
-          isLive ? "border-blue-500/30 shadow-(--shadow-extract-14)" : "border-border"
+          "block border rounded-lg p-4 space-y-2 w-full no-underline transition-colors hover:bg-bg-3/50 cursor-pointer",
+          isLive ? "border-blue-500/30 shadow-(--shadow-extract-14)" : "border-line"
         )}
       >
         <div className="flex items-center gap-2">
@@ -1736,26 +1736,26 @@ function LatestRunCard({
           {task ? (
             <>
               <StatusGlyph status={task.status} size="sm" />
-              <span className="font-mono text-xs text-muted-foreground">
+              <span className="font-mono text-xs text-ink-3">
                 {task.identifier ?? task.id.slice(0, 8)}
               </span>
               <span className="truncate text-xs">{task.title}</span>
             </>
           ) : (
             <>
-              <span className="font-mono text-xs text-muted-foreground">{run.id.slice(0, 8)}</span>
+              <span className="font-mono text-xs text-ink-3">{run.id.slice(0, 8)}</span>
               <Badge variant="ghost" className={cn(
                 "px-1.5 text-(length:--text-nano)",
                 run.invocationSource === "timer" ? "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300"
                   : run.invocationSource === "assignment" ? "bg-violet-100 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300"
                   : run.invocationSource === "on_demand" ? "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/50 dark:text-cyan-300"
-                  : "bg-muted text-muted-foreground"
+                  : "bg-bg-3 text-ink-3"
               )}>
                 {sourceLabels[run.invocationSource] ?? run.invocationSource}
               </Badge>
             </>
           )}
-          <span className="ml-auto text-xs text-muted-foreground">{relativeTime(run.createdAt)}</span>
+          <span className="ml-auto text-xs text-ink-3">{relativeTime(run.createdAt)}</span>
         </div>
 
         {summary && (
@@ -1821,15 +1821,15 @@ function AgentOverview({
           <h3 className="text-sm font-medium">Recent Tasks</h3>
           <Link
             to={`/issues?participantAgentId=${agentId}`}
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            className="text-xs text-ink-3 hover:text-ink transition-colors"
           >
             See All &rarr;
           </Link>
         </div>
         {assignedIssues.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No recent tasks.</p>
+          <p className="text-sm text-ink-3">No recent tasks.</p>
         ) : (
-          <div className="border border-border rounded-lg">
+          <div className="border border-line rounded-lg">
             {assignedIssues.slice(0, 10).map((issue) => (
               <EntityRow
                 key={issue.id}
@@ -1840,7 +1840,7 @@ function AgentOverview({
               />
             ))}
             {assignedIssues.length > 10 && (
-              <div className="px-3 py-2 text-xs text-muted-foreground text-center border-t border-border">
+              <div className="px-3 py-2 text-xs text-ink-3 text-center border-t border-line">
                 +{assignedIssues.length - 10} more tasks
               </div>
             )}
@@ -1876,44 +1876,44 @@ function CostsSection({
   return (
     <div className="space-y-4">
       {runtimeState && (
-        <div className="border border-border rounded-lg p-4">
+        <div className="border border-line rounded-lg p-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 tabular-nums">
             <div>
-              <span className="text-xs text-muted-foreground block">Input tokens</span>
+              <span className="text-xs text-ink-3 block">Input tokens</span>
               <span className="text-lg font-semibold">{formatTokens(runtimeState.totalInputTokens)}</span>
             </div>
             <div>
-              <span className="text-xs text-muted-foreground block">Output tokens</span>
+              <span className="text-xs text-ink-3 block">Output tokens</span>
               <span className="text-lg font-semibold">{formatTokens(runtimeState.totalOutputTokens)}</span>
             </div>
             <div>
-              <span className="text-xs text-muted-foreground block">Cached tokens</span>
+              <span className="text-xs text-ink-3 block">Cached tokens</span>
               <span className="text-lg font-semibold">{formatTokens(runtimeState.totalCachedInputTokens)}</span>
             </div>
             <div>
-              <span className="text-xs text-muted-foreground block">Total cost</span>
+              <span className="text-xs text-ink-3 block">Total cost</span>
               <span className="text-lg font-semibold">{formatCents(runtimeState.totalCostCents)}</span>
             </div>
           </div>
         </div>
       )}
       {runsWithCost.length > 0 && (
-        <div className="border border-border rounded-lg overflow-hidden">
+        <div className="border border-line rounded-lg overflow-hidden">
           <table className="w-full text-xs">
             <thead>
-              <tr className="border-b border-border bg-accent/20">
-                <th scope="col" className="text-left px-3 py-2 font-medium text-muted-foreground">Date</th>
-                <th scope="col" className="text-left px-3 py-2 font-medium text-muted-foreground">Run</th>
-                <th scope="col" className="text-right px-3 py-2 font-medium text-muted-foreground">Input</th>
-                <th scope="col" className="text-right px-3 py-2 font-medium text-muted-foreground">Output</th>
-                <th scope="col" className="text-right px-3 py-2 font-medium text-muted-foreground">Cost</th>
+              <tr className="border-b border-line bg-bg-3/20">
+                <th scope="col" className="text-left px-3 py-2 font-medium text-ink-3">Date</th>
+                <th scope="col" className="text-left px-3 py-2 font-medium text-ink-3">Run</th>
+                <th scope="col" className="text-right px-3 py-2 font-medium text-ink-3">Input</th>
+                <th scope="col" className="text-right px-3 py-2 font-medium text-ink-3">Output</th>
+                <th scope="col" className="text-right px-3 py-2 font-medium text-ink-3">Cost</th>
               </tr>
             </thead>
             <tbody>
               {runsWithCost.slice(0, 10).map((run) => {
                 const metrics = runMetrics(run);
                 return (
-                  <tr key={run.id} className="border-b border-border last:border-b-0">
+                  <tr key={run.id} className="border-b border-line last:border-b-0">
                     <td className="px-3 py-2">{formatDate(run.createdAt)}</td>
                     <td className="px-3 py-2 font-mono">{run.id.slice(0, 8)}</td>
                     <td className="px-3 py-2 text-right tabular-nums">{formatTokens(metrics.input)}</td>
@@ -2021,26 +2021,26 @@ function AgentConfigurePage({
       {/* Configuration Revisions — collapsible at the bottom */}
       <div>
         <button
-          className="flex items-center gap-2 text-sm font-medium hover:text-foreground transition-colors"
+          className="flex items-center gap-2 text-sm font-medium hover:text-ink transition-colors"
           onClick={() => setRevisionsOpen((v) => !v)}
         >
           {revisionsOpen
-            ? <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-            : <ChevronRight className="h-3.5 w-3.5 text-muted-foreground" />
+            ? <ChevronDown className="h-3.5 w-3.5 text-ink-3" />
+            : <ChevronRight className="h-3.5 w-3.5 text-ink-3" />
           }
           Configuration Revisions
-          <span className="text-xs font-normal text-muted-foreground">{configRevisions?.length ?? 0}</span>
+          <span className="text-xs font-normal text-ink-3">{configRevisions?.length ?? 0}</span>
         </button>
         {revisionsOpen && (
           <div className="mt-3">
             {(configRevisions ?? []).length === 0 ? (
-              <p className="text-sm text-muted-foreground">No configuration revisions yet.</p>
+              <p className="text-sm text-ink-3">No configuration revisions yet.</p>
             ) : (
               <div className="space-y-2">
                 {(configRevisions ?? []).slice(0, 10).map((revision) => (
-                  <div key={revision.id} className="border border-border/70 rounded-md p-3 space-y-2">
+                  <div key={revision.id} className="border border-line/70 rounded-md p-3 space-y-2">
                     <div className="flex items-center justify-between gap-3">
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-xs text-ink-3">
                         <span className="font-mono">{revision.id.slice(0, 8)}</span>
                         <span className="mx-1">·</span>
                         <span>{formatDate(revision.createdAt)}</span>
@@ -2049,7 +2049,7 @@ function AgentConfigurePage({
                       </div>
                       <Button
                         size="sm"
-                        variant="outline"
+                        variant="secondary"
                         className="h-7 px-2.5 text-xs"
                         onClick={() => rollbackConfig.mutate(revision.id)}
                         disabled={rollbackConfig.isPending}
@@ -2057,7 +2057,7 @@ function AgentConfigurePage({
                         Restore
                       </Button>
                     </div>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-ink-3">
                       Changed:{" "}
                       {revision.changedKeys.length > 0 ? revision.changedKeys.join(", ") : "no tracked changes"}
                     </p>
@@ -2202,7 +2202,7 @@ function ConfigurationTab({
         sectionLayout="cards"
       />
       {content === "configuration" ? (
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-ink-3">
           Saved adapter config affects the next run. Active runs keep the config they started with, and config changes may start a fresh adapter session.
         </p>
       ) : null}
@@ -2232,11 +2232,11 @@ function ConfigurationTab({
 
       {content === "configuration" ? <div>
         <h3 className="text-sm font-medium mb-3">Permissions</h3>
-        <div className="border border-border rounded-lg p-4 space-y-4">
+        <div className="border border-line rounded-lg p-4 space-y-4">
           <div className="flex items-center justify-between gap-4 text-sm">
             <div className="space-y-1">
               <div>Can create new agents</div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-ink-3">
                 Lets this agent create or hire agents. This also grants task assignment authority.
               </p>
             </div>
@@ -2255,7 +2255,7 @@ function ConfigurationTab({
           <div className="flex items-center justify-between gap-4 text-sm">
             <div className="space-y-1">
               <div>Can create/import skills</div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-ink-3">
                 Lets this agent install, import, create, and scan company skills without creating agents.
               </p>
             </div>
@@ -2274,7 +2274,7 @@ function ConfigurationTab({
           <div className="flex items-center justify-between gap-4 text-sm">
             <div className="space-y-1">
               <div>Can assign tasks</div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-ink-3">
                 {taskAssignHint}
               </p>
             </div>
@@ -2633,7 +2633,7 @@ export function PromptsTab({
   if (!isLocal) {
     return (
       <div className="max-w-3xl">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           Instructions bundles are only available for local adapters.
         </p>
       </div>
@@ -2655,12 +2655,12 @@ export function PromptsTab({
           ))}
         </div>
       )}
-      <p className="text-xs text-muted-foreground">
+      <p className="text-xs text-ink-3">
         Saved instructions affect the next run. Active runs keep the instructions they started with, and instruction changes may start a fresh adapter session.
       </p>
 
       <Collapsible defaultOpen={currentMode === "external"}>
-        <CollapsibleTrigger className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors group">
+        <CollapsibleTrigger className="flex items-center gap-1 text-xs text-ink-3 hover:text-ink transition-colors group">
           <ChevronRight className="h-3 w-3 transition-transform group-data-[state=open]:rotate-90" />
           Advanced
         </CollapsibleTrigger>
@@ -2668,11 +2668,11 @@ export function PromptsTab({
           <TooltipProvider>
             <div className="grid gap-x-6 gap-y-4 md:grid-cols-(--gtc-18)">
               <label className="space-y-1.5 min-w-0">
-                <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                <span className="text-xs font-medium text-ink-3 flex items-center gap-1">
                   Mode
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <HelpCircle className="h-3 w-3 text-muted-foreground cursor-help" />
+                      <HelpCircle className="h-3 w-3 text-ink-3 cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent side="right" sideOffset={4}>
                       Managed: Paperclip stores and serves the instructions bundle. External: you provide a path on disk where the instructions live.
@@ -2683,7 +2683,7 @@ export function PromptsTab({
                   <Button
                     type="button"
                     size="sm"
-                    variant={currentMode === "managed" ? "default" : "outline"}
+                    variant={currentMode === "managed" ? "primary" : "secondary"}
                     onClick={() => {
                       if (currentMode === "external") {
                         externalBundleRef.current = {
@@ -2706,7 +2706,7 @@ export function PromptsTab({
                   <Button
                     type="button"
                     size="sm"
-                    variant={currentMode === "external" ? "default" : "outline"}
+                    variant={currentMode === "external" ? "primary" : "secondary"}
                     onClick={() => {
                       const externalBundle = externalBundleRef.current;
                       const nextEntryFile = externalBundle?.entryFile ?? currentEntryFile ?? "AGENTS.md";
@@ -2723,11 +2723,11 @@ export function PromptsTab({
                 </div>
               </label>
               <label className="space-y-1.5 min-w-0">
-                <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                <span className="text-xs font-medium text-ink-3 flex items-center gap-1">
                   Root path
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <HelpCircle className="h-3 w-3 text-muted-foreground cursor-help" />
+                      <HelpCircle className="h-3 w-3 text-ink-3 cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent side="right" sideOffset={4}>
                       The absolute directory on disk where the instructions bundle lives. In managed mode this is set by Paperclip automatically.
@@ -2735,7 +2735,7 @@ export function PromptsTab({
                   </Tooltip>
                 </span>
                 {currentMode === "managed" ? (
-                  <div className="flex items-center gap-1.5 font-mono text-xs text-muted-foreground pt-1.5">
+                  <div className="flex items-center gap-1.5 font-mono text-xs text-ink-3 pt-1.5">
                     <span className="min-w-0 truncate" title={currentRootPath || undefined}>{currentRootPath || "(managed)"}</span>
                     {currentRootPath && (
                       <CopyText text={currentRootPath} className="shrink-0">
@@ -2772,11 +2772,11 @@ export function PromptsTab({
                 )}
               </label>
               <label className="space-y-1.5">
-                <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
+                <span className="text-xs font-medium text-ink-3 flex items-center gap-1">
                   Entry file
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <HelpCircle className="h-3 w-3 text-muted-foreground cursor-help" />
+                      <HelpCircle className="h-3 w-3 text-ink-3 cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent side="right" sideOffset={4}>
                       The main file the agent reads first when loading instructions. Defaults to AGENTS.md.
@@ -2822,7 +2822,7 @@ export function PromptsTab({
         }
       >
         <div className={cn(
-          "min-w-0 w-full border border-border rounded-lg p-3 space-y-3",
+          "min-w-0 w-full border border-line rounded-lg p-3 space-y-3",
           isMobile && showFilePanel && "block",
           isMobile && !showFilePanel && "hidden",
         )}>
@@ -2833,7 +2833,7 @@ export function PromptsTab({
                 <Button
                   type="button"
                   size="icon"
-                  variant="outline"
+                  variant="secondary"
                   className="h-7 w-7"
                   onClick={() => setShowNewFileInput(true)}
                 >
@@ -2872,7 +2872,7 @@ export function PromptsTab({
                 <Button
                   type="button"
                   size="sm"
-                  variant="default"
+                  variant="primary"
                   className="flex-1"
                   disabled={!newFilePath.trim() || newFilePath.includes("..")}
                   onClick={() => {
@@ -2890,7 +2890,7 @@ export function PromptsTab({
                 <Button
                   type="button"
                   size="sm"
-                  variant="outline"
+                  variant="secondary"
                   className="flex-1"
                   onClick={() => {
                     setShowNewFileInput(false);
@@ -2939,7 +2939,7 @@ export function PromptsTab({
                 );
               }
               return (
-                <span className="ml-3 shrink-0 rounded border border-border text-muted-foreground px-1.5 py-0.5 text-(length:--text-nano) uppercase tracking-wide">
+                <span className="ml-3 shrink-0 rounded border border-line text-ink-3 px-1.5 py-0.5 text-(length:--text-nano) uppercase tracking-wide">
                   {file.isEntryFile ? "entry" : `${file.size}b`}
                 </span>
               );
@@ -2950,19 +2950,19 @@ export function PromptsTab({
         {/* Draggable separator */}
         {instructionsSideBySide && (
           <div
-            className="w-1 cursor-col-resize rounded transition-colors hover:bg-border active:bg-primary/50"
+            className="w-1 cursor-col-resize rounded transition-colors hover:bg-line active:bg-accent/50"
             onMouseDown={handleSeparatorDrag}
           />
         )}
 
-        <div className={cn("min-w-0 w-full overflow-hidden border border-border rounded-lg p-4 space-y-3", isMobile && showFilePanel && "hidden")}>
+        <div className={cn("min-w-0 w-full overflow-hidden border border-line rounded-lg p-4 space-y-3", isMobile && showFilePanel && "hidden")}>
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2 min-w-0">
               {isMobile && (
                 <Button
                   type="button"
                   size="icon"
-                  variant="outline"
+                  variant="secondary"
                   className="h-7 w-7 shrink-0"
                   onClick={() => setShowFilePanel(true)}
                 >
@@ -2971,7 +2971,7 @@ export function PromptsTab({
               )}
               <div className="min-w-0">
                 <h4 className="text-sm font-medium font-mono truncate">{selectedOrEntryFile}</h4>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-ink-3">
                   {selectedFileExists
                     ? selectedFileSummary?.deprecated
                       ? "Deprecated virtual file"
@@ -2987,7 +2987,7 @@ export function PromptsTab({
                   ariaLabel="Copy instructions file as markdown"
                   title="Copy as markdown"
                   copiedLabel="Copied"
-                  className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-border text-muted-foreground hover:bg-accent hover:text-foreground"
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-md border border-line text-ink-3 hover:bg-bg-3 hover:text-ink"
                 >
                   <Copy className="h-3.5 w-3.5" />
                 </CopyText>
@@ -2996,7 +2996,7 @@ export function PromptsTab({
                 <Button
                   type="button"
                   size="sm"
-                  variant="outline"
+                  variant="secondary"
                   onClick={() => {
                     if (confirm(`Delete ${selectedOrEntryFile}?`)) {
                       deleteFile.mutate(selectedOrEntryFile, {
@@ -3035,7 +3035,7 @@ export function PromptsTab({
             <textarea
               value={displayValue}
               onChange={(event) => setDraft(event.target.value)}
-              className="min-h-(--sz-420px) w-full min-w-0 rounded-md border border-border bg-transparent px-3 py-2 font-mono text-sm outline-none"
+              className="min-h-(--sz-420px) w-full min-w-0 rounded-md border border-line bg-transparent px-3 py-2 font-mono text-sm outline-none"
               placeholder="File contents"
             />
           )}
@@ -3049,7 +3049,7 @@ export function PromptsTab({
 function PromptsTabSkeleton() {
   return (
     <div className="max-w-5xl space-y-4">
-      <div className="rounded-lg border border-border p-4 space-y-4">
+      <div className="rounded-lg border border-line p-4 space-y-4">
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-2">
             <Skeleton className="h-4 w-40" />
@@ -3067,7 +3067,7 @@ function PromptsTabSkeleton() {
         </div>
       </div>
       <div className="grid gap-4 lg:grid-cols-(--gtc-19)">
-        <div className="rounded-lg border border-border p-3 space-y-3">
+        <div className="rounded-lg border border-line p-3 space-y-3">
           <div className="flex items-center justify-between">
             <Skeleton className="h-4 w-12" />
             <Skeleton className="h-8 w-16" />
@@ -3079,7 +3079,7 @@ function PromptsTabSkeleton() {
             ))}
           </div>
         </div>
-        <div className="rounded-lg border border-border p-4 space-y-3">
+        <div className="rounded-lg border border-line p-4 space-y-3">
           <div className="space-y-2">
             <Skeleton className="h-4 w-48" />
             <Skeleton className="h-3 w-28" />
@@ -3115,13 +3115,13 @@ function RunListItem({ run, isSelected, agentId }: { run: HeartbeatRun; isSelect
     <Link
       to={isSelected ? `/agents/${agentId}/runs` : `/agents/${agentId}/runs/${run.id}`}
       className={cn(
-        "flex flex-col gap-1 w-full px-3 py-2.5 text-left border-b border-border last:border-b-0 transition-colors no-underline text-inherit",
-        isSelected ? "bg-accent/40" : "hover:bg-accent/20",
+        "flex flex-col gap-1 w-full px-3 py-2.5 text-left border-b border-line last:border-b-0 transition-colors no-underline text-inherit",
+        isSelected ? "bg-bg-3/40" : "hover:bg-bg-3/20",
       )}
     >
       <div className="flex items-center gap-2">
         <StatusIcon className={cn("h-3.5 w-3.5 shrink-0", statusInfo.color, run.status === "running" && "animate-spin")} />
-        <span className="font-mono text-xs text-muted-foreground">
+        <span className="font-mono text-xs text-ink-3">
           {run.id.slice(0, 8)}
         </span>
         <Badge variant="ghost" className={cn(
@@ -3129,22 +3129,22 @@ function RunListItem({ run, isSelected, agentId }: { run: HeartbeatRun; isSelect
           run.invocationSource === "timer" ? "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300"
             : run.invocationSource === "assignment" ? "bg-violet-100 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300"
             : run.invocationSource === "on_demand" ? "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/50 dark:text-cyan-300"
-            : "bg-muted text-muted-foreground"
+            : "bg-bg-3 text-ink-3"
         )}>
           {sourceLabels[run.invocationSource] ?? run.invocationSource}
         </Badge>
         {sourceResolvedFold ? <SourceResolvedFoldBadge showIcon={false} className="shrink-0 text-(length:--text-nano) py-0" /> : null}
-        <span className="ml-auto text-(length:--text-micro) text-muted-foreground shrink-0">
+        <span className="ml-auto text-(length:--text-micro) text-ink-3 shrink-0">
           {relativeTime(run.createdAt)}
         </span>
       </div>
       {summary && (
-        <span className="text-xs text-muted-foreground truncate pl-5.5">
+        <span className="text-xs text-ink-3 truncate pl-5.5">
           {summary.slice(0, 60)}
         </span>
       )}
       {(metrics.totalTokens > 0 || metrics.cost > 0) && (
-        <div className="flex items-center gap-2 pl-5.5 text-(length:--text-micro) text-muted-foreground tabular-nums">
+        <div className="flex items-center gap-2 pl-5.5 text-(length:--text-micro) text-ink-3 tabular-nums">
           {metrics.totalTokens > 0 && <span>{formatTokens(metrics.totalTokens)} tok</span>}
           {metrics.cost > 0 && <span>${metrics.cost.toFixed(3)}</span>}
         </div>
@@ -3173,7 +3173,7 @@ function RunsTab({
   const { isMobile } = useSidebar();
 
   if (runs.length === 0) {
-    return <p className="text-sm text-muted-foreground">No runs yet.</p>;
+    return <p className="text-sm text-ink-3">No runs yet.</p>;
   }
 
   // Sort by created descending
@@ -3192,7 +3192,7 @@ function RunsTab({
         <div className="space-y-3 min-w-0 overflow-x-hidden">
           <Link
             to={`/agents/${agentRouteId}/runs`}
-            className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors no-underline"
+            className="flex items-center gap-1.5 text-sm text-ink-3 hover:text-ink transition-colors no-underline"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
             Back to runs
@@ -3202,7 +3202,7 @@ function RunsTab({
       );
     }
     return (
-      <div className="border border-border rounded-lg overflow-x-hidden">
+      <div className="border border-line rounded-lg overflow-x-hidden">
         {sorted.map((run) => (
           <RunListItem key={run.id} run={run} isSelected={false} agentId={agentRouteId} />
         ))}
@@ -3215,7 +3215,7 @@ function RunsTab({
     <div className="flex gap-0">
       {/* Left: run list — border stretches full height, content sticks */}
       <div className={cn(
-        "shrink-0 border border-border rounded-lg",
+        "shrink-0 border border-line rounded-lg",
         selectedRun ? "w-72" : "w-full",
       )}>
         <div className="sticky top-4 overflow-y-auto" style={{ maxHeight: "calc(100vh - 2rem)" }}>
@@ -3392,7 +3392,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
           break-glass handlers as the task detail page. */}
       <RunWorkspaceRecoverySurface run={run} />
       {/* Run summary card */}
-      <div className="border border-border rounded-lg overflow-hidden">
+      <div className="border border-line rounded-lg overflow-hidden">
         <div className="flex flex-col sm:flex-row">
           {/* Left column: status + timing */}
           <div className="flex-1 p-4 space-y-3">
@@ -3400,9 +3400,9 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
               <StatusBadge status={run.status} />
               {(run.status === "running" || run.status === "queued") && (
                 <Button
-                  variant="ghost"
+                  variant="danger"
                   size="sm"
-                  className="text-destructive hover:text-destructive text-xs h-6 px-2"
+                  className="text-xs h-6 px-2"
                   onClick={() => cancelRun.mutate()}
                   disabled={cancelRun.isPending}
                 >
@@ -3442,9 +3442,9 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
                 ?? asNonEmptyString(adapterConfig?.model);
               if (!adapterType && !displayProvider && !displayModel) return null;
               return (
-                <div className="text-(length:--text-micro) text-muted-foreground font-mono flex items-center gap-1.5 flex-wrap">
+                <div className="text-(length:--text-micro) text-ink-3 font-mono flex items-center gap-1.5 flex-wrap">
                   {adapterType && (
-                    <span className="bg-muted rounded px-1.5 py-0.5 text-(length:--text-nano) font-medium uppercase tracking-wide">{adapterType.replace(/_/g, " ")}</span>
+                    <span className="bg-bg-3 rounded px-1.5 py-0.5 text-(length:--text-nano) font-medium uppercase tracking-wide">{adapterType.replace(/_/g, " ")}</span>
                   )}
                   {displayProvider && displayModel && (
                     <span>{displayProvider}/{displayModel}</span>
@@ -3458,21 +3458,21 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
             {run.responsibleUserId && (
               <div
                 data-testid="run-detail-on-behalf-of"
-                className="text-xs text-muted-foreground"
+                className="text-xs text-ink-3"
               >
                 On behalf of{" "}
-                <span className="text-foreground">
+                <span className="text-ink">
                   {responsibleUserName ?? responsibleUserLabel(null)}
                 </span>
               </div>
             )}
             {resumeRun.isError && (
-              <div className="text-xs text-destructive">
+              <div className="text-xs text-bad">
                 {resumeRun.error instanceof Error ? resumeRun.error.message : "Failed to resume run"}
               </div>
             )}
             {retryRun.isError && (
-              <div className="text-xs text-destructive">
+              <div className="text-xs text-bad">
                 {retryRun.error instanceof Error ? retryRun.error.message : "Failed to retry run"}
               </div>
             )}
@@ -3480,15 +3480,15 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
               <div className="space-y-0.5">
                 <div className="text-sm font-mono">
                   {startTime}
-                  {endTime && <span className="text-muted-foreground"> &rarr; </span>}
+                  {endTime && <span className="text-ink-3"> &rarr; </span>}
                   {endTime}
                 </div>
-                <div className="text-(length:--text-micro) text-muted-foreground">
+                <div className="text-(length:--text-micro) text-ink-3">
                   {relativeTime(run.startedAt!)}
                   {run.finishedAt && <> &rarr; {relativeTime(run.finishedAt)}</>}
                 </div>
                 {displayDurationSec !== null && (
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-xs text-ink-3">
                     Duration: {displayDurationSec >= 60 ? `${Math.floor(displayDurationSec / 60)}m ${displayDurationSec % 60}s` : `${displayDurationSec}s`}
                   </div>
                 )}
@@ -3497,13 +3497,13 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
             {run.error && (
               <div className="text-xs">
                 <span className="text-red-600 dark:text-red-400">{run.error}</span>
-                {run.errorCode && <span className="text-muted-foreground ml-1">({run.errorCode})</span>}
+                {run.errorCode && <span className="text-ink-3 ml-1">({run.errorCode})</span>}
               </div>
             )}
             {run.errorCode === "claude_auth_required" && adapterType === "claude_local" && (
               <div className="space-y-2">
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   className="h-7 px-2 text-xs"
                   onClick={() => runClaudeLogin.mutate()}
@@ -3512,7 +3512,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
                   {runClaudeLogin.isPending ? "Running claude login..." : "Login to Claude Code"}
                 </Button>
                 {runClaudeLogin.isError && (
-                  <p className="text-xs text-destructive">
+                  <p className="text-xs text-bad">
                     {runClaudeLogin.error instanceof Error
                       ? runClaudeLogin.error.message
                       : "Failed to run Claude login"}
@@ -3534,7 +3534,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
                 {claudeLoginResult && (
                   <>
                     {!!claudeLoginResult.stdout && (
-                      <pre className="bg-neutral-100 dark:bg-neutral-950 rounded-md p-3 text-xs font-mono text-foreground overflow-x-auto whitespace-pre-wrap">
+                      <pre className="bg-neutral-100 dark:bg-neutral-950 rounded-md p-3 text-xs font-mono text-ink overflow-x-auto whitespace-pre-wrap">
                         {claudeLoginResult.stdout}
                       </pre>
                     )}
@@ -3556,11 +3556,11 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
             {hasNonZeroExit && (
               <div className="text-xs text-red-600 dark:text-red-400">
                 Exit code {run.exitCode}
-                {run.signal && <span className="text-muted-foreground ml-1">(signal: {run.signal})</span>}
+                {run.signal && <span className="text-ink-3 ml-1">(signal: {run.signal})</span>}
               </div>
             )}
             {retryState && (
-              <div className="rounded-md border border-border/70 bg-accent/20 px-3 py-2 text-xs leading-5">
+              <div className="rounded-md border border-line/70 bg-bg-3/20 px-3 py-2 text-xs leading-5">
                 <div className="flex flex-wrap items-center gap-2">
                   <span
                     className={cn(
@@ -3573,35 +3573,35 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
                   {retryState.retryOfRunId ? (
                     <Link
                       to={`/agents/${agentRouteId}/runs/${retryState.retryOfRunId}`}
-                      className="font-mono text-foreground hover:underline"
+                      className="font-mono text-ink hover:underline"
                     >
                       {retryState.retryOfRunId.slice(0, 8)}
                     </Link>
                   ) : null}
                 </div>
-                {retryState.detail ? <p className="mt-2 text-muted-foreground">{retryState.detail}</p> : null}
-                {retryState.secondary ? <p className="text-muted-foreground">{retryState.secondary}</p> : null}
+                {retryState.detail ? <p className="mt-2 text-ink-3">{retryState.detail}</p> : null}
+                {retryState.secondary ? <p className="text-ink-3">{retryState.secondary}</p> : null}
               </div>
             )}
           </div>
 
           {/* Right column: metrics */}
           {hasMetrics && (
-            <div className="border-t sm:border-t-0 sm:border-l border-border p-4 grid grid-cols-2 gap-x-4 sm:gap-x-8 gap-y-3 content-center tabular-nums">
+            <div className="border-t sm:border-t-0 sm:border-l border-line p-4 grid grid-cols-2 gap-x-4 sm:gap-x-8 gap-y-3 content-center tabular-nums">
               <div>
-                <div className="text-xs text-muted-foreground">Input</div>
+                <div className="text-xs text-ink-3">Input</div>
                 <div className="text-sm font-medium font-mono">{formatTokens(metrics.input)}</div>
               </div>
               <div>
-                <div className="text-xs text-muted-foreground">Output</div>
+                <div className="text-xs text-ink-3">Output</div>
                 <div className="text-sm font-medium font-mono">{formatTokens(metrics.output)}</div>
               </div>
               <div>
-                <div className="text-xs text-muted-foreground">Cached</div>
+                <div className="text-xs text-ink-3">Cached</div>
                 <div className="text-sm font-medium font-mono">{formatTokens(metrics.cached)}</div>
               </div>
               <div>
-                <div className="text-xs text-muted-foreground">Cost</div>
+                <div className="text-xs text-ink-3">Cost</div>
                 <div className="text-sm font-medium font-mono">{metrics.cost > 0 ? `$${metrics.cost.toFixed(4)}` : "-"}</div>
               </div>
             </div>
@@ -3610,9 +3610,9 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
 
         {/* Collapsible session row */}
         {hasSession && (
-          <div className="border-t border-border">
+          <div className="border-t border-line">
             <button
-              className="flex items-center gap-1.5 w-full px-4 py-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+              className="flex items-center gap-1.5 w-full px-4 py-2 text-xs text-ink-3 hover:text-ink transition-colors"
               onClick={() => setSessionOpen((v) => !v)}
             >
               <ChevronRight className={cn("h-3 w-3 transition-transform", sessionOpen && "rotate-90")} />
@@ -3623,13 +3623,13 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
               <div className="px-4 pb-3 space-y-1 text-xs">
                 {run.sessionIdBefore && (
                   <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground w-12">{sessionChanged ? "Before" : "ID"}</span>
+                    <span className="text-ink-3 w-12">{sessionChanged ? "Before" : "ID"}</span>
                     <CopyText text={run.sessionIdBefore} className="font-mono" />
                   </div>
                 )}
                 {sessionChanged && run.sessionIdAfter && (
                   <div className="flex items-center gap-2">
-                    <span className="text-muted-foreground w-12">After</span>
+                    <span className="text-ink-3 w-12">After</span>
                     <CopyText text={run.sessionIdAfter} className="font-mono" />
                   </div>
                 )}
@@ -3637,7 +3637,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
                   <div className="pt-1">
                     <button
                       type="button"
-                      className="text-(length:--text-micro) text-muted-foreground underline underline-offset-2 hover:text-foreground disabled:opacity-60"
+                      className="text-(length:--text-micro) text-ink-3 underline underline-offset-2 hover:text-ink disabled:opacity-60"
                       disabled={clearSessionsForTouchedIssues.isPending}
                       onClick={() => {
                         const issueCount = touchedIssueIds.length;
@@ -3653,7 +3653,7 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
                         : "clear session for these tasks"}
                     </button>
                     {clearSessionsForTouchedIssues.isError && (
-                      <p className="text-(length:--text-micro) text-destructive mt-1">
+                      <p className="text-(length:--text-micro) text-bad mt-1">
                         {clearSessionsForTouchedIssues.error instanceof Error
                           ? clearSessionsForTouchedIssues.error.message
                           : "Failed to clear sessions"}
@@ -3670,19 +3670,19 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
       {/* Issues touched by this run */}
       {touchedIssues && touchedIssues.length > 0 && (
         <div className="space-y-2">
-          <span className="text-xs font-medium text-muted-foreground">Tasks Touched ({touchedIssues.length})</span>
-          <div className="border border-border rounded-lg divide-y divide-border">
+          <span className="text-xs font-medium text-ink-3">Tasks Touched ({touchedIssues.length})</span>
+          <div className="border border-line rounded-lg divide-y divide-line">
             {touchedIssues.map((issue) => (
               <Link
                 key={issue.issueId}
                 to={`/issues/${issue.identifier ?? issue.issueId}`}
-                className="flex items-center justify-between w-full px-3 py-2 text-xs hover:bg-accent/20 transition-colors text-left no-underline text-inherit"
+                className="flex items-center justify-between w-full px-3 py-2 text-xs hover:bg-bg-3/20 transition-colors text-left no-underline text-inherit"
               >
                 <div className="flex items-center gap-2 min-w-0">
                   <StatusBadge status={issue.status} />
                   <span className="truncate">{issue.title}</span>
                 </div>
-                <span className="font-mono text-muted-foreground shrink-0 ml-2">{issue.identifier ?? issue.issueId.slice(0, 8)}</span>
+                <span className="font-mono text-ink-3 shrink-0 ml-2">{issue.identifier ?? issue.issueId.slice(0, 8)}</span>
               </Link>
             ))}
           </div>
@@ -3700,8 +3700,8 @@ function RunDetail({ run: initialRun, agentRouteId, adapterType, adapterConfig }
       {/* stdout excerpt when no log is available */}
       {run.stdoutExcerpt && !run.logRef && (
         <div className="space-y-1">
-          <span className="text-xs font-medium text-muted-foreground">stdout</span>
-          <pre className="bg-neutral-100 dark:bg-neutral-950 rounded-md p-3 text-xs font-mono text-foreground overflow-x-auto whitespace-pre-wrap">{run.stdoutExcerpt}</pre>
+          <span className="text-xs font-medium text-ink-3">stdout</span>
+          <pre className="bg-neutral-100 dark:bg-neutral-950 rounded-md p-3 text-xs font-mono text-ink overflow-x-auto whitespace-pre-wrap">{run.stdoutExcerpt}</pre>
         </div>
       )}
 
@@ -4188,21 +4188,21 @@ export function LogViewer({ run, adapterType }: { run: HeartbeatRun; adapterType
   }, [run.id]);
 
   if (loading && logLoading) {
-    return <p className="text-xs text-muted-foreground">Loading run logs...</p>;
+    return <p className="text-xs text-ink-3">Loading run logs...</p>;
   }
 
   if (events.length === 0 && logLines.length === 0 && !logError) {
-    return <p className="text-xs text-muted-foreground">No log events.</p>;
+    return <p className="text-xs text-ink-3">No log events.</p>;
   }
 
   const levelColors: Record<string, string> = {
-    info: "text-foreground",
+    info: "text-ink",
     warn: "text-yellow-600 dark:text-yellow-400",
     error: "text-red-600 dark:text-red-400",
   };
 
   const streamColors: Record<string, string> = {
-    stdout: "text-foreground",
+    stdout: "text-ink",
     stderr: "text-red-600 dark:text-red-300",
     system: "text-blue-600 dark:text-blue-300",
   };
@@ -4218,11 +4218,11 @@ export function LogViewer({ run, adapterType }: { run: HeartbeatRun; adapterType
       )}
 
       <div className="flex items-center justify-between">
-        <span className="text-xs font-medium text-muted-foreground">
+        <span className="text-xs font-medium text-ink-3">
           Transcript ({transcript.length})
         </span>
         <div className="flex items-center gap-2">
-          <div className="inline-flex rounded-lg border border-border/70 bg-background/70 p-0.5">
+          <div className="inline-flex rounded-lg border border-line/70 bg-bg/70 p-0.5">
             {(["nice", "raw"] as const).map((mode) => (
               <button
                 key={mode}
@@ -4230,8 +4230,8 @@ export function LogViewer({ run, adapterType }: { run: HeartbeatRun; adapterType
                 className={cn(
                   "rounded-md px-2.5 py-1 text-(length:--text-micro) font-medium capitalize transition-colors",
                   transcriptMode === mode
-                    ? "bg-accent text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground",
+                    ? "bg-bg-3 text-ink shadow-sm"
+                    : "text-ink-3 hover:text-ink",
                 )}
                 onClick={() => setTranscriptMode(mode)}
               >
@@ -4265,7 +4265,7 @@ export function LogViewer({ run, adapterType }: { run: HeartbeatRun; adapterType
           )}
         </div>
       </div>
-      <div className="max-h-(--sz-38rem) overflow-y-auto rounded-2xl border border-border/70 bg-background/40 p-3 sm:p-4">
+      <div className="max-h-(--sz-38rem) overflow-y-auto rounded-2xl border border-line/70 bg-bg/40 p-3 sm:p-4">
         <RunTranscriptView
           entries={transcript}
           toolDecisions={toolDecisionLookup.data?.decisions ?? []}
@@ -4275,17 +4275,17 @@ export function LogViewer({ run, adapterType }: { run: HeartbeatRun; adapterType
           emptyMessage={run.logRef ? "Waiting for transcript..." : "No persisted transcript for this run."}
         />
         {hasMoreLog && (
-          <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border/60 pt-3">
+          <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-line/60 pt-3">
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               size="xs"
               onClick={loadMorePersistedLog}
               disabled={loadingMoreLog}
             >
               {loadingMoreLog ? "Loading..." : "Load more log"}
             </Button>
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs text-ink-3">
               Showing the first {Math.round(logOffset / 1024).toLocaleString("en-US")} KB
               {typeof run.logBytes === "number" && run.logBytes > 0
                 ? ` of ${Math.round(run.logBytes / 1024).toLocaleString("en-US")} KB`
@@ -4339,13 +4339,13 @@ export function LogViewer({ run, adapterType }: { run: HeartbeatRun; adapterType
 
       {events.length > 0 && (
         <div>
-          <div className="mb-2 text-xs font-medium text-muted-foreground">Events ({events.length})</div>
+          <div className="mb-2 text-xs font-medium text-ink-3">Events ({events.length})</div>
           <div className="bg-neutral-100 dark:bg-neutral-950 rounded-lg p-3 font-mono text-xs space-y-0.5">
             {events.map((evt) => {
               const color = evt.color
                 ?? (evt.level ? levelColors[evt.level] : null)
                 ?? (evt.stream ? streamColors[evt.stream] : null)
-                ?? "text-foreground";
+                ?? "text-ink";
 
               return (
                 <div key={evt.id} className="flex gap-2">
@@ -4452,7 +4452,7 @@ function KeysTab({ agentId, companyId }: { agentId: string; companyId?: string }
           <Button
             variant="ghost"
             size="sm"
-            className="text-muted-foreground text-xs"
+            className="text-xs"
             onClick={() => setNewToken(null)}
           >
             Dismiss
@@ -4461,12 +4461,12 @@ function KeysTab({ agentId, companyId }: { agentId: string; companyId?: string }
       )}
 
       {/* Create new key */}
-      <div className="border border-border rounded-lg p-4 space-y-3">
-        <h3 className="text-xs font-medium text-muted-foreground flex items-center gap-2">
+      <div className="border border-line rounded-lg p-4 space-y-3">
+        <h3 className="text-xs font-medium text-ink-3 flex items-center gap-2">
           <Key className="h-3.5 w-3.5" />
           Create API Key
         </h3>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-ink-3">
           API keys allow this agent to authenticate calls to the Paperclip server.
         </p>
         <div className="flex items-center gap-2">
@@ -4491,30 +4491,30 @@ function KeysTab({ agentId, companyId }: { agentId: string; companyId?: string }
       </div>
 
       {/* Active keys */}
-      {isLoading && <p className="text-sm text-muted-foreground">Loading keys...</p>}
+      {isLoading && <p className="text-sm text-ink-3">Loading keys...</p>}
 
       {!isLoading && activeKeys.length === 0 && !newToken && (
-        <p className="text-sm text-muted-foreground">No active API keys.</p>
+        <p className="text-sm text-ink-3">No active API keys.</p>
       )}
 
       {activeKeys.length > 0 && (
         <div>
-          <h3 className="text-xs font-medium text-muted-foreground mb-2">
+          <h3 className="text-xs font-medium text-ink-3 mb-2">
             Active Keys
           </h3>
-          <div className="border border-border rounded-lg divide-y divide-border">
+          <div className="border border-line rounded-lg divide-y divide-line">
             {activeKeys.map((key: AgentKey) => (
               <div key={key.id} className="flex items-center justify-between px-4 py-2.5">
                 <div>
                   <span className="text-sm font-medium">{key.name}</span>
-                  <span className="text-xs text-muted-foreground ml-3">
+                  <span className="text-xs text-ink-3 ml-3">
                     Created {formatDate(key.createdAt)}
                   </span>
                 </div>
                 <Button
-                  variant="ghost"
+                  variant="danger"
                   size="sm"
-                  className="text-destructive hover:text-destructive text-xs"
+                  className="text-xs"
                   onClick={() => revokeKey.mutate(key.id)}
                   disabled={revokeKey.isPending}
                 >
@@ -4529,15 +4529,15 @@ function KeysTab({ agentId, companyId }: { agentId: string; companyId?: string }
       {/* Revoked keys */}
       {revokedKeys.length > 0 && (
         <div>
-          <h3 className="text-xs font-medium text-muted-foreground mb-2">
+          <h3 className="text-xs font-medium text-ink-3 mb-2">
             Revoked Keys
           </h3>
-          <div className="border border-border rounded-lg divide-y divide-border opacity-50">
+          <div className="border border-line rounded-lg divide-y divide-line opacity-50">
             {revokedKeys.map((key: AgentKey) => (
               <div key={key.id} className="flex items-center justify-between px-4 py-2.5">
                 <div>
                   <span className="text-sm line-through">{key.name}</span>
-                  <span className="text-xs text-muted-foreground ml-3">
+                  <span className="text-xs text-ink-3 ml-3">
                     Revoked {key.revokedAt ? formatDate(key.revokedAt) : ""}
                   </span>
                 </div>

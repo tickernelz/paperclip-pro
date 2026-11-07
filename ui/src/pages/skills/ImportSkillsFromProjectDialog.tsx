@@ -239,7 +239,7 @@ function CandidateStatusBadge({
       return (
         <Badge
           variant="outline"
-          className="gap-1 px-1.5 py-0 font-normal text-muted-foreground border-border/60"
+          className="gap-1 px-1.5 py-0 font-normal text-ink-3 border-line/60"
         >
           <Link2 className="h-3 w-3" /> Imported
         </Badge>
@@ -257,7 +257,7 @@ function CandidateStatusBadge({
       return (
         <Badge
           variant="outline"
-          className="gap-1 px-1.5 py-0 font-normal text-muted-foreground border-border/60"
+          className="gap-1 px-1.5 py-0 font-normal text-ink-3 border-line/60"
         >
           <FileWarning className="h-3 w-3" /> Skipped
         </Badge>
@@ -510,18 +510,18 @@ export function ImportSkillsFromProjectDialog({
         className="flex max-h-(--sz-85vh) flex-col gap-0 overflow-hidden p-0 sm:max-w-3xl"
         data-testid="import-skills-from-project-dialog"
       >
-        <header className="flex shrink-0 items-start justify-between gap-3 border-b border-border/60 px-5 py-4">
+        <header className="flex shrink-0 items-start justify-between gap-3 border-b border-line/60 px-5 py-4">
           <div className="flex flex-col gap-1">
             <DialogTitle className="text-base font-semibold">
               Import skills from project
             </DialogTitle>
-            <DialogDescription className="text-xs text-muted-foreground">
+            <DialogDescription className="text-xs text-ink-3">
               Pick a project, scan its workspaces for skills, and import them as references.
             </DialogDescription>
           </div>
           <button
             type="button"
-            className="rounded-sm text-muted-foreground opacity-70 transition-opacity hover:opacity-100"
+            className="rounded-sm text-ink-3 opacity-70 transition-opacity hover:opacity-100"
             onClick={handleClose}
             aria-label="Close import dialog"
           >
@@ -565,9 +565,9 @@ export function ImportSkillsFromProjectDialog({
           {step === "result" && importResult && <ResultStep result={importResult} />}
         </div>
 
-        <footer className="flex shrink-0 flex-col gap-2 border-t border-border/60 bg-muted/20 px-5 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
+        <footer className="flex shrink-0 flex-col gap-2 border-t border-line/60 bg-bg-3/20 px-5 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-3">
           {step === "select" && !scanError && candidates.length > 0 ? (
-            <div className="min-w-0 flex-1 text-xs text-muted-foreground">
+            <div className="min-w-0 flex-1 text-xs text-ink-3">
               <span className="flex items-center gap-1.5">
                 <Link2 className="h-3.5 w-3.5 shrink-0" />
                 Files stay in the project — Studio edits save directly to them.
@@ -601,7 +601,7 @@ export function ImportSkillsFromProjectDialog({
                     </Button>
                   </div>
                 )}
-                <Button variant="outline" size="sm" onClick={backToPick}>
+                <Button variant="secondary" size="sm" onClick={backToPick}>
                   <ArrowLeft className="mr-1 h-3.5 w-3.5" /> Back
                 </Button>
                 {!scanError && candidates.length > 0 && (
@@ -660,9 +660,9 @@ function PickProjectStep({
 }: PickProjectStepProps) {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="border-b border-border/60 px-5 py-3">
+      <div className="border-b border-line/60 px-5 py-3">
         <div className="relative">
-          <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+          <Search className="pointer-events-none absolute left-2 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-3" />
           <Input
             value={filter}
             onChange={(event) => onFilterChange(event.target.value)}
@@ -675,10 +675,10 @@ function PickProjectStep({
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto">
         {loading ? (
-          <div className="p-6 text-center text-sm text-muted-foreground">Loading projects…</div>
+          <div className="p-6 text-center text-sm text-ink-3">Loading projects…</div>
         ) : error ? (
           <div
-            className="m-5 flex items-start gap-3 rounded-md border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive"
+            className="m-5 flex items-start gap-3 rounded-md border border-bad/40 bg-bad/10 p-4 text-sm text-bad"
             role="alert"
           >
             <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
@@ -689,7 +689,7 @@ function PickProjectStep({
         ) : projects.length === 0 ? (
           <EmptyState icon={Search} message={`No projects match "${filter}".`} />
         ) : (
-          <ul className="divide-y divide-border/60" data-testid="project-list">
+          <ul className="divide-y divide-line/60" data-testid="project-list">
             {projects.map((project) => {
               const scannable = scannableWorkspaces(project);
               const disabled = scannable.length === 0;
@@ -702,7 +702,7 @@ function PickProjectStep({
                       "flex w-full items-center gap-3 px-5 py-3 text-left transition-colors",
                       disabled
                         ? "cursor-not-allowed opacity-60"
-                        : "cursor-pointer hover:bg-accent/40",
+                        : "cursor-pointer hover:bg-bg-3/40",
                     )}
                     onClick={() => !disabled && onPick(project)}
                     disabled={disabled}
@@ -712,13 +712,13 @@ function PickProjectStep({
                   >
                     <div className="min-w-0 flex-1">
                       <div className="truncate text-sm font-medium">{project.name}</div>
-                      <div className="mt-0.5 text-xs text-muted-foreground">
+                      <div className="mt-0.5 text-xs text-ink-3">
                         {project.workspaces.length} workspace
                         {project.workspaces.length === 1 ? "" : "s"}
                         {kinds ? ` · ${kinds}` : ""}
                       </div>
                       {disabled && (
-                        <div className="mt-1 text-(length:--text-micro) text-muted-foreground">
+                        <div className="mt-1 text-(length:--text-micro) text-ink-3">
                           Remote-only project — no locally scannable workspaces to import from.
                         </div>
                       )}
@@ -746,12 +746,12 @@ function ScanningStep({ projectName }: { projectName: string }) {
       data-testid="scanning-step"
     >
       <div className="flex flex-col items-center gap-3">
-        <FolderSearch className="h-10 w-10 text-muted-foreground/60" />
-        <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+        <FolderSearch className="h-10 w-10 text-ink-3/60" />
+        <Loader2 className="h-5 w-5 animate-spin text-ink-3" />
       </div>
       <div>
         <p className="text-sm font-medium">Scanning {projectName || "project"} for skills…</p>
-        <p className="mt-1 text-xs text-muted-foreground">
+        <p className="mt-1 text-xs text-ink-3">
           Looking in well-known skill folders across each workspace.
         </p>
       </div>
@@ -760,14 +760,14 @@ function ScanningStep({ projectName }: { projectName: string }) {
           <Badge
             key={folder}
             variant="outline"
-            className="px-1.5 py-0 font-mono text-(length:--text-micro) font-normal text-muted-foreground"
+            className="px-1.5 py-0 font-mono text-(length:--text-micro) font-normal text-ink-3"
           >
             {folder}
           </Badge>
         ))}
         <Badge
           variant="outline"
-          className="px-1.5 py-0 text-(length:--text-micro) font-normal text-muted-foreground"
+          className="px-1.5 py-0 text-(length:--text-micro) font-normal text-ink-3"
         >
           +{APPROX_TOTAL_SCAN_FOLDERS - HIGHLIGHTED_SCAN_FOLDERS.length} more
         </Badge>
@@ -812,13 +812,13 @@ function ProjectSkillBrowser({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col" data-testid="project-skill-browser">
-      <div className="shrink-0 border-b border-border/60 px-5 py-3">
+      <div className="shrink-0 border-b border-line/60 px-5 py-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-sm font-medium">Browse project folders</p>
-            <p className="mt-0.5 text-xs text-muted-foreground">Open any folder and add directories or individual SKILL.md files.</p>
+            <p className="mt-0.5 text-xs text-ink-3">Open any folder and add directories or individual SKILL.md files.</p>
           </div>
-          <Button variant="outline" size="sm" onClick={onBack}>
+          <Button variant="secondary" size="sm" onClick={onBack}>
             <ArrowLeft className="mr-1 h-3.5 w-3.5" /> Discovered skills
           </Button>
         </div>
@@ -838,7 +838,7 @@ function ProjectSkillBrowser({
           </div>
         )}
       </div>
-      <div className="flex shrink-0 items-center gap-2 border-b border-border/60 bg-muted/20 px-5 py-2">
+      <div className="flex shrink-0 items-center gap-2 border-b border-line/60 bg-bg-3/20 px-5 py-2">
         <Button
           variant="ghost"
           size="sm"
@@ -848,17 +848,17 @@ function ProjectSkillBrowser({
         >
           <ArrowLeft className="h-3.5 w-3.5" />
         </Button>
-        <span className="min-w-0 truncate font-mono text-xs text-muted-foreground">{result?.path ?? folderPath}</span>
+        <span className="min-w-0 truncate font-mono text-xs text-ink-3">{result?.path ?? folderPath}</span>
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto">
         {browseQuery.isLoading ? (
-          <div className="flex items-center justify-center gap-2 p-8 text-sm text-muted-foreground">
+          <div className="flex items-center justify-center gap-2 p-8 text-sm text-ink-3">
             <Loader2 className="h-4 w-4 animate-spin" /> Loading folder…
           </div>
         ) : browseQuery.error ? (
-          <div className="p-6 text-sm text-destructive">{readableErrorMessage(browseQuery.error)}</div>
+          <div className="p-6 text-sm text-bad">{readableErrorMessage(browseQuery.error)}</div>
         ) : result?.entries.length ? (
-          <ul className="divide-y divide-border/60">
+          <ul className="divide-y divide-line/60">
             {result.entries.map((entry: CompanySkillProjectBrowseEntry) => {
               const selectablePath = entry.kind === "file"
                 ? entry.path.toLowerCase() === "skill.md" ? "." : entry.path.slice(0, -"/SKILL.md".length)
@@ -867,9 +867,9 @@ function ProjectSkillBrowser({
               return (
                 <li key={entry.path} className="flex items-center gap-3 px-5 py-2.5">
                   {entry.kind === "directory" ? (
-                    <Folder className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    <Folder className="h-4 w-4 shrink-0 text-ink-3" />
                   ) : (
-                    <FileText className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    <FileText className="h-4 w-4 shrink-0 text-ink-3" />
                   )}
                   <button
                     type="button"
@@ -884,17 +884,17 @@ function ProjectSkillBrowser({
                       {addingKey === key ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Add skill"}
                     </Button>
                   ) : entry.kind === "directory" ? (
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                    <ChevronRight className="h-4 w-4 text-ink-3" />
                   ) : null}
                 </li>
               );
             })}
           </ul>
         ) : (
-          <div className="p-8 text-center text-sm text-muted-foreground">This folder is empty.</div>
+          <div className="p-8 text-center text-sm text-ink-3">This folder is empty.</div>
         )}
         {result?.truncated && (
-          <p className="border-t border-border/60 px-5 py-2 text-xs text-muted-foreground">Showing the first 250 entries.</p>
+          <p className="border-t border-line/60 px-5 py-2 text-xs text-ink-3">Showing the first 250 entries.</p>
         )}
       </div>
     </div>
@@ -943,23 +943,23 @@ function SelectStep({
     return (
       <div className="flex min-h-0 flex-1 items-center justify-center p-6" data-testid="scan-error">
         <div className="max-w-md text-center">
-          <div className="mx-auto mb-4 w-fit bg-muted/50 p-4">
+          <div className="mx-auto mb-4 w-fit bg-bg-3/50 p-4">
             {grant ? (
-              <ShieldAlert className="h-10 w-10 text-muted-foreground/60" />
+              <ShieldAlert className="h-10 w-10 text-ink-3/60" />
             ) : (
-              <AlertCircle className="h-10 w-10 text-muted-foreground/60" />
+              <AlertCircle className="h-10 w-10 text-ink-3/60" />
             )}
           </div>
           <p className="text-base font-semibold">
             {grant ? "You can't import skills here" : "Scan failed"}
           </p>
-          <p className="mt-1.5 text-sm text-muted-foreground">
+          <p className="mt-1.5 text-sm text-ink-3">
             {grant
               ? "Your account doesn't have permission to add skills to this organization. Ask an owner to grant the skills permission, then try again."
               : readableErrorMessage(scanError)}
           </p>
           {!grant && (
-            <Button variant="outline" size="sm" className="mt-4" onClick={onRetry}>
+            <Button variant="secondary" size="sm" className="mt-4" onClick={onRetry}>
               Try again
             </Button>
           )}
@@ -987,19 +987,19 @@ function SelectStep({
         data-testid="select-empty"
       >
         <div className="max-w-md text-center">
-          <div className="mx-auto mb-4 w-fit bg-muted/50 p-4">
-            <FolderSearch className="h-10 w-10 text-muted-foreground/50" />
+          <div className="mx-auto mb-4 w-fit bg-bg-3/50 p-4">
+            <FolderSearch className="h-10 w-10 text-ink-3/50" />
           </div>
           <p className="text-base font-semibold">No skills found</p>
-          <p className="mt-1.5 text-sm text-muted-foreground">
+          <p className="mt-1.5 text-sm text-ink-3">
             None of the well-known skill folders in this project's workspaces contain a{" "}
-            <code className="rounded bg-muted px-1 py-0.5 text-xs">SKILL.md</code>. We searched{" "}
+            <code className="rounded bg-bg-3 px-1 py-0.5 text-xs">SKILL.md</code>. We searched{" "}
             {HIGHLIGHTED_SCAN_FOLDERS.join(", ")} and {APPROX_TOTAL_SCAN_FOLDERS -
               HIGHLIGHTED_SCAN_FOLDERS.length}{" "}
             other agent-harness folders.
           </p>
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             className="mt-4"
             onClick={() => onBrowseOpenChange(true)}
@@ -1008,11 +1008,11 @@ function SelectStep({
             <FolderOpen className="mr-1.5 h-3.5 w-3.5" /> Browse project folders
           </Button>
           {onImportFromPath && (
-            <p className="mt-3 text-sm text-muted-foreground">
+            <p className="mt-3 text-sm text-ink-3">
               For skills in non-standard folders, use{" "}
               <button
                 type="button"
-                className="font-medium text-foreground underline underline-offset-2"
+                className="font-medium text-ink underline underline-offset-2"
                 onClick={onImportFromPath}
               >
                 Import from path or URL
@@ -1027,15 +1027,15 @@ function SelectStep({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col" data-testid="candidate-list">
-      <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border/60 px-5 py-2.5">
-        <p className="text-xs text-muted-foreground">Choose discovered skills, or browse any workspace folder.</p>
-        <Button variant="outline" size="sm" onClick={() => onBrowseOpenChange(true)} data-testid="browse-project-folders">
+      <div className="flex shrink-0 items-center justify-between gap-3 border-b border-line/60 px-5 py-2.5">
+        <p className="text-xs text-ink-3">Choose discovered skills, or browse any workspace folder.</p>
+        <Button variant="secondary" size="sm" onClick={() => onBrowseOpenChange(true)} data-testid="browse-project-folders">
           <FolderOpen className="mr-1.5 h-3.5 w-3.5" /> Browse folders
         </Button>
       </div>
-      <div className="shrink-0 border-b border-border/60 px-5 py-2.5">
+      <div className="shrink-0 border-b border-line/60 px-5 py-2.5">
         <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-3" />
           <Input
             value={filter}
             onChange={(event) => onFilterChange(event.target.value)}
@@ -1047,26 +1047,26 @@ function SelectStep({
       </div>
       <div className="min-h-0 flex-1 overflow-y-auto">
         {groups.length === 0 ? (
-          <div className="flex h-full items-center justify-center p-6 text-sm text-muted-foreground">
+          <div className="flex h-full items-center justify-center p-6 text-sm text-ink-3">
             No skills match “{filter.trim()}”.
           </div>
         ) : (
           groups.map((group, groupIndex) => (
             <section key={group.key}>
               {groupIndex > 0 && !group.isPrimary && groups[groupIndex - 1]?.isPrimary && (
-                <header className="border-y border-border/60 bg-muted/30 px-5 py-2 text-xs uppercase tracking-wide text-muted-foreground">
+                <header className="border-y border-line/60 bg-bg-3/30 px-5 py-2 text-xs uppercase tracking-wide text-ink-3">
                   Other Workspaces
                 </header>
               )}
-              <header className="sticky top-0 z-10 border-b border-border/60 bg-background px-5 py-2 text-sm font-medium text-foreground">
+              <header className="sticky top-0 z-10 border-b border-line/60 bg-bg px-5 py-2 text-sm font-medium text-ink">
                 {group.workspaceName}
               </header>
               {group.directories.map((directory) => (
                 <div key={directory.key}>
-                  <div className="bg-muted/30 px-5 py-1.5 font-mono text-(length:--text-micro) text-muted-foreground">
+                  <div className="bg-bg-3/30 px-5 py-1.5 font-mono text-(length:--text-micro) text-ink-3">
                     {directory.directoryRoot}
                   </div>
-                  <ul className="divide-y divide-border/60">
+                  <ul className="divide-y divide-line/60">
                     {directory.candidates.map((candidate) => {
                       const selectable = isSelectableCandidate(candidate);
                       const key = selectionKey(candidate.workspaceId, candidate.relativePath);
@@ -1077,8 +1077,8 @@ function SelectStep({
                           key={`${candidate.workspaceId} ${candidate.relativePath}`}
                           className={cn(
                             "flex items-start gap-3 px-5 py-2.5 transition-colors",
-                            selectable ? "cursor-pointer hover:bg-accent/40" : "opacity-70",
-                            isSelected && "bg-accent/50",
+                            selectable ? "cursor-pointer hover:bg-bg-3/40" : "opacity-70",
+                            isSelected && "bg-bg-3/50",
                           )}
                           onClick={() => toggleCandidate(candidate)}
                           data-testid={`candidate-${candidate.relativePath}`}
@@ -1101,11 +1101,11 @@ function SelectStep({
                               <CandidateStatusBadge status={candidate.status} />
                             </div>
                             {candidate.description && (
-                              <p className="mt-0.5 line-clamp-2 text-xs text-muted-foreground">
+                              <p className="mt-0.5 line-clamp-2 text-xs text-ink-3">
                                 {candidate.description}
                               </p>
                             )}
-                            <p className="mt-0.5 font-mono text-(length:--text-micro) text-muted-foreground">
+                            <p className="mt-0.5 font-mono text-(length:--text-micro) text-ink-3">
                               {candidate.relativePath}
                             </p>
                             {candidate.reason && (
@@ -1114,7 +1114,7 @@ function SelectStep({
                                   "mt-0.5 text-(length:--text-micro)",
                                   candidate.status === "conflict"
                                     ? "text-amber-600 dark:text-amber-400"
-                                    : "text-muted-foreground",
+                                    : "text-ink-3",
                                 )}
                               >
                                 {candidate.reason}
@@ -1127,7 +1127,7 @@ function SelectStep({
                               >
                                 <label
                                   htmlFor={`rename-${candidate.workspaceId}-${candidate.slug}`}
-                                  className="shrink-0 text-xs text-muted-foreground"
+                                  className="shrink-0 text-xs text-ink-3"
                                 >
                                   Import as
                                 </label>
@@ -1146,7 +1146,7 @@ function SelectStep({
                                   }
                                 />
                                 {selectedValue && !isValidSelectionSlug(selectedValue) && (
-                                  <span className="text-xs text-destructive">
+                                  <span className="text-xs text-bad">
                                     Use a lowercase URL-safe slug.
                                   </span>
                                 )}
@@ -1179,16 +1179,16 @@ function ResultStep({ result }: ResultStepProps) {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="border-b border-border/60 px-5 py-4" data-testid="result-summary">
+      <div className="border-b border-line/60 px-5 py-4" data-testid="result-summary">
         <div className="flex items-start gap-3 rounded-md border border-emerald-500/30 bg-emerald-500/5 p-3">
           <Link2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
-          <div className="text-xs leading-relaxed text-muted-foreground">
-            <span className="font-medium text-foreground">No files were copied.</span> These skills
+          <div className="text-xs leading-relaxed text-ink-3">
+            <span className="font-medium text-ink">No files were copied.</span> These skills
             reference the files in the project workspace — editing them in Skill Studio saves
             directly back to those files.
           </div>
         </div>
-        <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+        <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-ink-3">
           <span className="text-emerald-600 dark:text-emerald-400">
             ✓ {result.imported.length} imported
           </span>
@@ -1199,10 +1199,10 @@ function ResultStep({ result }: ResultStepProps) {
       <div className="min-h-0 flex-1 overflow-y-auto">
         {importedSkills.length > 0 && (
           <section>
-            <header className="bg-muted/30 px-5 py-1.5 text-xs uppercase tracking-wide text-muted-foreground">
+            <header className="bg-bg-3/30 px-5 py-1.5 text-xs uppercase tracking-wide text-ink-3">
               Imported · {importedSkills.length}
             </header>
-            <ul className="divide-y divide-border/60" data-testid="result-imported">
+            <ul className="divide-y divide-line/60" data-testid="result-imported">
               {importedSkills.map((skill) => (
                 <li
                   key={skill.id}
@@ -1211,14 +1211,14 @@ function ResultStep({ result }: ResultStepProps) {
                   <div className="min-w-0 flex-1">
                     <div className="truncate font-medium">{skill.name}</div>
                     {skill.description && (
-                      <div className="truncate text-xs text-muted-foreground">
+                      <div className="truncate text-xs text-ink-3">
                         {skill.description}
                       </div>
                     )}
                   </div>
                   <Link
                     to={skillStudioRoute(skill.id)}
-                    className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-foreground no-underline hover:underline"
+                    className="inline-flex shrink-0 items-center gap-1 text-xs font-medium text-ink no-underline hover:underline"
                   >
                     Open <ExternalLink className="h-3 w-3" />
                   </Link>
@@ -1229,20 +1229,20 @@ function ResultStep({ result }: ResultStepProps) {
         )}
         {result.skipped.length > 0 && (
           <section>
-            <header className="bg-muted/30 px-5 py-1.5 text-xs uppercase tracking-wide text-muted-foreground">
+            <header className="bg-bg-3/30 px-5 py-1.5 text-xs uppercase tracking-wide text-ink-3">
               Skipped · {result.skipped.length}
             </header>
-            <ul className="divide-y divide-border/60" data-testid="result-skipped">
+            <ul className="divide-y divide-line/60" data-testid="result-skipped">
               {result.skipped.map((row, index) => (
                 <li
                   key={`${row.workspaceId ?? "?"}-${row.path ?? index}`}
                   className="flex items-start gap-2 px-5 py-2.5 text-xs"
                 >
-                  <FileWarning className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                  <FileWarning className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ink-3" />
                   <div className="min-w-0">
-                    <span className="font-mono text-muted-foreground">{row.path ?? "—"}</span>
+                    <span className="font-mono text-ink-3">{row.path ?? "—"}</span>
                     {row.reason && (
-                      <span className="ml-2 text-muted-foreground">{row.reason}</span>
+                      <span className="ml-2 text-ink-3">{row.reason}</span>
                     )}
                   </div>
                 </li>
@@ -1252,14 +1252,14 @@ function ResultStep({ result }: ResultStepProps) {
         )}
         {result.warnings.length > 0 && (
           <section>
-            <header className="bg-muted/30 px-5 py-1.5 text-xs uppercase tracking-wide text-muted-foreground">
+            <header className="bg-bg-3/30 px-5 py-1.5 text-xs uppercase tracking-wide text-ink-3">
               Warnings · {result.warnings.length}
             </header>
-            <ul className="divide-y divide-border/60" data-testid="result-warnings">
+            <ul className="divide-y divide-line/60" data-testid="result-warnings">
               {result.warnings.map((warning, index) => (
                 <li key={index} className="flex items-start gap-2 px-5 py-2.5 text-xs">
                   <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
-                  <span className="text-muted-foreground">{warning}</span>
+                  <span className="text-ink-3">{warning}</span>
                 </li>
               ))}
             </ul>

@@ -149,7 +149,7 @@ function WorkspaceSelect({
         renderOption={(option, { selected }) => (
           <span className="flex min-w-0 flex-col">
             <span className={`truncate ${selected ? "font-medium" : ""}`}>{option.label}</span>
-            <span className="truncate text-[11px] text-muted-foreground">
+            <span className="truncate text-[11px] text-ink-3">
               {option.workspace.status} - {option.description}
             </span>
           </span>
@@ -161,16 +161,16 @@ function WorkspaceSelect({
 
 function FormContext({ triggerClassName }: { triggerClassName?: string }) {
   return (
-    <div className="w-full max-w-sm rounded-md border border-border bg-card p-0">
+    <div className="w-full max-w-sm rounded-md border border-line bg-bg-2 p-0">
       <div className="px-4 py-3 space-y-2">
         <div className="space-y-1.5">
           <div className="text-xs font-medium">Execution workspace</div>
-          <div className="text-[11px] text-muted-foreground">
+          <div className="text-[11px] text-ink-3">
             Control whether this task runs in the shared workspace, a new isolated workspace, or an existing one.
           </div>
           {/* Neighbouring native select (mode picker): the row the combobox must match. */}
           <select
-            className="w-full rounded border border-border bg-transparent px-2 py-1.5 text-xs outline-none"
+            className="w-full rounded border border-line bg-transparent px-2 py-1.5 text-xs outline-none"
             defaultValue="reuse_existing"
           >
             <option value="shared_workspace">Project default</option>
@@ -255,7 +255,7 @@ export const SelectedRecentWorkspaceDuplicatedInAllGroup: Story = {
 export const DefaultAndCompactSizeComparison: Story = {
   render: () => (
     <div className="flex w-80 flex-col gap-2">
-      <select className="w-full rounded border border-border bg-transparent px-2 py-1.5 text-xs outline-none" defaultValue="reuse_existing">
+      <select className="w-full rounded border border-line bg-transparent px-2 py-1.5 text-xs outline-none" defaultValue="reuse_existing">
         <option value="reuse_existing">Reuse existing workspace</option>
       </select>
       <WorkspaceSelect />

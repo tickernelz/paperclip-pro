@@ -173,7 +173,7 @@ function ArtifactsToolbar({
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div className="relative w-full sm:max-w-sm">
-        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-3" />
         <Input
           value={query}
           onChange={(event) => onQueryChange(event.currentTarget.value)}
@@ -186,7 +186,7 @@ function ArtifactsToolbar({
             type="button"
             onClick={() => onQueryChange("")}
             aria-label="Clear artifact search"
-            className="absolute right-2 top-1/2 inline-flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
+            className="absolute right-2 top-1/2 inline-flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded text-ink-3 transition-colors hover:bg-bg-3/50 hover:text-ink"
           >
             <X className="h-3.5 w-3.5" />
           </button>
@@ -196,11 +196,11 @@ function ArtifactsToolbar({
       <div className="flex flex-wrap items-center gap-1.5">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button
+            <Button active={groupBy !== "none"}
               type="button"
-              variant="outline"
+              variant="secondary"
               size="icon"
-              className={cn("h-8 w-8 shrink-0", groupBy !== "none" && "bg-accent")}
+              className={cn("h-8 w-8 shrink-0")}
               title="Group artifacts"
               aria-label={`Group artifacts (currently ${artifactGroupByLabel(groupBy)})`}
             >
@@ -234,8 +234,8 @@ function ArtifactsToolbar({
               className={cn(
                 "rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
                 kind === filter.value
-                  ? "bg-accent text-foreground"
-                  : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+                  ? "bg-bg-3 text-ink"
+                  : "text-ink-3 hover:bg-bg-3/50 hover:text-ink",
               )}
             >
               {filter.label}
@@ -262,7 +262,7 @@ interface MockGroup {
  * Stack card mock for grouped views.
  *
  * Visual rules (matching ArtifactCard footprint):
- *  - Same border, radius (rounded-[8px]), border + bg-card surface, hover treatment.
+ *  - Same border, radius (rounded-[8px]), border + bg-bg-2 surface, hover treatment.
  *  - Preview frame is the same `aspect-video` PreviewFrame as ArtifactCard.
  *  - Footer block has the same vertical rhythm.
  *  - When `count > 1`, render two stacked sibling layers behind the main card,
@@ -281,11 +281,11 @@ function ArtifactStackCard({ group }: { group: MockGroup }) {
         <>
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-0 translate-x-[8px] translate-y-[8px] rounded-[8px] border border-border bg-muted/40 shadow-sm"
+            className="pointer-events-none absolute inset-0 translate-x-[8px] translate-y-[8px] rounded-[8px] border border-line bg-bg-3/40 shadow-sm"
           />
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute inset-0 translate-x-[4px] translate-y-[4px] rounded-[8px] border border-border bg-muted/70 shadow-sm"
+            className="pointer-events-none absolute inset-0 translate-x-[4px] translate-y-[4px] rounded-[8px] border border-line bg-bg-3/70 shadow-sm"
           />
         </>
       ) : null}
@@ -294,9 +294,9 @@ function ArtifactStackCard({ group }: { group: MockGroup }) {
         href={group.href}
         data-testid="artifact-stack-card"
         data-stack-count={group.count}
-        className="group relative flex flex-col overflow-hidden rounded-[8px] border border-border bg-card transition-colors hover:border-foreground/20"
+        className="group relative flex flex-col overflow-hidden rounded-[8px] border border-line bg-bg-2 transition-colors hover:border-ink/20"
       >
-        <div className="relative aspect-video w-full overflow-hidden bg-accent/20">
+        <div className="relative aspect-video w-full overflow-hidden bg-bg-3/20">
           {group.preview.contentPath ? (
             <img
               src={group.preview.contentPath}
@@ -304,11 +304,11 @@ function ArtifactStackCard({ group }: { group: MockGroup }) {
               className="h-full w-full object-cover"
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center bg-accent/15 text-muted-foreground/40">
+            <div className="flex h-full w-full items-center justify-center bg-bg-3/15 text-ink-3/40">
               <Layers className="h-8 w-8" aria-hidden="true" />
             </div>
           )}
-          <div className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-background/85 px-2 py-0.5 text-[11px] font-medium text-foreground/90 shadow-sm backdrop-blur">
+          <div className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-full bg-bg/85 px-2 py-0.5 text-[11px] font-medium text-ink/90 shadow-sm backdrop-blur">
             <Layers className="h-3 w-3" aria-hidden="true" />
             {group.count}
           </div>
@@ -316,20 +316,20 @@ function ArtifactStackCard({ group }: { group: MockGroup }) {
 
         <div className="flex flex-1 flex-col gap-1 p-3">
           <div className="flex h-7 items-center gap-2">
-            <span className="shrink-0 font-mono text-[11px] text-muted-foreground">
+            <span className="shrink-0 font-mono text-[11px] text-ink-3">
               {group.issueIdentifier}
             </span>
             <h3
-              className="min-w-0 flex-1 truncate text-sm font-medium leading-7 text-foreground/85"
+              className="min-w-0 flex-1 truncate text-sm font-medium leading-7 text-ink/85"
               title={group.issueTitle}
             >
               {group.issueTitle}
             </h3>
           </div>
 
-          <div className="mt-0.5 flex items-center gap-1.5 text-[11px] text-muted-foreground/65">
+          <div className="mt-0.5 flex items-center gap-1.5 text-[11px] text-ink-3/65">
             <span>{group.count} artifacts</span>
-            <span className="text-muted-foreground/50">·</span>
+            <span className="text-ink-3/50">·</span>
             <span>Updated {formatDate(group.updatedAt)}</span>
           </div>
         </div>
@@ -588,24 +588,24 @@ export const SelectedStack: Story = {
           onGroupByChange={setGroupBy}
         />
 
-        <div className="flex flex-col gap-2 border-b border-border pb-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-2 border-b border-line pb-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-2 min-w-0">
             <a
               href="/PAP/artifacts?groupBy=task"
-              className="inline-flex h-7 items-center gap-1 rounded-md px-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
+              className="inline-flex h-7 items-center gap-1 rounded-md px-2 text-xs font-medium text-ink-3 transition-colors hover:bg-bg-3/50 hover:text-ink"
             >
               <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
               All stacks
             </a>
-            <span className="text-muted-foreground/40" aria-hidden="true">
+            <span className="text-ink-3/40" aria-hidden="true">
               /
             </span>
-            <span className="shrink-0 font-mono text-[11px] text-muted-foreground">PAP-10306</span>
-            <span className="min-w-0 truncate text-sm font-medium text-foreground/90">
+            <span className="shrink-0 font-mono text-[11px] text-ink-3">PAP-10306</span>
+            <span className="min-w-0 truncate text-sm font-medium text-ink/90">
               Landing visuals refresh
             </span>
           </div>
-          <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground/70">
+          <div className="flex items-center gap-1.5 text-[11px] text-ink-3/70">
             <Layers className="h-3 w-3" aria-hidden="true" />
             <span>{SELECTED_GROUP_ARTIFACTS.length} artifacts in this stack</span>
           </div>

@@ -28,7 +28,7 @@ export function McpConfigHelpDialog() {
           type="button"
           variant="ghost"
           size="icon"
-          className="h-6 w-6 shrink-0 text-muted-foreground hover:text-foreground"
+          className="h-6 w-6 shrink-0"
           aria-label="Get help creating an MCP config"
         >
           <HelpCircle className="h-4 w-4" />
@@ -43,14 +43,14 @@ export function McpConfigHelpDialog() {
           </DialogDescription>
         </DialogHeader>
 
-        <ol className="list-decimal space-y-1.5 pl-5 text-sm text-muted-foreground">
+        <ol className="list-decimal space-y-1.5 pl-5 text-sm text-ink-3">
           {MCP_CONFIG_HELP_INSTRUCTIONS.map((instruction) => (
             <li key={instruction}>{instruction}</li>
           ))}
         </ol>
 
         <div className="space-y-2">
-          <label htmlFor="mcp-config-help-prompt" className="text-sm font-medium text-foreground">
+          <label htmlFor="mcp-config-help-prompt" className="text-sm font-medium text-ink">
             Prompt to send
           </label>
           <Textarea

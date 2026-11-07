@@ -3046,7 +3046,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
               {historyError || (historyPending && historyWaitExpired) ? (
                 <div
                   role="status"
-                  className="absolute inset-x-0 top-0 z-20 mx-auto flex w-full max-w-(--tc-shell-max-w) items-center gap-2 border border-border bg-background px-4 py-2 text-sm text-muted-foreground"
+                  className="absolute inset-x-0 top-0 z-20 mx-auto flex w-full max-w-(--tc-shell-max-w) items-center gap-2 border border-line bg-bg px-4 py-2 text-sm text-ink-3"
                 >
                   {historyError ? "Some task history could not be loaded." : "Some task history is still loading."}
                   {historyError ? (
@@ -3058,7 +3058,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
               ) : null}
               {!historyRevealed ? (
                 <div
-                  className="absolute inset-0 z-10 overflow-hidden bg-background"
+                  className="absolute inset-0 z-10 overflow-hidden bg-bg"
                   data-testid="task-chat-history-loading"
                   role="status"
                   aria-label="Loading conversation"
@@ -3098,7 +3098,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
                         {threadHeaderWithBlockers}
                       </div>
                     ) : null}
-                    <div className="px-3 py-10 text-center text-sm text-muted-foreground">
+                    <div className="px-3 py-10 text-center text-sm text-ink-3">
                       {emptyMessage}
                     </div>
                     {bottomBlockerLinks ? (

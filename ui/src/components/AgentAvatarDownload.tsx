@@ -46,7 +46,7 @@ export function AgentAvatarDownload({
   return (
     <div className="space-y-2">
       <Button
-        variant={iconOnly ? "ghost" : "outline"}
+        variant={iconOnly ? "ghost" : "secondary"}
         size={iconOnly ? "icon" : "default"}
         asChild
       >
@@ -70,7 +70,7 @@ export function AgentAvatarDownload({
         </a>
       </Button>
       {failed && (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-sm text-bad">
           Couldn’t download the avatar. Try downloading it again.
         </p>
       )}

@@ -11,8 +11,8 @@ import { failingPaths, runHealth, type SmokeHealth } from "@/pages/tools/smoke-l
 const HEALTH_DOT: Record<SmokeHealth, string> = {
   green: "bg-emerald-500",
   amber: "bg-amber-500",
-  red: "bg-destructive",
-  unknown: "bg-muted-foreground/40",
+  red: "bg-bad",
+  unknown: "bg-ink-3/40",
 };
 
 const HEALTH_LABEL: Record<SmokeHealth, string> = {
@@ -62,28 +62,28 @@ export function SmokeLabDashboardCard({ companyId }: { companyId: string }) {
   return (
     <Link
       to={advancedTabHref("smoke-lab")}
-      className="group flex items-center justify-between gap-3 rounded-lg border border-border bg-card p-4 shadow-sm transition-colors hover:bg-accent/40"
+      className="group flex items-center justify-between gap-3 rounded-lg border border-line bg-bg-2 p-4 shadow-sm transition-colors hover:bg-bg-3/40"
       data-testid="smoke-lab-dashboard-card"
     >
       <div className="flex min-w-0 items-start gap-3">
-        <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted">
-          <FlaskConical className="h-4 w-4 text-muted-foreground" />
+        <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-bg-3">
+          <FlaskConical className="h-4 w-4 text-ink-3" />
         </span>
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <span className={cn("h-2.5 w-2.5 shrink-0 rounded-full", HEALTH_DOT[health])} />
-            <p className="truncate text-sm font-semibold text-foreground">Integration smoke</p>
+            <p className="truncate text-sm font-semibold text-ink">Integration smoke</p>
           </div>
-          <p className="mt-0.5 truncate text-xs text-muted-foreground">
+          <p className="mt-0.5 truncate text-xs text-ink-3">
             {HEALTH_LABEL[health]}
             {failing.length > 0 && `: ${failing.join(", ")}`}
           </p>
-          <p className="mt-0.5 truncate text-(length:--text-micro) text-muted-foreground/80">
+          <p className="mt-0.5 truncate text-(length:--text-micro) text-ink-3/80">
             {latestRun ? `Last run ${formatTime(latestRun.startedAt)}` : "Run one from the Smoke Lab tab"}
           </p>
         </div>
       </div>
-      <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5" />
+      <ChevronRight className="h-4 w-4 shrink-0 text-ink-3 transition-transform group-hover:translate-x-0.5" />
     </Link>
   );
 }

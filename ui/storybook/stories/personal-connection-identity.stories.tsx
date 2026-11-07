@@ -126,7 +126,7 @@ function IdentitiesHarness({
     members: MEMBERS,
   };
   return (
-    <div className="mx-auto max-w-4xl bg-background p-8">
+    <div className="mx-auto max-w-4xl bg-bg p-8">
       <IdentitiesSection
         appName="Gmail"
         credentialPolicy={credentialPolicy}

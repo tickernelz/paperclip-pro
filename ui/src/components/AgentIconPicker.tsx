@@ -62,8 +62,8 @@ export function AgentIconPicker({ value, onChange, children }: AgentIconPickerPr
                 setSearch("");
               }}
               className={cn(
-                "flex items-center justify-center h-8 w-8 rounded hover:bg-accent transition-colors",
-                (value ?? DEFAULT_ICON) === name && "bg-accent ring-1 ring-primary"
+                "flex items-center justify-center h-8 w-8 rounded hover:bg-bg-3 transition-colors",
+                (value ?? DEFAULT_ICON) === name && "bg-bg-3 ring-1 ring-accent"
               )}
               title={name}
             >
@@ -71,7 +71,7 @@ export function AgentIconPicker({ value, onChange, children }: AgentIconPickerPr
             </button>
           ))}
           {filtered.length === 0 && (
-            <p className="col-span-7 text-xs text-muted-foreground text-center py-2">No icons match</p>
+            <p className="col-span-7 text-xs text-ink-3 text-center py-2">No icons match</p>
           )}
         </div>
       </PopoverContent>

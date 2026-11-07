@@ -12,7 +12,7 @@ export function HtmlArtifactPreview({ html, title }: { html: string; title: stri
       sandbox="allow-scripts"
       referrerPolicy="no-referrer"
       allow="camera 'none'; microphone 'none'; geolocation 'none'; clipboard-read 'none'; clipboard-write 'none'; fullscreen 'none'"
-      className="block h-full min-h-0 w-full flex-1 border-0 bg-background"
+      className="block h-full min-h-0 w-full flex-1 border-0 bg-bg"
     />
   );
 }

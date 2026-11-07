@@ -63,7 +63,7 @@ const sections: ShortcutSection[] = [
 
 function KeyCap({ children }: { children: string }) {
   return (
-    <kbd className="inline-flex h-6 min-w-6 items-center justify-center rounded border border-border bg-muted px-1.5 font-mono text-xs font-medium text-foreground shadow-(--shadow-extract-10)">
+    <kbd className="inline-flex h-6 min-w-6 items-center justify-center rounded border border-line bg-bg-3 px-1.5 font-mono text-xs font-medium text-ink shadow-(--shadow-extract-10)">
       {children}
     </kbd>
   );
@@ -72,10 +72,10 @@ function KeyCap({ children }: { children: string }) {
 export function KeyboardShortcutsCheatsheetContent() {
   return (
     <>
-      <div className="divide-y divide-border border-t border-border">
+      <div className="divide-y divide-line border-t border-line">
         {sections.map((section) => (
           <div key={section.title} className="px-5 py-3">
-            <h3 className="mb-2 text-(length:--text-micro) font-semibold uppercase tracking-wider text-muted-foreground">
+            <h3 className="mb-2 text-(length:--text-micro) font-semibold uppercase tracking-wider text-ink-3">
               {section.title}
             </h3>
             <div className="space-y-1.5">
@@ -84,12 +84,12 @@ export function KeyboardShortcutsCheatsheetContent() {
                   key={shortcut.label + shortcut.keys.join()}
                   className="flex items-center justify-between gap-4"
                 >
-                  <span className="text-sm text-foreground/90">{shortcut.label}</span>
+                  <span className="text-sm text-ink/90">{shortcut.label}</span>
                   <div className="flex items-center gap-1">
                     {shortcut.keys.map((key, i) => (
                       <span key={key} className="flex items-center gap-1">
                         {i > 0 && (
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-xs text-ink-3">
                             {shortcut.combo ? "+" : "then"}
                           </span>
                         )}
@@ -103,8 +103,8 @@ export function KeyboardShortcutsCheatsheetContent() {
           </div>
         ))}
       </div>
-      <div className="border-t border-border px-5 py-3">
-        <p className="text-xs text-muted-foreground">
+      <div className="border-t border-line px-5 py-3">
+        <p className="text-xs text-ink-3">
           Press <KeyCap>Esc</KeyCap> to close &middot; Shortcuts are disabled in text fields
         </p>
       </div>

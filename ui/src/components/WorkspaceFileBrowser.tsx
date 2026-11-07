@@ -79,21 +79,21 @@ export function describeUnavailable(reason: string): { title: string; body: stri
   const lower = reason.toLowerCase();
   if (lower.includes("remote")) {
     return {
-      icon: <Cloud aria-hidden="true" className="h-5 w-5 text-muted-foreground" />,
+      icon: <Cloud aria-hidden="true" className="h-5 w-5 text-ink-3" />,
       title: "Remote workspace preview not supported",
       body: "This workspace is hosted remotely and is not available for inline preview yet.",
     };
   }
   if (lower.includes("no_workspace") || lower.includes("no_local")) {
     return {
-      icon: <FolderOpen aria-hidden="true" className="h-5 w-5 text-muted-foreground" />,
+      icon: <FolderOpen aria-hidden="true" className="h-5 w-5 text-ink-3" />,
       title: "No workspace yet",
       body: "This issue does not have a workspace to browse. Files appear here once a run creates one.",
     };
   }
   if (lower.includes("archiv") || lower.includes("cleaned") || lower.includes("unavailable")) {
     return {
-      icon: <FolderOpen aria-hidden="true" className="h-5 w-5 text-muted-foreground" />,
+      icon: <FolderOpen aria-hidden="true" className="h-5 w-5 text-ink-3" />,
       title: "Workspace is no longer available",
       body: "The isolated worktree for this issue has been cleaned up, so files cannot be previewed.",
     };
@@ -120,8 +120,8 @@ function StateMessage({
     <div className="flex items-start gap-3 px-1 py-8 text-sm">
       {icon}
       <div className="space-y-1">
-        <p className="font-medium text-foreground">{title}</p>
-        {body ? <p className="text-muted-foreground">{body}</p> : null}
+        <p className="font-medium text-ink">{title}</p>
+        {body ? <p className="text-ink-3">{body}</p> : null}
         {actions ? <div className="pt-1">{actions}</div> : null}
       </div>
     </div>
@@ -141,14 +141,14 @@ function WorkspaceFileBreadcrumbs({
   if (!rootLabel && segments.length === 0) return null;
 
   return (
-    <nav aria-label="Current folder" className="min-w-0 overflow-hidden text-(length:--text-micro) text-muted-foreground">
+    <nav aria-label="Current folder" className="min-w-0 overflow-hidden text-(length:--text-micro) text-ink-3">
       <ol className="flex min-w-0 items-center gap-1 overflow-hidden">
         {rootLabel ? (
           <li className="min-w-0 shrink">
             <button
               type="button"
               onClick={() => onOpenFolder(null)}
-              className="max-w-full truncate rounded px-1 py-0.5 text-left hover:bg-accent hover:text-foreground"
+              className="max-w-full truncate rounded px-1 py-0.5 text-left hover:bg-bg-3 hover:text-ink"
               title={rootLabel}
             >
               {rootLabel}
@@ -163,7 +163,7 @@ function WorkspaceFileBreadcrumbs({
               <button
                 type="button"
                 onClick={() => onOpenFolder(path)}
-                className="max-w-full truncate rounded px-1 py-0.5 text-left font-mono hover:bg-accent hover:text-foreground"
+                className="max-w-full truncate rounded px-1 py-0.5 text-left font-mono hover:bg-bg-3 hover:text-ink"
                 title={path}
               >
                 {segment}
@@ -199,12 +199,12 @@ function WorkspaceFileRow({ item, treeItemId, selected, highlighted, depth, onOp
       title={item.displayPath}
       className={cn(
         "flex min-h-(--sz-36px) cursor-pointer items-center gap-2 rounded-md py-1.5 pr-2 sm:min-h-0",
-        selected ? "bg-accent text-foreground" : highlighted ? "bg-accent/50" : "hover:bg-accent/60",
+        selected ? "bg-bg-3 text-ink" : highlighted ? "bg-bg-3/50" : "hover:bg-bg-3/60",
       )}
       style={{ paddingLeft: `${0.5 + depth * 0.875}rem` }}
     >
-      <FileCode2 aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-      <span className="min-w-0 flex-1 truncate font-mono text-xs text-foreground">{name}</span>
+      <FileCode2 aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-ink-3" />
+      <span className="min-w-0 flex-1 truncate font-mono text-xs text-ink">{name}</span>
       {downloadUrl ? (
         <a
           href={downloadUrl}
@@ -212,7 +212,7 @@ function WorkspaceFileRow({ item, treeItemId, selected, highlighted, depth, onOp
           aria-label={`Download ${name}`}
           title={`Download ${name}`}
           onClick={(event) => event.stopPropagation()}
-          className="ml-auto inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-muted-foreground opacity-70 hover:bg-background/70 hover:text-foreground hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="ml-auto inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md text-ink-3 opacity-70 hover:bg-bg/70 hover:text-ink hover:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
         >
           <Download aria-hidden="true" className="h-3.5 w-3.5" />
         </a>
@@ -397,23 +397,23 @@ function WorkspaceFileTree({
             aria-expanded={expanded}
             title={node.key}
             onClick={() => onToggleFolder(node.key)}
-            className="flex min-h-(--sz-32px) w-full items-center gap-1.5 rounded-md py-1 pr-2 text-left hover:bg-accent/60"
+            className="flex min-h-(--sz-32px) w-full items-center gap-1.5 rounded-md py-1 pr-2 text-left hover:bg-bg-3/60"
             style={{ paddingLeft: `${0.25 + node.depth * 0.875}rem` }}
           >
             {expanded ? (
-              <ChevronDown aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+              <ChevronDown aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-ink-3" />
             ) : (
-              <ChevronRight aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+              <ChevronRight aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-ink-3" />
             )}
-            <FolderOpen aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-            <span className="min-w-0 flex-1 truncate font-mono text-xs text-foreground">{node.name}</span>
+            <FolderOpen aria-hidden="true" className="h-3.5 w-3.5 shrink-0 text-ink-3" />
+            <span className="min-w-0 flex-1 truncate font-mono text-xs text-ink">{node.name}</span>
           </button>
           {expanded ? (
             <>
               {children.map(renderNode)}
               {loading ? (
                 <div
-                  className="flex min-h-(--sz-30px) items-center gap-2 py-1 pr-2 text-xs text-muted-foreground"
+                  className="flex min-h-(--sz-30px) items-center gap-2 py-1 pr-2 text-xs text-ink-3"
                   style={{ paddingLeft: `${1 + (node.depth + 1) * 0.875}rem` }}
                 >
                   <Loader2 aria-hidden="true" className="h-3.5 w-3.5 animate-spin" />
@@ -424,7 +424,7 @@ function WorkspaceFileTree({
                 <button
                   type="button"
                   onClick={() => onLoadMoreFolder?.(node.key)}
-                  className="flex min-h-(--sz-30px) w-full items-center gap-2 rounded-md py-1 pr-2 text-left text-xs text-muted-foreground hover:bg-accent/60 hover:text-foreground"
+                  className="flex min-h-(--sz-30px) w-full items-center gap-2 rounded-md py-1 pr-2 text-left text-xs text-ink-3 hover:bg-bg-3/60 hover:text-ink"
                   style={{ paddingLeft: `${1 + (node.depth + 1) * 0.875}rem` }}
                 >
                   <span className="h-3.5 w-3.5 shrink-0" />
@@ -986,7 +986,7 @@ export function WorkspaceFileBrowser({
   if (source === "other" && !companyId) {
     body = (
       <StateMessage
-        icon={<FolderOpen aria-hidden="true" className="h-5 w-5 text-muted-foreground" />}
+        icon={<FolderOpen aria-hidden="true" className="h-5 w-5 text-ink-3" />}
         title="No organization selected"
         body="Choose an organization before browsing another project workspace."
       />
@@ -994,7 +994,7 @@ export function WorkspaceFileBrowser({
   } else if (source === "other" && projectsQuery.isFetching && projectsWithWorkspaces.length === 0) {
     body = (
       <StateMessage
-        icon={<Loader2 aria-hidden="true" className="h-5 w-5 animate-spin text-muted-foreground" />}
+        icon={<Loader2 aria-hidden="true" className="h-5 w-5 animate-spin text-ink-3" />}
         title="Loading project workspaces"
         body="Registered workspaces will appear here."
       />
@@ -1002,7 +1002,7 @@ export function WorkspaceFileBrowser({
   } else if (source === "other" && !canListFiles) {
     body = (
       <StateMessage
-        icon={<FolderOpen aria-hidden="true" className="h-5 w-5 text-muted-foreground" />}
+        icon={<FolderOpen aria-hidden="true" className="h-5 w-5 text-ink-3" />}
         title="No project workspaces"
         body="No same-organization project has a registered workspace to browse."
       />
@@ -1012,8 +1012,8 @@ export function WorkspaceFileBrowser({
       <div className="space-y-1.5 py-2" aria-busy="true">
         {Array.from({ length: 6 }).map((_, index) => (
           <div key={index} className="flex items-center gap-2 px-2 py-1.5">
-            <div className="h-3.5 w-3.5 shrink-0 rounded bg-muted" />
-            <div className="h-3 flex-1 rounded bg-muted" style={{ maxWidth: `${80 - index * 8}%` }} />
+            <div className="h-3.5 w-3.5 shrink-0 rounded bg-bg-3" />
+            <div className="h-3 flex-1 rounded bg-bg-3" style={{ maxWidth: `${80 - index * 8}%` }} />
           </div>
         ))}
       </div>
@@ -1043,7 +1043,7 @@ export function WorkspaceFileBrowser({
         actions={changedFilesTemporarilyUnavailable ? (
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             size="sm"
             disabled={!queriesEnabled}
             onClick={() => void listQuery.refetch()}
@@ -1059,7 +1059,7 @@ export function WorkspaceFileBrowser({
   } else if (items.length === 0) {
     body = (
       <StateMessage
-        icon={<Search aria-hidden="true" className="h-5 w-5 text-muted-foreground" />}
+        icon={<Search aria-hidden="true" className="h-5 w-5 text-ink-3" />}
         title={isSearch ? `No files match “${q}”` : "No recently changed files yet"}
         body="Try searching by name or path."
       />
@@ -1092,7 +1092,7 @@ export function WorkspaceFileBrowser({
         <div className="relative min-w-0 flex-1">
           <Search
             aria-hidden="true"
-            className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground"
+            className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-3"
           />
           <Input
             ref={inputRef}
@@ -1139,12 +1139,12 @@ export function WorkspaceFileBrowser({
       <div ref={scrollContainerRef} className="min-h-0 flex-1 overflow-y-auto">{body}</div>
 
       {lazyTruncatedFolders.has(currentFolderKey) || (data?.truncated && !isLazyBrowse) ? (
-        <div className="border-t border-border pt-2 text-(length:--text-micro) text-muted-foreground">
+        <div className="border-t border-line pt-2 text-(length:--text-micro) text-ink-3">
           {isLazyBrowse ? (
             <button
               type="button"
               onClick={() => loadMoreFolder(currentFolderKey)}
-              className="rounded px-1 py-0.5 text-left hover:bg-accent hover:text-foreground"
+              className="rounded px-1 py-0.5 text-left hover:bg-bg-3 hover:text-ink"
             >
               Load more from this folder
             </button>

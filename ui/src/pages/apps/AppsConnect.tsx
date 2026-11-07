@@ -45,9 +45,9 @@ export function AppsConnect({ byoOnly = false, credentialSource = "paperclip_vau
   useEffect(() => {
     if (hasSavedComposio) navigate(`/apps?source=composio&targetToolkit=${encodeURIComponent(toolkit!)}`, { replace: true });
   }, [hasSavedComposio, toolkit, navigate]);
-  if (reuseComposio && selectedCompanyId && (saved.isPending || hasSavedComposio)) return <p role="status" className="text-sm text-muted-foreground">Checking saved Composio accounts…</p>;
+  if (reuseComposio && selectedCompanyId && (saved.isPending || hasSavedComposio)) return <p role="status" className="text-sm text-ink-3">Checking saved Composio accounts…</p>;
   if (reuseComposio && saved.isError) return <div className="space-y-3">
-    <p role="alert" className="text-sm text-destructive">Couldn’t load your Composio accounts.</p>
+    <p role="alert" className="text-sm text-bad">Couldn’t load your Composio accounts.</p>
     <div className="flex items-center justify-between"><Button variant="ghost" onClick={() => navigate("/apps")}>Cancel</Button><Button onClick={() => void saved.refetch()}>Try again</Button></div>
   </div>;
   const returningToSkills = source === "github" && selectedCompanyId && skillSourceReturnPath(selectedCompanyId);

@@ -17,9 +17,9 @@ export interface WorkModeMeta {
 }
 
 const STANDARD_CLASSES = {
-  chip: "border-border bg-muted/40 text-muted-foreground hover:bg-accent hover:text-foreground",
+  chip: "border-line bg-bg-3/40 text-ink-3 hover:bg-bg-3 hover:text-ink",
   container: "",
-  menuItem: "text-foreground",
+  menuItem: "text-ink",
   badge: "",
 };
 

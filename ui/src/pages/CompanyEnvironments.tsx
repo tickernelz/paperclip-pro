@@ -718,12 +718,12 @@ function EnvironmentCustomImageBrowserTerminal({
   const terminalInteractive = connectionState === "connected";
 
   return (
-    <div className="mt-3 rounded-md border border-border/70 bg-background" data-testid={`custom-image-terminal-${sessionId}`}>
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border/60 px-3 py-2">
+    <div className="mt-3 rounded-md border border-line/70 bg-bg" data-testid={`custom-image-terminal-${sessionId}`}>
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line/60 px-3 py-2">
         <div className="flex min-w-0 items-center gap-2 text-xs">
-          <Terminal className="h-3.5 w-3.5 text-muted-foreground" />
+          <Terminal className="h-3.5 w-3.5 text-ink-3" />
           <span className="font-medium">Browser terminal</span>
-          <span className="text-muted-foreground">{customImageTerminalStatusCopy(connectionState)}</span>
+          <span className="text-ink-3">{customImageTerminalStatusCopy(connectionState)}</span>
         </div>
         <div className="flex items-center gap-2">
           {terminalInteractive ? (
@@ -733,7 +733,7 @@ function EnvironmentCustomImageBrowserTerminal({
           ) : (
             <Button
               size="sm"
-              variant="outline"
+              variant="secondary"
               onClick={() => void connectTerminal()}
               disabled={connectionState === "connecting"}
             >
@@ -743,7 +743,7 @@ function EnvironmentCustomImageBrowserTerminal({
           )}
         </div>
       </div>
-      <div className="bg-neutral-950 p-2 focus-within:ring-2 focus-within:ring-ring">
+      <div className="bg-neutral-950 p-2 focus-within:ring-2 focus-within:ring-focus">
         <div
           ref={terminalElementRef}
           data-testid={`custom-image-terminal-screen-${sessionId}`}
@@ -756,7 +756,7 @@ function EnvironmentCustomImageBrowserTerminal({
         />
       </div>
       {errorMessage ? (
-        <div className="border-t border-border/60 px-3 py-2 text-xs text-destructive">
+        <div className="border-t border-line/60 px-3 py-2 text-xs text-bad">
           {errorMessage}
         </div>
       ) : null}
@@ -1058,16 +1058,16 @@ function EnvironmentImageTemplatePanel({
 
   if (state.kind !== "supported") {
     return (
-      <div className="mt-3 border-t border-border/60 pt-3 text-xs" data-testid={`custom-image-template-state-${environment.id}`}>
-        <div className="font-medium text-foreground">{state.label}</div>
-        <div className="mt-1 text-muted-foreground">{state.reason}</div>
+      <div className="mt-3 border-t border-line/60 pt-3 text-xs" data-testid={`custom-image-template-state-${environment.id}`}>
+        <div className="font-medium text-ink">{state.label}</div>
+        <div className="mt-1 text-ink-3">{state.reason}</div>
       </div>
     );
   }
 
   if (overviewQuery.isLoading) {
     return (
-      <div className="mt-3 border-t border-border/60 pt-3 text-xs text-muted-foreground">
+      <div className="mt-3 border-t border-line/60 pt-3 text-xs text-ink-3">
         Loading template setup...
       </div>
     );
@@ -1075,7 +1075,7 @@ function EnvironmentImageTemplatePanel({
 
   if (overviewQuery.isError) {
     return (
-      <div className="mt-3 border-t border-border/60 pt-3 text-xs text-destructive">
+      <div className="mt-3 border-t border-line/60 pt-3 text-xs text-bad">
         {overviewQuery.error instanceof Error ? overviewQuery.error.message : "Template setup could not be loaded."}
       </div>
     );
@@ -1113,18 +1113,18 @@ function EnvironmentImageTemplatePanel({
   if (session && isActiveCustomImageSetupSession(session)) {
     const isCapturing = session.status === "capturing";
     return (
-      <div className="mt-3 border-t border-border/60 pt-3" data-testid={`custom-image-template-state-${environment.id}`}>
+      <div className="mt-3 border-t border-line/60 pt-3" data-testid={`custom-image-template-state-${environment.id}`}>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0 space-y-1">
             <div className="text-xs font-medium">{sessionStatusCopy(session.status)}</div>
-            <div className="text-xs text-muted-foreground">
+            <div className="text-xs text-ink-3">
               {providerDisplayName}{sessionExpiresAt ? ` · expires ${sessionExpiresAt}` : ""}
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Button
               size="sm"
-              variant="outline"
+              variant="secondary"
               onClick={() => finishSetupMutation.mutate(session.id)}
               disabled={isMutating || session.status !== "waiting_for_user"}
             >
@@ -1143,7 +1143,7 @@ function EnvironmentImageTemplatePanel({
           </div>
         </div>
         {isCapturing ? (
-          <div className="mt-2 text-xs text-muted-foreground">
+          <div className="mt-2 text-xs text-ink-3">
             Capture is in progress. If this state remains after a refresh or interrupted request, cancel it to return to the active template controls.
           </div>
         ) : null}
@@ -1151,8 +1151,8 @@ function EnvironmentImageTemplatePanel({
           <EnvironmentCustomImageBrowserTerminal autoConnect sessionId={session.id} />
         ) : null}
         {session.status === "waiting_for_user" && connectionCommand ? (
-          <details className="mt-2 rounded-md border border-border/60 bg-muted/20 px-3 py-2 text-xs text-muted-foreground">
-            <summary className="cursor-pointer select-none font-medium text-foreground">
+          <details className="mt-2 rounded-md border border-line/60 bg-bg-3/20 px-3 py-2 text-xs text-ink-3">
+            <summary className="cursor-pointer select-none font-medium text-ink">
               SSH command fallback
             </summary>
             <code className="mt-2 block overflow-x-auto whitespace-nowrap text-(length:--text-micro) leading-5">
@@ -1161,12 +1161,12 @@ function EnvironmentImageTemplatePanel({
           </details>
         ) : null}
         {session.status === "waiting_for_user" && connectionFallbackMessage ? (
-          <div className="mt-2 text-xs text-muted-foreground">
+          <div className="mt-2 text-xs text-ink-3">
             {connectionFallbackMessage}
           </div>
         ) : null}
         {session.failureReason ? (
-          <div className="mt-2 text-xs text-destructive">{session.failureReason}</div>
+          <div className="mt-2 text-xs text-bad">{session.failureReason}</div>
         ) : null}
       </div>
     );
@@ -1177,15 +1177,15 @@ function EnvironmentImageTemplatePanel({
     const templateOutOfSync = overview?.activeTemplateMatchesConfig === false;
     const bootSourceDriftSummary = formatBootSourceDriftSummary(overview?.activeTemplateDrift);
     return (
-      <div className="mt-3 border-t border-border/60 pt-3" data-testid={`custom-image-template-state-${environment.id}`}>
+      <div className="mt-3 border-t border-line/60 pt-3" data-testid={`custom-image-template-state-${environment.id}`}>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0 space-y-1">
             <div className="text-xs font-medium">Active template</div>
-            <div className="text-xs text-muted-foreground">
+            <div className="text-xs text-ink-3">
               {providerDisplayName} · {activeTemplate.templateKind}
               {" · "}
               <span
-                className="break-all font-mono text-foreground"
+                className="break-all font-mono text-ink"
                 title={templateRef
                   ? `Provider ${activeTemplate.templateKind} ref ${templateRef} (Paperclip template ${activeTemplate.id})`
                   : activeTemplate.id}
@@ -1197,7 +1197,7 @@ function EnvironmentImageTemplatePanel({
             </div>
             {templateOutOfSync ? (
               <div
-                className="text-xs text-destructive"
+                className="text-xs text-bad"
                 data-testid={`custom-image-template-out-of-sync-${environment.id}`}
               >
                 {bootSourceDriftSummary
@@ -1209,7 +1209,7 @@ function EnvironmentImageTemplatePanel({
           <div className="flex flex-wrap items-center gap-2">
             <Button
               size="sm"
-              variant="outline"
+              variant="secondary"
               onClick={() => startSetupMutation.mutate({ templateId: activeTemplate.id })}
               disabled={isMutating}
             >
@@ -1218,7 +1218,7 @@ function EnvironmentImageTemplatePanel({
             </Button>
             <Button
               size="sm"
-              variant="outline"
+              variant="secondary"
               onClick={() => relinkTemplateMutation.mutate()}
               disabled={isMutating}
               data-testid={`custom-image-template-relink-${environment.id}`}
@@ -1251,22 +1251,22 @@ function EnvironmentImageTemplatePanel({
   }
 
   return (
-    <div className="mt-3 border-t border-border/60 pt-3" data-testid={`custom-image-template-state-${environment.id}`}>
+    <div className="mt-3 border-t border-line/60 pt-3" data-testid={`custom-image-template-state-${environment.id}`}>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="space-y-1">
           <div className="text-xs font-medium">Not configured</div>
-          <div className="text-xs text-muted-foreground">
+          <div className="text-xs text-ink-3">
             {latestSession
               ? sessionStatusCopy(latestSession.status)
               : `Capture a custom ${providerDisplayName} image with your tools already logged in.`}
           </div>
           {latestSession?.failureReason ? (
-            <div className="text-xs text-destructive">{latestSession.failureReason}</div>
+            <div className="text-xs text-bad">{latestSession.failureReason}</div>
           ) : null}
         </div>
         <Button
           size="sm"
-          variant="outline"
+          variant="secondary"
           onClick={() => startSetupMutation.mutate({ templateId: null })}
           disabled={isMutating}
         >
@@ -1927,13 +1927,13 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
   })();
 
   if (!selectedCompanyId) {
-    return <div className="text-sm text-muted-foreground">Select an organization context to manage environment secrets and bindings.</div>;
+    return <div className="text-sm text-ink-3">Select an organization context to manage environment secrets and bindings.</div>;
   }
 
   if (!environmentsEnabled) {
     return (
       <div className="max-w-6xl space-y-4">
-        <div className="text-sm text-muted-foreground">
+        <div className="text-sm text-ink-3">
           Enable Environments in instance experimental settings to manage shared execution targets.
         </div>
       </div>
@@ -1950,7 +1950,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
             <span>
               <select
                 aria-label="Default environment"
-                className="min-w-(--sz-12rem) max-w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm font-normal outline-none"
+                className="min-w-(--sz-12rem) max-w-full rounded-md border border-line bg-transparent px-2.5 py-1.5 text-sm font-normal outline-none"
                 value={instanceDefaultEnvironmentId}
                 onChange={(event) =>
                   defaultEnvironmentMutation.mutate(event.target.value || null)}
@@ -2003,26 +2003,26 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
                       <span>
                         {environment.name}
                         {isPlatformManagedEnvironment(environment) ? null : (
-                          <span className="text-muted-foreground"> · {environment.driver}</span>
+                          <span className="text-ink-3"> · {environment.driver}</span>
                         )}
                       </span>
                       {isPlatformManagedEnvironment(environment) ? (
-                        <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs font-normal text-muted-foreground">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-bg-3 px-2 py-0.5 text-xs font-normal text-ink-3">
                           <Lock className="h-3 w-3" aria-hidden />
                           Managed by Paperclip
                         </span>
                       ) : null}
                     </div>
                     {environment.description ? (
-                      <div className="text-xs text-muted-foreground">{environment.description}</div>
+                      <div className="text-xs text-ink-3">{environment.description}</div>
                     ) : null}
                     {environment.driver === "ssh" ? (
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-xs text-ink-3">
                         {typeof environment.config.host === "string" ? environment.config.host : "SSH host"} ·{" "}
                         {typeof environment.config.username === "string" ? environment.config.username : "user"}
                       </div>
                     ) : environment.driver === "sandbox" ? (
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-xs text-ink-3">
                         {(() => {
                           const summary = summarizeSandboxConfig(environment.config as Record<string, unknown>);
                           // The managed row's badge already says "Managed by
@@ -2036,14 +2036,14 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
                         })()}
                       </div>
                     ) : (
-                      <div className="text-xs text-muted-foreground">Runs on this Paperclip host.</div>
+                      <div className="text-xs text-ink-3">Runs on this Paperclip host.</div>
                     )}
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
                     {environment.driver !== "local" ? (
                       <Button
                         size="sm"
-                        variant="outline"
+                        variant="secondary"
                         onClick={() => environmentProbeMutation.mutate(environment.id)}
                         disabled={testingEnvironmentId === environment.id}
                       >
@@ -2064,7 +2064,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
                     className={
                       probe.ok
                         ? "mt-3 rounded bg-green-500/5 px-2.5 py-2 text-xs text-green-700"
-                        : "mt-3 rounded bg-destructive/5 px-2.5 py-2 text-xs text-destructive"
+                        : "mt-3 rounded bg-bad/5 px-2.5 py-2 text-xs text-bad"
                     }
                   >
                     <div className="font-medium">{probe.summary}</div>
@@ -2081,7 +2081,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
       ) : null}
 
       {isEnvironmentFormPage && mode === "edit" && environments === undefined ? (
-        <div className="text-sm text-muted-foreground">
+        <div className="text-sm text-ink-3">
           Loading environment...
         </div>
       ) : null}
@@ -2089,8 +2089,8 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
       {isEnvironmentFormPage && mode === "edit" && environments !== undefined && !editingEnvironment ? (
         <div className="space-y-3 text-sm">
           <div className="font-medium">Environment not found</div>
-          <div className="text-muted-foreground">The environment may have been removed or is not available in this organization.</div>
-          <Button size="sm" variant="outline" asChild>
+          <div className="text-ink-3">The environment may have been removed or is not available in this organization.</div>
+          <Button size="sm" variant="secondary" asChild>
             <Link to={ENVIRONMENTS_PATH}>Back to environments</Link>
           </Button>
         </div>
@@ -2110,15 +2110,15 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <h1 className="text-lg font-semibold">{editingEnvironment.name}</h1>
-              <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">
+              <span className="inline-flex items-center gap-1 rounded-full bg-bg-3 px-2 py-0.5 text-xs text-ink-3">
                 <Lock className="h-3 w-3" aria-hidden />
                 Managed by Paperclip
               </span>
             </div>
-            <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
+            <p className="mt-1 max-w-3xl text-sm text-ink-3">
               {editingEnvironment.description ?? "Your agent runs on a computer managed by Paperclip."}
             </p>
-            <p className="mt-1 max-w-3xl text-xs text-muted-foreground">
+            <p className="mt-1 max-w-3xl text-xs text-ink-3">
               This environment is provisioned and maintained for you. You can add environment
               variables for your agents; its name and configuration are managed by Paperclip.
             </p>
@@ -2139,7 +2139,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
               />
             </Field>
             {managedEnvironmentEnvVarsMutation.isError ? (
-              <div className="mt-3 text-xs text-destructive">
+              <div className="mt-3 text-xs text-bad">
                 {managedEnvironmentEnvVarsMutation.error instanceof Error
                   ? managedEnvironmentEnvVarsMutation.error.message
                   : "Failed to save environment variables"}
@@ -2148,7 +2148,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
           </div>
           <div className="flex flex-wrap justify-end gap-2 py-4">
             <Button
-              variant="outline"
+              variant="secondary"
               onClick={closeEnvironmentForm}
               disabled={managedEnvironmentEnvVarsMutation.isPending}
             >
@@ -2181,7 +2181,6 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
                 <Button
                   size="icon-sm"
                   variant="ghost"
-                  className="text-muted-foreground hover:text-destructive"
                   aria-label={`Delete ${editingEnvironment.name}`}
                   title="Delete environment"
                   data-testid="environment-delete-button"
@@ -2195,7 +2194,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
               ) : null}
             </div>
             <h1 className="text-lg font-semibold">{editingEnvironmentId ? "Edit environment" : "Add environment"}</h1>
-            <p className="mt-1 max-w-3xl text-sm text-muted-foreground">
+            <p className="mt-1 max-w-3xl text-sm text-ink-3">
               Configure a reusable execution target for your agents. Saved changes affect future runs; Paperclip may start fresh sessions or sandbox leases after environment config changes.
             </p>
           </div>
@@ -2204,7 +2203,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
             <div className="space-y-4">
               <Field label="Name" hint="Operator-facing name for this execution target.">
                 <input
-                  className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
+                  className="w-full rounded-md border border-line bg-transparent px-2.5 py-1.5 text-sm outline-none"
                   type="text"
                   value={environmentForm.name}
                   onChange={(e) => setEnvironmentForm((current) => ({ ...current, name: e.target.value }))}
@@ -2212,7 +2211,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
               </Field>
               <Field label="Description" hint="Optional note about what this machine is for.">
                 <input
-                  className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
+                  className="w-full rounded-md border border-line bg-transparent px-2.5 py-1.5 text-sm outline-none"
                   type="text"
                   value={environmentForm.description}
                   onChange={(e) => setEnvironmentForm((current) => ({ ...current, description: e.target.value }))}
@@ -2220,7 +2219,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
               </Field>
               <Field label="Driver" hint="Sandbox stores plugin-backed provider config on the shared environment seam. SSH stores a remote machine target.">
                 <select
-                  className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
+                  className="w-full rounded-md border border-line bg-transparent px-2.5 py-1.5 text-sm outline-none"
                   value={environmentForm.driver}
                   onChange={(e) =>
                     setEnvironmentForm((current) => ({
@@ -2256,7 +2255,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
                 <div className="grid gap-3 md:grid-cols-2">
                   <Field label="Host" hint="DNS name or IP address for the remote machine.">
                     <input
-                      className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
+                      className="w-full rounded-md border border-line bg-transparent px-2.5 py-1.5 text-sm outline-none"
                       type="text"
                       value={environmentForm.sshHost}
                       onChange={(e) => setEnvironmentForm((current) => ({ ...current, sshHost: e.target.value }))}
@@ -2264,7 +2263,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
                   </Field>
                   <Field label="Port" hint="Defaults to 22.">
                     <input
-                      className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
+                      className="w-full rounded-md border border-line bg-transparent px-2.5 py-1.5 text-sm outline-none"
                       type="number"
                       min={1}
                       max={65535}
@@ -2274,7 +2273,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
                   </Field>
                   <Field label="Username" hint="SSH username.">
                     <input
-                      className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
+                      className="w-full rounded-md border border-line bg-transparent px-2.5 py-1.5 text-sm outline-none"
                       type="text"
                       value={environmentForm.sshUsername}
                       onChange={(e) => setEnvironmentForm((current) => ({ ...current, sshUsername: e.target.value }))}
@@ -2289,7 +2288,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
                   */}
                   <Field label="Remote workspace path" hint="Absolute path that Paperclip will verify during SSH connection tests.">
                     <input
-                      className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
+                      className="w-full rounded-md border border-line bg-transparent px-2.5 py-1.5 text-sm outline-none"
                       type="text"
                       placeholder="/Users/paperclip/workspace"
                       value={environmentForm.sshRemoteWorkspacePath}
@@ -2300,7 +2299,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
                   <Field label="Private key" hint="Optional PEM private key. Leave blank to rely on the server's SSH agent or default keychain.">
                     <div className="space-y-2">
                       <select
-                        className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
+                        className="w-full rounded-md border border-line bg-transparent px-2.5 py-1.5 text-sm outline-none"
                         value={environmentForm.sshPrivateKeySecretId}
                         onChange={(e) =>
                           setEnvironmentForm((current) => ({
@@ -2315,7 +2314,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
                         ))}
                       </select>
                       <textarea
-                        className="h-32 w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-xs font-mono outline-none"
+                        className="h-32 w-full rounded-md border border-line bg-transparent px-2.5 py-1.5 text-xs font-mono outline-none"
                         value={environmentForm.sshPrivateKey}
                         disabled={!!environmentForm.sshPrivateKeySecretId}
                         onChange={(e) => setEnvironmentForm((current) => ({ ...current, sshPrivateKey: e.target.value }))}
@@ -2324,7 +2323,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
                   </Field>
                   <Field label="Known hosts" hint="Optional known_hosts block used when strict host key checking is enabled.">
                     <textarea
-                      className="h-32 w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-xs font-mono outline-none"
+                      className="h-32 w-full rounded-md border border-line bg-transparent px-2.5 py-1.5 text-xs font-mono outline-none"
                       value={environmentForm.sshKnownHosts}
                       onChange={(e) => setEnvironmentForm((current) => ({ ...current, sshKnownHosts: e.target.value }))}
                     />
@@ -2345,7 +2344,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
                 <div className="space-y-3">
                   <Field label="Provider" hint="Installed run-capable sandbox provider plugins appear here.">
                     <select
-                      className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm outline-none"
+                      className="w-full rounded-md border border-line bg-transparent px-2.5 py-1.5 text-sm outline-none"
                       value={environmentForm.sandboxProvider}
                       onChange={(e) => {
                         const nextProviderKey = e.target.value;
@@ -2370,7 +2369,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
                     </select>
                   </Field>
                   {selectedSandboxProvider?.description ? (
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-xs text-ink-3">
                       {selectedSandboxProvider.description}
                     </div>
                   ) : null}
@@ -2383,7 +2382,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
                       errors={sandboxConfigErrors}
                     />
                   ) : (
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-xs text-ink-3">
                       This provider does not declare additional configuration fields.
                     </div>
                   )}
@@ -2406,7 +2405,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
               selectedCompanyId ? (
                 <div className="space-y-2 py-3">
                   <div className="text-sm font-medium">Custom image</div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-xs text-ink-3">
                     Start a setup sandbox, SSH in to customize the instance, then capture the
                     running machine as a reusable image for future runs.
                   </div>
@@ -2435,14 +2434,14 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
               </Field>
 
               {environmentMutation.isError ? (
-                <div className="text-xs text-destructive">
+                <div className="text-xs text-bad">
                   {environmentMutation.error instanceof Error
                     ? environmentMutation.error.message
                     : "Failed to save environment"}
                 </div>
               ) : null}
               {draftEnvironmentProbeMutation.data ? (
-                <div className={draftEnvironmentProbeMutation.data.ok ? "text-xs text-green-600" : "text-xs text-destructive"}>
+                <div className={draftEnvironmentProbeMutation.data.ok ? "text-xs text-green-600" : "text-xs text-bad"}>
                   {draftEnvironmentProbeMutation.data.summary}
                 </div>
               ) : null}
@@ -2451,7 +2450,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
 
           <div className="flex flex-wrap justify-end gap-2 py-4">
             <Button
-              variant="outline"
+              variant="secondary"
               onClick={closeEnvironmentForm}
               disabled={environmentMutation.isPending}
             >
@@ -2459,7 +2458,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
             </Button>
             {environmentForm.driver !== "local" ? (
               <Button
-                variant="outline"
+                variant="secondary"
                 onClick={() => draftEnvironmentProbeMutation.mutate(flushEnvironmentForm())}
                 disabled={draftEnvironmentProbeMutation.isPending || !environmentFormValid}
               >
@@ -2512,13 +2511,13 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
                 </AlertDialogHeader>
                 {reusableLeaseHolderGroups.length > 0 ? (
                   <div className="space-y-1.5" data-testid="environment-delete-lease-holders">
-                    <div className="text-xs font-medium text-muted-foreground">Sandbox leases held by</div>
+                    <div className="text-xs font-medium text-ink-3">Sandbox leases held by</div>
                     <ul className="space-y-1">
                       {reusableLeaseHolderGroups.map((group) => (
                         <li key={group.workspaceId ?? group.label} className="text-sm">
                           {group.workspaceId ? (
                             <Link
-                              className="underline underline-offset-2 hover:text-foreground"
+                              className="underline underline-offset-2 hover:text-ink"
                               to={`/execution-workspaces/${group.workspaceId}`}
                             >
                               {group.label}
@@ -2526,7 +2525,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
                           ) : (
                             <span>{group.label}</span>
                           )}
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-xs text-ink-3">
                             {" "}
                             · {group.leaseCount === 1 ? "1 sandbox lease" : `${group.leaseCount} sandbox leases`}
                             {group.issueLabels.length > 0 ? ` · ${group.issueLabels.join(", ")}` : ""}
@@ -2534,7 +2533,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
                         </li>
                       ))}
                     </ul>
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-xs text-ink-3">
                       {reusableLeaseOnlyBlock
                         ? "Deleting destroys these sandboxes; the workspaces stay open."
                         : "Close these workspaces to let Paperclip destroy their sandboxes, then retry the delete."}
@@ -2551,7 +2550,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
                         <select
                           aria-label="Reassign agents to environment"
                           data-testid="environment-delete-reassign-select"
-                          className="w-full rounded-md border border-border bg-transparent px-2.5 py-1.5 text-sm font-normal outline-none"
+                          className="w-full rounded-md border border-line bg-transparent px-2.5 py-1.5 text-sm font-normal outline-none"
                           value={reassignEnvironmentTargetId}
                           onChange={(event) => setReassignEnvironmentTargetId(event.target.value)}
                         >
@@ -2566,13 +2565,13 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
                             </option>
                           ))}
                         </select>
-                        <span className="block text-xs text-muted-foreground">
+                        <span className="block text-xs text-ink-3">
                           Affected: {agentsUsingEnvironment.map((agent) => agent.name).join(", ")}
                         </span>
                       </label>
                     ) : null}
                     {deleteImpactNotes.length > 0 ? (
-                      <ul className="space-y-1 text-xs text-muted-foreground">
+                      <ul className="space-y-1 text-xs text-ink-3">
                         {deleteImpactNotes.map((note) => (
                           <li key={note}>{note}</li>
                         ))}
@@ -2583,7 +2582,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
                 <AlertDialogFooter>
                   <AlertDialogCancel disabled={deleteEnvironmentMutation.isPending}>Cancel</AlertDialogCancel>
                   <AlertDialogAction
-                    className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    className="bg-bad text-accent-ink hover:bg-bad/90"
                     data-testid="environment-delete-confirm"
                     disabled={
                       deleteEnvironmentMutation.isPending ||

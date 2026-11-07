@@ -136,7 +136,7 @@ export function Sidebar({ children }: { children?: ReactNode }) {
         "w-full h-full min-h-0 flex flex-col",
         streamlinedUiEnabled
           ? primarySidebarStyles.surface
-          : "border-r border-border bg-background",
+          : "border-r border-line bg-bg",
       )}
     >
       {/* Top bar: company name, aligned with top sections and borderless.
@@ -158,7 +158,7 @@ export function Sidebar({ children }: { children?: ReactNode }) {
                 data-slot="icon-button"
                 aria-label={rail ? "New Task" : undefined}
                 className={cn(
-                  "flex items-center gap-2.5 mx-2 rounded-lg px-2 py-1.5 pointer-coarse:py-1 text-(length:--text-compact) font-medium text-foreground/80 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                  "flex items-center gap-2.5 mx-2 rounded-lg px-2 py-1.5 pointer-coarse:py-1 text-(length:--text-compact) font-medium text-ink/80 transition-colors hover:bg-bg-3 hover:text-ink",
                 )}
               >
                 <SquarePen className="h-4 w-4 shrink-0" />
@@ -317,7 +317,7 @@ export function Sidebar({ children }: { children?: ReactNode }) {
           slotTypes={["sidebarPanel"]}
           context={pluginContext}
           className="flex flex-col gap-3"
-          itemClassName="rounded-lg border border-border p-3"
+          itemClassName="rounded-lg border border-line p-3"
           missingBehavior="placeholder"
         />
       </nav>

@@ -12,15 +12,15 @@ import type { TaskChatToolItem } from "./task-chat-model";
 import { toolTaxonomy } from "./tool-taxonomy";
 
 const STATUS_ICON = {
-  pending: { Icon: Loader2, spin: false, tone: "text-muted-foreground" },
+  pending: { Icon: Loader2, spin: false, tone: "text-ink-3" },
   in_progress: {
     Icon: Loader2,
     spin: true,
     tone: "text-(--status-agent-running)",
   },
-  completed: { Icon: Check, spin: false, tone: "text-muted-foreground" },
-  failed: { Icon: X, spin: false, tone: "text-destructive" },
-  interrupted: { Icon: X, spin: false, tone: "text-muted-foreground" },
+  completed: { Icon: Check, spin: false, tone: "text-ink-3" },
+  failed: { Icon: X, spin: false, tone: "text-bad" },
+  interrupted: { Icon: X, spin: false, tone: "text-ink-3" },
 } as const;
 
 /**
@@ -42,9 +42,9 @@ export function TaskChatToolCard({ item }: { item: TaskChatToolItem }) {
         onClick={expandable ? () => setShowDetail((v) => !v) : undefined}
         aria-expanded={expandable ? showDetail : undefined}
         className={cn(
-          "group/tool -mx-1.5 flex min-h-6 w-full min-w-0 max-w-full items-center gap-2 overflow-hidden rounded-sm px-1.5 py-1 text-left leading-none text-muted-foreground",
+          "group/tool -mx-1.5 flex min-h-6 w-full min-w-0 max-w-full items-center gap-2 overflow-hidden rounded-sm px-1.5 py-1 text-left leading-none text-ink-3",
           expandable
-            ? "cursor-pointer transition-colors hover:bg-muted/60 hover:text-foreground"
+            ? "cursor-pointer transition-colors hover:bg-bg-3/60 hover:text-ink"
             : "cursor-default",
         )}
       >
@@ -70,7 +70,7 @@ export function TaskChatToolCard({ item }: { item: TaskChatToolItem }) {
                 "flex items-center gap-1 text-(length:--text-micro)",
                 item.decision === "allowed"
                   ? "text-(--status-task-icon-done)"
-                  : "text-destructive",
+                  : "text-bad",
               )}
             >
               {item.decision === "allowed" ? (
@@ -95,7 +95,7 @@ export function TaskChatToolCard({ item }: { item: TaskChatToolItem }) {
             aria-hidden
           />
           {item.status === "interrupted" ? (
-            <span className="text-(length:--text-micro) text-muted-foreground">
+            <span className="text-(length:--text-micro) text-ink-3">
               Interrupted
             </span>
           ) : null}
@@ -103,26 +103,26 @@ export function TaskChatToolCard({ item }: { item: TaskChatToolItem }) {
       </button>
       {item.target && showDetail ? (
         <div
-          className="task-chat-expanded-line-wrap ml-1.5 mt-0.5 min-w-0 max-w-full overflow-hidden border-l-2 border-border py-1 pl-2.5 font-mono text-(length:--text-micro) leading-relaxed text-muted-foreground"
+          className="task-chat-expanded-line-wrap ml-1.5 mt-0.5 min-w-0 max-w-full overflow-hidden border-l-2 border-line py-1 pl-2.5 font-mono text-(length:--text-micro) leading-relaxed text-ink-3"
           data-testid="task-chat-tool-target-detail"
         >
           {item.target}
         </div>
       ) : null}
       {item.detail && showDetail ? (
-        <pre className="task-chat-expanded-line-wrap ml-1.5 mt-0.5 min-w-0 max-w-full overflow-hidden whitespace-pre-wrap border-l-2 border-border py-1 pl-2.5 font-mono text-(length:--text-micro) leading-relaxed text-muted-foreground">
+        <pre className="task-chat-expanded-line-wrap ml-1.5 mt-0.5 min-w-0 max-w-full overflow-hidden whitespace-pre-wrap border-l-2 border-line py-1 pl-2.5 font-mono text-(length:--text-micro) leading-relaxed text-ink-3">
           {item.detail}
         </pre>
       ) : null}
       {item.diff && showDetail ? (
         <div
-          className="ml-1.5 mt-0.5 border-l-2 border-border py-1 pl-2.5"
+          className="ml-1.5 mt-0.5 border-l-2 border-line py-1 pl-2.5"
           data-testid="task-chat-tool-change-summary"
         >
-          <div className="flex min-w-0 items-center gap-2 text-(length:--text-micro) text-muted-foreground">
+          <div className="flex min-w-0 items-center gap-2 text-(length:--text-micro) text-ink-3">
             <span className="shrink-0">Changed</span>
             {item.diff.path ? (
-              <span className="min-w-0 truncate font-mono text-foreground">
+              <span className="min-w-0 truncate font-mono text-ink">
                 {item.diff.path}
               </span>
             ) : null}

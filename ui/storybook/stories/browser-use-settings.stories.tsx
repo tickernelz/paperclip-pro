@@ -43,7 +43,7 @@ const meta = {
   decorators: [
     (Story) => (
       <BrowserStoryProviders>
-        <div className="w-96 max-w-full bg-background p-4 text-foreground">
+        <div className="w-96 max-w-full bg-bg p-4 text-ink">
           <Story />
         </div>
       </BrowserStoryProviders>

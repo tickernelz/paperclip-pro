@@ -18,12 +18,12 @@ export function LiveNowTodoLine({
   return (
     <div
       data-slot="tasks-live-now-todo"
-      className={cn("flex h-5 min-w-0 items-center gap-1.5 text-xs text-muted-foreground", className)}
+      className={cn("flex h-5 min-w-0 items-center gap-1.5 text-xs text-ink-3", className)}
       role="group"
       aria-label="Agent todo"
     >
       <ListTodo aria-hidden className="size-3.5 shrink-0" />
-      <AgentTodoFocusLine snapshot={snapshot} className="flex-1 text-xs text-foreground" />
+      <AgentTodoFocusLine snapshot={snapshot} className="flex-1 text-xs text-ink" />
       <span className="shrink-0 font-medium tabular-nums">{`${snapshot.counts.completed}/${snapshot.counts.total}`}</span>
     </div>
   );

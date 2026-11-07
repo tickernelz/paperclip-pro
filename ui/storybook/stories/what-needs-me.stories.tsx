@@ -346,7 +346,8 @@ const DISMISSED: AttentionItem[] = [
 
 function ToolbarButton({ icon: Icon, active }: { icon: typeof Layers; active?: boolean }) {
   return (
-    <Button type="button" variant="outline" size="icon" className={active ? "h-8 w-8 shrink-0 bg-accent" : "h-8 w-8 shrink-0"}>
+    <Button type="button" variant="secondary" size="icon" active={active}
+          className="h-8 w-8 shrink-0">
       <Icon className="h-3.5 w-3.5" />
     </Button>
   );
@@ -387,7 +388,7 @@ function Queue({
         <h1 className="text-xl font-bold">Decisions</h1>
         <div className="flex items-center gap-2">
           {count > 0 && (
-            <span className="text-sm text-muted-foreground">
+            <span className="text-sm text-ink-3">
               {count} {count === 1 ? "decision" : "decisions"}
             </span>
           )}
@@ -397,12 +398,12 @@ function Queue({
         </div>
       </div>
       {count === 0 && snoozed.length === 0 && dismissed.length === 0 ? (
-        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-border py-20 text-center">
+        <div className="flex flex-col items-center justify-center rounded-xl border border-dashed border-line py-20 text-center">
           <div className="mb-4 rounded-full bg-green-500/10 p-4">
             <CheckCircle2 className="h-10 w-10 text-green-500" />
           </div>
-          <p className="text-lg font-semibold text-foreground">You're all caught up</p>
-          <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
+          <p className="text-lg font-semibold text-ink">You're all caught up</p>
+          <p className="mt-1 flex items-center gap-1.5 text-sm text-ink-3">
             <Inbox className="h-4 w-4" />
             Nothing needs a decision from you right now.
           </p>
@@ -418,7 +419,7 @@ function Queue({
                     label={groupLabel}
                     collapsible
                     collapsed={false}
-                    trailing={<span className="text-xs tabular-nums text-muted-foreground">{group.items.length}</span>}
+                    trailing={<span className="text-xs tabular-nums text-ink-3">{group.items.length}</span>}
                   />
                 )}
                 <div className="space-y-2">
@@ -440,7 +441,7 @@ function Queue({
 
           {snoozed.length > 0 && (
             <section className="space-y-2">
-              <IssueGroupHeader label={`Snoozed (${snoozed.length})`} collapsible collapsed={!openCurtains} className="text-muted-foreground" />
+              <IssueGroupHeader label={`Snoozed (${snoozed.length})`} collapsible collapsed={!openCurtains} className="text-ink-3" />
               {openCurtains && (
                 <div className="space-y-2">
                   {snoozed.map((it) => (
@@ -462,7 +463,7 @@ function Queue({
 
           {dismissed.length > 0 && (
             <section className="space-y-2">
-              <IssueGroupHeader label={`Dismissed (${dismissed.length})`} collapsible collapsed={!openCurtains} className="text-muted-foreground" />
+              <IssueGroupHeader label={`Dismissed (${dismissed.length})`} collapsible collapsed={!openCurtains} className="text-ink-3" />
               {openCurtains && (
                 <div className="space-y-2">
                   {dismissed.map((it) => (
@@ -579,8 +580,8 @@ export const ZeroState: Story = {
  */
 function PhoneFrame({ children }: { children: ReactNode }) {
   return (
-    <div className="flex justify-center bg-background p-4">
-      <div className="w-[390px] overflow-hidden rounded-xl border border-border bg-background shadow-sm">
+    <div className="flex justify-center bg-bg p-4">
+      <div className="w-[390px] overflow-hidden rounded-xl border border-line bg-bg shadow-sm">
         {children}
       </div>
     </div>

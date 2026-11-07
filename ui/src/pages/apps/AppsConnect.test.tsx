@@ -1011,7 +1011,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     );
     const accessCard = accessHeading?.closest(".overflow-hidden");
     expect(accessCard).toBeTruthy();
-    expect(accessCard?.classList.contains("bg-card")).toBe(false);
+    expect(accessCard?.classList.contains("bg-bg-2")).toBe(false);
     expect(accessCard?.classList.contains("shadow-sm")).toBe(false);
   });
 
@@ -1428,7 +1428,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     expect(container.textContent).toContain(
       "You must connect this instance to Paperclip to connect to Gmail (you only need to do this once).",
     );
-    expect(buttonByText("Connect with Paperclip")?.closest(".rounded-xl")?.classList.contains("border-border")).toBe(true);
+    expect(buttonByText("Connect with Paperclip")?.closest(".rounded-xl")?.classList.contains("border-line")).toBe(true);
     expect(container.textContent).not.toContain("Required once for managed Google sign-in.");
     expect(container.textContent).not.toContain("needs its own OAuth app");
 
@@ -1938,7 +1938,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     const capabilityQuestion = Array.from(container.querySelectorAll("label")).find(
       (label) => label.textContent === "What should Paperclip be able to do?",
     );
-    expect(capabilityQuestion?.closest(".max-w-xl")?.classList.contains("bg-card")).toBe(false);
+    expect(capabilityQuestion?.closest(".max-w-xl")?.classList.contains("bg-bg-2")).toBe(false);
   });
 
   it("keeps Shopify prerequisite copy off access before collecting the store domain", async () => {

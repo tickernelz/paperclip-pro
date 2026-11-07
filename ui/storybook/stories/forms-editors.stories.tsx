@@ -35,13 +35,13 @@ function Section({
 }) {
   return (
     <section className="paperclip-story__frame overflow-hidden">
-      <div className="border-b border-border px-5 py-4">
+      <div className="border-b border-line px-5 py-4">
         <div className="paperclip-story__label">{eyebrow}</div>
         <div className="mt-1 flex flex-wrap items-end justify-between gap-3">
           <div>
             <h2 className="text-xl font-semibold">{title}</h2>
             {description ? (
-              <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">{description}</p>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-ink-3">{description}</p>
             ) : null}
           </div>
         </div>
@@ -63,11 +63,11 @@ function StatePanel({
   disabled?: boolean;
 }) {
   return (
-    <div className="min-w-0 rounded-lg border border-border bg-background/70 p-4">
+    <div className="min-w-0 rounded-lg border border-line bg-bg/70 p-4">
       <div className="mb-3 flex min-h-6 flex-wrap items-start justify-between gap-2">
         <div>
           <div className="text-sm font-medium">{label}</div>
-          {detail ? <div className="mt-1 text-xs leading-5 text-muted-foreground">{detail}</div> : null}
+          {detail ? <div className="mt-1 text-xs leading-5 text-ink-3">{detail}</div> : null}
         </div>
         {disabled ? <Badge variant="outline">disabled</Badge> : null}
       </div>
@@ -359,19 +359,19 @@ function MarkdownEditorGallery() {
         </StatePanel>
         <StatePanel label="Toolbar actions" detail="External controls exercise insertion actions around the editor.">
           <div className="mb-3 flex flex-wrap gap-2">
-            <Button size="sm" variant="outline" onClick={() => setActionMarkdown((value) => `${value}\n\n## Next action\n`)}>
+            <Button size="sm" variant="secondary" onClick={() => setActionMarkdown((value) => `${value}\n\n## Next action\n`)}>
               <FileText className="mr-2 h-4 w-4" />
               Heading
             </Button>
-            <Button size="sm" variant="outline" onClick={() => setActionMarkdown((value) => `${value}\n\n- Verify typecheck\n- Build Storybook\n`)}>
+            <Button size="sm" variant="secondary" onClick={() => setActionMarkdown((value) => `${value}\n\n- Verify typecheck\n- Build Storybook\n`)}>
               <ListPlus className="mr-2 h-4 w-4" />
               List
             </Button>
-            <Button size="sm" variant="outline" onClick={() => setActionMarkdown((value) => `${value}\n\n| Field | State |\n| --- | --- |\n| Forms | Ready |\n`)}>
+            <Button size="sm" variant="secondary" onClick={() => setActionMarkdown((value) => `${value}\n\n| Field | State |\n| --- | --- |\n| Forms | Ready |\n`)}>
               <Table2 className="mr-2 h-4 w-4" />
               Table
             </Button>
-            <Button size="sm" variant="outline" onClick={() => setActionMarkdown((value) => `${value}\n\n\`\`\`sh\npnpm build-storybook\n\`\`\`\n`)}>
+            <Button size="sm" variant="secondary" onClick={() => setActionMarkdown((value) => `${value}\n\n\`\`\`sh\npnpm build-storybook\n\`\`\`\n`)}>
               <Code2 className="mr-2 h-4 w-4" />
               Code
             </Button>
@@ -401,7 +401,7 @@ function MarkdownBodyGallery() {
         <div className="space-y-4">
           <StatePanel label="Empty">
             <MarkdownBody>{""}</MarkdownBody>
-            <p className="text-sm text-muted-foreground">No markdown body content.</p>
+            <p className="text-sm text-ink-3">No markdown body content.</p>
           </StatePanel>
           <StatePanel label="Disabled container" disabled>
             <MarkdownBody linkIssueReferences={false}>A read-only preview can be dimmed by the parent surface.</MarkdownBody>
@@ -643,7 +643,7 @@ function FormsEditorsShowcase() {
           <div>
             <div className="paperclip-story__label">Forms and editors</div>
             <h1 className="mt-2 text-3xl font-semibold tracking-tight">Paperclip form controls under realistic state</h1>
-            <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-ink-3">
               Dense control-plane forms need to hold empty, filled, validation, and disabled states without losing scan
               speed. These fixtures keep the components reviewable outside production routes.
             </p>
@@ -683,11 +683,11 @@ function RoutineRunDialogStory() {
         <div className="flex flex-wrap items-center gap-3">
           <Button onClick={() => setOpen(true)}>Open run dialog</Button>
           {submitted ? (
-            <pre className="max-w-full overflow-x-auto rounded-md border border-border bg-muted/40 px-3 py-2 text-xs">
+            <pre className="max-w-full overflow-x-auto rounded-md border border-line bg-bg-3/40 px-3 py-2 text-xs">
               {JSON.stringify(submitted, null, 2)}
             </pre>
           ) : (
-            <span className="text-sm text-muted-foreground">Submit the dialog to inspect the payload.</span>
+            <span className="text-sm text-ink-3">Submit the dialog to inspect the payload.</span>
           )}
         </div>
       </Section>

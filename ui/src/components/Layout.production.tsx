@@ -589,7 +589,7 @@ export function Layout() {
     <ChatSetupSidebarProvider>
       <div
         className={cn(
-          "bg-background text-foreground pt-(--sz-safe-top)",
+          "bg-bg text-ink pt-(--sz-safe-top)",
           // overflow-x-clip on mobile keeps a stray wide descendant from making the
           // whole viewport scroll horizontally. clip (not hidden) leaves overflow-y
           // computed as visible, so native body scroll + the sticky breadcrumb keep
@@ -601,7 +601,7 @@ export function Layout() {
       >
         <a
           href="#main-content"
-          className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-(--z-200) focus:rounded-md focus:bg-background focus:px-3 focus:py-2 focus:text-sm focus:font-medium focus:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-3 focus:top-3 focus:z-(--z-200) focus:rounded-md focus:bg-bg focus:px-3 focus:py-2 focus:text-sm focus:font-medium focus:shadow-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-focus"
         >
           Skip to Main Content
         </a>
@@ -667,13 +667,13 @@ export function Layout() {
             <div
               className={cn(
                 isMobile &&
-                  "sticky top-0 z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/85",
+                  "sticky top-0 z-20 bg-bg/95 backdrop-blur supports-[backdrop-filter]:bg-bg/85",
               )}
             >
               <StandaloneBrowserControls mobile={isMobile} onNavigateHome={() => navigate("/dashboard")} />
               <BreadcrumbBar />
               {isMobile && isCompanySettingsRoute ? (
-                <div className="border-b border-border px-4 pb-3">
+                <div className="border-b border-line px-4 pb-3">
                   <CompanySettingsNav />
                 </div>
               ) : null}

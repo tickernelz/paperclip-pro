@@ -58,7 +58,7 @@ function ProviderChoice({
           {AGGREGATOR_NAMES[choice as RemoteMcpConnectorId]} is available.
           HubSpot access still needs to be verified.
         </p>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           The agent checks the requested action and asks you to authorize
           HubSpot if needed.
         </p>
@@ -75,7 +75,7 @@ function ProviderChoice({
     );
   return (
     <div className="mx-auto max-w-3xl p-6">
-      <p className="mb-4 text-sm text-muted-foreground">
+      <p className="mb-4 text-sm text-ink-3">
         Design review: simulated provider support, including an Executor
         workspace with HubSpot configured. No external requests.
       </p>

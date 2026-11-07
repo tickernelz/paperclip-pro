@@ -24,7 +24,7 @@ const meta = {
   args: { browser: browserFixture, onOpen: () => {} },
   decorators: [
     (Story) => (
-      <div className="w-96 max-w-full bg-background text-foreground">
+      <div className="w-96 max-w-full bg-bg text-ink">
         <Story />
       </div>
     ),

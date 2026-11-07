@@ -82,14 +82,14 @@ export function SourceResolvedFoldCallout({
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-eyebrow)">
             <span className="text-emerald-900 dark:text-emerald-200">SOURCE-RESOLVED FOLD</span>
-            <span className="text-muted-foreground/60" aria-hidden>·</span>
-            <span className="font-medium normal-case tracking-normal text-muted-foreground">
+            <span className="text-ink-3/60" aria-hidden>·</span>
+            <span className="font-medium normal-case tracking-normal text-ink-3">
               system audit
             </span>
             {finalizedRelative ? (
               <>
-                <span className="text-muted-foreground/60" aria-hidden>·</span>
-                <span className="font-medium normal-case tracking-normal text-muted-foreground">
+                <span className="text-ink-3/60" aria-hidden>·</span>
+                <span className="font-medium normal-case tracking-normal text-ink-3">
                   {finalizedRelative}
                 </span>
               </>
@@ -102,7 +102,7 @@ export function SourceResolvedFoldCallout({
       </header>
       <dl
         className={cn(
-          "divide-y border-t bg-background/40 px-3 py-2 sm:px-4 dark:bg-background/20",
+          "divide-y border-t bg-bg/40 px-3 py-2 sm:px-4 dark:bg-bg/20",
           "border-emerald-300/60 dark:border-emerald-500/30",
           "[&>*]:border-emerald-300/40 dark:[&>*]:border-emerald-500/20",
         )}
@@ -115,24 +115,24 @@ export function SourceResolvedFoldCallout({
             >
               {sourceLabel}
             </Link>
-            <span className="rounded-md border border-emerald-300/60 bg-background/60 px-1.5 py-0.5 text-(length:--text-micro) font-medium text-emerald-900 dark:border-emerald-500/30 dark:text-emerald-200">
+            <span className="rounded-md border border-emerald-300/60 bg-bg/60 px-1.5 py-0.5 text-(length:--text-micro) font-medium text-emerald-900 dark:border-emerald-500/30 dark:text-emerald-200">
               {fold.sourceIssueStatus}
             </span>
           </span>
         </MetaRow>
         <MetaRow label="Same-run evidence">
           <span className="inline-flex flex-wrap items-baseline gap-1.5">
-            <span className="rounded bg-background/70 px-1.5 py-0.5 font-mono text-(length:--text-micro) text-emerald-900 dark:bg-background/40 dark:text-emerald-100">
+            <span className="rounded bg-bg/70 px-1.5 py-0.5 font-mono text-(length:--text-micro) text-emerald-900 dark:bg-bg/40 dark:text-emerald-100">
               {fold.sameRunEvidenceKind}
             </span>
             <code
-              className="rounded bg-background/70 px-1.5 py-0.5 font-mono text-(length:--text-micro) text-emerald-900 dark:bg-background/40 dark:text-emerald-100"
+              className="rounded bg-bg/70 px-1.5 py-0.5 font-mono text-(length:--text-micro) text-emerald-900 dark:bg-bg/40 dark:text-emerald-100"
               title={fold.sameRunEvidenceId}
             >
               {evidenceShort}
             </code>
             {evidenceAt ? (
-              <span className="text-(length:--text-micro) text-muted-foreground">at {evidenceAt}</span>
+              <span className="text-(length:--text-micro) text-ink-3">at {evidenceAt}</span>
             ) : null}
           </span>
         </MetaRow>
@@ -141,11 +141,11 @@ export function SourceResolvedFoldCallout({
             <span>
               {silenceAgeLabel}
               {silenceStartedLabel ? (
-                <span className="text-muted-foreground"> (silence started {silenceStartedLabel})</span>
+                <span className="text-ink-3"> (silence started {silenceStartedLabel})</span>
               ) : null}
             </span>
           ) : (
-            <span className="text-muted-foreground">unknown</span>
+            <span className="text-ink-3">unknown</span>
           )}
         </MetaRow>
         <MetaRow label="Process cleanup">
@@ -155,7 +155,7 @@ export function SourceResolvedFoldCallout({
           >
             <span>{cleanupLabel}</span>
             {fold.cleanup.error ? (
-              <span className="text-muted-foreground">— {fold.cleanup.error}</span>
+              <span className="text-ink-3">— {fold.cleanup.error}</span>
             ) : null}
           </span>
         </MetaRow>

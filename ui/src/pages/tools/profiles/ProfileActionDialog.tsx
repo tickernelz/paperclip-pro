@@ -63,7 +63,7 @@ export function ProfileActionDialog({
           <DialogDescription>{copy.body}</DialogDescription>
         </DialogHeader>
         {defaultDeleteBlocked ? (
-          <div className="flex gap-3 rounded-lg border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+          <div className="flex gap-3 rounded-lg border border-bad/40 bg-bad/5 px-3 py-2 text-sm text-bad">
             <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
             <span>Choose another access profile and make it the organization default first.</span>
           </div>
@@ -71,7 +71,7 @@ export function ProfileActionDialog({
         <DialogFooter>
           <Button variant="ghost" onClick={onClose}>Cancel</Button>
           <Button
-            variant={kind === "delete" ? "destructive" : "default"}
+            variant={kind === "delete" ? "delete" : "primary"}
             disabled={pending || defaultDeleteBlocked}
             onClick={copy.action}
           >

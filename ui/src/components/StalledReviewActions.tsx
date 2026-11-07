@@ -114,7 +114,7 @@ export function StalledReviewActions({
         <div className="flex flex-col gap-2 sm:flex-1 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end @xl:flex-none">
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             size="sm"
             className="w-full sm:w-auto sm:flex-1 @xl:flex-none"
             disabled={pending}
@@ -130,9 +130,9 @@ export function StalledReviewActions({
           </Button>
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             size="sm"
-            className="w-full border-amber-400/70 text-amber-900 hover:bg-amber-100 dark:border-amber-500/50 dark:text-amber-100 dark:hover:bg-amber-500/15 sm:w-auto sm:flex-1 @xl:flex-none"
+            className="w-full sm:w-auto sm:flex-1 @xl:flex-none"
             disabled={pending || noteEmpty}
             title={noteEmpty ? "Add a note to request changes" : undefined}
             onClick={() => decide.mutate("request_changes")}

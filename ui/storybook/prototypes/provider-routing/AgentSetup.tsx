@@ -227,7 +227,7 @@ function AgentRoutingFields({
         />
       )}
       {scenario === "loading" ? (
-        <p role="status" className="text-sm text-muted-foreground">
+        <p role="status" className="text-sm text-ink-3">
           Loading your connections…
         </p>
       ) : selected ? (
@@ -278,7 +278,7 @@ function AgentRoutingFields({
               <p>Couldn’t load models from this connection.</p>
               <Button
                 size="sm"
-                variant="outline"
+                variant="secondary"
                 className="mt-3"
                 onClick={() => setCatalogError(false)}
               >
@@ -368,7 +368,7 @@ function AgentRoutingFields({
             >
               Connect another provider or gateway
             </Button>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-ink-3">
               To use a custom model ID or gateway alias, enter it in the Model
               picker above.
             </p>

@@ -53,12 +53,12 @@ type ToneTokens = {
 const TONE_TOKENS: Record<SystemNoticeTone, ToneTokens> = {
   neutral: {
     container:
-      "border-border bg-muted/35 dark:bg-muted/20",
-    iconWrap: "bg-muted text-foreground/70",
+      "border-line bg-bg-3/35 dark:bg-bg-3/20",
+    iconWrap: "bg-bg-3 text-ink/70",
     icon: Info,
-    iconClass: "text-muted-foreground",
-    label: "text-muted-foreground",
-    divider: "border-border/70",
+    iconClass: "text-ink-3",
+    label: "text-ink-3",
+    divider: "border-line/70",
   },
   info: {
     container:
@@ -114,17 +114,17 @@ function formatTimestamp(ts: string) {
 function MetadataRow({ row, tone }: { row: SystemNoticeMetadataRow; tone: ToneTokens }) {
   return (
     <div className="grid grid-cols-(--gtc-8) gap-x-3 gap-y-0.5 px-3 py-1.5 text-xs">
-      <div className="truncate text-(length:--text-micro) font-medium uppercase tracking-(--tracking-label) text-muted-foreground">
+      <div className="truncate text-(length:--text-micro) font-medium uppercase tracking-(--tracking-label) text-ink-3">
         {row.label}
       </div>
-      <div className="min-w-0 break-words text-foreground/90">
+      <div className="min-w-0 break-words text-ink/90">
         {(() => {
           switch (row.kind) {
             case "text":
               return <span>{row.value}</span>;
             case "code":
               return (
-                <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-(length:--text-micro) text-foreground/80">
+                <code className="rounded bg-bg-3 px-1.5 py-0.5 font-mono text-(length:--text-micro) text-ink/80">
                   {row.value}
                 </code>
               );
@@ -133,7 +133,7 @@ function MetadataRow({ row, tone }: { row: SystemNoticeMetadataRow; tone: ToneTo
                 <>
                   <span>{row.identifier}</span>
                   {row.title ? (
-                    <span className="text-muted-foreground">— {row.title}</span>
+                    <span className="text-ink-3">— {row.title}</span>
                   ) : null}
                 </>
               );
@@ -177,7 +177,7 @@ function MetadataRow({ row, tone }: { row: SystemNoticeMetadataRow; tone: ToneTo
               const runShort = row.runId.length > 12 ? `${row.runId.slice(0, 8)}…` : row.runId;
               const inner = (
                 <>
-                  <code className="rounded bg-muted px-1.5 py-0.5 text-foreground/80">{runShort}</code>
+                  <code className="rounded bg-bg-3 px-1.5 py-0.5 text-ink/80">{runShort}</code>
                   {row.status ? (
                     <span className={cn("font-sans", tone.label)}>{row.status}</span>
                   ) : null}
@@ -219,11 +219,11 @@ export function SystemNoticeMetadataSections({
 }) {
   const tokens = TONE_TOKENS[tone];
   return (
-    <div className="divide-y divide-border/50 px-1 py-1">
+    <div className="divide-y divide-line/50 px-1 py-1">
       {sections.map((section, sectionIdx) => (
         <div key={sectionIdx} className="py-1.5 first:pt-2 last:pb-2">
           {section.title ? (
-            <div className="px-3 pb-1 pt-0.5 text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">
+            <div className="px-3 pb-1 pt-0.5 text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-caps) text-ink-3">
               {section.title}
             </div>
           ) : null}
@@ -288,16 +288,16 @@ export function SystemNotice({
             <span className={tokens.label}>{resolvedLabel}</span>
             {source ? (
               <>
-                <span className="text-muted-foreground/60" aria-hidden>·</span>
+                <span className="text-ink-3/60" aria-hidden>·</span>
                 {source.href ? (
                   <a
                     href={source.href}
-                    className="rounded-sm font-medium normal-case tracking-normal text-muted-foreground underline-offset-2 hover:text-foreground hover:underline"
+                    className="rounded-sm font-medium normal-case tracking-normal text-ink-3 underline-offset-2 hover:text-ink hover:underline"
                   >
                     {source.label}
                   </a>
                 ) : (
-                  <span className="font-medium normal-case tracking-normal text-muted-foreground">
+                  <span className="font-medium normal-case tracking-normal text-ink-3">
                     {source.label}
                   </span>
                 )}
@@ -305,14 +305,14 @@ export function SystemNotice({
             ) : null}
             {timestamp ? (
               <>
-                <span className="text-muted-foreground/60" aria-hidden>·</span>
-                <span className="font-medium normal-case tracking-normal text-muted-foreground">
+                <span className="text-ink-3/60" aria-hidden>·</span>
+                <span className="font-medium normal-case tracking-normal text-ink-3">
                   {formatTimestamp(timestamp)}
                 </span>
               </>
             ) : null}
           </div>
-          <div className="mt-1 break-words text-sm leading-6 text-foreground">{body}</div>
+          <div className="mt-1 break-words text-sm leading-6 text-ink">{body}</div>
         </div>
         {hasDetails ? (
           <button
@@ -321,9 +321,9 @@ export function SystemNotice({
             aria-expanded={open}
             aria-controls={detailsId}
             className={cn(
-              "ml-1 inline-flex h-7 shrink-0 items-center gap-1 rounded-md border border-transparent px-2 text-(length:--text-micro) font-medium uppercase tracking-(--tracking-eyebrow) text-muted-foreground transition-(--tp-background-color-border-color-color)",
-              "hover:border-border/70 hover:bg-background/70 hover:text-foreground",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
+              "ml-1 inline-flex h-7 shrink-0 items-center gap-1 rounded-md border border-transparent px-2 text-(length:--text-micro) font-medium uppercase tracking-(--tracking-eyebrow) text-ink-3 transition-(--tp-background-color-border-color-color)",
+              "hover:border-line/70 hover:bg-bg/70 hover:text-ink",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/50",
             )}
           >
             <span>{open ? "Hide details" : "Details"}</span>
@@ -340,7 +340,7 @@ export function SystemNotice({
         <div
           id={detailsId}
           className={cn(
-            "border-t bg-background/50 dark:bg-background/30",
+            "border-t bg-bg/50 dark:bg-bg/30",
             tokens.divider,
           )}
         >

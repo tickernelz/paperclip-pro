@@ -14,6 +14,7 @@ import type {
   TaskChatItem,
   TaskChatMessageItem,
 } from "@/components/task-chat/task-chat-model";
+import { SegmentedItem } from "@/components/ui/segmented";
 
 /**
  * Demo binding for the agent-bubble copy · 👍 · 👎 cluster (PAP-413). The live
@@ -167,38 +168,33 @@ export function TaskChatLab() {
 
   return (
     <div className="flex h-full min-h-0 flex-col">
-      <header className="border-b border-border px-4 py-2">
+      <header className="border-b border-line px-4 py-2">
         <h1 className="text-sm font-semibold">Task Chat Lab</h1>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-ink-3">
           Synthetic harness for the task chat redesign · every state renders here with no live agent.
         </p>
       </header>
 
       <div className="flex min-h-0 flex-1">
         {/* State switcher */}
-        <nav className="w-56 shrink-0 overflow-y-auto border-r border-border p-2" aria-label="States">
+        <nav className="w-56 shrink-0 overflow-y-auto border-r border-line p-2" aria-label="States">
           {(["live", "tier-b"] as const).map((tier) => (
             <div key={tier} className="mb-3">
-              <p className="mb-1 px-1 text-(length:--text-nano) font-semibold uppercase tracking-wide text-muted-foreground">
+              <p className="mb-1 px-1 text-(length:--text-nano) font-semibold uppercase tracking-wide text-ink-3">
                 {tier === "live" ? "Live states" : "Tier-B (synthetic)"}
               </p>
               <ul className="flex flex-col gap-0.5">
                 {TASK_CHAT_STATE_LIST.filter((m) => m.tier === tier).map((m) => (
                   <li key={m.id}>
-                    <button
-                      type="button"
+                    <SegmentedItem selected={selected === m.id}
                       data-state-id={m.id}
                       onClick={() => {
                         setSelected(m.id);
                         setPlayToken((t) => t + 1);
                       }}
-                      className={cn(
-                        "w-full rounded px-2 py-1 text-left text-xs",
-                        selected === m.id ? "bg-primary text-primary-foreground" : "hover:bg-accent",
-                      )}
                     >
                       {m.label}
-                    </button>
+                    </SegmentedItem>
                   </li>
                 ))}
               </ul>
@@ -208,11 +204,11 @@ export function TaskChatLab() {
 
         {/* Stage */}
         <main className="flex min-h-0 flex-1 flex-col">
-          <div className="flex items-center gap-3 border-b border-border px-4 py-2 text-xs">
+          <div className="flex items-center gap-3 border-b border-line px-4 py-2 text-xs">
             <button
               type="button"
               onClick={() => setPlaying((p) => !p)}
-              className="flex items-center gap-1 rounded border border-border px-2 py-1 hover:bg-accent"
+              className="flex items-center gap-1 rounded border border-line px-2 py-1 hover:bg-bg-3"
             >
               {playing ? <Pause className="h-3.5 w-3.5" /> : <Play className="h-3.5 w-3.5" />}
               {playing ? "Pause" : "Play"}
@@ -220,13 +216,13 @@ export function TaskChatLab() {
             <button
               type="button"
               onClick={() => setPlayToken((t) => t + 1)}
-              className="flex items-center gap-1 rounded border border-border px-2 py-1 hover:bg-accent"
+              className="flex items-center gap-1 rounded border border-line px-2 py-1 hover:bg-bg-3"
             >
               <RotateCcw className="h-3.5 w-3.5" />
               Replay
             </button>
             <label className="flex items-center gap-2">
-              <span className="text-muted-foreground">Speed</span>
+              <span className="text-ink-3">Speed</span>
               <input
                 type="range"
                 min={0.1}
@@ -240,24 +236,19 @@ export function TaskChatLab() {
               <span className="w-10 tabular-nums">{speed.toFixed(1)}×</span>
             </label>
             <div className="ml-auto flex items-center gap-2">
-              <span className="text-muted-foreground">Agent bubble</span>
-              <div className="flex items-center gap-0.5 rounded border border-border p-0.5" role="group" aria-label="Agent bubble treatment">
+              <span className="text-ink-3">Agent bubble</span>
+              <div className="flex items-center gap-0.5 rounded border border-line p-0.5" role="group" aria-label="Agent bubble treatment">
                 {BUBBLE_VARIANTS.map((v) => (
-                  <button
+                  <SegmentedItem selected={bubbleVariant === v.id}
                     key={v.id || "current"}
-                    type="button"
                     data-bubble-variant-id={v.id || "current"}
                     onClick={() => setBubbleVariant(v.id)}
-                    className={cn(
-                      "rounded px-2 py-0.5 text-(length:--text-micro)",
-                      bubbleVariant === v.id ? "bg-primary text-primary-foreground" : "hover:bg-accent",
-                    )}
                   >
                     {v.label}
-                  </button>
+                  </SegmentedItem>
                 ))}
               </div>
-              <span className="font-mono text-(length:--text-micro) text-muted-foreground">{meta.protocol}</span>
+              <span className="font-mono text-(length:--text-micro) text-ink-3">{meta.protocol}</span>
             </div>
           </div>
 

@@ -408,7 +408,7 @@ function ConnectFlowPreview({
                             href={authUrl}
                             target="_blank"
                             rel="noreferrer noopener"
-                            className="underline underline-offset-2 hover:text-foreground"
+                            className="underline underline-offset-2 hover:text-ink"
                           >
                             {signInLabel}
                           </a>

@@ -69,11 +69,11 @@ export function MissingUserSecretsBanner({
             {missing.map((entry) => (
               <li
                 key={entry.definition.id}
-                className="flex items-center justify-between gap-2 rounded border border-amber-500/30 bg-background/40 px-2 py-1"
+                className="flex items-center justify-between gap-2 rounded border border-amber-500/30 bg-bg/40 px-2 py-1"
               >
                 <span className="min-w-0 truncate">
-                  <span className="font-medium text-foreground">{entry.definition.name}</span>{" "}
-                  <code className="text-(length:--text-micro) text-muted-foreground">{entry.definition.key}</code>
+                  <span className="font-medium text-ink">{entry.definition.name}</span>{" "}
+                  <code className="text-(length:--text-micro) text-ink-3">{entry.definition.key}</code>
                 </span>
                 <Button size="sm" onClick={() => setDialogFor(entry)}>
                   Set value

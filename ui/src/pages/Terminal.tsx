@@ -12,7 +12,7 @@ export function Terminal() {
   }, [setBreadcrumbs]);
 
   if (!selectedCompanyId) {
-    return <p className="text-sm text-muted-foreground">Select a company to open a terminal.</p>;
+    return <p className="text-sm text-ink-3">Select a company to open a terminal.</p>;
   }
 
   return <TerminalWorkspace key={selectedCompanyId} companyId={selectedCompanyId} />;

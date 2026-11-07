@@ -291,7 +291,7 @@ export function PipelineItemBodyDocument({
           }
         }}
       >
-        <div className="rounded-md border border-border bg-background">
+        <div className="rounded-md border border-line bg-bg">
           <MarkdownEditor
             value={draftBody}
             onChange={setDraftBody}
@@ -305,7 +305,7 @@ export function PipelineItemBodyDocument({
           />
         </div>
         <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
-          <span className="text-(length:--text-micro) text-muted-foreground">
+          <span className="text-(length:--text-micro) text-ink-3">
             Saving creates rev {(doc?.latestRevisionNumber ?? 0) + 1} · ⌘↵ to save · Esc to cancel
           </span>
           <div className="flex items-center gap-2">
@@ -329,13 +329,13 @@ export function PipelineItemBodyDocument({
               <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
                 Viewing revision {selectedHistoricalRevision.revisionNumber}
               </p>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-ink-3">
                 Historical preview. New comments are disabled while previewing a historical revision. Restoring it
                 creates a new latest revision and keeps history append-only.
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => setSelectedRevisionId(null)}>
+              <Button variant="secondary" size="sm" onClick={() => setSelectedRevisionId(null)}>
                 Return to latest
               </Button>
               <Button
@@ -410,7 +410,7 @@ export function PipelineItemBodyDocument({
       aria-label="Item body"
       id="pipeline-item-body-document"
       data-testid="pipeline-item-body-document"
-      className="rounded-lg border border-border p-3"
+      className="rounded-lg border border-line p-3"
     >
       <DocumentFrameHeader
         documentKey={BODY_DOCUMENT_KEY}

@@ -195,12 +195,12 @@ export function TaskBrowserPanel({
           {viewerLoad !== "loaded" && (
             <div
               role={viewerLoad === "timed-out" ? "alert" : "status"}
-              className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-background p-6 text-center"
+              className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-bg p-6 text-center"
             >
               {viewerLoad === "loading" ? (
                 <>
                   <LoaderCircle
-                    className="size-5 animate-spin text-muted-foreground motion-reduce:animate-none"
+                    className="size-5 animate-spin text-ink-3 motion-reduce:animate-none"
                     aria-hidden="true"
                   />
                   <p className="text-sm">Connecting to browser…</p>
@@ -210,12 +210,12 @@ export function TaskBrowserPanel({
                   <p className="text-sm font-medium">
                     The live view did not load
                   </p>
-                  <p className="max-w-sm text-sm text-muted-foreground">
+                  <p className="max-w-sm text-sm text-ink-3">
                     Reconnect the view or open this task in another browser. The
                     remote browser is still running.
                   </p>
                   <Button
-                    variant="outline"
+                    variant="secondary"
                     size="sm"
                     onClick={reconnect}
                   >
@@ -233,18 +233,18 @@ export function TaskBrowserPanel({
         >
           {waiting ? (
             <LoaderCircle
-              className="size-5 animate-spin text-muted-foreground motion-reduce:animate-none"
+              className="size-5 animate-spin text-ink-3 motion-reduce:animate-none"
               aria-hidden="true"
             />
           ) : (
             <Globe
-              className="size-5 text-muted-foreground"
+              className="size-5 text-ink-3"
               aria-hidden="true"
             />
           )}
           <div className="max-w-sm space-y-2">
             <p className="text-sm font-medium">{heading}</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-ink-3">
               {message ??
                 (browser?.status === "closed"
                   ? onOpenActiveBrowser
@@ -260,25 +260,25 @@ export function TaskBrowserPanel({
             </p>
           </div>
           {browser?.status === "closed" && !accessError && onOpenActiveBrowser && (
-            <Button variant="outline" size="sm" onClick={onOpenActiveBrowser}>
+            <Button variant="secondary" size="sm" onClick={onOpenActiveBrowser}>
               Open active browser
             </Button>
           )}
         </div>
       )}
       {viewable && url && message && (
-        <p role="alert" className="px-3 py-2 text-xs text-destructive">
+        <p role="alert" className="px-3 py-2 text-xs text-bad">
           {message}
         </p>
       )}
       {viewable && presenceError && (
-        <p role="alert" className="px-3 py-2 text-xs text-destructive">
+        <p role="alert" className="px-3 py-2 text-xs text-bad">
           Could not keep this browser open. Check your connection before the
           timer runs out.
         </p>
       )}
       {viewable && viewport.error && (
-        <p role="alert" className="px-3 py-2 text-xs text-destructive">
+        <p role="alert" className="px-3 py-2 text-xs text-bad">
           {viewport.error}
         </p>
       )}

@@ -3,8 +3,8 @@ import { TextAttachmentPreview } from "@/components/task-side-panel/TaskAttachme
 import { reportHtml, securityHtml } from "./fixtures";
 
 function Preview({ html = reportHtml, title = "repository-usage.html", width = 800 }: { html?: string; title?: string; width?: number }) {
-  return <main className="min-h-screen bg-background p-4 text-foreground">
-    <section className="mx-auto flex h-(--sz-640px) max-w-full flex-col overflow-hidden rounded-lg border border-border" style={{ width }}>
+  return <main className="min-h-screen bg-bg p-4 text-ink">
+    <section className="mx-auto flex h-(--sz-640px) max-w-full flex-col overflow-hidden rounded-lg border border-line" style={{ width }}>
       <TextAttachmentPreview key={title} title={title} text={html} markdown={false} html downloadUrl={`data:text/html;charset=utf-8,${encodeURIComponent(html)}`} />
     </section>
   </main>;

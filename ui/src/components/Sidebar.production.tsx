@@ -115,7 +115,7 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="w-full h-full min-h-0 border-r border-border bg-background flex flex-col">
+    <aside className="w-full h-full min-h-0 border-r border-line bg-bg flex flex-col">
       {/* Top bar: company name, aligned with top sections and borderless.
           Search deliberately does NOT live here:
           the header's spare width goes to the workspace/organization name,
@@ -134,7 +134,7 @@ export function Sidebar() {
                 onClick={() => openNewIssue()}
                 data-slot="icon-button"
                 aria-label={rail ? "New Task" : undefined}
-                className="flex items-center gap-2.5 mx-2 rounded-lg px-2 py-1.5 pointer-coarse:py-1 text-(length:--text-compact) font-medium text-foreground/80 hover:bg-accent/50 hover:text-foreground transition-colors"
+                className="flex items-center gap-2.5 mx-2 rounded-lg px-2 py-1.5 pointer-coarse:py-1 text-(length:--text-compact) font-medium text-ink/80 hover:bg-bg-3/50 hover:text-ink transition-colors"
               >
                 <SquarePen className="h-4 w-4 shrink-0" />
                 <span className={rail ? SIDEBAR_RAIL_HIDDEN_LABEL : "truncate"}>New Task</span>
@@ -247,7 +247,7 @@ export function Sidebar() {
           slotTypes={["sidebarPanel"]}
           context={pluginContext}
           className="flex flex-col gap-3"
-          itemClassName="rounded-lg border border-border p-3"
+          itemClassName="rounded-lg border border-line p-3"
           missingBehavior="placeholder"
         />
       </nav>

@@ -74,19 +74,13 @@ export function StarToggle({
         disabled={pending}
         onClick={handleClick}
         title={error ? "Couldn't save — retry" : undefined}
-        className={cn(
-          error
-            ? "text-red-500 hover:text-red-500"
-            : starred
-              ? "text-amber-600 dark:text-amber-500"
-              : undefined,
-          className,
-        )}
+        className={className}
       >
         <Icon
           className={cn(
             "h-4 w-4",
             pending && "motion-safe:animate-spin",
+            !pending && error && "text-bad",
             !pending && starred && !error && "fill-amber-500 text-amber-500",
             !pending && error && "text-red-500",
           )}
@@ -122,7 +116,7 @@ export function StarToggle({
           pending && "motion-safe:animate-spin",
           !pending && error && "text-red-500",
           !pending && !error && starred && "fill-amber-500 text-amber-500",
-          !pending && !error && !starred && "text-muted-foreground",
+          !pending && !error && !starred && "text-ink-3",
         )}
       />
     </Button>

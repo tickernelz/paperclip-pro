@@ -53,9 +53,9 @@ const TRIGGER_WORKSPACE_ICON_CLASS = "size-5 shrink-0 rounded-md text-(length:--
 const POPOVER_WORKSPACE_ICON_CLASS =
   "size-(--organization-popover-avatar-size) shrink-0 rounded-lg text-(length:--text-micro)";
 const ORGANIZATION_ROW_CLASS =
-  "h-(--organization-popover-company-row-height) min-w-0 gap-(--organization-popover-row-gap) rounded-lg px-2.5 py-0 text-(length:--text-compact) focus:bg-accent/50 focus:text-foreground";
+  "h-(--organization-popover-company-row-height) min-w-0 gap-(--organization-popover-row-gap) rounded-lg px-2.5 py-0 text-(length:--text-compact) focus:bg-bg-3/50 focus:text-ink";
 const ORGANIZATION_ACTION_CLASS =
-  "h-(--organization-popover-action-row-height) gap-(--organization-popover-row-gap) rounded-lg px-2.5 py-0 text-(length:--text-compact) font-medium leading-(--organization-popover-action-line-height) text-foreground focus:bg-accent/50 focus:text-foreground";
+  "h-(--organization-popover-action-row-height) gap-(--organization-popover-row-gap) rounded-lg px-2.5 py-0 text-(length:--text-compact) font-medium leading-(--organization-popover-action-line-height) text-ink focus:bg-bg-3/50 focus:text-ink";
 
 function WorkspaceIcon({ company, inPopover = false }: { company: Company; inPopover?: boolean }) {
   return (
@@ -115,7 +115,7 @@ function SortableCompanyItem({
           {company.name}
         </span>
         {isEditing ? null : (
-          <span className="block truncate text-(length:--text-nano) leading-(--organization-popover-prefix-line-height) text-muted-foreground">
+          <span className="block truncate text-(length:--text-nano) leading-(--organization-popover-prefix-line-height) text-ink-3">
             {company.issuePrefix}
           </span>
         )}
@@ -125,7 +125,7 @@ function SortableCompanyItem({
           type="button"
           ref={setActivatorNodeRef}
           aria-label={`Reorder ${company.name}`}
-          className="inline-flex size-8 shrink-0 items-center justify-center rounded text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-(length:--rad-2) focus-visible:ring-ring"
+          className="inline-flex size-8 shrink-0 items-center justify-center rounded text-ink-3 hover:bg-bg-3 hover:text-ink focus-visible:outline-none focus-visible:ring-(length:--rad-2) focus-visible:ring-focus"
           onClick={(event) => {
             event.preventDefault();
             event.stopPropagation();
@@ -137,7 +137,7 @@ function SortableCompanyItem({
         </button>
       ) : (
         <span className="flex size-5 shrink-0 items-center justify-center">
-          {isSelected ? <Check className="size-4 text-foreground" /> : null}
+          {isSelected ? <Check className="size-4 text-ink" /> : null}
         </span>
       )}
     </DropdownMenuItem>
@@ -265,7 +265,7 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange }: SidebarCompa
           // is what lets the name truncate: a flex item's default `min-width:auto`
           // floors it at its content width, so without it a long name widens the
           // trigger past the sidebar and pushes the chevron out of bounds.
-          className="h-9 min-w-0 flex-1 justify-start gap-2 px-4 text-left hover:bg-accent/50 hover:text-foreground has-[>svg]:px-4 dark:hover:bg-accent/50"
+          className="h-9 min-w-0 flex-1 justify-start gap-2 px-4 text-left has-[>svg]:px-4"
           aria-label={
             currentName
               ? `Open ${currentName} ${switcherNoun} switcher`
@@ -280,7 +280,7 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange }: SidebarCompa
                 truncates stays hover-recoverable via title. */}
             <span
               className={cn(
-                "min-w-0 truncate text-sm font-bold text-foreground",
+                "min-w-0 truncate text-sm font-bold text-ink",
                 rail && SIDEBAR_RAIL_HIDDEN_LABEL,
               )}
               title={currentName ?? undefined}
@@ -288,16 +288,16 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange }: SidebarCompa
               {currentName ?? `Select ${switcherNoun}`}
             </span>
           </span>
-          {!rail && <ChevronsUpDown className="size-3.5 shrink-0 text-muted-foreground" />}
+          {!rail && <ChevronsUpDown className="size-3.5 shrink-0 text-ink-3" />}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="start"
         sideOffset={8}
-        className="ml-2 w-(--organization-popover-width) max-w-(--sz-calc-24) overflow-hidden rounded-xl border-border bg-popover p-0 shadow-(--shadow-profile-popover)"
+        className="ml-2 w-(--organization-popover-width) max-w-(--sz-calc-24) overflow-hidden rounded-xl border-line bg-bg-2 p-0 shadow-(--shadow-profile-popover)"
       >
         <div className="flex h-(--organization-popover-header-height) items-center justify-between gap-2 px-3.5">
-          <DropdownMenuLabel className="p-0 text-(length:--text-compact) font-semibold text-foreground">
+          <DropdownMenuLabel className="p-0 text-(length:--text-compact) font-semibold text-ink">
             Organizations
           </DropdownMenuLabel>
           <button
@@ -307,7 +307,7 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange }: SidebarCompa
               event.stopPropagation();
               setIsEditingOrder((current) => !current);
             }}
-            className="rounded px-1.5 py-0.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            className="rounded px-1.5 py-0.5 text-xs font-medium text-ink-3 transition-colors hover:bg-bg-3 hover:text-ink"
           >
             {isEditingOrder ? "Done" : "Edit"}
           </button>
@@ -357,14 +357,14 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange }: SidebarCompa
             )
           ) : null}
         </div>
-        <div className="flex flex-col gap-0.5 border-t border-border px-2.5 pb-2.5 pt-2">
+        <div className="flex flex-col gap-0.5 border-t border-line px-2.5 pb-2.5 pt-2">
           {!companyCreationManaged && (
             <DropdownMenuItem
               onClick={addCompany}
               className={ORGANIZATION_ACTION_CLASS}
               disabled={isEditingOrder}
             >
-              <span className="flex size-5 shrink-0 items-center justify-center text-muted-foreground">
+              <span className="flex size-5 shrink-0 items-center justify-center text-ink-3">
                 <Plus className="size-4" />
               </span>
               <span className="min-w-0 flex-1 truncate">Create organization</span>
@@ -386,7 +386,7 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange }: SidebarCompa
                   closeNavigationChrome();
                 }}
               >
-                <span className="flex size-5 shrink-0 items-center justify-center text-muted-foreground">
+                <span className="flex size-5 shrink-0 items-center justify-center text-ink-3">
                   <UserPlus className="size-4" />
                 </span>
                 <span className="min-w-0 flex-1 truncate">
@@ -403,7 +403,7 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange }: SidebarCompa
               onClick={() => signOutMutation.mutate()}
               disabled={isEditingOrder || signOutMutation.isPending}
             >
-              <span className="flex size-5 shrink-0 items-center justify-center text-muted-foreground">
+              <span className="flex size-5 shrink-0 items-center justify-center text-ink-3">
                 <LogOut className="size-4" />
               </span>
               <span className="min-w-0 flex-1 truncate">

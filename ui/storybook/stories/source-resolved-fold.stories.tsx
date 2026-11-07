@@ -6,15 +6,15 @@ import type { SourceResolvedWatchdogFold } from "@/lib/source-resolved-watchdog-
 
 function StoryFrame({ title, description, children }: { title: string; description?: string; children: ReactNode }) {
   return (
-    <main className="min-h-screen bg-background p-4 text-foreground sm:p-8">
+    <main className="min-h-screen bg-bg p-4 text-ink sm:p-8">
       <div className="mx-auto max-w-3xl space-y-5">
         <header>
-          <div className="text-xs font-medium uppercase tracking-[0.2em] text-muted-foreground">
+          <div className="text-xs font-medium uppercase tracking-[0.2em] text-ink-3">
             Active-run watchdog · source-resolved fold
           </div>
           <h1 className="mt-1 text-2xl font-semibold">{title}</h1>
           {description ? (
-            <p className="mt-2 max-w-3xl text-sm text-muted-foreground">{description}</p>
+            <p className="mt-2 max-w-3xl text-sm text-ink-3">{description}</p>
           ) : null}
         </header>
         {children}
@@ -152,27 +152,27 @@ export const RunRowBadgeContext: Story = {
       title="Run-row Source-resolved badge"
       description="Chip placed alongside the existing Profile / silence chips on each run row. Subdued emerald — distinct from the green status checkmark, but not a hot warning."
     >
-      <div className="space-y-3 rounded-lg border border-border/60 bg-background/60 p-4 text-xs">
+      <div className="space-y-3 rounded-lg border border-line/60 bg-bg/60 p-4 text-xs">
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className="font-medium text-foreground">Run</span>
-          <code className="rounded bg-background/70 px-1.5 py-0.5 font-mono text-foreground">7accd7a4</code>
-          <span className="text-muted-foreground">by ClaudeCoder</span>
-          <span className="rounded-md border border-border px-1.5 py-0.5 capitalize text-muted-foreground">succeeded</span>
+          <span className="font-medium text-ink">Run</span>
+          <code className="rounded bg-bg/70 px-1.5 py-0.5 font-mono text-ink">7accd7a4</code>
+          <span className="text-ink-3">by ClaudeCoder</span>
+          <span className="rounded-md border border-line px-1.5 py-0.5 capitalize text-ink-3">succeeded</span>
           <span className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-1.5 py-0.5 font-medium text-emerald-700 dark:text-emerald-300">
             Completed
           </span>
           <SourceResolvedFoldBadge />
-          <span className="ml-auto text-muted-foreground">3m ago</span>
+          <span className="ml-auto text-ink-3">3m ago</span>
         </div>
         <div className="flex flex-wrap items-center gap-1.5">
-          <span className="font-medium text-foreground">Run</span>
-          <code className="rounded bg-background/70 px-1.5 py-0.5 font-mono text-foreground">2606404d</code>
-          <span className="text-muted-foreground">by ClaudeCoder</span>
-          <span className="rounded-md border border-border px-1.5 py-0.5 capitalize text-muted-foreground">succeeded</span>
+          <span className="font-medium text-ink">Run</span>
+          <code className="rounded bg-bg/70 px-1.5 py-0.5 font-mono text-ink">2606404d</code>
+          <span className="text-ink-3">by ClaudeCoder</span>
+          <span className="rounded-md border border-line px-1.5 py-0.5 capitalize text-ink-3">succeeded</span>
           <span className="rounded-md border border-emerald-500/30 bg-emerald-500/10 px-1.5 py-0.5 font-medium text-emerald-700 dark:text-emerald-300">
             Completed
           </span>
-          <span className="ml-auto text-muted-foreground">12m ago</span>
+          <span className="ml-auto text-ink-3">12m ago</span>
         </div>
       </div>
     </StoryFrame>

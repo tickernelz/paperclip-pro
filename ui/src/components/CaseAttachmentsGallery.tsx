@@ -36,7 +36,7 @@ export function CaseAttachmentsGallery({ attachments }: { attachments: CaseAttac
   );
 
   if (attachments.length === 0) {
-    return <p className="text-xs text-muted-foreground">No attachments.</p>;
+    return <p className="text-xs text-ink-3">No attachments.</p>;
   }
 
   return (
@@ -54,8 +54,8 @@ export function CaseAttachmentsGallery({ attachments }: { attachments: CaseAttac
               disabled={!isImage}
               title={filename}
               className={cn(
-                "group relative flex aspect-square flex-col overflow-hidden rounded-lg border border-border bg-muted/40 text-left",
-                isImage && "cursor-pointer hover:border-primary/50",
+                "group relative flex aspect-square flex-col overflow-hidden rounded-lg border border-line bg-bg-3/40 text-left",
+                isImage && "cursor-pointer hover:border-accent/50",
               )}
             >
               {isImage ? (
@@ -66,7 +66,7 @@ export function CaseAttachmentsGallery({ attachments }: { attachments: CaseAttac
                   className="h-full w-full object-cover transition-transform group-hover:scale-(--s-1_02)"
                 />
               ) : (
-                <div className="flex h-full w-full flex-col items-center justify-center gap-1 p-2 text-muted-foreground">
+                <div className="flex h-full w-full flex-col items-center justify-center gap-1 p-2 text-ink-3">
                   <FileText className="h-6 w-6" aria-hidden />
                   <span className="w-full truncate text-center text-(length:--text-micro)">{filename}</span>
                 </div>

@@ -3,7 +3,7 @@ export function EmailSafetyNotice() {
   return (
     <div
       role="note"
-      className="space-y-3 rounded-lg border border-border bg-muted/30 p-4"
+      className="space-y-3 rounded-lg border border-line bg-bg-3/30 p-4"
     >
       <div className="flex items-start gap-2">
         <AlertTriangle className="size-4 shrink-0 text-(--status-agent-paused)" />
@@ -11,11 +11,11 @@ export function EmailSafetyNotice() {
           <p className="text-sm font-medium">
             Anyone can email an unrestricted inbox
           </p>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-ink-3">
             Incoming email can create tasks and trigger agent work. Set up an
             allowlist in AgentMail to limit who can contact this inbox.
           </p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             Paperclip does not verify sender restrictions. AgentMail controls
             new messages and replies separately; check both lists.
           </p>
@@ -34,7 +34,7 @@ export function EmailSafetyNotice() {
           href="https://docs.agentmail.to/knowledge-base/allowlists-blocklists"
           target="_blank"
           rel="noreferrer"
-          className="text-muted-foreground underline underline-offset-4"
+          className="text-ink-3 underline underline-offset-4"
         >
           Set up allowlists ↗
         </a>

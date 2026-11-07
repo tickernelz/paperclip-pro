@@ -3,7 +3,7 @@
   appearance: none;
   height: calc(var(--spacing) * 2);
   border-radius: var(--radius-lg);
-  background: linear-gradient(to right, var(--tc-mode-ask) var(--fill), var(--muted) var(--fill));
+  background: linear-gradient(to right, var(--tc-mode-ask) var(--fill), var(--bg-3) var(--fill));
   cursor: pointer;
 }
 
@@ -11,7 +11,7 @@
   appearance: none;
   width: calc(var(--spacing) * 5);
   height: calc(var(--spacing) * 5);
-  border: calc(var(--spacing) * 0.5) solid var(--popover);
+  border: calc(var(--spacing) * 0.5) solid var(--bg-2);
   border-radius: 50%;
   background: var(--tc-mode-ask);
   box-shadow: var(--shadow-sm);
@@ -20,13 +20,13 @@
 .composer-effort-range::-moz-range-thumb {
   width: calc(var(--spacing) * 5);
   height: calc(var(--spacing) * 5);
-  border: calc(var(--spacing) * 0.5) solid var(--popover);
+  border: calc(var(--spacing) * 0.5) solid var(--bg-2);
   border-radius: 50%;
   background: var(--tc-mode-ask);
   box-shadow: var(--shadow-sm);
 }
 
-.composer-effort-range:focus-visible { outline: calc(var(--spacing) * 0.5) solid var(--ring); outline-offset: calc(var(--spacing) * 0.5); }
+.composer-effort-range:focus-visible { outline: calc(var(--spacing) * 0.5) solid var(--focus); outline-offset: calc(var(--spacing) * 0.5); }
 
 .composer-picker-accent { color: var(--tc-mode-ask); }
 

@@ -119,9 +119,9 @@ export function AgentPanel({ companyId, agent, visual, onClose }: AgentPanelProp
       <ScrollArea className="h-full">
         <div className="space-y-4 p-4">
           {activity?.message ? (
-            <div className="rounded-md border border-border bg-muted/40 p-3">
-              <p className="text-sm text-foreground">{activity.message}</p>
-              <p className="mt-1 text-xs text-muted-foreground">
+            <div className="rounded-md border border-line bg-bg-3/40 p-3">
+              <p className="text-sm text-ink">{activity.message}</p>
+              <p className="mt-1 text-xs text-ink-3">
                 {activity.updatedAtMs > 0
                   ? relativeTime(new Date(activity.updatedAtMs))
                   : "No timestamp"}
@@ -147,7 +147,7 @@ export function AgentPanel({ companyId, agent, visual, onClose }: AgentPanelProp
                 </Button>
                 <Button
                   size="sm"
-                  variant="outline"
+                  variant="secondary"
                   disabled={action.isPending}
                   onClick={() => action.mutate(paused ? "resume" : "pause")}
                 >
@@ -168,11 +168,11 @@ export function AgentPanel({ companyId, agent, visual, onClose }: AgentPanelProp
             </Button>
           </div>
 
-          {actionError ? <p className="text-sm text-destructive">{actionError}</p> : null}
+          {actionError ? <p className="text-sm text-bad">{actionError}</p> : null}
 
           {pendingInteractions.length > 0 ? (
             <section className="space-y-2">
-              <h3 className="text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
+              <h3 className="text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-ink-3">
                 Waiting on a decision
               </h3>
               {pendingInteractions.map((item) => (
@@ -189,23 +189,23 @@ export function AgentPanel({ companyId, agent, visual, onClose }: AgentPanelProp
           ) : null}
 
           <section className="space-y-2">
-            <h3 className="text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
+            <h3 className="text-xs font-semibold uppercase tracking-(--tracking-eyebrow) text-ink-3">
               Tasks · {agent.activeTaskCount} active / {agent.queuedTaskCount} queued
             </h3>
             {agent.tasks.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No open tasks.</p>
+              <p className="text-sm text-ink-3">No open tasks.</p>
             ) : (
               <ul className="space-y-1">
                 {agent.tasks.map((task) => (
                   <li key={task.issueId}>
                     <Link
                       to={`/issues/${task.identifier}`}
-                      className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-accent/40"
+                      className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-bg-3/40"
                     >
-                      <span className="shrink-0 font-mono text-xs text-muted-foreground">
+                      <span className="shrink-0 font-mono text-xs text-ink-3">
                         {task.identifier}
                       </span>
-                      <span className="min-w-0 flex-1 truncate text-foreground">{task.title}</span>
+                      <span className="min-w-0 flex-1 truncate text-ink">{task.title}</span>
                       {task.runStatus ? (
                         <Badge variant="secondary">{task.runStatus}</Badge>
                       ) : null}

@@ -9,12 +9,12 @@ export function RunRetryDetails({ run, agentRouteId }: {
 }) {
   const retry = describeRunRetryState(run);
   if (!retry) return null;
-  return <div className="rounded-md border border-border/70 bg-accent/20 px-3 py-2 text-xs leading-5">
+  return <div className="rounded-md border border-line/70 bg-bg-3/20 px-3 py-2 text-xs leading-5">
     <div className="flex flex-wrap items-center gap-2">
       <span className={cn("rounded-md border px-1.5 py-0.5 text-(length:--text-micro) font-medium", retry.tone)}>{retry.badgeLabel}</span>
-      {retry.retryOfRunId && <Link to={`/agents/${agentRouteId}/runs/${retry.retryOfRunId}`} className="font-mono text-foreground hover:underline">{retry.retryOfRunId.slice(0, 8)}</Link>}
+      {retry.retryOfRunId && <Link to={`/agents/${agentRouteId}/runs/${retry.retryOfRunId}`} className="font-mono text-ink hover:underline">{retry.retryOfRunId.slice(0, 8)}</Link>}
     </div>
-    {retry.detail && <p className="mt-2 text-muted-foreground">{retry.detail}</p>}
-    {retry.secondary && <p className="text-muted-foreground">{retry.secondary}</p>}
+    {retry.detail && <p className="mt-2 text-ink-3">{retry.detail}</p>}
+    {retry.secondary && <p className="text-ink-3">{retry.secondary}</p>}
   </div>;
 }

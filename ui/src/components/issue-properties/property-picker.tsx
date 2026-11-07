@@ -37,8 +37,8 @@ export function PropertyPicker({
 }) {
   const { enabled: streamlinedUiEnabled } = useStreamlinedUiEnabled();
   const btnCn = cn(
-    "inline-flex min-h-5 items-center gap-1.5 cursor-pointer hover:bg-accent/50 rounded px-1 -mx-1 py-0.5 transition-colors min-w-0 max-w-full text-left",
-    streamlinedUiEnabled && "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+    "inline-flex min-h-5 items-center gap-1.5 cursor-pointer hover:bg-bg-3/50 rounded px-1 -mx-1 py-0.5 transition-colors min-w-0 max-w-full text-left",
+    streamlinedUiEnabled && "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus",
     triggerClassName,
   );
 
@@ -51,7 +51,7 @@ export function PropertyPicker({
         aria-expanded={open}
         onClick={inline ? () => onOpenChange(!open) : undefined}
       >
-        <ChevronDown className={cn("h-3 w-3 text-muted-foreground", open && "rotate-180")} aria-hidden />
+        <ChevronDown className={cn("h-3 w-3 text-ink-3", open && "rotate-180")} aria-hidden />
       </button>
     );
     return (
@@ -71,7 +71,7 @@ export function PropertyPicker({
           {extra}
         </PropertyRow>
         {inline && open ? (
-          <div className={cn("rounded-md border border-border bg-popover p-1 mb-2", popoverClassName)}>
+          <div className={cn("rounded-md border border-line bg-bg-2 p-1 mb-2", popoverClassName)}>
             {children}
           </div>
         ) : null}
@@ -86,13 +86,13 @@ export function PropertyPicker({
           <button className={cn(btnCn, stacked && "items-start")} onClick={() => onOpenChange(!open)} aria-expanded={streamlinedUiEnabled ? open : undefined}>
             {triggerContent}
             {streamlinedUiEnabled ? (
-              <ChevronDown className={cn("ml-auto h-3 w-3 shrink-0 text-muted-foreground transition-transform", open && "rotate-180")} aria-hidden />
+              <ChevronDown className={cn("ml-auto h-3 w-3 shrink-0 text-ink-3 transition-transform", open && "rotate-180")} aria-hidden />
             ) : null}
           </button>
           {extra}
         </PropertyRow>
         {open && (
-          <div className={cn("rounded-md border border-border bg-popover p-1 mb-2", popoverClassName)}>
+          <div className={cn("rounded-md border border-line bg-bg-2 p-1 mb-2", popoverClassName)}>
             {children}
           </div>
         )}
@@ -107,7 +107,7 @@ export function PropertyPicker({
           <button className={cn(btnCn, stacked && "items-start")} aria-expanded={streamlinedUiEnabled ? open : undefined}>
             {triggerContent}
             {streamlinedUiEnabled ? (
-              <ChevronDown className={cn("ml-auto h-3 w-3 shrink-0 text-muted-foreground transition-transform", open && "rotate-180")} aria-hidden />
+              <ChevronDown className={cn("ml-auto h-3 w-3 shrink-0 text-ink-3 transition-transform", open && "rotate-180")} aria-hidden />
             ) : null}
           </button>
         </PopoverTrigger>

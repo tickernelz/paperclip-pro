@@ -75,12 +75,11 @@ export function RestorePrimaryModelControl({
     <span data-slot="restore-primary-model" className={cn("inline-flex min-w-0 items-center gap-1.5", className)}>
       <Button
         type="button"
-        variant="outline"
+        variant="secondary"
         size="xs"
         disabled={restore.isPending}
         aria-label={`Back to the primary model${task}`}
         title={`Back to the primary model — stops this fallback run and wakes the assignee on ${fallback.primaryModel}`}
-        className="border-amber-500/25 bg-amber-500/10 text-amber-800 hover:bg-amber-500/20 hover:text-amber-900 dark:border-amber-400/25 dark:bg-amber-400/10 dark:text-amber-200 dark:hover:bg-amber-400/20 dark:hover:text-amber-100"
         onClick={(event) => {
           event.preventDefault();
           event.stopPropagation();
@@ -91,7 +90,7 @@ export function RestorePrimaryModelControl({
         {restore.isPending ? "Restoring…" : "Back to primary model"}
       </Button>
       {restore.error ? (
-        <span role="alert" className="text-xs text-destructive">
+        <span role="alert" className="text-xs text-bad">
           {errorMessage(restore.error, "Couldn’t restore the primary model.")}
         </span>
       ) : null}

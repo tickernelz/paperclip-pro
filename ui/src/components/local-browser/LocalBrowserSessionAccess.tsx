@@ -93,17 +93,17 @@ export function LocalBrowserSessionAccess({
         </ul>
       ) : null}
 
-      <div role="group" aria-label="Permissions" className="space-y-3 rounded-md border border-border p-3">
+      <div role="group" aria-label="Permissions" className="space-y-3 rounded-md border border-line p-3">
         <h4 className="text-sm font-medium">Permissions</h4>
         {!access ? (
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-ink-3">
             Update the extension to manage permissions here.
           </p>
         ) : (
           <>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-ink-3">
               Site access:{" "}
-              <span className="font-medium text-foreground">{SITE_ACCESS_TEXT[access.siteAccess]}</span>
+              <span className="font-medium text-ink">{SITE_ACCESS_TEXT[access.siteAccess]}</span>
             </p>
             {needsAttention ? (
               <div
@@ -120,7 +120,7 @@ export function LocalBrowserSessionAccess({
               </div>
             ) : null}
             <div className="space-y-1">
-              <p className="text-xs font-medium text-muted-foreground">Granted</p>
+              <p className="text-xs font-medium text-ink-3">Granted</p>
               {granted.length > 0 ? (
                 <ul aria-label="Granted permissions" className="flex flex-wrap gap-1">
                   {granted.map((entry) => (
@@ -132,12 +132,12 @@ export function LocalBrowserSessionAccess({
                   ))}
                 </ul>
               ) : (
-                <p className="text-sm text-muted-foreground">None yet.</p>
+                <p className="text-sm text-ink-3">None yet.</p>
               )}
             </div>
             {missing.length > 0 ? (
               <div className="space-y-1">
-                <p className="text-xs font-medium text-muted-foreground">Missing</p>
+                <p className="text-xs font-medium text-ink-3">Missing</p>
                 <ul aria-label="Missing permissions" className="flex flex-wrap gap-1">
                   {missing.map((entry) => (
                     <li key={entry.id}>
@@ -156,7 +156,7 @@ export function LocalBrowserSessionAccess({
             ) : null}
             {access.pending.length > 0 ? (
               <div className="space-y-1">
-                <p className="text-xs font-medium text-muted-foreground">Agents are waiting for</p>
+                <p className="text-xs font-medium text-ink-3">Agents are waiting for</p>
                 <ul aria-label="Pending permission requests" className="space-y-1">
                   {access.pending.map((request) => {
                     const when = new Date(request.at);
@@ -164,9 +164,9 @@ export function LocalBrowserSessionAccess({
                     return (
                       <li
                         key={`${request.permission}-${request.at}`}
-                        className="text-sm text-muted-foreground"
+                        className="text-sm text-ink-3"
                       >
-                        <span className="font-medium text-foreground">
+                        <span className="font-medium text-ink">
                           {labelOf.get(request.permission) ?? request.permission}
                         </span>
                         {request.reason ? ` · ${request.reason}` : ""}
@@ -191,7 +191,7 @@ export function LocalBrowserSessionAccess({
         <div className="flex flex-wrap items-center gap-2">
           <Button
             size="sm"
-            variant="outline"
+            variant="secondary"
             disabled={openPermissions.isPending}
             onClick={() => openPermissions.mutate()}
           >
@@ -199,12 +199,12 @@ export function LocalBrowserSessionAccess({
           </Button>
         </div>
         {openPermissions.isSuccess ? (
-          <p role="status" className="text-sm text-muted-foreground">
+          <p role="status" className="text-sm text-ink-3">
             The permission page is open in {session.label}. Allow what agents need there.
           </p>
         ) : null}
         {openPermissions.isError ? (
-          <p role="alert" className="text-sm text-destructive">
+          <p role="alert" className="text-sm text-bad">
             {failureText(openPermissions.error)}
           </p>
         ) : null}

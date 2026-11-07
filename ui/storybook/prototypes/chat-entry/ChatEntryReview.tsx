@@ -63,18 +63,18 @@ export function ChatEntryLanding() {
   const suggestions = ["agent-cto", "agent-codex", "chat-design"].flatMap((id) => agents.filter((a) => a.id === id));
   return <div className="mx-auto flex w-full max-w-xl flex-col gap-6 px-6 py-16">
     <div className="flex flex-col gap-3">
-      <MessageSquare className="size-6 text-muted-foreground" />
+      <MessageSquare className="size-6 text-ink-3" />
       <h1 className="text-xl font-semibold">Who would you like to talk to?</h1>
-      <p className="text-sm text-muted-foreground">Think through an idea, ask a question, or plan the next step with someone on your team.</p>
+      <p className="text-sm text-ink-3">Think through an idea, ask a question, or plan the next step with someone on your team.</p>
     </div>
     <div className="flex flex-col gap-1">
       {suggestions.map((agent) => <Button key={agent.id} variant="ghost" className="h-auto justify-start gap-3 px-3 py-3" onClick={() => choose(agent)}>
         <AgentIcon icon={agent.icon} className="size-5" />
-        <span className="flex flex-1 flex-col items-start gap-1"><span>{agent.name}</span><span className="text-xs font-normal text-muted-foreground">{agent.title}</span></span>
-        <ArrowRight className="size-4 text-muted-foreground" />
+        <span className="flex flex-1 flex-col items-start gap-1"><span>{agent.name}</span><span className="text-xs font-normal text-ink-3">{agent.title}</span></span>
+        <ArrowRight className="size-4 text-ink-3" />
       </Button>)}
     </div>
-    <Button variant="outline" className="self-start" onClick={openPicker}><Search className="size-4" />Browse all {agents.length} agents</Button>
-    <p className="text-xs text-muted-foreground">Your conversations will appear in Chats. Star the people you talk to most.</p>
+    <Button variant="secondary" className="self-start" onClick={openPicker}><Search className="size-4" />Browse all {agents.length} agents</Button>
+    <p className="text-xs text-ink-3">Your conversations will appear in Chats. Star the people you talk to most.</p>
   </div>;
 }

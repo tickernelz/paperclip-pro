@@ -47,7 +47,7 @@ const meta: Meta<typeof AgentSkillRow> = {
   parameters: { layout: "padded" },
   decorators: [
     (Story) => (
-      <div className="max-w-2xl overflow-hidden rounded-lg border border-border">
+      <div className="max-w-2xl overflow-hidden rounded-lg border border-line">
         <Story />
       </div>
     ),

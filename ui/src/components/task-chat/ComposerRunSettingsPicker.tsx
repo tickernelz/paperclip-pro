@@ -371,17 +371,17 @@ export function ComposerRunSettingsPicker({
           type="button"
           aria-label="Choose assignee"
           onClick={() => setView("agents")}
-          className="flex min-w-0 flex-1 items-center gap-2 rounded-md px-1 py-1 text-left hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="flex min-w-0 flex-1 items-center gap-2 rounded-md px-1 py-1 text-left hover:bg-bg-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
           data-testid="composer-run-settings-assignee-row"
         >
           {renderAssigneeIdentity?.(assigneeValue, assigneeLabel, "option")}
           <span className="min-w-0 flex-1">
             <span className="block truncate text-sm font-medium">{assigneeLabel}</span>
-            <span className="block truncate text-xs text-muted-foreground">
+            <span className="block truncate text-xs text-ink-3">
               {pendingAgentId ? (harnessById.get(pendingAgentId) ?? "Agent") : "Person"}
             </span>
           </span>
-          <ChevronDown className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+          <ChevronDown className="size-4 shrink-0 text-ink-3" aria-hidden />
         </button>
         <button
           type="button"
@@ -389,7 +389,7 @@ export function ComposerRunSettingsPicker({
           title="Reset to agent default"
           disabled={!hasOverride || pending}
           onClick={resetOverrides}
-          className="grid size-8 shrink-0 place-items-center rounded-md text-muted-foreground hover:bg-accent disabled:opacity-40"
+          className="grid size-8 shrink-0 place-items-center rounded-md text-ink-3 hover:bg-bg-3 disabled:opacity-40"
           data-testid="composer-run-settings-reset"
         >
           <RotateCcw className="size-4" aria-hidden />
@@ -400,11 +400,11 @@ export function ComposerRunSettingsPicker({
           type="button"
           aria-label="Choose exact model"
           onClick={() => setView("model")}
-          className="flex w-full items-center gap-2 rounded-md px-1 py-1 text-left hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="flex w-full items-center gap-2 rounded-md px-1 py-1 text-left hover:bg-bg-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
           data-testid="composer-run-settings-model-row"
         >
           <span className="min-w-0 flex-1">
-            <span className="block text-xs text-muted-foreground">{modelField.label}</span>
+            <span className="block text-xs text-ink-3">{modelField.label}</span>
             {modelField.effective ? (
               <ModelValueLabel
                 display={describeModelValue(modelField.effective, modelField.options)}
@@ -420,7 +420,7 @@ export function ComposerRunSettingsPicker({
               </span>
             )}
           </span>
-          <ChevronDown className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+          <ChevronDown className="size-4 shrink-0 text-ink-3" aria-hidden />
         </button>
       ) : null}
       {choiceFields.map((field) => {
@@ -438,7 +438,7 @@ export function ComposerRunSettingsPicker({
         return (
           <div key={field.key} className="px-1">
             <div className="flex items-baseline justify-between gap-2">
-              <span className="text-xs text-muted-foreground">{field.label}</span>
+              <span className="text-xs text-ink-3">{field.label}</span>
               <span
                 className="min-w-0 truncate text-sm font-medium"
                 data-testid={`composer-run-settings-value-${field.key}`}
@@ -461,7 +461,7 @@ export function ComposerRunSettingsPicker({
               onPointerUp={commit}
               onKeyUp={commit}
               onBlur={commit}
-              className="mt-2 w-full accent-primary"
+              className="mt-2 w-full accent-accent"
               data-testid={`composer-run-settings-range-${field.key}`}
             />
           </div>
@@ -471,7 +471,7 @@ export function ComposerRunSettingsPicker({
       hasOverrideTarget &&
       !(draft && pendingAgentId && previewQuery.isFetched) ? (
         <p
-          className="px-1 text-xs text-muted-foreground"
+          className="px-1 text-xs text-ink-3"
           data-testid="composer-run-settings-empty"
         >
           {draft && !pendingAgentId
@@ -489,7 +489,7 @@ export function ComposerRunSettingsPicker({
           type="button"
           aria-label="Back to run settings"
           onClick={() => setView("settings")}
-          className="grid size-7 shrink-0 place-items-center rounded-md hover:bg-accent"
+          className="grid size-7 shrink-0 place-items-center rounded-md hover:bg-bg-3"
         >
           <ArrowLeft className="size-4" aria-hidden />
         </button>
@@ -497,7 +497,7 @@ export function ComposerRunSettingsPicker({
       </div>
       <div className="relative mt-1 shrink-0">
         <Search
-          className="pointer-events-none absolute left-2.5 top-2.5 size-4 text-muted-foreground"
+          className="pointer-events-none absolute left-2.5 top-2.5 size-4 text-ink-3"
           aria-hidden
         />
         <input
@@ -506,7 +506,7 @@ export function ComposerRunSettingsPicker({
           placeholder="Search assignees…"
           value={assigneeSearch}
           onChange={(event) => setAssigneeSearch(event.target.value)}
-          className="h-9 w-full rounded-md border border-input bg-transparent pl-8 pr-2 text-sm outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          className="h-9 w-full rounded-md border border-line-strong bg-transparent pl-8 pr-2 text-sm outline-none focus-visible:ring-1 focus-visible:ring-focus"
           data-testid="composer-run-settings-assignee-search"
         />
       </div>
@@ -525,12 +525,12 @@ export function ComposerRunSettingsPicker({
               role="option"
               aria-selected={option.id === assigneeValue}
               onClick={() => chooseAssignee(option.id)}
-              className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left hover:bg-accent"
+              className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left hover:bg-bg-3"
             >
               {renderAssigneeIdentity?.(option.id, option.label, "option")}
               <span className="min-w-0 flex-1 truncate text-sm">{option.label}</span>
               {agentId && harnessById.get(agentId) ? (
-                <span className="shrink-0 truncate text-xs text-muted-foreground">
+                <span className="shrink-0 truncate text-xs text-ink-3">
                   {harnessById.get(agentId)}
                 </span>
               ) : null}
@@ -541,7 +541,7 @@ export function ComposerRunSettingsPicker({
           );
         })}
         {filteredAssignees.length === 0 ? (
-          <p className="px-2 py-2 text-xs text-muted-foreground">No matches.</p>
+          <p className="px-2 py-2 text-xs text-ink-3">No matches.</p>
         ) : null}
       </div>
     </div>
@@ -554,7 +554,7 @@ export function ComposerRunSettingsPicker({
           type="button"
           aria-label="Back to run settings"
           onClick={() => setView("settings")}
-          className="grid size-7 shrink-0 place-items-center rounded-md hover:bg-accent"
+          className="grid size-7 shrink-0 place-items-center rounded-md hover:bg-bg-3"
         >
           <ArrowLeft className="size-4" aria-hidden />
         </button>
@@ -564,7 +564,7 @@ export function ComposerRunSettingsPicker({
       </div>
       <div className="relative mt-1 shrink-0">
         <Search
-          className="pointer-events-none absolute left-2.5 top-2.5 size-4 text-muted-foreground"
+          className="pointer-events-none absolute left-2.5 top-2.5 size-4 text-ink-3"
           aria-hidden
         />
         <input
@@ -580,7 +580,7 @@ export function ComposerRunSettingsPicker({
             event.preventDefault();
             chooseModel(modelQuery);
           }}
-          className="h-9 w-full rounded-md border border-input bg-transparent pl-8 pr-2 text-sm outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          className="h-9 w-full rounded-md border border-line-strong bg-transparent pl-8 pr-2 text-sm outline-none focus-visible:ring-1 focus-visible:ring-focus"
           data-testid="composer-run-settings-model-search"
         />
       </div>
@@ -596,14 +596,14 @@ export function ComposerRunSettingsPicker({
           aria-selected={!modelField?.override}
           disabled={pending}
           onClick={() => chooseModel(null)}
-          className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm hover:bg-accent disabled:opacity-50"
+          className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-sm hover:bg-bg-3 disabled:opacity-50"
           data-testid="composer-run-settings-model-default"
         >
           <span className="min-w-0 flex-1">
             <span className="block truncate">{AGENT_DEFAULT_LABEL}</span>
             {agentDefaultModel ? (
               <span
-                className="block truncate text-xs text-muted-foreground"
+                className="block truncate text-xs text-ink-3"
                 title={agentDefaultModel.id}
                 data-testid="composer-run-settings-model-default-value"
               >
@@ -629,7 +629,7 @@ export function ComposerRunSettingsPicker({
                 aria-selected={modelField?.override === option.value}
                 disabled={pending}
                 onClick={() => chooseModel(option.value)}
-                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-accent disabled:opacity-50"
+                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-bg-3 disabled:opacity-50"
                 data-testid={`composer-run-settings-model-option-${option.value}`}
               >
                 <ModelOptionText option={option} />
@@ -641,7 +641,7 @@ export function ComposerRunSettingsPicker({
           </div>
         ))}
         {filteredModels.length === 0 && !manualModelAvailable ? (
-          <p className="px-2 py-2 text-xs text-muted-foreground">No catalog match.</p>
+          <p className="px-2 py-2 text-xs text-ink-3">No catalog match.</p>
         ) : null}
       </div>
       {manualModelAvailable ? (
@@ -649,7 +649,7 @@ export function ComposerRunSettingsPicker({
           type="button"
           disabled={pending}
           onClick={() => chooseModel(modelQuery)}
-          className="mt-2 flex shrink-0 items-center gap-2 rounded-md border-t border-border/60 px-2 py-2 text-left text-sm hover:bg-accent disabled:opacity-50"
+          className="mt-2 flex shrink-0 items-center gap-2 rounded-md border-t border-line/60 px-2 py-2 text-left text-sm hover:bg-bg-3 disabled:opacity-50"
           data-testid="composer-run-settings-model-custom"
         >
           <Plus className="size-4 shrink-0" aria-hidden />
@@ -679,7 +679,7 @@ export function ComposerRunSettingsPicker({
           type="button"
           disabled={disabled}
           aria-label="Select assignee, model and thinking"
-          className="flex h-8 min-w-0 max-w-80 shrink items-center gap-1.5 rounded-md px-2.5 text-xs font-medium transition-colors hover:bg-accent disabled:opacity-50"
+          className="flex h-8 min-w-0 max-w-80 shrink items-center gap-1.5 rounded-md px-2.5 text-xs font-medium transition-colors hover:bg-bg-3 disabled:opacity-50"
           data-testid="task-chat-composer-assignee"
           data-slot="model-override-trigger"
           data-has-override={hasOverride ? "true" : "false"}
@@ -691,12 +691,12 @@ export function ComposerRunSettingsPicker({
           >
             {assigneeLabel}
           </span>
-          <span className="shrink-0 text-muted-foreground" aria-hidden>
+          <span className="shrink-0 text-ink-3" aria-hidden>
             ·
           </span>
           <span
             className={cn(
-              "min-w-0 truncate text-muted-foreground",
+              "min-w-0 truncate text-ink-3",
               mobile && "sr-only",
             )}
             data-testid="task-chat-composer-run-summary"
@@ -706,7 +706,7 @@ export function ComposerRunSettingsPicker({
           {pending ? (
             <Loader2 className="size-3 shrink-0 animate-spin" aria-hidden />
           ) : (
-            <ChevronDown className="size-3 shrink-0 text-muted-foreground" aria-hidden />
+            <ChevronDown className="size-3 shrink-0 text-ink-3" aria-hidden />
           )}
         </button>
       </PopoverTrigger>
@@ -729,7 +729,7 @@ export function ComposerRunSettingsPicker({
           <div
             data-mobile-sheet-controls=""
             data-testid="composer-run-settings-footer"
-            className="shrink-0 border-t border-border/60"
+            className="shrink-0 border-t border-line/60"
           >
             {footerSlot}
           </div>
@@ -738,7 +738,7 @@ export function ComposerRunSettingsPicker({
           <div
             data-mobile-sheet-controls=""
             data-testid="composer-run-settings-footer"
-            className="shrink-0 border-t border-border/60"
+            className="shrink-0 border-t border-line/60"
           >
             <ModelOverrideSubtaskRows
               inheritToSubtasks={view0.inheritance.inheritToSubtasks}
@@ -763,7 +763,7 @@ export function ComposerRunSettingsPicker({
         ) : null}
         {error ? (
           <p
-            className="shrink-0 px-3 py-2 text-xs text-destructive"
+            className="shrink-0 px-3 py-2 text-xs text-bad"
             data-testid="composer-run-settings-error"
           >
             {error}

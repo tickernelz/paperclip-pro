@@ -89,15 +89,15 @@ export function IssueScheduledRetryCard({
               {badgeLabel}
             </Badge>
             {attempt !== null ? (
-              <span className="text-muted-foreground">Attempt {attempt}</span>
+              <span className="text-ink-3">Attempt {attempt}</span>
             ) : null}
             {reason ? (
-              <span className="text-muted-foreground">{reason}</span>
+              <span className="text-ink-3">{reason}</span>
             ) : null}
           </div>
-          <div className="mt-1 text-sm font-medium text-foreground">{title}</div>
+          <div className="mt-1 text-sm font-medium text-ink">{title}</div>
           {(absolute || scheduledRetry.retryOfRunId) ? (
-            <div className="mt-0.5 text-xs text-muted-foreground">
+            <div className="mt-0.5 text-xs text-ink-3">
               {absolute ? <span>{absolute}</span> : null}
               {absolute && scheduledRetry.retryOfRunId ? <span>{" · "}</span> : null}
               {scheduledRetry.retryOfRunId ? (
@@ -105,7 +105,7 @@ export function IssueScheduledRetryCard({
                   Replaces run{" "}
                   <Link
                     to={`/agents/${scheduledRetry.agentId}/runs/${scheduledRetry.retryOfRunId}`}
-                    className="font-mono text-foreground hover:underline"
+                    className="font-mono text-ink hover:underline"
                   >
                     {shortRunId(scheduledRetry.retryOfRunId)}
                   </Link>
@@ -114,7 +114,7 @@ export function IssueScheduledRetryCard({
             </div>
           ) : null}
           {scheduledRetry.error ? (
-            <div className="mt-1 text-xs text-muted-foreground">
+            <div className="mt-1 text-xs text-ink-3">
               Last attempt failed: {scheduledRetry.error}{/[.!?]$/.test(scheduledRetry.error.trim()) ? "" : "."} Paperclip will retry automatically.
             </div>
           ) : null}
@@ -131,7 +131,7 @@ export function IssueScheduledRetryCard({
         <div className="flex flex-col items-stretch gap-1 sm:items-end">
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             size="sm"
             className="shrink-0 shadow-none"
             onClick={() => retryNow.mutate()}
@@ -155,7 +155,7 @@ export function IssueScheduledRetryCard({
               </span>
             )}
           </Button>
-          <span className="text-right text-xs text-muted-foreground sm:max-w-(--sz-12rem)">
+          <span className="text-right text-xs text-ink-3 sm:max-w-(--sz-12rem)">
             {retryNow.isPending
               ? "Promoting scheduled retry"
               : isSuccessTransient
@@ -192,7 +192,7 @@ export function RetryErrorBand({ error, onRetry, className }: RetryErrorBandProp
       <AlertCircle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
       <div className="min-w-0 flex-1">
         <div className="font-medium">Couldn't retry now</div>
-        <div className="mt-0.5 text-muted-foreground">{error.message}</div>
+        <div className="mt-0.5 text-ink-3">{error.message}</div>
       </div>
       <button
         type="button"

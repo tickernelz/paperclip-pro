@@ -326,8 +326,8 @@ describe("Shared Costs surfaces", () => {
       await act(async () => root.render(<MemoryRouter><QueryClientProvider client={queryClient}><Costs {...props} initialTab="providers" /></QueryClientProvider></MemoryRouter>));
       await act(async () => { await vi.waitFor(() => expect(container.querySelectorAll('[aria-label^="Period spend:"]')).toHaveLength(2)); });
       const bar = (percent: number) => container.querySelector(`[aria-label="Period spend: ${percent}%"]`)!.parentElement!;
-      expect(bar(10).querySelector(".bg-destructive")).toBeNull();
-      expect(bar(70).querySelector(".bg-destructive")).not.toBeNull();
+      expect(bar(10).querySelector(".bg-bad")).toBeNull();
+      expect(bar(70).querySelector(".bg-bad")).not.toBeNull();
       expect(container.textContent).toContain("10% of company budget");
       expect(container.textContent).toContain("70% of company budget");
       await act(async () => [...container.querySelectorAll("button")].find(button => button.textContent === "All Time")!.click());
@@ -351,9 +351,9 @@ describe("Shared Costs surfaces", () => {
       await vi.waitFor(() => expect(container.textContent).toContain("Costs are unavailable for 2 usage entries in this period. Totals include known costs only."));
     });
     const notice = [...container.querySelectorAll('[role="status"]')].find(element => element.textContent?.includes("Costs are unavailable"))!;
-    expect(notice.classList.contains("text-muted-foreground")).toBe(true);
-    expect(notice.querySelector(".text-destructive")).toBeNull();
-    expect(notice.classList.contains("text-destructive")).toBe(false);
+    expect(notice.classList.contains("text-ink-3")).toBe(true);
+    expect(notice.querySelector(".text-bad")).toBeNull();
+    expect(notice.classList.contains("text-bad")).toBe(false);
     expect(notice.textContent).toContain("1 run is awaiting cost data.");
     expect(notice.previousElementSibling?.textContent).toContain("API spend");
     expect(container.textContent).toContain("Finance headline totals are USD only");

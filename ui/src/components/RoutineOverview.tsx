@@ -126,13 +126,13 @@ function OverviewFact({
   detail?: React.ReactNode;
 }) {
   return (
-    <div className="flex min-w-0 flex-col gap-1 rounded-lg border border-border p-3">
-      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+    <div className="flex min-w-0 flex-col gap-1 rounded-lg border border-line p-3">
+      <div className="flex items-center gap-1.5 text-xs text-ink-3">
         <Icon className="h-3.5 w-3.5" aria-hidden="true" />
         <span>{label}</span>
       </div>
-      <div className="min-w-0 text-sm font-medium text-foreground">{value}</div>
-      {detail ? <div className="min-w-0 text-xs text-muted-foreground">{detail}</div> : null}
+      <div className="min-w-0 text-sm font-medium text-ink">{value}</div>
+      {detail ? <div className="min-w-0 text-xs text-ink-3">{detail}</div> : null}
     </div>
   );
 }
@@ -191,24 +191,24 @@ export function RoutineOverview() {
         {currentAssignee ? (
           <Link
             to={`/agents/${currentAssignee.urlKey ?? currentAssignee.id}`}
-            className="flex w-fit items-center gap-2 rounded-md text-sm font-medium hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="flex w-fit items-center gap-2 rounded-md text-sm font-medium hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
           >
-            <UserRound className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+            <UserRound className="h-4 w-4 text-ink-3" aria-hidden="true" />
             {currentAssignee.name}
           </Link>
         ) : (
-          <p className="text-sm text-muted-foreground">No default agent. Automatic triggers remain paused.</p>
+          <p className="text-sm text-ink-3">No default agent. Automatic triggers remain paused.</p>
         )}
       </section>
 
       <section className="flex flex-col gap-2" aria-labelledby="routine-description-heading">
         <h2 id="routine-description-heading" className="text-sm font-semibold">Description</h2>
         {routine.description?.trim() ? (
-          <MarkdownBody className="text-sm text-foreground" linkIssueReferences>
+          <MarkdownBody className="text-sm text-ink" linkIssueReferences>
             {routine.description}
           </MarkdownBody>
         ) : (
-          <p className="text-sm text-muted-foreground">No description yet.</p>
+          <p className="text-sm text-ink-3">No description yet.</p>
         )}
       </section>
 
@@ -220,7 +220,7 @@ export function RoutineOverview() {
           </Button>
         </div>
         {recentRuns.length === 0 ? (
-          <p className="py-6 text-center text-sm text-muted-foreground">
+          <p className="py-6 text-center text-sm text-ink-3">
             No runs yet. Run the routine now or wait for its schedule.
           </p>
         ) : (
@@ -234,7 +234,7 @@ export function RoutineOverview() {
                 metadata={(
                   <span className="flex items-center gap-2">
                     <StatusBadge status={run.status} />
-                    <span className="font-mono text-xs text-muted-foreground">{formatRoutineTimestamp(run.triggeredAt)}</span>
+                    <span className="font-mono text-xs text-ink-3">{formatRoutineTimestamp(run.triggeredAt)}</span>
                   </span>
                 )}
               />
@@ -242,7 +242,7 @@ export function RoutineOverview() {
               <div key={run.id} className="flex min-w-0 items-center gap-2 rounded-lg px-2 py-2 text-sm">
                 <StatusBadge status={run.status} />
                 <span className="min-w-0 flex-1 truncate">{run.trigger?.label ?? "Routine run"}</span>
-                <span className="shrink-0 font-mono text-xs text-muted-foreground">{formatRoutineTimestamp(run.triggeredAt)}</span>
+                <span className="shrink-0 font-mono text-xs text-ink-3">{formatRoutineTimestamp(run.triggeredAt)}</span>
               </div>
             ))}
           </div>

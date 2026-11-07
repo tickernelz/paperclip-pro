@@ -363,7 +363,7 @@ for (const adapter of ["process", "paperclip_runner"] as const) {
       if (adapter === "paperclip_runner") {
         await expect(
           page.getByRole("button", { name: /^Run cancelled/ }),
-        ).toHaveClass(/text-muted-foreground/);
+        ).toHaveClass(/text-ink-3/);
       }
       await page.reload();
       await expect(

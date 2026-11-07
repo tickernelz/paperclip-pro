@@ -172,9 +172,9 @@ function StoryFrame({ title, subtitle, children }: { title: string; subtitle: st
           QA edge state
         </Badge>
         <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
-        <p className="text-sm text-muted-foreground">{subtitle}</p>
+        <p className="text-sm text-ink-3">{subtitle}</p>
       </header>
-      <Card className="shadow-none border-border">
+      <Card className="shadow-none border-line">
         <CardHeader>
           <CardTitle className="text-base font-semibold">Agent detail - Skills tab</CardTitle>
         </CardHeader>

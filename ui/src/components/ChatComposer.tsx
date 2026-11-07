@@ -62,7 +62,7 @@ export interface ChatComposerProps {
   tone?: "standard" | "ask" | "planning";
   /**
    * Surface treatment (PAP-128 A / PAP-131).
-   * - `"card"`: opaque `bg-card` box (default).
+   * - `"card"`: opaque `bg-bg-2` box (default).
    * - `"translucent"`: the task-comments glass recipe — translucent background,
    *   backdrop blur, and a soft upward shadow — so chat text reads through the
    *   box as it scrolls behind (mirrors `IssueChatThread.tsx` composer shell).
@@ -228,17 +228,17 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(fu
       data-tone={tone}
       data-surface={surface}
       className={cn(
-        "relative rounded-xl border px-3 pt-2.5 pb-2 transition-colors duration-150 focus-within:border-muted-foreground/40",
+        "relative rounded-xl border px-3 pt-2.5 pb-2 transition-colors duration-150 focus-within:border-ink-3/40",
         // Surface: opaque card vs the task glass recipe (IssueChatThread.tsx shell).
         surface === "translucent"
-          ? "border-border/70 bg-background/95 shadow-(--shadow-extract-4) backdrop-blur supports-[backdrop-filter]:bg-background/85 dark:shadow-(--shadow-extract-5)"
-          : "border-border bg-card",
+          ? "border-line/70 bg-bg/95 shadow-(--shadow-extract-4) backdrop-blur supports-[backdrop-filter]:bg-bg/85 dark:shadow-(--shadow-extract-5)"
+          : "border-line bg-bg-2",
         // No blue focus ring — neutral border darkening only.
         isAsk &&
           "border-sky-500/55 bg-sky-50/50 focus-within:border-sky-500/70 dark:border-sky-500/50 dark:bg-sky-500/[0.07]",
         isPlanning &&
           "border-amber-500/55 bg-amber-50/50 focus-within:border-amber-500/70 dark:border-amber-500/50 dark:bg-amber-500/[0.07]",
-        isDragOver && canAttach && "border-muted-foreground/50 bg-accent/20",
+        isDragOver && canAttach && "border-ink-3/50 bg-bg-3/20",
         disabled && "opacity-60",
         className,
       )}
@@ -250,7 +250,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(fu
       {isDragOver && canAttach ? (
         <div
           data-testid="chat-composer-drop-overlay"
-          className="pointer-events-none absolute inset-1.5 z-20 flex items-center justify-center rounded-lg border border-dashed border-muted-foreground/50 bg-background/80 text-xs text-muted-foreground backdrop-blur-(--blur-1px)"
+          className="pointer-events-none absolute inset-1.5 z-20 flex items-center justify-center rounded-lg border border-dashed border-ink-3/50 bg-bg/80 text-xs text-ink-3 backdrop-blur-(--blur-1px)"
         >
           <span className="inline-flex items-center gap-2">
             <Paperclip className="h-3.5 w-3.5" />
@@ -271,7 +271,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(fu
         rows={1}
         wrap={singleLine ? "off" : "soft"}
         className={cn(
-          "block min-h-(--sz-22px) w-full resize-none border-0 bg-transparent p-0 text-sm leading-6 text-foreground outline-none placeholder:text-muted-foreground focus:outline-none focus:ring-0",
+          "block min-h-(--sz-22px) w-full resize-none border-0 bg-transparent p-0 text-sm leading-6 text-ink outline-none placeholder:text-ink-3 focus:outline-none focus:ring-0",
           singleLine
             ? "max-h-(--sz-22px) overflow-x-auto whitespace-nowrap"
             : "max-h-(--sz-200px) overflow-y-auto",
@@ -282,7 +282,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(fu
       {attachments.length > 0 ? (
         <div
           data-testid="chat-composer-attachments"
-          className="mt-2 space-y-1 rounded-md border border-dashed border-border/80 bg-muted/20 p-1.5"
+          className="mt-2 space-y-1 rounded-md border border-dashed border-line/80 bg-bg-3/20 p-1.5"
         >
           {attachments.map((attachment) => {
             const sizeLabel = formatAttachmentSize(attachment.size);
@@ -300,8 +300,8 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(fu
                 className={cn(
                   "flex min-w-0 items-center gap-2 rounded-sm px-2 py-1 text-xs",
                   attachment.status === "error"
-                    ? "bg-destructive/10 text-destructive"
-                    : "bg-background/70 text-muted-foreground",
+                    ? "bg-bad/10 text-bad"
+                    : "bg-bg/70 text-ink-3",
                 )}
               >
                 {attachment.status === "uploading" ? (
@@ -311,7 +311,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(fu
                 ) : (
                   <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
                 )}
-                <span className="min-w-0 flex-1 truncate font-medium text-foreground">
+                <span className="min-w-0 flex-1 truncate font-medium text-ink">
                   {attachment.name}
                 </span>
                 {sizeLabel ? <span className="shrink-0">{sizeLabel}</span> : null}
@@ -323,7 +323,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(fu
       ) : null}
 
       {hint ? (
-        <div className="mt-2 inline-flex items-center rounded-full border border-border/70 bg-muted/30 px-2 py-0.5 text-(length:--text-micro) text-muted-foreground">
+        <div className="mt-2 inline-flex items-center rounded-full border border-line/70 bg-bg-3/30 px-2 py-0.5 text-(length:--text-micro) text-ink-3">
           {hint}
         </div>
       ) : null}
@@ -344,7 +344,7 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(fu
               disabled={disabled || attaching}
               aria-label="Attach files"
               title="Attach files"
-              className="grid h-7 w-7 shrink-0 place-items-center rounded-md text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+              className="grid h-7 w-7 shrink-0 place-items-center rounded-md text-ink-3 transition-colors duration-150 hover:bg-bg-3 hover:text-ink disabled:cursor-not-allowed disabled:opacity-50"
             >
               {attaching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Paperclip className="h-4 w-4" />}
             </button>
@@ -368,8 +368,8 @@ export const ChatComposer = forwardRef<ChatComposerHandle, ChatComposerProps>(fu
           className={cn(
             "grid h-7 w-7 shrink-0 place-items-center rounded-md transition-colors duration-150 disabled:cursor-not-allowed",
             canSend
-              ? "bg-foreground text-background hover:opacity-90"
-              : "bg-accent text-muted-foreground",
+              ? "bg-ink text-bg hover:opacity-90"
+              : "bg-bg-3 text-ink-3",
           )}
         >
           {submitting ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}

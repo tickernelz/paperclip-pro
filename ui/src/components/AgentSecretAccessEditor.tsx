@@ -269,13 +269,13 @@ export function AgentSecretAccessEditor({
           {summaries.map((summary) => (
             <div
               key={summary.secretId}
-              className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-md border border-border bg-muted/30 px-2.5 py-1.5 text-xs"
+              className="flex flex-wrap items-center gap-x-2 gap-y-1 rounded-md border border-line bg-bg-3/30 px-2.5 py-1.5 text-xs"
             >
-              <KeyRound className="size-3.5 shrink-0 text-muted-foreground" />
+              <KeyRound className="size-3.5 shrink-0 text-ink-3" />
               <span className="font-medium">{secretName(summary.secretId)}</span>
               {summary.envKeys.length > 0 ? <DeliveryBadge mode="env" /> : null}
               {summary.apiAliases.length > 0 ? <DeliveryBadge mode="api" /> : null}
-              <span className="min-w-0 truncate font-mono text-(length:--text-micro) text-muted-foreground">
+              <span className="min-w-0 truncate font-mono text-(length:--text-micro) text-ink-3">
                 {[
                   ...summary.envKeys.map((key) => `${ENV_CONFIG_PATH_PREFIX}${key}`),
                   ...summary.apiAliases.map((alias) => `${AGENT_ACCESS_CONFIG_PATH_PREFIX}${alias}`),
@@ -285,13 +285,13 @@ export function AgentSecretAccessEditor({
           ))}
         </div>
       ) : (
-        <p className="text-sm text-muted-foreground">No secrets are bound to this agent yet.</p>
+        <p className="text-sm text-ink-3">No secrets are bound to this agent yet.</p>
       )}
 
       {/* Pending binding proposals targeting this agent (PAP-14731). */}
       {bindingProposals.length > 0 && onApproveProposal && onRejectProposal ? (
         <div className="space-y-2">
-          <div className="text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">
+          <div className="text-(length:--text-micro) font-medium uppercase tracking-wide text-ink-3">
             Proposed access
           </div>
           {bindingProposals.map((proposal) => {
@@ -306,12 +306,12 @@ export function AgentSecretAccessEditor({
                   <div className="flex min-w-0 flex-wrap items-center gap-1.5">
                     <ProposalDeliveryBadge configPath={proposal.configPath} />
                     <code className="font-mono">{envKey || proposal.configPath}</code>
-                    <span className="text-muted-foreground">→</span>
-                    <KeyRound className="size-3 text-muted-foreground" />
+                    <span className="text-ink-3">→</span>
+                    <KeyRound className="size-3 text-ink-3" />
                     <span className="font-medium">{secret.name}</span>
                     {secret.pending ? <ProposedBadge /> : null}
                   </div>
-                  <p className="flex flex-wrap items-center gap-1 text-muted-foreground">
+                  <p className="flex flex-wrap items-center gap-1 text-ink-3">
                     <span>proposed by {proposal.proposedBy.name}</span>
                     <span aria-hidden="true">·</span>
                     <span className="truncate italic">“{proposal.justification}”</span>
@@ -332,7 +332,7 @@ export function AgentSecretAccessEditor({
 
       {/* Editable API-access grants (access.<ALIAS>). */}
       <div className="space-y-2">
-        <div className="text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">
+        <div className="text-(length:--text-micro) font-medium uppercase tracking-wide text-ink-3">
           API access (no env var)
         </div>
         {rows.length > 0 ? (
@@ -361,7 +361,7 @@ export function AgentSecretAccessEditor({
                         disabled={disabled}
                         className={cn(
                           "h-9 font-mono text-sm",
-                          (aliasInvalid || aliasDuplicate) && "border-destructive text-destructive",
+                          (aliasInvalid || aliasDuplicate) && "border-bad text-bad",
                         )}
                       />
                     </div>
@@ -441,7 +441,7 @@ export function AgentSecretAccessEditor({
                         </PopoverContent>
                       </Popover>
                       <select
-                        className="h-9 shrink-0 rounded-md border border-border bg-background px-2 text-xs outline-none disabled:cursor-not-allowed disabled:opacity-60"
+                        className="h-9 shrink-0 rounded-md border border-line bg-bg px-2 text-xs outline-none disabled:cursor-not-allowed disabled:opacity-60"
                         value={row.version === undefined ? "latest" : String(row.version)}
                         onChange={(event) => {
                           const raw = event.target.value;
@@ -471,17 +471,17 @@ export function AgentSecretAccessEditor({
                       onClick={() => removeRow(row.id)}
                       disabled={disabled}
                       aria-label="Remove API access"
-                      className="mt-1 inline-flex size-7 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+                      className="mt-1 inline-flex size-7 shrink-0 items-center justify-center rounded-md text-ink-3 transition-colors hover:bg-bg-3 hover:text-ink disabled:pointer-events-none disabled:opacity-50"
                     >
                       <Trash2 className="size-3.5" />
                     </button>
                   </div>
                   {aliasInvalid ? (
-                    <p className="pl-0.5 text-(length:--text-micro) text-destructive">
+                    <p className="pl-0.5 text-(length:--text-micro) text-bad">
                       Invalid alias — use letters, digits and _
                     </p>
                   ) : aliasDuplicate ? (
-                    <p className="pl-0.5 text-(length:--text-micro) text-destructive">Duplicate alias</p>
+                    <p className="pl-0.5 text-(length:--text-micro) text-bad">Duplicate alias</p>
                   ) : null}
                 </div>
               );
@@ -493,14 +493,14 @@ export function AgentSecretAccessEditor({
           type="button"
           onClick={addRow}
           disabled={disabled}
-          className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
+          className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-ink-3 transition-colors hover:bg-bg-3 hover:text-ink disabled:pointer-events-none disabled:opacity-50"
         >
           <Plus className="size-3.5" />
           Add API access
         </button>
       </div>
 
-      <p className="text-(length:--text-micro) text-muted-foreground/70">
+      <p className="text-(length:--text-micro) text-ink-3/70">
         {deliveryModeDescription("api")} The agent reads them by alias through <code>GET /agents/me/secrets</code>.
       </p>
     </div>

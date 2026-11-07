@@ -246,11 +246,11 @@ export function CompanyAccess() {
   }, [removingMember]);
 
   if (!selectedCompanyId) {
-    return <div className="text-sm text-muted-foreground">Select an organization to manage access.</div>;
+    return <div className="text-sm text-ink-3">Select an organization to manage access.</div>;
   }
 
   if (membersQuery.isLoading) {
-    return <div className="text-sm text-muted-foreground">Loading organization access…</div>;
+    return <div className="text-sm text-ink-3">Loading organization access…</div>;
   }
 
   if (membersQuery.error) {
@@ -260,7 +260,7 @@ export function CompanyAccess() {
         : membersQuery.error instanceof Error
           ? membersQuery.error.message
           : "Failed to load organization members.";
-    return <div className="text-sm text-destructive">{message}</div>;
+    return <div className="text-sm text-bad">{message}</div>;
   }
 
   const members = membersQuery.data?.members ?? [];
@@ -282,7 +282,7 @@ export function CompanyAccess() {
     <div className="max-w-6xl space-y-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <ShieldCheck className="h-5 w-5 text-muted-foreground" />
+          <ShieldCheck className="h-5 w-5 text-ink-3" />
           <h1 className="text-lg font-semibold">Organization Members</h1>
         </div>
         {cloudInviteUrl && (
@@ -318,7 +318,7 @@ export function CompanyAccess() {
             <div className="flex flex-wrap items-center justify-between gap-2">
               <div>
                 <h3 className="text-sm font-semibold">Pending human joins</h3>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-ink-3">
                   Review pending join requests before they become active organization members.
                 </p>
               </div>
@@ -360,7 +360,7 @@ export function CompanyAccess() {
         <div className="overflow-x-auto">
           <table className="w-full min-w-(--sz-44rem) text-left text-sm">
             <thead>
-              <tr className="border-b border-border text-muted-foreground">
+              <tr className="border-b border-line text-ink-3">
                 <th className="px-3 py-2 font-medium">Name</th>
                 <th className="px-3 py-2 font-medium">Email</th>
                 <th className="px-3 py-2 font-medium">Role</th>
@@ -371,7 +371,7 @@ export function CompanyAccess() {
             <tbody>
               {members.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-3 py-8 text-muted-foreground">
+                  <td colSpan={5} className="px-3 py-8 text-ink-3">
                     No user memberships found for this organization yet.
                   </td>
                 </tr>
@@ -380,7 +380,7 @@ export function CompanyAccess() {
                 const canArchive = member.removal?.canArchive ?? true;
                 const displayName = memberDisplayName(member);
                 return (
-                  <tr key={member.id} className="border-b border-border last:border-b-0">
+                  <tr key={member.id} className="border-b border-line last:border-b-0">
                     <td className="px-3 py-3">
                       <div className="flex min-w-0 items-center gap-2.5">
                         <Avatar size="sm">
@@ -390,7 +390,7 @@ export function CompanyAccess() {
                         <span className="truncate font-medium">{displayName}</span>
                       </div>
                     </td>
-                    <td className="px-3 py-3 text-muted-foreground">
+                    <td className="px-3 py-3 text-ink-3">
                       {member.user?.email || member.principalId}
                     </td>
                     <td className="px-3 py-3">
@@ -405,7 +405,7 @@ export function CompanyAccess() {
                     </td>
                     <td className="px-3 py-3 text-right">
                       <div className="flex justify-end gap-2">
-                        <Button size="sm" variant="outline" onClick={() => setEditingMemberId(member.id)}>
+                        <Button size="sm" variant="secondary" onClick={() => setEditingMemberId(member.id)}>
                           Edit
                         </Button>
                         <span
@@ -414,7 +414,7 @@ export function CompanyAccess() {
                         >
                           <Button
                             size="sm"
-                            variant="outline"
+                            variant="secondary"
                             onClick={() => setRemovingMemberId(member.id)}
                             disabled={!canArchive}
                             title={!canArchive ? removalReason ?? undefined : undefined}
@@ -447,7 +447,7 @@ export function CompanyAccess() {
                 <label className="space-y-2 text-sm">
                   <span className="font-medium">Organization role</span>
                   <select
-                    className="w-full rounded-md border border-border bg-background px-3 py-2"
+                    className="w-full rounded-md border border-line bg-bg px-3 py-2"
                     value={draftRole ?? ""}
                     onChange={(event) =>
                       setDraftRole((event.target.value || null) as CompanyMember["membershipRole"])
@@ -464,7 +464,7 @@ export function CompanyAccess() {
                 <label className="space-y-2 text-sm">
                   <span className="font-medium">Membership status</span>
                   <select
-                    className="w-full rounded-md border border-border bg-background px-3 py-2"
+                    className="w-full rounded-md border border-line bg-bg px-3 py-2"
                     value={draftStatus}
                     onChange={(event) =>
                       setDraftStatus(event.target.value as EditableMemberStatus)
@@ -479,7 +479,7 @@ export function CompanyAccess() {
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setEditingMemberId(null)}>
+            <Button variant="secondary" onClick={() => setEditingMemberId(null)}>
               Cancel
             </Button>
             <Button
@@ -509,10 +509,10 @@ export function CompanyAccess() {
           </DialogHeader>
           {removingMember && (
             <div className="space-y-5">
-              <div className="rounded-lg border border-border px-3 py-3">
+              <div className="rounded-lg border border-line px-3 py-3">
                 <div className="text-sm font-medium">{memberDisplayName(removingMember)}</div>
-                <div className="text-sm text-muted-foreground">{removingMember.user?.email || removingMember.principalId}</div>
-                <div className="mt-2 text-sm text-muted-foreground">
+                <div className="text-sm text-ink-3">{removingMember.user?.email || removingMember.principalId}</div>
+                <div className="mt-2 text-sm text-ink-3">
                   {assignedIssuesQuery.isLoading
                     ? "Checking assigned tasks..."
                     : `${assignedIssues.length} open assigned task${assignedIssues.length === 1 ? "" : "s"}`}
@@ -523,7 +523,7 @@ export function CompanyAccess() {
                 <div className="space-y-2">
                   <div className="text-sm font-medium">Task reassignment</div>
                   <select
-                    className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm"
+                    className="w-full rounded-md border border-line bg-bg px-3 py-2 text-sm"
                     value={reassignmentTarget}
                     onChange={(event) => setReassignmentTarget(event.target.value)}
                   >
@@ -547,15 +547,15 @@ export function CompanyAccess() {
                       </optgroup>
                     ) : null}
                   </select>
-                  <div className="max-h-36 overflow-auto rounded-lg border border-border">
+                  <div className="max-h-36 overflow-auto rounded-lg border border-line">
                     {assignedIssues.slice(0, 6).map((issue) => (
-                      <div key={issue.id} className="border-b border-border px-3 py-2 text-sm last:border-b-0">
+                      <div key={issue.id} className="border-b border-line px-3 py-2 text-sm last:border-b-0">
                         <div className="font-medium">{issue.identifier ?? issue.id.slice(0, 8)}</div>
-                        <div className="truncate text-muted-foreground">{issue.title}</div>
+                        <div className="truncate text-ink-3">{issue.title}</div>
                       </div>
                     ))}
                     {assignedIssues.length > 6 ? (
-                      <div className="px-3 py-2 text-sm text-muted-foreground">
+                      <div className="px-3 py-2 text-sm text-ink-3">
                         {assignedIssues.length - 6} more task{assignedIssues.length - 6 === 1 ? "" : "s"}
                       </div>
                     ) : null}
@@ -565,11 +565,11 @@ export function CompanyAccess() {
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRemovingMemberId(null)}>
+            <Button variant="secondary" onClick={() => setRemovingMemberId(null)}>
               Cancel
             </Button>
             <Button
-              variant="destructive"
+              variant="danger"
               onClick={() => {
                 if (!removingMember) return;
                 archiveMemberMutation.mutate({
@@ -617,36 +617,36 @@ export function CompanyAccessLegacyRoute() {
   }
 
   if (isLoading) {
-    return <div className="text-sm text-muted-foreground">Checking for advanced permission extensions...</div>;
+    return <div className="text-sm text-ink-3">Checking for advanced permission extensions...</div>;
   }
 
   return (
     <div className="max-w-2xl space-y-5">
       <div className="space-y-3">
         <div className="flex items-center gap-2">
-          <Shield className="h-5 w-5 text-muted-foreground" />
+          <Shield className="h-5 w-5 text-ink-3" />
           <h1 className="text-lg font-semibold">Advanced Permissions</h1>
         </div>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           Advanced access, scoped assignment, and explicit grant controls are provided by installed organization settings extensions.
         </p>
       </div>
 
-      <div className="space-y-4 rounded-xl border border-border px-5 py-5">
+      <div className="space-y-4 rounded-xl border border-line px-5 py-5">
         <div className="space-y-2">
           <h2 className="text-sm font-semibold">Advanced permissions unavailable</h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-ink-3">
             Core Paperclip keeps enforcing organization boundaries and any existing restrictive policy data, but editing advanced permissions requires an installed extension.
           </p>
           {errorMessage ? (
-            <p className="text-sm text-destructive">Plugin extensions unavailable: {errorMessage}</p>
+            <p className="text-sm text-bad">Plugin extensions unavailable: {errorMessage}</p>
           ) : null}
         </div>
         <div className="flex flex-wrap gap-2">
           <Button asChild>
             <Link to="/company/settings/members">Open Members</Link>
           </Button>
-          <Button asChild variant="outline">
+          <Button asChild variant="secondary">
             <Link to="/company/settings/members?tab=invites">Open Invites</Link>
           </Button>
         </div>
@@ -706,14 +706,14 @@ function PendingJoinRequestCard({
         <div className="space-y-2">
           <div>
             <div className="font-medium">{title}</div>
-            <div className="text-sm text-muted-foreground">{subtitle}</div>
+            <div className="text-sm text-ink-3">{subtitle}</div>
           </div>
-          <div className="text-sm text-muted-foreground">{context}</div>
-          <div className="text-sm text-muted-foreground">{detail}</div>
-          {detailSecondary ? <div className="text-sm text-muted-foreground">{detailSecondary}</div> : null}
+          <div className="text-sm text-ink-3">{context}</div>
+          <div className="text-sm text-ink-3">{detail}</div>
+          {detailSecondary ? <div className="text-sm text-ink-3">{detailSecondary}</div> : null}
         </div>
         <div className="flex gap-2">
-          <Button type="button" variant="outline" onClick={onReject} disabled={disabled}>
+          <Button type="button" variant="secondary" onClick={onReject} disabled={disabled}>
             {rejectLabel}
           </Button>
           <Button type="button" onClick={onApprove} disabled={disabled}>

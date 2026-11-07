@@ -210,7 +210,7 @@ export function SearchableSelect<
       <PopoverTrigger asChild>
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           disabled={disabled}
           onPointerDown={() => {
             pointerFocusRef.current = true;
@@ -235,7 +235,7 @@ export function SearchableSelect<
           role="combobox"
           className={cn("w-full justify-between overflow-hidden", className, triggerClassName)}
         >
-          <span className={cn("min-w-0 flex-1 truncate text-left", !selectedOption && "text-muted-foreground")}>
+          <span className={cn("min-w-0 flex-1 truncate text-left", !selectedOption && "text-ink-3")}>
             {renderValue ? renderValue(selectedOption) : selectedOption?.label ?? placeholder}
           </span>
           <ChevronsUpDown className="ml-2 size-4 opacity-50" />
@@ -272,15 +272,15 @@ export function SearchableSelect<
         <div
           data-mobile-entity-picker-header=""
           data-mobile-sheet-header=""
-          className="hidden items-center justify-between gap-2 border-b border-border px-4 py-3"
+          className="hidden items-center justify-between gap-2 border-b border-line px-4 py-3"
         >
-          <span className="shrink-0 text-base font-semibold text-foreground">{mobileTitle ?? placeholder}</span>
-          <span data-mobile-sheet-value="" className="min-w-0 flex-1 truncate text-right text-xs text-muted-foreground">
+          <span className="shrink-0 text-base font-semibold text-ink">{mobileTitle ?? placeholder}</span>
+          <span data-mobile-sheet-value="" className="min-w-0 flex-1 truncate text-right text-xs text-ink-3">
             {selectedOption?.label ?? null}
           </span>
           <button
             type="button"
-            className="inline-flex size-9 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-foreground"
+            className="inline-flex size-9 shrink-0 items-center justify-center rounded-md text-ink-3 hover:bg-bg-3 hover:text-ink"
             aria-label="Close selector"
             data-mobile-sheet-close=""
             onClick={() => closePopover({ suppressTriggerFocus: true })}
@@ -303,12 +303,12 @@ export function SearchableSelect<
             }}
           >
             {loading ? (
-              <div className="px-3 py-6 text-center text-sm text-muted-foreground">{loadingMessage}</div>
+              <div className="px-3 py-6 text-center text-sm text-ink-3">{loadingMessage}</div>
             ) : (
               <>
                 {!hasOptions && !createItem ? <CommandEmpty>{emptyMessage}</CommandEmpty> : null}
                 {!hasOptions && createItem ? (
-                  <div className="px-3 py-3 text-center text-xs text-muted-foreground">{emptyMessage}</div>
+                  <div className="px-3 py-3 text-center text-xs text-ink-3">{emptyMessage}</div>
                 ) : null}
                 {filteredGroups.map((group) => (
                   <CommandGroup key={group.id} heading={group.label}>
@@ -331,7 +331,7 @@ export function SearchableSelect<
                   </CommandGroup>
                 ))}
                 {createItem ? (
-                  <CommandGroup className="border-t border-border">
+                  <CommandGroup className="border-t border-line">
                     <CommandItem
                       value="__searchable_select_create__"
                       onSelect={() => {

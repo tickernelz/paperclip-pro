@@ -60,31 +60,31 @@ function ScheduledRetrySurfaceStories() {
   return (
     <div className="space-y-8 p-6">
       <section className="space-y-2">
-        <div className="text-xs uppercase tracking-wide text-muted-foreground">
+        <div className="text-xs uppercase tracking-wide text-ink-3">
           IssueScheduledRetryCard - transient failure, in 15m
         </div>
         <IssueScheduledRetryCard issueId={baseIssue.id} scheduledRetry={transientRetry} />
       </section>
 
       <section className="space-y-2">
-        <div className="text-xs uppercase tracking-wide text-muted-foreground">
+        <div className="text-xs uppercase tracking-wide text-ink-3">
           IssueScheduledRetryCard - max-turn continuation, in 2d
         </div>
         <IssueScheduledRetryCard issueId={baseIssue.id} scheduledRetry={continuationRetry} />
       </section>
 
       <section className="space-y-2">
-        <div className="text-xs uppercase tracking-wide text-muted-foreground">
+        <div className="text-xs uppercase tracking-wide text-ink-3">
           IssueScheduledRetryCard - due now (overdue)
         </div>
         <IssueScheduledRetryCard issueId={baseIssue.id} scheduledRetry={dueNowRetry} />
       </section>
 
       <section className="space-y-2">
-        <div className="text-xs uppercase tracking-wide text-muted-foreground">
+        <div className="text-xs uppercase tracking-wide text-ink-3">
           IssueScheduledRetryCard - returns null with no live scheduled retry
         </div>
-        <div className="rounded-lg border border-dashed border-border px-3 py-2 text-xs text-muted-foreground">
+        <div className="rounded-lg border border-dashed border-line px-3 py-2 text-xs text-ink-3">
           (intentionally renders nothing for issues without a live scheduled retry)
         </div>
         <IssueScheduledRetryCard issueId={baseIssue.id} scheduledRetry={null} />
@@ -92,19 +92,19 @@ function ScheduledRetrySurfaceStories() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <section className="space-y-2">
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">
+          <div className="text-xs uppercase tracking-wide text-ink-3">
             IssueProperties Scheduled retry row - hidden when no live retry
           </div>
-          <div className="rounded-lg border border-border bg-background/70 p-4">
+          <div className="rounded-lg border border-line bg-bg/70 p-4">
             <IssueProperties issue={baseIssue} onUpdate={() => undefined} inline />
           </div>
         </section>
 
         <section className="space-y-2">
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">
+          <div className="text-xs uppercase tracking-wide text-ink-3">
             IssueProperties Scheduled retry row - transient failure, in 15m
           </div>
-          <div className="rounded-lg border border-border bg-background/70 p-4">
+          <div className="rounded-lg border border-line bg-bg/70 p-4">
             <IssueProperties
               issue={issueWithRetry(transientRetry)}
               onUpdate={() => undefined}
@@ -114,10 +114,10 @@ function ScheduledRetrySurfaceStories() {
         </section>
 
         <section className="space-y-2">
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">
+          <div className="text-xs uppercase tracking-wide text-ink-3">
             IssueProperties Scheduled retry row - continuation, in 2d
           </div>
-          <div className="rounded-lg border border-border bg-background/70 p-4">
+          <div className="rounded-lg border border-line bg-bg/70 p-4">
             <IssueProperties
               issue={issueWithRetry(continuationRetry)}
               onUpdate={() => undefined}
@@ -127,10 +127,10 @@ function ScheduledRetrySurfaceStories() {
         </section>
 
         <section className="space-y-2">
-          <div className="text-xs uppercase tracking-wide text-muted-foreground">
+          <div className="text-xs uppercase tracking-wide text-ink-3">
             IssueProperties Scheduled retry row - due now
           </div>
-          <div className="rounded-lg border border-border bg-background/70 p-4">
+          <div className="rounded-lg border border-line bg-bg/70 p-4">
             <IssueProperties
               issue={issueWithRetry(dueNowRetry)}
               onUpdate={() => undefined}

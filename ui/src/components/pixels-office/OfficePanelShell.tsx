@@ -20,13 +20,13 @@ export function OfficePanelShell({
   return (
     <aside
       aria-label={title}
-      className="flex h-full w-full min-w-0 flex-col overflow-hidden rounded-lg border border-border bg-card"
+      className="flex h-full w-full min-w-0 flex-col overflow-hidden rounded-lg border border-line bg-bg-2"
     >
-      <header className="flex items-start gap-2 border-b border-border px-4 py-3">
+      <header className="flex items-start gap-2 border-b border-line px-4 py-3">
         <div className="min-w-0 flex-1">
-          <h2 className="truncate text-sm font-semibold text-foreground">{title}</h2>
+          <h2 className="truncate text-sm font-semibold text-ink">{title}</h2>
           {subtitle ? (
-            <p className="truncate text-xs text-muted-foreground">{subtitle}</p>
+            <p className="truncate text-xs text-ink-3">{subtitle}</p>
           ) : null}
         </div>
         {headerExtra}

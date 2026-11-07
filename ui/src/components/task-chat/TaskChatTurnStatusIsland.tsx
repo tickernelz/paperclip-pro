@@ -111,7 +111,7 @@ function checklistIcon(step: TaskChatProtocolStep) {
   if (step.status === "blocked" || step.status === "failed") {
     return <CircleAlert className="mt-0.5 size-4 shrink-0 text-(--status-task-icon-blocked)" aria-hidden />;
   }
-  return <Circle className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden />;
+  return <Circle className="mt-0.5 size-4 shrink-0 text-ink-3" aria-hidden />;
 }
 
 function fileCountLabel(files: number): string {
@@ -136,10 +136,10 @@ function IslandBody({ model }: { model: TaskChatTurnStatusModel }) {
           </span>
         </span>
       ) : null}
-      {plan && workspace ? <span className="text-muted-foreground" aria-hidden>·</span> : null}
+      {plan && workspace ? <span className="text-ink-3" aria-hidden>·</span> : null}
       {workspace ? (
         <span className="flex min-w-0 items-center gap-2">
-          <span className="min-w-0 truncate text-sm text-muted-foreground">
+          <span className="min-w-0 truncate text-sm text-ink-3">
             {fileCountLabel(workspace.files)}
           </span>
           {workspace.additions != null ? (
@@ -173,7 +173,7 @@ function islandLabel(model: TaskChatTurnStatusModel): string {
   return parts.join(", ");
 }
 
-const ISLAND_CLASS_NAME = "mx-auto flex min-h-10 max-w-(--sz-turn-status-island) items-center overflow-hidden rounded-full border border-border bg-popover/95 px-4 py-2 text-foreground shadow-sm backdrop-blur";
+const ISLAND_CLASS_NAME = "mx-auto flex min-h-10 max-w-(--sz-turn-status-island) items-center overflow-hidden rounded-full border border-line bg-bg-2/95 px-4 py-2 text-ink shadow-sm backdrop-blur";
 
 const HOVER_CLOSE_GRACE_MS = 100;
 
@@ -221,7 +221,7 @@ export function TaskChatTurnStatusIsland({ model }: { model: TaskChatTurnStatusM
           aria-label={islandLabel(model)}
           className={cn(
             ISLAND_CLASS_NAME,
-            "cursor-pointer transition-colors hover:bg-muted/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background motion-reduce:transition-none",
+            "cursor-pointer transition-colors hover:bg-bg-3/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-bg motion-reduce:transition-none",
           )}
           data-testid="task-chat-turn-status-island"
           onPointerEnter={(event) => {
@@ -264,8 +264,8 @@ export function TaskChatTurnStatusIsland({ model }: { model: TaskChatTurnStatusM
               key={step.id}
               className={cn(
                 "flex items-start gap-2 rounded-md px-2 py-1.5 text-sm leading-5",
-                index === plan.currentStepIndex && "bg-muted",
-                step.status === "completed" && "text-muted-foreground",
+                index === plan.currentStepIndex && "bg-bg-3",
+                step.status === "completed" && "text-ink-3",
               )}
               aria-current={index === plan.currentStepIndex ? "step" : undefined}
             >

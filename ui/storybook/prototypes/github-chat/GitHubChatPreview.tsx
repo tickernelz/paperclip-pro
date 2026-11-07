@@ -49,14 +49,14 @@ import {
 } from "./fixtures";
 
 const selectClass =
-  "flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm";
+  "flex w-full rounded-md border border-line-strong bg-bg px-3 py-2 text-sm";
 function Help({ text }: { text: string }) {
   return (
     <details className="relative inline-block font-normal">
-      <summary className="cursor-pointer list-none text-muted-foreground">
+      <summary className="cursor-pointer list-none text-ink-3">
         <CircleHelp className="size-3.5" aria-label="Field help" />
       </summary>
-      <p className="absolute right-0 z-10 mt-2 w-60 rounded-md border border-border bg-popover p-3 text-xs text-popover-foreground shadow-sm">
+      <p className="absolute right-0 z-10 mt-2 w-60 rounded-md border border-line bg-bg-2 p-3 text-xs text-ink shadow-sm">
         {text}
       </p>
     </details>
@@ -130,7 +130,7 @@ function Toggle({
       <div>
         <p className="text-sm font-medium">{label}</p>
         {description && (
-          <p className="mt-1 text-xs text-muted-foreground">{description}</p>
+          <p className="mt-1 text-xs text-ink-3">{description}</p>
         )}
       </div>
       <ToggleSwitch
@@ -153,12 +153,12 @@ function Notice({
       role={tone === "error" ? "alert" : "status"}
       className={cn(
         "rounded-lg border p-4 text-sm",
-        tone === "muted" && "border-border bg-muted/40",
+        tone === "muted" && "border-line bg-bg-3/40",
         tone === "warning" &&
           "border-(--status-task-todo)/30 bg-(--status-task-todo)/10",
         tone === "success" &&
           "border-(--status-task-done)/30 bg-(--status-task-done)/10",
-        tone === "error" && "border-destructive/30 bg-destructive/10",
+        tone === "error" && "border-bad/30 bg-bad/10",
       )}
     >
       {children}
@@ -169,7 +169,7 @@ function CopyValue({ value }: { value: string }) {
   const [status, setStatus] = useState("");
   return (
     <div className="space-y-1">
-      <div className="flex items-center justify-between gap-2 rounded-md border border-border px-3 py-2">
+      <div className="flex items-center justify-between gap-2 rounded-md border border-line px-3 py-2">
         <code className="min-w-0 break-all text-xs">{value}</code>
         <Button
           variant="ghost"
@@ -185,7 +185,7 @@ function CopyValue({ value }: { value: string }) {
           <Copy className="size-4" />
         </Button>
       </div>
-      <p className="text-xs text-muted-foreground" role="status">
+      <p className="text-xs text-ink-3" role="status">
         {status}
       </p>
     </div>
@@ -195,13 +195,13 @@ function Heading({ title, children }: { title: string; children: ReactNode }) {
   return (
     <div className="space-y-2">
       <h1 className="text-xl font-bold">{title}</h1>
-      <p className="text-sm text-muted-foreground">{children}</p>
+      <p className="text-sm text-ink-3">{children}</p>
     </div>
   );
 }
 function Group({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <section className="space-y-4 border-t border-border pt-5">
+    <section className="space-y-4 border-t border-line pt-5">
       <h2 className="text-sm font-semibold">{title}</h2>
       {children}
     </section>
@@ -272,7 +272,7 @@ function ConfigEditor({
           </Notice>
         )}
         <Group title="When to review">
-          <div className="divide-y divide-border">
+          <div className="divide-y divide-line">
             {flag("opened", "New pull request")}
             {flag("reopened", "Pull request reopened")}
             {flag("ready", "Marked ready for review")}
@@ -286,7 +286,7 @@ function ConfigEditor({
           </div>
         </Group>
         <Group title="Comments and PR checks">
-          <div className="divide-y divide-border">
+          <div className="divide-y divide-line">
             {flag("summary", "Post a review summary")}
             {flag(
               "inline",
@@ -308,13 +308,13 @@ function ConfigEditor({
               ["off", "Report only · no rating gate"],
             ]}
           />
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             To block merging, require <strong>Paperclip Review</strong> from
             this GitHub App in your repository’s ruleset. Saving here does not
             change GitHub rules.
           </p>
         </Group>
-        <details className="space-y-4 rounded-lg border border-border p-4">
+        <details className="space-y-4 rounded-lg border border-line p-4">
           <summary className="cursor-pointer text-sm font-medium">
             Advanced review options
           </summary>
@@ -400,11 +400,11 @@ function ConfigEditor({
             )}
           </Group>
         </details>
-        <details className="space-y-4 rounded-lg border border-border p-4">
+        <details className="space-y-4 rounded-lg border border-line p-4">
           <summary className="cursor-pointer text-sm font-medium">
             Event prompts
           </summary>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             Each event becomes a message in the existing Paperclip task. Your
             agent’s instructions and tool permissions still apply.
           </p>
@@ -431,7 +431,7 @@ function ConfigEditor({
               }
             />
           </Field>
-          <p className="break-words text-xs text-muted-foreground">
+          <p className="break-words text-xs text-ink-3">
             Variables: repository, pr_number, head_sha, previous_head_sha,
             sender, event_action. Each run records the prompt revision.
           </p>
@@ -585,7 +585,7 @@ export function GitHubChatPreview({
   );
   const openTask = () => setDialog("task");
   const linkedContext = (
-    <div className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-muted-foreground">
+    <div className="flex flex-wrap gap-x-5 gap-y-2 text-xs text-ink-3">
       <span className="flex items-center gap-1.5">
         <Bot className="size-3.5" />
         {draft.agent}
@@ -595,8 +595,8 @@ export function GitHubChatPreview({
     </div>
   );
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-muted/40 px-5 py-2 text-xs text-muted-foreground">
+    <div className="min-h-screen bg-bg text-ink">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-bg-3/40 px-5 py-2 text-xs text-ink-3">
         <span>
           Design preview · GitHub chat & reviews · provider actions and tasks
           are simulated
@@ -629,42 +629,41 @@ export function GitHubChatPreview({
           Reset preview
         </Button>
       </div>
-      <header className="flex items-center gap-2 border-b border-border px-5 py-4 text-sm">
+      <header className="flex items-center gap-2 border-b border-line px-5 py-4 text-sm">
         <span className="font-semibold">Acme</span>
-        <ChevronRight className="size-3 text-muted-foreground" />
+        <ChevronRight className="size-3 text-ink-3" />
         <span>Apps</span>
-        <ChevronRight className="size-3 text-muted-foreground" />
+        <ChevronRight className="size-3 text-ink-3" />
         <img
           src="/brands/apps/github.svg"
           className="size-4 dark:invert"
           alt=""
         />
         <span>GitHub</span>
-        <ChevronRight className="size-3 text-muted-foreground" />
-        <span className="text-muted-foreground">
+        <ChevronRight className="size-3 text-ink-3" />
+        <span className="text-ink-3">
           {page ? bot : "Connect an agent"}
         </span>
       </header>
       <div className="flex flex-col md:flex-row">
-        <aside className="shrink-0 border-b border-border p-5 md:min-h-screen md:w-64 md:border-r md:border-b-0">
+        <aside className="shrink-0 border-b border-line p-5 md:min-h-screen md:w-64 md:border-r md:border-b-0">
           <div className="mb-6 flex items-center gap-3">
-            <div className="flex size-9 items-center justify-center rounded-lg bg-muted">
+            <div className="flex size-9 items-center justify-center rounded-lg bg-bg-3">
               <Bot className="size-5" />
             </div>
             <div>
               <p className="text-sm font-semibold">{draft.agent}</p>
-              <p className="text-xs text-muted-foreground">GitHub connection</p>
+              <p className="text-xs text-ink-3">GitHub connection</p>
             </div>
           </div>
           {page ? (
             <nav aria-label="Connection navigation" className="space-y-1">
               {sections.map((item) => (
-                <Button
+                <Button active={page === item}
                   key={item}
                   variant="ghost"
                   className={cn(
                     "w-full justify-start",
-                    page === item && "bg-accent",
                   )}
                   aria-current={page === item ? "page" : undefined}
                   onClick={() => {
@@ -703,7 +702,7 @@ export function GitHubChatPreview({
               />
             </div>
           )}
-          <p className="mt-8 text-xs text-muted-foreground">
+          <p className="mt-8 text-xs text-ink-3">
             GitHub conversations run as Paperclip tasks, assigned to this agent.
           </p>
         </aside>
@@ -727,7 +726,7 @@ export function GitHubChatPreview({
                 </Heading>
                 <Notice>
                   Step {draft.step + 1}: {steps[draft.step]} · {draft.agent}
-                  <p className="mt-2 text-xs text-muted-foreground">
+                  <p className="mt-2 text-xs text-ink-3">
                     Only non-secret preview settings are saved. Unsaved
                     credential fields are never stored.
                   </p>
@@ -803,12 +802,12 @@ export function GitHubChatPreview({
                       <p className="text-sm">
                         {bot}[bot] · Installed for {draft.agent}
                       </p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-ink-3">
                         Read PRs, post comments, submit scored reviews. Uses
                         this bot’s GitHub App credentials.
                       </p>
                       <Button
-                        variant="outline"
+                        variant="secondary"
                         onClick={() => {
                           setPage(null);
                           go(4);
@@ -862,7 +861,7 @@ export function GitHubChatPreview({
                     />
                     <div className="flex flex-wrap gap-2">
                       <Button
-                        variant="outline"
+                        variant="secondary"
                         onClick={() => {
                           setCheck("queued");
                           setNotice(
@@ -889,10 +888,10 @@ export function GitHubChatPreview({
                             ACM-142 · run 3
                           </button>
                         </p>
-                        <p className="text-muted-foreground">
+                        <p className="text-ink-3">
                           Today, 10:14 · 3/5 · a61d082 · 2 findings · run 2
                         </p>
-                        <p className="text-muted-foreground">
+                        <p className="text-ink-3">
                           Today, 09:55 · Follow-up answered · rating unchanged
                         </p>
                       </div>
@@ -900,7 +899,7 @@ export function GitHubChatPreview({
                   </>
                 )}
                 {page === "Conversations" && (
-                  <div className="divide-y divide-border rounded-lg border border-border">
+                  <div className="divide-y divide-line rounded-lg border border-line">
                     {[
                       [
                         "#284",
@@ -917,7 +916,7 @@ export function GitHubChatPreview({
                         key={pr}
                         className="flex flex-wrap items-center gap-3 p-4 text-sm"
                       >
-                        <GitPullRequest className="size-4 text-muted-foreground" />
+                        <GitPullRequest className="size-4 text-ink-3" />
                         <button
                           className="underline underline-offset-4"
                           onClick={() => setDialog("github")}
@@ -1061,7 +1060,7 @@ export function GitHubChatPreview({
                             />
                           </Field>
                         )}
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-ink-3">
                           GitHub creates the App and returns its credentials
                           directly to Paperclip. Then you choose which
                           repositories to install it on.
@@ -1102,7 +1101,7 @@ export function GitHubChatPreview({
                           label="GitHub App ID"
                           help="Open GitHub App settings, select your App, and copy App ID from General. This is not the Client ID."
                         >
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-xs text-ink-3">
                             GitHub → Settings → Developer settings → GitHub Apps
                             → your App → General.
                           </p>
@@ -1148,7 +1147,7 @@ export function GitHubChatPreview({
                             review comments, and pull requests.
                           </p>
                         </details>
-                        <p className="text-xs text-muted-foreground">
+                        <p className="text-xs text-ink-3">
                           Use dummy values in this preview. Credentials are not
                           sent or saved.
                         </p>
@@ -1203,7 +1202,7 @@ export function GitHubChatPreview({
                         </>
                       )}
                     </Notice>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-ink-3">
                       You may need an organization owner to approve the
                       installation.
                     </p>
@@ -1244,7 +1243,7 @@ export function GitHubChatPreview({
                       Check that GitHub can reach Paperclip and that your agent
                       can use this bot’s connection.
                     </Heading>
-                    <div className="divide-y divide-border rounded-lg border border-border px-4">
+                    <div className="divide-y divide-line rounded-lg border border-line px-4">
                       {[
                         "GitHub App identity",
                         "Signed webhook delivery",
@@ -1264,13 +1263,13 @@ export function GitHubChatPreview({
                             className="flex items-start gap-3 py-4"
                           >
                             {bad ? (
-                              <XCircle className="size-4 shrink-0 text-destructive" />
+                              <XCircle className="size-4 shrink-0 text-bad" />
                             ) : (
                               <CheckCircle2 className="size-4 shrink-0 text-(--status-task-done)" />
                             )}
                             <div>
                               <p className="text-sm font-medium">{label}</p>
-                              <p className="mt-1 text-xs text-muted-foreground">
+                              <p className="mt-1 text-xs text-ink-3">
                                 {bad
                                   ? scenario === "tools"
                                     ? `${draft.agent} has no permission to submit reviews through this connection.`
@@ -1294,7 +1293,7 @@ export function GitHubChatPreview({
                     </div>
                     {blocked && (
                       <Button
-                        variant="outline"
+                        variant="secondary"
                         onClick={() => {
                           setFixed(true);
                           change({ verified: true });
@@ -1304,11 +1303,11 @@ export function GitHubChatPreview({
                       </Button>
                     )}
                     <details className="space-y-3 text-sm">
-                      <summary className="cursor-pointer text-muted-foreground">
+                      <summary className="cursor-pointer text-ink-3">
                         Connection details & troubleshooting
                       </summary>
                       <CopyValue value="https://acme.staging.paperclip.app/api/chat-webhooks/example-public-id/github" />
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-ink-3">
                         Webhook verification does not prove a complete agent
                         review. Try a real PR after setup.
                       </p>
@@ -1386,7 +1385,7 @@ export function GitHubChatPreview({
                         </Notice>
                       </>
                     )}
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-ink-3">
                       This identifies you as the person requesting work.{" "}
                       {draft.agent} continues to read and publish using {bot}
                       [bot], with this bot’s allowed repositories and
@@ -1418,7 +1417,7 @@ export function GitHubChatPreview({
                       config={draft.config}
                       onChange={(c) => change({ config: c })}
                     />
-                    <details className="space-y-4 rounded-lg border border-border p-4">
+                    <details className="space-y-4 rounded-lg border border-line p-4">
                       <summary className="cursor-pointer text-sm font-medium">
                         Who can start work
                       </summary>
@@ -1467,7 +1466,7 @@ export function GitHubChatPreview({
                       </Notice>
                     )}
                     <Button
-                      variant="outline"
+                      variant="secondary"
                       onClick={() => change({ testSent: true })}
                     >
                       Simulate my test message
@@ -1579,7 +1578,7 @@ export function GitHubChatPreview({
             </div>
           )}
           {dialog === "manifest" && (
-            <pre className="overflow-x-auto rounded-md bg-muted p-4 text-xs">
+            <pre className="overflow-x-auto rounded-md bg-bg-3 p-4 text-xs">
               {JSON.stringify(
                 {
                   name: bot,
@@ -1626,7 +1625,7 @@ export function GitHubChatPreview({
                   I’ll inspect the current diff and verify the signature
                   handling.
                 </p>
-                <div className="space-y-2 rounded-md bg-muted p-3 font-mono text-xs">
+                <div className="space-y-2 rounded-md bg-bg-3 p-3 font-mono text-xs">
                   <p>github.read_pull_request · #284 · c82f10a</p>
                   <p>github.read_files · server/webhooks.ts</p>
                   <p>
@@ -1649,7 +1648,7 @@ export function GitHubChatPreview({
                   Continue this task with the new head. Event prompt revision 2.
                 </p>
               </div>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-ink-3">
                 Tools use {bot}[bot] through this connection. External input
                 cannot select another repository or credential.
               </p>
@@ -1670,7 +1669,7 @@ export function GitHubChatPreview({
                           ? "An authorized member must request a review before this head can be assessed."
                           : "The current head is awaiting an assessment. The previous review remains in history and cannot pass this commit."}
                 </p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-ink-3">
                   {check === "passed" || check === "failed"
                     ? "Reviewed commit c82f10a · 11 files · review 3"
                     : "PR head c82f10a · no complete assessment"}{" "}
@@ -1686,7 +1685,7 @@ export function GitHubChatPreview({
                     Verify the signature against the original request bytes.
                     Re-serializing JSON can reject a legitimate delivery.
                   </p>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-ink-3">
                     Prior thread retained · 2 replies · New findings appear as
                     additional comments.
                   </p>
@@ -1716,17 +1715,17 @@ function ReviewCard({
 }) {
   const pending = state === "running" || state === "queued";
   return (
-    <div className="space-y-4 rounded-lg border border-border p-5">
+    <div className="space-y-4 rounded-lg border border-line p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             acme/platform · PR #284
           </p>
           <h2 className="mt-1 text-base font-semibold">
             Harden webhook signature verification
           </h2>
         </div>
-        <GitPullRequest className="size-5 text-muted-foreground" />
+        <GitPullRequest className="size-5 text-ink-3" />
       </div>
       <Notice
         tone={
@@ -1772,7 +1771,7 @@ function ReviewCard({
             Open GitHub preview
           </button>
         )}
-        <span className="text-muted-foreground">
+        <span className="text-ink-3">
           Responsible: Dotta · Agent: {agent}
         </span>
       </div>
@@ -1802,15 +1801,15 @@ function Activity({ onTask }: { onTask: () => void }) {
       ];
   return (
     <>
-      <div className="divide-y divide-border rounded-lg border border-border">
+      <div className="divide-y divide-line rounded-lg border border-line">
         {items.map(([time, title, description]) => (
           <div key={time} className="flex flex-wrap gap-3 p-4 text-sm">
-            <time className="w-20 shrink-0 text-xs text-muted-foreground">
+            <time className="w-20 shrink-0 text-xs text-ink-3">
               {time}
             </time>
             <div className="flex-1">
               <p className="font-medium">{title}</p>
-              <p className="mt-1 text-xs text-muted-foreground">
+              <p className="mt-1 text-xs text-ink-3">
                 {description}
               </p>
             </div>
@@ -1823,10 +1822,10 @@ function Activity({ onTask }: { onTask: () => void }) {
         ))}
       </div>
       <div className="flex justify-between">
-        <span className="text-xs text-muted-foreground">
+        <span className="text-xs text-ink-3">
           September 19, 2026 · UTC
         </span>
-        <Button variant="outline" size="sm" onClick={() => setOlder(!older)}>
+        <Button variant="secondary" size="sm" onClick={() => setOlder(!older)}>
           {older ? "Newest activity" : "Older activity"}
         </Button>
       </div>
@@ -1876,11 +1875,11 @@ function RepositoryPicker({
   };
   return (
     <div className="space-y-4">
-      <div className="space-y-3 border-y border-border py-3">
+      <div className="space-y-3 border-y border-line py-3">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <p className="text-sm font-medium">{bot} · acme installation</p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-ink-3">
               {refreshError
                 ? "Repository access could not be loaded"
                 : `${available.length} repositories available from GitHub`}
@@ -1889,7 +1888,7 @@ function RepositoryPicker({
           <div className="flex items-center gap-2">
             <Button
               size="icon-sm"
-              variant="outline"
+              variant="secondary"
               aria-label="Refresh access"
               title="Refresh access"
               disabled={refreshing}
@@ -1901,13 +1900,13 @@ function RepositoryPicker({
                 <RefreshCw className="size-4" />
               )}
             </Button>
-            <Button size="sm" variant="outline" onClick={() => setManage(true)}>
+            <Button size="sm" variant="secondary" onClick={() => setManage(true)}>
               Configure access on GitHub
               <ExternalLink className="size-4" />
             </Button>
           </div>
         </div>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-ink-3">
           This list comes from the bot App’s installation on GitHub. Enable
           repositories below to let {bot} respond in them.
         </p>
@@ -1926,7 +1925,7 @@ function RepositoryPicker({
           </Notice>
         ) : (
           <div
-            className="max-h-(--sz-github-repository-list) divide-y divide-border overflow-y-auto"
+            className="max-h-(--sz-github-repository-list) divide-y divide-line overflow-y-auto"
             aria-label="Available GitHub repositories"
           >
             {available.map((repo) => (
@@ -1946,16 +1945,16 @@ function RepositoryPicker({
           </div>
         )}
         {refreshed && (
-          <p role="status" className="text-xs text-muted-foreground">
+          <p role="status" className="text-xs text-ink-3">
             Repository access refreshed. Newly available repositories stay
             disabled until you enable them here.
           </p>
         )}
       </div>
-      <p className="text-xs text-muted-foreground">
+      <p className="text-xs text-ink-3">
         Missing a repository?{" "}
         <button
-          className="text-foreground underline"
+          className="text-ink underline"
           onClick={() => setManage(true)}
         >
           Configure access on GitHub

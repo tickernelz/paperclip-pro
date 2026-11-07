@@ -271,10 +271,10 @@ function SearchPagePreview({
   query: string;
 }) {
   return (
-    <div className="flex h-full min-h-0 flex-col rounded-md border border-border bg-background">
-      <div className="border-b border-border px-4 py-3">
+    <div className="flex h-full min-h-0 flex-col rounded-md border border-line bg-bg">
+      <div className="border-b border-line px-4 py-3">
         <div className="relative">
-          <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-3" />
           <Input
             value={query}
             readOnly
@@ -282,18 +282,18 @@ function SearchPagePreview({
             className="h-10 pl-9 pr-20 text-sm"
             aria-label="Search query"
           />
-          <kbd className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] font-medium text-muted-foreground">
+          <kbd className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 rounded border border-line bg-bg-3 px-1.5 py-0.5 text-[10px] font-medium text-ink-3">
             ⌘K
           </kbd>
         </div>
       </div>
-      <div className="border-b border-border px-2 sm:px-4">
+      <div className="border-b border-line px-2 sm:px-4">
         <ScopeTabsPreview active="all" response={response} />
       </div>
 
       {state === "results" ? (
         <div className="flex w-full max-w-[960px] flex-col px-2 sm:px-4">
-          <div className="flex items-center justify-between py-2 text-[11px] uppercase tracking-wide text-muted-foreground">
+          <div className="flex items-center justify-between py-2 text-[11px] uppercase tracking-wide text-ink-3">
             <span>{response.results.length} results · sorted by relevance</span>
           </div>
           <div className="flex flex-col gap-y-1">
@@ -309,26 +309,26 @@ function SearchPagePreview({
           <div className="text-base font-semibold">
             No results for &ldquo;{query}&rdquo;
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-ink-3">
             We couldn&rsquo;t find a match in all scopes. Try widening the scope or rephrasing your query.
           </p>
-          <ul className="mt-2 space-y-0.5 text-xs text-muted-foreground">
+          <ul className="mt-2 space-y-0.5 text-xs text-ink-3">
             <li>Try fewer tokens or a single distinctive term.</li>
-            <li>Use an identifier shortcut like <code className="rounded bg-muted px-1 py-0.5">PAP-123</code>.</li>
+            <li>Use an identifier shortcut like <code className="rounded bg-bg-3 px-1 py-0.5">PAP-123</code>.</li>
           </ul>
         </div>
       ) : null}
 
       {state === "loading" ? (
         <div className="flex flex-col gap-2 px-2 py-3 sm:px-4">
-          <div className="px-3 text-xs text-muted-foreground">Searching for &ldquo;{query}&rdquo;…</div>
+          <div className="px-3 text-xs text-ink-3">Searching for &ldquo;{query}&rdquo;…</div>
           <div className="flex flex-col">
             {Array.from({ length: 5 }).map((_, index) => (
               <div key={index} className="flex items-start gap-3 px-3 py-2">
-                <div className="mt-1 h-4 w-4 rounded-full bg-muted" />
+                <div className="mt-1 h-4 w-4 rounded-full bg-bg-3" />
                 <div className="flex flex-1 flex-col gap-1.5">
-                  <div className="h-3 w-3/4 rounded bg-muted" />
-                  <div className="h-3 w-1/2 rounded bg-muted/60" />
+                  <div className="h-3 w-3/4 rounded bg-bg-3" />
+                  <div className="h-3 w-1/2 rounded bg-bg-3/60" />
                 </div>
               </div>
             ))}
@@ -340,21 +340,21 @@ function SearchPagePreview({
         <div className="mx-auto flex w-full max-w-2xl flex-col gap-4 px-4 py-10 sm:px-6">
           <div>
             <h2 className="text-lg font-semibold">Type to search company memory.</h2>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-sm text-ink-3">
               Issues, comments, plan documents, agents, projects — same surface, ranked by relevance.
             </p>
           </div>
-          <ul className="space-y-1 text-xs text-muted-foreground">
+          <ul className="space-y-1 text-xs text-ink-3">
             <li>
-              <span className="font-medium text-foreground">Identifier lookup:</span> type{" "}
-              <code className="rounded bg-muted px-1 py-0.5 text-[11px]">PAP-123</code> to jump straight to an issue.
+              <span className="font-medium text-ink">Identifier lookup:</span> type{" "}
+              <code className="rounded bg-bg-3 px-1 py-0.5 text-[11px]">PAP-123</code> to jump straight to an issue.
             </li>
             <li>
-              <span className="font-medium text-foreground">Quoted phrases:</span> wrap a phrase in quotes to match the
+              <span className="font-medium text-ink">Quoted phrases:</span> wrap a phrase in quotes to match the
               exact sequence.
             </li>
             <li>
-              <span className="font-medium text-foreground">⌘K:</span> reopens the command palette pre-seeded with your
+              <span className="font-medium text-ink">⌘K:</span> reopens the command palette pre-seeded with your
               current query.
             </li>
           </ul>
@@ -366,7 +366,7 @@ function SearchPagePreview({
 
 function SearchOperatorInputPreview() {
   return (
-    <div className="border-t border-border bg-background p-4">
+    <div className="border-t border-line bg-bg p-4">
       <ScopedSearchInput
         value='title:"internal status" status:blocked updated:>7d auth'
         onChange={() => undefined}
@@ -385,14 +385,14 @@ function CommandPaletteWithSearchAll({
   emptyResults?: boolean;
 }) {
   return (
-    <Command className="rounded-md border border-border bg-popover shadow-lg">
+    <Command className="rounded-md border border-line bg-bg-2 shadow-lg">
       <CommandInput value={query} readOnly placeholder="Search issues, agents, projects..." />
       <CommandList className="max-h-none">
         {emptyResults ? (
           <CommandEmpty>
             <span>
               No quick issue matches. Press{" "}
-              <kbd className="rounded border border-border bg-muted px-1 py-0.5 text-[10px]">↵</kbd>{" "}
+              <kbd className="rounded border border-line bg-bg-3 px-1 py-0.5 text-[10px]">↵</kbd>{" "}
               to <span className="font-medium">search all</span> or keep typing to refine.
             </span>
           </CommandEmpty>
@@ -400,15 +400,15 @@ function CommandPaletteWithSearchAll({
         <CommandGroup heading="Search">
           <CommandItem
             value="search-all"
-            className="bg-accent/40 border border-accent data-[selected=true]:bg-accent/60"
+            className="bg-bg-3/40 border border-bg-3 data-[selected=true]:bg-bg-3/60"
           >
             <SearchIcon className="mr-2 h-4 w-4" />
             <span className="flex-1 truncate">
               Search all for <span className="font-semibold">&ldquo;{query}&rdquo;</span>
             </span>
-            <span className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground">
+            <span className="ml-auto inline-flex items-center gap-1 text-xs text-ink-3">
               <span>open full search</span>
-              <kbd className="rounded border border-border bg-background px-1 py-0.5 text-[10px]">↵</kbd>
+              <kbd className="rounded border border-line bg-bg px-1 py-0.5 text-[10px]">↵</kbd>
             </span>
           </CommandItem>
         </CommandGroup>
@@ -426,7 +426,7 @@ function CommandPaletteWithSearchAll({
           <CommandItem>
             <SquarePen className="mr-2 h-4 w-4" />
             Create new issue
-            <span className="ml-auto text-xs text-muted-foreground">C</span>
+            <span className="ml-auto text-xs text-ink-3">C</span>
           </CommandItem>
           <CommandItem>
             <Plus className="mr-2 h-4 w-4" />
@@ -471,7 +471,7 @@ function CommandPaletteWithSearchAll({
               {storybookIssues.slice(0, 3).map((issue) => (
                 <CommandItem key={issue.id}>
                   <CircleDot className="mr-2 h-4 w-4" />
-                  <span className="mr-2 font-mono text-xs text-muted-foreground">{issue.identifier}</span>
+                  <span className="mr-2 font-mono text-xs text-ink-3">{issue.identifier}</span>
                   <span className="flex-1 truncate">{issue.title}</span>
                   <StatusBadge status={issue.status} />
                 </CommandItem>
@@ -547,7 +547,7 @@ function SearchStories() {
         <section className="paperclip-story__frame p-6">
           <div className="paperclip-story__label">Search</div>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight">Full search page and Command K handoff</h1>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-ink-3">
             Snippet-forward results, scope tabs, match-source chips, and the supporting empty / loading / initial
             states. Cmd K palette renders the persistent &ldquo;Search all for…&rdquo; row when a query is non-empty.
           </p>
@@ -598,7 +598,7 @@ function SearchStories() {
             <div className="paperclip-story__label">/search · screen 1</div>
             <h2 className="mt-1 text-lg font-semibold">Filter bar, active chips &amp; honest meta</h2>
           </div>
-          <div className="flex flex-col gap-2 border-t border-border bg-background p-4">
+          <div className="flex flex-col gap-2 border-t border-line bg-bg p-4">
             <SearchFilterBar
               filters={activeSearchFilters}
               onChange={noop}
@@ -612,7 +612,7 @@ function SearchStories() {
               onChange={noop}
               onClearAll={noop}
             />
-            <div className="py-1 text-[11px] uppercase tracking-wide text-muted-foreground">
+            <div className="py-1 text-[11px] uppercase tracking-wide text-ink-3">
               8 of 42 results · sorted by Relevance · 4 filters active
             </div>
           </div>
@@ -623,7 +623,7 @@ function SearchStories() {
             <div className="paperclip-story__label">/search · screen 4</div>
             <h2 className="mt-1 text-lg font-semibold">Zero-results recovery</h2>
           </div>
-          <div className="border-t border-border bg-background">
+          <div className="border-t border-line bg-bg">
             <ZeroResultsRecovery
               query="auth flake"
               filters={activeSearchFilters}
@@ -656,13 +656,13 @@ function SearchStories() {
           </div>
           <div className="grid gap-4 lg:grid-cols-2">
             <div>
-              <div className="mb-2 text-[11px] uppercase tracking-wide text-muted-foreground">
+              <div className="mb-2 text-[11px] uppercase tracking-wide text-ink-3">
                 With quick issue matches
               </div>
               <CommandPaletteWithSearchAll query="auth flake" />
             </div>
             <div>
-              <div className="mb-2 text-[11px] uppercase tracking-wide text-muted-foreground">
+              <div className="mb-2 text-[11px] uppercase tracking-wide text-ink-3">
                 Empty results — Enter routes to /search
               </div>
               <CommandPaletteWithSearchAll query="ghostbuster" emptyResults />

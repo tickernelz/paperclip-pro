@@ -62,9 +62,9 @@ export function BudgetPolicyCard({
       <Input aria-label="Reserve per run (USD)" aria-invalid={reservationCents === null} aria-describedby={reservationCents === null ? reservationErrorId : undefined}
         value={reservation} onChange={event => setReservation(event.target.value)} inputMode="decimal" />
     </label>
-    {reservationCents === null && <p id={reservationErrorId} role="alert" className="text-xs text-destructive">Enter a valid amount of zero or more.</p>}
-    <p className="text-xs text-muted-foreground">An estimate held before each run starts. Zero disables the estimate. Actual provider charges may exceed it.</p>
-    <Button variant="outline" disabled={isSaving || reservationCents === null || reservationCents === (summary.reservationCents ?? "0.0000000")}
+    {reservationCents === null && <p id={reservationErrorId} role="alert" className="text-xs text-bad">Enter a valid amount of zero or more.</p>}
+    <p className="text-xs text-ink-3">An estimate held before each run starts. Zero disables the estimate. Actual provider charges may exceed it.</p>
+    <Button variant="secondary" disabled={isSaving || reservationCents === null || reservationCents === (summary.reservationCents ?? "0.0000000")}
       onClick={() => { if (reservationCents !== null) onReservationChange(reservationCents); }}>Update reservation</Button>
   </div> : null;
 
@@ -93,37 +93,37 @@ export function BudgetPolicyCard({
   const observedBudgetGrid = isPlain ? (
     <div className="grid gap-6 sm:grid-cols-2">
       <div>
-        <div className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-muted-foreground">Observed</div>
+        <div className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-ink-3">Observed</div>
         <div className="mt-2 text-xl font-semibold tabular-nums">{formatCents(summary.observedAmount)}</div>
-        <div className="mt-1 text-xs text-muted-foreground">
+        <div className="mt-1 text-xs text-ink-3">
           {summary.amount > 0 ? `${summary.utilizationPercent}% of limit` : "No cap configured"}
         </div>
       </div>
       <div>
-        <div className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-muted-foreground">Budget</div>
+        <div className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-ink-3">Budget</div>
         <div className="mt-2 text-xl font-semibold tabular-nums">
           {summary.amount > 0 ? formatCents(summary.amount) : "Disabled"}
         </div>
-        <div className="mt-1 text-xs text-muted-foreground">
+        <div className="mt-1 text-xs text-ink-3">
           Soft alert at {summary.warnPercent}%{summary.paused && summary.pauseReason ? ` · ${summary.pauseReason} pause` : ""}
         </div>
       </div>
     </div>
   ) : (
     <div className="grid gap-3 sm:grid-cols-2">
-      <div className="rounded-xl border border-border/70 bg-black/[0.18] px-4 py-3">
-        <div className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-muted-foreground">Observed</div>
+      <div className="rounded-xl border border-line/70 bg-black/[0.18] px-4 py-3">
+        <div className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-ink-3">Observed</div>
         <div className="mt-2 text-xl font-semibold tabular-nums">{formatCents(summary.observedAmount)}</div>
-        <div className="mt-1 text-xs text-muted-foreground">
+        <div className="mt-1 text-xs text-ink-3">
           {summary.amount > 0 ? `${summary.utilizationPercent}% of limit` : "No cap configured"}
         </div>
       </div>
-      <div className="rounded-xl border border-border/70 bg-black/[0.18] px-4 py-3">
-        <div className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-muted-foreground">Budget</div>
+      <div className="rounded-xl border border-line/70 bg-black/[0.18] px-4 py-3">
+        <div className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-ink-3">Budget</div>
         <div className="mt-2 text-xl font-semibold tabular-nums">
           {summary.amount > 0 ? formatCents(summary.amount) : "Disabled"}
         </div>
-        <div className="mt-1 text-xs text-muted-foreground">
+        <div className="mt-1 text-xs text-ink-3">
           Soft alert at {summary.warnPercent}%{summary.paused && summary.pauseReason ? ` · ${summary.pauseReason} pause` : ""}
         </div>
       </div>
@@ -132,15 +132,15 @@ export function BudgetPolicyCard({
 
   const progressSection = (
     <div className="space-y-2">
-      {summary.pendingRunCount > 0 && <p className="text-sm text-destructive">{summary.pendingRunCount} completed runs await accounting.</p>}
+      {summary.pendingRunCount > 0 && <p className="text-sm text-bad">{summary.pendingRunCount} completed runs await accounting.</p>}
       {summary.unpricedEventCount > 0 && (
-        <p className="text-sm text-destructive">{summary.unpricedEventCount} usage events are unpriced. Known spend excludes their unknown cost.</p>
+        <p className="text-sm text-bad">{summary.unpricedEventCount} usage events are unpriced. Known spend excludes their unknown cost.</p>
       )}
-      <div className="flex items-center justify-between text-xs text-muted-foreground">
+      <div className="flex items-center justify-between text-xs text-ink-3">
         <span>Remaining</span>
         <span>{summary.amount > 0 ? formatCents(summary.remainingAmount) : "Unlimited"}</span>
       </div>
-      <div className={cn("h-2 overflow-hidden rounded-full", isPlain ? "bg-border/70" : "bg-muted/70")}>
+      <div className={cn("h-2 overflow-hidden rounded-full", isPlain ? "bg-line/70" : "bg-bg-3/70")}>
         <div
           role="progressbar"
           aria-valuenow={Math.round(progress)}
@@ -173,9 +173,9 @@ export function BudgetPolicyCard({
   ) : null;
 
   const saveSection = onSave ? (
-    <div className={cn("flex flex-col gap-3 sm:flex-row sm:items-end", isPlain ? "" : "rounded-xl border border-border/70 bg-background/50 p-3")}>
+    <div className={cn("flex flex-col gap-3 sm:flex-row sm:items-end", isPlain ? "" : "rounded-xl border border-line/70 bg-bg/50 p-3")}>
       <div className="min-w-0 flex-1">
-        <label className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-muted-foreground">
+        <label className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-ink-3">
           Budget (USD)
         </label>
         <Input
@@ -202,11 +202,11 @@ export function BudgetPolicyCard({
       <div className="space-y-6">
         <div className="flex items-start justify-between gap-6">
           <div>
-            <div className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-muted-foreground">
+            <div className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-ink-3">
               {summary.scopeType}
             </div>
             <div className="mt-2 text-xl font-semibold">{summary.scopeName}</div>
-            <div className="mt-2 text-sm text-muted-foreground">{windowLabel(summary.windowKind)}</div>
+            <div className="mt-2 text-sm text-ink-3">{windowLabel(summary.windowKind)}</div>
           </div>
           <div
             className={cn(
@@ -215,7 +215,7 @@ export function BudgetPolicyCard({
                 ? "text-red-700 dark:text-red-300"
                 : summary.status === "warning"
                   ? "text-amber-800 dark:text-amber-200"
-                  : "text-muted-foreground",
+                  : "text-ink-3",
             )}
           >
             <StatusIcon className="h-3.5 w-3.5" />
@@ -229,18 +229,18 @@ export function BudgetPolicyCard({
         {saveSection}
         {advancedSettings}
         {parsedDraft === null ? (
-          <p className="text-xs text-destructive">Enter a valid non-negative dollar amount.</p>
+          <p className="text-xs text-bad">Enter a valid non-negative dollar amount.</p>
         ) : null}
       </div>
     );
   }
 
   return (
-    <Card className={cn("overflow-hidden border-border/70 bg-card/80", compact ? "" : "shadow-(--shadow-extract-2)")}>
+    <Card className={cn("overflow-hidden border-line/70 bg-bg-2/80", compact ? "" : "shadow-(--shadow-extract-2)")}>
       <CardHeader className={cn("gap-3", compact ? "px-4 pt-4 pb-2" : "px-5 pt-5 pb-3")}>
         <div className="flex items-start justify-between gap-3">
           <div>
-            <div className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-muted-foreground">
+            <div className="text-(length:--text-micro) uppercase tracking-(--tracking-caps) text-ink-3">
               {summary.scopeType}
             </div>
             <CardTitle className="mt-1 text-base">{summary.scopeName}</CardTitle>
@@ -259,7 +259,7 @@ export function BudgetPolicyCard({
         {saveSection}
         {advancedSettings}
         {parsedDraft === null ? (
-          <p className="text-xs text-destructive">Enter a valid non-negative dollar amount.</p>
+          <p className="text-xs text-bad">Enter a valid non-negative dollar amount.</p>
         ) : null}
       </CardContent>
     </Card>

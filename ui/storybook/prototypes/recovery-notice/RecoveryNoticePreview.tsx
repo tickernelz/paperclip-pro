@@ -56,16 +56,16 @@ export function RecoveryNoticePreview(props: RecoveryNoticePreviewProps) {
     <main className={cn("mx-auto flex w-full flex-col gap-6 p-4 sm:p-6", props.mobile ? "max-w-sm" : "max-w-3xl")}>
       {props.comparison ? (
         <>
-          <div className="flex flex-col gap-3 border-b border-border pb-6">
+          <div className="flex flex-col gap-3 border-b border-line pb-6">
             <h1 className="text-lg font-semibold">Recovery notice</h1>
-            <p className="text-sm text-muted-foreground">The same event, with a clearer explanation and a visible next action.</p>
+            <p className="text-sm text-ink-3">The same event, with a clearer explanation and a visible next action.</p>
           </div>
           <section className="flex min-w-0 flex-col gap-2" aria-label="Previous notice">
-            <h2 className="text-xs font-medium text-muted-foreground">Previous</h2>
+            <h2 className="text-xs font-medium text-ink-3">Previous</h2>
             <TaskChatSystemNotice item={originalNotice} />
           </section>
           <section className="flex flex-col gap-2" aria-label="Implemented notice">
-            <h2 className="text-xs font-medium text-muted-foreground">Implemented</h2>
+            <h2 className="text-xs font-medium text-ink-3">Implemented</h2>
             <RecoveryNotice {...props} />
           </section>
         </>
@@ -73,16 +73,16 @@ export function RecoveryNoticePreview(props: RecoveryNoticePreviewProps) {
         <>
           {!props.noticeOnly ? (
             <>
-              <header className="flex flex-col gap-2 border-b border-border pb-5">
-                <span className="font-mono text-xs text-muted-foreground">PAP-204</span>
+              <header className="flex flex-col gap-2 border-b border-line pb-5">
+                <span className="font-mono text-xs text-ink-3">PAP-204</span>
                 <h1 className="text-xl font-semibold">Update the onboarding checklist</h1>
               </header>
-              <p className="max-w-md self-end rounded-xl bg-muted px-4 py-3 text-sm leading-relaxed">
+              <p className="max-w-md self-end rounded-xl bg-bg-3 px-4 py-3 text-sm leading-relaxed">
                 Review the setup steps and update the checklist with anything we’re missing.
               </p>
               <div className="flex flex-col gap-2">
                 <div className="flex items-center gap-2 text-sm">
-                  <Bot aria-hidden="true" className="size-4 text-muted-foreground" />
+                  <Bot aria-hidden="true" className="size-4 text-ink-3" />
                   <span className="font-medium">{props.agentName ?? "Alex"}</span>
                 </div>
                 <p className="text-sm leading-relaxed">I’ve reviewed the setup steps and started updating the checklist.</p>

@@ -107,7 +107,7 @@ function BlockerRow({
   return streamlined ? (
     <Link
       to={createIssueDetailPath(issuePathId)}
-      className="flex min-w-0 items-baseline gap-1.5 rounded px-1 py-0.5 text-amber-800 underline-offset-2 transition-colors hover:bg-accent/50 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:text-amber-200"
+      className="flex min-w-0 items-baseline gap-1.5 rounded px-1 py-0.5 text-amber-800 underline-offset-2 transition-colors hover:bg-bg-3/50 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus dark:text-amber-200"
       title={`${blocker.identifier ?? blocker.id.slice(0, 8)} — ${blocker.title}`}
     >
       <span className="shrink-0 font-medium">{label}</span>
@@ -171,7 +171,7 @@ function LiveWorkLink({
     <Link
       to={createIssueDetailPath(issuePathId)}
       className={streamlined
-        ? "flex min-w-0 items-center gap-1.5 rounded px-1 py-0.5 text-blue-800 underline-offset-2 transition-colors hover:bg-accent/50 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring dark:text-blue-200"
+        ? "flex min-w-0 items-center gap-1.5 rounded px-1 py-0.5 text-blue-800 underline-offset-2 transition-colors hover:bg-bg-3/50 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus dark:text-blue-200"
         : "flex min-w-0 items-baseline gap-1 text-blue-800 underline-offset-2 hover:underline dark:text-blue-200"}
       title={`${blocker.identifier ?? blocker.id.slice(0, 8)} — ${blocker.title}`}
     >

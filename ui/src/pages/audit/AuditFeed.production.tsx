@@ -111,10 +111,10 @@ function AuditActor({
   if (agent) {
     return (
       <span className="inline-flex min-w-0 items-center gap-1.5" title={agent.name}>
-        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-muted-foreground">
+        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-bg-3 text-ink-3">
           <AgentAvatar agent={agent} size={16} className="h-3 w-3"/>
         </span>
-        <span className="truncate font-medium text-foreground">{agent.name}</span>
+        <span className="truncate font-medium text-ink">{agent.name}</span>
       </span>
     );
   }
@@ -125,7 +125,7 @@ function AuditActor({
         name={profile?.label ?? "User"}
         avatarUrl={profile?.image ?? null}
         size="sm"
-        className="font-medium text-foreground"
+        className="font-medium text-ink"
       />
     );
   }
@@ -139,7 +139,7 @@ function AuditActor({
         : record.actorType === "user"
           ? "User"
           : "System";
-  return <Identity name={label} size="sm" className="font-medium text-foreground" />;
+  return <Identity name={label} size="sm" className="font-medium text-ink" />;
 }
 
 /**
@@ -155,16 +155,16 @@ function AuditEntityNode({ record }: { record: AuditActionRecord }) {
 
   if (issueRef) {
     return (
-      <Link to={`/issues/${issueRef}`} className="font-medium text-primary hover:underline">
+      <Link to={`/issues/${issueRef}`} className="font-medium text-accent hover:underline">
         {issue?.identifier ? `${issue.identifier}${issue.title ? ` · ${issue.title}` : ""}` : "the task"}
       </Link>
     );
   }
   if (document) {
-    return <span className="font-medium text-foreground">{document.key}</span>;
+    return <span className="font-medium text-ink">{document.key}</span>;
   }
   // Non-linkable entities (company, agent, goal, …) — show a plain descriptor.
-  return <span className="text-muted-foreground">{record.entityType}</span>;
+  return <span className="text-ink-3">{record.entityType}</span>;
 }
 
 function AuditRow({
@@ -192,31 +192,31 @@ function AuditRow({
     <li className="px-4 py-3 text-sm">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 space-y-1">
-          <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-foreground">
+          <div className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-ink">
             <AuditActor record={record} agentMap={agentMap} userProfileMap={userProfileMap} />
-            <span className="text-muted-foreground">{verb}</span>
+            <span className="text-ink-3">{verb}</span>
             <AuditEntityNode record={record} />
           </div>
           {excerpt ? (
-            <p className="line-clamp-2 border-l-2 border-border pl-2 text-muted-foreground">
+            <p className="line-clamp-2 border-l-2 border-line pl-2 text-ink-3">
               “{excerpt}”
             </p>
           ) : null}
           {documentKey ? (
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-ink-3">
               Document <span className="font-mono text-(length:--text-micro)">{documentKey}</span>
             </p>
           ) : null}
-          <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-2 text-xs text-ink-3">
             {showOnBehalf && responsibleLabel ? (
-              <span className="inline-flex items-center rounded-full bg-muted px-2 py-0.5">
+              <span className="inline-flex items-center rounded-full bg-bg-3 px-2 py-0.5">
                 on behalf of {responsibleLabel}
               </span>
             ) : null}
             {record.runId && record.agentId ? (
               <Link
                 to={`/agents/${record.agentId}/runs/${record.runId}`}
-                className="text-primary hover:underline"
+                className="text-accent hover:underline"
               >
                 View run
               </Link>
@@ -225,7 +225,7 @@ function AuditRow({
           </div>
         </div>
         <time
-          className="shrink-0 whitespace-nowrap text-xs text-muted-foreground"
+          className="shrink-0 whitespace-nowrap text-xs text-ink-3"
           dateTime={record.createdAt}
           title={new Date(record.createdAt).toLocaleString()}
         >
@@ -241,10 +241,10 @@ function AuditUpsell() {
   return (
     <Card>
       <CardContent className="flex flex-col items-center gap-3 py-14 text-center">
-        <ShieldAlert className="h-10 w-10 text-muted-foreground/50" />
+        <ShieldAlert className="h-10 w-10 text-ink-3/50" />
         <div>
-          <p className="text-sm font-medium text-foreground">Agent audit is a Paperclip Enterprise view</p>
-          <p className="mx-auto mt-1 max-w-md text-sm text-muted-foreground">
+          <p className="text-sm font-medium text-ink">Agent audit is a Paperclip Enterprise view</p>
+          <p className="mx-auto mt-1 max-w-md text-sm text-ink-3">
             The agent audit log gives you a searchable, exportable record of everything your agents
             did — every comment, task change, approval, and run — with the responsible person for
             each action. Ask an administrator to grant you the{" "}
@@ -465,8 +465,8 @@ export function AuditFeed({
       {!hideHeader ? (
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <h1 className="text-lg font-semibold text-foreground">Activity</h1>
-            <p className="mt-1 max-w-2xl text-sm text-muted-foreground">
+            <h1 className="text-lg font-semibold text-ink">Activity</h1>
+            <p className="mt-1 max-w-2xl text-sm text-ink-3">
               {resolvedMode === "agents"
                 ? "Every recorded agent action, newest first — with the responsible person and run behind each one."
                 : "Everything happening in your company, newest first — people, agents, and the system. Each line is one recorded action."}
@@ -561,7 +561,7 @@ export function AuditFeed({
             </Button>
           ) : null}
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             className="ml-auto"
             onClick={handleExport}
@@ -575,21 +575,21 @@ export function AuditFeed({
 
       {recoveringFromAccessDowngrade || fallingBackToAllActivity ? (
         <Card>
-          <CardContent className="py-14 text-center text-sm text-muted-foreground">
+          <CardContent className="py-14 text-center text-sm text-ink-3">
             Refreshing audit access…
           </CardContent>
         </Card>
       ) : feed.isLoading ? (
         <Card>
-          <CardContent className="py-14 text-center text-sm text-muted-foreground">Loading…</CardContent>
+          <CardContent className="py-14 text-center text-sm text-ink-3">Loading…</CardContent>
         </Card>
       ) : feed.error ? (
         <Card>
           <CardContent className="flex flex-col items-center gap-3 py-14 text-center">
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-ink-3">
               {feed.error instanceof Error ? feed.error.message : "Failed to load the audit log."}
             </p>
-            <Button variant="outline" size="sm" onClick={() => feed.refetch()}>
+            <Button variant="secondary" size="sm" onClick={() => feed.refetch()}>
               Try again
             </Button>
           </CardContent>
@@ -597,12 +597,12 @@ export function AuditFeed({
       ) : items.length === 0 ? (
         <Card>
           <CardContent className="flex flex-col items-center gap-3 py-14 text-center">
-            <ScrollText className="h-10 w-10 text-muted-foreground/40" />
+            <ScrollText className="h-10 w-10 text-ink-3/40" />
             <div>
-              <p className="text-sm font-medium text-foreground">
+              <p className="text-sm font-medium text-ink">
                 {hasActiveFilters ? "No actions match these filters" : "Nothing here yet"}
               </p>
-              <p className="mt-1 max-w-md text-sm text-muted-foreground">
+              <p className="mt-1 max-w-md text-sm text-ink-3">
                 {hasActiveFilters
                   ? "Try a wider date range or different filters."
                   : resolvedMode === "agents"
@@ -611,7 +611,7 @@ export function AuditFeed({
               </p>
             </div>
             {hasActiveFilters ? (
-              <Button variant="outline" size="sm" onClick={clearFilters}>
+              <Button variant="secondary" size="sm" onClick={clearFilters}>
                 Clear filters
               </Button>
             ) : null}
@@ -620,7 +620,7 @@ export function AuditFeed({
       ) : (
         <Card>
           <CardContent className="px-0 py-0">
-            <ul className={cn("divide-y divide-border")}>
+            <ul className={cn("divide-y divide-line")}>
               {items.map((record) => (
                 <AuditRow
                   key={record.id}
@@ -637,7 +637,7 @@ export function AuditFeed({
       {feed.hasNextPage ? (
         <div className="flex justify-center">
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             onClick={() => feed.fetchNextPage()}
             disabled={feed.isFetchingNextPage}
@@ -647,7 +647,7 @@ export function AuditFeed({
         </div>
       ) : null}
 
-      <p className="text-xs text-muted-foreground">
+      <p className="text-xs text-ink-3">
         Recorded by Paperclip — entries can't be edited. Sensitive values are never stored.
       </p>
     </div>

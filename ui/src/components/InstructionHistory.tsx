@@ -59,7 +59,7 @@ export function InstructionHistory({
       <Button
         type="button"
         size="sm"
-        variant="outline"
+        variant="secondary"
         aria-expanded={open}
         onClick={() => setOpen(!open)}
       >
@@ -68,10 +68,10 @@ export function InstructionHistory({
       {open && (
         <div className="space-y-3">
           {history.isLoading && (
-            <p className="text-sm text-muted-foreground">Loading revisions…</p>
+            <p className="text-sm text-ink-3">Loading revisions…</p>
           )}
           {error && (
-            <p role="alert" className="text-sm text-destructive">
+            <p role="alert" className="text-sm text-bad">
               {error.message}
             </p>
           )}
@@ -87,7 +87,7 @@ export function InstructionHistory({
                 >
                   <span className="font-mono">{revision.id.slice(0, 8)}</span>
                 </Button>
-                <span className="text-sm text-muted-foreground">
+                <span className="text-sm text-ink-3">
                   {revision.source} ·{" "}
                   {new Date(revision.createdAt).toLocaleString()}
                   {revision.id === currentRevisionId ? " · Current" : ""}
@@ -106,14 +106,14 @@ export function InstructionHistory({
           )}
           {diff.data && (
             <>
-              <p className="text-sm text-muted-foreground">Selected revision</p>
-              <pre className="whitespace-pre-wrap break-words rounded-md border border-border p-3 font-mono text-sm">
+              <p className="text-sm text-ink-3">Selected revision</p>
+              <pre className="whitespace-pre-wrap break-words rounded-md border border-line p-3 font-mono text-sm">
                 {diff.data.from.content}
               </pre>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-ink-3">
                 Changes from selected revision to current
               </p>
-              <pre className="whitespace-pre-wrap break-words rounded-md border border-border p-3 font-mono text-sm">
+              <pre className="whitespace-pre-wrap break-words rounded-md border border-line p-3 font-mono text-sm">
                 {diff.data.removed && `Removed:\n${diff.data.removed}\n`}
                 {diff.data.added && `Added:\n${diff.data.added}`}
                 {!diff.data.removed &&
@@ -132,7 +132,7 @@ export function InstructionHistory({
                 Restore as new revision
               </Button>
               {disabled && (
-                <p className="text-sm text-muted-foreground">
+                <p className="text-sm text-ink-3">
                   Save or cancel your edits before restoring.
                 </p>
               )}

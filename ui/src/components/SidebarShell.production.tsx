@@ -204,7 +204,7 @@ export function SidebarShell({
           // Overlay styling only while the panel is wider than its reserved
           // spacer (i.e. peeking) so it floats above content without reflow.
           isOverlay
-            ? "z-30 border-r border-border bg-background shadow-lg"
+            ? "z-30 border-r border-line bg-bg shadow-lg"
             : "z-0",
         )}
         style={panelStyle}
@@ -227,8 +227,8 @@ export function SidebarShell({
             className={cn(
               "absolute inset-y-0 right-0 z-20 w-3 cursor-col-resize touch-none outline-none",
               "before:absolute before:inset-y-0 before:left-1/2 before:w-px before:-translate-x-1/2 before:bg-transparent before:transition-colors",
-              "hover:before:bg-border focus-visible:before:bg-ring",
-              isResizing && "before:bg-ring",
+              "hover:before:bg-line focus-visible:before:bg-focus",
+              isResizing && "before:bg-focus",
             )}
             onPointerDown={handlePointerDown}
             onPointerMove={handlePointerMove}

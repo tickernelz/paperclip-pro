@@ -40,11 +40,11 @@ function formatMs(value: number | null) {
 
 function MetricTile({ label, value, testId }: { label: string; value: string; testId: string }) {
   return (
-    <div className="rounded-md border border-border bg-background px-3 py-2">
-      <div className="text-(length:--text-micro) font-medium uppercase tracking-(--tracking-eyebrow) text-muted-foreground">
+    <div className="rounded-md border border-line bg-bg px-3 py-2">
+      <div className="text-(length:--text-micro) font-medium uppercase tracking-(--tracking-eyebrow) text-ink-3">
         {label}
       </div>
-      <div data-testid={testId} className="mt-1 font-mono text-sm text-foreground">
+      <div data-testid={testId} className="mt-1 font-mono text-sm text-ink">
         {value}
       </div>
     </div>
@@ -106,7 +106,7 @@ export function IssueChatLongThreadPerf() {
 
   return (
     <div data-testid="issue-chat-long-thread-perf" className="space-y-5">
-      <div className="flex flex-col gap-3 border-b border-border pb-5 lg:flex-row lg:items-end lg:justify-between">
+      <div className="flex flex-col gap-3 border-b border-line pb-5 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <Badge variant="outline" className="font-mono text-(length:--text-micro)">
@@ -116,7 +116,7 @@ export function IssueChatLongThreadPerf() {
             <Badge variant="outline">{fixture.issue.projectName}</Badge>
           </div>
           <h1 className="mt-3 text-2xl font-semibold tracking-tight">{fixture.issue.title}</h1>
-          <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
+          <p className="mt-2 max-w-3xl text-sm leading-6 text-ink-3">
             Deterministic local fixture for measuring the current direct-render issue chat path with
             hundreds of merged thread rows, markdown-heavy assistant bodies, linked runs, documents,
             sub-issues, and sidebar context.
@@ -130,27 +130,27 @@ export function IssueChatLongThreadPerf() {
 
       <div className="grid gap-4 xl:grid-cols-(--gtc-40)">
         <main className="min-w-0 space-y-4">
-          <Card className="border-border/70">
+          <Card className="border-line/70">
             <CardHeader className="pb-2">
               <CardTitle className="text-base">Issue documents</CardTitle>
             </CardHeader>
             <CardContent className="grid gap-2 sm:grid-cols-2">
               {fixture.documents.map((document) => (
-                <div key={document} className="rounded-md border border-border bg-muted/30 px-3 py-2 text-sm">
+                <div key={document} className="rounded-md border border-line bg-bg-3/30 px-3 py-2 text-sm">
                   {document}
                 </div>
               ))}
             </CardContent>
           </Card>
 
-          <Card className="border-border/70">
+          <Card className="border-line/70">
             <CardHeader className="pb-2">
               <CardTitle className="text-base">Sub-issues</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               {fixture.subIssues.map((subIssue, index) => (
-                <div key={subIssue} className="flex items-center gap-3 rounded-md border border-border bg-background px-3 py-2 text-sm">
-                  <span className="font-mono text-xs text-muted-foreground">#{index + 1}</span>
+                <div key={subIssue} className="flex items-center gap-3 rounded-md border border-line bg-bg px-3 py-2 text-sm">
+                  <span className="font-mono text-xs text-ink-3">#{index + 1}</span>
                   <span>{subIssue}</span>
                 </div>
               ))}
@@ -177,7 +177,7 @@ export function IssueChatLongThreadPerf() {
         </main>
 
         <aside className="space-y-4 xl:sticky xl:top-4 xl:self-start">
-          <Card className="border-border/70">
+          <Card className="border-line/70">
             <CardHeader className="pb-2">
               <CardTitle className="text-base">Baseline metrics</CardTitle>
             </CardHeader>
@@ -190,14 +190,14 @@ export function IssueChatLongThreadPerf() {
             </CardContent>
           </Card>
 
-          <Card className="border-border/70">
+          <Card className="border-line/70">
             <CardHeader className="pb-2">
               <CardTitle className="text-base">Fixture shape</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
               {fixture.sidebarStats.map(([label, value]) => (
                 <div key={label} className="flex items-center justify-between gap-3 text-sm">
-                  <span className="text-muted-foreground">{label}</span>
+                  <span className="text-ink-3">{label}</span>
                   <span className="font-mono">{value}</span>
                 </div>
               ))}

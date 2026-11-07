@@ -102,7 +102,7 @@ export function TaskChatRichInput({
 
   return (
     <div
-      className="rounded-md bg-muted/35 px-3 py-2"
+      className="rounded-md bg-bg-3/35 px-3 py-2"
       role="group"
       aria-labelledby={ariaLabelledBy}
       data-testid={testId}
@@ -121,7 +121,7 @@ export function TaskChatRichInput({
         contentClassName="max-h-(--sz-28dvh) min-h-(--sz-72px) overflow-y-auto px-0 py-0 text-sm scrollbar-auto-hide"
       />
       {showAttachControls ? (
-        <div className="mt-1 flex flex-wrap items-center gap-1 text-xs text-muted-foreground">
+        <div className="mt-1 flex flex-wrap items-center gap-1 text-xs text-ink-3">
           <input
             ref={fileInputRef}
             type="file"
@@ -158,7 +158,7 @@ export function TaskChatRichInput({
         </div>
       ) : null}
       {uploadError ? (
-        <p className="mt-1 text-xs text-destructive" role="alert">
+        <p className="mt-1 text-xs text-bad" role="alert">
           {uploadError}
         </p>
       ) : null}

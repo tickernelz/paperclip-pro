@@ -75,7 +75,7 @@ describe("SidePanelTabs", () => {
     expect(container.querySelector('button[aria-label="Close Properties"]')).not.toBeNull();
     expect(container.querySelector('button[aria-label="Close Plan"]')).toBeNull();
     const addButton = container.querySelector<HTMLButtonElement>('button[aria-label="Open a new tab"]');
-    expect(addButton?.className).toContain("text-muted-foreground");
+    expect(addButton?.className).toContain("text-ink-3");
     expect(addButton?.className).toContain("h-(--side-panel-tab-height)");
   });
 
@@ -129,9 +129,9 @@ describe("SidePanelTabs", () => {
     const propertiesWrapper = container.querySelector<HTMLElement>('[data-side-panel-tab-wrapper="properties"]');
     expect(propertiesWrapper?.className).toContain("mx-1.5");
     expect(propertiesWrapper?.className).toContain("h-7");
-    expect(propertiesWrapper?.className).toContain("text-foreground");
-    expect(propertiesWrapper?.className).toContain("hover:bg-accent/50");
-    expect(propertiesWrapper?.className).not.toContain("bg-muted");
+    expect(propertiesWrapper?.className).toContain("text-ink");
+    expect(propertiesWrapper?.className).toContain("hover:bg-bg-3/50");
+    expect(propertiesWrapper?.className).not.toContain("bg-bg-3");
     expect(propertiesWrapper?.style.width).toBe("");
     expect(propertiesWrapper?.parentElement?.className)
       .toContain("min-w-(--side-panel-streamlined-tab-min-width)");
@@ -156,7 +156,7 @@ describe("SidePanelTabs", () => {
     const addButton = container.querySelector<HTMLButtonElement>('button[aria-label="Open a new tab"]');
     expect(addButton?.className).toContain("h-(--side-panel-tab-height)");
     expect(addButton?.className).toContain("w-(--side-panel-tab-height)");
-    expect(addButton?.className).toContain("hover:bg-accent");
+    expect(addButton?.className).toContain("hover:bg-bg-3");
   });
 
   it("lets a lone Streamlined tab fill the space before the add action", () => {

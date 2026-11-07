@@ -272,7 +272,7 @@ describe("markdown work product review row", () => {
     expect(container.querySelector(`[data-testid="annotation-surface-${REVIEW_KEY}"]`)).not.toBeNull();
   });
 
-  it.each(["compact", "card"] as const)("keeps %s text-card downloads separate from opening a tab", async (variant) => {
+  it.each(["compact", "card"] as const)("keeps %s text-bg-2 downloads separate from opening a tab", async (variant) => {
     root = createRoot(container);
     await act(async () => root!.render(
       <TextAttachmentContext.Provider value={openText}>

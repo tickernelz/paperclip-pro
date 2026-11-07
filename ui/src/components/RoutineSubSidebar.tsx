@@ -110,11 +110,11 @@ export function RoutineSubSidebar({
   return (
     <nav
       aria-label="Routine sections"
-      className="hidden h-full w-52 shrink-0 flex-col gap-4 overflow-y-auto border-r border-border bg-background px-3 py-4 md:flex"
+      className="hidden h-full w-52 shrink-0 flex-col gap-4 overflow-y-auto border-r border-line bg-bg px-3 py-4 md:flex"
     >
       {NAV_GROUPS.map((group) => (
         <div key={group.label} className="flex flex-col gap-0.5">
-          <p className="mx-2 px-2 pb-1 text-(length:--text-nano) font-medium uppercase tracking-widest font-mono text-muted-foreground/60">
+          <p className="mx-2 px-2 pb-1 text-(length:--text-nano) font-medium uppercase tracking-widest font-mono text-ink-3/60">
             {group.label}
           </p>
           {group.items.map((item) => {
@@ -142,8 +142,8 @@ export function RoutineSubSidebar({
                   // inset pill, type scale, and icon size.
                   "flex items-center gap-2.5 mx-2 rounded-lg px-2 py-1.5 pointer-coarse:py-1 text-(length:--text-compact) font-medium transition-colors motion-safe:duration-150",
                   isActive
-                    ? "bg-accent text-foreground"
-                    : "text-foreground/80 hover:bg-accent/50 hover:text-foreground",
+                    ? "bg-bg-3 text-ink"
+                    : "text-ink/80 hover:bg-bg-3/50 hover:text-ink",
                 )}
               >
                 <Icon className="h-4 w-4 shrink-0" />
@@ -153,7 +153,7 @@ export function RoutineSubSidebar({
                 ) : dirty ? (
                   <span
                     aria-label="Unsaved changes"
-                    className="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500 ring-2 ring-background"
+                    className="ml-auto h-1.5 w-1.5 shrink-0 rounded-full bg-amber-500 ring-2 ring-bg"
                   />
                 ) : null}
               </Link>
@@ -176,7 +176,7 @@ export function RoutineSectionPicker({
   isSectionDirty: (section: RoutineSectionKey) => boolean;
 }) {
   return (
-    <div className="sticky top-0 z-10 border-b border-border bg-background px-4 py-2 md:hidden">
+    <div className="sticky top-0 z-10 border-b border-line bg-bg px-4 py-2 md:hidden">
       <Select
         value={activeSection}
         onValueChange={(value) => {

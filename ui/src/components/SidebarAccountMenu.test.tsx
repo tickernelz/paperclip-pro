@@ -288,28 +288,28 @@ describe("SidebarAccountMenu", () => {
     await flushReact();
 
     const accountSurface = container.firstElementChild;
-    expect(accountSurface?.className).toContain("bg-border/50");
-    expect(accountSurface?.className).toContain("dark:bg-muted");
+    expect(accountSurface?.className).toContain("bg-line/50");
+    expect(accountSurface?.className).toContain("dark:bg-bg-3");
     expect(accountSurface?.className).not.toContain("border-t");
     expect(accountSurface?.className).not.toContain("border-r");
-    expect(accountSurface?.className).not.toContain("border-border");
+    expect(accountSurface?.className).not.toContain("border-line");
     const accountTrigger = container.querySelector('button[aria-label="Open account menu"]');
     expect(accountTrigger?.classList).toContain("rounded-lg");
-    expect(accountTrigger?.classList).toContain("hover:bg-sidebar-accent");
-    expect(accountTrigger?.classList).toContain("hover:text-sidebar-accent-foreground");
-    expect(accountTrigger?.classList).not.toContain("hover:bg-background");
+    expect(accountTrigger?.classList).toContain("hover:bg-bg-3");
+    expect(accountTrigger?.classList).toContain("hover:text-ink");
+    expect(accountTrigger?.classList).not.toContain("hover:bg-bg");
 
     const feedbackButton = container.querySelector<HTMLAnchorElement>(
       'a[aria-label="Share feedback"]',
     );
     expect(feedbackButton?.getAttribute("href")).toBe("https://paperclip.ing/feedback");
     expect(feedbackButton?.getAttribute("target")).toBe("_blank");
-    expect(feedbackButton?.classList).toContain("text-muted-foreground/50");
-    expect(feedbackButton?.classList).not.toContain("text-border");
-    expect(feedbackButton?.classList).not.toContain("text-muted-foreground");
-    expect(feedbackButton?.classList).toContain("hover:bg-sidebar-accent");
-    expect(feedbackButton?.classList).toContain("hover:text-sidebar-accent-foreground");
-    expect(feedbackButton?.classList).not.toContain("hover:bg-background");
+    expect(feedbackButton?.classList).toContain("text-ink-3/50");
+    expect(feedbackButton?.classList).not.toContain("text-line");
+    expect(feedbackButton?.classList).not.toContain("text-ink-3");
+    expect(feedbackButton?.classList).toContain("hover:bg-bg-3");
+    expect(feedbackButton?.classList).toContain("hover:text-ink");
+    expect(feedbackButton?.classList).not.toContain("hover:bg-bg");
     expect(feedbackButton?.querySelector("svg")?.classList).toContain("lucide-flag");
     expect(feedbackButton?.getAttribute("data-slot")).toBe("tooltip-trigger");
     expect(feedbackButton?.hasAttribute("title")).toBe(false);
@@ -336,17 +336,17 @@ describe("SidebarAccountMenu", () => {
       'button[aria-label="Open account menu"]',
     );
     expect(accountTrigger?.classList).toContain("rounded-lg");
-    expect(accountTrigger?.classList).toContain("hover:bg-accent/50");
+    expect(accountTrigger?.classList).toContain("hover:bg-bg-3/50");
 
     const feedbackButton = container.querySelector<HTMLAnchorElement>(
       'a[aria-label="Share feedback"]',
     );
     expect(feedbackButton?.getAttribute("href")).toBe("https://paperclip.ing/feedback");
     expect(feedbackButton?.getAttribute("target")).toBe("_blank");
-    expect(feedbackButton?.classList).toContain("text-muted-foreground/50");
-    expect(feedbackButton?.classList).not.toContain("text-border");
-    expect(feedbackButton?.classList).not.toContain("text-muted-foreground");
-    expect(feedbackButton?.classList).toContain("hover:bg-accent/50");
+    expect(feedbackButton?.classList).toContain("text-ink-3/50");
+    expect(feedbackButton?.classList).not.toContain("text-line");
+    expect(feedbackButton?.classList).not.toContain("text-ink-3");
+    expect(feedbackButton?.classList).toContain("hover:bg-bg-3/50");
     expect(feedbackButton?.querySelector("svg")?.classList).toContain("lucide-flag");
     expect(feedbackButton?.getAttribute("data-slot")).toBe("tooltip-trigger");
 
@@ -450,7 +450,7 @@ describe("SidebarAccountMenu", () => {
     expect(document.body.querySelector('[data-slot="popover-content"]')?.className)
       .toContain("min-h-(--profile-popover-min-height)");
     expect(document.body.querySelector('a[href="/company/settings"]')?.className)
-      .not.toContain("bg-muted");
+      .not.toContain("bg-bg-3");
     expect(document.body.textContent).not.toContain("Manage company and instance settings.");
     expect(document.body.textContent).not.toContain("Open your activity, task, and usage ledger.");
     expect(document.body.querySelector('a[href="/company/settings"]')).not.toBeNull();

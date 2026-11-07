@@ -29,7 +29,7 @@ export function InteractionAudienceLine({
   return (
     <div
       className={cn(
-        "flex items-start gap-2 text-xs leading-5 text-muted-foreground",
+        "flex items-start gap-2 text-xs leading-5 text-ink-3",
         compact ? "min-w-0" : "max-w-3xl",
         className,
       )}
@@ -55,7 +55,7 @@ export function InteractionAudienceLine({
             sentence needs a heading. */}
         {compact ? null : (
           <>
-            <span className="font-medium text-foreground">{audience.label}</span>
+            <span className="font-medium text-ink">{audience.label}</span>
             {" — "}
           </>
         )}

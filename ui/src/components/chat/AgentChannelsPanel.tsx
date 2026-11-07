@@ -41,7 +41,7 @@ export function AgentChannelsPanel({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h2 className="text-lg font-semibold">Channels</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-ink-3">
             Chat and email identities connected to this agent.
           </p>
         </div>
@@ -53,19 +53,19 @@ export function AgentChannelsPanel({
         </Button>
       </div>
       {query.isLoading ? (
-        <p className="text-sm text-muted-foreground">Loading channels…</p>
+        <p className="text-sm text-ink-3">Loading channels…</p>
       ) : endpoints.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-border p-5">
+        <div className="rounded-lg border border-dashed border-line p-5">
           <p className="text-sm font-medium">No channels connected</p>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-ink-3">
             {enabled || githubEnabled ? "Connect an agent identity from Connectors." : "Connect AgentMail from Connectors."}
           </p>
-          <Button asChild className="mt-3" variant="outline" size="sm">
+          <Button asChild className="mt-3" variant="secondary" size="sm">
             <Link to="/apps">Open Connectors</Link>
           </Button>
         </div>
       ) : (
-        <div className="divide-y divide-border border-y border-border">
+        <div className="divide-y divide-line border-y border-line">
           {endpoints.map((endpoint) => (
             <div
               key={endpoint.id}
@@ -75,14 +75,14 @@ export function AgentChannelsPanel({
                 <p className="text-sm font-semibold">
                   {providerNames[endpoint.provider]}
                 </p>
-                <p className="truncate text-xs text-muted-foreground">
+                <p className="truncate text-xs text-ink-3">
                   {endpoint.botLabel ??
                     endpoint.providerAccountLabel ??
                     "Provider identity"}
                 </p>
               </div>
               <StatusBadge status={endpoint.status} />
-              <Button asChild size="sm" variant="outline">
+              <Button asChild size="sm" variant="secondary">
                 <Link to={`/apps/chat/${endpoint.id}/settings`}>
                   Open connection <ExternalLink />
                 </Link>

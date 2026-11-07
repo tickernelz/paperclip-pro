@@ -60,7 +60,7 @@ export function SlackAvatarContent({
           width={512}
           height={512}
           alt={`${agentName}’s Cliptoon avatar`}
-          className="size-40 shrink-0 rounded-lg bg-muted object-contain"
+          className="size-40 shrink-0 rounded-lg bg-bg-3 object-contain"
         />
         <div className="space-y-3">
           <div className="space-y-1">
@@ -69,11 +69,11 @@ export function SlackAvatarContent({
                 ? "Download your agent’s avatar"
                 : "1. Download your agent’s avatar"}
             </h2>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-ink-3">
               PNG · 512 × 512 · Ready for Slack
             </p>
           </div>
-          <Button variant="outline" asChild>
+          <Button variant="secondary" asChild>
             <a
               href={avatarUrl}
               download={filename}
@@ -92,7 +92,7 @@ export function SlackAvatarContent({
             </a>
           </Button>
           {downloadError && (
-            <p role="alert" className="text-sm text-destructive">
+            <p role="alert" className="text-sm text-bad">
               Couldn’t download the avatar. Try downloading it again.
             </p>
           )}
@@ -114,7 +114,7 @@ export function SlackAvatarContent({
             <h2 id={`${id}-upload`} className="text-sm font-semibold">
               {compact ? "Upload it in Slack" : "2. Upload it in Slack"}
             </h2>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-ink-3">
               You’ll upload the downloaded image directly in Slack’s app
               settings.
             </p>
@@ -158,7 +158,7 @@ export function SlackAvatarSettings(props: SlackAvatarProps) {
     <section className="space-y-4" aria-label="Slack avatar">
       <div className="space-y-1">
         <h2 className="text-lg font-semibold">Agent avatar</h2>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           Use {props.agentName}’s avatar so your team recognizes the agent
         </p>
       </div>

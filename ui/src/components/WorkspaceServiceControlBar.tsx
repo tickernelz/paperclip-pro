@@ -87,10 +87,10 @@ function statusMeta(entry: WorkspaceServiceControlEntry): { label: string; unhea
 
 function StatusIndicator({ entry, className }: { entry: WorkspaceServiceControlEntry; className?: string }) {
   if (isTransitional(entry.state)) {
-    return <Loader2 className={cn("size-3 shrink-0 animate-spin text-muted-foreground", className)} />;
+    return <Loader2 className={cn("size-3 shrink-0 animate-spin text-ink-3", className)} />;
   }
   if (entry.state === "failed") {
-    return <TriangleAlert className={cn("size-3 shrink-0 text-destructive", className)} />;
+    return <TriangleAlert className={cn("size-3 shrink-0 text-bad", className)} />;
   }
   const unhealthy = entry.state === "running" && entry.healthStatus === "unhealthy";
   return (
@@ -101,7 +101,7 @@ function StatusIndicator({ entry, className }: { entry: WorkspaceServiceControlE
           ? unhealthy
             ? "bg-amber-500 ring-2 ring-amber-500/30"
             : "bg-emerald-500"
-          : "border border-muted-foreground/60 bg-transparent",
+          : "border border-ink-3/60 bg-transparent",
         className,
       )}
     />
@@ -122,7 +122,6 @@ function CopyUrlButton({ url, disabled }: { url: string; disabled?: boolean }) {
       disabled={disabled}
       aria-label={copyLabel}
       title={copyLabel}
-      className="text-muted-foreground hover:text-foreground"
       onClick={async () => {
         try {
           await copyTextToClipboard(url);
@@ -137,7 +136,7 @@ function CopyUrlButton({ url, disabled }: { url: string; disabled?: boolean }) {
       {copyState === "copied" ? (
         <Check className="size-3" />
       ) : copyState === "failed" ? (
-        <TriangleAlert className="size-3 text-destructive" />
+        <TriangleAlert className="size-3 text-bad" />
       ) : (
         <Copy className="size-3" />
       )}
@@ -151,7 +150,7 @@ function UrlSegment({ entry, compact }: { entry: WorkspaceServiceControlEntry; c
   const live = entry.state === "running" && Boolean(entry.url);
 
   if (!displayUrl) {
-    return <span className="font-mono text-xs text-muted-foreground/70">no url</span>;
+    return <span className="font-mono text-xs text-ink-3/70">no url</span>;
   }
   return (
     <>
@@ -161,14 +160,14 @@ function UrlSegment({ entry, compact }: { entry: WorkspaceServiceControlEntry; c
           target="_blank"
           rel="noreferrer"
           title={entry.url ?? undefined}
-          className={cn("min-w-0 truncate font-mono text-xs text-foreground hover:underline", compact ? "max-w-44" : "max-w-56")}
+          className={cn("min-w-0 truncate font-mono text-xs text-ink hover:underline", compact ? "max-w-44" : "max-w-56")}
         >
           {displayUrl}
         </a>
       ) : (
         <span
           title={entry.url ?? undefined}
-          className={cn("min-w-0 truncate font-mono text-xs text-muted-foreground/70", compact ? "max-w-44" : "max-w-56")}
+          className={cn("min-w-0 truncate font-mono text-xs text-ink-3/70", compact ? "max-w-44" : "max-w-56")}
         >
           {displayUrl}
         </span>
@@ -180,7 +179,6 @@ function UrlSegment({ entry, compact }: { entry: WorkspaceServiceControlEntry; c
           variant="ghost"
           size="icon-xs"
           disabled={!live}
-          className="text-muted-foreground hover:text-foreground"
           title="Open in new tab"
         >
           {live ? (
@@ -209,7 +207,7 @@ function ActionSlots({
   if (entry.state === "stopped") {
     return (
       <Button
-        variant="cta"
+        variant="primary"
         size="xs"
         className="w-13 justify-center"
         disabled={!canStart}
@@ -227,7 +225,7 @@ function ActionSlots({
     return (
       <>
         <Button
-          variant="cta"
+          variant="primary"
           size="icon-xs"
           disabled={!canStart}
           onClick={() => onAction("start")}
@@ -243,7 +241,7 @@ function ActionSlots({
           onClick={() => onAction("restart")}
           aria-label="Restart"
           title="Restart"
-          className="border border-border text-foreground"
+          className="border"
         >
           <RotateCcw className="size-3" />
         </Button>
@@ -260,7 +258,7 @@ function ActionSlots({
         onClick={() => onAction("stop")}
         aria-label="Stop"
         title="Stop"
-        className="border border-border text-foreground"
+        className="border"
       >
         <Square className="size-3" />
       </Button>
@@ -271,7 +269,7 @@ function ActionSlots({
         onClick={() => onAction("restart")}
         aria-label="Restart"
         title="Restart"
-        className="border border-border text-foreground"
+        className="border"
       >
         <RotateCcw className="size-3" />
       </Button>
@@ -290,7 +288,7 @@ function ServiceDetail({
   if (!detail) return null;
   const exposureFailed = entry.exposureState === "failed" || entry.exposureState === "cleanup_pending";
   return (
-    <div className={cn("flex items-center gap-1 text-xs", exposureFailed ? "text-destructive" : "text-muted-foreground")}>
+    <div className={cn("flex items-center gap-1 text-xs", exposureFailed ? "text-bad" : "text-ink-3")}>
       <span>{detail}</span>
       {onViewLogs && entry.state === "failed" ? (
         <>
@@ -298,7 +296,7 @@ function ServiceDetail({
           <button
             type="button"
             onClick={onViewLogs}
-            className="font-medium text-foreground underline underline-offset-2 hover:text-foreground/80"
+            className="font-medium text-ink underline underline-offset-2 hover:text-ink/80"
           >
             View logs
           </button>
@@ -322,17 +320,17 @@ function SingleServiceBar({
   const meta = statusMeta(entry);
   return (
     <div className={cn("flex w-full flex-col items-stretch gap-1 sm:w-auto sm:items-end", className)}>
-      <div className="rounded-lg border border-border bg-background">
+      <div className="rounded-lg border border-line bg-bg">
         <div className="flex h-9 items-center pl-3 pr-1.5">
           <div className="flex items-center gap-2 sm:min-w-24">
             <StatusIndicator entry={entry} />
-            <span className="whitespace-nowrap text-xs font-medium text-foreground">{meta.label}</span>
+            <span className="whitespace-nowrap text-xs font-medium text-ink">{meta.label}</span>
           </div>
-          <div className="mx-3 hidden h-5 w-px bg-border sm:block" />
+          <div className="mx-3 hidden h-5 w-px bg-line sm:block" />
           <div className="hidden w-56 min-w-0 shrink-0 items-center gap-0.5 sm:flex">
             <UrlSegment entry={entry} />
           </div>
-          <div className="mx-3 hidden h-5 w-px bg-border sm:block" />
+          <div className="mx-3 hidden h-5 w-px bg-line sm:block" />
           <div className="ml-auto flex items-center gap-1 pl-3 sm:pl-0">
             <ActionSlots
               entry={entry}
@@ -340,7 +338,7 @@ function SingleServiceBar({
             />
           </div>
         </div>
-        <div className="flex h-8 items-center justify-between gap-0.5 border-t border-border px-3 sm:hidden">
+        <div className="flex h-8 items-center justify-between gap-0.5 border-t border-line px-3 sm:hidden">
           <UrlSegment entry={entry} compact />
         </div>
       </div>
@@ -374,7 +372,7 @@ function ServicePopoverRow({
     <div className="flex items-center gap-3 py-2.5">
       <StatusIndicator entry={entry} className="mt-0.5" />
       <div className="min-w-0 flex-1">
-        <div className="truncate text-sm font-medium text-foreground">{entry.name}</div>
+        <div className="truncate text-sm font-medium text-ink">{entry.name}</div>
         <div className="flex min-w-0 items-center gap-0.5">
           {live && entry.url ? (
             <>
@@ -383,7 +381,7 @@ function ServicePopoverRow({
                 target="_blank"
                 rel="noreferrer"
                 title={entry.url}
-                className="min-w-0 truncate font-mono text-xs text-muted-foreground hover:text-foreground hover:underline"
+                className="min-w-0 truncate font-mono text-xs text-ink-3 hover:text-ink hover:underline"
               >
                 {displayUrl}
               </a>
@@ -394,8 +392,8 @@ function ServicePopoverRow({
               className={cn(
                 "min-w-0 text-xs",
                 exposureFailed
-                  ? "whitespace-normal break-words text-destructive"
-                  : "truncate text-muted-foreground",
+                  ? "whitespace-normal break-words text-bad"
+                  : "truncate text-ink-3",
               )}
             >
               {secondary}
@@ -447,30 +445,30 @@ function MultiServiceBar({
 
   return (
     <div className={cn("flex w-full flex-col items-stretch gap-1 sm:w-auto sm:items-end", className)}>
-      <div className="rounded-lg border border-border bg-background">
+      <div className="rounded-lg border border-line bg-bg">
         <div className="flex h-9 items-center pl-3 pr-1.5">
           <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
               <button
                 type="button"
-                className="flex h-full items-center gap-2 rounded-l-lg pr-1 text-xs font-medium text-foreground hover:bg-accent"
+                className="flex h-full items-center gap-2 rounded-l-lg pr-1 text-xs font-medium text-ink hover:bg-bg-3"
                 aria-label={`${runningCount} of ${services.length} services running — show services`}
               >
                 <StatusIndicator entry={aggregateEntry} />
                 <span className="whitespace-nowrap">{runningCount}/{services.length} running</span>
-                <ChevronDown className="size-3 text-muted-foreground" />
+                <ChevronDown className="size-3 text-ink-3" />
               </button>
             </PopoverTrigger>
             <PopoverContent align="end" className="w-96 p-0" onOpenAutoFocus={(event) => event.preventDefault()}>
-              <div className="px-4 pb-1 pt-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              <div className="px-4 pb-1 pt-3 text-xs font-medium uppercase tracking-wide text-ink-3">
                 Services · {services.length}
               </div>
-              <div className="divide-y divide-border px-4">
+              <div className="divide-y divide-line px-4">
                 {services.map((entry) => (
                   <ServicePopoverRow key={entry.key} entry={entry} onAction={onAction} />
                 ))}
               </div>
-              <div className="flex items-center gap-1 border-t border-border px-4 py-2">
+              <div className="flex items-center gap-1 border-t border-line px-4 py-2">
                 <Button variant="ghost" size="xs" onClick={() => onAction("start", null)}>Start all</Button>
                 <Button variant="ghost" size="xs" onClick={() => onAction("stop", null)}>Stop all</Button>
                 <Button variant="ghost" size="xs" onClick={() => onAction("restart", null)}>Restart all</Button>
@@ -478,7 +476,7 @@ function MultiServiceBar({
                   <Button
                     variant="link"
                     size="xs"
-                    className="ml-auto text-muted-foreground"
+                    className="ml-auto"
                     onClick={onManageServices}
                   >
                     Manage in Services tab →
@@ -487,18 +485,18 @@ function MultiServiceBar({
               </div>
             </PopoverContent>
           </Popover>
-          <div className="mx-3 hidden h-5 w-px bg-border sm:block" />
+          <div className="mx-3 hidden h-5 w-px bg-line sm:block" />
           <div className="hidden min-w-0 items-center gap-0.5 sm:flex">
             {primary ? (
               <>
-                <span className="mr-1 shrink-0 text-xs text-muted-foreground">{primary.name}</span>
+                <span className="mr-1 shrink-0 text-xs text-ink-3">{primary.name}</span>
                 <UrlSegment entry={primary} />
               </>
             ) : (
-              <span className="font-mono text-xs text-muted-foreground/70">no url</span>
+              <span className="font-mono text-xs text-ink-3/70">no url</span>
             )}
           </div>
-          <div className="mx-3 hidden h-5 w-px bg-border sm:block" />
+          <div className="mx-3 hidden h-5 w-px bg-line sm:block" />
           <div className="ml-auto flex items-center gap-1 pl-3 sm:pl-0">
             <ActionSlots
               entry={{ state: aggregateEntry.state, canStart: true }}
@@ -507,7 +505,7 @@ function MultiServiceBar({
           </div>
         </div>
         {primary ? (
-          <div className="flex h-8 items-center justify-between gap-0.5 border-t border-border px-3 sm:hidden">
+          <div className="flex h-8 items-center justify-between gap-0.5 border-t border-line px-3 sm:hidden">
             <UrlSegment entry={primary} compact />
           </div>
         ) : null}

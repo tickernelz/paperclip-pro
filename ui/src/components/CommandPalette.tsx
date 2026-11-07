@@ -279,7 +279,7 @@ export function CommandPalette() {
           {showSearchAll ? (
             <span>
               No quick task matches. Press{" "}
-              <kbd className="rounded border border-border bg-muted px-1 py-0.5 text-(length:--text-nano)">↵</kbd>{" "}
+              <kbd className="rounded border border-line bg-bg-3 px-1 py-0.5 text-(length:--text-nano)">↵</kbd>{" "}
               to <span className="font-medium">search all</span> or keep typing to refine.
             </span>
           ) : (
@@ -292,16 +292,16 @@ export function CommandPalette() {
             <CommandItem
               value={`${SEARCH_ALL_VALUE} ${searchQuery}`}
               onSelect={goFullSearch}
-              className="bg-accent/40 border border-accent data-[selected=true]:bg-accent/60"
+              className="bg-bg-3/40 border border-bg-3 data-[selected=true]:bg-bg-3/60"
               data-testid="command-search-all"
             >
               <Search className="mr-2 h-4 w-4" />
               <span className="flex-1 truncate">
                 Search all for <span className="font-semibold">&ldquo;{searchQuery}&rdquo;</span>
               </span>
-              <span className="ml-auto inline-flex items-center gap-1 text-xs text-muted-foreground">
+              <span className="ml-auto inline-flex items-center gap-1 text-xs text-ink-3">
                 <span>open full search</span>
-                <kbd className="rounded border border-border bg-background px-1 py-0.5 text-(length:--text-nano)">↵</kbd>
+                <kbd className="rounded border border-line bg-bg px-1 py-0.5 text-(length:--text-nano)">↵</kbd>
               </span>
             </CommandItem>
           </CommandGroup>
@@ -338,7 +338,7 @@ export function CommandPalette() {
                   <Hexagon className="mr-2 h-4 w-4 shrink-0" />
                   <span className="min-w-0 truncate">{project.name}</span>
                   {project.description ? (
-                    <span className="ml-2 hidden min-w-0 flex-1 truncate text-xs text-muted-foreground sm:inline">
+                    <span className="ml-2 hidden min-w-0 flex-1 truncate text-xs text-ink-3 sm:inline">
                       {project.description}
                     </span>
                   ) : null}
@@ -358,7 +358,7 @@ export function CommandPalette() {
           >
             <SquarePen className="mr-2 h-4 w-4" />
             Create new task
-            <span className="ml-auto text-xs text-muted-foreground">C</span>
+            <span className="ml-auto text-xs text-ink-3">C</span>
           </CommandItem>
           {onIssueDetail && fileViewerEnabled && (
             <CommandItem
@@ -369,7 +369,7 @@ export function CommandPalette() {
             >
               <FileCode2 className="mr-2 h-4 w-4" />
               Open file in this issue...
-              <span className="ml-auto text-xs text-muted-foreground">g f</span>
+              <span className="ml-auto text-xs text-ink-3">g f</span>
             </CommandItem>
           )}
           <CommandItem
@@ -439,7 +439,7 @@ export function CommandPalette() {
                   onSelect={() => go(`/issues/${issue.identifier ?? issue.id}`)}
                 >
                   <CircleDot className="mr-2 h-4 w-4" />
-                  <span className="text-muted-foreground mr-2 font-mono text-xs">
+                  <span className="text-ink-3 mr-2 font-mono text-xs">
                     {issue.identifier ?? issue.id.slice(0, 8)}
                   </span>
                   <span className="flex-1 truncate">{issue.title}</span>
@@ -461,7 +461,7 @@ export function CommandPalette() {
                 <CommandItem key={agent.id} onSelect={() => go(agentUrl(agent))}>
                   <Bot className="mr-2 h-4 w-4" />
                   {agent.name}
-                  <span className="text-xs text-muted-foreground ml-2">{agent.role}</span>
+                  <span className="text-xs text-ink-3 ml-2">{agent.role}</span>
                 </CommandItem>
               ))}
             </CommandGroup>

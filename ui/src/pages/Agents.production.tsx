@@ -361,7 +361,7 @@ export function Agents() {
           >
             <Button
               size="xs"
-              variant="outline"
+              variant="secondary"
               onClick={() => setConfigureState(builtInState)}
             >
               Set up
@@ -388,7 +388,7 @@ export function Agents() {
         className={cn(
           "group",
           agent.pausedAt && tab !== "paused" ? "opacity-50" : "",
-          resourceMembershipState(membershipsQuery.data, "agent", agent.id) === "left" ? "sm:text-foreground/55" : "",
+          resourceMembershipState(membershipsQuery.data, "agent", agent.id) === "left" ? "sm:text-ink/55" : "",
         )}
         leading={hasInvalidOrgChain ? (
           <AlertTriangle className="h-3.5 w-3.5 text-amber-500" aria-label="Invalid reporting chain" />
@@ -452,11 +452,11 @@ export function Agents() {
         <div className="flex items-center gap-2">
           {/* View toggle */}
           {!forceListView && (
-            <div className="flex items-center border border-border" role="group" aria-label="View mode">
+            <div className="flex items-center border border-line" role="group" aria-label="View mode">
               <button
                 className={cn(
                   "p-1.5 transition-colors",
-                  effectiveView === "list" ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent/50"
+                  effectiveView === "list" ? "bg-bg-3 text-ink" : "text-ink-3 hover:bg-bg-3/50"
                 )}
                 onClick={() => setView("list")}
                 title="List view"
@@ -468,7 +468,7 @@ export function Agents() {
               <button
                 className={cn(
                   "p-1.5 transition-colors",
-                  effectiveView === "org" ? "bg-accent text-foreground" : "text-muted-foreground hover:bg-accent/50"
+                  effectiveView === "org" ? "bg-bg-3 text-ink" : "text-ink-3 hover:bg-bg-3/50"
                 )}
                 onClick={() => setView("org")}
                 title="Org chart view"
@@ -479,7 +479,7 @@ export function Agents() {
               </button>
             </div>
           )}
-          <Button size="sm" variant="outline" onClick={openNewAgent}>
+          <Button size="sm" variant="secondary" onClick={openNewAgent}>
             <Plus className="h-3.5 w-3.5 mr-1.5" />
             New Agent
           </Button>
@@ -487,10 +487,10 @@ export function Agents() {
       </div>
 
       {filtered.length > 0 && (
-        <p className="text-xs text-muted-foreground">{filtered.length} agent{filtered.length !== 1 ? "s" : ""}</p>
+        <p className="text-xs text-ink-3">{filtered.length} agent{filtered.length !== 1 ? "s" : ""}</p>
       )}
 
-      {error && <p className="text-sm text-destructive">{error.message}</p>}
+      {error && <p className="text-sm text-bad">{error.message}</p>}
 
       {agents && agents.length === 0 && (
         <EmptyState
@@ -509,7 +509,7 @@ export function Agents() {
       )}
 
       {effectiveView === "list" && agents && agents.length > 0 && filtered.length === 0 && (
-        <p className="text-sm text-muted-foreground text-center py-8">
+        <p className="text-sm text-ink-3 text-center py-8">
           No agents match the selected status.
         </p>
       )}
@@ -537,13 +537,13 @@ export function Agents() {
       )}
 
       {effectiveView === "org" && orgTree && orgTree.length > 0 && filteredOrg.length === 0 && (
-        <p className="text-sm text-muted-foreground text-center py-8">
+        <p className="text-sm text-ink-3 text-center py-8">
           No agents match the selected status.
         </p>
       )}
 
       {effectiveView === "org" && orgTree && orgTree.length === 0 && (
-        <p className="text-sm text-muted-foreground text-center py-8">
+        <p className="text-sm text-ink-3 text-center py-8">
           No organizational hierarchy defined.
         </p>
       )}
@@ -599,9 +599,9 @@ function OrgTreeNode({
       <Link
         to={agent ? agentUrl(agent) : `/agents/${node.id}`}
         className={cn(
-          "group flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-accent/50 transition-colors w-full text-left no-underline text-inherit",
+          "group flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-bg-3/50 transition-colors w-full text-left no-underline text-inherit",
           agent?.pausedAt && tab !== "paused" && "opacity-50",
-          membershipState === "left" && "sm:text-foreground/55",
+          membershipState === "left" && "sm:text-ink/55",
         )}
       >
         {hasInvalidOrgChain ? (
@@ -615,7 +615,7 @@ function OrgTreeNode({
               the name at narrow widths. */}
           <div className="min-w-(--sz-7rem) truncate">
             <span className="text-sm font-medium">{node.name}</span>
-            <span className="text-xs text-muted-foreground ml-2">
+            <span className="text-xs text-ink-3 ml-2">
               {roleLabels[node.role] ?? node.role}
               {agent?.title ? ` - ${agent.title}` : ""}
             </span>
@@ -630,7 +630,7 @@ function OrgTreeNode({
                     e.stopPropagation();
                   }}
                 >
-                  <Button size="xs" variant="outline" onClick={() => onConfigureBuiltIn(builtInState)}>
+                  <Button size="xs" variant="secondary" onClick={() => onConfigureBuiltIn(builtInState)}>
                     Set up
                   </Button>
                 </span>
@@ -678,7 +678,7 @@ function OrgTreeNode({
         </div>
       </Link>
       {node.reports && node.reports.length > 0 && (
-        <div className="border-l border-border ml-4">
+        <div className="border-l border-line ml-4">
           {node.reports.map((child) => (
             <OrgTreeNode
               key={child.id}
@@ -723,26 +723,26 @@ function AgentMetaColumns({
     <>
       <div className="w-44 min-w-0 leading-tight">
         <div
-          className="truncate font-mono text-xs text-muted-foreground"
+          className="truncate font-mono text-xs text-ink-3"
           title={model ?? undefined}
         >
           {model ?? "—"}
         </div>
-        <div className="truncate font-mono text-(length:--text-micro) text-muted-foreground/70" title={adapterLabel}>
+        <div className="truncate font-mono text-(length:--text-micro) text-ink-3/70" title={adapterLabel}>
           {adapterLabel}
         </div>
       </div>
       {showEnvironment && (
         <div className="w-44 min-w-0 leading-tight">
-          <div className="truncate text-xs text-muted-foreground" title={environment.title}>
+          <div className="truncate text-xs text-ink-3" title={environment.title}>
             {environment.label}
           </div>
-          <div className="truncate text-(length:--text-micro) text-muted-foreground/70">
+          <div className="truncate text-(length:--text-micro) text-ink-3/70">
             {environment.detail}
           </div>
         </div>
       )}
-      <span className="w-24 whitespace-nowrap text-right text-xs text-muted-foreground">
+      <span className="w-24 whitespace-nowrap text-right text-xs text-ink-3">
         {agent.lastHeartbeatAt ? relativeTime(agent.lastHeartbeatAt) : "—"}
       </span>
     </>

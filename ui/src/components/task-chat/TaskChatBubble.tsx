@@ -91,7 +91,7 @@ export function TaskChatAgentIdentity({
       data-testid="task-chat-agent-identity"
     >
       <span data-testid="task-chat-agent-avatar"><AgentAvatar agent={agent} name={agentName} size={24} /></span>
-      <span className="text-sm font-semibold text-foreground">{agentName}</span>
+      <span className="text-sm font-semibold text-ink">{agentName}</span>
     </span>
   );
 }
@@ -227,7 +227,7 @@ function TaskChatBubbleContent({
     >
       {beforeTurn ? <div className="w-full pb-1">{beforeTurn}</div> : null}
       {isHuman && !item.isCurrentUser && item.authorName ? (
-        <span className="px-1 text-sm font-semibold text-foreground" data-testid="task-chat-human-identity" data-author-user-id={item.authorUserId}>
+        <span className="px-1 text-sm font-semibold text-ink" data-testid="task-chat-human-identity" data-author-user-id={item.authorUserId}>
           <Identity name={item.authorName} avatarUrl={paperclipHumanAvatarUrl(item.authorAvatarUrl)} size="default" className="gap-2" />
         </span>
       ) : null}
@@ -250,7 +250,7 @@ function TaskChatBubbleContent({
             "break-words py-2 text-sm",
             isOwnMessage
               ? "max-w-(--pct-85) rounded-2xl rounded-br-sm bg-(--liveness-blue) px-3.5 text-white"
-              : "w-full bg-transparent px-1 text-foreground",
+              : "w-full bg-transparent px-1 text-ink",
           )}
         >
           <MarkdownBody
@@ -274,7 +274,7 @@ function TaskChatBubbleContent({
           className="flex max-w-(--pct-85) flex-col gap-2"
           data-testid="task-chat-bubble-media"
         >
-          <span className="text-xs text-muted-foreground">
+          <span className="text-xs text-ink-3">
             Images · {imageRefs.length}
           </span>
           <div className="grid grid-cols-4 gap-2">
@@ -284,7 +284,7 @@ function TaskChatBubbleContent({
                 <button
                   key={ref.url}
                   type="button"
-                  className="group aspect-video min-w-0 overflow-hidden rounded-md bg-muted outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  className="group aspect-video min-w-0 overflow-hidden rounded-md bg-bg-3 outline-none focus-visible:ring-2 focus-visible:ring-focus"
                   aria-label={`Open ${ref.name || `image ${index + 1}`}`}
                   onClick={() => openImage(ref.url)}
                 >
@@ -299,7 +299,7 @@ function TaskChatBubbleContent({
             {imageRefs.length > 4 ? (
               <button
                 type="button"
-                className="aspect-video min-w-0 rounded-md bg-muted text-sm font-semibold text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="aspect-video min-w-0 rounded-md bg-bg-3 text-sm font-semibold text-ink outline-none focus-visible:ring-2 focus-visible:ring-focus"
                 aria-label={`Open ${imageRefs.length - 3} more screenshots`}
                 onClick={() => openImage(imageRefs[3].url)}
               >
@@ -307,14 +307,14 @@ function TaskChatBubbleContent({
               </button>
             ) : null}
           </div>
-          <span className="truncate text-xs text-muted-foreground">
+          <span className="truncate text-xs text-ink-3">
             {imageRefs.map((ref) => ref.name || "image").join(" · ")}
           </span>
         </div>
       ) : null}
       {attachmentRefs.length > 0 ? (
         <div className="flex max-w-(--pct-85) flex-col gap-2">
-          <span className="text-xs text-muted-foreground">
+          <span className="text-xs text-ink-3">
             Files · {attachmentRefs.length}
           </span>
           <AttachmentGroup data-testid="task-chat-bubble-attachments">
@@ -366,10 +366,10 @@ function TaskChatBubbleContent({
           <p className="font-medium text-amber-800 dark:text-amber-200">
             Verification caveat
           </p>
-          <ul className="mt-1 space-y-1 text-muted-foreground">
+          <ul className="mt-1 space-y-1 text-ink-3">
             {item.verificationCaveats.map((caveat, index) => (
               <li key={`${caveat.commandOrCheck}:${index}`}>
-                <span className="font-mono text-foreground">
+                <span className="font-mono text-ink">
                   {caveat.commandOrCheck}
                 </span>
                 {caveat.reasonCode
@@ -384,7 +384,7 @@ function TaskChatBubbleContent({
         </div>
       ) : null}
       {item.optimistic ? (
-        <span className="flex items-center gap-1 px-1 text-(length:--text-micro) text-muted-foreground">
+        <span className="flex items-center gap-1 px-1 text-(length:--text-micro) text-ink-3">
           <span>{item.optimistic === "queued" ? "Queued" : "Sending…"}</span>
           {item.optimistic === "queued" ? queuedAction : null}
         </span>
@@ -404,7 +404,7 @@ function TaskChatBubbleContent({
         streamlined ? (
           <div className="flex w-full items-center justify-between gap-2 px-1">
             {item.timestamp || sentFromIMessage ? (
-              <span className="text-(length:--text-micro) text-muted-foreground">
+              <span className="text-(length:--text-micro) text-ink-3">
                 {sentFromIMessage ? "Sent from iMessage" : null}
                 {sentFromIMessage && item.timestamp ? " · " : null}
                 {item.timestamp}
@@ -416,7 +416,7 @@ function TaskChatBubbleContent({
           <div className="flex items-center gap-1">
             {actions}
             {item.timestamp || sentFromIMessage ? (
-              <span className="px-1 text-(length:--text-micro) text-muted-foreground">
+              <span className="px-1 text-(length:--text-micro) text-ink-3">
                 {sentFromIMessage ? "Sent from iMessage" : null}
                 {sentFromIMessage && item.timestamp ? " · " : null}
                 {item.timestamp}
@@ -426,7 +426,7 @@ function TaskChatBubbleContent({
         )
       ) : item.timestamp || sentFromIMessage ? (
         // Timestamps are always visible (round 9) — no longer hover-revealed.
-        <span className="px-1 text-(length:--text-micro) text-muted-foreground">
+        <span className="px-1 text-(length:--text-micro) text-ink-3">
           {sentFromIMessage ? "Sent from iMessage" : null}
           {sentFromIMessage && item.timestamp ? " · " : null}
           {item.timestamp}

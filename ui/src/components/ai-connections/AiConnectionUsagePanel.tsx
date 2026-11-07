@@ -82,33 +82,33 @@ export function AiConnectionUsagePanel({ account, observation, cachedOnly = fals
     <section aria-label="Account usage limits" className="space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h3 className="text-sm font-semibold">Usage</h3>
-        {supported && !cachedOnly && <Button variant="outline" size="sm" disabled={probe.isPending || account.status !== "connected"} onClick={() => probe.mutate()}>
+        {supported && !cachedOnly && <Button variant="secondary" size="sm" disabled={probe.isPending || account.status !== "connected"} onClick={() => probe.mutate()}>
           {probe.isPending ? "Checking…" : usage?.status === "ok" ? "Refresh" : "Check usage"}
         </Button>}
       </div>
-      {cachedOnly && !usage && <p className="text-xs text-muted-foreground">Usage not observed.</p>}
-      {!supported && <p className="text-xs text-muted-foreground">Unavailable for this sign-in method.</p>}
-      {probe.error && <p role="alert" className="text-sm text-destructive">{probe.error.message}</p>}
-      {usage && usage.status !== "ok" && <p role={usage.status === "unsupported" ? "status" : "alert"} className="text-sm text-muted-foreground">{usageError(usage)}</p>}
+      {cachedOnly && !usage && <p className="text-xs text-ink-3">Usage not observed.</p>}
+      {!supported && <p className="text-xs text-ink-3">Unavailable for this sign-in method.</p>}
+      {probe.error && <p role="alert" className="text-sm text-bad">{probe.error.message}</p>}
+      {usage && usage.status !== "ok" && <p role={usage.status === "unsupported" ? "status" : "alert"} className="text-sm text-ink-3">{usageError(usage)}</p>}
       {usage?.status === "ok" && (
         <div className="space-y-3" aria-live="polite">
-          {usage.limits.length === 0 && <p className="text-xs text-muted-foreground">Usage not reported.</p>}
+          {usage.limits.length === 0 && <p className="text-xs text-ink-3">Usage not reported.</p>}
           {usage.limits.map((window) => {
             const details = limitDetails(window);
             return <div key={window.id} className="space-y-1.5">
               {window.usedPercent != null ? <QuotaBar label={limitLabel(window)} percentUsed={window.usedPercent} leftLabel={limitValue(window)} />
                 : <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-                  <span className="text-muted-foreground">{limitLabel(window)}</span>
+                  <span className="text-ink-3">{limitLabel(window)}</span>
                   <span className="font-mono">{limitValue(window)}</span>
                 </div>}
-              {details && <p className="text-xs text-muted-foreground">{details}</p>}
+              {details && <p className="text-xs text-ink-3">{details}</p>}
             </div>;
           })}
           {usage.overage && <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-            <span className="text-muted-foreground">Overage</span>
+            <span className="text-ink-3">Overage</span>
             <span className="font-mono">{overageSummary(usage)}</span>
           </div>}
-          <p className="text-xs text-muted-foreground">Updated <time className="font-mono" dateTime={usage.checkedAt} title={formatDateTime(usage.checkedAt)}>{formatDateTime(usage.checkedAt, { includeYear: false })}</time>{usage.planType ? ` · ${usage.planType}` : ""}</p>
+          <p className="text-xs text-ink-3">Updated <time className="font-mono" dateTime={usage.checkedAt} title={formatDateTime(usage.checkedAt)}>{formatDateTime(usage.checkedAt, { includeYear: false })}</time>{usage.planType ? ` · ${usage.planType}` : ""}</p>
         </div>
       )}
     </section>

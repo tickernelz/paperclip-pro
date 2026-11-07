@@ -105,7 +105,7 @@ function Section({
 }) {
   return (
     <section className="paperclip-story__frame overflow-hidden">
-      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-border px-5 py-4">
+      <div className="flex flex-wrap items-start justify-between gap-3 border-b border-line px-5 py-4">
         <div>
           <div className="paperclip-story__label">{eyebrow}</div>
           <h2 className="mt-1 text-xl font-semibold">{title}</h2>
@@ -1509,7 +1509,7 @@ export const ReviewSurface: Story = {
     <StoryFrame>
       <section className="paperclip-story__frame p-6">
         <div className="paperclip-story__label">Thread interactions</div>
-        <div className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
+        <div className="mt-2 max-w-3xl text-sm leading-6 text-ink-3">
           This review surface pressure-tests the thread interaction kinds
           directly inside the issue chat surface. The card language leans closer
           to annotated review sheets than generic admin widgets so the objects
@@ -1641,7 +1641,7 @@ export const ReviewSurface: Story = {
           title="IssueChatThread composition"
           description="Comments, timeline events, accepted task suggestions, a pending confirmation, a pending question form, and an active run share the same feed."
         >
-          <div className="overflow-hidden rounded-[32px] border border-border/70 bg-[linear-gradient(135deg,rgba(14,165,233,0.08),transparent_28%),linear-gradient(180deg,rgba(245,158,11,0.08),transparent_42%),var(--background)] p-5 shadow-[0_30px_80px_rgba(15,23,42,0.10)]">
+          <div className="overflow-hidden rounded-[32px] border border-line/70 bg-[linear-gradient(135deg,rgba(14,165,233,0.08),transparent_28%),linear-gradient(180deg,rgba(245,158,11,0.08),transparent_42%),var(--bg)] p-5 shadow-[0_30px_80px_rgba(15,23,42,0.10)]">
             <IssueChatThread
               comments={issueThreadInteractionComments}
               interactions={mixedIssueThreadInteractions}

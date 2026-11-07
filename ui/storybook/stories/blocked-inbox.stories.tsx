@@ -177,10 +177,10 @@ function BlockedTabSurface({ search = "" }: { search?: string }) {
   return (
     <PrimeBlockedFixtures>
       <div className="space-y-3">
-        <div className="text-xs uppercase tracking-wide text-muted-foreground">
+        <div className="text-xs uppercase tracking-wide text-ink-3">
           Inbox / Blocked tab — desktop layout
         </div>
-        <div className="rounded-lg border border-border bg-background p-4">
+        <div className="rounded-lg border border-line bg-bg p-4">
           <BlockedInboxView
             {...blockedViewDefaults}
             companyId={companyId}
@@ -198,10 +198,10 @@ function BlockedTabSurface({ search = "" }: { search?: string }) {
 function BlockedTabSurfaceMobile() {
   return (
     <div className="mx-auto max-w-[390px] space-y-3">
-      <div className="text-xs uppercase tracking-wide text-muted-foreground">
+      <div className="text-xs uppercase tracking-wide text-ink-3">
         Inbox / Blocked tab — 390px mobile width
       </div>
-      <div className="rounded-lg border border-border bg-background p-2">
+      <div className="rounded-lg border border-line bg-bg p-2">
         <BlockedTabSurface />
       </div>
     </div>
@@ -212,37 +212,37 @@ function BlockedReasonChipsCatalog() {
   return (
     <div className="grid gap-3 p-6 sm:grid-cols-2">
       <div className="space-y-2">
-        <div className="text-xs uppercase tracking-wide text-muted-foreground">
+        <div className="text-xs uppercase tracking-wide text-ink-3">
           Needs decision · medium
         </div>
         <BlockedReasonChip reason="pending_board_decision" severity="medium" />
       </div>
       <div className="space-y-2">
-        <div className="text-xs uppercase tracking-wide text-muted-foreground">
+        <div className="text-xs uppercase tracking-wide text-ink-3">
           Blocked chain stalled · critical
         </div>
         <BlockedReasonChip reason="blocked_chain_stalled" severity="critical" />
       </div>
       <div className="space-y-2">
-        <div className="text-xs uppercase tracking-wide text-muted-foreground">
+        <div className="text-xs uppercase tracking-wide text-ink-3">
           Needs attention · high
         </div>
         <BlockedReasonChip reason="blocked_by_assigned_backlog_issue" severity="high" />
       </div>
       <div className="space-y-2">
-        <div className="text-xs uppercase tracking-wide text-muted-foreground">
+        <div className="text-xs uppercase tracking-wide text-ink-3">
           Recovery required · high
         </div>
         <BlockedReasonChip reason="open_recovery_issue" severity="high" />
       </div>
       <div className="space-y-2">
-        <div className="text-xs uppercase tracking-wide text-muted-foreground">
+        <div className="text-xs uppercase tracking-wide text-ink-3">
           External wait · low (no severity dot)
         </div>
         <BlockedReasonChip reason="external_owner_action" severity="low" />
       </div>
       <div className="space-y-2">
-        <div className="text-xs uppercase tracking-wide text-muted-foreground">
+        <div className="text-xs uppercase tracking-wide text-ink-3">
           Owner paused · critical
         </div>
         <BlockedReasonChip reason="blocked_by_uninvokable_assignee" severity="critical" />
@@ -253,7 +253,7 @@ function BlockedReasonChipsCatalog() {
 
 function BlockedTabEmptyState() {
   return (
-    <div className="rounded-lg border border-border bg-background p-4">
+    <div className="rounded-lg border border-line bg-bg p-4">
       <BlockedInboxView
         {...blockedViewDefaults}
         companyId="company-empty"

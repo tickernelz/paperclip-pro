@@ -9,24 +9,24 @@ export function AiReviewFrame({ location, existing, proposed, wrapper, children 
   children: ReactNode;
 }) {
   return <div className="mx-auto max-w-6xl p-4 sm:p-6" data-testid="ai-review-frame">
-    <aside aria-label="Storybook context" className="mb-4 space-y-3 rounded-lg border border-dashed border-border bg-muted p-4">
+    <aside aria-label="Storybook context" className="mb-4 space-y-3 rounded-lg border border-dashed border-line bg-bg-3 p-4">
       <p className="text-xs font-semibold uppercase tracking-wide">Storybook only · Review guide</p>
       <p className="text-sm"><strong>Intended app location:</strong> {location}</p>
       <dl className="grid gap-3 text-sm sm:grid-cols-3">
-        <div><dt className="font-semibold">Already in the app</dt><dd className="mt-1 text-muted-foreground">{existing}</dd></div>
-        <div><dt className="font-semibold">Integrated AI component</dt><dd className="mt-1 text-muted-foreground">{proposed}</dd></div>
-        <div><dt className="font-semibold">Storybook simulation</dt><dd className="mt-1 text-muted-foreground">{wrapper}</dd></div>
+        <div><dt className="font-semibold">Already in the app</dt><dd className="mt-1 text-ink-3">{existing}</dd></div>
+        <div><dt className="font-semibold">Integrated AI component</dt><dd className="mt-1 text-ink-3">{proposed}</dd></div>
+        <div><dt className="font-semibold">Storybook simulation</dt><dd className="mt-1 text-ink-3">{wrapper}</dd></div>
       </dl>
-      <p className="text-xs text-muted-foreground">Dashed frames and labels are review annotations. Accounts and provider responses are fixtures. The components are integrated in the app; these stories use simulated accounts and authentication.</p>
+      <p className="text-xs text-ink-3">Dashed frames and labels are review annotations. Accounts and provider responses are fixtures. The components are integrated in the app; these stories use simulated accounts and authentication.</p>
     </aside>
-    <div className="overflow-hidden rounded-lg border border-border bg-background" data-testid="ai-review-preview">{children}</div>
+    <div className="overflow-hidden rounded-lg border border-line bg-bg" data-testid="ai-review-preview">{children}</div>
   </div>;
 }
 
 /** Marks a precise component boundary within a simulated page or an existing app page. */
 export function AiReviewBoundary({ label, children }: { label: string; children: ReactNode }) {
-  return <div className="min-w-0 space-y-3 rounded-lg border border-dashed border-border p-3" data-testid="ai-component-boundary">
-    <p className="text-xs font-medium text-muted-foreground">{label} · Review annotation</p>
+  return <div className="min-w-0 space-y-3 rounded-lg border border-dashed border-line p-3" data-testid="ai-component-boundary">
+    <p className="text-xs font-medium text-ink-3">{label} · Review annotation</p>
     {children}
   </div>;
 }

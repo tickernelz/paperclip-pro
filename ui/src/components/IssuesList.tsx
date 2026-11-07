@@ -235,7 +235,7 @@ const issueStatusLabels: Record<IssueStatus, string> = {
   cancelled: "Cancelled",
 };
 const progressSegmentClasses: Record<IssueStatus, string> = {
-  backlog: "bg-muted-foreground/40",
+  backlog: "bg-ink-3/40",
   todo: "bg-blue-500",
   in_progress: "bg-yellow-500",
   in_review: "bg-violet-500",
@@ -480,14 +480,14 @@ function IssueDateSeparator({ label }: { label: string }) {
       aria-label={label}
       data-issues-date-separator=""
     >
-      <span className="h-px min-w-0 flex-1 bg-border/80" aria-hidden="true" data-date-group-rule="" />
+      <span className="h-px min-w-0 flex-1 bg-line/80" aria-hidden="true" data-date-group-rule="" />
       <span
-        className="shrink-0 text-(length:--text-nano) font-medium uppercase tracking-wider text-muted-foreground/70"
+        className="shrink-0 text-(length:--text-nano) font-medium uppercase tracking-wider text-ink-3/70"
         data-date-group-label=""
       >
         {label}
       </span>
-      <span className="h-px min-w-0 flex-1 bg-border/80" aria-hidden="true" data-date-group-rule="" />
+      <span className="h-px min-w-0 flex-1 bg-line/80" aria-hidden="true" data-date-group-rule="" />
     </div>
   );
 }
@@ -726,23 +726,23 @@ function SubIssueProgressSummaryStrip({
   const showCostSummary = !!costSummary && (costSummary.runCount > 0 || totalTokens > 0);
 
   return (
-    <div className="border border-border bg-background p-3">
+    <div className="border border-line bg-bg p-3">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div className="min-w-0 flex-1 space-y-2">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
-            <span className="font-medium text-foreground">
+            <span className="font-medium text-ink">
               {summary.doneCount}/{summary.totalCount} done
             </span>
-            <span className="text-muted-foreground">
+            <span className="text-ink-3">
               {summary.inProgressCount} in progress
             </span>
-            <span className="text-muted-foreground">
+            <span className="text-ink-3">
               {summary.blockedCount} blocked
             </span>
             {showCostSummary && (
               <>
                 <span
-                  className="text-muted-foreground tabular-nums"
+                  className="text-ink-3 tabular-nums"
                   title={`${costSummary.runCount.toLocaleString()} run${
                     costSummary.runCount === 1 ? "" : "s"
                   } across ${costSummary.issueCount} sub-task${
@@ -751,7 +751,7 @@ function SubIssueProgressSummaryStrip({
                 >
                   {formatTokens(totalTokens)} tokens
                 </span>
-                <span className="text-muted-foreground tabular-nums">
+                <span className="text-ink-3 tabular-nums">
                   {formatDurationMs(costSummary.runtimeMs)} runtime
                 </span>
               </>
@@ -763,7 +763,7 @@ function SubIssueProgressSummaryStrip({
             aria-valuemin={0}
             aria-valuenow={summary.doneCount}
             aria-valuemax={summary.totalCount}
-            className="flex h-2 w-full overflow-hidden rounded-full bg-muted"
+            className="flex h-2 w-full overflow-hidden rounded-full bg-bg-3"
           >
             {statusEntries.map(({ status, count }) => (
               <span
@@ -777,30 +777,30 @@ function SubIssueProgressSummaryStrip({
           </div>
         </div>
 
-        <div className="min-w-0 border border-border bg-background px-3 py-2 text-sm lg:w-72">
+        <div className="min-w-0 border border-line bg-bg px-3 py-2 text-sm lg:w-72">
           {target && targetIssue ? (
             <>
-              <div className="text-xs font-medium text-muted-foreground">
+              <div className="text-xs font-medium text-ink-3">
                 {target.kind === "next" ? "Next up" : "Waiting on blockers"}
               </div>
               <Link
                 to={createIssueDetailPath(targetPathId)}
                 state={targetState}
                 issuePrefetch={targetIssue}
-                className="mt-1 block min-w-0 text-foreground underline-offset-2 hover:underline"
+                className="mt-1 block min-w-0 text-ink underline-offset-2 hover:underline"
               >
-                <span className="font-mono text-xs text-muted-foreground">
+                <span className="font-mono text-xs text-ink-3">
                   {targetIssue.identifier ?? targetIssue.id.slice(0, 8)}
                 </span>{" "}
                 <span>{targetIssue.title}</span>
               </Link>
             </>
           ) : summary.totalCount === 0 ? (
-            <div className="text-sm font-medium text-foreground">No active sub-tasks</div>
+            <div className="text-sm font-medium text-ink">No active sub-tasks</div>
           ) : summary.doneCount === summary.totalCount ? (
-            <div className="text-sm font-medium text-foreground">All sub-tasks done</div>
+            <div className="text-sm font-medium text-ink">All sub-tasks done</div>
           ) : (
-            <div className="text-sm font-medium text-foreground">No actionable sub-tasks</div>
+            <div className="text-sm font-medium text-ink">No actionable sub-tasks</div>
           )}
         </div>
       </div>
@@ -2063,13 +2063,13 @@ function StreamlinedIssuesList({
         context={toolbarContext ? (
           <div className="flex min-w-0 items-center gap-2">
             {toolbarContext}
-            <Button size="sm" variant="outline" aria-label={createButtonLabel} onClick={() => openCreateIssueDialog()}>
+            <Button size="sm" variant="secondary" aria-label={createButtonLabel} onClick={() => openCreateIssueDialog()}>
               <Plus className="h-4 w-4 sm:mr-1" />
               <span className="hidden sm:inline">{createButtonLabel}</span>
             </Button>
           </div>
         ) : (
-          <Button size="sm" variant="outline" aria-label={createButtonLabel} onClick={() => openCreateIssueDialog()}>
+          <Button size="sm" variant="secondary" aria-label={createButtonLabel} onClick={() => openCreateIssueDialog()}>
             <Plus className="h-4 w-4 sm:mr-1" />
             <span className="hidden sm:inline">{createButtonLabel}</span>
           </Button>
@@ -2087,9 +2087,9 @@ function StreamlinedIssuesList({
         controls={(
           <>
           {/* View mode toggle */}
-          <div className="flex items-center border border-border rounded-md overflow-hidden mr-1" role="group" aria-label="View mode">
+          <div className="flex items-center border border-line rounded-md overflow-hidden mr-1" role="group" aria-label="View mode">
             <button
-              className={`flex h-8 w-8 items-center justify-center transition-colors ${viewState.viewMode === "list" ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+              className={`flex h-8 w-8 items-center justify-center transition-colors ${viewState.viewMode === "list" ? "bg-bg-3 text-ink" : "text-ink-3 hover:text-ink"}`}
               onClick={() => updateView({ viewMode: "list" })}
               title="List view"
               aria-label="List view"
@@ -2098,7 +2098,7 @@ function StreamlinedIssuesList({
               <List className="h-3.5 w-3.5" />
             </button>
             <button
-              className={`flex h-8 w-8 items-center justify-center transition-colors ${viewState.viewMode === "board" ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+              className={`flex h-8 w-8 items-center justify-center transition-colors ${viewState.viewMode === "board" ? "bg-bg-3 text-ink" : "text-ink-3 hover:text-ink"}`}
               onClick={() => updateView({ viewMode: "board" })}
               title="Board view"
               aria-label="Board view"
@@ -2109,11 +2109,11 @@ function StreamlinedIssuesList({
           </div>
 
           {viewState.viewMode === "list" && (
-            <Button
+            <Button active={viewState.nestingEnabled}
               type="button"
-              variant="outline"
+              variant="secondary"
               size="icon"
-              className={cn("hidden h-8 w-8 shrink-0 sm:inline-flex", viewState.nestingEnabled && "bg-accent")}
+              className={cn("hidden h-8 w-8 shrink-0 sm:inline-flex")}
               onClick={() => updateView({ nestingEnabled: !viewState.nestingEnabled })}
               title={viewState.nestingEnabled ? "Disable parent-child nesting" : "Enable parent-child nesting"}
             >
@@ -2123,21 +2123,21 @@ function StreamlinedIssuesList({
 
           {viewState.viewMode === "board" && (
             <>
-              <Button
+              <Button active={boardCompactCards}
                 type="button"
-                variant="outline"
+                variant="secondary"
                 size="icon"
-                className={cn("h-8 w-8 shrink-0", boardCompactCards && "bg-accent")}
+                className={cn("h-8 w-8 shrink-0")}
                 onClick={() => updateView({ boardCardDensity: boardCompactCards ? "comfortable" : "compact" })}
                 title={boardCompactCards ? "Use comfortable cards" : "Use compact cards"}
               >
                 <ChevronsDownUp className="h-3.5 w-3.5" />
               </Button>
-              <Button
+              <Button active={boardCollapsedStatuses.length > 0}
                 type="button"
-                variant="outline"
+                variant="secondary"
                 size="icon"
-                className={cn("h-8 w-8 shrink-0", boardCollapsedStatuses.length > 0 && "bg-accent")}
+                className={cn("h-8 w-8 shrink-0")}
                 onClick={() => updateView({ boardColdLaneMode: boardCollapsedStatuses.length > 0 ? "expanded" : "collapsed" })}
                 title={boardCollapsedStatuses.length > 0 ? "Expand cold lanes" : "Collapse cold lanes"}
               >
@@ -2145,13 +2145,12 @@ function StreamlinedIssuesList({
               </Button>
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button
+                  <Button active={viewState.boardColumnPageSize !== KANBAN_COLUMN_DEFAULT_PAGE_SIZE}
                     type="button"
-                    variant="outline"
+                    variant="secondary"
                     size="sm"
                     className={cn(
                       "h-8 shrink-0 gap-1.5 px-2",
-                      viewState.boardColumnPageSize !== KANBAN_COLUMN_DEFAULT_PAGE_SIZE && "bg-accent",
                     )}
                     title="Cards per column"
                   >
@@ -2168,8 +2167,8 @@ function StreamlinedIssuesList({
                         className={cn(
                           "flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-sm",
                           viewState.boardColumnPageSize === pageSize
-                            ? "bg-accent/50 text-foreground"
-                            : "text-muted-foreground hover:bg-accent/50",
+                            ? "bg-bg-3/50 text-ink"
+                            : "text-ink-3 hover:bg-bg-3/50",
                         )}
                         onClick={() => updateView({ boardColumnPageSize: pageSize })}
                       >
@@ -2182,7 +2181,7 @@ function StreamlinedIssuesList({
               </Popover>
               <Button
                 type="button"
-                variant="outline"
+                variant="secondary"
                 size="icon"
                 className="h-8 w-8 shrink-0"
                 onClick={() => updateView({
@@ -2213,7 +2212,7 @@ function StreamlinedIssuesList({
           <IssueFiltersPopover
             state={viewState}
             onChange={updateView}
-            buttonVariant="outline"
+            buttonVariant="secondary"
             activeFilterCount={activeFilterCount}
             agents={agents}
             creators={creatorOptions}
@@ -2230,7 +2229,7 @@ function StreamlinedIssuesList({
           {viewState.viewMode === "list" && (
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" size="icon" className="h-8 w-8 shrink-0" title="Sort">
+                <Button variant="secondary" size="icon" className="h-8 w-8 shrink-0" title="Sort">
                   <ArrowUpDown className="h-3.5 w-3.5" />
                 </Button>
               </PopoverTrigger>
@@ -2239,7 +2238,7 @@ function StreamlinedIssuesList({
                   {remoteIssueSearchActive && (
                     <button
                       className={`flex items-center justify-between w-full px-2 py-1.5 text-sm rounded-sm ${
-                        keepServerOrder ? "bg-accent/50 text-foreground" : "hover:bg-accent/50 text-muted-foreground"
+                        keepServerOrder ? "bg-bg-3/50 text-ink" : "hover:bg-bg-3/50 text-ink-3"
                       }`}
                       onClick={() => setSearchSortPicked(false)}
                     >
@@ -2260,7 +2259,7 @@ function StreamlinedIssuesList({
                     <button
                       key={field}
                       className={`flex items-center justify-between w-full px-2 py-1.5 text-sm rounded-sm ${
-                        !keepServerOrder && viewState.sortField === field ? "bg-accent/50 text-foreground" : "hover:bg-accent/50 text-muted-foreground"
+                        !keepServerOrder && viewState.sortField === field ? "bg-bg-3/50 text-ink" : "hover:bg-bg-3/50 text-ink-3"
                       }`}
                       onClick={() => {
                         if (remoteIssueSearchActive) setSearchSortPicked(true);
@@ -2275,7 +2274,7 @@ function StreamlinedIssuesList({
                     >
                       <span>{label}</span>
                       {!keepServerOrder && viewState.sortField === field && (
-                        <span className="text-xs text-muted-foreground">
+                        <span className="text-xs text-ink-3">
                           {viewState.sortDir === "asc" ? "\u2191" : "\u2193"}
                         </span>
                       )}
@@ -2290,7 +2289,7 @@ function StreamlinedIssuesList({
           {viewState.viewMode === "list" && (
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" size="icon" className="h-8 w-8 shrink-0" title="Group">
+                <Button variant="secondary" size="icon" className="h-8 w-8 shrink-0" title="Group">
                   <Layers className="h-3.5 w-3.5" />
                 </Button>
               </PopoverTrigger>
@@ -2311,7 +2310,7 @@ function StreamlinedIssuesList({
                     <button
                       key={value}
                       className={`flex items-center justify-between w-full px-2 py-1.5 text-sm rounded-sm ${
-                        viewState.groupBy === value ? "bg-accent/50 text-foreground" : "hover:bg-accent/50 text-muted-foreground"
+                        viewState.groupBy === value ? "bg-bg-3/50 text-ink" : "hover:bg-bg-3/50 text-ink-3"
                       }`}
                       onClick={() => updateView({ groupBy: value })}
                     >
@@ -2329,14 +2328,14 @@ function StreamlinedIssuesList({
 
       {showListHeader ? <div ref={listHeaderRef}>{listHeader}</div> : null}
       {(isLoading || externalObjectFilterLoading) && <PageSkeleton variant="issues-list" />}
-      {error && <p className="text-sm text-destructive">{error.message}</p>}
+      {error && <p className="text-sm text-bad">{error.message}</p>}
       {remoteIssueSearchActive && searchedIssues.length === ISSUE_SEARCH_RESULT_LIMIT && (
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-ink-3">
           Showing up to {ISSUE_SEARCH_RESULT_LIMIT} matches. Refine the search to narrow further.
         </p>
       )}
       {boardColumnLimitReached && (
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-ink-3">
           Some board columns are showing up to {ISSUE_BOARD_COLUMN_RESULT_LIMIT} tasks. Refine filters or search to reveal the rest.
         </p>
       )}
@@ -2382,7 +2381,7 @@ function StreamlinedIssuesList({
               // (no unread column), so the band adds no extra left inset.
               <div
                 data-issues-group-key={group.key}
-                className={cn("rounded-lg px-3 sm:pl-0 sm:pr-4", selectedNavKey === `group:${group.key}` ? "bg-accent/50" : "hover:bg-accent/50")}
+                className={cn("rounded-lg px-3 sm:pl-0 sm:pr-4", selectedNavKey === `group:${group.key}` ? "bg-bg-3/50" : "hover:bg-bg-3/50")}
                 onClick={() => setSelectedNavKey(`group:${group.key}`)}
                 onMouseEnter={() => setNavSelectionFromPointer(`group:${group.key}`)}
               >
@@ -2401,7 +2400,7 @@ function StreamlinedIssuesList({
                   <Button
                     variant="ghost"
                     size="icon-xs"
-                    className="-mr-2 text-muted-foreground"
+                    className="-mr-2"
                     title={`New task in ${group.label}`}
                     aria-label={`New task in ${group.label}`}
                     onClick={() => openCreateIssueDialog(group)}
@@ -2455,7 +2454,7 @@ function StreamlinedIssuesList({
                   const unresolvedVisibleBlockers = checklistMeta?.unresolvedVisibleBlockersByIssueId.get(issue.id) ?? [];
                   const checklistRowId = checklistMeta ? `issue-workflow-row-${issue.id}` : undefined;
                   const doneRowTitleClass = checklistMeta && issue.status === "done"
-                    ? "text-muted-foreground"
+                    ? "text-ink-3"
                     : undefined;
                   const visibleBlockerChips = unresolvedVisibleBlockers
                     .map((blockerId) => {
@@ -2540,7 +2539,7 @@ function StreamlinedIssuesList({
                         titleSuffix={(
                           <>
                             {hasChildren && !isExpanded ? (
-                              <span className="ml-1.5 text-xs text-muted-foreground">
+                              <span className="ml-1.5 text-xs text-ink-3">
                                 ({totalDescendants} sub-task{totalDescendants !== 1 ? "s" : ""})
                               </span>
                             ) : null}
@@ -2572,7 +2571,7 @@ function StreamlinedIssuesList({
                             ) : null}
                           </>
                         )}
-                        className={cn(isMutedIssue && "opacity-70", selectedNavKey === `issue:${issue.id}` && "bg-accent/50 hover:bg-accent/50")}
+                        className={cn(isMutedIssue && "opacity-70", selectedNavKey === `issue:${issue.id}` && "bg-bg-3/50 hover:bg-bg-3/50")}
                         leadingControl={rowPresentation === "task" ? (
                           hasChildren ? (
                             <button
@@ -2592,7 +2591,7 @@ function StreamlinedIssuesList({
                           <span className="relative inline-flex items-start self-stretch sm:items-center" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}>
                             <StatusIcon status={issue.status} externalConversationState={issue.externalConversationState} size="md" blockerAttention={issue.blockerAttention} onChange={(s) => onUpdateIssue(issue.id, { status: s })} />
                             {hasChildren && isExpanded ? (
-                              <span aria-hidden="true" className="pointer-events-none absolute top-5 -bottom-2.5 left-1/2 w-px bg-border sm:hidden" />
+                              <span aria-hidden="true" className="pointer-events-none absolute top-5 -bottom-2.5 left-1/2 w-px bg-line sm:hidden" />
                             ) : null}
                           </span>
                         ) : undefined}
@@ -2691,7 +2690,7 @@ function StreamlinedIssuesList({
                                 >
                                   <PopoverTrigger asChild>
                                     <button
-                                      className="flex w-full shrink-0 items-center overflow-hidden rounded-md px-2 py-1 transition-colors hover:bg-accent/50"
+                                      className="flex w-full shrink-0 items-center overflow-hidden rounded-md px-2 py-1 transition-colors hover:bg-bg-3/50"
                                       onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
                                     >
                                       {issue.assigneeAgentId && agentName(issue.assigneeAgentId) ? (
@@ -2704,8 +2703,8 @@ function StreamlinedIssuesList({
                                           className="min-w-0"
                                         />
                                       ) : (
-                                        <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-                                          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-dashed border-muted-foreground/35 bg-muted/30">
+                                        <span className="inline-flex items-center gap-1.5 text-xs text-ink-3">
+                                          <span className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-dashed border-ink-3/35 bg-bg-3/30">
                                             <User className="h-3.5 w-3.5" />
                                           </span>
                                           Assignee
@@ -2720,7 +2719,7 @@ function StreamlinedIssuesList({
                                     onPointerDownOutside={() => setAssigneeSearch("")}
                                   >
                                     <input
-                                      className="mb-1 w-full border-b border-border bg-transparent px-2 py-1.5 text-xs outline-none placeholder:text-muted-foreground/50"
+                                      className="mb-1 w-full border-b border-line bg-transparent px-2 py-1.5 text-xs outline-none placeholder:text-ink-3/50"
                                       placeholder="Search responsible..."
                                       value={assigneeSearch}
                                       onChange={(e) => setAssigneeSearch(e.target.value)}
@@ -2729,8 +2728,8 @@ function StreamlinedIssuesList({
                                     <div className="max-h-48 overflow-y-auto overscroll-contain">
                                       <button
                                         className={cn(
-                                          "flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs hover:bg-accent/50",
-                                          !issue.assigneeAgentId && !issue.assigneeUserId && "bg-accent",
+                                          "flex w-full items-center gap-2 rounded px-2 py-1.5 text-xs hover:bg-bg-3/50",
+                                          !issue.assigneeAgentId && !issue.assigneeUserId && "bg-bg-3",
                                         )}
                                         onClick={(e) => {
                                           e.preventDefault();
@@ -2743,8 +2742,8 @@ function StreamlinedIssuesList({
                                       {currentUserId && (
                                         <button
                                           className={cn(
-                                            "flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-xs hover:bg-accent/50",
-                                            issue.assigneeUserId === currentUserId && "bg-accent",
+                                            "flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-xs hover:bg-bg-3/50",
+                                            issue.assigneeUserId === currentUserId && "bg-bg-3",
                                           )}
                                           onClick={(e) => {
                                             e.preventDefault();
@@ -2752,7 +2751,7 @@ function StreamlinedIssuesList({
                                             assignIssue(issue.id, null, currentUserId);
                                           }}
                                         >
-                                          <User className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                                          <User className="h-3.5 w-3.5 shrink-0 text-ink-3" />
                                           <span>Me</span>
                                         </button>
                                       )}
@@ -2765,8 +2764,8 @@ function StreamlinedIssuesList({
                                           <button
                                             key={agent.id}
                                             className={cn(
-                                              "flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-xs hover:bg-accent/50",
-                                              issue.assigneeAgentId === agent.id && "bg-accent",
+                                              "flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-xs hover:bg-bg-3/50",
+                                              issue.assigneeAgentId === agent.id && "bg-bg-3",
                                             )}
                                             onClick={(e) => {
                                               e.preventDefault();
@@ -2845,7 +2844,7 @@ function StreamlinedIssuesList({
           })}
           {(remainingIssueRowCount > 0 || hasMoreIssues || isLoadingMoreIssues) && (
             <div className="py-2" data-testid="issues-load-more-sentinel">
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-ink-3">
                 {isLoadingMoreIssues
                   ? "Loading more tasks..."
                   : remainingIssueRowCount > 0

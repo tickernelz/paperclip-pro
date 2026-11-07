@@ -37,18 +37,18 @@ function SelectField({
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <button className="inline-flex items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-sm hover:bg-accent/50 transition-colors w-full justify-between">
-          <span className={!value ? "text-muted-foreground" : ""}>
+        <button className="inline-flex items-center gap-1.5 rounded-md border border-line px-2.5 py-1.5 text-sm hover:bg-bg-3/50 transition-colors w-full justify-between">
+          <span className={!value ? "text-ink-3" : ""}>
             {selectedOpt?.label ?? value ?? "Select..."}
           </span>
-          <ChevronDown className="h-3 w-3 text-muted-foreground" />
+          <ChevronDown className="h-3 w-3 text-ink-3" />
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-1" align="start">
         {options.map((opt) => (
           <button
             key={opt.value}
-            className={`flex items-center w-full px-2 py-1.5 text-sm rounded hover:bg-accent/50 ${opt.value === value ? "bg-accent" : ""}`}
+            className={`flex items-center w-full px-2 py-1.5 text-sm rounded hover:bg-bg-3/50 ${opt.value === value ? "bg-bg-3" : ""}`}
             onMouseDown={(e) => {
               e.preventDefault();
               onChange(opt.value);
@@ -63,7 +63,7 @@ function SelectField({
   );
 }
 const inputClass =
-  "w-full rounded-md border border-border px-2.5 py-1.5 bg-transparent outline-none text-sm font-mono placeholder:text-muted-foreground/40";
+  "w-full rounded-md border border-line px-2.5 py-1.5 bg-transparent outline-none text-sm font-mono placeholder:text-ink-3/40";
 
 
 // ---------------------------------------------------------------------------

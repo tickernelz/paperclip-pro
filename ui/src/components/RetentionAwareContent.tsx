@@ -14,7 +14,7 @@ export function PurgedFileNotice({ purgedAt, className }: { purgedAt: string | D
     <span
       data-purged-file=""
       className={cn(
-        "inline-flex max-w-full rounded-md border border-border bg-muted px-2 py-1 text-xs text-muted-foreground",
+        "inline-flex max-w-full rounded-md border border-line bg-bg-3 px-2 py-1 text-xs text-ink-3",
         className,
       )}
     >

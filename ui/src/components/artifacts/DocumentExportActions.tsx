@@ -19,7 +19,7 @@ interface DocumentExportActionsProps {
 }
 
 const ACTION_BUTTON_CLASS =
-  "flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground disabled:opacity-50";
+  "flex h-7 w-7 items-center justify-center rounded-md text-ink-3 transition-colors hover:bg-bg-3 hover:text-ink disabled:opacity-50";
 
 /** Copy / download / export-to-PDF for one issue document artifact. */
 export function DocumentExportActions({

@@ -94,9 +94,9 @@ export function BulkAgentRoleDialog({
                 >
                   <span className="truncate">{entry.name}</span>
                   {entry.ok ? (
-                    <span className="text-right text-muted-foreground">{agentRoleLabel(entry.role)}</span>
+                    <span className="text-right text-ink-3">{agentRoleLabel(entry.role)}</span>
                   ) : (
-                    <span className="text-right text-xs text-destructive" role="alert">
+                    <span className="text-right text-xs text-bad" role="alert">
                       {entry.message}
                     </span>
                   )}

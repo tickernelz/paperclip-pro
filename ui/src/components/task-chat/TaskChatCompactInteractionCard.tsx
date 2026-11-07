@@ -77,7 +77,7 @@ import { TaskChatPlanPreviewCard } from "./TaskChatPlanPreviewCard";
 import { TaskChatRichInput } from "./TaskChatRichInput";
 
 const TAKEOVER_TEXTAREA_CLASS =
-  "min-h-16 resize-y border-0 bg-muted/35 text-sm shadow-none focus-visible:ring-0 focus-visible:ring-offset-0";
+  "min-h-16 resize-y border-0 bg-bg-3/35 text-sm shadow-none focus-visible:ring-0 focus-visible:ring-offset-0";
 
 type SharedInteractionProps = Omit<
   ComponentProps<typeof IssueThreadInteractionCard>,
@@ -134,8 +134,8 @@ function statusTone(status: IssueThreadInteraction["status"]): string {
   if (status === "pending") return "text-(--status-agent-running)";
   if (status === "accepted" || status === "answered")
     return "text-(--status-task-icon-done)";
-  if (status === "rejected" || status === "failed") return "text-destructive";
-  return "text-muted-foreground";
+  if (status === "rejected" || status === "failed") return "text-bad";
+  return "text-ink-3";
 }
 
 function StatusIcon({ status }: { status: IssueThreadInteraction["status"] }) {
@@ -175,8 +175,8 @@ function InteractionShell({
   const Icon = kind.icon;
   const title = (
     <div className="flex min-w-0 items-center gap-2">
-      <Icon aria-hidden className="h-4 w-4 shrink-0 text-muted-foreground" />
-      <strong className="min-w-0 truncate text-sm font-medium text-foreground">
+      <Icon aria-hidden className="h-4 w-4 shrink-0 text-ink-3" />
+      <strong className="min-w-0 truncate text-sm font-medium text-ink">
         {interaction.title ?? kind.fallbackTitle}
       </strong>
       {interaction.kind === "request_confirmation" &&
@@ -186,7 +186,7 @@ function InteractionShell({
       ) : null}
       {interaction.status !== "pending" ? (
         <span
-          className="inline-flex shrink-0 items-center gap-1 text-xs capitalize text-muted-foreground"
+          className="inline-flex shrink-0 items-center gap-1 text-xs capitalize text-ink-3"
           data-testid="interaction-status-badge"
         >
           <StatusIcon status={interaction.status} />
@@ -199,7 +199,7 @@ function InteractionShell({
     <article
       className={cn(
         presentation === "timeline"
-          ? "overflow-hidden rounded-md border border-border bg-card/60"
+          ? "overflow-hidden rounded-md border border-line bg-bg-2/60"
           : "overflow-clip",
       )}
     >
@@ -210,7 +210,7 @@ function InteractionShell({
           <div className="min-w-0 flex-1">
             {title}
             {audienceLabel ? (
-              <p className="mt-0.5 pl-6 text-xs text-muted-foreground">
+              <p className="mt-0.5 pl-6 text-xs text-ink-3">
                 {audienceLabel}
               </p>
             ) : null}
@@ -220,7 +220,7 @@ function InteractionShell({
       <div
         className={
           presentation === "timeline"
-            ? "border-t border-border/70 px-3 py-3"
+            ? "border-t border-line/70 px-3 py-3"
             : undefined
         }
       >
@@ -234,7 +234,7 @@ function InteractionActionError({ message }: { message: string | null }) {
   return (
     <div aria-live="assertive" data-testid="interaction-action-error">
       {message ? (
-        <div className="mt-2 rounded-sm border border-destructive/60 bg-destructive/10 px-2.5 py-2 text-sm text-destructive">
+        <div className="mt-2 rounded-sm border border-bad/60 bg-bad/10 px-2.5 py-2 text-sm text-bad">
           {message}
         </div>
       ) : null}
@@ -246,10 +246,10 @@ function Details({ children }: { children?: ReactNode }) {
   if (!children) return null;
   return (
     <details className="mt-2">
-      <summary className="flex cursor-pointer list-none items-center gap-1 text-xs font-medium text-muted-foreground">
+      <summary className="flex cursor-pointer list-none items-center gap-1 text-xs font-medium text-ink-3">
         <ChevronDown aria-hidden className="h-3.5 w-3.5" /> Details
       </summary>
-      <div className="mt-2 max-h-(--sz-28dvh) overflow-y-auto overscroll-contain rounded-sm bg-muted/40 px-2.5 py-2 text-sm text-muted-foreground scrollbar-auto-hide">
+      <div className="mt-2 max-h-(--sz-28dvh) overflow-y-auto overscroll-contain rounded-sm bg-bg-3/40 px-2.5 py-2 text-sm text-ink-3 scrollbar-auto-hide">
         {children}
       </div>
     </details>
@@ -269,7 +269,7 @@ function ActionRow({
       data-slot="task-chat-takeover-actions"
     >
       {hint ? (
-        <span className="mr-auto text-xs text-muted-foreground">{hint}</span>
+        <span className="mr-auto text-xs text-ink-3">{hint}</span>
       ) : (
         <span className="mr-auto" />
       )}
@@ -312,14 +312,14 @@ function CompactTarget({
     return (
       <a
         href={href}
-        className="inline-flex rounded-sm border border-border px-2 py-0.5 font-mono text-xs text-foreground hover:bg-muted/60"
+        className="inline-flex rounded-sm border border-line px-2 py-0.5 font-mono text-xs text-ink hover:bg-bg-3/60"
       >
         {label}
       </a>
     );
   }
   return (
-    <span className="inline-flex rounded-sm border border-border px-2 py-0.5 font-mono text-xs text-muted-foreground">
+    <span className="inline-flex rounded-sm border border-line px-2 py-0.5 font-mono text-xs text-ink-3">
       {label}
     </span>
   );
@@ -398,7 +398,7 @@ function ReceiptDisclosure({
     request = (
       <div className="grid gap-3">
         {questionSet.description ? (
-          <div className="text-sm text-muted-foreground">
+          <div className="text-sm text-ink-3">
             <InteractionInlineMarkdown>
               {questionSet.description}
             </InteractionInlineMarkdown>
@@ -420,21 +420,21 @@ function ReceiptDisclosure({
           return (
             <div key={question.id}>
               {question.header ? (
-                <p className="text-xs font-medium text-muted-foreground">
+                <p className="text-xs font-medium text-ink-3">
                   {question.header}
                 </p>
               ) : null}
-              <div className="text-sm text-foreground">
+              <div className="text-sm text-ink">
                 <InteractionInlineMarkdown>{question.prompt}</InteractionInlineMarkdown>
               </div>
               {question.helpText ? (
-                <div className="mt-0.5 text-xs text-muted-foreground">
+                <div className="mt-0.5 text-xs text-ink-3">
                   <InteractionInlineMarkdown>
                     {question.helpText}
                   </InteractionInlineMarkdown>
                 </div>
               ) : null}
-              <div className="mt-1 flex gap-1 text-sm font-medium text-foreground">
+              <div className="mt-1 flex gap-1 text-sm font-medium text-ink">
                 <span className="shrink-0">Answer:</span>
                 {values.length > 0 ? (
                   <InteractionInlineMarkdown className="min-w-0 flex-1">
@@ -461,11 +461,11 @@ function ReceiptDisclosure({
       .map((option) => option.label);
     request = (
       <div>
-        <div className="text-sm text-foreground">
+        <div className="text-sm text-ink">
           <InteractionInlineMarkdown>{interaction.payload.prompt}</InteractionInlineMarkdown>
         </div>
         {interaction.status === "accepted" ? (
-          <div className="mt-1 flex gap-1 text-sm font-medium text-foreground">
+          <div className="mt-1 flex gap-1 text-sm font-medium text-ink">
             <span className="shrink-0">Answer:</span>
             {selectedLabels.length > 0 ? (
               <InteractionInlineMarkdown className="min-w-0 flex-1">
@@ -499,7 +499,7 @@ function ReceiptDisclosure({
     );
     request = (
       <div>
-        <p className="text-sm text-foreground">{interaction.payload.prompt}</p>
+        <p className="text-sm text-ink">{interaction.payload.prompt}</p>
         {decidedItems.length > 0 ? (
           <ul className="mt-2 grid gap-1 text-sm">
             {decidedItems.map((item) => {
@@ -514,7 +514,7 @@ function ReceiptDisclosure({
             })}
           </ul>
         ) : (
-          <p className="mt-1 text-sm font-medium text-foreground">
+          <p className="mt-1 text-sm font-medium text-ink">
             No verdicts submitted
           </p>
         )}
@@ -545,7 +545,7 @@ function ReceiptDisclosure({
             ))}
           </ul>
         ) : interaction.status === "accepted" ? (
-          <p className="text-sm font-medium text-foreground">
+          <p className="text-sm font-medium text-ink">
             No tasks created
           </p>
         ) : null}
@@ -553,7 +553,7 @@ function ReceiptDisclosure({
     );
   } else if (interaction.kind === "connection_intent") {
     request = (
-      <p className="text-sm text-foreground">
+      <p className="text-sm text-ink">
         {interaction.payload.requestingAgentName} requested access to{" "}
         {interaction.payload.serviceName}.
       </p>
@@ -561,7 +561,7 @@ function ReceiptDisclosure({
   } else {
     request = (
       <div className="grid gap-2">
-        <div className="text-sm text-foreground">
+        <div className="text-sm text-ink">
           <InteractionInlineMarkdown>{interaction.payload.prompt}</InteractionInlineMarkdown>
         </div>
         <InteractionNoteReceipt
@@ -576,7 +576,7 @@ function ReceiptDisclosure({
           </div>
         ) : null}
         {interaction.payload.toolAction ? (
-          <div className="rounded-sm bg-muted/45 px-3 py-2.5 text-sm">
+          <div className="rounded-sm bg-bg-3/45 px-3 py-2.5 text-sm">
             <p>
               <strong>{interaction.payload.toolAction.toolDisplayName}</strong>{" "}
               · {interaction.payload.toolAction.risk} risk
@@ -595,30 +595,30 @@ function ReceiptDisclosure({
             <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap break-words font-mono text-xs">
               {interaction.payload.toolAction.argumentsSummaryJson}
             </pre>
-            <p className="mt-1 break-all font-mono text-xs text-muted-foreground">
+            <p className="mt-1 break-all font-mono text-xs text-ink-3">
               {interaction.payload.toolAction.argumentsHash}
             </p>
           </div>
         ) : null}
         {interaction.payload.secretProposal ? (
-          <dl className="grid gap-1 rounded-sm bg-muted/45 px-3 py-2.5 text-sm">
+          <dl className="grid gap-1 rounded-sm bg-bg-3/45 px-3 py-2.5 text-sm">
             <div>
-              <dt className="text-xs text-muted-foreground">Secret</dt>
+              <dt className="text-xs text-ink-3">Secret</dt>
               <dd>{interaction.payload.secretProposal.sourceSecretLabel}</dd>
             </div>
             <div>
-              <dt className="text-xs text-muted-foreground">Binding</dt>
+              <dt className="text-xs text-ink-3">Binding</dt>
               <dd className="font-mono text-xs">
                 {interaction.payload.secretProposal.configPath} →{" "}
                 {interaction.payload.secretProposal.targetAgentName}
               </dd>
             </div>
             <div>
-              <dt className="text-xs text-muted-foreground">Why</dt>
+              <dt className="text-xs text-ink-3">Why</dt>
               <dd>{interaction.payload.secretProposal.justification}</dd>
             </div>
             <div>
-              <dt className="text-xs text-muted-foreground">Expires</dt>
+              <dt className="text-xs text-ink-3">Expires</dt>
               <dd>
                 {new Date(
                   interaction.payload.secretProposal.expiresAt,
@@ -636,12 +636,12 @@ function ReceiptDisclosure({
       className={
         compact
           ? "space-y-3 pb-3 pl-7 pr-1"
-          : "mt-2 space-y-3 border-t border-border/60 pt-3"
+          : "mt-2 space-y-3 border-t border-line/60 pt-3"
       }
     >
       {request}
       {answerReason ? (
-        <div className="flex gap-1 text-sm text-muted-foreground">
+        <div className="flex gap-1 text-sm text-ink-3">
           <span className="shrink-0 font-medium">Reason:</span>
           <InteractionInlineMarkdown className="min-w-0 flex-1">
             {answerReason}
@@ -668,21 +668,21 @@ function ReceiptDisclosure({
             : "task-chat-interaction-receipt"
         }
       >
-        <summary className="flex min-h-8 cursor-pointer list-none items-center gap-2 rounded-sm px-1 py-1.5 text-sm leading-5 text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+        <summary className="flex min-h-8 cursor-pointer list-none items-center gap-2 rounded-sm px-1 py-1.5 text-sm leading-5 text-ink-3 transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
           <span
             className="flex w-6 shrink-0 items-center justify-center"
             data-testid="task-chat-interaction-receipt-icon-slot"
           >
             <Icon
               aria-hidden
-              className="h-3.5 w-3.5 shrink-0 text-muted-foreground"
+              className="h-3.5 w-3.5 shrink-0 text-ink-3"
               data-testid="task-chat-interaction-receipt-icon"
             />
           </span>
           <span>{summary}</span>
           <ChevronRight
             aria-hidden
-            className="ml-auto h-3 w-3 shrink-0 text-muted-foreground opacity-0 transition-[opacity,transform] group-hover:opacity-70 group-focus-visible:opacity-70 group-open:rotate-90"
+            className="ml-auto h-3 w-3 shrink-0 text-ink-3 opacity-0 transition-[opacity,transform] group-hover:opacity-70 group-focus-visible:opacity-70 group-open:rotate-90"
             data-testid="task-chat-interaction-receipt-caret"
           />
         </summary>
@@ -693,7 +693,7 @@ function ReceiptDisclosure({
 
   return (
     <details className="mt-2">
-      <summary className="cursor-pointer text-xs font-medium text-muted-foreground">
+      <summary className="cursor-pointer text-xs font-medium text-ink-3">
         View original request and resolution
       </summary>
       {detail}
@@ -950,7 +950,7 @@ function ConfirmationCard({
         />
       ) : isPlanConfirmation && rejecting ? null : (
         <div className="flex flex-wrap items-start justify-between gap-2">
-          <div className="min-w-0 flex-1 text-sm leading-5 text-foreground">
+          <div className="min-w-0 flex-1 text-sm leading-5 text-ink">
             {isPlanConfirmation ? (
               "Do you accept this plan?"
             ) : (
@@ -972,20 +972,20 @@ function ConfirmationCard({
         </Details>
       ) : null}
       {interaction.payload.toolAction ? (
-        <div className="mt-3 space-y-2 rounded-sm bg-muted/45 px-3 py-2.5 text-sm">
+        <div className="mt-3 space-y-2 rounded-sm bg-bg-3/45 px-3 py-2.5 text-sm">
           <div className="flex flex-wrap items-center gap-2">
             <strong>{interaction.payload.toolAction.toolDisplayName}</strong>
             <span
               className={cn(
                 "text-xs font-medium capitalize",
                 interaction.payload.toolAction.risk === "destructive"
-                  ? "text-destructive"
-                  : "text-muted-foreground",
+                  ? "text-bad"
+                  : "text-ink-3",
               )}
             >
               {interaction.payload.toolAction.risk} risk
             </span>
-            <span className="ml-auto text-xs text-muted-foreground">
+            <span className="ml-auto text-xs text-ink-3">
               Expires{" "}
               {new Date(
                 interaction.payload.toolAction.expiresAt,
@@ -996,37 +996,37 @@ function ConfirmationCard({
             {interaction.payload.toolAction.previewMarkdown}
           </MarkdownBody>
           <details>
-            <summary className="cursor-pointer text-xs font-medium text-muted-foreground">
+            <summary className="cursor-pointer text-xs font-medium text-ink-3">
               Arguments and audit hash
             </summary>
-            <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap break-words font-mono text-xs text-foreground">
+            <pre className="mt-2 max-h-40 overflow-auto whitespace-pre-wrap break-words font-mono text-xs text-ink">
               {interaction.payload.toolAction.argumentsSummaryJson}
             </pre>
-            <p className="mt-1 break-all font-mono text-xs text-muted-foreground">
+            <p className="mt-1 break-all font-mono text-xs text-ink-3">
               {interaction.payload.toolAction.argumentsHash}
             </p>
           </details>
         </div>
       ) : null}
       {interaction.payload.secretProposal ? (
-        <dl className="mt-3 grid gap-2 rounded-sm bg-muted/45 px-3 py-2.5 text-sm">
+        <dl className="mt-3 grid gap-2 rounded-sm bg-bg-3/45 px-3 py-2.5 text-sm">
           <div>
-            <dt className="text-xs text-muted-foreground">Secret</dt>
+            <dt className="text-xs text-ink-3">Secret</dt>
             <dd>{interaction.payload.secretProposal.sourceSecretLabel}</dd>
           </div>
           <div>
-            <dt className="text-xs text-muted-foreground">Binding</dt>
+            <dt className="text-xs text-ink-3">Binding</dt>
             <dd className="font-mono text-xs">
               {interaction.payload.secretProposal.configPath} →{" "}
               {interaction.payload.secretProposal.targetAgentName}
             </dd>
           </div>
           <div>
-            <dt className="text-xs text-muted-foreground">Why</dt>
+            <dt className="text-xs text-ink-3">Why</dt>
             <dd>{interaction.payload.secretProposal.justification}</dd>
           </div>
           <div>
-            <dt className="text-xs text-muted-foreground">Expires</dt>
+            <dt className="text-xs text-ink-3">Expires</dt>
             <dd>
               {new Date(
                 interaction.payload.secretProposal.expiresAt,
@@ -1039,7 +1039,7 @@ function ConfirmationCard({
         <div className={cn("space-y-2", !isPlanConfirmation && "mt-3")}>
           <p
             id={`${interaction.id}-reject-reason-label`}
-            className="text-xs font-medium leading-4 text-foreground"
+            className="text-xs font-medium leading-4 text-ink"
           >
             {interaction.payload.rejectReasonLabel ?? "What should change?"}
             {interaction.payload.rejectRequiresReason ? "" : " (optional)"}
@@ -1110,7 +1110,7 @@ function ConfirmationCard({
             <Button
               type="button"
               size="sm"
-              variant="outline"
+              variant="secondary"
               disabled={
                 working !== null ||
                 revisionUploading ||
@@ -1293,7 +1293,7 @@ function CheckboxConfirmationCard({
   return (
     <div>
       <div className="flex flex-wrap items-start justify-between gap-2">
-        <div className="min-w-0 flex-1 text-sm leading-5 text-foreground">
+        <div className="min-w-0 flex-1 text-sm leading-5 text-ink">
           <InteractionInlineMarkdown>{interaction.payload.prompt}</InteractionInlineMarkdown>
         </div>
         <CompactTarget interaction={interaction} />
@@ -1306,7 +1306,7 @@ function CheckboxConfirmationCard({
         {interaction.payload.options.length > 10 ? (
           <label className="relative mb-1 block">
             <Search
-              className="pointer-events-none absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground"
+              className="pointer-events-none absolute left-2.5 top-2.5 h-4 w-4 text-ink-3"
               aria-hidden
             />
             <Input
@@ -1321,7 +1321,7 @@ function CheckboxConfirmationCard({
         {visibleOptions.map((option) => (
           <label
             key={option.id}
-            className="flex cursor-pointer items-start gap-2 rounded-sm px-2 py-1.5 hover:bg-muted/50"
+            className="flex cursor-pointer items-start gap-2 rounded-sm px-2 py-1.5 hover:bg-bg-3/50"
           >
             <Checkbox
               checked={selected.has(option.id)}
@@ -1329,11 +1329,11 @@ function CheckboxConfirmationCard({
               className="mt-0.5"
             />
             <span className="min-w-0">
-              <span className="block text-sm leading-5 text-foreground">
+              <span className="block text-sm leading-5 text-ink">
                 <InteractionInlineMarkdown>{option.label}</InteractionInlineMarkdown>
               </span>
               {option.description ? (
-                <span className="block text-xs leading-4 text-muted-foreground">
+                <span className="block text-xs leading-4 text-ink-3">
                   <InteractionInlineMarkdown>
                     {option.description}
                   </InteractionInlineMarkdown>
@@ -1354,7 +1354,7 @@ function CheckboxConfirmationCard({
         <div className="mt-3 space-y-1.5">
           <label
             htmlFor={`${interaction.id}-reject-reason`}
-            className="text-xs font-medium text-foreground"
+            className="text-xs font-medium text-ink"
           >
             {interaction.payload.rejectReasonLabel ?? "What should change?"}
             {interaction.payload.rejectRequiresReason ? "" : " (optional)"}
@@ -1398,7 +1398,7 @@ function CheckboxConfirmationCard({
             <Button
               type="button"
               size="sm"
-              variant="outline"
+              variant="secondary"
               disabled={
                 working !== null ||
                 noteBlocked ||
@@ -1476,25 +1476,25 @@ function SuggestedTaskRow({
   ).length;
   return (
     <li>
-      <label className="flex cursor-pointer items-start gap-2 rounded-sm px-2 py-1.5 hover:bg-muted/50">
+      <label className="flex cursor-pointer items-start gap-2 rounded-sm px-2 py-1.5 hover:bg-bg-3/50">
         <Checkbox
           checked={selected.has(node.task.clientKey)}
           onCheckedChange={() => onToggle(node)}
           className="mt-0.5"
         />
         <span className="min-w-0 flex-1">
-          <span className="block text-sm leading-5 text-foreground">
+          <span className="block text-sm leading-5 text-ink">
             {node.task.title}
           </span>
           {hiddenCount > 0 ? (
-            <span className="block text-xs text-muted-foreground">
+            <span className="block text-xs text-ink-3">
               + {hiddenCount} hidden follow-up
             </span>
           ) : null}
         </span>
       </label>
       {node.children.length > 0 ? (
-        <ul className="ml-4 border-l border-border/80 pl-2">
+        <ul className="ml-4 border-l border-line/80 pl-2">
           {node.children.map((child) => (
             <SuggestedTaskRow
               key={child.task.clientKey}
@@ -1605,13 +1605,13 @@ function SuggestedTasksCard({
 
   return (
     <div>
-      <p className="text-sm leading-5 text-foreground">
+      <p className="text-sm leading-5 text-ink">
         Select the tasks to create.
       </p>
       {interaction.payload.tasks.length > 10 ? (
         <label className="relative mt-3 block">
           <Search
-            className="pointer-events-none absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground"
+            className="pointer-events-none absolute left-2.5 top-2.5 h-4 w-4 text-ink-3"
             aria-hidden
           />
           <Input
@@ -1640,7 +1640,7 @@ function SuggestedTasksCard({
         <div className="mt-3 space-y-1.5">
           <label
             htmlFor={`${interaction.id}-reject-reason`}
-            className="text-xs font-medium text-foreground"
+            className="text-xs font-medium text-ink"
           >
             Why should these tasks change? (optional)
           </label>
@@ -1672,7 +1672,7 @@ function SuggestedTasksCard({
             <Button
               type="button"
               size="sm"
-              variant="outline"
+              variant="secondary"
               disabled={working !== null || !onRejectInteraction}
               onClick={() => void resolve("reject")}
             >
@@ -1785,7 +1785,7 @@ function ItemVerdictsCard({
   const item = items[page];
   if (!item)
     return (
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm text-ink-3">
         No review items were provided.
       </p>
     );
@@ -1876,7 +1876,7 @@ function ItemVerdictsCard({
 
   return (
     <div>
-      <div className="mb-2 flex items-center text-xs text-muted-foreground">
+      <div className="mb-2 flex items-center text-xs text-ink-3">
         <span>{drafts.size + resolvedById.size} decided</span>
         <TaskChatComposerTakeoverControls>
           <nav
@@ -1915,11 +1915,11 @@ function ItemVerdictsCard({
       </div>
       <div className="flex flex-wrap items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
-          <p className="text-sm font-medium leading-5 text-foreground">
+          <p className="text-sm font-medium leading-5 text-ink">
             {item.label}
           </p>
           {item.description ? (
-            <p className="text-xs leading-4 text-muted-foreground">
+            <p className="text-xs leading-4 text-ink-3">
               {item.description}
             </p>
           ) : null}
@@ -1927,21 +1927,21 @@ function ItemVerdictsCard({
         {itemHref ? (
           <a
             href={itemHref}
-            className="text-xs font-medium text-primary hover:underline"
+            className="text-xs font-medium text-accent hover:underline"
           >
             Open
           </a>
         ) : null}
       </div>
       {item.previewMarkdown ? (
-        <div className="mt-2 rounded-sm bg-muted/40 px-2.5 py-2 text-xs">
+        <div className="mt-2 rounded-sm bg-bg-3/40 px-2.5 py-2 text-xs">
           <MarkdownBody externalReferences={externalReferences}>
             {item.previewMarkdown}
           </MarkdownBody>
         </div>
       ) : null}
       {resolved ? (
-        <p className="mt-3 inline-flex rounded-sm border border-border px-2 py-1 text-xs capitalize text-muted-foreground">
+        <p className="mt-3 inline-flex rounded-sm border border-line px-2 py-1 text-xs capitalize text-ink-3">
           {resolved.verdict}
           {resolved.reason ? ` · ${resolved.reason}` : ""}
         </p>
@@ -1956,19 +1956,19 @@ function ItemVerdictsCard({
               key={verdict}
               type="button"
               size="sm"
-              variant="outline"
+              variant="danger"
               aria-pressed={draft?.verdict === verdict}
               onClick={() => setVerdict(verdict)}
               className={cn(
                 "min-w-24 justify-center capitalize",
                 verdict === "approve" &&
                   (draft?.verdict === verdict
-                    ? "border-emerald-500/60 bg-emerald-500/15 text-emerald-700 hover:bg-emerald-500/20 dark:text-emerald-300"
-                    : "border-emerald-500/35 text-emerald-700 hover:bg-emerald-500/10 dark:text-emerald-300"),
+                    ? " "
+                    : " "),
                 verdict === "reject" &&
                   (draft?.verdict === verdict
-                    ? "border-destructive/60 bg-destructive/15 text-destructive hover:bg-destructive/20"
-                    : "border-destructive/35 text-destructive hover:bg-destructive/10"),
+                    ? " "
+                    : " "),
               )}
             >
               {verdict === "approve" ? (
@@ -1986,7 +1986,7 @@ function ItemVerdictsCard({
         <div className="mt-2 space-y-1.5">
           <label
             htmlFor={`${interaction.id}-${item.id}-reason`}
-            className="text-xs font-medium text-foreground"
+            className="text-xs font-medium text-ink"
           >
             {interaction.payload.reasonLabel ?? "Reason"}
           </label>
@@ -2002,7 +2002,7 @@ function ItemVerdictsCard({
             <Button
               type="button"
               size="sm"
-              variant="outline"
+              variant="secondary"
               disabled={!draft.reason.trim() || working}
               onClick={confirmRejectionReason}
             >

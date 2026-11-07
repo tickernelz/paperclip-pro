@@ -293,7 +293,7 @@ const COMPAT_META: Record<
   { label: string; tone: string }
 > = {
   compatible: { label: "Compatible", tone: "text-emerald-600 dark:text-emerald-300 border-emerald-500/30" },
-  unknown: { label: "Unknown compat", tone: "text-muted-foreground border-border" },
+  unknown: { label: "Unknown compat", tone: "text-ink-3 border-line" },
   invalid: { label: "Invalid", tone: "text-rose-600 dark:text-rose-300 border-rose-500/30" },
 };
 
@@ -316,7 +316,7 @@ function ProvenanceBadge({ team }: { team: CatalogTeam }) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <Badge variant="outline" className="border-border px-1.5 text-(length:--text-micro) text-muted-foreground">
+        <Badge variant="outline" className="border-line px-1.5 text-(length:--text-micro) text-ink-3">
           <Package className="h-3 w-3" />
           {team.packageName}
           {team.packageVersion ? `@${team.packageVersion}` : ""}
@@ -442,11 +442,11 @@ function TeamFileTree({
               <button
                 type="button"
                 onClick={() => onToggleDir(node.name)}
-                className="flex w-full items-center gap-1.5 rounded px-1.5 py-1 hover:bg-accent/40"
+                className="flex w-full items-center gap-1.5 rounded px-1.5 py-1 hover:bg-bg-3/40"
                 style={{ paddingLeft: depth * 14 + 6 }}
               >
                 {open ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
-                <DirIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                <DirIcon className="h-3.5 w-3.5 text-ink-3" />
                 <span className="truncate">{node.name}</span>
               </button>
               {open && (
@@ -469,12 +469,12 @@ function TeamFileTree({
               type="button"
               onClick={() => node.path && onSelectFile(node.path)}
               className={cn(
-                "flex w-full items-center gap-1.5 rounded px-1.5 py-1 hover:bg-accent/40",
-                active && "bg-accent/50 text-foreground",
+                "flex w-full items-center gap-1.5 rounded px-1.5 py-1 hover:bg-bg-3/40",
+                active && "bg-bg-3/50 text-ink",
               )}
               style={{ paddingLeft: depth * 14 + 22 }}
             >
-              <FileText className="h-3.5 w-3.5 text-muted-foreground" />
+              <FileText className="h-3.5 w-3.5 text-ink-3" />
               <span className="truncate">{node.name}</span>
             </button>
           </li>
@@ -495,8 +495,8 @@ export function TeamHierarchyPreview({ team }: { team: CatalogTeam }) {
   const members = team.agentSlugs.filter((slug) => !roots.has(slug));
   const requiresManager = team.rootAgentSlugs.length > 0;
   return (
-    <div className="max-h-72 overflow-auto rounded-md border border-border">
-      <ul className="divide-y divide-border/60">
+    <div className="max-h-72 overflow-auto rounded-md border border-line">
+      <ul className="divide-y divide-line/60">
         {team.rootAgentSlugs.map((slug) => (
           <li
             key={slug}
@@ -507,17 +507,17 @@ export function TeamHierarchyPreview({ team }: { team: CatalogTeam }) {
           >
             <Crown className="h-3.5 w-3.5 text-amber-500" />
             <span className="font-medium">{titleCase(slug)}</span>
-            <span className="text-xs text-muted-foreground">root agent</span>
+            <span className="text-xs text-ink-3">root agent</span>
           </li>
         ))}
         {members.map((slug) => (
           <li key={slug} className="flex items-center gap-2 px-3 py-2 pl-7 text-sm">
-            <Users2 className="h-3.5 w-3.5 text-muted-foreground" />
+            <Users2 className="h-3.5 w-3.5 text-ink-3" />
             <span>{titleCase(slug)}</span>
           </li>
         ))}
         {team.agentSlugs.length === 0 && (
-          <li className="px-3 py-2 text-xs text-muted-foreground">No agents in this team.</li>
+          <li className="px-3 py-2 text-xs text-ink-3">No agents in this team.</li>
         )}
       </ul>
     </div>
@@ -526,7 +526,7 @@ export function TeamHierarchyPreview({ team }: { team: CatalogTeam }) {
 
 function SectionHeader({ children }: { children: React.ReactNode }) {
   return (
-    <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+    <h3 className="text-xs font-semibold uppercase tracking-wide text-ink-3">
       {children}
     </h3>
   );
@@ -549,23 +549,23 @@ function MetricTile({
     <Card className="block px-3 py-2.5">
       <div className="flex items-center justify-between">
         <span className="text-xl font-semibold tabular-nums">{value}</span>
-        <Icon className="h-4 w-4 text-muted-foreground" />
+        <Icon className="h-4 w-4 text-ink-3" />
       </div>
-      <span className="text-xs text-muted-foreground">{label}</span>
+      <span className="text-xs text-ink-3">{label}</span>
     </Card>
   );
 }
 
 export function RequiredSkillsList({ skills }: { skills: CatalogTeamSkillRequirement[] }) {
-  if (skills.length === 0) return <p className="text-sm text-muted-foreground">No required skills.</p>;
+  if (skills.length === 0) return <p className="text-sm text-ink-3">No required skills.</p>;
   return (
     <ul className="space-y-1">
       {skills.map((skill) => (
         <li
           key={`${skill.type}:${skill.ref}`}
-          className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm"
+          className="flex items-center gap-2 rounded-md border border-line px-3 py-2 text-sm"
         >
-          <Boxes className="h-3.5 w-3.5 text-muted-foreground" />
+          <Boxes className="h-3.5 w-3.5 text-ink-3" />
           <span className="font-mono text-xs">{skill.ref}</span>
           <Badge variant="outline" className="ml-auto text-(length:--text-nano)">
             {skill.type}
@@ -594,9 +594,9 @@ export function EnvInputsList({ inputs }: { inputs: CatalogTeamEnvInputSummary[]
         {inputs.map((input) => (
           <li
             key={input.key}
-            className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm"
+            className="flex items-center gap-2 rounded-md border border-line px-3 py-2 text-sm"
           >
-            <KeyRound className="h-3.5 w-3.5 text-muted-foreground" />
+            <KeyRound className="h-3.5 w-3.5 text-ink-3" />
             <span className="font-mono text-xs uppercase tracking-wide">{input.key}</span>
             <Badge
               variant="outline"
@@ -604,7 +604,7 @@ export function EnvInputsList({ inputs }: { inputs: CatalogTeamEnvInputSummary[]
                 "ml-auto text-(length:--text-nano)",
                 input.kind === "secret"
                   ? "text-rose-600 dark:text-rose-300 border-rose-500/30"
-                  : "text-muted-foreground",
+                  : "text-ink-3",
               )}
             >
               {input.kind}
@@ -634,19 +634,19 @@ export function ExternalSourcesList({ sources }: { sources: CatalogTeamSourceRef
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground"
+        className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wide text-ink-3"
       >
         {open ? <ChevronDown className="h-3 w-3" /> : <ChevronRight className="h-3 w-3" />}
         External sources · {external.length}
       </button>
       {open && (
-        <ul className="divide-y divide-border rounded-md border border-border">
+        <ul className="divide-y divide-line rounded-md border border-line">
           {external.map((source) => {
             const Icon = sourceKindIcon(source.type);
             const code = sourceWarningCode(source);
             return (
               <li key={`${source.type}:${source.ref}`} className="flex items-center gap-2 px-3 py-2 text-sm">
-                <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+                <Icon className="h-3.5 w-3.5 text-ink-3" />
                 <span className="font-mono text-xs truncate">{source.ref}</span>
                 <span className="ml-auto text-(length:--text-micro)">
                   {code === "ok" && (
@@ -706,7 +706,7 @@ export function TeamDetailPane({
     <Button
       onClick={onInstall}
       disabled={invalid || !canInstall}
-      variant={outOfDate ? "default" : isInstalled ? "outline" : "default"}
+      variant={outOfDate ? "primary" : isInstalled ? "secondary" : "primary"}
     >
       {unsafe ? (
         <AlertTriangle className="h-4 w-4" />
@@ -730,7 +730,7 @@ export function TeamDetailPane({
               <Badge variant={team.kind === "bundled" ? "secondary" : "outline"} className="text-(length:--text-nano) capitalize">
                 {team.kind}
               </Badge>
-              <span className="text-xs text-muted-foreground">{team.category}</span>
+              <span className="text-xs text-ink-3">{team.category}</span>
               <TrustChip level={team.trustLevel} />
               <CompatChip compatibility={team.compatibility} />
               <ProvenanceBadge team={team} />
@@ -797,10 +797,10 @@ export function TeamDetailPane({
             <SectionHeader>Projects</SectionHeader>
             <ul className="space-y-1">
               {team.projectSlugs.map((slug) => (
-                <li key={slug} className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm">
-                  <FolderKanban className="h-3.5 w-3.5 text-muted-foreground" />
+                <li key={slug} className="flex items-center gap-2 rounded-md border border-line px-3 py-2 text-sm">
+                  <FolderKanban className="h-3.5 w-3.5 text-ink-3" />
                   <span>{titleCase(slug)}</span>
-                  <span className="ml-auto font-mono text-(length:--text-micro) text-muted-foreground">{slug}</span>
+                  <span className="ml-auto font-mono text-(length:--text-micro) text-ink-3">{slug}</span>
                 </li>
               ))}
             </ul>
@@ -822,7 +822,7 @@ export function TeamDetailPane({
         {/* File inventory */}
         <div className="space-y-2">
           <SectionHeader>Files</SectionHeader>
-          <div className="rounded-md border border-border p-1.5">
+          <div className="rounded-md border border-line p-1.5">
             <TeamFileTree
               nodes={tree}
               selectedPath={selectedPath}
@@ -832,12 +832,12 @@ export function TeamDetailPane({
             />
           </div>
           {selectedPath && (
-            <div className="rounded-md border border-border">
-              <div className="flex items-center justify-between border-b border-border px-3 py-2">
+            <div className="rounded-md border border-line">
+              <div className="flex items-center justify-between border-b border-line px-3 py-2">
                 <span className="font-mono text-xs">{selectedPath}</span>
                 <button
                   type="button"
-                  className="text-xs text-muted-foreground hover:text-foreground"
+                  className="text-xs text-ink-3 hover:text-ink"
                   onClick={() => onSelectFile(null)}
                 >
                   Close
@@ -1293,7 +1293,7 @@ function TeamInstallerDialog({
               key={s}
               className={cn(
                 "h-1.5 w-1.5 rounded-full",
-                i === stepIndex ? "bg-primary" : i < stepIndex ? "bg-primary/50" : "bg-muted",
+                i === stepIndex ? "bg-accent" : i < stepIndex ? "bg-accent/50" : "bg-bg-3",
               )}
             />
           ))}
@@ -1405,7 +1405,7 @@ function TeamInstallerDialog({
           )}
           {currentStep === "preview" ? (
             needsScriptsConfirm && confirmScripts ? (
-              <Button variant="destructive" onClick={submitInstall} disabled={installBlocked || previewMutation.isPending}>
+              <Button variant="danger" onClick={submitInstall} disabled={installBlocked || previewMutation.isPending}>
                 <AlertTriangle className="h-4 w-4" />
                 Confirm — install with executables
               </Button>
@@ -1433,12 +1433,12 @@ function TeamInstallerDialog({
     return (
       <Sheet open={open} onOpenChange={(next) => { if (!next && dismissable) onClose(); }}>
         <SheetContent side="bottom" className="flex h-(--sz-100dvh) flex-col gap-0 p-0">
-          <SheetHeader className="border-b border-border">
+          <SheetHeader className="border-b border-line">
             <SheetTitle>{headerTitle}</SheetTitle>
             {headerDescription && <SheetDescription>{headerDescription}</SheetDescription>}
           </SheetHeader>
           <div className="min-h-0 flex-1 overflow-auto p-4">{body}</div>
-          {footer && <div className="border-t border-border bg-background p-4">{footer}</div>}
+          {footer && <div className="border-t border-line bg-bg p-4">{footer}</div>}
         </SheetContent>
       </Sheet>
     );
@@ -1487,9 +1487,9 @@ export function StepTargetManager({
 
       <div className="space-y-1.5">
         <SectionHeader>Root agents</SectionHeader>
-        <ul className="rounded-md border border-border">
+        <ul className="rounded-md border border-line">
           {team.rootAgentSlugs.map((slug) => (
-            <li key={slug} className="flex items-center gap-2 border-b border-border/60 px-3 py-2 text-sm last:border-b-0">
+            <li key={slug} className="flex items-center gap-2 border-b border-line/60 px-3 py-2 text-sm last:border-b-0">
               <Crown className="h-3.5 w-3.5 text-amber-500" />
               <span className="font-medium">{titleCase(slug)}</span>
               <Badge variant="ghost" className="ml-auto bg-amber-500/15 text-(length:--text-micro) text-amber-600 dark:text-amber-300">
@@ -1503,7 +1503,7 @@ export function StepTargetManager({
       {!fullCompany && (
         <div className="space-y-1.5" aria-describedby="target-manager-help">
           <SectionHeader>Target manager</SectionHeader>
-          <Command className="rounded-md border border-border">
+          <Command className="rounded-md border border-line">
             <CommandInput placeholder="Search agents…" />
             <CommandList>
               <CommandEmpty>No agents found.</CommandEmpty>
@@ -1515,9 +1515,9 @@ export function StepTargetManager({
                     onSelect={() => onPickManager(agent.id)}
                   >
                     <div className="flex w-full items-center gap-2">
-                      <Users2 className="h-3.5 w-3.5 text-muted-foreground" />
+                      <Users2 className="h-3.5 w-3.5 text-ink-3" />
                       <span className="font-medium">{agent.name}</span>
-                      <span className="text-xs text-muted-foreground capitalize">{agent.role}</span>
+                      <span className="text-xs text-ink-3 capitalize">{agent.role}</span>
                       {targetManagerAgentId === agent.id && <Check className="ml-auto h-4 w-4 text-emerald-500" />}
                     </div>
                   </CommandItem>
@@ -1529,7 +1529,7 @@ export function StepTargetManager({
       )}
 
       {canBypassManager && (
-        <label className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-sm">
+        <label className="flex items-center gap-2 rounded-md border border-line px-3 py-2 text-sm">
           <input
             type="radio"
             checked={fullCompany}
@@ -1564,16 +1564,16 @@ export function StepSourcePolicy({
         Review each one and decide what to allow before continuing.
       </div>
 
-      <ul className="divide-y divide-border rounded-md border border-border">
+      <ul className="divide-y divide-line rounded-md border border-line">
         {external.map((source) => {
           const Icon = sourceKindIcon(source.type);
           const code = sourceWarningCode(source);
           return (
             <li key={`${source.type}:${source.ref}`} className="flex items-center gap-2 px-3 py-2.5 text-sm">
-              <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+              <Icon className="h-3.5 w-3.5 text-ink-3" />
               <div className="min-w-0">
                 <p className="font-mono text-xs truncate">{source.ref}</p>
-                <p className="text-(length:--text-micro) text-muted-foreground">
+                <p className="text-(length:--text-micro) text-ink-3">
                   {code === "ok" && "pinned"}
                   {code === "unpinned" && "unpinned reference"}
                   {code === "unsupported_in_ui" && "not installable from the browser"}
@@ -1597,7 +1597,7 @@ export function StepSourcePolicy({
         })}
       </ul>
 
-      <div className="space-y-2.5 rounded-md border border-border p-3">
+      <div className="space-y-2.5 rounded-md border border-line p-3">
         <PolicyToggle
           label="Allow external sources"
           description="Resolve github/url skill and team sources at install time."
@@ -1643,7 +1643,7 @@ function PolicyToggle({
     <div className="flex items-start justify-between gap-3">
       <div>
         <p className="text-sm font-medium">{label}</p>
-        <p className="text-xs text-muted-foreground">{description}</p>
+        <p className="text-xs text-ink-3">{description}</p>
       </div>
       <ToggleSwitch checked={checked} onCheckedChange={onChange} />
     </div>
@@ -1676,15 +1676,15 @@ export function StepSkillPlan({
         Before agents are imported, the catalog resolves the skills they depend on. This is the
         resolution plan.
       </div>
-      <ul className="divide-y divide-border rounded-md border border-border">
+      <ul className="divide-y divide-line rounded-md border border-line">
         {(preparations ?? team.requiredSkills.map(toPreparation)).map((prep) => {
           const meta = SKILL_ACTION_META[prep.action];
           return (
             <li key={`${prep.type}:${prep.ref}`} className="flex items-center gap-2 px-3 py-2.5 text-sm">
-              <Boxes className="h-3.5 w-3.5 text-muted-foreground" />
+              <Boxes className="h-3.5 w-3.5 text-ink-3" />
               <div className="min-w-0">
                 <p className="font-mono text-xs truncate">{prep.ref}</p>
-                {prep.reason && <p className="text-(length:--text-micro) text-muted-foreground">{prep.reason}</p>}
+                {prep.reason && <p className="text-(length:--text-micro) text-ink-3">{prep.reason}</p>}
               </div>
               <Badge variant="outline" className={cn("ml-auto text-(length:--text-nano)", meta.tone)}>
                 {meta.label}
@@ -1719,7 +1719,7 @@ function toPreparation(skill: CatalogTeamSkillRequirement): CatalogTeamSkillPrep
 const PLAN_ACTION_TONE: Record<string, string> = {
   create: "text-emerald-600 dark:text-emerald-300 border-emerald-500/30",
   update: "text-amber-600 dark:text-amber-300 border-amber-500/30",
-  skip: "text-muted-foreground border-border",
+  skip: "text-ink-3 border-line",
 };
 
 function PlanRow({
@@ -1741,11 +1741,11 @@ function PlanRow({
 }) {
   return (
     <li className="flex items-center gap-2 px-3 py-2 text-sm">
-      <Badge variant="outline" className={cn("text-(length:--text-nano) uppercase", PLAN_ACTION_TONE[action] ?? "border-border")}>
+      <Badge variant="outline" className={cn("text-(length:--text-nano) uppercase", PLAN_ACTION_TONE[action] ?? "border-line")}>
         {action}
       </Badge>
       <span className={cn("font-mono text-xs", action === "skip" && "line-through opacity-60")}>{slug}</span>
-      <ArrowRight className="h-3 w-3 text-muted-foreground" />
+      <ArrowRight className="h-3 w-3 text-ink-3" />
       {canRename && onRename ? (
         <Input
           value={override ?? plannedName}
@@ -1755,7 +1755,7 @@ function PlanRow({
       ) : (
         <span className="font-mono text-xs">{plannedName}</span>
       )}
-      {reason && <span className="ml-auto text-(length:--text-micro) text-muted-foreground">{reason}</span>}
+      {reason && <span className="ml-auto text-(length:--text-micro) text-ink-3">{reason}</span>}
     </li>
   );
 }
@@ -1797,7 +1797,7 @@ export function StepPreview({
 }) {
   if (loading && !result) {
     return (
-      <div className="flex items-center gap-2 py-12 text-sm text-muted-foreground">
+      <div className="flex items-center gap-2 py-12 text-sm text-ink-3">
         <Loader2 className="h-4 w-4 animate-spin" /> Preparing preview…
       </div>
     );
@@ -1809,7 +1809,7 @@ export function StepPreview({
           <XOctagon className="mt-0.5 h-4 w-4 shrink-0" />
           {error}
         </div>
-        <Button variant="outline" onClick={onRetry}>
+        <Button variant="secondary" onClick={onRetry}>
           <RotateCcw className="h-4 w-4" /> Retry
         </Button>
       </div>
@@ -1921,9 +1921,9 @@ export function StepPreview({
             );
             return (
               <li key={agent.slug} className="flex items-center gap-2 px-3 py-2 text-sm">
-                <Cpu className="h-3.5 w-3.5 text-muted-foreground" />
+                <Cpu className="h-3.5 w-3.5 text-ink-3" />
                 <span className="min-w-0 truncate">{agent.name}</span>
-                <span className="font-mono text-(length:--text-micro) text-muted-foreground">{agent.slug}</span>
+                <span className="font-mono text-(length:--text-micro) text-ink-3">{agent.slug}</span>
                 {selected ? (
                   <Select value={selected} onValueChange={(v) => onAdapterChange(agent.slug, v)}>
                     <SelectTrigger className="ml-auto h-8 w-48">
@@ -1943,7 +1943,7 @@ export function StepPreview({
               </li>
             );
           })}
-          <li className="px-3 py-1.5 text-(length:--text-micro) text-muted-foreground">
+          <li className="px-3 py-1.5 text-(length:--text-micro) text-ink-3">
             Each imported agent defaults to its package adapter; override here before install.
             Deeper per-adapter model config is editable on the agent after install.
           </li>
@@ -1960,15 +1960,15 @@ export function StepPreview({
             return (
               <li key={formKey} className="grid gap-2 px-3 py-2 text-sm sm:grid-cols-(--gtc-56) sm:items-center">
                 <div className="flex min-w-0 items-center gap-2">
-                  <KeyRound className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                  <KeyRound className="h-3.5 w-3.5 shrink-0 text-ink-3" />
                   <span className="font-mono text-xs uppercase tracking-wide">{input.key}</span>
-                  {input.description && <span className="truncate text-xs text-muted-foreground">{input.description}</span>}
+                  {input.description && <span className="truncate text-xs text-ink-3">{input.description}</span>}
                   {input.requirement === "required" && (
                     <Badge variant="outline" className="text-(length:--text-nano)">required</Badge>
                   )}
                   <Badge
                     variant="outline"
-                    className={cn("ml-auto text-(length:--text-nano)", input.kind === "secret" ? "text-rose-600 dark:text-rose-300 border-rose-500/30" : "text-muted-foreground")}
+                    className={cn("ml-auto text-(length:--text-nano)", input.kind === "secret" ? "text-rose-600 dark:text-rose-300 border-rose-500/30" : "text-ink-3")}
                   >
                     {input.kind}
                   </Badge>
@@ -2006,7 +2006,7 @@ export function StepPreview({
       )}
 
       {/* Provenance */}
-      <div className="rounded-md border border-border px-3 py-2.5 text-xs text-muted-foreground">
+      <div className="rounded-md border border-line px-3 py-2.5 text-xs text-ink-3">
         Imported entities are stamped with <code className="font-mono">metadata.paperclip.catalogTeam</code>{" "}
         ({team.packageName ?? team.key}, content hash <code className="font-mono">{team.contentHash.slice(0, 16)}…</code>),
         and an activity event is recorded for preview and install.
@@ -2017,20 +2017,20 @@ export function StepPreview({
 
 function SummaryCount({ label, value }: { label: string; value: number }) {
   return (
-    <div className="rounded-md border border-border px-3 py-2">
+    <div className="rounded-md border border-line px-3 py-2">
       <span className="text-lg font-semibold tabular-nums">{value}</span>
-      <p className="text-xs text-muted-foreground">{label}</p>
+      <p className="text-xs text-ink-3">{label}</p>
     </div>
   );
 }
 
 function PreviewSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="rounded-md border border-border">
-      <div className="border-b border-border px-3 py-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+    <div className="rounded-md border border-line">
+      <div className="border-b border-line px-3 py-2 text-xs font-semibold uppercase tracking-wide text-ink-3">
         {title}
       </div>
-      <ul className="divide-y divide-border/60">{children}</ul>
+      <ul className="divide-y divide-line/60">{children}</ul>
     </div>
   );
 }
@@ -2041,10 +2041,10 @@ function PreviewSection({ title, children }: { title: string; children: React.Re
 export function ApplyProgress({ team }: { team: CatalogTeam }) {
   return (
     <div className="flex items-center gap-3 py-10 text-sm">
-      <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+      <Loader2 className="h-5 w-5 animate-spin text-ink-3" />
       <div>
         <p className="font-medium">Installing {team.name}…</p>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-ink-3">
           Resolving skills, importing agents, projects, and routines. This may take a moment.
         </p>
       </div>
@@ -2057,7 +2057,7 @@ function ResultRow({ label, count }: { label: string; count: number }) {
     <li className="flex items-center gap-2.5 py-1.5 text-sm">
       <CheckCircle2 className="h-4 w-4 text-emerald-500" />
       <span>{label}</span>
-      <span className="ml-auto font-mono tabular-nums text-muted-foreground">{count}</span>
+      <span className="ml-auto font-mono tabular-nums text-ink-3">{count}</span>
     </li>
   );
 }
@@ -2082,11 +2082,11 @@ export function ApplySuccess({
         <CheckCircle2 className="h-6 w-6 text-emerald-500" />
         <p className="text-base font-semibold">Team installed</p>
       </div>
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm text-ink-3">
         {team.name} was imported into your organization. Imported entities are stamped with catalog provenance.
       </p>
       {result && (
-        <ul className="divide-y divide-border/60 rounded-md border border-border px-3">
+        <ul className="divide-y divide-line/60 rounded-md border border-line px-3">
           <ResultRow label="Agents imported" count={agentsCreated} />
           <ResultRow label="Projects imported" count={projectsCreated} />
           <ResultRow label="Skills resolved" count={skillsResolved} />
@@ -2100,10 +2100,10 @@ export function ApplySuccess({
         </div>
       )}
       <ul className="space-y-1 text-sm">
-        <li><a className="text-primary hover:underline" href="/agents/all">View imported agents →</a></li>
-        <li><a className="text-primary hover:underline" href="/projects">View imported projects →</a></li>
-        <li><a className="text-primary hover:underline" href="/routines">View routines →</a></li>
-        <li><a className="text-primary hover:underline" href="/activity">View activity log →</a></li>
+        <li><a className="text-accent hover:underline" href="/agents/all">View imported agents →</a></li>
+        <li><a className="text-accent hover:underline" href="/projects">View imported projects →</a></li>
+        <li><a className="text-accent hover:underline" href="/routines">View routines →</a></li>
+        <li><a className="text-accent hover:underline" href="/activity">View activity log →</a></li>
       </ul>
       <div className="flex justify-end">
         <Button onClick={onClose}>Done</Button>
@@ -2134,13 +2134,13 @@ export function TeamRow({
       type="button"
       onClick={onSelect}
       className={cn(
-        "flex w-full flex-col gap-1 border-b border-border/60 px-3 py-2.5 text-left transition-colors hover:bg-accent/30",
-        selected && "bg-accent/40",
+        "flex w-full flex-col gap-1 border-b border-line/60 px-3 py-2.5 text-left transition-colors hover:bg-bg-3/30",
+        selected && "bg-bg-3/40",
       )}
     >
       <div className="flex items-center gap-2">
-        <Users2 className={cn("h-3.5 w-3.5 text-muted-foreground", team.kind === "optional" && "opacity-70")} />
-        <span className={cn("line-clamp-2 text-(length:--text-compact) font-medium", selected && "text-foreground")}>
+        <Users2 className={cn("h-3.5 w-3.5 text-ink-3", team.kind === "optional" && "opacity-70")} />
+        <span className={cn("line-clamp-2 text-(length:--text-compact) font-medium", selected && "text-ink")}>
           {team.name}
         </span>
         {outOfDate && (
@@ -2165,7 +2165,7 @@ export function TeamRow({
           </Tooltip>
         )}
       </div>
-      <div className="flex items-center gap-1.5 text-(length:--text-micro) text-muted-foreground">
+      <div className="flex items-center gap-1.5 text-(length:--text-micro) text-ink-3">
         <span>
           {team.counts.agents}a · {team.counts.projects}p · {team.counts.routines}r · {skillCount(team)}s
         </span>
@@ -2198,20 +2198,20 @@ export function TeamCard({
       aria-pressed={selected}
       className={cn(
         // design-allow(card-pattern): interactive <button> tile; Card renders a div and would break button semantics (C5a Run 3)
-        "flex aspect-square w-full flex-col gap-2 rounded-lg border border-border bg-card p-4 text-left transition-colors hover:bg-accent/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-        selected && "ring-2 ring-ring",
+        "flex aspect-square w-full flex-col gap-2 rounded-lg border border-line bg-bg-2 p-4 text-left transition-colors hover:bg-bg-3/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus",
+        selected && "ring-2 ring-focus",
       )}
     >
       <div className="flex items-start justify-between gap-2">
-        <span className="flex h-8 w-8 items-center justify-center rounded-md border border-border bg-background">
-          <Users2 className="h-4 w-4 text-muted-foreground" />
+        <span className="flex h-8 w-8 items-center justify-center rounded-md border border-line bg-bg">
+          <Users2 className="h-4 w-4 text-ink-3" />
         </span>
         {team.trustLevel !== "markdown_only" && <TrustChip level={team.trustLevel} iconOnly />}
       </div>
 
       <div className="space-y-0.5">
         <h3 className="text-sm font-semibold leading-snug">{team.name}</h3>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-ink-3">
           {team.counts.agents} agent{team.counts.agents === 1 ? "" : "s"} ·{" "}
           {team.counts.projects} project{team.counts.projects === 1 ? "" : "s"} ·{" "}
           {team.counts.routines} routine{team.counts.routines === 1 ? "" : "s"}
@@ -2219,7 +2219,7 @@ export function TeamCard({
       </div>
 
       {team.description && (
-        <p className="line-clamp-3 text-xs text-muted-foreground">{team.description}</p>
+        <p className="line-clamp-3 text-xs text-ink-3">{team.description}</p>
       )}
 
       {team.tags.length > 0 && (
@@ -2392,10 +2392,10 @@ export function TeamCatalog() {
   return (
     <div className="flex h-full flex-col">
       {/* Toolbar */}
-      <div className="flex flex-wrap items-center gap-2 border-b border-border px-5 py-3">
+      <div className="flex flex-wrap items-center gap-2 border-b border-line px-5 py-3">
         <h1 className="text-lg font-semibold">Teams</h1>
         <div className="relative">
-          <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-3" />
           <Input
             value={q}
             onChange={(e) => setFilterParam("search", e.target.value)}
@@ -2406,7 +2406,7 @@ export function TeamCatalog() {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="h-8">
+            <Button variant="secondary" size="sm" className="h-8">
               <Filter className="h-3.5 w-3.5" />
               {kindFilter === "all" ? "All kinds" : kindFilter === "bundled" ? "Bundled" : "Optional"}
               <ChevronDown className="h-3.5 w-3.5" />
@@ -2425,7 +2425,7 @@ export function TeamCatalog() {
         {categories.length > 0 && (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" className="h-8">
+              <Button variant="secondary" size="sm" className="h-8">
                 {categoryFilter ? `Category · ${titleCase(categoryFilter)}` : "All categories"}
                 <ChevronDown className="h-3.5 w-3.5" />
               </Button>
@@ -2444,7 +2444,7 @@ export function TeamCatalog() {
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="h-8">
+            <Button variant="secondary" size="sm" className="h-8">
               {riskFilter === "any" ? "Any risk" : riskFilter === "safe" ? "Safe only" : riskFilter === "has_warnings" ? "Has warnings" : "Blocked"}
               <ChevronDown className="h-3.5 w-3.5" />
             </Button>
@@ -2462,7 +2462,7 @@ export function TeamCatalog() {
                 <DropdownMenuSeparator />
                 <button
                   type="button"
-                  className="flex w-full items-center gap-1.5 px-2 py-1.5 text-xs text-muted-foreground hover:text-foreground"
+                  className="flex w-full items-center gap-1.5 px-2 py-1.5 text-xs text-ink-3 hover:text-ink"
                   onClick={() => setSearchParams(new URLSearchParams())}
                 >
                   <RotateCcw className="h-3 w-3" /> Reset filters
@@ -2483,7 +2483,7 @@ export function TeamCatalog() {
         {/* List column — full width on < lg, fixed rail on >= lg (design §11) */}
         <div
           className={cn(
-            "w-full overflow-auto border-r border-border lg:w-(--sz-28rem) lg:shrink-0",
+            "w-full overflow-auto border-r border-line lg:w-(--sz-28rem) lg:shrink-0",
             !isDesktop && selectedTeam && "hidden",
           )}
         >
@@ -2498,7 +2498,7 @@ export function TeamCatalog() {
               <div role="alert" className="rounded-md border border-rose-500/30 bg-rose-500/10 px-3 py-2.5 text-sm text-rose-700 dark:text-rose-300">
                 Failed to load team catalog.
               </div>
-              <Button variant="outline" size="sm" className="mt-3" onClick={() => catalogQuery.refetch()}>
+              <Button variant="secondary" size="sm" className="mt-3" onClick={() => catalogQuery.refetch()}>
                 <RotateCcw className="h-3.5 w-3.5" /> Retry
               </Button>
             </div>
@@ -2515,7 +2515,7 @@ export function TeamCatalog() {
             <div>
               {grouped.bundled.length > 0 && (
                 <>
-                  <div className="px-3 py-2 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
+                  <div className="px-3 py-2 text-(length:--text-micro) font-semibold uppercase tracking-wide text-ink-3">
                     Bundled · {grouped.bundled.length}
                   </div>
                   {grouped.bundled.map((team) => (
@@ -2530,7 +2530,7 @@ export function TeamCatalog() {
               )}
               {grouped.optional.length > 0 && (
                 <>
-                  <div className="px-3 py-2 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
+                  <div className="px-3 py-2 text-(length:--text-micro) font-semibold uppercase tracking-wide text-ink-3">
                     Optional · {grouped.optional.length}
                   </div>
                   {grouped.optional.map((team) => (
@@ -2545,7 +2545,7 @@ export function TeamCatalog() {
               )}
               {grouped.installed.length > 0 && (
                 <>
-                  <div className="px-3 py-2 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
+                  <div className="px-3 py-2 text-(length:--text-micro) font-semibold uppercase tracking-wide text-ink-3">
                     Installed · {grouped.installed.length}
                   </div>
                   {grouped.installed.map((team) => (
@@ -2575,7 +2575,7 @@ export function TeamCatalog() {
               <button
                 type="button"
                 onClick={() => navigate(withFilters(TEAM_CATALOG_ROUTE_ROOT))}
-                className="flex items-center gap-1.5 border-b border-border px-4 py-2 text-sm text-muted-foreground hover:text-foreground"
+                className="flex items-center gap-1.5 border-b border-line px-4 py-2 text-sm text-ink-3 hover:text-ink"
               >
                 <ChevronLeft className="h-4 w-4" /> Back to catalog
               </button>
@@ -2593,7 +2593,7 @@ export function TeamCatalog() {
                 installed={installedById.get(selectedTeam.id) ?? null}
               />
             ) : (
-              <div className="flex flex-1 items-center justify-center text-sm text-muted-foreground">
+              <div className="flex flex-1 items-center justify-center text-sm text-ink-3">
                 Select a team to view details.
               </div>
             )}

@@ -252,9 +252,9 @@ function useHeldSelfTalk(selfTalk: string | undefined, live: boolean): HeldSelfT
 const CONFIG = {
   running: { Icon: Loader2, spin: true, tone: "text-(--status-agent-running)" },
   working: { Icon: Loader2, spin: true, tone: "text-(--status-agent-running)" },
-  awaiting_approval: { Icon: ShieldQuestion, spin: false, tone: "text-primary" },
-  interrupted: { Icon: OctagonX, spin: false, tone: "text-destructive" },
-  refused: { Icon: Ban, spin: false, tone: "text-destructive" },
+  awaiting_approval: { Icon: ShieldQuestion, spin: false, tone: "text-accent" },
+  interrupted: { Icon: OctagonX, spin: false, tone: "text-bad" },
+  refused: { Icon: Ban, spin: false, tone: "text-bad" },
   truncated: { Icon: Scissors, spin: false, tone: "text-(--status-agent-paused)" },
 } as const;
 
@@ -316,7 +316,7 @@ export function TaskChatStatusPill({
       ? whimsyWord(item.id, liveElapsedMs ?? item.elapsedMs ?? 0)
       : item.label;
     const statusLine = (
-      <div className="tc-enter-status flex items-center gap-2 py-0.5 text-xs text-muted-foreground">
+      <div className="tc-enter-status flex items-center gap-2 py-0.5 text-xs text-ink-3">
         {chevronOpen !== undefined ? (
           <span
             className="flex h-3.5 w-3.5 shrink-0 items-center justify-center"
@@ -376,7 +376,7 @@ export function TaskChatStatusPill({
     return (
       <div className="flex flex-col">
         <div
-          className="flex items-center gap-2 py-0.5 text-xs text-muted-foreground"
+          className="flex items-center gap-2 py-0.5 text-xs text-ink-3"
           data-testid="task-chat-interstitial-row"
         >
           <span aria-hidden className="h-3.5 w-3.5 shrink-0" />
@@ -396,7 +396,7 @@ export function TaskChatStatusPill({
             type="button"
             onClick={onToggle}
             aria-expanded={chevronOpen}
-            className="-mx-1.5 block w-full rounded-sm px-1.5 text-left transition-colors hover:bg-muted/60"
+            className="-mx-1.5 block w-full rounded-sm px-1.5 text-left transition-colors hover:bg-bg-3/60"
             data-testid="task-chat-live-turn"
           >
             {statusLine}
@@ -412,13 +412,13 @@ export function TaskChatStatusPill({
     <div
       className={cn(
         "tc-enter-status flex flex-col gap-2 rounded-lg border px-3 py-2 text-sm",
-        awaiting ? "tc-approval border-primary/40 bg-primary/5" : "border-border bg-muted/40",
+        awaiting ? "tc-approval border-accent/40 bg-accent/5" : "border-line bg-bg-3/40",
       )}
     >
       <div className="flex min-w-0 items-center gap-2">
         <Icon className={cn("h-4 w-4 shrink-0", tone, spin && "animate-spin")} />
         <span className="min-w-0 truncate font-medium">{item.label}</span>
-        <span className="ml-auto flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
+        <span className="ml-auto flex shrink-0 items-center gap-2 text-xs text-ink-3">
           {elapsed ? <span>{elapsed}</span> : null}
           {item.tokens ? (
             <span>
@@ -427,7 +427,7 @@ export function TaskChatStatusPill({
           ) : null}
         </span>
       </div>
-      {item.detail ? <p className="text-xs text-muted-foreground">{item.detail}</p> : null}
+      {item.detail ? <p className="text-xs text-ink-3">{item.detail}</p> : null}
       {awaiting && item.approval ? (
         <div className="flex flex-wrap justify-end gap-2 pt-1">
           {item.approval.options.map((opt) => {
@@ -440,8 +440,8 @@ export function TaskChatStatusPill({
                 className={cn(
                   "rounded-md border px-2.5 py-1 text-xs font-medium transition-colors",
                   reject
-                    ? "border-border text-muted-foreground hover:bg-accent/50 hover:text-foreground"
-                    : "border-primary bg-primary text-primary-foreground hover:bg-primary/90",
+                    ? "border-line text-ink-3 hover:bg-bg-3/50 hover:text-ink"
+                    : "border-accent bg-accent text-accent-ink hover:bg-accent/90",
                 )}
               >
                 {opt.label}

@@ -62,7 +62,7 @@ const SHOW_CONFERENCE_ROOM_EXPERIMENTAL_SETTING = false;
 
 function ManagedByCloudBadge() {
   return (
-    <Badge variant="outline" className="text-muted-foreground">
+    <Badge variant="outline" className="text-ink-3">
       <Lock aria-hidden="true" />
       Managed by Paperclip Cloud
     </Badge>
@@ -102,8 +102,8 @@ function ExperimentalToggleCard({
             <h3 className="text-sm font-semibold">{title}</h3>
             {isManaged ? <ManagedByCloudBadge /> : null}
           </div>
-          <p className="max-w-2xl text-sm text-muted-foreground">{description}</p>
-          {footnote ? <p className="max-w-2xl text-xs text-muted-foreground">{footnote}</p> : null}
+          <p className="max-w-2xl text-sm text-ink-3">{description}</p>
+          {footnote ? <p className="max-w-2xl text-xs text-ink-3">{footnote}</p> : null}
         </div>
         <ToggleSwitch
           checked={checked}
@@ -178,12 +178,12 @@ export function InstanceExperimentalSettings() {
   });
 
   if (experimentalQuery.isLoading) {
-    return <div className="text-sm text-muted-foreground">Loading experimental settings...</div>;
+    return <div className="text-sm text-ink-3">Loading experimental settings...</div>;
   }
 
   if (experimentalQuery.error) {
     return (
-      <div className="text-sm text-destructive">
+      <div className="text-sm text-bad">
         {experimentalQuery.error instanceof Error
           ? experimentalQuery.error.message
           : "Failed to load experimental settings."}
@@ -254,10 +254,10 @@ export function InstanceExperimentalSettings() {
     <div className="max-w-6xl space-y-6">
       <div className="space-y-2">
         <div className="flex items-center gap-2">
-          <FlaskConical className="h-5 w-5 text-muted-foreground" />
+          <FlaskConical className="h-5 w-5 text-ink-3" />
           <h1 className="text-lg font-semibold">Experimental</h1>
         </div>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           Opt into features that are still being evaluated before they become default behavior.
         </p>
       </div>
@@ -269,8 +269,8 @@ export function InstanceExperimentalSettings() {
         <div className="flex items-start gap-3">
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
           <div className="space-y-1 text-sm">
-            <p className="font-medium text-foreground">Experimental features may break at any time.</p>
-            <p className="text-muted-foreground">
+            <p className="font-medium text-ink">Experimental features may break at any time.</p>
+            <p className="text-ink-3">
               These features are opt-in and come with no compatibility guarantees. They may change, break, or be
               removed without notice. Avoid relying on them for critical or production workflows.
             </p>
@@ -279,7 +279,7 @@ export function InstanceExperimentalSettings() {
       </div>
 
       {actionError && (
-        <div className="rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+        <div className="rounded-md border border-bad/40 bg-bad/5 px-3 py-2 text-sm text-bad">
           {actionError}
         </div>
       )}
@@ -289,7 +289,7 @@ export function InstanceExperimentalSettings() {
           <h2 id="experimental-features-heading" className="text-sm font-semibold">
             Experimental features
           </h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-ink-3">
             Optional product features that are still being evaluated.
           </p>
         </div>
@@ -611,7 +611,7 @@ export function InstanceExperimentalSettings() {
             <h2 id="developer-mode-heading" className="text-sm font-semibold">
               Paperclip Developer Mode
             </h2>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-ink-3">
               Internal tools for developing, testing, and debugging Paperclip.
             </p>
           </div>
@@ -664,7 +664,7 @@ export function InstanceExperimentalSettings() {
                       <h3 className="text-sm font-semibold">Run tasks in this worktree</h3>
                       {worktreeRunExecutionManaged ? <ManagedByCloudBadge /> : null}
                     </div>
-                    <p className="max-w-2xl text-sm text-muted-foreground">
+                    <p className="max-w-2xl text-sm text-ink-3">
                       This is an isolated git-worktree preview instance. Turn this on to let the scheduler execute runs
                       here. Only tasks created after enabling will run automatically — copied/pre-existing tasks stay
                       parked. Toggling off and on resets the cutoff.
@@ -682,7 +682,7 @@ export function InstanceExperimentalSettings() {
                 </div>
 
                 {worktreeRunExecutionState.kind === "armed" ? (
-                  <div className="flex items-center gap-2 rounded-md border border-emerald-500/30 bg-emerald-500/5 px-3 py-2 text-sm text-foreground">
+                  <div className="flex items-center gap-2 rounded-md border border-emerald-500/30 bg-emerald-500/5 px-3 py-2 text-sm text-ink">
                     <Play className="h-4 w-4 shrink-0 text-emerald-600" />
                     <span>
                       Running tasks created after{" "}
@@ -698,8 +698,8 @@ export function InstanceExperimentalSettings() {
                   <div className="flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-sm">
                     <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-700" />
                     <div className="space-y-0.5">
-                      <p className="font-medium text-foreground">Execution is suppressed — effectively off.</p>
-                      <p className="text-muted-foreground">
+                      <p className="font-medium text-ink">Execution is suppressed — effectively off.</p>
+                      <p className="text-ink-3">
                         {worktreeRunExecutionState.reason === "instance_mismatch"
                           ? "This setting was armed in a different instance and copied here, so no tasks run automatically."
                           : "This setting is missing its activation cutoff, so no tasks run automatically."}{" "}
@@ -757,7 +757,7 @@ export function InstanceExperimentalSettings() {
             <h2 id="legacy-heading" className="text-sm font-semibold">
               Legacy
             </h2>
-            <p className="text-sm text-muted-foreground">These features are going to be removed.</p>
+            <p className="text-sm text-ink-3">These features are going to be removed.</p>
           </div>
 
           <ExperimentalToggleCard

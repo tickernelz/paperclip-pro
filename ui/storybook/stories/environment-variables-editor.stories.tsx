@@ -57,7 +57,7 @@ function Surface({ title, hint, children }: { title: string; hint?: ReactNode; c
             <CardTitle className="text-sm">{title}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
-            {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
+            {hint ? <p className="text-xs text-ink-3">{hint}</p> : null}
             {children}
           </CardContent>
         </Card>
@@ -204,7 +204,7 @@ export const MobileStacked: Story = {
   render: () => (
     <ToastProvider>
       <div className="p-6">
-        <div className="w-[390px] rounded-lg border border-border p-4">
+        <div className="w-[390px] rounded-lg border border-line p-4">
           <Editor
             initial={{
               NODE_ENV: { type: "plain", value: "production" },

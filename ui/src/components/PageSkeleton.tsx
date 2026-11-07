@@ -16,7 +16,7 @@ export function PageSkeleton({ variant = "list" }: PageSkeletonProps) {
   if (variant === "dashboard") {
     return (
       <div className="space-y-6">
-        <Skeleton className="h-32 w-full border border-border" />
+        <Skeleton className="h-32 w-full border border-line" />
 
         <div className="grid grid-cols-2 gap-2 xl:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -84,7 +84,7 @@ export function PageSkeleton({ variant = "list" }: PageSkeletonProps) {
           {Array.from({ length: 3 }).map((_, section) => (
             <div key={section} className="space-y-2">
               <Skeleton className="h-4 w-40" />
-              <div className="space-y-1 border border-border">
+              <div className="space-y-1 border border-line">
                 {Array.from({ length: 3 }).map((_, row) => (
                   <Skeleton key={row} className="h-14 w-full rounded-none" />
                 ))}
@@ -99,7 +99,7 @@ export function PageSkeleton({ variant = "list" }: PageSkeletonProps) {
   if (variant === "org-chart") {
     return (
       <div className="space-y-4">
-        <Skeleton className="h-(--sz-calc-17) w-full rounded-lg border border-border" />
+        <Skeleton className="h-(--sz-calc-17) w-full rounded-lg border border-line" />
       </div>
     );
   }

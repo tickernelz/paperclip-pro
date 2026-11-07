@@ -36,7 +36,7 @@ export function Curtain({
         collapsible
         collapsed={!open}
         onToggle={onToggle}
-        className="text-muted-foreground"
+        className="text-ink-3"
       />
       {open && <div className="space-y-4">{children}</div>}
     </section>
@@ -95,12 +95,12 @@ export function AgingItemRow({
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between gap-2 px-1">
-        <span className="text-(length:--text-nano) text-muted-foreground">
+        <span className="text-(length:--text-nano) text-ink-3">
           Idle {idleDays} {idleDays === 1 ? "day" : "days"}
         </span>
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           size="xs"
           className="h-7 gap-1"
           disabled={keep.isPending || item.keep}

@@ -141,14 +141,14 @@ export function ChatConnectionPurpose({ provider, onChat, onTools }: {
         <ChatSetupNavigation labels={provider === "slack" ? ["Choose agent", "App configuration access token", "Install Slack app", "Send a message"] : undefined} step={0} availableStep={0} onSelect={onChat} />
         <div>
           <h1 className="text-xl font-bold">Choose how to connect</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-ink-3">
             What should this {providerNames[provider]} connection do?
           </p>
         </div>
         <div className="grid gap-3">
           <button
             type="button"
-            className="flex items-center gap-4 rounded-xl border border-border p-4 text-left hover:bg-accent/40"
+            className="flex items-center gap-4 rounded-xl border border-line p-4 text-left hover:bg-bg-3/40"
             onClick={onChat}
           >
             <AgentAvatar size={48} />
@@ -156,7 +156,7 @@ export function ChatConnectionPurpose({ provider, onChat, onTools }: {
               <span className="block text-sm font-semibold">
                 Chat with an agent
               </span>
-              <span className="mt-1 block text-sm text-muted-foreground">
+              <span className="mt-1 block text-sm text-ink-3">
                 People in {providerNames[provider]} can start and continue
                 Paperclip tasks.
               </span>
@@ -164,17 +164,17 @@ export function ChatConnectionPurpose({ provider, onChat, onTools }: {
           </button>
           <button
             type="button"
-            className="flex items-center gap-4 rounded-xl border border-border p-4 text-left hover:bg-accent/40"
+            className="flex items-center gap-4 rounded-xl border border-line p-4 text-left hover:bg-bg-3/40"
             onClick={onTools}
           >
-            <span className="flex size-12 shrink-0 items-center justify-center text-muted-foreground" aria-hidden="true">
+            <span className="flex size-12 shrink-0 items-center justify-center text-ink-3" aria-hidden="true">
               <Hammer className="size-8" />
             </span>
             <span>
               <span className="block text-sm font-semibold">
                 Use this connection as an agent tool
               </span>
-              <span className="mt-1 block text-sm text-muted-foreground">
+              <span className="mt-1 block text-sm text-ink-3">
                 Let agents use {providerNames[provider]} actions and data while
                 they work.
               </span>
@@ -519,13 +519,13 @@ function ChatSdkEndpointSetup() {
 
   if (!provider)
     return (
-      <p className="text-sm text-destructive">
+      <p className="text-sm text-bad">
         This chat provider is not supported.
       </p>
     );
   if (!selectedCompanyId)
     return (
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm text-ink-3">
         Select an organization to connect chat.
       </p>
     );
@@ -550,7 +550,7 @@ function ChatSdkEndpointSetup() {
               <h1 className="text-xl font-bold">
                 Which agent do you want to chat with?
               </h1>
-              <p className="mt-1 text-sm text-muted-foreground">
+              <p className="mt-1 text-sm text-ink-3">
                 This agent is permanent for the connection. Connect another
                 channel to represent a different agent.
               </p>
@@ -568,7 +568,7 @@ function ChatSdkEndpointSetup() {
               <SlackAppDetails value={slackDetails} readOnly={!slackDetailsEditable || createEndpoint.isPending}
                 onChange={app => setSlackDraft({ agentId, app })}
                 onBlur={() => void persistSlackDetails().catch(() => {})} />
-              {saveSlackDetails.isError && <p role="alert" className="text-sm text-destructive">Couldn&apos;t save the Slack app details. Try again before continuing.</p>}
+              {saveSlackDetails.isError && <p role="alert" className="text-sm text-bad">Couldn&apos;t save the Slack app details. Try again before continuing.</p>}
             </SlackSetupAdvanced>}
             {provider === "github" && <GitHubAgentTrustWarning agent={selectedAgent} />}
             <SetupWizardFooter disabled={createEndpoint.isPending || saveSlackDetails.isPending} onSaveExit={() => void continueFromAgent(true)}>
@@ -589,7 +589,7 @@ function ChatSdkEndpointSetup() {
             {setupError ? (
               <div
                 role="alert"
-                className="rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive"
+                className="rounded-lg border border-bad/30 bg-bad/10 p-4 text-sm text-bad"
               >
                 <p className="font-medium">Connection failed</p>
                 <p className="mt-1">{setupError}</p>
@@ -651,7 +651,7 @@ function ChatSdkEndpointSetup() {
                 <CheckCircle2 aria-hidden="true" className="size-6 text-(--status-task-done)" />
                 Success
               </h1>
-              <p className="flex flex-wrap items-center justify-center gap-2 text-base text-muted-foreground">
+              <p className="flex flex-wrap items-center justify-center gap-2 text-base text-ink-3">
                 <span>You can now talk to {selectedAgent?.name ?? endpoint.assignedAgentName} in Slack</span>
                 <img src="/brands/apps/slack.svg" alt="" aria-hidden="true" className="size-6" />
               </p>
@@ -686,7 +686,7 @@ function ChatSdkEndpointSetup() {
           />
         )}
         {step !== 0 && !isSlack && !(provider === "openwa" && step === 1) && <div className="flex justify-start">
-          <Button className="text-muted-foreground" variant="ghost" onClick={() => navigate("/apps")}>
+          <Button variant="ghost" onClick={() => navigate("/apps")}>
             Save &amp; exit
           </Button>
         </div>}
@@ -776,7 +776,7 @@ function ProviderConnectStep({
   const endpointValue = (label: string, value: string | null | undefined) => (
     <div className="grid gap-2">
       <p className="text-sm font-medium">{label}</p>
-      <div className="rounded-lg border border-border bg-muted p-3 font-mono text-xs break-all">
+      <div className="rounded-lg border border-line bg-bg-3 p-3 font-mono text-xs break-all">
         {value ??
           "This endpoint is unavailable. Check the server's public URL."}
       </div>
@@ -925,7 +925,7 @@ function ProviderConnectStep({
       <div className="space-y-5">
         <div>
           <h1 className="text-xl font-bold">Connect {agentName} to Discord</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-ink-3">
             {repairing
               ? "Reconnect verifies this same Discord application and server installation. It does not add or remove the bot from the server. Leave fields blank to reuse saved credentials."
               : "Create one dedicated Discord application and bot for this Paperclip agent."}
@@ -950,7 +950,7 @@ function ProviderConnectStep({
           </li>
         </ol>
         <Button
-          variant="outline"
+          variant="secondary"
           onClick={() =>
             openProviderSetup("https://discord.com/developers/applications")
           }
@@ -961,13 +961,13 @@ function ProviderConnectStep({
         {field("guildId", "Server ID", "text")}
         {field("botToken", "Bot token")}
         {installUrl && (
-          <Button asChild variant="outline">
+          <Button asChild variant="secondary">
             <a href={installUrl} target="_blank" rel="noreferrer">
               Install bot in this server <ExternalLink />
             </a>
           </Button>
         )}
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           The install link grants only View Channels, Send Messages, Create
           Public Threads, Send Messages in Threads, Read Message History, Add
           Reactions, Embed Links, and Attach Files. Paperclip still requires
@@ -996,7 +996,7 @@ function ProviderConnectStep({
       <div className="space-y-5">
         <div>
           <h1 className="text-xl font-bold">Create {agentName} in Telegram</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-ink-3">
             {repairing
               ? "Reconnect verifies this same BotFather bot and automatically refreshes its Paperclip webhook and command menu. It does not recreate the bot or change its chat memberships. Leave the token blank to reuse the saved credential."
               : "Create a bot with BotFather, then paste the token it gives you."}
@@ -1011,7 +1011,7 @@ function ProviderConnectStep({
             Choose an available username ending in <code>bot</code>.
           </li>
         </ol>
-        <p className="rounded-md border border-border bg-muted/40 p-3 text-sm text-muted-foreground">
+        <p className="rounded-md border border-line bg-bg-3/40 p-3 text-sm text-ink-3">
           Paperclip works with Telegram&apos;s default bot privacy mode and
           registers its command menu automatically. In a group, ordinary
           mentions are not delivered to bots: start or continue work with{" "}
@@ -1019,14 +1019,14 @@ function ProviderConnectStep({
           a message from the bot.
         </p>
         <Button
-          variant="outline"
+          variant="secondary"
           onClick={() => openProviderSetup("https://t.me/BotFather")}
         >
           Open BotFather <ExternalLink />
         </Button>
         {field("botToken", "Bot token")}
         {(!endpoint.setup?.webhookUrl || automaticSlack && !endpoint.setup?.slackOAuthCallbackUri?.startsWith("https://")) && (
-          <p className="text-sm text-destructive">
+          <p className="text-sm text-bad">
             Configure a public HTTPS URL for this Paperclip instance before
             connecting Telegram.
           </p>
@@ -1053,13 +1053,13 @@ function ProviderConnectStep({
           <h1 className="text-xl font-bold">
             Connect {agentName} to Microsoft Teams
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-ink-3">
             {repairing
               ? "Reconnect verifies this same Microsoft app, tenant, and bot identity. It does not upload or reinstall the Teams app. Leave fields blank to reuse saved credentials."
               : "Use your own Microsoft app credentials for this bot."}
           </p>
         </div>
-        <p className="rounded-md border border-border bg-muted/40 p-3 text-sm text-muted-foreground">
+        <p className="rounded-md border border-line bg-bg-3/40 p-3 text-sm text-ink-3">
           This setup requires a Microsoft 365 work or school organization where
           you can register an Entra app, create an Azure Bot, and upload or
           install a Teams app. Personal or free Teams accounts at teams.live.com
@@ -1090,7 +1090,7 @@ function ProviderConnectStep({
           </li>
         </ol>
         <div className="flex flex-wrap gap-2">
-          <Button asChild variant="outline">
+          <Button asChild variant="secondary">
             <a
               href="https://entra.microsoft.com/#view/Microsoft_AAD_RegisteredApps/ApplicationsListBlade"
               target="_blank"
@@ -1099,7 +1099,7 @@ function ProviderConnectStep({
               Open Microsoft Entra <ExternalLink />
             </a>
           </Button>
-          <Button asChild variant="outline">
+          <Button asChild variant="secondary">
             <a
               href="https://portal.azure.com/#create/Microsoft.AzureBot"
               target="_blank"
@@ -1108,7 +1108,7 @@ function ProviderConnectStep({
               Create Azure Bot <ExternalLink />
             </a>
           </Button>
-          <Button asChild variant="outline">
+          <Button asChild variant="secondary">
             <a
               href="https://dev.teams.microsoft.com/apps"
               target="_blank"
@@ -1125,12 +1125,12 @@ function ProviderConnectStep({
         {field("clientId", "Application / Client ID", "text")}
         {field("tenantId", "Directory / Tenant ID", "text")}
         {field("clientSecret", "Client secret value")}
-        <section className="space-y-3 rounded-lg border border-border p-4">
+        <section className="space-y-3 rounded-lg border border-line p-4">
           <div>
             <h2 className="text-sm font-semibold">
               Microsoft portal field map
             </h2>
-            <p className="mt-1 text-sm text-muted-foreground">
+            <p className="mt-1 text-sm text-ink-3">
               Use these exact portal sections and reuse the same Application ID
               in all three places.
             </p>
@@ -1195,7 +1195,7 @@ function ProviderConnectStep({
         </label>
         <div className="flex flex-wrap gap-2">
           <Button
-            variant="outline"
+            variant="secondary"
             disabled={!credentials.clientId?.trim()}
             onClick={() => {
               void copyTextToClipboard(teamsManifestSettings).then(
@@ -1209,7 +1209,7 @@ function ProviderConnectStep({
               : "Copy manifest settings"}
           </Button>
         </div>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           Enter the Application / Client ID above before copying so the block
           contains the real bot identity. This block contains the
           Paperclip-specific fields to verify in Developer Portal or merge into
@@ -1217,21 +1217,21 @@ function ProviderConnectStep({
           Developer Portal supplies the remaining required metadata and packages
           the manifest with your app icons.
         </p>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           Paperclip does not use Teams single sign-on in this release. The
           copied <code>webApplicationInfo</code> entry only associates the RSC
           permissions with the same Entra Application ID. Its nonempty resource
           is an RSC placeholder; you do not need to register an Entra
           Application ID URI or add delegated Microsoft Graph permissions.
         </p>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           The two application RSC permissions let the bot receive every message,
           without an @mention, in each team or group chat where it is installed.
           Paperclip retains and acts only on messages admitted by your Paperclip
           reach and access rules. Make this provider access clear in the app
           description shown to installers.
         </p>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           This release supports personal chats, group chats, and standard team
           channels—not private channels. <code>supportsFiles: true</code>{" "}
           enables native file receipt and consent-based sending in personal
@@ -1239,7 +1239,7 @@ function ProviderConnectStep({
           connection and are not ingested here.
         </p>
         {!endpoint.setup?.messagingEndpoint && (
-          <p className="text-sm text-destructive">
+          <p className="text-sm text-bad">
             Configure a public HTTPS URL for this Paperclip instance before
             connecting Microsoft Teams.
           </p>
@@ -1273,7 +1273,7 @@ function ProviderConnectStep({
               ? "Reconnect GitHub App"
               : "Create or connect a GitHub App"}
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-ink-3">
             {repairing
               ? "Reconnect verifies this same App and installation, then updates its webhook URL, secret, and secure delivery settings. It does not reinstall the App or change repository access. Leave App ID and private key blank to reuse saved credentials. Keep Webhooks · Active enabled in GitHub; send a test conversation after reconnecting."
               : "Configure its webhook and permissions, then verify the App with Paperclip."}
@@ -1319,7 +1319,7 @@ function ProviderConnectStep({
         )}
         {endpointValue("Paperclip webhook URL", endpoint.setup?.webhookUrl)}
         <Button
-          variant="outline"
+          variant="secondary"
           onClick={() =>
             window.open(
               repairing
@@ -1382,14 +1382,14 @@ function ProviderConnectStep({
           <div>
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               onClick={() => privateKeyFileInputRef.current?.click()}
             >
               Choose .pem file
             </Button>
           </div>
           {privateKeyFileError ? (
-            <p role="alert" className="text-sm text-destructive">
+            <p role="alert" className="text-sm text-bad">
               {privateKeyFileError}
             </p>
           ) : null}
@@ -1397,7 +1397,7 @@ function ProviderConnectStep({
             <p
               role="status"
               aria-live="polite"
-              className="text-sm text-muted-foreground"
+              className="text-sm text-ink-3"
             >
               Reading private key file…
             </p>
@@ -1405,7 +1405,7 @@ function ProviderConnectStep({
             <p
               role="status"
               aria-live="polite"
-              className="text-sm text-muted-foreground"
+              className="text-sm text-ink-3"
             >
               Private key loaded. It stays in this form until you connect.
             </p>
@@ -1424,7 +1424,7 @@ function ProviderConnectStep({
               <div className="flex flex-wrap gap-2">
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="secondary"
                   onClick={() => {
                     // Both signals, and each covers the other's blind spot.
                     // The toast is the loud one, the way this step's other two
@@ -1446,12 +1446,12 @@ function ProviderConnectStep({
                       : "Copy webhook secret"}
                 </Button>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-ink-3">
                 Copy this value now. Paperclip will not show it again.
               </p>
             </>
           ) : (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-ink-3">
               {endpoint.setup?.webhookSecretConfigured
                 ? "A webhook secret is configured and cannot be shown again."
                 : "Generate the secret in Paperclip, then paste it into the GitHub App."}
@@ -1460,7 +1460,7 @@ function ProviderConnectStep({
           <div>
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               disabled={generatingSetupSecret}
               onClick={onGenerateSetupSecret}
             >
@@ -1473,7 +1473,7 @@ function ProviderConnectStep({
             </Button>
           </div>
           {endpoint.setup?.webhookSecretConfigured && (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-ink-3">
               {endpoint.providerAccountId || endpoint.botExternalId
                 ? "Regenerating immediately invalidates GitHub webhook signatures until you replace the secret in the GitHub App settings."
                 : "Generating another secret replaces the previous value. Paste the newest value into GitHub before continuing."}
@@ -1481,7 +1481,7 @@ function ProviderConnectStep({
           )}
           {endpoint.setup?.webhookSecretConfigured && (
             <p
-              className={`text-sm ${endpoint.setup.webhookVerifiedAt ? "text-foreground" : "text-muted-foreground"}`}
+              className={`text-sm ${endpoint.setup.webhookVerifiedAt ? "text-ink" : "text-ink-3"}`}
             >
               {endpoint.setup.webhookVerifiedAt
                 ? "GitHub has verified this webhook."
@@ -1490,7 +1490,7 @@ function ProviderConnectStep({
           )}
         </div>
         {(!endpoint.setup?.webhookUrl || automaticSlack && !endpoint.setup?.slackOAuthCallbackUri?.startsWith("https://")) && (
-          <p className="text-sm text-destructive">
+          <p className="text-sm text-bad">
             Configure a public HTTPS URL for this Paperclip instance before
             connecting GitHub.
           </p>
@@ -1524,28 +1524,28 @@ function ProviderConnectStep({
       <div className="space-y-5">
         <div>
           <h1 className="text-xl font-bold">{automaticSlack ? "Send a message to your agent" : "Verify Slack connection"}</h1>
-          {!automaticSlack && <p className="mt-1 text-sm text-muted-foreground">Slack needs to confirm that it can reach your Paperclip instance.</p>}
+          {!automaticSlack && <p className="mt-1 text-sm text-ink-3">Slack needs to confirm that it can reach your Paperclip instance.</p>}
         </div>
-        {automaticSlack ? <Button asChild variant="outline"><a href={endpoint.setup?.slackAccount?.dmChannelId && endpoint.providerAccountId ? `https://app.slack.com/client/${encodeURIComponent(endpoint.providerAccountId)}/${encodeURIComponent(endpoint.setup.slackAccount.dmChannelId)}` : endpoint.setup?.providerUrl ?? "https://app.slack.com"} target="_blank" rel="noopener noreferrer">Open Slack <ExternalLink className="size-4" /></a></Button> : slackRequestUrlInstructions}
+        {automaticSlack ? <Button asChild variant="secondary"><a href={endpoint.setup?.slackAccount?.dmChannelId && endpoint.providerAccountId ? `https://app.slack.com/client/${encodeURIComponent(endpoint.providerAccountId)}/${encodeURIComponent(endpoint.setup.slackAccount.dmChannelId)}` : endpoint.setup?.providerUrl ?? "https://app.slack.com"} target="_blank" rel="noopener noreferrer">Open Slack <ExternalLink className="size-4" /></a></Button> : slackRequestUrlInstructions}
         {endpoint.setup?.webhookVerifiedAt ? (
           <p role="status" className="flex items-center gap-2 text-sm">
             <CheckCircle2 className="size-4 text-(--status-task-done)" />
             Your Slack connection is working.{pending ? automaticSlack ? " Finishing setup…" : " Opening the message test…" : ""}
           </p>
         ) : slackVerificationError ? (
-          <p role="alert" className="text-sm text-destructive">Couldn&apos;t check verification. We&apos;ll keep trying; check your connection if this continues.</p>
+          <p role="alert" className="text-sm text-bad">Couldn&apos;t check verification. We&apos;ll keep trying; check your connection if this continues.</p>
         ) : (
-          <p role="status" className="flex items-center gap-2 text-sm text-muted-foreground">
+          <p role="status" className="flex items-center gap-2 text-sm text-ink-3">
             <Loader2 className="size-4 animate-spin" /> {automaticSlack ? "Waiting for your message…" : "Waiting for Slack. We’ll continue automatically."}
           </p>
         )}
         <SlackSetupAdvanced label={automaticSlack ? "Didn’t work?" : "Troubleshooting"}>
           {automaticSlack && slackRequestUrlInstructions}
-          <p className="text-muted-foreground">If the Request URL is missing or different, paste this URL into Event Subscriptions. If verification fails, check that your public HTTPS server is reachable and your Signing Secret is correct.</p>
+          <p className="text-ink-3">If the Request URL is missing or different, paste this URL into Event Subscriptions. If verification fails, check that your public HTTPS server is reachable and your Signing Secret is correct.</p>
           {endpointValue("Paperclip webhook URL", endpoint.setup?.webhookUrl)}
         </SlackSetupAdvanced>
         <div className="flex items-center justify-between gap-3">
-          <Button variant="ghost" className="text-muted-foreground" onClick={() => navigate("/apps")}>Save &amp; exit</Button>
+          <Button variant="ghost" onClick={() => navigate("/apps")}>Save &amp; exit</Button>
           {(!automaticSlack || endpoint.setup?.webhookVerifiedAt) && <Button disabled={pending || !endpoint.setup?.webhookVerifiedAt} onClick={() =>
             endpoint.setup?.step === "provider_setup" ? onAction("verify") : onSlackVerificationContinue()
           }>
@@ -1559,8 +1559,8 @@ function ProviderConnectStep({
   return (
     <div className="space-y-5">
       {(!endpoint.setup?.webhookUrl || automaticSlack && !endpoint.setup?.slackOAuthCallbackUri?.startsWith("https://")) && (
-        <div role="alert" className="flex items-start gap-3 rounded-lg border border-destructive/30 bg-destructive/10 p-4">
-          <AlertTriangle className="size-5 shrink-0 text-destructive" />
+        <div role="alert" className="flex items-start gap-3 rounded-lg border border-bad/30 bg-bad/10 p-4">
+          <AlertTriangle className="size-5 shrink-0 text-bad" />
           <div className="space-y-1">
             <p className="text-sm font-semibold">Public HTTPS URL required</p>
             <p className="text-sm">
@@ -1581,7 +1581,7 @@ function ProviderConnectStep({
       <div>
         <h1 className="text-xl font-bold">{slackStage === "app" ? automaticSlack ? "App configuration access token" : "Create a Slack app" : automaticSlack ? "Install Slack app" : "Add Slack credentials"}</h1>
         {repairing && !automaticSlack && (
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-ink-3">
             Reconnect verifies or replaces credentials for this same Slack app. It does not reinstall the app or change its workspace or channel membership. Leave credentials blank to reuse the saved values.
           </p>
         )}
@@ -1591,7 +1591,7 @@ function ProviderConnectStep({
           <div className="flex justify-end">
             <Dialog>
               <DialogTrigger asChild>
-                <Button variant="link" className="h-auto p-0 text-xs text-muted-foreground underline underline-offset-4">
+                <Button variant="link" className="h-auto p-0 text-xs underline underline-offset-4">
                   View Slack App Manifest
                 </Button>
               </DialogTrigger>
@@ -1610,7 +1610,7 @@ function ProviderConnectStep({
                 />
                 <DialogFooter>
                   <Button
-                    variant="outline"
+                    variant="secondary"
                     disabled={!slackValidation.success}
                     onClick={() => {
                       void copyTextToClipboard(slackManifest).then(
@@ -1627,11 +1627,11 @@ function ProviderConnectStep({
           </div>
         </div>
         {!automaticSlack && <div className="flex flex-wrap items-center justify-between gap-3 pt-3">
-          <Button variant="ghost" className="text-muted-foreground" onClick={() => void saveSlackAndExit()}>
+          <Button variant="ghost" onClick={() => void saveSlackAndExit()}>
             Save &amp; exit
           </Button>
           <div className="ml-auto flex flex-wrap items-center justify-end gap-2">
-            <Button variant="outline" disabled={openingSlackApp || !endpoint.setup?.webhookUrl || !slackValidation.success} onClick={onSlackAppCreated}>
+            <Button variant="secondary" disabled={openingSlackApp || !endpoint.setup?.webhookUrl || !slackValidation.success} onClick={onSlackAppCreated}>
               I already created the app
             </Button>
             {!repairing && (
@@ -1670,7 +1670,7 @@ function ProviderConnectStep({
           Now you need to find two secrets. They are in two different screens on Slack.
         </p>
         {slackCredentialsSaved && !repairing && (
-          <p className="text-sm text-muted-foreground">Your credentials are saved. Leave the fields blank to keep them, or enter replacements.</p>
+          <p className="text-sm text-ink-3">Your credentials are saved. Leave the fields blank to keep them, or enter replacements.</p>
         )}
         <section className="space-y-3">
           <h2 className="text-sm font-semibold"><label htmlFor="slack-bot-token">Bot User OAuth Token</label></h2>
@@ -1693,7 +1693,7 @@ function ProviderConnectStep({
             onChange={(event) => setCredentials({ ...credentials, botToken: event.target.value })}
           />
           {slackBotTokenInvalid && (
-            <p id="slack-bot-token-warning" role="alert" className="text-sm text-destructive">
+            <p id="slack-bot-token-warning" role="alert" className="text-sm text-bad">
               Your Bot User OAuth Token must start with <code>xoxb-</code>. Copy it from <strong>OAuth &amp; Permissions</strong>.
             </p>
           )}
@@ -1719,13 +1719,13 @@ function ProviderConnectStep({
             onChange={(event) => setCredentials({ ...credentials, signingSecret: event.target.value })}
           />
           {slackSigningSecretHasTokenPrefix && (
-            <p id="slack-signing-secret-warning" role="alert" className="text-sm text-destructive">
+            <p id="slack-signing-secret-warning" role="alert" className="text-sm text-bad">
               Use the <strong>Signing Secret</strong>, NOT an app or bot token. The Signing Secret has no token prefix.
             </p>
           )}
         </section>
         <div className="flex flex-wrap items-center justify-between gap-3">
-          <Button variant="ghost" className="text-muted-foreground" onClick={() => navigate("/apps")}>
+          <Button variant="ghost" onClick={() => navigate("/apps")}>
             Save &amp; exit
           </Button>
           <Button
@@ -1897,13 +1897,13 @@ function TryStep({
         <h1 className="text-xl font-bold">
           Try {agentName} in {providerNames[provider]}
         </h1>
-        {provider !== "slack" && <p className="mt-1 text-sm text-muted-foreground">
+        {provider !== "slack" && <p className="mt-1 text-sm text-ink-3">
           Complete this real conversation to finish setup.
         </p>}
       </div>
       {provider !== "slack" && (!principalsQuery.isSuccess || guestIsolationState === "loading") &&
       !principalsQuery.isError ? (
-        <p role="status" className="text-sm text-muted-foreground">
+        <p role="status" className="text-sm text-ink-3">
           Checking identity and guest readiness…
         </p>
       ) : null}
@@ -1912,39 +1912,39 @@ function TryStep({
           role={identityGuidance.tone === "warning" ? "alert" : "status"}
           className={
             identityGuidance.tone === "warning"
-              ? "rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-sm"
-              : "rounded-lg border border-border bg-muted/30 p-4 text-sm"
+              ? "rounded-lg border border-bad/30 bg-bad/10 p-4 text-sm"
+              : "rounded-lg border border-line bg-bg-3/30 p-4 text-sm"
           }
         >
           <h2 className="font-medium">{identityGuidance.title}</h2>
-          <p className="mt-1 text-muted-foreground">{identityGuidance.body}</p>
+          <p className="mt-1 text-ink-3">{identityGuidance.body}</p>
           <Button
             className="mt-3"
             size="sm"
-            variant="outline"
+            variant="secondary"
             onClick={onOpenAccess}
           >
             Review identity access
           </Button>
         </div>
       ) : null}
-      {provider === "imessage-photon" && botUsername && <div className="space-y-2"><Button variant="outline" onClick={() => { void copyTextToClipboard(botUsername).then(() => { setNumberCopied(true); setCopyError(null); }, () => setCopyError("Could not copy the number. Select it in the instructions below.")); }}>{numberCopied ? "Number copied" : `Copy ${botUsername}`}</Button>{copyError && <p role="alert" className="text-sm text-destructive">{copyError}</p>}</div>}
+      {provider === "imessage-photon" && botUsername && <div className="space-y-2"><Button variant="secondary" onClick={() => { void copyTextToClipboard(botUsername).then(() => { setNumberCopied(true); setCopyError(null); }, () => setCopyError("Could not copy the number. Select it in the instructions below.")); }}>{numberCopied ? "Number copied" : `Copy ${botUsername}`}</Button>{copyError && <p role="alert" className="text-sm text-bad">{copyError}</p>}</div>}
       {provider === "slack" ? (
         <>
           <ol className="list-decimal space-y-4 pl-5 text-sm">
-            <li>{slackAccount?.status === "linked" ? <Button asChild variant="outline"><a href={providerUrl ?? "https://app.slack.com"} target="_blank" rel="noopener noreferrer">{slackAccount.dmChannelId ? "Open your Slack DM" : "Open Slack"}<ExternalLink /></a></Button> : <>Open a channel and invite {botMention} if needed.</>}</li>
+            <li>{slackAccount?.status === "linked" ? <Button asChild variant="secondary"><a href={providerUrl ?? "https://app.slack.com"} target="_blank" rel="noopener noreferrer">{slackAccount.dmChannelId ? "Open your Slack DM" : "Open Slack"}<ExternalLink /></a></Button> : <>Open a channel and invite {botMention} if needed.</>}</li>
             <li>
-              <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border p-3">
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line p-3">
                 <code>{slackTestMessage}</code>
                 <Button size="sm" variant="ghost" onClick={() => {
                   void copyTextToClipboard(slackTestMessage).then(() => { setCommandCopied(true); setCommandCopyError(false); }, () => setCommandCopyError(true));
                 }}><Copy className="size-4" />{commandCopied ? "Copied" : "Copy message"}</Button>
               </div>
-              {slackAccount?.status !== "linked" && <p className="mt-2 text-muted-foreground">Select the bot from Slack’s @mention suggestions.</p>}
+              {slackAccount?.status !== "linked" && <p className="mt-2 text-ink-3">Select the bot from Slack’s @mention suggestions.</p>}
             </li>
             <li>Continue the conversation in the thread.</li>
           </ol>
-          {commandCopyError && <p role="alert" className="text-sm text-destructive">Couldn&apos;t copy. Select and copy the command above.</p>}
+          {commandCopyError && <p role="alert" className="text-sm text-bad">Couldn&apos;t copy. Select and copy the command above.</p>}
           <SetupWizardFooter onSaveExit={onSaveExit} disabled={pending}>
             <Button disabled={pending} onClick={onTest}>{pending && <Loader2 className="size-4 animate-spin" />}Done</Button>
           </SetupWizardFooter>
@@ -1955,7 +1955,7 @@ function TryStep({
       </ol>
       <div className="flex flex-wrap gap-2">
         {providerUrl && (
-          <Button asChild variant="outline">
+          <Button asChild variant="secondary">
             <a href={providerUrl} target="_blank" rel="noopener noreferrer">
               Open {providerNames[provider]} <ExternalLink />
             </a>

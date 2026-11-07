@@ -81,13 +81,13 @@ export function EditGatewayDialog({
         </DialogHeader>
         <form className="space-y-4" onSubmit={submit}>
           <label className="block space-y-1.5">
-            <span className="text-xs font-medium text-muted-foreground">Name</span>
+            <span className="text-xs font-medium text-ink-3">Name</span>
             <Input value={name} onChange={(event) => setName(event.target.value)} required autoFocus />
           </label>
           <label className="block space-y-1.5">
-            <span className="text-xs font-medium text-muted-foreground">Access profile</span>
+            <span className="text-xs font-medium text-ink-3">Access profile</span>
             <select
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              className="w-full rounded-md border border-line-strong bg-bg px-3 py-2 text-sm"
               value={profileId}
               onChange={(event) => setProfileId(event.target.value)}
               required
@@ -100,9 +100,9 @@ export function EditGatewayDialog({
             </select>
           </label>
           <label className="block space-y-1.5">
-            <span className="text-xs font-medium text-muted-foreground">Description (optional)</span>
+            <span className="text-xs font-medium text-ink-3">Description (optional)</span>
             <textarea
-              className="min-h-16 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+              className="min-h-16 w-full rounded-md border border-line-strong bg-bg px-3 py-2 text-sm"
               value={description}
               onChange={(event) => setDescription(event.target.value)}
               placeholder="Who this endpoint is for."

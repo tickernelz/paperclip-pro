@@ -116,7 +116,7 @@ const liveRuns: LiveRunForIssue[] = [
 
 function LiveNowStage({ companyId }: { companyId: string }) {
   return (
-    <div className="min-h-screen bg-background p-4 text-foreground sm:p-6">
+    <div className="min-h-screen bg-bg p-4 text-ink sm:p-6">
       <TasksLiveNowSection companyId={companyId} liveRuns={liveRuns} issues={issues} />
     </div>
   );

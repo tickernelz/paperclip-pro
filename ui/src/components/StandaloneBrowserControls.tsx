@@ -23,7 +23,7 @@ function ControlButton({
           type="button"
           variant="ghost"
           size="icon-sm"
-          className="size-8 text-muted-foreground hover:text-foreground"
+          className="size-8"
           aria-label={label}
           onClick={() => void onClick()}
         >
@@ -115,8 +115,8 @@ export function StandaloneBrowserControls({
       className={cn(
         "flex items-center gap-1",
         mobile
-          ? "h-10 border-b border-border bg-background/95 px-3 backdrop-blur supports-[backdrop-filter]:bg-background/85"
-          : "h-9 border-b border-border px-2",
+          ? "h-10 border-b border-line bg-bg/95 px-3 backdrop-blur supports-[backdrop-filter]:bg-bg/85"
+          : "h-9 border-b border-line px-2",
       )}
     >
       <ControlButton label="Back" onClick={back}>

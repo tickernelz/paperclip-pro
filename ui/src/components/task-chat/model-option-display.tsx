@@ -98,7 +98,7 @@ export function ModelValueLabel({
           {display.name}
         </span>
         {display.provider ? (
-          <span className="block truncate text-xs text-muted-foreground" data-testid={providerTestId}>
+          <span className="block truncate text-xs text-ink-3" data-testid={providerTestId}>
             {display.provider}
           </span>
         ) : null}
@@ -116,7 +116,7 @@ export function ModelValueLabel({
       {display.provider ? (
         <span
           className={cn(
-            "max-w-(--sz-12rem) truncate rounded border border-border px-1 text-(length:--text-micro) leading-4 text-muted-foreground",
+            "max-w-(--sz-12rem) truncate rounded border border-line px-1 text-(length:--text-micro) leading-4 text-ink-3",
             truncateName ? "shrink-0" : "min-w-8",
           )}
           data-testid={providerTestId}
@@ -135,7 +135,7 @@ export function ModelOptionText({ option }: { option: IssueRunModelOverrideOptio
     <span className="min-w-0 flex-1" title={option.value}>
       <span className="block truncate">{name}</span>
       {option.value && name !== option.value ? (
-        <span className="block truncate font-mono text-xs text-muted-foreground">{option.value}</span>
+        <span className="block truncate font-mono text-xs text-ink-3">{option.value}</span>
       ) : null}
     </span>
   );
@@ -146,7 +146,7 @@ export function ModelOptionGroupHeader({ provider, testId }: { provider: string;
   return (
     <div
       role="presentation"
-      className="px-2 pb-0.5 pt-2 text-(length:--text-micro) font-medium text-muted-foreground first:pt-1"
+      className="px-2 pb-0.5 pt-2 text-(length:--text-micro) font-medium text-ink-3 first:pt-1"
       data-testid={testId}
     >
       {provider}

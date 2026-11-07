@@ -39,7 +39,7 @@ export function MemberMultiSelect({
   pending = false,
   getDescription,
   triggerLabel,
-  triggerVariant = "outline",
+  triggerVariant = "secondary",
   triggerSize = "default",
   triggerFullWidth = true,
   triggerClassName,
@@ -127,11 +127,11 @@ export function MemberMultiSelect({
                   : `${selectedCount} ${selectedCount === 1 ? "person" : "people"} selected`)}
               </span>
             </span>
-            <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <ChevronRight className="h-4 w-4 shrink-0 text-ink-3" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-80 p-0" align={contentAlign}>
-          <div className="border-b border-border p-3">
+          <div className="border-b border-line p-3">
             <Input
               value={filter}
               onChange={(event) => setFilter(event.target.value)}
@@ -146,7 +146,7 @@ export function MemberMultiSelect({
               <Skeleton className="h-6 w-full" />
             </div>
           ) : members.length === 0 ? (
-            <div className="px-3 py-4 text-sm text-muted-foreground">{emptyMessage}</div>
+            <div className="px-3 py-4 text-sm text-ink-3">{emptyMessage}</div>
           ) : (
             <div className="max-h-60 overflow-y-auto py-1">
               {filteredMembers.map((member) => {
@@ -156,7 +156,7 @@ export function MemberMultiSelect({
                 return (
                   <label
                     key={member.userId}
-                    className="flex cursor-pointer items-start gap-2 px-3 py-2 hover:bg-accent/30"
+                    className="flex cursor-pointer items-start gap-2 px-3 py-2 hover:bg-bg-3/30"
                   >
                     <Checkbox
                       checked={workingUserIds.has(member.userId)}
@@ -171,19 +171,19 @@ export function MemberMultiSelect({
                     <span className="flex min-w-0 flex-col">
                       <Identity name={label} avatarUrl={member.image ?? null} size="sm" />
                       {description ? (
-                        <span className="truncate text-xs text-muted-foreground">{description}</span>
+                        <span className="truncate text-xs text-ink-3">{description}</span>
                       ) : null}
                     </span>
                   </label>
                 );
               })}
               {filteredMembers.length === 0 ? (
-                <div className="px-3 py-4 text-sm text-muted-foreground">No matches.</div>
+                <div className="px-3 py-4 text-sm text-ink-3">No matches.</div>
               ) : null}
             </div>
           )}
-          <div className="flex items-center justify-between border-t border-border px-3 py-2">
-            <span className="text-xs text-muted-foreground" aria-live="polite">
+          <div className="flex items-center justify-between border-t border-line px-3 py-2">
+            <span className="text-xs text-ink-3" aria-live="polite">
               {workingUserIds.size === 0 ? "No people selected" : `${workingUserIds.size} selected`}
             </span>
             <div className="flex items-center gap-2">
@@ -215,7 +215,7 @@ export function MemberMultiSelect({
             </div>
           ))}
           {selectedMembers.length > 3 ? (
-            <p className="px-1.5 pt-0.5 text-xs text-muted-foreground">
+            <p className="px-1.5 pt-0.5 text-xs text-ink-3">
               and {selectedMembers.length - 3} more
             </p>
           ) : null}

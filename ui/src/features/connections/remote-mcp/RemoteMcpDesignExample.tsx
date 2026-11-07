@@ -24,7 +24,7 @@ function ConnectExample({ providerId }: { providerId: RemoteMcpProviderId }) {
 export function RemoteMcpDesignExample() {
   const [providerId, setProviderId] = useState<RemoteMcpProviderId>("zapier");
   return <div className="space-y-4">
-    <div className="flex flex-wrap gap-2">{Object.values(remoteMcpProviders).map((provider) => <Button key={provider.id} size="sm" variant={providerId === provider.id ? "default" : "outline"} onClick={() => setProviderId(provider.id)}>{provider.name}</Button>)}</div>
+    <div className="flex flex-wrap gap-2">{Object.values(remoteMcpProviders).map((provider) => <Button key={provider.id} size="sm" variant={providerId === provider.id ? "primary" : "secondary"} onClick={() => setProviderId(provider.id)}>{provider.name}</Button>)}</div>
     <ConnectExample key={providerId} providerId={providerId} />
   </div>;
 }

@@ -56,18 +56,18 @@ export function DecisionsToolbar({
   return (
     <div className="flex items-center gap-2">
       {visibleCount > 0 && (
-        <span className="text-sm text-muted-foreground">
+        <span className="text-sm text-ink-3">
           {visibleCount} {visibleCount === 1 ? "decision" : "decisions"}
         </span>
       )}
       {/* Filter */}
       <Popover>
         <PopoverTrigger asChild>
-          <Button
+          <Button active={activeFilterCount > 0}
             type="button"
-            variant="outline"
+            variant="secondary"
             size="icon"
-            className={cn("h-8 w-8 shrink-0", activeFilterCount > 0 && "bg-accent")}
+            className={cn("h-8 w-8 shrink-0")}
             title="Filter"
             aria-label="Filter"
           >
@@ -81,11 +81,11 @@ export function DecisionsToolbar({
       {/* Group by */}
       <Popover>
         <PopoverTrigger asChild>
-          <Button
+          <Button active={groupBy !== "none"}
             type="button"
-            variant="outline"
+            variant="secondary"
             size="icon"
-            className={cn("h-8 w-8 shrink-0", groupBy !== "none" && "bg-accent")}
+            className={cn("h-8 w-8 shrink-0")}
             title="Group"
             aria-label="Group"
           >
@@ -100,7 +100,7 @@ export function DecisionsToolbar({
                 type="button"
                 className={cn(
                   "flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-sm",
-                  groupBy === value ? "bg-accent/50 text-foreground" : "text-muted-foreground hover:bg-accent/50",
+                  groupBy === value ? "bg-bg-3/50 text-ink" : "text-ink-3 hover:bg-bg-3/50",
                 )}
                 onClick={() => onGroupByChange(value)}
               >
@@ -116,7 +116,7 @@ export function DecisionsToolbar({
         <PopoverTrigger asChild>
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             size="icon"
             className="h-8 w-8 shrink-0"
             title="Sort"
@@ -133,7 +133,7 @@ export function DecisionsToolbar({
                 type="button"
                 className={cn(
                   "flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-sm",
-                  sortOrder === value ? "bg-accent/50 text-foreground" : "text-muted-foreground hover:bg-accent/50",
+                  sortOrder === value ? "bg-bg-3/50 text-ink" : "text-ink-3 hover:bg-bg-3/50",
                 )}
                 onClick={() => onSortOrderChange(value)}
               >
@@ -167,11 +167,11 @@ function FilterMenu({
   return (
     <div className="max-h-(--sz-70vh) overflow-y-auto">
       <div className="flex items-center justify-between px-3 py-2">
-        <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Filter</span>
+        <span className="text-xs font-semibold uppercase tracking-wide text-ink-3">Filter</span>
         {hasActive && (
           <button
             type="button"
-            className="text-xs text-muted-foreground hover:text-foreground"
+            className="text-xs text-ink-3 hover:text-ink"
             onClick={() => onChange(defaultAttentionFilterState)}
           >
             Clear
@@ -250,8 +250,8 @@ function FilterMenu({
 
 function FilterSection({ title, children }: { title: string; children: ReactNode }) {
   return (
-    <div className="border-t border-border/60 px-2 py-1.5">
-      <p className="px-1 pb-1 text-(length:--text-nano) font-medium uppercase tracking-wide text-muted-foreground">
+    <div className="border-t border-line/60 px-2 py-1.5">
+      <p className="px-1 pb-1 text-(length:--text-nano) font-medium uppercase tracking-wide text-ink-3">
         {title}
       </p>
       <div className="space-y-0.5">{children}</div>
@@ -271,7 +271,7 @@ function FilterRow({
   return (
     <button
       type="button"
-      className="flex w-full items-center gap-2 rounded-sm px-1 py-1 text-left text-sm hover:bg-accent/50"
+      className="flex w-full items-center gap-2 rounded-sm px-1 py-1 text-left text-sm hover:bg-bg-3/50"
       onClick={onToggle}
     >
       <Checkbox checked={checked} className="pointer-events-none" tabIndex={-1} />

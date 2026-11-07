@@ -21,7 +21,7 @@ export function AccountQuotaPanels({
             {account.accountLabel ?? "Subscription account"}
           </p>
           {(failed || !account.ok) && (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-ink-3">
               {account.errorFamily === "credentials_unavailable"
                 ? "Connect or reconnect a subscription in AI connections to view its quota."
                 : quotaUnavailableMessage(account.windows.length > 0)}
@@ -31,9 +31,9 @@ export function AccountQuotaPanels({
             <div key={`${window.label}:${index}`} className="space-y-1 text-sm">
               <div className="flex justify-between gap-3">
                 <span>{window.label}</span>
-                <span className="font-mono text-muted-foreground">{window.valueLabel ?? "Usage not reported"}</span>
+                <span className="font-mono text-ink-3">{window.valueLabel ?? "Usage not reported"}</span>
               </div>
-              {window.resetsAt && <p className="text-xs font-mono text-muted-foreground">Resets {formatDateTime(window.resetsAt)}</p>}
+              {window.resetsAt && <p className="text-xs font-mono text-ink-3">Resets {formatDateTime(window.resetsAt)}</p>}
             </div>
           ) : (
             <QuotaBar
@@ -55,7 +55,7 @@ export function AccountQuotaPanels({
             />
           ))}
           {account.capturedAt && (
-            <p className="text-xs font-mono text-muted-foreground">
+            <p className="text-xs font-mono text-ink-3">
               Last checked {formatDateTime(account.capturedAt)}
             </p>
           )}

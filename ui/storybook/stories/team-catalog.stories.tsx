@@ -135,7 +135,7 @@ function manifestAgent(slug: string, name: string): any {
 const noop = () => {};
 
 function Frame({ children, width = "max-w-3xl" }: { children: React.ReactNode; width?: string }) {
-  return <div className={`mx-auto w-full ${width} rounded-lg border border-border bg-background p-5`}>{children}</div>;
+  return <div className={`mx-auto w-full ${width} rounded-lg border border-line bg-bg p-5`}>{children}</div>;
 }
 
 const meta: Meta = {
@@ -146,10 +146,10 @@ type Story = StoryObj;
 
 export const BrowseList: Story = {
   render: () => (
-    <div className="w-[28rem] border border-border">
-      <div className="px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Bundled · 1</div>
+    <div className="w-[28rem] border border-line">
+      <div className="px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-ink-3">Bundled · 1</div>
       <TeamRow team={baseTeam} selected onSelect={noop} />
-      <div className="px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Optional · 2</div>
+      <div className="px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-ink-3">Optional · 2</div>
       <TeamRow team={optionalTeam} selected={false} onSelect={noop} />
       <TeamRow team={warnTeam} selected={false} onSelect={noop} />
     </div>
@@ -158,7 +158,7 @@ export const BrowseList: Story = {
 
 export const DetailPane: Story = {
   render: () => (
-    <div className="h-[760px] overflow-hidden border border-border">
+    <div className="h-[760px] overflow-hidden border border-line">
       <TeamDetailPane
         team={baseTeam}
         selectedPath={null}
@@ -175,14 +175,14 @@ export const DetailPane: Story = {
 export const InstalledStates: Story = {
   render: () => (
     <div className="flex flex-col gap-6">
-      <div className="w-[28rem] border border-border">
-        <div className="px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Bundled · 1</div>
+      <div className="w-[28rem] border border-line">
+        <div className="px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-ink-3">Bundled · 1</div>
         <TeamRow team={optionalTeam} selected={false} onSelect={noop} />
-        <div className="px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">Installed · 2</div>
+        <div className="px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-ink-3">Installed · 2</div>
         <TeamRow team={baseTeam} selected onSelect={noop} installed={outOfDateInstalledState} />
         <TeamRow team={warnTeam} selected={false} onSelect={noop} installed={currentInstalledState} />
       </div>
-      <div className="h-[760px] overflow-hidden border border-border">
+      <div className="h-[760px] overflow-hidden border border-line">
         <TeamDetailPane
           team={baseTeam}
           selectedPath={null}
@@ -312,7 +312,7 @@ export const OnboardingTeamGrid: Story = {
       <Frame width="max-w-2xl">
         <div className="space-y-1">
           <h2 className="text-lg font-semibold">Pick a starter team</h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-ink-3">
             We&apos;ll set up agents, projects, and routines so you can start with a working team.
           </p>
         </div>

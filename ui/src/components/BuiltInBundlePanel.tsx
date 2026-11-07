@@ -116,7 +116,7 @@ function ResourceActionButton({
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="outline" size="sm" disabled={pending}>
+        <Button variant="secondary" size="sm" disabled={pending}>
           {pending ? "Working…" : copy.triggerLabel}
         </Button>
       </AlertDialogTrigger>
@@ -152,7 +152,7 @@ function ConfirmActionButton({
   return (
     <AlertDialog>
       <AlertDialogTrigger asChild>
-        <Button variant="outline" size="sm" disabled={pending}>
+        <Button variant="secondary" size="sm" disabled={pending}>
           {pending ? "Working…" : triggerLabel}
         </Button>
       </AlertDialogTrigger>
@@ -186,7 +186,7 @@ function BundleRow({ label, secondary, chips, detail, detailTone = "muted", acti
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-sm font-medium">{label}</span>
           {secondary && (
-            <span className="text-(length:--text-micro) text-muted-foreground">{secondary}</span>
+            <span className="text-(length:--text-micro) text-ink-3">{secondary}</span>
           )}
           {chips}
         </div>
@@ -194,7 +194,7 @@ function BundleRow({ label, secondary, chips, detail, detailTone = "muted", acti
           <p
             className={cn(
               "text-(length:--text-micro) leading-snug",
-              detailTone === "error" ? "text-red-600 dark:text-red-400" : "text-muted-foreground",
+              detailTone === "error" ? "text-red-600 dark:text-red-400" : "text-ink-3",
             )}
           >
             {detail}
@@ -327,7 +327,7 @@ export function BuiltInBundlePanel({
           chips={<ResourceStatusChip variant={adapterChip} />}
           detail={adapterDetail}
           actions={
-            <Button variant="outline" size="sm" onClick={onConfigure}>
+            <Button variant="secondary" size="sm" onClick={onConfigure}>
               Configure
             </Button>
           }

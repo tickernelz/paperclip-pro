@@ -94,7 +94,7 @@ export function SavedProviderKeySelect({
           <span>{kind === "api" ? "API key" : "Subscription"}</span>
           <select
             aria-label={kind === "api" ? "Saved API key" : "Saved subscription"}
-            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+            className="w-full rounded-md border border-line-strong bg-bg px-3 py-2 text-sm"
             value={value}
             onChange={(event) => onChange(event.target.value)}
             disabled={disabled}
@@ -113,17 +113,17 @@ export function SavedProviderKeySelect({
         </label>
       )}
       {loading && (
-        <p role="status" className="text-sm text-muted-foreground">
+        <p role="status" className="text-sm text-ink-3">
           Checking saved API keys…
         </p>
       )}
       {error && (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-sm text-bad">
           Some saved keys could not be loaded. You can still enter a new key.
         </p>
       )}
       {value && (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           Reuse this saved {kind === "api" ? "key" : "subscription"} for this
           agent.
         </p>

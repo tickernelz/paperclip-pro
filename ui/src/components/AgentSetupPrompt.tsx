@@ -15,7 +15,7 @@ export interface AgentSetupPromptProps {
   title?: string;
   description?: string;
   label?: string;
-  variant?: "outline" | "ghost";
+  variant?: "secondary" | "ghost";
   side?: "top" | "bottom" | "left" | "right";
   align?: "start" | "center" | "end";
   className?: string;
@@ -69,7 +69,7 @@ export function AgentSetupPrompt({
   title = "Agent setup",
   description = "Paste this into your agent to take care of setup.",
   label = "Set up with an agent",
-  variant = "outline",
+  variant = "secondary",
   side = "top",
   align = "start",
   className,
@@ -198,7 +198,7 @@ export function AgentSetupPrompt({
             }}
             className={cn("agent-setup-trigger h-auto min-h-10 max-w-full gap-3 whitespace-normal text-left", variant === "ghost" && "w-full justify-start", className)}
           >
-            {status === "copied" ? <Check className="agent-setup-check size-4" /> : <Terminal className="size-4 text-muted-foreground" />}
+            {status === "copied" ? <Check className="agent-setup-check size-4" /> : <Terminal className="size-4 text-ink-3" />}
             <span className="relative min-w-0">
               <span className={status === "copied" ? "invisible" : undefined}>{label}</span>
               {status === "copied" && <span className="agent-setup-confirmation absolute inset-0 flex items-center">Copied!</span>}
@@ -226,7 +226,7 @@ export function AgentSetupPrompt({
           <div className="flex items-start gap-3">
             <div className="flex min-w-0 flex-1 flex-col gap-1">
               <h2 id={`${id}-title`} className="text-sm font-semibold">{title}</h2>
-              <p id={`${id}-description`} className="text-sm leading-relaxed text-muted-foreground">{description}</p>
+              <p id={`${id}-description`} className="text-sm leading-relaxed text-ink-3">{description}</p>
             </div>
             <Button type="button" variant="ghost" size="icon-xs" aria-label="Close agent setup" onClick={() => changeOpen(false)}>
               <X className="size-3.5" />
@@ -241,21 +241,21 @@ export function AgentSetupPrompt({
                 readOnly
                 value={prompt}
                 onFocus={(event) => event.currentTarget.select()}
-                className="agent-setup-preview resize-none rounded-lg bg-muted/50 p-3 pt-5 font-mono text-xs leading-relaxed"
+                className="agent-setup-preview resize-none rounded-lg bg-bg-3/50 p-3 pt-5 font-mono text-xs leading-relaxed"
               />
             ) : (
-              <pre tabIndex={0} aria-label="Setup prompt" className="agent-setup-preview m-0 overflow-auto whitespace-pre-wrap break-words rounded-lg border border-border/60 bg-muted/50 p-3 pt-5 font-mono text-xs leading-relaxed text-muted-foreground">{prompt}</pre>
+              <pre tabIndex={0} aria-label="Setup prompt" className="agent-setup-preview m-0 overflow-auto whitespace-pre-wrap break-words rounded-lg border border-line/60 bg-bg-3/50 p-3 pt-5 font-mono text-xs leading-relaxed text-ink-3">{prompt}</pre>
             )}
           </div>
 
           <div className="flex flex-col gap-2">
             {status === "failed" && (
-              <p role="alert" className="text-xs text-destructive">Could not copy automatically. Select and copy the prompt above, or try again.</p>
+              <p role="alert" className="text-xs text-bad">Could not copy automatically. Select and copy the prompt above, or try again.</p>
             )}
             <Button
               ref={copyButton}
               type="button"
-              variant="cta"
+              variant="primary"
               className="agent-setup-copy w-full"
               data-copied={status === "copied"}
               aria-disabled={status === "copying" || !prompt.trim()}
@@ -264,7 +264,7 @@ export function AgentSetupPrompt({
               {status === "copied" ? <Check className="agent-setup-check size-4" /> : <Copy className="size-4" />}
               {status === "copied" ? "Copied to clipboard" : status === "copying" ? "Copying…" : status === "failed" ? "Try copying again" : "Copy prompt"}
             </Button>
-            <p className="text-center text-xs text-muted-foreground">
+            <p className="text-center text-xs text-ink-3">
               {status === "copied" ? `Ready to paste into ${recipient}.` : agent ? `Give this prompt to ${recipient}.` : "Works with Codex, ChatGPT, Claude, and more."}
             </p>
           </div>

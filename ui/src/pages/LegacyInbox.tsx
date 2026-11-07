@@ -278,7 +278,7 @@ type NonIssueUnreadState = "visible" | "fading" | "hidden" | null;
 // Rows outside SwipeToArchive (non-archivable tabs/sections) still need the
 // hover-follows-selection band that SwipeToArchive's surface normally paints.
 function InboxRowSurface({ selected, children }: { selected: boolean; children: ReactNode }) {
-  return <div className={cn(selected && "rounded-lg bg-accent/50")}>{children}</div>;
+  return <div className={cn(selected && "rounded-lg bg-bg-3/50")}>{children}</div>;
 }
 
 export function FailedRunInboxRow({
@@ -318,7 +318,7 @@ export function FailedRunInboxRow({
 
   return (
     <div className={cn(
-      "group border-b border-border px-2 py-2.5 last:border-b-0 sm:px-1 sm:pr-3 sm:py-2",
+      "group border-b border-line px-2 py-2.5 last:border-b-0 sm:px-1 sm:pr-3 sm:py-2",
       className,
     )}>
       <div className="flex items-start gap-2 sm:items-center">
@@ -349,7 +349,7 @@ export function FailedRunInboxRow({
           to={`/agents/${run.agentId}/runs/${run.id}`}
           className={cn(
             "flex min-w-0 flex-1 items-start gap-2 no-underline text-inherit transition-colors",
-            selected ? "hover:bg-transparent" : "hover:bg-accent/50",
+            selected ? "hover:bg-transparent" : "hover:bg-bg-3/50",
           )}
         >
           {!showUnreadSlot && <span className="hidden h-2 w-2 shrink-0 sm:inline-flex" aria-hidden="true" />}
@@ -361,7 +361,7 @@ export function FailedRunInboxRow({
             <span className="line-clamp-2 text-sm font-medium sm:truncate sm:line-clamp-none">
               {issue ? (
                 <>
-                  <span className="font-mono text-muted-foreground mr-1.5">
+                  <span className="font-mono text-ink-3 mr-1.5">
                     {issue.identifier ?? issue.id.slice(0, 8)}
                   </span>
                   {issue.title}
@@ -370,7 +370,7 @@ export function FailedRunInboxRow({
                 <>Failed run{linkedAgentName ? ` — ${linkedAgentName}` : ""}</>
               )}
             </span>
-            <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+            <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-ink-3">
               <StatusBadge status={run.status} />
               {linkedAgentName && issue ? <span>{linkedAgentName}</span> : null}
               <span className="truncate max-w-(--sz-300px)">{displayError}</span>
@@ -384,7 +384,7 @@ export function FailedRunInboxRow({
           ) : null}
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             size="sm"
             className="h-8 shrink-0 px-2.5"
             onClick={onRetry}
@@ -397,7 +397,7 @@ export function FailedRunInboxRow({
             <button
               type="button"
               onClick={onDismiss}
-              className="rounded-md p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover:opacity-100"
+              className="rounded-md p-1 text-ink-3 opacity-0 transition-opacity hover:bg-bg-3 hover:text-ink group-hover:opacity-100"
               aria-label="Dismiss"
             >
               <X className="h-4 w-4" />
@@ -408,7 +408,7 @@ export function FailedRunInboxRow({
       <div className="mt-3 flex gap-2 sm:hidden">
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           size="sm"
           className="h-8 shrink-0 px-2.5"
           onClick={onRetry}
@@ -421,7 +421,7 @@ export function FailedRunInboxRow({
           <button
             type="button"
             onClick={onDismiss}
-            className="rounded-md p-1 text-muted-foreground hover:bg-accent hover:text-foreground"
+            className="rounded-md p-1 text-ink-3 hover:bg-bg-3 hover:text-ink"
             aria-label="Dismiss"
           >
             <X className="h-4 w-4" />
@@ -467,7 +467,7 @@ function ApprovalInboxRow({
 
   return (
     <div className={cn(
-      "group border-b border-border px-2 py-2.5 last:border-b-0 sm:px-1 sm:pr-3 sm:py-2",
+      "group border-b border-line px-2 py-2.5 last:border-b-0 sm:px-1 sm:pr-3 sm:py-2",
       className,
     )}>
       <div className="flex items-start gap-2 sm:items-center">
@@ -498,19 +498,19 @@ function ApprovalInboxRow({
           to={`/approvals/${approval.id}`}
           className={cn(
             "flex min-w-0 flex-1 items-start gap-2 no-underline text-inherit transition-colors",
-            selected ? "hover:bg-transparent" : "hover:bg-accent/50",
+            selected ? "hover:bg-transparent" : "hover:bg-bg-3/50",
           )}
         >
           {!showUnreadSlot && <span className="hidden h-2 w-2 shrink-0 sm:inline-flex" aria-hidden="true" />}
           <span className="hidden h-3.5 w-3.5 shrink-0 sm:inline-flex" aria-hidden="true" />
-          <span className="mt-0.5 shrink-0 rounded-md bg-muted p-1.5 sm:mt-0">
-            <Icon className="h-4 w-4 text-muted-foreground" />
+          <span className="mt-0.5 shrink-0 rounded-md bg-bg-3 p-1.5 sm:mt-0">
+            <Icon className="h-4 w-4 text-ink-3" />
           </span>
           <span className="min-w-0 flex-1">
             <span className="line-clamp-2 text-sm font-medium sm:truncate sm:line-clamp-none">
               {label}
             </span>
-            <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+            <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-ink-3">
               <span className="capitalize">{approvalStatusLabel(approval.status)}</span>
               {requesterName ? <span>requested by {requesterName}</span> : null}
               <span>updated {timeAgo(approval.updatedAt)}</span>
@@ -526,14 +526,14 @@ function ApprovalInboxRow({
               <>
                 <Button
                   size="sm"
-                  className="h-8 bg-(--status-task-icon-done) px-3 text-white hover:bg-(--status-task-done)"
+                  className="h-8 px-3"
                   onClick={onApprove}
                   disabled={isPending}
                 >
                   Approve
                 </Button>
                 <Button
-                  variant="destructive"
+                  variant="secondary"
                   size="sm"
                   className="h-8 px-3"
                   onClick={onReject}
@@ -550,14 +550,14 @@ function ApprovalInboxRow({
         <div className="mt-3 flex gap-2 sm:hidden">
           <Button
             size="sm"
-            className="h-8 bg-(--status-task-icon-done) px-3 text-white hover:bg-(--status-task-done)"
+            className="h-8 px-3"
             onClick={onApprove}
             disabled={isPending}
           >
             Approve
           </Button>
           <Button
-            variant="destructive"
+            variant="secondary"
             size="sm"
             className="h-8 px-3"
             onClick={onReject}
@@ -600,7 +600,7 @@ function JoinRequestInboxRow({
 
   return (
     <div className={cn(
-      "group border-b border-border px-2 py-2.5 last:border-b-0 sm:px-1 sm:pr-3 sm:py-2",
+      "group border-b border-line px-2 py-2.5 last:border-b-0 sm:px-1 sm:pr-3 sm:py-2",
       className,
     )}>
       <div className="flex items-start gap-2 sm:items-center">
@@ -630,14 +630,14 @@ function JoinRequestInboxRow({
         <div className="flex min-w-0 flex-1 items-start gap-2">
           {!showUnreadSlot && <span className="hidden h-2 w-2 shrink-0 sm:inline-flex" aria-hidden="true" />}
           <span className="hidden h-3.5 w-3.5 shrink-0 sm:inline-flex" aria-hidden="true" />
-          <span className="mt-0.5 shrink-0 rounded-md bg-muted p-1.5 sm:mt-0">
-            <UserPlus className="h-4 w-4 text-muted-foreground" />
+          <span className="mt-0.5 shrink-0 rounded-md bg-bg-3 p-1.5 sm:mt-0">
+            <UserPlus className="h-4 w-4 text-ink-3" />
           </span>
           <span className="min-w-0 flex-1">
             <span className="line-clamp-2 text-sm font-medium sm:truncate sm:line-clamp-none">
               {label}
             </span>
-            <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+            <span className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-ink-3">
               <span>requested {timeAgo(joinRequest.createdAt)} from IP {joinRequest.requestIp}</span>
               {joinRequest.adapterType && <span>adapter: {joinRequest.adapterType}</span>}
             </span>
@@ -649,14 +649,14 @@ function JoinRequestInboxRow({
           ) : null}
           <Button
             size="sm"
-            className="h-8 bg-(--status-task-icon-done) px-3 text-white hover:bg-(--status-task-done)"
+            className="h-8 px-3"
             onClick={onApprove}
             disabled={isPending}
           >
             Approve
           </Button>
           <Button
-            variant="destructive"
+            variant="secondary"
             size="sm"
             className="h-8 px-3"
             onClick={onReject}
@@ -669,14 +669,14 @@ function JoinRequestInboxRow({
       <div className="mt-3 flex gap-2 sm:hidden">
         <Button
           size="sm"
-          className="h-8 bg-(--status-task-icon-done) px-3 text-white hover:bg-(--status-task-done)"
+          className="h-8 px-3"
           onClick={onApprove}
           disabled={isPending}
         >
           Approve
         </Button>
         <Button
-          variant="destructive"
+          variant="secondary"
           size="sm"
           className="h-8 px-3"
           onClick={onReject}
@@ -2262,7 +2262,7 @@ export function Inbox() {
       <div className="space-y-2">
         {/* Search — full-width row on mobile, inline on desktop */}
         <div className="relative sm:hidden">
-          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+          <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-3" />
           <Input
             type="search"
             placeholder="Search inbox…"
@@ -2310,7 +2310,7 @@ export function Inbox() {
 
         <div className="flex items-center gap-2">
           <div className="relative hidden sm:block">
-            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-3" />
             <Input
               type="search"
               placeholder="Search inbox…"
@@ -2351,16 +2351,16 @@ export function Inbox() {
                 currentUserId={currentUserId}
                 enableExternalObjectFilters={externalObjectsEnabled}
                 enableRoutineVisibilityFilter
-                buttonVariant="outline"
+                buttonVariant="secondary"
                 iconOnly
               />
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button
+                  <Button active={blockedGroupBy !== "none"}
                     type="button"
-                    variant="outline"
+                    variant="secondary"
                     size="icon"
-                    className={cn("h-8 w-8 shrink-0", blockedGroupBy !== "none" && "bg-accent")}
+                    className={cn("h-8 w-8 shrink-0")}
                     title="Group"
                   >
                     <Layers className="h-3.5 w-3.5" />
@@ -2374,7 +2374,7 @@ export function Inbox() {
                         type="button"
                         className={cn(
                           "flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-sm",
-                          blockedGroupBy === value ? "bg-accent/50 text-foreground" : "text-muted-foreground hover:bg-accent/50",
+                          blockedGroupBy === value ? "bg-bg-3/50 text-ink" : "text-ink-3 hover:bg-bg-3/50",
                         )}
                         onClick={() => setBlockedGroupBy(value)}
                       >
@@ -2397,7 +2397,7 @@ export function Inbox() {
                 <PopoverTrigger asChild>
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="secondary"
                     size="icon"
                     className="h-8 w-8 shrink-0"
                     title="Sort"
@@ -2413,7 +2413,7 @@ export function Inbox() {
                         type="button"
                         className={cn(
                           "flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-sm",
-                          blockedSortBy === value ? "bg-accent/50 text-foreground" : "text-muted-foreground hover:bg-accent/50",
+                          blockedSortBy === value ? "bg-bg-3/50 text-ink" : "text-ink-3 hover:bg-bg-3/50",
                         )}
                         onClick={() => setBlockedSortBy(value)}
                       >
@@ -2427,11 +2427,11 @@ export function Inbox() {
             </>
           ) : showGeneralIssueToolbarControls ? (
             <>
-              <Button
+              <Button active={nestingEnabled}
                 type="button"
-                variant="outline"
+                variant="secondary"
                 size="icon"
-                className={cn("hidden h-8 w-8 shrink-0 sm:inline-flex", nestingEnabled && "bg-accent")}
+                className={cn("hidden h-8 w-8 shrink-0 sm:inline-flex")}
                 onClick={toggleNesting}
                 title={nestingEnabled ? "Disable parent-child nesting" : "Enable parent-child nesting"}
               >
@@ -2449,16 +2449,16 @@ export function Inbox() {
                 currentUserId={currentUserId}
                 enableExternalObjectFilters={externalObjectsEnabled}
                 enableRoutineVisibilityFilter
-                buttonVariant="outline"
+                buttonVariant="secondary"
                 iconOnly
               />
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button
+                  <Button active={groupBy !== "none"}
                     type="button"
-                    variant="outline"
+                    variant="secondary"
                     size="icon"
-                    className={cn("h-8 w-8 shrink-0", groupBy !== "none" && "bg-accent")}
+                    className={cn("h-8 w-8 shrink-0")}
                     title="Group"
                   >
                     <Layers className="h-3.5 w-3.5" />
@@ -2478,7 +2478,7 @@ export function Inbox() {
                         type="button"
                         className={cn(
                           "flex w-full items-center justify-between rounded-sm px-2 py-1.5 text-sm",
-                          groupBy === value ? "bg-accent/50 text-foreground" : "text-muted-foreground hover:bg-accent/50",
+                          groupBy === value ? "bg-bg-3/50 text-ink" : "text-ink-3 hover:bg-bg-3/50",
                         )}
                         onClick={() => updateGroupBy(value)}
                       >
@@ -2501,7 +2501,7 @@ export function Inbox() {
                 <>
                   <Button
                     type="button"
-                    variant="outline"
+                    variant="secondary"
                     size="sm"
                     className="h-8 shrink-0"
                     onClick={() => setShowMarkAllReadConfirm(true)}
@@ -2518,7 +2518,7 @@ export function Inbox() {
                         </DialogDescription>
                       </DialogHeader>
                       <DialogFooter>
-                        <Button variant="outline" onClick={() => setShowMarkAllReadConfirm(false)}>
+                        <Button variant="secondary" onClick={() => setShowMarkAllReadConfirm(false)}>
                           Cancel
                         </Button>
                         <Button
@@ -2577,8 +2577,8 @@ export function Inbox() {
         </div>
       )}
 
-      {approvalsError && <p className="text-sm text-destructive">{approvalsError.message}</p>}
-      {actionError && <p className="text-sm text-destructive">{actionError}</p>}
+      {approvalsError && <p className="text-sm text-bad">{approvalsError.message}</p>}
+      {actionError && <p className="text-sm text-bad">{actionError}</p>}
 
       {tab === "blocked" ? (
         <BlockedInboxView
@@ -2728,7 +2728,7 @@ export function Inbox() {
                         </>
                       }
                       titleSuffix={hasChildren && !isExpanded && depth === 0 ? (
-                        <span className="ml-1.5 text-xs text-muted-foreground">
+                        <span className="ml-1.5 text-xs text-ink-3">
                           ({childCount} sub-task{childCount !== 1 ? "s" : ""})
                         </span>
                       ) : undefined}
@@ -2800,13 +2800,13 @@ export function Inbox() {
                     elements.push(
                       <div
                         key={`${group.searchSection}-search-divider`}
-                        className="flex items-center gap-3 border-y border-border/70 bg-muted/30 px-4 py-2"
+                        className="flex items-center gap-3 border-y border-line/70 bg-bg-3/30 px-4 py-2"
                       >
-                        <div className="h-px flex-1 bg-border/80" />
-                        <span className="shrink-0 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
+                        <div className="h-px flex-1 bg-line/80" />
+                        <span className="shrink-0 text-(length:--text-micro) font-semibold uppercase tracking-wide text-ink-3">
                           {group.searchSection === "archived" ? "Archived" : "Other results"}
                         </span>
-                        <div className="h-px flex-1 bg-border/80" />
+                        <div className="h-px flex-1 bg-line/80" />
                       </div>,
                     );
                   }
@@ -2830,7 +2830,7 @@ export function Inbox() {
                             task chevrons. Read rows no longer reserve a
                             mark-read column, so inbox rows sit at pl-1 before
                             their chevron — same as the tasks list. */}
-                        <div className={cn("rounded-lg px-3 sm:pl-0 sm:pr-4", isGroupSelected ? "bg-accent/50" : "hover:bg-accent/50")}>
+                        <div className={cn("rounded-lg px-3 sm:pl-0 sm:pr-4", isGroupSelected ? "bg-bg-3/50" : "hover:bg-bg-3/50")}>
                         <IssueGroupHeader
                           label={group.label}
                           collapsible
@@ -2840,7 +2840,7 @@ export function Inbox() {
                             <Button
                               variant="ghost"
                               size="icon-xs"
-                              className="-mr-2 text-muted-foreground"
+                              className="-mr-2"
                               title={`New task in ${group.label}`}
                               aria-label={`New task in ${group.label}`}
                               onClick={(event) => {
@@ -3098,12 +3098,12 @@ export function Inbox() {
         <>
           {showSeparatorBefore("alerts") && <Separator />}
           <div>
-            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-ink-3">
               Alerts
             </h3>
-            <div className="divide-y divide-border border border-border">
+            <div className="divide-y divide-line border border-line">
               {showAggregateAgentError && (
-                <div className="group/alert relative flex items-center gap-3 px-4 py-3 transition-colors hover:bg-accent/50">
+                <div className="group/alert relative flex items-center gap-3 px-4 py-3 transition-colors hover:bg-bg-3/50">
                   <Link
                     to="/agents"
                     className="flex flex-1 cursor-pointer items-center gap-3 no-underline text-inherit"
@@ -3117,7 +3117,7 @@ export function Inbox() {
                   <button
                     type="button"
                     onClick={() => dismissAlert("alert:agent-errors")}
-                    className="rounded-md p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover/alert:opacity-100"
+                    className="rounded-md p-1 text-ink-3 opacity-0 transition-opacity hover:bg-bg-3 hover:text-ink group-hover/alert:opacity-100"
                     aria-label="Dismiss"
                   >
                     <X className="h-3.5 w-3.5" />
@@ -3125,7 +3125,7 @@ export function Inbox() {
                 </div>
               )}
               {showBudgetAlert && (
-                <div className="group/alert relative flex items-center gap-3 px-4 py-3 transition-colors hover:bg-accent/50">
+                <div className="group/alert relative flex items-center gap-3 px-4 py-3 transition-colors hover:bg-bg-3/50">
                   <Link
                     to="/costs"
                     className="flex flex-1 cursor-pointer items-center gap-3 no-underline text-inherit"
@@ -3140,7 +3140,7 @@ export function Inbox() {
                   <button
                     type="button"
                     onClick={() => dismissAlert("alert:budget")}
-                    className="rounded-md p-1 text-muted-foreground opacity-0 transition-opacity hover:bg-accent hover:text-foreground group-hover/alert:opacity-100"
+                    className="rounded-md p-1 text-ink-3 opacity-0 transition-opacity hover:bg-bg-3 hover:text-ink group-hover/alert:opacity-100"
                     aria-label="Dismiss"
                   >
                     <X className="h-3.5 w-3.5" />

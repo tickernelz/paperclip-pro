@@ -181,7 +181,7 @@ describe("Sidebar", () => {
 
     const sidebar = container.querySelector("aside");
     expect(sidebar?.classList).not.toContain("border-r");
-    expect(sidebar?.classList).not.toContain("border-border");
+    expect(sidebar?.classList).not.toContain("border-line");
     expect(sidebar?.classList).toContain("primary-sidebar-surface");
 
     flushSync(() => {

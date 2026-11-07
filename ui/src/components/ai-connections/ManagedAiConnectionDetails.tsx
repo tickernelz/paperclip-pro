@@ -17,7 +17,7 @@ export function ManagedAiConnectionRow({
   const metadata = connection.config?.ai as AiConnectionMetadata | undefined;
   if (!metadata) return null;
   return (
-    <p className="text-xs text-muted-foreground">
+    <p className="text-xs text-ink-3">
       {metadata.routing ? metadata.routing.kind === "bedrock" ? `Bedrock · ${metadata.routing.region}` : metadata.routing.kind === "openrouter" ? "OpenRouter" : metadata.routing.baseUrl : aiMethodLabel(metadata.provider, metadata.method)} ·{" "}
       {connection.credentialPolicy === "per_user"
         ? "Personal"
@@ -71,13 +71,13 @@ export function ManagedAiConnectionDetails({
     stop.error;
   if (error)
     return (
-      <p role="alert" className="text-sm text-destructive">
+      <p role="alert" className="text-sm text-bad">
         {error.message}
       </p>
     );
   if (!account || !grant)
     return (
-      <p role="status" className="text-sm text-muted-foreground">
+      <p role="status" className="text-sm text-ink-3">
         {accounts.isPending || grants.isPending
           ? "Loading AI account…"
           : "This account is not available to you."}
@@ -85,7 +85,7 @@ export function ManagedAiConnectionDetails({
     );
   return (
     <div className="space-y-4">
-      {account.routing && <details className="rounded-lg border border-border p-4"><summary className="cursor-pointer text-sm font-medium">Provider settings</summary><dl className="mt-4 grid grid-cols-2 gap-3 text-sm"><dt className="text-muted-foreground">Destination</dt><dd className="break-all">{account.routing.baseUrl ?? (account.routing.kind === "bedrock" ? account.routing.region : "OpenRouter")}</dd><dt className="text-muted-foreground">API format</dt><dd>{account.routing.kind === "openrouter" ? "Selected by harness" : account.routing.protocol}</dd><dt className="text-muted-foreground">Authentication</dt><dd>{account.routing.auth}</dd><dt className="text-muted-foreground">Models</dt><dd>{account.routing.models.map(m => m.label ?? m.id).join(", ") || "Enter a model ID on the agent"}</dd></dl></details>}
+      {account.routing && <details className="rounded-lg border border-line p-4"><summary className="cursor-pointer text-sm font-medium">Provider settings</summary><dl className="mt-4 grid grid-cols-2 gap-3 text-sm"><dt className="text-ink-3">Destination</dt><dd className="break-all">{account.routing.baseUrl ?? (account.routing.kind === "bedrock" ? account.routing.region : "OpenRouter")}</dd><dt className="text-ink-3">API format</dt><dd>{account.routing.kind === "openrouter" ? "Selected by harness" : account.routing.protocol}</dd><dt className="text-ink-3">Authentication</dt><dd>{account.routing.auth}</dd><dt className="text-ink-3">Models</dt><dd>{account.routing.models.map(m => m.label ?? m.id).join(", ") || "Enter a model ID on the agent"}</dd></dl></details>}
       <AiConnectionAccountControls
         account={account}
         grant={grant}
@@ -108,7 +108,7 @@ export function ManagedAiConnectionDetails({
                   {run.agentName} · {run.status}
                 </span>
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   size="sm"
                   disabled={stop.isPending}
                   onClick={() => stop.mutate(run.id)}

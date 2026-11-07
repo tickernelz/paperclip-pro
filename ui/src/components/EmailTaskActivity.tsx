@@ -30,7 +30,7 @@ export function EmailTaskActivity({
   return (
     <div className="space-y-3">
       {thread.error && (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-sm text-bad">
           {thread.error.message}
         </p>
       )}
@@ -75,7 +75,7 @@ function EmailDelivery({
     onSuccess: onResolved,
   });
   return (
-    <div className="space-y-2 text-xs text-muted-foreground">
+    <div className="space-y-2 text-xs text-ink-3">
       {p.request && !p.providerMessageId && (
         <article
           aria-label="Email send intent"
@@ -83,7 +83,7 @@ function EmailDelivery({
         >
           <p className="font-semibold">{p.request.subject ?? "Email reply"}</p>
           {p.request.to && <p>To: {p.request.to.join(", ")}</p>}
-          <div className="whitespace-pre-wrap break-words text-sm text-foreground">
+          <div className="whitespace-pre-wrap break-words text-sm text-ink">
             {p.request.text}
           </div>
         </article>
@@ -111,7 +111,7 @@ function EmailDelivery({
             <div className="flex gap-2">
               <Button
                 size="sm"
-                variant="outline"
+                variant="secondary"
                 disabled={!messageId || resolve.isPending}
                 onClick={() => resolve.mutate("sent")}
               >
@@ -119,7 +119,7 @@ function EmailDelivery({
               </Button>
               <Button
                 size="sm"
-                variant="outline"
+                variant="secondary"
                 disabled={resolve.isPending}
                 onClick={() => resolve.mutate("failed")}
               >
@@ -127,7 +127,7 @@ function EmailDelivery({
               </Button>
             </div>
             {resolve.error && (
-              <p role="alert" className="text-destructive">
+              <p role="alert" className="text-bad">
                 {resolve.error.message}
               </p>
             )}

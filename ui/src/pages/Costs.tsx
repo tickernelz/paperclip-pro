@@ -72,8 +72,8 @@ function ProviderTabLabel({ provider, rows }: { provider: string; rows: CostByPr
   return (
     <span className="flex items-center gap-1.5">
       <span>{providerDisplayName(provider)}</span>
-      <span className="font-mono text-xs text-muted-foreground">{formatTokens(totalTokens)}</span>
-      <span className="text-xs text-muted-foreground">{formatCents(totalCost)}</span>
+      <span className="font-mono text-xs text-ink-3">{formatTokens(totalTokens)}</span>
+      <span className="text-xs text-ink-3">{formatCents(totalCost)}</span>
     </span>
   );
 }
@@ -84,8 +84,8 @@ function BillerTabLabel({ biller, rows }: { biller: string; rows: CostByBiller[]
   return (
     <span className="flex items-center gap-1.5">
       <span>{providerDisplayName(biller)}</span>
-      <span className="font-mono text-xs text-muted-foreground">{formatTokens(totalTokens)}</span>
-      <span className="text-xs text-muted-foreground">{formatCents(totalCost)}</span>
+      <span className="font-mono text-xs text-ink-3">{formatTokens(totalTokens)}</span>
+      <span className="text-xs text-ink-3">{formatCents(totalCost)}</span>
     </span>
   );
 }
@@ -105,12 +105,12 @@ function MetricTile({
     <Card className="block p-4">
       <div className="flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <div className="text-(length:--text-micro) uppercase tracking-(--tracking-eyebrow) text-muted-foreground">{label}</div>
+          <div className="text-(length:--text-micro) uppercase tracking-(--tracking-eyebrow) text-ink-3">{label}</div>
           <div className="mt-2 text-2xl font-semibold tabular-nums">{value}</div>
-          <div className="mt-1 text-xs leading-5 text-muted-foreground">{subtitle}</div>
+          <div className="mt-1 text-xs leading-5 text-ink-3">{subtitle}</div>
         </div>
-        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-border">
-          <Icon className="h-4 w-4 text-muted-foreground" />
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md border border-line">
+          <Icon className="h-4 w-4 text-ink-3" />
         </div>
       </div>
     </Card>
@@ -533,8 +533,8 @@ export function Costs({
             <span>All providers</span>
             {providerKeys.length > 0 ? (
               <>
-                <span className="font-mono text-xs text-muted-foreground">{formatTokens(allTokens)}</span>
-                <span className="text-xs text-muted-foreground">{formatCents(allCents)}</span>
+                <span className="font-mono text-xs text-ink-3">{formatTokens(allTokens)}</span>
+                <span className="text-xs text-ink-3">{formatCents(allCents)}</span>
               </>
             ) : null}
           </span>
@@ -565,8 +565,8 @@ export function Costs({
             <span>All billers</span>
             {billerKeys.length > 0 ? (
               <>
-                <span className="font-mono text-xs text-muted-foreground">{formatTokens(allTokens)}</span>
-                <span className="text-xs text-muted-foreground">{formatCents(allCents)}</span>
+                <span className="font-mono text-xs text-ink-3">{formatTokens(allTokens)}</span>
+                <span className="text-xs text-ink-3">{formatCents(allCents)}</span>
               </>
             ) : null}
           </span>
@@ -602,7 +602,7 @@ export function Costs({
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
               {embedded ? (
-                <h2 className="text-lg font-semibold text-foreground">Costs</h2>
+                <h2 className="text-lg font-semibold text-ink">Costs</h2>
               ) : (
                 <h1 className="text-3xl font-semibold tracking-tight">Costs</h1>
               )}
@@ -624,25 +624,25 @@ export function Costs({
           </div>
 
           {preset === "custom" ? (
-            <div className="flex flex-wrap items-center gap-2 border border-border p-3">
+            <div className="flex flex-wrap items-center gap-2 border border-line p-3">
               <input
                 type="date"
                 value={customFrom}
                 onChange={(event) => setCustomFrom(event.target.value)}
-                className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground"
+                className="h-9 rounded-md border border-line-strong bg-bg px-3 text-sm text-ink"
               />
-              <span className="text-sm text-muted-foreground">to</span>
+              <span className="text-sm text-ink-3">to</span>
               <input
                 type="date"
                 value={customTo}
                 onChange={(event) => setCustomTo(event.target.value)}
-                className="h-9 rounded-md border border-input bg-background px-3 text-sm text-foreground"
+                className="h-9 rounded-md border border-line-strong bg-bg px-3 text-sm text-ink"
               />
             </div>
           ) : null}
 
           {financeData?.summary.currencies?.some((row) => row.currency !== "USD") && (
-            <p role="status" className="text-sm text-muted-foreground">
+            <p role="status" className="text-sm text-ink-3">
               Finance headline totals are USD only. Other currencies are listed separately; no exchange-rate conversion is applied.
             </p>
           )}
@@ -691,16 +691,16 @@ export function Costs({
               icon={ArrowUpRight}
             />
           </div>
-          {subscriptions && Number(subscriptions.subscription.costCents) > 0 && <p className="text-sm text-muted-foreground">Subscription accounts also have {formatCents(Number(subscriptions.subscription.costCents))} in recorded usage charges for this period, separate from monthly fees.</p>}
-          {subscriptions && subscriptions.unknown.eventCount > 0 && <p className="text-sm text-muted-foreground">{formatTokens(subscriptions.unknown.inputTokens + subscriptions.unknown.cachedInputTokens + subscriptions.unknown.outputTokens)} tokens have other or unknown billing types{Number(subscriptions.unknown.costCents) > 0 ? `, with ${formatCents(Number(subscriptions.unknown.costCents))} in recorded charges` : ""}. They remain in the inference ledger.</p>}
-          {subscriptionError && subscriptions && <p role="status" className="text-sm text-muted-foreground">Showing the last loaded API and subscription usage. Updates will resume automatically.</p>}
-          {discoverSubscriptions.error && <div role="status" className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+          {subscriptions && Number(subscriptions.subscription.costCents) > 0 && <p className="text-sm text-ink-3">Subscription accounts also have {formatCents(Number(subscriptions.subscription.costCents))} in recorded usage charges for this period, separate from monthly fees.</p>}
+          {subscriptions && subscriptions.unknown.eventCount > 0 && <p className="text-sm text-ink-3">{formatTokens(subscriptions.unknown.inputTokens + subscriptions.unknown.cachedInputTokens + subscriptions.unknown.outputTokens)} tokens have other or unknown billing types{Number(subscriptions.unknown.costCents) > 0 ? `, with ${formatCents(Number(subscriptions.unknown.costCents))} in recorded charges` : ""}. They remain in the inference ledger.</p>}
+          {subscriptionError && subscriptions && <p role="status" className="text-sm text-ink-3">Showing the last loaded API and subscription usage. Updates will resume automatically.</p>}
+          {discoverSubscriptions.error && <div role="status" className="flex flex-wrap items-center gap-2 text-sm text-ink-3">
             <p>Connected accounts could not be checked. Existing subscription estimates are still shown.</p>
-            {subscriptions?.canRefresh && <Button variant="outline" size="sm" disabled={discoverSubscriptions.isPending}
+            {subscriptions?.canRefresh && <Button variant="secondary" size="sm" disabled={discoverSubscriptions.isPending}
               onClick={() => discoverSubscriptions.mutate(companyId)}>Retry account check</Button>}
           </div>}
           {spendData?.summary.pricingComplete === false && (
-            <div role="status" className="space-y-1 text-sm text-muted-foreground">
+            <div role="status" className="space-y-1 text-sm text-ink-3">
               {spendData.summary.unpricedEventCount > 0 && (
                 <p>
                   Costs are unavailable for {spendData.summary.unpricedEventCount} usage {spendData.summary.unpricedEventCount === 1 ? "entry" : "entries"} in this period. Totals include known costs only.
@@ -717,18 +717,18 @@ export function Costs({
       ) : null}
 
       {budgetError && !budgetData ? (
-        <p role="status" className="text-sm text-muted-foreground">
+        <p role="status" className="text-sm text-ink-3">
           Budget data could not be loaded. Please try again shortly.
         </p>
       ) : null}
       {((spendData && spendError) || (financeData && financeError) || (budgetData && budgetError) || providerError || billerError || weekError || weekBillerError || windowError) ? (
-        <p role="status" className="text-sm text-muted-foreground">
+        <p role="status" className="text-sm text-ink-3">
           Showing the last loaded data. Updates will resume automatically.
         </p>
       ) : null}
 
-      {!!spendData?.summary.estimatedEventCount && <p role="status" className="text-sm text-muted-foreground">Includes {spendData.summary.estimatedEventCount} estimated {spendData.summary.estimatedEventCount === 1 ? "charge" : "charges"}. Token estimates use published rates and recorded assumptions; provider bills may differ.</p>}
-      {incidentMutation.error && <p role="alert" className="text-sm text-destructive">Could not update the budget. Check any pending runs or unpriced usage shown on this page, then try again.</p>}
+      {!!spendData?.summary.estimatedEventCount && <p role="status" className="text-sm text-ink-3">Includes {spendData.summary.estimatedEventCount} estimated {spendData.summary.estimatedEventCount === 1 ? "charge" : "charges"}. Token estimates use published rates and recorded assumptions; provider bills may differ.</p>}
+      {incidentMutation.error && <p role="alert" className="text-sm text-bad">Could not update the budget. Check any pending runs or unpriced usage shown on this page, then try again.</p>}
       <Tabs value={mainTab} onValueChange={(value) => { setMainTab(value as typeof mainTab); setSearchParams(current => { const next = new URLSearchParams(current); next.set("tab", value); return next; }, { replace: true }); }}>
         {!lockTab ? (
           <div className="max-w-full overflow-x-auto pb-2">
@@ -744,15 +744,15 @@ export function Costs({
           </div>
         ) : null}
 
-        <TabsContent value="fast-responses" className="mt-4">{showCustomPrompt ? <p className="text-sm text-muted-foreground">Select a start and end date to load data.</p> : <FastResponseHistory companyId={companyId} from={from} to={to} />}</TabsContent>
-        <TabsContent value="decisions" className="mt-4">{showCustomPrompt ? <p className="text-sm text-muted-foreground">Select a start and end date to load data.</p> : <DecisionHistory companyId={companyId} from={from} to={to} />}</TabsContent>
+        <TabsContent value="fast-responses" className="mt-4">{showCustomPrompt ? <p className="text-sm text-ink-3">Select a start and end date to load data.</p> : <FastResponseHistory companyId={companyId} from={from} to={to} />}</TabsContent>
+        <TabsContent value="decisions" className="mt-4">{showCustomPrompt ? <p className="text-sm text-ink-3">Select a start and end date to load data.</p> : <DecisionHistory companyId={companyId} from={from} to={to} />}</TabsContent>
         <TabsContent value="overview" className="mt-4 space-y-4">
           {showCustomPrompt ? (
-            <p className="text-sm text-muted-foreground">Select a start and end date to load data.</p>
+            <p className="text-sm text-ink-3">Select a start and end date to load data.</p>
           ) : showOverviewLoading ? (
             <PageSkeleton variant="costs" />
           ) : overviewError ? (
-            <p className="text-sm text-destructive">Cost data could not be loaded. Please try again shortly.</p>
+            <p className="text-sm text-bad">Cost data could not be loaded. Please try again shortly.</p>
           ) : (
             <>
               <div className="grid gap-4 xl:grid-cols-(--gtc-32)">
@@ -763,14 +763,14 @@ export function Costs({
                     </CardHeader>
                     <CardContent className="space-y-2 px-5">
                       {(spendData?.byAgent.length ?? 0) === 0 ? (
-                        <p className="text-sm text-muted-foreground">No cost events yet.</p>
+                        <p className="text-sm text-ink-3">No cost events yet.</p>
                       ) : (
                         spendData?.byAgent.map((row) => {
                           const modelRows = agentModelRows.get(row.agentId) ?? [];
                           const isExpanded = expandedAgents.has(row.agentId);
                           const hasBreakdown = modelRows.length > 0;
                           return (
-                            <div key={row.agentId ?? "services"} role="group" aria-label={`${row.agentName ?? row.agentId ?? "Paperclip services"} costs`} className="border border-border px-4 py-3">
+                            <div key={row.agentId ?? "services"} role="group" aria-label={`${row.agentName ?? row.agentId ?? "Paperclip services"} costs`} className="border border-line px-4 py-3">
                               <div
                                 className={cn("flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between", hasBreakdown ? "cursor-pointer select-none" : "")}
                                 onClick={() => hasBreakdown && toggleAgent(row.agentId)}
@@ -778,8 +778,8 @@ export function Costs({
                                 <div className="flex min-w-0 items-center gap-2">
                                   {hasBreakdown ? (
                                     isExpanded
-                                      ? <ChevronDown className="h-3 w-3 shrink-0 text-muted-foreground" />
-                                      : <ChevronRight className="h-3 w-3 shrink-0 text-muted-foreground" />
+                                      ? <ChevronDown className="h-3 w-3 shrink-0 text-ink-3" />
+                                      : <ChevronRight className="h-3 w-3 shrink-0 text-ink-3" />
                                   ) : (
                                     <span className="h-3 w-3 shrink-0" />
                                   )}
@@ -788,11 +788,11 @@ export function Costs({
                                 </div>
                                 <div className="text-right text-sm tabular-nums">
                                   <CostAmount costCents={row.costCents} eventCount={row.eventCount} estimatedEventCount={row.estimatedEventCount} />
-                                  <div className="text-xs text-muted-foreground">
+                                  <div className="text-xs text-ink-3">
                                     in {formatTokens(row.inputTokens + row.cachedInputTokens)} ({formatTokens(row.cachedInputTokens)} cached) · out {formatTokens(row.outputTokens)}
                                   </div>
                                   {(row.apiRunCount > 0 || row.subscriptionRunCount > 0) ? (
-                                    <div className="text-xs text-muted-foreground">
+                                    <div className="text-xs text-ink-3">
                                       {"runs: "}
                                       {row.apiRunCount > 0 ? `${row.apiRunCount} api` : "0 api"}
                                       {" · "}
@@ -805,7 +805,7 @@ export function Costs({
                               </div>
 
                               {isExpanded && modelRows.length > 0 ? (
-                                <div className="mt-3 space-y-2 border-l border-border pl-4">
+                                <div className="mt-3 space-y-2 border-l border-line pl-4">
                                   {modelRows.map((modelRow) => {
                                     const sharePct = row.costCents > 0 ? Math.round((modelRow.costCents / row.costCents) * 100) : 0;
                                     return (
@@ -814,12 +814,12 @@ export function Costs({
                                         className="flex flex-col gap-2 text-xs sm:flex-row sm:items-start sm:justify-between sm:gap-3"
                                       >
                                         <div className="min-w-0">
-                                          <div className="truncate font-medium text-foreground">
+                                          <div className="truncate font-medium text-ink">
                                             {providerDisplayName(modelRow.provider)}
-                                            <span className="mx-1 text-border">/</span>
+                                            <span className="mx-1 text-line">/</span>
                                             <span className="font-mono">{modelRow.model}</span>
                                           </div>
-                                          <div className="truncate text-muted-foreground">
+                                          <div className="truncate text-ink-3">
                                             {providerDisplayName(modelRow.biller)} · {billingTypeDisplayName(modelRow.billingType)}
                                           </div>
                                         </div>
@@ -828,9 +828,9 @@ export function Costs({
                                             costCents={modelRow.costCents}
                                             eventCount={modelRow.eventCount}
                                             estimatedEventCount={modelRow.estimatedEventCount}
-                                            suffix={<span className="ml-1 font-normal text-muted-foreground">({sharePct}%)</span>}
+                                            suffix={<span className="ml-1 font-normal text-ink-3">({sharePct}%)</span>}
                                           />
-                                          <div className="text-muted-foreground">
+                                          <div className="text-ink-3">
                                             {formatTokens(modelRow.inputTokens + modelRow.cachedInputTokens + modelRow.outputTokens)} tok
                                           </div>
                                         </div>
@@ -846,7 +846,7 @@ export function Costs({
                     </CardContent>
                   </Card>
                   {userSpendError && (
-                    <p role="status" className="text-sm text-muted-foreground">
+                    <p role="status" className="text-sm text-ink-3">
                       {userSpendData ? "User costs could not be refreshed. Showing the last loaded data." : "User costs could not be loaded. Please try again shortly."}
                     </p>
                   )}
@@ -860,12 +860,12 @@ export function Costs({
                     </CardHeader>
                     <CardContent className="space-y-2 px-5">
                       {(spendData?.byProject.length ?? 0) === 0 ? (
-                        <p className="text-sm text-muted-foreground">No project-attributed run costs yet.</p>
+                        <p className="text-sm text-ink-3">No project-attributed run costs yet.</p>
                       ) : (
                         spendData?.byProject.map((row, index) => (
                           <div
                             key={row.projectId ?? `unattributed-${index}`}
-                            className="flex items-center justify-between gap-3 border border-border px-3 py-2 text-sm"
+                            className="flex items-center justify-between gap-3 border border-line px-3 py-2 text-sm"
                           >
                             <span className="truncate">{row.projectName ?? row.projectId ?? "Unattributed"}</span>
                             <CostAmount costCents={row.costCents} eventCount={row.eventCount} estimatedEventCount={row.estimatedEventCount} />
@@ -906,7 +906,7 @@ export function Costs({
                   eventCount={financeData.summary.eventCount}
                 />
               ) : (
-                <p role="status" className="text-sm text-muted-foreground">
+                <p role="status" className="text-sm text-ink-3">
                   {financeLoading ? "Loading financial events…" : "Financial events could not be loaded. Please try again shortly."}
                 </p>
               )}
@@ -915,12 +915,12 @@ export function Costs({
         </TabsContent>
 
         <TabsContent value="budgets" className="mt-4 space-y-4">
-          {policyMutation.error && <p role="alert" className="text-sm text-destructive">Could not update the budget policy. Review your settings and try again.</p>}
+          {policyMutation.error && <p role="alert" className="text-sm text-bad">Could not update the budget policy. Review your settings and try again.</p>}
           {budgetLoading ? (
             <PageSkeleton variant="costs" />
           ) : budgetError && !budgetData ? null : (
             <>
-              <Card className="border-border/70 bg-(image:--gradient-extract-2)">
+              <Card className="border-line/70 bg-(image:--gradient-extract-2)">
                 <CardHeader className="px-5 pt-5 pb-3">
                   <CardTitle className="text-base">Budget control plane</CardTitle>
                   <CardDescription>
@@ -959,7 +959,7 @@ export function Costs({
                 <div className="space-y-3">
                   <div>
                     <h2 className="text-lg font-semibold">Active incidents</h2>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-ink-3">
                       Resolve hard stops here by raising the budget or explicitly keeping the scope paused.
                     </p>
                   </div>
@@ -990,7 +990,7 @@ export function Costs({
                     <section key={scopeType} className="space-y-3">
                       <div>
                         <h2 className="text-lg font-semibold capitalize">{scopeType === "company" ? "organization" : scopeType} budgets</h2>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-ink-3">
                           {scopeType === "company"
                             ? "Organization-wide monthly policy."
                             : scopeType === "agent"
@@ -1017,7 +1017,7 @@ export function Costs({
 
                 {budgetPolicies.length === 0 ? (
                   <Card>
-                    <CardContent className="px-5 py-8 text-sm text-muted-foreground">
+                    <CardContent className="px-5 py-8 text-sm text-ink-3">
                       No budget policies yet. Set agent and project budgets from their detail pages, or use the existing organization monthly budget control.
                     </CardContent>
                   </Card>
@@ -1029,7 +1029,7 @@ export function Costs({
 
         <TabsContent value="providers" className="mt-4 space-y-4">
           {showCustomPrompt ? (
-            <p className="text-sm text-muted-foreground">Select a start and end date to load data.</p>
+            <p className="text-sm text-ink-3">Select a start and end date to load data.</p>
           ) : (
             <>
               <Tabs value={effectiveProvider} onValueChange={setActiveProvider}>
@@ -1037,7 +1037,7 @@ export function Costs({
 
                 <TabsContent value="all" className="mt-4">
                   {providers.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No cost events in this period.</p>
+                    <p className="text-sm text-ink-3">No cost events in this period.</p>
                   ) : (
                     <div className="grid gap-4 md:grid-cols-2">
                       {providers.map((provider) => (
@@ -1090,7 +1090,7 @@ export function Costs({
 
         <TabsContent value="billers" className="mt-4 space-y-4">
           {showCustomPrompt ? (
-            <p className="text-sm text-muted-foreground">Select a start and end date to load data.</p>
+            <p className="text-sm text-ink-3">Select a start and end date to load data.</p>
           ) : (
             <>
               <Tabs value={effectiveBiller} onValueChange={setActiveBiller}>
@@ -1098,7 +1098,7 @@ export function Costs({
 
                 <TabsContent value="all" className="mt-4">
                   {billers.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">No billable events in this period.</p>
+                    <p className="text-sm text-ink-3">No billable events in this period.</p>
                   ) : (
                     <div className="grid gap-4 md:grid-cols-2">
                       {billers.map((biller) => {
@@ -1144,14 +1144,14 @@ export function Costs({
         </TabsContent>
 
         <TabsContent value="finance" className="mt-4 space-y-4">
-          {financeData?.summary.providerReportedCentsExact !== undefined && <p className="text-sm text-muted-foreground">Provider API cost reports: {formatCents(financeData.summary.providerReportedCents ?? 0)}. Report totals overlap invoices and run estimates and are shown separately from recorded charges.</p>}
+          {financeData?.summary.providerReportedCentsExact !== undefined && <p className="text-sm text-ink-3">Provider API cost reports: {formatCents(financeData.summary.providerReportedCents ?? 0)}. Report totals overlap invoices and run estimates and are shown separately from recorded charges.</p>}
 
           {showCustomPrompt ? (
-            <p className="text-sm text-muted-foreground">Select a start and end date to load data.</p>
+            <p className="text-sm text-ink-3">Select a start and end date to load data.</p>
           ) : financeLoading ? (
             <PageSkeleton variant="costs" />
           ) : financeError && !financeData ? (
-            <p className="text-sm text-destructive">Financial events could not be loaded. Please try again shortly.</p>
+            <p className="text-sm text-bad">Financial events could not be loaded. Please try again shortly.</p>
           ) : (
             <>
               <FinanceSummaryCard
@@ -1171,7 +1171,7 @@ export function Costs({
                     </CardHeader>
                     <CardContent className="grid gap-4 px-5 pb-5 pt-2 md:grid-cols-2">
                       {(financeData?.byBiller.length ?? 0) === 0 ? (
-                        <p className="text-sm text-muted-foreground">No finance events yet.</p>
+                        <p className="text-sm text-ink-3">No finance events yet.</p>
                       ) : (
                         financeData?.byBiller.map((row) => <FinanceBillerCard key={`${row.biller}:${row.currency}`} row={row} />)
                       )}

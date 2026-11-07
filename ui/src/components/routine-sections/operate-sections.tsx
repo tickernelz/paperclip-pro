@@ -75,8 +75,8 @@ export function ActivitySection({ isLoading = false, error }: { isLoading?: bool
     return Array.from(byDay.entries());
   }, [events]);
 
-  if (isLoading) return <p className="text-sm text-muted-foreground">Loading activity…</p>;
-  if (error) return <p role="alert" className="text-sm text-destructive">{error.message}</p>;
+  if (isLoading) return <p className="text-sm text-ink-3">Loading activity…</p>;
+  if (error) return <p role="alert" className="text-sm text-bad">{error.message}</p>;
 
   if (events.length === 0) {
     return <EmptyState icon={ActivityIcon} message="No activity yet." />;
@@ -86,7 +86,7 @@ export function ActivitySection({ isLoading = false, error }: { isLoading?: bool
     <div className="space-y-4">
       {groups.map(([day, dayEvents]) => (
         <div key={day}>
-          <div className="sticky top-0 bg-background py-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          <div className="sticky top-0 bg-bg py-2 text-xs font-medium uppercase tracking-wide text-ink-3">
             {day}
           </div>
           <div>

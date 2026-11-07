@@ -209,27 +209,27 @@ function RunnerGoalWidgetBase({ control }: { control: RunnerGoalControl }) {
 
   return (
     <section
-      className="rounded-xl border border-border/80 bg-card/95 px-3 py-2 shadow-sm"
+      className="rounded-xl border border-line/80 bg-bg-2/95 px-3 py-2 shadow-sm"
       aria-label="Agent session goal"
       data-testid="runner-goal-widget"
     >
       <div className="flex items-start gap-2">
-        <Flag className="mt-0.5 h-4 w-4 shrink-0 text-primary" aria-hidden />
+        <Flag className="mt-0.5 h-4 w-4 shrink-0 text-accent" aria-hidden />
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-1.5">
             <span className="text-xs font-semibold">Session goal</span>
             {goal ? (
-              <span className="rounded-full bg-muted px-1.5 py-0.5 text-xs font-medium capitalize" role="status">
+              <span className="rounded-full bg-bg-3 px-1.5 py-0.5 text-xs font-medium capitalize" role="status">
                 {goal.status.replaceAll("_", " ")}
               </span>
             ) : null}
             {goal?.workingNow ? (
-              <span className="inline-flex items-center gap-1 text-xs text-primary" role="status">
-                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" /> Working now
+              <span className="inline-flex items-center gap-1 text-xs text-accent" role="status">
+                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent" /> Working now
               </span>
             ) : null}
             {pendingLabel ? (
-              <span className="inline-flex items-center gap-1 text-xs text-muted-foreground" role="status">
+              <span className="inline-flex items-center gap-1 text-xs text-ink-3" role="status">
                 <Loader2 className="h-3 w-3 animate-spin" aria-hidden /> {pendingLabel}
               </span>
             ) : null}
@@ -237,12 +237,12 @@ function RunnerGoalWidgetBase({ control }: { control: RunnerGoalControl }) {
           {goal ? (
             <p className={cn("mt-1 text-sm leading-snug", control.expanded ? "max-h-40 overflow-auto" : "line-clamp-2")}>{goal.objective}</p>
           ) : (
-            <p className="mt-1 text-xs text-muted-foreground">
+            <p className="mt-1 text-xs text-ink-3">
               {capability?.reason ?? "Type /goal followed by an objective to pursue work across turns."}
             </p>
           )}
           {goal ? (
-            <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
+            <div className="mt-1 flex flex-wrap gap-x-3 gap-y-1 text-xs text-ink-3">
               <span>{formatDuration(goal.elapsedSeconds)}</span>
               {capability?.usageReporting ? (
                 <span>
@@ -272,14 +272,14 @@ function RunnerGoalWidgetBase({ control }: { control: RunnerGoalControl }) {
             </Button>
           ) : null}
           {goal && can("clear") ? (
-            <Button size="icon" variant="ghost" className={cn("h-7 w-7", "text-muted-foreground hover:text-destructive")} onClick={() => void control.executeAction("clear").catch(() => {})} aria-label="Clear goal">
+            <Button size="icon" variant="ghost" className={cn("h-7 w-7", " ")} onClick={() => void control.executeAction("clear").catch(() => {})} aria-label="Clear goal">
               <Trash2 className="h-3.5 w-3.5" aria-hidden />
             </Button>
           ) : null}
         </div>
       </div>
       {mutationError ? (
-        <p className="mt-1 text-xs text-destructive" role="alert">{mutationError}</p>
+        <p className="mt-1 text-xs text-bad" role="alert">{mutationError}</p>
       ) : null}
       <Dialog open={Boolean(control.dialog)} onOpenChange={(open) => {
         if (!open && !control.saving) control.setDialog(null);
@@ -316,9 +316,9 @@ function RunnerGoalWidgetBase({ control }: { control: RunnerGoalControl }) {
                 }}
               />
             </label>
-            {mutationError ? <p className="text-sm text-destructive" role="alert">{mutationError}</p> : null}
+            {mutationError ? <p className="text-sm text-bad" role="alert">{mutationError}</p> : null}
             <DialogFooter>
-              <Button type="button" variant="outline" disabled={control.saving} onClick={() => control.setDialog(null)}>Cancel</Button>
+              <Button type="button" variant="secondary" disabled={control.saving} onClick={() => control.setDialog(null)}>Cancel</Button>
               <Button type="submit" disabled={!control.dialog?.objective.trim() || control.saving}>
                 {control.saving ? "Saving…" : control.dialog?.action === "replace" ? "Replace goal" : "Save goal"}
               </Button>

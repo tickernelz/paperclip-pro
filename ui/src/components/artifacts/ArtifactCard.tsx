@@ -16,7 +16,7 @@ interface ArtifactCardProps {
  */
 function PreviewFrame({ children, className }: { children: React.ReactNode; className?: string }) {
   return (
-    <div className={cn("relative aspect-video w-full overflow-hidden bg-accent/20", className)}>
+    <div className={cn("relative aspect-video w-full overflow-hidden bg-bg-3/20", className)}>
       {children}
     </div>
   );
@@ -25,7 +25,7 @@ function PreviewFrame({ children, className }: { children: React.ReactNode; clas
 function PlaceholderPreview({ label }: { label?: string }) {
   return (
     <PreviewFrame className="flex items-center justify-center">
-      <div className="flex flex-col items-center gap-1.5 text-muted-foreground/50">
+      <div className="flex flex-col items-center gap-1.5 text-ink-3/50">
         <Paperclip className="h-7 w-7" aria-hidden="true" />
         {label ? <span className="text-(length:--text-micro) font-medium uppercase tracking-wide">{label}</span> : null}
       </div>
@@ -140,13 +140,13 @@ function TextPreview({ artifact }: { artifact: PreviewArtifact }) {
     return <PlaceholderPreview label={artifact.source === "document" ? "Document" : "Text"} />;
   }
   return (
-    <PreviewFrame className="bg-card">
+    <PreviewFrame className="bg-bg-2">
       <div className="absolute inset-0 overflow-hidden p-3">
-        <p className="max-h-full overflow-hidden whitespace-pre-wrap break-words text-base leading-6 text-muted-foreground/75">
+        <p className="max-h-full overflow-hidden whitespace-pre-wrap break-words text-base leading-6 text-ink-3/75">
           {preview}
         </p>
       </div>
-      <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-card to-transparent" />
+      <div className="pointer-events-none absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-bg-2 to-transparent" />
     </PreviewFrame>
   );
 }
@@ -186,7 +186,7 @@ function SecondaryAction({
       title={title}
       aria-label={title}
       onClick={(event) => event.stopPropagation()}
-      className="flex h-7 w-7 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+      className="flex h-7 w-7 items-center justify-center rounded-md text-ink-3 transition-colors hover:bg-bg-3 hover:text-ink"
     >
       {children}
     </a>
@@ -201,14 +201,14 @@ export function ArtifactCard({ artifact }: ArtifactCardProps) {
       disableIssueQuicklook
       data-testid="artifact-card"
       data-media-kind={artifact.mediaKind}
-      className="group flex flex-col overflow-hidden rounded-lg border border-border bg-card cursor-pointer transition-colors hover:border-foreground/20 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="group flex flex-col overflow-hidden rounded-lg border border-line bg-bg-2 cursor-pointer transition-colors hover:border-ink/20 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
     >
       <ArtifactPreview artifact={artifact} />
 
       <div className="flex flex-1 flex-col gap-1 p-3">
         <div className="flex h-7 items-start justify-between gap-2">
           <h3
-            className="min-w-0 flex-1 truncate text-sm font-medium leading-7 text-foreground/85"
+            className="min-w-0 flex-1 truncate text-sm font-medium leading-7 text-ink/85"
             title={artifact.title}
           >
             {artifact.title}
@@ -234,11 +234,11 @@ export function ArtifactCard({ artifact }: ArtifactCardProps) {
           </div>
         </div>
 
-        <div className="mt-0.5 flex items-center gap-1.5 text-(length:--text-micro) text-muted-foreground/65">
+        <div className="mt-0.5 flex items-center gap-1.5 text-(length:--text-micro) text-ink-3/65">
           <span>Last edited {formatDate(artifact.updatedAt)}</span>
           {artifact.createdByAgent ? (
             <>
-              <span className="text-muted-foreground/50">·</span>
+              <span className="text-ink-3/50">·</span>
               <span className="truncate">{artifact.createdByAgent.name}</span>
             </>
           ) : null}

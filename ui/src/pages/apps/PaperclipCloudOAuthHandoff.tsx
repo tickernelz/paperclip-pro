@@ -23,20 +23,20 @@ export function ManagedOAuthHandoffState({
 }) {
   const failed = phase === "error";
   return (
-    <main className="flex min-h-screen items-center justify-center bg-background p-6">
+    <main className="flex min-h-screen items-center justify-center bg-bg p-6">
       <div className="flex max-w-lg items-start gap-3">
-        <span className="mt-1 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-border bg-background">
+        <span className="mt-1 inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-line bg-bg">
           {failed ? (
-            <Link2 className="h-5 w-5 text-destructive" />
+            <Link2 className="h-5 w-5 text-bad" />
           ) : (
-            <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+            <Loader2 className="h-5 w-5 animate-spin text-ink-3" />
           )}
         </span>
         <div className="min-w-0">
           <h1 className="text-xl font-bold tracking-tight">
             {failed ? "Sign-in couldn’t continue" : "Preparing secure sign-in"}
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-ink-3">
             {failed
               ? error ?? "Paperclip couldn’t prepare the provider sign-in. Try again."
               : phase === "reauthenticating"

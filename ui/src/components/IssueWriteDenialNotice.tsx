@@ -50,12 +50,12 @@ const TONE_CLASSES: Record<IssueWriteDenialTone, { surface: string; icon: string
   },
   // Rejected attribution: the write is fine, the claimed identity is not.
   // Neutral surface, but the action lines stay near-foreground — on a muted
-  // background `text-muted-foreground` drops below comfortable contrast.
+  // background `text-ink-3` drops below comfortable contrast.
   attribution: {
     surface:
-      "border-border bg-muted/60 text-foreground dark:border-border dark:bg-muted/30",
-    icon: "text-muted-foreground",
-    action: "text-foreground/80",
+      "border-line bg-bg-3/60 text-ink dark:border-line dark:bg-bg-3/30",
+    icon: "text-ink-3",
+    action: "text-ink/80",
   },
 };
 

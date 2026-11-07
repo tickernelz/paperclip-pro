@@ -94,7 +94,7 @@ export function TaskChatPlanPreviewCard({
     : `rev ${revision}`;
   const body = (
     <>
-      <div className="flex items-center gap-2 border-b border-border/70 px-3 py-2.5 text-sm text-muted-foreground">
+      <div className="flex items-center gap-2 border-b border-line/70 px-3 py-2.5 text-sm text-ink-3">
         <Lightbulb
           aria-hidden
           className={cn("h-4 w-4 shrink-0", live && "text-(--status-agent-running)")}
@@ -112,33 +112,33 @@ export function TaskChatPlanPreviewCard({
         {href ? (
           <Maximize2
             aria-hidden
-            className="ml-auto h-4 w-4 transition-transform group-hover:scale-105 group-hover:text-foreground"
+            className="ml-auto h-4 w-4 transition-transform group-hover:scale-105 group-hover:text-ink"
           />
         ) : null}
       </div>
       <div className="relative max-h-36 overflow-hidden px-4 py-3">
-        <h3 className="text-base font-semibold leading-6 text-foreground">{content.title}</h3>
+        <h3 className="text-base font-semibold leading-6 text-ink">{content.title}</h3>
         {content.preview.length > 0 ? (
-          <ul className="mt-2 space-y-1.5 text-sm leading-5 text-muted-foreground">
+          <ul className="mt-2 space-y-1.5 text-sm leading-5 text-ink-3">
             {content.preview.map((line, index) => (
               <li key={`${index}-${line}`} className="flex gap-2">
-                <span aria-hidden className="shrink-0 text-muted-foreground/60">•</span>
+                <span aria-hidden className="shrink-0 text-ink-3/60">•</span>
                 <span className="line-clamp-1">{line}</span>
               </li>
             ))}
           </ul>
         ) : (
-          <p className="mt-1 text-sm text-muted-foreground">
+          <p className="mt-1 text-sm text-ink-3">
             {live ? "Waiting for the first plan step…" : "Open the synchronized plan to review it."}
           </p>
         )}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-linear-to-b from-transparent to-card/95" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-linear-to-b from-transparent to-bg-2/95" />
       </div>
     </>
   );
   const sharedClassName = cn(
-    "group block w-full overflow-hidden rounded-md border border-border bg-muted/25 text-left",
-    href && "transition-colors hover:border-foreground/25 hover:bg-muted/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+    "group block w-full overflow-hidden rounded-md border border-line bg-bg-3/25 text-left",
+    href && "transition-colors hover:border-ink/25 hover:bg-bg-3/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus",
     className,
   );
 

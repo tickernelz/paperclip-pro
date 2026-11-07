@@ -241,13 +241,13 @@ export function LocalBrowserViewer({ sessionId, companyId, className }: LocalBro
   return (
     <div className={cn("flex w-full flex-col gap-3", className)}>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <span className="text-xs font-medium text-muted-foreground" data-testid="local-browser-status">
+        <span className="text-xs font-medium text-ink-3" data-testid="local-browser-status">
           {STATUS_LABEL[status]}
         </span>
         <Button
           type="button"
           size="sm"
-          variant={controlledByViewer ? "outline" : "default"}
+          variant={controlledByViewer ? "secondary" : "primary"}
           aria-pressed={controlledByViewer}
           onClick={() => setControlledByViewer(!controlledByViewer)}
         >
@@ -263,7 +263,7 @@ export function LocalBrowserViewer({ sessionId, companyId, className }: LocalBro
         tabIndex={0}
         data-testid="local-browser-surface"
         className={cn(
-          "relative w-full overflow-hidden rounded-md border bg-muted outline-none focus-visible:ring-2 focus-visible:ring-ring",
+          "relative w-full overflow-hidden rounded-md border bg-bg-3 outline-none focus-visible:ring-2 focus-visible:ring-focus",
           controlledByViewer ? "cursor-crosshair" : "cursor-default",
         )}
         style={{ aspectRatio: frame ? `${frame.width} / ${frame.height}` : "16 / 9" }}
@@ -286,15 +286,15 @@ export function LocalBrowserViewer({ sessionId, companyId, className }: LocalBro
           />
         ) : (
           <div className="flex size-full flex-col items-center justify-center gap-1 px-4 text-center">
-            <p className={cn("text-sm", placeholder.tone === "error" ? "text-destructive" : "text-muted-foreground")}>
+            <p className={cn("text-sm", placeholder.tone === "error" ? "text-bad" : "text-ink-3")}>
               {placeholder.text}
             </p>
           </div>
         )}
 
         {frame && !controlledByViewer ? (
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-background/90 px-3 py-2">
-            <p className="text-xs text-muted-foreground">
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-bg/90 px-3 py-2">
+            <p className="text-xs text-ink-3">
               The agent has control of this tab. Take over to use the mouse and keyboard.
             </p>
           </div>
@@ -304,13 +304,13 @@ export function LocalBrowserViewer({ sessionId, companyId, className }: LocalBro
       {frame && notice ? (
         <p
           role={notice.tone === "error" ? "alert" : "status"}
-          className={cn("text-xs", notice.tone === "error" ? "text-destructive" : "text-muted-foreground")}
+          className={cn("text-xs", notice.tone === "error" ? "text-bad" : "text-ink-3")}
         >
           {notice.text}
         </p>
       ) : null}
 
-      <p id={hintId} className="text-xs text-muted-foreground">
+      <p id={hintId} className="text-xs text-ink-3">
         Press Escape to release control back to the agent.
       </p>
     </div>

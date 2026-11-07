@@ -395,7 +395,7 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
           >
             <Button
               size="xs"
-              variant="outline"
+              variant="secondary"
               onClick={() => setConfigureState(builtInState)}
             >
               Set up
@@ -422,7 +422,7 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
         className={cn(
           "group py-3",
           agent.pausedAt && tab !== "paused" ? "opacity-50" : "",
-          resourceMembershipState(membershipsQuery.data, "agent", agent.id) === "left" ? "sm:text-foreground/55" : "",
+          resourceMembershipState(membershipsQuery.data, "agent", agent.id) === "left" ? "sm:text-ink/55" : "",
         )}
         leading={(
           <div className="flex items-center gap-2">
@@ -508,7 +508,7 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
           />
         </Tabs>
         <div className="flex items-center gap-2">
-          {!forceListView ? <div className="flex items-center overflow-hidden rounded-md border border-border" role="group" aria-label="Agent view">
+          {!forceListView ? <div className="flex items-center overflow-hidden rounded-md border border-line" role="group" aria-label="Agent view">
               <Button
                 type="button"
                 size="icon-sm"
@@ -525,7 +525,7 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
                 type="button"
                 size="icon-sm"
                 variant={effectiveView === "org" ? "secondary" : "ghost"}
-                className="rounded-none border-l border-border"
+                className="rounded-none border-l"
                 onClick={() => setView("org")}
                 title="Org chart view"
                 aria-label="Org chart view"
@@ -534,7 +534,7 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
                 <Network className="h-3.5 w-3.5" />
               </Button>
           </div> : null}
-          <Button size="sm" variant="outline" onClick={openNewAgent}>
+          <Button size="sm" variant="secondary" onClick={openNewAgent}>
             <Plus className="h-3.5 w-3.5 mr-1.5" />
             New Agent
           </Button>
@@ -543,7 +543,7 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
 
       {effectiveView === "list" && filtered.length > 0 && (
         <div
-          className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground"
+          className="flex flex-wrap items-center gap-2 text-xs text-ink-3"
           data-testid="agents-bulk-toolbar"
         >
           <label className="flex items-center gap-2">
@@ -571,7 +571,7 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
             <>
               <Button
                 size="xs"
-                variant="outline"
+                variant="secondary"
                 data-testid="agents-bulk-model"
                 onClick={() => setBulkConfigOpen(true)}
               >
@@ -579,7 +579,7 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
               </Button>
               <Button
                 size="xs"
-                variant="outline"
+                variant="secondary"
                 data-testid="agents-bulk-role"
                 onClick={() => setBulkRoleOpen(true)}
               >
@@ -593,10 +593,10 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
         </div>
       )}
       {effectiveView !== "list" && filtered.length > 0 && (
-        <p className="text-xs text-muted-foreground">{filtered.length} agent{filtered.length !== 1 ? "s" : ""}</p>
+        <p className="text-xs text-ink-3">{filtered.length} agent{filtered.length !== 1 ? "s" : ""}</p>
       )}
 
-      {error && <p className="text-sm text-destructive">{error.message}</p>}
+      {error && <p className="text-sm text-bad">{error.message}</p>}
 
       {agents && agents.length === 0 && (
         <EmptyState
@@ -616,7 +616,7 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
       )}
 
       {effectiveView === "list" && agents && agents.length > 0 && filtered.length === 0 && (
-        <p className="text-sm text-muted-foreground text-center py-8">
+        <p className="text-sm text-ink-3 text-center py-8">
           No agents match the selected status.
         </p>
       )}
@@ -627,13 +627,13 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
       )}
 
       {effectiveView === "org" && orgTree && orgTree.length > 0 && filteredOrg.length === 0 && (
-        <p className="text-sm text-muted-foreground text-center py-8">
+        <p className="text-sm text-ink-3 text-center py-8">
           No agents match the selected status.
         </p>
       )}
 
       {effectiveView === "org" && orgTree && orgTree.length === 0 && (
-        <p className="text-sm text-muted-foreground text-center py-8">
+        <p className="text-sm text-ink-3 text-center py-8">
           No organizational hierarchy defined.
         </p>
       )}
@@ -705,9 +705,9 @@ function OrgTreeNode({
       <Link
         to={agent ? agentUrl(agent) : `/agents/${node.id}`}
         className={cn(
-          "group flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-accent/50 transition-colors w-full text-left no-underline text-inherit",
+          "group flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-bg-3/50 transition-colors w-full text-left no-underline text-inherit",
           agent?.pausedAt && tab !== "paused" && "opacity-50",
-          membershipState === "left" && "sm:text-foreground/55",
+          membershipState === "left" && "sm:text-ink/55",
         )}
       >
         {hasInvalidOrgChain ? (
@@ -721,7 +721,7 @@ function OrgTreeNode({
               the name at narrow widths. */}
           <div className="min-w-(--sz-7rem) truncate">
             <span className="text-sm font-medium">{node.name}</span>
-            <span className="text-xs text-muted-foreground ml-2">
+            <span className="text-xs text-ink-3 ml-2">
               {roleLabels[node.role] ?? node.role}
               {agent?.title ? ` - ${agent.title}` : ""}
             </span>
@@ -736,7 +736,7 @@ function OrgTreeNode({
                     e.stopPropagation();
                   }}
                 >
-                  <Button size="xs" variant="outline" onClick={() => onConfigureBuiltIn(builtInState)}>
+                  <Button size="xs" variant="secondary" onClick={() => onConfigureBuiltIn(builtInState)}>
                     Set up
                   </Button>
                 </span>
@@ -784,7 +784,7 @@ function OrgTreeNode({
         </div>
       </Link>
       {node.reports && node.reports.length > 0 && (
-        <div className="border-l border-border ml-4">
+        <div className="border-l border-line ml-4">
           {node.reports.map((child) => (
             <OrgTreeNode
               key={child.id}
@@ -831,26 +831,26 @@ function AgentMetaColumns({
     <>
       {modelColumns ?? <div className="w-44 min-w-0 leading-tight">
         <div
-          className="truncate font-mono text-xs text-muted-foreground"
+          className="truncate font-mono text-xs text-ink-3"
           title={model ?? undefined}
         >
           {model ?? "—"}
         </div>
-        <div className="truncate font-mono text-(length:--text-micro) text-muted-foreground/70" title={adapterLabel}>
+        <div className="truncate font-mono text-(length:--text-micro) text-ink-3/70" title={adapterLabel}>
           {adapterLabel}
         </div>
       </div>}
       {showEnvironment && (
         <div className="w-44 min-w-0 leading-tight">
-          <div className="truncate text-xs text-muted-foreground" title={environment.title}>
+          <div className="truncate text-xs text-ink-3" title={environment.title}>
             {environment.label}
           </div>
-          <div className="truncate text-(length:--text-micro) text-muted-foreground/70">
+          <div className="truncate text-(length:--text-micro) text-ink-3/70">
             {environment.detail}
           </div>
         </div>
       )}
-      <span className="w-24 whitespace-nowrap text-right text-xs text-muted-foreground">
+      <span className="w-24 whitespace-nowrap text-right text-xs text-ink-3">
         {agent.lastHeartbeatAt ? relativeTime(agent.lastHeartbeatAt) : "—"}
       </span>
     </>
@@ -862,7 +862,7 @@ function AgentsTableHeader({ showEnvironment }: { showEnvironment: boolean }) {
     <EntityRow
       title="Agent"
       titleClassName="flex-none w-44"
-      className="hidden @5xl:flex py-1.5 text-xs font-medium text-muted-foreground"
+      className="hidden @5xl:flex py-1.5 text-xs font-medium text-ink-3"
       leading={(
         <div className="flex items-center gap-2" aria-hidden="true">
           <span className="block size-4" />

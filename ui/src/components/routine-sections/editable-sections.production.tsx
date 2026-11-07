@@ -154,7 +154,7 @@ export function OverviewSection({
     <div className="space-y-6">
       {/* Assignment row */}
       <div className="overflow-x-auto overscroll-x-contain">
-        <div className="inline-flex min-w-full flex-wrap items-center gap-2 text-sm text-muted-foreground sm:min-w-max sm:flex-nowrap">
+        <div className="inline-flex min-w-full flex-wrap items-center gap-2 text-sm text-ink-3 sm:min-w-max sm:flex-nowrap">
           <span>For</span>
           <InlineEntitySelector
             ref={assigneeSelectorRef}
@@ -179,14 +179,14 @@ export function OverviewSection({
               option ? (
                 currentAssignee ? (
                   <>
-                    <AgentAvatar agent={currentAssignee} size={16} className="h-3.5 w-3.5 shrink-0 text-muted-foreground"/>
+                    <AgentAvatar agent={currentAssignee} size={16} className="h-3.5 w-3.5 shrink-0 text-ink-3"/>
                     <span className="truncate">{option.label}</span>
                   </>
                 ) : (
                   <span className="truncate">{option.label}</span>
                 )
               ) : (
-                <span className="text-muted-foreground">Responsible</span>
+                <span className="text-ink-3">Responsible</span>
               )
             }
             renderOption={(option) => {
@@ -195,7 +195,7 @@ export function OverviewSection({
               return (
                 <>
                   {assignee ? (
-                    <AgentAvatar agent={assignee} size={16} className="h-3.5 w-3.5 shrink-0 text-muted-foreground"/>
+                    <AgentAvatar agent={assignee} size={16} className="h-3.5 w-3.5 shrink-0 text-ink-3"/>
                   ) : null}
                   <span className="truncate">{option.label}</span>
                 </>
@@ -224,7 +224,7 @@ export function OverviewSection({
                   <span className="truncate">{option.label}</span>
                 </>
               ) : (
-                <span className="text-muted-foreground">Project</span>
+                <span className="text-ink-3">Project</span>
               )
             }
             renderOption={(option) => {
@@ -351,30 +351,30 @@ export function OverviewSection({
 
       {/* Recent activity */}
       <div className="space-y-2">
-        <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+        <p className="text-xs font-medium uppercase tracking-wide text-ink-3">
           Recent activity
         </p>
         {recentActivity.length === 0 ? (
-          <p className="text-xs text-muted-foreground">No activity yet.</p>
+          <p className="text-xs text-ink-3">No activity yet.</p>
         ) : (
-          <div className="divide-y divide-border/60">
+          <div className="divide-y divide-line/60">
             {recentActivity.map((event) => (
               <div key={event.id} className="flex items-center gap-2 py-1.5 text-xs">
                 <Badge variant="outline" className="shrink-0 font-mono">
                   {event.action}
                 </Badge>
-                <span className="min-w-0 flex-1 truncate text-muted-foreground">
+                <span className="min-w-0 flex-1 truncate text-ink-3">
                   {event.details && Object.keys(event.details).length > 0
                     ? Object.keys(event.details).slice(0, 3).join(" · ")
                     : ""}
                 </span>
-                <span className="shrink-0 text-muted-foreground/60">{timeAgo(event.createdAt)}</span>
+                <span className="shrink-0 text-ink-3/60">{timeAgo(event.createdAt)}</span>
               </div>
             ))}
             <button
               type="button"
               onClick={() => navigateToSection("activity")}
-              className="flex items-center gap-1 pt-2 text-xs text-muted-foreground hover:text-foreground"
+              className="flex items-center gap-1 pt-2 text-xs text-ink-3 hover:text-ink"
             >
               View all activity <ArrowRight className="h-3 w-3" />
             </button>
@@ -402,15 +402,15 @@ function SummaryCard({
 }) {
   return (
     <button type="button" onClick={to} aria-label={ariaLabel} className="text-left">
-      <Card className="gap-2 p-4 transition-colors hover:border-border hover:bg-accent/30">
+      <Card className="gap-2 p-4 transition-colors hover:border-line hover:bg-bg-3/30">
         <CardContent className="space-y-1 p-0">
-          <div className="flex items-center gap-1.5 text-xs uppercase tracking-wide text-muted-foreground">
+          <div className="flex items-center gap-1.5 text-xs uppercase tracking-wide text-ink-3">
             <Icon className="h-3.5 w-3.5" />
             {label}
-            <ArrowRight className="ml-auto h-3.5 w-3.5 text-muted-foreground/60" />
+            <ArrowRight className="ml-auto h-3.5 w-3.5 text-ink-3/60" />
           </div>
           <p className="text-lg font-semibold">{value}</p>
-          <p className="text-xs text-muted-foreground">{hint}</p>
+          <p className="text-xs text-ink-3">{hint}</p>
         </CardContent>
       </Card>
     </button>
@@ -438,14 +438,14 @@ export function TriggersSection() {
     <div className="space-y-4">
       {/* Add-trigger drawer header (§3.2) */}
       <div className="flex items-center justify-between">
-        <p className="text-sm font-medium text-muted-foreground">
+        <p className="text-sm font-medium text-ink-3">
           {routine.triggers.length === 0
             ? "No triggers yet"
             : `${routine.triggers.length} trigger${routine.triggers.length === 1 ? "" : "s"}`}
         </p>
         <Button
           size="sm"
-          variant={addOpen ? "secondary" : "default"}
+          variant={addOpen ? "secondary" : "primary"}
           onClick={() => setAddOpen((open) => !open)}
           aria-expanded={addOpen}
         >
@@ -465,7 +465,7 @@ export function TriggersSection() {
 
       {/* Add trigger form — expand-on-click drawer */}
       {addOpen ? (
-      <div className="space-y-3 rounded-lg border border-border p-4">
+      <div className="space-y-3 rounded-lg border border-line p-4">
         <p className="text-sm font-medium">Add trigger</p>
         <div className="grid gap-3 md:grid-cols-2">
           <div className="space-y-1.5">
@@ -519,7 +519,7 @@ export function TriggersSection() {
                     ))}
                   </SelectContent>
                 </Select>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-ink-3">
                   {signingModeDescriptions[newTrigger.signingMode]}
                 </p>
               </div>
@@ -560,10 +560,10 @@ export function TriggersSection() {
       ) : null}
 
       {secretMessage ? (
-        <div className="space-y-3 rounded-lg border border-border bg-muted/20 p-4 text-sm">
+        <div className="space-y-3 rounded-lg border border-line bg-bg-3/20 p-4 text-sm">
           <div>
             <p className="font-medium">{secretMessage.title}</p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-ink-3">
               Save this now. Paperclip will not show the secret value again.
             </p>
           </div>
@@ -572,20 +572,20 @@ export function TriggersSection() {
               <div key={`${entry.webhookUrl}-${index}`} className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Input aria-label="New webhook URL" value={entry.webhookUrl} readOnly className="flex-1" />
-                  <Button variant="outline" size="sm" onClick={() => copySecretValue("Webhook URL", entry.webhookUrl)}>
+                  <Button variant="secondary" size="sm" onClick={() => copySecretValue("Webhook URL", entry.webhookUrl)}>
                     URL
                   </Button>
                 </div>
                 <div className="flex items-center gap-2">
                   <Input aria-label="New webhook secret" value={entry.webhookSecret} readOnly className="flex-1" />
-                  <Button variant="outline" size="sm" onClick={() => copySecretValue("Webhook secret", entry.webhookSecret)}>
+                  <Button variant="secondary" size="sm" onClick={() => copySecretValue("Webhook secret", entry.webhookSecret)}>
                     Secret
                   </Button>
                 </div>
               </div>
             ))}
           </div>
-          <Button variant="outline" size="sm" onClick={() => setSecretMessage(null)}>Done</Button>
+          <Button variant="secondary" size="sm" onClick={() => setSecretMessage(null)}>Done</Button>
         </div>
       ) : null}
 
@@ -621,8 +621,8 @@ export function VariablesSection() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3 rounded-md border border-border bg-muted/20 px-4 py-3 text-xs">
-        <span className="flex-1 text-muted-foreground">
+      <div className="flex items-center gap-3 rounded-md border border-line bg-bg-3/20 px-4 py-3 text-xs">
+        <span className="flex-1 text-ink-3">
           Variables are auto-detected from <code className="font-mono">{"{{placeholders}}"}</code> in
           the title &amp; instructions. The variable name is read-only — rename by editing the
           placeholder.
@@ -673,7 +673,7 @@ export function SecretsSection() {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-md border border-border bg-muted/20 px-4 py-3 text-xs text-muted-foreground">
+      <div className="rounded-md border border-line bg-bg-3/20 px-4 py-3 text-xs text-ink-3">
         Routine secrets apply to every task this routine creates. They override matching keys in
         project and agent env. <span className="font-mono">PAPERCLIP_*</span> names are reserved.
       </div>
@@ -704,7 +704,7 @@ export function DeliverySection() {
   return (
     <div className="space-y-6">
       <div className="space-y-3">
-        <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">
+        <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-ink-3">
           Concurrency
         </p>
         <RadioCardGroup
@@ -717,7 +717,7 @@ export function DeliverySection() {
         />
       </div>
       <div className="space-y-3">
-        <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">
+        <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-ink-3">
           Catch-up
         </p>
         <RadioCardGroup
@@ -730,7 +730,7 @@ export function DeliverySection() {
         />
       </div>
       <div className="space-y-3">
-        <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">
+        <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-ink-3">
           Advanced run policy
         </p>
         <RadioCardGroup
@@ -743,12 +743,12 @@ export function DeliverySection() {
           disabled={!hasScheduleTrigger}
         />
         {!hasScheduleTrigger ? (
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             Add a schedule trigger to gate runs on activity. Webhook, manual, and API fires always
             run.
           </p>
         ) : gateEnabled ? (
-          <div className="space-y-2 rounded-lg border border-border p-3">
+          <div className="space-y-2 rounded-lg border border-line p-3">
             <Label className="text-xs font-medium">Activity scope</Label>
             <RadioCardGroup
               ariaLabel="Activity gate scope"
@@ -772,7 +772,7 @@ export function DeliverySection() {
 const dispositionToneClass: Record<string, string> = {
   queued: "text-emerald-600 dark:text-emerald-400",
   coalesced: "text-amber-600 dark:text-amber-400",
-  skipped: "text-muted-foreground",
+  skipped: "text-ink-3",
 };
 
 /**
@@ -808,33 +808,33 @@ function NextFiresPreview({
 
   return (
     <div className="space-y-3">
-      <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-muted-foreground">
+      <p className="text-xs font-medium uppercase tracking-(--tracking-caps) text-ink-3">
         Next 5 fires
       </p>
       {preview ? (
         <>
-          <div className="space-y-1.5 rounded-lg border border-border p-3 font-mono text-xs">
+          <div className="space-y-1.5 rounded-lg border border-line p-3 font-mono text-xs">
             {preview.entries.map((entry, index) => (
               <div key={index} className="flex items-center gap-2">
-                <span className="text-muted-foreground/40">·</span>
+                <span className="text-ink-3/40">·</span>
                 <span className="tabular-nums">{formatFireTime(entry.at, preview.timeZone)}</span>
-                <ArrowRight className="h-3 w-3 shrink-0 text-muted-foreground/50" />
+                <ArrowRight className="h-3 w-3 shrink-0 text-ink-3/50" />
                 <span className={cn("font-medium", dispositionToneClass[entry.disposition])}>
                   {entry.label}
                 </span>
                 {entry.note ? (
-                  <span className="truncate text-muted-foreground/60">({entry.note})</span>
+                  <span className="truncate text-ink-3/60">({entry.note})</span>
                 ) : null}
               </div>
             ))}
           </div>
-          <p className="text-(length:--text-micro) text-muted-foreground/60">
+          <p className="text-(length:--text-micro) text-ink-3/60">
             Preview assumes the previous run is still in flight when the next fires. Times shown in{" "}
             {preview.timeZone}.
           </p>
         </>
       ) : (
-        <p className="rounded-lg border border-dashed border-border p-3 text-xs text-muted-foreground">
+        <p className="rounded-lg border border-dashed border-line p-3 text-xs text-ink-3">
           No enabled schedule trigger to preview. Add a schedule in Triggers to see how this policy
           treats upcoming fires.
         </p>

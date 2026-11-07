@@ -69,23 +69,23 @@ export function ActivityRow({ event, agentMap, userProfileMap, entityNameMap, en
             <p className="flex h-6 min-w-0 flex-1 items-center gap-1.5">
               <span className="max-w-1/2 shrink-0 truncate" title={`${actorName} ${verb}`}>
                 <span>{actorName}</span>{" "}
-                <span className="text-muted-foreground">{verb}</span>
+                <span className="text-ink-3">{verb}</span>
               </span>
               {event.entityType === "issue" ? (
                 <span className="min-w-0 flex-1 truncate" title={entityTitle}>{entityTitle}</span>
               ) : (
                 <span className="min-w-0 flex-1 truncate">
                   {name && <span className="font-medium">{name}</span>}
-                  {entityTitle && <span className="text-muted-foreground"> — {entityTitle}</span>}
+                  {entityTitle && <span className="text-ink-3"> — {entityTitle}</span>}
                 </span>
               )}
             </p>
-            <span className="ml-auto shrink-0 truncate text-right font-mono text-(length:--text-micro) text-muted-foreground @xl:w-(--dashboard-list-id-width)">
+            <span className="ml-auto shrink-0 truncate text-right font-mono text-(length:--text-micro) text-ink-3 @xl:w-(--dashboard-list-id-width)">
               {event.entityType === "issue" ? name : null}
             </span>
           </div>
           <div className="flex min-h-6 min-w-0 items-center @xl:contents">
-            <span className="ml-auto w-(--dashboard-list-time-width) shrink-0 whitespace-nowrap text-right text-xs text-muted-foreground">
+            <span className="ml-auto w-(--dashboard-list-time-width) shrink-0 whitespace-nowrap text-right text-xs text-ink-3">
               {timeAgo(event.createdAt)}
             </span>
           </div>
@@ -97,7 +97,7 @@ export function ActivityRow({ event, agentMap, userProfileMap, entityNameMap, en
 
   const classes = cn(
     "dashboard-list-row text-sm",
-    link && "cursor-pointer hover:bg-accent/50 transition-colors",
+    link && "cursor-pointer hover:bg-bg-3/50 transition-colors",
     className,
   );
 

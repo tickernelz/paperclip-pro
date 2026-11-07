@@ -6,8 +6,8 @@ describe("ProjectTile", () => {
   it("renders a neutral gray folder tile by default", () => {
     const markup = renderToStaticMarkup(<ProjectTile />);
     // Neutral tile uses the muted token, never an inline background color.
-    expect(markup).toContain("bg-muted");
-    expect(markup).toContain("text-muted-foreground");
+    expect(markup).toContain("bg-bg-3");
+    expect(markup).toContain("text-ink-3");
     expect(markup).not.toContain("background-color");
     // Folder icon is the default when no icon prop is supplied.
     expect(markup).toContain("lucide-folder");
@@ -29,13 +29,13 @@ describe("ProjectTile", () => {
     expect(markup).toContain("background-color:#22c55e");
     expect(markup).toContain("text-white");
     // Tinted tile drops the muted neutral background.
-    expect(markup).not.toContain("bg-muted");
+    expect(markup).not.toContain("bg-bg-3");
     expect(markup).toContain("lucide-folder");
   });
 
   it("treats null color as neutral (not tinted)", () => {
     const markup = renderToStaticMarkup(<ProjectTile color={null} />);
-    expect(markup).toContain("bg-muted");
+    expect(markup).toContain("bg-bg-3");
     expect(markup).not.toContain("background-color");
   });
 

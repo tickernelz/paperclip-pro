@@ -126,7 +126,7 @@ export function Stepper({
               // steps do not have. At 6px they carry the row on their own now
               // that no label sits under them.
               "size-1.5 shrink-0 rounded-full transition-colors",
-              segment <= step ? "bg-foreground" : "bg-border",
+              segment <= step ? "bg-ink" : "bg-line",
               jumpable ? "cursor-pointer" : "cursor-default",
             )}
           />

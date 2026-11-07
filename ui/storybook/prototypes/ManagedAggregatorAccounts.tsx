@@ -29,14 +29,14 @@ export function ManagedAggregatorAccounts() {
     await fetch("http://localhost:4310/fixture", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(upstream) });
   }
   return <QueryClientProvider client={client}><main className="mx-auto max-w-3xl space-y-6 p-4 sm:p-6">
-    <aside aria-label="Simulated upstream controls" className="flex flex-wrap items-center gap-2 rounded-lg border border-dashed border-border p-3">
-      <span className="text-xs text-muted-foreground">Simulated upstream</span>
-      <Button size="sm" variant="outline" onClick={() => change({ arcadeAccounts: ["Work", "Personal", "Added upstream"], failed: false, partial: false })}>Add Arcade account</Button>
-      <Button size="sm" variant="outline" onClick={() => change({ arcadeAccounts: ["Work"], failed: false, partial: false })}>Disconnect Arcade Personal</Button>
-      <Button size="sm" variant="outline" onClick={() => change({ failed: true })}>Expire authorization</Button>
-      <Button size="sm" variant="outline" onClick={() => change({ failed: false, partial: true })}>Fail a page</Button>
-      <Button size="sm" variant="outline" onClick={() => change({ unsupported: true })}>Disable Executor inventory</Button>
-      <Button size="sm" variant="outline" onClick={() => change({ arcadeAccounts: ["Work", "Personal"], failed: false, partial: false, unsupported: false })}>Restore upstream</Button>
+    <aside aria-label="Simulated upstream controls" className="flex flex-wrap items-center gap-2 rounded-lg border border-dashed border-line p-3">
+      <span className="text-xs text-ink-3">Simulated upstream</span>
+      <Button size="sm" variant="secondary" onClick={() => change({ arcadeAccounts: ["Work", "Personal", "Added upstream"], failed: false, partial: false })}>Add Arcade account</Button>
+      <Button size="sm" variant="secondary" onClick={() => change({ arcadeAccounts: ["Work"], failed: false, partial: false })}>Disconnect Arcade Personal</Button>
+      <Button size="sm" variant="secondary" onClick={() => change({ failed: true })}>Expire authorization</Button>
+      <Button size="sm" variant="secondary" onClick={() => change({ failed: false, partial: true })}>Fail a page</Button>
+      <Button size="sm" variant="secondary" onClick={() => change({ unsupported: true })}>Disable Executor inventory</Button>
+      <Button size="sm" variant="secondary" onClick={() => change({ arcadeAccounts: ["Work", "Personal"], failed: false, partial: false, unsupported: false })}>Restore upstream</Button>
     </aside>
     {error ? <p role="alert">{error}</p> : ready ? <Browse /> : <p role="status">Connecting to the fixture API…</p>}
   </main></QueryClientProvider>;

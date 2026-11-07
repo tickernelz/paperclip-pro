@@ -120,7 +120,7 @@ function FieldSection({
   return (
     <div
       className={cn(
-        "flex min-w-0 flex-col gap-1 border-b border-border/60 p-2 last:border-b-0",
+        "flex min-w-0 flex-col gap-1 border-b border-line/60 p-2 last:border-b-0",
         open ? "min-h-0 flex-1" : "shrink-0",
       )}
       data-testid={`task-model-override-section-${field.key}`}
@@ -140,12 +140,12 @@ function FieldSection({
               <ModelValueLabel
                 display={effective}
                 layout="inline"
-                className="justify-end text-xs text-muted-foreground"
+                className="justify-end text-xs text-ink-3"
                 testId={`task-model-override-effective-${field.key}`}
               />
             ) : (
               <span
-                className="min-w-0 truncate text-xs text-muted-foreground"
+                className="min-w-0 truncate text-xs text-ink-3"
                 data-testid={`task-model-override-effective-${field.key}`}
               >
                 {AGENT_DEFAULT_LABEL}
@@ -159,12 +159,12 @@ function FieldSection({
               <ModelValueLabel
                 display={effective}
                 layout="inline"
-                className="max-w-48 justify-end text-xs text-muted-foreground"
+                className="max-w-48 justify-end text-xs text-ink-3"
                 testId={`task-model-override-effective-${field.key}`}
               />
             ) : (
               <span
-                className="max-w-32 truncate text-xs text-muted-foreground"
+                className="max-w-32 truncate text-xs text-ink-3"
                 data-testid={`task-model-override-effective-${field.key}`}
               >
                 {AGENT_DEFAULT_LABEL}
@@ -185,7 +185,7 @@ function FieldSection({
           }}
           placeholder={field.freeText ? "Search or type a value…" : "Search…"}
           disabled={pending}
-          className="h-8 w-full shrink-0 rounded-md border border-input bg-transparent px-2 text-xs outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          className="h-8 w-full shrink-0 rounded-md border border-line-strong bg-transparent px-2 text-xs outline-none focus-visible:ring-1 focus-visible:ring-focus"
           data-testid={`task-model-override-search-${field.key}`}
         />
       ) : null}
@@ -198,14 +198,14 @@ function FieldSection({
           type="button"
           disabled={pending}
           onClick={() => onSelect(field.key, null)}
-          className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs hover:bg-accent disabled:opacity-50"
+          className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs hover:bg-bg-3 disabled:opacity-50"
           data-testid={`task-model-override-default-${field.key}`}
         >
           <span className="min-w-0 flex-1">
             <span className="block truncate">{AGENT_DEFAULT_LABEL}</span>
             {agentDefault ? (
               <span
-                className="block truncate text-muted-foreground"
+                className="block truncate text-ink-3"
                 title={agentDefault.id}
                 data-testid={`task-model-override-default-value-${field.key}`}
               >
@@ -222,7 +222,7 @@ function FieldSection({
             type="button"
             disabled={pending}
             onClick={() => onSelect(field.key, query)}
-            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs hover:bg-accent disabled:opacity-50"
+            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs hover:bg-bg-3 disabled:opacity-50"
             data-testid={`task-model-override-custom-${field.key}`}
           >
             <span className="min-w-0 flex-1 truncate">Use “{query}”</span>
@@ -242,7 +242,7 @@ function FieldSection({
                 type="button"
                 disabled={pending}
                 onClick={() => onSelect(field.key, option.value)}
-                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs hover:bg-accent disabled:opacity-50"
+                className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs hover:bg-bg-3 disabled:opacity-50"
                 data-testid={`task-model-override-option-${field.key}-${option.value}`}
               >
                 <ModelOptionText option={option} />
@@ -432,8 +432,8 @@ export function TaskModelOverrideControl({
             noAgent ? draft!.noAgentHint : "Model and thinking effort for this task"
           }
           className={cn(
-            "flex h-8 min-w-0 shrink items-center gap-1.5 rounded-md px-2.5 text-xs font-medium transition-colors hover:bg-accent disabled:opacity-50",
-            hasOverride ? "text-foreground" : "text-muted-foreground",
+            "flex h-8 min-w-0 shrink items-center gap-1.5 rounded-md px-2.5 text-xs font-medium transition-colors hover:bg-bg-3 disabled:opacity-50",
+            hasOverride ? "text-ink" : "text-ink-3",
           )}
           data-testid="task-chat-composer-model-override"
           data-slot="model-override-trigger"
@@ -490,7 +490,7 @@ export function TaskModelOverrideControl({
           ))}
           {fields.length === 0 ? (
             <p
-              className="px-3 py-2 text-xs text-muted-foreground"
+              className="px-3 py-2 text-xs text-ink-3"
               data-testid="task-model-override-empty"
             >
               {view?.unsupportedReason ?? "Loading model options…"}
@@ -501,7 +501,7 @@ export function TaskModelOverrideControl({
           <div
             data-mobile-sheet-controls=""
             data-testid="task-model-override-footer"
-            className="shrink-0 border-t border-border/60"
+            className="shrink-0 border-t border-line/60"
           >
             {footerSlot}
           </div>
@@ -509,7 +509,7 @@ export function TaskModelOverrideControl({
           <div
             data-mobile-sheet-controls=""
             data-testid="task-model-override-footer"
-            className="shrink-0 border-t border-border/60"
+            className="shrink-0 border-t border-line/60"
           >
             <ModelOverrideSubtaskRows
               inheritToSubtasks={view.inheritance.inheritToSubtasks}
@@ -534,7 +534,7 @@ export function TaskModelOverrideControl({
         ) : null}
         {error ? (
           <p
-            className="shrink-0 px-3 py-2 text-xs text-destructive"
+            className="shrink-0 px-3 py-2 text-xs text-bad"
             data-testid="task-model-override-error"
           >
             {error}

@@ -10,7 +10,7 @@ const noop = () => {};
 function DetailRow({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div className="flex flex-col gap-1.5 py-1.5 sm:flex-row sm:items-start sm:gap-3">
-      <div className="shrink-0 text-xs text-muted-foreground sm:w-32">{label}</div>
+      <div className="shrink-0 text-xs text-ink-3 sm:w-32">{label}</div>
       <div className="min-w-0 flex-1 text-sm">{children}</div>
     </div>
   );
@@ -83,8 +83,8 @@ export const AllStates: Story = {
           ["Failed", { kind: "failed", at: new Date("2026-08-01T18:24:00Z") }],
         ] as const
       ).map(([label, status]) => (
-        <div key={label} className="flex items-start justify-between gap-6 border-b border-border/60 pb-3">
-          <span className="text-sm font-medium text-muted-foreground">{label}</span>
+        <div key={label} className="flex items-start justify-between gap-6 border-b border-line/60 pb-3">
+          <span className="text-sm font-medium text-ink-3">{label}</span>
           <RuntimeProvisionStatusValue status={status} onViewLogs={noop} />
         </div>
       ))}

@@ -54,8 +54,8 @@ function durationLabel(event: ToolGatewayActivityEvent): string | null {
 function Fact({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
   return (
     <div className="flex gap-3 py-1">
-      <dt className="w-28 shrink-0 text-muted-foreground">{label}</dt>
-      <dd className={mono ? "min-w-0 break-all font-mono text-(length:--text-micro) text-foreground" : "min-w-0 text-foreground"}>
+      <dt className="w-28 shrink-0 text-ink-3">{label}</dt>
+      <dd className={mono ? "min-w-0 break-all font-mono text-(length:--text-micro) text-ink" : "min-w-0 text-ink"}>
         {value}
       </dd>
     </div>
@@ -83,29 +83,29 @@ function ActivityRow({ event }: { event: ToolGatewayActivityEvent }) {
       <button
         type="button"
         onClick={() => setOpen((current) => !current)}
-        className="flex w-full items-start gap-2.5 px-4 py-3 text-left hover:bg-accent/50"
+        className="flex w-full items-start gap-2.5 px-4 py-3 text-left hover:bg-bg-3/50"
         aria-expanded={open}
       >
         {open ? (
-          <ChevronDown className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+          <ChevronDown className="mt-0.5 h-4 w-4 shrink-0 text-ink-3" />
         ) : (
-          <ChevronRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+          <ChevronRight className="mt-0.5 h-4 w-4 shrink-0 text-ink-3" />
         )}
         <span className="min-w-0 flex-1">
-          <span className="block text-foreground">
+          <span className="block text-ink">
             <span className="font-medium">{actor}</span> used <span className="font-medium">{tool}</span> in {app}
           </span>
         </span>
         <span className="flex shrink-0 items-center gap-2 whitespace-nowrap">
           <StatusBadge status={outcome.status} label={outcome.label} />
-          <span className="text-xs text-muted-foreground">
+          <span className="text-xs text-ink-3">
             · <RelativeTime value={event.createdAt} />
           </span>
         </span>
       </button>
 
       {open ? (
-        <div className="border-t border-border bg-muted/30 px-4 py-3 pl-10 text-xs">
+        <div className="border-t border-line bg-bg-3/30 px-4 py-3 pl-10 text-xs">
           <dl>
             {rawTool ? <Fact label="Tool" value={rawTool} mono /> : null}
             {event.invocation?.status ? <Fact label="Call status" value={event.invocation.status} /> : null}
@@ -118,16 +118,16 @@ function ActivityRow({ event }: { event: ToolGatewayActivityEvent }) {
           </dl>
           {argumentsText ? (
             <div className="mt-2 space-y-1">
-              <div className="text-muted-foreground">Arguments (redacted)</div>
-              <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-md border border-border bg-background p-3 font-mono text-xs text-foreground">
+              <div className="text-ink-3">Arguments (redacted)</div>
+              <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-md border border-line bg-bg p-3 font-mono text-xs text-ink">
                 {argumentsText}
               </pre>
             </div>
           ) : null}
           {resultText ? (
             <div className="mt-3 space-y-1">
-              <div className="text-muted-foreground">Result (redacted)</div>
-              <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-md border border-border bg-background p-3 font-mono text-xs text-foreground">
+              <div className="text-ink-3">Result (redacted)</div>
+              <pre className="overflow-x-auto whitespace-pre-wrap break-words rounded-md border border-line bg-bg p-3 font-mono text-xs text-ink">
                 {resultText}
               </pre>
             </div>
@@ -178,22 +178,22 @@ export function GatewayActivityPanel({
 
   return (
     <div className="space-y-3">
-      <p className="text-sm text-muted-foreground">
+      <p className="text-sm text-ink-3">
         Calls through this gateway from the last 30 days. Open a row to inspect its tool, redacted arguments, result, and decision.
       </p>
       {events.length === 0 ? (
-        <div className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted-foreground">
+        <div className="rounded-md border border-dashed border-line p-6 text-center text-sm text-ink-3">
           No calls have gone through this gateway yet.
         </div>
       ) : (
-        <ul className="divide-y divide-border rounded-lg border border-border">
+        <ul className="divide-y divide-line rounded-lg border border-line">
           {events.map((event) => <ActivityRow key={event.id} event={event} />)}
         </ul>
       )}
       {activityQuery.hasNextPage ? (
         <div className="flex justify-center">
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             onClick={() => activityQuery.fetchNextPage()}
             disabled={activityQuery.isFetchingNextPage}

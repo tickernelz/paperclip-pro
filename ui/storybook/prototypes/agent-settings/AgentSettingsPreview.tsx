@@ -126,7 +126,7 @@ export function AgentSettingsPreview({
         element={
           <div className="p-8 space-y-4">
             <h2 className="text-xl font-semibold">Linked page</h2>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-ink-3">
               This preview focuses on agent configuration. The existing
               destination is unchanged.
             </p>
@@ -208,7 +208,7 @@ function SettingsPage({ runtimeContent }: { runtimeContent?: ReactNode }) {
   }, [view]);
   if (!agent)
     return (
-      <div className="p-8 text-sm text-muted-foreground">Loading agent…</div>
+      <div className="p-8 text-sm text-ink-3">Loading agent…</div>
     );
   const title =
     view === "secrets"
@@ -240,13 +240,13 @@ function SettingsPage({ runtimeContent }: { runtimeContent?: ReactNode }) {
     }
   }
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      <div className="flex items-center gap-2 border-b border-border px-6 py-3 text-xs text-muted-foreground">
+    <div className="min-h-screen bg-bg text-ink">
+      <div className="flex items-center gap-2 border-b border-line px-6 py-3 text-xs text-ink-3">
         <span>Agents</span>
         <ChevronRight className="size-3" />
         <span>{agent.name}</span>
         <ChevronRight className="size-3" />
-        <span className="text-foreground">{title}</span>
+        <span className="text-ink">{title}</span>
       </div>
       <div className="flex min-h-screen">
         <div
@@ -281,7 +281,7 @@ function SettingsPage({ runtimeContent }: { runtimeContent?: ReactNode }) {
                 agentName={agent.name}
               />
             </details>
-            <header className="flex flex-wrap items-center justify-between gap-5 border-b border-border pb-6">
+            <header className="flex flex-wrap items-center justify-between gap-5 border-b border-line pb-6">
               <div className="flex min-w-0 items-center gap-4">
                 <div
                   role="img"
@@ -294,7 +294,7 @@ function SettingsPage({ runtimeContent }: { runtimeContent?: ReactNode }) {
                   <h1 className="text-2xl font-semibold tracking-tight">
                     {agent.name}
                   </h1>
-                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-2 text-xs text-ink-3">
                     {agent.adapterType === "claude_local" ||
                     agent.adapterType === "codex_local" ? (
                       <img
@@ -332,7 +332,7 @@ function SettingsPage({ runtimeContent }: { runtimeContent?: ReactNode }) {
             </header>
             <div className="space-y-2">
               <h2 className="text-xl font-semibold">{title}</h2>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-ink-3">
                 {descriptions[view]}
               </p>
             </div>
@@ -453,7 +453,7 @@ function SettingsPage({ runtimeContent }: { runtimeContent?: ReactNode }) {
               )}
             </div>
             {(saveError || permissions.error) && (
-              <p role="alert" className="text-sm text-destructive">
+              <p role="alert" className="text-sm text-bad">
                 {saveError ?? String(permissions.error)}
               </p>
             )}
@@ -461,8 +461,8 @@ function SettingsPage({ runtimeContent }: { runtimeContent?: ReactNode }) {
               view,
             ) &&
               !(view === "runtime" && runtimeContent) && (
-                <footer className="sticky bottom-0 flex flex-wrap items-center justify-between gap-3 border-t border-border bg-background py-4">
-                  <p role="status" className="text-xs text-muted-foreground">
+                <footer className="sticky bottom-0 flex flex-wrap items-center justify-between gap-3 border-t border-line bg-bg py-4">
+                  <p role="status" className="text-xs text-ink-3">
                     {saving
                       ? "Saving changes…"
                       : dirty

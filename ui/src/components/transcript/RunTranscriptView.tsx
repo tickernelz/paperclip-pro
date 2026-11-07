@@ -437,7 +437,7 @@ function summarizeToolDecision(decision: ToolRunDecision | null): { label: strin
   }
   return {
     label: humanizeLabel(decision.invocation.status),
-    className: "text-foreground/70",
+    className: "text-ink/70",
     detail: decision.reasonCode ?? undefined,
   };
 }
@@ -867,20 +867,20 @@ function TranscriptProviderActivity({ block, density }: { block: Extract<Transcr
   const children = Array.isArray(block.payload.children) ? block.payload.children.map(asRecord).filter((value): value is Record<string, unknown> => value !== null) : [];
   const sources = Array.isArray(block.payload.sources) ? block.payload.sources.map(asRecord).filter((value): value is Record<string, unknown> => value !== null) : [];
   const output = typeof block.payload.output === "string" ? block.payload.output.slice(-(8 * 1024)) : "";
-  return <div className={cn("rounded-xl border p-2", block.status === "failed" ? "border-red-500/30 bg-red-500/[0.05]" : "border-border/70 bg-muted/20")} data-provider-family={block.family}>
+  return <div className={cn("rounded-xl border p-2", block.status === "failed" ? "border-red-500/30 bg-red-500/[0.05]" : "border-line/70 bg-bg-3/20")} data-provider-family={block.family}>
     <button type="button" className="flex min-h-8 w-full items-center gap-2 text-left" onClick={() => setOpen((value) => !value)} aria-expanded={open}>
       <span aria-hidden="true">{block.status === "running" ? "⏳" : block.status === "failed" ? "✕" : block.status === "interrupted" ? "■" : "✓"}</span>
       <strong className={cn("font-mono", density === "compact" ? "text-(length:--text-micro)" : "text-xs")}>{block.title}</strong>
-      <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">{block.summary}</span>
+      <span className="min-w-0 flex-1 truncate text-xs text-ink-3">{block.summary}</span>
       {open ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
     </button>
-    {open ? <div className="mt-2 space-y-2 border-l border-border pl-5 text-xs">
+    {open ? <div className="mt-2 space-y-2 border-l border-line pl-5 text-xs">
       {steps.length > 0 ? <ol className="space-y-1">{steps.map((step, index) => <li key={String(step.stepId ?? index)}><span className="mr-2" aria-hidden="true">{step.status === "completed" ? "✓" : step.status === "blocked" ? "!" : "○"}</span>{String(step.body ?? "")}</li>)}</ol> : null}
-      {children.length > 0 ? <ul className="space-y-1">{children.map((child, index) => <li key={String(child.childId ?? index)}><strong>{String(child.role ?? "Child agent")}</strong> · {String(child.status ?? "unknown")}<div className="text-muted-foreground">{String(child.summary ?? "")}</div></li>)}</ul> : null}
-      {sources.length > 0 ? <ul className="space-y-1">{sources.map((source, index) => { const url = typeof source.url === "string" && /^https?:\/\//.test(source.url) ? source.url : null; return <li key={String(source.sourceId ?? index)}>{url ? <a className="underline" href={url} target="_blank" rel="noreferrer">{String(source.title ?? url)}</a> : String(source.title ?? "Unavailable source")} <span className="text-muted-foreground">Provider-reported</span></li>; })}</ul> : null}
-      {output ? <pre className="max-h-64 overflow-auto whitespace-pre-wrap rounded bg-background p-2 font-mono">{output}</pre> : null}
-      {block.family === "provider_notice" && Array.isArray(block.payload.details) ? <dl className="space-y-1">{block.payload.details.slice(0, 64).map((value, index) => { const detail = asRecord(value); return detail && typeof detail.name === "string" && typeof detail.value === "string" ? <div key={index}><dt className="text-muted-foreground">{detail.name}</dt><dd className="whitespace-pre-wrap break-words">{detail.value}</dd></div> : null; })}</dl> : null}
-      {block.family === "model_identity" ? <div><span className="text-muted-foreground">Requested</span> {String(block.payload.requestedModel ?? "—")} · <span className="text-muted-foreground">Effective</span> {String(block.payload.effectiveModel ?? "—")}</div> : null}
+      {children.length > 0 ? <ul className="space-y-1">{children.map((child, index) => <li key={String(child.childId ?? index)}><strong>{String(child.role ?? "Child agent")}</strong> · {String(child.status ?? "unknown")}<div className="text-ink-3">{String(child.summary ?? "")}</div></li>)}</ul> : null}
+      {sources.length > 0 ? <ul className="space-y-1">{sources.map((source, index) => { const url = typeof source.url === "string" && /^https?:\/\//.test(source.url) ? source.url : null; return <li key={String(source.sourceId ?? index)}>{url ? <a className="underline" href={url} target="_blank" rel="noreferrer">{String(source.title ?? url)}</a> : String(source.title ?? "Unavailable source")} <span className="text-ink-3">Provider-reported</span></li>; })}</ul> : null}
+      {output ? <pre className="max-h-64 overflow-auto whitespace-pre-wrap rounded bg-bg p-2 font-mono">{output}</pre> : null}
+      {block.family === "provider_notice" && Array.isArray(block.payload.details) ? <dl className="space-y-1">{block.payload.details.slice(0, 64).map((value, index) => { const detail = asRecord(value); return detail && typeof detail.name === "string" && typeof detail.value === "string" ? <div key={index}><dt className="text-ink-3">{detail.name}</dt><dd className="whitespace-pre-wrap break-words">{detail.value}</dd></div> : null; })}</dl> : null}
+      {block.family === "model_identity" ? <div><span className="text-ink-3">Requested</span> {String(block.payload.requestedModel ?? "—")} · <span className="text-ink-3">Effective</span> {String(block.payload.effectiveModel ?? "—")}</div> : null}
     </div> : null}
   </div>;
 }
@@ -915,7 +915,7 @@ function TranscriptMessageBlock({
   return (
     <div>
       {!isAssistant && (
-        <div className="mb-1.5 flex items-center gap-2 text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">
+        <div className="mb-1.5 flex items-center gap-2 text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-caps) text-ink-3">
           <User className={compact ? "h-3.5 w-3.5" : "h-4 w-4"} />
           <span>User</span>
         </div>
@@ -925,14 +925,14 @@ function TranscriptMessageBlock({
           "[&>*:first-child]:mt-0 [&>*:last-child]:mb-0",
           // Match the default view's chat message body (IssueChatThread:
           // `text-sm leading-6`) so streamed text reads identically (PAP-461, A2).
-          compact ? "text-xs leading-5 text-foreground/85" : "text-sm leading-6",
+          compact ? "text-xs leading-5 text-ink/85" : "text-sm leading-6",
         )}
         externalReferences={externalReferences}
       >
         {block.text}
       </MarkdownBody>
       {block.streaming && (
-        <div className="mt-2 inline-flex items-center gap-1 text-(length:--text-nano) font-medium italic text-muted-foreground">
+        <div className="mt-2 inline-flex items-center gap-1 text-(length:--text-nano) font-medium italic text-ink-3">
           <span className="relative flex h-1.5 w-1.5">
             <span className="tc-live-ping absolute inline-flex h-full w-full rounded-full bg-current opacity-70" />
             <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-current" />
@@ -959,9 +959,9 @@ function TranscriptThinkingBlock({
     <MarkdownBody
       className={cn(
         // Match the default view's chain-of-thought text (IssueChatThread:
-        // `text-(length:--text-compact) italic leading-5 text-muted-foreground/70`)
+        // `text-(length:--text-compact) italic leading-5 text-ink-3/70`)
         // so streamed thinking reads identically across both views (PAP-461, A2).
-        "italic text-muted-foreground/70 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0",
+        "italic text-ink-3/70 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0",
         density === "compact" ? "text-(length:--text-micro) leading-5" : "text-(length:--text-compact) leading-5",
         className,
       )}
@@ -986,7 +986,7 @@ function ToolDecisionInlineDetail({ decision }: { decision: ToolRunDecision | nu
   const summary = summarizeToolDecision(decision);
   if (!summary?.detail) return null;
   return (
-    <div className="mt-1 break-words text-(length:--text-micro) text-muted-foreground">
+    <div className="mt-1 break-words text-(length:--text-micro) text-ink-3">
       {summary.detail}
     </div>
   );
@@ -997,27 +997,27 @@ function ToolDecisionDetails({ decision, compact }: { decision: ToolRunDecision 
   const actionRequest = decision.actionRequest;
   return (
     <div className={cn(
-      "rounded-lg border border-border/60 bg-background/60 p-2",
+      "rounded-lg border border-line/60 bg-bg/60 p-2",
       compact ? "text-(length:--text-micro)" : "text-xs",
     )}>
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-        <span className="font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground">Decision</span>
+        <span className="font-semibold uppercase tracking-(--tracking-eyebrow) text-ink-3">Decision</span>
         <ToolDecisionBadge decision={decision} />
-        {decision.reasonCode && <span className="font-mono text-muted-foreground">{decision.reasonCode}</span>}
+        {decision.reasonCode && <span className="font-mono text-ink-3">{decision.reasonCode}</span>}
       </div>
       {decision.denialReason && (
         <div className="mt-1 break-words text-red-700 dark:text-red-300">
           {decision.denialReason}
         </div>
       )}
-      <div className="mt-2 grid gap-1 font-mono text-muted-foreground sm:grid-cols-2">
+      <div className="mt-2 grid gap-1 font-mono text-ink-3 sm:grid-cols-2">
         <span>invocation {decision.invocation.id.slice(0, 8)}</span>
         <span>audit {decision.auditEvents.length}</span>
         {actionRequest && <span>action {actionRequest.status} {actionRequest.id.slice(0, 8)}</span>}
         {actionRequest?.interactionId && <span>card {actionRequest.interactionId.slice(0, 8)}</span>}
       </div>
       {decision.pendingAction?.previewMarkdown && (
-        <MarkdownBody className="mt-2 text-(length:--text-micro) leading-5 text-foreground/75 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
+        <MarkdownBody className="mt-2 text-(length:--text-micro) leading-5 text-ink/75 [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
           {decision.pendingAction.previewMarkdown}
         </MarkdownBody>
       )}
@@ -1079,7 +1079,7 @@ function TranscriptToolCard({
         )}
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <span className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">
+            <span className="text-(length:--text-micro) font-semibold uppercase tracking-(--tracking-caps) text-ink-3">
               {block.name}
             </span>
             <span className={cn("text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-eyebrow)", statusTone)}>
@@ -1087,14 +1087,14 @@ function TranscriptToolCard({
             </span>
             <ToolDecisionBadge decision={decision} />
           </div>
-          <div className={cn("mt-1 break-words text-foreground/80", compact ? "text-xs" : "text-sm")}>
+          <div className={cn("mt-1 break-words text-ink/80", compact ? "text-xs" : "text-sm")}>
             {summary}
           </div>
           <ToolDecisionInlineDetail decision={decision} />
         </div>
         <button
           type="button"
-          className="mt-0.5 inline-flex h-5 w-5 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
+          className="mt-0.5 inline-flex h-5 w-5 items-center justify-center text-ink-3 transition-colors hover:text-ink"
           onClick={() => setOpen((value) => !value)}
           aria-label={open ? "Collapse tool details" : "Expand tool details"}
         >
@@ -1106,20 +1106,20 @@ function TranscriptToolCard({
           <div className={detailsClass}>
             <div className={cn("grid gap-3", compact ? "grid-cols-1" : "lg:grid-cols-2")}>
               <div>
-                <div className="mb-1 text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">
+                <div className="mb-1 text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-caps) text-ink-3">
                   Input
                 </div>
-                <pre className="overflow-x-auto whitespace-pre-wrap break-words font-mono text-(length:--text-micro) text-foreground/80">
+                <pre className="overflow-x-auto whitespace-pre-wrap break-words font-mono text-(length:--text-micro) text-ink/80">
                   {formatToolPayload(block.input) || "<empty>"}
                 </pre>
               </div>
               <div>
-                <div className="mb-1 text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">
+                <div className="mb-1 text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-caps) text-ink-3">
                   Result
                 </div>
                 <pre className={cn(
                   "overflow-x-auto whitespace-pre-wrap break-words font-mono text-(length:--text-micro)",
-                  block.status === "error" ? "text-red-700 dark:text-red-300" : "text-foreground/80",
+                  block.status === "error" ? "text-red-700 dark:text-red-300" : "text-ink/80",
                 )}>
                   {block.result ? formatToolPayload(block.result) : "Waiting for result..."}
                 </pre>
@@ -1170,7 +1170,7 @@ function TranscriptCommandGroup({
     : null;
   const statusTone = isRunning
       ? "text-blue-700 dark:text-blue-300"
-      : "text-foreground/70";
+      : "text-ink/70";
 
   return (
     <div className={cn(showExpandedErrorState && "rounded-xl border border-red-500/20 bg-red-500/[0.04] p-3")}>
@@ -1198,7 +1198,7 @@ function TranscriptCommandGroup({
                 index > 0 && "-ml-1.5",
                 isRunning
                   ? "border-blue-500/25 bg-blue-500/[0.08] text-blue-600 dark:text-blue-300"
-                  : "border-border/70 bg-background text-foreground/55",
+                  : "border-line/70 bg-bg text-ink/55",
                 isRunning && "animate-pulse",
               )}
             >
@@ -1207,7 +1207,7 @@ function TranscriptCommandGroup({
           ))}
         </div>
         <div className="min-w-0 flex-1">
-          <div className="text-(length:--text-micro) font-semibold uppercase leading-none tracking-(--tracking-label) text-muted-foreground/70">
+          <div className="text-(length:--text-micro) font-semibold uppercase leading-none tracking-(--tracking-label) text-ink-3/70">
             {title}
           </div>
           {highlightedDecision && (
@@ -1217,7 +1217,7 @@ function TranscriptCommandGroup({
             </div>
           )}
           {subtitle && (
-            <div className={cn("mt-1 break-words font-mono text-foreground/85", compact ? "text-xs" : "text-sm")}>
+            <div className={cn("mt-1 break-words font-mono text-ink/85", compact ? "text-xs" : "text-sm")}>
               {subtitle}
             </div>
           )}
@@ -1230,7 +1230,7 @@ function TranscriptCommandGroup({
         <button
           type="button"
           className={cn(
-            "inline-flex h-5 w-5 items-center justify-center text-muted-foreground transition-colors hover:text-foreground",
+            "inline-flex h-5 w-5 items-center justify-center text-ink-3 transition-colors hover:text-ink",
             subtitle && "mt-0.5",
           )}
           onClick={(event) => {
@@ -1253,7 +1253,7 @@ function TranscriptCommandGroup({
                     ? "border-red-500/25 bg-red-500/[0.08] text-red-600 dark:text-red-300"
                     : item.status === "running"
                       ? "border-blue-500/25 bg-blue-500/[0.08] text-blue-600 dark:text-blue-300"
-                      : "border-border/70 bg-background text-foreground/55",
+                      : "border-line/70 bg-bg text-ink/55",
                 )}>
                   <TerminalSquare className="h-3 w-3" />
                 </span>
@@ -1264,7 +1264,7 @@ function TranscriptCommandGroup({
               {item.result && (
                 <pre className={cn(
                   "overflow-x-auto whitespace-pre-wrap break-words font-mono text-(length:--text-micro)",
-                  item.status === "error" ? "text-red-700 dark:text-red-300" : "text-foreground/80",
+                  item.status === "error" ? "text-red-700 dark:text-red-300" : "text-ink/80",
                 )}>
                   {formatToolPayload(item.result)}
                 </pre>
@@ -1313,10 +1313,10 @@ function TranscriptToolGroup({
     : null;
   const statusTone = isRunning
     ? "text-blue-700 dark:text-blue-300"
-    : "text-foreground/70";
+    : "text-ink/70";
 
   return (
-    <div className="rounded-xl border border-border/40 bg-muted/[0.25]">
+    <div className="rounded-xl border border-line/40 bg-bg-3/[0.25]">
       <div
         role="button"
         tabIndex={0}
@@ -1338,7 +1338,7 @@ function TranscriptToolGroup({
                     ? "border-blue-500/25 bg-blue-500/[0.08] text-blue-600 dark:text-blue-300"
                     : isItemError
                       ? "border-red-500/25 bg-red-500/[0.08] text-red-600 dark:text-red-300"
-                      : "border-border/70 bg-background text-foreground/55",
+                      : "border-line/70 bg-bg text-ink/55",
                   isItemRunning && "animate-pulse",
                 )}
               >
@@ -1348,7 +1348,7 @@ function TranscriptToolGroup({
           })}
         </div>
         <div className="min-w-0 flex-1">
-          <div className={cn("font-semibold uppercase leading-none tracking-(--tracking-label)", compact ? "text-(length:--text-nano)" : "text-(length:--text-micro)", "text-muted-foreground/70")}>
+          <div className={cn("font-semibold uppercase leading-none tracking-(--tracking-label)", compact ? "text-(length:--text-nano)" : "text-(length:--text-micro)", "text-ink-3/70")}>
             {title}
           </div>
           {highlightedDecision && (
@@ -1358,14 +1358,14 @@ function TranscriptToolGroup({
             </div>
           )}
           {subtitle && (
-            <div className={cn("mt-1 break-words font-mono text-foreground/85", compact ? "text-xs" : "text-sm")}>
+            <div className={cn("mt-1 break-words font-mono text-ink/85", compact ? "text-xs" : "text-sm")}>
               {subtitle}
             </div>
           )}
         </div>
         <button
           type="button"
-          className={cn("inline-flex h-5 w-5 items-center justify-center text-muted-foreground transition-colors hover:text-foreground", subtitle && "mt-0.5")}
+          className={cn("inline-flex h-5 w-5 items-center justify-center text-ink-3 transition-colors hover:text-ink", subtitle && "mt-0.5")}
           onClick={(e) => { e.stopPropagation(); setOpen((v) => !v); }}
           aria-label={open ? "Collapse tool details" : "Expand tool details"}
         >
@@ -1373,7 +1373,7 @@ function TranscriptToolGroup({
         </button>
       </div>
       {open && (
-        <div className={cn("space-y-2 border-t border-border/30 px-3 py-3", hasError && "rounded-b-xl")}>
+        <div className={cn("space-y-2 border-t border-line/30 px-3 py-3", hasError && "rounded-b-xl")}>
           {block.items.map((item, index) => (
             <div key={`${item.ts}-${index}`} className="space-y-1.5">
               <div className="flex items-center gap-2">
@@ -1383,11 +1383,11 @@ function TranscriptToolGroup({
                     ? "border-red-500/25 bg-red-500/[0.08] text-red-600 dark:text-red-300"
                     : item.status === "running"
                       ? "border-blue-500/25 bg-blue-500/[0.08] text-blue-600 dark:text-blue-300"
-                      : "border-border/70 bg-background text-foreground/55",
+                      : "border-line/70 bg-bg text-ink/55",
                 )}>
                   <ToolFamilyIcon name={item.name} className="h-3 w-3" />
                 </span>
-                <span className={cn("text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-eyebrow) text-muted-foreground")}>
+                <span className={cn("text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-eyebrow) text-ink-3")}>
                   {humanizeLabel(item.name)}
                 </span>
                 <span className={cn("text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-eyebrow)",
@@ -1402,17 +1402,17 @@ function TranscriptToolGroup({
               </div>
               <div className={cn("grid gap-2 pl-7", compact ? "grid-cols-1" : "lg:grid-cols-2")}>
                 <div>
-                  <div className="mb-0.5 text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">Input</div>
-                  <pre className="overflow-x-auto whitespace-pre-wrap break-words font-mono text-(length:--text-micro) text-foreground/80">
+                  <div className="mb-0.5 text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-caps) text-ink-3">Input</div>
+                  <pre className="overflow-x-auto whitespace-pre-wrap break-words font-mono text-(length:--text-micro) text-ink/80">
                     {formatToolPayload(item.input) || "<empty>"}
                   </pre>
                 </div>
                 {item.result && (
                   <div>
-                    <div className="mb-0.5 text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">Result</div>
+                    <div className="mb-0.5 text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-caps) text-ink-3">Result</div>
                     <pre className={cn(
                       "overflow-x-auto whitespace-pre-wrap break-words font-mono text-(length:--text-micro)",
-                      item.status === "error" ? "text-red-700 dark:text-red-300" : "text-foreground/80",
+                      item.status === "error" ? "text-red-700 dark:text-red-300" : "text-ink/80",
                     )}>
                       {formatToolPayload(item.result)}
                     </pre>
@@ -1448,7 +1448,7 @@ function TranscriptActivityRow({
         </span>
       )}
       <div className={cn(
-        "break-words text-foreground/80",
+        "break-words text-ink/80",
         density === "compact" ? "text-xs leading-5" : "text-sm leading-6",
       )}>
         {block.name}
@@ -1474,7 +1474,7 @@ function TranscriptEventRow({
         ? "text-amber-700 dark:text-amber-300"
         : block.tone === "info"
           ? "text-sky-700 dark:text-sky-300"
-          : "text-foreground/75";
+          : "text-ink/75";
 
   return (
     <div className={toneClasses}>
@@ -1499,14 +1499,14 @@ function TranscriptEventRow({
             </MarkdownBody>
           ) : (
             <div className={cn("whitespace-pre-wrap break-words", compact ? "text-(length:--text-micro)" : "text-xs")}>
-              <span className="text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-label) text-muted-foreground/70">
+              <span className="text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-label) text-ink-3/70">
                 {block.label}
               </span>
               {block.text ? <span className="ml-2">{block.text}</span> : null}
             </div>
           )}
           {block.detail && (
-            <pre className="mt-2 overflow-x-auto whitespace-pre-wrap break-words font-mono text-(length:--text-micro) text-foreground/75">
+            <pre className="mt-2 overflow-x-auto whitespace-pre-wrap break-words font-mono text-(length:--text-micro) text-ink/75">
               {block.detail}
             </pre>
           )}
@@ -1591,7 +1591,7 @@ function TranscriptDiffGroup({
                 );
               case "truncation":
                 return (
-                  <span key={key} className="block text-muted-foreground italic mt-1">
+                  <span key={key} className="block text-ink-3 italic mt-1">
                     {hunk.text}
                     {"\n"}
                   </span>
@@ -1599,7 +1599,7 @@ function TranscriptDiffGroup({
               case "context":
               default:
                 return (
-                  <span key={key} className="block text-muted-foreground/70">
+                  <span key={key} className="block text-ink-3/70">
                     {" "}
                     {hunk.text}
                     {"\n"}
@@ -1701,12 +1701,12 @@ function TranscriptStdoutRow({
   return (
     <div>
       <div className="flex items-center gap-2">
-        <span className="text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-caps) text-muted-foreground">
+        <span className="text-(length:--text-nano) font-semibold uppercase tracking-(--tracking-caps) text-ink-3">
           stdout
         </span>
         <button
           type="button"
-          className="inline-flex h-5 w-5 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
+          className="inline-flex h-5 w-5 items-center justify-center text-ink-3 transition-colors hover:text-ink"
           onClick={() => setOpen((value) => !value)}
           aria-label={open ? "Collapse stdout" : "Expand stdout"}
         >
@@ -1715,7 +1715,7 @@ function TranscriptStdoutRow({
       </div>
       {open && (
         <pre className={cn(
-          "mt-2 overflow-x-auto whitespace-pre-wrap break-words font-mono text-foreground/80",
+          "mt-2 overflow-x-auto whitespace-pre-wrap break-words font-mono text-ink/80",
           density === "compact" ? "text-(length:--text-micro)" : "text-xs",
         )}>
           {block.text}
@@ -1831,10 +1831,10 @@ function RawTranscriptView({
             "grid-cols-(--gtc-16)",
           )}
         >
-          <span className="text-(length:--text-nano) uppercase tracking-(--tracking-caps) text-muted-foreground">
+          <span className="text-(length:--text-nano) uppercase tracking-(--tracking-caps) text-ink-3">
             {entry.kind}
           </span>
-          <pre className="min-w-0 whitespace-pre-wrap break-words text-foreground/80">
+          <pre className="min-w-0 whitespace-pre-wrap break-words text-ink/80">
             {rawEntryContent(entry)}
           </pre>
         </div>
@@ -1868,7 +1868,7 @@ export function RunTranscriptView({
 
   if (entries.length === 0) {
     return (
-      <div className={cn("rounded-2xl border border-dashed border-border/70 bg-background/40 p-4 text-sm text-muted-foreground", className)}>
+      <div className={cn("rounded-2xl border border-dashed border-line/70 bg-bg/40 p-4 text-sm text-ink-3", className)}>
         {emptyMessage}
       </div>
     );

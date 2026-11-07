@@ -161,8 +161,8 @@ function TaskExecutionExample({
   }
   return (
     <div className={mobile ? "mx-auto max-w-sm" : "mx-auto max-w-3xl"}>
-      <div className="flex items-center justify-between gap-3 border-b border-border py-3">
-        <span className="font-mono text-xs text-muted-foreground">PAP-204</span>
+      <div className="flex items-center justify-between gap-3 border-b border-line py-3">
+        <span className="font-mono text-xs text-ink-3">PAP-204</span>
         <Popover open={menu} onOpenChange={setMenu}>
           <PopoverTrigger asChild>
             <Button
@@ -196,14 +196,14 @@ function TaskExecutionExample({
           <h1 className="text-xl font-semibold">
             Polish the task conversation
           </h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-ink-3">
             Make it easy to send a follow-up or pause work.
           </p>
         </div>
         <div className="flex items-center gap-2 text-sm">
           <Bot className="h-4 w-4" />
           <span className="font-medium">Alex</span>
-          <span role="status" className="text-muted-foreground">
+          <span role="status" className="text-ink-3">
             {cancelled
               ? "Cancelled"
               : state === "running"
@@ -220,7 +220,7 @@ function TaskExecutionExample({
           interaction on mobile.
         </p>
         {parent ? (
-          <div className="space-y-2 text-sm text-muted-foreground">
+          <div className="space-y-2 text-sm text-ink-3">
             <div>Review composer behavior</div>
             <div>Verify mobile layout</div>
           </div>
@@ -240,8 +240,8 @@ function TaskExecutionExample({
           />
         ) : null}
         {messages.map((message, index) => (
-          <div key={index} className="rounded-md bg-muted p-3 text-sm">
-            <span className="text-xs text-muted-foreground">
+          <div key={index} className="rounded-md bg-bg-3 p-3 text-sm">
+            <span className="text-xs text-ink-3">
               {state === "running" || state === "stopping" || state === "paused"
                 ? "Queued"
                 : "Sent"}
@@ -286,8 +286,8 @@ function TaskExecutionExample({
             role="alert"
             className={
               wakeFails
-                ? "text-sm text-muted-foreground"
-                : "text-sm text-destructive"
+                ? "text-sm text-ink-3"
+                : "text-sm text-bad"
             }
           >
             {error}
@@ -411,7 +411,7 @@ export const StopWithoutToasts: Story = {
     ).toBeVisible();
     await expect(
       canvas.getByRole("button", { name: "Run cancelled" }),
-    ).toHaveClass("text-muted-foreground");
+    ).toHaveClass("text-ink-3");
     await expect(
       canvas.queryByRole("button", { name: "Dismiss notification" }),
     ).toBeNull();

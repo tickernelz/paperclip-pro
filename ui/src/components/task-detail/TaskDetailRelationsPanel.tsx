@@ -29,7 +29,7 @@ export function RelationNavigationList({
   issueLinkState?: unknown;
 }) {
   if (items.length === 0) {
-    return <p className="py-6 text-center text-sm text-muted-foreground">{emptyMessage}</p>;
+    return <p className="py-6 text-center text-sm text-ink-3">{emptyMessage}</p>;
   }
 
   return (
@@ -45,7 +45,7 @@ export function RelationNavigationList({
               to={createIssueDetailPath(pathId)}
               state={issueLinkState}
               onClickCapture={() => rememberIssueDetailLocationState(pathId, issueLinkState)}
-              className="flex min-w-0 items-center gap-2 rounded-md px-2 py-2 text-sm transition-colors hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="flex min-w-0 items-center gap-2 rounded-md px-2 py-2 text-sm transition-colors hover:bg-bg-3/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
               title={`${item.identifier ? `${item.identifier} — ` : ""}${item.title}`}
             >
               {item.status ? (
@@ -53,7 +53,7 @@ export function RelationNavigationList({
               ) : null}
               <span className="min-w-0 flex-1 truncate">{item.title}</span>
               {item.identifier ? (
-                <span className="shrink-0 font-mono text-xs text-muted-foreground">
+                <span className="shrink-0 font-mono text-xs text-ink-3">
                   {item.identifier}
                 </span>
               ) : null}
@@ -132,12 +132,12 @@ export function TaskDetailSubtasksPanel({
   return (
     <section className="flex flex-col gap-4" aria-label="Subtasks">
       <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between gap-3 text-xs text-muted-foreground">
+        <div className="flex items-center justify-between gap-3 text-xs text-ink-3">
           <span>Progress</span>
           <span className="font-mono">{completed} of {items.length} complete</span>
         </div>
         <div
-          className="h-1.5 overflow-hidden rounded-full bg-muted"
+          className="h-1.5 overflow-hidden rounded-full bg-bg-3"
           role="progressbar"
           aria-label="Subtask completion"
           aria-valuemin={0}
@@ -153,7 +153,7 @@ export function TaskDetailSubtasksPanel({
 
       {rootBlocker ? (
         <section className="flex flex-col gap-1.5" aria-labelledby="task-root-blocker-heading">
-          <h3 id="task-root-blocker-heading" className="text-xs font-medium text-muted-foreground">
+          <h3 id="task-root-blocker-heading" className="text-xs font-medium text-ink-3">
             Root blocker
           </h3>
           <RelationNavigationList
@@ -167,7 +167,7 @@ export function TaskDetailSubtasksPanel({
 
       {nextAction ? (
         <section className="flex flex-col gap-1.5" aria-labelledby="task-next-action-heading">
-          <h3 id="task-next-action-heading" className="text-xs font-medium text-muted-foreground">
+          <h3 id="task-next-action-heading" className="text-xs font-medium text-ink-3">
             {nextAction.status === "blocked" ? "Blocked subtask" : "Next action"}
           </h3>
           <TaskDetailTaskList
@@ -177,16 +177,16 @@ export function TaskDetailSubtasksPanel({
           />
         </section>
       ) : items.length > 0 ? (
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-ink-3">
           {allCompleted ? "All subtasks are complete." : "No remaining subtask actions."}
         </p>
       ) : (
-        <p className="py-6 text-center text-sm text-muted-foreground">No subtasks yet.</p>
+        <p className="py-6 text-center text-sm text-ink-3">No subtasks yet.</p>
       )}
 
       {remainingItems.length > 0 ? (
         <section className="flex flex-col gap-1.5" aria-labelledby="task-other-subtasks-heading">
-          <h3 id="task-other-subtasks-heading" className="text-xs font-medium text-muted-foreground">
+          <h3 id="task-other-subtasks-heading" className="text-xs font-medium text-ink-3">
             {nextAction ? "Other subtasks" : "Subtasks"}
           </h3>
           <TaskDetailTaskList
@@ -198,7 +198,7 @@ export function TaskDetailSubtasksPanel({
       ) : null}
 
       {onAddSubtask ? (
-        <Button type="button" variant="outline" size="sm" className="self-start" onClick={onAddSubtask}>
+        <Button type="button" variant="secondary" size="sm" className="self-start" onClick={onAddSubtask}>
           <Plus className="h-3.5 w-3.5" />
           Add subtask
         </Button>
@@ -219,7 +219,7 @@ export function TaskDetailReferencesPanel({
   return (
     <div className="flex flex-col gap-6">
       <section className="flex flex-col gap-2" aria-labelledby="task-referenced-heading">
-        <h3 id="task-referenced-heading" className="text-xs font-medium text-muted-foreground">
+        <h3 id="task-referenced-heading" className="text-xs font-medium text-ink-3">
           Referenced
         </h3>
         <RelationNavigationList
@@ -230,7 +230,7 @@ export function TaskDetailReferencesPanel({
         />
       </section>
       <section className="flex flex-col gap-2" aria-labelledby="task-mentioned-in-heading">
-        <h3 id="task-mentioned-in-heading" className="text-xs font-medium text-muted-foreground">
+        <h3 id="task-mentioned-in-heading" className="text-xs font-medium text-ink-3">
           Mentioned in
         </h3>
         <RelationNavigationList

@@ -200,14 +200,14 @@ describe("ChatComposer", () => {
   });
 
   it('defaults to the opaque "card" surface', () => {
-    // PAP-131: surface is opt-in — existing adopters keep the bg-card box.
+    // PAP-131: surface is opt-in — existing adopters keep the bg-bg-2 box.
     const root = createRoot(container);
     act(() => {
       root.render(<Harness />);
     });
     const box = container.querySelector('[data-testid="chat-composer"]')!;
     expect(box.getAttribute("data-surface")).toBe("card");
-    expect(box.className).toContain("bg-card");
+    expect(box.className).toContain("bg-bg-2");
     expect(box.className).not.toContain("backdrop-blur");
     // Rounded corners are shared chrome on both surfaces.
     expect(box.className).toContain("rounded-xl");
@@ -222,15 +222,15 @@ describe("ChatComposer", () => {
     const box = container.querySelector('[data-testid="chat-composer"]')!;
     expect(box.getAttribute("data-surface")).toBe("translucent");
     // Glass recipe — mirrors the task-comments composer shell.
-    expect(box.className).toContain("bg-background/95");
-    expect(box.className).toContain("supports-[backdrop-filter]:bg-background/85");
+    expect(box.className).toContain("bg-bg/95");
+    expect(box.className).toContain("supports-[backdrop-filter]:bg-bg/85");
     expect(box.className).toContain("backdrop-blur");
     expect(box.className).toContain("shadow-(--shadow-extract-4)");
     expect(box.className).toContain("dark:shadow-(--shadow-extract-5)");
-    expect(box.className).not.toContain("bg-card");
+    expect(box.className).not.toContain("bg-bg-2");
     // Shared chrome survives: rounded-xl corners + neutral focus darkening.
     expect(box.className).toContain("rounded-xl");
-    expect(box.className).toContain("focus-within:border-muted-foreground/40");
+    expect(box.className).toContain("focus-within:border-ink-3/40");
     act(() => root.unmount());
   });
 

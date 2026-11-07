@@ -22,7 +22,7 @@ function TaskContextNotices() {
   });
   return (
     <QueryClientProvider client={client}>
-      <main className="min-h-screen bg-background p-6 text-foreground">
+      <main className="min-h-screen bg-bg p-6 text-ink">
         <div className="w-full space-y-3">
           <h1 className={`${shellSectionClass} text-xl font-semibold`}>Chat connection and recovery</h1>
           <ExternallyConnectedTaskBanner className={`${shellSectionClass} mt-3`} companyId="demo" issueId="context-notices" />

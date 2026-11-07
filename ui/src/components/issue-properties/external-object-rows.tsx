@@ -121,7 +121,7 @@ function ExternalObjectPropertyValue({ group }: { group: IssueExternalObjectGrou
   const className = cn(
     "inline-flex min-w-0 max-w-full items-center gap-1.5 text-sm no-underline",
     externalObjectPropertyTone(group),
-    pill.url ? "hover:underline focus-visible:outline-none focus-visible:ring-(length:--rad-3) focus-visible:ring-ring" : "",
+    pill.url ? "hover:underline focus-visible:outline-none focus-visible:ring-(length:--rad-3) focus-visible:ring-focus" : "",
   );
 
   if (pill.url) {
@@ -176,14 +176,14 @@ export function ExternalObjectRows({
   if (externalObjectsError) {
     return (
       <PropertyRow label="External objects">
-        <span className="text-xs text-muted-foreground">
+        <span className="text-xs text-ink-3">
           Couldn't load external objects.
           {onRetryExternalObjects ? (
             <>
               {" "}
               <button
                 type="button"
-                className="text-primary underline-offset-2 hover:underline"
+                className="text-accent underline-offset-2 hover:underline"
                 onClick={onRetryExternalObjects}
               >
                 Retry
@@ -198,7 +198,7 @@ export function ExternalObjectRows({
   if (externalObjectsLoading) {
     return (
       <PropertyRow label="External objects">
-        <span className="h-4 w-24 animate-pulse rounded bg-muted/40" />
+        <span className="h-4 w-24 animate-pulse rounded bg-bg-3/40" />
       </PropertyRow>
     );
   }

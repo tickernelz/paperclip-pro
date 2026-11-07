@@ -21,7 +21,7 @@ type GlobalToolbarContext = { companyId: string | null; companyPrefix: string | 
 /** Task identifier rendered in gray monospace between the glyph and the title. */
 function CrumbIdentifier({ identifier }: { identifier?: string }) {
   if (!identifier) return null;
-  return <span className="shrink-0 font-mono text-muted-foreground">{identifier}</span>;
+  return <span className="shrink-0 font-mono text-ink-3">{identifier}</span>;
 }
 
 function GlobalToolbar({ context }: { context: GlobalToolbarContext }) {
@@ -56,7 +56,7 @@ export function BreadcrumbBar() {
 
   if (isMobile && mobileToolbar) {
     return (
-      <div className="border-b border-border px-2 h-12 shrink-0 flex items-center">
+      <div className="border-b border-line px-2 h-12 shrink-0 flex items-center">
         {mobileToolbar}
       </div>
     );
@@ -64,7 +64,7 @@ export function BreadcrumbBar() {
 
   if (breadcrumbs.length === 0) {
     return (
-      <div className="border-b border-border px-4 md:px-6 h-12 shrink-0 flex items-center justify-end">
+      <div className="border-b border-line px-4 md:px-6 h-12 shrink-0 flex items-center justify-end">
         {globalToolbarSlots}
       </div>
     );
@@ -85,7 +85,7 @@ export function BreadcrumbBar() {
   // Single breadcrumb = page title (uppercase)
   if (breadcrumbs.length === 1) {
     return (
-      <div className="border-b border-border px-4 md:px-6 h-12 shrink-0 flex items-center">
+      <div className="border-b border-line px-4 md:px-6 h-12 shrink-0 flex items-center">
         {menuButton}
         <div className="min-w-0 overflow-hidden flex-1">
           {breadcrumbs[0].leading || breadcrumbs[0].identifier ? (
@@ -109,7 +109,7 @@ export function BreadcrumbBar() {
 
   // Multiple breadcrumbs = breadcrumb trail
   return (
-    <div className="border-b border-border px-4 md:px-6 h-12 shrink-0 flex items-center">
+    <div className="border-b border-line px-4 md:px-6 h-12 shrink-0 flex items-center">
       {menuButton}
       <div className="min-w-0 overflow-hidden flex-1">
         <Breadcrumb className="min-w-0 overflow-hidden">

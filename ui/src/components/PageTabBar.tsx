@@ -24,7 +24,7 @@ export function PageTabBar({ items, value, onValueChange, align = "center" }: Pa
         <select
           value={value}
           onChange={(e) => onValueChange(e.target.value)}
-          className="h-9 appearance-none rounded-md border border-border bg-background pl-3 pr-9 py-1 text-base focus:outline-none focus:ring-1 focus:ring-ring"
+          className="h-9 appearance-none rounded-md border border-line bg-bg pl-3 pr-9 py-1 text-base focus:outline-none focus:ring-1 focus:ring-focus"
           aria-label="Page section"
         >
           {items.map((item) => (
@@ -33,7 +33,7 @@ export function PageTabBar({ items, value, onValueChange, align = "center" }: Pa
             </option>
           ))}
         </select>
-        <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+        <ChevronDown aria-hidden="true" className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-ink-3" />
       </div>
     );
   }

@@ -89,7 +89,7 @@ export function TaskChatTurn({
         data-settled={item.settled ? "true" : "false"}
       >
         {item.agentName || !item.historical ? <div
-          className="flex min-h-8 w-full min-w-0 items-center gap-2 pb-1 pt-1.5 text-sm text-muted-foreground"
+          className="flex min-h-8 w-full min-w-0 items-center gap-2 pb-1 pt-1.5 text-sm text-ink-3"
           data-testid="task-chat-turn-summary"
           data-turn-position="identity"
         >
@@ -129,7 +129,7 @@ export function TaskChatTurn({
         {item.finalResponse ? (
           <div className="w-full" data-testid="task-chat-final-response">
             <div
-              className="break-words px-1 py-2 text-sm text-foreground"
+              className="break-words px-1 py-2 text-sm text-ink"
               data-testid="task-chat-agent-bubble"
             >
               <MarkdownBody softBreaks linkIssueReferences>
@@ -186,9 +186,9 @@ export function TaskChatTurn({
       onClick={() => setOpen((o) => !o)}
       aria-expanded={open}
       className={cn(
-        "group flex w-full items-center gap-2 px-1 text-muted-foreground transition-colors hover:text-foreground",
+        "group flex w-full items-center gap-2 px-1 text-ink-3 transition-colors hover:text-ink",
         item.standaloneHeader
-          ? "border-b border-border/70 py-2 text-sm"
+          ? "border-b border-line/70 py-2 text-sm"
           : "py-0.5 text-xs",
         streamlined && "min-w-0",
       )}

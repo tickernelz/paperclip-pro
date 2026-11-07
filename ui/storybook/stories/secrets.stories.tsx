@@ -133,10 +133,10 @@ type Story = StoryObj;
 
 function Section({ eyebrow, title, children }: { eyebrow: string; title: string; children: ReactNode }) {
   return (
-    <section className="border-b border-border pb-8 last:border-b-0">
+    <section className="border-b border-line pb-8 last:border-b-0">
       <header className="mb-3 px-6 pt-6">
-        <p className="text-[11px] uppercase tracking-wide text-muted-foreground">{eyebrow}</p>
-        <h2 className="text-lg font-semibold text-foreground">{title}</h2>
+        <p className="text-[11px] uppercase tracking-wide text-ink-3">{eyebrow}</p>
+        <h2 className="text-lg font-semibold text-ink">{title}</h2>
       </header>
       <div className="px-6">{children}</div>
     </section>
@@ -146,7 +146,7 @@ function Section({ eyebrow, title, children }: { eyebrow: string; title: string;
 export const SecretsInventory: Story = {
   render: () => (
     <StorybookSecretsFixtures>
-      <div className="h-screen w-full bg-background">
+      <div className="h-screen w-full bg-bg">
         <Secrets />
       </div>
     </StorybookSecretsFixtures>
@@ -171,7 +171,7 @@ function BindingPickerSurface({
       </CardHeader>
       <CardContent className="space-y-3">
         <SecretBindingPicker value={value} onChange={setValue} />
-        <pre className="rounded bg-muted/40 p-2 text-[11px] font-mono">
+        <pre className="rounded bg-bg-3/40 p-2 text-[11px] font-mono">
           {JSON.stringify(value, null, 2)}
         </pre>
       </CardContent>
@@ -258,18 +258,18 @@ export const RunFailureCopy: Story = {
   render: () => (
     <div className="space-y-4 p-6">
       <Section eyebrow="Run failure" title="Missing or disabled secret blocks the run">
-        <Card className="border-destructive/40 bg-destructive/5">
+        <Card className="border-bad/40 bg-bad/5">
           <CardHeader className="space-y-1">
             <div className="flex items-center gap-2">
-              <AlertCircle className="h-4 w-4 text-destructive" />
-              <Badge variant="outline" className="border-destructive/40 text-destructive">
+              <AlertCircle className="h-4 w-4 text-bad" />
+              <Badge variant="outline" className="border-bad/40 text-bad">
                 Run failed
               </Badge>
-              <span className="text-xs font-mono text-muted-foreground">PAP-2350 · run-storybook</span>
+              <span className="text-xs font-mono text-ink-3">PAP-2350 · run-storybook</span>
             </div>
             <CardTitle className="text-sm">
               Secret <span className="font-mono">OPENAI_API_KEY</span> is{" "}
-              <span className="font-medium text-destructive">disabled</span>
+              <span className="font-medium text-bad">disabled</span>
             </CardTitle>
             <CardDescription className="text-xs">
               The agent tried to resolve <span className="font-mono">env.OPENAI_API_KEY</span> for{" "}
@@ -279,11 +279,11 @@ export const RunFailureCopy: Story = {
           </CardHeader>
           <CardContent className="space-y-2 text-xs">
             <div>
-              <p className="text-muted-foreground">Next action</p>
+              <p className="text-ink-3">Next action</p>
               <ul className="list-disc pl-4 space-y-0.5">
                 <li>
                   Re-enable the secret on{" "}
-                  <a className="text-primary underline" href="/PAP/company/settings/secrets">
+                  <a className="text-accent underline" href="/PAP/company/settings/secrets">
                     Company settings &gt; Secrets
                   </a>
                 </li>
@@ -292,7 +292,7 @@ export const RunFailureCopy: Story = {
               </ul>
             </div>
             <div>
-              <p className="text-muted-foreground">Audit</p>
+              <p className="text-ink-3">Audit</p>
               <p className="font-mono text-[11px]">
                 secret_access_events.outcome=failure error=secret_disabled consumer=agent:CodexCoder
               </p>

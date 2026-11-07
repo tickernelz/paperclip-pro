@@ -40,7 +40,7 @@ function Section({
 }) {
   return (
     <section className="paperclip-story__frame overflow-hidden">
-      <div className="border-b border-border px-5 py-4">
+      <div className="border-b border-line px-5 py-4">
         <div className="paperclip-story__label">{eyebrow}</div>
         <h2 className="mt-1 text-xl font-semibold">{title}</h2>
       </div>
@@ -69,8 +69,8 @@ function CaseFrame({
   return (
     <div className="space-y-3">
       <div className={`rounded-lg border px-3 py-2 ${toneClasses[tone]}`}>
-        <div className="text-sm font-medium text-foreground">{title}</div>
-        <div className="mt-1 text-xs leading-5 text-muted-foreground">{detail}</div>
+        <div className="text-sm font-medium text-ink">{title}</div>
+        <div className="mt-1 text-xs leading-5 text-ink-3">{detail}</div>
       </div>
       {children}
     </div>
@@ -567,7 +567,7 @@ function BudgetFinanceMatrix() {
             <div>
               <div className="paperclip-story__label">Budget and finance</div>
               <h1 className="mt-2 text-3xl font-semibold tracking-tight">Spend controls, quotas, and accounting surfaces</h1>
-              <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
+              <p className="mt-3 max-w-3xl text-sm leading-6 text-ink-3">
                 Fixture-backed coverage for the board's cost-control components: active incidents, sidebar budget markers,
                 provider quotas, biller allocation, account-level finance events, and subscription quota windows.
               </p>
@@ -611,12 +611,12 @@ function BudgetFinanceMatrix() {
             {sidebarMarkers.map((marker) => {
               const Icon = marker.icon;
               return (
-                <div key={marker.level} className="rounded-lg border border-border bg-background/70 p-4">
+                <div key={marker.level} className="rounded-lg border border-line bg-bg/70 p-4">
                   <div className="flex items-center gap-3">
-                    <Icon className="h-4 w-4 text-muted-foreground" />
+                    <Icon className="h-4 w-4 text-ink-3" />
                     <div className="min-w-0">
                       <div className="text-sm font-medium">{marker.label}</div>
-                      <div className="text-xs text-muted-foreground">{marker.detail}</div>
+                      <div className="text-xs text-ink-3">{marker.detail}</div>
                     </div>
                     <BudgetSidebarMarker level={marker.level} title={`${marker.label} budget indicator`} />
                   </div>
@@ -726,8 +726,8 @@ function BudgetFinanceMatrix() {
                   ].map((item) => {
                     const Icon = item.icon;
                     return (
-                      <div key={item.label} className="flex items-center justify-between gap-3 border border-border p-3">
-                        <span className="inline-flex items-center gap-2 text-muted-foreground">
+                      <div key={item.label} className="flex items-center justify-between gap-3 border border-line p-3">
+                        <span className="inline-flex items-center gap-2 text-ink-3">
                           <Icon className="h-4 w-4" />
                           {item.label}
                         </span>

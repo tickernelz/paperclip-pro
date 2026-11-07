@@ -340,7 +340,7 @@ export function AsciiArtAnimation() {
   return (
     <pre
       ref={preRef}
-      className="w-full h-full m-0 p-0 overflow-hidden text-muted-foreground/60 select-none leading-none"
+      className="w-full h-full m-0 p-0 overflow-hidden text-ink-3/60 select-none leading-none"
       style={{ fontSize: "var(--text-micro)", fontFamily: "monospace" }}
       aria-hidden="true"
     />

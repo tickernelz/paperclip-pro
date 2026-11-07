@@ -317,9 +317,9 @@ export function FrontmatterPanel({
   const warningCount = validation.length;
 
   const chevron = open ? (
-    <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+    <ChevronDown className="h-4 w-4 shrink-0 text-ink-3" aria-hidden="true" />
   ) : (
-    <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+    <ChevronRight className="h-4 w-4 shrink-0 text-ink-3" aria-hidden="true" />
   );
 
   return (
@@ -327,7 +327,7 @@ export function FrontmatterPanel({
       <Collapsible
         open={open}
         onOpenChange={setOpen}
-        className={cn("border-b border-border", className)}
+        className={cn("border-b border-line", className)}
         data-testid="frontmatter-panel"
       >
         <div className="flex items-center gap-2 px-3 py-1.5">
@@ -341,10 +341,10 @@ export function FrontmatterPanel({
             {chevron}
             <span className="text-sm font-medium">Frontmatter</span>
             {!open && present ? (
-              <span className="truncate text-xs text-muted-foreground">{summary}</span>
+              <span className="truncate text-xs text-ink-3">{summary}</span>
             ) : null}
             {!open && !present ? (
-              <span className="text-xs text-muted-foreground">None</span>
+              <span className="text-xs text-ink-3">None</span>
             ) : null}
           </button>
 
@@ -420,7 +420,7 @@ export function FrontmatterPanel({
               )}
             </div>
           ) : (
-            <div className="px-3 pb-2 text-xs text-muted-foreground">
+            <div className="px-3 pb-2 text-xs text-ink-3">
               This file has no frontmatter.
             </div>
           )}
@@ -474,7 +474,7 @@ function FieldsForm({
     <div className="space-y-3 pt-1">
       {form.hasName ? (
         <div>
-          <Label htmlFor="fm-name" className="text-xs text-muted-foreground">
+          <Label htmlFor="fm-name" className="text-xs text-ink-3">
             name
           </Label>
           <Input
@@ -491,7 +491,7 @@ function FieldsForm({
 
       {form.hasDescription ? (
         <div>
-          <Label htmlFor="fm-description" className="text-xs text-muted-foreground">
+          <Label htmlFor="fm-description" className="text-xs text-ink-3">
             description
           </Label>
           <Textarea
@@ -508,7 +508,7 @@ function FieldsForm({
 
       {form.allowedToolsPresent ? (
         <div>
-          <Label className="text-xs text-muted-foreground">allowed-tools</Label>
+          <Label className="text-xs text-ink-3">allowed-tools</Label>
           {form.allowedTools === null ? (
             <p className="mt-1 text-xs text-amber-500">
               {toolsWarning ?? "Expected a list — edit in YAML."}
@@ -526,9 +526,9 @@ function FieldsForm({
 
       {form.metadataPresent ? (
         <div>
-          <Label className="text-xs text-muted-foreground">metadata</Label>
+          <Label className="text-xs text-ink-3">metadata</Label>
           {form.metadataComplex !== null ? (
-            <p className="mt-1 text-xs text-muted-foreground">Complex value — edit in YAML.</p>
+            <p className="mt-1 text-xs text-ink-3">Complex value — edit in YAML.</p>
           ) : (
             <MetadataRows
               rows={form.metaRows}
@@ -542,7 +542,7 @@ function FieldsForm({
       {form.unknown.map((row, index) =>
         row.editable ? (
           <div key={row.id}>
-            <Label htmlFor={`fm-unknown-${row.id}`} className="text-xs text-muted-foreground">
+            <Label htmlFor={`fm-unknown-${row.id}`} className="text-xs text-ink-3">
               {row.key}
             </Label>
             <Input
@@ -559,8 +559,8 @@ function FieldsForm({
           </div>
         ) : (
           <div key={row.id}>
-            <Label className="text-xs text-muted-foreground">{row.key}</Label>
-            <p className="mt-1 text-xs text-muted-foreground">Complex value — edit in YAML.</p>
+            <Label className="text-xs text-ink-3">{row.key}</Label>
+            <p className="mt-1 text-xs text-ink-3">Complex value — edit in YAML.</p>
           </div>
         ),
       )}
@@ -656,7 +656,7 @@ function ChipInput({
   };
 
   return (
-    <div className="mt-1 flex flex-wrap items-center gap-1.5 rounded-md border border-border px-2 py-1.5">
+    <div className="mt-1 flex flex-wrap items-center gap-1.5 rounded-md border border-line px-2 py-1.5">
       {values.map((value, index) => (
         <Badge key={`${value}-${index}`} variant="secondary" className="gap-1">
           {value}
@@ -665,7 +665,7 @@ function ChipInput({
               type="button"
               aria-label={`Remove ${value}`}
               onClick={() => onChange(values.filter((_, i) => i !== index))}
-              className="hover:text-foreground"
+              className="hover:text-ink"
             >
               <X className="h-3 w-3" />
             </button>
@@ -710,7 +710,7 @@ function YamlEditor({
   return (
     <div className="pt-1">
       {!canReturnToFields && !parseError ? (
-        <div className="mb-1.5 flex items-start gap-2 rounded-md bg-muted/40 px-2 py-1.5 text-xs text-muted-foreground">
+        <div className="mb-1.5 flex items-start gap-2 rounded-md bg-bg-3/40 px-2 py-1.5 text-xs text-ink-3">
           <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden="true" />
           <span>Editing raw YAML to preserve formatting the form can't reconstruct.</span>
         </div>
@@ -724,7 +724,7 @@ function YamlEditor({
         className="font-mono text-xs"
         aria-label="Frontmatter YAML"
       />
-      <p className="mt-1 text-xs text-muted-foreground">
+      <p className="mt-1 text-xs text-ink-3">
         Raw YAML is the source of truth in this mode.
       </p>
     </div>

@@ -48,14 +48,14 @@ export function ComposioAppSetup({ name, toolkit, connections, onClose, onBack, 
       <Label htmlFor="composio-app-account">Composio account</Label>
       <select id="composio-app-account" value={connectionId} disabled={busy} onChange={event => {
         setConnectionId(event.target.value); setResult(null); setError(null);
-      }} className="h-9 w-full rounded-md border border-input bg-background px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring">
+      }} className="h-9 w-full rounded-md border border-line-strong bg-bg px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus">
         {connections.map(candidate => <option key={candidate.id} value={candidate.id}>{candidate.name}</option>)}
         <option value="__new__">Connect a new account…</option>
       </select>
     </div>
-    {error ? <p role="alert" className="text-sm text-destructive">{error}</p> : null}
-    {result ? <p role="status" className="text-sm text-muted-foreground">Finish connecting {name} in Composio, then return here.</p> : null}
-    {result?.authorizationUrl ? <Button asChild variant="outline" className="w-full">
+    {error ? <p role="alert" className="text-sm text-bad">{error}</p> : null}
+    {result ? <p role="status" className="text-sm text-ink-3">Finish connecting {name} in Composio, then return here.</p> : null}
+    {result?.authorizationUrl ? <Button asChild variant="secondary" className="w-full">
       <a href={result.authorizationUrl} target="_blank" rel="noopener noreferrer">Connect {name} in Composio<ExternalLink className="size-4" /></a>
     </Button> : null}
     <div className="flex items-center justify-between gap-2">

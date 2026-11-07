@@ -138,7 +138,7 @@ export function ConnectionCatalog({
                   (row) => row.id === toolConnection.id,
                 )!;
                 return (
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-xs text-ink-3">
                     {connection.ownership === "shared"
                       ? "Company account"
                       : "Personal account"}{" "}
@@ -161,7 +161,7 @@ export function ConnectionCatalog({
         })}
       </section>
       {!visible.length && (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           No connectors match “{query}”.
         </p>
       )}
@@ -184,7 +184,7 @@ export function ConnectionCatalog({
               Cancel
             </Button>
             <Button
-              variant="destructive"
+              variant="delete"
               onClick={() => {
                 onRemove(removing!);
                 setRemoving(undefined);

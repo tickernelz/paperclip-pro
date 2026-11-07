@@ -32,17 +32,17 @@ const FIXTURE_ORDER: LabFixtureKey[] = [
 
 function CliFallback({ hasActiveInvite }: { hasActiveInvite: boolean }) {
   return (
-    <div className="mt-6 border-t border-border pt-5">
+    <div className="mt-6 border-t border-line pt-5">
       <div className="flex items-center gap-2 text-sm font-medium">
-        <Terminal className="size-4 text-muted-foreground" aria-hidden />
+        <Terminal className="size-4 text-ink-3" aria-hidden />
         <span>Prefer to finish setup from the host?</span>
       </div>
-      <p className="mt-2 text-sm text-muted-foreground">
+      <p className="mt-2 text-sm text-ink-3">
         {hasActiveInvite
           ? "A bootstrap invite is already active. Check your Paperclip startup logs for the first‑admin URL, or run this command on the host to rotate it:"
           : "Run this command on the host that runs Paperclip to print a one‑time first‑admin invite URL:"}
       </p>
-      <pre className="mt-3 overflow-x-auto rounded-md border border-border bg-muted/30 p-3 font-mono text-xs">
+      <pre className="mt-3 overflow-x-auto rounded-md border border-line bg-bg-3/30 p-3 font-mono text-xs">
 {BOOTSTRAP_FALLBACK_COMMAND}
       </pre>
     </div>
@@ -61,7 +61,7 @@ function SignedOutPrivate() {
   return (
     <StateChrome>
       <h1 className="text-xl font-semibold">Finish setting up this Paperclip</h1>
-      <p className="mt-2 text-sm text-muted-foreground">
+      <p className="mt-2 text-sm text-ink-3">
         No admin has claimed this instance yet. Sign in or create your Paperclip account to become the first
         admin from this browser.
       </p>
@@ -79,16 +79,16 @@ function SignedInPrivate() {
   return (
     <StateChrome>
       <h1 className="text-xl font-semibold">Finish setting up this Paperclip</h1>
-      <p className="mt-2 text-sm text-muted-foreground">
+      <p className="mt-2 text-sm text-ink-3">
         No admin has claimed this instance yet. Claim it now to become the first admin and start onboarding.
       </p>
       <div className="mt-5 flex flex-wrap items-center gap-3">
         <Button>Claim this instance</Button>
-        <span className="text-sm text-muted-foreground">
-          Signed in as <span className="font-medium text-foreground">jane@appliance.local</span>
+        <span className="text-sm text-ink-3">
+          Signed in as <span className="font-medium text-ink">jane@appliance.local</span>
         </span>
       </div>
-      <p className="mt-3 text-xs text-muted-foreground">
+      <p className="mt-3 text-xs text-ink-3">
         Wrong account?{" "}
         <a href="/auth?next=/" className="underline underline-offset-2">
           Switch account
@@ -104,7 +104,7 @@ function ClaimingPrivate() {
   return (
     <StateChrome>
       <h1 className="text-xl font-semibold">Finish setting up this Paperclip</h1>
-      <p className="mt-2 text-sm text-muted-foreground">
+      <p className="mt-2 text-sm text-ink-3">
         No admin has claimed this instance yet. Claim it now to become the first admin and start onboarding.
       </p>
       <div className="mt-5 flex flex-wrap items-center gap-3">
@@ -112,8 +112,8 @@ function ClaimingPrivate() {
           <Loader2 className="mr-2 size-4 animate-spin" aria-hidden />
           Claiming…
         </Button>
-        <span className="text-sm text-muted-foreground">
-          Signed in as <span className="font-medium text-foreground">jane@appliance.local</span>
+        <span className="text-sm text-ink-3">
+          Signed in as <span className="font-medium text-ink">jane@appliance.local</span>
         </span>
       </div>
       <CliFallback hasActiveInvite={false} />
@@ -125,23 +125,23 @@ function ClaimErrorPrivate() {
   return (
     <StateChrome>
       <h1 className="text-xl font-semibold">Finish setting up this Paperclip</h1>
-      <p className="mt-2 text-sm text-muted-foreground">
+      <p className="mt-2 text-sm text-ink-3">
         No admin has claimed this instance yet. Claim it now to become the first admin and start onboarding.
       </p>
       <div className="mt-5 flex flex-wrap items-center gap-3">
         <Button>Claim this instance</Button>
-        <span className="text-sm text-muted-foreground">
-          Signed in as <span className="font-medium text-foreground">jane@appliance.local</span>
+        <span className="text-sm text-ink-3">
+          Signed in as <span className="font-medium text-ink">jane@appliance.local</span>
         </span>
       </div>
       <div
         role="alert"
-        className="mt-4 flex items-start gap-2 rounded-md border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive"
+        className="mt-4 flex items-start gap-2 rounded-md border border-bad/40 bg-bad/10 p-3 text-sm text-bad"
       >
         <TriangleAlert className="mt-0.5 size-4 flex-shrink-0" aria-hidden />
         <div>
           <p className="font-medium">Someone else has already claimed this instance.</p>
-          <p className="mt-1 text-destructive/90">
+          <p className="mt-1 text-bad/90">
             Refresh to sign in, or ask the existing admin to invite you from{" "}
             <span className="font-mono">Settings → Access</span>.
           </p>
@@ -161,17 +161,17 @@ function ClaimSuccess() {
         </div>
         <div>
           <h1 className="text-xl font-semibold">You&rsquo;re the instance admin</h1>
-          <p className="mt-2 text-sm text-muted-foreground">
+          <p className="mt-2 text-sm text-ink-3">
             Setup is complete. Taking you to onboarding to create your first organization&hellip;
           </p>
         </div>
       </div>
       <div className="mt-5 flex items-center gap-3">
-        <Loader2 className="size-4 animate-spin text-muted-foreground" aria-hidden />
-        <span className="text-sm text-muted-foreground">Redirecting&hellip;</span>
+        <Loader2 className="size-4 animate-spin text-ink-3" aria-hidden />
+        <span className="text-sm text-ink-3">Redirecting&hellip;</span>
       </div>
       <div className="mt-5">
-        <Button asChild variant="outline">
+        <Button asChild variant="secondary">
           <a href="/">Continue to dashboard</a>
         </Button>
       </div>
@@ -183,12 +183,12 @@ function PublicInviteOnly() {
   return (
     <StateChrome>
       <h1 className="text-xl font-semibold">This Paperclip is waiting on its first admin</h1>
-      <p className="mt-2 text-sm text-muted-foreground">
+      <p className="mt-2 text-sm text-ink-3">
         This instance runs in invite‑only mode. The operator must generate a one‑time first‑admin invite URL
         from the host. Once you have the link, open it from this browser to finish setup.
       </p>
       <CliFallback hasActiveInvite />
-      <p className="mt-4 text-xs text-muted-foreground">
+      <p className="mt-4 text-xs text-ink-3">
         Browser‑based claim is intentionally disabled in public mode so anyone on the network can&rsquo;t
         promote themselves.
       </p>
@@ -207,12 +207,12 @@ const FIXTURE_BODIES: Record<LabFixtureKey, ReactElement> = {
 
 export function BootstrapSetupUxLab() {
   return (
-    <div className="bg-background min-h-screen pb-16">
-      <header className="border-b border-border bg-muted/20">
+    <div className="bg-bg min-h-screen pb-16">
+      <header className="border-b border-line bg-bg-3/20">
         <div className="mx-auto max-w-3xl px-6 py-6">
-          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">UX Lab</p>
+          <p className="text-xs font-medium uppercase tracking-wider text-ink-3">UX Lab</p>
           <h1 className="mt-1 text-2xl font-semibold">Bootstrap-pending setup states</h1>
-          <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
+          <p className="mt-2 max-w-2xl text-sm text-ink-3">
             Fixtures for the bootstrap-pending screen in <span className="font-mono">CloudAccessGate</span>. Used
             as the UX spec for{" "}
             <a className="underline underline-offset-2" href="/PAP/issues/PAP-10113">
@@ -233,11 +233,11 @@ export function BootstrapSetupUxLab() {
           <section key={key} aria-labelledby={`lab-${key}`}>
             <h2
               id={`lab-${key}`}
-              className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground"
+              className="mb-3 text-xs font-medium uppercase tracking-wider text-ink-3"
             >
               {FIXTURE_LABELS[key]}
             </h2>
-            <div className="rounded-lg border border-dashed border-border/70 bg-muted/10 p-2">
+            <div className="rounded-lg border border-dashed border-line/70 bg-bg-3/10 p-2">
               {FIXTURE_BODIES[key]}
             </div>
           </section>

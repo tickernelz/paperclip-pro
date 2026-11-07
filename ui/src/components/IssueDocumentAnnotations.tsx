@@ -414,15 +414,13 @@ export function DocumentAnnotationsCountChip({
   );
 
   return (
-    <Button
+    <Button active={panelOpen}
       type="button"
       size="sm"
       variant="ghost"
       data-state={panelOpen ? "open" : "closed"}
       className={cn(
-        "h-auto gap-1 rounded-md px-1.5 py-0 text-(length:--text-micro) font-normal text-muted-foreground hover:text-foreground",
-        panelOpen && "bg-muted text-foreground",
-        openCount > 0 && "text-foreground",
+        "h-auto gap-1 rounded-md px-1.5 py-0 text-(length:--text-micro) font-normal",
       )}
       onClick={onToggle}
       data-testid={`document-annotation-count-${docKey}`}

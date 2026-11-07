@@ -494,12 +494,12 @@ function ConnectedTaskComposer({
     >
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex min-w-0 flex-1 basis-64 items-center gap-3">
-          <Radio className="h-4 w-4 shrink-0 text-muted-foreground" />
+          <Radio className="h-4 w-4 shrink-0 text-ink-3" />
           <div className="min-w-0 flex-1">
             <p className="font-medium">
               Connected to {providerNames[binding.provider]}
             </p>
-            <p className="truncate text-xs text-muted-foreground">
+            <p className="truncate text-xs text-ink-3">
               {binding.externalLabel} · {binding.provider === "slack"
                 ? "Messages you send here and agent replies are also posted to Slack."
                 : "Agent assignment is fixed for this external task."}
@@ -508,7 +508,7 @@ function ConnectedTaskComposer({
         </div>
         <div className="flex min-w-0 flex-wrap items-center gap-2">
           {binding.externalUrl && (
-            <Button asChild size="sm" variant="outline">
+            <Button asChild size="sm" variant="secondary">
               <a href={binding.externalUrl} target="_blank" rel="noreferrer">
                 Open {providerNames[binding.provider]} <ExternalLink />
               </a>
@@ -516,7 +516,7 @@ function ConnectedTaskComposer({
           )}
           <Button
             size="sm"
-            variant="outline"
+            variant="secondary"
             onClick={() => setComposing((value) => !value)}
           >
             Send to channel
@@ -529,7 +529,7 @@ function ConnectedTaskComposer({
         </div>
       </div>
       {composing && (
-        <div className="space-y-2 border-t border-border pt-3">
+        <div className="space-y-2 border-t border-line pt-3">
           <label
             className="text-xs font-medium"
             htmlFor="external-board-update"
@@ -555,7 +555,7 @@ function ConnectedTaskComposer({
             placeholder="Write only what should be visible in the provider conversation."
           />
           {selectedAttachmentIds.length > 0 && !body.trim() && (
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-ink-3">
               Add a message to send with your files.
             </p>
           )}
@@ -575,24 +575,24 @@ function ConnectedTaskComposer({
             <Button
               type="button"
               size="sm"
-              variant="outline"
+              variant="secondary"
               disabled={uploadDisabled}
               onClick={() => fileInput.current?.click()}
             >
               <Paperclip />
               {uploading ? "Uploading…" : "Attach file"}
             </Button>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-ink-3">
               Files stay on this task until you send them to the channel.
             </p>
           </div>
           {uploadError && (
-            <p role="alert" className="text-xs text-destructive">
+            <p role="alert" className="text-xs text-bad">
               {uploadError}
             </p>
           )}
           {selectionNotice && (
-            <p role="status" className="text-xs text-muted-foreground">
+            <p role="status" className="text-xs text-ink-3">
               A file already attached to another comment was removed from this
               selection. Attach a new copy or share the task link; your message
               is unchanged.
@@ -600,7 +600,7 @@ function ConnectedTaskComposer({
           )}
           {visibleAttachments.length > 0 && (
             <fieldset
-              className="space-y-2 rounded-md border border-border bg-background p-3"
+              className="space-y-2 rounded-md border border-line bg-bg p-3"
               disabled={
                 showingRetainedFiles ||
                 Boolean(publication) ||
@@ -615,7 +615,7 @@ function ConnectedTaskComposer({
                   ? "Files in this send"
                   : "Include task files"}
               </legend>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-ink-3">
                 {binding.provider === "github"
                   ? "GitHub Apps cannot upload file bytes in comments. Checked files stay on the Paperclip task; GitHub receives an authenticated task link when this Board has a public URL, or a private-task notice otherwise."
                   : binding.provider === "microsoft-teams" &&
@@ -647,7 +647,7 @@ function ConnectedTaskComposer({
                           publish.reset();
                         }}
                       />
-                      <Paperclip className="h-3.5 w-3.5 text-muted-foreground" />
+                      <Paperclip className="h-3.5 w-3.5 text-ink-3" />
                       <span className="truncate">{label}</span>
                     </label>
                   );
@@ -656,24 +656,24 @@ function ConnectedTaskComposer({
             </fieldset>
           )}
           {storageError && (
-            <p role="alert" className="text-xs text-destructive">
+            <p role="alert" className="text-xs text-bad">
               {storageError}
             </p>
           )}
           {rejection && (
             <div
               role="alert"
-              className="space-y-1 rounded-md border border-border bg-background p-3 text-xs"
+              className="space-y-1 rounded-md border border-line bg-bg p-3 text-xs"
             >
               <p className="font-medium">Update was not sent</p>
-              <p className="text-muted-foreground">
+              <p className="text-ink-3">
                 A selected file already belongs to another comment. This request
                 was rejected before any channel message was queued. Your exact
                 draft is kept.
               </p>
               <Button
                 size="sm"
-                variant="outline"
+                variant="secondary"
                 disabled={Boolean(storageError)}
                 onClick={() => {
                   if (!storageKey || !retainedSend.current?.rejection) return;
@@ -714,10 +714,10 @@ function ConnectedTaskComposer({
             !publication && (
               <div
                 role="alert"
-                className="space-y-1 rounded-md border border-border bg-background p-3 text-xs"
+                className="space-y-1 rounded-md border border-line bg-bg p-3 text-xs"
               >
                 <p className="font-medium">Delivery result not confirmed</p>
-                <p className="text-muted-foreground">
+                <p className="text-ink-3">
                   Your exact draft and request identity are kept. Retry safely
                   to learn the authoritative publication state without creating
                   a duplicate.
@@ -738,12 +738,12 @@ function ConnectedTaskComposer({
                   ? "alert"
                   : "status"
               }
-              className="space-y-1 rounded-md border border-border bg-background p-3 text-xs"
+              className="space-y-1 rounded-md border border-line bg-bg p-3 text-xs"
             >
               <p className="font-medium">{currentFeedback.title}</p>
-              <p className="text-muted-foreground">{currentFeedback.body}</p>
+              <p className="text-ink-3">{currentFeedback.body}</p>
               {batch && (
-                <p className="text-muted-foreground">
+                <p className="text-ink-3">
                   {batch.declined !== undefined &&
                   batch.expired !== undefined &&
                   batch.cancelled !== undefined &&
@@ -766,7 +766,7 @@ function ConnectedTaskComposer({
               )}
               {batch?.parts?.some((part) => part.fileTransfer) && (
                 <ul
-                  className="space-y-1 text-muted-foreground"
+                  className="space-y-1 text-ink-3"
                   aria-label="File delivery outcomes"
                 >
                   {batch.parts
@@ -780,13 +780,13 @@ function ConnectedTaskComposer({
                 </ul>
               )}
               {publicationStatus.isError && (
-                <p role="alert" className="text-muted-foreground">
+                <p role="alert" className="text-ink-3">
                   Delivery status could not be refreshed. Your draft is kept;
                   Paperclip will check again without sending another update.
                 </p>
               )}
               {currentPublication.redactedError && (
-                <p className="text-muted-foreground">
+                <p className="text-ink-3">
                   Provider detail: {currentPublication.redactedError}
                 </p>
               )}
@@ -830,7 +830,7 @@ function ConnectedTaskComposer({
             </div>
           )}
           <div className="flex items-center justify-between gap-3">
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-ink-3">
               {binding.provider === "slack"
                 ? "Your message is posted to Slack with your name and starts the agent."
                 : "Ordinary board comments remain Paperclip-only."}

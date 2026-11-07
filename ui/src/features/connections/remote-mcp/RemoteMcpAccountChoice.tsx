@@ -30,7 +30,7 @@ export function RemoteMcpAccountChoice({
             ? `Connect ${upstreamServiceName} through ${providerName}`
             : `Connect ${providerName}`}
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="mt-2 text-sm text-ink-3">
           Use an existing connection or connect a new account. Existing access
           stays unchanged.
         </p>
@@ -52,7 +52,7 @@ export function RemoteMcpAccountChoice({
         onSelect={onSelect}
       />
       {error && (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-sm text-bad">
           {error}
         </p>
       )}

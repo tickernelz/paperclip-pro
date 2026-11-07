@@ -121,20 +121,20 @@ export const MultiServiceOpen: Story = {
 export const HeaderContext: Story = {
   name: "In header context",
   render: (args) => (
-    <div className="max-w-5xl rounded-xl border border-border bg-background p-6">
+    <div className="max-w-5xl rounded-xl border border-line bg-bg p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          <div className="text-xs font-medium uppercase tracking-wide text-ink-3">
             Execution workspace
           </div>
-          <h1 className="mt-1 truncate text-2xl font-bold text-foreground">
+          <h1 className="mt-1 truncate text-2xl font-bold text-ink">
             PAP-14025-skills-need-to-be-organized-in-folders-the-ta…
           </h1>
         </div>
         <WorkspaceServiceControlBar {...args} />
       </div>
-      <div className="mt-8 flex gap-6 border-b border-border pb-2 text-sm text-muted-foreground">
-        <span className="font-medium text-foreground">Tasks</span>
+      <div className="mt-8 flex gap-6 border-b border-line pb-2 text-sm text-ink-3">
+        <span className="font-medium text-ink">Tasks</span>
         <span>Services</span>
         <span>Configuration</span>
         <span>Runtime logs</span>
@@ -148,20 +148,20 @@ export const HeaderContext: Story = {
 export const HeaderContextFailed: Story = {
   name: "In header context · failed",
   render: (args) => (
-    <div className="max-w-5xl rounded-xl border border-border bg-background p-6">
+    <div className="max-w-5xl rounded-xl border border-line bg-bg p-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          <div className="text-xs font-medium uppercase tracking-wide text-ink-3">
             Execution workspace
           </div>
-          <h1 className="mt-1 truncate text-2xl font-bold text-foreground">
+          <h1 className="mt-1 truncate text-2xl font-bold text-ink">
             PAP-14025-skills-need-to-be-organized-in-folders-the-ta…
           </h1>
         </div>
         <WorkspaceServiceControlBar {...args} />
       </div>
-      <div className="mt-8 flex gap-6 border-b border-border pb-2 text-sm text-muted-foreground">
-        <span className="font-medium text-foreground">Tasks</span>
+      <div className="mt-8 flex gap-6 border-b border-line pb-2 text-sm text-ink-3">
+        <span className="font-medium text-ink">Tasks</span>
         <span>Services</span>
         <span>Configuration</span>
       </div>
@@ -182,7 +182,7 @@ export const MobileWidth: Story = {
   name: "Mobile width (two-row card)",
   decorators: [
     (Story) => (
-      <div className="w-80 rounded-xl border border-dashed border-border p-3">
+      <div className="w-80 rounded-xl border border-dashed border-line p-3">
         <Story />
       </div>
     ),
@@ -208,7 +208,7 @@ export const AllStates: Story = {
         ] as const
       ).map(([label, service]) => (
         <div key={label} className="flex w-full items-center justify-between gap-6">
-          <span className="text-sm font-medium text-muted-foreground">{label}</span>
+          <span className="text-sm font-medium text-ink-3">{label}</span>
           <WorkspaceServiceControlBar services={[service]} onAction={noop} onViewLogs={noop} />
         </div>
       ))}

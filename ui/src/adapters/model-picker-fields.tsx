@@ -14,6 +14,7 @@ import {
   modelOptionMatches,
   ModelValueLabel,
 } from "../components/task-chat/model-option-display";
+import { Chip } from "@/components/ui/chip";
 
 type PickerOption = IssueRunModelOverrideOption;
 
@@ -22,7 +23,7 @@ export const MODEL_SEARCH_PLACEHOLDER = "Search models or paste an ID";
 const VALUE_SEARCH_PLACEHOLDER = "Search or type a value";
 
 const triggerClass =
-  "flex w-full min-w-0 items-center gap-2 rounded-md border border-border bg-transparent px-2.5 py-1.5 text-left text-sm transition-colors hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-transparent";
+  "flex w-full min-w-0 items-center gap-2 rounded-md border border-line bg-transparent px-2.5 py-1.5 text-left text-sm transition-colors hover:bg-bg-3/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:bg-transparent";
 
 function isPrintableKey(event: KeyboardEvent): boolean {
   return event.key.length === 1 && event.key !== " " && !event.metaKey && !event.ctrlKey && !event.altKey;
@@ -109,7 +110,7 @@ export function OptionSearchList({
         if (index !== activeIndex) setActive(index);
       }}
       onClick={() => onSelect(value)}
-      className="flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm data-[active=true]:bg-accent"
+      className="flex cursor-pointer items-center gap-2 rounded-sm px-2 py-1.5 text-sm data-[active=true]:bg-bg-3"
     >
       {body}
     </div>
@@ -117,8 +118,8 @@ export function OptionSearchList({
 
   return (
     <div className="flex flex-col">
-      <div className="relative border-b border-border">
-        <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
+      <div className="relative border-b border-line">
+        <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-ink-3" aria-hidden="true" />
         <input
           type="text"
           role="combobox"
@@ -136,7 +137,7 @@ export function OptionSearchList({
             setActive(0);
           }}
           onKeyDown={handleKeyDown}
-          className="h-9 w-full bg-transparent pl-8 pr-2.5 text-sm outline-none placeholder:text-muted-foreground"
+          className="h-9 w-full bg-transparent pl-8 pr-2.5 text-sm outline-none placeholder:text-ink-3"
           data-testid={`${testId}-search`}
         />
       </div>
@@ -160,7 +161,7 @@ export function OptionSearchList({
                 index,
                 <>
                   <ModelOptionText option={option} />
-                  {reason ? <span className="shrink-0 text-xs text-muted-foreground">{reason}</span> : null}
+                  {reason ? <span className="shrink-0 text-xs text-ink-3">{reason}</span> : null}
                   {option.value === selected ? <Check className="size-4 shrink-0" aria-hidden="true" /> : null}
                 </>,
               );
@@ -172,16 +173,16 @@ export function OptionSearchList({
               custom,
               choices.length - 1,
               <>
-                <Plus className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+                <Plus className="size-4 shrink-0 text-ink-3" aria-hidden="true" />
                 <span className="min-w-0 flex-1 truncate">
                   Use <span className="font-mono text-xs">{custom}</span>
                 </span>
-                {note?.(custom) ? <span className="shrink-0 text-xs text-muted-foreground">{note(custom)}</span> : null}
+                {note?.(custom) ? <span className="shrink-0 text-xs text-ink-3">{note(custom)}</span> : null}
               </>,
             )
           : null}
         {choices.length === 0 ? (
-          <p className="px-2 py-2 text-xs text-muted-foreground">
+          <p className="px-2 py-2 text-xs text-ink-3">
             {options.length === 0 ? "No options yet. Type a value to use it." : "No match."}
           </p>
         ) : null}
@@ -253,20 +254,20 @@ export function ComboboxField({
             {display ? (
               <ModelValueLabel display={display} layout="inline" className="min-w-0 flex-1" testId={`${testId}-value`} />
             ) : (
-              <span className="min-w-0 flex-1 truncate text-muted-foreground" data-testid={`${testId}-value`}>
+              <span className="min-w-0 flex-1 truncate text-ink-3" data-testid={`${testId}-value`}>
                 {emptyLabel}
               </span>
             )}
             {effort && value && showsEffortControl(effort.value, value, options) ? (
               <span
-                className={cn("shrink-0 text-xs", effort.value ? "text-foreground" : "text-muted-foreground")}
+                className={cn("shrink-0 text-xs", effort.value ? "text-ink" : "text-ink-3")}
                 data-testid={`${testId}-effort-value`}
               >
                 · {effort.value ?? effort.defaultLabel ?? "Default effort"}
               </span>
             ) : null}
             {clearable && value ? <span className="w-5 shrink-0" aria-hidden="true" /> : null}
-            <ChevronDown className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+            <ChevronDown className="size-4 shrink-0 text-ink-3" aria-hidden="true" />
           </button>
         </PopoverTrigger>
         <PopoverContent
@@ -309,7 +310,7 @@ export function ComboboxField({
           type="button"
           aria-label={`Clear ${label}`}
           onClick={() => onChange("")}
-          className="absolute right-8.5 top-1/2 grid size-5 -translate-y-1/2 place-items-center rounded-sm text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+          className="absolute right-8.5 top-1/2 grid size-5 -translate-y-1/2 place-items-center rounded-sm text-ink-3 hover:bg-bg-3 hover:text-ink focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus"
           data-testid={`${testId}-clear`}
         >
           <X className="size-3.5" aria-hidden="true" />
@@ -371,24 +372,16 @@ export function EffortChips({
       {chips.map((chip) => {
         const selected = (chip.value ?? null) === (value ?? null);
         return (
-          <button
+          <Chip selected={selected}
             key={chip.value ?? ""}
-            type="button"
             role="radio"
             aria-checked={selected}
             title={chip.muted ? "Not listed for this model" : undefined}
             onClick={() => onChange(chip.value)}
             data-testid={`${testId}-${chip.value ?? "default"}`}
-            className={cn(
-              "rounded-md border px-2 py-0.5 text-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
-              selected
-                ? "border-primary bg-primary text-primary-foreground"
-                : "border-border text-muted-foreground hover:bg-accent hover:text-foreground",
-              chip.muted && !selected && "line-through",
-            )}
           >
             {chip.text}
-          </button>
+          </Chip>
         );
       })}
     </div>
@@ -397,8 +390,8 @@ export function EffortChips({
 
 function EffortHeader({ children }: { children: ReactNode }) {
   return (
-    <div className="space-y-1.5 border-b border-border px-2.5 py-2">
-      <span className="block text-xs font-medium text-muted-foreground">Thinking effort</span>
+    <div className="space-y-1.5 border-b border-line px-2.5 py-2">
+      <span className="block text-xs font-medium text-ink-3">Thinking effort</span>
       {children}
     </div>
   );
@@ -428,13 +421,13 @@ export function EffortButton({
           type="button"
           aria-label={label}
           className={cn(
-            "inline-flex h-6 shrink-0 items-center gap-1 rounded-md border border-border px-1.5 text-xs transition-colors hover:bg-accent/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring",
-            !value && "text-muted-foreground",
+            "inline-flex h-6 shrink-0 items-center gap-1 rounded-md border border-line px-1.5 text-xs transition-colors hover:bg-bg-3/50 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-focus",
+            !value && "text-ink-3",
           )}
           data-testid={testId}
         >
           {value ?? "Default"}
-          <ChevronDown className="size-3 text-muted-foreground" aria-hidden="true" />
+          <ChevronDown className="size-3 text-ink-3" aria-hidden="true" />
         </button>
       </PopoverTrigger>
       <PopoverContent align="end" disablePortal={disablePortal} className="w-auto max-w-72 p-0">
@@ -458,7 +451,7 @@ export function EffortButton({
 /** Label-row counter for a model list, such as "1/5". */
 export function ModelListCount({ count, max }: { count: number; max: number }) {
   return (
-    <span className="text-xs tabular-nums text-muted-foreground" data-testid="model-list-count">
+    <span className="text-xs tabular-nums text-ink-3" data-testid="model-list-count">
       · {count}/{max}
     </span>
   );
@@ -532,14 +525,14 @@ export function ModelListField({
   return (
     <div className="space-y-1.5" data-testid={testId}>
       {value.length > 0 ? (
-        <ol className="divide-y divide-border overflow-hidden rounded-md border border-border" aria-label={label}>
+        <ol className="divide-y divide-line overflow-hidden rounded-md border border-line" aria-label={label}>
           {value.map((entry, index) => (
             <li
               key={entry}
               data-testid={`${testId}-item`}
               className="flex min-w-0 items-center gap-2 py-1 pl-2.5 pr-1 text-sm"
             >
-              <span className="w-4 shrink-0 text-xs tabular-nums text-muted-foreground" aria-hidden="true">
+              <span className="w-4 shrink-0 text-xs tabular-nums text-ink-3" aria-hidden="true">
                 {index + 1}
               </span>
               <ModelValueLabel
@@ -601,7 +594,7 @@ export function ModelListField({
               aria-haspopup="listbox"
               aria-expanded={open}
               disabled={full}
-              className={cn(triggerClass, "border-dashed text-muted-foreground hover:text-foreground")}
+              className={cn(triggerClass, "border-dashed text-ink-3 hover:text-ink")}
               onKeyDown={(event) => {
                 if (open || !isPrintableKey(event)) return;
                 event.preventDefault();
@@ -639,7 +632,7 @@ export function ModelListField({
         </Popover>
       </div>
       {shownError ? (
-        <p role="alert" className="text-xs text-destructive" data-testid={`${testId}-error`}>
+        <p role="alert" className="text-xs text-bad" data-testid={`${testId}-error`}>
           {shownError}
         </p>
       ) : null}

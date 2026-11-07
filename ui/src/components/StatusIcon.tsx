@@ -114,7 +114,7 @@ export function StatusIcon({ status, externalConversationState, blockerAttention
     <button
       type="button"
       aria-label={`Change status (current: ${ariaLabel})`}
-      className="inline-flex min-h-5 items-center gap-1.5 cursor-pointer hover:bg-accent/50 rounded px-1 -mx-1 py-0.5 transition-colors"
+      className="inline-flex min-h-5 items-center gap-1.5 cursor-pointer hover:bg-bg-3/50 rounded px-1 -mx-1 py-0.5 transition-colors"
     >
       {glyph}
       <span className="text-sm">{statusLabel(displayStatus)}</span>
@@ -124,7 +124,7 @@ export function StatusIcon({ status, externalConversationState, blockerAttention
       type="button"
       data-slot="icon-button"
       aria-label={`Change status (current: ${ariaLabel})`}
-      className="inline-flex cursor-pointer items-center justify-center rounded-sm focus-visible:outline-none focus-visible:ring-(length:--rad-3) focus-visible:ring-ring"
+      className="inline-flex cursor-pointer items-center justify-center rounded-sm focus-visible:outline-none focus-visible:ring-(length:--rad-3) focus-visible:ring-focus"
     >
       {glyph}
     </button>
@@ -135,11 +135,11 @@ export function StatusIcon({ status, externalConversationState, blockerAttention
       <PopoverTrigger asChild>{trigger}</PopoverTrigger>
       <PopoverContent className="w-40 p-1" align="start">
         {allStatuses.map((s) => (
-          <Button
+          <Button active={s === status}
             key={s}
             variant="ghost"
             size="sm"
-            className={cn("w-full justify-start gap-2 text-xs", s === status && "bg-accent")}
+            className={cn("w-full justify-start gap-2 text-xs")}
             onClick={() => {
               onChange(s);
               setOpen(false);

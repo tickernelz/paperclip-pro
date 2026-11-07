@@ -55,16 +55,16 @@ function serviceTone(status: string): "success" | "warn" | "error" | "muted" {
 
 function CellGlyph({ status }: { status: CellStatus }) {
   if (status === "pass") return <Check className="mx-auto h-4 w-4 text-emerald-600 dark:text-emerald-400" aria-label="pass" />;
-  if (status === "fail") return <X className="mx-auto h-4 w-4 text-destructive" aria-label="fail" />;
+  if (status === "fail") return <X className="mx-auto h-4 w-4 text-bad" aria-label="fail" />;
   if (status === "skipped") return <Minus className="mx-auto h-4 w-4 text-amber-500" aria-label="skipped" />;
-  return <span className="mx-auto block h-1.5 w-1.5 rounded-full bg-muted-foreground/30" aria-label="not run" />;
+  return <span className="mx-auto block h-1.5 w-1.5 rounded-full bg-ink-3/30" aria-label="not run" />;
 }
 
 const HEALTH_STYLES: Record<string, string> = {
   green: "bg-emerald-500",
   amber: "bg-amber-500",
-  red: "bg-destructive",
-  unknown: "bg-muted-foreground/40",
+  red: "bg-bad",
+  unknown: "bg-ink-3/40",
 };
 
 export function SmokeLabTab({ companyId }: { companyId: string }) {
@@ -178,14 +178,14 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
   // Flag off — hidden. The server is authoritative; this is the friendly UX gate.
   if (loaded && !enabled) {
     return (
-      <div className="rounded-lg border border-border bg-card p-6">
-        <div className="flex items-center gap-2 text-foreground">
-          <FlaskConical className="h-5 w-5 text-muted-foreground" />
+      <div className="rounded-lg border border-line bg-bg-2 p-6">
+        <div className="flex items-center gap-2 text-ink">
+          <FlaskConical className="h-5 w-5 text-ink-3" />
           <h2 className="text-base font-semibold">Smoke Lab is turned off</h2>
         </div>
-        <p className="mt-1.5 max-w-xl text-sm text-muted-foreground">
+        <p className="mt-1.5 max-w-xl text-sm text-ink-3">
           The Smoke Lab is an experimental developer surface for exercising the integration paths
-          against deterministic local fixtures. Turn on <code className="rounded bg-muted px-1 py-0.5 text-xs">Smoke Lab</code>{" "}
+          against deterministic local fixtures. Turn on <code className="rounded bg-bg-3 px-1 py-0.5 text-xs">Smoke Lab</code>{" "}
           under Settings → Experimental to enable it.
         </p>
       </div>
@@ -193,7 +193,7 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
   }
 
   if (!loaded) {
-    return <div className="p-6 text-sm text-muted-foreground">Loading Smoke Lab…</div>;
+    return <div className="p-6 text-sm text-ink-3">Loading Smoke Lab…</div>;
   }
 
   const services = servicesQuery.data?.services ?? [];
@@ -204,19 +204,19 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
     <div className="flex flex-col gap-6" data-testid="smoke-lab-tab">
       <header>
         <div className="flex flex-wrap items-center gap-2">
-          <FlaskConical className="h-5 w-5 text-muted-foreground" />
-          <h1 className="text-xl font-bold text-foreground">Smoke Lab</h1>
+          <FlaskConical className="h-5 w-5 text-ink-3" />
+          <h1 className="text-xl font-bold text-ink">Smoke Lab</h1>
           <Badge variant="outline">Experimental</Badge>
           <a
             href="https://github.com/paperclipai/paperclip/blob/master/doc/connections/SMOKE-LAB-TUTORIAL.md"
             target="_blank"
             rel="noreferrer"
-            className="ml-auto inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+            className="ml-auto inline-flex items-center gap-1.5 text-sm font-medium text-accent hover:underline"
           >
             <BookOpen className="h-4 w-4" /> Hands-on tutorial
           </a>
         </div>
-        <p className="mt-1.5 max-w-3xl text-sm text-muted-foreground">
+        <p className="mt-1.5 max-w-3xl text-sm text-ink-3">
           Exercise every integration path (P1–P7) end-to-end against deterministic local fixtures —
           a fake OAuth provider and loopback MCP servers. Nothing here touches a real vendor or a
           real credential. Start the services, install the fixture apps, then drive the governed
@@ -225,7 +225,7 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
             href="https://github.com/paperclipai/paperclip/blob/master/doc/connections/SMOKE-LAB-TUTORIAL.md"
             target="_blank"
             rel="noreferrer"
-            className="font-medium text-primary hover:underline"
+            className="font-medium text-accent hover:underline"
           >
             hands-on tutorial
           </a>
@@ -237,8 +237,8 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
       <section className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <ServerCog className="h-4 w-4 text-muted-foreground" />
-            <h2 className="text-sm font-semibold text-foreground">Fixture services</h2>
+            <ServerCog className="h-4 w-4 text-ink-3" />
+            <h2 className="text-sm font-semibold text-ink">Fixture services</h2>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <Button
@@ -259,7 +259,7 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
                 </Button>
                 <Button
                   size="sm"
-                  variant="outline"
+                  variant="secondary"
                   onClick={() => installMutation.mutate()}
                   disabled={anyMutating}
                 >
@@ -280,11 +280,11 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
 
         <div className="grid gap-3 sm:grid-cols-2">
           {services.map((service) => (
-            <div key={service.id} className="rounded-lg border border-border bg-card p-4">
+            <div key={service.id} className="rounded-lg border border-line bg-bg-2 p-4">
               <div className="flex items-start justify-between gap-2">
                 <div>
-                  <p className="text-sm font-semibold text-foreground">{service.label}</p>
-                  <p className="text-xs text-muted-foreground">{service.detail ?? service.id}</p>
+                  <p className="text-sm font-semibold text-ink">{service.label}</p>
+                  <p className="text-xs text-ink-3">{service.detail ?? service.id}</p>
                 </div>
                 <span className="inline-flex items-center gap-1.5 text-xs font-medium">
                   <span
@@ -293,15 +293,15 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
                       service.status === "running"
                         ? "bg-emerald-500"
                         : service.status === "error"
-                          ? "bg-destructive"
-                          : "bg-muted-foreground/40",
+                          ? "bg-bad"
+                          : "bg-ink-3/40",
                     )}
                   />
                   <span
                     className={cn(
                       serviceTone(service.status) === "success" && "text-emerald-600 dark:text-emerald-400",
-                      serviceTone(service.status) === "error" && "text-destructive",
-                      serviceTone(service.status) === "muted" && "text-muted-foreground",
+                      serviceTone(service.status) === "error" && "text-bad",
+                      serviceTone(service.status) === "muted" && "text-ink-3",
                     )}
                   >
                     {service.status}
@@ -310,27 +310,27 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
               </div>
               <dl className="mt-3 space-y-1 text-xs">
                 <div className="flex items-baseline gap-2">
-                  <dt className="w-16 shrink-0 text-muted-foreground">URL</dt>
-                  <dd className="min-w-0 break-all font-mono text-foreground">
-                    {service.url ?? <span className="text-muted-foreground">not running</span>}
+                  <dt className="w-16 shrink-0 text-ink-3">URL</dt>
+                  <dd className="min-w-0 break-all font-mono text-ink">
+                    {service.url ?? <span className="text-ink-3">not running</span>}
                   </dd>
                 </div>
               </dl>
             </div>
           ))}
           {services.length === 0 && (
-            <p className="text-sm text-muted-foreground">No services reported. Start the fixture services above.</p>
+            <p className="text-sm text-ink-3">No services reported. Start the fixture services above.</p>
           )}
         </div>
 
         {/* Demo credentials for the fake OAuth login */}
-        <div className="rounded-lg border border-dashed border-border bg-muted/30 p-3">
-          <p className="text-xs font-semibold text-foreground">Fake OAuth demo credentials</p>
-          <p className="mt-0.5 text-xs text-muted-foreground">
+        <div className="rounded-lg border border-dashed border-line bg-bg-3/30 p-3">
+          <p className="text-xs font-semibold text-ink">Fake OAuth demo credentials</p>
+          <p className="mt-0.5 text-xs text-ink-3">
             Type these into the fake provider's real consent page during a P1 (OAuth) smoke. Fixed
             fixture values — safe to show.
           </p>
-          <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 font-mono text-xs text-foreground">
+          <div className="mt-2 flex flex-wrap gap-x-6 gap-y-1 font-mono text-xs text-ink">
             <span>email: {DEMO_EMAIL}</span>
             <span>password: {DEMO_PASSWORD}</span>
           </div>
@@ -340,21 +340,21 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
       {/* Results matrix */}
       <section className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="text-sm font-semibold text-foreground">Integration matrix</h2>
-          <div className="flex items-center gap-3 text-xs text-muted-foreground">
+          <h2 className="text-sm font-semibold text-ink">Integration matrix</h2>
+          <div className="flex items-center gap-3 text-xs text-ink-3">
             <span className="inline-flex items-center gap-1"><Check className="h-3.5 w-3.5 text-emerald-600 dark:text-emerald-400" /> pass</span>
-            <span className="inline-flex items-center gap-1"><X className="h-3.5 w-3.5 text-destructive" /> fail</span>
+            <span className="inline-flex items-center gap-1"><X className="h-3.5 w-3.5 text-bad" /> fail</span>
             <span className="inline-flex items-center gap-1"><Minus className="h-3.5 w-3.5 text-amber-500" /> skipped</span>
-            <span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/30" /> not run</span>
+            <span className="inline-flex items-center gap-1"><span className="h-1.5 w-1.5 rounded-full bg-ink-3/30" /> not run</span>
           </div>
         </div>
-        <div className="overflow-x-auto rounded-lg border border-border">
+        <div className="overflow-x-auto rounded-lg border border-line">
           <table className="w-full border-collapse text-xs">
             <thead>
-              <tr className="border-b border-border bg-muted/40">
-                <th className="sticky left-0 z-10 bg-muted/40 px-3 py-2 text-left font-semibold text-foreground">Path</th>
+              <tr className="border-b border-line bg-bg-3/40">
+                <th className="sticky left-0 z-10 bg-bg-3/40 px-3 py-2 text-left font-semibold text-ink">Path</th>
                 {LIFECYCLE_STAGES.map((stage) => (
-                  <th key={stage.key} className="px-2 py-2 text-center font-medium text-muted-foreground">
+                  <th key={stage.key} className="px-2 py-2 text-center font-medium text-ink-3">
                     {stage.label}
                   </th>
                 ))}
@@ -362,11 +362,11 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
             </thead>
             <tbody>
               {SMOKE_PATHS.map((path) => (
-                <tr key={path} className="border-b border-border last:border-0">
-                  <th scope="row" className="sticky left-0 z-10 bg-card px-3 py-2 text-left">
-                    <span className="font-mono font-semibold text-foreground">{path}</span>
-                    <span className="ml-2 text-foreground">{SMOKE_PATH_LABELS[path].title}</span>
-                    <span className="block text-(length:--text-micro) font-normal text-muted-foreground">
+                <tr key={path} className="border-b border-line last:border-0">
+                  <th scope="row" className="sticky left-0 z-10 bg-bg-2 px-3 py-2 text-left">
+                    <span className="font-mono font-semibold text-ink">{path}</span>
+                    <span className="ml-2 text-ink">{SMOKE_PATH_LABELS[path].title}</span>
+                    <span className="block text-(length:--text-micro) font-normal text-ink-3">
                       {SMOKE_PATH_LABELS[path].detail}
                     </span>
                   </th>
@@ -384,7 +384,7 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
           </table>
         </div>
         {steps.length === 0 && (
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             No steps recorded for the selected run yet. Run a browser smoke to populate the matrix.
           </p>
         )}
@@ -394,8 +394,8 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
       <section className="flex flex-col gap-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <h2 className="text-sm font-semibold text-foreground">Runs</h2>
-            <span className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+            <h2 className="text-sm font-semibold text-ink">Runs</h2>
+            <span className="inline-flex items-center gap-1.5 text-xs text-ink-3">
               <span className={cn("h-2 w-2 rounded-full", HEALTH_STYLES[health])} />
               {health === "unknown" ? "no runs yet" : health}
               {failing.length > 0 && ` · failing: ${failing.join(", ")}`}
@@ -412,11 +412,11 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
         </div>
 
         <div className="grid gap-4 lg:grid-cols-(--gtc-64)">
-          <div className="rounded-lg border border-border">
+          <div className="rounded-lg border border-line">
             {runs.length === 0 && (
-              <p className="p-4 text-sm text-muted-foreground">No runs recorded yet.</p>
+              <p className="p-4 text-sm text-ink-3">No runs recorded yet.</p>
             )}
-            <ul className="divide-y divide-border">
+            <ul className="divide-y divide-line">
               {runs.map((run: SmokeRun) => {
                 const isActive = run.id === activeRunId;
                 return (
@@ -425,13 +425,13 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
                       type="button"
                       onClick={() => setSelectedRunId(run.id)}
                       className={cn(
-                        "flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left transition-colors hover:bg-accent/50",
-                        isActive && "bg-accent",
+                        "flex w-full items-center justify-between gap-2 px-3 py-2.5 text-left transition-colors hover:bg-bg-3/50",
+                        isActive && "bg-bg-3",
                       )}
                     >
                       <span className="min-w-0">
-                        <span className="block text-xs font-medium text-foreground">{formatTime(run.startedAt)}</span>
-                        <span className="block text-(length:--text-micro) text-muted-foreground">{run.trigger}</span>
+                        <span className="block text-xs font-medium text-ink">{formatTime(run.startedAt)}</span>
+                        <span className="block text-(length:--text-micro) text-ink-3">{run.trigger}</span>
                       </span>
                       <StatusBadge status={run.status} />
                     </button>
@@ -441,53 +441,53 @@ export function SmokeLabTab({ companyId }: { companyId: string }) {
             </ul>
           </div>
 
-          <div className="min-w-0 rounded-lg border border-border">
+          <div className="min-w-0 rounded-lg border border-line">
             {!activeRun && (
-              <p className="p-4 text-sm text-muted-foreground">Select a run to see its steps.</p>
+              <p className="p-4 text-sm text-ink-3">Select a run to see its steps.</p>
             )}
             {activeRun && (
               <div className="flex flex-col">
-                <div className="flex items-center justify-between gap-2 border-b border-border px-4 py-2.5">
-                  <span className="text-xs text-muted-foreground">
+                <div className="flex items-center justify-between gap-2 border-b border-line px-4 py-2.5">
+                  <span className="text-xs text-ink-3">
                     Started {formatTime(activeRun.startedAt)} · finished {formatTime(activeRun.finishedAt)}
                   </span>
                   <StatusBadge status={activeRun.status} />
                 </div>
                 {steps.length === 0 ? (
-                  <p className="p-4 text-sm text-muted-foreground">No steps recorded for this run.</p>
+                  <p className="p-4 text-sm text-ink-3">No steps recorded for this run.</p>
                 ) : (
-                  <ul className="divide-y divide-border">
+                  <ul className="divide-y divide-line">
                     {steps.map((step) => (
                       <li key={step.id} className="flex items-start gap-3 px-4 py-2.5">
                         <span className="mt-0.5">
                           {step.status === "pass" ? (
                             <Check className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                           ) : step.status === "fail" ? (
-                            <X className="h-4 w-4 text-destructive" />
+                            <X className="h-4 w-4 text-bad" />
                           ) : (
                             <CircleSlash className="h-4 w-4 text-amber-500" />
                           )}
                         </span>
                         <div className="min-w-0 flex-1">
-                          <p className="text-xs font-medium text-foreground">
+                          <p className="text-xs font-medium text-ink">
                             <span className="font-mono">{step.path}</span> · {step.scenarioStep}
                           </p>
                           {step.detail && (
-                            <p className="mt-0.5 break-words text-(length:--text-micro) text-muted-foreground">{step.detail}</p>
+                            <p className="mt-0.5 break-words text-(length:--text-micro) text-ink-3">{step.detail}</p>
                           )}
                           {step.screenshotArtifactRef && typeof step.screenshotArtifactRef.url === "string" && (
                             <a
                               href={step.screenshotArtifactRef.url}
                               target="_blank"
                               rel="noreferrer"
-                              className="mt-1 inline-block text-(length:--text-micro) font-medium text-primary hover:underline"
+                              className="mt-1 inline-block text-(length:--text-micro) font-medium text-accent hover:underline"
                             >
                               View screenshot
                             </a>
                           )}
                         </div>
                         {typeof step.durationMs === "number" && (
-                          <span className="shrink-0 text-(length:--text-micro) tabular-nums text-muted-foreground">
+                          <span className="shrink-0 text-(length:--text-micro) tabular-nums text-ink-3">
                             {step.durationMs}ms
                           </span>
                         )}

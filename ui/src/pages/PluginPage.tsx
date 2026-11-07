@@ -130,13 +130,13 @@ export function PluginPage() {
     }
     return (
       <div className="space-y-4">
-        <p className="text-sm text-muted-foreground">Select an organization to view this page.</p>
+        <p className="text-sm text-ink-3">Select an organization to view this page.</p>
       </div>
     );
   }
 
   if (!contributions) {
-    return <div className="text-sm text-muted-foreground">Loading…</div>;
+    return <div className="text-sm text-ink-3">Loading…</div>;
   }
 
   if (!pluginId && pluginRoutePath) {
@@ -145,7 +145,7 @@ export function PluginPage() {
     );
     if (duplicateMatches.length > 1) {
       return (
-        <div className="rounded-md border border-destructive/30 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+        <div className="rounded-md border border-bad/30 bg-bad/5 px-3 py-2 text-sm text-bad">
           Multiple plugins declare the route <code>{pluginRoutePath}</code>. Use the plugin-id route until the conflict is resolved.
         </div>
       );

@@ -167,7 +167,7 @@ export function ProfileDetail({
     return (
       <div className="space-y-4">
         <ToolsPageHeader title="Profile not found" description="This access profile may have been deleted." />
-        <Button variant="outline" onClick={() => navigate("/apps/advanced/profiles")}>Back to profiles</Button>
+        <Button variant="secondary" onClick={() => navigate("/apps/advanced/profiles")}>Back to profiles</Button>
       </div>
     );
   }
@@ -182,23 +182,23 @@ export function ProfileDetail({
         description={profile.description ?? "No description yet."}
         actions={
           <div className="flex flex-wrap gap-2">
-            <Button variant="outline" disabled={archived} onClick={() => setDialog("edit")}>
+            <Button variant="secondary" disabled={archived} onClick={() => setDialog("edit")}>
               <Pencil className="mr-1.5 h-4 w-4" />
               Edit
             </Button>
-            <Button variant="outline" disabled={archived} onClick={() => setDialog("duplicate")}>
+            <Button variant="secondary" disabled={archived} onClick={() => setDialog("duplicate")}>
               <Copy className="mr-1.5 h-4 w-4" />
               Duplicate
             </Button>
             {archived ? (
-              <Button variant="outline" onClick={() => setDialog("restore")}>
+              <Button variant="secondary" onClick={() => setDialog("restore")}>
                 <ArchiveRestore className="mr-1.5 h-4 w-4" />
                 Restore
               </Button>
             ) : (
-              <Button variant="outline" onClick={() => setDialog("archive")}>Archive</Button>
+              <Button variant="secondary" onClick={() => setDialog("archive")}>Archive</Button>
             )}
-            <Button variant="outline" className="text-destructive hover:text-destructive" onClick={() => setDialog("delete")}>
+            <Button variant="danger" onClick={() => setDialog("delete")}>
               <Trash2 className="mr-1.5 h-4 w-4" />
               Delete
             </Button>
@@ -208,15 +208,15 @@ export function ProfileDetail({
 
       <div className="flex flex-wrap items-center gap-3 text-sm">
         <Badge variant={archived ? "outline" : "default"}>{STATUS_LABEL[profile.status]}</Badge>
-        <span className="text-muted-foreground">Updated <RelativeTime value={profile.updatedAt} /></span>
-        <span className="text-muted-foreground">{allowsLabel(profile.summary)}</span>
+        <span className="text-ink-3">Updated <RelativeTime value={profile.updatedAt} /></span>
+        <span className="text-ink-3">{allowsLabel(profile.summary)}</span>
       </div>
 
       {created ? (
-        <div className="flex items-center justify-between gap-3 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3">
+        <div className="flex items-center justify-between gap-3 rounded-lg border border-accent/30 bg-accent/5 px-4 py-3">
           <div>
-            <p className="text-sm font-medium text-foreground">Profile saved</p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm font-medium text-ink">Profile saved</p>
+            <p className="text-sm text-ink-3">
               {unassigned ? "Assign it to agents before it changes their access." : "Assignments are active now."}
             </p>
           </div>
@@ -248,8 +248,8 @@ export function ProfileDetail({
 
       <section className="space-y-3">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-base font-semibold text-foreground">What it allows</h2>
-          <Button variant="outline" size="sm" disabled={archived} onClick={() => navigate(`/apps/advanced/profiles/${profile.id}/edit?step=2`)}>
+          <h2 className="text-base font-semibold text-ink">What it allows</h2>
+          <Button variant="secondary" size="sm" disabled={archived} onClick={() => navigate(`/apps/advanced/profiles/${profile.id}/edit?step=2`)}>
             Edit tools
           </Button>
         </div>
@@ -258,8 +258,8 @@ export function ProfileDetail({
 
       <section className="space-y-3">
         <div className="flex items-center justify-between gap-3">
-          <h2 className="text-base font-semibold text-foreground">Who has it</h2>
-          <Button variant="outline" size="sm" disabled={archived} onClick={() => navigate(`/apps/advanced/profiles/${profile.id}/edit?step=3`)}>
+          <h2 className="text-base font-semibold text-ink">Who has it</h2>
+          <Button variant="secondary" size="sm" disabled={archived} onClick={() => navigate(`/apps/advanced/profiles/${profile.id}/edit?step=3`)}>
             Assign
           </Button>
         </div>
@@ -273,7 +273,7 @@ export function ProfileDetail({
       </section>
 
       <section className="space-y-3">
-        <h2 className="text-base font-semibold text-foreground">New tools that appear later</h2>
+        <h2 className="text-base font-semibold text-ink">New tools that appear later</h2>
         <NewToolsSetting
           value={profile.defaultAction}
           disabled={archived || updateProfile.isPending}
@@ -387,24 +387,24 @@ function NewToolsReviewDialog({
         ) : error ? (
           <ErrorState error={error} onRetry={onRetry} />
         ) : tools.length === 0 ? (
-          <div className="rounded-lg border border-dashed border-border px-4 py-6 text-sm text-muted-foreground">
+          <div className="rounded-lg border border-dashed border-line px-4 py-6 text-sm text-ink-3">
             There are no new tools waiting for review.
           </div>
         ) : (
-          <div className="max-h-(--sz-52vh) divide-y divide-border overflow-y-auto rounded-lg border border-border">
+          <div className="max-h-(--sz-52vh) divide-y divide-line overflow-y-auto rounded-lg border border-line">
             {tools.map((tool) => (
               <div key={tool.catalogEntryId} className="grid gap-3 px-3 py-3 sm:grid-cols-[1fr_auto]">
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="truncate text-sm font-medium text-foreground">
+                    <p className="truncate text-sm font-medium text-ink">
                       {tool.title || tool.toolName}
                     </p>
                     <Badge variant="secondary">{capabilityText(tool)}</Badge>
                   </div>
                   {tool.description ? (
-                    <p className="mt-1 text-sm text-muted-foreground">{tool.description}</p>
+                    <p className="mt-1 text-sm text-ink-3">{tool.description}</p>
                   ) : null}
-                  <p className="mt-1 text-xs text-muted-foreground">
+                  <p className="mt-1 text-xs text-ink-3">
                     {tool.applicationName ?? tool.connectionName ?? "App tool"} · added {formatShortDate(tool.addedAt)}
                   </p>
                 </div>
@@ -452,10 +452,10 @@ function AllowList({ rows, total }: { rows: AllowRow[]; total: number }) {
     );
   }
   return (
-    <div className="overflow-hidden rounded-lg border border-border">
+    <div className="overflow-hidden rounded-lg border border-line">
       <table className="w-full text-sm">
         <thead>
-          <tr className="border-b border-border bg-muted/40 text-left text-xs font-medium text-muted-foreground">
+          <tr className="border-b border-line bg-bg-3/40 text-left text-xs font-medium text-ink-3">
             <th className="px-3 py-2 font-medium">Tool</th>
             <th className="px-3 py-2 font-medium">App</th>
             <th className="px-3 py-2 font-medium">Capabilities</th>
@@ -464,12 +464,12 @@ function AllowList({ rows, total }: { rows: AllowRow[]; total: number }) {
         </thead>
         <tbody>
           {rows.slice(0, 80).map((row) => (
-            <tr key={row.id} className={cn("border-b border-border last:border-0", row.degraded && "bg-muted/30 text-muted-foreground")}>
+            <tr key={row.id} className={cn("border-b border-line last:border-0", row.degraded && "bg-bg-3/30 text-ink-3")}>
               <td className="px-3 py-2">
                 <div className="flex flex-col">
-                  <span className="font-medium text-foreground">{row.tool}</span>
+                  <span className="font-medium text-ink">{row.tool}</span>
                   {row.degraded ? (
-                    <a className="mt-0.5 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline" href={`/apps/${row.connectionId}`}>
+                    <a className="mt-0.5 inline-flex items-center gap-1 text-xs font-medium text-accent hover:underline" href={`/apps/${row.connectionId}`}>
                       <PlugZap className="h-3 w-3" />
                       Reconnect
                     </a>
@@ -478,17 +478,17 @@ function AllowList({ rows, total }: { rows: AllowRow[]; total: number }) {
               </td>
               <td className="px-3 py-2">
                 <span>{row.app}</span>
-                {row.degraded ? <span className="ml-2 text-xs text-muted-foreground">{row.app} is disconnected</span> : null}
+                {row.degraded ? <span className="ml-2 text-xs text-ink-3">{row.app} is disconnected</span> : null}
               </td>
-              <td className="px-3 py-2 text-muted-foreground">{row.capabilities}</td>
+              <td className="px-3 py-2 text-ink-3">{row.capabilities}</td>
               <td className="px-3 py-2">
                 {row.source.startsWith("added by rule") ? (
                   <span className="rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-950">{row.source}</span>
                 ) : (
-                  <span className="text-muted-foreground">{row.source}</span>
+                  <span className="text-ink-3">{row.source}</span>
                 )}
                 {row.autoAddedAt ? (
-                  <div className="mt-0.5 text-xs text-muted-foreground">
+                  <div className="mt-0.5 text-xs text-ink-3">
                     added automatically · {formatShortDate(row.autoAddedAt)}
                   </div>
                 ) : null}
@@ -498,11 +498,11 @@ function AllowList({ rows, total }: { rows: AllowRow[]; total: number }) {
         </tbody>
       </table>
       {rows.length > 80 ? (
-        <p className="border-t border-border px-3 py-2 text-xs text-muted-foreground">
+        <p className="border-t border-line px-3 py-2 text-xs text-ink-3">
           Showing 80 of {rows.length} allowed tools.
         </p>
       ) : (
-        <p className="border-t border-border px-3 py-2 text-xs text-muted-foreground">
+        <p className="border-t border-line px-3 py-2 text-xs text-ink-3">
           Allows {rows.length} of {total} known tools.
         </p>
       )}
@@ -525,23 +525,23 @@ function Assignments({
 }) {
   if (profile.bindings.length === 0) {
     return (
-      <div className="rounded-lg border border-dashed border-border px-4 py-5">
-        <p className="text-sm font-medium text-foreground">Not assigned yet</p>
-        <p className="text-sm text-muted-foreground">Assign this profile before it changes access.</p>
+      <div className="rounded-lg border border-dashed border-line px-4 py-5">
+        <p className="text-sm font-medium text-ink">Not assigned yet</p>
+        <p className="text-sm text-ink-3">Assign this profile before it changes access.</p>
       </div>
     );
   }
   return (
-    <div className="divide-y divide-border overflow-hidden rounded-lg border border-border">
+    <div className="divide-y divide-line overflow-hidden rounded-lg border border-line">
       {profile.bindings.map((binding) => (
         <div key={binding.id} className="flex items-center justify-between gap-3 px-3 py-2.5">
           <div className="flex min-w-0 items-center gap-3">
-            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-xs font-semibold text-muted-foreground">
+            <span className="flex h-8 w-8 items-center justify-center rounded-full bg-bg-3 text-xs font-semibold text-ink-3">
               {binding.targetType === "company" ? "Or" : binding.targetType.slice(0, 2).toUpperCase()}
             </span>
             <div className="min-w-0">
-              <p className="truncate text-sm font-medium text-foreground">{assignmentLabel(binding, companyId, maps)}</p>
-              <p className="text-xs text-muted-foreground">{assignmentTypeLabel(binding.targetType)}</p>
+              <p className="truncate text-sm font-medium text-ink">{assignmentLabel(binding, companyId, maps)}</p>
+              <p className="text-xs text-ink-3">{assignmentTypeLabel(binding.targetType)}</p>
             </div>
           </div>
           <Button variant="ghost" size="sm" disabled={archived} onClick={() => onRemove(binding)}>
@@ -574,7 +574,7 @@ function NewToolsSetting({
           key={option.value}
           className={cn(
             "flex cursor-pointer items-start gap-3 rounded-lg border px-4 py-3",
-            value === option.value ? "border-primary bg-primary/5" : "border-border",
+            value === option.value ? "border-accent bg-accent/5" : "border-line",
             disabled && "cursor-not-allowed opacity-60",
           )}
         >
@@ -586,8 +586,8 @@ function NewToolsSetting({
             onChange={() => onChange(option.value)}
           />
           <span>
-            <span className="block text-sm font-medium text-foreground">{option.title}</span>
-            <span className="block text-xs text-muted-foreground">{option.body}</span>
+            <span className="block text-sm font-medium text-ink">{option.title}</span>
+            <span className="block text-xs text-ink-3">{option.body}</span>
           </span>
         </label>
       ))}
@@ -643,13 +643,13 @@ function ProfileDialogs({
             <div className="space-y-1.5">
               <Label htmlFor="edit-profile-name">Name</Label>
               <Input id="edit-profile-name" value={name} onChange={(e) => setName(e.target.value)} />
-              {duplicateName ? <p className="text-xs text-destructive">Another profile already uses this name.</p> : null}
+              {duplicateName ? <p className="text-xs text-bad">Another profile already uses this name.</p> : null}
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="edit-profile-description">Description</Label>
               <Textarea id="edit-profile-description" value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
             </div>
-            <button type="button" className="text-sm font-medium text-muted-foreground hover:text-foreground" onClick={() => setAdvancedOpen((v) => !v)}>
+            <button type="button" className="text-sm font-medium text-ink-3 hover:text-ink" onClick={() => setAdvancedOpen((v) => !v)}>
               Advanced
             </button>
             {advancedOpen ? (
@@ -682,7 +682,7 @@ function ProfileDialogs({
             <div className="space-y-1.5">
               <Label htmlFor="copy-profile-name">Name</Label>
               <Input id="copy-profile-name" value={copyName} onChange={(e) => setCopyName(e.target.value)} />
-              {duplicateCopyName ? <p className="text-xs text-destructive">Another profile already uses this name.</p> : null}
+              {duplicateCopyName ? <p className="text-xs text-bad">Another profile already uses this name.</p> : null}
             </div>
             <label className="flex items-center gap-2 text-sm">
               <input type="checkbox" checked={copyAssignments} onChange={(e) => setCopyAssignments(e.target.checked)} />

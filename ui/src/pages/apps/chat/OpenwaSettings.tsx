@@ -102,8 +102,8 @@ function SaveRow({ label, state }: { label: string; state: ReturnType<typeof use
       <Button size="sm" disabled={state.pending} onClick={state.submit}>
         {state.pending ? "Saving…" : label}
       </Button>
-      {state.saved ? <span role="status" className="text-xs text-muted-foreground">Saved</span> : null}
-      {state.errors.form ? <span role="alert" className="text-xs text-destructive">{state.errors.form}</span> : null}
+      {state.saved ? <span role="status" className="text-xs text-ink-3">Saved</span> : null}
+      {state.errors.form ? <span role="alert" className="text-xs text-bad">{state.errors.form}</span> : null}
     </div>
   );
 }
@@ -139,9 +139,9 @@ function CapabilityWarnings({ endpoint }: { endpoint: OpenwaEndpoint }) {
     queryKey: queryKeys.agents.detail(endpoint.assignedAgentId),
     queryFn: () => agentsApi.get(endpoint.assignedAgentId, endpoint.companyId),
   });
-  if (agent.isPending) return <p role="status" className="text-sm text-muted-foreground">Checking the agent's adapter…</p>;
+  if (agent.isPending) return <p role="status" className="text-sm text-ink-3">Checking the agent's adapter…</p>;
   if (agent.isError || !agent.data)
-    return <p role="alert" className="text-sm text-destructive">Couldn't load the assigned agent, so adapter capability warnings are unavailable.</p>;
+    return <p role="alert" className="text-sm text-bad">Couldn't load the assigned agent, so adapter capability warnings are unavailable.</p>;
   const caps = capabilities(agent.data.adapterType);
   const warnings = openwaCapabilityWarnings({
     adapterType: agent.data.adapterType,
@@ -153,10 +153,10 @@ function CapabilityWarnings({ endpoint }: { endpoint: OpenwaEndpoint }) {
   });
   if (!warnings.length) return null;
   return (
-    <div aria-label="Capability warnings" className="space-y-2 rounded-lg border border-border bg-muted/30 p-3 text-sm">
+    <div aria-label="Capability warnings" className="space-y-2 rounded-lg border border-line bg-bg-3/30 p-3 text-sm">
       {warnings.map((warning) => (
         <p key={warning} className="flex items-start gap-2">
-          <AlertTriangle className="mt-0.5 size-4 shrink-0 text-muted-foreground" />
+          <AlertTriangle className="mt-0.5 size-4 shrink-0 text-ink-3" />
           <span>{warning}</span>
         </p>
       ))}
@@ -206,18 +206,18 @@ function OwnersSection({ endpointId }: { endpointId: string }) {
       description="Owners can start full-access runs and approve requests. Each owner number must be linked to a Paperclip member who is not a viewer."
     >
       {owners.isPending ? (
-        <p className="text-sm text-muted-foreground">Loading owners…</p>
+        <p className="text-sm text-ink-3">Loading owners…</p>
       ) : owners.isError ? (
-        <p role="alert" className="text-sm text-destructive">Couldn't load owners.</p>
+        <p role="alert" className="text-sm text-bad">Couldn't load owners.</p>
       ) : owners.data.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No owners yet. Add the number of the person who manages this agent.</p>
+        <p className="text-sm text-ink-3">No owners yet. Add the number of the person who manages this agent.</p>
       ) : (
-        <ul className="divide-y divide-border border-y border-border">
+        <ul className="divide-y divide-line border-y border-line">
           {owners.data.map((owner) => (
             <li key={owner.id} className="flex items-center gap-3 py-2">
               <div className="min-w-0 flex-1">
                 <p className="font-mono text-sm">{owner.numberMasked}</p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-xs text-ink-3">
                   {owner.effective
                     ? "Linked to " + (owner.displayName ?? "a Paperclip member")
                     : owner.linkStatus === "linked"
@@ -250,20 +250,20 @@ function OwnersSection({ endpointId }: { endpointId: string }) {
             aria-describedby={error ? "openwa-owner-number-error" : undefined}
             onChange={(event) => setNumber(event.target.value)}
           />
-          <Button size="sm" variant="outline" disabled={add.isPending || !number.trim()} onClick={submit}>
+          <Button size="sm" variant="secondary" disabled={add.isPending || !number.trim()} onClick={submit}>
             {add.isPending ? "Adding…" : "Add owner"}
           </Button>
         </div>
         <FieldMessage id="openwa-owner-number" error={error} />
       </div>
       {confirmation ? (
-        <div className="space-y-2 border-y border-border py-3">
+        <div className="space-y-2 border-y border-line py-3">
           <p className="text-sm font-medium">Private identity-link URL</p>
-          <p className="text-xs text-muted-foreground">Send it only to the owner. They open it while signed in to Paperclip to link this number.</p>
+          <p className="text-xs text-ink-3">Send it only to the owner. They open it while signed in to Paperclip to link this number.</p>
           <p className="break-all font-mono text-xs">{confirmation.url}</p>
           <Button
             size="sm"
-            variant="outline"
+            variant="secondary"
             onClick={() =>
               void copyTextToClipboard(confirmation.url).then(
                 () => pushToast({ title: "Identity-link URL copied", tone: "success" }),
@@ -329,7 +329,7 @@ function SenderPolicySection({ endpoint }: { endpoint: OpenwaEndpoint }) {
           state={{ ...memberRepliesState, submit: () => memberRepliesState.save({ groupMemberReplies: memberReplies }) }}
         />
       </div>
-      {rules.isError ? <p role="alert" className="text-sm text-destructive">Couldn't load sender lists.</p> : null}
+      {rules.isError ? <p role="alert" className="text-sm text-bad">Couldn't load sender lists.</p> : null}
       <SenderList endpointId={endpoint.id} list="allow" title="Allowlist" rules={rules.data ?? []} loading={rules.isPending} />
       <SenderList endpointId={endpoint.id} list="deny" title="Denylist" rules={rules.data ?? []} loading={rules.isPending} />
     </SettingsSection>
@@ -386,15 +386,15 @@ function SenderList({
     <div className="space-y-2">
       <h4 className="text-sm font-medium">{title}</h4>
       {loading ? (
-        <p className="text-xs text-muted-foreground">Loading…</p>
+        <p className="text-xs text-ink-3">Loading…</p>
       ) : entries.length === 0 ? (
-        <p className="text-xs text-muted-foreground">No numbers.</p>
+        <p className="text-xs text-ink-3">No numbers.</p>
       ) : (
-        <ul className="divide-y divide-border border-y border-border">
+        <ul className="divide-y divide-line border-y border-line">
           {entries.map((rule) => (
             <li key={rule.id} className="flex items-center gap-3 py-2">
               <span className="font-mono text-sm">{rule.e164}</span>
-              <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">{rule.label}</span>
+              <span className="min-w-0 flex-1 truncate text-xs text-ink-3">{rule.label}</span>
               <Button size="icon-sm" variant="ghost" aria-label={"Remove " + rule.e164} disabled={remove.isPending} onClick={() => remove.mutate(rule.id)}>
                 <Trash2 className="size-4" />
               </Button>
@@ -428,11 +428,11 @@ function SenderList({
           />
           <FieldMessage id={id + "-label"} error={errors.label} />
         </div>
-        <Button size="sm" variant="outline" disabled={add.isPending || !number.trim()} onClick={submit}>
+        <Button size="sm" variant="secondary" disabled={add.isPending || !number.trim()} onClick={submit}>
           {"Add to " + title.toLowerCase()}
         </Button>
       </div>
-      {errors.form ? <p role="alert" className="text-xs text-destructive">{errors.form}</p> : null}
+      {errors.form ? <p role="alert" className="text-xs text-bad">{errors.form}</p> : null}
     </div>
   );
 }
@@ -461,7 +461,7 @@ function TriggerDefaultsSection({ endpoint }: { endpoint: OpenwaEndpoint }) {
       }
       footer={<SaveRow label="Save triggers" state={{ ...state, submit }} />}
     >
-      <div className="divide-y divide-border">
+      <div className="divide-y divide-line">
         {OPENWA_TRIGGER_RULES.map((rule) => (
           <ToggleRow
             key={rule.key}
@@ -494,7 +494,7 @@ function TriggerDefaultsSection({ endpoint }: { endpoint: OpenwaEndpoint }) {
       </div>
       <div className="grid gap-1">
         <label htmlFor="openwa-keywords" className="text-sm font-medium">Keywords</label>
-        <p className="text-xs text-muted-foreground">Comma-separated whole words, matched case-insensitively. Up to 50.</p>
+        <p className="text-xs text-ink-3">Comma-separated whole words, matched case-insensitively. Up to 50.</p>
         <Input
           id="openwa-keywords"
           value={keywords}
@@ -576,7 +576,7 @@ function ApprovalsSection({ endpoint }: { endpoint: OpenwaEndpoint }) {
       description="Runs started by non-owners need an owner's approval for these actions. Turning one off lets those runs do it without asking."
       footer={<SaveRow label="Save approvals" state={{ ...state, submit }} />}
     >
-      <div className="divide-y divide-border">
+      <div className="divide-y divide-line">
         {approvalToggles.map((toggle) => (
           <ToggleRow
             key={toggle.key}
@@ -635,7 +635,7 @@ function ConversationSection({ endpoint }: { endpoint: OpenwaEndpoint }) {
             <option key={mode} value={mode}>{INFLIGHT_MODE_LABELS[mode]}</option>
           ))}
         </select>
-        <p id="openwa-inflight-mode-help" className="text-xs text-muted-foreground">
+        <p id="openwa-inflight-mode-help" className="text-xs text-ink-3">
           {inflightMode === "queue"
             ? "New messages wait for the next run."
             : "New messages are steered into the running turn when the adapter supports it."}
@@ -743,7 +743,7 @@ function GatewayAdminSection({ endpoint }: { endpoint: OpenwaEndpoint }) {
       </div>
       <div className="grid gap-1">
         <label htmlFor="openwa-admin-key" className="text-sm font-medium">Admin API key</label>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-ink-3">
           {configured === undefined ? "Checking whether a key is saved…" : configured ? "A key is saved. Enter a new one to replace it." : "No admin key is saved."}{" "}
           Saving re-verifies the session, so the channel returns to its test step until an owner sends a test message.
         </p>
@@ -758,7 +758,7 @@ function GatewayAdminSection({ endpoint }: { endpoint: OpenwaEndpoint }) {
             aria-describedby={keyError ? "openwa-admin-key-error" : undefined}
             onChange={(event) => setAdminKey(event.target.value)}
           />
-          <Button size="sm" variant="outline" disabled={replaceKey.isPending || !adminKey.trim()} onClick={() => replaceKey.mutate(adminKey.trim())}>
+          <Button size="sm" variant="secondary" disabled={replaceKey.isPending || !adminKey.trim()} onClick={() => replaceKey.mutate(adminKey.trim())}>
             {replaceKey.isPending ? "Verifying…" : configured ? "Replace admin key" : "Save admin key"}
           </Button>
         </div>
@@ -787,7 +787,7 @@ function CustomInstructionsSection({ endpoint }: { endpoint: OpenwaEndpoint }) {
         aria-describedby={error ? "openwa-custom-instructions-error" : undefined}
         onChange={(event) => setText(event.target.value)}
       />
-      <p className="text-xs text-muted-foreground">
+      <p className="text-xs text-ink-3">
         <span className="font-mono">{text.length}</span> / <span className="font-mono">{OPENWA_CUSTOM_INSTRUCTIONS_MAX_LENGTH}</span> characters
       </p>
       <FieldMessage id="openwa-custom-instructions" error={error} />

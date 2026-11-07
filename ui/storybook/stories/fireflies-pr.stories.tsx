@@ -20,7 +20,7 @@ const demoSecret = "storybook-only-signing-secret";
 const demoUrl = "https://acme.paperclip.example/api/routine-triggers/public/0123456789abcdef01234567/fire";
 const noop = () => {};
 function Frame({ children }: { children: ReactNode }) {
-  return <div className="mx-auto max-w-5xl space-y-6 p-6 text-foreground"><p className="text-xs text-muted-foreground">PR #13890 · Production components with simulated data. No provider requests or real credentials.</p>{children}</div>;
+  return <div className="mx-auto max-w-5xl space-y-6 p-6 text-ink"><p className="text-xs text-ink-3">PR #13890 · Production components with simulated data. No provider requests or real credentials.</p>{children}</div>;
 }
 const meta = {
   title: "PR reviews/Fireflies and app webhooks",
@@ -49,7 +49,7 @@ type Story = StoryObj<typeof meta>;
 
 function Catalog() {
   const [message, setMessage] = useState("");
-  return <Frame><ConnectorCard row={{ key: "fireflies", slug: "fireflies", brandKey: "fireflies", name: fireflies.name, description: fireflies.description, logoUrl: fireflies.branding?.logoUrl, entry: fireflies, applications: [], connections: [], chatEndpoints: [] }} userProfileById={new Map()} chatConnectorsEnabled={false} onRequestRemove={noop} onNavigate={() => setMessage("Open the Access story to walk through the connection flow.")} /><p role="status" className="text-sm text-muted-foreground">{message}</p></Frame>;
+  return <Frame><ConnectorCard row={{ key: "fireflies", slug: "fireflies", brandKey: "fireflies", name: fireflies.name, description: fireflies.description, logoUrl: fireflies.branding?.logoUrl, entry: fireflies, applications: [], connections: [], chatEndpoints: [] }} userProfileById={new Map()} chatConnectorsEnabled={false} onRequestRemove={noop} onNavigate={() => setMessage("Open the Access story to walk through the connection flow.")} /><p role="status" className="text-sm text-ink-3">{message}</p></Frame>;
 }
 function Flow({ stage }: { stage: "access" | "setup" }) {
   const navigate = useNavigate();

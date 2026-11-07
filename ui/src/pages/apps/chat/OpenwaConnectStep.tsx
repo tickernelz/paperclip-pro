@@ -36,7 +36,7 @@ function FieldLabel({ htmlFor, label, help }: { htmlFor: string; label: string; 
           <button
             type="button"
             aria-label={`Help with ${label.toLowerCase()}`}
-            className="rounded-sm text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="rounded-sm text-ink-3 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
           >
             <CircleHelp className="size-3.5" aria-hidden="true" />
           </button>
@@ -115,7 +115,7 @@ export function OpenwaConnectStep({
     <div className="space-y-5">
       <div className="space-y-2">
         <h1 className="text-xl font-bold">Connect OpenWA</h1>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           Connect {agentName} to one WhatsApp session on your self-hosted OpenWA gateway. Paperclip only reads the
           gateway during inspection; nothing is sent until an owner messages the number.
         </p>
@@ -126,7 +126,7 @@ export function OpenwaConnectStep({
         </p>
       </div>
       {repairing && (
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           Reconnect keeps this gateway session. Leave the API key blank to reuse the saved keys.
         </p>
       )}
@@ -188,35 +188,35 @@ export function OpenwaConnectStep({
         </div>
       </details>
       <Button
-        variant="outline"
+        variant="secondary"
         disabled={pending || inspection.isPending || !baseUrl.trim() || !apiKey.trim()}
         onClick={() => inspection.mutate()}
       >
         {inspection.isPending ? "Inspecting gateway…" : "Inspect gateway"}
       </Button>
       {inspection.isError && (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-sm text-bad">
           {sanitizedSetupErrorMessage(inspection.error, { apiKey, adminApiKey })}
         </p>
       )}
       {result && (
         <div className="space-y-4">
           <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-            <dt className="text-muted-foreground">Gateway version</dt>
+            <dt className="text-ink-3">Gateway version</dt>
             <dd>{result.gatewayVersion ?? `Unknown (assuming ${result.pinnedVersion})`}</dd>
-            <dt className="text-muted-foreground">Engine</dt>
+            <dt className="text-ink-3">Engine</dt>
             <dd>{result.engine ?? "Unknown"}</dd>
-            <dt className="text-muted-foreground">Key role</dt>
+            <dt className="text-ink-3">Key role</dt>
             <dd>{result.keyRole}</dd>
             {result.adminKey && (
               <>
-                <dt className="text-muted-foreground">Admin key</dt>
+                <dt className="text-ink-3">Admin key</dt>
                 <dd>{result.adminKey.role}</dd>
               </>
             )}
           </dl>
           {result.warnings.length > 0 && (
-            <div role="status" className="space-y-1 rounded-lg border border-border bg-muted/30 p-4 text-sm">
+            <div role="status" className="space-y-1 rounded-lg border border-line bg-bg-3/30 p-4 text-sm">
               {result.warnings.map((warning) => (
                 <p key={warning} className="flex gap-2">
                   <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
@@ -228,7 +228,7 @@ export function OpenwaConnectStep({
           <fieldset className="space-y-2">
             <legend className="text-sm font-medium">WhatsApp session</legend>
             {!result.eligible && (
-              <p role="alert" className="text-sm text-destructive">
+              <p role="alert" className="text-sm text-bad">
                 No session can be connected. Connect WhatsApp in the OpenWA dashboard or free the session from its other channel.
               </p>
             )}
@@ -268,7 +268,7 @@ export function OpenwaConnectStep({
               />
               <span>
                 <span className="font-medium">A number dedicated to {agentName}</span>
-                <span className="block text-muted-foreground">
+                <span className="block text-ink-3">
                   People message this number to reach the agent. Direct messages, mentions, and replies start work.
                 </span>
               </span>
@@ -284,7 +284,7 @@ export function OpenwaConnectStep({
               />
               <span>
                 <span className="font-medium">An owner&apos;s personal number</span>
-                <span className="block text-muted-foreground">
+                <span className="block text-ink-3">
                   The agent replies as you. Only chats you enable in Settings can trigger it, and its messages carry a
                   visible prefix so contacts know an assistant wrote them. Paperclip can read every chat this session can see.
                 </span>

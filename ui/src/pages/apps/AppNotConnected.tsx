@@ -93,7 +93,7 @@ export function AppNotConnected() {
     return <Navigate to={appApplicationTabHref(applicationId, "permissions")} replace />;
   }
   if (!selectedCompanyId) {
-    return <div className="p-6 text-sm text-muted-foreground">Select an organization to manage apps.</div>;
+    return <div className="p-6 text-sm text-ink-3">Select an organization to manage apps.</div>;
   }
   if (!applicationId || !activeTab) {
     return <Navigate to={applicationId ? appApplicationTabHref(applicationId, "permissions") : "/apps"} replace />;
@@ -108,9 +108,9 @@ export function AppNotConnected() {
   }
   if (!application) {
     return (
-      <div className="max-w-3xl space-y-3 p-6 text-sm text-muted-foreground">
+      <div className="max-w-3xl space-y-3 p-6 text-sm text-ink-3">
         <p>This app doesn’t exist anymore.</p>
-        <Button variant="outline" size="sm" onClick={() => navigate("/apps")}>Back to connectors</Button>
+        <Button variant="secondary" size="sm" onClick={() => navigate("/apps")}>Back to connectors</Button>
       </div>
     );
   }
@@ -216,12 +216,12 @@ function ApplicationHeader({
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <h1 className="truncate text-2xl font-bold tracking-tight">{applicationName}</h1>
-          <span className="inline-flex items-center rounded-full border border-border bg-background px-2 py-0.5 text-xs font-medium text-muted-foreground">
+          <span className="inline-flex items-center rounded-full border border-line bg-bg px-2 py-0.5 text-xs font-medium text-ink-3">
             {connectedCount > 0 ? `${connectedCount} connected` : "Not connected"}
           </span>
         </div>
         {description && (
-          <p className="mt-1 text-sm text-muted-foreground">{description}</p>
+          <p className="mt-1 text-sm text-ink-3">{description}</p>
         )}
       </div>
     </header>
@@ -242,12 +242,12 @@ function ConnectionCallout({
   onConnect: () => void;
 }) {
   return (
-    <section className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border px-4 py-3">
+    <section className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-line px-4 py-3">
       <div>
-        <h2 className="text-sm font-semibold text-foreground">
+        <h2 className="text-sm font-semibold text-ink">
           {previousConnection ? "Needs attention" : "Not connected"}
         </h2>
-        <p className="mt-0.5 text-sm text-muted-foreground">
+        <p className="mt-0.5 text-sm text-ink-3">
           {previousConnection
             ? previousConnection.authKind === "oauth"
               ? `Sign in to ${applicationName} again to restore access.`
@@ -255,7 +255,7 @@ function ConnectionCallout({
             : `Connect ${applicationName} so agents can use it.`}
         </p>
         {previousConnection && !canReconnect ? (
-          <p className="mt-1 text-sm text-muted-foreground">{reconnectUnavailableMessage}</p>
+          <p className="mt-1 text-sm text-ink-3">{reconnectUnavailableMessage}</p>
         ) : null}
       </div>
       {!previousConnection || canReconnect ? (
@@ -268,12 +268,12 @@ function ConnectionCallout({
 function PermissionsTab({ previousConnection }: { previousConnection: ToolConnection | null }) {
   return (
     <section>
-      <h2 className="text-sm font-bold text-foreground">Permissions paused</h2>
-      <p className="mt-1 text-sm text-muted-foreground">
+      <h2 className="text-sm font-bold text-ink">Permissions paused</h2>
+      <p className="mt-1 text-sm text-ink-3">
         Reconnect this app to edit who can use it and which actions need a human first.
       </p>
       {previousConnection && (
-        <p className="mt-3 text-xs text-muted-foreground">
+        <p className="mt-3 text-xs text-ink-3">
           Previous setup is retained for reconnect, but access controls stay read-only until the app is online.
         </p>
       )}
@@ -284,8 +284,8 @@ function PermissionsTab({ previousConnection }: { previousConnection: ToolConnec
 function EmptyTab({ title, body }: { title: string; body: string }) {
   return (
     <section>
-      <h2 className="text-sm font-bold text-foreground">{title}</h2>
-      <p className="mt-1 text-sm text-muted-foreground">{body}</p>
+      <h2 className="text-sm font-bold text-ink">{title}</h2>
+      <p className="mt-1 text-sm text-ink-3">{body}</p>
     </section>
   );
 }

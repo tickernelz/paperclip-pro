@@ -47,8 +47,8 @@ export function ModelOverrideSubtaskRows({
               disabled={disabled}
               data-testid={`${testIdPrefix}-scope-${scope.value}`}
               className={cn(
-                "flex-1 rounded-md border border-border px-2 py-1 text-xs transition-colors hover:bg-accent/40 disabled:opacity-50",
-                subtaskScope === scope.value && "bg-accent text-foreground",
+                "flex-1 rounded-md border border-line px-2 py-1 text-xs transition-colors hover:bg-bg-3/40 disabled:opacity-50",
+                subtaskScope === scope.value && "bg-bg-3 text-ink",
               )}
               onClick={() => onScopeChange(scope.value)}
             >
@@ -60,7 +60,7 @@ export function ModelOverrideSubtaskRows({
       {propagation ? (
         <div className="flex flex-col gap-0.5 px-1">
           <p
-            className="text-xs text-muted-foreground"
+            className="text-xs text-ink-3"
             data-testid={`${testIdPrefix}-propagation`}
           >
             {propagation.applied} of {propagation.visited} subtasks updated

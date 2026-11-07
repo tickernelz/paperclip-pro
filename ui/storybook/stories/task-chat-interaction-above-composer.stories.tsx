@@ -101,17 +101,17 @@ function InteractionAboveComposer({ interaction, mobile = false }: { interaction
   );
 
   if (mobile) return (
-    <div className="flex min-h-dvh flex-col bg-background text-foreground">
+    <div className="flex min-h-dvh flex-col bg-bg text-ink">
       <header className="flex h-12 shrink-0 items-center gap-3 px-4 text-sm">
-        <ChevronLeft className="size-4 text-muted-foreground" aria-hidden />
+        <ChevronLeft className="size-4 text-ink-3" aria-hidden />
         <span className="min-w-0 flex-1 truncate font-medium">PAP-1715 · Interaction review</span>
-        <Ellipsis className="size-4 text-muted-foreground" aria-hidden />
+        <Ellipsis className="size-4 text-ink-3" aria-hidden />
       </header>
       <main className="flex flex-1 flex-col p-4 pb-(--tc-composer-visible-nav-offset)"
         style={{ "--tc-composer-bottom": "var(--tc-composer-visible-nav-offset)" } as CSSProperties}>
         <div className="-mx-4 flex flex-1 flex-col">
           <div className="space-y-4 px-4 text-sm">
-            {messages.map((body, index) => <p key={index} className="ml-8 rounded-lg bg-secondary px-3 py-2">{body}</p>)}
+            {messages.map((body, index) => <p key={index} className="ml-8 rounded-lg bg-bg-3 px-3 py-2">{body}</p>)}
           </div>
           <div className="min-h-4 flex-1" />
           <TaskChatComposerDock mobile streamlined={false}>{composer}</TaskChatComposerDock>
@@ -122,14 +122,14 @@ function InteractionAboveComposer({ interaction, mobile = false }: { interaction
   );
 
   return (
-    <div className="flex min-h-screen flex-col bg-background p-6 text-foreground">
+    <div className="flex min-h-screen flex-col bg-bg p-6 text-ink">
       <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col">
         <header className="text-sm">
           <h1 className="text-base font-semibold">PAP-1715 · Interaction review</h1>
-          <p className="text-muted-foreground">A pending decision stays visible while you write a normal message.</p>
+          <p className="text-ink-3">A pending decision stays visible while you write a normal message.</p>
         </header>
         <div className="flex-1 space-y-3 py-6">
-          {messages.map((body, index) => <p key={index} className="ml-auto max-w-fit rounded-lg bg-secondary px-3 py-2 text-sm">{body}</p>)}
+          {messages.map((body, index) => <p key={index} className="ml-auto max-w-fit rounded-lg bg-bg-3 px-3 py-2 text-sm">{body}</p>)}
         </div>
         {composer}
       </div>
@@ -197,7 +197,7 @@ const runtimeRequest: TaskChatRuntimeRequestItem = {
 
 function RuntimeQuestionAboveComposer() {
   const [open, setOpen] = useState(true);
-  return <div className="flex min-h-screen flex-col bg-background p-6 text-foreground">
+  return <div className="flex min-h-screen flex-col bg-bg p-6 text-ink">
     <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col justify-end">
       <TaskChatComposer
         onAdd={async () => {}}

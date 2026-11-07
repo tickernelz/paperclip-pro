@@ -72,13 +72,13 @@ export function PathInstructionsModal({
           <DialogTitle className="text-base">How to get a full path</DialogTitle>
           <DialogDescription>
             Paste the absolute path (e.g.{" "}
-            <code className="text-xs bg-muted px-1 py-0.5 rounded">/Users/you/project</code>
+            <code className="text-xs bg-bg-3 px-1 py-0.5 rounded">/Users/you/project</code>
             ) into the input field.
           </DialogDescription>
         </DialogHeader>
 
         {/* Platform tabs */}
-        <div className="flex gap-1 rounded-md border border-border p-0.5">
+        <div className="flex gap-1 rounded-md border border-line p-0.5">
           {platforms.map((p) => (
             <button
               key={p.id}
@@ -86,8 +86,8 @@ export function PathInstructionsModal({
               className={cn(
                 "flex flex-1 items-center justify-center gap-1.5 rounded px-2 py-1 text-xs transition-colors",
                 platform === p.id
-                  ? "bg-accent text-foreground"
-                  : "text-muted-foreground hover:text-foreground hover:bg-accent/50",
+                  ? "bg-bg-3 text-ink"
+                  : "text-ink-3 hover:text-ink hover:bg-bg-3/50",
               )}
               onClick={() => setPlatform(p.id)}
             >
@@ -101,7 +101,7 @@ export function PathInstructionsModal({
         <ol className="space-y-2 text-sm">
           {current.steps.map((step, i) => (
             <li key={i} className="flex gap-2">
-              <span className="text-muted-foreground font-mono text-xs mt-0.5 shrink-0">
+              <span className="text-ink-3 font-mono text-xs mt-0.5 shrink-0">
                 {i + 1}.
               </span>
               <span>{step}</span>
@@ -110,7 +110,7 @@ export function PathInstructionsModal({
         </ol>
 
         {current.tip && (
-          <p className="text-xs text-muted-foreground border-l-2 border-border pl-3">
+          <p className="text-xs text-ink-3 border-l-2 border-line pl-3">
             {current.tip}
           </p>
         )}
@@ -130,7 +130,7 @@ export function ChoosePathButton({ className }: { className?: string }) {
       <button
         type="button"
         className={cn(
-          "inline-flex items-center rounded-md border border-border px-2 py-0.5 text-xs text-muted-foreground hover:bg-accent/50 transition-colors shrink-0",
+          "inline-flex items-center rounded-md border border-line px-2 py-0.5 text-xs text-ink-3 hover:bg-bg-3/50 transition-colors shrink-0",
           className,
         )}
         onClick={() => setOpen(true)}

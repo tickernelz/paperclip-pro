@@ -106,7 +106,7 @@ export function DocumentDiffModal({
                 value={effectiveLeftId ?? ""}
                 onValueChange={(value) => setLeftRevisionId(value)}
               >
-                <SelectTrigger className="h-7 w-60 text-xs border-border/60">
+                <SelectTrigger className="h-7 w-60 text-xs border-line/60">
                   <SelectValue placeholder="Select revision" />
                 </SelectTrigger>
                 <SelectContent>
@@ -124,7 +124,7 @@ export function DocumentDiffModal({
                 value={effectiveRightId ?? ""}
                 onValueChange={(value) => setRightRevisionId(value)}
               >
-                <SelectTrigger className="h-7 w-60 text-xs border-border/60">
+                <SelectTrigger className="h-7 w-60 text-xs border-line/60">
                   <SelectValue placeholder="Select revision" />
                 </SelectTrigger>
                 <SelectContent>
@@ -139,16 +139,16 @@ export function DocumentDiffModal({
           </div>
         </div>
 
-        <div className="overflow-auto flex-1 rounded-md border border-border text-xs">
+        <div className="overflow-auto flex-1 rounded-md border border-line text-xs">
           {!revisions ? (
-            <div className="p-6 text-center text-muted-foreground text-sm">Loading revisions...</div>
+            <div className="p-6 text-center text-ink-3 text-sm">Loading revisions...</div>
           ) : !leftRevision || !rightRevision ? (
-            <div className="p-6 text-center text-muted-foreground text-sm">Select two revisions to compare.</div>
+            <div className="p-6 text-center text-ink-3 text-sm">Select two revisions to compare.</div>
           ) : leftRevision.id === rightRevision.id ? (
-            <div className="p-6 text-center text-muted-foreground text-sm">Both sides are the same revision.</div>
+            <div className="p-6 text-center text-ink-3 text-sm">Both sides are the same revision.</div>
           ) : (
             <div className="font-mono text-xs leading-6">
-              <div className="grid grid-cols-(--gtc-1) border-b border-border/60 bg-muted/30 px-3 py-2 text-(length:--text-micro) uppercase tracking-wide text-muted-foreground">
+              <div className="grid grid-cols-(--gtc-1) border-b border-line/60 bg-bg-3/30 px-3 py-2 text-(length:--text-micro) uppercase tracking-wide text-ink-3">
                 <span>Old</span>
                 <span>New</span>
                 <span />
@@ -157,15 +157,15 @@ export function DocumentDiffModal({
               {diffRows.map((row, index) => (
                 <div
                   key={`${row.kind}-${index}-${row.oldLineNumber ?? "x"}-${row.newLineNumber ?? "x"}`}
-                  className={`grid grid-cols-(--gtc-1) gap-0 border-b border-border/30 px-3 ${lineClassesByKind[row.kind]}`}
+                  className={`grid grid-cols-(--gtc-1) gap-0 border-b border-line/30 px-3 ${lineClassesByKind[row.kind]}`}
                 >
-                  <span className="select-none border-r border-border/30 pr-3 text-right text-muted-foreground">
+                  <span className="select-none border-r border-line/30 pr-3 text-right text-ink-3">
                     {row.oldLineNumber ?? ""}
                   </span>
-                  <span className="select-none border-r border-border/30 px-3 text-right text-muted-foreground">
+                  <span className="select-none border-r border-line/30 px-3 text-right text-ink-3">
                     {row.newLineNumber ?? ""}
                   </span>
-                  <span className="select-none px-3 text-center text-muted-foreground">
+                  <span className="select-none px-3 text-center text-ink-3">
                     {markerByKind[row.kind]}
                   </span>
                   <pre className="overflow-x-auto whitespace-pre-wrap break-words px-3 py-0 text-inherit">

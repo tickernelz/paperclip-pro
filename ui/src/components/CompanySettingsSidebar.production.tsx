@@ -87,14 +87,14 @@ export function CompanySettingsSidebar() {
   const sidebarPlugins = (plugins ?? []).filter((plugin) => !isSandboxProviderOnly(plugin));
 
   return (
-    <aside className="w-full h-full min-h-0 border-r border-border bg-background flex flex-col">
+    <aside className="w-full h-full min-h-0 border-r border-line bg-bg flex flex-col">
       <div className="flex flex-col gap-1 px-3 py-3 shrink-0">
         <Link
           to="/dashboard"
           onClick={() => {
             if (isMobile) setSidebarOpen(false);
           }}
-          className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
+          className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-ink-3 transition-colors hover:bg-bg-3/50 hover:text-ink"
         >
           <ChevronLeft className="h-3.5 w-3.5 shrink-0" />
           <span className="truncate">{selectedCompany?.name ?? "Company"}</span>
@@ -186,7 +186,7 @@ export function CompanySettingsSidebar() {
             />
           )}
           {showPlugins && sidebarPlugins.length > 0 ? (
-            <div className="ml-4 mt-1 flex flex-col gap-0.5 border-l border-border/70 pl-3">
+            <div className="ml-4 mt-1 flex flex-col gap-0.5 border-l border-line/70 pl-3">
               {sidebarPlugins.map((plugin) => (
                 <NavLink
                   key={plugin.id}
@@ -196,8 +196,8 @@ export function CompanySettingsSidebar() {
                     [
                       "rounded-md px-2 py-1.5 text-xs transition-colors",
                       isActive
-                        ? "bg-accent text-foreground"
-                        : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+                        ? "bg-bg-3 text-ink"
+                        : "text-ink-3 hover:bg-bg-3/50 hover:text-ink",
                     ].join(" ")
                   }
                 >

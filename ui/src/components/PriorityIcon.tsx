@@ -45,7 +45,7 @@ export function PriorityIcon({ priority, onChange, className, showLabel }: Prior
     <button
       type="button"
       aria-label={`Change priority (current: ${config.label})`}
-      className="inline-flex min-h-5 items-center gap-1.5 cursor-pointer hover:bg-accent/50 rounded px-1 -mx-1 py-0.5 transition-colors"
+      className="inline-flex min-h-5 items-center gap-1.5 cursor-pointer hover:bg-bg-3/50 rounded px-1 -mx-1 py-0.5 transition-colors"
     >
       {icon}
       <span className="text-sm">{config.label}</span>
@@ -55,7 +55,7 @@ export function PriorityIcon({ priority, onChange, className, showLabel }: Prior
       type="button"
       data-slot="icon-button"
       aria-label={`Change priority (current: ${config.label})`}
-      className="inline-flex cursor-pointer items-center justify-center rounded-sm focus-visible:outline-none focus-visible:ring-(length:--rad-3) focus-visible:ring-ring"
+      className="inline-flex cursor-pointer items-center justify-center rounded-sm focus-visible:outline-none focus-visible:ring-(length:--rad-3) focus-visible:ring-focus"
     >
       {icon}
     </button>
@@ -69,11 +69,11 @@ export function PriorityIcon({ priority, onChange, className, showLabel }: Prior
           const c = priorityConfig[p]!;
           const PIcon = c.icon;
           return (
-            <Button
+            <Button active={p === priority}
               key={p}
               variant="ghost"
               size="sm"
-              className={cn("w-full justify-start gap-2 text-xs", p === priority && "bg-accent")}
+              className={cn("w-full justify-start gap-2 text-xs")}
               onClick={() => {
                 onChange(p);
                 setOpen(false);

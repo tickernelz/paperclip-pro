@@ -48,7 +48,7 @@ function contrastRatio(first: string, second: string): number {
 }
 
 describe("destructive theme tokens", () => {
-  // Confirm buttons use `bg-destructive text-destructive-foreground`. The label
+  // Confirm buttons use `bg-bad text-accent-ink`. The label
   // must stay readable on the destructive fill in both themes.
   // Light theme meets WCAG AA for normal text (4.5:1). The dark theme keeps the
   // brighter red chosen in the gallery review, so it only has to meet 3:1.

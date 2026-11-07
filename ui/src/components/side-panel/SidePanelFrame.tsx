@@ -50,9 +50,9 @@ export function SidePanelFrame({
       data-resizing={resizing ? "true" : "false"}
       className={cn(
         "flex min-h-0 min-w-0 flex-col overflow-hidden bg-(--side-panel-bg) text-(--side-panel-fg)",
-        presentation === "docked" && "h-full border-l border-border",
+        presentation === "docked" && "h-full border-l border-line",
         presentation === "sheet" && "h-full w-full",
-        presentation === "embedded" && "h-full rounded-xl border border-border",
+        presentation === "embedded" && "h-full rounded-xl border border-line",
         !open && "pointer-events-none opacity-0",
         className,
       )}
@@ -88,7 +88,7 @@ export function SidePanelFrame({
       {footer ? (
         <footer className={cn(
           "shrink-0",
-          headerSize !== "task-detail" && "border-t border-border",
+          headerSize !== "task-detail" && "border-t border-line",
         )}>
           {footer}
         </footer>
@@ -112,7 +112,7 @@ export function SidePanelToggleButton({
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <Button
+        <Button active={open}
           type="button"
           variant="ghost"
           size="icon-sm"
@@ -121,7 +121,6 @@ export function SidePanelToggleButton({
           onClick={onToggle}
           className={cn(
             "h-(--side-panel-tab-height) w-(--side-panel-tab-height)",
-            open && "bg-accent text-accent-foreground",
             className,
           )}
         >
@@ -152,7 +151,7 @@ export function SidePanelWindowControls({
         type="button"
         variant="ghost"
         size="icon-sm"
-        className="h-(--side-panel-tab-height) w-(--side-panel-tab-height) text-muted-foreground hover:text-foreground focus-visible:text-foreground"
+        className="h-(--side-panel-tab-height) w-(--side-panel-tab-height)"
         onClick={() => onMaximizedChange(!maximized)}
         aria-label={maximized ? "Restore side panel" : "Maximize side panel"}
         title={maximized ? "Restore side panel" : "Maximize side panel"}
@@ -164,7 +163,7 @@ export function SidePanelWindowControls({
           type="button"
           variant="ghost"
           size="icon-sm"
-          className="h-(--side-panel-tab-height) w-(--side-panel-tab-height) text-muted-foreground hover:text-foreground focus-visible:text-foreground"
+          className="h-(--side-panel-tab-height) w-(--side-panel-tab-height)"
           onClick={onToggle}
           aria-label="Close side panel"
           title="Close side panel"

@@ -104,7 +104,7 @@ export const STATUS_CARD_LIFECYCLE_PRESENTATION: Record<
   },
   archived: {
     label: "Archived",
-    dotClassName: "bg-muted-foreground/50",
+    dotClassName: "bg-ink-3/50",
     description: "No auto-updates and no watches. Restore to start watching again.",
     dashedBorder: false,
     keepsLastSummary: true,

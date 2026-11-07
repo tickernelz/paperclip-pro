@@ -66,7 +66,7 @@ function FullPageTimelineHarness() {
   }
 
   return (
-    <div className="min-h-screen bg-background p-6 text-foreground">
+    <div className="min-h-screen bg-bg p-6 text-ink">
       <Timeline />
     </div>
   );
@@ -96,7 +96,7 @@ function TimelineHarness({
   };
 
   return (
-    <div className="min-h-screen bg-background p-6 text-foreground">
+    <div className="min-h-screen bg-bg p-6 text-ink">
       <div className="space-y-6">
         <div className="space-y-2">
           <h1 className="text-3xl font-semibold tracking-tight">Work Timeline</h1>
@@ -105,7 +105,7 @@ function TimelineHarness({
         <div className="flex flex-wrap items-center justify-end gap-1" aria-label="Timeline zoom controls">
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             size="icon-xs"
             onClick={() => adjustZoom(0.8)}
             aria-label="Zoom out"
@@ -115,7 +115,7 @@ function TimelineHarness({
           </Button>
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             size="icon-xs"
             onClick={() => adjustZoom(1.25)}
             aria-label="Zoom in"
@@ -125,7 +125,7 @@ function TimelineHarness({
           </Button>
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             size="icon-xs"
             onClick={resetZoom}
             aria-label="Reset zoom"
@@ -136,7 +136,7 @@ function TimelineHarness({
         </div>
 
         <div className="space-y-3">
-          <div className="rounded-lg border border-border bg-card">
+          <div className="rounded-lg border border-line bg-bg-2">
             <WorkTimelineChart
               data={data}
               zoom={zoom}
@@ -148,7 +148,7 @@ function TimelineHarness({
               }}
             />
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             {data.spans.length} runs · {data.actors.length} actors · {data.events.length} human/instant events · real
             company data
           </p>

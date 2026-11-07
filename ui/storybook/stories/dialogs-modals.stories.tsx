@@ -266,13 +266,13 @@ function Section({
 }) {
   return (
     <section className="paperclip-story__frame overflow-hidden">
-      <div className="border-b border-border px-5 py-4">
+      <div className="border-b border-line px-5 py-4">
         <div className="paperclip-story__label">{eyebrow}</div>
         <div className="mt-1 flex flex-wrap items-end justify-between gap-3">
           <div>
             <h2 className="text-xl font-semibold">{title}</h2>
             {description ? (
-              <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">{description}</p>
+              <p className="mt-2 max-w-3xl text-sm leading-6 text-ink-3">{description}</p>
             ) : null}
           </div>
         </div>
@@ -306,15 +306,15 @@ function DialogBackdropFrame({
       <Section eyebrow={eyebrow} title={title} description={description}>
         <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_260px]">
           <div className="space-y-3">
-            <div className="h-3 w-36 rounded-full bg-muted" />
-            <div className="h-24 rounded-lg border border-dashed border-border bg-muted/30" />
+            <div className="h-3 w-36 rounded-full bg-bg-3" />
+            <div className="h-24 rounded-lg border border-dashed border-line bg-bg-3/30" />
             <div className="grid gap-3 sm:grid-cols-3">
-              <div className="h-16 rounded-lg border border-border bg-background/70" />
-              <div className="h-16 rounded-lg border border-border bg-background/70" />
-              <div className="h-16 rounded-lg border border-border bg-background/70" />
+              <div className="h-16 rounded-lg border border-line bg-bg/70" />
+              <div className="h-16 rounded-lg border border-line bg-bg/70" />
+              <div className="h-16 rounded-lg border border-line bg-bg/70" />
             </div>
           </div>
-          <div className="rounded-lg border border-border bg-background/70 p-4">
+          <div className="rounded-lg border border-line bg-bg/70 p-4">
             <div className="mb-3 text-sm font-medium">Story state</div>
             <div className="flex flex-wrap gap-2">
               {badges.map((badge) => (

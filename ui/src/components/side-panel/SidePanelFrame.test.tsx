@@ -58,7 +58,7 @@ describe("side-panel shell controls", () => {
     expect(toggleButtons[0]?.className).toContain("h-(--side-panel-tab-height)");
     await act(async () => toggleButtons[0]?.click());
     const maximizeButton = container.querySelector<HTMLButtonElement>('[aria-label="Maximize side panel"]');
-    expect(maximizeButton?.className).toContain("text-muted-foreground");
+    expect(maximizeButton?.className).toContain("text-ink-3");
     expect(maximizeButton?.className).toContain("h-(--side-panel-tab-height)");
     await act(async () => maximizeButton?.click());
     await act(async () => toggleButtons[1]?.click());

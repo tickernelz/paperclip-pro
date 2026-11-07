@@ -150,7 +150,7 @@ export function ConnectionSetup({
           description: entry.description,
           icon:
             entry.value === "custom" ? (
-              <span className="flex size-9 items-center justify-center rounded-lg bg-muted text-muted-foreground">
+              <span className="flex size-9 items-center justify-center rounded-lg bg-bg-3 text-ink-3">
                 <Network className="size-5" />
               </span>
             ) : (
@@ -196,17 +196,17 @@ export function ConnectionSetup({
           environment before running tasks.
         </Notice>
         <dl className="grid grid-cols-2 gap-3 text-sm">
-          <dt className="text-muted-foreground">Provider</dt>
+          <dt className="text-ink-3">Provider</dt>
           <dd>{providerLabel}</dd>
-          <dt className="text-muted-foreground">Destination</dt>
+          <dt className="text-ink-3">Destination</dt>
           <dd className="break-all font-mono text-xs">{result.endpoint}</dd>
-          <dt className="text-muted-foreground">Credential access</dt>
+          <dt className="text-ink-3">Credential access</dt>
           <dd>
             {ownership === "personal"
               ? "Only me"
               : "Any human in the organization"}
           </dd>
-          <dt className="text-muted-foreground">Agent access</dt>
+          <dt className="text-ink-3">Agent access</dt>
           <dd>
             {allAgents
               ? "Any agent"
@@ -315,7 +315,7 @@ export function ConnectionSetup({
                   },
                 ]}
               />
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-ink-3">
                 Uses the identity available inside the selected execution
                 environment. Agents running elsewhere need an identity there
                 too.

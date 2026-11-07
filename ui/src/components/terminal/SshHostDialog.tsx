@@ -114,13 +114,13 @@ export function SshHostDialog({ companyId, open, savedHosts, onOpenChange, onCon
             />
           </div>
           {error ? (
-            <p className="text-xs text-destructive" role="alert">
+            <p className="text-xs text-bad" role="alert">
               {error}
             </p>
           ) : null}
           {savedHosts.length > 0 ? (
-            <div className="space-y-1 border-t border-border pt-3">
-              <p className="text-xs font-medium text-foreground">Saved hosts</p>
+            <div className="space-y-1 border-t border-line pt-3">
+              <p className="text-xs font-medium text-ink">Saved hosts</p>
               <ul className="space-y-1">
                 {savedHosts.map((host) => (
                   <li key={host.id} className="flex items-center gap-2 text-xs">
@@ -133,7 +133,7 @@ export function SshHostDialog({ companyId, open, savedHosts, onOpenChange, onCon
                       }}
                     >
                       {host.name}
-                      <span className="ml-2 text-muted-foreground">
+                      <span className="ml-2 text-ink-3">
                         {host.destination}
                         {host.port === null ? "" : `:${host.port}`}
                       </span>

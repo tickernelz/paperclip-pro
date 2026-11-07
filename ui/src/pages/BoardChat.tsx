@@ -64,7 +64,7 @@ function agentInitials(name: string): string {
  * the shared `[agent icon][agent name]` convention (PAP-105 / PAP-97).
  */
 function AgentBubbleHeader({ agent }: { agent: import("../components/AgentAvatar").AvatarAgent }) {
-  return <div className="mb-1 flex items-center gap-1.5 pl-1"><AgentAvatar agent={agent} size={24} /><span className="text-sm font-medium text-foreground">{agent.name}</span></div>;
+  return <div className="mb-1 flex items-center gap-1.5 pl-1"><AgentAvatar agent={agent} size={24} /><span className="text-sm font-medium text-ink">{agent.name}</span></div>;
 }
 
 /** Agent-styled chat bubble containing the three-dot typing indicator. */
@@ -74,13 +74,13 @@ function TypingBubble() {
       <div
         className={cn(
           boardChatBubbleShell,
-          "bg-card border border-border text-foreground [border-radius:14px_14px_14px_4px]",
+          "bg-bg-2 border border-line text-ink [border-radius:14px_14px_14px_4px]",
         )}
       >
         <span className="typing-dots" aria-label="typing">
-          <span />
-          <span />
-          <span />
+          <span className="typing-dot" />
+          <span className="typing-dot" />
+          <span className="typing-dot" />
         </span>
       </div>
     </div>
@@ -646,7 +646,7 @@ export function BoardChat() {
       <div className="flex items-center justify-center h-full">
         <div className="text-center max-w-sm">
           <h2 className="text-lg font-semibold">No organization selected</h2>
-          <p className="text-sm text-muted-foreground mt-2">
+          <p className="text-sm text-ink-3 mt-2">
             Select an organization to start chatting with your board concierge.
           </p>
         </div>
@@ -663,7 +663,7 @@ export function BoardChat() {
         {/* Left: chat (self-contained pane) — full width on mobile, 2/3 default on desktop */}
         <div
           className={cn(
-            "relative flex min-h-0 min-w-0 shrink-0 flex-col bg-background",
+            "relative flex min-h-0 min-w-0 shrink-0 flex-col bg-bg",
             "w-full md:w-auto",
             innerWidth <= 0 && "md:w-2/3",
           )}
@@ -671,14 +671,14 @@ export function BoardChat() {
         >
           <div className="relative flex shrink-0 items-center justify-between gap-2 px-4 py-3">
             <div
-              className="pointer-events-none absolute bottom-0 left-0 right-0 h-px bg-border"
+              className="pointer-events-none absolute bottom-0 left-0 right-0 h-px bg-line"
               aria-hidden
             />
             <div className="min-w-0 flex-1">
               <h3 className="text-sm font-semibold">
                 {ceoAgent?.name ?? "Conference Room"}
               </h3>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-ink-3">
                 {selectedCompany?.name ?? "Your organization"}
               </p>
             </div>
@@ -689,7 +689,6 @@ export function BoardChat() {
                     type="button"
                     variant="ghost"
                     size="icon-sm"
-                    className="text-muted-foreground"
                     aria-label="chat history"
                   >
                     <History className="h-4 w-4" />
@@ -703,7 +702,6 @@ export function BoardChat() {
                     type="button"
                     variant="ghost"
                     size="icon-sm"
-                    className="text-muted-foreground"
                     aria-label="new chat"
                   >
                     <MessageSquarePlus className="h-4 w-4" />
@@ -767,7 +765,7 @@ export function BoardChat() {
                       <div
                         className={cn(
                           boardChatBubbleShell,
-                          "bg-card border border-border text-foreground [border-radius:14px_14px_14px_4px]",
+                          "bg-bg-2 border border-line text-ink [border-radius:14px_14px_14px_4px]",
                         )}
                       >
                         <MarkdownBody className={BOARD_CHAT_MARKDOWN_CLASS}>{welcomeBody}</MarkdownBody>
@@ -784,7 +782,7 @@ export function BoardChat() {
                               composerRef.current?.focus();
                             }}
                             // design-allow(card-pattern): interactive suggestion-pill <button>, not a content card (C5a Run 3)
-                            className="rounded-full border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground transition-colors duration-150 hover:bg-accent hover:text-foreground"
+                            className="rounded-full border border-line bg-bg-2 px-3 py-1.5 text-xs text-ink-3 transition-colors duration-150 hover:bg-bg-3 hover:text-ink"
                           >
                             {chip.label}
                           </button>
@@ -824,7 +822,7 @@ export function BoardChat() {
                     <div
                       className={cn(
                         boardChatBubbleShell,
-                        "bg-card border border-border text-foreground [border-radius:14px_14px_14px_4px]",
+                        "bg-bg-2 border border-line text-ink [border-radius:14px_14px_14px_4px]",
                       )}
                     >
                       <MarkdownBody className={BOARD_CHAT_MARKDOWN_CLASS}>
@@ -875,7 +873,7 @@ export function BoardChat() {
                   <div
                     className={cn(
                       boardChatBubbleShell,
-                      "bg-card border border-border text-foreground [border-radius:14px_14px_14px_4px]",
+                      "bg-bg-2 border border-line text-ink [border-radius:14px_14px_14px_4px]",
                     )}
                   >
                     <MarkdownBody className={BOARD_CHAT_MARKDOWN_CLASS}>{streamingText}</MarkdownBody>
@@ -891,7 +889,7 @@ export function BoardChat() {
 
               {/* Status bar — always visible while sending, independent from the chat bubble */}
               {sending && (
-                <div className="flex items-center gap-2 pl-1 text-xs text-muted-foreground">
+                <div className="flex items-center gap-2 pl-1 text-xs text-ink-3">
                   <img src="/paperclip-thinking.svg" alt="" className="inline-block shrink-0" style={{ width: 14, height: 14 }} />
                   <span>{statusText || "Thinking..."}</span>
                   {elapsedSec > 0 && (
@@ -910,7 +908,7 @@ export function BoardChat() {
                   <div
                     className={cn(
                       boardChatBubbleShell,
-                      "bg-destructive/10 border border-destructive/30 text-destructive [border-radius:14px_14px_14px_4px]",
+                      "bg-bad/10 border border-bad/30 text-bad [border-radius:14px_14px_14px_4px]",
                     )}
                   >
                     {errorText}
@@ -930,7 +928,7 @@ export function BoardChat() {
               onClick={() => scrollToLatest("smooth")}
               aria-label="Jump to latest messages"
               // design-allow(card-pattern): floating scroll-to-bottom <button>, not a content card (C5a Run 3)
-              className="absolute bottom-24 left-1/2 z-20 grid h-8 w-8 -translate-x-1/2 place-items-center rounded-full border border-border bg-card text-foreground shadow-md transition-colors duration-150 hover:bg-accent hover:border-muted-foreground/30"
+              className="absolute bottom-24 left-1/2 z-20 grid h-8 w-8 -translate-x-1/2 place-items-center rounded-full border border-line bg-bg-2 text-ink shadow-md transition-colors duration-150 hover:bg-bg-3 hover:border-ink-3/30"
             >
               <ArrowDown className="h-4 w-4" />
             </button>
@@ -948,7 +946,7 @@ export function BoardChat() {
                mask is gone — the dock carries the task-style soft top fade instead
                (mirrors IssueChatThread's composer dock). pointer-events pass through
                the fade so the scrollbar stays usable; the composer re-enables them. */}
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-background via-background/95 to-background/0 px-6 pt-6 pb-5">
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-bg via-bg/95 to-bg/0 px-6 pt-6 pb-5">
             <ChatComposer
               ref={composerRef}
               value={input}
@@ -970,11 +968,11 @@ export function BoardChat() {
           role="separator"
           aria-orientation="vertical"
           aria-label="Resize board chat and agent feed"
-          className="group relative hidden w-3 shrink-0 cursor-col-resize bg-background md:flex"
+          className="group relative hidden w-3 shrink-0 cursor-col-resize bg-bg md:flex"
           onMouseDown={handleSplitDragStart}
         >
           <div
-            className="pointer-events-none absolute top-0 bottom-0 left-0 w-px bg-border transition-colors group-hover:bg-foreground/20"
+            className="pointer-events-none absolute top-0 bottom-0 left-0 w-px bg-line transition-colors group-hover:bg-ink/20"
             aria-hidden
           />
         </div>

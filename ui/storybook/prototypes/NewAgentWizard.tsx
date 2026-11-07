@@ -69,10 +69,10 @@ function TextField({ label, hint, value, onChange, placeholder, required, invali
 }) {
   const id = useId();
   return <div className="flex flex-col gap-2">
-    <label htmlFor={id} className="text-sm font-medium">{label}{required && <span className="text-muted-foreground"> (required)</span>}</label>
+    <label htmlFor={id} className="text-sm font-medium">{label}{required && <span className="text-ink-3"> (required)</span>}</label>
     <Input id={id} type={type} value={value} onChange={event => onChange(event.target.value)} placeholder={placeholder}
       required={required} readOnly={readOnly} aria-invalid={invalid || undefined} aria-describedby={hint ? `${id}-hint` : undefined} />
-    {hint && <p id={`${id}-hint`} className="text-xs leading-relaxed text-muted-foreground">{hint}</p>}
+    {hint && <p id={`${id}-hint`} className="text-xs leading-relaxed text-ink-3">{hint}</p>}
   </div>;
 }
 
@@ -80,7 +80,7 @@ function SelectField({ label, value, onChange, options, hint, hideLabel = false 
   label: string; value: string; onChange: (value: string) => void; options: string[]; hint?: string; hideLabel?: boolean;
 }) {
   const control = <select aria-label={label} value={value} onChange={event => onChange(event.target.value)}
-    className="w-full rounded-md border border-border bg-background px-2.5 py-1.5 text-sm leading-5 outline-none focus-visible:ring-2 focus-visible:ring-ring">
+    className="w-full rounded-md border border-line bg-bg px-2.5 py-1.5 text-sm leading-5 outline-none focus-visible:ring-2 focus-visible:ring-focus">
     {options.map(option => <option key={option}>{option}</option>)}
   </select>;
   return hideLabel ? control : <Field label={label} hint={hint}>{control}</Field>;
@@ -89,7 +89,7 @@ function SelectField({ label, value, onChange, options, hint, hideLabel = false 
 function Section({ title, description, children }: { title: string; description?: string; children: ReactNode }) {
   return <section className="flex flex-col gap-5">
     <div className="flex flex-col gap-1"><h3 className="text-sm font-semibold">{title}</h3>
-      {description && <p className="text-sm text-muted-foreground">{description}</p>}</div>
+      {description && <p className="text-sm text-ink-3">{description}</p>}</div>
     {children}
   </section>;
 }
@@ -204,9 +204,9 @@ export function NewAgentWizard({ initialScreen = "name", initialAdapter = null, 
   const currentStep = steps.findIndex(step => step.screen === screen);
 
   return <MotionConfig reducedMotion="user">
-    <div className="min-h-screen bg-background text-foreground">
-      <div className="flex items-center justify-between gap-3 border-b border-border px-6 py-3">
-        <span className="text-xs text-muted-foreground">Design preview · Changes stay in this story</span>
+    <div className="min-h-screen bg-bg text-ink">
+      <div className="flex items-center justify-between gap-3 border-b border-line px-6 py-3">
+        <span className="text-xs text-ink-3">Design preview · Changes stay in this story</span>
         <Button size="sm" variant="ghost" onClick={() => {
           resetTest(); setTaskCreated(null); setName(""); setAdapter(null); setDrafts({}); setEnvironments({}); setRunnerProvider("Codex (app server)"); setConnections({}); go("name"); setOpen(true);
         }}><RotateCcw className="size-3.5" />Start over</Button>
@@ -215,14 +215,14 @@ export function NewAgentWizard({ initialScreen = "name", initialAdapter = null, 
       {modal ? <>
         <div className="mx-auto flex max-w-5xl flex-col gap-8 px-6 py-10">
           <div className="flex items-center justify-between"><div className="flex flex-col gap-1">
-            <h1 className="text-xl font-bold">Agents</h1><p className="text-sm text-muted-foreground">The people behind your company.</p>
+            <h1 className="text-xl font-bold">Agents</h1><p className="text-sm text-ink-3">The people behind your company.</p>
           </div>
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild><Button><Plus className="size-4" />New agent</Button></DialogTrigger>
               <DialogContent className={cn("flex max-h-(--sz-calc-18) flex-col gap-0 overflow-hidden p-0 sm:max-w-(--sz-640px)", screen === "name" && "sm:max-w-(--sz-560px)")}>
-                <div className="flex items-center gap-2 px-6 py-5 text-xs text-muted-foreground" aria-label="New agent progress">
-                  <span className={cn(screen === "name" && "text-foreground font-medium")}>1. Name</span><ChevronRight className="size-3" />
-                  <span className={cn(screen === "adapter" && "text-foreground font-medium")}>2. Adapter</span>
+                <div className="flex items-center gap-2 px-6 py-5 text-xs text-ink-3" aria-label="New agent progress">
+                  <span className={cn(screen === "name" && "text-ink font-medium")}>1. Name</span><ChevronRight className="size-3" />
+                  <span className={cn(screen === "adapter" && "text-ink font-medium")}>2. Adapter</span>
                 </div>
                 <form className="flex min-h-0 flex-col" onSubmit={event => {
                   event.preventDefault();
@@ -250,7 +250,7 @@ export function NewAgentWizard({ initialScreen = "name", initialAdapter = null, 
                           const info = getAdapterDisplay(type);
                           return <label key={type} className="relative cursor-pointer">
                             <input type="radio" name="new-agent-adapter" value={type} checked={adapter === type} onChange={() => setAdapter(type)} className="peer sr-only" />
-                            <span className={cn("flex h-full flex-col items-center gap-2 rounded-lg border px-3 py-4 text-center peer-focus-visible:ring-2 peer-focus-visible:ring-ring hover:bg-accent/40", adapter === type ? "border-foreground/40 bg-accent" : "border-border bg-card")}>
+                            <span className={cn("flex h-full flex-col items-center gap-2 rounded-lg border px-3 py-4 text-center peer-focus-visible:ring-2 peer-focus-visible:ring-focus hover:bg-bg-3/40", adapter === type ? "border-ink/40 bg-bg-3" : "border-line bg-bg-2")}>
                               <span aria-hidden="true"><AdapterMark adapter={type} /></span>
                               <span className="text-sm font-medium">{info.label}</span>
                               {adapter === type && <Check className="absolute right-2 top-2 size-3.5" />}
@@ -262,7 +262,7 @@ export function NewAgentWizard({ initialScreen = "name", initialAdapter = null, 
                         options={["Codex (app server)", "Claude (ACPX)", "OpenCode"]} onChange={value => setRunnerProvider(value as RunnerProvider)} />}
                     </fieldset>}
                   </div>
-                  <div className="flex items-center justify-between gap-4 border-t border-border px-6 py-4">
+                  <div className="flex items-center justify-between gap-4 border-t border-line px-6 py-4">
                     <Button type="button" variant="ghost" onClick={() => screen === "name" ? setOpen(false) : go("name")}>
                       {screen === "name" ? "Cancel" : <><ArrowLeft className="size-4" />Back</>}
                     </Button>
@@ -274,18 +274,18 @@ export function NewAgentWizard({ initialScreen = "name", initialAdapter = null, 
               </DialogContent>
             </Dialog>
           </div>
-          <div className="flex items-center gap-4 rounded-lg border border-border p-5"><Users className="size-8 text-muted-foreground" />
-            <div className="flex flex-col gap-1"><p className="text-sm font-medium">Build your team</p><p className="text-sm text-muted-foreground">Create a new agent to get started.</p></div>
+          <div className="flex items-center gap-4 rounded-lg border border-line p-5"><Users className="size-8 text-ink-3" />
+            <div className="flex flex-col gap-1"><p className="text-sm font-medium">Build your team</p><p className="text-sm text-ink-3">Create a new agent to get started.</p></div>
           </div>
         </div>
       </> : <div className="mx-auto flex max-w-5xl flex-col gap-8 px-6 py-8">
         <div className="flex flex-col gap-6">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground"><span>Agents</span><ChevronRight className="size-3" /><span>{name || "Darnold"}</span><ChevronRight className="size-3" /><span className="text-foreground">{screen === "connect" ? "Connect" : screen === "saved" ? "Confirmation" : "Configuration"}</span></div>
+          <div className="flex items-center gap-2 text-xs text-ink-3"><span>Agents</span><ChevronRight className="size-3" /><span>{name || "Darnold"}</span><ChevronRight className="size-3" /><span className="text-ink">{screen === "connect" ? "Connect" : screen === "saved" ? "Confirmation" : "Configuration"}</span></div>
           <div className="flex items-start gap-4">
             <PillGuy state="dormant" className="size-14 shrink-0" />
             <div className="flex min-w-0 flex-col gap-2">
               <div className="flex flex-wrap items-center gap-3"><h1 ref={heading} tabIndex={-1} className="break-words text-2xl font-semibold tracking-tight outline-none">{name || "Darnold"}</h1><Badge variant="outline">{screen === "saved" ? "Configured" : "Setup in progress"}</Badge></div>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground"><AdapterMark adapter={brandAdapter} /><span>{getAdapterDisplay(brandAdapter).label}</span>{isRunner && <Badge variant="outline">{runnerProvider === "Codex (app server)" ? "Native app server runner" : runnerProvider === "Claude (ACPX)" ? "ACPX runner" : "Paperclip Runner"}</Badge>}</div>
+              <div className="flex items-center gap-2 text-sm text-ink-3"><AdapterMark adapter={brandAdapter} /><span>{getAdapterDisplay(brandAdapter).label}</span>{isRunner && <Badge variant="outline">{runnerProvider === "Codex (app server)" ? "Native app server runner" : runnerProvider === "Claude (ACPX)" ? "ACPX runner" : "Paperclip Runner"}</Badge>}</div>
             </div>
           </div>
         </div>
@@ -293,8 +293,8 @@ export function NewAgentWizard({ initialScreen = "name", initialAdapter = null, 
           <nav aria-label="Agent setup steps" className="shrink-0 md:w-44">
             <ol className="flex flex-wrap gap-2 md:flex-col">{steps.map((step, index) => <li key={step.screen} className="flex-1">
               <button type="button" aria-current={index === currentStep ? "step" : undefined} disabled={index > currentStep || testState === "running"}
-                onClick={() => go(step.screen)} className={cn("flex w-full items-center gap-3 rounded-md px-3 py-3 text-left text-sm disabled:cursor-default", index === currentStep ? "bg-accent font-medium" : "text-muted-foreground")}>
-                <span className={cn("flex size-6 shrink-0 items-center justify-center rounded-full border text-xs", index === currentStep ? "border-foreground bg-foreground text-background" : "border-border")}>{index + 1}</span>
+                onClick={() => go(step.screen)} className={cn("flex w-full items-center gap-3 rounded-md px-3 py-3 text-left text-sm disabled:cursor-default", index === currentStep ? "bg-bg-3 font-medium" : "text-ink-3")}>
+                <span className={cn("flex size-6 shrink-0 items-center justify-center rounded-full border text-xs", index === currentStep ? "border-ink bg-ink text-bg" : "border-line")}>{index + 1}</span>
                 {step.label}
               </button>
             </li>)}</ol>
@@ -306,22 +306,22 @@ export function NewAgentWizard({ initialScreen = "name", initialAdapter = null, 
           <ProviderConnectionPreview provider={connectionProvider} initialMethod={connectedMethod ?? initialConnectionMethod} initialWaiting={initialConnectionWaiting}
             onConnected={method => { resetTest(); setConnections(previous => ({ ...previous, [connectionKey]: method })); go("runtime"); }} />
         </OnboardingCard> : screen === "saved" ? <div className="flex max-w-2xl flex-col gap-6">
-          <div className="flex flex-col gap-6 rounded-lg border border-border p-6">
+          <div className="flex flex-col gap-6 rounded-lg border border-line p-6">
             <div className="flex items-center gap-3"><Check className="size-5" /><h2 className="text-lg font-semibold">Your agent is ready</h2></div>
             <dl className="grid grid-cols-2 gap-4 text-sm">
-              <dt className="text-muted-foreground">Adapter</dt><dd>{display.label}</dd>
-              {selected !== "cursor_cloud" && <><dt className="text-muted-foreground">Model</dt><dd className="break-all font-mono text-xs">{draft.model || "Default"}</dd></>}
-              {isRunner && <><dt className="text-muted-foreground">Provider</dt><dd>{runnerProvider}</dd></>}
-              {connectionProvider && <><dt className="text-muted-foreground">Connection</dt><dd>{connectionProvider} · {connectedMethod === "api" ? "API key" : connectedMethod === "subscription" ? "Subscription" : "Not connected"}</dd></>}
-              <dt className="text-muted-foreground">Environment</dt><dd>{selected === "cursor_cloud" ? "Cursor Cloud" : environment}</dd>
+              <dt className="text-ink-3">Adapter</dt><dd>{display.label}</dd>
+              {selected !== "cursor_cloud" && <><dt className="text-ink-3">Model</dt><dd className="break-all font-mono text-xs">{draft.model || "Default"}</dd></>}
+              {isRunner && <><dt className="text-ink-3">Provider</dt><dd>{runnerProvider}</dd></>}
+              {connectionProvider && <><dt className="text-ink-3">Connection</dt><dd>{connectionProvider} · {connectedMethod === "api" ? "API key" : connectedMethod === "subscription" ? "Subscription" : "Not connected"}</dd></>}
+              <dt className="text-ink-3">Environment</dt><dd>{selected === "cursor_cloud" ? "Cursor Cloud" : environment}</dd>
             </dl>
-            <p className="text-sm text-muted-foreground">Your agent has not started running.</p>
+            <p className="text-sm text-ink-3">Your agent has not started running.</p>
           </div>
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <Button variant="outline" onClick={() => go("runtime")}><Settings2 className="size-4" />Edit configuration</Button>
+            <Button variant="secondary" onClick={() => go("runtime")}><Settings2 className="size-4" />Edit configuration</Button>
             <Button onClick={assignTask}>Assign {name || "Darnold"} a Task<ArrowRight className="size-4" /></Button>
           </div>
-          {taskCreated && <p role="status" className="text-sm text-muted-foreground">Task created: {taskCreated}</p>}
+          {taskCreated && <p role="status" className="text-sm text-ink-3">Task created: {taskCreated}</p>}
         </div> : <form className="flex min-w-0 flex-col gap-8" onSubmit={event => {
           event.preventDefault();
           if (testState !== "running" && testState !== "fail" && (!connectionProvider || connectedMethod) && validateRuntime()) go("saved");
@@ -341,11 +341,11 @@ export function NewAgentWizard({ initialScreen = "name", initialAdapter = null, 
               </div>}
               {!isRunner && setupEfforts(selected, draft.model).length > 0 && <SelectField label="Thinking effort" value={draft.effort} onChange={effort => setDraft({ effort })} options={["Auto", ...setupEfforts(selected, draft.model)]} />}
             </div>
-            {SETUP_LOGIN_HINTS[selected] && <p className="text-sm text-muted-foreground">{SETUP_LOGIN_HINTS[selected]}</p>}
+            {SETUP_LOGIN_HINTS[selected] && <p className="text-sm text-ink-3">{SETUP_LOGIN_HINTS[selected]}</p>}
             {SETUP_CREDENTIAL_KEYS[selected] && <>
               <TextField type="password" label={SETUP_CREDENTIAL_KEYS[selected]} required={selected === "cursor_cloud"} value={draft.apiKey} onChange={apiKey => setDraft({ apiKey })} />
-              {selected === "cursor_cloud" && <a href="https://cursor.com/dashboard/api?section=user-keys#user-api-keys" target="_blank" rel="noopener noreferrer" className="shrink-0 text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground">get api key</a>}
-              <p className="text-xs text-muted-foreground">New keys are saved as organization secrets when you finish setup.</p>
+              {selected === "cursor_cloud" && <a href="https://cursor.com/dashboard/api?section=user-keys#user-api-keys" target="_blank" rel="noopener noreferrer" className="shrink-0 text-xs text-ink-3 underline underline-offset-4 hover:text-ink">get api key</a>}
+              <p className="text-xs text-ink-3">New keys are saved as organization secrets when you finish setup.</p>
             </>}
             {selected === "kimi_local" && draft.apiKey && <TextField label="Kimi API model name" value={draft.kimiModel} onChange={kimiModel => setDraft({ kimiModel })} placeholder="kimi-for-coding" required />}
           </Section>
@@ -354,8 +354,8 @@ export function NewAgentWizard({ initialScreen = "name", initialAdapter = null, 
           </Section>}
           </fieldset>
           <RuntimeTestCard state={testState} result={testResult} error={error} onTest={() => void runTest()} />
-          {error && testState !== "fail" && <p role="alert" className="text-sm text-destructive">{error}</p>}
-          <div className="flex justify-between border-t border-border py-5">
+          {error && testState !== "fail" && <p role="alert" className="text-sm text-bad">{error}</p>}
+          <div className="flex justify-between border-t border-line py-5">
             {connectionProvider ? <Button type="button" variant="ghost" disabled={testState === "running"} onClick={() => go("connect")}><ArrowLeft className="size-4" />Connection</Button> : <span />}
             <Button type="submit" disabled={testState === "running" || testState === "fail" || !!connectionProvider && !connectedMethod}>Finish setup<Check className="size-4" /></Button>
           </div>

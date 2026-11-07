@@ -389,7 +389,7 @@ describe("Live now cards", () => {
     await waitFor(() => {
       const badge = byIssue("issue-1").querySelector("[data-slot='live-now-model-fallback']");
       expect(badge?.textContent).toContain("GPT-5 · OpenAI");
-      expect(badge?.querySelector(".text-muted-foreground")?.textContent).toBe(" · primary: rate limit");
+      expect(badge?.querySelector(".text-ink-3")?.textContent).toBe(" · primary: rate limit");
     });
     expect(byIssue("issue-2").querySelector("[data-slot='live-now-model-fallback']")).toBeNull();
   });

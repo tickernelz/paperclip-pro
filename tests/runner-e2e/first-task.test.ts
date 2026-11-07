@@ -319,7 +319,7 @@ describe("first-task question presentation grading", () => {
   it("accepts canonical text presentation over its single-option storage fallback", () => {
     const e = recording();
     e.checkpoints[1].interactions.push({
-      id: "text-card",
+      id: "text-bg-2",
       kind: "ask_user_questions",
       payload: {
         questions: [question],

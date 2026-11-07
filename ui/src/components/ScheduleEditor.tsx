@@ -281,11 +281,11 @@ export function ScheduleEditor({
             aria-invalid={!customValidation.valid}
             className="font-mono text-sm"
           />
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             Five fields: minute hour day-of-month month day-of-week
           </p>
           <p
-            className={customValidation.valid ? "text-xs text-muted-foreground" : "text-xs text-destructive"}
+            className={customValidation.valid ? "text-xs text-ink-3" : "text-xs text-bad"}
             aria-live="polite"
           >
             {customValidation.message}
@@ -298,7 +298,7 @@ export function ScheduleEditor({
         <div className="flex flex-wrap items-center gap-2">
           {preset !== "every_minute" && preset !== "every_hour" && (
             <>
-              <span className="text-sm text-muted-foreground">at</span>
+              <span className="text-sm text-ink-3">at</span>
               <Select
                 value={hour}
                 onValueChange={(h) => {
@@ -317,7 +317,7 @@ export function ScheduleEditor({
                   ))}
                 </SelectContent>
               </Select>
-              <span className="text-sm text-muted-foreground">:</span>
+              <span className="text-sm text-ink-3">:</span>
               <Select
                 value={minute}
                 onValueChange={(m) => {
@@ -341,7 +341,7 @@ export function ScheduleEditor({
 
           {preset === "every_hour" && (
             <>
-              <span className="text-sm text-muted-foreground">at minute</span>
+              <span className="text-sm text-ink-3">at minute</span>
               <Select
                 value={minute}
                 onValueChange={(m) => {
@@ -365,13 +365,13 @@ export function ScheduleEditor({
 
           {preset === "weekly" && (
             <>
-              <span className="text-sm text-muted-foreground">on</span>
+              <span className="text-sm text-ink-3">on</span>
               <div className="flex gap-1">
                 {DAYS_OF_WEEK.map((d) => (
                   <Button
                     key={d.value}
                     type="button"
-                    variant={dayOfWeek === d.value ? "default" : "outline"}
+                    variant={dayOfWeek === d.value ? "primary" : "secondary"}
                     size="sm"
                     className="h-7 px-2 text-xs"
                     aria-pressed={dayOfWeek === d.value}
@@ -389,7 +389,7 @@ export function ScheduleEditor({
 
           {preset === "monthly" && (
             <>
-              <span className="text-sm text-muted-foreground">on day</span>
+              <span className="text-sm text-ink-3">on day</span>
               <Select
                 value={dayOfMonth}
                 onValueChange={(dom) => {

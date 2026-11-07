@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Chip } from "@/components/ui/chip";
 
 interface ArtifactsPanelProps {
   taskId: string;
@@ -80,7 +81,7 @@ function statusBadge(status: string) {
     case "failed":
       return { label: "Failed", className: "bg-red-500/10 text-red-600 dark:text-red-400" };
     default:
-      return { label: status, className: "bg-muted text-muted-foreground" };
+      return { label: status, className: "bg-bg-3 text-ink-3" };
   }
 }
 
@@ -129,47 +130,41 @@ export function ArtifactsPanel({ taskId, isAgentWorking, openDocKey, openDocTitl
 
   return (
     <div className="flex flex-col h-full" data-artifacts-panel>
-      <div className="px-4 py-3 border-b border-border flex items-center gap-2">
-        <Package className="h-4 w-4 text-muted-foreground shrink-0" />
+      <div className="px-4 py-3 border-b border-line flex items-center gap-2">
+        <Package className="h-4 w-4 text-ink-3 shrink-0" />
         <h3 className="text-sm font-semibold">Artifacts</h3>
       </div>
 
       {/* Filter chips */}
-      <div className="px-4 py-2 flex flex-wrap gap-1 border-b border-border">
+      <div className="px-4 py-2 flex flex-wrap gap-1 border-b border-line">
         {FILTERS.map((f) => (
-          <button
+          <Chip selected={filter === f.value}
             key={f.value}
-            className={cn(
-              "rounded-full px-2.5 py-0.5 text-(length:--text-micro) font-medium transition-colors",
-              filter === f.value
-                ? "bg-foreground text-background"
-                : "text-muted-foreground hover:text-foreground hover:bg-accent/50",
-            )}
             onClick={() => setFilter(f.value)}
           >
             {f.label}
-          </button>
+          </Chip>
         ))}
       </div>
 
       {/* Work products list */}
       <div className="flex-1 overflow-y-auto scrollbar-auto-hide">
         {isLoading ? (
-          <div className="flex items-center justify-center py-8 text-muted-foreground text-sm">
+          <div className="flex items-center justify-center py-8 text-ink-3 text-sm">
             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
             Loading...
           </div>
         ) : filtered.length === 0 ? (
           <div className="px-4 py-8 text-center">
-            <Package className="h-8 w-8 mx-auto text-muted-foreground/40 mb-3" />
-            <p className="text-sm text-muted-foreground">
+            <Package className="h-8 w-8 mx-auto text-ink-3/40 mb-3" />
+            <p className="text-sm text-ink-3">
               {workProducts?.length === 0
                 ? "Your team's deliverables and plans will appear here as they're produced."
                 : "No artifacts match this filter."}
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-border">
+          <div className="divide-y divide-line">
             {filtered.map((wp) => {
               const Icon = typeIcon(wp.type);
               const badge = statusBadge(wp.status);
@@ -179,8 +174,8 @@ export function ArtifactsPanel({ taskId, isAgentWorking, openDocKey, openDocTitl
                 <button
                   key={wp.id}
                   className={cn(
-                    "w-full text-left px-4 py-3 hover:bg-accent/30 transition-colors",
-                    showGenerating && "bg-muted/30",
+                    "w-full text-left px-4 py-3 hover:bg-bg-3/30 transition-colors",
+                    showGenerating && "bg-bg-3/30",
                   )}
                   onClick={() => {
                     if (wp.type === "document") {
@@ -199,17 +194,17 @@ export function ArtifactsPanel({ taskId, isAgentWorking, openDocKey, openDocTitl
                         </span>
                       </div>
                     ) : (
-                      <Icon className="h-4 w-4 mt-0.5 text-muted-foreground shrink-0" />
+                      <Icon className="h-4 w-4 mt-0.5 text-ink-3 shrink-0" />
                     )}
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2">
                         <span className="text-sm font-medium truncate">{wp.title}</span>
                         {wp.url && (
-                          <ExternalLink className="h-3 w-3 text-muted-foreground shrink-0" />
+                          <ExternalLink className="h-3 w-3 text-ink-3 shrink-0" />
                         )}
                       </div>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className="text-(length:--text-nano) text-muted-foreground capitalize">
+                        <span className="text-(length:--text-nano) text-ink-3 capitalize">
                           {wp.type.replace(/_/g, " ")}
                         </span>
                         {showGenerating ? (
@@ -224,7 +219,7 @@ export function ArtifactsPanel({ taskId, isAgentWorking, openDocKey, openDocTitl
                         )}
                       </div>
                       {wp.summary && (
-                        <p className="text-(length:--text-micro) text-muted-foreground mt-1 line-clamp-2">
+                        <p className="text-(length:--text-micro) text-ink-3 mt-1 line-clamp-2">
                           {wp.summary}
                         </p>
                       )}
@@ -270,41 +265,41 @@ function DocumentViewer({
 
   return (
     <div className="flex flex-col h-full">
-      <div className="px-4 py-3 border-b border-border flex items-center gap-2">
-        <button onClick={onBack} className="text-muted-foreground hover:text-foreground">
+      <div className="px-4 py-3 border-b border-line flex items-center gap-2">
+        <button onClick={onBack} className="text-ink-3 hover:text-ink">
           <ArrowLeft className="h-4 w-4" />
         </button>
         <h3 className="text-sm font-semibold flex-1 truncate">{title}</h3>
-        <button onClick={onBack} className="text-muted-foreground hover:text-foreground">
+        <button onClick={onBack} className="text-ink-3 hover:text-ink">
           <X className="h-4 w-4" />
         </button>
       </div>
       <div className="flex-1 overflow-y-auto scrollbar-auto-hide p-4">
         {isLoading ? (
-          <div className="flex items-center justify-center py-8 text-muted-foreground text-sm">
+          <div className="flex items-center justify-center py-8 text-ink-3 text-sm">
             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
             Loading document...
           </div>
         ) : error ? (
-          <p className="text-sm text-muted-foreground">Document not available yet.</p>
+          <p className="text-sm text-ink-3">Document not available yet.</p>
         ) : doc?.body ? (
           <div className="prose prose-sm dark:prose-invert max-w-none">
             <MarkdownBody>{doc.body}</MarkdownBody>
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground">Document is empty.</p>
+          <p className="text-sm text-ink-3">Document is empty.</p>
         )}
       </div>
 
       {/* Sticky action footer */}
       {needsAction && (
-        <div className="border-t border-border px-4 py-3 bg-background shrink-0">
-          <p className="text-(length:--text-micro) text-muted-foreground mb-2">This document needs your review.</p>
+        <div className="border-t border-line px-4 py-3 bg-bg shrink-0">
+          <p className="text-(length:--text-micro) text-ink-3 mb-2">This document needs your review.</p>
           <div className="flex items-center gap-3">
-            <Button size="lg" className="h-11 px-8 text-base font-semibold flex-1 rounded-lg bg-green-700 hover:bg-green-800 text-white border-0" onClick={onApprove}>
+            <Button size="lg" className="h-11 px-8 text-base font-semibold flex-1 rounded-lg" onClick={onApprove}>
               Approve
             </Button>
-            <Button size="lg" className="h-11 px-8 text-base font-semibold flex-1 rounded-lg bg-red-900 hover:bg-red-950 text-white border-0" onClick={() => {
+            <Button variant="secondary" size="lg" className="h-11 px-8 text-base font-semibold flex-1 rounded-lg" onClick={() => {
               onReject?.();
               onBack();
             }}>

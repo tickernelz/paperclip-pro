@@ -96,7 +96,7 @@ function MailEvent({
   const incoming = direction === "inbound";
   return (
     <article
-      className="overflow-hidden rounded-xl border border-border"
+      className="overflow-hidden rounded-xl border border-line"
       aria-label={
         incoming
           ? "Received email from Alex"
@@ -105,7 +105,7 @@ function MailEvent({
             : "Email sent by Support"
       }
     >
-      <header className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-muted/30 px-5 py-3">
+      <header className="flex flex-wrap items-center justify-between gap-2 border-b border-line bg-bg-3/30 px-5 py-3">
         <span className="flex items-center gap-2 text-sm font-medium">
           {incoming ? (
             <ArrowDownLeft className="size-4" />
@@ -118,7 +118,7 @@ function MailEvent({
               ? "Email not delivered"
               : "Email sent"}
         </span>
-        <span className="text-xs text-muted-foreground">{at}</span>
+        <span className="text-xs text-ink-3">{at}</span>
       </header>
       <div className="space-y-4 p-5">
         <div className="space-y-2">
@@ -134,24 +134,24 @@ function MailEvent({
             ) : (
               <AgentIdentity />
             )}
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs text-ink-3">
               {incoming ? peer : inbox}
             </span>
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             To: {incoming ? inbox : peer}
           </p>
         </div>
         <h3 className="text-sm font-semibold">{subject}</h3>
         <p className="whitespace-pre-wrap text-sm leading-relaxed">{body}</p>
         {attachment && (
-          <Button variant="outline" size="sm" onClick={onAttachment}>
+          <Button variant="secondary" size="sm" onClick={onAttachment}>
             <FileText className="size-4" />
             Delivery notes.txt
-            <span className="text-xs text-muted-foreground">1 KB</span>
+            <span className="text-xs text-ink-3">1 KB</span>
           </Button>
         )}
-        <details className="text-xs text-muted-foreground">
+        <details className="text-xs text-ink-3">
           <summary className="cursor-pointer">Email details</summary>
           <dl className="grid grid-cols-2 gap-2 pt-3">
             <dt>From</dt>
@@ -166,10 +166,10 @@ function MailEvent({
         </details>
       </div>
       {!incoming && (
-        <footer className="flex items-center gap-2 border-t border-border px-5 py-3 text-xs">
+        <footer className="flex items-center gap-2 border-t border-line px-5 py-3 text-xs">
           {outcome === "failed" ? (
             <>
-              <TriangleAlert className="size-3.5 text-destructive" />
+              <TriangleAlert className="size-3.5 text-bad" />
               <span>Delivery failed · Recipient address was rejected</span>
             </>
           ) : (
@@ -243,8 +243,8 @@ function EmailTaskExperience({
   }
   return (
     <TaskChatPresentationProvider mode="streamlined">
-      <div className="min-h-screen bg-background text-foreground">
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-muted/30 px-6 py-3">
+      <div className="min-h-screen bg-bg text-ink">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line bg-bg-3/30 px-6 py-3">
           <div className="space-y-1">
             <p className="text-xs font-medium">
               Design preview ·{" "}
@@ -252,11 +252,11 @@ function EmailTaskExperience({
                 ? "Agent starts an email conversation"
                 : "An email arrives for an agent"}
             </p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-ink-3">
               Scripted agent actions. No real emails are sent.
             </p>
           </div>
-          <Button variant="outline" size="sm" onClick={advance}>
+          <Button variant="secondary" size="sm" onClick={advance}>
             {phase === "start" ? (
               <Play className="size-3.5" />
             ) : phase === "sent" ? (
@@ -267,17 +267,17 @@ function EmailTaskExperience({
             {actionLabel}
           </Button>
         </div>
-        <div className="flex items-center justify-between gap-3 border-b border-border px-6 py-4">
+        <div className="flex items-center justify-between gap-3 border-b border-line px-6 py-4">
           <nav
             aria-label="Task breadcrumb"
-            className="flex min-w-0 items-center gap-2 text-sm text-muted-foreground"
+            className="flex min-w-0 items-center gap-2 text-sm text-ink-3"
           >
             <span>Tasks</span>
             <ChevronRight className="size-3.5 shrink-0" />
             {outbound && emailTask && (
               <>
                 <button
-                  className="shrink-0 hover:text-foreground"
+                  className="shrink-0 hover:text-ink"
                   onClick={() => setView("parent")}
                 >
                   PAP-240
@@ -285,7 +285,7 @@ function EmailTaskExperience({
                 <ChevronRight className="size-3.5 shrink-0" />
               </>
             )}
-            <span className="truncate text-foreground">{taskTitle}</span>
+            <span className="truncate text-ink">{taskTitle}</span>
             <span className="shrink-0 font-mono text-xs">{taskKey}</span>
           </nav>
           <Button
@@ -306,7 +306,7 @@ function EmailTaskExperience({
               <div className="flex flex-wrap items-center gap-3">
                 <AgentIdentity />
                 {emailTask && (
-                  <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <span className="flex items-center gap-1.5 text-xs text-ink-3">
                     <Mail className="size-3.5" />
                     {inbox}
                   </span>
@@ -314,7 +314,7 @@ function EmailTaskExperience({
               </div>
             </header>
             {emailTask && (
-              <div className="flex flex-wrap items-center justify-between gap-2 border-y border-border py-3 text-xs text-muted-foreground">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-y border-line py-3 text-xs text-ink-3">
                 <span>
                   {outbound
                     ? "Started by Support"
@@ -352,18 +352,18 @@ function EmailTaskExperience({
                   </InternalMessage>
                   {sent && (
                     <button
-                      className="flex w-full items-center gap-3 rounded-xl border border-border p-4 text-left hover:bg-accent/40"
+                      className="flex w-full items-center gap-3 rounded-xl border border-line p-4 text-left hover:bg-bg-3/40"
                       onClick={() => setView("email")}
                     >
                       <Mail className="size-5 shrink-0" />
                       <span className="min-w-0 flex-1 space-y-1">
-                        <span className="block text-xs font-mono text-muted-foreground">
+                        <span className="block text-xs font-mono text-ink-3">
                           PAP-241 · Email task
                         </span>
                         <span className="block text-sm font-medium">
                           Pilot delivery · September 18
                         </span>
-                        <span className="block text-xs text-muted-foreground">
+                        <span className="block text-xs text-ink-3">
                           {blocked ? "Delivery failed" : "Email delivered"} · To
                           Alex
                         </span>
@@ -404,10 +404,10 @@ function EmailTaskExperience({
                   )}
                   {phase === "followup" && (
                     <>
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                        <span className="h-px flex-1 bg-border" />
+                      <div className="flex items-center gap-3 text-xs text-ink-3">
+                        <span className="h-px flex-1 bg-line" />
                         New email · Same task
-                        <span className="h-px flex-1 bg-border" />
+                        <span className="h-px flex-1 bg-line" />
                       </div>
                       {mail(
                         "inbound",
@@ -435,8 +435,8 @@ function EmailTaskExperience({
                   </div>
                 ))}
             </div>
-            <div className="space-y-2 border-t border-border pt-5">
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+            <div className="space-y-2 border-t border-line pt-5">
+              <div className="flex items-center gap-1.5 text-xs text-ink-3">
                 <LockKeyhole className="size-3.5" />
                 Message Support · Internal
               </div>
@@ -456,18 +456,18 @@ function EmailTaskExperience({
           {propertiesOpen && (
             <aside
               aria-label="Task details"
-              className="w-full shrink-0 space-y-6 border-t border-border p-6 lg:w-64 lg:border-l lg:border-t-0"
+              className="w-full shrink-0 space-y-6 border-t border-line p-6 lg:w-64 lg:border-l lg:border-t-0"
             >
               <div className="space-y-3">
-                <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-3">
                   Task details
                 </h2>
                 <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground">Assigned to</p>
+                  <p className="text-xs text-ink-3">Assigned to</p>
                   <AgentIdentity />
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs text-muted-foreground">Created by</p>
+                  <p className="text-xs text-ink-3">Created by</p>
                   <p className="text-sm">
                     {!emailTask
                       ? "You"
@@ -479,17 +479,17 @@ function EmailTaskExperience({
                 {emailTask && (
                   <>
                     <div className="space-y-1">
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-ink-3">
                         Email address
                       </p>
                       <p className="break-all text-sm">{inbox}</p>
                     </div>
                     <div className="space-y-1">
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-ink-3">
                         External participant
                       </p>
                       <p className="text-sm">Alex</p>
-                      <p className="break-all text-xs text-muted-foreground">
+                      <p className="break-all text-xs text-ink-3">
                         {peer}
                       </p>
                     </div>
@@ -497,7 +497,7 @@ function EmailTaskExperience({
                 )}
                 {outbound && (emailTask || sent) && (
                   <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-ink-3">
                       {emailTask ? "Parent task" : "Child task"}
                     </p>
                     <button
@@ -511,7 +511,7 @@ function EmailTaskExperience({
                   </div>
                 )}
               </div>
-              <details className="text-xs text-muted-foreground">
+              <details className="text-xs text-ink-3">
                 <summary className="cursor-pointer">
                   How email works here
                 </summary>
@@ -530,7 +530,7 @@ function EmailTaskExperience({
               <DialogTitle>Delivery notes.txt</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 text-sm">
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs text-ink-3">
                 Attachment from Alex · Sample file
               </p>
               <p>Pilot delivery: Friday, September 18.</p>

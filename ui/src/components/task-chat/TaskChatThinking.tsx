@@ -32,7 +32,7 @@ export function TaskChatThinking({
     return (
       <div
         className={cn(
-          "flex min-w-0 items-start gap-1.5 px-1 py-0.5 text-xs font-normal text-muted-foreground",
+          "flex min-w-0 items-start gap-1.5 px-1 py-0.5 text-xs font-normal text-ink-3",
           rowClassName,
         )}
         data-testid="task-chat-thinking"
@@ -40,7 +40,7 @@ export function TaskChatThinking({
       >
         <span className="flex w-5 shrink-0 items-center justify-center">
           <Brain
-            className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground/50"
+            className="mt-0.5 h-3.5 w-3.5 shrink-0 text-ink-3/50"
             aria-hidden
             data-testid="task-chat-thinking-icon"
           />
@@ -54,7 +54,7 @@ export function TaskChatThinking({
 
   if (!body) {
     return (
-      <div className={cn("-mx-1.5 flex min-w-0 items-center gap-2 px-1.5 py-0.5 text-xs font-normal text-muted-foreground", rowClassName)} data-testid="task-chat-thinking">
+      <div className={cn("-mx-1.5 flex min-w-0 items-center gap-2 px-1.5 py-0.5 text-xs font-normal text-ink-3", rowClassName)} data-testid="task-chat-thinking">
         <span className="flex w-5 shrink-0 items-center justify-center">
           <Brain className={cn("h-3.5 w-3.5 shrink-0", active && "text-(--status-agent-running)")} aria-hidden data-testid="task-chat-thinking-icon" />
         </span>
@@ -70,7 +70,7 @@ export function TaskChatThinking({
         aria-expanded={open}
         aria-label={`${open ? "Collapse" : "Expand"} ${baseLabel.toLowerCase()}: ${preview}`}
         onClick={() => setOpen((value) => !value)}
-        className={cn("group/thinking -mx-1.5 flex w-full min-w-0 max-w-full items-center gap-2 overflow-hidden rounded-sm px-1.5 py-0.5 text-left font-normal text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring", rowClassName)}
+        className={cn("group/thinking -mx-1.5 flex w-full min-w-0 max-w-full items-center gap-2 overflow-hidden rounded-sm px-1.5 py-0.5 text-left font-normal text-ink-3 transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus", rowClassName)}
       >
         <span className="flex w-5 shrink-0 items-center justify-center">
           <Brain className={cn("h-3.5 w-3.5 shrink-0", active && "text-(--status-agent-running)")} aria-hidden data-testid="task-chat-thinking-icon" />
@@ -89,7 +89,7 @@ export function TaskChatThinking({
         <ChevronRight className={cn("tc-hover-disclosure-caret h-3 w-3 shrink-0 transition-[opacity,transform] group-hover/thinking:opacity-80 group-focus-visible/thinking:opacity-80", open ? "rotate-90 opacity-80" : "opacity-0")} aria-hidden />
       </button>
       {open ? (
-        <div className="task-chat-expanded-line-wrap ml-2.5 mt-1 min-w-0 max-w-full overflow-hidden border-l-2 border-border pl-2.5 text-xs font-normal text-muted-foreground">
+        <div className="task-chat-expanded-line-wrap ml-2.5 mt-1 min-w-0 max-w-full overflow-hidden border-l-2 border-line pl-2.5 text-xs font-normal text-ink-3">
           <MarkdownBody className="task-chat-reasoning-markdown" softBreaks linkIssueReferences>{body}</MarkdownBody>
         </div>
       ) : null}

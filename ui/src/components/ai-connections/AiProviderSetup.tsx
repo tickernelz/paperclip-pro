@@ -215,7 +215,7 @@ export function AiProviderSetup({
           ...p,
           icon:
             p.id === "gateway" || p.id === "local" ? (
-              <span className="flex size-9 items-center justify-center rounded-lg bg-muted">
+              <span className="flex size-9 items-center justify-center rounded-lg bg-bg-3">
                 {p.id === "gateway" ? (
                   <Network className="size-5" />
                 ) : (
@@ -236,7 +236,7 @@ export function AiProviderSetup({
     />
   );
   const modelSettings = (
-    <label className="block space-y-2 text-xs text-muted-foreground">
+    <label className="block space-y-2 text-xs text-ink-3">
       Model IDs (comma separated)
       <Input
         aria-label="Model IDs"
@@ -281,13 +281,13 @@ export function AiProviderSetup({
             : `${reconnect ? "Reconnect" : "Connect"} ${label}`}
         </h2>
       </div>
-      {agents.isError && <p role="alert" className="text-sm text-destructive">Could not load agents. <Button type="button" variant="ghost" onClick={() => void agents.refetch()}>Retry</Button></p>}
+      {agents.isError && <p role="alert" className="text-sm text-bad">Could not load agents. <Button type="button" variant="ghost" onClick={() => void agents.refetch()}>Retry</Button></p>}
       {step === "provider" ? (
         <>
           {advancedOnly ? choices(true) : <>
           {choices(false)}
           <details>
-            <summary className="cursor-pointer text-sm text-muted-foreground">
+            <summary className="cursor-pointer text-sm text-ink-3">
               Advanced providers
             </summary>
             <div className="pt-4">{choices(true)}</div>
@@ -325,7 +325,7 @@ export function AiProviderSetup({
         >
           {(provider === "gateway" || provider === "local") && (
             <>
-              <label className="block space-y-2 text-xs text-muted-foreground">
+              <label className="block space-y-2 text-xs text-ink-3">
                 Provider URL
                 <Input
                   aria-label="Provider URL"
@@ -339,7 +339,7 @@ export function AiProviderSetup({
                   disabled={Boolean(reconnect)}
                 />
               </label>
-              <label className="block space-y-2 text-xs text-muted-foreground">
+              <label className="block space-y-2 text-xs text-ink-3">
                 API format
                 <Select
                   value={protocol}
@@ -369,7 +369,7 @@ export function AiProviderSetup({
             </>
           )}
           {provider === "bedrock" && (
-            <label className="block space-y-2 text-xs text-muted-foreground">
+            <label className="block space-y-2 text-xs text-ink-3">
               AWS region
               <Input
                 aria-label="AWS region"
@@ -380,7 +380,7 @@ export function AiProviderSetup({
             </label>
           )}
           {provider !== "openrouter" && (
-            <label className="block space-y-2 text-xs text-muted-foreground">
+            <label className="block space-y-2 text-xs text-ink-3">
               Authentication
               <Select
                 value={auth}
@@ -412,7 +412,7 @@ export function AiProviderSetup({
           )}
           {
             auth !== "none" && (
-              <label className="block space-y-2 text-xs text-muted-foreground">
+              <label className="block space-y-2 text-xs text-ink-3">
                 API key
                 <Input
                   aria-label="API key"
@@ -424,13 +424,13 @@ export function AiProviderSetup({
               </label>
             )
           }
-          {reconnect && <details><summary className="cursor-pointer text-sm text-muted-foreground">Model settings</summary>{modelSettings}</details>}
-          <p className="text-xs text-muted-foreground">
+          {reconnect && <details><summary className="cursor-pointer text-sm text-ink-3">Model settings</summary>{modelSettings}</details>}
+          <p className="text-xs text-ink-3">
             Test the connection with your chosen model in the agent’s execution
             environment after connecting.
           </p>
           {save.error && (
-            <p role="alert" className="text-sm text-destructive">
+            <p role="alert" className="text-sm text-bad">
               {save.error instanceof Error && save.error.name === "ZodError"
                 ? "Check the URL, API format, and authentication fields."
                 : save.error.message}

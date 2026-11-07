@@ -68,12 +68,12 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
   });
 
   if (generalQuery.isLoading || healthQuery.isLoading) {
-    return <div className="text-sm text-muted-foreground">Loading general settings...</div>;
+    return <div className="text-sm text-ink-3">Loading general settings...</div>;
   }
 
   if (generalQuery.error) {
     return (
-      <div className="text-sm text-destructive">
+      <div className="text-sm text-bad">
         {generalQuery.error instanceof Error
           ? generalQuery.error.message
           : "Failed to load general settings."}
@@ -115,10 +115,10 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
       {!embedded ? (
         <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <SlidersHorizontal className="h-5 w-5 text-muted-foreground" />
+            <SlidersHorizontal className="h-5 w-5 text-ink-3" />
             <h1 className="text-lg font-semibold">General</h1>
           </div>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-ink-3">
             Configure instance-wide preferences
             {visibleTopics.length > 0 ? <> including {topicSummary}</> : null}.
           </p>
@@ -126,7 +126,7 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
       ) : null}
 
       {visibleActionError && (
-        <div className="rounded-md border border-destructive/40 bg-destructive/5 px-3 py-2 text-sm text-destructive">
+        <div className="rounded-md border border-bad/40 bg-bad/5 px-3 py-2 text-sm text-bad">
           {visibleActionError}
         </div>
       )}
@@ -141,7 +141,7 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
               deploymentExposure={healthQuery.data?.deploymentExposure}
             />
           </div>
-          <div className="text-sm text-muted-foreground">
+          <div className="text-sm text-ink-3">
             {healthQuery.data?.deploymentMode === "local_trusted"
               ? "Local trusted mode is optimized for a local operator. Browser requests run as local board context and no sign-in is required."
               : healthQuery.data?.deploymentExposure === "public"
@@ -171,7 +171,7 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-1.5">
             <h2 className="text-sm font-semibold">Censor username in logs</h2>
-            <p className="max-w-2xl text-sm text-muted-foreground">
+            <p className="max-w-2xl text-sm text-ink-3">
               Hide the username segment in home-directory paths and similar operator-visible log output. Standalone
               username mentions outside of paths are not yet masked in the live transcript view. This is off by
               default.
@@ -192,7 +192,7 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
         <div className="space-y-5">
           <div className="space-y-1.5">
             <h2 className="text-sm font-semibold">Backup retention</h2>
-            <p className="max-w-2xl text-sm text-muted-foreground">
+            <p className="max-w-2xl text-sm text-ink-3">
               Configure how long automatic database backups are retained. Backups run roughly
               every hour and are compressed with gzip. Within the daily window all backups are
               kept; beyond that, one backup per week and one per month are preserved.
@@ -200,7 +200,7 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
           </div>
 
           <div className="space-y-1.5">
-            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Daily</h3>
+            <h3 className="text-xs font-medium text-ink-3 uppercase tracking-wide">Daily</h3>
             <div className="flex flex-wrap gap-2">
               {DAILY_RETENTION_PRESETS.map((days) => {
                 const active = backupRetention.dailyDays === days;
@@ -212,8 +212,8 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
                     className={cn(
                       "rounded-lg border px-3 py-2 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-60",
                       active
-                        ? "border-foreground bg-accent text-foreground"
-                        : "border-border bg-background hover:bg-accent/50",
+                        ? "border-ink bg-bg-3 text-ink"
+                        : "border-line bg-bg hover:bg-bg-3/50",
                     )}
                     onClick={() =>
                       updateGeneralMutation.mutate({
@@ -229,7 +229,7 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
           </div>
 
           <div className="space-y-1.5">
-            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Weekly</h3>
+            <h3 className="text-xs font-medium text-ink-3 uppercase tracking-wide">Weekly</h3>
             <div className="flex flex-wrap gap-2">
               {WEEKLY_RETENTION_PRESETS.map((weeks) => {
                 const active = backupRetention.weeklyWeeks === weeks;
@@ -242,8 +242,8 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
                     className={cn(
                       "rounded-lg border px-3 py-2 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-60",
                       active
-                        ? "border-foreground bg-accent text-foreground"
-                        : "border-border bg-background hover:bg-accent/50",
+                        ? "border-ink bg-bg-3 text-ink"
+                        : "border-line bg-bg hover:bg-bg-3/50",
                     )}
                     onClick={() =>
                       updateGeneralMutation.mutate({
@@ -259,7 +259,7 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
           </div>
 
           <div className="space-y-1.5">
-            <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Monthly</h3>
+            <h3 className="text-xs font-medium text-ink-3 uppercase tracking-wide">Monthly</h3>
             <div className="flex flex-wrap gap-2">
               {MONTHLY_RETENTION_PRESETS.map((months) => {
                 const active = backupRetention.monthlyMonths === months;
@@ -272,8 +272,8 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
                     className={cn(
                       "rounded-lg border px-3 py-2 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-60",
                       active
-                        ? "border-foreground bg-accent text-foreground"
-                        : "border-border bg-background hover:bg-accent/50",
+                        ? "border-ink bg-bg-3 text-ink"
+                        : "border-line bg-bg hover:bg-bg-3/50",
                     )}
                     onClick={() =>
                       updateGeneralMutation.mutate({
@@ -317,7 +317,7 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
         <div className="space-y-4">
           <div className="space-y-1.5">
             <h2 className="text-sm font-semibold">AI feedback sharing</h2>
-            <p className="max-w-2xl text-sm text-muted-foreground">
+            <p className="max-w-2xl text-sm text-ink-3">
               Control whether thumbs up and thumbs down votes can send the voted AI output to
               Paperclip Labs. Votes are always saved locally.
             </p>
@@ -326,14 +326,14 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
                 href={FEEDBACK_TERMS_URL}
                 target="_blank"
                 rel="noreferrer"
-                className="inline-flex text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+                className="inline-flex text-sm text-ink-3 underline underline-offset-4 hover:text-ink"
               >
                 Read our terms of service
               </a>
             ) : null}
           </div>
           {feedbackDataSharingPreference === "prompt" ? (
-            <div className="rounded-lg bg-accent/20 px-3 py-2 text-sm text-muted-foreground">
+            <div className="rounded-lg bg-bg-3/20 px-3 py-2 text-sm text-ink-3">
               No default is saved yet. The next thumbs up or thumbs down choice will ask once and
               then save the answer here.
             </div>
@@ -360,8 +360,8 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
                   className={cn(
                     "rounded-lg border px-3 py-2 text-left transition-colors disabled:cursor-not-allowed disabled:opacity-60",
                     active
-                      ? "border-foreground bg-accent text-foreground"
-                      : "border-border bg-background hover:bg-accent/50",
+                      ? "border-ink bg-bg-3 text-ink"
+                      : "border-line bg-bg hover:bg-bg-3/50",
                   )}
                   onClick={() =>
                     updateGeneralMutation.mutate({
@@ -372,14 +372,14 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
                   }
                 >
                   <div className="text-sm font-medium">{option.label}</div>
-                  <div className="text-xs text-muted-foreground">
+                  <div className="text-xs text-ink-3">
                     {option.description}
                   </div>
                 </button>
               );
             })}
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             To retest the first-use prompt in local dev, remove the{" "}
             <code>feedbackDataSharingPreference</code> key from the{" "}
             <code>instance_settings.general</code> JSON row for this instance, or set it back to{" "}
@@ -396,12 +396,12 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-1.5">
             <h2 className="text-sm font-semibold">Sign out</h2>
-            <p className="max-w-2xl text-sm text-muted-foreground">
+            <p className="max-w-2xl text-sm text-ink-3">
               Sign out of this Paperclip instance. You will be redirected to the login page.
             </p>
           </div>
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             disabled={signOutMutation.isPending || updateGeneralMutation.isPending}
             onClick={() => {
@@ -443,7 +443,7 @@ function SpeechToTextSection({
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-1.5">
             <h2 className="text-sm font-semibold">Speech-to-text</h2>
-            <p className="max-w-2xl text-sm text-muted-foreground">
+            <p className="max-w-2xl text-sm text-ink-3">
               Transcribe voice notes and audio that chat connectors receive, using any OpenAI-compatible
               /audio/transcriptions endpoint. The API key is read from the named server environment variable at call
               time and is never stored by Paperclip. This is off by default.
@@ -458,7 +458,7 @@ function SpeechToTextSection({
         </div>
         <div className="grid gap-3 md:grid-cols-2">
           <label className="space-y-1.5">
-            <span className="text-xs font-medium text-muted-foreground">Base URL</span>
+            <span className="text-xs font-medium text-ink-3">Base URL</span>
             <Input
               value={draft.baseUrl}
               placeholder="https://api.openai.com/v1"
@@ -467,7 +467,7 @@ function SpeechToTextSection({
             />
           </label>
           <label className="space-y-1.5">
-            <span className="text-xs font-medium text-muted-foreground">Model</span>
+            <span className="text-xs font-medium text-ink-3">Model</span>
             <Input
               value={draft.model}
               placeholder="whisper-1"
@@ -476,7 +476,7 @@ function SpeechToTextSection({
             />
           </label>
           <label className="space-y-1.5">
-            <span className="text-xs font-medium text-muted-foreground">API key environment variable</span>
+            <span className="text-xs font-medium text-ink-3">API key environment variable</span>
             <Input
               value={draft.apiKeyEnvVar}
               placeholder="OPENAI_API_KEY"
@@ -488,7 +488,7 @@ function SpeechToTextSection({
           </label>
           <div className="grid grid-cols-2 gap-3">
             <label className="space-y-1.5">
-              <span className="text-xs font-medium text-muted-foreground">Max audio (seconds)</span>
+              <span className="text-xs font-medium text-ink-3">Max audio (seconds)</span>
               <Input
                 type="number"
                 min={1}
@@ -499,7 +499,7 @@ function SpeechToTextSection({
               />
             </label>
             <label className="space-y-1.5">
-              <span className="text-xs font-medium text-muted-foreground">Wake wait (seconds)</span>
+              <span className="text-xs font-medium text-ink-3">Wake wait (seconds)</span>
               <Input
                 type="number"
                 min={1}
@@ -512,7 +512,7 @@ function SpeechToTextSection({
           </div>
         </div>
         {!complete ? (
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             Enter a base URL, a model and an environment variable name to enable transcription.
           </p>
         ) : null}
@@ -520,7 +520,7 @@ function SpeechToTextSection({
           <Button size="sm" disabled={disabled || !dirty} onClick={() => onSave(draft)}>
             Save speech-to-text
           </Button>
-          <Button variant="outline" size="sm" disabled={disabled || !dirty} onClick={() => setDraft(value)}>
+          <Button variant="secondary" size="sm" disabled={disabled || !dirty} onClick={() => setDraft(value)}>
             Reset
           </Button>
         </div>
@@ -532,7 +532,7 @@ function SpeechToTextSection({
 function StatusBox({ label, value }: { label: string; value: string }) {
   return (
     <div className="space-y-1">
-      <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className="text-xs font-medium uppercase tracking-wide text-ink-3">{label}</div>
       <div className="text-sm font-medium">{value}</div>
     </div>
   );

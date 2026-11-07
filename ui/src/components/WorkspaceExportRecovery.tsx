@@ -28,7 +28,7 @@ export function WorkspaceExportRecovery({ issueId, action, canManage, onQueued, 
   return <section aria-label="Workspace export repair" className={cn("task-context-notice flex flex-col gap-2", className)}>
     <p className="font-medium">Workspace export needs repair</p>
     {queued ? <p role="status">Export is queued for the saved result. The agent will not repeat its work.</p> : <>
-      <p className="text-muted-foreground">{"Automatic workspace export retries stopped. Inspect the export failure, restore provider or destination availability, and preserve the saved files in the retained sandbox. Retry export here when the cause is resolved."}</p>
+      <p className="text-ink-3">{"Automatic workspace export retries stopped. Inspect the export failure, restore provider or destination availability, and preserve the saved files in the retained sandbox. Retry export here when the cause is resolved."}</p>
       {canManage ? <>
         <Label htmlFor={noteId}>Repair performed</Label>
         <Textarea id={noteId} value={repairNote} onChange={event => setRepairNote(event.target.value)} maxLength={12_000}
@@ -38,8 +38,8 @@ export function WorkspaceExportRecovery({ issueId, action, canManage, onQueued, 
             {retry.isPending ? "Queueing export…" : "Retry workspace export"}
           </Button>
         </div>
-      </> : <p className="text-muted-foreground">A board member with runtime access can retry this export after repair.</p>}
-      {retry.isError && <p role="alert" className="text-destructive">{retry.error instanceof Error ? retry.error.message : "Could not queue export. Refresh the task and inspect its run."}</p>}
+      </> : <p className="text-ink-3">A board member with runtime access can retry this export after repair.</p>}
+      {retry.isError && <p role="alert" className="text-bad">{retry.error instanceof Error ? retry.error.message : "Could not queue export. Refresh the task and inspect its run."}</p>}
     </>}
   </section>;
 }

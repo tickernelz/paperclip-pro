@@ -766,7 +766,7 @@ describe("Inbox toolbar", () => {
       separator.querySelectorAll("[data-date-group-rule]").length === 2
     ))).toBe(true);
     expect(separators.every((separator) => (
-      separator.querySelector("[data-date-group-label]")?.classList.contains("text-muted-foreground/70")
+      separator.querySelector("[data-date-group-label]")?.classList.contains("text-ink-3/70")
     ))).toBe(true);
 
     act(() => root.unmount());
@@ -963,8 +963,8 @@ describe("Inbox toolbar", () => {
       row.querySelector<HTMLAnchorElement>("a[data-inbox-issue-link]")?.parentElement ?? null;
 
     // Nothing selected before hover — both rows show the hover-accent class.
-    expect(bandOf(rows[0]!)?.className).toContain("hover:bg-accent/50");
-    expect(bandOf(rows[1]!)?.className).toContain("hover:bg-accent/50");
+    expect(bandOf(rows[0]!)?.className).toContain("hover:bg-bg-3/50");
+    expect(bandOf(rows[1]!)?.className).toContain("hover:bg-bg-3/50");
 
     // Hovering paints via CSS `:hover` only — it must NOT flip a row into the
     // state-selected band (which would swap to hover:bg-transparent). Coupling
@@ -975,8 +975,8 @@ describe("Inbox toolbar", () => {
       rows[1]!.dispatchEvent(new MouseEvent("mouseover", { bubbles: true }));
       rows[1]!.dispatchEvent(new MouseEvent("mouseenter", { bubbles: false }));
     });
-    expect(bandOf(rows[0]!)?.className).toContain("hover:bg-accent/50");
-    expect(bandOf(rows[1]!)?.className).toContain("hover:bg-accent/50");
+    expect(bandOf(rows[0]!)?.className).toContain("hover:bg-bg-3/50");
+    expect(bandOf(rows[1]!)?.className).toContain("hover:bg-bg-3/50");
     expect(bandOf(rows[1]!)?.className).not.toContain("hover:bg-transparent");
 
     act(() => {
@@ -1072,7 +1072,7 @@ describe("Inbox toolbar", () => {
       row.querySelector<HTMLAnchorElement>("a[data-inbox-issue-link]")?.parentElement ?? null;
     const selectedRowIndex = () =>
       [...container.querySelectorAll("[data-inbox-item]")].findIndex((row) =>
-        bandOf(row)?.className.split(/\s+/).includes("bg-accent/50"),
+        bandOf(row)?.className.split(/\s+/).includes("bg-bg-3/50"),
       );
 
     try {
@@ -1418,7 +1418,7 @@ describe("FailedRunInboxRow", () => {
     const link = container.querySelector("a");
     expect(link).not.toBeNull();
     expect(link?.className).toContain("hover:bg-transparent");
-    expect(link?.className).not.toContain("hover:bg-accent/50");
+    expect(link?.className).not.toContain("hover:bg-bg-3/50");
 
     act(() => {
       root.unmount();
@@ -1460,7 +1460,7 @@ describe("InboxIssueMetaLeading", () => {
 
     expect(statusIcon).not.toBeUndefined();
     // Status accent stays visible — not neutralized to muted.
-    expect(statusIcon?.getAttribute("class") ?? "").not.toContain("!text-muted-foreground");
+    expect(statusIcon?.getAttribute("class") ?? "").not.toContain("!text-ink-3");
     expect(liveBadge).not.toBeNull();
     expect(liveBadge?.className).toContain("bg-blue-500/10");
     expect(liveBadgeLabel).not.toBeNull();

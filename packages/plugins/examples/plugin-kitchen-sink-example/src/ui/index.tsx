@@ -140,14 +140,14 @@ const layoutStack: CSSProperties = {
 };
 
 const cardStyle: CSSProperties = {
-  border: "1px solid var(--border)",
+  border: "1px solid var(--line)",
   borderRadius: "12px",
   padding: "14px",
-  background: "var(--card, transparent)",
+  background: "var(--bg-2, transparent)",
 };
 
 const subtleCardStyle: CSSProperties = {
-  border: "1px solid color-mix(in srgb, var(--border) 75%, transparent)",
+  border: "1px solid color-mix(in srgb, var(--line) 75%, transparent)",
   borderRadius: "10px",
   padding: "12px",
 };
@@ -169,7 +169,7 @@ const sectionHeaderStyle: CSSProperties = {
 
 const buttonStyle: CSSProperties = {
   appearance: "none",
-  border: "1px solid var(--border)",
+  border: "1px solid var(--line)",
   borderRadius: "999px",
   background: "transparent",
   color: "inherit",
@@ -180,9 +180,9 @@ const buttonStyle: CSSProperties = {
 
 const primaryButtonStyle: CSSProperties = {
   ...buttonStyle,
-  background: "var(--foreground)",
-  color: "var(--background)",
-  borderColor: "var(--foreground)",
+  background: "var(--ink)",
+  color: "var(--bg)",
+  borderColor: "var(--ink)",
 };
 
 function toneButtonStyle(tone: "success" | "warn" | "info"): CSSProperties {
@@ -190,7 +190,7 @@ function toneButtonStyle(tone: "success" | "warn" | "info"): CSSProperties {
     return {
       ...buttonStyle,
       background: "color-mix(in srgb, #16a34a 18%, transparent)",
-      borderColor: "color-mix(in srgb, #16a34a 60%, var(--border))",
+      borderColor: "color-mix(in srgb, #16a34a 60%, var(--line))",
       color: "#86efac",
     };
   }
@@ -198,21 +198,21 @@ function toneButtonStyle(tone: "success" | "warn" | "info"): CSSProperties {
     return {
       ...buttonStyle,
       background: "color-mix(in srgb, #d97706 18%, transparent)",
-      borderColor: "color-mix(in srgb, #d97706 60%, var(--border))",
+      borderColor: "color-mix(in srgb, #d97706 60%, var(--line))",
       color: "#fcd34d",
     };
   }
   return {
     ...buttonStyle,
     background: "color-mix(in srgb, #2563eb 18%, transparent)",
-    borderColor: "color-mix(in srgb, #2563eb 60%, var(--border))",
+    borderColor: "color-mix(in srgb, #2563eb 60%, var(--line))",
     color: "#93c5fd",
   };
 }
 
 const inputStyle: CSSProperties = {
   width: "100%",
-  border: "1px solid var(--border)",
+  border: "1px solid var(--line)",
   borderRadius: "8px",
   padding: "8px 10px",
   background: "transparent",
@@ -224,8 +224,8 @@ const codeStyle: CSSProperties = {
   margin: 0,
   padding: "10px",
   borderRadius: "8px",
-  border: "1px solid var(--border)",
-  background: "color-mix(in srgb, var(--muted, #888) 16%, transparent)",
+  border: "1px solid var(--line)",
+  background: "color-mix(in srgb, var(--bg-3, #888) 16%, transparent)",
   overflowX: "auto",
   fontSize: "11px",
   lineHeight: 1.45,
@@ -238,12 +238,12 @@ const widgetGridStyle: CSSProperties = {
 };
 
 const widgetStyle: CSSProperties = {
-  border: "1px solid var(--border)",
+  border: "1px solid var(--line)",
   borderRadius: "14px",
   padding: "14px",
   display: "grid",
   gap: "8px",
-  background: "color-mix(in srgb, var(--card, transparent) 72%, transparent)",
+  background: "color-mix(in srgb, var(--bg-2, transparent) 72%, transparent)",
 };
 
 const mutedTextStyle: CSSProperties = {
@@ -304,7 +304,7 @@ function Pill({ label }: { label: string }) {
         alignItems: "center",
         gap: "6px",
         borderRadius: "999px",
-        border: "1px solid var(--border)",
+        border: "1px solid var(--line)",
         padding: "2px 8px",
         fontSize: "11px",
       }}
@@ -725,12 +725,12 @@ function KitchenSinkPageWidgets({ context }: { context: PluginPageProps["context
                 ...subtleCardStyle,
                 borderColor:
                   quickActionStatus.tone === "error"
-                    ? "color-mix(in srgb, #dc2626 45%, var(--border))"
+                    ? "color-mix(in srgb, #dc2626 45%, var(--line))"
                     : quickActionStatus.tone === "warn"
-                      ? "color-mix(in srgb, #d97706 45%, var(--border))"
+                      ? "color-mix(in srgb, #d97706 45%, var(--line))"
                       : quickActionStatus.tone === "success"
-                        ? "color-mix(in srgb, #16a34a 45%, var(--border))"
-                        : "color-mix(in srgb, #2563eb 45%, var(--border))",
+                        ? "color-mix(in srgb, #16a34a 45%, var(--line))"
+                        : "color-mix(in srgb, #2563eb 45%, var(--line))",
               }}
             >
               <div style={{ fontSize: "12px", fontWeight: 600 }}>{quickActionStatus.title}</div>
@@ -878,7 +878,7 @@ function KitchenSinkIssueCrudDemo({ context }: { context: PluginPageProps["conte
             </button>
           </div>
           {loading ? <div style={mutedTextStyle}>Loading issues…</div> : null}
-          {error ? <div style={{ ...mutedTextStyle, color: "var(--destructive, #dc2626)" }}>{error}</div> : null}
+          {error ? <div style={{ ...mutedTextStyle, color: "var(--bad, #dc2626)" }}>{error}</div> : null}
           <div style={{ display: "grid", gap: "10px" }}>
             {issues.map((issue) => {
               const draft = drafts[issue.id] ?? { title: issue.title, status: issue.status };
@@ -1034,7 +1034,7 @@ function KitchenSinkCompanyCrudDemo({ context }: { context: PluginPageProps["con
         </button>
       </div>
       {loading ? <div style={mutedTextStyle}>Loading companies…</div> : null}
-      {error ? <div style={{ ...mutedTextStyle, color: "var(--destructive, #dc2626)" }}>{error}</div> : null}
+      {error ? <div style={{ ...mutedTextStyle, color: "var(--bad, #dc2626)" }}>{error}</div> : null}
       <div style={{ display: "grid", gap: "10px" }}>
         {demoCompanies.map((company) => {
           const draft = drafts[company.id] ?? { name: company.name, status: "active" };
@@ -1253,7 +1253,7 @@ function KitchenSinkHostIntegrationDemo({ context }: { context: PluginPageProps[
               </button>
             </div>
             {loading ? <div style={mutedTextStyle}>Loading run data…</div> : null}
-            {error ? <div style={{ ...mutedTextStyle, color: "var(--destructive, #dc2626)" }}>{error}</div> : null}
+            {error ? <div style={{ ...mutedTextStyle, color: "var(--bad, #dc2626)" }}>{error}</div> : null}
             <MiniList
               items={liveRuns}
               empty="No live runs right now."
@@ -2233,7 +2233,7 @@ export function KitchenSinkSettingsPage({ context }: PluginSettingsPageProps) {
         </label>
       </div>
 
-      {error ? <div style={{ color: "var(--destructive, #c00)", fontSize: "12px" }}>{error}</div> : null}
+      {error ? <div style={{ color: "var(--bad, #c00)", fontSize: "12px" }}>{error}</div> : null}
 
       <div style={rowStyle}>
         <button type="submit" style={primaryButtonStyle} disabled={saving}>
@@ -2321,8 +2321,8 @@ export function KitchenSinkSidebarLink({ context }: PluginSidebarProps) {
       className={[
         "flex items-center gap-2.5 px-3 py-2 text-[13px] font-medium transition-colors",
         isActive
-          ? "bg-accent text-foreground"
-          : "text-foreground/80 hover:bg-accent/50 hover:text-foreground",
+          ? "bg-bg-3 text-ink"
+          : "text-ink/80 hover:bg-bg-3/50 hover:text-ink",
       ].join(" ")}
     >
       <span className="relative shrink-0">

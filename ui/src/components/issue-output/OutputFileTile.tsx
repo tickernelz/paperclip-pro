@@ -6,7 +6,7 @@ const TONE_CLASSES: Record<OutputFileTone, string> = {
   pdf: "bg-red-500/15 text-red-700 dark:text-red-300",
   zip: "bg-amber-500/15 text-amber-700 dark:text-amber-300",
   image: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-300",
-  bin: "bg-muted text-muted-foreground",
+  bin: "bg-bg-3 text-ink-3",
 };
 
 interface OutputFileTileProps {

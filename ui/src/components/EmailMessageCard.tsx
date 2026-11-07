@@ -59,14 +59,14 @@ export function EmailMessageCard({
       aria-label={
         message.direction === "inbound" ? "Email received" : "Email sent"
       }
-      className={contextNotice ? "task-context-notice space-y-3" : "space-y-4 rounded-xl border border-border bg-card p-5"}
+      className={contextNotice ? "task-context-notice space-y-3" : "space-y-4 rounded-xl border border-line bg-bg-2 p-5"}
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
         <span className="flex items-center gap-2 text-sm font-semibold">
           <Mail className="size-4" />
           {message.direction === "inbound" ? "Email received" : "Email sent"}
         </span>
-        <span className="text-xs text-muted-foreground">
+        <span className="text-xs text-ink-3">
           {new Date(message.timestamp).toLocaleString()}
         </span>
       </div>
@@ -74,16 +74,16 @@ export function EmailMessageCard({
         <p className="text-sm font-medium">
           {message.from}
           {message.direction === "inbound" && (
-            <span className="ml-2 rounded-md bg-muted px-2 py-1 text-xs text-muted-foreground">
+            <span className="ml-2 rounded-md bg-bg-3 px-2 py-1 text-xs text-ink-3">
               External
             </span>
           )}
         </p>
-        <p className="break-words text-xs text-muted-foreground">
+        <p className="break-words text-xs text-ink-3">
           To: {message.to.join(", ")}
         </p>
         {!!message.cc?.length && (
-          <p className="break-words text-xs text-muted-foreground">
+          <p className="break-words text-xs text-ink-3">
             Cc: {message.cc.join(", ")}
           </p>
         )}
@@ -102,7 +102,7 @@ export function EmailMessageCard({
                 href={`/api/attachments/${id}/content`}
                 target="_blank"
                 rel="noreferrer"
-                className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-xs"
+                className="flex items-center gap-2 rounded-md border border-line px-3 py-2 text-xs"
               >
                 <Paperclip className="size-3.5" />
                 {attachment?.originalFilename ?? "Open attachment"}
@@ -111,7 +111,7 @@ export function EmailMessageCard({
           })}
         </div>
       )}
-      <details className="text-xs text-muted-foreground">
+      <details className="text-xs text-ink-3">
         <summary className="cursor-pointer">Email details</summary>
         <div className="space-y-2 pt-3">
           {!!message.bcc?.length && <p>Bcc: {message.bcc.join(", ")}</p>}
@@ -124,7 +124,7 @@ export function EmailMessageCard({
         </div>
       </details>
       {publication && (
-        <p className="border-t border-border pt-3 text-xs text-muted-foreground">
+        <p className="border-t border-line pt-3 text-xs text-ink-3">
           {publication.outcome === "delivered"
             ? "Delivered"
             : publication.outcome === "failed"
@@ -138,7 +138,7 @@ export function EmailMessageCard({
         </p>
       )}
       {attachments.error && (
-        <p role="alert" className="text-xs text-destructive">
+        <p role="alert" className="text-xs text-bad">
           Attachments could not be loaded.
         </p>
       )}

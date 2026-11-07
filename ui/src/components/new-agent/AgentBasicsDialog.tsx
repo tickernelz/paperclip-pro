@@ -94,17 +94,17 @@ export function AgentBasicsDialog({
         )}
       >
         <div
-          className="flex items-center gap-2 px-6 py-5 text-xs text-muted-foreground"
+          className="flex items-center gap-2 px-6 py-5 text-xs text-ink-3"
           aria-label="New agent progress"
         >
           <span
-            className={cn(step === "name" && "font-medium text-foreground")}
+            className={cn(step === "name" && "font-medium text-ink")}
           >
             1. Name
           </span>
           <ChevronRight className="size-3" />
           <span
-            className={cn(step === "adapter" && "font-medium text-foreground")}
+            className={cn(step === "adapter" && "font-medium text-ink")}
           >
             2. Adapter
           </span>
@@ -155,7 +155,7 @@ export function AgentBasicsDialog({
                   <Button
                     type="button"
                     variant="link"
-                    className="px-0 text-muted-foreground"
+                    className="px-0"
                     onClick={onInvite}
                   >
                     Invite an external agent
@@ -166,12 +166,12 @@ export function AgentBasicsDialog({
               <fieldset className="space-y-4">
                 <legend className="sr-only">Adapter</legend>
                 {isPending && (
-                  <p role="status" className="text-sm text-muted-foreground">
+                  <p role="status" className="text-sm text-ink-3">
                     Loading adapters…
                   </p>
                 )}
                 {error && (
-                  <p role="alert" className="text-sm text-destructive">
+                  <p role="alert" className="text-sm text-bad">
                     {error.message}
                   </p>
                 )}
@@ -193,10 +193,10 @@ export function AgentBasicsDialog({
                         />
                         <span
                           className={cn(
-                            "flex h-full flex-col items-center gap-2 rounded-lg border px-3 py-4 text-center peer-focus-visible:ring-2 peer-focus-visible:ring-ring hover:bg-accent/40",
+                            "flex h-full flex-col items-center gap-2 rounded-lg border px-3 py-4 text-center peer-focus-visible:ring-2 peer-focus-visible:ring-focus hover:bg-bg-3/40",
                             adapterType === adapter.type
-                              ? "border-foreground/40 bg-accent"
-                              : "border-border bg-card",
+                              ? "border-ink/40 bg-bg-3"
+                              : "border-line bg-bg-2",
                           )}
                         >
                           <AdapterMark type={adapter.type} />
@@ -215,7 +215,7 @@ export function AgentBasicsDialog({
                   <label className="flex flex-col gap-2 text-sm font-medium">
                     Runner
                     <select
-                      className="rounded-md border border-border bg-background px-3 py-2"
+                      className="rounded-md border border-line bg-bg px-3 py-2"
                       value={runnerProvider}
                       onChange={(event) =>
                         setRunnerProvider(event.target.value)
@@ -231,7 +231,7 @@ export function AgentBasicsDialog({
               </fieldset>
             )}
           </div>
-          <div className="flex justify-between gap-4 border-t border-border px-6 py-4">
+          <div className="flex justify-between gap-4 border-t border-line px-6 py-4">
             <Button
               type="button"
               variant="ghost"

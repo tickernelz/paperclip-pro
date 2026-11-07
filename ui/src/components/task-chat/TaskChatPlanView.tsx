@@ -5,13 +5,13 @@ import type { TaskChatPlan, TaskChatPlanEntryStatus } from "./task-chat-model";
 const STATUS_ICON: Record<TaskChatPlanEntryStatus, { Icon: typeof Check; spin: boolean; tone: string }> = {
   completed: { Icon: Check, spin: false, tone: "text-(--status-task-icon-done)" },
   in_progress: { Icon: Loader2, spin: true, tone: "text-(--status-agent-running)" },
-  pending: { Icon: Circle, spin: false, tone: "text-muted-foreground" },
+  pending: { Icon: Circle, spin: false, tone: "text-ink-3" },
 };
 
 const PRIORITY_TONE = {
-  high: "text-destructive",
+  high: "text-bad",
   medium: "text-(--status-agent-paused)",
-  low: "text-muted-foreground",
+  low: "text-ink-3",
 } as const;
 
 /**
@@ -23,8 +23,8 @@ export function TaskChatPlanView({ plan }: { plan: TaskChatPlan }) {
   const done = plan.entries.filter((e) => e.status === "completed").length;
   return (
     <div className="flex flex-col gap-2 py-2">
-      <div className="flex items-center gap-2 px-1 text-xs text-muted-foreground">
-        <span className="font-medium text-foreground">Plan</span>
+      <div className="flex items-center gap-2 px-1 text-xs text-ink-3">
+        <span className="font-medium text-ink">Plan</span>
         <span>· rev {plan.revision}</span>
         <span className="ml-auto">
           {done}/{plan.entries.length} done
@@ -36,11 +36,11 @@ export function TaskChatPlanView({ plan }: { plan: TaskChatPlan }) {
           return (
             <li
               key={entry.id}
-              className="tc-enter-plan-entry flex items-start gap-2 rounded-md border border-border bg-card/50 px-2.5 py-1.5 text-sm"
+              className="tc-enter-plan-entry flex items-start gap-2 rounded-md border border-line bg-bg-2/50 px-2.5 py-1.5 text-sm"
               style={{ animationDelay: `calc(var(--motion-plan-entry-stagger) * ${i})` }}
             >
               <Icon className={cn("mt-0.5 h-4 w-4 shrink-0", tone, spin && "animate-spin")} />
-              <span className={cn("min-w-0 flex-1", entry.status === "completed" && "text-muted-foreground line-through")}>
+              <span className={cn("min-w-0 flex-1", entry.status === "completed" && "text-ink-3 line-through")}>
                 {entry.content}
               </span>
               <span className={cn("shrink-0 text-(length:--text-nano) uppercase tracking-wide", PRIORITY_TONE[entry.priority])}>

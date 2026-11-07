@@ -146,7 +146,7 @@ export function LocalBrowserLimitsFields({
                 onChange={(event) => onChange(key, event.target.value)}
                 className="w-32 font-mono"
               />
-              <span className="text-sm text-muted-foreground">{field.unit}</span>
+              <span className="text-sm text-ink-3">{field.unit}</span>
               <Button
                 size="sm"
                 variant="ghost"
@@ -157,12 +157,12 @@ export function LocalBrowserLimitsFields({
                 Reset
               </Button>
             </div>
-            <p id={`${inputId}-hint`} className="text-xs text-muted-foreground">
+            <p id={`${inputId}-hint`} className="text-xs text-ink-3">
               {field.help} Default {formatInUnit(key, range.default)} {field.unit}, allowed{" "}
               {formatInUnit(key, range.min)} to {formatInUnit(key, range.ceiling)}.
             </p>
             {error ? (
-              <p id={`${inputId}-error`} role="alert" className="text-xs text-destructive">
+              <p id={`${inputId}-error`} role="alert" className="text-xs text-bad">
                 {error}
               </p>
             ) : null}

@@ -69,21 +69,21 @@ function ComposerAddStory({ initialMode, goalAvailable, mobile, mobileContext, f
     mobile={mobile}
   />;
 
-  if (mobileContext) return <div className="flex min-h-dvh flex-col bg-background text-foreground">
+  if (mobileContext) return <div className="flex min-h-dvh flex-col bg-bg text-ink">
     <header className="flex h-12 shrink-0 items-center gap-3 px-4 text-sm">
-      <ChevronLeft className="size-4 text-muted-foreground" aria-hidden />
+      <ChevronLeft className="size-4 text-ink-3" aria-hidden />
       <span className="min-w-0 flex-1 truncate font-medium">PAP-1074 · Composer on mobile</span>
-      <Ellipsis className="size-4 text-muted-foreground" aria-hidden />
+      <Ellipsis className="size-4 text-ink-3" aria-hidden />
     </header>
     <main className="flex flex-1 flex-col p-4 pb-(--tc-composer-visible-nav-offset)"
       style={{ "--tc-composer-bottom": "var(--tc-composer-visible-nav-offset)" } as CSSProperties}>
       {/* Production's full-width chat tab cancels the page's p-4 with -mx-4. */}
       <div className={fullBleedMobileContext ? "-mx-4 flex flex-1 flex-col" : "flex flex-1 flex-col"}>
         <div className={fullBleedMobileContext ? "space-y-4 px-4 text-sm" : "space-y-4 text-sm"}>
-          <div className="rounded-lg bg-muted px-3 py-2">Tune the composer spacing for a phone screen.</div>
-          <div className="ml-8 rounded-lg bg-secondary px-3 py-2">The bottom navigation stays visible while writing.</div>
-          {goal ? <div className="rounded-lg bg-card px-3 py-2">Goal: {goal}</div> : null}
-          {sent.map((body, index) => <div key={index} className="ml-8 rounded-lg bg-secondary px-3 py-2">{body}</div>)}
+          <div className="rounded-lg bg-bg-3 px-3 py-2">Tune the composer spacing for a phone screen.</div>
+          <div className="ml-8 rounded-lg bg-bg-3 px-3 py-2">The bottom navigation stays visible while writing.</div>
+          {goal ? <div className="rounded-lg bg-bg-2 px-3 py-2">Goal: {goal}</div> : null}
+          {sent.map((body, index) => <div key={index} className="ml-8 rounded-lg bg-bg-3 px-3 py-2">{body}</div>)}
         </div>
         <div className="min-h-4 flex-1" />
         <TaskChatComposerDock mobile streamlined={!fullBleedMobileContext}>{composer}</TaskChatComposerDock>
@@ -92,15 +92,15 @@ function ComposerAddStory({ initialMode, goalAvailable, mobile, mobileContext, f
     <MobileBottomNav visible />
   </div>;
 
-  return <div className="flex min-h-screen flex-col bg-background p-4 text-foreground sm:p-8">
+  return <div className="flex min-h-screen flex-col bg-bg p-4 text-ink sm:p-8">
     <div className="mx-auto flex w-full max-w-3xl flex-1 flex-col">
-      <header className="border-b border-border pb-4">
+      <header className="border-b border-line pb-4">
         <h1 className="text-base font-semibold">Composer actions</h1>
-        <p className="mt-1 text-sm text-muted-foreground">Open the plus menu to attach a file, start a goal, or choose Plan or Ask mode.</p>
+        <p className="mt-1 text-sm text-ink-3">Open the plus menu to attach a file, start a goal, or choose Plan or Ask mode.</p>
       </header>
       <div className="flex flex-1 flex-col justify-end gap-3 py-6">
-        {goal ? <div className="rounded-lg border border-border bg-card px-4 py-3 text-sm">Goal: {goal}</div> : null}
-        {sent.map((body, index) => <div key={index} className="ml-auto rounded-lg bg-secondary px-4 py-3 text-sm">{body}</div>)}
+        {goal ? <div className="rounded-lg border border-line bg-bg-2 px-4 py-3 text-sm">Goal: {goal}</div> : null}
+        {sent.map((body, index) => <div key={index} className="ml-auto rounded-lg bg-bg-3 px-4 py-3 text-sm">{body}</div>)}
       </div>
       {composer}
     </div>

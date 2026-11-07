@@ -52,7 +52,7 @@ export function AgentChatSidebar({
               event.stopPropagation();
               onToggleStar(agent.id);
             }}
-            className={cn("absolute right-2 top-(--pct-50) -translate-y-(--pct-50) text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover/agent-chat:opacity-100 focus-visible:opacity-100 pointer-coarse:opacity-100", pinned && "opacity-100")}
+            className={cn("absolute right-2 top-(--pct-50) -translate-y-(--pct-50) opacity-0 transition-opacity group-hover/agent-chat:opacity-100 focus-visible:opacity-100 pointer-coarse:opacity-100", pinned && "opacity-100")}
           >
             <Star
               aria-hidden="true"
@@ -66,7 +66,7 @@ export function AgentChatSidebar({
   return (
     <section aria-label="Chats" className="group/chats flex flex-col gap-0.5">
       <div className="relative flex min-h-9 items-center px-4 py-1.5">
-        <span className={cn("font-mono text-(length:--text-nano) font-medium uppercase tracking-widest text-muted-foreground/60", rail && "sr-only")}>Chats</span>
+        <span className={cn("font-mono text-(length:--text-nano) font-medium uppercase tracking-widest text-ink-3/60", rail && "sr-only")}>Chats</span>
         <Button
           type="button"
           variant="ghost"
@@ -74,7 +74,7 @@ export function AgentChatSidebar({
           aria-label="Chat with an agent"
           title="Chat with an agent"
           onClick={onOpenChat}
-          className="absolute right-2 top-(--pct-50) -translate-y-(--pct-50) text-muted-foreground opacity-0 group-hover/chats:opacity-100 focus-visible:opacity-100 pointer-coarse:opacity-100"
+          className="absolute right-2 top-(--pct-50) -translate-y-(--pct-50) opacity-0 group-hover/chats:opacity-100 focus-visible:opacity-100 pointer-coarse:opacity-100"
         >
           <SquarePen aria-hidden="true" className="size-3.5" />
         </Button>

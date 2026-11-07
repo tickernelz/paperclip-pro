@@ -151,11 +151,11 @@ export function InvitesSection() {
   });
 
   if (!selectedCompanyId) {
-    return <div className="text-sm text-muted-foreground">Select an organization to manage invites.</div>;
+    return <div className="text-sm text-ink-3">Select an organization to manage invites.</div>;
   }
 
   if (invitesQuery.isLoading) {
-    return <div className="text-sm text-muted-foreground">Loading invites…</div>;
+    return <div className="text-sm text-ink-3">Loading invites…</div>;
   }
 
   if (invitesQuery.error) {
@@ -165,33 +165,33 @@ export function InvitesSection() {
         : invitesQuery.error instanceof Error
           ? invitesQuery.error.message
           : "Failed to load invites.";
-    return <div className="text-sm text-destructive">{message}</div>;
+    return <div className="text-sm text-bad">{message}</div>;
   }
 
   return (
     <div className="max-w-6xl space-y-8">
-      <p className="max-w-3xl text-sm text-muted-foreground">
+      <p className="max-w-3xl text-sm text-ink-3">
         Invite people to request access to this organization. New invite links are copied to your clipboard when they are
         generated.
       </p>
 
-      <section className="space-y-4 rounded-xl border border-border p-5">
+      <section className="space-y-4 rounded-xl border border-line p-5">
         <div className="space-y-1">
           <h2 className="text-sm font-semibold">Invite a person</h2>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-ink-3">
             Generate a human invite link and choose the default access it should request.
           </p>
         </div>
 
         <fieldset className="space-y-3">
           <legend className="text-sm font-medium">Choose a role</legend>
-          <div className="rounded-xl border border-border">
+          <div className="rounded-xl border border-line">
             {inviteRoleOptions.map((option, index) => {
               const checked = humanRole === option.value;
               return (
                 <label
                   key={option.value}
-                  className={`flex cursor-pointer gap-3 px-4 py-4 ${index > 0 ? "border-t border-border" : ""}`}
+                  className={`flex cursor-pointer gap-3 px-4 py-4 ${index > 0 ? "border-t border-line" : ""}`}
                 >
                   <input
                     type="radio"
@@ -199,19 +199,19 @@ export function InvitesSection() {
                     value={option.value}
                     checked={checked}
                     onChange={() => setHumanRole(option.value)}
-                    className="mt-1 h-4 w-4 border-border text-foreground"
+                    className="mt-1 h-4 w-4 border-line text-ink"
                   />
                   <span className="min-w-0 space-y-1">
                     <span className="flex flex-wrap items-center gap-2">
                       <span className="text-sm font-medium">{option.label}</span>
                       {option.value === "operator" ? (
-                        <Badge variant="outline" className="border-border text-muted-foreground">
+                        <Badge variant="outline" className="border-line text-ink-3">
                           Default
                         </Badge>
                       ) : null}
                     </span>
-                    <span className="block max-w-2xl text-sm text-muted-foreground">{option.description}</span>
-                    <span className="block text-sm text-foreground">{option.gets}</span>
+                    <span className="block max-w-2xl text-sm text-ink-3">{option.description}</span>
+                    <span className="block text-sm text-ink">{option.gets}</span>
                   </span>
                 </label>
               );
@@ -219,7 +219,7 @@ export function InvitesSection() {
           </div>
         </fieldset>
 
-        <div className="rounded-lg border border-border px-4 py-3 text-sm text-muted-foreground">
+        <div className="rounded-lg border border-line px-4 py-3 text-sm text-ink-3">
           Each invite link is single-use. Human invitees get the selected role immediately after sign-in; agent invites still create a join request for approval.
         </div>
 
@@ -227,22 +227,22 @@ export function InvitesSection() {
           <Button onClick={() => createInviteMutation.mutate()} disabled={createInviteMutation.isPending}>
             {createInviteMutation.isPending ? "Creating…" : "Create invite"}
           </Button>
-          <span className="text-sm text-muted-foreground">Invite history below keeps the audit trail.</span>
+          <span className="text-sm text-ink-3">Invite history below keeps the audit trail.</span>
         </div>
 
         {latestInviteUrl ? (
-          <div className="space-y-3 rounded-lg border border-border px-4 py-4">
+          <div className="space-y-3 rounded-lg border border-line px-4 py-4">
             <div className="space-y-1">
               <div className="flex items-center justify-between gap-3">
                 <div className="text-sm font-medium">Latest invite link</div>
                 {latestInviteCopied ? (
-                  <div className="inline-flex items-center gap-1 text-xs font-medium text-foreground">
+                  <div className="inline-flex items-center gap-1 text-xs font-medium text-ink">
                     <Check className="h-3.5 w-3.5" />
                     Copied
                   </div>
                 ) : null}
               </div>
-              <div className="text-sm text-muted-foreground">
+              <div className="text-sm text-ink-3">
                 This URL includes the current Paperclip domain returned by the server.
               </div>
             </div>
@@ -254,7 +254,7 @@ export function InvitesSection() {
                 value={latestInviteUrl}
                 onFocus={(event) => event.currentTarget.select()}
                 onClick={(event) => event.currentTarget.select()}
-                className="w-full rounded-md border border-border bg-muted/60 px-3 py-2 text-sm text-foreground outline-none transition-colors selection:bg-primary selection:text-primary-foreground focus:border-ring"
+                className="w-full rounded-md border border-line bg-bg-3/60 px-3 py-2 text-sm text-ink outline-none transition-colors selection:bg-accent selection:text-accent-ink focus:border-focus"
                 aria-label="Latest invite URL"
               />
             </label>
@@ -262,7 +262,7 @@ export function InvitesSection() {
               <Button
                 type="button"
                 size="sm"
-                variant="outline"
+                variant="secondary"
                 onClick={async () => {
                   const copied = await copyInviteUrl(latestInviteUrl);
                   setLatestInviteCopied(copied);
@@ -276,11 +276,11 @@ export function InvitesSection() {
         ) : null}
       </section>
 
-      <section className="rounded-xl border border-border">
+      <section className="rounded-xl border border-line">
         <div className="flex flex-wrap items-center justify-between gap-4 px-5 py-4">
           <div className="space-y-1">
             <h2 className="text-sm font-semibold">Invite history</h2>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-ink-3">
               Review invite status, audience, inviter, and any linked join request.
             </p>
           </div>
@@ -290,28 +290,28 @@ export function InvitesSection() {
         </div>
 
         {inviteHistory.length === 0 ? (
-          <div className="border-t border-border px-5 py-8 text-sm text-muted-foreground">
+          <div className="border-t border-line px-5 py-8 text-sm text-ink-3">
             No invites have been created for this organization yet.
           </div>
         ) : (
-          <div className="border-t border-border">
+          <div className="border-t border-line">
             <div className="overflow-x-auto">
               <table className="min-w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-border">
-                    <th className="px-5 py-3 font-medium text-muted-foreground">State</th>
-                    <th className="px-5 py-3 font-medium text-muted-foreground">For</th>
-                    <th className="px-5 py-3 font-medium text-muted-foreground">Invited by</th>
-                    <th className="px-5 py-3 font-medium text-muted-foreground">Created</th>
-                    <th className="px-5 py-3 font-medium text-muted-foreground">Join request</th>
-                    <th className="px-5 py-3 text-right font-medium text-muted-foreground">Action</th>
+                  <tr className="border-b border-line">
+                    <th className="px-5 py-3 font-medium text-ink-3">State</th>
+                    <th className="px-5 py-3 font-medium text-ink-3">For</th>
+                    <th className="px-5 py-3 font-medium text-ink-3">Invited by</th>
+                    <th className="px-5 py-3 font-medium text-ink-3">Created</th>
+                    <th className="px-5 py-3 font-medium text-ink-3">Join request</th>
+                    <th className="px-5 py-3 text-right font-medium text-ink-3">Action</th>
                   </tr>
                 </thead>
                 <tbody>
                   {inviteHistory.map((invite) => (
-                    <tr key={invite.id} className="border-b border-border last:border-b-0">
+                    <tr key={invite.id} className="border-b border-line last:border-b-0">
                       <td className="px-5 py-3 align-top">
-                        <Badge variant="outline" className="border-border text-muted-foreground">
+                        <Badge variant="outline" className="border-line text-ink-3">
                           {formatInviteState(invite.state)}
                         </Badge>
                       </td>
@@ -319,10 +319,10 @@ export function InvitesSection() {
                       <td className="px-5 py-3 align-top">
                         <div>{invite.invitedByUser?.name || invite.invitedByUser?.email || "Unknown inviter"}</div>
                         {invite.invitedByUser?.email && invite.invitedByUser.name ? (
-                          <div className="text-xs text-muted-foreground">{invite.invitedByUser.email}</div>
+                          <div className="text-xs text-ink-3">{invite.invitedByUser.email}</div>
                         ) : null}
                       </td>
-                      <td className="px-5 py-3 align-top text-muted-foreground">
+                      <td className="px-5 py-3 align-top text-ink-3">
                         {new Date(invite.createdAt).toLocaleString()}
                       </td>
                       <td className="px-5 py-3 align-top">
@@ -331,21 +331,21 @@ export function InvitesSection() {
                             Review request
                           </Link>
                         ) : (
-                          <span className="text-muted-foreground">—</span>
+                          <span className="text-ink-3">—</span>
                         )}
                       </td>
                       <td className="px-5 py-3 text-right align-top">
                         {invite.state === "active" ? (
                           <Button
                             size="sm"
-                            variant="outline"
+                            variant="secondary"
                             onClick={() => revokeMutation.mutate(invite.id)}
                             disabled={revokeMutation.isPending}
                           >
                             Revoke
                           </Button>
                         ) : (
-                          <span className="text-xs text-muted-foreground">Inactive</span>
+                          <span className="text-xs text-ink-3">Inactive</span>
                         )}
                       </td>
                     </tr>
@@ -354,10 +354,10 @@ export function InvitesSection() {
               </table>
             </div>
             {invitesQuery.hasNextPage ? (
-              <div className="flex justify-center border-t border-border px-5 py-4">
+              <div className="flex justify-center border-t border-line px-5 py-4">
                 <Button
                   type="button"
-                  variant="outline"
+                  variant="secondary"
                   onClick={() => invitesQuery.fetchNextPage()}
                   disabled={invitesQuery.isFetchingNextPage}
                 >

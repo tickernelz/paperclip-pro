@@ -50,7 +50,7 @@ function PayloadField({ label, value }: { label: string; value: unknown }) {
   if (!value) return null;
   return (
     <div className="flex items-center gap-2">
-      <span className="text-muted-foreground w-20 sm:w-24 shrink-0 text-xs">{label}</span>
+      <span className="text-ink-3 w-20 sm:w-24 shrink-0 text-xs">{label}</span>
       <span>{String(value)}</span>
     </div>
   );
@@ -66,12 +66,12 @@ function SkillList({ values }: { values: unknown }) {
 
   return (
     <div className="flex items-start gap-2">
-      <span className="text-muted-foreground w-20 sm:w-24 shrink-0 text-xs pt-0.5">Skills</span>
+      <span className="text-ink-3 w-20 sm:w-24 shrink-0 text-xs pt-0.5">Skills</span>
       <div className="flex flex-wrap gap-1.5">
         {items.map((item) => (
           <span
             key={item}
-            className="rounded bg-muted px-1.5 py-0.5 font-mono text-(length:--text-micro) text-muted-foreground"
+            className="rounded bg-bg-3 px-1.5 py-0.5 font-mono text-(length:--text-micro) text-ink-3"
           >
             {item}
           </span>
@@ -85,7 +85,7 @@ export function HireAgentPayload({ payload }: { payload: Record<string, unknown>
   return (
     <div className="mt-3 space-y-1.5 text-sm">
       <div className="flex items-center gap-2">
-        <span className="text-muted-foreground w-20 sm:w-24 shrink-0 text-xs">Name</span>
+        <span className="text-ink-3 w-20 sm:w-24 shrink-0 text-xs">Name</span>
         <span className="font-medium">{String(payload.name ?? "—")}</span>
       </div>
       <PayloadField label="Role" value={payload.role} />
@@ -93,14 +93,14 @@ export function HireAgentPayload({ payload }: { payload: Record<string, unknown>
       <PayloadField label="Icon" value={payload.icon} />
       {!!payload.capabilities && (
         <div className="flex items-start gap-2">
-          <span className="text-muted-foreground w-20 sm:w-24 shrink-0 text-xs pt-0.5">Capabilities</span>
-          <span className="text-muted-foreground">{String(payload.capabilities)}</span>
+          <span className="text-ink-3 w-20 sm:w-24 shrink-0 text-xs pt-0.5">Capabilities</span>
+          <span className="text-ink-3">{String(payload.capabilities)}</span>
         </div>
       )}
       {!!payload.adapterType && (
         <div className="flex items-center gap-2">
-          <span className="text-muted-foreground w-20 sm:w-24 shrink-0 text-xs">Adapter</span>
-          <span className="font-mono text-xs bg-muted px-1.5 py-0.5 rounded">
+          <span className="text-ink-3 w-20 sm:w-24 shrink-0 text-xs">Adapter</span>
+          <span className="font-mono text-xs bg-bg-3 px-1.5 py-0.5 rounded">
             {String(payload.adapterType)}
           </span>
         </div>
@@ -116,12 +116,12 @@ export function CeoStrategyPayload({ payload }: { payload: Record<string, unknow
     <div className="mt-3 space-y-1.5 text-sm">
       <PayloadField label="Title" value={payload.title} />
       {!!plan && (
-        <div className="mt-2 rounded-md bg-muted/40 px-3 py-2 text-sm text-muted-foreground whitespace-pre-wrap font-mono text-xs max-h-48 overflow-y-auto">
+        <div className="mt-2 rounded-md bg-bg-3/40 px-3 py-2 text-sm text-ink-3 whitespace-pre-wrap font-mono text-xs max-h-48 overflow-y-auto">
           {String(plan)}
         </div>
       )}
       {!plan && (
-        <pre className="mt-2 rounded-md bg-muted/40 px-3 py-2 text-xs text-muted-foreground overflow-x-auto max-h-48">
+        <pre className="mt-2 rounded-md bg-bg-3/40 px-3 py-2 text-xs text-ink-3 overflow-x-auto max-h-48">
           {JSON.stringify(payload, null, 2)}
         </pre>
       )}
@@ -138,12 +138,12 @@ export function BudgetOverridePayload({ payload }: { payload: Record<string, unk
       <PayloadField label="Window" value={payload.windowKind} />
       <PayloadField label="Metric" value={payload.metric} />
       {(budgetAmount !== null || observedAmount !== null) ? (
-        <div className="rounded-md bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+        <div className="rounded-md bg-bg-3/40 px-3 py-2 text-xs text-ink-3">
           Limit {budgetAmount !== null ? formatCents(budgetAmount) : "—"} · Observed {observedAmount !== null ? formatCents(observedAmount) : "—"}
         </div>
       ) : null}
       {!!payload.guidance && (
-        <p className="text-muted-foreground">{String(payload.guidance)}</p>
+        <p className="text-ink-3">{String(payload.guidance)}</p>
       )}
     </div>
   );
@@ -187,14 +187,14 @@ function BoardApprovalPayloadContent({ payload }: { payload: Record<string, unkn
     <div className="mt-4 space-y-3.5 text-sm">
       {title && (
         <div className="space-y-1">
-          <p className="text-(length:--text-micro) font-medium uppercase tracking-(--tracking-label) text-muted-foreground">Title</p>
-          <p className="font-medium leading-6 text-foreground">{title}</p>
+          <p className="text-(length:--text-micro) font-medium uppercase tracking-(--tracking-label) text-ink-3">Title</p>
+          <p className="font-medium leading-6 text-ink">{title}</p>
         </div>
       )}
       {summary && (
         <div className="space-y-1">
-          <p className="text-(length:--text-micro) font-medium uppercase tracking-(--tracking-label) text-muted-foreground">Summary</p>
-          <MarkdownBody className="leading-6 text-foreground/90">{summary}</MarkdownBody>
+          <p className="text-(length:--text-micro) font-medium uppercase tracking-(--tracking-label) text-ink-3">Summary</p>
+          <MarkdownBody className="leading-6 text-ink/90">{summary}</MarkdownBody>
         </div>
       )}
       {recommendedAction && (
@@ -202,22 +202,22 @@ function BoardApprovalPayloadContent({ payload }: { payload: Record<string, unkn
           <p className="text-(length:--text-micro) font-medium uppercase tracking-(--tracking-label) text-amber-700 dark:text-amber-300">
             Recommended action
           </p>
-          <MarkdownBody className="mt-1 leading-6 text-foreground">{recommendedAction}</MarkdownBody>
+          <MarkdownBody className="mt-1 leading-6 text-ink">{recommendedAction}</MarkdownBody>
         </div>
       )}
       {nextActionOnApproval && (
-        <div className="rounded-lg border border-border/60 bg-background/60 px-3.5 py-3">
-          <p className="text-(length:--text-micro) font-medium uppercase tracking-(--tracking-label) text-muted-foreground">On approval</p>
-          <MarkdownBody className="mt-1 leading-6 text-foreground">{nextActionOnApproval}</MarkdownBody>
+        <div className="rounded-lg border border-line/60 bg-bg/60 px-3.5 py-3">
+          <p className="text-(length:--text-micro) font-medium uppercase tracking-(--tracking-label) text-ink-3">On approval</p>
+          <MarkdownBody className="mt-1 leading-6 text-ink">{nextActionOnApproval}</MarkdownBody>
         </div>
       )}
       {risks.length > 0 && (
         <div className="space-y-1.5">
-          <p className="text-(length:--text-micro) font-medium uppercase tracking-(--tracking-label) text-muted-foreground">Risks</p>
-          <ul className="space-y-1 text-sm text-muted-foreground">
+          <p className="text-(length:--text-micro) font-medium uppercase tracking-(--tracking-label) text-ink-3">Risks</p>
+          <ul className="space-y-1 text-sm text-ink-3">
             {risks.map((risk, index) => (
               <li key={`${index}-${risk}`} className="flex items-start gap-2">
-                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-muted-foreground/60" />
+                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-ink-3/60" />
                 <MarkdownBody className="leading-6">{risk}</MarkdownBody>
               </li>
             ))}
@@ -226,10 +226,10 @@ function BoardApprovalPayloadContent({ payload }: { payload: Record<string, unkn
       )}
       {proposedComment && (
         <div className="space-y-1.5">
-          <p className="text-(length:--text-micro) font-medium uppercase tracking-(--tracking-label) text-muted-foreground">
+          <p className="text-(length:--text-micro) font-medium uppercase tracking-(--tracking-label) text-ink-3">
             Proposed comment
           </p>
-          <pre className="max-h-48 overflow-auto rounded-lg border border-border/60 bg-muted/50 px-3.5 py-3 font-mono text-xs leading-5 text-muted-foreground whitespace-pre-wrap">
+          <pre className="max-h-48 overflow-auto rounded-lg border border-line/60 bg-bg-3/50 px-3.5 py-3 font-mono text-xs leading-5 text-ink-3 whitespace-pre-wrap">
             {proposedComment}
           </pre>
         </div>

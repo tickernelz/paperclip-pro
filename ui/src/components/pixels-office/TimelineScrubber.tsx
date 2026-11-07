@@ -110,7 +110,7 @@ export function TimelineScrubber({ companyId, store, onReplayingChange }: Timeli
 
   if (!replaying) {
     return (
-      <Button size="sm" variant="outline" onClick={enterReplay}>
+      <Button size="sm" variant="secondary" onClick={enterReplay}>
         <Play className="size-4" aria-hidden />
         Replay last 24 h
       </Button>
@@ -138,7 +138,7 @@ export function TimelineScrubber({ companyId, store, onReplayingChange }: Timeli
         }}
         className="min-w-0 flex-1"
       />
-      <span className="shrink-0 font-mono text-xs text-muted-foreground">
+      <span className="shrink-0 font-mono text-xs text-ink-3">
         {new Date(cursorMs).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
       </span>
       <div className="flex items-center gap-1">
@@ -153,13 +153,13 @@ export function TimelineScrubber({ companyId, store, onReplayingChange }: Timeli
           </Button>
         ))}
       </div>
-      <Button size="sm" variant="default" onClick={returnToLive}>
+      <Button size="sm" variant="primary" onClick={returnToLive}>
         <Radio className="size-4" aria-hidden />
         Live
       </Button>
-      {isFetching ? <span className="text-xs text-muted-foreground">Loading history…</span> : null}
+      {isFetching ? <span className="text-xs text-ink-3">Loading history…</span> : null}
       {error ? (
-        <span className="text-xs text-destructive">
+        <span className="text-xs text-bad">
           {error instanceof Error ? error.message : "Timeline unavailable"}
         </span>
       ) : null}

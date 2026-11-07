@@ -161,7 +161,7 @@ function GovernanceSelect({
        * self-describing for sighted users, and always carry `aria-label` for
        * screen-reader pairing. WCAG 2.1 SC 1.4.10 (Reflow) — design review R2.
        */}
-      <span className="mb-1 block text-xs font-medium text-muted-foreground uppercase tracking-wide sm:hidden">
+      <span className="mb-1 block text-xs font-medium text-ink-3 uppercase tracking-wide sm:hidden">
         {mobileLabel}
       </span>
       <Select value={value} onValueChange={(v) => onChange(v as GovernanceSelectValue)} disabled={disabled}>
@@ -207,7 +207,7 @@ function GovernanceSelect({
                */}
               <span className="flex min-w-0 flex-col gap-0.5">
                 <span>{option.label}</span>
-                <span className="text-(length:--text-micro) text-muted-foreground">
+                <span className="text-(length:--text-micro) text-ink-3">
                   {option.effect}
                 </span>
               </span>
@@ -240,20 +240,20 @@ export function InteractionGovernancePanel({
 }) {
   return (
     <div className="space-y-4" data-testid="company-settings-interaction-governance-section">
-      <div className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
+      <div className="text-xs font-medium text-ink-3 uppercase tracking-wide">
         Interaction governance
       </div>
       <div className="space-y-4">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           Thread interactions are open by default:{" "}
-          <span className="font-medium text-foreground">Anyone</span> in the organization — the
+          <span className="font-medium text-ink">Anyone</span> in the organization — the
           board or any agent, including the one that asked — can respond. Narrow a kind
           only when you need to.{" "}
-          <span className="font-medium text-foreground">Default policy</span> is the
+          <span className="font-medium text-ink">Default policy</span> is the
           audience new cards get when the requester does not ask for one;{" "}
-          <span className="font-medium text-foreground">Cap</span> narrows every request of
+          <span className="font-medium text-ink">Cap</span> narrows every request of
           that kind and can never widen one. Tool-approval confirmations always stay{" "}
-          <span className="font-medium text-foreground">Human only</span>.
+          <span className="font-medium text-ink">Human only</span>.
         </p>
         {/*
          * Responsive: below `sm` the row collapses to a single column so the
@@ -263,13 +263,13 @@ export function InteractionGovernancePanel({
          * its own inline label. At `sm`+ it restores the aligned 3-col grid.
          */}
         <div className="grid grid-cols-1 gap-y-4 sm:grid-cols-[1fr_auto_auto] sm:items-center sm:gap-x-4 sm:gap-y-2.5">
-          <div className="hidden text-xs font-medium text-muted-foreground uppercase tracking-wide sm:block">
+          <div className="hidden text-xs font-medium text-ink-3 uppercase tracking-wide sm:block">
             Kind
           </div>
-          <div className="hidden text-xs font-medium text-muted-foreground uppercase tracking-wide sm:block">
+          <div className="hidden text-xs font-medium text-ink-3 uppercase tracking-wide sm:block">
             Default policy
           </div>
-          <div className="hidden text-xs font-medium text-muted-foreground uppercase tracking-wide sm:block">
+          <div className="hidden text-xs font-medium text-ink-3 uppercase tracking-wide sm:block">
             Cap
           </div>
           {ISSUE_THREAD_INTERACTION_KINDS.map((kind) => {
@@ -301,7 +301,7 @@ export function InteractionGovernancePanel({
           })}
         </div>
         {errorMessage ? (
-          <span className="text-xs text-destructive">{errorMessage}</span>
+          <span className="text-xs text-bad">{errorMessage}</span>
         ) : null}
       </div>
     </div>

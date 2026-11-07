@@ -85,21 +85,21 @@ function buildContent(
 
 function StoryFrame({ children }: { children: ReactNode }) {
   return (
-    <div className="relative min-h-screen bg-background text-foreground">
+    <div className="relative min-h-screen bg-bg text-ink">
       <div className="mx-auto max-w-3xl space-y-4 p-6 text-sm">
         <div className="space-y-1">
-          <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+          <div className="text-xs font-medium uppercase tracking-wide text-ink-3">
             Host issue page (preview)
           </div>
           <h1 className="text-xl font-semibold">
             PAP-1963 — Phase 4: UX visual review file viewer implementation
           </h1>
-          <p className="text-muted-foreground">
+          <p className="text-ink-3">
             This frame represents the underlying issue detail page so the sheet
             overlay can be evaluated in context.
           </p>
         </div>
-        <div className="rounded-md border border-border bg-muted/40 p-4 text-xs text-muted-foreground">
+        <div className="rounded-md border border-line bg-bg-3/40 p-4 text-xs text-ink-3">
           The workspace file viewer opens as a right-side sheet, pushing a URL
           entry. Use browser back to close.
         </div>

@@ -28,28 +28,28 @@ describe("markdown code block styles", () => {
   it("rides theme tokens for the rendered code block surface", () => {
     const block = cssBlock(".paperclip-markdown pre");
 
-    expect(block).toContain("background-color: var(--muted)");
-    expect(block).toContain("color: var(--foreground)");
-    expect(block).toContain("border: 1px solid var(--border)");
+    expect(block).toContain("background-color: var(--bg-3)");
+    expect(block).toContain("color: var(--ink)");
+    expect(block).toContain("border: 1px solid var(--line)");
     expect(block).toContain("border-radius: var(--radius-lg)");
   });
 
   it("rides theme tokens for the editor content code block surface", () => {
     const block = cssBlock(".paperclip-mdxeditor-content pre");
 
-    expect(block).toContain("background: var(--muted)");
-    expect(block).toContain("color: var(--foreground)");
-    expect(block).toContain("border: 1px solid var(--border)");
+    expect(block).toContain("background: var(--bg-3)");
+    expect(block).toContain("color: var(--ink)");
+    expect(block).toContain("border: 1px solid var(--line)");
     expect(block).toContain("border-radius: var(--radius-lg)");
   });
 
   it("points the normal and inverted prose variables at the same tokens", () => {
     const block = cssBlock(".paperclip-markdown");
 
-    expect(block).toContain("--tw-prose-pre-bg: var(--muted)");
-    expect(block).toContain("--tw-prose-pre-code: var(--foreground)");
-    expect(block).toContain("--tw-prose-invert-pre-bg: var(--muted)");
-    expect(block).toContain("--tw-prose-invert-pre-code: var(--foreground)");
+    expect(block).toContain("--tw-prose-pre-bg: var(--bg-3)");
+    expect(block).toContain("--tw-prose-pre-code: var(--ink)");
+    expect(block).toContain("--tw-prose-invert-pre-bg: var(--bg-3)");
+    expect(block).toContain("--tw-prose-invert-pre-code: var(--ink)");
   });
 
   it("keeps every themed code surface free of hardcoded colors", () => {
@@ -62,9 +62,9 @@ describe("markdown code block styles", () => {
   });
 
   it("separates the copy and wrap controls from the code block surface", () => {
-    // The controls sit on top of the block. --muted is now the block's own
+    // The controls sit on top of the block. --bg-3 is now the block's own
     // fill, so the controls must not use it or they disappear against it.
-    expect(codeBlockActionStyle.backgroundColor).toBe("var(--background)");
-    expect(codeBlockActionStyle.backgroundColor).not.toContain("--muted");
+    expect(codeBlockActionStyle.backgroundColor).toBe("var(--bg)");
+    expect(codeBlockActionStyle.backgroundColor).not.toContain("--bg-3");
   });
 });

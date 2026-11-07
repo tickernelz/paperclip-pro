@@ -36,11 +36,11 @@ export function secretStatusTone(status: SecretStatus): string {
     case "active":
       return "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300";
     case "disabled":
-      return "border-muted bg-muted text-muted-foreground";
+      return "border-bg-3 bg-bg-3 text-ink-3";
     case "archived":
-      return "border-border bg-muted/60 text-muted-foreground";
+      return "border-line bg-bg-3/60 text-ink-3";
     default:
-      return "border-border bg-muted text-muted-foreground";
+      return "border-line bg-bg-3 text-ink-3";
   }
 }
 
@@ -54,7 +54,7 @@ export function myValueTone(state: MyValueState): string {
     case "not_set":
       return "border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-300";
     case "inactive":
-      return "border-muted bg-muted text-muted-foreground";
+      return "border-bg-3 bg-bg-3 text-ink-3";
   }
 }
 

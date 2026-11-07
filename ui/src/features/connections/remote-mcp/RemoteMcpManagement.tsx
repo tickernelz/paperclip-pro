@@ -17,10 +17,10 @@ export function RemoteMcpManagement({ providerName, connected = true, canReconne
   return <section className="space-y-4">
     <h2 className="text-sm font-semibold">Connection settings</h2>
     <div className="flex flex-wrap items-center gap-3">
-      <Button variant="outline" disabled={!canReconnect || busy} onClick={onReconnect}>Reconnect</Button>
-      <Button variant="outline" onClick={onManage}>Manage in {providerName}</Button>
+      <Button variant="secondary" disabled={!canReconnect || busy} onClick={onReconnect}>Reconnect</Button>
+      <Button variant="secondary" onClick={onManage}>Manage in {providerName}</Button>
       {connected && canDisconnect && <AlertDialog open={confirming} onOpenChange={(open) => { if (!busy) setConfirming(open); }}>
-        <AlertDialogTrigger asChild><Button variant="ghost" className="text-destructive">Disconnect</Button></AlertDialogTrigger>
+        <AlertDialogTrigger asChild><Button variant="danger">Disconnect</Button></AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Disconnect {providerName}?</AlertDialogTitle>

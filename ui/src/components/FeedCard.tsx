@@ -182,7 +182,7 @@ function getIconSpec(
     if (isActive && action === "heartbeat.invoked") {
       return { kind: "lucide", Icon: Loader2, color: "text-blue-600 dark:text-blue-400", spin: true };
     }
-    return { kind: "lucide", Icon: Loader2, color: "text-muted-foreground" };
+    return { kind: "lucide", Icon: Loader2, color: "text-ink-3" };
   }
 
   // Approval — distinct from task status icons (those still use StatusCircle).
@@ -203,12 +203,12 @@ function getIconSpec(
     case "agent.created":
       return { kind: "lucide", Icon: UserPlus, color: "text-purple-600 dark:text-purple-400" };
     case "agent.paused":
-      return { kind: "lucide", Icon: PauseCircle, color: "text-muted-foreground" };
+      return { kind: "lucide", Icon: PauseCircle, color: "text-ink-3" };
     case "agent.resumed":
-      return { kind: "lucide", Icon: PlayCircle, color: "text-muted-foreground" };
+      return { kind: "lucide", Icon: PlayCircle, color: "text-ink-3" };
     case "agent.updated":
     case "agent.terminated":
-      return { kind: "lucide", Icon: Settings, color: "text-muted-foreground" };
+      return { kind: "lucide", Icon: Settings, color: "text-ink-3" };
   }
 
   // Document on issue
@@ -223,12 +223,12 @@ function getIconSpec(
 
   // Comments
   if (action === "issue.commented" || action === "issue.comment_added") {
-    return { kind: "lucide", Icon: MessageCircle, color: "text-muted-foreground" };
+    return { kind: "lucide", Icon: MessageCircle, color: "text-ink-3" };
   }
 
   // Issue check-out
   if (action === "issue.checked_out") {
-    return { kind: "lucide", Icon: LogIn, color: "text-muted-foreground" };
+    return { kind: "lucide", Icon: LogIn, color: "text-ink-3" };
   }
 
   // Generic issue lifecycle → StatusCircle with event-derived status
@@ -238,10 +238,10 @@ function getIconSpec(
   }
 
   if (event.entityType === "goal") {
-    return { kind: "lucide", Icon: Target, color: "text-muted-foreground" };
+    return { kind: "lucide", Icon: Target, color: "text-ink-3" };
   }
 
-  return { kind: "lucide", Icon: Settings, color: "text-muted-foreground" };
+  return { kind: "lucide", Icon: Settings, color: "text-ink-3" };
 }
 
 function StatusCircle({ status }: { status: string }) {
@@ -383,13 +383,13 @@ function ActorGlyph({ content }: { content: CardContent }) {
   if (content.actorType === "agent") {
     return (
       <AgentAvatar agent={content.actor} size={16}
-        className="h-3.5 w-3.5 shrink-0 text-muted-foreground"/>
+        className="h-3.5 w-3.5 shrink-0 text-ink-3"/>
     );
   }
   if (content.actorType === "user") {
-    return <User className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />;
+    return <User className="h-3.5 w-3.5 shrink-0 text-ink-3" />;
   }
-  return <Settings className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />;
+  return <Settings className="h-3.5 w-3.5 shrink-0 text-ink-3" />;
 }
 
 /* ------------------------------------------------------------------ */
@@ -430,7 +430,7 @@ export function FeedCard({
   const verb = formatVerb(event.action, details, isPinned ? "pinned" : "chronological");
   const iconSpec = getIconSpec(event, details, isActive);
 
-  const mutedTextBase = isMuted ? "text-muted-foreground/70" : "text-(--hex-959596)";
+  const mutedTextBase = isMuted ? "text-ink-3/70" : "text-(--hex-959596)";
   const mutedTextHover = isMuted ? "" : "group-hover:text-white";
 
   const card = (
@@ -439,7 +439,7 @@ export function FeedCard({
       className={cn(
         "flex-row group ml-3 mr-3 md:ml-0 my-2 w-(--sz-calc-1) md:w-(--sz-calc-2) items-center gap-2 p-(--sz-18px) text-xs",
         "transition-(--tp-background-color-border-color) duration-150",
-        content.link && "cursor-pointer hover:bg-accent hover:border-muted-foreground/30",
+        content.link && "cursor-pointer hover:bg-bg-3 hover:border-ink-3/30",
         className,
       )}
     >
@@ -468,9 +468,9 @@ export function FeedCard({
         )}
       </span>
       {isPinned && (
-        <span className="shrink-0 text-xs text-muted-foreground">Review →</span>
+        <span className="shrink-0 text-xs text-ink-3">Review →</span>
       )}
-      <span data-fc="time" className="shrink-0 text-muted-foreground">
+      <span data-fc="time" className="shrink-0 text-ink-3">
         {timeAgo(event.createdAt)}
       </span>
     </Card>

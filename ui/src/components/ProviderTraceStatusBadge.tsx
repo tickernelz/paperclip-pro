@@ -62,7 +62,7 @@ export function ProviderTraceStatusBadge({
       className={cn(
         "inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-(length:--text-micro) font-medium",
         label === "Trace off" || label === "Trace deleted" || label === "Trace expired"
-          ? "border-border bg-background text-muted-foreground"
+          ? "border-line bg-bg text-ink-3"
           : warning
             ? "border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-300"
             : "border-amber-500/30 bg-amber-500/10 text-amber-800 dark:text-amber-200",

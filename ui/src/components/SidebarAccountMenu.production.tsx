@@ -71,16 +71,16 @@ function MenuAction({
   topLevel = false,
 }: MenuActionProps) {
   const className =
-    "flex w-full items-start gap-3 rounded-xl px-3 py-3 text-left transition-colors hover:bg-accent/60";
+    "flex w-full items-start gap-3 rounded-xl px-3 py-3 text-left transition-colors hover:bg-bg-3/60";
 
   const content = (
     <>
-      <span className="mt-0.5 rounded-lg border border-border bg-background/70 p-2 text-muted-foreground">
+      <span className="mt-0.5 rounded-lg border border-line bg-bg/70 p-2 text-ink-3">
         <Icon className="size-4" />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-sm font-medium text-foreground">{label}</span>
-        <span className="block text-xs text-muted-foreground">{description}</span>
+        <span className="block text-sm font-medium text-ink">{label}</span>
+        <span className="block text-xs text-ink-3">{description}</span>
       </span>
     </>
   );
@@ -171,14 +171,14 @@ export function SidebarAccountMenu({
   }
 
   return (
-    <div className="border-t border-r border-border bg-background px-3 py-2">
+    <div className="border-t border-r border-line bg-bg px-3 py-2">
       <div className={cn("flex items-center gap-0.5", !rail && "px-2")}>
         <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <button
             type="button"
             className={cn(
-              "flex min-w-0 items-center gap-2.5 rounded-lg text-left text-(length:--text-compact) font-medium text-foreground/80 transition-colors hover:bg-accent/50 hover:text-foreground",
+              "flex min-w-0 items-center gap-2.5 rounded-lg text-left text-(length:--text-compact) font-medium text-ink/80 transition-colors hover:bg-bg-3/50 hover:text-ink",
               rail ? "w-full px-3 py-2" : "flex-1 px-2 py-1.5",
             )}
             aria-label="Open account menu"
@@ -194,7 +194,7 @@ export function SidebarAccountMenu({
           side="top"
           align="start"
           sideOffset={10}
-          className="w-(--sz-277px) max-w-(--sz-calc-24) overflow-hidden rounded-t-2xl rounded-b-none border-border p-0 shadow-2xl"
+          className="w-(--sz-277px) max-w-(--sz-calc-24) overflow-hidden rounded-t-2xl rounded-b-none border-line p-0 shadow-2xl"
         >
           <div className="h-24 bg-(image:--gradient-extract-25)" />
           <div className="-mt-8 px-4 pb-4">
@@ -204,20 +204,20 @@ export function SidebarAccountMenu({
                 to={profileHref}
                 aria-label="View profile"
                 onClick={closeNavigationChrome}
-                className="absolute inset-0 rounded-xl transition-colors hover:bg-accent/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="absolute inset-0 rounded-xl transition-colors hover:bg-bg-3/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
               />
-              <div className="pointer-events-none relative rounded-2xl border-4 border-popover bg-popover p-0.5 shadow-sm">
+              <div className="pointer-events-none relative rounded-2xl border-4 border-bg-2 bg-bg-2 p-0.5 shadow-sm">
                 <Avatar size="lg">
                   {session?.user.image ? <AvatarImage src={session.user.image} alt={displayName} /> : null}
                   <AvatarFallback>{initials}</AvatarFallback>
                 </Avatar>
               </div>
               <div className="pointer-events-none relative min-w-0 flex-1 pt-1">
-                <h2 className="truncate text-base font-semibold text-foreground">{displayName}</h2>
-                <p className="truncate text-sm text-muted-foreground">{secondaryLabel}</p>
+                <h2 className="truncate text-base font-semibold text-ink">{displayName}</h2>
+                <p className="truncate text-sm text-ink-3">{secondaryLabel}</p>
                 {stagingCommit ? (
                   <a
-                    className="pointer-events-auto block truncate font-mono text-(length:--text-micro) leading-(--profile-popover-meta-line-height) text-muted-foreground hover:underline focus-visible:underline"
+                    className="pointer-events-auto block truncate font-mono text-(length:--text-micro) leading-(--profile-popover-meta-line-height) text-ink-3 hover:underline focus-visible:underline"
                     href={`https://github.com/paperclipai/paperclip/commit/${stagingCommit}`}
                     target="_blank"
                     rel="noreferrer"
@@ -255,20 +255,20 @@ export function SidebarAccountMenu({
                 <button
                   type="button"
                   className={cn(
-                    "flex w-full items-start gap-3 rounded-xl px-3 py-3 text-left transition-colors hover:bg-destructive/10",
+                    "flex w-full items-start gap-3 rounded-xl px-3 py-3 text-left transition-colors hover:bg-bad/10",
                     signOutMutation.isPending && "cursor-not-allowed opacity-60",
                   )}
                   onClick={handleSignOut}
                   disabled={signOutMutation.isPending}
                 >
-                  <span className="mt-0.5 rounded-lg border border-border bg-background/70 p-2 text-muted-foreground">
+                  <span className="mt-0.5 rounded-lg border border-line bg-bg/70 p-2 text-ink-3">
                     <LogOut className="size-4" />
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block text-sm font-medium text-foreground">
+                    <span className="block text-sm font-medium text-ink">
                       {signOutMutation.isPending ? "Signing out..." : "Sign out"}
                     </span>
-                    <span className="block text-xs text-muted-foreground">
+                    <span className="block text-xs text-ink-3">
                       End this browser session.
                     </span>
                   </span>
@@ -287,7 +287,7 @@ export function SidebarAccountMenu({
                 target="_blank"
                 rel="noreferrer"
                 aria-label="Share feedback"
-                className="flex size-8 shrink-0 items-center justify-center rounded-lg text-muted-foreground/50 transition-colors hover:bg-accent/50 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="flex size-8 shrink-0 items-center justify-center rounded-lg text-ink-3/50 transition-colors hover:bg-bg-3/50 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
               >
                 <Flag className="h-4 w-4" aria-hidden="true" />
               </a>

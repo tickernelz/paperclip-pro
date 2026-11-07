@@ -129,8 +129,8 @@ export function SidebarNavItem({
           // (agents/projects) reserve extra right padding via className.
           "flex items-center gap-2.5 mx-2 rounded-lg px-2 py-1.5 pointer-coarse:py-1 text-(length:--text-compact) font-medium transition-colors",
           (active ?? isActive)
-            ? "bg-accent text-foreground"
-            : "text-foreground/80 hover:bg-accent/50 hover:text-foreground",
+            ? "bg-bg-3 text-ink"
+            : "text-ink/80 hover:bg-bg-3/50 hover:text-ink",
           className,
         )
       }
@@ -156,7 +156,7 @@ export function SidebarNavItem({
                 ? "bg-red-600"
                 : badgeTone === "warning"
                   ? "bg-amber-500"
-                  : "bg-primary",
+                  : "bg-accent",
             )}
             aria-hidden="true"
           />
@@ -170,7 +170,7 @@ export function SidebarNavItem({
             "ml-auto px-1.5 text-(length:--text-nano) leading-none",
             textBadgeTone === "amber"
               ? "bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400"
-              : "bg-muted text-muted-foreground",
+              : "bg-bg-3 text-ink-3",
           )}
         >
           {textBadge}
@@ -198,7 +198,7 @@ export function SidebarNavItem({
               ? "bg-red-600/90 text-red-50"
               : badgeTone === "warning"
                 ? "bg-amber-500/90 text-amber-50"
-                : "bg-primary text-primary-foreground",
+                : "bg-accent text-accent-ink",
           )}
         >
           {badge}

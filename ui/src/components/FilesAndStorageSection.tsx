@@ -69,7 +69,7 @@ export function FilesAndStorageSection({
     <section className="space-y-6">
       <div className="space-y-1.5">
         <h2 className="text-sm font-semibold">Files and storage</h2>
-        <p className="max-w-2xl text-sm text-muted-foreground">
+        <p className="max-w-2xl text-sm text-ink-3">
           Control how large uploaded files may be and whether old attachments are cleaned up automatically.
         </p>
       </div>
@@ -128,13 +128,13 @@ function UploadLimitForm({
     <div className="space-y-3">
       <div className="space-y-1">
         <h3 className="text-sm font-medium">Upload size limit</h3>
-        <p className="max-w-2xl text-sm text-muted-foreground">
+        <p className="max-w-2xl text-sm text-ink-3">
           Largest file anyone can attach, in MB ({ATTACHMENT_MAX_MEGABYTES_MIN}–{ATTACHMENT_MAX_MEGABYTES_MAX}). Leave blank to use the default: the PAPERCLIP_ATTACHMENT_MAX_BYTES environment variable when set, otherwise {DEFAULT_ATTACHMENT_MAX_MEGABYTES} MB.
         </p>
         {effectiveLimit ? (
           <p className="text-sm" data-testid="attachment-limit-effective">
             Current limit: <span className="font-medium tabular-nums">{formatAttachmentSize(effectiveLimit.maxBytes)}</span>{" "}
-            <span className="text-muted-foreground">({LIMIT_SOURCE_LABELS[effectiveLimit.source]})</span>
+            <span className="text-ink-3">({LIMIT_SOURCE_LABELS[effectiveLimit.source]})</span>
           </p>
         ) : null}
       </div>
@@ -147,7 +147,7 @@ function UploadLimitForm({
         }}
       >
         <label className="space-y-1.5 sm:w-48">
-          <span className="text-xs font-medium text-muted-foreground">Limit (MB)</span>
+          <span className="text-xs font-medium text-ink-3">Limit (MB)</span>
           <Input
             type="number"
             inputMode="numeric"
@@ -171,7 +171,7 @@ function UploadLimitForm({
           </Button>
           <Button
             type="button"
-            variant="outline"
+            variant="secondary"
             size="sm"
             disabled={save.isPending || !dirty}
             onClick={() => {
@@ -184,7 +184,7 @@ function UploadLimitForm({
         </div>
       </form>
       {shownError ? (
-        <p role="alert" className="text-sm text-destructive">{shownError}</p>
+        <p role="alert" className="text-sm text-bad">{shownError}</p>
       ) : null}
     </div>
   );
@@ -286,7 +286,7 @@ function RetentionForm({ value }: { value: AttachmentRetentionSettings }) {
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 space-y-1">
           <h3 className="text-sm font-medium">Automatic attachment cleanup</h3>
-          <p className="max-w-2xl text-sm text-muted-foreground">
+          <p className="max-w-2xl text-sm text-ink-3">
             Off by default. When on, Paperclip periodically deletes stored files nothing refers to any more and, if you choose, attachments of tasks closed long ago. Each removed attachment leaves a tombstone, so tasks show &ldquo;File removed by retention&rdquo; with the date instead of a broken file.
           </p>
         </div>
@@ -300,7 +300,7 @@ function RetentionForm({ value }: { value: AttachmentRetentionSettings }) {
 
       <div className="grid gap-3 sm:grid-cols-2">
         <label className="space-y-1.5">
-          <span className="text-xs font-medium text-muted-foreground">
+          <span className="text-xs font-medium text-ink-3">
             Remove unused files after (days, {ATTACHMENT_ORPHAN_AFTER_DAYS_MIN}–{ATTACHMENT_ORPHAN_AFTER_DAYS_MAX})
           </span>
           <Input
@@ -317,7 +317,7 @@ function RetentionForm({ value }: { value: AttachmentRetentionSettings }) {
         </label>
         <div className="space-y-1.5">
           <div className="flex items-center justify-between gap-3">
-            <span className="min-w-0 text-xs font-medium text-muted-foreground">
+            <span className="min-w-0 text-xs font-medium text-ink-3">
               Remove attachments of closed tasks after (days, {ATTACHMENT_CLOSED_TASK_AFTER_DAYS_MIN}–{ATTACHMENT_CLOSED_TASK_AFTER_DAYS_MAX})
             </span>
             <ToggleSwitch
@@ -342,7 +342,7 @@ function RetentionForm({ value }: { value: AttachmentRetentionSettings }) {
       </div>
 
       {visibleErrors.length > 0 ? (
-        <div role="alert" className="space-y-1 text-sm text-destructive">
+        <div role="alert" className="space-y-1 text-sm text-bad">
           {visibleErrors.map((message) => <p key={message}>{message}</p>)}
         </div>
       ) : null}
@@ -359,7 +359,7 @@ function RetentionForm({ value }: { value: AttachmentRetentionSettings }) {
           {save.isPending ? "Saving..." : "Save cleanup settings"}
         </Button>
         <Button
-          variant="outline"
+          variant="secondary"
           size="sm"
           disabled={busy || preview.isPending}
           onClick={() => {
@@ -369,27 +369,27 @@ function RetentionForm({ value }: { value: AttachmentRetentionSettings }) {
         >
           {preview.isPending ? "Previewing..." : "Preview"}
         </Button>
-        <Button variant="outline" size="sm" disabled={busy} onClick={() => setConfirmRunOpen(true)}>
+        <Button variant="secondary" size="sm" disabled={busy} onClick={() => setConfirmRunOpen(true)}>
           {run.isPending ? "Running..." : "Run now"}
         </Button>
       </div>
 
-      {actionError ? <p role="alert" className="text-sm text-destructive">{actionError}</p> : null}
+      {actionError ? <p role="alert" className="text-sm text-bad">{actionError}</p> : null}
 
       {preview.data ? (
         <RetentionReportSummary title="Preview — nothing deleted yet" report={preview.data} />
       ) : null}
 
       <div className="space-y-1.5" data-testid="attachment-retention-last-run">
-        <h4 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Last run</h4>
+        <h4 className="text-xs font-medium uppercase tracking-wide text-ink-3">Last run</h4>
         {status.isLoading ? (
-          <p className="text-sm text-muted-foreground">Loading cleanup history...</p>
+          <p className="text-sm text-ink-3">Loading cleanup history...</p>
         ) : status.error ? (
-          <p className="text-sm text-muted-foreground">{errorText(status.error, "Cleanup history is unavailable.")}</p>
+          <p className="text-sm text-ink-3">{errorText(status.error, "Cleanup history is unavailable.")}</p>
         ) : status.data?.lastRun ? (
           <LastRunSummary report={status.data.lastRun} />
         ) : (
-          <p className="text-sm text-muted-foreground">Cleanup has not run yet.</p>
+          <p className="text-sm text-ink-3">Cleanup has not run yet.</p>
         )}
       </div>
 
@@ -416,13 +416,13 @@ function LastRunSummary({ report }: { report: AttachmentRetentionReport }) {
     <div className="space-y-0.5 text-sm">
       <p>
         <span className="tabular-nums">{formatDateTime(report.finishedAt)}</span>
-        <span className="text-muted-foreground"> · {report.trigger === "manual" ? "Manual" : "Scheduled"}</span>
+        <span className="text-ink-3"> · {report.trigger === "manual" ? "Manual" : "Scheduled"}</span>
       </p>
-      <p className="text-muted-foreground">
+      <p className="text-ink-3">
         <span className="tabular-nums">{report.totalCount}</span> {report.totalCount === 1 ? "file" : "files"} removed ·{" "}
         <span className="tabular-nums">{formatAttachmentSize(report.totalBytes)}</span> freed
         {report.failedCount > 0 ? (
-          <span className="text-destructive"> · <span className="tabular-nums">{report.failedCount}</span> failed</span>
+          <span className="text-bad"> · <span className="tabular-nums">{report.failedCount}</span> failed</span>
         ) : null}
       </p>
     </div>
@@ -432,12 +432,12 @@ function LastRunSummary({ report }: { report: AttachmentRetentionReport }) {
 function RetentionReportSummary({ title, report }: { title: string; report: AttachmentRetentionReport }) {
   return (
     <div className="space-y-2" data-testid="attachment-retention-preview">
-      <h4 className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{title}</h4>
+      <h4 className="text-xs font-medium uppercase tracking-wide text-ink-3">{title}</h4>
       <ul className="space-y-1.5">
         {report.rules.map((rule) => (
           <li key={rule.rule} data-rule={rule.rule} className="flex items-start justify-between gap-3 text-sm">
             <span className="min-w-0">{RULE_LABELS[rule.rule]}</span>
-            <span className="shrink-0 text-right tabular-nums text-muted-foreground">
+            <span className="shrink-0 text-right tabular-nums text-ink-3">
               {rule.count} {rule.count === 1 ? "file" : "files"} · {formatAttachmentSize(rule.bytes)}
             </span>
           </li>

@@ -43,26 +43,26 @@ export function AppsSidebar() {
   if (chatDetail) return <ChatDetailSidebar endpointId={chatDetail[1]} NavItem={SidebarNavItem} />;
 
   return (
-    <aside className="w-full h-full min-h-0 border-r border-border bg-background flex flex-col">
+    <aside className="w-full h-full min-h-0 border-r border-line bg-bg flex flex-col">
       <div className="flex flex-col gap-1 px-3 py-3 shrink-0">
         <Link
           to="/dashboard"
           onClick={() => {
             if (isMobile) setSidebarOpen(false);
           }}
-          className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
+          className="flex items-center gap-1.5 rounded-md px-2 py-1 text-xs text-ink-3 transition-colors hover:bg-bg-3/50 hover:text-ink"
         >
           <ChevronLeft className="h-3.5 w-3.5 shrink-0" />
           <span className="truncate">{selectedCompany?.name ?? "Company"}</span>
         </Link>
         <div className="flex items-center gap-2 px-2 py-1">
-          <AppWindow className="h-4 w-4 text-muted-foreground shrink-0" />
-          <span className="flex-1 truncate text-sm font-bold text-foreground">Connectors</span>
+          <AppWindow className="h-4 w-4 text-ink-3 shrink-0" />
+          <span className="flex-1 truncate text-sm font-bold text-ink">Connectors</span>
         </div>
       </div>
 
       <nav className="flex-1 min-h-0 overflow-y-auto scrollbar-auto-hide px-3 py-2">
-        <div className="px-3 pb-1 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
+        <div className="px-3 pb-1 text-(length:--text-micro) font-semibold uppercase tracking-wide text-ink-3">
           Connectors
         </div>
         <div className="flex flex-col gap-0.5">
@@ -76,10 +76,10 @@ export function AppsSidebar() {
             badgeLabel="waiting for your OK"
           />
         </div>
-        <div className="px-3 pb-1 pt-4 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
+        <div className="px-3 pb-1 pt-4 text-(length:--text-micro) font-semibold uppercase tracking-wide text-ink-3">
           Developer
         </div>
-        <p className="px-3 pb-1.5 text-(length:--text-micro) leading-snug text-muted-foreground/70">
+        <p className="px-3 pb-1.5 text-(length:--text-micro) leading-snug text-ink-3/70">
           Advanced setup for developers. Most teams never open this.
         </p>
         <div className="flex flex-col gap-0.5">

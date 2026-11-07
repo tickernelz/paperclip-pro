@@ -68,14 +68,14 @@ function SetupLinkSection({
 }) {
   return (
     <section className="space-y-3">
-      <h2 className="text-sm font-semibold text-foreground">{title}</h2>
+      <h2 className="text-sm font-semibold text-ink">{title}</h2>
       <button
         type="button"
         onClick={onClick}
-        className="flex w-full items-center justify-between gap-4 rounded-lg border border-border px-4 py-3 text-left transition-colors hover:bg-accent/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        className="flex w-full items-center justify-between gap-4 rounded-lg border border-line px-4 py-3 text-left transition-colors hover:bg-bg-3/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus"
       >
-        <span className="min-w-0 text-sm text-muted-foreground">{summary}</span>
-        <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+        <span className="min-w-0 text-sm text-ink-3">{summary}</span>
+        <ChevronRight className="h-4 w-4 shrink-0 text-ink-3" />
       </button>
     </section>
   );
@@ -121,15 +121,15 @@ function PostHogConfigurationSection({ connection }: { connection: ToolConnectio
   ];
   return (
     <section>
-      <h2 className="text-sm font-bold text-foreground">PostHog access scope</h2>
-      <p className="mt-0.5 text-sm text-muted-foreground">
+      <h2 className="text-sm font-bold text-ink">PostHog access scope</h2>
+      <p className="mt-0.5 text-sm text-ink-3">
         PostHog uses its normal account defaults unless you narrow the optional controls below.
       </p>
-      <dl className="mt-4 divide-y divide-border">
+      <dl className="mt-4 divide-y divide-line">
         {rows.map(([label, value]) => (
           <div key={label} className="grid gap-1 py-2 sm:grid-cols-3 sm:gap-4">
-            <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
-            <dd className="break-words text-sm text-foreground sm:col-span-2">{value}</dd>
+            <dt className="text-xs font-medium text-ink-3">{label}</dt>
+            <dd className="break-words text-sm text-ink sm:col-span-2">{value}</dd>
           </div>
         ))}
       </dl>
@@ -164,38 +164,38 @@ function GoogleSheetsAllowlistSection({
   return (
     <section>
       <div>
-        <h2 className="text-sm font-bold text-foreground">Sheets agents can use</h2>
-        <p className="mt-0.5 text-sm text-muted-foreground">
+        <h2 className="text-sm font-bold text-ink">Sheets agents can use</h2>
+        <p className="mt-0.5 text-sm text-ink-3">
           Agents can only use the sheets listed here.
         </p>
       </div>
 
       <div className="mt-4 space-y-2">
         {ids.length === 0 ? (
-          <div className="text-sm text-muted-foreground">No sheets are connected yet.</div>
+          <div className="text-sm text-ink-3">No sheets are connected yet.</div>
         ) : (
           ids.map((id) => {
             const sheetUrl = googleSheetsUrlForId(id);
             return (
-              <div key={id} className="flex items-center gap-3 border-t border-border py-2 first:border-t-0">
+              <div key={id} className="flex items-center gap-3 border-t border-line py-2 first:border-t-0">
                 <a
                   href={sheetUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="min-w-0 flex-1 text-sm font-medium text-foreground underline-offset-2 hover:underline"
+                  className="min-w-0 flex-1 text-sm font-medium text-ink underline-offset-2 hover:underline"
                 >
                   <span className="block truncate">Open sheet</span>
-                  <span className="block truncate font-mono text-xs font-normal text-muted-foreground">
+                  <span className="block truncate font-mono text-xs font-normal text-ink-3">
                     {sheetUrl}
                   </span>
-                  <span className="block truncate font-mono text-(length:--text-micro) font-normal text-muted-foreground/80">
+                  <span className="block truncate font-mono text-(length:--text-micro) font-normal text-ink-3/80">
                     ID: {id}
                   </span>
                 </a>
                 <Button
                   type="button"
                   size="sm"
-                  variant="outline"
+                  variant="secondary"
                   disabled={disabled || ids.length <= 1}
                   title={ids.length <= 1 ? "Add another sheet before removing this one." : undefined}
                   onClick={() => saveIds(ids.filter((current) => current !== id))}
@@ -220,7 +220,7 @@ function GoogleSheetsAllowlistSection({
         />
         <Button
           type="button"
-          variant="outline"
+          variant="secondary"
           disabled={disabled}
           onClick={() => {
             const parsed = parseGoogleSheetIds(draft);
@@ -239,7 +239,7 @@ function GoogleSheetsAllowlistSection({
           Add sheet
         </Button>
       </div>
-      {error && <div className="mt-2 text-xs text-destructive">{error}</div>}
+      {error && <div className="mt-2 text-xs text-bad">{error}</div>}
     </section>
   );
 }
@@ -286,16 +286,16 @@ export function QuarantinedActionsReview({
           </button>
         </div>
       </div>
-      <div className="divide-y divide-border">
+      <div className="divide-y divide-line">
         {entries.map((entry) => {
           const enabled = enabledIds.has(entry.id);
           const label = entry.title ?? entry.toolName;
           return (
             <div key={entry.id} className="flex items-center gap-3 py-3">
               <div className="min-w-0 flex-1">
-                <div className="text-sm font-medium text-foreground">{label}</div>
+                <div className="text-sm font-medium text-ink">{label}</div>
                 {entry.description && (
-                  <div className="truncate text-xs text-muted-foreground">{entry.description}</div>
+                  <div className="truncate text-xs text-ink-3">{entry.description}</div>
                 )}
               </div>
               <ToggleSwitch

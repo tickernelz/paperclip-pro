@@ -68,9 +68,9 @@ export function EntityRow({
     // When a secondaryRow is present the shell stacks (main line + secondary
     // line); otherwise the shell itself is the single flex row.
     secondaryRow ? "block" : "flex items-center gap-3",
-    "px-4 py-2 text-sm border-b border-border last:border-b-0 transition-colors",
-    isClickable && "cursor-pointer hover:bg-accent/50",
-    selected && "bg-accent/30",
+    "px-4 py-2 text-sm border-b border-line last:border-b-0 transition-colors",
+    isClickable && "cursor-pointer hover:bg-bg-3/50",
+    selected && "bg-bg-3/30",
     className
   );
 
@@ -88,7 +88,7 @@ export function EntityRow({
       >
         <div className="flex items-center gap-2">
           {identifier && (
-            <span className="text-xs text-muted-foreground font-mono shrink-0 relative top-(--sz-1px)">
+            <span className="text-xs text-ink-3 font-mono shrink-0 relative top-(--sz-1px)">
               {identifier}
             </span>
           )}
@@ -100,7 +100,7 @@ export function EntityRow({
         {(subtitle || reserveSubtitleSpace) && (
           <p
             className={cn(
-              "text-xs text-muted-foreground mt-0.5 min-h-4",
+              "text-xs text-ink-3 mt-0.5 min-h-4",
               !subtitleClassName && "truncate",
               subtitleClassName,
               !subtitle && "invisible",

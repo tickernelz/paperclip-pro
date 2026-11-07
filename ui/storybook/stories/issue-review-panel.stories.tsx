@@ -18,7 +18,7 @@ function Frame({
 }) {
   return (
     <div className="mx-auto space-y-2 p-6" style={{ maxWidth: width }}>
-      <div className="text-xs uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className="text-xs uppercase tracking-wide text-ink-3">{label}</div>
       {children}
     </div>
   );

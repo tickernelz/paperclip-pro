@@ -168,13 +168,13 @@ function Matrix({ kinds = KINDS, states = STATES }: { kinds?: CardKind[]; states
     <div className="flex w-(--container-4xl) max-w-full flex-col gap-8 p-6">
       {kinds.map((kind) => (
         <section key={kind.id} className="flex flex-col gap-3" aria-labelledby={`${kind.id}-heading`}>
-          <h2 id={`${kind.id}-heading`} className="text-sm font-semibold text-foreground">{kind.label}</h2>
+          <h2 id={`${kind.id}-heading`} className="text-sm font-semibold text-ink">{kind.label}</h2>
           <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
             {states.flatMap((state) => [false, true].map((withStats) => {
               const workProduct = product(kind, state, withStats);
               return (
                 <div key={workProduct.id} className="flex min-w-0 flex-col gap-1">
-                  <span className="text-xs text-muted-foreground">{state.label} · {withStats ? "with stats" : "without stats"}</span>
+                  <span className="text-xs text-ink-3">{state.label} · {withStats ? "with stats" : "without stats"}</span>
                   <RichWorkProductCard workProduct={workProduct} href={workProduct.url} />
                 </div>
               );

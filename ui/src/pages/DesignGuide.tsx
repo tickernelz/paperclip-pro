@@ -293,7 +293,7 @@ const DESIGN_GUIDE_TASK = {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <section className="space-y-4">
-      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+      <h3 className="text-sm font-semibold text-ink-3 uppercase tracking-wide">
         {title}
       </h3>
       <Separator />
@@ -390,7 +390,7 @@ function EnvironmentVariablesEditorShowcase() {
     STRIPE_API_KEY: { type: "plain", value: "demo-value-not-a-credential" },
   });
   return (
-    <div className="max-w-(--sz-640px) rounded-md border border-border p-4">
+    <div className="max-w-(--sz-640px) rounded-md border border-line p-4">
       <EnvironmentVariablesEditor
         value={env}
         secrets={DESIGN_GUIDE_SECRETS}
@@ -415,12 +415,12 @@ function Swatch({ name, cssVar }: { name: string; cssVar: string }) {
   return (
     <div className="flex items-center gap-3">
       <div
-        className="h-8 w-8 rounded-md border border-border shrink-0"
+        className="h-8 w-8 rounded-md border border-line shrink-0"
         style={{ backgroundColor: `var(${cssVar})` }}
       />
       <div>
         <p className="text-xs font-mono">{cssVar}</p>
-        <p className="text-xs text-muted-foreground">{name}</p>
+        <p className="text-xs text-ink-3">{name}</p>
       </div>
     </div>
   );
@@ -435,12 +435,12 @@ function TaskExecutionControlsExample() {
   const [dialogMode, setDialogMode] = useState<"resume" | "cancel" | "restore" | null>(null);
   const [wake, setWake] = useState(true);
   return <div className="max-w-xl space-y-4">
-    <div className="w-52 rounded-md border border-border p-1">
+    <div className="w-52 rounded-md border border-line p-1">
       <TaskTreeControlMenuItems scope="subtree" canPause={running} canResume={!running} canCancel canRestore={!running}
         onPause={() => setRunning(false)} onResume={() => setDialogMode("resume")}
         onCancel={() => setDialogMode("cancel")} onRestore={() => setDialogMode("restore")} />
     </div>
-    <p className="text-sm text-muted-foreground">{running ? "Running: type to switch Stop to Send." : "Paused: resume from the menu."}</p>
+    <p className="text-sm text-ink-3">{running ? "Running: type to switch Stop to Send." : "Paused: resume from the menu."}</p>
     <TaskChatProjectCreatedCard item={{ id: "design-project", kind: "project_created", projectId: "example-project", name: "Onboarding improvements", description: "Help new teams reach their first useful result.", timestamp: "2026-09-11T00:00:00Z", repositories: [{ id: "1", name: "paperclipai/paperclip", url: "https://github.com/paperclipai/paperclip" }] }} />
     {!running ? <TaskChatMarker item={{ id: "design-cancelled", kind: "marker", variant: "interrupted", tone: "neutral", label: "Run cancelled", detail: "The run was cancelled before returning an answer.", collapsible: true }} /> : null}
     <TaskChatComposer pause={!running ? { scope: "subtree", onResume: () => setDialogMode("resume") } : null} onAdd={async () => {}} workMode="standard" stopScope="subtree" onStop={running ? async () => setRunning(false) : undefined} />
@@ -466,7 +466,7 @@ function TaskPendingInputExample() {
           <p>Should the agent use the existing draft?</p>
           <div className="flex gap-2">
             <Button size="sm" onClick={() => setPending(false)}>Use draft</Button>
-            <Button size="sm" variant="outline" onClick={() => setPending(false)}>Start fresh</Button>
+            <Button size="sm" variant="secondary" onClick={() => setPending(false)}>Start fresh</Button>
           </div>
         </div>,
         onDismiss: () => setOpen(false),
@@ -480,9 +480,9 @@ function TaskPendingInputExample() {
 function AgentChatPickerExample() {
   const [state, setState] = useState<"closed" | "empty" | "loading" | "error">("closed");
   return <div className="flex flex-wrap gap-2">
-    <Button variant="outline" onClick={() => setState("empty")}>Empty picker</Button>
-    <Button variant="outline" onClick={() => setState("loading")}>Loading picker</Button>
-    <Button variant="outline" onClick={() => setState("error")}>Failed picker</Button>
+    <Button variant="secondary" onClick={() => setState("empty")}>Empty picker</Button>
+    <Button variant="secondary" onClick={() => setState("loading")}>Loading picker</Button>
+    <Button variant="secondary" onClick={() => setState("error")}>Failed picker</Button>
     <AgentChatPicker agents={[]} open={state !== "closed"} onOpenChange={(open) => { if (!open) setState("closed"); }} onSelect={() => {}}
       loading={state === "loading"} error={state === "error" ? new Error("Unavailable") : null} onRetry={() => setState("empty")} />
   </div>;
@@ -490,10 +490,10 @@ function AgentChatPickerExample() {
 
 function ComposerActionsExample() {
   const [mode, setMode] = useState<IssueWorkMode>("standard");
-  return <div className="flex max-w-xl items-center gap-2 rounded-xl border border-border bg-card p-3">
+  return <div className="flex max-w-xl items-center gap-2 rounded-xl border border-line bg-bg-2 p-3">
     <ComposerAddMenu mode={mode} onModeChange={setMode} onAttachFile={() => {}} onGoal={() => {}} />
     <ComposerModeChip mode={mode} onRemove={() => setMode("standard")} />
-    <span className="ml-auto text-xs text-muted-foreground">Plus menu · removable mode chip</span>
+    <span className="ml-auto text-xs text-ink-3">Plus menu · removable mode chip</span>
   </div>;
 }
 
@@ -526,7 +526,7 @@ export function DesignGuide() {
       {/* Page header */}
       <div>
         <h2 className="text-xl font-bold">Design Guide</h2>
-        <p className="text-sm text-muted-foreground mt-1">
+        <p className="text-sm text-ink-3 mt-1">
           Every component, style, and pattern used across Paperclip.
         </p>
       </div>
@@ -535,7 +535,7 @@ export function DesignGuide() {
       {/*  COVERAGE                                                     */}
       {/* ============================================================ */}
       <Section title="Component Coverage">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           This page should be updated when new UI primitives or app-level patterns ship.
         </p>
         <div className="grid gap-6 md:grid-cols-2">
@@ -587,7 +587,7 @@ export function DesignGuide() {
       </Section>
 
       <Section title="Task Collection">
-        <p className="max-w-prose text-sm text-muted-foreground">
+        <p className="max-w-prose text-sm text-ink-3">
           CollectionToolbar owns shared geometry while each page owns its state and behavior.
           The canonical task row is opt-in during migration: status leads, unread work uses
           title emphasis, metadata remains stable, and the task identifier trails.
@@ -595,16 +595,16 @@ export function DesignGuide() {
         <CollectionToolbar
           context={<span className="text-sm font-medium">Recent tasks</span>}
           search={<Input aria-label="Search task collection example" placeholder="Search tasks..." />}
-          controls={<Button variant="outline" size="sm">Filter</Button>}
+          controls={<Button variant="secondary" size="sm">Filter</Button>}
           actions={<Button size="sm">New task</Button>}
-          feedback={<span className="text-xs text-muted-foreground">1 task · Updated newest first</span>}
+          feedback={<span className="text-xs text-ink-3">1 task · Updated newest first</span>}
         />
-        <div className="overflow-hidden rounded-lg border border-border">
+        <div className="overflow-hidden rounded-lg border border-line">
           <IssueRow
             issue={DESIGN_GUIDE_TASK}
             presentation="task"
             unreadState="visible"
-            metadata={<span className="text-xs text-muted-foreground">Updated 12m ago</span>}
+            metadata={<span className="text-xs text-ink-3">Updated 12m ago</span>}
             actions={<Button variant="ghost" size="xs">More</Button>}
           />
         </div>
@@ -626,25 +626,25 @@ export function DesignGuide() {
       <Section title="Colors">
         <SubSection title="Core">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <Swatch name="Background" cssVar="--background" />
-            <Swatch name="Foreground" cssVar="--foreground" />
-            <Swatch name="Card" cssVar="--card" />
-            <Swatch name="Primary" cssVar="--primary" />
-            <Swatch name="Primary foreground" cssVar="--primary-foreground" />
-            <Swatch name="Secondary" cssVar="--secondary" />
-            <Swatch name="Muted" cssVar="--muted" />
-            <Swatch name="Muted foreground" cssVar="--muted-foreground" />
-            <Swatch name="Accent" cssVar="--accent" />
-            <Swatch name="Destructive" cssVar="--destructive" />
-            <Swatch name="Border" cssVar="--border" />
-            <Swatch name="Ring" cssVar="--ring" />
+            <Swatch name="Background" cssVar="--bg" />
+            <Swatch name="Foreground" cssVar="--ink" />
+            <Swatch name="Card" cssVar="--bg-2" />
+            <Swatch name="Primary" cssVar="--accent" />
+            <Swatch name="Primary foreground" cssVar="--accent-ink" />
+            <Swatch name="Secondary" cssVar="--bg-3" />
+            <Swatch name="Muted" cssVar="--bg-3" />
+            <Swatch name="Muted foreground" cssVar="--ink-3" />
+            <Swatch name="Accent" cssVar="--bg-3" />
+            <Swatch name="Destructive" cssVar="--bad" />
+            <Swatch name="Border" cssVar="--line" />
+            <Swatch name="Ring" cssVar="--focus" />
           </div>
         </SubSection>
 
         <SubSection title="Sidebar">
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            <Swatch name="Sidebar" cssVar="--sidebar" />
-            <Swatch name="Sidebar border" cssVar="--sidebar-border" />
+            <Swatch name="Sidebar" cssVar="--bg-2" />
+            <Swatch name="Sidebar border" cssVar="--line" />
           </div>
         </SubSection>
 
@@ -677,20 +677,20 @@ export function DesignGuide() {
         <div className="space-y-3">
           <h2 className="text-xl font-bold">Page Title — text-xl font-bold</h2>
           <h2 className="text-lg font-semibold">Section Title — text-lg font-semibold</h2>
-          <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+          <h3 className="text-sm font-semibold text-ink-3 uppercase tracking-wide">
             Section Heading — text-sm font-semibold uppercase tracking-wide
           </h3>
           <p className="text-sm font-medium">Card Title — text-sm font-medium</p>
           <p className="text-sm font-semibold">Card Title Alt — text-sm font-semibold</p>
           <p className="text-sm">Body text — text-sm</p>
-          <p className="text-sm text-muted-foreground">
-            Muted description — text-sm text-muted-foreground
+          <p className="text-sm text-ink-3">
+            Muted description — text-sm text-ink-3
           </p>
-          <p className="text-xs text-muted-foreground">
-            Tiny label — text-xs text-muted-foreground
+          <p className="text-xs text-ink-3">
+            Tiny label — text-xs text-ink-3
           </p>
-          <p className="text-sm font-mono text-muted-foreground">
-            Mono identifier — text-sm font-mono text-muted-foreground
+          <p className="text-sm font-mono text-ink-3">
+            Mono identifier — text-sm font-mono text-ink-3
           </p>
           <p className="text-2xl font-bold">Large stat — text-2xl font-bold</p>
           <p className="font-mono text-xs">Log/code text — font-mono text-xs</p>
@@ -711,10 +711,10 @@ export function DesignGuide() {
           ].map(([label, radius]) => (
             <div key={label} className="flex flex-col items-center gap-1">
               <div
-                className="h-12 w-12 bg-primary"
+                className="h-12 w-12 bg-accent"
                 style={{ borderRadius: radius }}
               />
-              <span className="text-xs text-muted-foreground">{label}</span>
+              <span className="text-xs text-ink-3">{label}</span>
             </div>
           ))}
         </div>
@@ -726,11 +726,11 @@ export function DesignGuide() {
       <Section title="Buttons">
         <SubSection title="Variants">
           <div className="flex items-center gap-2 flex-wrap">
-            <Button variant="default">Default</Button>
+            <Button variant="primary">Primary</Button>
             <Button variant="secondary">Secondary</Button>
-            <Button variant="outline">Outline</Button>
             <Button variant="ghost">Ghost</Button>
-            <Button variant="destructive">Destructive</Button>
+            <Button variant="danger">Danger</Button>
+            <Button variant="delete">Delete</Button>
             <Button variant="link">Link</Button>
           </div>
         </SubSection>
@@ -748,16 +748,16 @@ export function DesignGuide() {
           <div className="flex items-center gap-2 flex-wrap">
             <Button variant="ghost" size="icon-xs"><Search /></Button>
             <Button variant="ghost" size="icon-sm"><Search /></Button>
-            <Button variant="outline" size="icon"><Search /></Button>
-            <Button variant="outline" size="icon-lg"><Search /></Button>
+            <Button variant="secondary" size="icon"><Search /></Button>
+            <Button variant="secondary" size="icon-lg"><Search /></Button>
           </div>
         </SubSection>
 
         <SubSection title="With icons">
           <div className="flex items-center gap-2 flex-wrap">
             <Button><Plus /> New Issue</Button>
-            <Button variant="outline"><Upload /> Upload</Button>
-            <Button variant="destructive"><Trash2 /> Delete</Button>
+            <Button variant="secondary"><Upload /> Upload</Button>
+            <Button variant="delete"><Trash2 /> Delete</Button>
             <Button size="sm"><Plus /> Add</Button>
           </div>
         </SubSection>
@@ -765,7 +765,8 @@ export function DesignGuide() {
         <SubSection title="States">
           <div className="flex items-center gap-2 flex-wrap">
             <Button disabled>Disabled</Button>
-            <Button variant="outline" disabled>Disabled Outline</Button>
+            <Button variant="secondary" disabled>Disabled Secondary</Button>
+            <Button loading>Loading</Button>
           </div>
         </SubSection>
       </Section>
@@ -823,7 +824,7 @@ export function DesignGuide() {
               (s) => (
                 <div key={s} className="flex items-center gap-1.5">
                   <StatusIcon status={s} />
-                  <span className="text-xs text-muted-foreground">{s}</span>
+                  <span className="text-xs text-ink-3">{s}</span>
                 </div>
               )
             )}
@@ -841,7 +842,7 @@ export function DesignGuide() {
             {["critical", "high", "medium", "low"].map((p) => (
               <div key={p} className="flex items-center gap-1.5">
                 <PriorityIcon priority={p} />
-                <span className="text-xs text-muted-foreground">{p}</span>
+                <span className="text-xs text-ink-3">{p}</span>
               </div>
             ))}
           </div>
@@ -859,7 +860,7 @@ export function DesignGuide() {
                 <span className="relative flex h-2.5 w-2.5">
                   <span className={`inline-flex h-full w-full rounded-full ${agentStatusDot[label] ?? agentStatusDotDefault}`} />
                 </span>
-                <span className="text-xs text-muted-foreground">{label}</span>
+                <span className="text-xs text-ink-3">{label}</span>
               </div>
             ))}
           </div>
@@ -871,7 +872,7 @@ export function DesignGuide() {
               ["timer", "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300"],
               ["assignment", "bg-violet-100 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300"],
               ["on_demand", "bg-cyan-100 text-cyan-700 dark:bg-cyan-900/50 dark:text-cyan-300"],
-              ["automation", "bg-muted text-muted-foreground"],
+              ["automation", "bg-bg-3 text-ink-3"],
             ].map(([label, cls]) => (
               <Badge variant="ghost" key={label} className={`px-1.5 text-(length:--text-nano) ${cls}`}>
                 {label}
@@ -881,7 +882,7 @@ export function DesignGuide() {
         </SubSection>
 
         <SubSection title="IssueReferencePill">
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             Used wherever a task is referenced — in markdown, the Related Work tab, and activity summaries.
             Pass <code className="font-mono">status</code> to show the target issue&apos;s state at a glance.
             Use <code className="font-mono">variant="property"</code> for compact badges with direct navigation.
@@ -899,7 +900,7 @@ export function DesignGuide() {
         </SubSection>
 
         <SubSection title="LockedIssueChip">
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             Existence-only reference to a private task shown from a surface the viewer can see
             (a blocker edge, a mention). Mono id + lock, dashed muted border,{" "}
             <strong>no title, never a link</strong>. Falls back to &quot;Private&quot; when even the
@@ -916,7 +917,7 @@ export function DesignGuide() {
       {/*  AGENT CAPSULE                                                */}
       {/* ============================================================ */}
       <Section title="Agent Capsule">
-        <p className="text-sm text-muted-foreground max-w-prose">
+        <p className="text-sm text-ink-3 max-w-prose">
           The brand &quot;capsule is the agent&quot; motif. A single agent reads as a tall
           pill that moves through three states as it comes to life. The online fill uses
           the live brand agent-gradient tokens (<code className="font-mono">--agent-Na</code> →{" "}
@@ -927,19 +928,19 @@ export function DesignGuide() {
           <div className="flex items-end gap-10">
             <div className="flex flex-col items-center gap-2">
               <AgentCapsule state="slot" />
-              <span className="text-xs text-muted-foreground">slot</span>
+              <span className="text-xs text-ink-3">slot</span>
             </div>
             <div className="flex flex-col items-center gap-2">
               <AgentCapsule state="configured" />
-              <span className="text-xs text-muted-foreground">configured</span>
+              <span className="text-xs text-ink-3">configured</span>
             </div>
             <div className="flex flex-col items-center gap-2">
               <AgentCapsule state="online" gradient={5} />
-              <span className="text-xs text-muted-foreground">online</span>
+              <span className="text-xs text-ink-3">online</span>
             </div>
             <div className="flex flex-col items-center gap-2">
               <AgentCapsule state="online" gradient={5} glow="blue" />
-              <span className="text-xs text-muted-foreground">online · blue glow</span>
+              <span className="text-xs text-ink-3">online · blue glow</span>
             </div>
           </div>
         </SubSection>
@@ -947,19 +948,19 @@ export function DesignGuide() {
           <div className="flex items-end gap-8">
             <div className="flex flex-col items-center gap-2">
               <AgentCapsule state="online" size="sm" gradient={1} />
-              <span className="text-xs text-muted-foreground">sm</span>
+              <span className="text-xs text-ink-3">sm</span>
             </div>
             <div className="flex flex-col items-center gap-2">
               <AgentCapsule state="online" size="md" gradient={4} />
-              <span className="text-xs text-muted-foreground">md</span>
+              <span className="text-xs text-ink-3">md</span>
             </div>
             <div className="flex flex-col items-center gap-2">
               <AgentCapsule state="online" size="lg" gradient={8} />
-              <span className="text-xs text-muted-foreground">lg</span>
+              <span className="text-xs text-ink-3">lg</span>
             </div>
             <div className="flex flex-col items-center gap-2">
               <AgentCapsule state="online" size={{ width: 28, height: 96 }} gradient={6} />
-              <span className="text-xs text-muted-foreground">custom px</span>
+              <span className="text-xs text-ink-3">custom px</span>
             </div>
           </div>
         </SubSection>
@@ -968,7 +969,7 @@ export function DesignGuide() {
             {Array.from({ length: AGENT_GRADIENT_COUNT }, (_, i) => (
               <div key={i} className="flex flex-col items-center gap-1.5">
                 <AgentCapsule state="online" size="sm" gradient={i + 1} />
-                <span className="text-(length:--text-nano) font-mono text-muted-foreground">{i + 1}</span>
+                <span className="text-(length:--text-nano) font-mono text-ink-3">{i + 1}</span>
               </div>
             ))}
           </div>
@@ -1009,7 +1010,7 @@ export function DesignGuide() {
           <SubSection title="Inline Editor">
             <div className="space-y-4">
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Title (single-line)</p>
+                <p className="text-xs text-ink-3 mb-1">Title (single-line)</p>
                 <InlineEditor
                   value={inlineTitle}
                   onSave={setInlineTitle}
@@ -1018,7 +1019,7 @@ export function DesignGuide() {
                 />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Body text (single-line)</p>
+                <p className="text-xs text-ink-3 mb-1">Body text (single-line)</p>
                 <InlineEditor
                   value={inlineText}
                   onSave={setInlineText}
@@ -1027,12 +1028,12 @@ export function DesignGuide() {
                 />
               </div>
               <div>
-                <p className="text-xs text-muted-foreground mb-1">Description (multiline, auto-sizing)</p>
+                <p className="text-xs text-ink-3 mb-1">Description (multiline, auto-sizing)</p>
                 <InlineEditor
                   value={inlineDesc}
                   onSave={setInlineDesc}
                   as="p"
-                  className="text-sm text-muted-foreground"
+                  className="text-sm text-ink-3"
                   placeholder="Add a description..."
                   multiline
                 />
@@ -1046,7 +1047,7 @@ export function DesignGuide() {
       {/*  SELECT                                                       */}
       {/* ============================================================ */}
       <Section title="Select">
-        <p className="mb-4 text-sm text-muted-foreground">Native single-value dropdowns share an inset, theme-aware caret and reserve room for it in the base stylesheet. Multiple-selection lists and controls with a custom icon keep their own appearance.</p>
+        <p className="mb-4 text-sm text-ink-3">Native single-value dropdowns share an inset, theme-aware caret and reserve room for it in the base stylesheet. Multiple-selection lists and controls with a custom icon keep their own appearance.</p>
         <div className="grid gap-6 md:grid-cols-2">
           <SubSection title="Default size">
             <Select value={selectValue} onValueChange={setSelectValue}>
@@ -1061,7 +1062,7 @@ export function DesignGuide() {
                 <SelectItem value="done">Done</SelectItem>
               </SelectContent>
             </Select>
-            <p className="text-xs text-muted-foreground">Current value: {selectValue}</p>
+            <p className="text-xs text-ink-3">Current value: {selectValue}</p>
           </SubSection>
           <SubSection title="Small trigger">
             <Select defaultValue="high">
@@ -1085,7 +1086,7 @@ export function DesignGuide() {
       <Section title="Dropdown Menu">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm">
+            <Button variant="secondary" size="sm">
               Quick Actions
               <ChevronDown className="h-4 w-4" />
             </Button>
@@ -1121,11 +1122,11 @@ export function DesignGuide() {
       <Section title="Popover">
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="outline" size="sm">Open Popover</Button>
+            <Button variant="secondary" size="sm">Open Popover</Button>
           </PopoverTrigger>
           <PopoverContent className="space-y-2">
             <p className="text-sm font-medium">Agent heartbeat</p>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-xs text-ink-3">
               Last run succeeded 24s ago. Next timer run in 9m.
             </p>
             <Button size="xs">Wake now</Button>
@@ -1139,11 +1140,11 @@ export function DesignGuide() {
       <Section title="Collapsible">
         <Collapsible open={collapsibleOpen} onOpenChange={setCollapsibleOpen} className="space-y-2">
           <CollapsibleTrigger asChild>
-            <Button variant="outline" size="sm">
+            <Button variant="secondary" size="sm">
               {collapsibleOpen ? "Hide" : "Show"} advanced filters
             </Button>
           </CollapsibleTrigger>
-          <CollapsibleContent className="rounded-md border border-border p-3">
+          <CollapsibleContent className="rounded-md border border-line p-3">
             <div className="space-y-2">
               <Label htmlFor="owner-filter">Owner</Label>
               <Input id="owner-filter" placeholder="Filter by agent name" />
@@ -1158,7 +1159,7 @@ export function DesignGuide() {
       <Section title="Sheet">
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="outline" size="sm">Open Side Panel</Button>
+            <Button variant="secondary" size="sm">Open Side Panel</Button>
           </SheetTrigger>
           <SheetContent side="right">
             <SheetHeader>
@@ -1176,7 +1177,7 @@ export function DesignGuide() {
               </div>
             </div>
             <SheetFooter>
-              <Button variant="outline">Cancel</Button>
+              <Button variant="secondary">Cancel</Button>
               <Button>Save</Button>
             </SheetFooter>
           </SheetContent>
@@ -1187,10 +1188,10 @@ export function DesignGuide() {
       {/*  SCROLL AREA                                                  */}
       {/* ============================================================ */}
       <Section title="Scroll Area">
-        <ScrollArea className="h-36 rounded-md border border-border">
+        <ScrollArea className="h-36 rounded-md border border-line">
           <div className="space-y-2 p-3">
             {Array.from({ length: 12 }).map((_, i) => (
-              <div key={i} className="rounded-md border border-border p-2 text-sm">
+              <div key={i} className="rounded-md border border-line p-2 text-sm">
                 Heartbeat run #{i + 1}: completed successfully
               </div>
             ))}
@@ -1202,7 +1203,7 @@ export function DesignGuide() {
       {/*  COMMAND                                                      */}
       {/* ============================================================ */}
       <Section title="Command (CMDK)">
-        <div className="rounded-md border border-border">
+        <div className="rounded-md border border-line">
           <Command>
             <CommandInput placeholder="Type a command or search..." />
             <CommandList>
@@ -1273,7 +1274,7 @@ export function DesignGuide() {
               />
             ))}
           </div>
-          <p className="text-xs text-muted-foreground">The dashboard and Live runs page use the same compact cards. In-progress task icons animate across the app, including between runs, to represent task workflow status. Live indicators report active execution. Open a run to view its status and transcript.</p>
+          <p className="text-xs text-ink-3">The dashboard and Live runs page use the same compact cards. In-progress task icons animate across the app, including between runs, to represent task workflow status. Live indicators report active execution. Open a run to view its status and transcript.</p>
         </SubSection>
         <SubSection title="Standard Card">
           <Card>
@@ -1286,7 +1287,7 @@ export function DesignGuide() {
             </CardContent>
             <CardFooter className="gap-2">
               <Button size="sm">Action</Button>
-              <Button variant="outline" size="sm">Cancel</Button>
+              <Button variant="secondary" size="sm">Cancel</Button>
             </CardFooter>
           </Card>
         </SubSection>
@@ -1314,16 +1315,16 @@ export function DesignGuide() {
               <TabsTrigger value="costs">Costs</TabsTrigger>
             </TabsList>
             <TabsContent value="overview">
-              <p className="text-sm text-muted-foreground py-4">Overview tab content.</p>
+              <p className="text-sm text-ink-3 py-4">Overview tab content.</p>
             </TabsContent>
             <TabsContent value="runs">
-              <p className="text-sm text-muted-foreground py-4">Runs tab content.</p>
+              <p className="text-sm text-ink-3 py-4">Runs tab content.</p>
             </TabsContent>
             <TabsContent value="config">
-              <p className="text-sm text-muted-foreground py-4">Config tab content.</p>
+              <p className="text-sm text-ink-3 py-4">Config tab content.</p>
             </TabsContent>
             <TabsContent value="costs">
-              <p className="text-sm text-muted-foreground py-4">Costs tab content.</p>
+              <p className="text-sm text-ink-3 py-4">Costs tab content.</p>
             </TabsContent>
           </Tabs>
         </SubSection>
@@ -1336,13 +1337,13 @@ export function DesignGuide() {
               <TabsTrigger value="comments">Comments</TabsTrigger>
             </TabsList>
             <TabsContent value="summary">
-              <p className="text-sm text-muted-foreground py-4">Summary content with underline tabs.</p>
+              <p className="text-sm text-ink-3 py-4">Summary content with underline tabs.</p>
             </TabsContent>
             <TabsContent value="details">
-              <p className="text-sm text-muted-foreground py-4">Details content.</p>
+              <p className="text-sm text-ink-3 py-4">Details content.</p>
             </TabsContent>
             <TabsContent value="comments">
-              <p className="text-sm text-muted-foreground py-4">Comments content.</p>
+              <p className="text-sm text-ink-3 py-4">Comments content.</p>
             </TabsContent>
           </Tabs>
         </SubSection>
@@ -1352,7 +1353,7 @@ export function DesignGuide() {
       {/*  ENTITY ROWS                                                  */}
       {/* ============================================================ */}
       <Section title="Entity Rows">
-        <div className="border border-border rounded-md">
+        <div className="border border-line rounded-md">
           <EntityRow
             leading={
               <>
@@ -1407,7 +1408,7 @@ export function DesignGuide() {
           />
         </div>
         <SubSection title="Membership action">
-          <div className="border border-border rounded-md">
+          <div className="border border-line rounded-md">
             <EntityRow
               title="Joined resource"
               subtitle="Hover or focus the row to reveal the reserved action slot."
@@ -1424,7 +1425,7 @@ export function DesignGuide() {
             <EntityRow
               title="Left resource"
               subtitle="Persistent action with dimmed row content."
-              className="group text-foreground/55"
+              className="group text-ink/55"
               trailing={
                 <MembershipAction
                   state="left"
@@ -1437,7 +1438,7 @@ export function DesignGuide() {
             <EntityRow
               title="Leaving resource"
               subtitle="Disabled while the optimistic mutation is pending."
-              className="group text-foreground/55"
+              className="group text-ink/55"
               trailing={
                 <MembershipAction
                   state="left"
@@ -1479,7 +1480,7 @@ export function DesignGuide() {
         />
         {filters.length === 0 && (
           <Button
-            variant="outline"
+            variant="secondary"
             size="sm"
             onClick={() =>
               setFilters([
@@ -1541,7 +1542,7 @@ export function DesignGuide() {
           <div className="flex flex-wrap gap-3">{AGENT_PALETTE_IDS.map(palette => <AgentAvatar key={palette} appearance={appearanceForPalette(palette)} size={48} label={palette} />)}</div>
         </SubSection>
         <SubSection title="Onboarding and live character">
-          <p className="text-sm text-muted-foreground">Place one live character beside the agent name. Onboarding uses a larger padded frame. Onboarding and agent headers follow the pointer across the page; other placements track within their region. Full-page examples are in Storybook under Agents / Personas / Full pages.</p>
+          <p className="text-sm text-ink-3">Place one live character beside the agent name. Onboarding uses a larger padded frame. Onboarding and agent headers follow the pointer across the page; other placements track within their region. Full-page examples are in Storybook under Agents / Personas / Full pages.</p>
           <div className="flex gap-4"><AgentCharacter muted state="sleepy" motion="still" size={128} /><AgentCharacter size={128} /></div>
         </SubSection>
       </Section>
@@ -1574,7 +1575,7 @@ export function DesignGuide() {
         <div className="flex items-center gap-4">
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant="outline" size="sm">Hover me</Button>
+              <Button variant="secondary" size="sm">Hover me</Button>
             </TooltipTrigger>
             <TooltipContent>This is a tooltip</TooltipContent>
           </Tooltip>
@@ -1593,7 +1594,7 @@ export function DesignGuide() {
       <Section title="Dialog">
         <Dialog>
           <DialogTrigger asChild>
-            <Button variant="outline">Open Dialog</Button>
+            <Button variant="secondary">Open Dialog</Button>
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
@@ -1613,7 +1614,7 @@ export function DesignGuide() {
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline">Cancel</Button>
+              <Button variant="secondary">Cancel</Button>
               <Button>Save</Button>
             </DialogFooter>
           </DialogContent>
@@ -1624,7 +1625,7 @@ export function DesignGuide() {
       {/*  EMPTY STATE                                                  */}
       {/* ============================================================ */}
       <Section title="Empty State">
-        <div className="border border-border rounded-md">
+        <div className="border border-line rounded-md">
           <EmptyState
             icon={Inbox}
             message="No items to show. Create your first one to get started."
@@ -1646,10 +1647,10 @@ export function DesignGuide() {
           ].map(({ label, pct, color }) => (
             <div key={label} className="space-y-1">
               <div className="flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">{label}</span>
+                <span className="text-xs text-ink-3">{label}</span>
                 <span className="text-xs font-mono">{pct}%</span>
               </div>
-              <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+              <div className="w-full h-2 bg-bg-3 rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-(--tp-width-background-color) duration-150 ${color}`}
                   style={{ width: `${pct}%` }}
@@ -1665,13 +1666,13 @@ export function DesignGuide() {
       {/* ============================================================ */}
       <Section title="Log Viewer">
         <div className="bg-neutral-950 rounded-lg p-3 font-mono text-xs max-h-80 overflow-y-auto">
-          <div className="text-foreground">[12:00:01] INFO  Agent started successfully</div>
-          <div className="text-foreground">[12:00:02] INFO  Processing task PAP-001</div>
+          <div className="text-ink">[12:00:01] INFO  Agent started successfully</div>
+          <div className="text-ink">[12:00:02] INFO  Processing task PAP-001</div>
           <div className="text-yellow-400">[12:00:05] WARN  Rate limit approaching (80%)</div>
-          <div className="text-foreground">[12:00:08] INFO  Task PAP-001 completed</div>
+          <div className="text-ink">[12:00:08] INFO  Task PAP-001 completed</div>
           <div className="text-red-400">[12:00:12] ERROR Connection timeout to upstream service</div>
           <div className="text-blue-300">[12:00:12] SYS   Retrying connection in 5s...</div>
-          <div className="text-foreground">[12:00:17] INFO  Reconnected successfully</div>
+          <div className="text-ink">[12:00:17] INFO  Reconnected successfully</div>
           <div className="flex items-center gap-1.5">
             <span className="relative flex h-1.5 w-1.5">
               <span className="absolute inline-flex h-full w-full rounded-full bg-blue-400 animate-pulse" />
@@ -1686,27 +1687,27 @@ export function DesignGuide() {
       {/*  PROPERTY ROW PATTERN                                         */}
       {/* ============================================================ */}
       <Section title="Property Row Pattern">
-        <div className="border border-border rounded-md p-4 space-y-1 max-w-sm">
+        <div className="border border-line rounded-md p-4 space-y-1 max-w-sm">
           <div className="flex items-center justify-between py-1.5">
-            <span className="text-xs text-muted-foreground">Status</span>
+            <span className="text-xs text-ink-3">Status</span>
             <StatusBadge status="active" />
           </div>
           {/* PAP-411: priority metadata row hidden behind SHOW_TASK_PRIORITY_UI. */}
           {SHOW_TASK_PRIORITY_UI && (
             <div className="flex items-center justify-between py-1.5">
-              <span className="text-xs text-muted-foreground">Priority</span>
+              <span className="text-xs text-ink-3">Priority</span>
               <PriorityIcon priority="high" />
             </div>
           )}
           <div className="flex items-center justify-between py-1.5">
-            <span className="text-xs text-muted-foreground">Responsible</span>
+            <span className="text-xs text-ink-3">Responsible</span>
             <div className="flex items-center gap-1.5">
               <Avatar size="sm"><AvatarFallback>A</AvatarFallback></Avatar>
               <span className="text-xs">Agent Alpha</span>
             </div>
           </div>
           <div className="flex items-center justify-between py-1.5">
-            <span className="text-xs text-muted-foreground">Created</span>
+            <span className="text-xs text-ink-3">Created</span>
             <span className="text-xs">Jan 15, 2025</span>
           </div>
         </div>
@@ -1717,11 +1718,11 @@ export function DesignGuide() {
       {/* ============================================================ */}
       <Section title="Navigation Patterns">
         <SubSection title="Independent MCP connections">
-          <p className="text-sm text-muted-foreground">Zapier, Arcade, Composio and Executor each own a connection. Their controlled setup views share Access → Connect. Tool discovery completes setup. Saved connections reuse the standard Permissions action list and per-action Test dialog. Storybook’s Apps / Connections groups use in-memory provider fixtures.</p>
+          <p className="text-sm text-ink-3">Zapier, Arcade, Composio and Executor each own a connection. Their controlled setup views share Access → Connect. Tool discovery completes setup. Saved connections reuse the standard Permissions action list and per-action Test dialog. Storybook’s Apps / Connections groups use in-memory provider fixtures.</p>
           <RemoteMcpDesignExample />
         </SubSection>
         <SubSection title="Setup wizard">
-          <p className="text-sm text-muted-foreground">Shared by connection setup and trigger previews. Setup navigation takes over the section sidebar; each step owns a single footer.</p>
+          <p className="text-sm text-ink-3">Shared by connection setup and trigger previews. Setup navigation takes over the section sidebar; each step owns a single footer.</p>
           <div className="max-w-sm space-y-6">
             <SetupWizardNavigation inline labels={["Choose trigger", "Configure", "Review"]} step={wizardStep} availableStep={2} onSelect={setWizardStep} />
             <SetupWizardFooter onSaveExit={() => setWizardStep(0)}><Button onClick={() => setWizardStep((wizardStep + 1) % 3)}>Continue</Button></SetupWizardFooter>
@@ -1738,28 +1739,28 @@ export function DesignGuide() {
           </SubSection>
         </SubSection>
         <SubSection title="Sidebar nav items">
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-ink-3">
             Layout accepts sidebarSections to compose additional SidebarSection groups inside the shared sidebar.
             Use SidebarNavItem for each row, with sibling action buttons for starring or menus.
             The Chats section shows starred agents, the earliest-created agent when unstarred, then four recent agents without duplicates. Compose and star controls share a vertical column. Compose appears on hover or keyboard focus and remains visible on touch; starred icons remain visible. The picker searches all company agents by name or role without a subtitle, count, continuation labels, or footer. Task breadcrumbs support leading identity and trailing actions beside the label, including single-item task headers; see the Agent chat Storybook.
           </p>
           <Card className="block w-60 p-3 space-y-0.5">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium bg-accent text-accent-foreground">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium bg-bg-3 text-ink">
               <LayoutDashboard className="h-4 w-4" />
               Dashboard
             </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground cursor-pointer">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium text-ink-3 hover:bg-bg-3/50 hover:text-ink cursor-pointer">
               <CircleDot className="h-4 w-4" />
               Issues
-              <Badge variant="ghost" className="ml-auto bg-primary text-primary-foreground px-1.5">
+              <Badge variant="ghost" className="ml-auto bg-accent text-accent-ink px-1.5">
                 12
               </Badge>
             </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground cursor-pointer">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium text-ink-3 hover:bg-bg-3/50 hover:text-ink cursor-pointer">
               <Bot className="h-4 w-4" />
               Agents
             </div>
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium text-muted-foreground hover:bg-accent/50 hover:text-accent-foreground cursor-pointer">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium text-ink-3 hover:bg-bg-3/50 hover:text-ink cursor-pointer">
               <Hexagon className="h-4 w-4" />
               Projects
             </div>
@@ -1767,12 +1768,12 @@ export function DesignGuide() {
         </SubSection>
 
         <SubSection title="View toggle">
-          <div className="flex items-center border border-border rounded-md w-fit">
-            <button className="px-3 py-1.5 text-xs font-medium bg-accent text-foreground rounded-l-md">
+          <div className="flex items-center border border-line rounded-md w-fit">
+            <button className="px-3 py-1.5 text-xs font-medium bg-bg-3 text-ink rounded-l-md">
               <ListTodo className="h-3.5 w-3.5 inline mr-1" />
               List
             </button>
-            <button className="px-3 py-1.5 text-xs font-medium text-muted-foreground hover:bg-accent/50 rounded-r-md">
+            <button className="px-3 py-1.5 text-xs font-medium text-ink-3 hover:bg-bg-3/50 rounded-r-md">
               <Target className="h-3.5 w-3.5 inline mr-1" />
               Org
             </button>
@@ -1785,12 +1786,12 @@ export function DesignGuide() {
       {/* ============================================================ */}
       <Section title="Grouped List (Issues pattern)">
         <div>
-          <div className="flex items-center gap-2 px-4 py-2 bg-muted/50 rounded-t-md">
+          <div className="flex items-center gap-2 px-4 py-2 bg-bg-3/50 rounded-t-md">
             <StatusIcon status="in_progress" />
             <span className="text-sm font-medium">In Progress</span>
-            <span className="text-xs text-muted-foreground ml-1">2</span>
+            <span className="text-xs text-ink-3 ml-1">2</span>
           </div>
-          <div className="border border-border rounded-b-md">
+          <div className="border border-line rounded-b-md">
             {/* PAP-411: leading PriorityIcon hidden behind SHOW_TASK_PRIORITY_UI. */}
             <EntityRow
               leading={SHOW_TASK_PRIORITY_UI ? <PriorityIcon priority="high" /> : undefined}
@@ -1815,17 +1816,17 @@ export function DesignGuide() {
         <div className="space-y-3 max-w-2xl">
           <h3 className="text-sm font-semibold">Comments (2)</h3>
           <div className="space-y-3">
-            <div className="rounded-md border border-border p-3">
+            <div className="rounded-md border border-line p-3">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-medium text-muted-foreground">Agent</span>
-                <span className="text-xs text-muted-foreground">Jan 15, 2025</span>
+                <span className="text-xs font-medium text-ink-3">Agent</span>
+                <span className="text-xs text-ink-3">Jan 15, 2025</span>
               </div>
               <p className="text-sm">Started working on the authentication module. Will need API keys configured.</p>
             </div>
-            <div className="rounded-md border border-border p-3">
+            <div className="rounded-md border border-line p-3">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-xs font-medium text-muted-foreground">Human</span>
-                <span className="text-xs text-muted-foreground">Jan 16, 2025</span>
+                <span className="text-xs font-medium text-ink-3">Human</span>
+                <span className="text-xs text-ink-3">Jan 16, 2025</span>
               </div>
               <p className="text-sm">API keys have been added to the vault. Please proceed.</p>
             </div>
@@ -1841,22 +1842,22 @@ export function DesignGuide() {
       {/*  COST TABLE PATTERN                                           */}
       {/* ============================================================ */}
       <Section title="Cost Table Pattern">
-        <div className="border border-border rounded-lg overflow-hidden">
+        <div className="border border-line rounded-lg overflow-hidden">
           <table className="w-full text-xs">
-            <thead className="border-b border-border bg-accent/20">
+            <thead className="border-b border-line bg-bg-3/20">
               <tr>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground">Model</th>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground">Tokens</th>
-                <th className="text-left px-3 py-2 font-medium text-muted-foreground">Cost</th>
+                <th className="text-left px-3 py-2 font-medium text-ink-3">Model</th>
+                <th className="text-left px-3 py-2 font-medium text-ink-3">Tokens</th>
+                <th className="text-left px-3 py-2 font-medium text-ink-3">Cost</th>
               </tr>
             </thead>
             <tbody>
-              <tr className="border-b border-border">
+              <tr className="border-b border-line">
                 <td className="px-3 py-2">claude-sonnet-4-20250514</td>
                 <td className="px-3 py-2 font-mono">1.2M</td>
                 <td className="px-3 py-2 font-mono">$18.00</td>
               </tr>
-              <tr className="border-b border-border">
+              <tr className="border-b border-line">
                 <td className="px-3 py-2">claude-haiku-4-20250506</td>
                 <td className="px-3 py-2 font-mono">500k</td>
                 <td className="px-3 py-2 font-mono">$1.25</td>
@@ -1884,13 +1885,13 @@ export function DesignGuide() {
         </SubSection>
 
         <SubSection title="Page Skeleton (list)">
-          <div className="border border-border rounded-md p-4">
+          <div className="border border-line rounded-md p-4">
             <PageSkeleton variant="list" />
           </div>
         </SubSection>
 
         <SubSection title="Page Skeleton (detail)">
-          <div className="border border-border rounded-md p-4">
+          <div className="border border-line rounded-md p-4">
             <PageSkeleton variant="detail" />
           </div>
         </SubSection>
@@ -1901,7 +1902,7 @@ export function DesignGuide() {
       {/* ============================================================ */}
       <Section title="Separator">
         <div className="space-y-4">
-          <p className="text-sm text-muted-foreground">Horizontal</p>
+          <p className="text-sm text-ink-3">Horizontal</p>
           <Separator />
           <div className="flex items-center gap-4 h-8">
             <span className="text-sm">Left</span>
@@ -1917,28 +1918,28 @@ export function DesignGuide() {
       {/*  TEAM CATALOG                                                 */}
       {/* ============================================================ */}
       <Section title="Team Catalog">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           Components from the Team Catalog browse/install surface (<code className="font-mono text-xs">/teams-catalog</code>).
           Fixtures are shared with the Storybook stories.
         </p>
 
         <SubSection title="TeamRow (browse list)">
-          <div className="w-(--sz-28rem) rounded-md border border-border">
-            <div className="px-3 py-2 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
+          <div className="w-(--sz-28rem) rounded-md border border-line">
+            <div className="px-3 py-2 text-(length:--text-micro) font-semibold uppercase tracking-wide text-ink-3">
               Bundled · 1
             </div>
             <TeamRow team={sampleTeam} selected onSelect={() => {}} />
-            <div className="px-3 py-2 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
+            <div className="px-3 py-2 text-(length:--text-micro) font-semibold uppercase tracking-wide text-ink-3">
               Optional · 2
             </div>
             <TeamRow team={optionalTeam} selected={false} onSelect={() => {}} />
-            <div className="px-3 py-2 text-(length:--text-micro) font-semibold uppercase tracking-wide text-muted-foreground">
+            <div className="px-3 py-2 text-(length:--text-micro) font-semibold uppercase tracking-wide text-ink-3">
               Installed · 2
             </div>
             <TeamRow team={sampleTeam} selected={false} onSelect={() => {}} installed={outOfDateInstalledState} />
             <TeamRow team={warnTeam} selected={false} onSelect={() => {}} installed={currentInstalledState} />
           </div>
-          <p className="mt-2 text-xs text-muted-foreground">
+          <p className="mt-2 text-xs text-ink-3">
             Installed teams collapse under <code className="font-mono">INSTALLED · N</code>; an out-of-date
             install (server <code className="font-mono">originHash</code> ≠ catalog <code className="font-mono">contentHash</code>)
             shows the amber <code className="font-mono">↑</code> badge (PAP-10256).
@@ -1946,9 +1947,9 @@ export function DesignGuide() {
         </SubSection>
 
         <SubSection title="TeamCard (onboarding grid)">
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             Square tile for the onboarding &ldquo;Pick a starter team&rdquo; grid. Selected tile gets{" "}
-            <code className="font-mono">ring-2 ring-ring</code>. Drives the{" "}
+            <code className="font-mono">ring-2 ring-focus</code>. Drives the{" "}
             <code className="font-mono">useInstallTeamCatalogEntry</code> simplified flow.
           </p>
           <TeamCardShowcase />
@@ -1979,7 +1980,7 @@ export function DesignGuide() {
         </SubSection>
 
         <SubSection title="Source policy step (StepSourcePolicy)">
-          <div className="max-w-xl rounded-md border border-border p-4">
+          <div className="max-w-xl rounded-md border border-line p-4">
             <StepSourcePolicy
               team={warnTeam}
               allowExternalSources={allowExternal}
@@ -1995,7 +1996,7 @@ export function DesignGuide() {
         </SubSection>
 
         <SubSection title="Skill plan step (StepSkillPlan)">
-          <div className="max-w-xl rounded-md border border-border p-4">
+          <div className="max-w-xl rounded-md border border-line p-4">
             <StepSkillPlan team={sampleTeam} preparations={sampleSkillPreparations} />
           </div>
         </SubSection>
@@ -2026,8 +2027,8 @@ export function DesignGuide() {
             const LucideIcon = Icon as React.FC<{ className?: string }>;
             return (
               <div key={name as string} className="flex flex-col items-center gap-1.5 p-2">
-                <LucideIcon className="h-4 w-4 text-muted-foreground" />
-                <span className="text-(length:--text-nano) text-muted-foreground font-mono">{name as string}</span>
+                <LucideIcon className="h-4 w-4 text-ink-3" />
+                <span className="text-(length:--text-nano) text-ink-3 font-mono">{name as string}</span>
               </div>
             );
           })}
@@ -2038,7 +2039,7 @@ export function DesignGuide() {
       {/*  KEYBOARD SHORTCUTS                                           */}
       {/* ============================================================ */}
       <Section title="Keyboard Shortcuts">
-        <div className="border border-border rounded-md divide-y divide-border text-sm">
+        <div className="border border-line rounded-md divide-y divide-line text-sm">
           {[
             ["Cmd+K / Ctrl+K", "Open Command Palette"],
             ["C", "New Issue (outside inputs)"],
@@ -2048,8 +2049,8 @@ export function DesignGuide() {
             ["Cmd+Enter / Ctrl+Enter", "Submit markdown comment"],
           ].map(([key, desc]) => (
             <div key={key} className="flex items-center justify-between px-4 py-2">
-              <span className="text-muted-foreground">{desc}</span>
-              <kbd className="px-2 py-0.5 text-xs font-mono bg-muted rounded border border-border">
+              <span className="text-ink-3">{desc}</span>
+              <kbd className="px-2 py-0.5 text-xs font-mono bg-bg-3 rounded border border-line">
                 {key}
               </kbd>
             </div>
@@ -2065,7 +2066,7 @@ export function DesignGuide() {
           <IssueOutputSection workProducts={DESIGN_GUIDE_DEGRADED_OUTPUTS} />
         </SubSection>
         <SubSection title="Empty state">
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-ink-3">
             When an issue has produced no artifact work products, the Output section renders nothing
             at all (no placeholder card).
           </p>
@@ -2081,7 +2082,7 @@ export function DesignGuide() {
             <EnforcementBanner companyId="" forceVariant="default" recentDenialCount={0} />
             <EnforcementBanner companyId="" forceVariant="denied-detected" recentDenialCount={3} />
           </div>
-          <p className="mt-2 text-xs text-muted-foreground">
+          <p className="mt-2 text-xs text-ink-3">
             Persistent at the top of the Tools &amp; Access surface. Tints to <code>denied-detected</code> when
             governed tool calls were denied or failed in the last hour. Observability only — enforcement lives
             in the tool gateway.
@@ -2106,7 +2107,7 @@ export function DesignGuide() {
               body="The supervisor is restarting (attempt 2/3). The gateway returns runtime-error and the agent does not see partial output."
             />
           </div>
-          <p className="mt-2 text-xs text-muted-foreground">
+          <p className="mt-2 text-xs text-ink-3">
             Static governance copy with a tone. Used for the PAP-10400 trust-tier banner on Runtime and the
             effective-access banner on Agent → Tools. Pass <code>title</code>/<code>body</code> and an optional{" "}
             <code>icon</code>.
@@ -2150,7 +2151,7 @@ export function DesignGuide() {
               expiresInLabel="expires in 18h 02m"
             />
           </div>
-          <p className="mt-2 text-xs text-muted-foreground">
+          <p className="mt-2 text-xs text-ink-3">
             Signed payload sha256 + expiry surface on every variant (PAP-10400). The{" "}
             <code>stale</code> variant tints the border amber, banners the catalog-hash mismatch, strikes through
             the previous hash next to the current one, and renders <code>Approve</code> disabled until the request
@@ -2159,7 +2160,7 @@ export function DesignGuide() {
         </SubSection>
 
         <SubSection title="Action approval card — mobile (390×844, surface 99)">
-          <div className="w-(--sz-390px) max-w-full rounded-xl border border-border bg-background p-3">
+          <div className="w-(--sz-390px) max-w-full rounded-xl border border-line bg-bg p-3">
             <ActionCardMobile
               toolName="slack.post_message"
               risk="medium"
@@ -2177,7 +2178,7 @@ export function DesignGuide() {
               expiresInLabel="expires in 23h 51m"
             />
           </div>
-          <p className="mt-2 text-xs text-muted-foreground">
+          <p className="mt-2 text-xs text-ink-3">
             Identical content; the three buttons stack full-width in the order Approve / Deny / Edit &amp; re-sign,
             and the bindings table uses a 70px label column.
           </p>
@@ -2192,7 +2193,7 @@ export function DesignGuide() {
               { label: "Payload", value: "sha256:2c26b46b…66e7ae", mono: true },
             ]}
           />
-          <p className="mt-2 text-xs text-muted-foreground">
+          <p className="mt-2 text-xs text-ink-3">
             Two-column key/value block with mono values. Lives inside <code>ActionCard</code> and is reused
             standalone in the audit row drilldown.
           </p>
@@ -2207,7 +2208,7 @@ export function DesignGuide() {
               <StatusBadge key={s} status={s} />
             ))}
           </div>
-          <p className="mt-2 text-xs text-muted-foreground">
+          <p className="mt-2 text-xs text-ink-3">
             Policy decisions, connection/runtime health, and catalog quarantine all route through the canonical{" "}
             <code>StatusBadge</code> keys defined in <code>lib/status-colors</code>.
           </p>
@@ -2225,7 +2226,7 @@ export function DesignGuide() {
       </Section>
 
       <Section title="GitHub skill sources">
-        <p className="text-sm text-muted-foreground">The shared FileTree explorer layout puts disclosure controls beside selection, with compact folder chains, equal-height rows, inline skill descriptions, and trailing status badges. Folders select descendant packages; package checkboxes select only that package, independently of nested skills. Included files use aligned rows without individual checkboxes (`getCheckboxState` returns null); package rows use `renderNodeExtra` for file counts and inspection. Use arrow keys to navigate and Space to select.</p>
+        <p className="text-sm text-ink-3">The shared FileTree explorer layout puts disclosure controls beside selection, with compact folder chains, equal-height rows, inline skill descriptions, and trailing status badges. Folders select descendant packages; package checkboxes select only that package, independently of nested skills. Included files use aligned rows without individual checkboxes (`getCheckboxState` returns null); package rows use `renderNodeExtra` for file counts and inspection. Use arrow keys to navigate and Space to select.</p>
         <SkillSourceTreeShowcase />
         <SkillBinaryFile file={{ skillId: "example", path: "assets/example.bin", kind: "asset", content: "AAECAw==", encoding: "base64", language: null, markdown: false, editable: false }} />
       </Section>
@@ -2239,11 +2240,11 @@ export function DesignGuide() {
             available={[{ id: "2", fullName: "paperclipai/docs", url: "https://github.com/paperclipai/docs", connections: ["Company GitHub"] }]}
             onChange={() => {}} onConnect={() => {}} onRetry={() => {}} />
         </SubSection>
-        <p className="text-sm text-muted-foreground">Loading, errors, empty search, mobile, and short viewports are covered in the Project repos Storybook stories.</p>
+        <p className="text-sm text-ink-3">Loading, errors, empty search, mobile, and short viewports are covered in the Project repos Storybook stories.</p>
       </Section>
 
       <Section title="Environment Variables Editor">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           Reusable env-var editor (agents, projects, environments, routines). One shared grid, an
           in-field Text/Secret source switch, a fuzzy secret picker with a pinned “Create secret”
           item, automatic sensitive-value detection, and inline secret-health warnings. See the
@@ -2277,16 +2278,16 @@ export function DesignGuide() {
         <SubSection title="Needs attention, with inspectable details">
           <DispositionRecoveryNotice snapshot={{ kind: "disposition_repair_escalated", actionId: "design-recovery", attemptCount: 2, maxAttempts: 2, reason: "unchanged_source_state_exhausted", assigneeAgentId: null }} defaultExpanded />
         </SubSection>
-        <p className="text-sm text-muted-foreground">Storybook’s Recovery notice stories show the actionable, pending, acknowledged, unavailable, failed, and mobile states using this production component.</p>
+        <p className="text-sm text-ink-3">Storybook’s Recovery notice stories show the actionable, pending, acknowledged, unavailable, failed, and mobile states using this production component.</p>
       </Section>
 
       <Section title="Pending task input above composer">
-        <p className="mb-3 text-sm text-muted-foreground">A decision card sits above the ordinary message composer. Dismiss the card to keep a reopen control, or resolve it to clear the pending state.</p>
+        <p className="mb-3 text-sm text-ink-3">A decision card sits above the ordinary message composer. Dismiss the card to keep a reopen control, or resolve it to clear the pending state.</p>
         <TaskPendingInputExample />
       </Section>
 
       <Section title="Execution recovery">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           Recovery runs in the background. Task lists keep their ordinary status without
           execution badges. Active transcript headers keep saying Working during automatic
           recovery. Recovery decisions and attempts belong in the run log;
@@ -2305,23 +2306,23 @@ export function DesignGuide() {
       </Section>
 
       <Section title="External agent invitation">
-        <p className="text-sm text-muted-foreground">Match the harness picker with provider cards. Connection checks reflect confirmed server evidence. AnimatedDialogContent resizes to its content using motion tokens and respects reduced motion.</p>
+        <p className="text-sm text-ink-3">Match the harness picker with provider cards. Connection checks reflect confirmed server evidence. AnimatedDialogContent resizes to its content using motion tokens and respects reduced motion.</p>
         <ExternalAgentPresetPicker onSelect={() => {}} />
         <DotConnectionChecks state={{ phase: "testing" }} />
-        <Dialog><DialogTrigger asChild><Button variant="outline">Preview invitation modal</Button></DialogTrigger>
+        <Dialog><DialogTrigger asChild><Button variant="secondary">Preview invitation modal</Button></DialogTrigger>
           <AnimatedDialogContent><div className="space-y-4 p-6"><DialogTitle>Invite an external agent</DialogTitle><DialogDescription>Choose an agent you already use.</DialogDescription><ExternalAgentPresetPicker onSelect={() => {}} /></div></AnimatedDialogContent>
         </Dialog>
       </Section>
 
       <Section title="Browser setup prompt">
-        <p className="text-sm text-muted-foreground">Use AgentSetupPrompt for prompts handed to an external agent: connections, webhook setup, onboarding, and task handoffs. One click copies the complete prompt, opens its preview, and confirms success inline; clipboard failures offer selectable text.</p>
+        <p className="text-sm text-ink-3">Use AgentSetupPrompt for prompts handed to an external agent: connections, webhook setup, onboarding, and task handoffs. One click copies the complete prompt, opens its preview, and confirms success inline; clipboard failures offer selectable text.</p>
         <SetupPrompt prompt="Design guide example. This is a preview, not a real provider setup request." />
-        <p className="text-sm text-muted-foreground">For a named recipient, pass the optional agent name and logo. The same copy feedback, preview, and manual clipboard recovery apply.</p>
+        <p className="text-sm text-ink-3">For a named recipient, pass the optional agent name and logo. The same copy feedback, preview, and manual clipboard recovery apply.</p>
         <SetupPrompt prompt="Design guide example for Dot. No live pairing code." label="Copy setup prompt" title="Connect your Dot" agent={{ name: "Dot", src: "/brands/adapters/openai-dot.svg" }} />
       </Section>
 
       <Section title="Connection Intent">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           The task card is the dialog host for the shared connection setup flow. Provider forms,
           validation, OAuth, access selection, and completion come from the same feature module as
           the full-page Apps setup; this card owns only audience, dialog, and task refresh behavior.
@@ -2347,36 +2348,36 @@ export function DesignGuide() {
       </Section>
 
       <Section title="AgentMail API key">
-        <p className="text-sm text-muted-foreground">AgentMail setup has two steps: pick an agent, then pick an email address. Ask for the API key alongside the agent only when needed. Keep address errors beside the field and additional settings under Advanced options.</p>
-        <p className="text-sm text-muted-foreground">Preview only. This field does not save or submit a credential.</p>
+        <p className="text-sm text-ink-3">AgentMail setup has two steps: pick an agent, then pick an email address. Ask for the API key alongside the agent only when needed. Keep address errors beside the field and additional settings under Advanced options.</p>
+        <p className="text-sm text-ink-3">Preview only. This field does not save or submit a credential.</p>
         <div className="max-w-md">
           <AgentMailApiKeyField value={agentmailDemoKey} onChange={setAgentmailDemoKey} />
         </div>
       </Section>
 
       <Section title="Resizable Panels">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           Design-system wrapper over <span className="font-mono">react-resizable-panels</span>{" "}
           (Skill Studio D2). Drag a handle to resize; panels accept percentage or pixel
           (<span className="font-mono">minSize="240px"</span>) constraints and the middle panel is
           collapsible. Use anywhere a split view is needed.
         </p>
-        <div className="h-48 max-w-2xl overflow-hidden rounded-md border border-border">
+        <div className="h-48 max-w-2xl overflow-hidden rounded-md border border-line">
           <ResizablePanelGroup>
-            <ResizablePanel id="a" minSize="120px" className="bg-muted/30">
-              <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
+            <ResizablePanel id="a" minSize="120px" className="bg-bg-3/30">
+              <div className="flex h-full items-center justify-center text-xs text-ink-3">
                 Panel A
               </div>
             </ResizablePanel>
             <ResizableHandle />
-            <ResizablePanel id="b" minSize="120px" collapsible collapsedSize="40px" className="bg-muted/10">
-              <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
+            <ResizablePanel id="b" minSize="120px" collapsible collapsedSize="40px" className="bg-bg-3/10">
+              <div className="flex h-full items-center justify-center text-xs text-ink-3">
                 Panel B (collapsible)
               </div>
             </ResizablePanel>
             <ResizableHandle />
-            <ResizablePanel id="c" minSize="120px" className="bg-muted/30">
-              <div className="flex h-full items-center justify-center text-xs text-muted-foreground">
+            <ResizablePanel id="c" minSize="120px" className="bg-bg-3/30">
+              <div className="flex h-full items-center justify-center text-xs text-ink-3">
                 Panel C
               </div>
             </ResizablePanel>
@@ -2394,7 +2395,7 @@ export function DesignGuide() {
       </Section>
 
       <Section title="Inline Banner">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           Token-backed full-width notice (<span className="font-mono">brandBanner</span> tones). Use{" "}
           <span className="font-mono">info</span> for provenance/context and{" "}
           <span className="font-mono">warning</span> for paused/attention. Supports an optional bold
@@ -2406,7 +2407,7 @@ export function DesignGuide() {
           <InlineBanner
             tone="info"
             title="Built-in agent"
-            actions={<Button variant="outline" size="sm">Reset to defaults</Button>}
+            actions={<Button variant="secondary" size="sm">Reset to defaults</Button>}
           >
             Ships with Paperclip and powers <strong>Briefs</strong>. It can be paused but not deleted.
           </InlineBanner>
@@ -2436,7 +2437,7 @@ export function DesignGuide() {
       </Section>
 
       <Section title="Text attachment tabs">
-        <p className="text-sm text-muted-foreground">Uploaded text opens in a named task tab. Markdown offers Rendered and Raw icon controls; every text file has a download action.</p>
+        <p className="text-sm text-ink-3">Uploaded text opens in a named task tab. Markdown offers Rendered and Raw icon controls; every text file has a download action.</p>
         <div className="grid gap-4 md:grid-cols-2">
           <TextAttachmentPreview title="README.md" text={"# Project notes\n\nReview the **original** file."} markdown downloadUrl="data:text/markdown,%23%20Project%20notes" />
           <TextAttachmentPreview title="notes.txt" text="Plain text stays literal: <example>" markdown={false} downloadUrl="data:text/plain,Plain%20text" />
@@ -2456,7 +2457,7 @@ export function DesignGuide() {
       </Section>
 
       <Section title="Browser session footer">
-        <p className="text-sm text-muted-foreground">Fit to pane follows the visible panel. Fixed viewport presets and session actions live in the footer menu. Costs stay in task reporting. The idle countdown appears only in the final five minutes. Full panel, activity, and settings states are in Storybook under Browser Use.</p>
+        <p className="text-sm text-ink-3">Fit to pane follows the visible panel. Fixed viewport presets and session actions live in the footer menu. Costs stay in task reporting. The idle countdown appears only in the final five minutes. Full panel, activity, and settings states are in Storybook under Browser Use.</p>
         {(["running", "idle", "closing-soon", "closed"] as const).map((state) => (
           <SubSection key={state} title={state === "closing-soon" ? "Closing soon" : state}>
             <TaskBrowserFooter
@@ -2477,7 +2478,7 @@ export function DesignGuide() {
       </Section>
 
       <Section title="Browser activity in the task feed">
-        <p className="text-sm text-muted-foreground">Each browser appears once at its opening time among the task messages. Its status updates in place; the action opens its side-panel tab.</p>
+        <p className="text-sm text-ink-3">Each browser appears once at its opening time among the task messages. Its status updates in place; the action opens its side-panel tab.</p>
         {(["starting", "running", "idle", "closed", "failed"] as const).map((status) => (
           <SubSection key={status} title={status}>
             <TaskBrowserActivity browser={{
@@ -2490,7 +2491,7 @@ export function DesignGuide() {
       </Section>
 
       <Section title="Media artifacts">
-        <p className="text-sm text-muted-foreground">Images and videos use gallery tiles. The whole tile opens the task gallery; files and links keep compact, fully clickable rows. Task/Artifact Gallery in Storybook covers playable videos, mixed files, narrow panels, and unavailable previews.</p>
+        <p className="text-sm text-ink-3">Images and videos use gallery tiles. The whole tile opens the task gallery; files and links keep compact, fully clickable rows. Task/Artifact Gallery in Storybook covers playable videos, mixed files, narrow panels, and unavailable previews.</p>
         <div className="grid max-w-2xl grid-cols-1 gap-3 sm:grid-cols-2">
           <MediaArtifactCard id="design-image" title="Launch artwork" contentPath="/announcement-preview.svg" contentType="image/svg+xml" originalFilename="launch.svg" detail="Image" />
           <MediaArtifactCard id="design-video" title="Video preview unavailable" contentPath="" contentType="video/mp4" originalFilename="preview.mp4" detail="Video" />
@@ -2502,7 +2503,7 @@ export function DesignGuide() {
       </Section>
 
       <Section title="Built-in Agent Lifecycle Chips">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-ink-3">
           A derived lifecycle chip (amber) for attention states. The lifecycle chip is separate from
           the agent status vocabulary and only shows for{" "}
           <span className="font-mono">needs_setup</span> / <span className="font-mono">pending_approval</span>.
@@ -2512,7 +2513,7 @@ export function DesignGuide() {
           <BuiltInLifecycleChip status="pending_approval" />
           <BuiltInLifecycleChip status="needs_setup" compact />
         </div>
-        <p className="mt-3 text-sm text-muted-foreground">
+        <p className="mt-3 text-sm text-ink-3">
           <span className="font-mono">&lt;BuiltInAgentGate agentKey&gt;</span> composes{" "}
           <span className="font-mono">PageSkeleton</span> + <span className="font-mono">EmptyState</span>{" "}
           + <span className="font-mono">InlineBanner</span> to render the loading / setup /

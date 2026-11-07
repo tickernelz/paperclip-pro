@@ -249,7 +249,7 @@ export function Artifacts() {
     <div className="w-full max-w-6xl space-y-5">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative w-full sm:max-w-sm">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-3" />
           <Input
             value={draftQuery}
             onChange={(event) => setDraftQuery(event.currentTarget.value)}
@@ -262,7 +262,7 @@ export function Artifacts() {
               type="button"
               onClick={() => setDraftQuery("")}
               aria-label="Clear artifact search"
-              className="absolute right-2 top-1/2 inline-flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
+              className="absolute right-2 top-1/2 inline-flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded text-ink-3 transition-colors hover:bg-bg-3/50 hover:text-ink"
             >
               <X className="h-3.5 w-3.5" />
             </button>
@@ -272,15 +272,15 @@ export function Artifacts() {
         <div className="flex flex-wrap items-center gap-1.5">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button
+              <Button active={grouping}
                 type="button"
-                variant="outline"
+                variant="secondary"
                 size="icon"
                 aria-label={`Group artifacts (currently ${artifactGroupByLabel(groupBy)})`}
                 title="Group artifacts"
                 data-testid="artifact-group-control"
                 data-group-by={groupBy}
-                className={cn("h-8 w-8 shrink-0", grouping && "bg-accent")}
+                className={cn("h-8 w-8 shrink-0")}
               >
                 <Layers className="h-3.5 w-3.5" aria-hidden="true" />
               </Button>
@@ -313,8 +313,8 @@ export function Artifacts() {
                 className={cn(
                   "rounded-md px-2.5 py-1 text-xs font-medium transition-colors",
                   kind === filter.value
-                    ? "bg-accent text-foreground"
-                    : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+                    ? "bg-bg-3 text-ink"
+                    : "text-ink-3 hover:bg-bg-3/50 hover:text-ink",
                 )}
               >
                 {filter.label}
@@ -329,21 +329,21 @@ export function Artifacts() {
           <Link
             to={backToStacksTo}
             data-testid="artifact-stack-back"
-            className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
+            className="inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-ink-3 transition-colors hover:bg-bg-3/50 hover:text-ink"
           >
             <ArrowLeft className="h-3.5 w-3.5" aria-hidden="true" />
             All stacks
           </Link>
           {selectedGroup ? (
-            <span className="truncate text-muted-foreground">
-              <span className="text-foreground/80">{selectedGroup.issue.identifier}</span>{" "}
+            <span className="truncate text-ink-3">
+              <span className="text-ink/80">{selectedGroup.issue.identifier}</span>{" "}
               {selectedGroup.title}
             </span>
           ) : null}
         </div>
       ) : null}
 
-      {error && <p className="text-sm text-destructive">{error.message}</p>}
+      {error && <p className="text-sm text-bad">{error.message}</p>}
 
       {isLoading ? (
         <PageSkeleton variant="list" />
@@ -360,7 +360,7 @@ export function Artifacts() {
                   <ArtifactCard key={`${artifact.source}:${artifact.id}`} artifact={artifact} />
                 ))}
           </div>
-          <div ref={loadMoreRef} className="flex min-h-10 items-center justify-center pb-2 text-xs text-muted-foreground">
+          <div ref={loadMoreRef} className="flex min-h-10 items-center justify-center pb-2 text-xs text-ink-3">
             {isFetchingNextPage
               ? "Loading more artifacts..."
               : hasNextPage

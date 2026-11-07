@@ -60,17 +60,17 @@ function ServerInfoRow({
 }) {
   return (
     <div className="flex w-full items-start gap-3 rounded-xl px-3 py-3 text-left">
-      <span className="mt-0.5 rounded-lg border border-border bg-background/70 p-2 text-muted-foreground">
+      <span className="mt-0.5 rounded-lg border border-line bg-bg/70 p-2 text-ink-3">
         <Icon className="size-4" />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="block text-sm font-medium text-foreground">{label}</span>
+        <span className="block text-sm font-medium text-ink">{label}</span>
         {dateTime ? (
-          <time dateTime={dateTime} className="block break-words text-xs text-muted-foreground">
+          <time dateTime={dateTime} className="block break-words text-xs text-ink-3">
             {value}
           </time>
         ) : (
-          <span className="block break-words text-xs text-muted-foreground">{value}</span>
+          <span className="block break-words text-xs text-ink-3">{value}</span>
         )}
       </span>
     </div>
@@ -122,8 +122,8 @@ export function SidebarServerInfo() {
       : localChangesLabel(health);
 
   return (
-    <div className="mt-2 border-t border-border pt-2">
-      <p className="px-3 pb-1 pt-1 text-(length:--text-micro) font-medium uppercase tracking-wide text-muted-foreground">
+    <div className="mt-2 border-t border-line pt-2">
+      <p className="px-3 pb-1 pt-1 text-(length:--text-micro) font-medium uppercase tracking-wide text-ink-3">
         Server
       </p>
       <ServerInfoRow

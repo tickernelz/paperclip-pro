@@ -27,13 +27,13 @@ export function RoutineTriggerCard({
   return (
     <section
       aria-label={`${kind === "schedule" ? "Schedule" : kind === "api" ? "API" : "Webhook"} trigger`}
-      className="rounded-md border border-border"
+      className="rounded-md border border-line"
     >
       <div className="flex flex-wrap items-center gap-3 p-4">
-        <span className="shrink-0 text-muted-foreground">{icon}</span>
+        <span className="shrink-0 text-ink-3">{icon}</span>
         <div className="min-w-0 flex-1">
           <h3 className="text-sm font-medium">{title}</h3>
-          <p className="text-xs text-muted-foreground">{summary}</p>
+          <p className="text-xs text-ink-3">{summary}</p>
         </div>
         <div className="flex items-center gap-1">
           <Button
@@ -57,7 +57,7 @@ export function RoutineTriggerCard({
         </div>
       </div>
       {expanded && (
-        <div id={editorId} className="space-y-5 border-t border-border p-4">
+        <div id={editorId} className="space-y-5 border-t border-line p-4">
           {children}
         </div>
       )}

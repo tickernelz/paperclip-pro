@@ -618,8 +618,8 @@ function MockFileTree(props: FileTreeProps) {
                 gap: 6,
                 width: "100%",
                 border: "none",
-                background: isSelected ? "var(--accent, oklch(0.269 0 0))" : "transparent",
-                color: "var(--foreground, oklch(0.985 0 0))",
+                background: isSelected ? "var(--bg-3, oklch(0.269 0 0))" : "transparent",
+                color: "var(--ink, oklch(0.985 0 0))",
                 fontSize: 12,
                 textAlign: "left",
                 padding: `4px 8px 4px ${depth * 16 + 12}px`,
@@ -630,7 +630,7 @@ function MockFileTree(props: FileTreeProps) {
               aria-expanded={node.kind === "dir" ? isExpanded : undefined}
               aria-selected={isSelected || undefined}
             >
-              <span style={{ width: 12, color: "var(--muted-foreground, oklch(0.708 0 0))" }} aria-hidden>
+              <span style={{ width: 12, color: "var(--ink-3, oklch(0.708 0 0))" }} aria-hidden>
                 {node.kind === "dir" ? (isExpanded ? "▾" : "▸") : ""}
               </span>
               <span style={{ flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
@@ -642,8 +642,8 @@ function MockFileTree(props: FileTreeProps) {
                     fontSize: 10,
                     padding: "1px 6px",
                     borderRadius: 999,
-                    background: "color-mix(in oklab, var(--accent, oklch(0.4 0.04 250)) 50%, transparent)",
-                    color: "var(--foreground, oklch(0.985 0 0))",
+                    background: "color-mix(in oklab, var(--bg-3, oklch(0.4 0.04 250)) 50%, transparent)",
+                    color: "var(--ink, oklch(0.985 0 0))",
                     textTransform: "uppercase",
                     letterSpacing: "0.04em",
                   }}
@@ -661,15 +661,15 @@ function MockFileTree(props: FileTreeProps) {
   );
 
   if (props.loading) {
-    return <div style={{ padding: 12, fontSize: 12, color: "var(--muted-foreground, oklch(0.708 0 0))" }}>Loading…</div>;
+    return <div style={{ padding: 12, fontSize: 12, color: "var(--ink-3, oklch(0.708 0 0))" }}>Loading…</div>;
   }
   if (props.error) {
-    return <div style={{ padding: 12, fontSize: 12, color: "var(--destructive, oklch(0.7 0.2 25))" }}>{props.error.message}</div>;
+    return <div style={{ padding: 12, fontSize: 12, color: "var(--bad, oklch(0.7 0.2 25))" }}>{props.error.message}</div>;
   }
   if (props.nodes.length === 0) {
     return (
-      <div style={{ padding: 16, fontSize: 12, color: "var(--muted-foreground, oklch(0.708 0 0))" }}>
-        <div style={{ fontWeight: 600, color: "var(--foreground, oklch(0.985 0 0))" }}>{props.empty?.title ?? "No files"}</div>
+      <div style={{ padding: 16, fontSize: 12, color: "var(--ink-3, oklch(0.708 0 0))" }}>
+        <div style={{ fontWeight: 600, color: "var(--ink, oklch(0.985 0 0))" }}>{props.empty?.title ?? "No files"}</div>
         <div>{props.empty?.description ?? "Nothing to show."}</div>
       </div>
     );
@@ -692,11 +692,11 @@ function MockIssuesList(props: IssuesListProps) {
     <div style={{ display: "grid", gap: 10, padding: 18, fontFamily: "ui-sans-serif, system-ui, -apple-system, sans-serif" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
         <strong style={{ fontSize: 14 }}>Issues</strong>
-        <span style={{ fontSize: 11, color: "var(--muted-foreground, oklch(0.708 0 0))" }}>
+        <span style={{ fontSize: 11, color: "var(--ink-3, oklch(0.708 0 0))" }}>
           {rows.length} loaded · {props.filters?.originKindPrefix ?? props.projectId ?? "all"}
         </span>
       </div>
-      <div style={{ border: "1px solid var(--border, oklch(0.269 0 0))", borderRadius: 8, overflow: "hidden", background: "var(--card, oklch(0.205 0 0))" }}>
+      <div style={{ border: "1px solid var(--line, oklch(0.269 0 0))", borderRadius: 8, overflow: "hidden", background: "var(--bg-2, oklch(0.205 0 0))" }}>
         {rows.map((issue) => (
           <div
             key={issue.id}
@@ -706,19 +706,19 @@ function MockIssuesList(props: IssuesListProps) {
               gap: isNarrow ? "6px 10px" : 12,
               alignItems: "center",
               padding: "10px 12px",
-              borderBottom: "1px solid var(--border, oklch(0.269 0 0))",
+              borderBottom: "1px solid var(--line, oklch(0.269 0 0))",
               fontSize: 13,
             }}
           >
-            <span style={{ fontFamily: "ui-monospace, SFMono-Regular, monospace", fontSize: 12, color: "var(--muted-foreground, oklch(0.708 0 0))" }}>{issue.identifier}</span>
+            <span style={{ fontFamily: "ui-monospace, SFMono-Regular, monospace", fontSize: 12, color: "var(--ink-3, oklch(0.708 0 0))" }}>{issue.identifier}</span>
             {isNarrow ? null : <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{issue.title}</span>}
-            {isNarrow ? null : <span style={{ fontSize: 11, color: "var(--muted-foreground, oklch(0.708 0 0))" }}>{issue.operationType}</span>}
-            <span style={{ justifySelf: "end", maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 11, border: "1px solid var(--border, oklch(0.269 0 0))", borderRadius: 999, padding: "2px 8px" }}>{issue.status}</span>
+            {isNarrow ? null : <span style={{ fontSize: 11, color: "var(--ink-3, oklch(0.708 0 0))" }}>{issue.operationType}</span>}
+            <span style={{ justifySelf: "end", maxWidth: "100%", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", fontSize: 11, border: "1px solid var(--line, oklch(0.269 0 0))", borderRadius: 999, padding: "2px 8px" }}>{issue.status}</span>
             {isNarrow ? (
               <span style={{ gridColumn: "1 / -1", minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{issue.title}</span>
             ) : null}
             {isNarrow ? (
-              <span style={{ gridColumn: "1 / -1", fontSize: 11, color: "var(--muted-foreground, oklch(0.708 0 0))" }}>{issue.operationType}</span>
+              <span style={{ gridColumn: "1 / -1", fontSize: 11, color: "var(--ink-3, oklch(0.708 0 0))" }}>{issue.operationType}</span>
             ) : null}
           </div>
         ))}
@@ -759,10 +759,10 @@ function MockMarkdownEditor({
         width: "100%",
         minHeight: 260,
         boxSizing: "border-box",
-        border: "1px solid var(--border, oklch(0.269 0 0))",
+        border: "1px solid var(--line, oklch(0.269 0 0))",
         borderRadius: 8,
-        background: "var(--card, oklch(0.205 0 0))",
-        color: "var(--foreground, oklch(0.985 0 0))",
+        background: "var(--bg-2, oklch(0.205 0 0))",
+        color: "var(--ink, oklch(0.985 0 0))",
         padding: 12,
         font: "13px ui-sans-serif, system-ui, -apple-system, sans-serif",
       }}
@@ -786,10 +786,10 @@ function MockAssigneePicker({
       style={{
         width: "100%",
         minHeight: 44,
-        border: "1px solid var(--border, oklch(0.269 0 0))",
+        border: "1px solid var(--line, oklch(0.269 0 0))",
         borderRadius: 8,
-        background: "var(--card, oklch(0.205 0 0))",
-        color: "var(--foreground, oklch(0.985 0 0))",
+        background: "var(--bg-2, oklch(0.205 0 0))",
+        color: "var(--ink, oklch(0.985 0 0))",
         padding: "8px 12px",
         textAlign: "left",
         font: "13px ui-sans-serif, system-ui, -apple-system, sans-serif",
@@ -827,7 +827,7 @@ type MockManagedRoutinesListProps = {
 function MockManagedRoutinesList(props: MockManagedRoutinesListProps) {
   if (props.routines.length === 0) {
     return (
-      <div style={{ padding: 16, fontSize: 12, color: "var(--muted-foreground, oklch(0.708 0 0))" }}>
+      <div style={{ padding: 16, fontSize: 12, color: "var(--ink-3, oklch(0.708 0 0))" }}>
         No managed routines.
       </div>
     );
@@ -837,10 +837,10 @@ function MockManagedRoutinesList(props: MockManagedRoutinesListProps) {
       style={{
         display: "grid",
         gap: 0,
-        border: "1px solid var(--border, oklch(0.269 0 0))",
+        border: "1px solid var(--line, oklch(0.269 0 0))",
         borderRadius: 8,
         overflow: "hidden",
-        background: "var(--card, oklch(0.205 0 0))",
+        background: "var(--bg-2, oklch(0.205 0 0))",
         fontFamily: "ui-sans-serif, system-ui, -apple-system, sans-serif",
       }}
     >
@@ -853,7 +853,7 @@ function MockManagedRoutinesList(props: MockManagedRoutinesListProps) {
             gap: 12,
             alignItems: "center",
             padding: "10px 14px",
-            borderTop: index === 0 ? "none" : "1px solid var(--border, oklch(0.269 0 0))",
+            borderTop: index === 0 ? "none" : "1px solid var(--line, oklch(0.269 0 0))",
             fontSize: 13,
           }}
         >
@@ -864,7 +864,7 @@ function MockManagedRoutinesList(props: MockManagedRoutinesListProps) {
             <span
               style={{
                 fontSize: 11,
-                color: "var(--muted-foreground, oklch(0.708 0 0))",
+                color: "var(--ink-3, oklch(0.708 0 0))",
                 fontFamily: "ui-monospace, SFMono-Regular, monospace",
               }}
             >
@@ -875,7 +875,7 @@ function MockManagedRoutinesList(props: MockManagedRoutinesListProps) {
             style={{
               justifySelf: "start",
               fontSize: 11,
-              border: "1px solid var(--border, oklch(0.269 0 0))",
+              border: "1px solid var(--line, oklch(0.269 0 0))",
               borderRadius: 999,
               padding: "2px 8px",
             }}
@@ -889,9 +889,9 @@ function MockManagedRoutinesList(props: MockManagedRoutinesListProps) {
                 fontSize: 11,
                 padding: "4px 8px",
                 borderRadius: 6,
-                border: "1px solid var(--border, oklch(0.269 0 0))",
+                border: "1px solid var(--line, oklch(0.269 0 0))",
                 background: "transparent",
-                color: "var(--foreground, oklch(0.985 0 0))",
+                color: "var(--ink, oklch(0.985 0 0))",
                 cursor: "pointer",
               }}
               onClick={() => props.onRunNow?.({ key: routine.key })}
@@ -904,9 +904,9 @@ function MockManagedRoutinesList(props: MockManagedRoutinesListProps) {
                 fontSize: 11,
                 padding: "4px 8px",
                 borderRadius: 6,
-                border: "1px solid var(--border, oklch(0.269 0 0))",
+                border: "1px solid var(--line, oklch(0.269 0 0))",
                 background: "transparent",
-                color: "var(--foreground, oklch(0.985 0 0))",
+                color: "var(--ink, oklch(0.985 0 0))",
                 cursor: "pointer",
               }}
               onClick={() => props.onReset?.({ key: routine.key })}
@@ -936,10 +936,10 @@ function MockProjectPicker({
       style={{
         width: "100%",
         minHeight: 44,
-        border: "1px solid var(--border, oklch(0.269 0 0))",
+        border: "1px solid var(--line, oklch(0.269 0 0))",
         borderRadius: 8,
-        background: "var(--card, oklch(0.205 0 0))",
-        color: "var(--foreground, oklch(0.985 0 0))",
+        background: "var(--bg-2, oklch(0.205 0 0))",
+        color: "var(--ink, oklch(0.985 0 0))",
         padding: "8px 12px",
         textAlign: "left",
         font: "13px ui-sans-serif, system-ui, -apple-system, sans-serif",
@@ -1039,7 +1039,7 @@ function readView(): ViewKey {
 export function App() {
   const view = useView();
   return (
-    <div style={{ height: "100vh", width: "100vw", overflow: "hidden", background: "var(--background, oklch(0.145 0 0))", color: "var(--foreground, oklch(0.985 0 0))" }}>
+    <div style={{ height: "100vh", width: "100vw", overflow: "hidden", background: "var(--bg, oklch(0.145 0 0))", color: "var(--ink, oklch(0.985 0 0))" }}>
       {view === "wiki-sidebar" ? (
         <div style={{ display: "flex", height: "100vh" }}>
           <WikiRouteSidebar context={HOST_CONTEXT as never} />
@@ -1048,7 +1048,7 @@ export function App() {
           </div>
         </div>
       ) : view === "sidebar" ? (
-        <aside style={{ width: 240, background: "var(--sidebar, oklch(0.145 0 0))", padding: 12, height: "100vh", borderRight: "1px solid var(--border, oklch(0.269 0 0))" }}>
+        <aside style={{ width: 240, background: "var(--bg-2, oklch(0.145 0 0))", padding: 12, height: "100vh", borderRight: "1px solid var(--line, oklch(0.269 0 0))" }}>
           <SidebarLink context={HOST_CONTEXT as never} />
         </aside>
       ) : view === "settings" ? (

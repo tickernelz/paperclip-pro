@@ -58,17 +58,17 @@ function RadioRow({
     <div
       className={cn(
         "rounded-md border px-3 py-2.5 transition-colors",
-        selected ? "border-primary bg-primary/5 ring-1 ring-primary" : "border-border hover:bg-accent/40",
+        selected ? "border-accent bg-accent/5 ring-1 ring-accent" : "border-line hover:bg-bg-3/40",
       )}
     >
       <button type="button" role="radio" aria-checked={selected} onClick={onSelect} className="flex w-full items-center gap-2 text-left">
         <span
           className={cn(
             "flex h-4 w-4 shrink-0 items-center justify-center rounded-full border",
-            selected ? "border-primary" : "border-muted-foreground/50",
+            selected ? "border-accent" : "border-ink-3/50",
           )}
         >
-          {selected ? <span className="h-2 w-2 rounded-full bg-primary" /> : null}
+          {selected ? <span className="h-2 w-2 rounded-full bg-accent" /> : null}
         </span>
         <span className="text-sm font-medium">{title}</span>
         {badge}
@@ -125,7 +125,7 @@ export function StatusCardSettingsForm({
             selected={policy.mode === "manual"}
             title="Manual only — updates when I press refresh"
             badge={
-              <span className="ml-auto rounded-full bg-muted px-2 py-0.5 text-(length:--text-nano) font-medium uppercase tracking-wide text-muted-foreground">
+              <span className="ml-auto rounded-full bg-bg-3 px-2 py-0.5 text-(length:--text-nano) font-medium uppercase tracking-wide text-ink-3">
                 Default
               </span>
             }
@@ -136,7 +136,7 @@ export function StatusCardSettingsForm({
             title="On a schedule, only if something changed"
             onSelect={() => setMode("interval")}
           >
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex items-center gap-2 text-sm text-ink-3">
               <span>Check every</span>
               <Select
                 value={String(policy.intervalMinutes ?? 15)}
@@ -160,7 +160,7 @@ export function StatusCardSettingsForm({
             title="As soon as something changes (debounced)"
             onSelect={() => setMode("reactive")}
           >
-            <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+            <div className="flex flex-wrap items-center gap-2 text-sm text-ink-3">
               <span>Wait</span>
               <Select
                 value={String(policy.debounceSeconds ?? 60)}
@@ -199,12 +199,12 @@ export function StatusCardSettingsForm({
         under a collapsed "Advanced" disclosure otherwise.
       */}
       {autoUpdating ? (
-        <Collapsible className="rounded-md border border-border">
+        <Collapsible className="rounded-md border border-line">
           <CollapsibleTrigger className="group flex w-full items-center justify-between gap-2 px-3 py-2.5 text-sm font-semibold">
             Advanced
-            <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-data-[state=open]:rotate-180" />
+            <ChevronDown className="h-4 w-4 text-ink-3 transition-transform group-data-[state=open]:rotate-180" />
           </CollapsibleTrigger>
-          <CollapsibleContent className="space-y-6 border-t border-border px-3 py-3">
+          <CollapsibleContent className="space-y-6 border-t border-line px-3 py-3">
             <section className="space-y-2">
               <h3 className="text-sm font-semibold">Count as a change</h3>
               <div className="space-y-2">
@@ -216,7 +216,7 @@ export function StatusCardSettingsForm({
                       className="mt-0.5"
                       aria-label={row.label}
                     />
-                    <span className={cn(row.noisy && "text-muted-foreground")}>{row.label}</span>
+                    <span className={cn(row.noisy && "text-ink-3")}>{row.label}</span>
                   </label>
                 ))}
               </div>
@@ -237,7 +237,7 @@ export function StatusCardSettingsForm({
                     className="h-8 w-32"
                     aria-label="Active hours start"
                   />
-                  <span className="text-muted-foreground">–</span>
+                  <span className="text-ink-3">–</span>
                   <Input
                     type="time"
                     value={activeHours.end}
@@ -277,10 +277,10 @@ export function StatusCardSettingsForm({
 
       <div className="flex items-center gap-2 text-sm">
         <span className="font-semibold">Estimated cost</span>
-        <span className="text-muted-foreground">=</span>
+        <span className="text-ink-3">=</span>
         <Tooltip>
           <TooltipTrigger asChild>
-            <span className="cursor-default font-medium text-foreground underline decoration-dotted decoration-muted-foreground/50 underline-offset-4">
+            <span className="cursor-default font-medium text-ink underline decoration-dotted decoration-ink-3/50 underline-offset-4">
               {costEstimate.cost}
             </span>
           </TooltipTrigger>

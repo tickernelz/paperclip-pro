@@ -31,7 +31,7 @@ export function PrimaryAgentIndicator({ agentId, companyId }: { agentId: string;
   if (!primary || primary.loading || primary.primaryAgentId !== agentId) return null;
   return <Tooltip>
     <TooltipTrigger asChild>
-      <span role="img" aria-label="My primary agent" className="inline-flex shrink-0 text-primary">
+      <span role="img" aria-label="My primary agent" className="inline-flex shrink-0 text-accent">
         <Crown aria-hidden="true" className="size-3.5" />
       </span>
     </TooltipTrigger>
@@ -44,8 +44,8 @@ export function SetPrimaryAgentButton({ agent }: {
 }) {
   const primary = usePrimaryAgentPresentation(agent.companyId);
   if (!primary || agent.status === "terminated" || agent.status === "pending_approval") return null;
-  if (primary.error) return <Button type="button" variant="link" size="sm" onClick={primary.onRetry}
-    className="h-auto justify-start p-0 text-xs text-destructive">Retry loading primary agent</Button>;
+  if (primary.error) return <Button type="button" variant="danger" size="sm" onClick={primary.onRetry}
+    className="h-auto justify-start p-0 text-xs">Retry loading primary agent</Button>;
   const selected = primary.primaryAgentId === agent.id;
   const pending = primary.pendingAgentId === agent.id;
   if (selected && !pending && !primary.loading) return null;
@@ -54,7 +54,7 @@ export function SetPrimaryAgentButton({ agent }: {
   const disabled = loading || Boolean(primary.pendingAgentId);
   const button = <Button type="button" variant="link" size="sm" disabled={disabled}
     onClick={primary.primaryAgentId ? undefined : () => primary.onChange(agent.id)}
-    className="h-auto justify-start p-0 text-xs text-muted-foreground hover:text-foreground">
+    className="h-auto justify-start p-0 text-xs">
     {pending || loading ? <Loader2 aria-hidden="true" className="size-3 motion-safe:animate-spin" /> : null}
     {loading ? "Loading primary…" : pending ? "Setting primary…" : "Set as my primary"}
   </Button>;
@@ -67,13 +67,13 @@ export function SetPrimaryAgentButton({ agent }: {
           <AgentAvatar agent={previous} size={64} label={`${previous.name} avatar`} />
           <span className="max-w-full break-words text-sm font-medium">{previous.name}</span>
         </div>
-        <ArrowRight aria-hidden="true" className="mt-5 size-6 shrink-0 text-muted-foreground" />
+        <ArrowRight aria-hidden="true" className="mt-5 size-6 shrink-0 text-ink-3" />
         <div className="flex min-w-0 flex-1 flex-col items-center gap-2 text-center">
           <AgentAvatar agent={agent} size={64} label={`${agent.name} avatar`}
-            className="rounded-xl ring-1 ring-primary ring-offset-2 ring-offset-background" />
+            className="rounded-xl ring-1 ring-accent ring-offset-2 ring-offset-bg" />
           <span className="flex max-w-full items-center justify-center gap-1.5 text-sm font-medium">
             <span className="min-w-0 break-words">{agent.name}</span>
-            <span role="img" aria-label="New primary agent" className="inline-flex shrink-0 text-primary">
+            <span role="img" aria-label="New primary agent" className="inline-flex shrink-0 text-accent">
               <Crown aria-hidden="true" className="size-3.5" />
             </span>
           </span>

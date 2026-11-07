@@ -67,7 +67,7 @@ function chatMetaText(chat: OpenwaChat, numberMode: OpenwaEndpointPolicy["number
 }
 
 function ChatMetaLine({ text }: { text: string }) {
-  return <span className="text-xs text-muted-foreground">{text}</span>;
+  return <span className="text-xs text-ink-3">{text}</span>;
 }
 
 function DedicatedGroupToggle({ chat, pending, onApply }: { chat: OpenwaChat; pending: boolean; onApply: () => void }) {
@@ -81,7 +81,7 @@ function DedicatedGroupToggle({ chat, pending, onApply }: { chat: OpenwaChat; pe
   return (
     <Button
       size="sm"
-      variant="outline"
+      variant="secondary"
       disabled={pending}
       title={replyPresetLabel}
       aria-label={replyPresetLabel}
@@ -130,13 +130,13 @@ export function OpenwaChatsSettings({ endpointId, policy }: { endpointId: string
       }
     >
       {chats.isPending ? (
-        <p className="text-sm text-muted-foreground">Loading chats…</p>
+        <p className="text-sm text-ink-3">Loading chats…</p>
       ) : chats.isError ? (
-        <p role="alert" className="text-sm text-destructive">Couldn't load chats.</p>
+        <p role="alert" className="text-sm text-bad">Couldn't load chats.</p>
       ) : configured.length === 0 ? (
-        <p className="text-sm text-muted-foreground">No chat has its own settings yet.</p>
+        <p className="text-sm text-ink-3">No chat has its own settings yet.</p>
       ) : (
-        <ul className="divide-y divide-border border-y border-border">
+        <ul className="divide-y divide-line border-y border-line">
           {configured.map((chat) => (
             <li key={chat.id} className="space-y-2 py-3 sm:flex sm:items-center sm:gap-4">
               <div className="flex min-w-0 items-center gap-2 sm:min-w-32 sm:flex-1">
@@ -148,7 +148,7 @@ export function OpenwaChatsSettings({ endpointId, policy }: { endpointId: string
                 </Badge>
               </div>
               <div className="flex min-w-0 items-center gap-2 sm:flex-1">
-                <p className="min-w-0 flex-1 truncate text-xs text-muted-foreground" title={chatMetaText(chat, policy.numberMode, labels)}>
+                <p className="min-w-0 flex-1 truncate text-xs text-ink-3" title={chatMetaText(chat, policy.numberMode, labels)}>
                   <ChatMetaLine text={chatMetaText(chat, policy.numberMode, labels)} />
                 </p>
                 <Badge variant={chat.enabled ? "secondary" : "outline"} className="hidden sm:inline-flex">
@@ -163,7 +163,7 @@ export function OpenwaChatsSettings({ endpointId, policy }: { endpointId: string
                     onApply={() => dedicate.mutate({ chatId: chat.chatId, label: chat.label, settings: chat.settings })}
                   />
                 ) : null}
-                <Button size="sm" variant="outline" onClick={() => setEditing({ chatId: chat.chatId, label: chat.label, draft: chatDraft(chat.label, chat.settings) })}>
+                <Button size="sm" variant="secondary" onClick={() => setEditing({ chatId: chat.chatId, label: chat.label, draft: chatDraft(chat.label, chat.settings) })}>
                   Edit
                 </Button>
               </div>
@@ -172,7 +172,7 @@ export function OpenwaChatsSettings({ endpointId, policy }: { endpointId: string
         </ul>
       )}
       {dedicate.isError ? (
-        <p role="alert" className="text-sm text-destructive">
+        <p role="alert" className="text-sm text-bad">
           {dedicate.error instanceof Error ? dedicate.error.message : "Couldn't save the chat."}
         </p>
       ) : null}
@@ -188,27 +188,27 @@ export function OpenwaChatsSettings({ endpointId, policy }: { endpointId: string
         />
       ) : null}
       <div className="space-y-2">
-        <Button size="sm" variant="outline" className="w-full sm:w-auto" onClick={() => setPicking((value) => !value)}>
+        <Button size="sm" variant="secondary" className="w-full sm:w-auto" onClick={() => setPicking((value) => !value)}>
           {picking ? "Hide gateway chats" : "Add a chat from WhatsApp"}
         </Button>
         {picking ? (
           gatewayChats.isPending ? (
-            <p className="text-sm text-muted-foreground">Loading chats from the gateway…</p>
+            <p className="text-sm text-ink-3">Loading chats from the gateway…</p>
           ) : gatewayChats.isError ? (
-            <p role="alert" className="text-sm text-destructive">
+            <p role="alert" className="text-sm text-bad">
               {gatewayChats.error instanceof Error ? gatewayChats.error.message : "Couldn't read chats from the gateway."}
             </p>
           ) : unconfigured.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Every chat the gateway lists already has settings.</p>
+            <p className="text-sm text-ink-3">Every chat the gateway lists already has settings.</p>
           ) : (
-            <ul aria-label="Gateway chats" className="max-h-80 divide-y divide-border overflow-y-auto border-y border-border">
+            <ul aria-label="Gateway chats" className="max-h-80 divide-y divide-line overflow-y-auto border-y border-line">
               {unconfigured.map((chat) => (
                 <li key={chat.chatId} className="space-y-2 py-3 sm:flex sm:items-center sm:gap-3">
                   <div className="min-w-0">
                     <p className="truncate text-sm" title={chat.name}>
                       {chat.name}
                     </p>
-                    <p className="text-xs text-muted-foreground">{chat.isGroup ? "Group" : "Direct chat"}</p>
+                    <p className="text-xs text-ink-3">{chat.isGroup ? "Group" : "Direct chat"}</p>
                   </div>
                   <div className="flex flex-wrap items-center gap-2 sm:shrink-0 sm:justify-end">
                     {chat.isGroup ? (
@@ -292,7 +292,7 @@ function ChatEditor({
       : null;
   const reportOptions = staleReportGroup ? [...reportGroups, staleReportGroup] : reportGroups;
   return (
-    <div aria-label={"Settings for " + initial.label} className="space-y-3 rounded-lg border border-border bg-muted/30 p-3">
+    <div aria-label={"Settings for " + initial.label} className="space-y-3 rounded-lg border border-line bg-bg-3/30 p-3">
       <p className="text-sm font-semibold">{initial.label}</p>
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="grid gap-1">
@@ -337,7 +337,7 @@ function ChatEditor({
             <option key={group.chatKey} value={group.chatKey}>{group.label}</option>
           ))}
         </select>
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-ink-3">
           Approval requests, owner questions and reports that start in this chat go here. Only groups with an owner present are listed.
         </p>
         <FieldMessage id="openwa-chat-owner-report" error={fieldError(errors, "ownerReportChatKey")} />
@@ -412,13 +412,13 @@ function ChatEditor({
           aria-invalid={fieldError(errors, "note") ? true : undefined}
           onChange={(event) => setDraft((current) => ({ ...current, note: event.target.value }))}
         />
-        <p className="text-xs text-muted-foreground">
+        <p className="text-xs text-ink-3">
           <span className="font-mono">{draft.note.length}</span> / <span className="font-mono">{OPENWA_CHAT_NOTE_MAX_LENGTH}</span> characters
         </p>
         <FieldMessage id="openwa-chat-note" error={fieldError(errors, "note")} />
       </div>
-      {errors.form ? <p role="alert" className="text-xs text-destructive">{errors.form}</p> : null}
-      {errors.chatId ? <p role="alert" className="text-xs text-destructive">{errors.chatId}</p> : null}
+      {errors.form ? <p role="alert" className="text-xs text-bad">{errors.form}</p> : null}
+      {errors.chatId ? <p role="alert" className="text-xs text-bad">{errors.chatId}</p> : null}
       <div className="flex items-center justify-between gap-2">
         <Button size="sm" variant="ghost" className="shrink-0" onClick={onClose}>Cancel</Button>
         <Button size="sm" className="shrink-0" disabled={save.isPending} onClick={submit}>{save.isPending ? "Saving…" : "Save chat"}</Button>

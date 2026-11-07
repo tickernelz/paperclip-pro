@@ -83,7 +83,7 @@ const SHARED_WORKSPACE_CONCURRENCY_OPTIONS: {
 function SaveIndicator({ state }: { state: ProjectFieldSaveState }) {
   if (state === "saving") {
     return (
-      <span className="inline-flex items-center gap-1 text-(length:--text-micro) text-muted-foreground">
+      <span className="inline-flex items-center gap-1 text-(length:--text-micro) text-ink-3">
         <Loader2 className="h-3 w-3 animate-spin" />
         Saving
       </span>
@@ -99,7 +99,7 @@ function SaveIndicator({ state }: { state: ProjectFieldSaveState }) {
   }
   if (state === "error") {
     return (
-      <span className="inline-flex items-center gap-1 text-(length:--text-micro) text-destructive">
+      <span className="inline-flex items-center gap-1 text-(length:--text-micro) text-bad">
         <AlertCircle className="h-3 w-3" />
         Failed
       </span>
@@ -120,7 +120,7 @@ function FieldLabel({
   // overflows into the value column and overlaps the field content.
   return (
     <div className="flex flex-col items-start gap-0.5">
-      <span className="text-xs text-muted-foreground">{label}</span>
+      <span className="text-xs text-ink-3">{label}</span>
       <SaveIndicator state={state} />
     </div>
   );
@@ -161,25 +161,25 @@ function ArchiveDangerZone({
   const action = isArchive ? "Archive" : "Unarchive";
 
   return (
-    <div className="space-y-3 rounded-md border border-destructive/40 bg-destructive/5 px-4 py-4">
-      <p className="text-sm text-muted-foreground">
+    <div className="space-y-3 rounded-md border border-bad/40 bg-bad/5 px-4 py-4">
+      <p className="text-sm text-ink-3">
         {isArchive
           ? "Archive this project to hide it from the sidebar and project selectors."
           : "Unarchive this project to restore it in the sidebar and project selectors."}
       </p>
       {archivePending ? (
-        <Button size="sm" variant="destructive" disabled>
+        <Button size="sm" variant="danger" disabled>
           <Loader2 className="h-3 w-3 animate-spin mr-1" />
           {isArchive ? "Archiving..." : "Unarchiving..."}
         </Button>
       ) : confirming ? (
         <div className="flex items-center gap-2">
-          <span className="text-sm text-destructive font-medium">
+          <span className="text-sm text-bad font-medium">
             {action} &ldquo;{project.name}&rdquo;?
           </span>
           <Button
             size="sm"
-            variant="destructive"
+            variant="danger"
             onClick={() => {
               setConfirming(false);
               onArchive(isArchive);
@@ -189,7 +189,7 @@ function ArchiveDangerZone({
           </Button>
           <Button
             size="sm"
-            variant="outline"
+            variant="secondary"
             onClick={() => setConfirming(false)}
           >
             Cancel
@@ -198,7 +198,7 @@ function ArchiveDangerZone({
       ) : (
         <Button
           size="sm"
-          variant="destructive"
+          variant="danger"
           onClick={() => setConfirming(true)}
         >
           {isArchive ? (
@@ -455,7 +455,7 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
               value={project.name}
               onCommit={(name) => commitField("name", { name })}
               immediate
-              className="w-full rounded border border-border bg-transparent px-2 py-1 text-sm outline-none"
+              className="w-full rounded border border-line bg-transparent px-2 py-1 text-sm outline-none"
               placeholder="Project name"
             />
           ) : (
@@ -473,12 +473,12 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
               onSave={(description) => commitField("description", { description })}
               nullable
               as="p"
-              className="text-sm text-muted-foreground"
+              className="text-sm text-ink-3"
               placeholder="Add a description..."
               multiline
             />
           ) : (
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-ink-3">
               {project.description?.trim() || "No description"}
             </p>
           )}
@@ -500,7 +500,7 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
               />
               <span>{project.visibility === "private" ? "Private" : "Open to company"}</span>
             </label>
-            <p className="text-(length:--text-micro) text-muted-foreground">
+            <p className="text-(length:--text-micro) text-ink-3">
               {project.visibility === "private"
                 ? "Only access members can discover this project. Tasks shared directly remain readable on their own."
                 : "Everyone in the company can discover this project. Individually private tasks keep their own access rules."}
@@ -543,13 +543,13 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
 
       <div className="space-y-1 py-4">
         {(!hideHostPaths || (primaryCodebaseWorkspace?.runtimeServices?.length ?? 0) > 0) && <div className="space-y-2">
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          <div className="flex items-center gap-1.5 text-xs text-ink-3">
             <span>Codebase</span>
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
                   type="button"
-                  className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-border text-(length:--text-nano) text-muted-foreground hover:text-foreground"
+                  className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-line text-(length:--text-nano) text-ink-3 hover:text-ink"
                   aria-label="Codebase help"
                 >
                   ?
@@ -562,7 +562,7 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
               </TooltipContent>
             </Tooltip>
           </div>
-          <div className="space-y-2 rounded-md border border-border/70 p-3">
+          <div className="space-y-2 rounded-md border border-line/70 p-3">
             {/*
               The local folder is an absolute path on the execution host. Under
               the managed-sandbox-only policy every agent runs in the
@@ -573,23 +573,23 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
             */}
             {hideHostPaths ? (
               codebase.origin === "managed_checkout" ? (
-                <div className="text-(length:--text-micro) text-muted-foreground">Paperclip-managed folder.</div>
+                <div className="text-(length:--text-micro) text-ink-3">Paperclip-managed folder.</div>
               ) : null
             ) : (
               <div className="space-y-1">
-                <div className="text-(length:--text-micro) uppercase tracking-wide text-muted-foreground">Local folder</div>
+                <div className="text-(length:--text-micro) uppercase tracking-wide text-ink-3">Local folder</div>
                 <div className="flex items-center justify-between gap-2">
                   <div className="min-w-0 space-y-1">
-                    <div className="min-w-0 break-all font-mono text-xs text-muted-foreground">
+                    <div className="min-w-0 break-all font-mono text-xs text-ink-3">
                       {codebase.effectiveLocalFolder}
                     </div>
                     {codebase.origin === "managed_checkout" && (
-                      <div className="text-(length:--text-micro) text-muted-foreground">Paperclip-managed folder.</div>
+                      <div className="text-(length:--text-micro) text-ink-3">Paperclip-managed folder.</div>
                     )}
                   </div>
                   <div className="flex items-center gap-1">
                     <Button
-                      variant="outline"
+                      variant="secondary"
                       size="xs"
                       className="h-6 px-2"
                       onClick={() => {
@@ -616,7 +616,7 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
             )}
 
             {hasAdditionalLegacyWorkspaces && (
-              <div className="text-(length:--text-micro) text-muted-foreground">
+              <div className="text-(length:--text-micro) text-ink-3">
                 Additional legacy workspace records exist on this project. Paperclip is using the primary workspace as the codebase view.
               </div>
             )}
@@ -626,7 +626,7 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
                 {primaryCodebaseWorkspace.runtimeServices.map((service) => (
                   <div
                     key={service.id}
-                    className="flex items-center justify-between gap-2 rounded-md border border-border/60 px-2 py-1"
+                    className="flex items-center justify-between gap-2 rounded-md border border-line/60 px-2 py-1"
                   >
                     <div className="min-w-0 space-y-0.5">
                       <div className="flex items-center gap-2">
@@ -638,19 +638,19 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
                               ? "bg-green-500/15 text-green-700 dark:text-green-300"
                               : service.status === "failed"
                                 ? "bg-red-500/15 text-red-700 dark:text-red-300"
-                                : "bg-muted text-muted-foreground",
+                                : "bg-bg-3 text-ink-3",
                           )}
                         >
                           {service.status}
                         </Badge>
                       </div>
-                      <div className="text-(length:--text-micro) text-muted-foreground">
+                      <div className="text-(length:--text-micro) text-ink-3">
                         {service.url ? (
                           <a
                             href={service.url}
                             target="_blank"
                             rel="noreferrer"
-                            className="hover:text-foreground hover:underline"
+                            className="hover:text-ink hover:underline"
                           >
                             {service.url}
                           </a>
@@ -663,15 +663,15 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
                           className={cn(
                             "text-(length:--text-nano)",
                             service.exposure.state === "failed" || service.exposure.state === "cleanup_pending"
-                              ? "text-destructive"
-                              : "text-muted-foreground",
+                              ? "text-bad"
+                              : "text-ink-3",
                           )}
                         >
                           HTTPS {service.exposure.state.replace("_", " ")}
                         </div>
                       ) : null}
                     </div>
-                    <div className="text-(length:--text-nano) text-muted-foreground whitespace-nowrap">
+                    <div className="text-(length:--text-nano) text-ink-3 whitespace-nowrap">
                       {service.lifecycle}
                     </div>
                   </div>
@@ -680,10 +680,10 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
             ) : null}
           </div>
           {!hideHostPaths && workspaceMode === "local" && (
-            <div className="space-y-1.5 rounded-md border border-border p-2">
+            <div className="space-y-1.5 rounded-md border border-line p-2">
               <div className="flex items-center gap-2">
                 <input
-                  className="w-full rounded border border-border bg-transparent px-2 py-1 text-xs font-mono outline-none"
+                  className="w-full rounded border border-line bg-transparent px-2 py-1 text-xs font-mono outline-none"
                   value={workspaceCwd}
                   onChange={(e) => setWorkspaceCwd(e.target.value)}
                   placeholder="/absolute/path/to/workspace"
@@ -692,7 +692,7 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
               </div>
               <div className="flex items-center gap-2">
                 <Button
-                  variant="outline"
+                  variant="secondary"
                   size="xs"
                   className="h-6 px-2"
                   disabled={(!workspaceCwd.trim() && !primaryCodebaseWorkspace) || createWorkspace.isPending || updateWorkspace.isPending}
@@ -716,16 +716,16 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
             </div>
           )}
           {workspaceError && (
-            <p className="text-xs text-destructive">{workspaceError}</p>
+            <p className="text-xs text-bad">{workspaceError}</p>
           )}
           {createWorkspace.isError && (
-            <p className="text-xs text-destructive">Failed to save workspace.</p>
+            <p className="text-xs text-bad">Failed to save workspace.</p>
           )}
           {removeWorkspace.isError && (
-            <p className="text-xs text-destructive">Failed to delete workspace.</p>
+            <p className="text-xs text-bad">Failed to delete workspace.</p>
           )}
           {updateWorkspace.isError && (
-            <p className="text-xs text-destructive">Failed to update workspace.</p>
+            <p className="text-xs text-bad">Failed to update workspace.</p>
           )}
         </div>}
 
@@ -734,13 +734,13 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
             <Separator className="my-4" />
 
             <div className="py-1.5 space-y-2">
-              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <div className="flex items-center gap-1.5 text-xs text-ink-3">
                 <span>Execution Workspaces</span>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <button
                       type="button"
-                      className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-border text-(length:--text-nano) text-muted-foreground hover:text-foreground"
+                      className="inline-flex h-4 w-4 items-center justify-center rounded-full border border-line text-(length:--text-nano) text-ink-3 hover:text-ink"
                       aria-label="Execution workspaces help"
                     >
                       ?
@@ -758,7 +758,7 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
                       <span>Enable isolated task checkouts</span>
                       <SaveIndicator state={fieldState("execution_workspace_enabled")} />
                     </div>
-                    <div className="text-xs text-muted-foreground">
+                    <div className="text-xs text-ink-3">
                       Let tasks choose between the project's primary checkout and an isolated execution workspace.
                     </div>
                   </div>
@@ -772,7 +772,7 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
                         )}
                     />
                   ) : (
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-ink-3">
                       {executionWorkspacesEnabled ? "Enabled" : "Disabled"}
                     </span>
                   )}
@@ -786,7 +786,7 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
                           <span>New tasks default to isolated checkout</span>
                           <SaveIndicator state={fieldState("execution_workspace_default_mode")} />
                         </div>
-                        <div className="text-(length:--text-micro) text-muted-foreground">
+                        <div className="text-(length:--text-micro) text-ink-3">
                           If disabled, new tasks stay on the project's primary checkout unless someone opts in.
                         </div>
                       </div>
@@ -814,7 +814,7 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
                       </div>
                       {onUpdate || onFieldUpdate ? (
                         <select
-                          className="w-full rounded border border-border bg-transparent px-2 py-1 text-xs outline-none"
+                          className="w-full rounded border border-line bg-transparent px-2 py-1 text-xs outline-none"
                           aria-label="Shared workspace concurrency"
                           value={executionWorkspaceSharedConcurrency}
                           onChange={(e) =>
@@ -838,17 +838,17 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
                           )?.label}
                         </div>
                       )}
-                      <p className="text-(length:--text-micro) text-muted-foreground">
+                      <p className="text-(length:--text-micro) text-ink-3">
                         {SHARED_WORKSPACE_CONCURRENCY_OPTIONS.find(
                           (option) => option.value === executionWorkspaceSharedConcurrency,
                         )?.help}
                       </p>
                     </div>
 
-                    <div className="border-t border-border/60 pt-2">
+                    <div className="border-t border-line/60 pt-2">
                       <button
                         type="button"
-                        className="flex w-full items-center gap-2 py-1 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+                        className="flex w-full items-center gap-2 py-1 text-xs font-medium text-ink-3 transition-colors hover:text-ink"
                         onClick={() => setExecutionWorkspaceAdvancedOpen((open) => !open)}
                       >
                         {executionWorkspaceAdvancedOpen
@@ -859,19 +859,19 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
 
                     {executionWorkspaceAdvancedOpen ? (
                       <div className="space-y-3">
-                        <div className="text-xs text-muted-foreground">
-                          Host-managed implementation: <span className="text-foreground">Git worktree</span>
+                        <div className="text-xs text-ink-3">
+                          Host-managed implementation: <span className="text-ink">Git worktree</span>
                         </div>
                         {showExecutionWorkspaceEnvironmentControl ? (
                           <div>
                             <div className="mb-1 flex items-center gap-1.5">
-                              <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                              <label className="flex items-center gap-2 text-xs text-ink-3">
                                 <span>Environment</span>
                                 <SaveIndicator state={fieldState("execution_workspace_environment")} />
                               </label>
                             </div>
                             <select
-                              className="w-full rounded border border-border bg-transparent px-2 py-1 text-xs outline-none"
+                              className="w-full rounded border border-line bg-transparent px-2 py-1 text-xs outline-none"
                               value={executionWorkspaceEnvironmentId}
                               onChange={(e) =>
                                 commitField(
@@ -892,7 +892,7 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
                         ) : null}
                         <div>
                           <div className="mb-1 flex items-center gap-1.5">
-                            <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <label className="flex items-center gap-2 text-xs text-ink-3">
                               <span>Base ref</span>
                               <SaveIndicator state={fieldState("execution_workspace_base_ref")} />
                             </label>
@@ -910,13 +910,13 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
                                 })!,
                               })}
                             immediate
-                            className="w-full rounded border border-border bg-transparent px-2 py-1 text-xs font-mono outline-none"
+                            className="w-full rounded border border-line bg-transparent px-2 py-1 text-xs font-mono outline-none"
                             placeholder="origin/main"
                           />
                         </div>
                         <div>
                           <div className="mb-1 flex items-center gap-1.5">
-                            <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <label className="flex items-center gap-2 text-xs text-ink-3">
                               <span>Branch template</span>
                               <SaveIndicator state={fieldState("execution_workspace_branch_template")} />
                             </label>
@@ -934,13 +934,13 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
                                 })!,
                               })}
                             immediate
-                            className="w-full rounded border border-border bg-transparent px-2 py-1 text-xs font-mono outline-none"
+                            className="w-full rounded border border-line bg-transparent px-2 py-1 text-xs font-mono outline-none"
                             placeholder="{{issue.identifier}}-{{slug}}"
                           />
                         </div>
                         <div>
                           <div className="mb-1 flex items-center gap-1.5">
-                            <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <label className="flex items-center gap-2 text-xs text-ink-3">
                               <span>Worktree parent dir</span>
                               <SaveIndicator state={fieldState("execution_workspace_worktree_parent_dir")} />
                             </label>
@@ -958,13 +958,13 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
                                 })!,
                               })}
                             immediate
-                            className="w-full rounded border border-border bg-transparent px-2 py-1 text-xs font-mono outline-none"
+                            className="w-full rounded border border-line bg-transparent px-2 py-1 text-xs font-mono outline-none"
                             placeholder=".paperclip/worktrees"
                           />
                         </div>
                         <div>
                           <div className="mb-1 flex items-center gap-1.5">
-                            <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <label className="flex items-center gap-2 text-xs text-ink-3">
                               <span>Provision command</span>
                               <SaveIndicator state={fieldState("execution_workspace_provision_command")} />
                             </label>
@@ -982,13 +982,13 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
                                 })!,
                               })}
                             immediate
-                            className="w-full rounded border border-border bg-transparent px-2 py-1 text-xs font-mono outline-none"
+                            className="w-full rounded border border-line bg-transparent px-2 py-1 text-xs font-mono outline-none"
                             placeholder="bash ./scripts/provision-worktree.sh"
                           />
                         </div>
                         <div>
                           <div className="mb-1 flex items-center gap-1.5">
-                            <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <label className="flex items-center gap-2 text-xs text-ink-3">
                               <span>Runtime provision command</span>
                               <SaveIndicator state={fieldState("execution_workspace_runtime_provision_command")} />
                             </label>
@@ -1006,16 +1006,16 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
                                 })!,
                               })}
                             immediate
-                            className="w-full rounded border border-border bg-transparent px-2 py-1 text-xs font-mono outline-none"
+                            className="w-full rounded border border-line bg-transparent px-2 py-1 text-xs font-mono outline-none"
                             placeholder="bash ./scripts/provision-worktree-runtime.sh"
                           />
-                          <p className="mt-1 text-xs text-muted-foreground">
+                          <p className="mt-1 text-xs text-ink-3">
                             Runs once before the first runtime-service start (heavy setup, e.g. DB seed). Leave empty to keep eager provisioning.
                           </p>
                         </div>
                         <div>
                           <div className="mb-1 flex items-center gap-1.5">
-                            <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <label className="flex items-center gap-2 text-xs text-ink-3">
                               <span>Teardown command</span>
                               <SaveIndicator state={fieldState("execution_workspace_teardown_command")} />
                             </label>
@@ -1033,11 +1033,11 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
                                 })!,
                               })}
                             immediate
-                            className="w-full rounded border border-border bg-transparent px-2 py-1 text-xs font-mono outline-none"
+                            className="w-full rounded border border-line bg-transparent px-2 py-1 text-xs font-mono outline-none"
                             placeholder="bash ./scripts/teardown-worktree.sh"
                           />
                         </div>
-                        <p className="text-(length:--text-micro) text-muted-foreground">
+                        <p className="text-(length:--text-micro) text-ink-3">
                           Provision runs inside the derived worktree before agent execution. Teardown is stored here for
                           future cleanup flows.
                         </p>
@@ -1056,7 +1056,7 @@ export function ProjectProperties({ project, repositories, onUpdate, onFieldUpda
         <>
           <Separator className="my-4" />
           <div className="space-y-4 py-4">
-            <div className="text-xs font-medium text-destructive uppercase tracking-wide">
+            <div className="text-xs font-medium text-bad uppercase tracking-wide">
               Danger Zone
             </div>
             <ArchiveDangerZone

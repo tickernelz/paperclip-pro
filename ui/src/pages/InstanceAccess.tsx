@@ -93,7 +93,7 @@ export function InstanceAccess() {
   });
 
   if (usersQuery.isLoading || !accountSettled || (usersQuery.isSuccess && companiesQuery.isPending)) {
-    return <div className="text-sm text-muted-foreground">Loading instance access…</div>;
+    return <div className="text-sm text-ink-3">Loading instance access…</div>;
   }
 
   if (usersQuery.error) {
@@ -103,13 +103,13 @@ export function InstanceAccess() {
         : usersQuery.error instanceof Error
           ? usersQuery.error.message
           : "Failed to load users.";
-    return <div className="text-sm text-destructive">{message}</div>;
+    return <div className="text-sm text-bad">{message}</div>;
   }
 
   if (companiesQuery.error) {
     return (
       <div className="space-y-3">
-        <p className="text-sm text-destructive">Failed to load organizations. Try again before changing access.</p>
+        <p className="text-sm text-bad">Failed to load organizations. Try again before changing access.</p>
         <Button onClick={() => void companiesQuery.refetch()}>Try again</Button>
       </div>
     );
@@ -119,10 +119,10 @@ export function InstanceAccess() {
     <div className="max-w-6xl space-y-6">
       <div className="space-y-3">
         <div className="flex items-center gap-2">
-          <Shield className="h-5 w-5 text-muted-foreground" />
+          <Shield className="h-5 w-5 text-ink-3" />
           <h1 className="text-lg font-semibold">Instance Access</h1>
         </div>
-        <p className="max-w-3xl text-sm text-muted-foreground">
+        <p className="max-w-3xl text-sm text-ink-3">
           Search users, manage instance-admin status, and control which organizations they can access.
         </p>
       </div>
@@ -132,7 +132,7 @@ export function InstanceAccess() {
           <label className="block space-y-2 text-sm">
             <span className="font-medium">Search users</span>
             <input
-              className="w-full rounded-md border border-border bg-background px-3 py-2"
+              className="w-full rounded-md border border-line bg-bg px-3 py-2"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Search by name or email"
@@ -146,20 +146,20 @@ export function InstanceAccess() {
                 onClick={() => setSelectedUserId(user.id)}
                 className={`w-full rounded-lg border px-3 py-3 text-left transition-colors ${
                   user.id === selectedUserId
-                    ? "border-foreground bg-accent"
-                    : "border-border hover:bg-accent/40"
+                    ? "border-ink bg-bg-3"
+                    : "border-line hover:bg-bg-3/40"
                 }`}
               >
                 <div className="flex items-center justify-between gap-2">
                   <div className="min-w-0">
                     <div className="truncate font-medium">{user.name || user.email || user.id}</div>
-                    <div className="truncate text-sm text-muted-foreground">{user.email || user.id}</div>
+                    <div className="truncate text-sm text-ink-3">{user.email || user.id}</div>
                   </div>
                   {user.isInstanceAdmin ? (
                     <ShieldCheck className="h-4 w-4 text-emerald-600" />
                   ) : null}
                 </div>
-                <div className="mt-2 text-xs text-muted-foreground">
+                <div className="mt-2 text-xs text-ink-3">
                   {user.activeCompanyMembershipCount} active organization memberships
                 </div>
               </button>
@@ -169,11 +169,11 @@ export function InstanceAccess() {
 
         <Card className="block space-y-4 p-5">
           {!selectedUserId ? (
-            <div className="text-sm text-muted-foreground">Select a user to inspect instance access.</div>
+            <div className="text-sm text-ink-3">Select a user to inspect instance access.</div>
           ) : userAccessQuery.isLoading ? (
-            <div className="text-sm text-muted-foreground">Loading user access…</div>
+            <div className="text-sm text-ink-3">Loading user access…</div>
           ) : userAccessQuery.error ? (
-            <div className="text-sm text-destructive">
+            <div className="text-sm text-bad">
               {userAccessQuery.error instanceof Error ? userAccessQuery.error.message : "Failed to load user access."}
             </div>
           ) : (
@@ -183,12 +183,12 @@ export function InstanceAccess() {
                   <div className="text-lg font-semibold">
                     {selectedUser?.name || selectedUser?.email || selectedUserId}
                   </div>
-                  <div className="text-sm text-muted-foreground">
+                  <div className="text-sm text-ink-3">
                     {selectedUser?.email || selectedUserId}
                   </div>
                 </div>
                 <Button
-                  variant={selectedUser?.isInstanceAdmin ? "outline" : "default"}
+                  variant={selectedUser?.isInstanceAdmin ? "secondary" : "primary"}
                   onClick={() => setAdminMutation.mutate(!(selectedUser?.isInstanceAdmin ?? false))}
                   disabled={setAdminMutation.isPending}
                 >
@@ -199,7 +199,7 @@ export function InstanceAccess() {
               <div className="space-y-3">
                 <div>
                   <h2 className="text-sm font-semibold">Organization access</h2>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-ink-3">
                     Toggle organization membership for this user. New access defaults to an active operator membership.
                   </p>
                 </div>
@@ -207,7 +207,7 @@ export function InstanceAccess() {
                   {companies.map((company) => (
                     <label
                       key={company.id}
-                      className="flex items-start gap-3 rounded-lg border border-border px-3 py-3"
+                      className="flex items-start gap-3 rounded-lg border border-line px-3 py-3"
                     >
                       <Checkbox
                         checked={selectedCompanyIds.has(company.id)}
@@ -222,7 +222,7 @@ export function InstanceAccess() {
                       />
                       <span className="space-y-1">
                         <span className="block text-sm font-medium">{company.name}</span>
-                        <span className="block text-xs text-muted-foreground">{company.issuePrefix}</span>
+                        <span className="block text-xs text-ink-3">{company.issuePrefix}</span>
                       </span>
                     </label>
                   ))}
@@ -243,15 +243,15 @@ export function InstanceAccess() {
                   {(userAccessQuery.data?.companyAccess ?? []).map((membership) => (
                     <div
                       key={membership.id}
-                      className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-sm"
+                      className="flex items-center justify-between rounded-lg border border-line px-3 py-2 text-sm"
                     >
                       <div>
                         <div className="font-medium">{membership.companyName || membership.companyId}</div>
-                        <div className="text-muted-foreground">
+                        <div className="text-ink-3">
                           {membership.membershipRole || "unset"} • {membership.status}
                         </div>
                       </div>
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-xs text-ink-3">
                         {new Date(membership.updatedAt).toLocaleDateString()}
                       </div>
                     </div>

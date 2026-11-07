@@ -74,7 +74,7 @@ export const privacyParameters = {
 export const mobile = { viewport: { value: "mobile", isRotated: false } };
 
 export function StoryFrame({ children }: { title: string; story: string; checks: string[]; children: ReactNode }) {
-  return <main className="min-h-screen bg-background p-6 text-foreground"><div className="mx-auto max-w-4xl">{children}<ToastViewport /></div></main>;
+  return <main className="min-h-screen bg-bg p-6 text-ink"><div className="mx-auto max-w-4xl">{children}<ToastViewport /></div></main>;
 }
 
 export async function choosePrivateTask(page: ReturnType<typeof within>) {
