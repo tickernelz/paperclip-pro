@@ -332,6 +332,30 @@ function findCascadeLayerIssues(css) {
   return issues;
 }
 
+const PACKAGE_CSS_IMPORT_RE = /^\s*import\s+["'](?![./]|@\/)([^"']+\.css)["']/gm;
+const UNLAYERED_CSS_IMPORT_RE = /^\s*@import\s+(?:url\()?["'](?![./])(?!tailwindcss["'])([^"']+)["']\)?(?![^;]*\blayer\()[^;]*;/gm;
+
+function findVendorCssImportIssues() {
+  const files = [];
+  const collect = (dir) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const p = join(dir, entry.name);
+      if (entry.isDirectory()) collect(p);
+      else if (/\.(tsx?|jsx?|css)$/.test(entry.name)) files.push(p);
+    }
+  };
+  collect(UI_SRC);
+  const issues = [];
+  for (const filePath of files.sort()) {
+    const content = readFileSync(filePath, "utf8");
+    const pattern = filePath.endsWith(".css") ? UNLAYERED_CSS_IMPORT_RE : PACKAGE_CSS_IMPORT_RE;
+    for (const match of content.matchAll(pattern)) {
+      issues.push({ file: relPathToPosix(filePath), index: match.index, content, snippet: `package stylesheet outside @layer vendor: ${match[1]}` });
+    }
+  }
+  return issues;
+}
+
 function lineNumberAt(content, index) {
   return content.slice(0, index).split("\n").length;
 }
@@ -384,6 +408,10 @@ function main() {
       line: lineNumberAt(tokenLayer, issue.index),
       snippet: issue.snippet,
     });
+  }
+
+  for (const issue of findVendorCssImportIssues()) {
+    violations.gate5.push({ file: issue.file, line: lineNumberAt(issue.content, issue.index), snippet: issue.snippet });
   }
 
   const totalViolations = Object.values(violations).reduce((total, gate) => total + gate.length, 0);

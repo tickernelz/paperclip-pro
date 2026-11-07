@@ -27,7 +27,7 @@ export const ToggleSwitch = React.forwardRef<
         data-slot="toggle"
         disabled={disabled}
         className={cn(
-          "relative inline-flex shrink-0 items-center rounded-full border-2 transition-all outline-none",
+          "relative inline-flex shrink-0 items-center rounded-full border-2 transition-all outline-hidden",
           "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus",
           "disabled:cursor-not-allowed disabled:border-line-strong disabled:bg-bg-3",
           isLg ? "h-6 w-12" : "h-5 w-11",

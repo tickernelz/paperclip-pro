@@ -1,5 +1,6 @@
-@layer theme, base, components, utilities, layout, state;
+@layer vendor, theme, base, utilities, layout, components, state;
 
+@import "@mdxeditor/editor/style.css" layer(vendor);
 @import "./motion-tokens.css";
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
@@ -2287,7 +2288,7 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
 }
 
 .paperclip-mdxeditor .cm-content {
-  caret-color: #cdd6f4;
+  caret-color: #cdd6f4 !important;
 }
 
 /* MDXEditor code block language selector – show on hover only */

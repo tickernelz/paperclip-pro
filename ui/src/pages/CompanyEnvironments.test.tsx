@@ -120,7 +120,6 @@ vi.mock("@xterm/addon-fit", () => ({
   FitAddon: xtermMocks.MockFitAddon,
 }));
 
-vi.mock("@xterm/xterm/css/xterm.css", () => ({}));
 
 const mockEnvironmentsApi = vi.hoisted(() => ({
   list: vi.fn(),
