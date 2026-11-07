@@ -300,6 +300,7 @@ export interface AdapterModel {
   provider?: string;
   /** Reasoning efforts this model accepts, lowest to highest. Absent when the model exposes no levels. */
   thinking?: string[];
+  cost?: { input?: number; output?: number };
 }
 
 export type AdapterEnvironmentCheckLevel = "info" | "warn" | "error";

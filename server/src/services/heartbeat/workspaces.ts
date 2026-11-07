@@ -1951,6 +1951,8 @@ function issueOverridesWithoutModelSwitchKeys(issueOverrides: unknown) {
 }
 
 const RESUME_NEUTRAL_ADAPTER_CONFIG_KEYS = [
+  "stylePreset",
+  "fallbackMode",
   "instructionsBundleMode",
   "instructionsRootPath",
   "instructionsEntryFile",

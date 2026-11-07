@@ -347,7 +347,7 @@
       "assertCanUpdateAgent"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@agents.ts:5119",
+    "boardGuard": "assertBoard@agents.ts:5215",
     "authorityCapability": null,
     "parameters": [
       {
@@ -2847,6 +2847,7 @@
       "assertNoNewAgentLegacyPromptTemplate",
       "assertProviderTraceSettingTransition",
       "assertSelectableAdapterType",
+      "assertValidOmpSettings",
       "getActorInfo"
     ],
     "permissions": [],
@@ -3409,6 +3410,7 @@
       "assertNoNewAgentLegacyPromptTemplate",
       "assertProviderTraceSettingTransition",
       "assertSelectableAdapterType",
+      "assertValidOmpSettings",
       "getActorInfo"
     ],
     "permissions": [],
@@ -8326,7 +8328,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:7105",
+    "boardGuard": "assertInstanceAdmin@agents.ts:7202",
     "authorityCapability": null,
     "parameters": [
       {
@@ -14728,7 +14730,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:7243",
+    "boardGuard": "assertInstanceAdmin@agents.ts:7340",
     "authorityCapability": null,
     "parameters": [
       {
@@ -18170,6 +18172,41 @@
     ]
   },
   {
+    "name": "paperclipGetAgentDefaultPresetUsage",
+    "operationId": "GET /api/companies/{companyId}/agent-defaults/preset-usage",
+    "method": "GET",
+    "path": "/companies/{companyId}/agent-defaults/preset-usage",
+    "description": "Runs, cost and duration per Style preset over the last 7 days",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "handler",
+    "tags": [
+      "agents"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertBoard",
+      "assertCompanyAccess"
+    ],
+    "permissions": [],
+    "boardGuard": "assertBoard@agents.ts:2920",
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
     "name": "paperclipGetAgentDotBinding",
     "operationId": "GET /api/companies/{companyId}/agents/{agentId}/dot-binding",
     "method": "GET",
@@ -21475,7 +21512,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:7076",
+    "boardGuard": "assertInstanceAdmin@agents.ts:7173",
     "authorityCapability": null,
     "parameters": [
       {
@@ -27688,6 +27725,41 @@
     ]
   },
   {
+    "name": "paperclipListAgentDefaults",
+    "operationId": "GET /api/companies/{companyId}/agent-defaults",
+    "method": "GET",
+    "path": "/companies/{companyId}/agent-defaults",
+    "description": "Read the company's OMP agent defaults",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "handler",
+    "tags": [
+      "agents"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertBoard",
+      "assertCompanyAccess"
+    ],
+    "permissions": [],
+    "boardGuard": "assertBoard@agents.ts:2855",
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
     "name": "paperclipListAgentInstructionsCandidates",
     "operationId": "GET /api/agents/{id}/instructions-bundle/candidates",
     "method": "GET",
@@ -31071,7 +31143,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:3621",
+    "boardGuard": "assertInstanceAdmin@agents.ts:3713",
     "authorityCapability": null,
     "parameters": []
   },
@@ -32169,6 +32241,41 @@
     ]
   },
   {
+    "name": "paperclipListOmpSettings",
+    "operationId": "GET /api/companies/{companyId}/omp/settings",
+    "method": "GET",
+    "path": "/companies/{companyId}/omp/settings",
+    "description": "List the OMP settings an agent may pin, without credential values",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "handler",
+    "tags": [
+      "adapters"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertBoard",
+      "assertCompanyAccess"
+    ],
+    "permissions": [],
+    "boardGuard": "assertBoard@agents.ts:2927",
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ]
+  },
+  {
     "name": "paperclipListPendingDecisions",
     "operationId": "GET /api/companies/{companyId}/pending-decisions",
     "method": "GET",
@@ -32922,7 +33029,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:6622",
+    "boardGuard": "assertInstanceAdmin@agents.ts:6719",
     "authorityCapability": null,
     "parameters": [
       {
@@ -39292,7 +39399,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@agents.ts:5397",
+    "boardGuard": "assertBoard@agents.ts:5494",
     "authorityCapability": null,
     "parameters": [
       {
@@ -39540,7 +39647,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:7168",
+    "boardGuard": "assertInstanceAdmin@agents.ts:7265",
     "authorityCapability": null,
     "parameters": [
       {
@@ -40442,6 +40549,58 @@
         },
         "required": [
           "imageBase64"
+        ]
+      }
+    }
+  },
+  {
+    "name": "paperclipSetAgentDefault",
+    "operationId": "PUT /api/companies/{companyId}/agent-defaults",
+    "method": "PUT",
+    "path": "/companies/{companyId}/agent-defaults",
+    "description": "Save the company's OMP agent defaults and apply them to agents that follow them",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "handler",
+    "tags": [
+      "agents"
+    ],
+    "annotations": {
+      "readOnlyHint": false,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertBoard",
+      "assertCompanyAccess",
+      "getActorInfo"
+    ],
+    "permissions": [],
+    "boardGuard": "assertBoard@agents.ts:2862",
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    ],
+    "body": {
+      "required": false,
+      "documented": true,
+      "mode": "merge",
+      "schema": {
+        "type": "object",
+        "properties": {
+          "values": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "values"
         ]
       }
     }
@@ -46456,6 +46615,7 @@
       "assertNoAgentProcessAdapterMutation",
       "assertProviderTraceSettingTransition",
       "assertSelectableAdapterType",
+      "assertValidOmpSettings",
       "getActorInfo"
     ],
     "permissions": [],

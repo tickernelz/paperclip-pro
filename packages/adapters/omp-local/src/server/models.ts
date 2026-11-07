@@ -154,6 +154,14 @@ function modelEnvelope(stdout: string): Record<string, unknown> | null {
   return null;
 }
 
+function modelCost(value: unknown): { input?: number; output?: number } | null {
+  const row = objectValue(value);
+  const cost: { input?: number; output?: number } = {};
+  if (typeof row.input === "number" && Number.isFinite(row.input) && row.input >= 0) cost.input = row.input;
+  if (typeof row.output === "number" && Number.isFinite(row.output) && row.output >= 0) cost.output = row.output;
+  return Object.keys(cost).length > 0 ? cost : null;
+}
+
 /** Parse the exact `omp models --json` envelope without trusting individual rows. */
 export function parseOmpModelsOutput(stdout: string): AdapterModel[] {
   const envelope = modelEnvelope(stdout);
@@ -171,11 +179,13 @@ export function parseOmpModelsOutput(stdout: string): AdapterModel[] {
     seen.add(selector);
     const name = nonEmptyString(row.name);
     const thinking = stringList(row.thinking);
+    const cost = modelCost(row.cost);
     models.push({
       id: selector,
       label: name ?? selector,
       provider,
       ...(thinking.length > 0 ? { thinking } : {}),
+      ...(cost ? { cost } : {}),
     });
   }
   return models;

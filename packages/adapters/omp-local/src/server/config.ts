@@ -163,7 +163,7 @@ function jsonObjectFromOutput(stdout: string): Record<string, unknown> | null {
   return null;
 }
 
-async function configProbe(command: string, args: string[], env: Record<string, string>) {
+export async function configProbe(command: string, args: string[], env: Record<string, string>) {
   return runChildProcess(
     `omp-config-${Date.now()}-${Math.random().toString(16).slice(2)}`,
     command,

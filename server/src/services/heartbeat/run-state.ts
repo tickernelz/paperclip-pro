@@ -7,6 +7,8 @@ const MODEL_SWITCH_ADAPTER_CONFIG_KEYS = [
   "thinking",
   "thinkingEffort",
   "effort",
+  "stylePreset",
+  "fallbackMode",
 ] as const;
 import { retryIdempotentDatabaseOperation } from "../../database-retry.js";
 import { jsonbRecordFields } from "../jsonb-projection.js";

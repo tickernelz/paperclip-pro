@@ -100,6 +100,9 @@ import {
   planAgentAdapterConfigBatch,
   type AgentAdapterConfigBatchValue,
 } from "../services/agent-adapter-config-batch.js";
+import { listOmpSettingsCatalog } from "@tickernelz/paperclip-pro-adapter-omp-local/server";
+import { planAgentDefaultsApply, validateOmpSettingsMap, OMP_SETTINGS_KEY, OMP_SETTINGS_PATH_PREFIX } from "@tickernelz/paperclip-pro-shared";
+import { agentDefaultsService, validateAgentDefaults, withAgentDefaults } from "../services/agent-defaults.js";
 import {
   agentService,
   agentInstructionsService,
@@ -2203,6 +2206,13 @@ export function agentRoutes(
     );
   }
 
+  async function assertValidOmpSettings(adapterType: string | null | undefined, adapterConfig: Record<string, unknown>) {
+    if (adapterType !== "omp_local" || adapterConfig[OMP_SETTINGS_KEY] === undefined) return;
+    const catalog = await listOmpSettingsCatalog().catch(() => undefined);
+    const errors = validateOmpSettingsMap(adapterConfig[OMP_SETTINGS_KEY], catalog);
+    if (errors.length > 0) throw unprocessable(errors.join(" "));
+  }
+
   function applyCreateDefaultsByAdapterType(
     adapterType: string | null | undefined,
     adapterConfig: Record<string, unknown>,
@@ -2466,6 +2476,7 @@ export function agentRoutes(
     "cwd",
     "env",
     "filesystemSandboxCommand",
+    "ompSettings",
   ] as const;
 
   const POOL_AUTH_OVERRIDE_ENV_KEYS = [
@@ -2835,6 +2846,87 @@ export function agentRoutes(
     } catch (err) {
       next(err);
     }
+  });
+
+  const agentDefaultsSvc = agentDefaultsService(db);
+
+  router.get("/companies/:companyId/agent-defaults", async (req, res) => {
+    const companyId = req.params.companyId as string;
+    assertBoard(req);
+    assertCompanyAccess(req, companyId);
+    res.json({ values: await agentDefaultsSvc.getDefaults(companyId) });
+  });
+
+  router.put("/companies/:companyId/agent-defaults", async (req, res) => {
+    const companyId = req.params.companyId as string;
+    assertBoard(req);
+    assertCompanyAccess(req, companyId);
+    const values = asRecord(req.body?.values);
+    if (!values) throw unprocessable("Send the defaults as { values: { <setting path>: <value> } }.");
+    const needsCatalog = Object.keys(values).some((path) => path.startsWith(OMP_SETTINGS_PATH_PREFIX));
+    const errors = validateAgentDefaults(values, needsCatalog ? await listOmpSettingsCatalog() : []);
+    if (errors.length > 0) {
+      res.status(422).json({ error: "Defaults were not saved.", details: errors });
+      return;
+    }
+    const previous = await agentDefaultsSvc.getDefaults(companyId);
+    const plan = planAgentDefaultsApply(await agentDefaultsSvc.listOmpAgents(companyId), previous, values);
+    const actor = getActorInfo(req);
+    for (const entry of plan.entries) {
+      if (entry.appliedPaths.length === 0) continue;
+      const updated = await svc.update(
+        entry.agentId,
+        {
+          adapterConfig: await normalizeMediatedAdapterConfigForPersistence({
+            companyId,
+            adapterType: "omp_local",
+            adapterConfig: entry.adapterConfig,
+          }),
+        },
+        {
+          recordRevision: {
+            createdByAgentId: actor.agentId,
+            createdByUserId: actor.actorType === "user" ? actor.actorId : null,
+            source: "agent_defaults",
+          },
+        },
+      );
+      if (!updated) continue;
+      await logActivity(db, {
+        companyId,
+        actorType: actor.actorType,
+        actorId: actor.actorId,
+        agentId: actor.agentId,
+        runId: actor.runId,
+        agentApiKeyId: actor.agentApiKeyId,
+        action: "agent.updated",
+        entityType: "agent",
+        entityId: updated.id,
+        details: { changedTopLevelKeys: ["adapterConfig"], changedAdapterConfigKeys: entry.appliedPaths, agentDefaults: true },
+      });
+    }
+    await agentDefaultsSvc.setDefaults(companyId, values);
+    res.json({
+      values,
+      changedPaths: plan.changedPaths,
+      following: plan.following,
+      ownValues: plan.ownValues,
+      sessionKept: plan.sessionKept,
+    });
+  });
+
+  router.get("/companies/:companyId/agent-defaults/preset-usage", async (req, res) => {
+    const companyId = req.params.companyId as string;
+    assertBoard(req);
+    assertCompanyAccess(req, companyId);
+    res.json({ days: 7, rows: await agentDefaultsSvc.presetUsage(companyId, 7) });
+  });
+
+  router.get("/companies/:companyId/omp/settings", async (req, res) => {
+    const companyId = req.params.companyId as string;
+    assertBoard(req);
+    assertCompanyAccess(req, companyId);
+    res.json({ settings: await listOmpSettingsCatalog() });
   });
 
   router.get("/companies/:companyId/adapters/:type/models", async (req, res) => {
@@ -4121,10 +4213,12 @@ export function agentRoutes(
     assertNoAgentLocalAdapterHostCommandMutation(req, hireInput.adapterType, rawHireAdapterConfig, await callerUsesAiConnectionPool(req, companyId));
     assertNoAgentProcessAdapterMutation(req, hireInput.adapterType, Object.keys(rawHireAdapterConfig).length > 0);
     const hiredAgentId = randomUUID();
-    const requestedAdapterConfig = applyCreateDefaultsByAdapterType(
+    const requestedAdapterConfig = withAgentDefaults(
       hireInput.adapterType,
-      rawHireAdapterConfig,
+      applyCreateDefaultsByAdapterType(hireInput.adapterType, rawHireAdapterConfig),
+      await agentDefaultsSvc.getDefaults(companyId),
     );
+    await assertValidOmpSettings(hireInput.adapterType, requestedAdapterConfig);
     assertExternalInstructionsAdmin(req, {
       id: hiredAgentId,
       companyId,
@@ -4416,10 +4510,12 @@ export function agentRoutes(
     assertNoAgentLocalAdapterHostCommandMutation(req, createInput.adapterType, rawCreateAdapterConfig, await callerUsesAiConnectionPool(req, companyId));
     assertNoAgentProcessAdapterMutation(req, createInput.adapterType, Object.keys(rawCreateAdapterConfig).length > 0);
     const agentId = randomUUID();
-    const requestedAdapterConfig = applyCreateDefaultsByAdapterType(
+    const requestedAdapterConfig = withAgentDefaults(
       createInput.adapterType,
-      rawCreateAdapterConfig,
+      applyCreateDefaultsByAdapterType(createInput.adapterType, rawCreateAdapterConfig),
+      await agentDefaultsSvc.getDefaults(companyId),
     );
+    await assertValidOmpSettings(createInput.adapterType, requestedAdapterConfig);
     assertExternalInstructionsAdmin(req, {
       id: agentId,
       companyId,
@@ -5310,6 +5406,7 @@ export function agentRoutes(
         requestedAdapterType,
         rawEffectiveAdapterConfig,
       );
+      await assertValidOmpSettings(requestedAdapterType, effectiveAdapterConfig);
       const normalizedEffectiveAdapterConfig = await normalizeMediatedAdapterConfigForPersistence({
         companyId: existing.companyId,
         adapterType: requestedAdapterType,
