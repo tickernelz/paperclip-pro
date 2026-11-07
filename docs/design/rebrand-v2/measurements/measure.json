@@ -1,0 +1,4387 @@
+{
+ "commit": "b681cebf8edd992aa46a220dedd25adc5e016974",
+ "cliVersion": "0.3.1",
+ "trackedFiles": 10614,
+ "name": {
+  "filesWithPaperclip": 6618,
+  "linesWithPaperclip": 65501,
+  "textFilesWithPaperclip": 6613,
+  "filesWithScope": 3450,
+  "packageJsonTracked": 48,
+  "packagesScoped": 45,
+  "publishable": 35,
+  "bin": {
+   "paperclip-pro": "./dist/index.js"
+  },
+  "envTokensDistinct": 869,
+  "envFiles": 1363,
+  "envOccurrences": 10633,
+  "envTop": [
+   [
+    "PAPERCLIP_HOME",
+    717
+   ],
+   [
+    "PAPERCLIP_API_KEY",
+    526
+   ],
+   [
+    "PAPERCLIP_API_URL",
+    519
+   ],
+   [
+    "PAPERCLIP_INSTANCE_ID",
+    498
+   ],
+   [
+    "PAPERCLIP_RUN_ID",
+    219
+   ],
+   [
+    "PAPERCLIP_COMPANY_ID",
+    190
+   ],
+   [
+    "PAPERCLIP_SECRETS_MASTER_KEY_FILE",
+    184
+   ],
+   [
+    "PAPERCLIP_PUBLIC_URL",
+    174
+   ],
+   [
+    "PAPERCLIP_CONFIG",
+    167
+   ],
+   [
+    "PAPERCLIP_AGENT_JWT_SECRET",
+    162
+   ],
+   [
+    "PAPERCLIP_TASK_ID",
+    152
+   ],
+   [
+    "PAPERCLIP_RUNNER_STATE_DIR",
+    143
+   ]
+  ],
+  "homeDirFiles": 70,
+  "serviceFiles": 11,
+  "binInvocationFiles": 177,
+  "displayNameUiFiles": 218,
+  "displayNameUiLines": 752,
+  "enStrings": 3,
+  "mcpTools": 833,
+  "mcpToolsPrefixed": 833,
+  "mcpToolNameFiles": 793,
+  "skills": [
+   "agentmail",
+   "complain",
+   "openwa",
+   "paperclip",
+   "paperclip-board",
+   "paperclip-converting-plans-to-tasks",
+   "paperclip-create-agent",
+   "para-memory-files",
+   "slack",
+   "suggestion-box"
+  ],
+  "skillsPrefixed": [
+   "paperclip",
+   "paperclip-board",
+   "paperclip-converting-plans-to-tasks",
+   "paperclip-create-agent"
+  ],
+  "licenseCopyright": [
+   "Copyright (c) 2025 Paperclip AI",
+   "Copyright (c) 2026 Zhafron Adani Kautsar (paperclip-pro fork modifications)"
+  ]
+ },
+ "adapters": {
+  "folders": [
+   "claude-local",
+   "codex-local",
+   "cursor-cloud",
+   "cursor-local",
+   "gemini-local",
+   "grok-local",
+   "hermes",
+   "hermes-gateway",
+   "kimi-local",
+   "omp-local",
+   "openclaw-gateway",
+   "opencode-local",
+   "pi-local"
+  ],
+  "types": [
+   "process",
+   "http",
+   "claude_local",
+   "codex_local",
+   "paperclip_runner",
+   "cursor_cloud",
+   "gemini_local",
+   "grok_local",
+   "hermes_gateway",
+   "hermes_local",
+   "kimi_local",
+   "omp_local",
+   "opencode_local",
+   "pi_local",
+   "cursor",
+   "openclaw_gateway"
+  ],
+  "refsByWord": {
+   "process": 213,
+   "http": 134,
+   "claude_local": 322,
+   "codex_local": 491,
+   "paperclip_runner": 295,
+   "cursor_cloud": 36,
+   "gemini_local": 103,
+   "grok_local": 84,
+   "hermes_gateway": 75,
+   "hermes_local": 76,
+   "kimi_local": 65,
+   "omp_local": 70,
+   "opencode_local": 128,
+   "pi_local": 73,
+   "cursor": 243,
+   "openclaw_gateway": 66
+  },
+  "perFolder": {
+   "claude-local": {
+    "files": 54,
+    "loc": 14853
+   },
+   "codex-local": {
+    "files": 74,
+    "loc": 22397
+   },
+   "cursor-cloud": {
+    "files": 16,
+    "loc": 2076
+   },
+   "cursor-local": {
+    "files": 24,
+    "loc": 4193
+   },
+   "gemini-local": {
+    "files": 25,
+    "loc": 4972
+   },
+   "grok-local": {
+    "files": 36,
+    "loc": 6419
+   },
+   "hermes": {
+    "files": 45,
+    "loc": 8070
+   },
+   "hermes-gateway": {
+    "files": 10,
+    "loc": 222
+   },
+   "kimi-local": {
+    "files": 25,
+    "loc": 3591
+   },
+   "omp-local": {
+    "files": 48,
+    "loc": 10366
+   },
+   "openclaw-gateway": {
+    "files": 19,
+    "loc": 2826
+   },
+   "opencode-local": {
+    "files": 26,
+    "loc": 4753
+   },
+   "pi-local": {
+    "files": 22,
+    "loc": 4071
+   }
+  },
+  "uiAdapterDirs": [
+   "claude-local",
+   "codex-local",
+   "cursor",
+   "cursor-cloud",
+   "gemini-local",
+   "grok-local",
+   "hermes-gateway",
+   "hermes-local",
+   "http",
+   "kimi-local",
+   "omp-local",
+   "openclaw-gateway",
+   "opencode-local",
+   "paperclip-runner",
+   "pi-local",
+   "process"
+  ],
+  "uiAdapterFiles": {
+   "claude-local": 2,
+   "codex-local": 3,
+   "cursor": 2,
+   "cursor-cloud": 1,
+   "gemini-local": 2,
+   "grok-local": 2,
+   "hermes-gateway": 3,
+   "hermes-local": 1,
+   "http": 4,
+   "kimi-local": 2,
+   "omp-local": 1,
+   "openclaw-gateway": 2,
+   "opencode-local": 2,
+   "paperclip-runner": 2,
+   "pi-local": 2,
+   "process": 4
+  },
+  "ompUiFiles": [
+   "packages/adapters/omp-local/src/ui/index.ts",
+   "packages/adapters/omp-local/src/ui/parse-stdout.test.ts",
+   "packages/adapters/omp-local/src/ui/parse-stdout.ts"
+  ],
+  "configFieldsFiles": [
+   "ui/src/adapters/claude-local/config-fields.tsx",
+   "ui/src/adapters/codex-local/config-fields.tsx",
+   "ui/src/adapters/cursor/config-fields.tsx",
+   "ui/src/adapters/gemini-local/config-fields.tsx",
+   "ui/src/adapters/grok-local/config-fields.tsx",
+   "ui/src/adapters/hermes-gateway/config-fields.tsx",
+   "ui/src/adapters/http/config-fields.tsx",
+   "ui/src/adapters/kimi-local/config-fields.tsx",
+   "ui/src/adapters/openclaw-gateway/config-fields.tsx",
+   "ui/src/adapters/opencode-local/config-fields.tsx",
+   "ui/src/adapters/pi-local/config-fields.tsx",
+   "ui/src/adapters/process/config-fields.tsx",
+   "ui/src/adapters/schema-config-fields.tsx"
+  ]
+ },
+ "ui": {
+  "tsTsxCssUi": 2480,
+  "tsTsxCss": 2163,
+  "pages": 395,
+  "components": 931,
+  "filesDarkVariant": 187,
+  "filesDarkOrTheme": 251,
+  "themeFiles": [
+   "ui/src/components/ThemeToggle.test.tsx",
+   "ui/src/components/ThemeToggle.tsx",
+   "ui/src/context/ThemeContext.test.tsx",
+   "ui/src/context/ThemeContext.tsx"
+  ],
+  "pageModules": [
+   "AdapterManager.tsx",
+   "AgentChat.tsx",
+   "AgentChats.tsx",
+   "AgentDetail.production.tsx",
+   "AgentDetail.tsx",
+   "AgentToolsTab.tsx",
+   "Agents.production.tsx",
+   "Agents.tsx",
+   "ApprovalDetail.tsx",
+   "Approvals.tsx",
+   "Artifacts.tsx",
+   "Auth.tsx",
+   "BoardChat.tsx",
+   "BoardClaim.tsx",
+   "BootstrapSetupUxLab.tsx",
+   "CaseDetail.tsx",
+   "Cases.tsx",
+   "CliAuth.tsx",
+   "Companies.tsx",
+   "CompanyAccess.tsx",
+   "CompanyConnections.tsx",
+   "CompanyEnvironments.tsx",
+   "CompanyExport.tsx",
+   "CompanyImport.tsx",
+   "CompanySettings.tsx",
+   "CompanySettingsPluginPage.tsx",
+   "CompanySkills.production.tsx",
+   "CompanySkills.tsx",
+   "Costs.production.tsx",
+   "Costs.tsx",
+   "CrossIssueCollaborationUxLab.tsx",
+   "Dashboard.tsx",
+   "DashboardLive.tsx",
+   "DecisionQueuePage.tsx",
+   "DesignGuide.tsx",
+   "ExecutionWorkspaceDetail.tsx",
+   "GoalDetail.tsx",
+   "Goals.tsx",
+   "Inbox.tsx",
+   "InstanceAccess.tsx",
+   "InstanceExperimentalSettings.tsx",
+   "InstanceGeneralSettings.tsx",
+   "InviteLanding.tsx",
+   "InviteUxLab.tsx",
+   "IssueChatLongThreadPerf.tsx",
+   "IssueChatUxLab.tsx",
+   "IssueDetail.tsx",
+   "Issues.tsx",
+   "JoinRequestQueue.tsx",
+   "LegacyInbox.tsx",
+   "McpConnect.tsx",
+   "MyIssues.tsx",
+   "NewAgent.tsx",
+   "NotFound.tsx",
+   "Org.tsx",
+   "OrgChart.production.tsx",
+   "OrgChart.tsx",
+   "PipelineSettings.tsx",
+   "Pipelines.tsx",
+   "PixelsOffice.tsx",
+   "PluginManager.tsx",
+   "PluginPage.tsx",
+   "PluginSettings.tsx",
+   "ProfileSettings.tsx",
+   "ProjectDetail.tsx",
+   "ProjectWorkspaceDetail.tsx",
+   "Projects.tsx",
+   "PublicIssueSharePage.tsx",
+   "ResponsibleUserDenialUxLab.tsx",
+   "RoutineDetail.production.tsx",
+   "RoutineDetail.tsx",
+   "Routines.production.tsx",
+   "Routines.tsx",
+   "RunTranscriptUxLab.tsx",
+   "Search.tsx",
+   "Secrets.tsx",
+   "SkillSources.tsx",
+   "SkillStudio.tsx",
+   "StatusCards/ArchivedStatusCardRow.tsx",
+   "StatusCards/CreateStatusCardDialog.tsx",
+   "StatusCards/StatusCardDetailDrawer.tsx",
+   "StatusCards/StatusCardSettingsForm.tsx",
+   "StatusCards/StatusCardTile.tsx",
+   "StatusCards/SummarizerAgentSelect.tsx",
+   "StatusCards/index.tsx",
+   "SystemNoticeUxLab.tsx",
+   "TaskChatLab.tsx",
+   "TeamCatalog.tsx",
+   "Terminal.tsx",
+   "Timeline.tsx",
+   "UserProfile.tsx",
+   "WhatNeedsMe.tsx",
+   "Workspaces.tsx",
+   "agent-skills/AgentSkillReleasePicker.tsx",
+   "agent-skills/AgentSkillRow.tsx",
+   "agent-skills/AgentSkillsTab.tsx",
+   "apps/AggregatorAppManager.tsx",
+   "apps/AggregatorConnectDialog.tsx",
+   "apps/AppDetail.tsx",
+   "apps/AppLogo.tsx",
+   "apps/AppNotConnected.tsx",
+   "apps/AppsConnect.tsx",
+   "apps/AppsReview.tsx",
+   "apps/ArcadeDiscoverySetup.tsx",
+   "apps/AssistantConnection.tsx",
+   "apps/Browse.tsx",
+   "apps/CatalogSourceFilters.tsx",
+   "apps/ComposioAppManager.tsx",
+   "apps/ComposioAppSetup.tsx",
+   "apps/ConnectionProvenanceChip.tsx",
+   "apps/Connections.tsx",
+   "apps/ExecutorManagementSetup.tsx",
+   "apps/PaperclipCloudOAuthHandoff.tsx",
+   "apps/ReviewQueueCard.tsx",
+   "apps/UnverifiedServerBadge.tsx",
+   "apps/app-detail/ActionTestDialog.tsx",
+   "apps/app-detail/ActivityPanel.tsx",
+   "apps/app-detail/AdvancedPanel.tsx",
+   "apps/app-detail/AgentConnectionAccess.tsx",
+   "apps/app-detail/BrowserUseSettingsPanel.tsx",
+   "apps/app-detail/ConnectedAggregatorApps.tsx",
+   "apps/app-detail/IdentitiesSection.tsx",
+   "apps/app-detail/LocalBrowserSettingsPanel.tsx",
+   "apps/app-detail/PermissionsPanel.tsx",
+   "apps/app-detail/RailwayAccessPanel.tsx",
+   "apps/app-detail/ReviewPanel.tsx",
+   "apps/app-detail/SetupPanel.tsx",
+   "apps/chat/ChatCommunicationInstructions.tsx",
+   "apps/chat/ChatConversationList.tsx",
+   "apps/chat/ChatEndpointDetail.tsx",
+   "apps/chat/ChatEndpointSetup.tsx",
+   "apps/chat/ChatIdentityConfirm.tsx",
+   "apps/chat/EmailEndpointSetup.tsx",
+   "apps/chat/GitHubAppIdentity.tsx",
+   "apps/chat/GitHubBotConfiguration.tsx",
+   "apps/chat/GitHubBotManagement.tsx",
+   "apps/chat/GitHubChatSetup.tsx",
+   "apps/chat/GitHubConnectionComplete.tsx",
+   "apps/chat/GitHubSettingsDisclosure.tsx",
+   "apps/chat/GitHubSetupPrompt.tsx",
+   "apps/chat/OpenwaApprovalsList.tsx",
+   "apps/chat/OpenwaAuditTab.tsx",
+   "apps/chat/OpenwaChatsSettings.tsx",
+   "apps/chat/OpenwaConnectStep.tsx",
+   "apps/chat/OpenwaGatewayManager.tsx",
+   "apps/chat/OpenwaHealthCard.tsx",
+   "apps/chat/OpenwaLinkedNumbers.tsx",
+   "apps/chat/OpenwaSettings.tsx",
+   "apps/chat/PhotonConnectStep.tsx",
+   "apps/chat/SetupPrompt.tsx",
+   "apps/chat/SlackAppDetails.tsx",
+   "apps/chat/SlackAutomaticSetup.tsx",
+   "apps/chat/SlackAvatarStep.tsx",
+   "apps/chat/SlackIdentityStep.tsx",
+   "apps/chat/SlackSetupPrompt.tsx",
+   "apps/chat/SlackToolSettings.tsx",
+   "apps/chat/openwa-fields.tsx",
+   "apps/connection-owner.tsx",
+   "apps/gateways/ConnectClientDialog.tsx",
+   "apps/gateways/CopyableGatewayUrl.tsx",
+   "apps/gateways/EditGatewayDialog.tsx",
+   "apps/gateways/GatewayDetail.tsx",
+   "apps/gateways/GatewaysList.tsx",
+   "apps/gateways/NewGatewayDialog.tsx",
+   "apps/gateways/panels/AppsToolsPanel.tsx",
+   "apps/gateways/panels/GatewayActivityPanel.tsx",
+   "apps/gateways/panels/GatewayAdvancedPanel.tsx",
+   "apps/gateways/panels/OverviewPanel.tsx",
+   "apps/gateways/panels/TokensPanel.tsx",
+   "audit/AuditFeed.production.tsx",
+   "audit/AuditFeed.tsx",
+   "audit/AuditHub.tsx",
+   "audit/AuditRuns.tsx",
+   "audit/CompanyActivity.production.tsx",
+   "audit/CompanyActivity.tsx",
+   "audit/RoutineAuditActivity.tsx",
+   "secrets/ImportFromVaultDialog.tsx",
+   "secrets/MissingUserSecretsBanner.tsx",
+   "secrets/MyUserSecretsTab.tsx",
+   "secrets/ProposalsTab.tsx",
+   "secrets/SecretPathName.tsx",
+   "secrets/SetMyUserSecretDialog.tsx",
+   "secrets/UserSecretDefinitionsTab.tsx",
+   "secrets/proposal-review.tsx",
+   "secrets/user-secret-presentation.tsx",
+   "skills/ImportSkillsFromProjectDialog.tsx",
+   "skills/SkillImportProgress.tsx",
+   "skills/SkillPackagePreview.tsx",
+   "skills/SkillSourceTree.tsx",
+   "tools/AdvancedToolsRoute.tsx",
+   "tools/AuditTab.tsx",
+   "tools/GatewaysTab.tsx",
+   "tools/McpConfigHelpDialog.tsx",
+   "tools/PasteConfigTab.tsx",
+   "tools/ProfilesTab.tsx",
+   "tools/SmokeLabTab.tsx",
+   "tools/ToolsAccess.tsx",
+   "tools/connection-dialogs.tsx",
+   "tools/profiles/ProfileActionDialog.tsx",
+   "tools/profiles/ProfileDetail.tsx",
+   "tools/profiles/ProfileDetailRoute.tsx",
+   "tools/profiles/ProfileWizard.tsx",
+   "tools/profiles/ProfileWizardRoute.tsx",
+   "tools/profiles/ProfilesIndex.tsx",
+   "tools/profiles/ToolsAdminGate.tsx",
+   "tools/profiles/WizardToolsStep.tsx",
+   "tools/shared.tsx"
+  ],
+  "routes": [
+   "*",
+   ":companyPrefix",
+   ":pluginRoutePath/*",
+   "activity",
+   "activity/*",
+   "activity/budgets",
+   "activity/costs",
+   "activity/runs",
+   "activity/timeline",
+   "agents",
+   "agents/:agentId",
+   "agents/:agentId/:tab",
+   "agents/:agentId/runs/:runId",
+   "agents/new",
+   "approvals",
+   "approvals/:approvalId",
+   "approvals/all",
+   "approvals/pending",
+   "apps",
+   "apps/:connectionId",
+   "apps/:connectionId/:tab",
+   "apps/advanced",
+   "apps/advanced/:tab",
+   "apps/advanced/audit",
+   "apps/advanced/gateways",
+   "apps/advanced/profiles/:profileId",
+   "apps/advanced/profiles/:profileId/edit",
+   "apps/advanced/profiles/new",
+   "apps/advanced/run-your-own",
+   "apps/app/:applicationId",
+   "apps/app/:applicationId/:tab",
+   "apps/assistant-connection",
+   "apps/attention",
+   "apps/browse",
+   "apps/byo",
+   "apps/chat/:endpointId",
+   "apps/chat/:endpointId/:tab",
+   "apps/chat/:endpointId/reviews/:reviewId",
+   "apps/chat/connect",
+   "apps/connect",
+   "apps/connect/:appKey",
+   "apps/connect/:appKey/:stage",
+   "apps/connections",
+   "apps/gateways",
+   "apps/gateways/:gatewayId",
+   "apps/gateways/:gatewayId/:tab",
+   "apps/review",
+   "apps/vercel-connect",
+   "artifacts",
+   "assistant-connections",
+   "audit",
+   "audit/*",
+   "audit/activity",
+   "audit/budgets",
+   "audit/costs",
+   "audit/runs",
+   "audit/timeline",
+   "auth",
+   "board-chat",
+   "board-claim/:token",
+   "budgets",
+   "cases",
+   "cases/:caseIdentifier",
+   "chat-identity/confirm",
+   "chats",
+   "chats/:agentRef",
+   "cli-auth/:id",
+   "companies",
+   "company/export/*",
+   "company/import",
+   "company/settings",
+   "company/settings/:settingsRoutePath/*",
+   "company/settings/access",
+   "company/settings/cloud-upstream",
+   "company/settings/connections",
+   "company/settings/environments",
+   "company/settings/instance",
+   "company/settings/instance/access",
+   "company/settings/instance/adapters",
+   "company/settings/instance/environments",
+   "company/settings/instance/environments/:environmentId/edit",
+   "company/settings/instance/environments/new",
+   "company/settings/instance/experimental",
+   "company/settings/instance/general",
+   "company/settings/instance/heartbeats",
+   "company/settings/instance/plugins",
+   "company/settings/instance/plugins/:pluginId",
+   "company/settings/instance/profile",
+   "company/settings/invites",
+   "company/settings/members",
+   "company/settings/secrets",
+   "company/settings/tools",
+   "company/settings/tools/:tab",
+   "costs",
+   "dashboard",
+   "dashboard/live",
+   "decisions",
+   "decisions/queues/:key",
+   "design-guide",
+   "dev/task-chat-lab",
+   "dot-connect/:id",
+   "execution-workspaces/:workspaceId",
+   "execution-workspaces/:workspaceId/configuration",
+   "execution-workspaces/:workspaceId/issues",
+   "execution-workspaces/:workspaceId/routines",
+   "execution-workspaces/:workspaceId/runtime-logs",
+   "execution-workspaces/:workspaceId/services",
+   "goals",
+   "goals/:goalId",
+   "inbox",
+   "inbox/*",
+   "inbox/all",
+   "inbox/blocked",
+   "inbox/mine",
+   "inbox/new",
+   "inbox/recent",
+   "inbox/requests",
+   "inbox/unread",
+   "instance",
+   "instance/settings",
+   "instance/settings/*",
+   "instance/settings/adapters",
+   "invite/:token",
+   "issues",
+   "issues/:issueId",
+   "issues/active",
+   "issues/all",
+   "issues/backlog",
+   "issues/done",
+   "issues/recent",
+   "learnings",
+   "mcp-connect/:id",
+   "mcp-device",
+   "oauth-handoff",
+   "onboarding",
+   "org",
+   "pipelines",
+   "pipelines/:pipelineId",
+   "pipelines/:pipelineId/add",
+   "pipelines/:pipelineId/cases/:caseId",
+   "pipelines/:pipelineId/items/:caseId",
+   "pipelines/:pipelineId/settings",
+   "pixels-office",
+   "plugins/:pluginId",
+   "projects",
+   "projects/:projectId",
+   "projects/:projectId/budget",
+   "projects/:projectId/configuration",
+   "projects/:projectId/issues",
+   "projects/:projectId/issues/:filter",
+   "projects/:projectId/overview",
+   "projects/:projectId/workspaces",
+   "projects/:projectId/workspaces/:workspaceId",
+   "review-queue",
+   "routines",
+   "routines/:routineId",
+   "routines/:routineId/:section",
+   "runs",
+   "s/:token",
+   "s/:token/issues/:issueId",
+   "search",
+   "settings",
+   "settings/*",
+   "skills/*",
+   "skills/:skillId/studio",
+   "skills/sources",
+   "skills/sources/:sourceId",
+   "skills/studio",
+   "skills/studio/:skillId",
+   "skills/studio/new",
+   "status",
+   "status-cards",
+   "status-cards/:cardId",
+   "status/:cardId",
+   "tasks",
+   "terminal",
+   "tests/perf/long-thread",
+   "timeline",
+   "tools",
+   "tools/:tab",
+   "u/:userSlug",
+   "ux-lab/bootstrap-setup",
+   "ux-lab/cross-issue-collaboration",
+   "ux-lab/responsible-user-denial",
+   "workspaces"
+  ],
+  "locales": [
+   "ar",
+   "bn",
+   "cs",
+   "da",
+   "de",
+   "el",
+   "en",
+   "es",
+   "fa",
+   "fi",
+   "fil",
+   "fr",
+   "he",
+   "hi",
+   "hu",
+   "id",
+   "it",
+   "ja",
+   "ko",
+   "mr",
+   "ms",
+   "nb",
+   "nl",
+   "pa",
+   "pl",
+   "pt-BR",
+   "pt-PT",
+   "ro",
+   "ru",
+   "sv",
+   "sw",
+   "ta",
+   "te",
+   "th",
+   "tr",
+   "uk",
+   "ur",
+   "vi",
+   "zh-CN",
+   "zh-TW"
+  ],
+  "onboarding": [
+   "AgentPreview.tsx",
+   "ConnectModelPreview.tsx",
+   "CredentialModeLink.tsx",
+   "FooterNav.tsx",
+   "ModelSourceTiles.tsx",
+   "OmpSetupCard.tsx",
+   "OnboardingCharacter.test.tsx",
+   "OnboardingCharacter.tsx",
+   "OnboardingPrimitives.tsx",
+   "PillGuy.tsx",
+   "SavedProviderKeySelect.tsx",
+   "SleepingZs.tsx",
+   "Stepper.test.ts",
+   "Stepper.tsx",
+   "omp-setup.ts",
+   "onboarding-character.test.ts",
+   "onboarding-character.ts",
+   "onboarding-motion.ts"
+  ],
+  "indexCssTokens": 700,
+  "indexCssLines": 3574
+ },
+ "uiBefore": {
+  "sidebarLabels": [
+   "Search",
+   "Dashboard",
+   "Inbox",
+   "Chat",
+   "Decisions",
+   "Status",
+   "Pixels Office",
+   "Conference Room",
+   "Work",
+   "Chat",
+   "Tasks",
+   "Tasks",
+   "Projects",
+   "Routines",
+   "Artifacts",
+   "Cases",
+   "Pipelines",
+   "Goals",
+   "Workspaces",
+   "Terminal",
+   "Org",
+   "Agents",
+   "Skills",
+   "Connectors",
+   "Audit",
+   "Organization",
+   "Org",
+   "Connectors",
+   "Timeline",
+   "Costs",
+   "Activity",
+   "Settings"
+  ],
+  "sidebarDistinct": 28,
+  "paletteClassUses": 4228,
+  "paletteClassFiles": 199,
+  "paletteDistinct": 306,
+  "arbitraryPxUses": 7,
+  "textSizesDistinct": 9,
+  "radiusClassesDistinct": 8,
+  "darkVariantUses": 1546,
+  "tokensLight": {
+   "background": "oklch(1 0 0)",
+   "foreground": "oklch(0.145 0 0)",
+   "muted-foreground": "oklch(0.556 0 0)",
+   "border": "oklch(0.922 0 0)",
+   "primary": "oklch(0.205 0 0)",
+   "primary-foreground": "oklch(0.985 0 0)",
+   "ring": "oklch(0.708 0 0)",
+   "destructive": "oklch(0.577 0.245 27.325)",
+   "muted": "oklch(0.97 0 0)",
+   "card": "oklch(1 0 0)"
+  },
+  "tokensDark": {
+   "background": "oklch(0.205 0 0)",
+   "foreground": "oklch(0.985 0 0)",
+   "muted-foreground": "oklch(0.708 0 0)",
+   "border": "oklch(1 0 0 / 10%)",
+   "primary": "oklch(0.922 0 0)",
+   "primary-foreground": "oklch(0.205 0 0)",
+   "ring": "oklch(0.556 0 0)",
+   "destructive": "oklch(0.637 0.237 25.331)",
+   "muted": "oklch(0.269 0 0)",
+   "card": "oklch(0.205 0 0)"
+  },
+  "fontSans": "\"InterVariable\", \"Inter\", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", sans-serif"
+ },
+ "omp": {
+  "adapterConfigKeys": [
+   "addDirs",
+   "advisor",
+   "agentDir",
+   "allowHome",
+   "approvalMode",
+   "bootstrapPromptTemplate",
+   "configFiles",
+   "cwd",
+   "effort",
+   "env",
+   "experimentalContextManagement",
+   "extensions",
+   "extraArgs",
+   "fallbackModels",
+   "graceSec",
+   "hooks",
+   "instructionsFilePath",
+   "maxTime",
+   "model",
+   "modelCycle",
+   "modelEfforts",
+   "modelProbeTimeoutSec",
+   "noExtensions",
+   "noLsp",
+   "noPrewalk",
+   "noPty",
+   "noRules",
+   "noSession",
+   "noSkills",
+   "noTitle",
+   "noTools",
+   "planModel",
+   "planYolo",
+   "planYoloInto",
+   "pluginDirs",
+   "prewalk",
+   "prewalkInto",
+   "printThoughts",
+   "profile",
+   "promptTemplate",
+   "rpcSteering",
+   "skills",
+   "slowModel",
+   "smolModel",
+   "systemPrompt",
+   "thinking",
+   "thinkingEffort",
+   "timeoutSec",
+   "tools"
+  ],
+  "version": "omp/18.17.0",
+  "settingsTotal": 602,
+  "sections": {
+   "appearance": 50,
+   "context": 31,
+   "files": 28,
+   "interaction": 61,
+   "internal": 152,
+   "memory": 31,
+   "model": 65,
+   "providers": 41,
+   "shell": 18,
+   "tasks": 45,
+   "tools": 80
+  },
+  "types": {
+   "string": 60,
+   "enum": 102,
+   "boolean": 240,
+   "number": 150,
+   "array": 32,
+   "record": 18
+  },
+  "settings": [
+   {
+    "key": "theme.dark",
+    "section": "appearance",
+    "type": "string"
+   },
+   {
+    "key": "theme.light",
+    "section": "appearance",
+    "type": "string"
+   },
+   {
+    "key": "symbolPreset",
+    "section": "appearance",
+    "type": "unicode|nerd|ascii",
+    "value": "nerd"
+   },
+   {
+    "key": "colorBlindMode",
+    "section": "appearance",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "composer.shape",
+    "section": "appearance",
+    "type": "string"
+   },
+   {
+    "key": "composer.tokenRate",
+    "section": "appearance",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "statusLine.preset",
+    "section": "appearance",
+    "type": "default|minimal|compact|full|nerd|ascii|custom",
+    "value": "full"
+   },
+   {
+    "key": "statusLine.separator",
+    "section": "appearance",
+    "type": "powerline|powerline-thin|slash|pipe|block|none|ascii",
+    "value": "powerline-thin"
+   },
+   {
+    "key": "statusLine.contextLine",
+    "section": "appearance",
+    "type": "off|percentage|annotated|embedded",
+    "value": "embedded"
+   },
+   {
+    "key": "statusLine.sessionAccent",
+    "section": "appearance",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "statusLine.transparent",
+    "section": "appearance",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "statusLine.compactThinkingLevel",
+    "section": "appearance",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "statusLine.showHookStatus",
+    "section": "appearance",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "terminal.showImages",
+    "section": "appearance",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "images.autoResize",
+    "section": "appearance",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "images.blockImages",
+    "section": "appearance",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "tui.resizeScrollback",
+    "section": "appearance",
+    "type": "append|rebuild|preserve",
+    "value": "rebuild"
+   },
+   {
+    "key": "tui.completeScrollback",
+    "section": "appearance",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "terminal.showProgress",
+    "section": "appearance",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "terminal.programStatus",
+    "section": "appearance",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "tui.textSizing",
+    "section": "appearance",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "tui.colorfulMarkdown",
+    "section": "appearance",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "tui.renderMermaid",
+    "section": "appearance",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "tui.renderSvg",
+    "section": "appearance",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "tui.autoGraph",
+    "section": "appearance",
+    "type": "auto|smart|always|off",
+    "value": "auto"
+   },
+   {
+    "key": "tui.reactions",
+    "section": "appearance",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "tui.codexResetFireworks",
+    "section": "appearance",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "tui.titleState",
+    "section": "appearance",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "tui.titleSpinner",
+    "section": "appearance",
+    "type": "braille|pulse|dots|line",
+    "value": "braille"
+   },
+   {
+    "key": "tui.spinnerInterval",
+    "section": "appearance",
+    "type": "number",
+    "value": "(not set)"
+   },
+   {
+    "key": "tui.maxFps",
+    "section": "appearance",
+    "type": "number",
+    "value": "30"
+   },
+   {
+    "key": "tui.hyperlinks",
+    "section": "appearance",
+    "type": "off|auto|always",
+    "value": "auto"
+   },
+   {
+    "key": "tui.mouse",
+    "section": "appearance",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "tui.tight",
+    "section": "appearance",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "display.shimmer",
+    "section": "appearance",
+    "type": "classic|kitt|disabled",
+    "value": "classic"
+   },
+   {
+    "key": "tui.motion",
+    "section": "appearance",
+    "type": "full|reduced|none",
+    "value": "full"
+   },
+   {
+    "key": "display.pinnedAgents",
+    "section": "appearance",
+    "type": "off|collapsed|full",
+    "value": "collapsed"
+   },
+   {
+    "key": "display.subagentLivePreview",
+    "section": "appearance",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "display.smoothStreaming",
+    "section": "appearance",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "display.hideToolActivity",
+    "section": "appearance",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "display.showTokenUsage",
+    "section": "appearance",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "display.showTurnTime",
+    "section": "appearance",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "display.cacheMissMarker",
+    "section": "appearance",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "display.shellVisualization",
+    "section": "appearance",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "display.advisorCollapsedLines",
+    "section": "appearance",
+    "type": "number",
+    "value": "0"
+   },
+   {
+    "key": "display.collapseCompacted",
+    "section": "appearance",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "showHardwareCursor",
+    "section": "appearance",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "tui.imeSafeCursor",
+    "section": "appearance",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "task.showResolvedModelBadge",
+    "section": "appearance",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "title.icons",
+    "section": "appearance",
+    "type": "nf+emoji|emoji|boring",
+    "value": "nf+emoji"
+   },
+   {
+    "key": "workspace.additionalDirectories",
+    "section": "context",
+    "type": "array"
+   },
+   {
+    "key": "contextFiles.extra",
+    "section": "context",
+    "type": "array"
+   },
+   {
+    "key": "contextPromotion.enabled",
+    "section": "context",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "extendedContext",
+    "section": "context",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "compaction.enabled",
+    "section": "context",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "compaction.experimentalContextManagement",
+    "section": "context",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "compaction.midTurnEnabled",
+    "section": "context",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "compaction.methodOrder",
+    "section": "context",
+    "type": "array"
+   },
+   {
+    "key": "compaction.thresholdPercent",
+    "section": "context",
+    "type": "number",
+    "value": "85"
+   },
+   {
+    "key": "compaction.thresholdTokens",
+    "section": "context",
+    "type": "number",
+    "value": "-1"
+   },
+   {
+    "key": "compaction.handoffSaveToDisk",
+    "section": "context",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "compaction.remoteStreamingV2Enabled",
+    "section": "context",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "compaction.asyncEnabled",
+    "section": "context",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "compaction.idleEnabled",
+    "section": "context",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "compaction.idleThresholdTokens",
+    "section": "context",
+    "type": "number",
+    "value": "200000"
+   },
+   {
+    "key": "compaction.idleTimeoutSeconds",
+    "section": "context",
+    "type": "number",
+    "value": "300"
+   },
+   {
+    "key": "compaction.supersedeReads",
+    "section": "context",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "compaction.dropUseless",
+    "section": "context",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "snapcompact.systemPrompt",
+    "section": "context",
+    "type": "none|agents-md|all",
+    "value": "none"
+   },
+   {
+    "key": "snapcompact.toolResults",
+    "section": "context",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "tools.format",
+    "section": "context",
+    "type": "auto|native|glm|hermes|kimi|xml|anthropic|deepseek|harmony|qwen3|gemini|gemma|minimax",
+    "value": "auto"
+   },
+   {
+    "key": "snapcompact.shape",
+    "section": "context",
+    "type": "auto|8x8r-bw|8x8r-sent|8x8u-bw|8x8u-sent|6x6u-bw|6x6u-sent|5x8-bw|5x8-sent|6x12-dim|8x13-bw|8on16-bw|8on22-bw|11on16-bw|silver16-bw|doc-8on16-bw|doc-8on16-sent|doc-8on16-sent-dim",
+    "value": "auto"
+   },
+   {
+    "key": "branchSummary.enabled",
+    "section": "context",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "ttsr.enabled",
+    "section": "context",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "ttsr.judge",
+    "section": "context",
+    "type": "auto|on|off",
+    "value": "auto"
+   },
+   {
+    "key": "ttsr.contextMode",
+    "section": "context",
+    "type": "discard|keep",
+    "value": "discard"
+   },
+   {
+    "key": "ttsr.interruptMode",
+    "section": "context",
+    "type": "never|prose-only|tool-only|always",
+    "value": "always"
+   },
+   {
+    "key": "ttsr.repeatMode",
+    "section": "context",
+    "type": "once|after-gap",
+    "value": "once"
+   },
+   {
+    "key": "ttsr.repeatGap",
+    "section": "context",
+    "type": "number",
+    "value": "10"
+   },
+   {
+    "key": "ttsr.builtinRules",
+    "section": "context",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "ttsr.disabledRules",
+    "section": "context",
+    "type": "array"
+   },
+   {
+    "key": "edit.mode",
+    "section": "files",
+    "type": "apply_patch|hashline|patch|replace|sloppy|none",
+    "value": "hashline"
+   },
+   {
+    "key": "edit.fuzzyMatch",
+    "section": "files",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "edit.fuzzyThreshold",
+    "section": "files",
+    "type": "number",
+    "value": "0.95"
+   },
+   {
+    "key": "edit.streamingAbort",
+    "section": "files",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "edit.recoverInlineEdits",
+    "section": "files",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "edit.blockAutoGenerated",
+    "section": "files",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "edit.enforceSeenLines",
+    "section": "files",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "edit.blackbox.enabled",
+    "section": "files",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "edit.autoRepair.enabled",
+    "section": "files",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "readLineNumbers",
+    "section": "files",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "read.defaultLimit",
+    "section": "files",
+    "type": "number",
+    "value": "5000"
+   },
+   {
+    "key": "read.renderMarkdown",
+    "section": "files",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "read.summarize.enabled",
+    "section": "files",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "read.summarize.prose",
+    "section": "files",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "read.summarize.minBodyLines",
+    "section": "files",
+    "type": "number",
+    "value": "4"
+   },
+   {
+    "key": "read.summarize.minCommentLines",
+    "section": "files",
+    "type": "number",
+    "value": "6"
+   },
+   {
+    "key": "read.summarize.minTotalLines",
+    "section": "files",
+    "type": "number",
+    "value": "100"
+   },
+   {
+    "key": "read.summarize.unfoldUntil",
+    "section": "files",
+    "type": "number",
+    "value": "50"
+   },
+   {
+    "key": "read.summarize.unfoldLimit",
+    "section": "files",
+    "type": "number",
+    "value": "100"
+   },
+   {
+    "key": "read.toolResultPreview",
+    "section": "files",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "lsp.enabled",
+    "section": "files",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "lsp.lazy",
+    "section": "files",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "lsp.shared",
+    "section": "files",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "lsp.formatOnWrite",
+    "section": "files",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "lsp.diagnosticsOnWrite",
+    "section": "files",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "lsp.diagnosticsOnEdit",
+    "section": "files",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "lsp.diagnosticsDeduplicate",
+    "section": "files",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "lsp.requestTimeout",
+    "section": "files",
+    "type": "number",
+    "value": "10"
+   },
+   {
+    "key": "autoResume",
+    "section": "interaction",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "git.enabled",
+    "section": "interaction",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "steeringMode",
+    "section": "interaction",
+    "type": "all|one-at-a-time",
+    "value": "one-at-a-time"
+   },
+   {
+    "key": "followUpMode",
+    "section": "interaction",
+    "type": "all|one-at-a-time",
+    "value": "one-at-a-time"
+   },
+   {
+    "key": "interruptMode",
+    "section": "interaction",
+    "type": "immediate|wait",
+    "value": "immediate"
+   },
+   {
+    "key": "btw.inject",
+    "section": "interaction",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "tui.vimMode",
+    "section": "interaction",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "tui.vimModeDisplay",
+    "section": "interaction",
+    "type": "text|icon|none",
+    "value": "text"
+   },
+   {
+    "key": "loop.mode",
+    "section": "interaction",
+    "type": "prompt|compact|reset",
+    "value": "prompt"
+   },
+   {
+    "key": "loop.conditionTimeoutMs",
+    "section": "interaction",
+    "type": "number",
+    "value": "30000"
+   },
+   {
+    "key": "composer.recallClearedDrafts",
+    "section": "interaction",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "doubleEscapeAction",
+    "section": "interaction",
+    "type": "rewind|tree|none",
+    "value": "rewind"
+   },
+   {
+    "key": "input.bareExitOnEmptySession",
+    "section": "interaction",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "input.bareSlashCommands",
+    "section": "interaction",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "treeFilterMode",
+    "section": "interaction",
+    "type": "default|no-tools|user-only|labeled-only|all",
+    "value": "default"
+   },
+   {
+    "key": "autocompleteMaxVisible",
+    "section": "interaction",
+    "type": "number",
+    "value": "10"
+   },
+   {
+    "key": "spelling.typoDetection",
+    "section": "interaction",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "spelling.autocomplete",
+    "section": "interaction",
+    "type": "off|auto|ngram|smollm|apple",
+    "value": "auto"
+   },
+   {
+    "key": "composer.predictions",
+    "section": "interaction",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "composer.predictionAlternatives",
+    "section": "interaction",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "spelling.autocorrect",
+    "section": "interaction",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "emojiAutocomplete",
+    "section": "interaction",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "paste.largeMenuThreshold",
+    "section": "interaction",
+    "type": "number",
+    "value": "100"
+   },
+   {
+    "key": "startup.quiet",
+    "section": "interaction",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "startup.showSplash",
+    "section": "interaction",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "startup.setupWizard",
+    "section": "interaction",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "startup.checkUpdate",
+    "section": "interaction",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "update.channel",
+    "section": "interaction",
+    "type": "stable|canary",
+    "value": "stable"
+   },
+   {
+    "key": "update.auto",
+    "section": "interaction",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "marketplace.autoUpdate",
+    "section": "interaction",
+    "type": "off|notify|auto",
+    "value": "auto"
+   },
+   {
+    "key": "startup.changelogMode",
+    "section": "interaction",
+    "type": "summary|expanded|hidden",
+    "value": "summary"
+   },
+   {
+    "key": "magicKeywords.enabled",
+    "section": "interaction",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "magicKeywords.ultrathink",
+    "section": "interaction",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "magicKeywords.chillax",
+    "section": "interaction",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "magicKeywords.orchestrate",
+    "section": "interaction",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "magicKeywords.workflow",
+    "section": "interaction",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "magicKeywords.jevify",
+    "section": "interaction",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "completion.notify",
+    "section": "interaction",
+    "type": "on|off",
+    "value": "on"
+   },
+   {
+    "key": "error.notify",
+    "section": "interaction",
+    "type": "on|off",
+    "value": "on"
+   },
+   {
+    "key": "ask.timeout",
+    "section": "interaction",
+    "type": "number",
+    "value": "0"
+   },
+   {
+    "key": "ask.notify",
+    "section": "interaction",
+    "type": "on|off",
+    "value": "on"
+   },
+   {
+    "key": "recap.enabled",
+    "section": "interaction",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "recap.idleSeconds",
+    "section": "interaction",
+    "type": "number",
+    "value": "240"
+   },
+   {
+    "key": "session.worktreeScope",
+    "section": "interaction",
+    "type": "directory|repo",
+    "value": "repo"
+   },
+   {
+    "key": "power.sleepPrevention",
+    "section": "interaction",
+    "type": "off|idle|display|system",
+    "value": "idle"
+   },
+   {
+    "key": "features.unexpectedStopDetection",
+    "section": "interaction",
+    "type": "none|mechanical|smart",
+    "value": "smart"
+   },
+   {
+    "key": "tools.approval",
+    "section": "interaction",
+    "type": "record"
+   },
+   {
+    "key": "tools.approvalMode",
+    "section": "interaction",
+    "type": "always-ask|always-ask-cached|write|yolo",
+    "value": "yolo"
+   },
+   {
+    "key": "tools.restrictedFolders",
+    "section": "interaction",
+    "type": "array"
+   },
+   {
+    "key": "skills.registryUrl",
+    "section": "interaction",
+    "type": "string"
+   },
+   {
+    "key": "stt.enabled",
+    "section": "interaction",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "stt.submitTrigger",
+    "section": "interaction",
+    "type": "never|release|release-complete|say-submit",
+    "value": "never"
+   },
+   {
+    "key": "collab.relayUrl",
+    "section": "interaction",
+    "type": "string"
+   },
+   {
+    "key": "collab.webUrl",
+    "section": "interaction",
+    "type": "string"
+   },
+   {
+    "key": "collab.displayName",
+    "section": "interaction",
+    "type": "string"
+   },
+   {
+    "key": "collab.autoStart",
+    "section": "interaction",
+    "type": "off|view|control",
+    "value": "off"
+   },
+   {
+    "key": "share.serverUrl",
+    "section": "interaction",
+    "type": "string"
+   },
+   {
+    "key": "share.store",
+    "section": "interaction",
+    "type": "blob|gist",
+    "value": "blob"
+   },
+   {
+    "key": "share.redactSecrets",
+    "section": "interaction",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "stream.serverUrl",
+    "section": "interaction",
+    "type": "string"
+   },
+   {
+    "key": "stream.redactPatterns",
+    "section": "interaction",
+    "type": "array"
+   },
+   {
+    "key": "auth.broker.url",
+    "section": "internal",
+    "type": "string"
+   },
+   {
+    "key": "auth.broker.token",
+    "section": "internal",
+    "type": "string"
+   },
+   {
+    "key": "auth.accountPolicies",
+    "section": "internal",
+    "type": "array"
+   },
+   {
+    "key": "enabledModels",
+    "section": "internal",
+    "type": "array"
+   },
+   {
+    "key": "enabledProviders",
+    "section": "internal",
+    "type": "array"
+   },
+   {
+    "key": "disabledProviders",
+    "section": "internal",
+    "type": "array"
+   },
+   {
+    "key": "modelRoles",
+    "section": "internal",
+    "type": "record"
+   },
+   {
+    "key": "judgment.attemptTimeoutMs",
+    "section": "internal",
+    "type": "number",
+    "value": "3000"
+   },
+   {
+    "key": "modelPresets",
+    "section": "internal",
+    "type": "record"
+   },
+   {
+    "key": "modelTags",
+    "section": "internal",
+    "type": "record"
+   },
+   {
+    "key": "modelProviderOrder",
+    "section": "internal",
+    "type": "array"
+   },
+   {
+    "key": "cycleOrder",
+    "section": "internal",
+    "type": "array"
+   },
+   {
+    "key": "setupVersion",
+    "section": "internal",
+    "type": "number",
+    "value": "2"
+   },
+   {
+    "key": "statusLine.leftSegments",
+    "section": "internal",
+    "type": "array"
+   },
+   {
+    "key": "statusLine.rightSegments",
+    "section": "internal",
+    "type": "array"
+   },
+   {
+    "key": "statusLine.segmentOptions",
+    "section": "internal",
+    "type": "record"
+   },
+   {
+    "key": "tui.maxInlineImageColumns",
+    "section": "internal",
+    "type": "number",
+    "value": "100"
+   },
+   {
+    "key": "tui.maxInlineImageRows",
+    "section": "internal",
+    "type": "number",
+    "value": "20"
+   },
+   {
+    "key": "tui.maxInlineImages",
+    "section": "internal",
+    "type": "number",
+    "value": "8"
+   },
+   {
+    "key": "retry.enabled",
+    "section": "internal",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "retry.baseDelayMs",
+    "section": "internal",
+    "type": "number",
+    "value": "500"
+   },
+   {
+    "key": "providers.anthropic.slowMode",
+    "section": "internal",
+    "type": "off|auto",
+    "value": "off"
+   },
+   {
+    "key": "thinkingBudgets.minimal",
+    "section": "internal",
+    "type": "number",
+    "value": "1024"
+   },
+   {
+    "key": "thinkingBudgets.low",
+    "section": "internal",
+    "type": "number",
+    "value": "2048"
+   },
+   {
+    "key": "thinkingBudgets.medium",
+    "section": "internal",
+    "type": "number",
+    "value": "8192"
+   },
+   {
+    "key": "thinkingBudgets.high",
+    "section": "internal",
+    "type": "number",
+    "value": "16384"
+   },
+   {
+    "key": "thinkingBudgets.xhigh",
+    "section": "internal",
+    "type": "number",
+    "value": "32768"
+   },
+   {
+    "key": "thinkingBudgets.max",
+    "section": "internal",
+    "type": "number",
+    "value": "32768"
+   },
+   {
+    "key": "session.warnCost",
+    "section": "internal",
+    "type": "number",
+    "value": "(not set)"
+   },
+   {
+    "key": "session.maxCost",
+    "section": "internal",
+    "type": "number",
+    "value": "(not set)"
+   },
+   {
+    "key": "compaction.modelThresholds",
+    "section": "internal",
+    "type": "record"
+   },
+   {
+    "key": "compaction.modelThresholdsEnabled",
+    "section": "internal",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "compaction.reserveTokens",
+    "section": "internal",
+    "type": "number",
+    "value": "(not set)"
+   },
+   {
+    "key": "compaction.keepRecentTokens",
+    "section": "internal",
+    "type": "number",
+    "value": "20000"
+   },
+   {
+    "key": "compaction.autoContinue",
+    "section": "internal",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "compaction.remoteEndpoint",
+    "section": "internal",
+    "type": "string"
+   },
+   {
+    "key": "compaction.v2RetainedMessageBudget",
+    "section": "internal",
+    "type": "number",
+    "value": "64000"
+   },
+   {
+    "key": "branchSummary.reserveTokens",
+    "section": "internal",
+    "type": "number",
+    "value": "16384"
+   },
+   {
+    "key": "memories.enabled",
+    "section": "internal",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "memories.maxRolloutsPerStartup",
+    "section": "internal",
+    "type": "number",
+    "value": "64"
+   },
+   {
+    "key": "memories.maxRolloutAgeDays",
+    "section": "internal",
+    "type": "number",
+    "value": "30"
+   },
+   {
+    "key": "memories.minRolloutIdleHours",
+    "section": "internal",
+    "type": "number",
+    "value": "12"
+   },
+   {
+    "key": "memories.threadScanLimit",
+    "section": "internal",
+    "type": "number",
+    "value": "300"
+   },
+   {
+    "key": "memories.maxRawMemoriesForGlobal",
+    "section": "internal",
+    "type": "number",
+    "value": "200"
+   },
+   {
+    "key": "memories.stage1Concurrency",
+    "section": "internal",
+    "type": "number",
+    "value": "8"
+   },
+   {
+    "key": "memories.stage1LeaseSeconds",
+    "section": "internal",
+    "type": "number",
+    "value": "120"
+   },
+   {
+    "key": "memories.stage1RetryDelaySeconds",
+    "section": "internal",
+    "type": "number",
+    "value": "120"
+   },
+   {
+    "key": "memories.phase2LeaseSeconds",
+    "section": "internal",
+    "type": "number",
+    "value": "180"
+   },
+   {
+    "key": "memories.phase2RetryDelaySeconds",
+    "section": "internal",
+    "type": "number",
+    "value": "180"
+   },
+   {
+    "key": "memories.phase2HeartbeatSeconds",
+    "section": "internal",
+    "type": "number",
+    "value": "30"
+   },
+   {
+    "key": "memories.rolloutPayloadPercent",
+    "section": "internal",
+    "type": "number",
+    "value": "0.7"
+   },
+   {
+    "key": "memories.phase1InputTokenLimit",
+    "section": "internal",
+    "type": "number",
+    "value": "4000"
+   },
+   {
+    "key": "memories.fallbackTokenLimit",
+    "section": "internal",
+    "type": "number",
+    "value": "16000"
+   },
+   {
+    "key": "memories.summaryInjectionTokenLimit",
+    "section": "internal",
+    "type": "number",
+    "value": "5000"
+   },
+   {
+    "key": "sharpshooter.minPromptLength",
+    "section": "internal",
+    "type": "number",
+    "value": "16"
+   },
+   {
+    "key": "sharpshooter.intervalMinutes",
+    "section": "internal",
+    "type": "number",
+    "value": "5"
+   },
+   {
+    "key": "sharpshooter.injectionTokenLimit",
+    "section": "internal",
+    "type": "number",
+    "value": "15000"
+   },
+   {
+    "key": "autolearn.minToolCalls",
+    "section": "internal",
+    "type": "number",
+    "value": "5"
+   },
+   {
+    "key": "mnemopi.retainEveryNTurns",
+    "section": "internal",
+    "type": "number",
+    "value": "4"
+   },
+   {
+    "key": "mnemopi.recallLimit",
+    "section": "internal",
+    "type": "number",
+    "value": "8"
+   },
+   {
+    "key": "mnemopi.recallContextTurns",
+    "section": "internal",
+    "type": "number",
+    "value": "3"
+   },
+   {
+    "key": "mnemopi.recallMaxQueryChars",
+    "section": "internal",
+    "type": "number",
+    "value": "4000"
+   },
+   {
+    "key": "mnemopi.injectionTokenLimit",
+    "section": "internal",
+    "type": "number",
+    "value": "5000"
+   },
+   {
+    "key": "mnemopi.debug",
+    "section": "internal",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "hindsight.bankIdPrefix",
+    "section": "internal",
+    "type": "string"
+   },
+   {
+    "key": "hindsight.bankMission",
+    "section": "internal",
+    "type": "string"
+   },
+   {
+    "key": "hindsight.retainMission",
+    "section": "internal",
+    "type": "string"
+   },
+   {
+    "key": "hindsight.retainEveryNTurns",
+    "section": "internal",
+    "type": "number",
+    "value": "3"
+   },
+   {
+    "key": "hindsight.retainOverlapTurns",
+    "section": "internal",
+    "type": "number",
+    "value": "2"
+   },
+   {
+    "key": "hindsight.retainContext",
+    "section": "internal",
+    "type": "string"
+   },
+   {
+    "key": "hindsight.recallBudget",
+    "section": "internal",
+    "type": "low|mid|high",
+    "value": "mid"
+   },
+   {
+    "key": "hindsight.recallMaxTokens",
+    "section": "internal",
+    "type": "number",
+    "value": "1024"
+   },
+   {
+    "key": "hindsight.recallContextTurns",
+    "section": "internal",
+    "type": "number",
+    "value": "1"
+   },
+   {
+    "key": "hindsight.recallMaxQueryChars",
+    "section": "internal",
+    "type": "number",
+    "value": "800"
+   },
+   {
+    "key": "hindsight.recallTypes",
+    "section": "internal",
+    "type": "array"
+   },
+   {
+    "key": "hindsight.debug",
+    "section": "internal",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "hindsight.requestTimeoutMs",
+    "section": "internal",
+    "type": "number",
+    "value": "30000"
+   },
+   {
+    "key": "hindsight.reflectTimeoutMs",
+    "section": "internal",
+    "type": "number",
+    "value": "120000"
+   },
+   {
+    "key": "hindsight.recallTimeoutMs",
+    "section": "internal",
+    "type": "number",
+    "value": "30000"
+   },
+   {
+    "key": "hindsight.retainTimeoutMs",
+    "section": "internal",
+    "type": "number",
+    "value": "60000"
+   },
+   {
+    "key": "hindsight.mentalModelMaxRenderChars",
+    "section": "internal",
+    "type": "number",
+    "value": "16000"
+   },
+   {
+    "key": "edit.modelVariants",
+    "section": "internal",
+    "type": "record"
+   },
+   {
+    "key": "async.maxJobs",
+    "section": "internal",
+    "type": "number",
+    "value": "100"
+   },
+   {
+    "key": "dev.autoqaPush.token",
+    "section": "internal",
+    "type": "string"
+   },
+   {
+    "key": "dev.autoqaConsent",
+    "section": "internal",
+    "type": "unset|granted|denied",
+    "value": "granted"
+   },
+   {
+    "key": "shellPath",
+    "section": "internal",
+    "type": "string"
+   },
+   {
+    "key": "shellCommandPrefix",
+    "section": "internal",
+    "type": "string"
+   },
+   {
+    "key": "bashInterceptor.patterns",
+    "section": "internal",
+    "type": "array"
+   },
+   {
+    "key": "shellMinimizer.settingsPath",
+    "section": "internal",
+    "type": "string"
+   },
+   {
+    "key": "shellMinimizer.only",
+    "section": "internal",
+    "type": "array"
+   },
+   {
+    "key": "shellMinimizer.except",
+    "section": "internal",
+    "type": "array"
+   },
+   {
+    "key": "shellMinimizer.maxCaptureBytes",
+    "section": "internal",
+    "type": "number",
+    "value": "4194304"
+   },
+   {
+    "key": "shellMinimizer.legacyFilters",
+    "section": "internal",
+    "type": "boolean",
+    "value": "(not set)"
+   },
+   {
+    "key": "bash.autoBackground.thresholdMs",
+    "section": "internal",
+    "type": "number",
+    "value": "60000"
+   },
+   {
+    "key": "eval.autoBackground.thresholdMs",
+    "section": "internal",
+    "type": "number",
+    "value": "60000"
+   },
+   {
+    "key": "task.agentSoftRequestBudget",
+    "section": "internal",
+    "type": "record"
+   },
+   {
+    "key": "task.disabledAgents",
+    "section": "internal",
+    "type": "array"
+   },
+   {
+    "key": "task.agentModelOverrides",
+    "section": "internal",
+    "type": "record"
+   },
+   {
+    "key": "task.agentServiceTierOverrides",
+    "section": "internal",
+    "type": "record"
+   },
+   {
+    "key": "task.agentCompactionThresholdOverrides",
+    "section": "internal",
+    "type": "record"
+   },
+   {
+    "key": "task.agentAccountPools",
+    "section": "internal",
+    "type": "record"
+   },
+   {
+    "key": "task.agentPrewalk",
+    "section": "internal",
+    "type": "record"
+   },
+   {
+    "key": "task.agentAdvisor",
+    "section": "internal",
+    "type": "record"
+   },
+   {
+    "key": "extensions",
+    "section": "internal",
+    "type": "array"
+   },
+   {
+    "key": "disabledExtensions",
+    "section": "internal",
+    "type": "array"
+   },
+   {
+    "key": "skills.enabled",
+    "section": "internal",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "skills.enableCodexUser",
+    "section": "internal",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "skills.enableClaudeUser",
+    "section": "internal",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "skills.enableClaudeProject",
+    "section": "internal",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "skills.enablePiUser",
+    "section": "internal",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "skills.enablePiProject",
+    "section": "internal",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "skills.enableAgentsUser",
+    "section": "internal",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "skills.enableAgentsProject",
+    "section": "internal",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "skills.customDirectories",
+    "section": "internal",
+    "type": "array"
+   },
+   {
+    "key": "skills.ignoredSkills",
+    "section": "internal",
+    "type": "array"
+   },
+   {
+    "key": "skills.manualSkills",
+    "section": "internal",
+    "type": "array"
+   },
+   {
+    "key": "skills.includeSkills",
+    "section": "internal",
+    "type": "array"
+   },
+   {
+    "key": "searxng.token",
+    "section": "internal",
+    "type": "string"
+   },
+   {
+    "key": "searxng.basicUsername",
+    "section": "internal",
+    "type": "string"
+   },
+   {
+    "key": "searxng.basicPassword",
+    "section": "internal",
+    "type": "string"
+   },
+   {
+    "key": "searxng.categories",
+    "section": "internal",
+    "type": "string"
+   },
+   {
+    "key": "searxng.engines",
+    "section": "internal",
+    "type": "string"
+   },
+   {
+    "key": "searxng.language",
+    "section": "internal",
+    "type": "string"
+   },
+   {
+    "key": "searxng.safesearch",
+    "section": "internal",
+    "type": "number",
+    "value": "(not set)"
+   },
+   {
+    "key": "images.urls.options",
+    "section": "internal",
+    "type": "record"
+   },
+   {
+    "key": "images.urls.credentials",
+    "section": "internal",
+    "type": "record"
+   },
+   {
+    "key": "stt.language",
+    "section": "internal",
+    "type": "string"
+   },
+   {
+    "key": "commit.mapReduceEnabled",
+    "section": "internal",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "commit.mapReduceThreshold",
+    "section": "internal",
+    "type": "number",
+    "value": "5000"
+   },
+   {
+    "key": "commit.mapBatchTokenBudget",
+    "section": "internal",
+    "type": "number",
+    "value": "16000"
+   },
+   {
+    "key": "commit.cacheEnabled",
+    "section": "internal",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "commit.cacheTtlDays",
+    "section": "internal",
+    "type": "number",
+    "value": "14"
+   },
+   {
+    "key": "commit.changelogMaxDiffChars",
+    "section": "internal",
+    "type": "number",
+    "value": "120000"
+   },
+   {
+    "key": "gc.blobs",
+    "section": "internal",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "gc.archive",
+    "section": "internal",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "gc.wal",
+    "section": "internal",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "gc.coldArchiveAfterDays",
+    "section": "internal",
+    "type": "number",
+    "value": "30"
+   },
+   {
+    "key": "gc.retainNewestGlobal",
+    "section": "internal",
+    "type": "number",
+    "value": "20"
+   },
+   {
+    "key": "gc.retainNewestPerCwd",
+    "section": "internal",
+    "type": "number",
+    "value": "10"
+   },
+   {
+    "key": "gc.stale",
+    "section": "internal",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "gc.staleRetainNewest",
+    "section": "internal",
+    "type": "number",
+    "value": "20"
+   },
+   {
+    "key": "gc.staleRetainDays",
+    "section": "internal",
+    "type": "number",
+    "value": "30"
+   },
+   {
+    "key": "gc.compress",
+    "section": "internal",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "gc.compressAfterDays",
+    "section": "internal",
+    "type": "number",
+    "value": "7"
+   },
+   {
+    "key": "gc.autoCompress",
+    "section": "internal",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "spotlight.experiment.holdout",
+    "section": "internal",
+    "type": "number",
+    "value": "0.15"
+   },
+   {
+    "key": "spotlight.experiment.scoreFree",
+    "section": "internal",
+    "type": "number",
+    "value": "0.15"
+   },
+   {
+    "key": "spotlight.experiment.tools",
+    "section": "internal",
+    "type": "array"
+   },
+   {
+    "key": "spotlight.url",
+    "section": "internal",
+    "type": "string"
+   },
+   {
+    "key": "spotlight.model",
+    "section": "internal",
+    "type": "string"
+   },
+   {
+    "key": "spotlight.thinking",
+    "section": "internal",
+    "type": "low|med|high|max",
+    "value": "low"
+   },
+   {
+    "key": "spotlight.timeoutMs",
+    "section": "internal",
+    "type": "number",
+    "value": "5000"
+   },
+   {
+    "key": "memory.backend",
+    "section": "memory",
+    "type": "off|local|hindsight|mnemopi|sharpshooter",
+    "value": "hindsight"
+   },
+   {
+    "key": "sharpshooter.model",
+    "section": "memory",
+    "type": "string"
+   },
+   {
+    "key": "autolearn.enabled",
+    "section": "memory",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "autolearn.autoContinue",
+    "section": "memory",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "mnemopi.dbPath",
+    "section": "memory",
+    "type": "string"
+   },
+   {
+    "key": "mnemopi.bank",
+    "section": "memory",
+    "type": "string"
+   },
+   {
+    "key": "mnemopi.scoping",
+    "section": "memory",
+    "type": "global|per-project|per-project-tagged",
+    "value": "global"
+   },
+   {
+    "key": "mnemopi.embeddingVariant",
+    "section": "memory",
+    "type": "en|multilingual",
+    "value": "multilingual"
+   },
+   {
+    "key": "mnemopi.autoRecall",
+    "section": "memory",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "mnemopi.autoRetain",
+    "section": "memory",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "mnemopi.polyphonicRecall",
+    "section": "memory",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "mnemopi.enhancedRecall",
+    "section": "memory",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "mnemopi.proactiveLinking",
+    "section": "memory",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "mnemopi.noEmbeddings",
+    "section": "memory",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "mnemopi.embeddingModel",
+    "section": "memory",
+    "type": "string"
+   },
+   {
+    "key": "mnemopi.embeddingApiUrl",
+    "section": "memory",
+    "type": "string"
+   },
+   {
+    "key": "mnemopi.embeddingApiKey",
+    "section": "memory",
+    "type": "string"
+   },
+   {
+    "key": "mnemopi.llmMode",
+    "section": "memory",
+    "type": "none|smol|remote",
+    "value": "smol"
+   },
+   {
+    "key": "mnemopi.llmBaseUrl",
+    "section": "memory",
+    "type": "string"
+   },
+   {
+    "key": "mnemopi.llmApiKey",
+    "section": "memory",
+    "type": "string"
+   },
+   {
+    "key": "mnemopi.llmModel",
+    "section": "memory",
+    "type": "string"
+   },
+   {
+    "key": "hindsight.apiUrl",
+    "section": "memory",
+    "type": "string"
+   },
+   {
+    "key": "hindsight.apiToken",
+    "section": "memory",
+    "type": "string"
+   },
+   {
+    "key": "hindsight.bankId",
+    "section": "memory",
+    "type": "string"
+   },
+   {
+    "key": "hindsight.scoping",
+    "section": "memory",
+    "type": "global|per-project|per-project-tagged",
+    "value": "global"
+   },
+   {
+    "key": "hindsight.globalScope",
+    "section": "memory",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "hindsight.autoRecall",
+    "section": "memory",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "hindsight.autoRetain",
+    "section": "memory",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "hindsight.retainMode",
+    "section": "memory",
+    "type": "full-session|last-turn",
+    "value": "full-session"
+   },
+   {
+    "key": "hindsight.mentalModelsEnabled",
+    "section": "memory",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "hindsight.mentalModelAutoSeed",
+    "section": "memory",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "modelRoleStorage",
+    "section": "model",
+    "type": "global|project",
+    "value": "global"
+   },
+   {
+    "key": "prewalk.enabled",
+    "section": "model",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "prewalk.from",
+    "section": "model",
+    "type": "string"
+   },
+   {
+    "key": "prewalk.into",
+    "section": "model",
+    "type": "string"
+   },
+   {
+    "key": "prewalk.auto",
+    "section": "model",
+    "type": "off|suggest|on",
+    "value": "off"
+   },
+   {
+    "key": "prewalk.autoTarget",
+    "section": "model",
+    "type": "string"
+   },
+   {
+    "key": "images.describeForTextModels",
+    "section": "model",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "defaultThinkingLevel",
+    "section": "model",
+    "type": "minimal|low|medium|high|xhigh|max|auto",
+    "value": "auto"
+   },
+   {
+    "key": "hideThinkingBlock",
+    "section": "model",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "expandThinkingBlocks",
+    "section": "model",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "proseOnlyThinking",
+    "section": "model",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "omitThinking",
+    "section": "model",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "externalThinking",
+    "section": "model",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "model.loopGuard.enabled",
+    "section": "model",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "model.loopGuard.checkAssistantContent",
+    "section": "model",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "model.loopGuard.toolCallReminder",
+    "section": "model",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "model.toolCallLoopGuard.enabled",
+    "section": "model",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "model.toolCallLoopGuard.threshold",
+    "section": "model",
+    "type": "number",
+    "value": "5"
+   },
+   {
+    "key": "model.toolCallLoopGuard.exemptTools",
+    "section": "model",
+    "type": "array"
+   },
+   {
+    "key": "inlineToolDescriptors",
+    "section": "model",
+    "type": "auto|on|off",
+    "value": "auto"
+   },
+   {
+    "key": "includeModelInPrompt",
+    "section": "model",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "includeWorkspaceTree",
+    "section": "model",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "skillful",
+    "section": "model",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "personality",
+    "section": "model",
+    "type": "default|friendly|pragmatic|none",
+    "value": "default"
+   },
+   {
+    "key": "temperature",
+    "section": "model",
+    "type": "number",
+    "value": "-1"
+   },
+   {
+    "key": "topP",
+    "section": "model",
+    "type": "number",
+    "value": "-1"
+   },
+   {
+    "key": "topK",
+    "section": "model",
+    "type": "number",
+    "value": "-1"
+   },
+   {
+    "key": "minP",
+    "section": "model",
+    "type": "number",
+    "value": "-1"
+   },
+   {
+    "key": "presencePenalty",
+    "section": "model",
+    "type": "number",
+    "value": "-1"
+   },
+   {
+    "key": "repetitionPenalty",
+    "section": "model",
+    "type": "number",
+    "value": "-1"
+   },
+   {
+    "key": "textVerbosity",
+    "section": "model",
+    "type": "low|medium|high",
+    "value": "high"
+   },
+   {
+    "key": "tier.openai",
+    "section": "model",
+    "type": "none|auto|default|flex|scale|priority|ultrafast",
+    "value": "priority"
+   },
+   {
+    "key": "tier.anthropic",
+    "section": "model",
+    "type": "none|priority",
+    "value": "none"
+   },
+   {
+    "key": "tier.google",
+    "section": "model",
+    "type": "none|flex|priority",
+    "value": "priority"
+   },
+   {
+    "key": "tier.subagent",
+    "section": "model",
+    "type": "inherit|none|auto|default|flex|scale|priority|ultrafast",
+    "value": "inherit"
+   },
+   {
+    "key": "tier.advisor",
+    "section": "model",
+    "type": "inherit|none|auto|default|flex|scale|priority|ultrafast",
+    "value": "inherit"
+   },
+   {
+    "key": "retry.maxRetries",
+    "section": "model",
+    "type": "number",
+    "value": "10"
+   },
+   {
+    "key": "retry.maxDelayMs",
+    "section": "model",
+    "type": "number",
+    "value": "300000"
+   },
+   {
+    "key": "retry.waitForUsageReset",
+    "section": "model",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "retry.modelFallback",
+    "section": "model",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "retry.fallbackOn",
+    "section": "model",
+    "type": "any|usage-limit|except-usage-limit",
+    "value": "any"
+   },
+   {
+    "key": "retry.rateLimitWalksChain",
+    "section": "model",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "retry.usageAwareFallback",
+    "section": "model",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "retry.usageReservePct",
+    "section": "model",
+    "type": "number",
+    "value": "10"
+   },
+   {
+    "key": "retry.usageReservePolicy",
+    "section": "model",
+    "type": "confirm|auto|fail-closed",
+    "value": "confirm"
+   },
+   {
+    "key": "retry.fallbackChains",
+    "section": "model",
+    "type": "record"
+   },
+   {
+    "key": "retry.fallbackRevertPolicy",
+    "section": "model",
+    "type": "cooldown-expiry|never",
+    "value": "cooldown-expiry"
+   },
+   {
+    "key": "providers.anthropic.serverSideFallback",
+    "section": "model",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "providers.autoThinkingMaxEffort",
+    "section": "model",
+    "type": "xhigh|max",
+    "value": "xhigh"
+   },
+   {
+    "key": "advisor.enabled",
+    "section": "model",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "advisor.syncBacklog",
+    "section": "model",
+    "type": "off|1|3|5|strict",
+    "value": "1"
+   },
+   {
+    "key": "advisor.immuneTurns",
+    "section": "model",
+    "type": "number",
+    "value": "3"
+   },
+   {
+    "key": "advisor.continueSeverity",
+    "section": "model",
+    "type": "nit|concern|blocker",
+    "value": "concern"
+   },
+   {
+    "key": "advisor.reviewMode",
+    "section": "model",
+    "type": "turn|agent-end",
+    "value": "turn"
+   },
+   {
+    "key": "advisor.reviewInterval",
+    "section": "model",
+    "type": "number",
+    "value": "1"
+   },
+   {
+    "key": "advisor.maxNotesPerUpdate",
+    "section": "model",
+    "type": "number",
+    "value": "4"
+   },
+   {
+    "key": "advisor.evictStaleResults",
+    "section": "model",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "images.urls.enabled",
+    "section": "model",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "images.urls.backends",
+    "section": "model",
+    "type": "array"
+   },
+   {
+    "key": "images.urls.command",
+    "section": "model",
+    "type": "string"
+   },
+   {
+    "key": "images.urls.publicBaseUrl",
+    "section": "model",
+    "type": "string"
+   },
+   {
+    "key": "images.urls.ttlHours",
+    "section": "model",
+    "type": "number",
+    "value": "72"
+   },
+   {
+    "key": "images.urls.bindHost",
+    "section": "model",
+    "type": "string"
+   },
+   {
+    "key": "images.urls.sshTarget",
+    "section": "model",
+    "type": "string"
+   },
+   {
+    "key": "images.urls.sshRemotePort",
+    "section": "model",
+    "type": "number",
+    "value": "8787"
+   },
+   {
+    "key": "providers.maxInFlightRequests",
+    "section": "providers",
+    "type": "record"
+   },
+   {
+    "key": "providers.ollama-cloud.maxConcurrency",
+    "section": "providers",
+    "type": "number",
+    "value": "3"
+   },
+   {
+    "key": "providers.webSearchTimeoutSeconds",
+    "section": "providers",
+    "type": "number",
+    "value": "60"
+   },
+   {
+    "key": "providers.antigravityEndpoint",
+    "section": "providers",
+    "type": "auto|production|sandbox",
+    "value": "auto"
+   },
+   {
+    "key": "providers.fireworksTier",
+    "section": "providers",
+    "type": "standard|priority",
+    "value": "standard"
+   },
+   {
+    "key": "providers.tinyModelDevice",
+    "section": "providers",
+    "type": "default|gpu|cpu|mlx|metal|webgpu|cuda|dml|coreml|auto|wasm|webnn|webnn-gpu|webnn-cpu|webnn-npu",
+    "value": "default"
+   },
+   {
+    "key": "providers.tinyModelDtype",
+    "section": "providers",
+    "type": "default|q4|q4f16|q8|fp16|fp32|int8|uint8|bnb4|q2|q2f16|q1|q1f16|auto",
+    "value": "default"
+   },
+   {
+    "key": "providers.kimiApiFormat",
+    "section": "providers",
+    "type": "auto|openai|anthropic",
+    "value": "auto"
+   },
+   {
+    "key": "providers.openaiWebsockets",
+    "section": "providers",
+    "type": "auto|off|on",
+    "value": "auto"
+   },
+   {
+    "key": "providers.openaiResponsesWebsockets",
+    "section": "providers",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "providers.openaiLiveSteering",
+    "section": "providers",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "providers.muse-code.storeResponses",
+    "section": "providers",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "providers.openai-codex.daybreak",
+    "section": "providers",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "providers.cacheRetention",
+    "section": "providers",
+    "type": "auto|short|long|none",
+    "value": "auto"
+   },
+   {
+    "key": "providers.cacheWarming",
+    "section": "providers",
+    "type": "off|streaming|idle",
+    "value": "idle"
+   },
+   {
+    "key": "providers.streamFirstEventTimeoutSeconds",
+    "section": "providers",
+    "type": "number",
+    "value": "-1"
+   },
+   {
+    "key": "providers.streamIdleTimeoutSeconds",
+    "section": "providers",
+    "type": "number",
+    "value": "-1"
+   },
+   {
+    "key": "providers.openrouterVariant",
+    "section": "providers",
+    "type": "default|nitro|floor|online|exacto",
+    "value": "default"
+   },
+   {
+    "key": "live.voice",
+    "section": "providers",
+    "type": "arbor|breeze|cove|ember|juniper|maple|sol|spruce|vale",
+    "value": "sol"
+   },
+   {
+    "key": "tts.localVoice",
+    "section": "providers",
+    "type": "af_heart|af_bella|af_nicole|af_aoede|af_kore|af_sarah|am_michael|am_fenrir|am_puck|bf_emma|bm_george|bm_fable",
+    "value": "af_heart"
+   },
+   {
+    "key": "tts.localSpeed",
+    "section": "providers",
+    "type": "number",
+    "value": "1"
+   },
+   {
+    "key": "speech.enabled",
+    "section": "providers",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "speech.mode",
+    "section": "providers",
+    "type": "all|assistant|yield",
+    "value": "assistant"
+   },
+   {
+    "key": "speech.enhanced",
+    "section": "providers",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "speech.voice",
+    "section": "providers",
+    "type": "af_heart|af_bella|af_nicole|af_aoede|af_kore|af_sarah|am_michael|am_fenrir|am_puck|bf_emma|bm_george|bm_fable",
+    "value": "af_heart"
+   },
+   {
+    "key": "speech.speed",
+    "section": "providers",
+    "type": "number",
+    "value": "1"
+   },
+   {
+    "key": "providers.fetch",
+    "section": "providers",
+    "type": "auto|native|trafilatura|lynx|parallel|firecrawl|jina",
+    "value": "auto"
+   },
+   {
+    "key": "codexResets.autoRedeem",
+    "section": "providers",
+    "type": "unset|yes|no",
+    "value": "unset"
+   },
+   {
+    "key": "codexResets.minBlockedMinutes",
+    "section": "providers",
+    "type": "number",
+    "value": "60"
+   },
+   {
+    "key": "codexResets.keepCredits",
+    "section": "providers",
+    "type": "number",
+    "value": "0"
+   },
+   {
+    "key": "codexResets.salvageHorizonHours",
+    "section": "providers",
+    "type": "number",
+    "value": "12"
+   },
+   {
+    "key": "claudeResets.autoRedeem",
+    "section": "providers",
+    "type": "unset|yes|no",
+    "value": "unset"
+   },
+   {
+    "key": "claudeResets.minBlockedMinutes",
+    "section": "providers",
+    "type": "number",
+    "value": "60"
+   },
+   {
+    "key": "claudeResets.keepCredits",
+    "section": "providers",
+    "type": "number",
+    "value": "0"
+   },
+   {
+    "key": "claudeResets.salvageHorizonHours",
+    "section": "providers",
+    "type": "number",
+    "value": "12"
+   },
+   {
+    "key": "provider.appendOnlyContext",
+    "section": "providers",
+    "type": "auto|on|off",
+    "value": "auto"
+   },
+   {
+    "key": "telemetry.otlpExportEnabled",
+    "section": "providers",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "exa.enabled",
+    "section": "providers",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "exa.searchDelayMs",
+    "section": "providers",
+    "type": "number",
+    "value": "1000"
+   },
+   {
+    "key": "searxng.endpoint",
+    "section": "providers",
+    "type": "string"
+   },
+   {
+    "key": "secrets.enabled",
+    "section": "providers",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "bash.enabled",
+    "section": "shell",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "bash.allowCompoundCommands",
+    "section": "shell",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "bash.autoBackground.enabled",
+    "section": "shell",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "bash.gitGuard",
+    "section": "shell",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "bash.patterns",
+    "section": "shell",
+    "type": "array"
+   },
+   {
+    "key": "bashInterceptor.enabled",
+    "section": "shell",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "bash.direnv",
+    "section": "shell",
+    "type": "auto|off",
+    "value": "auto"
+   },
+   {
+    "key": "bash.direnvLoadTimeoutMs",
+    "section": "shell",
+    "type": "number",
+    "value": "30000"
+   },
+   {
+    "key": "shellMinimizer.enabled",
+    "section": "shell",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "shellMinimizer.sourceOutlineLevel",
+    "section": "shell",
+    "type": "default|aggressive",
+    "value": "default"
+   },
+   {
+    "key": "eval.py",
+    "section": "shell",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "eval.js",
+    "section": "shell",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "eval.autoProvision",
+    "section": "shell",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "eval.tools.enabled",
+    "section": "shell",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "eval.workpool.freshAgents",
+    "section": "shell",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "eval.autoBackground.enabled",
+    "section": "shell",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "python.kernelMode",
+    "section": "shell",
+    "type": "session|per-call",
+    "value": "session"
+   },
+   {
+    "key": "python.interpreter",
+    "section": "shell",
+    "type": "string"
+   },
+   {
+    "key": "task.isolation.enabled",
+    "section": "tasks",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "isolation.backend",
+    "section": "tasks",
+    "type": "auto|apfs|btrfs|zfs|reflink|overlayfs|projfs|block-clone|rcopy",
+    "value": "auto"
+   },
+   {
+    "key": "worktree.clone",
+    "section": "tasks",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "worktree.cleanSource",
+    "section": "tasks",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "worktree.onStart",
+    "section": "tasks",
+    "type": "off|ask|create",
+    "value": "off"
+   },
+   {
+    "key": "worktree.onExit",
+    "section": "tasks",
+    "type": "keep|ask|remove",
+    "value": "keep"
+   },
+   {
+    "key": "task.isolation.apply",
+    "section": "tasks",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "ovnfs.path",
+    "section": "tasks",
+    "type": "string"
+   },
+   {
+    "key": "task.isolation.merge",
+    "section": "tasks",
+    "type": "patch|branch",
+    "value": "patch"
+   },
+   {
+    "key": "task.isolation.commits",
+    "section": "tasks",
+    "type": "generic|ai",
+    "value": "generic"
+   },
+   {
+    "key": "worktree.base",
+    "section": "tasks",
+    "type": "string"
+   },
+   {
+    "key": "task.eager",
+    "section": "tasks",
+    "type": "default|preferred|always",
+    "value": "preferred"
+   },
+   {
+    "key": "task.batch",
+    "section": "tasks",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "task.file",
+    "section": "tasks",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "task.structured",
+    "section": "tasks",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "task.speculativeLaunch",
+    "section": "tasks",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "task.enableEffort",
+    "section": "tasks",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "task.perCallModel",
+    "section": "tasks",
+    "type": "off|eval|on",
+    "value": "off"
+   },
+   {
+    "key": "task.perCallModelAllow",
+    "section": "tasks",
+    "type": "array"
+   },
+   {
+    "key": "task.maxConcurrency",
+    "section": "tasks",
+    "type": "number",
+    "value": "32"
+   },
+   {
+    "key": "task.workerThreads",
+    "section": "tasks",
+    "type": "number",
+    "value": "4"
+   },
+   {
+    "key": "task.enableLsp",
+    "section": "tasks",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "task.maxRecursionDepth",
+    "section": "tasks",
+    "type": "number",
+    "value": "2"
+   },
+   {
+    "key": "task.maxRuntimeMs",
+    "section": "tasks",
+    "type": "number",
+    "value": "0"
+   },
+   {
+    "key": "task.completionProbe",
+    "section": "tasks",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "task.agentIdleTtlMs",
+    "section": "tasks",
+    "type": "number",
+    "value": "420000"
+   },
+   {
+    "key": "task.softRequestBudget",
+    "section": "tasks",
+    "type": "number",
+    "value": "0"
+   },
+   {
+    "key": "task.softRequestBudgetNotice",
+    "section": "tasks",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "task.maxEffort",
+    "section": "tasks",
+    "type": "minimal|low|medium|high|xhigh|max",
+    "value": "high"
+   },
+   {
+    "key": "task.prewalk",
+    "section": "tasks",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "plan.enabled",
+    "section": "tasks",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "plan.defaultOnStartup",
+    "section": "tasks",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "plan.autosave",
+    "section": "tasks",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "plan.autosaveDir",
+    "section": "tasks",
+    "type": "string"
+   },
+   {
+    "key": "goal.enabled",
+    "section": "tasks",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "goal.statusInFooter",
+    "section": "tasks",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "goal.continuationModes",
+    "section": "tasks",
+    "type": "array"
+   },
+   {
+    "key": "title.generator",
+    "section": "tasks",
+    "type": "fork|tiny",
+    "value": "fork"
+   },
+   {
+    "key": "title.refreshOnReplan",
+    "section": "tasks",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "title.refreshAfterPrompts",
+    "section": "tasks",
+    "type": "number",
+    "value": "0"
+   },
+   {
+    "key": "skills.enableSkillCommands",
+    "section": "tasks",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "commands.enableClaudeUser",
+    "section": "tasks",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "commands.enableClaudeProject",
+    "section": "tasks",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "commands.enableOpencodeUser",
+    "section": "tasks",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "commands.enableOpencodeProject",
+    "section": "tasks",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "tools.artifactSpillThreshold",
+    "section": "tools",
+    "type": "number",
+    "value": "50"
+   },
+   {
+    "key": "tools.artifactTailBytes",
+    "section": "tools",
+    "type": "number",
+    "value": "20"
+   },
+   {
+    "key": "tools.artifactHeadBytes",
+    "section": "tools",
+    "type": "number",
+    "value": "20"
+   },
+   {
+    "key": "tools.outputMaxColumns",
+    "section": "tools",
+    "type": "number",
+    "value": "768"
+   },
+   {
+    "key": "tools.artifactTailLines",
+    "section": "tools",
+    "type": "number",
+    "value": "500"
+   },
+   {
+    "key": "tools.artifactMaxBytes",
+    "section": "tools",
+    "type": "number",
+    "value": "16"
+   },
+   {
+    "key": "todo.enabled",
+    "section": "tools",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "todo.reminders",
+    "section": "tools",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "todo.remindersMax",
+    "section": "tools",
+    "type": "number",
+    "value": "3"
+   },
+   {
+    "key": "todo.eager",
+    "section": "tools",
+    "type": "default|preferred|always",
+    "value": "preferred"
+   },
+   {
+    "key": "tasks.todoClearDelay",
+    "section": "tools",
+    "type": "number",
+    "value": "60"
+   },
+   {
+    "key": "glob.enabled",
+    "section": "tools",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "grep.enabled",
+    "section": "tools",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "grep.contextBefore",
+    "section": "tools",
+    "type": "number",
+    "value": "1"
+   },
+   {
+    "key": "grep.contextAfter",
+    "section": "tools",
+    "type": "number",
+    "value": "3"
+   },
+   {
+    "key": "astGrep.enabled",
+    "section": "tools",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "astEdit.enabled",
+    "section": "tools",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "find.enabled",
+    "section": "tools",
+    "type": "auto|on|off",
+    "value": "auto"
+   },
+   {
+    "key": "debug.enabled",
+    "section": "tools",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "launch.enabled",
+    "section": "tools",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "speechgen.enabled",
+    "section": "tools",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "generate_image.enabled",
+    "section": "tools",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "computer.enabled",
+    "section": "tools",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "ratchet.enabled",
+    "section": "tools",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "archive.enabled",
+    "section": "tools",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "computer.display",
+    "section": "tools",
+    "type": "string"
+   },
+   {
+    "key": "computer.maxWidth",
+    "section": "tools",
+    "type": "number",
+    "value": "3840"
+   },
+   {
+    "key": "computer.maxHeight",
+    "section": "tools",
+    "type": "number",
+    "value": "2400"
+   },
+   {
+    "key": "computer.backgroundFallback",
+    "section": "tools",
+    "type": "takeover|refuse",
+    "value": "takeover"
+   },
+   {
+    "key": "images.questionTimeoutMs",
+    "section": "tools",
+    "type": "number",
+    "value": "300000"
+   },
+   {
+    "key": "checkpoint.enabled",
+    "section": "tools",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "fetch.enabled",
+    "section": "tools",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "vault.enabled",
+    "section": "tools",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "github.enabled",
+    "section": "tools",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "github.cache.enabled",
+    "section": "tools",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "github.cache.softTtlSec",
+    "section": "tools",
+    "type": "number",
+    "value": "300"
+   },
+   {
+    "key": "github.cache.hardTtlSec",
+    "section": "tools",
+    "type": "number",
+    "value": "604800"
+   },
+   {
+    "key": "web_search.enabled",
+    "section": "tools",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "security.enabled",
+    "section": "tools",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "ask.enabled",
+    "section": "tools",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "out.enabled",
+    "section": "tools",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "tools.intentTracing",
+    "section": "tools",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "tools.abortOnFabricatedResult",
+    "section": "tools",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "tools.speculativeExecution.enabled",
+    "section": "tools",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "tools.speculativeExecution.maxInFlight",
+    "section": "tools",
+    "type": "number",
+    "value": "2"
+   },
+   {
+    "key": "tools.maxTimeout",
+    "section": "tools",
+    "type": "number",
+    "value": "0"
+   },
+   {
+    "key": "async.enabled",
+    "section": "tools",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "async.printWake",
+    "section": "tools",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "async.widgets",
+    "section": "tools",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "tools.xdev",
+    "section": "tools",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "tools.xdevDocs",
+    "section": "tools",
+    "type": "inline|builtins|catalog",
+    "value": "catalog"
+   },
+   {
+    "key": "tools.xdevInlineDevices",
+    "section": "tools",
+    "type": "array"
+   },
+   {
+    "key": "tools.xdevNotices",
+    "section": "tools",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "dev.autoqa",
+    "section": "tools",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "dev.autoqaPush.endpoint",
+    "section": "tools",
+    "type": "string"
+   },
+   {
+    "key": "extensionHandlers.toolCallTimeoutMs",
+    "section": "tools",
+    "type": "number",
+    "value": "30000"
+   },
+   {
+    "key": "extensionHandlers.modeControl",
+    "section": "tools",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "extensionRenderers.assistantText",
+    "section": "tools",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "extensionRenderers.transcriptPresenters",
+    "section": "tools",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "browser.enabled",
+    "section": "tools",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "browser.cdpUrl",
+    "section": "tools",
+    "type": "string"
+   },
+   {
+    "key": "browser.relay",
+    "section": "tools",
+    "type": "boolean",
+    "value": "false"
+   },
+   {
+    "key": "browser.relayUrl",
+    "section": "tools",
+    "type": "string"
+   },
+   {
+    "key": "browser.headless",
+    "section": "tools",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "browser.cmux",
+    "section": "tools",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "browser.tern",
+    "section": "tools",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "browser.freezeOnTurnEnd",
+    "section": "tools",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "browser.idleCloseSec",
+    "section": "tools",
+    "type": "number",
+    "value": "1800"
+   },
+   {
+    "key": "browser.screenshotDir",
+    "section": "tools",
+    "type": "string"
+   },
+   {
+    "key": "ida.enabled",
+    "section": "tools",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "ida.python",
+    "section": "tools",
+    "type": "string"
+   },
+   {
+    "key": "ida.installDir",
+    "section": "tools",
+    "type": "string"
+   },
+   {
+    "key": "ida.maxOpen",
+    "section": "tools",
+    "type": "number",
+    "value": "4"
+   },
+   {
+    "key": "ida.idleCloseSec",
+    "section": "tools",
+    "type": "number",
+    "value": "900"
+   },
+   {
+    "key": "mcp.enableProjectConfig",
+    "section": "tools",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "mcp.startupTimeoutMs",
+    "section": "tools",
+    "type": "number",
+    "value": "250"
+   },
+   {
+    "key": "mcp.renderMarkdownResults",
+    "section": "tools",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "mcp.notifications",
+    "section": "tools",
+    "type": "boolean",
+    "value": "true"
+   },
+   {
+    "key": "mcp.notificationDebounceMs",
+    "section": "tools",
+    "type": "number",
+    "value": "500"
+   },
+   {
+    "key": "spotlight.experiment.enabled",
+    "section": "tools",
+    "type": "boolean",
+    "value": "false"
+   }
+  ]
+ }
+}

@@ -1,0 +1,15 @@
+linear https://linear.app
+vercel https://vercel.com
+raycast https://www.raycast.com
+notion https://www.notion.com/product
+github https://github.com/features/issues
+stripe https://stripe.com/payments
+supabase https://supabase.com
+cursor https://cursor.com
+zed https://zed.dev
+attio https://attio.com
+railway https://railway.com
+resend https://resend.com
+linear-docs https://linear.app/docs/conceptual-model
+vercel-docs https://vercel.com/docs/projects/project-configuration
+github-settings https://docs.github.com/en/account-and-profile/setting-up-and-managing-your-personal-account-on-github/managing-user-account-settings/managing-your-theme-settings

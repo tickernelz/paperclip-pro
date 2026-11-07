@@ -1,0 +1,370 @@
+{
+ "essential": [
+  {
+   "label": "Model",
+   "key": "model",
+   "source": "adapter",
+   "group": "model",
+   "type": "adapter",
+   "section": "adapter",
+   "session": "keep"
+  },
+  {
+   "label": "Thinking level",
+   "key": "thinking",
+   "source": "adapter",
+   "group": "model",
+   "type": "adapter",
+   "section": "adapter",
+   "session": "keep"
+  },
+  {
+   "label": "Effort per model",
+   "key": "modelEfforts",
+   "source": "adapter",
+   "group": "model",
+   "type": "adapter",
+   "section": "adapter",
+   "session": "keep"
+  },
+  {
+   "label": "Fallback chain",
+   "key": "fallbackModels",
+   "source": "adapter",
+   "group": "model",
+   "type": "adapter",
+   "section": "adapter",
+   "session": "keep"
+  },
+  {
+   "label": "Small model",
+   "key": "smolModel",
+   "source": "adapter",
+   "group": "model",
+   "type": "adapter",
+   "section": "adapter",
+   "session": "new"
+  },
+  {
+   "label": "Slow model",
+   "key": "slowModel",
+   "source": "adapter",
+   "group": "model",
+   "type": "adapter",
+   "section": "adapter",
+   "session": "new"
+  },
+  {
+   "label": "Plan model",
+   "key": "planModel",
+   "source": "adapter",
+   "group": "model",
+   "type": "adapter",
+   "section": "adapter",
+   "session": "new"
+  },
+  {
+   "label": "Default thinking level",
+   "key": "defaultThinkingLevel",
+   "source": "omp",
+   "group": "model",
+   "type": "enum",
+   "section": "model",
+   "session": "new"
+  },
+  {
+   "label": "Advisor",
+   "key": "advisor.enabled",
+   "source": "omp",
+   "group": "model",
+   "type": "boolean",
+   "section": "model",
+   "session": "new"
+  },
+  {
+   "label": "Prewalk to small model",
+   "key": "prewalk.enabled",
+   "source": "omp",
+   "group": "model",
+   "type": "boolean",
+   "section": "model",
+   "session": "new"
+  },
+  {
+   "label": "Retries",
+   "key": "retry.maxRetries",
+   "source": "omp",
+   "group": "model",
+   "type": "number",
+   "section": "model",
+   "session": "new"
+  },
+  {
+   "label": "Fall back on",
+   "key": "retry.fallbackOn",
+   "source": "omp",
+   "group": "model",
+   "type": "enum",
+   "section": "model",
+   "session": "new"
+  },
+  {
+   "label": "Hide thinking from log",
+   "key": "omitThinking",
+   "source": "omp",
+   "group": "model",
+   "type": "boolean",
+   "section": "model",
+   "session": "new"
+  },
+  {
+   "label": "Tool allowlist",
+   "key": "tools",
+   "source": "adapter",
+   "group": "tools",
+   "type": "adapter",
+   "section": "adapter",
+   "session": "new"
+  },
+  {
+   "label": "Approval mode",
+   "key": "tools.approvalMode",
+   "source": "omp",
+   "group": "tools",
+   "type": "enum",
+   "section": "interaction",
+   "session": "new"
+  },
+  {
+   "label": "Shell",
+   "key": "bash.enabled",
+   "source": "omp",
+   "group": "tools",
+   "type": "boolean",
+   "section": "shell",
+   "session": "new"
+  },
+  {
+   "label": "Browser",
+   "key": "browser.enabled",
+   "source": "omp",
+   "group": "tools",
+   "type": "boolean",
+   "section": "tools",
+   "session": "new"
+  },
+  {
+   "label": "Web search",
+   "key": "web_search.enabled",
+   "source": "omp",
+   "group": "tools",
+   "type": "boolean",
+   "section": "tools",
+   "session": "new"
+  },
+  {
+   "label": "GitHub tool",
+   "key": "github.enabled",
+   "source": "omp",
+   "group": "tools",
+   "type": "boolean",
+   "section": "tools",
+   "session": "new"
+  },
+  {
+   "label": "Ask tool",
+   "key": "ask.enabled",
+   "source": "omp",
+   "group": "tools",
+   "type": "boolean",
+   "section": "tools",
+   "session": "new"
+  },
+  {
+   "label": "LSP",
+   "key": "lsp.enabled",
+   "source": "omp",
+   "group": "tools",
+   "type": "boolean",
+   "section": "files",
+   "session": "new"
+  },
+  {
+   "label": "Skills",
+   "key": "skills",
+   "source": "adapter",
+   "group": "tools",
+   "type": "adapter",
+   "section": "adapter",
+   "session": "new"
+  },
+  {
+   "label": "MCP startup timeout",
+   "key": "mcp.startupTimeoutMs",
+   "source": "omp",
+   "group": "tools",
+   "type": "number",
+   "section": "tools",
+   "session": "new"
+  },
+  {
+   "label": "MCP project config",
+   "key": "mcp.enableProjectConfig",
+   "source": "omp",
+   "group": "tools",
+   "type": "boolean",
+   "section": "tools",
+   "session": "new"
+  },
+  {
+   "label": "Extensions",
+   "key": "extensions",
+   "source": "adapter",
+   "group": "tools",
+   "type": "adapter",
+   "section": "adapter",
+   "session": "new"
+  },
+  {
+   "label": "Hooks",
+   "key": "hooks",
+   "source": "adapter",
+   "group": "tools",
+   "type": "adapter",
+   "section": "adapter",
+   "session": "new"
+  },
+  {
+   "label": "Context notes",
+   "key": "compaction.experimentalContextManagement",
+   "source": "omp",
+   "group": "context",
+   "type": "boolean",
+   "section": "context",
+   "session": "new"
+  },
+  {
+   "label": "Compaction threshold",
+   "key": "compaction.thresholdPercent",
+   "source": "omp",
+   "group": "context",
+   "type": "number",
+   "section": "context",
+   "session": "new"
+  },
+  {
+   "label": "Extra context files",
+   "key": "contextFiles.extra",
+   "source": "omp",
+   "group": "context",
+   "type": "array",
+   "section": "context",
+   "session": "new"
+  },
+  {
+   "label": "Subagent depth",
+   "key": "task.maxRecursionDepth",
+   "source": "omp",
+   "group": "run",
+   "type": "number",
+   "section": "tasks",
+   "session": "new"
+  },
+  {
+   "label": "Max run time",
+   "key": "maxTime",
+   "source": "adapter",
+   "group": "run",
+   "type": "adapter",
+   "section": "adapter",
+   "session": "new"
+  },
+  {
+   "label": "Timeout",
+   "key": "timeoutSec",
+   "source": "adapter",
+   "group": "run",
+   "type": "adapter",
+   "section": "adapter",
+   "session": "new"
+  },
+  {
+   "label": "Instructions file",
+   "key": "instructionsFilePath",
+   "source": "adapter",
+   "group": "run",
+   "type": "adapter",
+   "section": "adapter",
+   "session": "keep"
+  },
+  {
+   "label": "System prompt",
+   "key": "systemPrompt",
+   "source": "adapter",
+   "group": "run",
+   "type": "adapter",
+   "section": "adapter",
+   "session": "new"
+  },
+  {
+   "label": "Environment variables",
+   "key": "env",
+   "source": "adapter",
+   "group": "run",
+   "type": "adapter",
+   "section": "adapter",
+   "session": "new"
+  },
+  {
+   "label": "OMP profile",
+   "key": "profile",
+   "source": "adapter",
+   "group": "run",
+   "type": "adapter",
+   "section": "adapter",
+   "session": "new"
+  }
+ ],
+ "essentialCount": 36,
+ "essentialOmp": 19,
+ "essentialAdapter": 17,
+ "visibleOmp": 450,
+ "advancedOmp": 431,
+ "searchable": 467,
+ "hiddenInternal": 152,
+ "adapterKeysNotInEssential": [
+  "addDirs",
+  "advisor",
+  "agentDir",
+  "allowHome",
+  "approvalMode",
+  "bootstrapPromptTemplate",
+  "configFiles",
+  "cwd",
+  "effort",
+  "experimentalContextManagement",
+  "extraArgs",
+  "graceSec",
+  "modelCycle",
+  "modelProbeTimeoutSec",
+  "noExtensions",
+  "noLsp",
+  "noPrewalk",
+  "noPty",
+  "noRules",
+  "noSession",
+  "noSkills",
+  "noTitle",
+  "noTools",
+  "planYolo",
+  "planYoloInto",
+  "pluginDirs",
+  "prewalk",
+  "prewalkInto",
+  "printThoughts",
+  "promptTemplate",
+  "rpcSteering",
+  "thinkingEffort"
+ ],
+ "missing": []
+}
