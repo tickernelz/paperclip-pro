@@ -6,6 +6,9 @@ import { MemoryRouter } from "react-router-dom";
 import { CompanyProvider } from "@/context/CompanyContext";
 import { SidebarProvider } from "@/context/SidebarContext";
 import { SidebarNavItem } from "@/components/SidebarNavItem";
+import { MarkdownBody } from "@/components/MarkdownBody";
+import { MarkdownEditor } from "@/components/MarkdownEditor";
+import { ThemeProvider } from "@/context/ThemeContext";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
 import { Segmented, SegmentedItem } from "@/components/ui/segmented";
@@ -28,6 +31,7 @@ const STATES = [
 ] as const;
 const SELECTABLE_VARIANTS = new Set(["secondary", "ghost"]);
 const BADGE_TONES = ["default", "danger", "warning"] as const;
+const MARKDOWN_SAMPLE = "Plain text with a [link](https://example.com), `inline code` and **bold** words.\n\n> A quoted line";
 
 function Surface({ theme, surface }: { theme: string; surface: (typeof GALLERY_SURFACES)[number] }) {
   const [switchOn, setSwitchOn] = useState(true);
@@ -84,6 +88,17 @@ function Surface({ theme, surface }: { theme: string; surface: (typeof GALLERY_S
         <ToggleSwitch data-gallery-item={id("switch.off")} aria-label="Off" checked={switchOff} onCheckedChange={setSwitchOff} />
         <ToggleSwitch data-gallery-item={id("switch.disabled")} aria-label="Disabled" checked={false} onCheckedChange={() => undefined} disabled />
       </div>
+      <div className="grid grid-cols-3 gap-3">
+        <div data-gallery-item={id("markdown.body")} data-gallery-kind="text">
+          <MarkdownBody>{MARKDOWN_SAMPLE}</MarkdownBody>
+        </div>
+        <div data-gallery-item={id("markdown.editor.filled")} data-gallery-kind="text">
+          <MarkdownEditor value={MARKDOWN_SAMPLE} onChange={() => undefined} placeholder="Write a comment" bordered />
+        </div>
+        <div data-gallery-item={id("markdown.editor.empty")} data-gallery-kind="text">
+          <MarkdownEditor value="" onChange={() => undefined} placeholder="Write a comment" bordered />
+        </div>
+      </div>
       <nav className="flex w-60 flex-col gap-1" aria-label={id("nav")}>
         {BADGE_TONES.map((tone) => (
           <div key={tone} data-gallery-item={id(`navitem.on.badge-${tone}`)}>
@@ -103,6 +118,7 @@ const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false 
 function Gallery() {
   return (
     <QueryClientProvider client={queryClient}>
+    <ThemeProvider>
     <MemoryRouter initialEntries={["/"]}>
       <CompanyProvider>
       <TooltipProvider>
@@ -120,6 +136,7 @@ function Gallery() {
       </TooltipProvider>
       </CompanyProvider>
     </MemoryRouter>
+    </ThemeProvider>
     </QueryClientProvider>
   );
 }

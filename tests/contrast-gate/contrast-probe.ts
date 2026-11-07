@@ -13,6 +13,7 @@ export interface ContrastItem {
   minText: number | null;
   large: boolean;
   boundary: number | null;
+  focusable: boolean;
   focusRing: number | null;
   texts: ContrastText[];
 }
@@ -57,11 +58,28 @@ export function probeRenderedContrast(state: string): ContrastItem[] {
   };
   const opacityOf = (el: Element) => chain(el).reduce((total, node) => total * parseFloat(getComputedStyle(node).opacity), 1);
   const round = (value: number) => Math.round(value * 100) / 100;
+  const splitShadows = (value: string) => {
+    const parts: string[] = [];
+    let depth = 0;
+    let current = "";
+    for (const char of value) {
+      if (char === "(") depth++;
+      else if (char === ")") depth--;
+      if (char === "," && depth === 0) {
+        parts.push(current);
+        current = "";
+      } else current += char;
+    }
+    parts.push(current);
+    return parts.map((part) => part.trim()).filter(Boolean);
+  };
 
   const items: ContrastItem[] = [];
   for (const host of document.querySelectorAll<HTMLElement>("[data-gallery-item]")) {
     const id = host.dataset.galleryItem!;
-    const el = host.matches("a, button, [role=switch], [role=group]") ? host : host.querySelector<HTMLElement>("a, button") ?? host;
+    const textSurface = host.dataset.galleryKind === "text";
+    const el = textSurface || host.matches("a, button, [role=switch], [role=group]") ? host : host.querySelector<HTMLElement>("a, button") ?? host;
+    const focusable = !textSurface && el.matches("button:not([disabled]), a[href]");
     const style = getComputedStyle(el);
     const opacity = opacityOf(el);
     const background = effectiveBackground(el, false);
@@ -85,7 +103,7 @@ export function probeRenderedContrast(state: string): ContrastItem[] {
       const own = rgba(getComputedStyle(icon).color);
       iconRatio = round(ratio(over([own[0], own[1], own[2], own[3] * opacity], background), background));
     }
-    const exempt = /\.(ghost|link)(\.|$)|navitem|segmented\.item(?!\.on)/.test(id);
+    const exempt = textSurface || /\.(ghost|link)(\.|$)|navitem|segmented\.item(?!\.on)/.test(id);
     let boundary: number | null = null;
     if (!exempt) {
       const fill = rgba(style.backgroundColor);
@@ -97,11 +115,24 @@ export function probeRenderedContrast(state: string): ContrastItem[] {
     let focusRing: number | null = null;
     if (style.outlineStyle !== "none" && parseFloat(style.outlineWidth) > 0) {
       const ring = rgba(style.outlineColor);
-      focusRing = round(ratio(over(ring, outer), outer));
+      if (ring[3] > 0) focusRing = round(ratio(over(ring, outer), outer));
+    }
+    if (focusRing === null && style.boxShadow !== "none") {
+      for (const shadow of splitShadows(style.boxShadow)) {
+        const color = shadow.match(/(?:rgba?|oklab|oklch|lab|lch|color|hsla?)\([^)]*\)|#[0-9a-f]{3,8}\b/i)?.[0];
+        const lengths = shadow.replace(color ?? "", "").trim().split(/\s+/).filter((part) => /px$/.test(part)).map(parseFloat);
+        const spread = lengths[3] ?? 0;
+        const blur = lengths[2] ?? 0;
+        if (!color || (spread <= 0 && blur <= 0)) continue;
+        const ring = rgba(color);
+        if (ring[3] === 0) continue;
+        const measured = round(ratio(over(ring, outer), outer));
+        focusRing = focusRing === null ? measured : Math.max(focusRing, measured);
+      }
     }
     const minText = texts.length ? Math.min(...texts.map((entry) => entry.ratio)) : iconRatio;
     const large = texts.length > 0 && texts.every((entry) => entry.size >= 24 || (entry.size >= 18.66 && entry.weight >= 700));
-    items.push({ id, state, minText, large, boundary, focusRing, texts });
+    items.push({ id, state, minText, large, boundary, focusable, focusRing, texts });
   }
   return items;
 }

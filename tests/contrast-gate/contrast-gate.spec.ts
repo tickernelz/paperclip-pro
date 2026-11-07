@@ -2,7 +2,7 @@ import { writeFileSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 import { probeRenderedContrast, type ContrastItem } from "./contrast-probe";
 
-const EXPECTED_REST_ITEMS = 2 * 3 * 38;
+const EXPECTED_REST_ITEMS = 2 * 3 * 41;
 const TEXT_MIN = 4.5;
 const LARGE_TEXT_MIN = 3;
 const BOUNDARY_MIN = 3;
@@ -18,6 +18,7 @@ function failuresOf(item: ContrastItem): string[] {
   const floor = item.large ? LARGE_TEXT_MIN : TEXT_MIN;
   if (item.minText !== null && item.minText < floor) failures.push(`text ${item.minText} < ${floor}`);
   if (item.boundary !== null && item.boundary < BOUNDARY_MIN) failures.push(`boundary ${item.boundary} < ${BOUNDARY_MIN}`);
+  if (item.state === "focus" && item.focusable && item.focusRing === null) failures.push("no visible focus indicator");
   if (item.state === "focus" && item.focusRing !== null && item.focusRing < FOCUS_RING_MIN) failures.push(`focus ring ${item.focusRing} < ${FOCUS_RING_MIN}`);
   return failures;
 }
@@ -53,6 +54,9 @@ test("every component variant, state and theme meets rendered contrast", async (
     failing: failing.length,
     lowestText: lowest ? { id: lowest.id, state: lowest.state, ratio: lowest.minText } : null,
     lowestBoundary: Math.min(...rows.filter((row) => row.boundary !== null).map((row) => row.boundary!)),
+    focusMeasured: rows.filter((row) => row.state === "focus" && row.focusable && row.focusRing !== null).length,
+    focusExpected: rows.filter((row) => row.state === "focus" && row.focusable).length,
+    lowestFocusRing: Math.min(...rows.filter((row) => row.state === "focus" && row.focusRing !== null).map((row) => row.focusRing!)),
   };
   const reportPath = testInfo.outputPath("contrast-report.json");
   writeFileSync(reportPath, JSON.stringify({ summary, failing, rows }, null, 1));
