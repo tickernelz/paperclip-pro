@@ -65,7 +65,7 @@ export interface LiveFixtureValues {
   aiConnection?: ManagedAccountFixture;
 
   onboardingRuntime?: {
-    mode: "production-wizard" | "post-onboarding-runtime-switch";
+    mode: "onboarding-api" | "post-onboarding-runtime-switch";
     originalAdapterType: string;
     originalModel: string | null;
     testedAdapterType: string;

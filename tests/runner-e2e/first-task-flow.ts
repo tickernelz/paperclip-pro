@@ -8,6 +8,7 @@ import { captureFirstTaskAttachments } from "./first-task-attachments.js";
 import { waitForFirstTaskReply } from "./first-task-replies.js";
 import { observeCompletionUpdate } from "./completion-update-flow.js";
 import {
+  firstTaskHireRequest,
   firstTaskNativeRuntimePatch,
   provisionFirstTaskFixtures,
 } from "./first-task-fixtures.js";
@@ -33,35 +34,20 @@ import {
   type Row,
 } from "./first-task-scoring.js";
 
-/** The wizard creates the agent/task. Only credential provisioning uses Node fetch,
- * keeping plaintext keys out of Playwright's trace and recorded form values. */
 export async function setupFirstTaskFixtures(input: {
-  page: Page;
   api: RunnerApi;
   execution: MatrixExecution;
   nonce: string;
   credentials: Partial<Record<CredentialName, string>>;
   observe: (fixtures: LiveFixtureValues) => void;
 }): Promise<LiveFixtureValues> {
-  const { page, api, execution, nonce } = input;
+  const { api, execution, nonce } = input;
   await api.patch("/api/instance/settings/experimental", {
     enableClassicTaskInterface: false,
   });
-  await page.goto("/onboarding", { waitUntil: "domcontentloaded" });
-  const launcher = page.getByRole("button", {
-    name: /Start Onboarding|New Organization|Add Agent/,
+  const company = await api.post<Row>("/api/companies", {
+    name: `First task ${nonce}`,
   });
-  if (await launcher.count()) await launcher.first().click();
-  const create = page.getByRole("button", { name: /Build a new organization/ });
-  if (await create.count()) await create.first().click();
-  await page
-    .getByPlaceholder("e.g. Northwind Labs")
-    .fill(`First task ${nonce}`);
-  await page.getByRole("button", { name: "Continue", exact: true }).click();
-  await expect(page.locator("#onboarding-agent-name")).toBeVisible();
-  const companies = await api.get<Row[]>("/api/companies");
-  const company = companies.find((c) => c.name === `First task ${nonce}`);
-  if (!company) throw new Error("Onboarding fixture company missing");
   const fixtures = await provisionFirstTaskFixtures({
     api,
     execution,
@@ -73,50 +59,25 @@ export async function setupFirstTaskFixtures(input: {
       issuePrefix: company.issuePrefix,
     },
   });
-  const secret = fixtures.secretRefs[execution.profile.credential]!;
   input.observe(fixtures);
-  await page.locator("#onboarding-agent-name").fill(fixtures.agent.name);
-  await page.getByRole("button", { name: "Next", exact: true }).click();
-  await expect(
-    page.getByRole("heading", { name: "Connect a model" }),
-  ).toBeVisible();
-  await page
-    .getByRole("radio", {
-      name:
-        execution.profile.credential === "OPENAI_API_KEY"
-          ? /^OpenAI/
-          : /^Claude/,
-    })
-    .click();
-  const useKey = page.getByRole("button", {
-    name: "Use API key instead",
-    exact: true,
-  });
-  const savedKey = page.getByRole("combobox", { name: "Saved API key" });
-  // Credential mode depends on the selected provider and its asynchronous key lookup.
-  await expect(savedKey.or(useKey).first()).toBeVisible();
-  if (await useKey.isVisible()) await useKey.click();
-  await page
-    .getByRole("combobox", { name: "Saved API key" })
-    .selectOption(`company:${secret.secretId}`);
-  await page
-    .getByRole("button", { name: /^(Connect|Next)$/, exact: true })
-    .last()
-    .click();
-  await expect(
-    page.getByRole("button", { name: "Get started", exact: true }),
-  ).toBeVisible({ timeout: 120_000 });
+  const hireRequest = firstTaskHireRequest(execution, fixtures);
+  const hire = await api.post<{ agent: Row; approval?: Row | null }>(
+    `/api/companies/${company.id}/agent-hires`,
+    hireRequest,
+  );
+  if (hire.approval) {
+    await api.post(`/api/approvals/${hire.approval.id}/approve`, {
+      decisionNote: "Approved during onboarding first-agent setup.",
+    });
+  }
   const agents = await api.get<Row[]>(`/api/companies/${company.id}/agents`);
   expect(agents).toHaveLength(1);
-  const wizardAdapter =
-    execution.profile.credential === "OPENAI_API_KEY"
-      ? "codex_local"
-      : "claude_local";
-  expect(agents[0].adapterType).toBe(wizardAdapter);
+  const onboardingAdapter = hireRequest.adapterType;
+  expect(agents[0].adapterType).toBe(onboardingAdapter);
   fixtures.onboardingRuntime = {
-    mode: "production-wizard",
-    originalAdapterType: wizardAdapter,
-    testedAdapterType: wizardAdapter,
+    mode: "onboarding-api",
+    originalAdapterType: onboardingAdapter,
+    testedAdapterType: onboardingAdapter,
     originalModel: agents[0].adapterConfig?.model ?? null,
   };
   if (execution.profile.generation === "native") {
@@ -143,7 +104,7 @@ export async function setupFirstTaskFixtures(input: {
     );
     fixtures.onboardingRuntime = {
       mode: "post-onboarding-runtime-switch",
-      originalAdapterType: wizardAdapter,
+      originalAdapterType: onboardingAdapter,
       testedAdapterType: migrated.adapterType,
       originalModel: agents[0].adapterConfig?.model ?? null,
     };
@@ -154,7 +115,17 @@ export async function setupFirstTaskFixtures(input: {
     name: agents[0].name,
   };
   input.observe(fixtures);
-  await page.getByRole("button", { name: "Get started", exact: true }).click();
+  const project = await api.post<Row>(`/api/companies/${company.id}/projects`, {
+    name: "Onboarding",
+    status: "in_progress",
+  });
+  await api.post(`/api/companies/${company.id}/issues`, {
+    title: "Paperclip onboarding",
+    assigneeAgentId: agents[0].id,
+    projectId: project.id,
+    status: "todo",
+    onboardingFirstTask: true,
+  });
   return fixtures;
 }
 

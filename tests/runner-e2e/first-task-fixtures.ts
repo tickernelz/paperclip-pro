@@ -1,10 +1,9 @@
 import { normalizePaperclipOperationalSkillPreference } from "../../packages/adapter-utils/src/server-utils.js";
+import { AGENT_DEFAULT_MAX_CONCURRENT_RUNS } from "../../packages/shared/src/constants.js";
 import type { RunnerApi } from "./api.js";
 import type { LiveFixtureValues } from "./live-fixtures.js";
 import type { CredentialName, MatrixExecution } from "./types.js";
 
-/** Provision only credentials for the UI-created company. The production wizard
- * remains the sole creator/configurer of its first agent and onboarding task. */
 export async function provisionFirstTaskFixtures(input: {
   api: Pick<RunnerApi, "get" | "postSensitive">;
   execution: MatrixExecution;
@@ -59,8 +58,36 @@ export async function provisionFirstTaskFixtures(input: {
   };
 }
 
+export function firstTaskHireRequest(
+  execution: MatrixExecution,
+  fixtures: LiveFixtureValues,
+) {
+  const credential = execution.profile.credential;
+  const env = { [credential]: fixtures.secretRefs[credential] };
+  const codex = credential === "OPENAI_API_KEY";
+  return {
+    name: fixtures.agent.name,
+    role: "general",
+    adapterType: codex ? "codex_local" : "claude_local",
+    adapterConfig: codex
+      ? { timeoutSec: 0, graceSec: 15, env, search: false, fastMode: false, dangerouslyBypassApprovalsAndSandbox: true }
+      : { timeoutSec: 0, graceSec: 15, env, maxTurnsPerRun: 1000, dangerouslySkipPermissions: true },
+    onboardingFirstAgent: true,
+    runtimeConfig: {
+      heartbeat: {
+        enabled: false,
+        intervalSec: 300,
+        wakeOnDemand: true,
+        skipTimerWhenNoActionableWork: true,
+        cooldownSec: 10,
+        maxConcurrentRuns: AGENT_DEFAULT_MAX_CONCURRENT_RUNS,
+      },
+    },
+  };
+}
+
 /** Reuse the qualified runtime configuration only, never the QA persona from
- * buildAgent. Native onboarding is not offered by the production wizard yet. */
+ * buildAgent. */
 export function firstTaskNativeRuntimePatch(
   execution: MatrixExecution,
   fixtures: LiveFixtureValues,
@@ -79,7 +106,6 @@ export function firstTaskNativeRuntimePatch(
     ...agent.adapterConfig,
     ...(built.adapterConfig as Record<string, unknown>),
   };
-  // Preserve the wizard's model choice (including its unset provider default).
   if (agent.adapterConfig?.model == null) delete config.model;
   else config.model = agent.adapterConfig.model;
   return {

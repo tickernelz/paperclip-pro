@@ -139,8 +139,8 @@ Paperclip task, run an agent, or replace a Product E2E result.
 `--suite confirmation-replies` selects ten local native Claude/Codex cells:
 conversational single-task approval, saved-plan approval, rejection, card-click
 acceptance as a control, and ambiguous approval with two independent pending
-proposals. The onboarding cells use the production wizard, runtime switch and
-persona. The ambiguity fixture creates ordinary board cards through the public
+proposals. The onboarding cells use the onboarding API setup, runtime switch
+and persona. The ambiguity fixture creates ordinary board cards through the public
 API, sends "Yes, go ahead" through the browser, requires both to stay pending
 with a clarification reply and no execution, then approves only one and rejects
 the other through separate browser messages.
@@ -184,8 +184,8 @@ pnpm test:e2e:runner -- --suite confirmation-replies
 and native Claude, each with onboarding, idle handoff, busy handoff, two-task
 handoff, and restart recovery. These exercise the production completion-delivery
 path and agent-authored responses. There is no separate completion feature flag.
-The onboarding cell reuses the real wizard and its existing pre-execution native
-runtime switch, retaining the production persona.
+The onboarding cell reuses the onboarding API setup and its existing
+pre-execution native runtime switch, retaining the production persona.
 
 The idle chat cell asks the agent to delegate one welcome note to a named worker and
 report its result without another user message. A bounded local file read in
@@ -501,8 +501,7 @@ Agent Chat, starts a conversation, disables new messages, verifies the public
 write endpoint rejects a send without creating work, and re-enables the same
 conversation with its remembered context. The company, credential, and native
 agent are fixture-provisioned. This qualifies the experimental-settings path,
-not native first-run onboarding: the current production wizard offers legacy
-adapters. Native API tools are enabled by default, subject to the
+not native first-run onboarding: production onboarding hires `omp_local` only. Native API tools are enabled by default, subject to the
 [operator controls](../../doc/runner-api-tools.md#default-availability-and-operator-controls).
 
 `followup-while-running` and `revise-while-running` send a second browser message
@@ -1073,27 +1072,29 @@ includes its 52 executions alongside the other suites in one shared dashboard,
 campaign result bundle, and history entry. Suite/profile selectors narrow that
 same harness; they do not invoke a separate onboarding reporting program.
 
-`first-task` uses the production onboarding wizard, creates the first agent,
-keeps its default persona/model/permissions/skill assignments, and answers the
-seeded opening question in the browser. The suite does not install the generic
+`first-task` creates the organization, first agent and onboarding task through
+the API calls onboarding makes: `POST /api/companies`, an
+`onboardingFirstAgent` hire on `/api/companies/:id/agent-hires` (approved when
+the instance requires it), and an `onboardingFirstTask` issue in the
+`Onboarding` project. It keeps the server-seeded persona/model/permissions/skill
+assignments and answers the seeded opening question in the browser. The suite does not install the generic
 Runner QA persona or replace the hidden `/first-task` invocation. Profile IDs
 select the Codex or Claude adapter family; **the production onboarding model
 default is retained**, even when it differs from that profile's normal harness
 model. Configured and provider-observed model identities are reported separately.
 
 There are thirteen cases on `legacy-codex`, `legacy-claude`, `runner-codex`, and
-`runner-acpx-claude`, local only (52 cells). Native profiles complete the same
-production wizard using their legacy provider, then change only the agent's
-runtime configuration via the public API before its first task. The wizard does
-not currently offer native Runner. Persona, managed instructions, skills, seeded
+`runner-acpx-claude`, local only (52 cells). Native profiles hire the first agent
+on its legacy provider, then change only the agent's runtime configuration via
+the public API before its first task is created. Persona, managed instructions, skills, seeded
 question, and task invocation are preserved. Explicit model choices are retained;
 an unset model resolves through the production runtime-switch defaults. The
 production switch removes the legacy Paperclip operational skill because Runner
 supplies its control-plane contract through its protocol; other assigned skills,
 including `/first-task`, are retained. Native runtime permissions come from the
 existing qualified profile. Evidence labels
-this setup `post-onboarding-runtime-switch`; it does not claim a native wizard
-path exists. Legacy setup is labeled `production-wizard`.
+this setup `post-onboarding-runtime-switch`; it does not claim a native
+onboarding path exists. Legacy setup is labeled `onboarding-api`.
 
 | First response / control | Complete journey |
 | --- | --- |
@@ -1451,10 +1452,10 @@ prompts, onboarding defaults, or provider permissions are changed.
 
 For pre-default native onboarding qualification, select all `first-task` cases
 with profiles `runner-codex,runner-acpx-claude` (26 cells). The existing public-API
-runtime switch occurs after the real wizard creates its first agent and before
-any provider work. It preserves the wizard's model, persona, skills, and task.
+runtime switch occurs after the onboarding hire creates its first agent and before
+any provider work. It preserves the hire's model, persona, skills, and task.
 This tests the native first-task process in advance of the UI/default rollout;
-it does not certify a native option in the wizard, which is not offered yet.
+it does not certify a native option in onboarding, which is not offered.
 
 Current proof and remaining decisions are recorded in
 [the 21 September qualification report](QUALIFICATION-2026-09-21.md). In particular,
@@ -2126,10 +2127,10 @@ pnpm test:e2e:runner -- --id hiring-templates.runner-codex.local.hire-coder-temp
 pnpm test:e2e:runner -- --id hiring-templates.runner-acpx-claude.local.hire-coder-template-reuse --max-automatic-retries 0
 ```
 
-The existing `first-task` suite uses the actual onboarding wizard and captures
-the changed chief-of-staff persona and skill selections; it needs no fixture
-change for that default selection. Hiring from that wizard-created chief of
-staff remains a separate follow-up qualification.
+The existing `first-task` suite hires through the `onboardingFirstAgent` marker
+and captures the changed chief-of-staff persona and skill selections; it needs no
+fixture change for that default selection. Hiring from that onboarding-created
+chief of staff remains a separate follow-up qualification.
 
 ### Hiring completion accounting evidence
 
