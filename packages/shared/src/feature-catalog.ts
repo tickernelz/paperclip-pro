@@ -788,7 +788,9 @@ export const INSTANCE_FEATURE_PLACEMENT: Record<InstanceFeatureKey, FeaturePlace
 type FeaturePlacementOf<D extends FeatureDestination> = Extract<FeaturePlacement, { destination: D }>;
 
 export function featureKeysWithDestination<D extends FeatureDestination>(destination: D): InstanceFeatureKey[] {
-  return INSTANCE_FEATURE_KEYS.filter((key) => INSTANCE_FEATURE_PLACEMENT[key].destination === destination);
+  return (Object.keys(INSTANCE_FEATURE_PLACEMENT) as InstanceFeatureKey[]).filter(
+    (key) => INSTANCE_FEATURE_PLACEMENT[key].destination === destination,
+  );
 }
 
 export function featurePlacement<D extends FeatureDestination>(
