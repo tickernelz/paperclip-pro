@@ -58,7 +58,6 @@ import {
 } from "../../home-paths.js";
 import {
   formatManagedGitWorktreeBranchInspection,
-  inspectManagedGitWorktreeBranch,
   type ExecutionWorkspaceInput,
   type RealizedExecutionWorkspace,
   sanitizeRuntimeServiceBaseEnv,
@@ -102,26 +101,6 @@ const MANAGED_WORKSPACE_GIT_CLONE_TIMEOUT_MS = 10 * 60 * 1000;
 
 export const WORKSPACE_VALIDATION_FAILURE_CODE = "workspace_validation_failed";
 
-const GITHUB_PR_WORKFLOW_SKILL_KEY =
-  "paperclipai/bundled/software-development/github-pr-workflow";
-
-const GITHUB_PR_WORKFLOW_SKILL_SLUG = "github-pr-workflow";
-
-const PUSH_CAPABILITY_ENV_KEYS = ["GH_TOKEN", "GITHUB_TOKEN"] as const;
-
-// Keep this in sync with local adapters that require a git workspace before launch.
-export const GIT_SENSITIVE_LOCAL_ADAPTER_TYPES = new Set([
-  "claude_local",
-  "codex_local",
-  "cursor",
-  "gemini_local",
-  "grok_local",
-  "hermes_local",
-  "kimi_local",
-  "opencode_local",
-  "pi_local",
-]);
-
 export class WorkspaceValidationFailure extends Error {
   code = WORKSPACE_VALIDATION_FAILURE_CODE;
   resultJson: Record<string, unknown>;
@@ -131,29 +110,6 @@ export class WorkspaceValidationFailure extends Error {
     this.name = "WorkspaceValidationFailure";
     this.resultJson = resultJson;
   }
-}
-
-function hasGithubPrWorkflowSkill(desiredSkills: string[]) {
-  return desiredSkills.some((skill) => {
-    const normalized = skill.trim();
-    return (
-      normalized === GITHUB_PR_WORKFLOW_SKILL_KEY ||
-      normalized === GITHUB_PR_WORKFLOW_SKILL_SLUG ||
-      normalized.endsWith(`/${GITHUB_PR_WORKFLOW_SKILL_SLUG}`)
-    );
-  });
-}
-
-export function requiresPushCapabilityPreflight(input: {
-  adapterType: string;
-  issueId: string | null | undefined;
-  explicitRunScopedSkillKeys: string[];
-}) {
-  return (
-    Boolean(input.issueId) &&
-    GIT_SENSITIVE_LOCAL_ADAPTER_TYPES.has(input.adapterType) &&
-    hasGithubPrWorkflowSkill(input.explicitRunScopedSkillKeys)
-  );
 }
 
 export function applyPersistedExecutionWorkspaceConfig(input: {
@@ -928,15 +884,6 @@ export function fingerprintFinalizeWorkspaceBranchValidation(input: {
   return `workspace_finalize_branch_mismatch:v1:sha256:${digest}`;
 }
 
-async function hasGitMetadata(cwd: string | null | undefined) {
-  const normalized = readNonEmptyString(cwd);
-  if (!normalized) return false;
-  return fs
-    .lstat(path.resolve(normalized, ".git"))
-    .then((entry) => entry.isDirectory() || entry.isFile())
-    .catch(() => false);
-}
-
 async function isGitCheckout(cwd: string | null | undefined) {
   const normalized = readNonEmptyString(cwd);
   if (!normalized) return false;
@@ -992,41 +939,6 @@ async function hasNoGitMetadataInWorkspaceAncestors(cwd: string): Promise<boolea
   } catch {
     return false;
   }
-}
-
-function sameResolvedPath(
-  left: string | null | undefined,
-  right: string | null | undefined,
-) {
-  const leftPath = readNonEmptyString(left);
-  const rightPath = readNonEmptyString(right);
-  if (!leftPath || !rightPath) return false;
-  return path.resolve(leftPath) === path.resolve(rightPath);
-}
-
-async function hasGitPushRemote(cwd: string | null | undefined) {
-  const normalized = readNonEmptyString(cwd);
-  if (!normalized) return false;
-  const remoteNames = await execFile("git", ["remote"], { cwd: normalized })
-    .then((result) =>
-      result.stdout
-        .split(/\r?\n/)
-        .map((value) => value.trim())
-        .filter((value) => value.length > 0),
-    )
-    .catch(() => []);
-
-  for (const remoteName of remoteNames) {
-    const pushUrl = await execFile(
-      "git",
-      ["remote", "get-url", "--push", remoteName],
-      { cwd: normalized },
-    )
-      .then((result) => readNonEmptyString(result.stdout))
-      .catch(() => null);
-    if (pushUrl) return true;
-  }
-  return false;
 }
 
 export async function assertGitWorktreeBaseWorkspaceReady(input: {
@@ -1157,32 +1069,6 @@ export async function assertGitWorktreeBaseWorkspaceReady(input: {
   }
 }
 
-export async function assertPushCapabilityCheckoutValid(input: {
-  enabled: boolean;
-  issue: {
-    id: string;
-    identifier: string | null;
-  } | null;
-  cwd: string | null | undefined;
-}) {
-  if (!input.enabled || !input.issue) return;
-  const cwd = readNonEmptyString(input.cwd);
-  if (!cwd) return;
-  if (await hasGitPushRemote(cwd)) return;
-  throw new WorkspaceValidationFailure(
-    `Issue ${input.issue.identifier ?? input.issue.id} requested the GitHub PR workflow, but checkout "${cwd}" has no configured push remote. Bind the run to a writable repo checkout before dispatching the agent.`,
-    {
-      workspaceValidation: {
-        reason: "missing_git_push_remote",
-        issueId: input.issue.id,
-        issueIdentifier: input.issue.identifier,
-        executionWorkspaceCwd: cwd,
-        requiredEnvKeys: [...PUSH_CAPABILITY_ENV_KEYS],
-      },
-    },
-  );
-}
-
 /**
  * Reconcile the `projectWorkspaceId` for a reused execution workspace.
  *
@@ -1201,236 +1087,6 @@ export function reconcileReusedExecutionWorkspaceProjectWorkspaceId(
   resolvedProjectWorkspaceId: string | null | undefined,
 ): string | null {
   return existingProjectWorkspaceId ?? resolvedProjectWorkspaceId ?? null;
-}
-
-export async function readGitSensitiveProjectWorkspaceSourceType(input: {
-  db: Db;
-  adapterType: string;
-  projectWorkspaceId: string | null;
-}): Promise<string | null> {
-  if (!input.projectWorkspaceId) return null;
-  if (!GIT_SENSITIVE_LOCAL_ADAPTER_TYPES.has(input.adapterType)) return null;
-  const [row] = await input.db
-    .select({ sourceType: projectWorkspaces.sourceType })
-    .from(projectWorkspaces)
-    .where(eq(projectWorkspaces.id, input.projectWorkspaceId))
-    .limit(1);
-  return readNonEmptyString(row?.sourceType);
-}
-
-export async function assertGitSensitiveAdapterWorkspaceValid(input: {
-  adapterType: string;
-  agentId: string;
-  issue: {
-    id: string;
-    identifier: string | null;
-    projectId: string | null;
-    projectWorkspaceId: string | null;
-  } | null;
-  resolvedWorkspace: ResolvedWorkspaceForRun;
-  executionWorkspace: RealizedExecutionWorkspace;
-  persistedExecutionWorkspace: ExecutionWorkspace | null;
-  executionTarget: unknown;
-  environmentDriver?: string | null;
-  leaseMetadata?: unknown;
-  projectWorkspaceSourceType?: string | null;
-}) {
-  if (!GIT_SENSITIVE_LOCAL_ADAPTER_TYPES.has(input.adapterType)) return;
-
-  const executionTargetKind =
-    readNonEmptyString(
-      (input.executionTarget as { kind?: unknown } | null)?.kind,
-    ) ?? "local";
-  if (executionTargetKind !== "local") return;
-
-  const issue = input.issue;
-  if (!issue) return;
-
-  const environmentDriver =
-    readNonEmptyString(input.environmentDriver) ?? "local";
-  const leaseMetadata = parseObject(input.leaseMetadata);
-  const leaseProviderMetadata = parseObject(leaseMetadata.providerMetadata);
-  const leaseRemoteCwd =
-    readNonEmptyString(leaseMetadata.remoteCwd) ??
-    readNonEmptyString(leaseProviderMetadata.remoteCwd);
-
-  const effectiveCwd = readNonEmptyString(input.executionWorkspace.cwd);
-  const persistedCwd = readNonEmptyString(
-    input.persistedExecutionWorkspace?.cwd,
-  );
-  const agentFallbackCwd = resolveDefaultAgentWorkspaceDir(input.agentId);
-  const workspaceExpectation =
-    Boolean(issue.projectWorkspaceId) ||
-    Boolean(input.resolvedWorkspace.workspaceId) ||
-    input.executionWorkspace.strategy === "git_worktree";
-  const projectWorkspaceSourceType = readNonEmptyString(
-    input.projectWorkspaceSourceType,
-  );
-  const gitMetadataExpectation =
-    input.executionWorkspace.strategy === "git_worktree" ||
-    input.persistedExecutionWorkspace?.strategyType === "git_worktree" ||
-    projectWorkspaceSourceType === "git_repo";
-
-  const fail = (
-    reason: string,
-    message: string,
-    extra: Record<string, unknown> = {},
-  ) => {
-    throw new WorkspaceValidationFailure(message, {
-      workspaceValidation: {
-        reason,
-        adapterType: input.adapterType,
-        issueId: issue.id,
-        issueIdentifier: issue.identifier,
-        issueProjectId: issue.projectId,
-        issueProjectWorkspaceId: issue.projectWorkspaceId,
-        resolvedWorkspaceSource: input.resolvedWorkspace.source,
-        projectWorkspaceSourceType: projectWorkspaceSourceType ?? null,
-        resolvedProjectId: input.resolvedWorkspace.projectId,
-        resolvedProjectWorkspaceId: input.resolvedWorkspace.workspaceId,
-        resolvedWorkspaceCwd: input.resolvedWorkspace.cwd,
-        executionWorkspaceCwd: effectiveCwd,
-        executionWorkspaceStrategy: input.executionWorkspace.strategy,
-        executionWorkspaceProjectId: input.executionWorkspace.projectId,
-        executionWorkspaceProjectWorkspaceId:
-          input.executionWorkspace.workspaceId,
-        persistedExecutionWorkspaceId:
-          input.persistedExecutionWorkspace?.id ?? null,
-        persistedWorkspaceCwd: persistedCwd,
-        persistedWorkspaceStrategy:
-          input.persistedExecutionWorkspace?.strategyType ?? null,
-        persistedProjectId:
-          input.persistedExecutionWorkspace?.projectId ?? null,
-        persistedProjectWorkspaceId:
-          input.persistedExecutionWorkspace?.projectWorkspaceId ?? null,
-        persistedProviderRef:
-          input.persistedExecutionWorkspace?.providerRef ?? null,
-        ...extra,
-      },
-    });
-  };
-
-  if (issue.projectWorkspaceId && !issue.projectId) {
-    fail(
-      "missing_project_id",
-      `Issue ${issue.identifier ?? issue.id} is linked to a project workspace but has no project id; refusing to launch ${input.adapterType} from fallback cwd.`,
-    );
-  }
-
-  if (!input.executionTarget && environmentDriver !== "local" && leaseRemoteCwd)
-    return;
-
-  if (workspaceExpectation && !input.persistedExecutionWorkspace) {
-    fail(
-      "missing_persisted_execution_workspace",
-      `Issue ${issue.identifier ?? issue.id} requires a project execution workspace, but none was persisted before adapter launch.`,
-    );
-  }
-
-  if (workspaceExpectation && !effectiveCwd) {
-    fail(
-      "missing_effective_cwd",
-      `Issue ${issue.identifier ?? issue.id} expected a project workspace, but no adapter cwd was resolved before launch.`,
-    );
-  }
-
-  if (
-    input.persistedExecutionWorkspace &&
-    effectiveCwd &&
-    persistedCwd &&
-    !sameResolvedPath(effectiveCwd, persistedCwd)
-  ) {
-    fail(
-      "persisted_cwd_mismatch",
-      `Issue ${issue.identifier ?? issue.id} resolved adapter cwd "${effectiveCwd}" but persisted execution workspace cwd is "${persistedCwd}".`,
-    );
-  }
-
-  const expectedProjectWorkspaceId =
-    issue.projectWorkspaceId ?? input.resolvedWorkspace.workspaceId ?? null;
-  if (
-    expectedProjectWorkspaceId &&
-    input.persistedExecutionWorkspace &&
-    !input.persistedExecutionWorkspace.projectWorkspaceId
-  ) {
-    fail(
-      "persisted_workspace_missing_project_workspace_id",
-      `Issue ${issue.identifier ?? issue.id} expected project workspace "${expectedProjectWorkspaceId}" but persisted execution workspace has no project workspace id.`,
-    );
-  }
-
-  if (
-    expectedProjectWorkspaceId &&
-    input.persistedExecutionWorkspace?.projectWorkspaceId &&
-    input.persistedExecutionWorkspace.projectWorkspaceId !==
-      expectedProjectWorkspaceId
-  ) {
-    fail(
-      "project_workspace_mismatch",
-      `Issue ${issue.identifier ?? issue.id} expected project workspace "${expectedProjectWorkspaceId}" but persisted execution workspace points at "${input.persistedExecutionWorkspace.projectWorkspaceId}".`,
-    );
-  }
-
-  if (
-    workspaceExpectation &&
-    effectiveCwd &&
-    sameResolvedPath(effectiveCwd, agentFallbackCwd)
-  ) {
-    fail(
-      "fallback_agent_home_cwd",
-      `Issue ${issue.identifier ?? issue.id} expected a project workspace, but ${input.adapterType} would launch from agent fallback cwd "${effectiveCwd}".`,
-    );
-  }
-
-  if (
-    input.persistedExecutionWorkspace?.strategyType === "git_worktree" &&
-    input.persistedExecutionWorkspace.providerRef &&
-    effectiveCwd &&
-    !sameResolvedPath(
-      effectiveCwd,
-      input.persistedExecutionWorkspace.providerRef,
-    )
-  ) {
-    fail(
-      "git_worktree_provider_ref_mismatch",
-      `Issue ${issue.identifier ?? issue.id} expected git worktree "${input.persistedExecutionWorkspace.providerRef}" but adapter cwd resolved to "${effectiveCwd}".`,
-    );
-  }
-
-  if (
-    gitMetadataExpectation &&
-    effectiveCwd &&
-    !(await hasGitMetadata(effectiveCwd))
-  ) {
-    fail(
-      "missing_git_metadata",
-      `Issue ${issue.identifier ?? issue.id} expected a git workspace for ${input.adapterType}, but "${effectiveCwd}" has no .git metadata.`,
-    );
-  }
-
-  const expectedManagedBranchName =
-    readNonEmptyString(input.executionWorkspace.branchName) ??
-    readNonEmptyString(input.persistedExecutionWorkspace?.branchName);
-  if (
-    input.persistedExecutionWorkspace?.strategyType === "git_worktree" &&
-    effectiveCwd &&
-    expectedManagedBranchName
-  ) {
-    const inspection = await inspectManagedGitWorktreeBranch({
-      worktreePath: effectiveCwd,
-      expectedBranchName: expectedManagedBranchName,
-    });
-    if (!inspection.valid) {
-      fail(
-        "git_worktree_branch_mismatch",
-        `Issue ${issue.identifier ?? issue.id} expected git worktree branch "${expectedManagedBranchName}" at "${effectiveCwd}", but ${inspection.reason ?? "the checked-out branch could not be verified"}.`,
-        {
-          managedGitWorktreeBranch:
-            formatManagedGitWorktreeBranchInspection(inspection),
-        },
-      );
-    }
-  }
 }
 
 /**

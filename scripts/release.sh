@@ -96,7 +96,7 @@ restore_publish_artifacts() {
   rm -f "${CLI_DIR}/README.md"
   rm -rf "${REPO_ROOT}/server/ui-dist"
 
-  for pkg_dir in server packages/adapters/claude-local packages/adapters/codex-local; do
+  for pkg_dir in server; do
     rm -rf "${REPO_ROOT}/$pkg_dir/skills"
   done
 }

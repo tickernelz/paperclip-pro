@@ -98,8 +98,8 @@ describeEmbeddedPostgres("owner-relayed decisions (routes + postgres)", () => {
     const now = new Date();
     await db.insert(companies).values({ id: companyId, name: "HMX", issuePrefix: prefix, requireBoardApprovalForNewAgents: false });
     await db.insert(agents).values([
-      { id: wiraId, companyId, name: "Wira", role: "engineer", status: "idle", adapterType: "codex_local", adapterConfig: {}, runtimeConfig: {}, permissions: {} },
-      { id: nadiaId, companyId, name: "Nadia", role: "engineer", status: "idle", adapterType: "codex_local", adapterConfig: {}, runtimeConfig: {}, permissions: {} },
+      { id: wiraId, companyId, name: "Wira", role: "engineer", status: "idle", adapterType: "omp_local", adapterConfig: {}, runtimeConfig: {}, permissions: {} },
+      { id: nadiaId, companyId, name: "Nadia", role: "engineer", status: "idle", adapterType: "omp_local", adapterConfig: {}, runtimeConfig: {}, permissions: {} },
     ]);
     await db.insert(authUsers).values({ id: ownerUserId, name: "Zhafron", email: ownerUserId + "@example.test", createdAt: now, updatedAt: now });
     await db.insert(companyMemberships).values({ companyId, principalType: "user", principalId: ownerUserId, status: "active", membershipRole: "owner" });
@@ -463,7 +463,7 @@ describeEmbeddedPostgres("owner-relayed decisions (routes + postgres)", () => {
     });
     await db.insert(agents).values({
       companyId: seed.companyId, name: "Broken Agent", role: "engineer", status: "error", errorReason: "adapter config missing",
-      adapterType: "codex_local", adapterConfig: {}, runtimeConfig: {}, permissions: {},
+      adapterType: "omp_local", adapterConfig: {}, runtimeConfig: {}, permissions: {},
     });
     const failedRunId = randomUUID();
     await db.insert(heartbeatRuns).values({

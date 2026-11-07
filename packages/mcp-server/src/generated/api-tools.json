@@ -347,7 +347,7 @@
       "assertCanUpdateAgent"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@agents.ts:5377",
+    "boardGuard": "assertBoard@agents.ts:5119",
     "authorityCapability": null,
     "parameters": [
       {
@@ -1859,45 +1859,6 @@
         }
       }
     }
-  },
-  {
-    "name": "paperclipClaudeLoginAgent",
-    "operationId": "POST /api/agents/{id}/claude-login",
-    "method": "POST",
-    "path": "/agents/{agentId}/claude-login",
-    "description": "Trigger Claude login for agent",
-    "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "handler",
-    "tags": [
-      "agents"
-    ],
-    "annotations": {
-      "readOnlyHint": false,
-      "destructiveHint": false,
-      "idempotentHint": false
-    },
-    "guards": [
-      "assertAuthenticated",
-      "assertBoard",
-      "assertBoardCanManageAgentsForCompany",
-      "assertCompanyAccess",
-      "getActorInfo",
-      "hasCompanyAccess"
-    ],
-    "permissions": [],
-    "boardGuard": "assertBoard@agents.ts:6386",
-    "authorityCapability": null,
-    "parameters": [
-      {
-        "name": "agentId",
-        "in": "path",
-        "required": true,
-        "schema": {
-          "type": "string"
-        }
-      }
-    ]
   },
   {
     "name": "paperclipClearErrorAgent",
@@ -8061,20 +8022,8 @@
             "enum": [
               "process",
               "http",
-              "claude_local",
-              "codex_local",
               "paperclip_runner",
-              "cursor_cloud",
-              "gemini_local",
-              "grok_local",
-              "hermes_gateway",
-              "hermes_local",
-              "kimi_local",
-              "omp_local",
-              "opencode_local",
-              "pi_local",
-              "cursor",
-              "openclaw_gateway"
+              "omp_local"
             ]
           },
           "externalInvoiceId": {
@@ -8377,7 +8326,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:7403",
+    "boardGuard": "assertInstanceAdmin@agents.ts:7105",
     "authorityCapability": null,
     "parameters": [
       {
@@ -14779,7 +14728,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:7541",
+    "boardGuard": "assertInstanceAdmin@agents.ts:7243",
     "authorityCapability": null,
     "parameters": [
       {
@@ -21526,7 +21475,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:7374",
+    "boardGuard": "assertInstanceAdmin@agents.ts:7076",
     "authorityCapability": null,
     "parameters": [
       {
@@ -26812,7 +26761,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@adapters.ts:316",
+    "boardGuard": "assertInstanceAdmin@adapters.ts:317",
     "authorityCapability": null,
     "parameters": [],
     "body": {
@@ -27253,53 +27202,6 @@
     }
   },
   {
-    "name": "paperclipInvitePromptOpenclaw",
-    "operationId": "POST /api/companies/{companyId}/openclaw/invite-prompt",
-    "method": "POST",
-    "path": "/companies/{companyId}/openclaw/invite-prompt",
-    "description": "Create an OpenClaw invite prompt bundle",
-    "toolset": "extended",
-    "authority": "board",
-    "authoritySource": "registry",
-    "tags": [
-      "access"
-    ],
-    "annotations": {
-      "readOnlyHint": false,
-      "destructiveHint": false,
-      "idempotentHint": false
-    },
-    "guards": [
-      "assertCanGenerateOpenClawInvitePrompt"
-    ],
-    "permissions": [],
-    "boardGuard": null,
-    "authorityCapability": null,
-    "parameters": [
-      {
-        "name": "companyId",
-        "in": "path",
-        "required": true,
-        "schema": {
-          "type": "string"
-        }
-      }
-    ],
-    "body": {
-      "required": true,
-      "documented": true,
-      "mode": "merge",
-      "schema": {
-        "type": "object",
-        "properties": {
-          "agentMessage": {
-            "type": "string"
-          }
-        }
-      }
-    }
-  },
-  {
     "name": "paperclipInvokeAgentHeartbeat",
     "operationId": "POST /api/agents/{id}/heartbeat/invoke",
     "method": "POST",
@@ -27317,9 +27219,12 @@
       "idempotentHint": false
     },
     "guards": [
+      "assertAuthenticated",
       "assertBoardCanWakeAgent",
+      "assertCompanyAccess",
       "assertInstanceAdmin",
-      "getActorInfo"
+      "getActorInfo",
+      "hasCompanyAccess"
     ],
     "permissions": [],
     "boardGuard": null,
@@ -27565,7 +27470,7 @@
       "assertCompanyAccess",
       "assertKnownAdapterType",
       "getActorInfo",
-      "requireServerAdapter"
+      "requireRunnerHarness"
     ],
     "permissions": [],
     "boardGuard": null,
@@ -27675,7 +27580,7 @@
       "assertInstanceAdminUser"
     ],
     "permissions": [],
-    "boardGuard": "await assertInstanceAdminUser@access.ts:4788",
+    "boardGuard": "await assertInstanceAdminUser@access.ts:3764",
     "authorityCapability": null,
     "parameters": [
       {
@@ -27710,7 +27615,7 @@
       "assertInstanceAdminUser"
     ],
     "permissions": [],
-    "boardGuard": "await assertInstanceAdminUser@access.ts:4715",
+    "boardGuard": "await assertInstanceAdminUser@access.ts:3691",
     "authorityCapability": null,
     "parameters": []
   },
@@ -31166,7 +31071,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:3854",
+    "boardGuard": "assertInstanceAdmin@agents.ts:3621",
     "authorityCapability": null,
     "parameters": []
   },
@@ -33017,7 +32922,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:6920",
+    "boardGuard": "assertInstanceAdmin@agents.ts:6622",
     "authorityCapability": null,
     "parameters": [
       {
@@ -39387,7 +39292,7 @@
       "getActorInfo"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@agents.ts:5660",
+    "boardGuard": "assertBoard@agents.ts:5397",
     "authorityCapability": null,
     "parameters": [
       {
@@ -39635,7 +39540,7 @@
       "assertInstanceAdmin"
     ],
     "permissions": [],
-    "boardGuard": "assertInstanceAdmin@agents.ts:7466",
+    "boardGuard": "assertInstanceAdmin@agents.ts:7168",
     "authorityCapability": null,
     "parameters": [
       {
@@ -45489,9 +45394,6 @@
               "ANTHROPIC_API_KEY": {
                 "type": "string"
               },
-              "API_SERVER_KEY": {
-                "type": "string"
-              },
               "CURSOR_API_KEY": {
                 "type": "string"
               },
@@ -45502,9 +45404,6 @@
                 "type": "string"
               },
               "KIMI_API_KEY": {
-                "type": "string"
-              },
-              "KIMI_MODEL_API_KEY": {
                 "type": "string"
               },
               "MINIMAX_API_KEY": {

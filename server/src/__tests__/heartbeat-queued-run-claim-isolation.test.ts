@@ -88,7 +88,7 @@ describeEmbeddedPostgres("heartbeat queued-run claim isolation", () => {
       name: "Claim Isolation Agent",
       role: "engineer",
       status: "idle",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: {},
       runtimeConfig: {
         heartbeat: {

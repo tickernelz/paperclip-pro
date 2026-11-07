@@ -1,6 +1,6 @@
 import { mkdir, realpath, rm, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { hasUsableGrokAuthValue, parseGrokAuthPayload, resolveManagedGrokHomeDir } from "../../packages/adapters/grok-local/src/server/grok-home.js";
+import { hasUsableGrokAuthValue, parseGrokAuthPayload, resolveManagedGrokHomeDir } from "../../server/src/services/ai-providers/grok/grok-home.js";
 
 function credential(raw: string) {
   if (Buffer.byteLength(raw) > 256 * 1024) throw new Error("Grok fixture credential exceeds its bound");

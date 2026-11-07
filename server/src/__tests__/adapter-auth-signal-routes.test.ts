@@ -2,11 +2,6 @@ import express from "express";
 import request from "supertest";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-// The cheap host-local authentication-signal route. It reads no sandbox and
-// runs no shell command or model process, so every test drives it through a
-// plain in-process Express app with fake services -- no database, no
-// sandbox provider, and no adapter execution.
-
 const COMPANY_1 = "company-1";
 const OTHER_COMPANY = "company-2";
 const OWNER_A = "user-a";
@@ -55,9 +50,6 @@ const mockInstanceSettingsService = vi.hoisted(() => ({
   getExperimental: vi.fn(async () => ({ enableManagedSandboxOnly: false })),
 }));
 
-// The one host-local Codex readiness predictor the route calls. The test
-// controls its resolved value and its failure, so it stays independent of a
-// real Codex home on disk.
 const mockEvaluateCodexCredentialReadiness = vi.hoisted(() => vi.fn());
 
 vi.mock("../services/index.js", () => ({
@@ -104,8 +96,8 @@ vi.mock("../services/instance-settings.js", () => ({
   instanceSettingsService: () => mockInstanceSettingsService,
 }));
 
-vi.mock("@tickernelz/paperclip-pro-adapter-codex-local/server", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("@tickernelz/paperclip-pro-adapter-codex-local/server")>();
+vi.mock("../services/ai-providers/codex/codex-home.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../services/ai-providers/codex/codex-home.js")>();
   return {
     ...actual,
     evaluateCodexCredentialReadiness: mockEvaluateCodexCredentialReadiness,
@@ -228,9 +220,6 @@ describe("adapter auth-signal route", () => {
   });
 
   it("returns unknown for codex_local on a sandbox environment even when the host reports ready", async () => {
-    // The host readiness predictor is ready, but the selected sandbox holds no
-    // credential of its own. The route must not let the unrelated host login
-    // hide the sandbox's own sign-in panel.
     mockEvaluateCodexCredentialReadiness.mockResolvedValueOnce({
       managed: true,
       authMode: "subscription",

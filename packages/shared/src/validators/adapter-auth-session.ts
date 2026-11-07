@@ -1,6 +1,6 @@
 import { aiConnectionLoginIntentSchema } from "../ai-connections.js";
 import { z } from "zod";
-import { AGENT_ADAPTER_TYPES } from "../constants.js";
+import { ADAPTER_LOGIN_TYPES } from "../constants.js";
 import { ADAPTER_AUTH_SESSION_STATUSES } from "../types/agent.js";
 
 const isoDateTime = z.union([z.date(), z.string().datetime()]);
@@ -44,7 +44,7 @@ export type AdapterAuthSessionOwnerResponse =
 export const startAdapterAuthSessionRequestSchema = z.object({
   aiConnection: aiConnectionLoginIntentSchema.optional(),
   environmentId: z.string().guid(),
-  adapterType: z.enum(AGENT_ADAPTER_TYPES),
+  adapterType: z.enum(ADAPTER_LOGIN_TYPES),
   ttlSeconds: z.number().int().min(60).max(24 * 60 * 60).optional(),
 }).strict();
 export type StartAdapterAuthSessionRequest =

@@ -58,7 +58,7 @@ Use `paperclipUpdateAgentInstructionsPath` (extended) instead of the generic age
 Rules:
 
 - Allowed for: the target agent itself, or an ancestor manager in that agent's reporting chain.
-- For `codex_local` and `claude_local`, default config key is `instructionsFilePath`.
+- For `omp_local`, default config key is `instructionsFilePath`.
 - Relative paths are resolved against the target agent's `adapterConfig.cwd`; absolute paths are accepted as-is.
 - To clear the path, send `"path": null`.
 - For adapters with a different key, provide it explicitly:

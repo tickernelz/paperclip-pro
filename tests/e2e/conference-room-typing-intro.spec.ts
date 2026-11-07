@@ -1,5 +1,5 @@
 import { test, expect, type Page } from "@playwright/test";
-import { mockOnboardingLocalAiConnection } from "./helpers/onboarding-ai-connection";
+import { chooseOnboardingOmpModel, mockOnboardingOmp } from "./helpers/onboarding-omp";
 import {
   expectLandsOnFirstTaskWithoutDashboardBounce,
   instrumentNavLog,
@@ -27,13 +27,7 @@ const FIRST_TASK_TITLE = "Paperclip onboarding";
  * with an inert http adapter).
  */
 async function installLaunchIntercepts(page: Page, baseURL?: string) {
-  await mockOnboardingLocalAiConnection(page);
-  await page.route("**/test-environment", (route) =>
-    route.fulfill({
-      contentType: "application/json",
-      body: JSON.stringify({ status: "pass", checks: [] }),
-    }),
-  );
+  await mockOnboardingOmp(page);
 
   await page.route("**/agent-hires", async (route) => {
     const req = route.request();
@@ -86,24 +80,7 @@ async function runOnboardingWizard(page: Page, companyName: string) {
   await page.locator("#onboarding-agent-name").fill("Ada");
   await page.getByRole("button", { name: /^Next$/ }).click();
 
-  // Step 4: pick a model source, then advance. Nothing is selected on arrival
-  // — the row is a question, not a confirmation — so the CTA is disabled until
-  // a tile is pressed. By role rather than by label: which adapters the tiles
-  // offer depends on the registry this environment reports.
-  await page.getByRole("button", { name: "Use another adapter" }).click();
-  const source = page.getByRole("radio").first();
-  await source.waitFor({ timeout: 30_000 });
-  await source.click();
-
-  // "Connect", not "Next": this step's button starts the sign-in where there
-  // is one to start, so it is named for what it does. This test simulates
-  // successful local account connection before the environment check and hire.
-  //
-  // Waited on for enabled rather than for visible: it is already on screen,
-  // disabled, and clicking a disabled button raises nothing and does nothing.
-  const connectNext = page.getByRole("button", { name: /^Connect$/ });
-  await expect(connectNext).toBeEnabled({ timeout: 30_000 });
-  await connectNext.click();
+  await chooseOnboardingOmpModel(page);
 
   // Step 5: review → Get started creates the first task and opens its
   // detail page.

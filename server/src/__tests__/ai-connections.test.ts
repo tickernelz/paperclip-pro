@@ -22,11 +22,10 @@ import { quotaCredentialRecoveryPath, quotaCredentialRecovery, quotaCredentialHa
 import { readAiConnectionConfigurationFailure } from "../services/ai-connection-configuration-failure.js";
 import { aiConnectionService } from "../services/ai-connections.js";
 import { syncConnectionCredentialBindings } from "../services/connection-credential-bindings.js";
-import * as codexAdapter from "@tickernelz/paperclip-pro-adapter-codex-local/server";
+import * as codexAdapter from "../services/ai-providers/codex/codex-auth-cache.js";
 import { WORKSPACE_RESTORE_LOCK_TIMEOUT_CODE } from "@tickernelz/paperclip-pro-adapter-utils/workspace-restore-merge";
 import * as executionTarget from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
 import { prepareManagedAiRuntime, withManagedAiProbe, assertManagedAiProjectAuth, isAiConnectionBusy } from "../services/ai-connection-runtime.js";
-import { execute as executeGemini, testEnvironment as testGeminiEnvironment } from "@tickernelz/paperclip-pro-adapter-gemini-local/server";
 import { toolAccessService } from "../services/tool-access.js";
 import { secretService } from "../services/secrets.js";
 import { resolveExecutionRunAdapterConfig } from "../services/heartbeat.js";
@@ -761,73 +760,6 @@ describe("managed AI connections", () => {
       expect(crossAgentRead.stdout).toBe("ENOENT");
       await expect(access(transcript)).rejects.toMatchObject({ code: "ENOENT" });
     } finally { await Promise.all([resumed.cleanup(), peer.cleanup()]); }
-  });
-  it("authenticates local Gemini probes and runs with the saved key in an isolated home", async () => {
-    const root = await mkdtemp(path.join(home, "gemini-auth-"));
-    const command = path.join(root, "gemini");
-    await writeFile(command, `#!/usr/bin/env node
-const fs = require("node:fs");
-const path = require("node:path");
-const settings = JSON.parse(fs.readFileSync(path.join(process.env.HOME, ".gemini/settings.json"), "utf8"));
-if (settings.selectedAuthType !== "gemini-api-key" || settings.security?.auth?.selectedType !== "gemini-api-key" || process.env.GEMINI_API_KEY !== "saved-google-key") {
-  console.error("Invalid auth method selected");
-  process.exit(1);
-}
-console.log(JSON.stringify({ type: "system", subtype: "init", session_id: "gemini-managed" }));
-console.log(JSON.stringify({ type: "assistant", message: { content: [{ type: "output_text", text: "hello" }] } }));
-console.log(JSON.stringify({ type: "result", subtype: "success", result: "hello", session_id: "gemini-managed" }));
-`, { mode: 0o700 });
-    const saved = await service.save(companyId, "alice", {
-      provider: "google", method: "api_key", ownership: "personal", name: "Saved Google",
-      apiKey: "fixture", allAgents: true, agentIds: [],
-    }, "saved-google-key");
-    const runtime = await prepareManagedAiRuntime(db, {
-      companyId, agentId, responsibleUserId: "alice", adapterType: "gemini_local",
-      binding: { provider: "google", method: "api_key", mode: "responsible_user" },
-      config: { engine: "cli", command, cwd: root, promptTemplate: "Say hello.", paperclipRuntimeSkills: [], env: { GEMINI_API_KEY: "ambient-google-key" } },
-    });
-    try {
-      expect(runtime.attribution.grantId).toBe(saved.grantId);
-      expect(runtime.home).not.toBe(os.homedir());
-      const settingsFile = path.join(runtime.home!, ".gemini/settings.json");
-      expect(await readFile(settingsFile, "utf8")).not.toContain("saved-google-key");
-      expect((await stat(settingsFile)).mode & 0o777).toBe(0o600);
-      const probe = await testGeminiEnvironment({ companyId, adapterType: "gemini_local", config: runtime.config });
-      expect(probe.status).toBe("pass");
-      expect(probe.checks).toContainEqual(expect.objectContaining({ code: "gemini_hello_probe_passed" }));
-      const result = await executeGemini({
-        runId: randomUUID(),
-        agent: { id: agentId, companyId, name: "Gemini", adapterType: "gemini_local", adapterConfig: { engine: "cli" } },
-        runtime: { sessionId: null, sessionParams: null, sessionDisplayId: null, taskKey: null },
-        config: runtime.config, context: {}, onLog: async () => {},
-      });
-      expect(result.exitCode).toBe(0);
-      expect(result.sessionId).toBe("gemini-managed");
-    } finally {
-      await runtime.cleanup();
-      await rm(root, { recursive: true, force: true });
-    }
-    await expect(access(runtime.home!)).rejects.toThrow();
-  });
-
-  it("preserves Google account defaults when the provider constraint migration is reapplied", async () => {
-    const saved = await service.save(companyId, "bob", {
-      provider: "google", method: "api_key", ownership: "personal", name: "Google migration",
-      apiKey: "fixture", allAgents: true, agentIds: [],
-    }, "google-migration-key");
-    const migration = await readFile(new URL("../../../packages/db/src/migrations/0321_familiar_titania.sql", import.meta.url), "utf8");
-    for (let attempt = 0; attempt < 2; attempt += 1) {
-      await db.transaction(async (tx) => {
-        for (const statement of migration.split("--> statement-breakpoint")) {
-          if (statement.trim()) await tx.execute(sql.raw(statement));
-        }
-      });
-    }
-    const selected = await service.select({
-      companyId, agentId, userId: "bob", adapterType: "gemini_local",
-      binding: { provider: "google", method: "api_key", mode: "responsible_user" },
-    });
-    expect(selected.grant.id).toBe(saved.grantId);
   });
 
   it.each([false, true])("reports the authoritative connection-manager capability for custom grants (manager: %s)", async (manager) => {
@@ -1893,7 +1825,7 @@ console.log(JSON.stringify({ type: "result", subtype: "success", result: "hello"
     app.use("/api", agentRoutes(db));
     app.use((error: { status?: number; message: string }, _req: express.Request, res: express.Response, _next: express.NextFunction) => { res.status(error.status ?? 500).json({ error: error.message }); });
     for (const endpoint of ["agents", "agent-hires"]) {
-      const response = await request(app).post(`/api/companies/${companyId}/${endpoint}`).send({ name: `Shared ${endpoint}`, role: "general", adapterType: "claude_local", adapterConfig: { model: "claude-sonnet-4-6" }, runtimeConfig: { aiConnection: selected } });
+      const response = await request(app).post(`/api/companies/${companyId}/${endpoint}`).send({ name: `Shared ${endpoint}`, role: "general", adapterType: "paperclip_runner", adapterConfig: { provider: "acpx", acpxAgent: "claude", model: "claude-sonnet-4-6" }, runtimeConfig: { aiConnection: selected } });
       expect(response.status, JSON.stringify(response.body)).toBe(201);
       const agent = endpoint === "agents" ? response.body : response.body.agent;
       expect(agent.adapterConfig.model).toBe("claude-sonnet-4-6");
@@ -1908,7 +1840,7 @@ console.log(JSON.stringify({ type: "result", subtype: "success", result: "hello"
     try {
       for (const endpoint of ["agents", "agent-hires"]) {
         const name = `Rollback ${endpoint}`;
-        const response = await request(app).post(`/api/companies/${companyId}/${endpoint}`).send({ name, role: "general", adapterType: "claude_local", adapterConfig: { model: "claude-sonnet-4-6" }, runtimeConfig: { aiConnection: selected } });
+        const response = await request(app).post(`/api/companies/${companyId}/${endpoint}`).send({ name, role: "general", adapterType: "paperclip_runner", adapterConfig: { provider: "acpx", acpxAgent: "claude", model: "claude-sonnet-4-6" }, runtimeConfig: { aiConnection: selected } });
         expect(response.status).toBe(500);
         expect(await db.select().from(agents).where(and(eq(agents.companyId, companyId), eq(agents.name, name)))).toEqual([]);
       }

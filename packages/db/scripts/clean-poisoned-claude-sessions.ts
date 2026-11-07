@@ -84,8 +84,6 @@ export function classifyJsonlText(text: string): SessionClassification {
 }
 
 export function encodeClaudeCwd(cwd: string): string {
-  // Mirrors `effectiveExecutionCwd.replace(/[^a-zA-Z0-9-]/g, "-")` from the
-  // claude-local adapter (`packages/adapters/claude-local/src/server/execute.ts`).
   return cwd.replace(/[^a-zA-Z0-9-]/g, "-");
 }
 

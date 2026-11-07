@@ -6,7 +6,6 @@ export const AGENT_ADMITTING_GUARDS: Readonly<Record<string, true>> = {
   assertBoardOrAgent: true,
   assertBoardOrAgentAuthority: true,
   assertBoardOrgOrAgentAuthority: true,
-  assertCanGenerateOpenClawInvitePrompt: true,
   assertCanReadConfigurations: true,
   assertCanResolveProposal: true,
   assertCanUpdateAgent: true,

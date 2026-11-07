@@ -80,7 +80,7 @@ describe("P6-32 legacy finalization regression", () => {
       id: agentId,
       companyId,
       name: "Legacy agent",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       status: "idle",
       runtimeConfig: { heartbeat: { wakeOnDemand: true, maxConcurrentRuns: 1 } },
     });

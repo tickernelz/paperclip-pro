@@ -1,14 +1,16 @@
 import type { Db } from "@tickernelz/paperclip-pro-db";
 import { agents } from "@tickernelz/paperclip-pro-db";
-import { getAgentWorkEligibility, type AgentEligibilityAgent, type AgentOrgChainHealth } from "@tickernelz/paperclip-pro-shared";
+import { getAgentWorkEligibility, retiredAdapterMessage, type AgentEligibilityAgent, type AgentOrgChainHealth } from "@tickernelz/paperclip-pro-shared";
 import { eq } from "drizzle-orm";
+import { findActiveServerAdapter } from "../adapters/registry.js";
+import { isRetiredAdapterModule } from "../adapters/retired.js";
 
 type AgentStatus = (typeof agents.$inferSelect)["status"];
 
 export type AgentOrgRow = Pick<
   typeof agents.$inferSelect,
   "id" | "companyId" | "name" | "reportsTo" | "status"
->;
+> & Partial<Pick<typeof agents.$inferSelect, "adapterType">>;
 
 export type AgentInvokabilityBlockReason =
   | "missing"
@@ -20,7 +22,8 @@ export type AgentInvokabilityBlockReason =
   | "manager_company_mismatch"
   | "manager_terminated"
   | "reporting_cycle"
-  | "reporting_chain_too_deep";
+  | "reporting_chain_too_deep"
+  | "adapter_retired";
 
 export type AgentInvokability =
   | { invokable: true }
@@ -76,6 +79,15 @@ export function evaluateAgentInvokability(
 ): AgentInvokability {
   if (!agent) {
     return blocked("missing", "Agent no longer exists", {}, false);
+  }
+
+  if (agent.adapterType && isRetiredAdapterModule(findActiveServerAdapter(agent.adapterType))) {
+    return blocked(
+      "adapter_retired",
+      retiredAdapterMessage(agent.adapterType),
+      { agentId: agent.id, adapterType: agent.adapterType },
+      false,
+    );
   }
 
   const eligibility = getAgentWorkEligibility({

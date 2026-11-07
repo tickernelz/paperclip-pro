@@ -29,16 +29,6 @@ const DEFAULT_SESSION_COMPACTION_POLICY: SessionCompactionPolicy = {
   maxSessionBytes: 0,
 };
 
-// Adapters with native context management still participate in session resume,
-// but Paperclip should not rotate them using threshold-based compaction.
-const ADAPTER_MANAGED_SESSION_POLICY: SessionCompactionPolicy = {
-  enabled: true,
-  maxSessionRuns: 0,
-  maxRawInputTokens: 0,
-  maxSessionAgeHours: 0,
-  maxSessionBytes: 0,
-};
-
 const OMP_SESSION_COMPACTION_POLICY: SessionCompactionPolicy = {
   enabled: true,
   maxSessionRuns: 0,
@@ -47,70 +37,7 @@ const OMP_SESSION_COMPACTION_POLICY: SessionCompactionPolicy = {
   maxSessionBytes: 16 * 1024 * 1024,
 };
 
-export const LEGACY_SESSIONED_ADAPTER_TYPES = new Set([
-  "claude_local",
-  "codex_local",
-  "cursor_cloud",
-  "cursor",
-  "gemini_local",
-  "grok_local",
-  "hermes_local",
-  "kimi_local",
-  "opencode_local",
-  "pi_local",
-]);
-
 export const ADAPTER_SESSION_MANAGEMENT: Record<string, AdapterSessionManagement> = {
-  claude_local: {
-    supportsSessionResume: true,
-    nativeContextManagement: "confirmed",
-    defaultSessionCompaction: ADAPTER_MANAGED_SESSION_POLICY,
-  },
-  codex_local: {
-    supportsSessionResume: true,
-    nativeContextManagement: "confirmed",
-    defaultSessionCompaction: ADAPTER_MANAGED_SESSION_POLICY,
-  },
-  cursor_cloud: {
-    supportsSessionResume: true,
-    nativeContextManagement: "unknown",
-    defaultSessionCompaction: DEFAULT_SESSION_COMPACTION_POLICY,
-  },
-  cursor: {
-    supportsSessionResume: true,
-    nativeContextManagement: "unknown",
-    defaultSessionCompaction: DEFAULT_SESSION_COMPACTION_POLICY,
-  },
-  gemini_local: {
-    supportsSessionResume: true,
-    nativeContextManagement: "unknown",
-    defaultSessionCompaction: DEFAULT_SESSION_COMPACTION_POLICY,
-  },
-  grok_local: {
-    supportsSessionResume: true,
-    nativeContextManagement: "unknown",
-    defaultSessionCompaction: DEFAULT_SESSION_COMPACTION_POLICY,
-  },
-  kimi_local: {
-    supportsSessionResume: true,
-    nativeContextManagement: "unknown",
-    defaultSessionCompaction: DEFAULT_SESSION_COMPACTION_POLICY,
-  },
-  opencode_local: {
-    supportsSessionResume: true,
-    nativeContextManagement: "unknown",
-    defaultSessionCompaction: DEFAULT_SESSION_COMPACTION_POLICY,
-  },
-  pi_local: {
-    supportsSessionResume: true,
-    nativeContextManagement: "unknown",
-    defaultSessionCompaction: DEFAULT_SESSION_COMPACTION_POLICY,
-  },
-  hermes_local: {
-    supportsSessionResume: true,
-    nativeContextManagement: "confirmed",
-    defaultSessionCompaction: ADAPTER_MANAGED_SESSION_POLICY,
-  },
   omp_local: {
     supportsSessionResume: true,
     nativeContextManagement: "confirmed",
@@ -186,10 +113,9 @@ export function resolveSessionCompactionPolicy(
   const adapterSessionManagement = getAdapterSessionManagement(adapterType);
   const explicitOverride = readSessionCompactionOverride(runtimeConfig);
   const hasExplicitOverride = Object.keys(explicitOverride).length > 0;
-  const fallbackEnabled = Boolean(adapterType && LEGACY_SESSIONED_ADAPTER_TYPES.has(adapterType));
   const basePolicy = adapterSessionManagement?.defaultSessionCompaction ?? {
     ...DEFAULT_SESSION_COMPACTION_POLICY,
-    enabled: fallbackEnabled,
+    enabled: false,
   };
 
   return {

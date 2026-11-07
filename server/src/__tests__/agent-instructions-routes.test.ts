@@ -186,7 +186,7 @@ function makeAgent() {
     status: "active",
     reportsTo: null,
     capabilities: null,
-    adapterType: "codex_local",
+    adapterType: "omp_local",
     adapterConfig: {},
     runtimeConfig: {},
     defaultEnvironmentId: null,
@@ -415,6 +415,7 @@ describe("agent instructions bundle routes", () => {
   });
 
   it("rejects a company admin that requests a new external instruction root", async () => {
+    mockFindServerAdapter.mockImplementation((type: string) => ({ type, instructionsPathKey: "instructionsFilePath" }));
     mockSyncInstructionsBundleConfigFromFilePath.mockImplementation((_agent, config) => ({
       ...config,
       instructionsBundleMode: "external",

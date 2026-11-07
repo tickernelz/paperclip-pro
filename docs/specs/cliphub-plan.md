@@ -111,7 +111,7 @@ interface Listing {
   includedFiles: string[];         // List of files in the bundle
 
   // Compatibility
-  compatibleAdapters: string[];    // ['claude_local', 'codex_local', ...]
+  compatibleAdapters: string[];    // ['omp_local', ...]
   requiredModels: string[];        // ['claude-opus-4-6', 'claude-sonnet-4-6']
   paperclipVersionMin: string;     // Minimum Paperclip version
 

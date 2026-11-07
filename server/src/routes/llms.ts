@@ -3,12 +3,8 @@ import type { Db } from "@tickernelz/paperclip-pro-db";
 import { AGENT_ICON_NAMES } from "@tickernelz/paperclip-pro-shared";
 import { forbidden } from "../errors.js";
 import { listServerAdapters } from "../adapters/index.js";
-import { hermesGatewayAgentConfigurationDoc } from "../adapters/hermes-gateway-doc.js";
+import { isRetiredAdapterModule } from "../adapters/retired.js";
 import { agentService } from "../services/agents.js";
-
-const pluginOnlyAdapterDocs = new Map<string, string>([
-  ["hermes_gateway", hermesGatewayAgentConfigurationDoc],
-]);
 
 function hasCreatePermission(agent: { role: string; permissions: Record<string, unknown> | null | undefined }) {
   if (!agent.permissions || typeof agent.permissions !== "object") return false;
@@ -32,21 +28,14 @@ export function llmRoutes(db: Db) {
 
   router.get("/llms/agent-configuration.txt", async (req, res) => {
     await assertCanRead(req);
-    const adapters = listServerAdapters().sort((a, b) => a.type.localeCompare(b.type));
+    const adapters = listServerAdapters()
+      .filter((adapter) => !isRetiredAdapterModule(adapter))
+      .sort((a, b) => a.type.localeCompare(b.type));
     const lines = [
       "# Paperclip Agent Configuration Index",
       "",
       "Installed adapters:",
       ...adapters.map((adapter) => `- ${adapter.type}: /llms/agent-configuration/${adapter.type}.txt`),
-      "",
-      "Plugin-only adapter docs:",
-      ...Array.from(pluginOnlyAdapterDocs.keys())
-        .filter(
-          (adapterType) => !adapters.some((adapter) => adapter.type === adapterType),
-        )
-        .map(
-          (adapterType) => `- ${adapterType}: /llms/agent-configuration/${adapterType}.txt`,
-        ),
       "",
       "Related Paperclip MCP tools:",
       "- paperclipListAgentConfigurations",
@@ -87,11 +76,6 @@ export function llmRoutes(db: Db) {
     const adapterType = req.params.adapterType as string;
     const adapter = listServerAdapters().find((entry) => entry.type === adapterType);
     if (!adapter) {
-      const pluginOnlyDoc = pluginOnlyAdapterDocs.get(adapterType);
-      if (pluginOnlyDoc) {
-        res.type("text/plain").send(pluginOnlyDoc);
-        return;
-      }
       res.status(404).type("text/plain").send(`Unknown adapter type: ${adapterType}`);
       return;
     }

@@ -49,6 +49,11 @@ import {
 import { readBuiltInAgentMarker, withBuiltInAgentMarker } from "../lib/built-in-agent-metadata.ts";
 import { issueThreadInteractionService } from "../services/issue-thread-interactions.ts";
 
+vi.mock("../adapters/registry.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../adapters/registry.js")>()),
+  listAdapterModels: vi.fn(async () => []),
+}));
+
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
 const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;
 
@@ -209,8 +214,8 @@ describeEmbeddedPostgres("built-in agents", () => {
     expect(definitions.map((definition) => definition.key).sort()).toEqual(["briefs", "learning", "reflection-coach", "summarizer"]);
     const summarizer = definitions.find((definition) => definition.key === "summarizer");
     expect(summarizer).toMatchObject({
-      defaultAdapterType: "claude_local",
-      defaultAdapterConfig: { model: "claude-haiku-4-5" },
+      defaultAdapterType: "omp_local",
+      defaultAdapterConfig: {},
     });
     expect(summarizer?.defaultRuntimeConfig).toBeUndefined();
     expect(() => validateBuiltInAgentDefinitions([
@@ -249,8 +254,8 @@ describeEmbeddedPostgres("built-in agents", () => {
         shortPurpose: "Bad default adapter",
         defaultInstructions: "Do work",
         defaultRole: "general",
-        allowedAdapterTypes: ["codex_local"],
-        defaultAdapterType: "claude_local",
+        allowedAdapterTypes: ["omp_local"],
+        defaultAdapterType: "process",
       },
     ])).toThrow("defaultAdapterType must be allowed");
   });
@@ -274,20 +279,20 @@ describeEmbeddedPostgres("built-in agents", () => {
     });
 
     const configured = await svc.ensure(companyId, "briefs", {
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: { model: "gpt-5.4" },
     });
     expect(configured.status).toBe("ready");
     expect(configured.agentId).toBe(created.agentId);
     expect(configured.agent).toMatchObject({
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: { model: "gpt-5.4" },
     });
 
     const reconciled = await svc.ensure(companyId, "briefs");
     expect(reconciled.status).toBe("ready");
     expect(reconciled.agent).toMatchObject({
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: { model: "gpt-5.4" },
     });
 
@@ -387,7 +392,7 @@ describeEmbeddedPostgres("built-in agents", () => {
     const companyId = await seedCompany();
     const builtIns = builtInAgentService(db);
     const ready = await builtIns.ensure(companyId, "briefs", {
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: { model: "gpt-5.4" },
     });
 
@@ -406,7 +411,7 @@ describeEmbeddedPostgres("built-in agents", () => {
     await expect(builtIns.get(companyId, "briefs")).resolves.toMatchObject({
       status: "ready",
       agentId: ready.agentId,
-      agent: { adapterType: "codex_local", adapterConfig: { model: "gpt-5.4" } },
+      agent: { adapterType: "omp_local", adapterConfig: { model: "gpt-5.4" } },
     });
   });
 
@@ -422,7 +427,7 @@ describeEmbeddedPostgres("built-in agents", () => {
     // Configuring the adapter for the first time must apply directly instead of
     // throwing "adapter changes require board approval".
     const result = await builtIns.provision(companyId, "briefs", {
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: { model: "gpt-5.4" },
       budgetMonthlyCents: 2500,
     }, { requestedByUserId: "board-user" });
@@ -433,7 +438,7 @@ describeEmbeddedPostgres("built-in agents", () => {
       agentId: seeded.agentId,
       agent: {
         status: "idle",
-        adapterType: "codex_local",
+        adapterType: "omp_local",
         adapterConfig: { model: "gpt-5.4" },
         budgetMonthlyCents: 2500,
       },
@@ -456,29 +461,9 @@ describeEmbeddedPostgres("built-in agents", () => {
       details: {
         code: "built_in_agent_adapter_not_allowed",
         key: "briefs",
-        allowedAdapterTypes: ["codex_local", "claude_local", "gemini_local", "opencode_local", "process"],
+        allowedAdapterTypes: ["omp_local", "process"],
       },
     });
-  });
-
-  it("rejects unknown built-in adapter models before saving setup", async () => {
-    const companyId = await seedCompany();
-
-    await expect(builtInAgentService(db).ensure(companyId, "summarizer", {
-      adapterType: "claude_local",
-      adapterConfig: { model: "claude-haiku-4-6" },
-    })).rejects.toMatchObject({
-      status: 422,
-      details: {
-        code: "built_in_agent_model_unknown",
-        key: "summarizer",
-        adapterType: "claude_local",
-        model: "claude-haiku-4-6",
-      },
-    });
-
-    const rows = await db.select().from(agents).where(eq(agents.companyId, companyId));
-    expect(rows).toHaveLength(0);
   });
 
   it("recovers an orphaned marked row instead of creating a duplicate", async () => {
@@ -490,7 +475,7 @@ describeEmbeddedPostgres("built-in agents", () => {
       name: "Old Briefs",
       role: "general",
       status: "idle",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: { model: "gpt-5.4" },
       runtimeConfig: {},
       permissions: {},
@@ -516,7 +501,7 @@ describeEmbeddedPostgres("built-in agents", () => {
     expect(deriveBuiltInAgentStatus(needsSetup.agent)).toBe("needs_setup");
 
     const ready = await builtIns.ensure(companyId, "learning", {
-      adapterType: "claude_local",
+      adapterType: "omp_local",
       adapterConfig: { model: "claude-sonnet-4-5" },
     });
     expect(ready.status).toBe("ready");
@@ -555,7 +540,7 @@ describeEmbeddedPostgres("built-in agents", () => {
     });
 
     const ready = await builtIns.ensure(companyId, "briefs", {
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: { model: "gpt-5.4" },
     });
     await expect(builtIns.requireBuiltInAgent(companyId, "briefs")).resolves.toMatchObject({
@@ -579,7 +564,7 @@ describeEmbeddedPostgres("built-in agents", () => {
     const companyId = await seedCompany();
     const builtIns = builtInAgentService(db);
     const ready = await builtIns.ensure(companyId, "briefs", {
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: { model: "gpt-5.4" },
     });
 
@@ -600,7 +585,7 @@ describeEmbeddedPostgres("built-in agents", () => {
         role: "general",
         title: null,
         capabilities: "Prepares concise operational briefs for the board and agent company.",
-        adapterType: "codex_local",
+        adapterType: "omp_local",
         adapterConfig: { model: "gpt-5.4" },
       },
     });
@@ -612,7 +597,7 @@ describeEmbeddedPostgres("built-in agents", () => {
       name: "CEO",
       role: "ceo",
       status: "idle",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: { model: "gpt-5.4", apiKey: "do-not-copy" },
       runtimeConfig: {},
       permissions: {},
@@ -647,7 +632,7 @@ describeEmbeddedPostgres("built-in agents", () => {
         role: "general",
         title: "Reflection Coach",
         icon: "eye",
-        adapterType: "codex_local",
+        adapterType: "omp_local",
         permissions: {
           canCreateAgents: false,
           canCreateSkills: false,
@@ -704,7 +689,7 @@ describeEmbeddedPostgres("built-in agents", () => {
       name: "CEO",
       role: "ceo",
       status: "idle",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: { model: "gpt-5.4" },
       runtimeConfig: {},
       permissions: {},
@@ -742,7 +727,7 @@ describeEmbeddedPostgres("built-in agents", () => {
       name: "CEO",
       role: "ceo",
       status: "idle",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: { model: "gpt-5.4" },
       runtimeConfig: {},
       permissions: {},
@@ -986,7 +971,7 @@ describeEmbeddedPostgres("built-in agents", () => {
       name: "Normal",
       role: "engineer",
       status: "idle",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: { model: "gpt-5.4" },
       runtimeConfig: {},
       permissions: {},
@@ -996,7 +981,7 @@ describeEmbeddedPostgres("built-in agents", () => {
       name: "Spoof",
       role: "engineer",
       status: "idle",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: { model: "gpt-5.4" },
       runtimeConfig: {},
       permissions: {},
@@ -1037,7 +1022,7 @@ describeEmbeddedPostgres("built-in agents", () => {
       title: "Old title",
       capabilities: "Old purpose",
       status: "idle",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: { model: "gpt-5.4" },
       runtimeConfig: {},
       permissions: {},
@@ -1073,7 +1058,7 @@ describeEmbeddedPostgres("built-in agents", () => {
         name: "Briefs One",
         role: "general",
         status: "idle",
-        adapterType: "codex_local",
+        adapterType: "omp_local",
         adapterConfig: { model: "gpt-5.4" },
         runtimeConfig: {},
         permissions: {},
@@ -1086,7 +1071,7 @@ describeEmbeddedPostgres("built-in agents", () => {
         name: "Briefs Two",
         role: "general",
         status: "pending_approval",
-        adapterType: "codex_local",
+        adapterType: "omp_local",
         adapterConfig: { model: "gpt-5.4" },
         runtimeConfig: {},
         permissions: {},
@@ -1153,7 +1138,7 @@ describeEmbeddedPostgres("built-in agents", () => {
         name: "Briefs Dupe",
         role: "general",
         status: "idle",
-        adapterType: "codex_local",
+        adapterType: "omp_local",
         adapterConfig: { model: "gpt-5.4" },
         runtimeConfig: {},
         permissions: {},
@@ -1217,7 +1202,7 @@ describeEmbeddedPostgres("built-in agents", () => {
       name: "Stale Briefs",
       role: "engineer",
       status: "idle",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: { model: "gpt-5.4" },
       runtimeConfig: {},
       permissions: {},
@@ -1249,7 +1234,7 @@ describeEmbeddedPostgres("built-in agents", () => {
       name: "CEO",
       role: "ceo",
       status: "idle",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: { model: "gpt-5.4" },
       runtimeConfig: {},
       permissions: {},
@@ -1263,7 +1248,7 @@ describeEmbeddedPostgres("built-in agents", () => {
       title: "Reflection Coach",
       icon: "eye",
       reportsTo: root.id,
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       budgetMonthlyCents: 0,
     });
     expect(state.status).toBe("paused");
@@ -1324,7 +1309,7 @@ describeEmbeddedPostgres("built-in agents", () => {
       name: "CEO",
       role: "ceo",
       status: "idle",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: { model: "gpt-5.4" },
       runtimeConfig: {},
       permissions: {},
@@ -1339,8 +1324,8 @@ describeEmbeddedPostgres("built-in agents", () => {
       icon: "sparkles",
       role: "general",
       reportsTo: root.id,
-      adapterType: "claude_local",
-      adapterConfig: { model: "claude-haiku-4-5" },
+      adapterType: "omp_local",
+      adapterConfig: {},
       budgetMonthlyCents: 0,
     });
     expect(state.status).toBe("paused");
@@ -1464,7 +1449,7 @@ describeEmbeddedPostgres("built-in agents", () => {
       name: "CEO",
       role: "ceo",
       status: "idle",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: { model: "gpt-5.4" },
       runtimeConfig: {},
       permissions: {},
@@ -1516,7 +1501,7 @@ describeEmbeddedPostgres("built-in agents", () => {
       name: "CEO",
       role: "ceo",
       status: "idle",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: { model: "gpt-5.4" },
       runtimeConfig: {},
       permissions: {},
@@ -1570,7 +1555,7 @@ describeEmbeddedPostgres("built-in agents", () => {
       name: "CEO",
       role: "ceo",
       status: "idle",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: { model: "gpt-5.4" },
       runtimeConfig: {},
       permissions: {},
@@ -1579,7 +1564,7 @@ describeEmbeddedPostgres("built-in agents", () => {
       name: "Target Coder",
       role: "engineer",
       status: "idle",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: { model: "gpt-5.4" },
       runtimeConfig: {},
       permissions: {},

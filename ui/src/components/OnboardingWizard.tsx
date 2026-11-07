@@ -15,7 +15,6 @@ import { AnimatePresence, MotionConfig, motion } from "motion/react";
 import type {
   AdapterEnvironmentTestResult,
   AgentRole,
-  ClaudeOAuthTokenStatusResponse,
   Environment,
   InstanceSettings,
 } from "@tickernelz/paperclip-pro-shared";
@@ -94,7 +93,6 @@ import { isVisualAdapterChoice } from "../adapters/metadata";
 import { useDisabledAdaptersSync, useAdapterRegistryLoaded } from "../adapters/use-disabled-adapters";
 import { useAdapterCapabilities } from "../adapters/use-adapter-capabilities";
 import { getAdapterDisplay } from "../adapters/adapter-display-registry";
-import { buildFixedClaudeOAuthBinding } from "./environment-variables-editor/model";
 import { defaultCreateValues } from "./agent-config-defaults";
 import { restoreOnboardingState } from "../lib/onboarding-state";
 import {
@@ -104,11 +102,6 @@ import {
   selectReusableOnboardingProject,
 } from "../lib/onboarding-launch";
 import { buildNewAgentRuntimeConfig } from "../lib/new-agent-runtime-config";
-import { DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX } from "@tickernelz/paperclip-pro-adapter-codex-local";
-import { DEFAULT_CURSOR_LOCAL_MODEL } from "@tickernelz/paperclip-pro-adapter-cursor-local";
-import { DEFAULT_GEMINI_LOCAL_MODEL } from "@tickernelz/paperclip-pro-adapter-gemini-local";
-import { DEFAULT_KIMI_LOCAL_MODEL } from "@tickernelz/paperclip-pro-adapter-kimi-local";
-import { DEFAULT_OPENCODE_LOCAL_MODEL, isValidOpenCodeModelId } from "@tickernelz/paperclip-pro-adapter-opencode-local";
 import {
   canGoBackFromOnboardingStep,
   canJumpToOnboardingStep,
@@ -161,7 +154,7 @@ const ONBOARDING_EXCLUDED_ADAPTER_TYPES = new Set([
 function restoreOnboardingAdapterType(savedAdapterType: unknown): AdapterType {
   return typeof savedAdapterType === "string" && savedAdapterType !== "paperclip_runner"
     ? savedAdapterType
-    : "claude_local";
+    : OMP_ADAPTER_TYPE;
 }
 
 /**
@@ -185,24 +178,6 @@ function isEnvRecord(value: unknown): value is Record<string, unknown> {
 const ANTHROPIC_API_KEY_ENV_KEY = "ANTHROPIC_API_KEY";
 
 /**
- * True when the adapter configuration carries a non-empty ANTHROPIC_API_KEY.
- * The server rejects that key together with the fixed Claude login binding
- * (see `assertClaudeOAuthBindingInvariant` in `server/src/services/secrets.ts`).
- * This checks the built configuration first, so onboarding never sends a
- * hire the server would reject.
- */
-function adapterConfigHasAnthropicApiKey(config: Record<string, unknown>): boolean {
-  if (!isEnvRecord(config.env)) return false;
-  const binding = config.env[ANTHROPIC_API_KEY_ENV_KEY];
-  if (typeof binding === "string") return binding.trim().length > 0;
-  if (!isEnvRecord(binding)) return false;
-  if (binding.type === "plain") {
-    return typeof binding.value === "string" && binding.value.trim().length > 0;
-  }
-  return binding.type === "secret_ref" || binding.type === "user_secret_ref";
-}
-
-/**
  * Full-colour brand marks for the sources this step offers.
  *
  * The registry's own icons are monochrome, drawn to sit in dense config UI
@@ -214,9 +189,7 @@ function adapterConfigHasAnthropicApiKey(config: Record<string, unknown>): boole
  * adapter with no brand file here still renders — with its registry icon —
  * rather than a gap where a tile should be.
  */
-const MODEL_SOURCE_BRAND_MARKS: Record<string, string> = {
-  claude_local: "/brands/claude-color.svg",
-};
+const MODEL_SOURCE_BRAND_MARKS: Record<string, string> = {};
 
 
 /**
@@ -238,9 +211,7 @@ function OpenAiBlossom({ className }: { className?: string }) {
   );
 }
 
-const MODEL_SOURCE_INLINE_MARKS: Record<string, ComponentType<{ className?: string }>> = {
-  codex_local: OpenAiBlossom,
-};
+const MODEL_SOURCE_INLINE_MARKS: Record<string, ComponentType<{ className?: string }>> = {};
 
 /**
  * The environment variable each source reads its key from.
@@ -250,10 +221,7 @@ const MODEL_SOURCE_INLINE_MARKS: Record<string, ComponentType<{ className?: stri
  * mapping already existed in this file as prose inside the environment-check
  * hint; this is the same knowledge, in a form the key field can use.
  */
-const API_KEY_ENV_KEYS: Record<string, string> = {
-  claude_local: ANTHROPIC_API_KEY_ENV_KEY,
-  codex_local: "OPENAI_API_KEY",
-};
+const API_KEY_ENV_KEYS: Record<string, string> = {};
 
 function apiKeyEnvKeyFor(adapterType: string): string {
   return API_KEY_ENV_KEYS[adapterType] ?? "API_KEY";
@@ -661,9 +629,6 @@ function OnboardingWizardInner({
     useState<AdapterEnvironmentTestResult | null>(null);
   const [adapterEnvError, setAdapterEnvError] = useState<string | null>(null);
   const [adapterEnvLoading, setAdapterEnvLoading] = useState(false);
-  const [forceUnsetAnthropicApiKey, setForceUnsetAnthropicApiKey] =
-    useState(false);
-  const [unsetAnthropicLoading, setUnsetAnthropicLoading] = useState(false);
   const [otherAdapterChosen, setOtherAdapterChosen] = useState(saved?.otherAdapterChosen === true);
   const [otherAdaptersOpen, setOtherAdaptersOpen] = useState(otherAdapterChosen);
   const [fallbackModels, setFallbackModels] = useState<string[]>([]);
@@ -710,8 +675,6 @@ function OnboardingWizardInner({
   // The owner's stored Claude subscription login, read right before the hire
   // (see handleGiveHeartbeat). Onboarding applies it with no extra control,
   // so nothing else reads this state yet.
-  const [claudeOAuthStatus, setClaudeOAuthStatus] =
-    useState<ClaudeOAuthTokenStatusResponse | null>(null);
 
   // Created entity IDs — pre-populate from existing company when skipping step 1
   const [createdCompanyId, setCreatedCompanyId] = useState<string | null>(
@@ -732,8 +695,8 @@ function OnboardingWizardInner({
     : savedKeys.options[0]?.id;
   const selectedApiKey = savedKeys.options.find((option) => option.id === selectedApiKeyId);
   const credentialMode = credentialModeChoice ?? (
-    (savedKeys.subscriptions.length > 0 || (adapterType === "claude_local" && savedKeys.storedLogin.data))
-      ? "subscription" : savedKeys.options.length || adapterType === "opencode_local" ? "api" : "subscription"
+    savedKeys.subscriptions.length > 0
+      ? "subscription" : savedKeys.options.length ? "api" : "subscription"
   );
   const [createdCompanyPrefix, setCreatedCompanyPrefix] = useState<
     string | null
@@ -1146,15 +1109,7 @@ function OnboardingWizardInner({
     adapterCaps.supportsInstructionsBundle ||
     adapterCaps.supportsSkills ||
     adapterCaps.supportsLocalAgentJwt;
-  const isLocalAdapter =
-    isLocalAdapterCaps ||
-    adapterType === "claude_local" ||
-    adapterType === "codex_local" ||
-    adapterType === "gemini_local" ||
-    adapterType === "kimi_local" ||
-    adapterType === "opencode_local" ||
-    adapterType === "pi_local" ||
-    adapterType === "cursor";
+  const isLocalAdapter = isLocalAdapterCaps;
   // Build adapter grids dynamically from the UI registry + display metadata.
   // External/plugin adapters automatically appear with generic defaults, and
   // server-disabled types are filtered out.
@@ -1241,8 +1196,7 @@ function OnboardingWizardInner({
       // the saved account replaces the panel and "Connecting" never finishes.
       (connectAuthUrl || (
         showAdapterLoginPanel &&
-        !savedSubscription &&
-        !(adapterType === "claude_local" && savedKeys.storedLogin.data)
+        !savedSubscription
       )) &&
       !savedKeys.loading &&
       createdCompanyId &&
@@ -1332,7 +1286,7 @@ function OnboardingWizardInner({
     if (!effectiveOnboardingOpen || step !== 4 || connectPhase !== "ready" ||
         !connectStepReady || connectStepNeedsLogin || connectCredentialStored ||
         credentialMode !== "subscription" ||
-        (adapterType !== "claude_local" && adapterType !== "codex_local") ||
+        adapterType !== OMP_ADAPTER_TYPE ||
         (!hasSavedSubscription && localLogin.status !== "ready") ||
         loading || autoConnectStartedRef.current) return;
     autoConnectStartedRef.current = true;
@@ -1531,10 +1485,6 @@ function OnboardingWizardInner({
     sourceSelected &&
     (credentialMode === "api" || connectCardSpace || connectStepHasNoSandbox);
 
-  // The default (or a saved) adapterType can name an adapter the server has
-  // since disabled — e.g. a cloud sandbox registry without claude_local. The
-  // grid hides it, so without this snap the wizard would silently keep an
-  // invisible selection and create an agent that can never acquire a lease.
   useEffect(() => {
     // Not until the registry has loaded. External adapter types are only
     // registered once the adapters query resolves, so before that a saved
@@ -1555,34 +1505,11 @@ function OnboardingWizardInner({
     // preselection this step was changed to stop doing. The saved answer was
     // unofferable, so the question is open again.
     setSourcePicked(false);
-    if (next === "codex_local") return;
-    if (next === "opencode_local") {
-      setModel(DEFAULT_OPENCODE_LOCAL_MODEL);
-      return;
-    }
-    if (next === "gemini_local") {
-      setModel(DEFAULT_GEMINI_LOCAL_MODEL);
-      return;
-    }
-    if (next === "cursor") {
-      setModel(DEFAULT_CURSOR_LOCAL_MODEL);
-      return;
-    }
     setModel("");
   }, [adapterRegistryLoaded, recommendedAdapters, moreAdapters, adapterType]);
 
-  const COMMAND_PLACEHOLDERS: Record<string, string> = {
-    claude_local: "claude",
-    codex_local: "codex",
-    gemini_local: "gemini",
-    kimi_local: "kimi",
-    pi_local: "pi",
-    cursor: "agent",
-    opencode_local: "opencode",
-  };
   const effectiveAdapterCommand =
-    command.trim() ||
-    (COMMAND_PLACEHOLDERS[adapterType] ?? adapterType.replace(/_local$/, ""));
+    command.trim() || adapterType.replace(/_local$/, "");
 
   // Throw the cached probe away whenever the thing it probed changes. Every
   // input to `buildAdapterConfig` belongs in this list, `credentialMode` and
@@ -1627,15 +1554,6 @@ function OnboardingWizardInner({
   }, [step]);
 
   const selectedModel = (adapterModels ?? []).find((m) => m.id === model);
-  const hasAnthropicApiKeyOverrideCheck =
-    adapterEnvResult?.checks.some(
-      (check) =>
-        check.code === "claude_anthropic_api_key_overrides_subscription"
-    ) ?? false;
-  const shouldSuggestUnsetAnthropicApiKey =
-    adapterType === "claude_local" &&
-    adapterEnvResult?.status === "fail" &&
-    hasAnthropicApiKeyOverrideCheck;
   const filteredModels = useMemo(() => {
     const query = modelSearch.trim().toLowerCase();
     return (adapterModels ?? []).filter((entry) => {
@@ -1648,29 +1566,12 @@ function OnboardingWizardInner({
       );
     });
   }, [adapterModels, modelSearch]);
-  const groupedModels = useMemo(() => {
-    if (adapterType !== "opencode_local") {
-      return [
-        {
-          provider: "models",
-          entries: [...filteredModels].sort((a, b) => a.id.localeCompare(b.id))
-        }
-      ];
+  const groupedModels = useMemo(() => [
+    {
+      provider: "models",
+      entries: [...filteredModels].sort((a, b) => a.id.localeCompare(b.id))
     }
-    const groups = new Map<string, Array<{ id: string; label: string }>>();
-    for (const entry of filteredModels) {
-      const provider = extractProviderIdWithFallback(entry.id);
-      const bucket = groups.get(provider) ?? [];
-      bucket.push(entry);
-      groups.set(provider, bucket);
-    }
-    return Array.from(groups.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([provider, entries]) => ({
-        provider,
-        entries: [...entries].sort((a, b) => a.id.localeCompare(b.id))
-      }));
-  }, [filteredModels, adapterType]);
+  ], [filteredModels]);
 
   function reset() {
     onboardingDraftStorage.clear();
@@ -1685,7 +1586,7 @@ function OnboardingWizardInner({
     setAgentName("");
     setAgentAppearance(randomAgentAppearance());
     setAgentRole(DEFAULT_AGENT_ROLE);
-    setAdapterType("claude_local");
+    setAdapterType(OMP_ADAPTER_TYPE);
     setOtherAdapterChosen(false);
     setOtherAdaptersOpen(false);
     setFallbackModels([]);
@@ -1697,9 +1598,6 @@ function OnboardingWizardInner({
     adapterEnvResultAppliedStoredLoginRef.current = false;
     setAdapterEnvError(null);
     setAdapterEnvLoading(false);
-    setForceUnsetAnthropicApiKey(false);
-    setUnsetAnthropicLoading(false);
-    setClaudeOAuthStatus(null);
     setCreatedCompanyId(null);
     setCreatedCompanyPrefix(null);
     setCreatedAgentId(null);
@@ -1886,36 +1784,11 @@ function OnboardingWizardInner({
     const config = adapter.buildAdapterConfig({
       ...defaultCreateValues,
       adapterType,
-      model:
-        adapterType === "gemini_local"
-          ? model || DEFAULT_GEMINI_LOCAL_MODEL
-          : adapterType === "kimi_local"
-            ? model || DEFAULT_KIMI_LOCAL_MODEL
-          : adapterType === "cursor"
-            ? model || DEFAULT_CURSOR_LOCAL_MODEL
-            : adapterType === "opencode_local"
-              ? model || DEFAULT_OPENCODE_LOCAL_MODEL
-              : model,
+      model,
       command,
       args,
       url,
-      dangerouslySkipPermissions:
-        adapterType === "claude_local" || adapterType === "opencode_local",
-      dangerouslyBypassSandbox:
-        adapterType === "codex_local"
-          ? DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX
-          : defaultCreateValues.dangerouslyBypassSandbox
     });
-    if (adapterType === "claude_local" && forceUnsetAnthropicApiKey) {
-      const env =
-        typeof config.env === "object" &&
-        config.env !== null &&
-        !Array.isArray(config.env)
-          ? { ...(config.env as Record<string, unknown>) }
-          : {};
-      env.ANTHROPIC_API_KEY = { type: "plain", value: "" };
-      config.env = env;
-    }
     // A key typed on this step is the credential the agent is being hired with,
     // so it has to reach the configuration the hire sends — and the same one the
     // environment test probes, or the test would pass on a config the hire does
@@ -2087,7 +1960,7 @@ function OnboardingWizardInner({
     // guard at the mutation boundary so a stale or modified client cannot use
     // first-run onboarding to create a native agent.
     if (adapterType === "paperclip_runner") {
-      setAdapterType("claude_local");
+      setAdapterType(OMP_ADAPTER_TYPE);
       setModel("");
       setError("Paperclip Runner is not available during onboarding. Choose a legacy adapter.");
       return;
@@ -2104,38 +1977,6 @@ function OnboardingWizardInner({
     setLoading(true);
     setError(null);
     try {
-      if (adapterType === "opencode_local") {
-        const selectedModelId = model.trim();
-        if (!isValidOpenCodeModelId(selectedModelId)) {
-          setError(
-            "OpenCode requires an explicit model in provider/model format."
-          );
-          return;
-        }
-        if (adapterModelsError) {
-          setError(
-            adapterModelsError instanceof Error
-              ? adapterModelsError.message
-              : "Failed to load OpenCode models."
-          );
-          return;
-        }
-        if (adapterModelsLoading || adapterModelsFetching) {
-          setError(
-            "OpenCode models are still loading. Please wait and try again."
-          );
-          return;
-        }
-        const discoveredModels = adapterModels ?? [];
-        if (!discoveredModels.some((entry) => entry.id === selectedModelId)) {
-          setError(
-            discoveredModels.length === 0
-              ? "No OpenCode models discovered. Run `opencode models` and authenticate providers."
-              : `Configured OpenCode model is unavailable: ${selectedModelId}`
-          );
-          return;
-        }
-      }
 
       // Onboarding applies a stored Claude subscription login automatically,
       // with no extra control. A new user who signs in, leaves, and returns
@@ -2166,32 +2007,7 @@ function OnboardingWizardInner({
       }
       const managedBinding = managedBindingForStep();
       const baseAdapterConfig = buildAdapterConfig(apiKeyStored);
-      let storedClaudeLogin: ClaudeOAuthTokenStatusResponse | null = null;
-      if (
-        !managedBinding && adapterType === "claude_local" &&
-        !adapterConfigHasAnthropicApiKey(baseAdapterConfig)
-      ) {
-        try {
-          storedClaudeLogin = await agentsApi.getClaudeOAuthTokenStatus(createdCompanyId);
-        } catch (err) {
-          // A fixed 404 means the owner has no stored value. It is not a
-          // failure.
-          if (!(err instanceof ApiError) || err.status !== 404) throw err;
-          storedClaudeLogin = null;
-        }
-        if (!isCurrent()) return;
-        setClaudeOAuthStatus(storedClaudeLogin);
-      }
-      const shouldApplyStoredClaudeLogin = storedClaudeLogin !== null;
-      const hireAdapterConfig = shouldApplyStoredClaudeLogin
-        ? {
-            ...baseAdapterConfig,
-            env: {
-              ...(isEnvRecord(baseAdapterConfig.env) ? baseAdapterConfig.env : {}),
-              ...buildFixedClaudeOAuthBinding(),
-            },
-          }
-        : baseAdapterConfig;
+      const hireAdapterConfig = baseAdapterConfig;
 
       if (isLocalAdapter) {
         // A cached result is reusable only when it tested the same
@@ -2203,13 +2019,13 @@ function OnboardingWizardInner({
         // problem or signed in.
         const cachedUsable =
           adapterEnvResult &&
-          adapterEnvResultAppliedStoredLoginRef.current === shouldApplyStoredClaudeLogin &&
+          adapterEnvResultAppliedStoredLoginRef.current === false &&
           !blocksAgentCreate(adapterEnvResult)
             ? adapterEnvResult
             : null;
         const result =
           cachedUsable ??
-          (await runAdapterEnvironmentTest(hireAdapterConfig, shouldApplyStoredClaudeLogin, isCurrent));
+          (await runAdapterEnvironmentTest(hireAdapterConfig, false, isCurrent));
         if (!result || !isCurrent()) return;
         // Block the hire on a failed environment test. Also block it on a
         // pass or a warn result that reports missing authentication — the
@@ -2267,7 +2083,6 @@ function OnboardingWizardInner({
         role: agentRole,
         adapterType,
         adapterConfig: hireAdapterConfig,
-        ...(shouldApplyStoredClaudeLogin ? { applyStoredClaudeLogin: true } : {}),
         // The server owns what the first agent is told now: this marker seeds
         // the chief-of-staff persona over the agent's entry instruction file.
         // The wizard no longer composes or overwrites it.
@@ -2310,55 +2125,6 @@ function OnboardingWizardInner({
         setConnectAuthUrl(null);
         setConnectPhase((phase) => phase === "connecting" ? "ready" : phase);
       }
-    }
-  }
-
-  async function handleUnsetAnthropicApiKey() {
-    if (!createdCompanyId || unsetAnthropicLoading) return;
-    setUnsetAnthropicLoading(true);
-    setError(null);
-    setAdapterEnvError(null);
-    setForceUnsetAnthropicApiKey(true);
-
-    const configWithUnset = (() => {
-      const config = buildAdapterConfig();
-      const env =
-        typeof config.env === "object" &&
-        config.env !== null &&
-        !Array.isArray(config.env)
-          ? { ...(config.env as Record<string, unknown>) }
-          : {};
-      env.ANTHROPIC_API_KEY = { type: "plain", value: "" };
-      config.env = env;
-      return config;
-    })();
-
-    try {
-      if (createdAgentId) {
-        await agentsApi.update(
-          createdAgentId,
-          { adapterConfig: configWithUnset },
-          createdCompanyId
-        );
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.agents.list(createdCompanyId)
-        });
-      }
-
-      const result = await runAdapterEnvironmentTest(configWithUnset);
-      if (result?.status === "fail") {
-        setError(
-          "Retried with ANTHROPIC_API_KEY unset in adapter config, but the environment test is still failing."
-        );
-      }
-    } catch (err) {
-      setError(
-        err instanceof Error
-          ? err.message
-          : "Failed to unset ANTHROPIC_API_KEY and retry."
-      );
-    } finally {
-      setUnsetAnthropicLoading(false);
     }
   }
 
@@ -2779,8 +2545,7 @@ function OnboardingWizardInner({
                         setOtherAdapterChosen(true);
                         setSourcePicked(true);
                         setAdapterType(id);
-                        if (id === "opencode_local") setModel(DEFAULT_OPENCODE_LOCAL_MODEL);
-                        else if (id !== "codex_local") setModel("");
+                        setModel("");
                         setConnectPhase("collapsing");
                       }}
                     />
@@ -3034,45 +2799,11 @@ function OnboardingWizardInner({
                         <AdapterEnvironmentResult result={adapterEnvResult} />
                       ) : null}
 
-                      {shouldSuggestUnsetAnthropicApiKey && (
-                        <div className="rounded-md border border-amber-300/60 bg-amber-50/40 px-2.5 py-2 space-y-2">
-                          <p className="text-(length:--text-micro) text-amber-900/90 leading-relaxed">
-                            Claude failed while{" "}
-                            <span className="font-mono">ANTHROPIC_API_KEY</span>{" "}
-                            is set. You can clear it in this adapter config
-                            and retry the probe.
-                          </p>
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            className="h-7 px-2.5 text-xs"
-                            disabled={
-                              adapterEnvLoading || unsetAnthropicLoading
-                            }
-                            onClick={() => void handleUnsetAnthropicApiKey()}
-                          >
-                            {unsetAnthropicLoading
-                              ? "Retrying..."
-                              : "Unset ANTHROPIC_API_KEY"}
-                          </Button>
-                        </div>
-                      )}
-
                       {adapterEnvResult && adapterEnvResult.status === "fail" && (
                         <div className="rounded-md border border-line/70 bg-bg-3/20 px-2.5 py-2 text-(length:--text-micro) space-y-1.5">
                           <p className="font-medium">Manual debug</p>
                           <p className="text-ink-3 font-mono break-all">
-                            {adapterType === "cursor"
-                              ? `${effectiveAdapterCommand} -p --mode ask --output-format json \"Respond with hello.\"`
-                              : adapterType === "codex_local"
-                              ? `${effectiveAdapterCommand} exec --json -`
-                              : adapterType === "gemini_local"
-                                ? `${effectiveAdapterCommand} --output-format json "Respond with hello."`
-                              : adapterType === "kimi_local"
-                                ? `${effectiveAdapterCommand} -p "Respond with hello." --output-format stream-json`
-                              : adapterType === "opencode_local"
-                                ? `${effectiveAdapterCommand} run --format json "Respond with hello."`
-                              : adapterType === OMP_ADAPTER_TYPE
+                            {adapterType === OMP_ADAPTER_TYPE
                                 ? `${effectiveAdapterCommand} models --json`
                               : `${effectiveAdapterCommand} --print - --output-format stream-json --verbose`}
                           </p>
@@ -3089,38 +2820,6 @@ function OnboardingWizardInner({
                               <span className="font-mono">/login</span> inside{" "}
                               <span className="font-mono">omp</span>, then retry.
                             </p>
-                          ) : adapterType === "claude_local" || adapterType === "codex_local" ? (
-                            <p className="text-ink-3">
-                              If authentication fails, connect your subscription in the browser above or use an API key.
-                            </p>
-                          ) : adapterType === "cursor" ||
-                          adapterType === "codex_local" ||
-                          adapterType === "gemini_local" ||
-                          adapterType === "kimi_local" ||
-                          adapterType === "opencode_local" ? (
-                            <p className="text-ink-3">
-                              If auth fails, set{" "}
-                              <span className="font-mono">
-                                {adapterType === "cursor"
-                                  ? "CURSOR_API_KEY"
-                                  : adapterType === "gemini_local"
-                                    ? "GEMINI_API_KEY"
-                                    : adapterType === "kimi_local"
-                                      ? "KIMI_MODEL_NAME + KIMI_MODEL_API_KEY"
-                                    : "OPENAI_API_KEY"}
-                              </span>{" "}
-                              in env or run{" "}
-                              <span className="font-mono">
-                                {adapterType === "cursor"
-                                  ? "agent login"
-                                  : adapterType === "gemini_local"
-                                      ? "gemini auth"
-                                      : adapterType === "kimi_local"
-                                        ? "kimi login"
-                                      : "opencode auth login"}
-                              </span>
-                              .
-                            </p>
                           ) : (
                             <p className="text-ink-3">If login is required, connect the provider above and retry.</p>
                           )}
@@ -3129,21 +2828,14 @@ function OnboardingWizardInner({
                     </div>
                   )}
 
-                  {(adapterType === "http" ||
-                    adapterType === "openclaw_gateway") && (
+                  {adapterType === "http" && (
                     <div>
                       <label className="text-xs text-ink-3 mb-1 block">
-                        {adapterType === "openclaw_gateway"
-                          ? "Gateway URL"
-                          : "Webhook URL"}
+                        Webhook URL
                       </label>
                       <input
                         className="w-full rounded-md border border-line bg-transparent px-3 py-2 text-sm font-mono outline-none focus:ring-1 focus:ring-focus placeholder:text-ink-3/50"
-                        placeholder={
-                          adapterType === "openclaw_gateway"
-                            ? "ws://127.0.0.1:18789"
-                            : "https://..."
-                        }
+                        placeholder="https://..."
                         value={url}
                         onChange={(e) => setUrl(e.target.value)}
                       />

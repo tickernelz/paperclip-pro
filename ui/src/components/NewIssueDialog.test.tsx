@@ -1061,7 +1061,7 @@ describe("NewIssueDialog", () => {
       title: "Draft task", description: "", status: "todo", priority: "medium", assigneeValue: "",
       reviewerValue: "", approverValue: "", projectId: "project-1",
       selectedExecutionWorkspaceId: "stale-workspace", executionWorkspaceMode: "reuse_existing",
-      assigneeModelOverride: "", assigneeThinkingEffort: "", assigneeChrome: false, workMode: "standard",
+      workMode: "standard",
     }));
     const { root } = renderDialog(container, ["workspaces.isolation"]);
     await flush();
@@ -1309,7 +1309,7 @@ describe("NewIssueDialog", () => {
     localStorage.setItem("paperclip:issue-draft", JSON.stringify({
       title: "", description: "Keep the request without a title", status: "todo", priority: "medium",
       assigneeValue: "", reviewerValue: "", approverValue: "", projectId: "",
-      assigneeModelOverride: "", assigneeThinkingEffort: "", assigneeChrome: false,
+      
     }));
     const { root } = renderDialog(container);
     await flush();
@@ -2026,9 +2026,6 @@ describe("NewIssueDialog", () => {
         watchdogAgentId: "agent-9",
         watchdogInstructions: "Keep it moving",
         projectId: "",
-        assigneeModelOverride: "",
-        assigneeThinkingEffort: "",
-        assigneeChrome: false,
         workMode: "standard",
       }),
     );

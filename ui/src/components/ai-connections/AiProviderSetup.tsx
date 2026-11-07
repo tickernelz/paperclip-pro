@@ -361,7 +361,7 @@ export function AiProviderSetup({
                       Anthropic Messages · Claude
                     </SelectItem>
                     <SelectItem value="chat">
-                      Chat Completions · OpenCode, Hermes
+                      Chat Completions · OpenCode
                     </SelectItem>
                   </SelectContent>
                 </Select>

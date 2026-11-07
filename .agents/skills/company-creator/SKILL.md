@@ -196,16 +196,9 @@ The `.paperclip.yaml` file is the Paperclip vendor extension. It configures adap
 **Do not specify an adapter unless the repo or user context warrants it.** If you don't know what adapter the user wants, omit the adapter block entirely — Paperclip will use its default. Specifying an unknown adapter type causes an import error.
 
 Paperclip's supported adapter types (these are the ONLY valid values):
-- `claude_local` — Claude Code CLI
-- `codex_local` — Codex CLI
-- `opencode_local` — OpenCode CLI
-- `pi_local` — Pi CLI
-- `cursor` — Cursor
-- `gemini_local` — Gemini CLI
-- `openclaw_gateway` — OpenClaw gateway
+- `omp_local` — OMP coding agent
 
 Only set an adapter when:
-- The repo or its skills clearly target a specific runtime (e.g. gstack is built for Claude Code, so `claude_local` is appropriate)
 - The user explicitly requests a specific adapter
 - The agent's role requires a specific runtime capability
 
@@ -222,7 +215,7 @@ schema: paperclip/v1
 agents:
   release-engineer:
     adapter:
-      type: claude_local
+      type: omp_local
       config:
         model: claude-sonnet-4-6
     inputs:

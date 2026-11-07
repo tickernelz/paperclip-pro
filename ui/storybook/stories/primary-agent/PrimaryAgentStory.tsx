@@ -246,7 +246,7 @@ export function PrimaryPage({ task, drawer }: { task?: "primary" | "recent" | "e
     if (task && !launched.current) {
       launched.current = true;
       if (task === "draft") {
-        localStorage.setItem("paperclip:issue-draft", JSON.stringify({ title: "Review the launch mockups", description: "Keep the mobile navigation compact.", companyId, status: "todo", priority: "medium", assigneeValue: `agent:${designer.id}`, projectId: "", reviewerValue: "", approverValue: "", assigneeModelOverride: "", assigneeThinkingEffort: "", assigneeChrome: false }));
+        localStorage.setItem("paperclip:issue-draft", JSON.stringify({ title: "Review the launch mockups", description: "Keep the mobile navigation compact.", companyId, status: "todo", priority: "medium", assigneeValue: `agent:${designer.id}`, projectId: "", reviewerValue: "", approverValue: "" }));
         openNewIssue();
       } else {
         openNewIssue({ title: "Plan next week's launch", ...(task === "explicit" ? { assigneeAgentId: designer.id } : task === "primary" ? { assigneeAgentId: state.primaryId ?? undefined } : {}) });

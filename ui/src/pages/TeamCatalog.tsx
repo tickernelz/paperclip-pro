@@ -116,7 +116,7 @@ import { GithubIcon } from "../components/icons/github-icon";
 // Matches design §11 breakpoints. Module-level so stories and the page agree.
 const DESKTOP_MIN = 1024;
 const MOBILE_MAX = 767;
-const TEAM_INSTALL_FALLBACK_ADAPTER_TYPE = "claude_local";
+const TEAM_INSTALL_FALLBACK_ADAPTER_TYPE = "omp_local";
 const TEAM_INSTALL_FORBIDDEN_ADAPTER_TYPES = new Set(["process", "http"]);
 
 export function listTeamInstallAdapterTypes(

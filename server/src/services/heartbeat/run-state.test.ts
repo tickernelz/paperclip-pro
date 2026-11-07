@@ -113,7 +113,7 @@ describePostgres("heartbeat run state database wiring", () => {
     const companyId = randomUUID();
     await db.insert(companies).values({ id: companyId, name: "Run state", issuePrefix: `S${companyId.slice(0, 8)}` });
     const [agent] = await db.insert(agents).values({
-      companyId, name: "Session agent", adapterType: "codex_local",
+      companyId, name: "Session agent", adapterType: "omp_local",
     }).returning();
     const [issue] = await db.insert(issues).values({ companyId, title: "Session task", assigneeAgentId: agent.id }).returning();
     return { companyId, agent, issue, state: extracted.createHeartbeatRunState(db) };

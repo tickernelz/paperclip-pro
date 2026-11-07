@@ -1,6 +1,7 @@
 import express from "express";
 import request from "supertest";
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { RETIRED_ADAPTER_TYPES } from "@tickernelz/paperclip-pro-shared";
 import { vi } from "vitest";
 import type { ServerAdapterModule } from "../adapters/index.js";
 
@@ -181,108 +182,22 @@ describe("adapter routes", () => {
     const res = await request(app).get("/api/adapters");
     expect(res.status).toBe(200);
 
-    // codex_local has instructions bundle + skills + jwt, no materialized skills
-    // (claude_local is overridden by beforeEach, so check codex_local instead)
-    const codexLocal = res.body.find((a: any) => a.type === "codex_local");
-    expect(codexLocal).toBeDefined();
-    expect(codexLocal.capabilities).toMatchObject({
+    const ompLocal = res.body.find((a: any) => a.type === "omp_local");
+    expect(ompLocal).toBeDefined();
+    expect(ompLocal.capabilities).toMatchObject({
       supportsInstructionsBundle: true,
       supportsSkills: true,
       supportsLocalAgentJwt: true,
       requiresMaterializedRuntimeSkills: false,
-      supportsAcp: true,
-    });
-    expect(codexLocal.acp).toMatchObject({
-      agentId: "codex",
-      skillsMode: "ephemeral",
-      prerequisites: {
-        nodeRange: ">=24.11.0",
-        packages: ["@agentclientprotocol/codex-acp"],
-      },
+      supportsAcp: false,
     });
 
-    // process adapter should have no local capabilities
     const processAdapter = res.body.find((a: any) => a.type === "process");
     expect(processAdapter).toBeDefined();
     expect(processAdapter.capabilities).toMatchObject({
       supportsInstructionsBundle: false,
       supportsSkills: false,
       supportsLocalAgentJwt: true,
-      requiresMaterializedRuntimeSkills: false,
-      supportsAcp: false,
-    });
-
-    // cursor adapter should require materialized runtime skills
-    const cursorAdapter = res.body.find((a: any) => a.type === "cursor");
-    expect(cursorAdapter).toBeDefined();
-    expect(cursorAdapter.capabilities.requiresMaterializedRuntimeSkills).toBe(true);
-    expect(cursorAdapter.capabilities.supportsInstructionsBundle).toBe(true);
-    expect(cursorAdapter.capabilities.supportsAcp).toBe(false);
-
-    const geminiAdapter = res.body.find((a: any) => a.type === "gemini_local");
-    expect(geminiAdapter).toBeDefined();
-    expect(geminiAdapter.capabilities).toMatchObject({
-      supportsInstructionsBundle: true,
-      supportsSkills: true,
-      supportsLocalAgentJwt: true,
-      requiresMaterializedRuntimeSkills: true,
-      supportsAcp: true,
-    });
-    expect(geminiAdapter.acp).toMatchObject({
-      agentId: "gemini",
-      skillsMode: "ephemeral",
-      prerequisites: {
-        nodeRange: ">=24.11.0",
-        packages: ["@google/gemini-cli"],
-      },
-    });
-
-    const grokAdapter = res.body.find((a: any) => a.type === "grok_local");
-    expect(grokAdapter).toBeDefined();
-    expect(grokAdapter.capabilities).toMatchObject({
-      supportsInstructionsBundle: true,
-      supportsSkills: true,
-      supportsLocalAgentJwt: true,
-      requiresMaterializedRuntimeSkills: true,
-      supportsAcp: false,
-    });
-
-    const kimiAdapter = res.body.find((a: any) => a.type === "kimi_local");
-    expect(kimiAdapter).toBeDefined();
-    expect(kimiAdapter.capabilities).toMatchObject({
-      supportsInstructionsBundle: true,
-      supportsSkills: true,
-      supportsLocalAgentJwt: true,
-      requiresMaterializedRuntimeSkills: true,
-      supportsAcp: true,
-    });
-    expect(kimiAdapter.acp).toMatchObject({
-      agentId: "kimi",
-      skillsMode: "ephemeral",
-      prerequisites: {
-        nodeRange: ">=20.0.0",
-        packages: ["@moonshot-ai/kimi-code"],
-      },
-    });
-
-    const hermesLocal = res.body.find((a: any) => a.type === "hermes_local");
-    expect(hermesLocal).toBeDefined();
-    expect(hermesLocal.source).toBe("builtin");
-    expect(hermesLocal.capabilities).toMatchObject({
-      supportsInstructionsBundle: true,
-      supportsSkills: true,
-      supportsLocalAgentJwt: true,
-      requiresMaterializedRuntimeSkills: false,
-      supportsAcp: false,
-    });
-
-    const hermesGateway = res.body.find((a: any) => a.type === "hermes_gateway");
-    expect(hermesGateway).toBeDefined();
-    expect(hermesGateway.source).toBe("builtin");
-    expect(hermesGateway.capabilities).toMatchObject({
-      supportsInstructionsBundle: false,
-      supportsSkills: false,
-      supportsLocalAgentJwt: false,
       requiresMaterializedRuntimeSkills: false,
       supportsAcp: false,
     });
@@ -294,20 +209,13 @@ describe("adapter routes", () => {
     const res = await request(app).get("/api/adapters");
     expect(res.status).toBe(200);
 
-    // http adapter has no listSkills/syncSkills
     const httpAdapter = res.body.find((a: any) => a.type === "http");
     expect(httpAdapter).toBeDefined();
     expect(httpAdapter.capabilities.supportsSkills).toBe(false);
 
-    // codex_local has listSkills/syncSkills
-    const codexLocal = res.body.find((a: any) => a.type === "codex_local");
-    expect(codexLocal).toBeDefined();
-    expect(codexLocal.capabilities.supportsSkills).toBe(true);
-
-    // acpx_local remains registered only as a tombstone for legacy rows.
-    const acpxLocal = res.body.find((a: any) => a.type === "acpx_local");
-    expect(acpxLocal).toBeDefined();
-    expect(acpxLocal.capabilities.supportsSkills).toBe(false);
+    const ompLocal = res.body.find((a: any) => a.type === "omp_local");
+    expect(ompLocal).toBeDefined();
+    expect(ompLocal.capabilities.supportsSkills).toBe(true);
   });
 
   it("uses the active adapter when resolving config schema for a paused builtin override", async () => {
@@ -394,129 +302,17 @@ describe("adapter routes", () => {
     expect(JSON.stringify(res.body)).not.toContain("Codex via ACPX");
   });
 
-  it("serves the built-in claude_local ACP engine config schema", async () => {
-    const app = createApp();
-
-    const paused = await request(app)
-      .patch("/api/adapters/claude_local/override")
-      .send({ paused: true });
-    expect(paused.status, JSON.stringify(paused.body)).toBe(200);
-
-    const res = await request(app).get("/api/adapters/claude_local/config-schema");
-
-    expect(res.status, JSON.stringify(res.body)).toBe(200);
-    expect(res.body.fields).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          key: "engine",
-          default: "auto",
-          options: expect.arrayContaining([
-            expect.objectContaining({ value: "auto" }),
-            expect.objectContaining({ value: "cli" }),
-            expect.objectContaining({ value: "acp" }),
-          ]),
-        }),
-        expect.objectContaining({
-          key: "agentCommand",
-          meta: { visibleWhen: { key: "engine", values: ["acp"] } },
-        }),
-        expect.objectContaining({
-          key: "warmHandleIdleMs",
-          default: 0,
-        }),
-      ]),
-    );
-  });
-
-  it("serves the built-in codex_local ACP engine config schema", async () => {
-    const app = createApp();
-
-    const res = await request(app).get("/api/adapters/codex_local/config-schema");
-
-    expect(res.status, JSON.stringify(res.body)).toBe(200);
-    expect(res.body.fields).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          key: "engine",
-          default: "auto",
-          options: expect.arrayContaining([
-            expect.objectContaining({ value: "auto" }),
-            expect.objectContaining({ value: "cli" }),
-            expect.objectContaining({ value: "acp" }),
-          ]),
-        }),
-        expect.objectContaining({
-          key: "agentCommand",
-          meta: { visibleWhen: { key: "engine", values: ["acp"] } },
-        }),
-        expect.objectContaining({
-          key: "warmHandleIdleMs",
-          default: 0,
-        }),
-      ]),
-    );
-  });
-
-  it("serves the built-in gemini_local ACP engine config schema", async () => {
-    const app = createApp();
-
-    const res = await request(app).get("/api/adapters/gemini_local/config-schema");
-
-    expect(res.status, JSON.stringify(res.body)).toBe(200);
-    expect(res.body.fields).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          key: "engine",
-          default: "auto",
-          options: expect.arrayContaining([
-            expect.objectContaining({ value: "auto" }),
-            expect.objectContaining({ value: "cli" }),
-            expect.objectContaining({ value: "acp" }),
-          ]),
-        }),
-        expect.objectContaining({
-          key: "agentCommand",
-          meta: { visibleWhen: { key: "engine", values: ["acp"] } },
-        }),
-        expect.objectContaining({
-          key: "warmHandleIdleMs",
-          default: 0,
-        }),
-      ]),
-    );
-  });
-
-  it("serves built-in Hermes config schemas", async () => {
-    const app = createApp();
-
-    const local = await request(app).get("/api/adapters/hermes_local/config-schema");
-    expect(local.status, JSON.stringify(local.body)).toBe(200);
-    expect(local.body.fields).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ key: "provider" }),
-        expect.objectContaining({ key: "timeoutSec" }),
-      ]),
-    );
-
-    const gateway = await request(app).get("/api/adapters/hermes_gateway/config-schema");
-    expect(gateway.status, JSON.stringify(gateway.body)).toBe(200);
-    expect(gateway.body.fields).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ key: "apiBaseUrl", required: true }),
-        expect.objectContaining({ key: "apiKey", required: true }),
-      ]),
-    );
-  });
-
-  it("GET /api/adapters lists acpx_local only as a model-less tombstone", async () => {
+  it("GET /api/adapters does not list removed adapter types", async () => {
     const app = createApp();
 
     const res = await request(app).get("/api/adapters");
 
     expect(res.status, JSON.stringify(res.body)).toBe(200);
-    const acpxLocal = res.body.find((a: any) => a.type === "acpx_local");
-    expect(acpxLocal).toBeDefined();
-    expect(acpxLocal.modelsCount).toBe(0);
+    const listed = res.body.map((a: any) => a.type);
+    const externallyRegistered = new Set(["claude_local"]);
+    for (const type of RETIRED_ADAPTER_TYPES.filter((type) => !externallyRegistered.has(type))) {
+      expect(listed).not.toContain(type);
+    }
   });
 
   it("rejects signed-in users without org access", async () => {

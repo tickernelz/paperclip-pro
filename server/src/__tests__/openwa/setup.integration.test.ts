@@ -188,7 +188,7 @@ describeEmbeddedPostgres("OpenWA setup inspection and configure", () => {
       name: "WhatsApp Agent",
       role: "engineer",
       status: "idle",
-      adapterType: options.adapterType ?? "claude_local",
+      adapterType: options.adapterType ?? "omp_local",
       adapterConfig: {},
       runtimeConfig: {},
       permissions: {},
@@ -470,7 +470,7 @@ describeEmbeddedPostgres("OpenWA setup inspection and configure", () => {
   it("puts the endpoint in attention when its agent switches to an adapter without run tokens", async () => {
     const { app, endpoint, service, agentId } = await setup();
     expect((await configure(app, endpoint.id)).status).toBe(200);
-    await agentService(db).update(agentId, { adapterType: "codex_local" });
+    await agentService(db).update(agentId, { adapterType: "omp_local" });
     expect((await service.get(endpoint.id)).status).toBe("verifying");
     await agentService(db).update(agentId, { adapterType: "paperclip_runner" });
     const updated = await service.get(endpoint.id);

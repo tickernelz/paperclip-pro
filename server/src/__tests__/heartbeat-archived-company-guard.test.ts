@@ -66,7 +66,7 @@ describeEmbeddedPostgres("heartbeat archived-company guard", () => {
       name: "Archived Agent",
       role: "engineer",
       status: "idle",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: {},
       runtimeConfig: {
         heartbeat: {
@@ -101,7 +101,7 @@ describeEmbeddedPostgres("heartbeat archived-company guard", () => {
         name: "Terminated Manager",
         role: "cto",
         status: "terminated",
-        adapterType: "codex_local",
+        adapterType: "omp_local",
         adapterConfig: {},
         runtimeConfig: {
           heartbeat: {
@@ -119,7 +119,7 @@ describeEmbeddedPostgres("heartbeat archived-company guard", () => {
         role: "engineer",
         reportsTo: managerId,
         status: "idle",
-        adapterType: "codex_local",
+        adapterType: "omp_local",
         adapterConfig: {},
         runtimeConfig: {
           heartbeat: {

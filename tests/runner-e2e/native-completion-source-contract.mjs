@@ -113,7 +113,7 @@ export const NATIVE_COMPLETION_SOURCE_FILES = [...new Set([
   "packages/paperclip-runner/src/live/runnerd-codex-transport.ts",
   "packages/paperclip-runner/src/drivers/acpx/qualified-profiles.ts",
   "packages/paperclip-runner/src/drivers/opencode/opencode-server-driver.ts",
-  "packages/adapters/codex-local/src/index.ts", "packages/adapters/claude-local/src/index.ts",
+  "packages/adapter-utils/src/provider-models/codex.ts", "packages/adapter-utils/src/provider-models/claude.ts",
   "packages/paperclip-runner/package.json", "tsconfig.base.json",
   "packages/paperclip-runner/runner/crates/runner-core/src/provider_events.rs",
   "packages/paperclip-runner/runner/Cargo.toml", "packages/paperclip-runner/runner/Cargo.lock",

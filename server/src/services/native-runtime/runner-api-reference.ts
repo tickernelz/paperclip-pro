@@ -587,17 +587,6 @@ export const runnerApiReference: Record<string, { section: string; description?:
     "section": "Companies, Projects, Goals",
     "description": "Update goal"
   },
-  "POST /api/companies/{}/openclaw/invite-prompt": {
-    "section": "Companies, Projects, Goals",
-    "description": "Generate OpenClaw invite prompt (CEO/board only)",
-    "examples": [
-      {
-        "body": {
-          "agentMessage": "optional note for the joining OpenClaw agent"
-        }
-      }
-    ]
-  },
   "GET /api/companies/{}/routines": {
     "section": "Routines",
     "description": "List all routines in company"

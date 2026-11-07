@@ -252,7 +252,6 @@ import {
   // Access / membership
   acceptInviteSchema,
   createCompanyInviteSchema,
-  createOpenClawInvitePromptSchema,
   claimJoinRequestApiKeySchema,
   createCliAuthChallengeSchema,
   resolveCliAuthChallengeSchema,
@@ -1600,7 +1599,6 @@ const BOARD_ONLY_OPERATIONS = new Set([
   "GET /api/cli-auth/me",
   "POST /api/companies/{companyId}/invites",
   "GET /api/companies/{companyId}/invites",
-  "POST /api/companies/{companyId}/openclaw/invite-prompt",
   "GET /api/companies/{companyId}/join-requests",
   "POST /api/companies/{companyId}/join-requests/{requestId}/approve",
   "POST /api/companies/{companyId}/join-requests/{requestId}/reject",
@@ -1874,7 +1872,6 @@ const CREATED_OPERATIONS = new Set([
   "POST /api/board-api-keys",
   "POST /api/companies",
   "POST /api/companies/{companyId}/invites",
-  "POST /api/companies/{companyId}/openclaw/invite-prompt",
   "POST /api/companies/{companyId}/cost-events",
   "POST /api/companies/{companyId}/finance-events",
   "POST /api/companies/{companyId}/secret-provider-configs",
@@ -8192,17 +8189,6 @@ registry.registerPath({
   responses: { 200: r.ok(), 401: r.unauthorized },
 });
 
-registry.registerPath({
-  method: "post",
-  path: "/api/companies/{companyId}/openclaw/invite-prompt",
-  tags: ["access"],
-  summary: "Create an OpenClaw invite prompt bundle",
-  request: {
-    params: z.object({ companyId: z.string() }),
-    body: jsonBody(createOpenClawInvitePromptSchema),
-  },
-  responses: { 200: r.ok(), 400: r.badRequest, 401: r.unauthorized },
-});
 
 registry.registerPath({
   method: "post",
@@ -8849,15 +8835,6 @@ registry.registerPath({
   path: "/api/agents/{id}/heartbeat/invoke",
   tags: ["agents"],
   summary: "Invoke agent heartbeat",
-  request: { params: z.object({ id: z.string() }) },
-  responses: { 200: r.ok(), 401: r.unauthorized },
-});
-
-registry.registerPath({
-  method: "post",
-  path: "/api/agents/{id}/claude-login",
-  tags: ["agents"],
-  summary: "Trigger Claude login for agent",
   request: { params: z.object({ id: z.string() }) },
   responses: { 200: r.ok(), 401: r.unauthorized },
 });

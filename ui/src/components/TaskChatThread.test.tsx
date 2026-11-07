@@ -2851,17 +2851,17 @@ describe("TaskChatThread runtime transcript selection", () => {
   );
 
   it.each([
-    ...["claude_local", "codex_local", "cursor", "gemini_local", "opencode_local",
-      "pi_local", "grok_local", "kimi_local", "hermes_local"].flatMap((adapterType) =>
-      ["failed", "timed_out"].map((status) => ({ adapterType, status, runtimeMode: "legacy" as const,
-        cause: "legacy_execution_requires_reconciliation", canRetry: true }))),
+    ...["failed", "timed_out"].map((status) => ({ adapterType: "omp_local", status, runtimeMode: "legacy" as const,
+      cause: "legacy_execution_requires_reconciliation", canRetry: true })),
+    { adapterType: "claude_local", status: "failed", runtimeMode: "legacy" as const,
+      cause: "legacy_execution_requires_reconciliation", canRetry: false },
     { adapterType: "paperclip_runner", status: "failed", runtimeMode: "native" as const,
       cause: "legacy_execution_requires_reconciliation", canRetry: false },
     { adapterType: "process", status: "failed", runtimeMode: "legacy" as const,
       cause: "legacy_execution_requires_reconciliation", canRetry: false },
-    { adapterType: "claude_local", status: "failed", runtimeMode: "legacy" as const,
+    { adapterType: "omp_local", status: "failed", runtimeMode: "legacy" as const,
       cause: "uncertain_provider_action", canRetry: false },
-    { adapterType: "claude_local", status: "cancelled", runtimeMode: "legacy" as const,
+    { adapterType: "omp_local", status: "cancelled", runtimeMode: "legacy" as const,
       cause: "legacy_execution_requires_reconciliation", canRetry: false },
   ])("offers only explicit conversation retries: $runtimeMode/$adapterType/$status/$cause", (testCase) => {
     render(

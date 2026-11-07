@@ -5,27 +5,7 @@ const brandMarks: Record<string, { src: string; dark?: string }> = {
   openai_dot: { src: "/brands/adapters/openai-dot.svg" },
   claude_local: { src: "/brands/claude-color.svg" },
   codex_local: { src: "/brands/codex-color.svg" },
-  gemini_local: { src: "/brands/adapters/gemini-color.svg" },
-  kimi_local: {
-    src: "/brands/adapters/kimi-color-light.svg",
-    dark: "/brands/adapters/kimi-color.svg",
-  },
-  ...Object.fromEntries(
-    [
-      ["cursor", "cursor"],
-      ["cursor_cloud", "cursor"],
-      ["grok_local", "grok"],
-      ["hermes_local", "hermesagent"],
-      ["hermes_gateway", "hermesagent"],
-      ["pi_local", "pi"],
-    ].map(([type, icon]) => [
-      type,
-      {
-        src: `/brands/adapters/${icon}.svg`,
-        dark: `/brands/adapters/${icon}-dark.svg`,
-      },
-    ]),
-  ),
+  grok_local: { src: "/brands/adapters/grok.svg", dark: "/brands/adapters/grok-dark.svg" },
 };
 export function AdapterMark({
   type,

@@ -8,10 +8,7 @@ const gitReasons = [
   "dns_failure", "connection_refused", "network_unreachable", "connection_reset",
   "connection_timeout", "tls_failure", "rate_limited", "remote_unavailable",
 ] as const;
-const hermesConfigurationReasons = [
-  "endpoint_missing", "endpoint_invalid", "insecure_transport", "credentials_missing",
-] as const;
-const hermesRequestReasons = [
+const httpRequestReasons = [
   "authentication_failed", "endpoint_not_found", "rate_limited", "remote_unavailable",
   "connection_refused", "dns_failure", "network_unreachable", "connection_reset",
   "connection_timeout", "tls_failure",
@@ -26,18 +23,9 @@ export type GitConnectionFailure = {
 
 export type ConnectionFailure = GitConnectionFailure | {
   schemaVersion: 1;
-  provider: "hermes_gateway";
-} & ({
-  operation: "configuration";
-  reason: typeof hermesConfigurationReasons[number];
-} | {
-  operation: "create_run";
-  reason: typeof hermesRequestReasons[number];
-}) | {
-  schemaVersion: 1;
   provider: "mcp_http";
   operation: "discover_tools";
-  reason: typeof hermesRequestReasons[number];
+  reason: typeof httpRequestReasons[number];
 };
 
 /** Unknown versions, combinations and extra payload fields remain reportable. */
@@ -49,9 +37,7 @@ export function readConnectionFailure(value: unknown): ConnectionFailure | null 
       record.schemaVersion !== 1 || typeof record.reason !== "string") return null;
   let reasons: readonly string[];
   if (record.provider === "git" && record.operation === "clone") reasons = gitReasons;
-  else if (record.provider === "hermes_gateway" && record.operation === "configuration") reasons = hermesConfigurationReasons;
-  else if (record.provider === "hermes_gateway" && record.operation === "create_run") reasons = hermesRequestReasons;
-  else if (record.provider === "mcp_http" && record.operation === "discover_tools") reasons = hermesRequestReasons;
+  else if (record.provider === "mcp_http" && record.operation === "discover_tools") reasons = httpRequestReasons;
   else return null;
   if (!reasons.includes(record.reason)) return null;
   return { schemaVersion: 1, provider: record.provider, operation: record.operation, reason: record.reason } as ConnectionFailure;

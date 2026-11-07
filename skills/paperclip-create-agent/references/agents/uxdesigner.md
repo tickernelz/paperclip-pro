@@ -9,7 +9,7 @@ Use this template when hiring product designers who produce UX specs, review int
 - `title`: `Principal Product Designer (UX)`
 - `icon`: `gem`
 - `capabilities`: `Owns product UX strategy, interaction design, user research, and design-system quality across {{companyName}}.`
-- `adapterType`: `claude_local`, `codex_local`, or another adapter with repo and design context
+- `adapterType`: `omp_local`
 
 ## `AGENTS.md`
 

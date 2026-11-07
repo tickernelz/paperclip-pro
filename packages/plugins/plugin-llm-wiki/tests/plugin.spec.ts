@@ -146,7 +146,7 @@ beforeEach(() => {
                 problems: [],
                 checkedAt: new Date().toISOString(),
               },
-              managedAgent: { status: "resolved", source: "managed", agentId: "agent-1", resourceKey: "wiki-maintainer", details: { name: "Wiki Maintainer", status: "idle", adapterType: "claude_local", icon: "book-open", urlKey: "wiki-maintainer" } },
+              managedAgent: { status: "resolved", source: "managed", agentId: "agent-1", resourceKey: "wiki-maintainer", details: { name: "Wiki Maintainer", status: "idle", adapterType: "omp_local", icon: "book-open", urlKey: "wiki-maintainer" } },
               managedProject: { status: "resolved", projectId: "project-1", details: { name: "LLM Wiki", status: "in_progress" } },
               managedSkills: DEFAULT_MANAGED_SKILLS,
               operationCount: 0,
@@ -246,7 +246,7 @@ beforeEach(() => {
                 problems: [],
                 checkedAt: new Date().toISOString(),
               },
-              managedAgent: mockSettingsManagedAgent ?? { status: "resolved", source: "managed", agentId: "agent-1", resourceKey: "wiki-maintainer", details: { name: "Wiki Maintainer", status: "idle", adapterType: "claude_local", icon: "book-open", urlKey: "wiki-maintainer" } },
+              managedAgent: mockSettingsManagedAgent ?? { status: "resolved", source: "managed", agentId: "agent-1", resourceKey: "wiki-maintainer", details: { name: "Wiki Maintainer", status: "idle", adapterType: "omp_local", icon: "book-open", urlKey: "wiki-maintainer" } },
               managedProject: { status: "resolved", source: "managed", projectId: "project-1", resourceKey: "llm-wiki", details: { name: "LLM Wiki", status: "in_progress" } },
               managedSkills: mockSettingsManagedSkills.length > 0 ? mockSettingsManagedSkills : DEFAULT_MANAGED_SKILLS,
               managedRoutines: mockSettingsManagedRoutines,
@@ -485,7 +485,7 @@ function wikiMaintainerAgent(): Agent {
     status: "idle",
     reportsTo: null,
     capabilities: "Maintains the wiki",
-    adapterType: "claude_local",
+    adapterType: "omp_local",
     adapterConfig: {},
     runtimeConfig: {},
     budgetMonthlyCents: 0,
@@ -671,12 +671,8 @@ describe("LLM Wiki plugin scaffold", () => {
       "wiki/log.md",
     ]);
     expect(manifest.agents?.[0]?.agentKey).toBe("wiki-maintainer");
-    expect(manifest.agents?.[0]?.adapterType).toBe("claude_local");
-    expect(manifest.agents?.[0]?.adapterConfig).toMatchObject({
-      dangerouslySkipPermissions: false,
-      dangerouslyBypassApprovalsAndSandbox: false,
-      sandbox: true,
-    });
+    expect(manifest.agents?.[0]?.adapterType).toBe("omp_local");
+    expect(manifest.agents?.[0]?.adapterPreference).toEqual(["omp_local"]);
     expect(manifest.agents?.[0]?.instructions?.entryFile).toBe("AGENTS.md");
     expect(manifest.agents?.[0]?.instructions?.content).toContain("You are the maintainer of this personal wiki");
     expect(manifest.agents?.[0]?.instructions?.files?.["AGENTS.md"]).toContain("{{localFolders.wiki-root.path}}");
@@ -1021,7 +1017,7 @@ Duplicate headings receive stable suffixes.
       source: "managed",
       agentId: "agent-1",
       resourceKey: "wiki-maintainer",
-      details: { name: "Wiki Maintainer", status: "pending_approval", adapterType: "claude_local", icon: "book-open", urlKey: "wiki-maintainer" },
+      details: { name: "Wiki Maintainer", status: "pending_approval", adapterType: "omp_local", icon: "book-open", urlKey: "wiki-maintainer" },
     };
 
     const markup = renderToStaticMarkup(createElement(WikiPage, {
@@ -1316,7 +1312,7 @@ Duplicate headings receive stable suffixes.
       agentId: "agent-1",
       resourceKey: "wiki-maintainer",
       defaultDrift: { entryFile: "AGENTS.md", changedFiles: ["AGENTS.md"] },
-      details: { name: "Wiki Maintainer", status: "idle", adapterType: "claude_local", icon: "book-open", urlKey: "wiki-maintainer" },
+      details: { name: "Wiki Maintainer", status: "idle", adapterType: "omp_local", icon: "book-open", urlKey: "wiki-maintainer" },
     };
 
     const markup = renderToStaticMarkup(createElement(WikiPage, {

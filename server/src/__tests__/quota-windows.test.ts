@@ -11,7 +11,7 @@ import {
   parseClaudeCliUsageText,
   readClaudeToken,
   claudeConfigDir,
-} from "@tickernelz/paperclip-pro-adapter-claude-local/server";
+} from "../services/ai-providers/claude/quota.js";
 
 import {
   secondsToWindowLabel,
@@ -20,7 +20,7 @@ import {
   fetchCodexQuota,
   mapCodexRpcQuota,
   codexHomeDir,
-} from "@tickernelz/paperclip-pro-adapter-codex-local/server";
+} from "../services/ai-providers/codex/quota.js";
 
 // ---------------------------------------------------------------------------
 // toPercent

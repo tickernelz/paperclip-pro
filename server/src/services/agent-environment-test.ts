@@ -3,7 +3,7 @@ import type { AdapterExecutionTarget } from "@tickernelz/paperclip-pro-adapter-u
 import type { AdapterEnvironmentCheck } from "@tickernelz/paperclip-pro-adapter-utils";
 import { parseObject } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 import { aiRoutingHarness, ADAPTER_AUTH_MISSING_CHECK_CODE, AI_CONNECTION_CAPABILITIES, type AiConnectionBinding } from "@tickernelz/paperclip-pro-shared";
-import { requireServerAdapter } from "../adapters/index.js";
+import { requireRunnerHarness, requireServerAdapter } from "../adapters/index.js";
 import { forbidden, HttpError, unprocessable } from "../errors.js";
 import { instanceSettingsService } from "./instance-settings.js";
 import { environmentService } from "./environments.js";
@@ -516,8 +516,9 @@ export function agentEnvironmentTestService(db: Db, pluginWorkerManager?: Plugin
       return result;
     }
     if (!result.checks.some(check => check.code.includes("hello_probe"))) {
-      const providerAdapter = context.config.managedAiRouting ? aiRoutingHarness(adapterType, context.config.provider, context.config.acpxAgent) : { anthropic: "claude_local", openai: "codex_local", openrouter: "opencode_local", xai: "grok_local", google: "gemini_local" }[binding.provider];
-      const probe = await requireServerAdapter(providerAdapter).testEnvironment({ ...context, adapterType: providerAdapter, config: { ...context.config, engine: "cli" } });
+      const providerAdapter = context.config.managedAiRouting ? aiRoutingHarness(adapterType, context.config.provider, context.config.acpxAgent) : ({ anthropic: "claude_local", openai: "codex_local", openrouter: "opencode_local", xai: "grok_local" } as Record<string, string | undefined>)[binding.provider];
+      if (!providerAdapter) throw unprocessable("No runtime can use this AI connection provider.", { code: "ai_connection_provider_unsupported" });
+      const probe = await requireRunnerHarness(providerAdapter).testEnvironment({ ...context, adapterType: providerAdapter, config: { ...context.config, engine: "cli" } });
       result.checks.push(...probe.checks);
       result.status = probe.status === "fail" ? "fail" : result.status === "warn" || probe.status === "warn" ? "warn" : "pass";
     }

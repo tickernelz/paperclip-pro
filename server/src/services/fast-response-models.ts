@@ -1,7 +1,7 @@
-import { models as anthropic } from "@tickernelz/paperclip-pro-adapter-claude-local";
-import { models as openai } from "@tickernelz/paperclip-pro-adapter-codex-local";
-import { models as google } from "@tickernelz/paperclip-pro-adapter-gemini-local";
-import { models as xai } from "@tickernelz/paperclip-pro-adapter-grok-local";
+import { models as anthropic } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/claude";
+import { models as openai } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/codex";
+import { models as google } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/gemini";
+import { models as xai } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/grok";
 import type { AiConnectionMetadata } from "@tickernelz/paperclip-pro-shared";
 
 /** Catalogs follow the saved API connection, never the host CLI's credentials or environment. */

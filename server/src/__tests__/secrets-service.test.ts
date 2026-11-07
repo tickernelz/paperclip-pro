@@ -6,7 +6,7 @@ import path from "node:path";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import type { MockInstance } from "vitest";
 import { and, eq, sql } from "drizzle-orm";
-import { resolveCodexAuthCacheDir, withAccountHomeSecretMutationLock } from "@tickernelz/paperclip-pro-adapter-codex-local/server";
+import { resolveCodexAuthCacheDir, withAccountHomeSecretMutationLock } from "../services/ai-providers/codex/codex-auth-cache.js";
 import {
   activityLog,
   agents,
@@ -28,6 +28,9 @@ import { awsSecretsManagerProvider } from "../secrets/aws-secrets-manager-provid
 import { localEncryptedProvider } from "../secrets/local-encrypted-provider.js";
 import { SecretProviderClientError } from "../secrets/types.js";
 import { secretService } from "../services/secrets.js";
+import { registerServerAdapter, unregisterServerAdapter } from "../adapters/registry.js";
+
+const SCHEMA_SECRET_ADAPTER = "acme_gateway";
 
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
 const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;
@@ -156,6 +159,12 @@ describeEmbeddedPostgres("secretService", () => {
     const started = await startEmbeddedPostgresTestDatabase("secrets-service");
     stopDb = started.cleanup;
     db = createDb(started.connectionString);
+    registerServerAdapter({
+      type: SCHEMA_SECRET_ADAPTER,
+      execute: async () => ({ exitCode: 0, signal: null, timedOut: false }),
+      testEnvironment: async () => ({ adapterType: SCHEMA_SECRET_ADAPTER, status: "pass", checks: [], testedAt: new Date(0).toISOString() }),
+      getConfigSchema: () => ({ fields: [{ key: "apiKey", label: "API key", type: "text", meta: { secret: true } }] }),
+    });
   });
 
   afterEach(async () => {
@@ -175,6 +184,7 @@ describeEmbeddedPostgres("secretService", () => {
   });
 
   afterAll(async () => {
+    unregisterServerAdapter(SCHEMA_SECRET_ADAPTER);
     await stopDb?.();
     if (previousKeyFile === undefined) {
       delete process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE;
@@ -230,7 +240,7 @@ describeEmbeddedPostgres("secretService", () => {
       companyId,
       name: "Secret reader",
       role: "engineer",
-      adapterType: "codex_local",
+      adapterType: SCHEMA_SECRET_ADAPTER,
       adapterConfig: {},
       permissions,
       status: "idle",
@@ -1159,7 +1169,7 @@ describeEmbeddedPostgres("secretService", () => {
     const normalizeCall = svc.normalizeAdapterConfigForPersistence(
       companyId,
       { apiKey: accountHomeDir },
-      { adapterType: "hermes_gateway" },
+      { adapterType: SCHEMA_SECRET_ADAPTER },
     );
     // The queued create must stay blocked behind the held lock.
     await new Promise((resolve) => setTimeout(resolve, 20));
@@ -1180,7 +1190,7 @@ describeEmbeddedPostgres("secretService", () => {
     const normalized = await svc.normalizeAdapterConfigForPersistence(
       companyId,
       { apiKey: `plain-api-key-${randomUUID()}` },
-      { adapterType: "hermes_gateway" },
+      { adapterType: SCHEMA_SECRET_ADAPTER },
     );
     const apiKeyBinding = (normalized as Record<string, unknown>).apiKey as { type: string; secretId: string };
     expect(apiKeyBinding.type).toBe("secret_ref");
@@ -1446,7 +1456,7 @@ describeEmbeddedPostgres("secretService", () => {
         companyId,
         name: "CodexCoder",
         role: "engineer",
-        adapterType: "codex_local",
+        adapterType: SCHEMA_SECRET_ADAPTER,
         adapterConfig: {},
       })
       .returning();
@@ -1939,7 +1949,7 @@ describeEmbeddedPostgres("secretService", () => {
     };
 
     await expect(
-      svc.resolveAdapterConfigForRuntime(companyId, adapterConfig, undefined, { adapterType: "hermes_gateway" }),
+      svc.resolveAdapterConfigForRuntime(companyId, adapterConfig, undefined, { adapterType: SCHEMA_SECRET_ADAPTER }),
     ).rejects.toMatchObject({
       status: 422,
       details: { code: "responsible_user_missing" },
@@ -1949,7 +1959,7 @@ describeEmbeddedPostgres("secretService", () => {
       companyId,
       adapterConfig,
       undefined,
-      { adapterType: "hermes_gateway", skipUserSecrets: true },
+      { adapterType: SCHEMA_SECRET_ADAPTER, skipUserSecrets: true },
     );
 
     expect(resolved.config).not.toHaveProperty("apiKey");
@@ -2365,7 +2375,7 @@ describeEmbeddedPostgres("secretService", () => {
       svc.collectMissingAdapterConfigRuntimeBindings(
         companyId,
         adapterConfig,
-        "hermes_gateway",
+        SCHEMA_SECRET_ADAPTER,
         {
           consumerType: "agent",
           consumerId: "agent-1",
@@ -2396,7 +2406,7 @@ describeEmbeddedPostgres("secretService", () => {
             required: false,
           },
         },
-        "hermes_gateway",
+        SCHEMA_SECRET_ADAPTER,
         {
           consumerType: "agent",
           consumerId: "agent-1",
@@ -2413,7 +2423,7 @@ describeEmbeddedPostgres("secretService", () => {
       svc.collectMissingAdapterConfigRuntimeBindings(
         companyId,
         adapterConfig,
-        "hermes_gateway",
+        SCHEMA_SECRET_ADAPTER,
         {
           consumerType: "agent",
           consumerId: "agent-1",
@@ -4566,7 +4576,7 @@ describeEmbeddedPostgres("secretService", () => {
       companyId,
       name: "JWT Agent",
       role: "engineer",
-      adapterType: "codex_local",
+      adapterType: SCHEMA_SECRET_ADAPTER,
       adapterConfig: {},
       status: "idle",
       createdAt: new Date(),

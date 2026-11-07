@@ -5,7 +5,6 @@ import { getIssuePullRequests, pullRequestHref, pullRequestIdentity } from "../.
 import { useWorkspaceIsolationControls } from "@/hooks/useWorkspaceIsolationControls";
 import { AgentIdentity } from "@/components/AgentIdentity";
 import { AgentAvatar } from "@/components/AgentAvatar";
-import { normalizeLegacyRunnerProvider } from "@tickernelz/paperclip-pro-adapter-utils";
 import { useCallback, useEffect, useMemo, useRef, useState, type ComponentType } from "react";
 import { createPortal } from "react-dom";
 import { PROPERTIES_PANE_HEADER_SLOT_ID } from "../PropertiesPanel";
@@ -33,7 +32,6 @@ import { projectsApi } from "../../api/projects";
 import { useCompany } from "../../context/CompanyContext";
 import { queryKeys } from "../../lib/queryKeys";
 import { buildCompanyUserInlineOptions, buildCompanyUserLabelMap, buildCompanyUserProfileMap, isAgentTaskTarget } from "../../lib/company-members";
-import { ISSUE_OVERRIDE_ADAPTER_TYPES, type IssueModelLane } from "../../lib/issue-assignee-overrides";
 import { useProjectOrder } from "../../hooks/useProjectOrder";
 import {
   getRecentAssigneeIds,
@@ -54,7 +52,6 @@ import {
   formatMonitorOffset,
   useMonitorCountdown,
 } from "../../lib/issue-monitor";
-import { extractProviderIdWithFallback } from "../../lib/model-utils";
 import { formatRetryReason } from "../../lib/runRetryState";
 import { useRetryNowMutation } from "../../hooks/useRetryNowMutation";
 import { RetryErrorBand } from "../IssueScheduledRetryCard";
@@ -69,7 +66,6 @@ import type { IssueExternalObjectGroup } from "../../hooks/useIssueExternalObjec
 import { timeAgo } from "../../lib/timeAgo";
 import { invalidateInboxIssueQueries } from "../../lib/inboxArchiveCache";
 import { Button } from "@/components/ui/button";
-import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -98,15 +94,9 @@ import {
 import { ExternalObjectRows } from "./external-object-rows";
 import {
   asRecord,
-  compactRecord,
   defaultExecutionWorkspaceModeForProject,
   defaultProjectWorkspaceIdForProject,
   isMainIssueWorkspace,
-  overrideLane,
-  sortAdapterModels,
-  thinkingEffortKeyFor,
-  thinkingEffortOptionsFor,
-  thinkingEffortValueFor,
   toDateTimeLocalValue,
 } from "./helpers";
 import { PropertyPicker } from "./property-picker";
@@ -688,112 +678,20 @@ export function IssueProperties({
   const assignee = issue.assigneeAgentId
     ? agents?.find((a) => a.id === issue.assigneeAgentId)
     : null;
-  const assigneeAdapterType = assignee?.adapterType ?? null;
   const assigneeAdapterOverrides = issue.assigneeAdapterOverrides ?? null;
   const showAssigneeAdapterOptions = assigneeAdapterOverrides !== null;
-  const supportsAssigneeOverrides = Boolean(
-    assigneeAdapterType && ISSUE_OVERRIDE_ADAPTER_TYPES.has(assigneeAdapterType),
-  );
-  const assigneeOverrideLane = overrideLane(assigneeAdapterOverrides);
   const assigneeOverrideAdapterConfig = asRecord(assigneeAdapterOverrides?.adapterConfig);
   const assigneeOverrideModel =
     typeof assigneeOverrideAdapterConfig.model === "string" ? assigneeOverrideAdapterConfig.model : "";
-  const assigneePrimaryAdapterConfig = asRecord(assignee?.adapterConfig);
-  const assigneePrimaryModel =
-    typeof assigneePrimaryAdapterConfig.model === "string" ? assigneePrimaryAdapterConfig.model : "";
-  const effectiveAssigneeModel = assigneeOverrideModel || assigneePrimaryModel;
-  const assigneeOverrideThinkingEffort = thinkingEffortValueFor(
-    assigneeAdapterType,
-    assigneeOverrideAdapterConfig,
-  );
-  const assigneeOverrideChrome = assigneeAdapterType === "claude_local"
-    && assigneeOverrideAdapterConfig.chrome === true;
-  const catalogProvider = assigneeAdapterType === "paperclip_runner" ? String(normalizeLegacyRunnerProvider(assigneePrimaryAdapterConfig).provider ?? "codex") : undefined;
-  const { data: assigneeAdapterModels } = useQuery({
-    queryKey:
-      companyId && assigneeAdapterType
-        ? queryKeys.agents.adapterModels(companyId, assigneeAdapterType, null, catalogProvider)
-        : ["agents", "none", "adapter-models", assigneeAdapterType ?? "none"],
-    queryFn: () => agentsApi.adapterModels(companyId!, assigneeAdapterType!, { provider: catalogProvider }),
-    enabled: Boolean(companyId) && showAssigneeAdapterOptions && supportsAssigneeOverrides,
-  });
-  const modelOverrideOptions = useMemo<InlineEntityOption[]>(() => {
-    const models = sortAdapterModels(assigneeAdapterModels ?? []);
-    const options = models.map((model) => ({
-      id: model.id,
-      label: model.label,
-      searchText: `${model.id} ${extractProviderIdWithFallback(model.id)}`,
-    }));
-    if (assigneeOverrideModel && !options.some((option) => option.id === assigneeOverrideModel)) {
-      options.unshift({
-        id: assigneeOverrideModel,
-        label: assigneeOverrideModel,
-        searchText: assigneeOverrideModel,
-      });
-    }
-    return options;
-  }, [assigneeAdapterModels, assigneeOverrideModel]);
+  const assigneeOverrideThinkingEffort = String(assigneeOverrideAdapterConfig.effort ?? "");
   const updateAssigneeAdapterOverrides = (next: Issue["assigneeAdapterOverrides"]) => {
     onUpdate({ assigneeAdapterOverrides: next });
   };
-  const buildAssigneeOverrideWithConfig = (adapterConfig: Record<string, unknown>) => {
-    const nextConfig = compactRecord(adapterConfig);
-    const next = compactRecord({
-      useProjectWorkspace: assigneeAdapterOverrides?.useProjectWorkspace,
-      ...(Object.keys(nextConfig).length > 0 ? { adapterConfig: nextConfig } : {}),
-    });
-    return Object.keys(next).length > 0 ? next : null;
-  };
-  const updateAssigneeOverrideConfig = (patch: Record<string, unknown>) => {
-    updateAssigneeAdapterOverrides(
-      buildAssigneeOverrideWithConfig({
-        ...assigneeOverrideAdapterConfig,
-        ...patch,
-      }),
-    );
-  };
-  const updateAssigneeOverrideThinkingEffort = (nextValue: string) => {
-    const nextConfig = { ...assigneeOverrideAdapterConfig };
-    delete nextConfig.modelReasoningEffort;
-    delete nextConfig.reasoningEffort;
-    delete nextConfig.effort;
-    delete nextConfig.variant;
-    if (nextValue) {
-      nextConfig[thinkingEffortKeyFor(assigneeAdapterType)] = nextValue;
-    }
-    updateAssigneeAdapterOverrides(buildAssigneeOverrideWithConfig(nextConfig));
-  };
-  const updateAssigneeOverrideModel = (nextModel: string) => {
-    const nextConfig: Record<string, unknown> = {
-      ...assigneeOverrideAdapterConfig,
-      model: nextModel || undefined,
-    };
-    if (
-      assigneeAdapterType === "codex_local"
-      && assigneeOverrideThinkingEffort
-      && !thinkingEffortOptionsFor(assigneeAdapterType, nextModel || assigneePrimaryModel).some(
-        (option) => option.value === assigneeOverrideThinkingEffort,
-      )
-    ) {
-      delete nextConfig.modelReasoningEffort;
-      delete nextConfig.reasoningEffort;
-      delete nextConfig.effort;
-    }
-    updateAssigneeAdapterOverrides(buildAssigneeOverrideWithConfig(nextConfig));
-  };
-  const setAssigneeOverrideLane = (lane: IssueModelLane) => {
-    if (lane === "primary") {
-      updateAssigneeAdapterOverrides(null);
-      return;
-    }
-    updateAssigneeAdapterOverrides(buildAssigneeOverrideWithConfig(assigneeOverrideAdapterConfig) ?? { adapterConfig: {} });
-  };
   const assigneeOptionsTrigger = (() => {
-    if (assigneeOverrideLane === "custom") {
+    if (assigneeAdapterOverrides?.adapterConfig) {
       const details = [
         assigneeOverrideModel,
         assigneeOverrideThinkingEffort,
-        assigneeOverrideChrome ? "Chrome" : "",
       ].filter(Boolean);
       const summary = details.length > 0 ? `Override · ${details.join(" · ")}` : "Override · adapter options";
       return (
@@ -807,78 +705,7 @@ export function IssueProperties({
     }
     return <span className="text-sm text-ink-3">Primary model</span>;
   })();
-  const assigneeOptionsContent = supportsAssigneeOverrides ? (
-    <div className="w-full space-y-3 p-2">
-      <div className="space-y-1.5">
-        <div className="text-xs text-ink-3">Model lane</div>
-        <div className="flex w-full overflow-hidden rounded-md border border-line" role="radiogroup" aria-label="Model lane">
-          {(["primary", "custom"] as const).map((lane) => (
-            <button
-              key={lane}
-              type="button"
-              role="radio"
-              aria-checked={assigneeOverrideLane === lane}
-              className={cn(
-                "flex-1 px-2 py-1 text-xs capitalize transition-colors hover:bg-bg-3/40",
-                assigneeOverrideLane === lane && "bg-bg-3 text-ink",
-              )}
-              onClick={() => setAssigneeOverrideLane(lane)}
-            >
-              {lane === "primary" ? "Primary" : "Override"}
-            </button>
-          ))}
-        </div>
-        {assigneeOverrideLane === "custom" ? (
-          <p className="text-xs text-ink-3">
-            Task-level model override — replaces the agent&apos;s primary model for this issue.
-          </p>
-        ) : null}
-      </div>
-      {assigneeOverrideLane === "custom" ? (
-        <>
-          <div className="space-y-1.5">
-            <div className="text-xs text-ink-3">Model</div>
-            <InlineEntitySelector
-              value={assigneeOverrideModel}
-              options={modelOverrideOptions}
-              placeholder="Default model"
-              disablePortal
-              noneLabel="Default model"
-              searchPlaceholder="Search models..."
-              emptyMessage="No models found."
-              onChange={updateAssigneeOverrideModel}
-            />
-          </div>
-          <div className="space-y-1.5">
-            <div className="text-xs text-ink-3">Thinking effort</div>
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {thinkingEffortOptionsFor(assigneeAdapterType, effectiveAssigneeModel).map((option) => (
-                <button
-                  key={option.value || "default"}
-                  className={cn(
-                    "px-2 py-1 rounded-md text-xs border border-line hover:bg-bg-3/50 transition-colors",
-                    assigneeOverrideThinkingEffort === option.value && "bg-bg-3",
-                  )}
-                  onClick={() => updateAssigneeOverrideThinkingEffort(option.value)}
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
-          </div>
-          {assigneeAdapterType === "claude_local" ? (
-            <div className="flex items-center justify-between rounded-md border border-line px-2 py-1.5">
-              <div className="text-xs text-ink-3">Enable Chrome (--chrome)</div>
-              <ToggleSwitch
-                checked={assigneeOverrideChrome}
-                onCheckedChange={(next) => updateAssigneeOverrideConfig({ chrome: next ? true : undefined })}
-              />
-            </div>
-          ) : null}
-        </>
-      ) : null}
-    </div>
-  ) : (
+  const assigneeOptionsContent = (
     <div className="w-full space-y-2 p-2">
       <p className="text-xs text-ink-3">
         {assignee

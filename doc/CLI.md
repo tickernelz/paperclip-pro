@@ -549,7 +549,6 @@ npx @tickernelz/paperclip-pro agent resume <agent-id>
 npx @tickernelz/paperclip-pro agent approve <agent-id>
 npx @tickernelz/paperclip-pro agent terminate <agent-id>
 npx @tickernelz/paperclip-pro agent heartbeat:invoke <agent-id>
-npx @tickernelz/paperclip-pro agent claude-login <agent-id>
 npx @tickernelz/paperclip-pro agent local-cli <agent-id-or-shortname> --company-id <company-id>
 ```
 
@@ -968,7 +967,6 @@ npx @tickernelz/paperclip-pro inbox dismissals --company-id <company-id>
 npx @tickernelz/paperclip-pro inbox dismiss --company-id <company-id> --payload-json '{"itemKey":"run:<run-id>"}'
 npx @tickernelz/paperclip-pro board-claim show <token>
 npx @tickernelz/paperclip-pro board-claim claim <token> [--payload-json '{...}']
-npx @tickernelz/paperclip-pro openclaw invite-prompt --company-id <company-id> --payload-json '{...}'
 npx @tickernelz/paperclip-pro available-skill list
 npx @tickernelz/paperclip-pro available-skill index
 npx @tickernelz/paperclip-pro available-skill get <skill-name>
@@ -976,13 +974,6 @@ npx @tickernelz/paperclip-pro llm agent-configuration
 npx @tickernelz/paperclip-pro llm agent-configuration:adapter <adapter-type>
 npx @tickernelz/paperclip-pro llm agent-icons
 ```
-
-Hermes gateway uses the generic invite/join commands above rather than
-`openclaw invite-prompt`. Create an agent invite, read
-`invite onboarding:text`, submit a join request with
-`adapterType: "hermes_gateway"` and `agentDefaultsPayload.apiBaseUrl` /
-`agentDefaultsPayload.apiKey`, then approve and claim the key with the `join`
-commands. See [HERMES_GATEWAY_ONBOARDING.md](./HERMES_GATEWAY_ONBOARDING.md).
 
 ## Adapter, Asset, And Skill Commands
 

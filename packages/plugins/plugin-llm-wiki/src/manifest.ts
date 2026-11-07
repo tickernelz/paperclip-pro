@@ -157,12 +157,9 @@ const manifest: PaperclipPluginManifestV1 = {
       title: "LLM Wiki Maintainer",
       icon: "book-open",
       capabilities: "Ingests source material, maintains local wiki pages, answers cited questions, and runs wiki lint/maintenance through plugin tools.",
-      adapterType: "claude_local",
-      adapterPreference: ["claude_local", "codex_local", "gemini_local", "opencode_local", "cursor", "pi_local"],
+      adapterType: "omp_local",
+      adapterPreference: ["omp_local"],
       adapterConfig: {
-        dangerouslySkipPermissions: false,
-        dangerouslyBypassApprovalsAndSandbox: false,
-        sandbox: true,
         paperclipSkillSync: {
           desiredSkills: WIKI_MANAGED_SKILL_CANONICAL_KEYS
         }

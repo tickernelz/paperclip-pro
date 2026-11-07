@@ -93,11 +93,8 @@ body:
       label: Agent adapter(s) involved
       description: Select all that apply. If unsure, leave unchecked and describe in additional context.
       options:
-        - label: Claude Code
-        - label: Codex
-        - label: Cursor
-        - label: Droid
-        - label: Hermes
+        - label: OMP (omp_local)
+        - label: Paperclip Runner
         - label: Custom / external plugin adapter
         - label: Not adapter-specific (core bug)
 

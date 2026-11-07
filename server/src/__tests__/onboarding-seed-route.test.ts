@@ -122,7 +122,7 @@ describeEmbeddedPostgres("POST /api/companies/:companyId/onboarding-seed", () =>
     expect(record[0]?.issueId).toBe(companyIssues[0]?.id);
   });
 
-  it("keeps server-seeded onboarding on a legacy adapter when native runner is requested", async () => {
+  it("keeps server-seeded onboarding on OMP when native runner is requested", async () => {
     const previous = process.env.PAPERCLIP_ONBOARDING_SEED_ADAPTER_TYPE;
     process.env.PAPERCLIP_ONBOARDING_SEED_ADAPTER_TYPE = "paperclip_runner";
     try {
@@ -133,7 +133,7 @@ describeEmbeddedPostgres("POST /api/companies/:companyId/onboarding-seed", () =>
       expect(response.status).toBe(200);
       const companyAgents = await ctx.db.select().from(agents).where(eq(agents.companyId, companyId));
       expect(companyAgents).toHaveLength(1);
-      expect(companyAgents[0]?.adapterType).toBe("claude_local");
+      expect(companyAgents[0]?.adapterType).toBe("omp_local");
     } finally {
       if (previous === undefined) {
         delete process.env.PAPERCLIP_ONBOARDING_SEED_ADAPTER_TYPE;

@@ -1,7 +1,6 @@
-import { codexLocalReasoningEffortsForModel, isCodexLocalFastModeSupported, isCodexLocalKnownModel } from "@tickernelz/paperclip-pro-adapter-codex-local";
-import { claudeLocalReasoningEffortsForModel } from "@tickernelz/paperclip-pro-adapter-claude-local";
-import { DEFAULT_GROK_LOCAL_MODEL, grokLocalReasoningEffortsForModel } from "@tickernelz/paperclip-pro-adapter-grok-local";
-import { DEFAULT_KIMI_LOCAL_MODEL, modelSupportsEffort, KIMI_SUPPORTED_EFFORTS } from "@tickernelz/paperclip-pro-adapter-kimi-local";
+import { codexLocalReasoningEffortsForModel, isCodexLocalFastModeSupported, isCodexLocalKnownModel } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/codex";
+import { claudeLocalReasoningEffortsForModel } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/claude";
+import { DEFAULT_GROK_LOCAL_MODEL, grokLocalReasoningEffortsForModel } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/grok";
 import { AGENT_PALETTE_IDS, appearanceForPalette } from "@tickernelz/paperclip-pro-shared";
 
 export type ModelOption = { id: string; label: string; detail?: string };
@@ -45,12 +44,6 @@ export const composerAgents: ComposerAgent[] = [
     { id: "openrouter/anthropic/claude-sonnet-4.6", label: "Claude Sonnet 4.6", detail: "OpenRouter" },
     { id: "openai/gpt-5.6-sol", label: "GPT-5.6 Sol", detail: "OpenAI" },
   ], manualPattern: "provider/model" },
-  { id: "kimi", name: "Kimi", role: "Planning", harness: "Kimi Code", adapterType: "kimi_local", provider: "CLI engine", engine: "cli", defaultModel: "kimi-code/k3", models: [
-    { id: "kimi-code/k3", label: "K3", detail: "Supports effort on CLI" },
-    { id: "kimi-code/kimi-for-coding", label: "K2.8 Preview", detail: "Supports effort on CLI" },
-    { id: "kimi-code/kimi-for-coding-highspeed", label: "K2.7 Coding Highspeed", detail: "Uses model default" },
-    { id: "kimi-code/k3-256k", label: "K3 (256K)", detail: "Supports effort on CLI" },
-  ], manualPattern: "kimi-code/model" },
   { id: "gemini", name: "Gem", role: "Analysis", harness: "Gemini CLI", adapterType: "gemini_local", defaultModel: "auto", models: [
     { id: "auto", label: "Auto" },
     { id: "gemini-3.1-pro-preview", label: "Gemini 3.1 Pro Preview" },
@@ -74,18 +67,10 @@ export const composerAgents: ComposerAgent[] = [
   { id: "http", name: "Hook", role: "Integration", harness: "HTTP", adapterType: "http", models: [], noModelReason: "This agent calls an HTTP endpoint. The destination service chooses its model." },
   { id: "openclaw", name: "Ollie", role: "Support", harness: "OpenClaw Gateway", adapterType: "openclaw_gateway", models: [], noModelReason: "This gateway chooses its model remotely; Paperclip has no model catalog or per-message setting for it." },
   { id: "hermes-gateway", name: "Hera", role: "Remote operations", harness: "Hermes Gateway", adapterType: "hermes_gateway", models: [], noModelReason: "This Hermes gateway chooses its model remotely; Paperclip cannot override it here." },
-  { id: "kimi-acp", name: "Kima", role: "Planning", harness: "Kimi Code", adapterType: "kimi_local", provider: "ACP engine", engine: "acp", defaultModel: "kimi-code/k3", models: [
-    { id: "kimi-code/k3", label: "K3" },
-    { id: "kimi-code/kimi-for-coding", label: "K2.8 Preview" },
-  ], manualPattern: "kimi-code/model" },
   { id: "grok-default", name: "Grok Default", role: "Investigation", harness: "Grok CLI", adapterType: "grok_local", models: [
     { id: "grok-build", label: "Grok Build" },
     { id: "grok-4.7", label: "Grok 4.7" },
   ], manualPattern: "Grok model ID" },
-  { id: "kimi-cli-default", name: "Kimi Default", role: "Planning", harness: "Kimi Code", adapterType: "kimi_local", provider: "CLI engine", engine: " CLI ", models: [
-    { id: "kimi-code/kimi-for-coding", label: "K2.8 Preview" },
-    { id: "kimi-code/k3", label: "K3" },
-  ], manualPattern: "kimi-code/model" },
   { id: "long-labels", name: "Alexandra Engineering Coordinator", role: "Engineering", harness: "Codex", adapterType: "codex_local", defaultModel: "gpt-5.6-sol", models: [
     { id: "gpt-5.6-sol", label: "GPT-5.6 Sol Extended Context Preview", detail: "Agent default" },
   ], manualPattern: "Model ID, e.g. gpt-5.6-sol" },
@@ -102,14 +87,12 @@ export const effortLabels: Record<string, string> = {
 };
 
 export function effortChoices(agent: ComposerAgent, model: string): readonly string[] {
-  const effectiveModel = model.trim() || (agent.adapterType === "grok_local" ? DEFAULT_GROK_LOCAL_MODEL
-    : agent.adapterType === "kimi_local" ? DEFAULT_KIMI_LOCAL_MODEL : "");
+  const effectiveModel = model.trim() || (agent.adapterType === "grok_local" ? DEFAULT_GROK_LOCAL_MODEL : "");
   if (agent.adapterType === "codex_local" || agent.id === "runner") return isCodexLocalKnownModel(effectiveModel) ? codexLocalReasoningEffortsForModel(effectiveModel) : [];
   if (!agent.models.some((option) => option.id === effectiveModel)) return [];
   if (agent.adapterType === "claude_local") return claudeLocalReasoningEffortsForModel(effectiveModel);
   if (agent.adapterType === "grok_local") return grokLocalReasoningEffortsForModel(effectiveModel);
   if (agent.adapterType === "pi_local") return ["off", "minimal", "low", "medium", "high", "xhigh"];
-  if (agent.adapterType === "kimi_local" && agent.engine?.trim().toLowerCase() === "cli" && modelSupportsEffort(effectiveModel)) return KIMI_SUPPORTED_EFFORTS;
   // The current model API only returns id/label. OpenCode/OpenRouter variants are
   // model-specific, so a guessed generic slider would send unsupported values.
   return [];

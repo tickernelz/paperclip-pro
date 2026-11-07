@@ -54,12 +54,12 @@ const adapterExecute = vi.hoisted(() => vi.fn(async () => ({
 
 vi.mock("../adapters/index.js", () => ({
   getServerAdapter: () => ({
-    type: "codex_local",
+    type: "acme_local",
     execute: adapterExecute,
     supportsLocalAgentJwt: false,
   }),
   findActiveServerAdapter: () => ({
-    type: "codex_local",
+    type: "acme_local",
     execute: adapterExecute,
     supportsLocalAgentJwt: false,
   }),
@@ -326,7 +326,7 @@ describeEmbeddedPostgres("accepted plan workspace refresh", () => {
       name: "CodexCoder",
       role: "engineer",
       status: "idle",
-      adapterType: "codex_local",
+      adapterType: "acme_local",
       adapterConfig: {},
       runtimeConfig: {},
       permissions: {},
@@ -370,7 +370,7 @@ describeEmbeddedPostgres("accepted plan workspace refresh", () => {
     await db.insert(agentTaskSessions).values({
       companyId,
       agentId,
-      adapterType: "codex_local",
+      adapterType: "acme_local",
       taskKey: issueId,
       sessionParamsJson: {
         sessionId: "stale-shared-session",
@@ -500,7 +500,7 @@ describeEmbeddedPostgres("accepted plan workspace refresh", () => {
       name: "CodexCoder",
       role: "engineer",
       status: "idle",
-      adapterType: "codex_local",
+      adapterType: "acme_local",
       adapterConfig: {},
       runtimeConfig: {
         heartbeat: {
@@ -736,7 +736,7 @@ describeEmbeddedPostgres("accepted plan workspace refresh", () => {
       name: "CodexCoder",
       role: "engineer",
       status: "idle",
-      adapterType: "codex_local",
+      adapterType: "acme_local",
       adapterConfig: {},
       runtimeConfig: {},
       permissions: {},
@@ -784,7 +784,7 @@ describeEmbeddedPostgres("accepted plan workspace refresh", () => {
     await db.insert(agentTaskSessions).values({
       companyId,
       agentId,
-      adapterType: "codex_local",
+      adapterType: "acme_local",
       taskKey: issueId,
       sessionParamsJson: {
         sessionId: "stale-cross-issue-session",
@@ -895,7 +895,7 @@ describeEmbeddedPostgres("accepted plan workspace refresh", () => {
       name: "CodexCoder",
       role: "engineer",
       status: "idle",
-      adapterType: "codex_local",
+      adapterType: "acme_local",
       adapterConfig: {},
       runtimeConfig: {},
       permissions: {},
@@ -943,7 +943,7 @@ describeEmbeddedPostgres("accepted plan workspace refresh", () => {
     await db.insert(agentTaskSessions).values({
       companyId,
       agentId,
-      adapterType: "codex_local",
+      adapterType: "acme_local",
       taskKey: issueId,
       sessionParamsJson: {
         sessionId: "stale-standard-cross-issue-session",
@@ -1008,143 +1008,5 @@ describeEmbeddedPostgres("accepted plan workspace refresh", () => {
     }));
     expect(adapterInput.context.paperclipTaskMarkdown).toContain("Issue: \"PAP-9401\"");
     expect(adapterInput.context.paperclipTaskMarkdown).not.toContain("Create child issues from the approved plan only");
-  }, 20_000);
-
-  it("preserves accepted-plan instructions but replaces a pre-identity session when the wake issue owns the in-flight claim", async () => {
-    const companyId = randomUUID();
-    const projectId = randomUUID();
-    const projectWorkspaceId = randomUUID();
-    const issueId = randomUUID();
-    const agentId = randomUUID();
-    const repoRoot = await createGitRepo();
-    tempRoots.push(repoRoot);
-
-    await instanceSettingsService(db).updateExperimental({
-      enableIsolatedWorkspaces: false,
-    });
-    await db.insert(companies).values({
-      id: companyId,
-      name: "Acme",
-      issuePrefix: `T${companyId.replace(/-/g, "").slice(0, 6).toUpperCase()}`,
-      status: "active",
-      defaultResponsibleUserId: "responsible-user",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-    await db.insert(projects).values({
-      id: projectId,
-      companyId,
-      name: "Accepted Plan Retry",
-      status: "active",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-    await db.insert(projectWorkspaces).values({
-      id: projectWorkspaceId,
-      companyId,
-      projectId,
-      name: "Primary",
-      cwd: repoRoot,
-      isPrimary: true,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-    await db.insert(agents).values({
-      id: agentId,
-      companyId,
-      name: "CodexCoder",
-      role: "engineer",
-      status: "idle",
-      adapterType: "codex_local",
-      adapterConfig: {},
-      runtimeConfig: {},
-      permissions: {},
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-    await db.insert(issues).values({
-      id: issueId,
-      companyId,
-      projectId,
-      projectWorkspaceId,
-      title: "Accepted plan retry",
-      status: "in_progress",
-      workMode: "planning",
-      priority: "medium",
-      responsibleUserId: "responsible-user",
-      assigneeAgentId: agentId,
-      identifier: "PAP-9303",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-    await seedAcceptedPlanClaim({
-      companyId,
-      issueId,
-      ownerAgentId: agentId,
-      status: "in_flight",
-    });
-    await db.insert(agentTaskSessions).values({
-      companyId,
-      agentId,
-      adapterType: "codex_local",
-      taskKey: issueId,
-      sessionParamsJson: {
-        sessionId: "accepted-plan-retry-session",
-        cwd: repoRoot,
-      },
-      sessionDisplayId: "accepted-plan-retry-session",
-    });
-    adapterExecute.mockImplementationOnce(async () => {
-      await db.update(issues).set({ status: "done", updatedAt: new Date() }).where(eq(issues.id, issueId));
-      return {
-        exitCode: 0,
-        signal: null,
-        timedOut: false,
-        sessionParams: { sessionId: "accepted-plan-retry-session" },
-        sessionDisplayId: "accepted-plan-retry-session",
-        summary: "Resumed accepted-plan continuation for the same issue.",
-        provider: "test",
-        model: "test-model",
-      };
-    });
-
-    const heartbeat = heartbeatService(db);
-    const run = await heartbeat.wakeup(agentId, {
-      source: "automation",
-      triggerDetail: "system",
-      reason: "issue_blockers_resolved",
-      payload: {
-        issueId,
-        interactionId: "interaction-same-issue",
-        interactionKind: "request_confirmation",
-        interactionStatus: "accepted",
-        mutation: "interaction",
-      },
-      contextSnapshot: {
-        issueId,
-        taskId: issueId,
-        wakeReason: "issue_blockers_resolved",
-        interactionKind: "request_confirmation",
-        interactionStatus: "accepted",
-      },
-    });
-
-    expect(run).not.toBeNull();
-    await vi.waitFor(async () => {
-      const latest = await heartbeat.getRun(run!.id);
-      expect(latest?.status).toBe("succeeded");
-    }, { timeout: 10_000 });
-
-    expect(adapterExecute).toHaveBeenCalledTimes(1);
-    const adapterInput = adapterExecute.mock.calls[0]?.[0] as {
-      runtime: { sessionId: string | null; sessionParams: Record<string, unknown> | null };
-      context: Record<string, unknown>;
-    };
-    // The old process predates identity injection and must be replaced.
-    expect(adapterInput.runtime.sessionId).toBeNull();
-    expect(adapterInput.context.acceptedPlanWakeRouting).toBeUndefined();
-    expect(adapterInput.context.paperclipTaskMarkdown).toContain(
-      "Implement the accepted plan on this issue when the work is small and cohesive.",
-    );
   }, 20_000);
 });

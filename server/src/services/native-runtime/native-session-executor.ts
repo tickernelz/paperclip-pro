@@ -14,7 +14,7 @@ import { activeIssueInteractionCondition } from "../issue-question-context.js";
 import { resolveAcpxQualification } from "./acpx-qualification.js";
 import { readLocalAiCredentialFile } from "../local-ai-credential-file.js";
 import { prepareGrokRunnerCredentials } from "./grok-runner-credentials.js";
-import { copyBackGrokAuth } from "@tickernelz/paperclip-pro-adapter-grok-local/server";
+import { copyBackGrokAuth } from "../ai-providers/grok/grok-auth-copyback.js";
 
 import { inferOpenAiCompatibleBiller, type AdapterUsageCheckpoint } from "@tickernelz/paperclip-pro-adapter-utils";
 import { createAgentIdentityRedactor } from "../agent-identity-redaction.js";
@@ -30,12 +30,12 @@ import { exportGitHubOperationCredentials } from "../github-operation-credential
 import { bindManagedNativeCredentialTurn, completeManagedNativeCredentialTurn } from "./managed-native-credentials.js";
 import { createLocalNativeQuestionBridge } from "./local-native-question-bridge.js";
 import { readVerifiedRemoteWorkspaceFile } from "./remote-deliverable-file.js";
-import { copyBackCodexAuth } from "@tickernelz/paperclip-pro-adapter-codex-local/server";
+import { copyBackCodexAuth } from "../ai-providers/codex/codex-auth-copyback.js";
 import {
   codexCliVersionAtLeast,
   minimumCodexCliVersionForModel,
   normalizeCodexModel,
-} from "@tickernelz/paperclip-pro-adapter-codex-local";
+} from "@tickernelz/paperclip-pro-adapter-utils/provider-models/codex";
 import { nativeCompletionFeedback } from "./native-completion-feedback.js";
 import { hasAcknowledgedNativeReassignmentStopIntent, hasAcknowledgedNativeStopIntent } from "../acknowledged-native-stop.js";
 import { stoppedCodexTurnIsTextOnly } from "./stopped-codex-turn.js";

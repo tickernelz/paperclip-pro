@@ -27,12 +27,12 @@ describe("adapters", () => {
 
       const outcome = await adapter.cleanupRunProcess({
         runId: "run-1",
-        adapterType: "hermes_gateway",
+        adapterType: "http",
         fallbackPid: 4242,
         fallbackProcessGroupId: null,
       });
 
-      expect(outcome).toEqual({ attempted: false, outcome: "skipped_non_local_adapter", adapterType: "hermes_gateway" });
+      expect(outcome).toEqual({ attempted: false, outcome: "skipped_non_local_adapter", adapterType: "http" });
       expect(mockedIsPidAlive).not.toHaveBeenCalled();
     });
 
@@ -41,12 +41,12 @@ describe("adapters", () => {
 
       const outcome = await adapter.cleanupRunProcess({
         runId: "run-1",
-        adapterType: "codex_local",
+        adapterType: "omp_local",
         fallbackPid: null,
         fallbackProcessGroupId: null,
       });
 
-      expect(outcome).toEqual({ attempted: false, outcome: "no_process_metadata", adapterType: "codex_local" });
+      expect(outcome).toEqual({ attempted: false, outcome: "no_process_metadata", adapterType: "omp_local" });
     });
 
     it("reports not_running when the process is dead", async () => {
@@ -56,7 +56,7 @@ describe("adapters", () => {
 
       const outcome = await adapter.cleanupRunProcess({
         runId: "run-1",
-        adapterType: "codex_local",
+        adapterType: "omp_local",
         fallbackPid: 4242,
         fallbackProcessGroupId: null,
       });
@@ -64,7 +64,7 @@ describe("adapters", () => {
       expect(outcome).toEqual({
         attempted: false,
         outcome: "not_running",
-        adapterType: "codex_local",
+        adapterType: "omp_local",
         pid: 4242,
         processGroupId: null,
       });
@@ -79,7 +79,7 @@ describe("adapters", () => {
 
       const outcome = await adapter.cleanupRunProcess({
         runId: "run-1",
-        adapterType: "codex_local",
+        adapterType: "omp_local",
         fallbackPid: 4242,
         fallbackProcessGroupId: null,
       });
@@ -87,7 +87,7 @@ describe("adapters", () => {
       expect(outcome).toEqual({
         attempted: true,
         outcome: "terminated",
-        adapterType: "codex_local",
+        adapterType: "omp_local",
         pid: 4242,
         processGroupId: null,
       });
@@ -102,7 +102,7 @@ describe("adapters", () => {
 
       const outcome = await adapter.cleanupRunProcess({
         runId: "run-1",
-        adapterType: "codex_local",
+        adapterType: "omp_local",
         fallbackPid: 4242,
         fallbackProcessGroupId: null,
       });
@@ -110,7 +110,7 @@ describe("adapters", () => {
       expect(outcome).toEqual({
         attempted: true,
         outcome: "failed",
-        adapterType: "codex_local",
+        adapterType: "omp_local",
         pid: 4242,
         processGroupId: null,
         error: "kill failed",
@@ -124,7 +124,7 @@ describe("adapters", () => {
 
       const outcome = await adapter.cleanupRunProcess({
         runId: "run-1",
-        adapterType: "codex_local",
+        adapterType: "omp_local",
         fallbackPid: null,
         fallbackProcessGroupId: 4242,
       });
@@ -132,7 +132,7 @@ describe("adapters", () => {
       expect(outcome).toEqual({
         attempted: true,
         outcome: "terminated",
-        adapterType: "codex_local",
+        adapterType: "omp_local",
         pid: null,
         processGroupId: 4242,
       });
@@ -159,7 +159,7 @@ describe("adapters", () => {
 
         const outcome = await adapter.cleanupRunProcess({
           runId: "run-1",
-          adapterType: "codex_local",
+          adapterType: "omp_local",
           fallbackPid,
           fallbackProcessGroupId,
         });
@@ -167,7 +167,7 @@ describe("adapters", () => {
         expect(outcome).toEqual({
           attempted: false,
           outcome: "no_process_metadata",
-          adapterType: "codex_local",
+          adapterType: "omp_local",
         });
         expect(mockedIsPidAlive).not.toHaveBeenCalled();
         expect(mockedIsProcessGroupAlive).not.toHaveBeenCalled();

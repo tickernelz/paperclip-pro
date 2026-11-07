@@ -551,7 +551,7 @@ function ConflictResolutionList({
 
 // ── Adapter type options for import ───────────────────────────────────
 
-const FALLBACK_IMPORT_ADAPTER_TYPE = "claude_local";
+const FALLBACK_IMPORT_ADAPTER_TYPE = "omp_local";
 const IMPORT_ADAPTER_OPTIONS: { value: string; label: string }[] = [
   ...listUIAdapters().map((adapter) => ({
     value: adapter.type,
@@ -1027,9 +1027,9 @@ export function CompanyImport() {
     enabled: Boolean(selectedCompanyId),
   });
   const ceoAdapterType = useMemo(() => {
-    if (!companyAgents) return "claude_local";
+    if (!companyAgents) return FALLBACK_IMPORT_ADAPTER_TYPE;
     const ceo = companyAgents.find((a) => a.role === "ceo");
-    return ceo?.adapterType ?? "claude_local";
+    return ceo?.adapterType ?? FALLBACK_IMPORT_ADAPTER_TYPE;
   }, [companyAgents]);
 
   // Fetch the destination's installed adapters so imported agents keep their
@@ -1567,7 +1567,7 @@ export function CompanyImport() {
   function handleAdapterConfigChange(slug: string, patch: Partial<CreateConfigValues>) {
     resetMutationState();
     const agent = adapterAgents.find((a) => a.slug === slug);
-    const currentType = agent ? effectiveAdapterType(agent) : adapterOverrides[slug] ?? "claude_local";
+    const currentType = agent ? effectiveAdapterType(agent) : adapterOverrides[slug] ?? FALLBACK_IMPORT_ADAPTER_TYPE;
     setAdapterConfigValues((prev) => ({
       ...prev,
       [slug]: { ...(prev[slug] ?? importAdapterValues(

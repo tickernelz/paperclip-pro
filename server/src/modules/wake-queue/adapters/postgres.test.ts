@@ -97,7 +97,7 @@ describeEmbeddedPostgres("wake-queue postgres adapter", () => {
       name: input.name ?? "CodexCoder",
       role: "engineer",
       status: "active",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: {},
       runtimeConfig: { heartbeat: { wakeOnDemand: true, maxConcurrentRuns: 1 } },
       permissions: {},

@@ -1249,7 +1249,7 @@ describe("environment routes", () => {
         },
       },
     });
-    expect(res.body.adapters.find((row: any) => row.adapterType === "codex_local").sandboxProviders["secure-plugin"])
+    expect(res.body.adapters.find((row: any) => row.adapterType === "omp_local").sandboxProviders["secure-plugin"])
       .toBe("supported");
   });
 

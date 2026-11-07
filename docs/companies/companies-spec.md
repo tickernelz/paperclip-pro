@@ -448,7 +448,7 @@ schema: paperclip/v1
 agents:
   claudecoder:
     adapter:
-      type: claude_local
+      type: omp_local
       config:
         model: claude-opus-4-6
     inputs:

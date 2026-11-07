@@ -70,7 +70,6 @@ import {
   readPaperclipSkillSyncPreference,
   writePaperclipSkillSyncPreference,
 } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
-import { requireOpenCodeModelId } from "@tickernelz/paperclip-pro-adapter-opencode-local/server";
 import { findServerAdapter } from "../adapters/index.js";
 import { formatAttachmentSize, getMaxAttachmentBytes } from "../attachment-types.js";
 import { forbidden, notFound, unprocessable } from "../errors.js";
@@ -794,41 +793,7 @@ const RUNTIME_DEFAULT_RULES: Array<{ path: string[]; value: unknown }> = [
   { path: ["heartbeat", "maxConcurrentRuns"], value: AGENT_DEFAULT_MAX_CONCURRENT_RUNS },
 ];
 
-const ADAPTER_DEFAULT_RULES_BY_TYPE: Record<string, Array<{ path: string[]; value: unknown }>> = {
-  codex_local: [
-    { path: ["timeoutSec"], value: 0 },
-    { path: ["graceSec"], value: 15 },
-  ],
-  gemini_local: [
-    { path: ["timeoutSec"], value: 0 },
-    { path: ["graceSec"], value: 15 },
-  ],
-  kimi_local: [
-    { path: ["timeoutSec"], value: 0 },
-    { path: ["graceSec"], value: 15 },
-  ],
-  opencode_local: [
-    { path: ["timeoutSec"], value: 0 },
-    { path: ["graceSec"], value: 15 },
-  ],
-  cursor: [
-    { path: ["timeoutSec"], value: 0 },
-    { path: ["graceSec"], value: 15 },
-  ],
-  claude_local: [
-    { path: ["timeoutSec"], value: 0 },
-    { path: ["graceSec"], value: 15 },
-    { path: ["maxTurnsPerRun"], value: 1000 },
-  ],
-  openclaw_gateway: [
-    { path: ["timeoutSec"], value: 120 },
-    { path: ["waitTimeoutMs"], value: 120000 },
-    { path: ["sessionKeyStrategy"], value: "fixed" },
-    { path: ["sessionKey"], value: "paperclip" },
-    { path: ["role"], value: "operator" },
-    { path: ["scopes"], value: ["operator.admin"] },
-  ],
-};
+const ADAPTER_DEFAULT_RULES_BY_TYPE: Record<string, Array<{ path: string[]; value: unknown }>> = {};
 
 function isPlainRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -867,12 +832,6 @@ function asInteger(value: unknown): number | null {
 
 function hasOwn(record: Record<string, unknown>, key: string) {
   return Object.prototype.hasOwnProperty.call(record, key);
-}
-
-function readStringArray(value: unknown): string[] | null {
-  if (!Array.isArray(value)) return null;
-  const entries = value.filter((entry): entry is string => typeof entry === "string");
-  return entries.length === value.length ? entries : null;
 }
 
 function derivePortableCommentAuthorType(value: Record<string, unknown>) {
@@ -1184,32 +1143,11 @@ function normalizePortableIssueAttachments(
   return attachments;
 }
 
-function appendCodexImportArg(adapterConfig: Record<string, unknown>, arg: string) {
-  const extraArgs = readStringArray(adapterConfig.extraArgs);
-  if (extraArgs) {
-    if (!extraArgs.includes(arg)) adapterConfig.extraArgs = [...extraArgs, arg];
-    return;
-  }
-
-  const legacyArgs = readStringArray(adapterConfig.args);
-  if (legacyArgs && legacyArgs.length > 0) {
-    if (!legacyArgs.includes(arg)) adapterConfig.args = [...legacyArgs, arg];
-    return;
-  }
-
-  if (legacyArgs?.includes(arg)) return;
-  adapterConfig.extraArgs = [arg];
-}
-
 function applyImportAdapterRunDefaults(
   adapterType: string,
   adapterConfig: Record<string, unknown>,
 ) {
-  const next = { ...adapterConfig };
-  if (adapterType === "codex_local") {
-    appendCodexImportArg(next, "--skip-git-repo-check");
-  }
-  return next;
+  return { ...adapterConfig };
 }
 
 function normalizeRoutineTriggerExtension(value: unknown): CompanyPortabilityIssueRoutineTriggerManifestEntry | null {
@@ -3637,13 +3575,6 @@ export function companyPortabilityService(db: Db, storage?: StorageService) {
         );
       }
       return;
-    }
-    if (adapterType !== "opencode_local") return;
-    try {
-      requireOpenCodeModelId(adapterConfig.model);
-    } catch (err) {
-      const reason = err instanceof Error ? err.message : String(err);
-      throw unprocessable(`Invalid opencode_local adapterConfig: ${reason}`);
     }
   }
 

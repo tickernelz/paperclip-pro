@@ -1,6 +1,4 @@
 import { notifyDeliveryWork, DELIVERY_QUEUES } from "./delivery-work-notifications.js";
-import { readFile, readdir } from "node:fs/promises";
-import path from "node:path";
 import { and, asc, desc, eq, getTableColumns, gte, isNull, lte, ne, or } from "drizzle-orm";
 import type { Db } from "@tickernelz/paperclip-pro-db";
 import {
@@ -20,9 +18,6 @@ import {
   issues,
 } from "@tickernelz/paperclip-pro-db";
 import { readPaperclipSkillSyncPreference } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
-import { claudeConfigDir, parseClaudeStreamJson } from "@tickernelz/paperclip-pro-adapter-claude-local/server";
-import { codexHomeDir, parseCodexJsonl } from "@tickernelz/paperclip-pro-adapter-codex-local/server";
-import { parseOpenCodeJsonl } from "@tickernelz/paperclip-pro-adapter-opencode-local/server";
 import {
   DEFAULT_FEEDBACK_DATA_SHARING_PREFERENCE,
   DEFAULT_FEEDBACK_DATA_SHARING_TERMS_VERSION,
@@ -37,7 +32,6 @@ import {
   type FeedbackTraceTargetSummary,
   type FeedbackVoteValue,
 } from "@tickernelz/paperclip-pro-shared";
-import { resolveHomeAwarePath, resolvePaperclipInstanceRoot } from "../home-paths.js";
 import { notFound, unprocessable } from "../errors.js";
 import { agentInstructionsBundleMode, agentInstructionsService } from "./agent-instructions.js";
 import {
@@ -149,14 +143,6 @@ function truncateExcerpt(text: string, max = MAX_EXCERPT_CHARS) {
   return normalized.length <= max ? normalized : `${normalized.slice(0, max - 1)}...`;
 }
 
-function contentTypeForPath(filePath: string) {
-  const lower = filePath.toLowerCase();
-  if (lower.endsWith(".jsonl") || lower.endsWith(".ndjson")) return "application/x-ndjson";
-  if (lower.endsWith(".json")) return "application/json";
-  if (lower.endsWith(".md")) return "text/markdown; charset=utf-8";
-  return "text/plain; charset=utf-8";
-}
-
 function normalizeInstanceGeneralSettings(raw: unknown) {
   // Stored rows can carry retired keys (for example keyboardShortcuts) until
   // the settings row is rewritten. Strip them instead of failing closed, or a
@@ -254,70 +240,6 @@ function appendNote(notes: string[], note: string) {
   notes.push(note);
 }
 
-async function readTextFileIfPresent(
-  filePath: string | null,
-  state: ReturnType<typeof createFeedbackRedactionState>,
-  fieldPath: string,
-) {
-  if (!filePath) return null;
-  const raw = await readFile(filePath, "utf8").catch(() => null);
-  if (raw == null) return null;
-  return sanitizeFeedbackText(raw, state, fieldPath, MAX_TRACE_FILE_CHARS);
-}
-
-async function listChildFiles(dirPath: string) {
-  const entries = await readdir(dirPath, { withFileTypes: true }).catch(() => []);
-  return entries
-    .filter((entry) => entry.isFile())
-    .map((entry) => path.join(dirPath, entry.name))
-    .sort((left, right) => left.localeCompare(right));
-}
-
-async function listNestedFiles(dirPath: string, maxDepth = 4): Promise<string[]> {
-  async function walk(currentPath: string, depth: number): Promise<string[]> {
-    const entries = await readdir(currentPath, { withFileTypes: true }).catch(() => []);
-    const files = entries
-      .filter((entry) => entry.isFile())
-      .map((entry) => path.join(currentPath, entry.name))
-      .sort((left, right) => left.localeCompare(right));
-    if (depth >= maxDepth) return files;
-
-    const childDirs = entries
-      .filter((entry) => entry.isDirectory())
-      .map((entry) => path.join(currentPath, entry.name))
-      .sort((left, right) => left.localeCompare(right));
-    const nested = await Promise.all(childDirs.map((childDir) => walk(childDir, depth + 1)));
-    return [...files, ...nested.flat()];
-  }
-
-  return walk(dirPath, 0);
-}
-
-async function findMatchingFile(
-  rootDir: string,
-  matcher: (absolutePath: string, name: string) => boolean,
-  maxDepth = 5,
-): Promise<string | null> {
-  async function search(dirPath: string, depth: number): Promise<string | null> {
-    const entries = await readdir(dirPath, { withFileTypes: true }).catch(() => []);
-    for (const entry of entries) {
-      const absolutePath = path.join(dirPath, entry.name);
-      if (entry.isFile() && matcher(absolutePath, entry.name)) {
-        return absolutePath;
-      }
-    }
-    if (depth >= maxDepth) return null;
-    for (const entry of entries) {
-      if (!entry.isDirectory()) continue;
-      const found = await search(path.join(dirPath, entry.name), depth + 1);
-      if (found) return found;
-    }
-    return null;
-  }
-
-  return search(rootDir, 0);
-}
-
 async function readFullRunLog(run: {
   logStore: string | null;
   logRef: string | null;
@@ -341,25 +263,6 @@ async function readFullRunLog(run: {
   return combined || null;
 }
 
-function parseRunLogEntries(logText: string | null) {
-  if (!logText) return [];
-  const entries: Array<{ ts: string; stream: string; chunk: string }> = [];
-  for (const rawLine of logText.split(/\r?\n/)) {
-    const line = rawLine.trim();
-    if (!line) continue;
-    try {
-      const parsed = JSON.parse(line) as { ts?: unknown; stream?: unknown; chunk?: unknown };
-      const ts = asString(parsed.ts) ?? new Date(0).toISOString();
-      const stream = asString(parsed.stream) ?? "stdout";
-      const chunk = typeof parsed.chunk === "string" ? parsed.chunk : "";
-      entries.push({ ts, stream, chunk });
-    } catch {
-      // Keep malformed lines out of the normalized bundle but preserve the raw log file separately.
-    }
-  }
-  return entries;
-}
-
 function captureStatusFromFiles(files: FeedbackTraceBundleFile[]): FeedbackTraceBundleCaptureStatus {
   const sources = new Set(files.map((file) => file.source));
   if (sources.has("codex_session")) return "full";
@@ -379,367 +282,6 @@ function captureStatusFromFiles(files: FeedbackTraceBundleFile[]): FeedbackTrace
   );
   if (hasAdapterFiles) return "partial";
   return files.length > 0 ? "partial" : "unavailable";
-}
-
-async function buildCodexTraceFiles(input: {
-  companyId: string;
-  sessionId: string | null;
-  state: ReturnType<typeof createFeedbackRedactionState>;
-  notes: string[];
-}) {
-  const files: FeedbackTraceBundleFile[] = [];
-  if (!input.sessionId) {
-    appendNote(input.notes, "codex_session_id_missing");
-    return { files, raw: null as Record<string, unknown> | null, normalized: null as Record<string, unknown> | null };
-  }
-
-  const managedRoot = path.join(
-    resolvePaperclipInstanceRoot(),
-    "companies",
-    input.companyId,
-    "codex-home",
-    "sessions",
-  );
-  const sharedRoot = path.join(codexHomeDir(), "sessions");
-  const sessionFile =
-    await findMatchingFile(managedRoot, (_absolutePath, name) => name.includes(input.sessionId!), 6) ??
-    await findMatchingFile(sharedRoot, (_absolutePath, name) => name.includes(input.sessionId!), 6);
-
-  const sessionText = await readTextFileIfPresent(sessionFile, input.state, "bundle.rawAdapterTrace.codex.session");
-  if (!sessionText) {
-    appendNote(input.notes, "codex_session_file_missing");
-    return { files, raw: null as Record<string, unknown> | null, normalized: null as Record<string, unknown> | null };
-  }
-
-  files.push(makeBundleFile({
-    path: "adapter/codex/session.jsonl",
-    contentType: "application/x-ndjson",
-    source: "codex_session",
-    contents: sessionText,
-  }));
-
-  return {
-    files,
-    raw: {
-      adapterType: "codex_local",
-      sessionId: input.sessionId,
-      sessionFile: sessionFile ? path.basename(sessionFile) : null,
-    },
-    normalized: sanitizeFeedbackValue(
-      {
-        adapterType: "codex_local",
-        sessionId: input.sessionId,
-        summary: parseCodexJsonl(sessionText),
-      },
-      input.state,
-      "bundle.normalizedAdapterTrace.codex",
-      MAX_TRACE_FILE_CHARS,
-    ) as Record<string, unknown>,
-  };
-}
-
-async function buildClaudeTraceFiles(input: {
-  sessionId: string | null;
-  stdoutText: string;
-  state: ReturnType<typeof createFeedbackRedactionState>;
-  notes: string[];
-}) {
-  const files: FeedbackTraceBundleFile[] = [];
-  const sanitizedStdout = sanitizeFeedbackText(
-    input.stdoutText,
-    input.state,
-    "bundle.rawAdapterTrace.claude.stdout",
-    MAX_TRACE_FILE_CHARS,
-  );
-  if (sanitizedStdout.trim().length > 0) {
-    files.push(makeBundleFile({
-      path: "adapter/claude/stream-json.ndjson",
-      contentType: "application/x-ndjson",
-      source: "claude_stream_json",
-      contents: sanitizedStdout,
-    }));
-  }
-
-  const projectsRoot = path.join(claudeConfigDir(), "projects");
-  const projectSessionFile = input.sessionId
-    ? await findMatchingFile(projectsRoot, (_absolutePath, name) => name === `${input.sessionId}.jsonl`, 6)
-    : null;
-  const projectSessionText = await readTextFileIfPresent(
-    projectSessionFile,
-    input.state,
-    "bundle.rawAdapterTrace.claude.projectSession",
-  );
-  if (projectSessionText) {
-    files.push(makeBundleFile({
-      path: "adapter/claude/session.jsonl",
-      contentType: "application/x-ndjson",
-      source: "claude_project_session",
-      contents: projectSessionText,
-    }));
-  } else if (input.sessionId) {
-    appendNote(input.notes, "claude_project_session_missing");
-  }
-
-  const projectSessionArtifactsDir = projectSessionFile
-    ? path.join(path.dirname(projectSessionFile), input.sessionId ?? "")
-    : null;
-  const projectSessionArtifactFiles = projectSessionArtifactsDir
-    ? await listNestedFiles(projectSessionArtifactsDir, 4)
-    : [];
-  for (const filePath of projectSessionArtifactFiles) {
-    const relativePath = path.relative(projectSessionArtifactsDir!, filePath).split(path.sep).join("/");
-    const fileText = await readTextFileIfPresent(
-      filePath,
-      input.state,
-      `bundle.rawAdapterTrace.claude.projectArtifacts.${relativePath}`,
-    );
-    if (!fileText) continue;
-    files.push(makeBundleFile({
-      path: `adapter/claude/session/${relativePath}`,
-      contentType: contentTypeForPath(filePath),
-      source: "claude_project_artifact",
-      contents: fileText,
-    }));
-  }
-
-  const debugLogText = await readTextFileIfPresent(
-    input.sessionId ? path.join(claudeConfigDir(), "debug", `${input.sessionId}.txt`) : null,
-    input.state,
-    "bundle.rawAdapterTrace.claude.debugLog",
-  );
-  if (debugLogText) {
-    files.push(makeBundleFile({
-      path: "adapter/claude/debug.txt",
-      contentType: "text/plain; charset=utf-8",
-      source: "claude_debug_log",
-      contents: debugLogText,
-    }));
-  }
-
-  const taskDir = input.sessionId ? path.join(claudeConfigDir(), "tasks", input.sessionId) : null;
-  const taskFiles = taskDir ? await listChildFiles(taskDir) : [];
-  const metadataPieces: string[] = [];
-  for (const filePath of taskFiles) {
-    const fileText = await readTextFileIfPresent(
-      filePath,
-      input.state,
-      `bundle.rawAdapterTrace.claude.taskMetadata.${path.basename(filePath)}`,
-    );
-    if (!fileText) continue;
-    metadataPieces.push(`# ${path.basename(filePath)}\n${fileText}`);
-  }
-  if (metadataPieces.length > 0) {
-    files.push(makeBundleFile({
-      path: "adapter/claude/task-metadata.txt",
-      contentType: "text/plain; charset=utf-8",
-      source: "claude_task_metadata",
-      contents: `${metadataPieces.join("\n\n")}\n`,
-    }));
-  } else if (input.sessionId) {
-    appendNote(input.notes, "claude_task_metadata_missing");
-  }
-
-  if (files.length === 0) {
-    appendNote(input.notes, "claude_stream_trace_missing");
-  }
-
-  return {
-    files,
-    raw: {
-      adapterType: "claude_local",
-      sessionId: input.sessionId,
-      projectSessionFound: Boolean(projectSessionText),
-      projectArtifactsCount: projectSessionArtifactFiles.length,
-      debugLogFound: Boolean(debugLogText),
-      taskDirPresent: taskFiles.length > 0,
-    },
-    normalized: sanitizeFeedbackValue(
-      {
-        adapterType: "claude_local",
-        sessionId: input.sessionId,
-        summary: parseClaudeStreamJson(input.stdoutText),
-      },
-      input.state,
-      "bundle.normalizedAdapterTrace.claude",
-      MAX_TRACE_FILE_CHARS,
-    ) as Record<string, unknown>,
-  };
-}
-
-async function buildOpenCodeTraceFiles(input: {
-  sessionId: string | null;
-  stdoutText: string;
-  state: ReturnType<typeof createFeedbackRedactionState>;
-  notes: string[];
-}) {
-  const files: FeedbackTraceBundleFile[] = [];
-  if (!input.sessionId) {
-    appendNote(input.notes, "opencode_session_id_missing");
-    return {
-      files,
-      raw: null as Record<string, unknown> | null,
-      normalized: sanitizeFeedbackValue(
-        {
-          adapterType: "opencode_local",
-          summary: parseOpenCodeJsonl(input.stdoutText),
-        },
-        input.state,
-        "bundle.normalizedAdapterTrace.opencode",
-        MAX_TRACE_FILE_CHARS,
-      ) as Record<string, unknown>,
-    };
-  }
-
-  const opencodeRoot = resolveHomeAwarePath(
-    process.env.PAPERCLIP_OPENCODE_STORAGE_DIR ?? "~/.local/share/opencode",
-  );
-  const sessionRoot = path.join(opencodeRoot, "storage", "session");
-  const diffRoot = path.join(opencodeRoot, "storage", "session_diff");
-  const messageRoot = path.join(opencodeRoot, "storage", "message");
-  const partRoot = path.join(opencodeRoot, "storage", "part");
-  const todoRoot = path.join(opencodeRoot, "storage", "todo");
-  const projectRoot = path.join(opencodeRoot, "storage", "project");
-  const sessionFile = await findMatchingFile(
-    sessionRoot,
-    (_absolutePath, name) => name === `${input.sessionId}.json`,
-    6,
-  );
-  const diffFile = path.join(diffRoot, `${input.sessionId}.json`);
-
-  const sessionRaw = sessionFile ? await readFile(sessionFile, "utf8").catch(() => null) : null;
-  const sessionText =
-    sessionRaw == null
-      ? null
-      : sanitizeFeedbackText(sessionRaw, input.state, "bundle.rawAdapterTrace.opencode.session", MAX_TRACE_FILE_CHARS);
-  if (sessionText) {
-    files.push(makeBundleFile({
-      path: "adapter/opencode/session.json",
-      contentType: "application/json",
-      source: "opencode_session",
-      contents: sessionText,
-    }));
-  } else {
-    appendNote(input.notes, "opencode_session_file_missing");
-  }
-
-  const diffText = await readTextFileIfPresent(
-    diffFile,
-    input.state,
-    "bundle.rawAdapterTrace.opencode.sessionDiff",
-  );
-  if (diffText) {
-    files.push(makeBundleFile({
-      path: "adapter/opencode/session-diff.json",
-      contentType: "application/json",
-      source: "opencode_session_diff",
-      contents: diffText,
-    }));
-  }
-
-  const messageFiles = await listChildFiles(path.join(messageRoot, input.sessionId));
-  const messageIds: string[] = [];
-  for (const filePath of messageFiles) {
-    const messageText = await readTextFileIfPresent(
-      filePath,
-      input.state,
-      `bundle.rawAdapterTrace.opencode.messages.${path.basename(filePath)}`,
-    );
-    if (!messageText) continue;
-    messageIds.push(path.basename(filePath, path.extname(filePath)));
-    files.push(makeBundleFile({
-      path: `adapter/opencode/messages/${path.basename(filePath)}`,
-      contentType: "application/json",
-      source: "opencode_message",
-      contents: messageText,
-    }));
-  }
-  if (messageFiles.length === 0) {
-    appendNote(input.notes, "opencode_message_files_missing");
-  }
-
-  let partFilesCount = 0;
-  for (const messageId of messageIds) {
-    const partFiles = await listChildFiles(path.join(partRoot, messageId));
-    for (const filePath of partFiles) {
-      const partText = await readTextFileIfPresent(
-        filePath,
-        input.state,
-        `bundle.rawAdapterTrace.opencode.parts.${messageId}.${path.basename(filePath)}`,
-      );
-      if (!partText) continue;
-      partFilesCount += 1;
-      files.push(makeBundleFile({
-        path: `adapter/opencode/parts/${messageId}/${path.basename(filePath)}`,
-        contentType: "application/json",
-        source: "opencode_message_part",
-        contents: partText,
-      }));
-    }
-  }
-  if (messageIds.length > 0 && partFilesCount === 0) {
-    appendNote(input.notes, "opencode_message_parts_missing");
-  }
-
-  const parsedSession = (() => {
-    if (!sessionRaw) return null;
-    try {
-      return JSON.parse(sessionRaw) as Record<string, unknown>;
-    } catch {
-      return null;
-    }
-  })();
-  const projectId = asString(parsedSession?.projectID) ?? asString(parsedSession?.projectId);
-  const projectText = await readTextFileIfPresent(
-    projectId ? path.join(projectRoot, `${projectId}.json`) : null,
-    input.state,
-    "bundle.rawAdapterTrace.opencode.project",
-  );
-  if (projectText) {
-    files.push(makeBundleFile({
-      path: "adapter/opencode/project.json",
-      contentType: "application/json",
-      source: "opencode_project",
-      contents: projectText,
-    }));
-  }
-
-  const todoText = await readTextFileIfPresent(
-    path.join(todoRoot, `${input.sessionId}.json`),
-    input.state,
-    "bundle.rawAdapterTrace.opencode.todo",
-  );
-  if (todoText) {
-    files.push(makeBundleFile({
-      path: "adapter/opencode/todo.json",
-      contentType: "application/json",
-      source: "opencode_todo",
-      contents: todoText,
-    }));
-  }
-
-  return {
-    files,
-    raw: {
-      adapterType: "opencode_local",
-      sessionId: input.sessionId,
-      sessionFileFound: Boolean(sessionText),
-      sessionDiffFound: Boolean(diffText),
-      messageFilesCount: messageFiles.length,
-      partFilesCount,
-      projectFound: Boolean(projectText),
-      todoFound: Boolean(todoText),
-    },
-    normalized: sanitizeFeedbackValue(
-      {
-        adapterType: "opencode_local",
-        sessionId: input.sessionId,
-        summary: parseOpenCodeJsonl(input.stdoutText),
-      },
-      input.state,
-      "bundle.normalizedAdapterTrace.opencode",
-      MAX_TRACE_FILE_CHARS,
-    ) as Record<string, unknown>,
-  };
 }
 
 function truncateFailureReason(error: unknown) {
@@ -1477,8 +1019,8 @@ async function buildFeedbackTraceBundleFromRow(
   const sourceRunId = resolveSourceRunId(payloadSnapshot);
 
   let paperclipRun: Record<string, unknown> | null = null;
-  let rawAdapterTrace: Record<string, unknown> | null = null;
-  let normalizedAdapterTrace: Record<string, unknown> | null = null;
+  const rawAdapterTrace: Record<string, unknown> | null = null;
+  const normalizedAdapterTrace: Record<string, unknown> | null = null;
   let adapterType: string | null = null;
 
   if (!sourceRunId) {
@@ -1527,11 +1069,6 @@ async function buildFeedbackTraceBundleFromRow(
         .where(eq(heartbeatRunEvents.runId, run.id))
         .orderBy(asc(heartbeatRunEvents.seq));
       const logText = await readFullRunLog(run);
-      const logEntries = parseRunLogEntries(logText);
-      const stdoutText = logEntries
-        .filter((entry) => entry.stream === "stdout")
-        .map((entry) => entry.chunk)
-        .join("");
 
       paperclipRun = sanitizeFeedbackValue(
         {
@@ -1598,39 +1135,7 @@ async function buildFeedbackTraceBundleFromRow(
         appendNote(notes, "run_log_missing");
       }
 
-      if (run.adapterType === "codex_local") {
-        const adapter = await buildCodexTraceFiles({
-          companyId: row.companyId,
-          sessionId: run.sessionIdAfter ?? run.sessionIdBefore,
-          state,
-          notes,
-        });
-        files.push(...adapter.files);
-        rawAdapterTrace = adapter.raw;
-        normalizedAdapterTrace = adapter.normalized;
-      } else if (run.adapterType === "claude_local") {
-        const adapter = await buildClaudeTraceFiles({
-          sessionId: run.sessionIdAfter ?? run.sessionIdBefore,
-          stdoutText,
-          state,
-          notes,
-        });
-        files.push(...adapter.files);
-        rawAdapterTrace = adapter.raw;
-        normalizedAdapterTrace = adapter.normalized;
-      } else if (run.adapterType === "opencode_local") {
-        const adapter = await buildOpenCodeTraceFiles({
-          sessionId: run.sessionIdAfter ?? run.sessionIdBefore,
-          stdoutText,
-          state,
-          notes,
-        });
-        files.push(...adapter.files);
-        rawAdapterTrace = adapter.raw;
-        normalizedAdapterTrace = adapter.normalized;
-      } else {
-        appendNote(notes, "adapter_specific_trace_not_supported");
-      }
+      appendNote(notes, "adapter_specific_trace_not_supported");
     }
   }
 

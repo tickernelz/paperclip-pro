@@ -180,7 +180,7 @@ for (const journey of [
       });
       const [company] = await api("/companies");
       let [agent] = await api(`/companies/${company.id}/agents`);
-      expect(agent.adapterType).toBe("codex_local");
+      expect(agent.adapterType).toBe("omp_local");
       expect(await api(`/companies/${company.id}/issues`)).toEqual([]);
       expect(await api(`/companies/${company.id}/heartbeat-runs`)).toEqual([]);
       expect(

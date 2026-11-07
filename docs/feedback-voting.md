@@ -150,12 +150,6 @@ Open `full-traces/<issue>-<trace>/bundle.json` to see the expanded export metada
 
 Each entry in `bundle.json.files[]` includes the actual captured file payload under `contents`, not just a pathname. For text artifacts this is stored as UTF-8 text; binary artifacts use base64 plus an `encoding` marker.
 
-Built-in local adapters now export their native session artifacts more directly:
-
-- `codex_local`: `adapter/codex/session.jsonl`
-- `claude_local`: `adapter/claude/session.jsonl`, plus any `adapter/claude/session/...` sidecar files and `adapter/claude/debug.txt` when present
-- `opencode_local`: `adapter/opencode/session.json`, `adapter/opencode/messages/*.json`, and `adapter/opencode/parts/<messageId>/*.json`, with optional `project.json`, `todo.json`, and `session-diff.json`
-
 ## Sharing preferences
 
 The first time you vote, a consent dialog asks:

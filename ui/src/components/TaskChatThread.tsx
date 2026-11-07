@@ -587,10 +587,7 @@ export function TaskChatThread(props: TaskChatThreadProps) {
         (run.status === "failed" || run.status === "timed_out") &&
         run.execution?.phase === "recovery_needed" &&
         run.execution.cause === "legacy_execution_requires_reconciliation" &&
-        [
-          "claude_local", "codex_local", "cursor", "gemini_local", "opencode_local",
-          "pi_local", "grok_local", "kimi_local", "hermes_local",
-        ].includes(run.adapterType ?? "")
+        run.adapterType === "omp_local"
       ) return false;
       return [
         "working",

@@ -56,8 +56,7 @@ paperclip/
 │   ├── shared/                  # API types, constants, validators
 │   ├── adapter-utils/           # Adapter interfaces and helpers
 │   └── adapters/
-│       ├── claude-local/        # Claude Code adapter
-│       └── codex-local/         # OpenAI Codex adapter
+│       └── omp-local/           # OMP adapter
 │
 ├── skills/                      # Agent skills
 │   └── paperclip/               # Core Paperclip skill (heartbeat protocol)
@@ -87,7 +86,7 @@ Adapters are the bridge between Paperclip and agent runtimes. Each adapter is a 
 - **UI module** — stdout parser for the run viewer, config form fields for agent creation
 - **CLI module** — terminal formatter for `paperclip-pro run --watch`
 
-Built-in adapters: `claude_local`, `codex_local`, `process`, `http`. You can create custom adapters for any runtime.
+Built-in adapters: `omp_local`, `paperclip_runner`, `process`, `http`. You can create custom adapters for any runtime.
 
 ## Key Design Decisions
 

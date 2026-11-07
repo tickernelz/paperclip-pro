@@ -1,7 +1,8 @@
 import type { PaperclipQuestion, PaperclipQuestionResponse, PaperclipQuestionSet, TranscriptEntry } from "@tickernelz/paperclip-pro-adapter-utils";
 import type { UIAdapterModule } from "../types";
-import { parseCodexStdoutLine, buildPaperclipRunnerConfig } from "@tickernelz/paperclip-pro-adapter-codex-local/ui";
-import { CodexLocalConfigFields } from "../codex-local/config-fields";
+import { parseCodexStdoutLine } from "./parse-stdout";
+import { buildPaperclipRunnerConfig } from "./build-config";
+import { CodexLocalConfigFields } from "./config-fields";
 import { isRunLogOnlyProviderEvent } from "@/components/transcript/run-log-only-events";
 
 type JsonRecord = Record<string, unknown>;

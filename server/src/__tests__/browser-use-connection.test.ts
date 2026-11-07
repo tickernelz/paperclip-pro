@@ -392,11 +392,9 @@ const actor = { actorType: "user" as const, actorId: "browser-reviewer" };
       expect(markdown).toContain("browser_start");
       expect(markdown).toContain(f.connection.connectionId);
       expect(markdown).not.toContain("bu_fixture_secret");
-      for (const adapterType of ["paperclip_runner", "codex_local", "claude_local", "kimi_local"]) {
-        const delivery = await prepareConnectorSkillDelivery({ ...config, engine: "cli" }, adapterType);
-        expect(delivery.config.paperclipRuntimeSkills).toEqual([skill]);
-      }
-      const sharedHome = await prepareConnectorSkillDelivery(config, "cursor_local");
+      const delivery = await prepareConnectorSkillDelivery({ ...config, engine: "cli" }, "paperclip_runner");
+      expect(delivery.config.paperclipRuntimeSkills).toEqual([skill]);
+      const sharedHome = await prepareConnectorSkillDelivery(config, "omp_local");
       expect(sharedHome.config.paperclipRuntimeSkills).toEqual([]);
       expect(sharedHome.instructions).toContain("name: browser-use-cloud");
       expect(sharedHome.config.paperclipConnectorSkillDigest).toBe(config.paperclipConnectorSkillDigest);
@@ -405,7 +403,7 @@ const actor = { actorType: "user" as const, actorId: "browser-reviewer" };
       const revoked = await applyConnectorSkills(config, config.paperclipRuntimeSkills, []);
       expect(revoked.paperclipRuntimeSkills).toEqual([]);
       expect(revoked.paperclipConnectorSkillDigest).toBeNull();
-      expect((await prepareConnectorSkillDelivery(revoked, "cursor_local")).instructions).toBe("");
+      expect((await prepareConnectorSkillDelivery(revoked, "omp_local")).instructions).toBe("");
     });
     it("withholds Cloud instructions when connection tools are disabled", async () => {
       const f = await fixture();

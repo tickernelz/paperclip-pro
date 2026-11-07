@@ -56,7 +56,6 @@ import { registerConnectionIntentCommands } from "./commands/client/connections.
 import {
   assertTestDriveDatabaseIsolation,
   prepareTestDriveEnvironment,
-  redactTestDriveArgv,
   registerTestDriveCommand,
   type TestDriveOptions,
 } from "./commands/test-drive.js";
@@ -107,10 +106,8 @@ program.hook("preAction", async (_thisCommand, actionCommand) => {
   const options = actionCommand.optsWithGlobals() as DataDirOptionLike & TestDriveOptions;
   let dataDirOptions: DataDirOptionLike = options;
   if (actionCommand.name() === "test-drive") {
-    redactTestDriveArgv(options.apiKey);
     const prepared = await prepareTestDriveEnvironment({
       dataDir: options.dataDir,
-      apiKeyEnv: options.apiKeyEnv,
     });
     dataDirOptions = { ...options, dataDir: prepared.dataDir };
   }

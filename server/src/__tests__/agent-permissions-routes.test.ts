@@ -1,7 +1,7 @@
 import express from "express";
 import request from "supertest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { DEFAULT_OPENCODE_LOCAL_MODEL } from "@tickernelz/paperclip-pro-adapter-opencode-local";
+import { DEFAULT_OPENCODE_LOCAL_MODEL } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/opencode";
 import { LOW_TRUST_REVIEW_PRESET } from "@tickernelz/paperclip-pro-shared";
 import { hoistModuleGraph } from "./helpers/hoist-module-graph.js";
 
@@ -124,8 +124,8 @@ const mockInstanceSettingsService = vi.hoisted(() => ({
 }));
 
 function registerModuleMocks() {
-  vi.doMock("@tickernelz/paperclip-pro-adapter-opencode-local/server", async () => {
-    const actual = await vi.importActual<typeof import("@tickernelz/paperclip-pro-adapter-opencode-local/server")>("@tickernelz/paperclip-pro-adapter-opencode-local/server");
+  vi.doMock("../services/ai-providers/opencode/models.js", async () => {
+    const actual = await vi.importActual<typeof import("../services/ai-providers/opencode/models.js")>("../services/ai-providers/opencode/models.js");
     return {
       ...actual,
       ensureOpenCodeModelConfiguredAndAvailable: mockEnsureOpenCodeModelConfiguredAndAvailable,
@@ -950,7 +950,7 @@ describe("agent permission routes", () => {
   });
 
   it("blocks an agent from switching a peer onto the process adapter", async () => {
-    mockAgentService.getById.mockResolvedValue({ ...baseAgent, adapterType: "codex_local" });
+    mockAgentService.getById.mockResolvedValue({ ...baseAgent, adapterType: "omp_local" });
     const app = await createApp({
       type: "agent",
       agentId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
@@ -968,14 +968,13 @@ describe("agent permission routes", () => {
   });
 
   it.each([
-    ["claude_local", { engine: "cli", command: "/tmp/untrusted" }],
-    ["codex_local", { args: ["-c", "id"] }],
-    ["cursor_local", { env: { PATH: "/tmp" } }],
-    ["hermes_local", { hermesCommand: "/tmp/untrusted" }],
-    ["gemini_local", { cwd: "/tmp" }],
-    ["opencode_local", { filesystemSandboxCommand: "/tmp/untrusted" }],
-  ])("blocks agent-authenticated host settings for %s", async (adapterType, adapterConfig) => {
-    mockAgentService.getById.mockResolvedValue({ ...baseAgent, adapterType });
+    ["command", { command: "/tmp/untrusted" }],
+    ["args", { args: ["-c", "id"] }],
+    ["env", { env: { PATH: "/tmp" } }],
+    ["cwd", { cwd: "/tmp" }],
+    ["filesystemSandboxCommand", { filesystemSandboxCommand: "/tmp/untrusted" }],
+  ])("blocks agent-authenticated omp_local host setting %s", async (_key, adapterConfig) => {
+    mockAgentService.getById.mockResolvedValue({ ...baseAgent, adapterType: "omp_local" });
     const app = await createApp({
       type: "agent",
       agentId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
@@ -993,22 +992,11 @@ describe("agent permission routes", () => {
   });
 
   it("allows an agent to update a peer's local model without host settings", async () => {
-    mockAgentService.getById.mockResolvedValue({ ...baseAgent, adapterType: "claude_local" });
+    mockAgentService.getById.mockResolvedValue({ ...baseAgent, adapterType: "omp_local" });
     const app = await createApp({ type: "agent", agentId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", companyId, source: "agent_key", runId: "run-1" });
     const res = await requestApp(app, (baseUrl) => request(baseUrl)
       .patch(`/api/agents/${agentId}`)
       .send({ adapterConfig: { model: "claude-sonnet-4-5" } }));
-
-    expect(res.status, JSON.stringify(res.body)).toBe(200);
-    expect(mockAgentService.update).toHaveBeenCalledOnce();
-  });
-
-  it("allows a provider credential reference without allowing arbitrary environment variables", async () => {
-    mockAgentService.getById.mockResolvedValue({ ...baseAgent, adapterType: "claude_local" });
-    const app = await createApp({ type: "agent", agentId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", companyId, source: "agent_key", runId: "run-1" });
-    const res = await requestApp(app, (baseUrl) => request(baseUrl)
-      .patch(`/api/agents/${agentId}`)
-      .send({ adapterConfig: { env: { ANTHROPIC_API_KEY: { type: "secret_ref", secretId: "33333333-3333-4333-8333-333333333333" } } } }));
 
     expect(res.status, JSON.stringify(res.body)).toBe(200);
     expect(mockAgentService.update).toHaveBeenCalledOnce();
@@ -1023,7 +1011,7 @@ describe("agent permission routes", () => {
     const app = await createApp({ type: "agent", agentId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", companyId, source: "agent_key", runId: "run-1" });
     const res = await requestApp(app, (baseUrl) => request(baseUrl)
       .patch(`/api/agents/${agentId}`)
-      .send({ adapterType: "claude_local", adapterConfig: { engine: "cli" } }));
+      .send({ adapterType: "omp_local", adapterConfig: { engine: "cli" } }));
 
     expect(res.status).toBe(403);
     expect(res.body.error).toContain("host-executed local adapter settings");
@@ -1051,7 +1039,7 @@ describe("agent permission routes", () => {
     const app = await createApp({ type: "agent", agentId, companyId, source: "agent_key", runId: "run-1" });
     const res = await requestApp(app, (baseUrl) => request(baseUrl)
       .post(path)
-      .send({ name: "Local peer", role: "engineer", adapterType: "claude_local", adapterConfig: { engine: "cli", command: "/tmp/untrusted" } }));
+      .send({ name: "Local peer", role: "engineer", adapterType: "omp_local", adapterConfig: { engine: "cli", command: "/tmp/untrusted" } }));
 
     expect(res.status).toBe(403);
     expect(res.body.error).toContain("host-executed local adapter settings");
@@ -1076,7 +1064,7 @@ describe("agent permission routes", () => {
     const revisionId = "33333333-3333-4333-8333-333333333333";
     mockAgentService.getConfigRevision.mockResolvedValue({
       id: revisionId,
-      afterConfig: { adapterType: "claude_local", adapterConfig: { engine: "cli", command: "/tmp/untrusted" }, runtimeConfig: {} },
+      afterConfig: { adapterType: "omp_local", adapterConfig: { engine: "cli", command: "/tmp/untrusted" }, runtimeConfig: {} },
     });
     const app = await createApp({ type: "agent", agentId, companyId, source: "agent_key", runId: "run-1" });
     const res = await requestApp(app, (baseUrl) => request(baseUrl)
@@ -1094,7 +1082,7 @@ describe("agent permission routes", () => {
       mockAgentService.getConfigRevision.mockResolvedValue({
         id: revisionId,
         afterConfig: {
-          adapterType: "codex_local",
+          adapterType: "omp_local",
           adapterConfig: { workspaceStrategy: { type: "git_worktree", [commandKey]: "sh -c id" } },
           runtimeConfig: {},
         },
@@ -1119,11 +1107,11 @@ describe("agent permission routes", () => {
     const revisionId = "33333333-3333-4333-8333-333333333333";
     mockAgentService.getConfigRevision.mockResolvedValue({
       id: revisionId,
-      afterConfig: { adapterType: "codex_local", adapterConfig: {}, runtimeConfig: {} },
+      afterConfig: { adapterType: "omp_local", adapterConfig: {}, runtimeConfig: {} },
     });
     mockAgentService.rollbackConfigRevision.mockResolvedValue({
       ...baseAgent,
-      adapterType: "codex_local",
+      adapterType: "omp_local",
     });
     const app = await createApp({
       type: "agent",
@@ -1196,7 +1184,7 @@ describe("agent permission routes", () => {
       .send({
         name: "Injected",
         role: "engineer",
-        adapterType: "codex_local",
+        adapterType: "omp_local",
         adapterConfig: {
           instructionsRootPath: "/etc",
           instructionsEntryFile: "passwd",
@@ -1370,7 +1358,7 @@ describe("agent permission routes", () => {
       .send({
         name: "Builder",
         role: "engineer",
-        adapterType: "codex_local",
+        adapterType: "omp_local",
         adapterConfig: {},
         runtimeConfig: {
           heartbeat: {
@@ -1395,80 +1383,6 @@ describe("agent permission routes", () => {
     );
   });
 
-  it("seeds opencode agent creation with the static default model without live discovery", async () => {
-    mockEnsureOpenCodeModelConfiguredAndAvailable.mockRejectedValue(
-      new Error("`opencode models` should not be called during creation"),
-    );
-
-    const app = await createApp({
-      type: "board",
-      userId: "board-user",
-      source: "local_implicit",
-      isInstanceAdmin: true,
-      companyIds: [companyId],
-    });
-
-    const res = await requestApp(app, (baseUrl) => request(baseUrl)
-      .post(`/api/companies/${companyId}/agents`)
-      .send({
-        name: "OpenCode Builder",
-        role: "engineer",
-        adapterType: "opencode_local",
-        adapterConfig: {},
-      }));
-
-    expect(res.status, JSON.stringify(res.body)).toBe(201);
-    expect(mockEnsureOpenCodeModelConfiguredAndAvailable).not.toHaveBeenCalled();
-    expect(mockAgentService.create).toHaveBeenCalledWith(
-      companyId,
-      expect.objectContaining({
-        adapterType: "opencode_local",
-        adapterConfig: expect.objectContaining({
-          model: DEFAULT_OPENCODE_LOCAL_MODEL,
-        }),
-      }),
-      { createdByUserId: "board-user", responsibleUserId: "board-user", claudeLogin: { storedSessionId: null, ownerUserId: "board-user", applyExistingWithoutClaim: false } },
-    );
-  });
-
-  it("accepts manual opencode provider/model values without host-side discovery", async () => {
-    mockEnsureOpenCodeModelConfiguredAndAvailable.mockRejectedValue(
-      new Error("`opencode models` should not be called during creation"),
-    );
-
-    const app = await createApp({
-      type: "board",
-      userId: "board-user",
-      source: "local_implicit",
-      isInstanceAdmin: true,
-      companyIds: [companyId],
-    });
-
-    const res = await requestApp(app, (baseUrl) => request(baseUrl)
-      .post(`/api/companies/${companyId}/agents`)
-      .send({
-        name: "OpenCode Builder",
-        role: "engineer",
-        adapterType: "opencode_local",
-        adapterConfig: {
-          model: "anthropic/claude-sonnet-4-5",
-        },
-      }));
-
-    expect(res.status, JSON.stringify(res.body)).toBe(201);
-    expect(mockEnsureOpenCodeModelConfiguredAndAvailable).not.toHaveBeenCalled();
-    expect(mockAgentService.create).toHaveBeenCalledWith(
-      companyId,
-      expect.objectContaining({
-        adapterType: "opencode_local",
-        adapterConfig: expect.objectContaining({
-          model: "anthropic/claude-sonnet-4-5",
-        }),
-      }),
-      { createdByUserId: "board-user", responsibleUserId: "board-user", claudeLogin: { storedSessionId: null, ownerUserId: "board-user", applyExistingWithoutClaim: false } },
-    );
-  });
-
   it("normalizes hire requests to disable timer heartbeats by default", async () => {
     const app = await createApp({
       type: "board",
@@ -1483,7 +1397,7 @@ describe("agent permission routes", () => {
       .send({
         name: "Builder",
         role: "engineer",
-        adapterType: "codex_local",
+        adapterType: "omp_local",
         adapterConfig: {},
         runtimeConfig: {
           heartbeat: {
@@ -1753,12 +1667,7 @@ describe("agent permission routes", () => {
   });
 
   const sshCapableAdapterCases = [
-    { adapterType: "codex_local", name: "Codex Builder", adapterConfig: {} },
-    { adapterType: "claude_local", name: "Claude Builder", adapterConfig: {} },
-    { adapterType: "gemini_local", name: "Gemini Builder", adapterConfig: {} },
-    { adapterType: "opencode_local", name: "OpenCode Builder", adapterConfig: { model: "opencode/gpt-5-nano" } },
-    { adapterType: "cursor", name: "Cursor Builder", adapterConfig: {} },
-    { adapterType: "pi_local", name: "Pi Builder", adapterConfig: { model: "openai/gpt-5.4-mini" } },
+    { adapterType: "omp_local", name: "OMP Builder", adapterConfig: {} },
   ];
 
   for (const adapterCase of sshCapableAdapterCases) {
@@ -1892,7 +1801,7 @@ describe("agent permission routes", () => {
     });
     mockAgentService.getById.mockResolvedValue({
       ...baseAgent,
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       defaultEnvironmentId: environmentId,
     });
 

@@ -5,13 +5,11 @@ import path from "node:path";
 import { promisify } from "node:util";
 import { describe, expect, it, vi } from "vitest";
 import type { agents } from "@tickernelz/paperclip-pro-db";
-import { sessionCodec as codexSessionCodec } from "@tickernelz/paperclip-pro-adapter-codex-local/server";
+import { sessionCodec as codexSessionCodec } from "../services/ai-providers/codex/session-codec.js";
 import { resolveDefaultAgentWorkspaceDir } from "../home-paths.js";
 import {
   applyPersistedExecutionWorkspaceConfig,
-  assertGitSensitiveAdapterWorkspaceValid,
   assertGitWorktreeBaseWorkspaceReady,
-  assertPushCapabilityCheckoutValid,
   buildExplicitResumeSessionOverride,
   buildEffectiveRunSessionConfigMetadata,
   buildEffectiveRunWorkspaceConfigMetadata,
@@ -34,7 +32,6 @@ import {
   resolveNextSessionState,
   resolveTaskSessionConfigFreshness,
   isWorkspaceSyncConflictFailure,
-  requiresPushCapabilityPreflight,
   resolveWorkspaceAfterLowTrustPreflight,
   resolveRuntimeSessionParamsForWorkspace,
   shouldDeferFollowupWakeForSameIssue,
@@ -70,68 +67,6 @@ function buildResolvedWorkspace(overrides: Partial<ResolvedWorkspaceForRun> = {}
   };
 }
 
-type WorkspaceValidationInput = Parameters<typeof assertGitSensitiveAdapterWorkspaceValid>[0];
-
-function buildWorkspaceValidationInput(
-  overrides: Partial<WorkspaceValidationInput> = {},
-): WorkspaceValidationInput {
-  return {
-    adapterType: "codex_local",
-    agentId: "agent-1",
-    issue: {
-      id: "issue-1",
-      identifier: "PAP-1",
-      projectId: "project-1",
-      projectWorkspaceId: "workspace-1",
-    },
-    resolvedWorkspace: buildResolvedWorkspace(),
-    executionWorkspace: {
-      baseCwd: "/tmp/project",
-      source: "project_primary",
-      projectId: "project-1",
-      workspaceId: "workspace-1",
-      repoUrl: null,
-      repoRef: null,
-      strategy: "project_primary",
-      cwd: "/tmp/project",
-      branchName: null,
-      worktreePath: null,
-      warnings: [],
-      created: false,
-      baseRefSha: null,
-    },
-    persistedExecutionWorkspace: {
-      id: "execution-workspace-1",
-      companyId: "company-1",
-      projectId: "project-1",
-      projectWorkspaceId: "workspace-1",
-      sourceIssueId: "issue-1",
-      mode: "project_workspace",
-      strategyType: "project_primary",
-      name: "Primary workspace",
-      status: "active",
-      cwd: "/tmp/project",
-      repoUrl: null,
-      baseRef: null,
-      branchName: null,
-      providerType: "local_path",
-      providerRef: null,
-      derivedFromExecutionWorkspaceId: null,
-      lastUsedAt: new Date("2026-06-06T00:00:00.000Z"),
-      openedAt: new Date("2026-06-06T00:00:00.000Z"),
-      closedAt: null,
-      cleanupEligibleAt: null,
-      cleanupReason: null,
-      config: null,
-      metadata: null,
-      createdAt: new Date("2026-06-06T00:00:00.000Z"),
-      updatedAt: new Date("2026-06-06T00:00:00.000Z"),
-    },
-    executionTarget: { kind: "local" },
-    ...overrides,
-  };
-}
-
 async function runGit(cwd: string, args: string[]) {
   await execFile("git", args, { cwd });
 }
@@ -143,24 +78,6 @@ async function createGitCheckout(options: { withRemote: boolean }) {
     await runGit(root, ["remote", "add", "origin", "https://github.com/example/repo.git"]);
   }
   return root;
-}
-
-async function expectWorkspaceValidationFailure(
-  input: WorkspaceValidationInput,
-  reason: string,
-  message: string,
-) {
-  await expect(assertGitSensitiveAdapterWorkspaceValid(input)).rejects.toMatchObject({
-    code: "workspace_validation_failed",
-    message: expect.stringContaining(message),
-    resultJson: {
-      workspaceValidation: expect.objectContaining({
-        reason,
-        adapterType: input.adapterType,
-        issueId: input.issue?.id,
-      }),
-    },
-  });
 }
 
 function buildAgent(adapterType: string, runtimeConfig: Record<string, unknown> = {}) {
@@ -188,31 +105,6 @@ function buildAgent(adapterType: string, runtimeConfig: Record<string, unknown> 
     updatedAt: new Date(),
   } as unknown as typeof agents.$inferSelect;
 }
-
-const hermesSessionCodec = {
-  deserialize(raw: unknown) {
-    if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return null;
-    const record = raw as Record<string, unknown>;
-    const sessionId = typeof record.sessionId === "string" && record.sessionId.trim() ? record.sessionId.trim() : null;
-    return sessionId ? { sessionId } : null;
-  },
-  serialize(params: Record<string, unknown> | null) {
-    if (!params) return null;
-    const sessionId = typeof params.sessionId === "string" && params.sessionId.trim() ? params.sessionId.trim() : null;
-    return sessionId ? { sessionId } : null;
-  },
-  getDisplayId(params: Record<string, unknown> | null) {
-    return typeof params?.sessionId === "string" && params.sessionId.trim() ? params.sessionId.trim() : null;
-  },
-};
-
-const truncatingHermesSessionCodec = {
-  ...hermesSessionCodec,
-  getDisplayId(params: Record<string, unknown> | null) {
-    const sessionId = hermesSessionCodec.getDisplayId(params);
-    return sessionId ? sessionId.slice(0, 16) : null;
-  },
-};
 
 function lowTrustResolution(): TrustPresetResolution {
   return {
@@ -249,297 +141,6 @@ function buildIssueAncestryDb(rows: Array<{ id: string; companyId: string; paren
     }),
   };
 }
-
-describe("assertGitSensitiveAdapterWorkspaceValid", () => {
-  it("rejects a project-workspace-linked issue that is missing its project id before adapter launch", async () => {
-    await expectWorkspaceValidationFailure(
-      buildWorkspaceValidationInput({
-        issue: {
-          id: "issue-1",
-          identifier: "PAP-1",
-          projectId: null,
-          projectWorkspaceId: "workspace-1",
-        },
-      }),
-      "missing_project_id",
-      "linked to a project workspace but has no project id",
-    );
-  });
-
-  it("rejects a git-sensitive local adapter when effective cwd differs from the persisted workspace cwd", async () => {
-    const input = buildWorkspaceValidationInput();
-
-    await expectWorkspaceValidationFailure(
-      buildWorkspaceValidationInput({
-        executionWorkspace: {
-          ...input.executionWorkspace,
-          cwd: "/tmp/agent-fallback",
-        },
-      }),
-      "persisted_cwd_mismatch",
-      'resolved adapter cwd "/tmp/agent-fallback"',
-    );
-  });
-
-  it("rejects a workspace-linked issue when no execution workspace was persisted", async () => {
-    await expectWorkspaceValidationFailure(
-      buildWorkspaceValidationInput({
-        persistedExecutionWorkspace: null,
-      }),
-      "missing_persisted_execution_workspace",
-      "requires a project execution workspace",
-    );
-  });
-
-  it("rejects a workspace-linked issue when no effective adapter cwd was resolved", async () => {
-    const input = buildWorkspaceValidationInput();
-
-    await expectWorkspaceValidationFailure(
-      buildWorkspaceValidationInput({
-        executionWorkspace: {
-          ...input.executionWorkspace,
-          cwd: null,
-        },
-      }),
-      "missing_effective_cwd",
-      "no adapter cwd was resolved",
-    );
-  });
-
-  it("rejects a persisted execution workspace linked to a different project workspace", async () => {
-    const input = buildWorkspaceValidationInput();
-
-    await expectWorkspaceValidationFailure(
-      buildWorkspaceValidationInput({
-        persistedExecutionWorkspace: {
-          ...input.persistedExecutionWorkspace!,
-          projectWorkspaceId: "workspace-other",
-        },
-      }),
-      "project_workspace_mismatch",
-      'expected project workspace "workspace-1"',
-    );
-  });
-
-  it("rejects a persisted execution workspace missing its project workspace id", async () => {
-    const input = buildWorkspaceValidationInput();
-
-    await expectWorkspaceValidationFailure(
-      buildWorkspaceValidationInput({
-        persistedExecutionWorkspace: {
-          ...input.persistedExecutionWorkspace!,
-          projectWorkspaceId: null,
-        },
-      }),
-      "persisted_workspace_missing_project_workspace_id",
-      "has no project workspace id",
-    );
-  });
-
-  it("rejects a workspace-linked issue that would launch from the agent fallback cwd", async () => {
-    const input = buildWorkspaceValidationInput();
-    const fallbackCwd = resolveDefaultAgentWorkspaceDir("agent-1");
-
-    await expectWorkspaceValidationFailure(
-      buildWorkspaceValidationInput({
-        executionWorkspace: {
-          ...input.executionWorkspace,
-          cwd: fallbackCwd,
-        },
-        persistedExecutionWorkspace: {
-          ...input.persistedExecutionWorkspace!,
-          cwd: fallbackCwd,
-        },
-      }),
-      "fallback_agent_home_cwd",
-      "would launch from agent fallback cwd",
-    );
-  });
-
-  it("rejects a git worktree persisted workspace when cwd differs from providerRef", async () => {
-    const input = buildWorkspaceValidationInput();
-
-    await expectWorkspaceValidationFailure(
-      buildWorkspaceValidationInput({
-        executionWorkspace: {
-          ...input.executionWorkspace,
-          strategy: "git_worktree",
-          cwd: "/tmp/worktree-current",
-        },
-        persistedExecutionWorkspace: {
-          ...input.persistedExecutionWorkspace!,
-          strategyType: "git_worktree",
-          cwd: "/tmp/worktree-current",
-          providerRef: "/tmp/worktree-expected",
-        },
-      }),
-      "git_worktree_provider_ref_mismatch",
-      'expected git worktree "/tmp/worktree-expected"',
-    );
-  });
-
-  it("rejects a git worktree persisted workspace when the checked-out branch differs from the recorded branch", async () => {
-    const repoRoot = await createGitCheckout({ withRemote: false });
-    const worktreeParent = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-branch-worktree-"));
-    const worktreePath = path.join(worktreeParent, "workspace");
-    const recordedBranch = "PAP-1-recorded-branch";
-    const actualBranch = "PAP-1-push-pr-head";
-    try {
-      await runGit(repoRoot, ["config", "user.email", "test@example.com"]);
-      await runGit(repoRoot, ["config", "user.name", "Paperclip Test"]);
-      await fs.writeFile(path.join(repoRoot, "README.md"), "initial\n", "utf8");
-      await runGit(repoRoot, ["add", "README.md"]);
-      await runGit(repoRoot, ["commit", "-m", "Initial commit"]);
-      await runGit(repoRoot, ["worktree", "add", "-b", recordedBranch, worktreePath, "HEAD"]);
-      await runGit(worktreePath, ["checkout", "-b", actualBranch]);
-
-      const input = buildWorkspaceValidationInput();
-      await expectWorkspaceValidationFailure(
-        buildWorkspaceValidationInput({
-          resolvedWorkspace: buildResolvedWorkspace({ cwd: worktreePath }),
-          executionWorkspace: {
-            ...input.executionWorkspace,
-            strategy: "git_worktree",
-            baseCwd: repoRoot,
-            cwd: worktreePath,
-            branchName: recordedBranch,
-            worktreePath,
-          },
-          persistedExecutionWorkspace: {
-            ...input.persistedExecutionWorkspace!,
-            strategyType: "git_worktree",
-            cwd: worktreePath,
-            providerType: "git_worktree",
-            providerRef: worktreePath,
-            branchName: recordedBranch,
-          },
-        }),
-        "git_worktree_branch_mismatch",
-        `expected git worktree branch "${recordedBranch}"`,
-      );
-    } finally {
-      await fs.rm(repoRoot, { recursive: true, force: true });
-      await fs.rm(worktreeParent, { recursive: true, force: true });
-    }
-  });
-
-  it("rejects a git worktree execution workspace whose adapter cwd has no git metadata", async () => {
-    const input = buildWorkspaceValidationInput();
-    const cwd = "/tmp/paperclip-workspace-without-git-metadata";
-
-    await expectWorkspaceValidationFailure(
-      buildWorkspaceValidationInput({
-        resolvedWorkspace: buildResolvedWorkspace({ cwd }),
-        executionWorkspace: {
-          ...input.executionWorkspace,
-          strategy: "git_worktree",
-          baseCwd: cwd,
-          cwd,
-        },
-        persistedExecutionWorkspace: {
-          ...input.persistedExecutionWorkspace!,
-          cwd,
-        },
-      }),
-      "missing_git_metadata",
-      "has no .git metadata",
-    );
-  });
-
-  it("rejects a git_repo project workspace whose adapter cwd has no git metadata", async () => {
-    const input = buildWorkspaceValidationInput();
-    const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-git-repo-no-git-"));
-
-    try {
-      await expectWorkspaceValidationFailure(
-        buildWorkspaceValidationInput({
-          projectWorkspaceSourceType: "git_repo",
-          resolvedWorkspace: buildResolvedWorkspace({ cwd }),
-          executionWorkspace: {
-            ...input.executionWorkspace,
-            baseCwd: cwd,
-            cwd,
-          },
-          persistedExecutionWorkspace: {
-            ...input.persistedExecutionWorkspace!,
-            cwd,
-          },
-        }),
-        "missing_git_metadata",
-        "has no .git metadata",
-      );
-    } finally {
-      await fs.rm(cwd, { recursive: true, force: true });
-    }
-  });
-
-  it.each(["local_path", "non_git_path"])(
-    "accepts a %s project workspace whose adapter cwd has no git metadata",
-    async (projectWorkspaceSourceType) => {
-      const input = buildWorkspaceValidationInput();
-      const cwd = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-plain-folder-"));
-
-      try {
-        await expect(
-          assertGitSensitiveAdapterWorkspaceValid(
-            buildWorkspaceValidationInput({
-              projectWorkspaceSourceType,
-              resolvedWorkspace: buildResolvedWorkspace({ cwd }),
-              executionWorkspace: {
-                ...input.executionWorkspace,
-                baseCwd: cwd,
-                cwd,
-              },
-              persistedExecutionWorkspace: {
-                ...input.persistedExecutionWorkspace!,
-                cwd,
-              },
-            }),
-          ),
-        ).resolves.toBeUndefined();
-      } finally {
-        await fs.rm(cwd, { recursive: true, force: true });
-      }
-    },
-  );
-
-  it("still rejects a non_git_path project workspace that would launch from the agent fallback cwd", async () => {
-    const input = buildWorkspaceValidationInput();
-    const fallbackCwd = resolveDefaultAgentWorkspaceDir("agent-1");
-
-    await expectWorkspaceValidationFailure(
-      buildWorkspaceValidationInput({
-        projectWorkspaceSourceType: "non_git_path",
-        executionWorkspace: {
-          ...input.executionWorkspace,
-          cwd: fallbackCwd,
-        },
-        persistedExecutionWorkspace: {
-          ...input.persistedExecutionWorkspace!,
-          cwd: fallbackCwd,
-        },
-      }),
-      "fallback_agent_home_cwd",
-      "would launch from agent fallback cwd",
-    );
-  });
-
-  it("does not apply the git-sensitive workspace guard to non-local execution targets", async () => {
-    const input = buildWorkspaceValidationInput();
-
-    await expect(
-      assertGitSensitiveAdapterWorkspaceValid(
-        buildWorkspaceValidationInput({
-          executionTarget: { kind: "cloud" },
-          executionWorkspace: {
-            ...input.executionWorkspace,
-            cwd: "/tmp/agent-fallback",
-          },
-        }),
-      ),
-    ).resolves.toBeUndefined();
-  });
-});
 
 describe("assertGitWorktreeBaseWorkspaceReady", () => {
   it.each(["all_external", "mixed", "malformed"])("keeps materialization aggregation fail-closed: %s", async (kind) => {
@@ -1136,72 +737,6 @@ describe("buildAnchorFallbackWorkspaceNotes", () => {
       'Failed to prepare the project workspace checkout: authentication failed. Using fallback workspace "/fallback" for this run.',
       'Project workspace path "/missing/path" is not available yet. Using fallback workspace "/fallback" for this run.',
     ]);
-  });
-});
-
-describe("assertPushCapabilityCheckoutValid", () => {
-  it("rejects a GitHub PR workflow checkout without a configured push remote", async () => {
-    const cwd = await createGitCheckout({ withRemote: false });
-    try {
-      await expect(assertPushCapabilityCheckoutValid({
-        enabled: true,
-        issue: {
-          id: "issue-1",
-          identifier: "PAP-1",
-        },
-        cwd,
-      })).rejects.toMatchObject({
-        code: "workspace_validation_failed",
-        message: expect.stringContaining("has no configured push remote"),
-        resultJson: {
-          workspaceValidation: expect.objectContaining({
-            reason: "missing_git_push_remote",
-            issueId: "issue-1",
-            executionWorkspaceCwd: cwd,
-          }),
-        },
-      });
-    } finally {
-      await fs.rm(cwd, { recursive: true, force: true });
-    }
-  });
-
-  it("allows a GitHub PR workflow checkout when a push remote is configured", async () => {
-    const cwd = await createGitCheckout({ withRemote: true });
-    try {
-      await expect(assertPushCapabilityCheckoutValid({
-        enabled: true,
-        issue: {
-          id: "issue-1",
-          identifier: "PAP-1",
-        },
-        cwd,
-      })).resolves.toBeUndefined();
-    } finally {
-      await fs.rm(cwd, { recursive: true, force: true });
-    }
-  });
-});
-
-describe("requiresPushCapabilityPreflight", () => {
-  it("only enables the guard when the issue explicitly mentions the GitHub PR workflow skill", () => {
-    expect(requiresPushCapabilityPreflight({
-      adapterType: "codex_local",
-      issueId: "issue-1",
-      explicitRunScopedSkillKeys: ["paperclipai/bundled/software-development/github-pr-workflow"],
-    })).toBe(true);
-
-    expect(requiresPushCapabilityPreflight({
-      adapterType: "codex_local",
-      issueId: "issue-1",
-      explicitRunScopedSkillKeys: [],
-    })).toBe(false);
-
-    expect(requiresPushCapabilityPreflight({
-      adapterType: "cursor-cloud",
-      issueId: "issue-1",
-      explicitRunScopedSkillKeys: ["paperclipai/bundled/software-development/github-pr-workflow"],
-    })).toBe(false);
   });
 });
 
@@ -3553,246 +3088,10 @@ describe("buildExplicitResumeSessionOverride", () => {
     });
   });
 
-  it("does not synthesize Hermes resume params from a truncated display id", () => {
-    const result = buildExplicitResumeSessionOverride({
-      adapterType: "hermes_local",
-      resumeFromRunId: "run-1",
-      resumeRunSessionIdBefore: null,
-      resumeRunSessionIdAfter: "20260601_141558_",
-      taskSession: {
-        sessionParamsJson: {
-          sessionId: "20260601_141000_c861e4",
-        },
-        sessionDisplayId: "20260601_141000_",
-        lastRunId: "run-2",
-      },
-      sessionCodec: truncatingHermesSessionCodec,
-    });
-
-    expect(result).toBeNull();
-  });
-
-  it("uses validated Hermes run result params before truncated display ids", () => {
-    const result = buildExplicitResumeSessionOverride({
-      adapterType: "hermes_local",
-      resumeFromRunId: "run-1",
-      resumeRunSessionIdBefore: null,
-      resumeRunSessionIdAfter: "20260601_141558_",
-      resumeRunSessionParams: {
-        sessionId: "20260601_141558_c861e4",
-      },
-      taskSession: null,
-      sessionCodec: truncatingHermesSessionCodec,
-    });
-
-    expect(result).toEqual({
-      sessionDisplayId: "20260601_141558_c861e4",
-      sessionParams: {
-        sessionId: "20260601_141558_c861e4",
-      },
-    });
-  });
-
-  it("keeps Hermes run result params and display id together when falling back from a prior session", () => {
-    const result = buildExplicitResumeSessionOverride({
-      adapterType: "hermes_local",
-      resumeFromRunId: "run-1",
-      resumeRunSessionIdBefore: "20260601_140000_old123",
-      resumeRunSessionIdAfter: "20260601_141558_",
-      resumeRunSessionParams: {
-        sessionId: "20260601_141558_c861e4",
-      },
-      taskSession: null,
-      sessionCodec: truncatingHermesSessionCodec,
-    });
-
-    expect(result).toEqual({
-      sessionDisplayId: "20260601_141558_c861e4",
-      sessionParams: {
-        sessionId: "20260601_141558_c861e4",
-      },
-    });
-  });
-
-  it("ignores invalid Hermes run result params", () => {
-    const result = buildExplicitResumeSessionOverride({
-      adapterType: "hermes_local",
-      resumeFromRunId: "run-1",
-      resumeRunSessionIdBefore: null,
-      resumeRunSessionIdAfter: "20260601_141558_",
-      resumeRunSessionParams: {
-        sessionId: "from",
-      },
-      taskSession: null,
-      sessionCodec: truncatingHermesSessionCodec,
-    });
-
-    expect(result).toBeNull();
-  });
-
-  it("keeps full Hermes task-session params even when the saved display id is truncated", () => {
-    const result = buildExplicitResumeSessionOverride({
-      adapterType: "hermes_local",
-      resumeFromRunId: "run-1",
-      resumeRunSessionIdBefore: null,
-      resumeRunSessionIdAfter: "20260601_141558_",
-      taskSession: {
-        sessionParamsJson: {
-          sessionId: "20260601_141558_c861e4",
-        },
-        sessionDisplayId: "20260601_141558_",
-        lastRunId: "run-1",
-      },
-      sessionCodec: truncatingHermesSessionCodec,
-    });
-
-    expect(result).toEqual({
-      sessionDisplayId: "20260601_141558_c861e4",
-      sessionParams: {
-        sessionId: "20260601_141558_c861e4",
-      },
-    });
-  });
-
-  it("falls back from a poisoned Hermes session-after value to a valid session-before value", () => {
-    const result = buildExplicitResumeSessionOverride({
-      adapterType: "hermes_local",
-      resumeFromRunId: "run-1",
-      resumeRunSessionIdBefore: "20260601_141558_c861e4",
-      resumeRunSessionIdAfter: "from",
-      taskSession: null,
-      sessionCodec: hermesSessionCodec,
-    });
-
-    expect(result).toEqual({
-      sessionDisplayId: "20260601_141558_c861e4",
-      sessionParams: {
-        sessionId: "20260601_141558_c861e4",
-      },
-    });
-  });
 });
 
 describe("resolveNextSessionState", () => {
-  it("preserves previous valid Hermes session state when failed adapter output reports prose tokens", () => {
-    const result = resolveNextSessionState({
-      adapterType: "hermes_local",
-      codec: truncatingHermesSessionCodec,
-      adapterResult: {
-        exitCode: 1,
-        signal: null,
-        timedOut: false,
-        sessionParams: {
-          sessionId: "from",
-        },
-        sessionId: "from",
-        sessionDisplayId: "from",
-        errorMessage: "Session not found: 20260601_141558_",
-      },
-      outcome: "failed",
-      previousParams: {
-        sessionId: "20260601_141558_c861e4",
-      },
-      previousDisplayId: "20260601_141558_c861e4",
-      previousLegacySessionId: "20260601_141558_c861e4",
-    });
-
-    expect(result).toEqual({
-      params: {
-        sessionId: "20260601_141558_c861e4",
-      },
-      displayId: "20260601_141558_c861e4",
-      legacySessionId: "20260601_141558_c861e4",
-    });
-  });
-
-  it("drops poisoned previous Hermes session state instead of passing it to the next run", () => {
-    const result = resolveNextSessionState({
-      adapterType: "hermes_local",
-      codec: truncatingHermesSessionCodec,
-      adapterResult: {
-        exitCode: 1,
-        signal: null,
-        timedOut: false,
-        sessionId: "from",
-        sessionDisplayId: "from",
-        errorMessage: "Session not found: from",
-      },
-      outcome: "failed",
-      previousParams: {
-        sessionId: "from",
-      },
-      previousDisplayId: "from",
-      previousLegacySessionId: "from",
-    });
-
-    expect(result).toEqual({
-      params: null,
-      displayId: null,
-      legacySessionId: null,
-    });
-  });
-
-  it("derives Hermes display state from canonical params instead of adapter-truncated display ids", () => {
-    const result = resolveNextSessionState({
-      adapterType: "hermes_local",
-      codec: truncatingHermesSessionCodec,
-      adapterResult: {
-        exitCode: 0,
-        signal: null,
-        timedOut: false,
-        sessionParams: {
-          sessionId: "20260601_141558_c861e4",
-        },
-        sessionDisplayId: "20260601_141558_",
-      },
-      outcome: "succeeded",
-      previousParams: null,
-      previousDisplayId: null,
-      previousLegacySessionId: null,
-    });
-
-    expect(result).toEqual({
-      params: {
-        sessionId: "20260601_141558_c861e4",
-      },
-      displayId: "20260601_141558_c861e4",
-      legacySessionId: "20260601_141558_c861e4",
-    });
-  });
-
-  it("uses one canonical Hermes explicit session candidate instead of mixing valid and invalid fields", () => {
-    const result = resolveNextSessionState({
-      adapterType: "hermes_local",
-      codec: truncatingHermesSessionCodec,
-      adapterResult: {
-        exitCode: 0,
-        signal: null,
-        timedOut: false,
-        sessionParams: {
-          sessionId: "from",
-        },
-        sessionId: "20260601_141558_c861e4",
-        sessionDisplayId: "20260601_141558_",
-      },
-      outcome: "succeeded",
-      previousParams: {
-        sessionId: "20260601_140000_previous",
-      },
-      previousDisplayId: "20260601_140000_previous",
-      previousLegacySessionId: "20260601_140000_previous",
-    });
-
-    expect(result).toEqual({
-      params: {
-        sessionId: "20260601_141558_c861e4",
-      },
-      displayId: "20260601_141558_c861e4",
-      legacySessionId: "20260601_141558_c861e4",
-    });
-  });
-
-  it("keeps non-Hermes arbitrary session ids unchanged", () => {
+  it("keeps arbitrary session ids unchanged", () => {
     const result = resolveNextSessionState({
       adapterType: "codex_local",
       codec: codexSessionCodec,
@@ -3858,58 +3157,27 @@ describe("prioritizeProjectWorkspaceCandidatesForRun", () => {
 });
 
 describe("parseSessionCompactionPolicy", () => {
-  it("disables Paperclip-managed rotation by default for codex and claude local", () => {
-    expect(parseSessionCompactionPolicy(buildAgent("codex_local"))).toEqual({
-      enabled: true,
-      maxSessionRuns: 0,
-      maxRawInputTokens: 0,
-      maxSessionAgeHours: 0,
-      maxSessionBytes: 0,
-    });
-    expect(parseSessionCompactionPolicy(buildAgent("claude_local"))).toEqual({
-      enabled: true,
-      maxSessionRuns: 0,
-      maxRawInputTokens: 0,
-      maxSessionAgeHours: 0,
-      maxSessionBytes: 0,
-    });
-  });
-
-  it("keeps conservative defaults for adapters without confirmed native compaction", () => {
-    expect(parseSessionCompactionPolicy(buildAgent("cursor"))).toEqual({
-      enabled: true,
-      maxSessionRuns: 200,
-      maxRawInputTokens: 2_000_000,
-      maxSessionAgeHours: 72,
-      maxSessionBytes: 0,
-    });
-    expect(parseSessionCompactionPolicy(buildAgent("opencode_local"))).toEqual({
-      enabled: true,
-      maxSessionRuns: 200,
-      maxRawInputTokens: 2_000_000,
-      maxSessionAgeHours: 72,
-      maxSessionBytes: 0,
-    });
+  it("leaves Paperclip-managed rotation off for adapters without declared session management", () => {
+    expect(parseSessionCompactionPolicy(buildAgent("acme_local"))).toMatchObject({ enabled: false });
   });
 
   it("lets explicit agent overrides win over adapter defaults", () => {
     expect(
       parseSessionCompactionPolicy(
-        buildAgent("codex_local", {
+        buildAgent("acme_local", {
           heartbeat: {
             sessionCompaction: {
+              enabled: true,
               maxSessionRuns: 25,
               maxRawInputTokens: 500_000,
             },
           },
         }),
       ),
-    ).toEqual({
+    ).toMatchObject({
       enabled: true,
       maxSessionRuns: 25,
       maxRawInputTokens: 500_000,
-      maxSessionAgeHours: 0,
-      maxSessionBytes: 0,
     });
   });
 

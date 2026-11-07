@@ -240,7 +240,7 @@ describeEmbeddedPostgres("issue comment message delivery", () => {
       name: "Delivery Runner",
       role: "engineer",
       status: "idle",
-      adapterType: options.legacy ? "claude_local" : "paperclip_runner",
+      adapterType: options.legacy ? "process" : "paperclip_runner",
       adapterConfig: {},
       runtimeConfig: options.legacy
         ? { heartbeat: { maxConcurrentRuns: 1 } }
@@ -1824,7 +1824,7 @@ describeEmbeddedPostgres("issue comment message delivery", () => {
       name: "Delivery Reviewer",
       role: "engineer",
       status: "idle",
-      adapterType: "claude_local",
+      adapterType: "omp_local",
       adapterConfig: {},
       runtimeConfig: {},
       permissions: {},

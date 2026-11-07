@@ -3,13 +3,7 @@ import { AgentCharacter } from "../AgentCharacter";
 import { useAgentAppearanceDraft } from "../../hooks/useAgentAppearanceDraft";
 import { AiConnectionField, aiProviderForAdapter } from "../ai-connections/AiConnectionField";
 import type { AiConnectionBinding } from "@tickernelz/paperclip-pro-shared";
-import { DEFAULT_CODEX_LOCAL_MODEL } from "@tickernelz/paperclip-pro-adapter-codex-local";
-import {
-  SETUP_CREDENTIAL_KEYS,
-  SETUP_LOGIN_HINTS,
-  setupEfforts,
-  setupProviderKeys,
-} from "@/lib/agent-setup-fields";
+import { DEFAULT_CODEX_LOCAL_MODEL } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/codex";
 import { testAgentSetup } from "@/lib/test-agent-setup";
 import { useCloudInstance } from "@/hooks/useCloudInstance";
 import { isNewAgentAdapterAllowed } from "@/lib/new-agent-adapters";
@@ -55,7 +49,7 @@ import { Field, ToggleField } from "../agent-config-primitives";
 import { SecretPicker } from "../environment-variables-editor/SecretPicker";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { NativeSelect, nativeSelectClassName } from "../ui/select";
+import { nativeSelectClassName } from "../ui/select";
 import {
   OnboardingCard,
   OnboardingHeading,
@@ -127,23 +121,14 @@ function Setup({
     brandType === "claude_local" || brandType === "codex_local" || brandType === "grok_local"
       ? brandType
       : null;
-  const multiProvider =
-    brandType === "opencode_local" || brandType === "pi_local";
-  const providerKeys = setupProviderKeys(brandType);
-  const chooseProvider = multiProvider || brandType === "hermes_local";
-  const hasCredentialField =
-    chooseProvider || Boolean(SETUP_CREDENTIAL_KEYS[adapterType]);
-  const showModel = !isDot && !["cursor_cloud", "hermes_gateway"].includes(adapterType);
+  const multiProvider = brandType === "opencode_local";
+  const chooseProvider = multiProvider;
+  const showModel = !isDot;
   const [allowUnmeteredProvider, setAllowUnmeteredProvider] = useState(false);
-  const [gatewayUrl, setGatewayUrl] = useState("");
-  const [kimiModel, setKimiModel] = useState("");
-  const [kimiBaseUrl, setKimiBaseUrl] = useState("");
-  const [kimiProtocol, setKimiProtocol] = useState("kimi");
   const [screen, setScreen] = useState<"connect" | "runtime" | "saved">(
     createdAgentId ? "saved" : connectionAdapter ? "connect" : "runtime",
   );
   const [model, setModel] = useState("");
-  const efforts = isRunner ? [] : setupEfforts(adapterType, model);
   const [effort, setEffort] = useState("");
   const [modelOpen, setModelOpen] = useState(false);
   const [environmentOverride, setEnvironmentOverride] = useState("");
@@ -160,8 +145,6 @@ function Setup({
   const [connection, setConnection] = useState<ProviderConnection | null>(null);
   const aiBinding = runtimeAiBinding ?? connection?.aiConnection;
   const connectionModels = useConnectionModels(companyId, aiBinding, brandType);
-  const [repository, setRepository] = useState("");
-  const [branch, setBranch] = useState("");
   const [createdInSession, setCreated] = useState<Agent | null>(null);
   const savedAgent = useQuery({
     queryKey: queryKeys.agents.detail(createdAgentId ?? "new"),
@@ -235,12 +218,12 @@ function Setup({
   const companySecrets = useQuery({
     queryKey: queryKeys.secrets.list(companyId),
     queryFn: () => secretsApi.list(companyId),
-    enabled: hasCredentialField && adapterType !== "cursor_cloud",
+    enabled: chooseProvider,
   });
   const userSecrets = useQuery({
     queryKey: queryKeys.secrets.myUserSecrets(companyId),
     queryFn: () => secretsApi.listMyUserSecrets(companyId),
-    enabled: hasCredentialField && adapterType !== "cursor_cloud",
+    enabled: chooseProvider,
     retry: false,
   });
   const forced = resolveForcedKubernetesEnvironment(
@@ -280,8 +263,7 @@ function Setup({
   const canLogin =
     environment?.driver === "sandbox" &&
     caps.data?.sandboxProviders?.[sandboxProvider]?.supportsLoginPty === true;
-  const envKey =
-    SETUP_CREDENTIAL_KEYS[adapterType] ?? providerKeys[provider] ?? "API_KEY";
+  const envKey = PROVIDER_ENV_KEYS[provider] ?? "API_KEY";
   const savedKey = userSecrets.data?.find(
     (entry) => entry.definition.key === envKey && entry.secret,
   );
@@ -289,24 +271,20 @@ function Setup({
     (entry) => entry.key === envKey && entry.status === "active",
   );
   const selectedBinding =
-    adapterType === "cursor_cloud"
-      ? null
-      : (providerBinding ??
-        (savedOrganizationKey
-          ? {
-              type: "secret_ref" as const,
-              secretId: savedOrganizationKey.id,
-              version: "latest" as const,
-            }
-          : savedKey
-            ? {
-                type: "user_secret_ref" as const,
-                key: envKey,
-                version: "latest" as const,
-              }
-            : null));
-  const usingKimiApi =
-    adapterType === "kimi_local" && Boolean(apiKey.trim() || selectedBinding);
+    providerBinding ??
+    (savedOrganizationKey
+      ? {
+          type: "secret_ref" as const,
+          secretId: savedOrganizationKey.id,
+          version: "latest" as const,
+        }
+      : savedKey
+        ? {
+            type: "user_secret_ref" as const,
+            key: envKey,
+            version: "latest" as const,
+          }
+        : null);
   const cloud = Boolean(useCloudInstance());
   const available =
     isNewAgentAdapterAllowed(adapterType, {
@@ -351,7 +329,6 @@ function Setup({
       model:
         model || (brandType === "codex_local" ? DEFAULT_CODEX_LOCAL_MODEL : ""),
       thinkingEffort: effort,
-      dangerouslyBypassSandbox: adapterType === "codex_local",
       envBindings: nextConnection?.env ?? {},
       ...(isRunner
         ? {
@@ -374,30 +351,8 @@ function Setup({
         ...((runnerProvider === "claude" || runnerProvider === "grok") ? { acpxAgent: runnerProvider } : {}),
         ...(model ? { model } : {}),
       });
-    if (!aiBinding && !nextConnection?.aiConnection && hasCredentialField && binding) {
-      if (adapterType === "hermes_gateway") config.apiKey = binding;
-      else
-        config.env = { ...((config.env as object) ?? {}), [envKey]: binding };
-    }
-    if (adapterType === "cursor_cloud")
-      Object.assign(config, {
-        repoUrl: repository.trim(),
-        ...(branch.trim() ? { repoStartingRef: branch.trim() } : {}),
-      });
-    if (adapterType === "hermes_gateway") config.apiBaseUrl = gatewayUrl.trim();
-    if (usingKimiApi) {
-      // --model overrides Kimi's environment-defined model. Let KIMI_MODEL_NAME win.
-      delete config.model;
-      config.env = {
-        ...((config.env as object) ?? {}),
-        KIMI_MODEL_NAME: { type: "plain", value: kimiModel.trim() },
-        KIMI_MODEL_PROVIDER_TYPE: { type: "plain", value: kimiProtocol },
-        ...(kimiBaseUrl.trim()
-          ? {
-              KIMI_MODEL_BASE_URL: { type: "plain", value: kimiBaseUrl.trim() },
-            }
-          : {}),
-      };
+    if (!aiBinding && !nextConnection?.aiConnection && chooseProvider && binding) {
+      config.env = { ...((config.env as object) ?? {}), [envKey]: binding };
     }
     return config;
   }
@@ -405,38 +360,13 @@ function Setup({
     if (isDot && !allowUnmeteredProvider) throw new Error("Acknowledge external provider billing before creating your Dot agent.");
     if (multiProvider && (!model.trim() || !model.includes("/")))
       throw new Error("Choose or enter a model in provider/model format.");
-    if (
-      adapterType === "cursor_cloud" &&
-      !/^https:\/\/github\.com\/[^/]+\/[^/]+/.test(repository.trim())
-    )
-      throw new Error("Enter a GitHub repository URL.");
-    if (
-      ["cursor_cloud", "hermes_gateway"].includes(adapterType) &&
-      !apiKey.trim() &&
-      !selectedBinding
-    )
-      throw new Error(
-        adapterType === "cursor_cloud"
-          ? "Enter a Cursor API key."
-          : `Enter ${envKey} or select an organization secret.`,
-      );
-    if (adapterType === "hermes_gateway") {
-      try {
-        const url = new URL(gatewayUrl.trim());
-        if (!["https:", "http:"].includes(url.protocol)) throw new Error();
-      } catch {
-        throw new Error("Enter the Hermes API base URL.");
-      }
-    }
-    if (usingKimiApi && !kimiModel.trim())
-      throw new Error("Enter the Kimi API model name.");
     return buildConfig(nextConnection);
   }
   function pendingCredentials(nextConnection = connection) {
     if (aiBinding || nextConnection?.aiConnection) return {};
     return {
       ...nextConnection?.credentials,
-      ...(hasCredentialField && apiKey.trim()
+      ...(chooseProvider && apiKey.trim()
         ? { [envKey]: apiKey.trim() }
         : {}),
     };
@@ -507,10 +437,7 @@ function Setup({
           : storeOrganizationApiKey;
         const secret = await store(companyId, key, value);
         staged.push(secret);
-        if (adapterType === "hermes_gateway" && key === "API_SERVER_KEY")
-          config.apiKey = secret.binding;
-        else
-          config.env = {
+        config.env = {
             ...((config.env as object) ?? {}),
             [key]: secret.binding,
           };
@@ -620,24 +547,10 @@ function Setup({
   const confirmationEnvironment = created?.defaultEnvironmentId
     ? envs.data?.find((env) => env.id === created.defaultEnvironmentId)
     : environment;
-  const createdKimiModel = (
-    created?.adapterConfig?.env as Record<string, unknown> | undefined
-  )?.KIMI_MODEL_NAME;
-  const confirmationModel =
-    created?.adapterConfig?.model ||
-    (typeof createdKimiModel === "string"
-      ? createdKimiModel
-      : (createdKimiModel as { value?: string } | undefined)?.value) ||
-    model ||
-    "Default";
-  const environmentLabel =
-    adapterType === "cursor_cloud"
-      ? "Cursor Cloud"
-      : adapterType === "hermes_gateway"
-        ? "Hermes Gateway"
-        : confirmationEnvironment
-          ? environmentDisplayLabel(confirmationEnvironment)
-          : "Local machine";
+  const confirmationModel = created?.adapterConfig?.model || model || "Default";
+  const environmentLabel = confirmationEnvironment
+    ? environmentDisplayLabel(confirmationEnvironment)
+    : "Local machine";
   const setupError =
     adapters.error ??
     envs.error ??
@@ -866,10 +779,9 @@ function Setup({
                             onChange={binding => { binding.mode !== "router" && setRuntimeAiBinding(binding); resetTest(); }} />
                         )}
                         {(connectionModels ? connectionModels.error : models.error) && <p role="alert" className="text-sm text-bad">Could not load models. Retry or enter a model ID manually.</p>}
-                        {((showModel && !usingKimiApi) ||
-                          efforts.length > 0) && (
+                        {showModel && (
                           <div className="grid items-start gap-5 sm:grid-cols-2">
-                            {showModel && !usingKimiApi && (
+                            {showModel && (
                               <ModelDropdown
                                 models={connectionModels?.models ?? models.data ?? []}
                                 onRefreshModels={connectionModels?.refreshModels}
@@ -879,7 +791,7 @@ function Setup({
                                   setModel(connectionModels?.resolveModel(value) ?? value);
                                   const dropEffort = adapterType === "omp_local"
                                     ? !keepsEffort(effort, value, (models.data ?? []).map((entry) => modelPickerOption(entry, false)))
-                                    : Boolean(effort) && !setupEfforts(adapterType, value).includes(effort);
+                                    : Boolean(effort);
                                   if (dropEffort) setEffort("");
                                   const nextProvider = value.split("/")[0];
                                   if (
@@ -905,33 +817,9 @@ function Setup({
                                   : undefined}
                               />
                             )}
-                            {efforts.length > 0 && adapterType !== "omp_local" && (
-                              <Field label="Thinking effort">
-                                <NativeSelect
-                                  aria-label="Thinking effort"
-                                  value={effort}
-                                  onChange={(event) => {
-                                    setEffort(event.target.value);
-                                    resetTest();
-                                  }}
-                                >
-                                  <option value="">Auto</option>
-                                  {efforts.map((value) => (
-                                    <option key={value} value={value}>
-                                      {value}
-                                    </option>
-                                  ))}
-                                </NativeSelect>
-                              </Field>
-                            )}
                           </div>
                         )}
-                        {!aiBinding && SETUP_LOGIN_HINTS[adapterType] && (
-                          <p className="text-sm text-ink-3">
-                            {SETUP_LOGIN_HINTS[adapterType]}
-                          </p>
-                        )}
-                        {hasCredentialField && !aiBinding && (
+                        {chooseProvider && !aiBinding && (
                           <div className="grid gap-5 sm:grid-cols-2">
                             {chooseProvider && (
                               <Field label="API key provider">
@@ -947,7 +835,7 @@ function Setup({
                                     resetTest();
                                   }}
                                 >
-                                  {Object.keys(providerKeys).map((key) => (
+                                  {Object.keys(PROVIDER_ENV_KEYS).map((key) => (
                                     <option key={key} value={key}>
                                       {key === "openrouter"
                                         ? "OpenRouter"
@@ -966,13 +854,7 @@ function Setup({
                                 </select>
                               </Field>
                             )}
-                            <div
-                              className={
-                                adapterType === "cursor_cloud"
-                                  ? "sm:col-span-2"
-                                  : undefined
-                              }
-                            >
+                            <div>
                               <Field label={envKey}>
                                 <div className="flex items-center gap-3">
                                   <Input
@@ -988,57 +870,40 @@ function Setup({
                                     placeholder={
                                       selectedBinding
                                         ? "Using saved key"
-                                        : [
-                                              "cursor_cloud",
-                                              "hermes_gateway",
-                                            ].includes(adapterType)
-                                          ? "Required"
-                                          : "Optional if already configured"
+                                        : "Optional if already configured"
                                     }
                                   />
-                                  {adapterType === "cursor_cloud" && (
-                                    <a
-                                      href="https://cursor.com/dashboard/api?section=user-keys#user-api-keys"
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="shrink-0 text-xs text-ink-3 underline underline-offset-4 hover:text-ink"
-                                    >
-                                      get api key
-                                    </a>
-                                  )}
                                 </div>
                               </Field>
                             </div>
-                            {adapterType !== "cursor_cloud" && (
-                              <div
-                                className={
-                                  chooseProvider ? "sm:col-span-2" : undefined
-                                }
-                              >
-                                <Field label="Or use an organization secret">
-                                  <SecretPicker
-                                    secretId={
-                                      selectedBinding &&
-                                      typeof selectedBinding === "object" &&
-                                      selectedBinding.type === "secret_ref"
-                                        ? selectedBinding.secretId
-                                        : ""
-                                    }
-                                    secrets={companySecrets.data ?? []}
-                                    disabled={busy}
-                                    onSelect={(secretId) => {
-                                      setProviderBinding({
-                                        type: "secret_ref",
-                                        secretId,
-                                        version: "latest",
-                                      });
-                                      setApiKey("");
-                                      resetTest();
-                                    }}
-                                  />
-                                </Field>
-                              </div>
-                            )}
+                            <div
+                              className={
+                                chooseProvider ? "sm:col-span-2" : undefined
+                              }
+                            >
+                              <Field label="Or use an organization secret">
+                                <SecretPicker
+                                  secretId={
+                                    selectedBinding &&
+                                    typeof selectedBinding === "object" &&
+                                    selectedBinding.type === "secret_ref"
+                                      ? selectedBinding.secretId
+                                      : ""
+                                  }
+                                  secrets={companySecrets.data ?? []}
+                                  disabled={busy}
+                                  onSelect={(secretId) => {
+                                    setProviderBinding({
+                                      type: "secret_ref",
+                                      secretId,
+                                      version: "latest",
+                                    });
+                                    setApiKey("");
+                                    resetTest();
+                                  }}
+                                />
+                              </Field>
+                            </div>
                             <p className="text-xs text-ink-3 sm:col-span-2">
                               New keys are saved as organization secrets when
                               you finish setup.
@@ -1046,122 +911,33 @@ function Setup({
                             </p>
                           </div>
                         )}
-                        {adapterType === "hermes_gateway" && (
-                          <Field label="Hermes API base URL">
-                            <Input
-                              aria-label="Hermes API base URL"
-                              value={gatewayUrl}
-                              onChange={(event) => {
-                                setGatewayUrl(event.target.value);
-                                resetTest();
-                              }}
-                              placeholder="https://hermes.example.com"
-                            />
-                          </Field>
-                        )}
-                        {usingKimiApi && (
-                          <div className="grid gap-5 sm:grid-cols-2">
-                            <Field label="Kimi API model name">
-                              <Input
-                                aria-label="Kimi API model name"
-                                value={kimiModel}
-                                onChange={(event) => {
-                                  setKimiModel(event.target.value);
-                                  resetTest();
-                                }}
-                                placeholder="kimi-for-coding"
-                              />
-                            </Field>
-                            <Field label="Kimi API protocol">
-                              <select
-                                aria-label="Kimi API protocol"
-                                className={controlClass}
-                                value={kimiProtocol}
-                                onChange={(event) => {
-                                  setKimiProtocol(event.target.value);
-                                  resetTest();
-                                }}
-                              >
-                                {["kimi", "anthropic", "openai"].map(
-                                  (value) => (
-                                    <option key={value}>{value}</option>
-                                  ),
-                                )}
-                              </select>
-                            </Field>
-                            <Field
-                              label="Kimi API base URL"
-                              hint="Optional override for your provider endpoint."
-                            >
-                              <Input
-                                aria-label="Kimi API base URL"
-                                value={kimiBaseUrl}
-                                onChange={(event) => {
-                                  setKimiBaseUrl(event.target.value);
-                                  resetTest();
-                                }}
-                                placeholder="Provider default"
-                              />
-                            </Field>
-                          </div>
-                        )}
-                        {adapterType === "cursor_cloud" && (
-                          <div className="grid gap-5 sm:grid-cols-2">
-                            <Field label="GitHub repository">
-                              <Input
-                                aria-label="GitHub repository"
-                                value={repository}
-                                onChange={(event) => {
-                                  setRepository(event.target.value);
-                                  resetTest();
-                                }}
-                                placeholder="https://github.com/your-org/repo"
-                              />
-                            </Field>
-                            <Field label="Branch">
-                              <Input
-                                aria-label="Branch"
-                                placeholder="Repository default"
-                                value={branch}
-                                onChange={(event) => {
-                                  setBranch(event.target.value);
-                                  resetTest();
-                                }}
-                              />
-                            </Field>
-                          </div>
-                        )}
                       </section>
-                      {!["cursor_cloud", "hermes_gateway"].includes(
-                        adapterType,
-                      ) && (
-                        <section className="space-y-5">
-                          <h3 className="text-sm font-semibold">Environment</h3>
-                          <select
-                            aria-label="Environment"
-                            className={controlClass}
-                            value={environmentOverride}
-                            disabled={forced.forced}
-                            onChange={(event) => {
-                              setEnvironmentOverride(event.target.value);
-                              setConnection(null);
-                              resetTest();
-                              if (connectionAdapter) setScreen("connect");
-                            }}
-                          >
-                            <option value="">
-                              Default: {environmentLabel}
-                            </option>
-                            {(envs.data ?? [])
-                              .filter((env) => env.status === "active" && (!managedOnly || env.driver !== "local"))
-                              .map((env) => (
-                                <option key={env.id} value={env.id}>
-                                  {environmentDisplayLabel(env)}
-                                </option>
-                              ))}
-                          </select>
-                        </section>
-                      )}
+                      <section className="space-y-5">
+                        <h3 className="text-sm font-semibold">Environment</h3>
+                        <select
+                          aria-label="Environment"
+                          className={controlClass}
+                          value={environmentOverride}
+                          disabled={forced.forced}
+                          onChange={(event) => {
+                            setEnvironmentOverride(event.target.value);
+                            setConnection(null);
+                            resetTest();
+                            if (connectionAdapter) setScreen("connect");
+                          }}
+                        >
+                          <option value="">
+                            Default: {environmentLabel}
+                          </option>
+                          {(envs.data ?? [])
+                            .filter((env) => env.status === "active" && (!managedOnly || env.driver !== "local"))
+                            .map((env) => (
+                              <option key={env.id} value={env.id}>
+                                {environmentDisplayLabel(env)}
+                              </option>
+                            ))}
+                        </select>
+                      </section>
                     </fieldset>
                     <RuntimeTestCard
                       variant={isDot ? "prerequisites" : "connection"}

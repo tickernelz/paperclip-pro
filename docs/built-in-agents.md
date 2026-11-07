@@ -62,7 +62,7 @@ Hypothetical registry diff:
      defaultInstructions:
        "You are Paperclip's built-in Learning agent. Extract durable lessons from completed work, preserve useful patterns, and keep learning artifacts grounded in source context.",
      defaultRole: "general",
-     allowedAdapterTypes: ["codex_local", "claude_local", "gemini_local", "opencode_local", "process"],
+     allowedAdapterTypes: ["omp_local", "process"],
      defaultBudgetMonthlyCents: 0,
    },
 +  {
@@ -73,7 +73,7 @@ Hypothetical registry diff:
 +    defaultInstructions:
 +      "You are Paperclip's built-in Digest agent. Produce short, sourced summaries of recent company activity, decisions, blockers, and next actions.",
 +    defaultRole: "general",
-+    allowedAdapterTypes: ["codex_local", "claude_local", "process"],
++    allowedAdapterTypes: ["omp_local"],
 +    defaultBudgetMonthlyCents: 0,
 +  },
  ]);

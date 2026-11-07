@@ -141,14 +141,14 @@ it("records the exact unconfirmed run without finishing or removing its control"
   let finished = false;
   void control.settled.then(() => { finished = true; });
   const result = waitForAdapterStop(control.settled, 1000, {
-    runId, adapterType: "claude_local", runtimeMode: "legacy", abortRequested: control.controller.signal.aborted,
+    runId, adapterType: "omp_local", runtimeMode: "legacy", abortRequested: control.controller.signal.aborted,
   }).catch((error: unknown) => error);
   try {
     await vi.advanceTimersByTimeAsync(1000);
     const error = await result;
     expect(error).toBeInstanceOf(AdapterStopTimeoutError);
     expect((error as AdapterStopTimeoutError).diagnostics).toEqual({
-      runId, adapterType: "claude_local", runtimeMode: "legacy", abortRequested: true, timeoutMs: 1000,
+      runId, adapterType: "omp_local", runtimeMode: "legacy", abortRequested: true, timeoutMs: 1000,
       phase: "unknown", phaseElapsedMs: null,
     });
     expect(adapterExecutionControls.get(runId)).toBe(control);

@@ -14,7 +14,6 @@ export function managedProviderRouting(
   const env: Record<string, string> = {};
   const config: Record<string, unknown> = {};
   let codexConfig = "";
-  let hermesConfig = "";
   const baseUrl = aiRoutingBaseUrl(route, harness);
   if (route.kind === "bedrock") {
     env.CLAUDE_CODE_USE_BEDROCK = "1";
@@ -62,15 +61,6 @@ export function managedProviderRouting(
     });
     env.OPENCODE_DISABLE_PROJECT_CONFIG = "true";
     config.model = aiRoutingModel(route, harness, model);
-  } else if (harness === "hermes_local") {
-    env.OPENAI_BASE_URL = baseUrl;
-    env.OPENAI_API_KEY = credential;
-    env.OPENROUTER_API_KEY = route.kind === "openrouter" ? credential : "";
-    config.provider = route.kind === "openrouter" ? "openrouter" : "auto";
-    // Hermes now reads custom endpoint routing from config.yaml, not OPENAI_BASE_URL.
-    // Hermes strips OPENAI_API_KEY from terminal children. A custom variable
-    // would expose the reusable gateway key to task-controlled shell commands.
-    hermesConfig = `model:\n  provider: ${route.kind === "openrouter" ? '"openrouter"' : '"custom"'}\n  default: ${JSON.stringify(model)}\n  base_url: ${JSON.stringify(baseUrl)}\n  api_mode: "chat_completions"\n${route.auth === "none" ? "" : '  api_key: "${OPENAI_API_KEY}"\n'}`;
   }
-  return { env, config, codexConfig, hermesConfig };
+  return { env, config, codexConfig };
 }

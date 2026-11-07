@@ -7,7 +7,6 @@ import {
   createAdapterRuntimeToolAccess,
   paperclipApiBaseUrl,
   createAdapterRuntimeMcpAccess,
-  createManagedMcpRunConfig,
   revokeHeartbeatRunGatewayTokens,
 } from "./run-preparation.js";
 import {
@@ -774,17 +773,6 @@ export async function executeHeartbeatRuntime(db: Db, input: HeartbeatRuntimeExe
       const runtimeMcp = createAdapterRuntimeMcpAccess(runtimeMcpServers);
       if (runtimeTools && runtimeToolDelivery === "invocation_context") {
         adapterContext.paperclipRuntimeTools = runtimeTools;
-      }
-      const managedMcpConfig = await createManagedMcpRunConfig({
-        db,
-        agent,
-        runId: run.id,
-        config: runtimeConfig,
-        projectId: issueRef?.projectId ?? null,
-        issueId: issueRef?.id ?? null,
-      });
-      if (managedMcpConfig) {
-        adapterContext.paperclipManagedMcp = managedMcpConfig;
       }
       const guardedDispatch =
         await dispatchResolvedInteractionContinuationWithAtomicGate(

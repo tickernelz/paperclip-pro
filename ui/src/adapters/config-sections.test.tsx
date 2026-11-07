@@ -7,12 +7,8 @@ import type { ComponentType } from "react";
 import { beforeAll, describe, expect, it } from "vitest";
 import { TooltipProvider } from "../components/ui/tooltip";
 import type { AdapterConfigFieldsProps, AdapterConfigSection } from "./types";
-import { CodexLocalConfigFields } from "./codex-local/config-fields";
-import { ClaudeLocalAdvancedFields } from "./claude-local/config-fields";
-import { GeminiLocalConfigFields } from "./gemini-local/config-fields";
+import { CodexLocalConfigFields } from "./paperclip-runner/config-fields";
 import { ProcessConfigFields } from "./process/config-fields";
-import { OpenClawGatewayConfigFields } from "./openclaw-gateway/config-fields";
-import { HermesGatewayConfigFields } from "./hermes-gateway/config-fields";
 
 beforeAll(() => { Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true }); });
 
@@ -108,31 +104,6 @@ describe("adapter configuration sections", () => {
     expect(policy).not.toContain("qualification pending");
   });
 
-  it.each([
-    ["claude_local", ClaudeLocalAdvancedFields],
-    ["codex_local", CodexLocalConfigFields],
-    ["gemini_local", GeminiLocalConfigFields],
-  ] as const)(
-    "separates ACP commands and lifecycle for %s",
-    async (type, Component) => {
-      const config = {
-        engine: "acp",
-        agentCommand: "saved-command",
-        warmHandleIdleMs: 1234,
-      };
-      expect(await renderSection(Component, type, "advanced", config)).toContain(
-        'value="saved-command"',
-      );
-      expect(
-        await renderSection(Component, type, "configuration", config),
-      ).not.toContain("ACP server command");
-      const policy = await renderSection(Component, type, "runPolicy", config);
-      expect(policy).toContain("ACP session mode");
-      expect(policy).toContain('value="1234"');
-      expect(policy).not.toContain("ACP server command");
-    },
-  );
-
   it("keeps process command and arguments under Advanced with saved values", async () => {
     const config = { command: "node", args: ["worker.js", "--quiet"] };
     expect(
@@ -148,19 +119,4 @@ describe("adapter configuration sections", () => {
     expect(advanced).toContain('value="worker.js, --quiet"');
   });
 
-  it.each([
-    ["openclaw_gateway", OpenClawGatewayConfigFields],
-    ["hermes_gateway", HermesGatewayConfigFields],
-  ] as const)(
-    "moves %s timeouts without changing their values",
-    async (type, Component) => {
-      const config = { timeoutSec: 37 };
-      expect(
-        await renderSection(Component, type, "configuration", config),
-      ).not.toContain('value="37"');
-      expect(await renderSection(Component, type, "runPolicy", config)).toContain(
-        'value="37"',
-      );
-    },
-  );
 });

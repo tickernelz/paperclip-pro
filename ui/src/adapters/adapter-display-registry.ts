@@ -6,17 +6,8 @@
  * `getAdapterDisplay()`.
  */
 import type { ComponentType } from "react";
-import {
-  Bot,
-  Code,
-  Gem,
-  Moon,
-  MousePointer2,
-  Sparkles,
-  Terminal,
-  Cpu,
-} from "lucide-react";
-import { OpenCodeLogoIcon } from "@/components/OpenCodeLogoIcon";
+import { Bot, Cpu } from "lucide-react";
+import { isRetiredAdapterType, retiredAdapterMessage } from "@tickernelz/paperclip-pro-shared";
 
 // ---------------------------------------------------------------------------
 // Type suffix parsing
@@ -60,72 +51,11 @@ export interface AdapterDisplayInfo {
 }
 
 const adapterDisplayMap: Record<string, AdapterDisplayInfo> = {
-  acpx_local: {
-    label: "ACPX (retired)",
-    description: "Retired standalone ACPX adapter",
-    icon: Bot,
-    comingSoon: true,
-    disabledLabel: "Use Claude Code or Codex with the ACP engine",
-    hideFromVisualSelection: true,
-  },
-  claude_local: {
-    label: "Claude Code",
-    description: "Claude Code CLI harness",
-    icon: Sparkles,
-    recommended: true,
-  },
-  codex_local: {
-    label: "Codex",
-    description: "Codex CLI harness",
-    icon: Code,
-    recommended: true,
-  },
   paperclip_runner: {
     label: "Paperclip Runner",
     description: "Rust runner with a Codex provider",
     icon: Cpu,
     experimental: true,
-  },
-  gemini_local: {
-    label: "Gemini CLI",
-    description: "Gemini CLI harness",
-    icon: Gem,
-  },
-  grok_local: {
-    label: "Grok Build",
-    description: "Grok Build harness",
-    icon: Bot,
-  },
-  kimi_local: {
-    label: "Kimi Code",
-    description: "Kimi Code CLI harness",
-    icon: Moon,
-  },
-  hermes_gateway: {
-    label: "Hermes Gateway",
-    description: "Remote Hermes API server",
-    icon: Bot,
-    hideFromVisualSelection: true,
-  },
-  hermes_local: {
-    label: "Hermes",
-    description: "Hermes harness",
-    icon: Bot,
-  },
-  opencode_local: {
-    label: "OpenCode",
-    description: "OpenCode multi-provider harness",
-    icon: OpenCodeLogoIcon,
-  },
-  pi_local: {
-    label: "Pi",
-    description: "Pi harness",
-    icon: Terminal,
-  },
-  cursor: {
-    label: "Cursor",
-    description: "Cursor CLI harness",
-    icon: MousePointer2,
   },
   // Display-only choice: persisted as paperclip_runner with provider openai_dot.
   openai_dot: {
@@ -133,19 +63,6 @@ const adapterDisplayMap: Record<string, AdapterDisplayInfo> = {
     description: "Your Dot in ChatGPT",
     icon: Bot,
     experimental: true,
-  },
-  cursor_cloud: {
-    label: "Cursor Cloud",
-    description: "Managed remote Cursor agent",
-    icon: MousePointer2,
-  },
-  openclaw_gateway: {
-    label: "OpenClaw Gateway",
-    description: "External gateway adapter",
-    icon: Bot,
-    comingSoon: true,
-    disabledLabel: "Invite external agents from the add-agent modal",
-    hideFromVisualSelection: true,
   },
   process: {
     label: "Process",
@@ -178,9 +95,7 @@ function humanizeType(type: string): string {
 }
 
 export function getAdapterLabel(type: string): string {
-  // Known labels are final — only unknown (plugin) types get a derived
-  // suffix, so labels like "OpenClaw Gateway" don't become
-  // "OpenClaw Gateway (gateway)".
+  if (isRetiredAdapterType(type)) return getAdapterDisplay(type).label;
   const known = adapterDisplayMap[type];
   if (known) return known.label;
   return withSuffix(humanizeType(type), getTypeSuffix(type));
@@ -197,6 +112,16 @@ export function getAdapterLabels(): Record<string, string> {
 export function getAdapterDisplay(type: string): AdapterDisplayInfo {
   const known = adapterDisplayMap[type];
   if (known) return known;
+  if (isRetiredAdapterType(type)) {
+    return {
+      label: `${humanizeType(type)} (removed)`,
+      description: retiredAdapterMessage(type),
+      icon: Bot,
+      comingSoon: true,
+      disabledLabel: retiredAdapterMessage(type),
+      hideFromVisualSelection: true,
+    };
+  }
 
   const suffix = getTypeSuffix(type);
   const label = withSuffix(humanizeType(type), suffix);

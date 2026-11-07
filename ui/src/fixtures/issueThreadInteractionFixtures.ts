@@ -1592,7 +1592,7 @@ export const issueThreadInteractionLiveRuns: LiveRunForIssue[] = [
     createdAt: "2026-04-20T14:26:00.000Z",
     agentId: "agent-codex",
     agentName: "CodexCoder",
-    adapterType: "codex_local",
+    adapterType: "omp_local",
   },
 ];
 

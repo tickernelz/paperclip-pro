@@ -196,8 +196,8 @@ describeEmbeddedPostgres("heartbeat bounded retry scheduling", () => {
     adapterType?: string;
     agentName?: string;
   }) {
-    const adapterType = input.adapterType ?? "codex_local";
-    const agentName = input.agentName ?? (adapterType === "claude_local" ? "ClaudeCoder" : "CodexCoder");
+    const adapterType = input.adapterType ?? "omp_local";
+    const agentName = input.agentName ?? "Coder";
     await db.insert(companies).values({
       id: input.companyId,
       name: "Paperclip",
@@ -385,7 +385,6 @@ describeEmbeddedPostgres("heartbeat bounded retry scheduling", () => {
     expect((retryRun?.contextSnapshot as Record<string, unknown> | null)?.providerQuotaRetryNotBefore).toBe(
       "2030-04-22T21:00:00.000Z",
     );
-    expect((retryRun?.contextSnapshot as Record<string, unknown> | null)?.codexTransientFallbackMode ?? null).toBeNull();
 
     await expect
       .poll(
@@ -431,7 +430,7 @@ describeEmbeddedPostgres("heartbeat bounded retry scheduling", () => {
       name: "ClaudeCoder",
       role: "engineer",
       status: "active",
-      adapterType: "claude_local",
+      adapterType: "omp_local",
       adapterConfig: {},
       runtimeConfig: input?.runtimeConfig ?? {
         heartbeat: {
@@ -661,7 +660,7 @@ describeEmbeddedPostgres("heartbeat bounded retry scheduling", () => {
       name: "CodexCoder",
       role: "engineer",
       status: "active",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: {},
       runtimeConfig: {
         heartbeat: {
@@ -860,7 +859,6 @@ describeEmbeddedPostgres("heartbeat bounded retry scheduling", () => {
     expect((retryRun?.contextSnapshot as Record<string, unknown> | null)?.wakeReason).toBe(
       MAX_TURN_CONTINUATION_WAKE_REASON,
     );
-    expect((retryRun?.contextSnapshot as Record<string, unknown> | null)?.codexTransientFallbackMode ?? null).toBeNull();
 
     const wakeupRequest = await db
       .select({ reason: agentWakeupRequests.reason, payload: agentWakeupRequests.payload })
@@ -1796,7 +1794,7 @@ describeEmbeddedPostgres("heartbeat bounded retry scheduling", () => {
         name: "ClaudeCoder",
         role: "engineer",
         status: "active",
-        adapterType: "claude_local",
+        adapterType: "omp_local",
         adapterConfig: {},
         runtimeConfig: {
           heartbeat: {
@@ -1812,7 +1810,7 @@ describeEmbeddedPostgres("heartbeat bounded retry scheduling", () => {
         name: "CodexCoder",
         role: "engineer",
         status: "active",
-        adapterType: "codex_local",
+        adapterType: "omp_local",
         adapterConfig: {},
         runtimeConfig: {
           heartbeat: {
@@ -1963,7 +1961,7 @@ describeEmbeddedPostgres("heartbeat bounded retry scheduling", () => {
       name: "CodexCoder",
       role: "engineer",
       status: "active",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: {},
       runtimeConfig: {
         heartbeat: {
@@ -2043,57 +2041,6 @@ describeEmbeddedPostgres("heartbeat bounded retry scheduling", () => {
       expect(onLiveEvent).not.toHaveBeenCalled();
     } finally {
       unsubscribe();
-    }
-  });
-
-  it("advances codex transient fallback stages across bounded retry attempts", async () => {
-    const fallbackModes = [
-      "same_session",
-      "safer_invocation",
-    ] as const;
-
-    for (const [index, expectedMode] of fallbackModes.entries()) {
-      const companyId = randomUUID();
-      const agentId = randomUUID();
-      const runId = randomUUID();
-      const now = new Date(`2026-04-20T1${index}:00:00.000Z`);
-
-      await seedRetryFixture({
-        runId,
-        companyId,
-        agentId,
-        now,
-        errorCode: "adapter_failed",
-        errorFamily: "transient_upstream",
-        scheduledRetryAttempt: index,
-      });
-
-      const scheduled = await heartbeat.scheduleBoundedRetry(runId, {
-        now,
-        random: () => 0.5,
-      });
-
-      expect(scheduled.outcome).toBe("scheduled");
-      if (scheduled.outcome !== "scheduled") continue;
-
-      const retryRun = await db
-        .select({
-          contextSnapshot: heartbeatRuns.contextSnapshot,
-          wakeupRequestId: heartbeatRuns.wakeupRequestId,
-        })
-        .from(heartbeatRuns)
-        .where(eq(heartbeatRuns.id, scheduled.run.id))
-        .then((rows) => rows[0] ?? null);
-      expect((retryRun?.contextSnapshot as Record<string, unknown> | null)?.codexTransientFallbackMode).toBe(expectedMode);
-
-      const wakeupRequest = await db
-        .select({ payload: agentWakeupRequests.payload })
-        .from(agentWakeupRequests)
-        .where(eq(agentWakeupRequests.id, retryRun?.wakeupRequestId ?? ""))
-        .then((rows) => rows[0] ?? null);
-      expect((wakeupRequest?.payload as Record<string, unknown> | null)?.codexTransientFallbackMode).toBe(expectedMode);
-
-      await cleanupRetryFixture();
     }
   });
 
@@ -2217,7 +2164,7 @@ describeEmbeddedPostgres("heartbeat bounded retry scheduling", () => {
       now,
       errorCode: "adapter_failed",
       errorFamily: "transient_upstream",
-      adapterType: "claude_local",
+      adapterType: "omp_local",
       retryNotBefore: retryNotBefore.toISOString(),
     });
 
@@ -2244,7 +2191,6 @@ describeEmbeddedPostgres("heartbeat bounded retry scheduling", () => {
     const contextSnapshot = (retryRun?.contextSnapshot as Record<string, unknown> | null) ?? {};
     expect(contextSnapshot.transientRetryNotBefore).toBe(retryNotBefore.toISOString());
     // Claude does not participate in the Codex fallback-mode ladder.
-    expect(contextSnapshot.codexTransientFallbackMode ?? null).toBeNull();
 
     const wakeupRequest = await db
       .select({ payload: agentWakeupRequests.payload })
@@ -2473,7 +2419,7 @@ describeEmbeddedPostgres("heartbeat bounded retry scheduling", () => {
         name: "OtherCoder",
         role: "engineer",
         status: "active",
-        adapterType: "codex_local",
+        adapterType: "omp_local",
         adapterConfig: {},
         runtimeConfig: { heartbeat: { wakeOnDemand: true, maxConcurrentRuns: 1 } },
         permissions: {},
@@ -2586,7 +2532,7 @@ describeEmbeddedPostgres("heartbeat bounded retry scheduling", () => {
         name: "CodexCoder",
         role: "engineer",
         status: "active",
-        adapterType: "codex_local",
+        adapterType: "omp_local",
         adapterConfig: {},
         runtimeConfig: { heartbeat: { wakeOnDemand: true, maxConcurrentRuns: 1 } },
         permissions: {},

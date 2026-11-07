@@ -1,5 +1,5 @@
 import { WORKSPACE_RESTORE_LOCK_TIMEOUT_CODE } from "@tickernelz/paperclip-pro-adapter-utils/workspace-restore-merge";
-import { withAccountHomeSecretMutationLock } from "@tickernelz/paperclip-pro-adapter-codex-local/server";
+import { withAccountHomeSecretMutationLock } from "./ai-providers/codex/codex-auth-cache.js";
 import { syncConnectionCredentialBindings } from "./connection-credential-bindings.js";
 import { createHash, randomUUID } from "node:crypto";
 import { isDeepStrictEqual } from "node:util";

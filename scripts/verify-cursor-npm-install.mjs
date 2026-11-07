@@ -51,7 +51,7 @@ writeFileSync(join(consumer, 'package.json'), JSON.stringify({ private: true, ty
 for (const [index, name] of [...needed].entries()) {
  const { dir, manifest } = packages.get(name); const staged = join(root, `source-${index}`); const target = join(root, `package-${index}`); mkdirSync(staged);
  for (const file of manifest.files ?? ['dist']) {
-  const skills = file === 'skills' && ['server', 'packages/adapters/claude-local', 'packages/adapters/codex-local'].includes(dir);
+  const skills = file === 'skills' && dir === 'server';
   if (file === 'skills' && !skills && !existsSync(join(repo,dir,file))) continue;
   cpSync(skills ? join(repo,'skills') : join(repo,dir,file), join(staged,file), { recursive: true });
  }

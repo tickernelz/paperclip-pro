@@ -88,7 +88,7 @@ describeEmbeddedPostgres("run-dispatch postgres adapter", () => {
       name: "CodexCoder",
       role: "engineer",
       status: "active",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: {},
       runtimeConfig: { heartbeat: { wakeOnDemand: true, maxConcurrentRuns: 1 } },
       permissions: {},
@@ -108,7 +108,7 @@ describeEmbeddedPostgres("run-dispatch postgres adapter", () => {
       name: input.name,
       role: input.role ?? "engineer",
       status: "active",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: {},
       runtimeConfig: { heartbeat: { wakeOnDemand: true, maxConcurrentRuns: 1 } },
       permissions: {},
@@ -1097,7 +1097,7 @@ describeEmbeddedPostgres("run-dispatch postgres adapter", () => {
       { id: runId, companyId, agentId, status: "queued", contextSnapshot: { issueId, wakeReason: "issue_commented" } },
     ]);
     await db.insert(heartbeatRunEvents).values({ companyId, agentId, runId: previousRunId,
-      seq: 1, eventType: "adapter.invoke", payload: { adapterType: "codex_local" } });
+      seq: 1, eventType: "adapter.invoke", payload: { adapterType: "omp_local" } });
     const [action] = await db.insert(issueRecoveryActions).values({ companyId, sourceIssueId: issueId,
       kind: "active_run_watchdog", ownerType: "board", cause: "legacy_execution_requires_reconciliation", status,
       evidence: { runId: previousRunId, automaticRecovery: { replay: "blocked", actionOutcome: "unknown" } },
@@ -1121,7 +1121,7 @@ describeEmbeddedPostgres("run-dispatch postgres adapter", () => {
 
   it.each(["process", "http", null])("keeps a historical %s hold after switching to a conversation adapter", async historicalAdapter => {
     const { companyId, agentId } = await seedCompanyAndAgent();
-    await db.update(agents).set({ adapterType: "codex_local" }).where(eq(agents.id, agentId));
+    await db.update(agents).set({ adapterType: "omp_local" }).where(eq(agents.id, agentId));
     const issueId = randomUUID(), previousRunId = randomUUID();
     await seedIssue({ companyId, issueId, status: "blocked", assigneeAgentId: agentId });
     await db.insert(heartbeatRuns).values({ id: previousRunId, companyId, agentId,

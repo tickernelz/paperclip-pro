@@ -381,7 +381,7 @@ describeEmbeddedPostgres("paperclip-pro company import/export e2e", () => {
         body: JSON.stringify({
           name: "Export Engineer",
           role: "engineer",
-          adapterType: "claude_local",
+          adapterType: "omp_local",
           adapterConfig: {},
           instructionsBundle: {
             files: {

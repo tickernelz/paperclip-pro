@@ -13,7 +13,6 @@ import { completeConnectionIntentSchema } from "@tickernelz/paperclip-pro-shared
 import { agentFileStore, agentFileTokenFromHash } from "../services/agent-file-store.js";
 import { pipeline } from "node:stream/promises";
 import { resolveAgentAppearance, agentAvatarUrl, agentAuthorityCapabilities } from "@tickernelz/paperclip-pro-shared";
-import { listOpenRouterModels } from "../services/openrouter-models.js";
 import { withManagedAiProbe, stripAiAuthBindings } from "../services/ai-connection-runtime.js";
 import {
   ADAPTER_AUTH_MISSING_CHECK_CODE,
@@ -35,7 +34,7 @@ import { executionProjectionForRun, executionProjectionsForRunRows, executionPro
 import { applyMcpReasoningEffort } from "../services/public-mcp/agent-config.js";
 import { selectDashboardRunIds } from "../services/dashboard-run-selection.js";
 import { Router, type NextFunction, type Request, type Response } from "express";
-import { generateKeyPairSync, randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import { readFile, rm } from "node:fs/promises";
 import path from "node:path";
 import type { Db } from "@tickernelz/paperclip-pro-db";
@@ -85,7 +84,6 @@ import {
   normalizePaperclipRunnerAdapterConfig,
   PAPERCLIP_OPERATIONAL_SKILL_KEY,
   parseObject,
-  resolvePaperclipInstanceRootForAdapter,
   readPaperclipSkillSyncPreference,
   writePaperclipSkillSyncPreference,
 } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
@@ -142,11 +140,10 @@ import type {
   AdapterEnvironmentCheck,
   AdapterEnvironmentTestResult,
 } from "@tickernelz/paperclip-pro-adapter-utils";
-import { evaluateCodexCredentialReadiness } from "@tickernelz/paperclip-pro-adapter-codex-local/server";
 import type { AdapterAuthSignal, AdapterAuthSignalResponse, CodexAccountBindingClaim } from "@tickernelz/paperclip-pro-shared";
 import { getDisabledAdapterTypes } from "../services/adapter-plugin-store.js";
 import { skillVersionSelectionMap } from "../services/runtime-skill-selections.js";
-import { isFixedClaudeOAuthBinding, secretService } from "../services/secrets.js";
+import { secretService } from "../services/secrets.js";
 import { authorizationDeniedDetails } from "../services/authorization.js";
 import { providerTraceStore } from "../services/provider-trace-store.js";
 import {
@@ -162,7 +159,12 @@ import {
   listAdapterModels,
   refreshAdapterModels,
   requireServerAdapter,
+  findRunnerHarness,
+  requireRunnerHarness,
+  listRunnerHarnessModels,
+  refreshRunnerHarnessModels,
 } from "../adapters/index.js";
+import { isRetiredAdapterModule } from "../adapters/retired.js";
 import {
   REDACTED_EVENT_VALUE,
   redactAgentAdapterConfig,
@@ -195,7 +197,6 @@ import {
   isTruthyRuntimeEnvValue,
   resolveWorktreeRunExecutionActivationState,
 } from "../services/instance-settings.js";
-import { runClaudeLogin } from "@tickernelz/paperclip-pro-adapter-claude-local/server";
 import { createInviteRateLimiter } from "../services/invite-rate-limit.js";
 import {
   SetupTokenSessionService,
@@ -231,23 +232,11 @@ import type {
   ClaudeSetupTokenOverwrite,
   SetupTokenTransportAdvisory,
 } from "@tickernelz/paperclip-pro-shared";
-import { SETUP_TOKEN_TRANSPORT_ADVISORY_CODE } from "@tickernelz/paperclip-pro-shared";
-import {
-  DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX,
-  DEFAULT_CODEX_LOCAL_MODEL,
-} from "@tickernelz/paperclip-pro-adapter-codex-local";
-import {
-  checkStagedCredentialReadiness,
-  promoteDeviceLoginCredential,
-  readSubscriptionAccountId,
-  resolveManagedCodexHomeDir,
-  withAccountHomeSecretMutationLock,
-  withCodexAccountHomePromotionLock,
-} from "@tickernelz/paperclip-pro-adapter-codex-local/server";
-import {
-  checkStagedGrokCredentialReadiness,
-  promoteGrokDeviceLoginCredential,
-} from "@tickernelz/paperclip-pro-adapter-grok-local/server";
+import { retiredAdapterMessage, SETUP_TOKEN_TRANSPORT_ADVISORY_CODE } from "@tickernelz/paperclip-pro-shared";
+import { checkStagedCredentialReadiness, promoteDeviceLoginCredential } from "../services/ai-providers/codex/adapter-auth-promotion.js";
+import { readSubscriptionAccountId, withAccountHomeSecretMutationLock, withCodexAccountHomePromotionLock } from "../services/ai-providers/codex/codex-auth-cache.js";
+import { evaluateCodexCredentialReadiness, resolveManagedCodexHomeDir } from "../services/ai-providers/codex/codex-home.js";
+import { checkStagedGrokCredentialReadiness, promoteGrokDeviceLoginCredential } from "../services/ai-providers/grok/adapter-auth-promotion.js";
 import {
   AdapterAuthSessionConflictError,
   createDeviceLoginService,
@@ -259,11 +248,6 @@ import {
   type CredentialPromotion,
 } from "../services/device-login-service.js";
 import type { AdapterAuthSessionOwnerResponse } from "@tickernelz/paperclip-pro-shared";
-import { DEFAULT_CURSOR_LOCAL_MODEL } from "@tickernelz/paperclip-pro-adapter-cursor-local";
-import { DEFAULT_GEMINI_LOCAL_MODEL } from "@tickernelz/paperclip-pro-adapter-gemini-local";
-import { DEFAULT_KIMI_LOCAL_MODEL } from "@tickernelz/paperclip-pro-adapter-kimi-local";
-import { DEFAULT_OPENCODE_LOCAL_MODEL } from "@tickernelz/paperclip-pro-adapter-opencode-local";
-import { requireOpenCodeModelId } from "@tickernelz/paperclip-pro-adapter-opencode-local/server";
 import {
   loadDefaultAgentInstructionsBundle,
   resolveDefaultAgentInstructionsBundleRole,
@@ -543,14 +527,7 @@ export function agentRoutes(
   // Legacy hardcoded maps — used as fallback when adapter module does not
   // declare capability flags explicitly.
   const DEFAULT_INSTRUCTIONS_PATH_KEYS: Record<string, string> = {
-    claude_local: "instructionsFilePath",
-    codex_local: "instructionsFilePath",
     droid_local: "instructionsFilePath",
-    gemini_local: "instructionsFilePath",
-    kimi_local: "instructionsFilePath",
-    opencode_local: "instructionsFilePath",
-    cursor: "instructionsFilePath",
-    pi_local: "instructionsFilePath",
   };
   const DEFAULT_MANAGED_INSTRUCTIONS_ADAPTER_TYPES = new Set(Object.keys(DEFAULT_INSTRUCTIONS_PATH_KEYS));
 
@@ -1477,7 +1454,7 @@ export function agentRoutes(
   // type. Return null when the adapter declares no capability, so a guard fails
   // closed on the absent case.
   function getRegistryLoginCapability(type: string) {
-    return findActiveServerAdapter(type)?.loginCapability ?? null;
+    return findActiveServerAdapter(type)?.loginCapability ?? findRunnerHarness(type)?.loginCapability ?? null;
   }
 
   // The device-login route drives a login that shows a one-time code on a real
@@ -1847,6 +1824,9 @@ export function agentRoutes(
    */
   async function assertSelectableAdapterType(type: string | null | undefined, config?: unknown): Promise<string> {
     const adapterType = assertKnownAdapterType(type);
+    if (isRetiredAdapterModule(findActiveServerAdapter(adapterType))) {
+      throw unprocessable(retiredAdapterMessage(adapterType), { code: "adapter_retired" });
+    }
     if (adapterType === "paperclip_runner") {
       const experimental = await instanceSettings.getExperimental();
       if (asRecord(config)?.provider === "openai_dot") {
@@ -1864,6 +1844,7 @@ export function agentRoutes(
     const disabled = new Set(getDisabledAdapterTypes());
     if (!disabled.has(adapterType)) return adapterType;
     const available = listServerAdapters()
+      .filter((a) => !isRetiredAdapterModule(a))
       .map((a) => a.type)
       .filter((t) => !disabled.has(t))
       .sort();
@@ -2222,138 +2203,6 @@ export function agentRoutes(
     );
   }
 
-  function generateEd25519PrivateKeyPem(): string {
-    const { privateKey } = generateKeyPairSync("ed25519");
-    return privateKey.export({ type: "pkcs8", format: "pem" }).toString();
-  }
-
-  function ensureGatewayDeviceKey(
-    adapterType: string | null | undefined,
-    adapterConfig: Record<string, unknown>,
-  ): Record<string, unknown> {
-    if (adapterType !== "openclaw_gateway") return adapterConfig;
-    const disableDeviceAuth = parseBooleanLike(adapterConfig.disableDeviceAuth) === true;
-    if (disableDeviceAuth) return adapterConfig;
-    if (asNonEmptyString(adapterConfig.devicePrivateKeyPem)) return adapterConfig;
-    return { ...adapterConfig, devicePrivateKeyPem: generateEd25519PrivateKeyPem() };
-  }
-
-  function codexLocalAgentHome(companyId: string, agentId: string): string {
-    const instanceRoot = resolvePaperclipInstanceRootForAdapter({
-      homeDir: asNonEmptyString(process.env.PAPERCLIP_HOME) ?? undefined,
-      instanceId: asNonEmptyString(process.env.PAPERCLIP_INSTANCE_ID) ?? undefined,
-      env: process.env,
-    });
-    return path.resolve(instanceRoot, "companies", companyId, "agents", agentId, "codex-home");
-  }
-
-  function codexLocalEnvKeyConfigured(value: unknown): boolean {
-    if (asEnvBindingString(value)) return true;
-    const record = asRecord(value);
-    return record?.type === "secret_ref" && typeof record.secretId === "string";
-  }
-
-  // codex_local agents inherit whatever Codex login is already on the device
-  // (the host's ~/.codex or $CODEX_HOME) by default, so a fresh agent needs no
-  // env overrides at all. We only carve out an isolated per-agent CODEX_HOME
-  // when the agent sets its own OPENAI_API_KEY, so that key's api-key auth.json
-  // does not collide with the shared company home other agents use for the host
-  // login. Agents without a key share the host credentials.
-  function applyCodexLocalKeyIsolation(
-    companyId: string,
-    agentId: string,
-    adapterType: string | null | undefined,
-    adapterConfig: Record<string, unknown>,
-  ): Record<string, unknown> {
-    if (adapterType !== "codex_local") return adapterConfig;
-    const existingEnv = asRecord(adapterConfig.env);
-    if (!existingEnv) return adapterConfig;
-    if (!codexLocalEnvKeyConfigured(existingEnv.OPENAI_API_KEY)) return adapterConfig;
-    if (codexLocalEnvKeyConfigured(existingEnv.CODEX_HOME)) return adapterConfig;
-    return {
-      ...adapterConfig,
-      env: { ...existingEnv, CODEX_HOME: codexLocalAgentHome(companyId, agentId) },
-    };
-  }
-
-  // The provider credential environment keys a hired agent can inherit from the
-  // hiring agent, by adapter type. Each key holds a credential. A configuration
-  // key such as CODEX_HOME or GROK_HOME is a path, not a credential, and stays
-  // out of this list.
-  const INHERITABLE_AGENT_CREDENTIAL_ENV_KEYS: Record<string, readonly string[]> = {
-    claude_local: ["ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "CLAUDE_CODE_OAUTH_TOKEN"],
-    codex_local: ["OPENAI_API_KEY", "CODEX_API_KEY"],
-    grok_local: ["XAI_API_KEY"],
-  };
-
-  function isInheritableCredentialReference(value: unknown): value is Record<string, unknown> {
-    const record = asRecord(value);
-    return record !== null && (record.type === "secret_ref" || record.type === "user_secret_ref");
-  }
-
-  // A hired agent inherits the provider credential references the hiring
-  // agent already holds for the same adapter type, so a freshly hired agent
-  // can run without a separate credential setup step. The merge copies each
-  // reference object whole, so the child keeps the parent's pinned version
-  // and its other fields. A key the hire request already supplies always
-  // wins, and the merge never inherits a plain environment value.
-  //
-  // A claude_local hire request that already supplies any Claude credential
-  // key inherits no Claude credential key at all. That keeps child-wins
-  // precedence and rules out the forbidden pairing of the fixed OAuth binding
-  // with an ANTHROPIC_API_KEY.
-  //
-  // The hiring agent must belong to the target company. Without that check, an
-  // agent that can create agents in another company could copy its own
-  // company's credential reference into that other company.
-  async function applyHiringAgentAuthInheritance(
-    req: Request,
-    companyId: string,
-    adapterType: string | null | undefined,
-    adapterConfig: Record<string, unknown>,
-    runtimeConfig: unknown,
-  ): Promise<{ adapterConfig: Record<string, unknown>; inheritedFixedClaudeOAuthBinding: boolean }> {
-    const noInheritance = { adapterConfig, inheritedFixedClaudeOAuthBinding: false };
-    if (asRecord(runtimeConfig)?.aiConnection) return noInheritance;
-    if (req.actor.type !== "agent" || !req.actor.agentId) return noInheritance;
-    const credentialKeys = adapterType ? INHERITABLE_AGENT_CREDENTIAL_ENV_KEYS[adapterType] : undefined;
-    if (!credentialKeys) return noInheritance;
-
-    const parent = await svc.getById(req.actor.agentId);
-    if (!parent || parent.companyId !== companyId || parent.adapterType !== adapterType) return noInheritance;
-    // Managed parents must not pass stale legacy credential references to hires.
-    if (aiRuntimeConnectionBindingSchema.safeParse(parent.runtimeConfig.aiConnection).success) return noInheritance;
-    const parentEnv = asRecord(asRecord(parent.adapterConfig)?.env);
-    if (!parentEnv) return noInheritance;
-
-    const existingEnv = asRecord(adapterConfig.env);
-    const claudeCredentialKeys = INHERITABLE_AGENT_CREDENTIAL_ENV_KEYS.claude_local;
-    const childHasClaudeCredential =
-      adapterType === "claude_local" &&
-      existingEnv !== null &&
-      claudeCredentialKeys.some((key) => existingEnv[key] !== undefined);
-    if (childHasClaudeCredential) return noInheritance;
-
-    const nextEnv: Record<string, unknown> = { ...(existingEnv ?? {}) };
-    let inheritedFixedClaudeOAuthBinding = false;
-    let changed = false;
-    for (const key of credentialKeys) {
-      if (existingEnv && existingEnv[key] !== undefined) continue;
-      const parentValue = parentEnv[key];
-      if (!isInheritableCredentialReference(parentValue)) continue;
-      nextEnv[key] = { ...parentValue };
-      changed = true;
-      if (key === "CLAUDE_CODE_OAUTH_TOKEN" && isFixedClaudeOAuthBinding(parentValue)) {
-        inheritedFixedClaudeOAuthBinding = true;
-      }
-    }
-    if (!changed) return noInheritance;
-    return {
-      adapterConfig: { ...adapterConfig, env: nextEnv },
-      inheritedFixedClaudeOAuthBinding,
-    };
-  }
-
   function applyCreateDefaultsByAdapterType(
     adapterType: string | null | undefined,
     adapterConfig: Record<string, unknown>,
@@ -2362,31 +2211,7 @@ export function agentRoutes(
     if (adapterType === "paperclip_runner") {
       return normalizePaperclipRunnerAdapterConfig(adapterType, next);
     }
-    if (adapterType === "codex_local") {
-      const hasBypassFlag =
-        typeof next.dangerouslyBypassApprovalsAndSandbox === "boolean" ||
-        typeof next.dangerouslyBypassSandbox === "boolean";
-      if (!hasBypassFlag) {
-        next.dangerouslyBypassApprovalsAndSandbox = DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX;
-      }
-      return ensureGatewayDeviceKey(adapterType, next);
-    }
-    if (adapterType === "gemini_local" && !asNonEmptyString(next.model)) {
-      next.model = DEFAULT_GEMINI_LOCAL_MODEL;
-      return ensureGatewayDeviceKey(adapterType, next);
-    }
-    if (adapterType === "kimi_local" && !asNonEmptyString(next.model)) {
-      next.model = DEFAULT_KIMI_LOCAL_MODEL;
-      return ensureGatewayDeviceKey(adapterType, next);
-    }
-    if (adapterType === "opencode_local" && !asNonEmptyString(next.model)) {
-      next.model = DEFAULT_OPENCODE_LOCAL_MODEL;
-      return ensureGatewayDeviceKey(adapterType, next);
-    }
-    if (adapterType === "cursor" && !asNonEmptyString(next.model)) {
-      next.model = DEFAULT_CURSOR_LOCAL_MODEL;
-    }
-    return ensureGatewayDeviceKey(adapterType, next);
+    return next;
   }
 
   async function assertAdapterConfigConstraints(
@@ -2396,14 +2221,6 @@ export function agentRoutes(
   ) {
     if (adapterType === "paperclip_runner") {
       await assertFreshPaperclipRunnerProvider(companyId, adapterType, adapterConfig);
-      return;
-    }
-    if (adapterType !== "opencode_local") return;
-    try {
-      requireOpenCodeModelId(adapterConfig.model);
-    } catch (err) {
-      const reason = err instanceof Error ? err.message : String(err);
-      throw unprocessable(`Invalid opencode_local adapterConfig: ${reason}`);
     }
   }
 
@@ -2644,7 +2461,6 @@ export function agentRoutes(
 
   const LOCAL_ADAPTER_HOST_COMMAND_KEYS = [
     "command",
-    "hermesCommand",
     "args",
     "extraArgs",
     "cwd",
@@ -2652,12 +2468,6 @@ export function agentRoutes(
     "filesystemSandboxCommand",
   ] as const;
 
-  const LOCAL_ADAPTER_CREDENTIAL_ENV_KEYS: Record<string, readonly string[]> = {
-    ...INHERITABLE_AGENT_CREDENTIAL_ENV_KEYS,
-    gemini_local: ["GEMINI_API_KEY", "GOOGLE_API_KEY"],
-    kimi_local: ["KIMI_MODEL_API_KEY"],
-    opencode_local: ["PAPERCLIP_OPENCODE_PROVIDERS", "OPENCODE_AUTH_JSON"],
-  };
   const POOL_AUTH_OVERRIDE_ENV_KEYS = [
     "OPENAI_API_KEY", "ANTHROPIC_API_KEY", "PAPERCLIP_OPENCODE_PROVIDERS", "OPENCODE_AUTH_JSON",
   ] as const;
@@ -2670,16 +2480,13 @@ export function agentRoutes(
   }
 
   function containsOnlyLocalAdapterCredentialRefs(
-    adapterType: string,
     env: unknown,
     allowPlainCredentials: boolean,
   ): boolean {
     const envRecord = asRecord(env);
     if (!envRecord) return false;
-    const allowedKeys = LOCAL_ADAPTER_CREDENTIAL_ENV_KEYS[adapterType] ?? [];
     return Object.entries(envRecord).every(([key, value]) =>
-      (allowedKeys.includes(key) && isInheritableCredentialReference(value)) ||
-      (allowPlainCredentials && POOL_AUTH_OVERRIDE_ENV_KEYS.includes(key as typeof POOL_AUTH_OVERRIDE_ENV_KEYS[number]) && asEnvBindingString(value) !== null),
+      allowPlainCredentials && POOL_AUTH_OVERRIDE_ENV_KEYS.includes(key as typeof POOL_AUTH_OVERRIDE_ENV_KEYS[number]) && asEnvBindingString(value) !== null,
     );
   }
 
@@ -2692,7 +2499,7 @@ export function agentRoutes(
     if (req.actor.type !== "agent" || !adapterType.endsWith("_local") || isCompanyOwnerAgentActor(req)) return;
     const changedKeys = LOCAL_ADAPTER_HOST_COMMAND_KEYS.filter((key) =>
       adapterConfig[key] !== undefined &&
-      (key !== "env" || !containsOnlyLocalAdapterCredentialRefs(adapterType, adapterConfig.env, allowPlainCredentials)),
+      (key !== "env" || !containsOnlyLocalAdapterCredentialRefs(adapterConfig.env, allowPlainCredentials)),
     );
     if (changedKeys.length === 0) return;
     throw forbidden(
@@ -2787,21 +2594,12 @@ export function agentRoutes(
     return Array.from(out.values());
   }
 
-  // Legacy hardcoded set — used as fallback when adapter module does not
-  // declare requiresMaterializedRuntimeSkills explicitly.
-  const LEGACY_MATERIALIZED_SKILLS_SET = new Set([
-    "cursor",
-    "gemini_local",
-    "opencode_local",
-    "pi_local",
-  ]);
-
   function shouldMaterializeRuntimeSkillsForAdapter(adapterType: string) {
     const adapter = findActiveServerAdapter(adapterType);
     if (adapter?.requiresMaterializedRuntimeSkills !== undefined) {
       return adapter.requiresMaterializedRuntimeSkills;
     }
-    return LEGACY_MATERIALIZED_SKILLS_SET.has(adapterType);
+    return false;
   }
 
   async function buildRuntimeSkillConfig(
@@ -3050,7 +2848,7 @@ export function agentRoutes(
       const catalog = new Map<string, { id: string; label: string }>();
       for (const member of pool.members) {
         const memberAdapter = member.binding.provider === "openai" ? "codex_local" : member.binding.provider === "anthropic" ? "claude_local" : member.binding.provider === "xai" ? "grok_local" : "opencode_local";
-        const models = [{ id: member.profile.model, label: member.profile.model }, ...await listAdapterModels(memberAdapter)];
+        const models = [{ id: member.profile.model, label: member.profile.model }, ...await listRunnerHarnessModels(memberAdapter)];
         for (const model of models) {
           try { poolMemberRuntimeConfig({ ...member, profile: { ...member.profile, model: model.id } }, type); catalog.set(model.id, model); } catch { /* Only qualified profiles belong in the pool catalog. */ }
         }
@@ -3068,10 +2866,6 @@ export function agentRoutes(
       return;
     }
     const provider = asNonEmptyString(req.query.provider);
-    if (type === "opencode_local" && provider === "openrouter") {
-      res.json(await listOpenRouterModels(refresh));
-      return;
-    }
     if (type === "paperclip_runner" && provider && !isPaperclipRunnerProvider(provider)) {
       throw unprocessable("Unknown Paperclip Runner provider");
     }
@@ -3081,12 +2875,13 @@ export function agentRoutes(
           : provider === "aws_agentcore" ? type : "codex_local"
       : type;
     if (modelAdapterType === "opencode_local" && environment && environment.driver !== "local") {
-      res.json(requireServerAdapter(modelAdapterType).models ?? []);
+      res.json(requireRunnerHarness(modelAdapterType).models);
       return;
     }
-    const models = refresh
-      ? await refreshAdapterModels(modelAdapterType)
-      : await listAdapterModels(modelAdapterType);
+    const harness = findRunnerHarness(modelAdapterType);
+    const models = harness
+      ? refresh ? await refreshRunnerHarnessModels(modelAdapterType) : await listRunnerHarnessModels(modelAdapterType)
+      : refresh ? await refreshAdapterModels(modelAdapterType) : await listAdapterModels(modelAdapterType);
     res.json(models);
   });
 
@@ -3365,11 +3160,6 @@ export function agentRoutes(
             ...effectiveAdapterConfig,
             env: { ...parseObject(effectiveAdapterConfig.env), ...req.body.testCredentials },
           };
-          // Hermes authenticates the gateway itself through a top-level field.
-          // Keep its draft key out of persistence normalization, like env keys.
-          if (type === "hermes_gateway" && req.body.testCredentials.API_SERVER_KEY) {
-            effectiveAdapterConfig.apiKey = req.body.testCredentials.API_SERVER_KEY;
-          }
         }
         const result = aiBinding ? await withManagedAiProbe(db, { companyId, agentId: req.body.agentId ?? "", responsibleUserId: responsibleUserForAiRequest(req), adapterType: type, binding: aiBinding, config: effectiveAdapterConfig, allowUninstalledPersonal: !req.body.agentId, allowUninstalledShared: !req.body.agentId && await canInstallSharedAiConnectionForNewAgent(db, req, companyId, aiBinding) }, async managed => {
           const tested = await testManagedEnvironment(type, { companyId, adapterType: type, config: managed.config, executionTarget, environmentName }, aiBinding, managed, savedAgentId ?? undefined);
@@ -3400,11 +3190,6 @@ export function agentRoutes(
     },
   );
 
-  // The claude_local branch of the auth-signal read. It checks two host-local
-  // sources for a usable Claude Code OAuth token: the resolved envVars of the
-  // caller's selected environment, and the caller's own stored Claude login. It
-  // returns "present" the moment either source holds a non-empty token, so it
-  // never resolves more than the one env key it needs.
   async function evaluateClaudeAuthSignal(
     req: Request,
     companyId: string,
@@ -3437,14 +3222,6 @@ export function agentRoutes(
     return "absent";
   }
 
-  // The codex_local branch of the auth-signal read. The host filesystem check
-  // (`evaluateCodexCredentialReadiness` against `process.env`) describes only
-  // the Paperclip host, so it is authoritative for the null-environment and
-  // "local" driver cases, where the host is the execution target. For a
-  // non-local environment (a sandbox), the host's own credential state says
-  // nothing about that sandbox, so the route checks the environment's own
-  // OPENAI_API_KEY binding instead and otherwise reports "unknown" -- never
-  // "present" from a host login the sandbox does not share.
   async function evaluateCodexAuthSignal(
     req: Request,
     companyId: string,
@@ -3482,13 +3259,6 @@ export function agentRoutes(
     return readiness.ready ? "present" : "absent";
   }
 
-  // The cheap host-local authentication signal for one adapter type. The route
-  // reads host-local state only: a stored Claude login, a resolved environment
-  // env var, or the local Codex credential readiness check. It leases no
-  // sandbox, starts no shell command, and starts no model request. The two
-  // access gates below run before any read, so a caller who cannot create
-  // agents for the company and a foreign environment both fail closed before
-  // the route touches a credential source.
   router.get(
     "/companies/:companyId/adapters/:type/auth-signal",
     async (req, res) => {
@@ -3509,9 +3279,6 @@ export function agentRoutes(
           status = await evaluateCodexAuthSignal(req, companyId, environmentId);
         }
       } catch {
-        // A failed read is never a claim that the credential is absent. Report
-        // the neutral "unknown" signal instead, so the wizard falls back to
-        // showing the login panel.
         status = "unknown";
       }
 
@@ -4354,21 +4121,9 @@ export function agentRoutes(
     assertNoAgentLocalAdapterHostCommandMutation(req, hireInput.adapterType, rawHireAdapterConfig, await callerUsesAiConnectionPool(req, companyId));
     assertNoAgentProcessAdapterMutation(req, hireInput.adapterType, Object.keys(rawHireAdapterConfig).length > 0);
     const hiredAgentId = randomUUID();
-    const authInheritance = await applyHiringAgentAuthInheritance(
-      req,
-      companyId,
+    const requestedAdapterConfig = applyCreateDefaultsByAdapterType(
       hireInput.adapterType,
-      applyCreateDefaultsByAdapterType(
-        hireInput.adapterType,
-        rawHireAdapterConfig,
-      ),
-      hireInput.runtimeConfig,
-    );
-    const requestedAdapterConfig = applyCodexLocalKeyIsolation(
-      companyId,
-      hiredAgentId,
-      hireInput.adapterType,
-      authInheritance.adapterConfig,
+      rawHireAdapterConfig,
     );
     assertExternalInstructionsAdmin(req, {
       id: hiredAgentId,
@@ -4477,15 +4232,7 @@ export function agentRoutes(
             // from the actor, so an agent actor never reaches the no-claim bind.
             applyExistingWithoutClaim:
               req.actor.type !== "agent" && hireApplyStoredClaudeLogin === true,
-            // Set only when an agent actor hired this child and the merge above
-            // inherited the parent's fixed Claude OAuth reference. The service
-            // re-reads this named parent inside the write transaction before it
-            // permits the bind, so this identifier is a claim to verify, not a
-            // trusted value.
-            inheritedFromAgentId:
-              req.actor.type === "agent" && authInheritance.inheritedFixedClaudeOAuthBinding
-                ? req.actor.agentId
-                : null,
+            inheritedFromAgentId: null,
           },
         },
       );
@@ -4669,14 +4416,9 @@ export function agentRoutes(
     assertNoAgentLocalAdapterHostCommandMutation(req, createInput.adapterType, rawCreateAdapterConfig, await callerUsesAiConnectionPool(req, companyId));
     assertNoAgentProcessAdapterMutation(req, createInput.adapterType, Object.keys(rawCreateAdapterConfig).length > 0);
     const agentId = randomUUID();
-    const requestedAdapterConfig = applyCodexLocalKeyIsolation(
-      companyId,
-      agentId,
+    const requestedAdapterConfig = applyCreateDefaultsByAdapterType(
       createInput.adapterType,
-      applyCreateDefaultsByAdapterType(
-        createInput.adapterType,
-        rawCreateAdapterConfig,
-      ),
+      rawCreateAdapterConfig,
     );
     assertExternalInstructionsAdmin(req, {
       id: agentId,
@@ -5564,14 +5306,9 @@ export function agentRoutes(
           rawEffectiveAdapterConfig,
         );
       }
-      const effectiveAdapterConfig = applyCodexLocalKeyIsolation(
-        existing.companyId,
-        existing.id,
+      const effectiveAdapterConfig = applyCreateDefaultsByAdapterType(
         requestedAdapterType,
-        applyCreateDefaultsByAdapterType(
-          requestedAdapterType,
-          rawEffectiveAdapterConfig,
-        ),
+        rawEffectiveAdapterConfig,
       );
       const normalizedEffectiveAdapterConfig = await normalizeMediatedAdapterConfigForPersistence({
         companyId: existing.companyId,
@@ -6380,41 +6117,6 @@ export function agentRoutes(
     }
 
     res.status(202).json(run);
-  });
-
-  router.post("/agents/:id/claude-login", async (req, res) => {
-    assertBoard(req);
-    const id = req.params.id as string;
-    const agent = await getAccessibleResource(req, res, svc.getById(id), "Agent not found");
-    if (!agent) return;
-    await assertBoardCanManageAgentsForCompany(req, agent.companyId);
-    if (agent.adapterType !== "claude_local") {
-      res.status(400).json({ error: "Login is only supported for claude_local agents" });
-      return;
-    }
-
-    const config = asRecord(agent.adapterConfig) ?? {};
-    // Persisted agent: default declared mode; consumerId = agent.id matches the
-    // declaration rows written at env.<KEY> by syncAgentAdapterEnvBindings.
-    const { config: runtimeConfig } = await secretsSvc.resolveAdapterConfigForRuntime(
-      agent.companyId,
-      config,
-      buildActorSecretContext(req, { consumerType: "agent", consumerId: agent.id }),
-      { adapterType: agent.adapterType },
-    );
-    const result = await runClaudeLogin({
-      runId: `claude-login-${randomUUID()}`,
-      agent: {
-        id: agent.id,
-        companyId: agent.companyId,
-        name: agent.name,
-        adapterType: agent.adapterType,
-        adapterConfig: agent.adapterConfig,
-      },
-      config: runtimeConfig,
-    });
-
-    res.json(result);
   });
 
   // --- Setup-token login session routes --------------------------------------

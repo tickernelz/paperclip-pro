@@ -1,3 +1,4 @@
+import { RUNNER_HARNESS_ADAPTER_TYPES } from "./constants.js";
 import type { AgentAdapterType, EnvironmentDriver } from "./constants.js";
 import type { SandboxEnvironmentProvider } from "./types/environment.js";
 import type {
@@ -64,18 +65,7 @@ export interface EnvironmentCapabilities {
   sandboxProviders: Record<SandboxEnvironmentProvider, EnvironmentProviderCapability>;
 }
 
-const REMOTE_MANAGED_ADAPTERS = new Set<AgentAdapterType>([
-  "claude_local",
-  "codex_local",
-  "paperclip_runner",
-  "cursor",
-  "gemini_local",
-  "grok_local",
-  "kimi_local",
-  "omp_local",
-  "opencode_local",
-  "pi_local",
-]);
+const REMOTE_MANAGED_ADAPTERS = new Set<AgentAdapterType>(["paperclip_runner", "omp_local", ...RUNNER_HARNESS_ADAPTER_TYPES]);
 
 export function adapterSupportsRemoteManagedEnvironments(adapterType: string): boolean {
   return REMOTE_MANAGED_ADAPTERS.has(adapterType as AgentAdapterType);

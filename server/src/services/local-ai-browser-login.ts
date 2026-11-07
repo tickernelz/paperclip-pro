@@ -2,8 +2,8 @@ import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { open } from "node:fs/promises";
 import { constants } from "node:fs";
 import path from "node:path";
-import { runSetupTokenLogin } from "@tickernelz/paperclip-pro-adapter-claude-local/server";
-import { runDeviceLogin } from "@tickernelz/paperclip-pro-adapter-codex-local/server";
+import { runSetupTokenLogin } from "./ai-providers/claude/setup-token-runner.js";
+import { runDeviceLogin } from "./ai-providers/codex/device-login-runner.js";
 import { ensureCommandResolvable, resolveCommandForLogs } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
 import { resolveCodexCommand } from "../vendor/paperclip-runner/index.js";
 

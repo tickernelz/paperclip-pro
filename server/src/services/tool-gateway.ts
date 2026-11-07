@@ -2472,8 +2472,6 @@ export function createToolGatewayService(
       "```",
     ].join("\n");
 
-    // Prosumer-facing card preview (M5/M7/M9). Respect an already-set custom preview
-    // (e.g. OpenClaw-supplied), otherwise emit plain language with no technical vocab.
     const previewMarkdown =
       actionRequest.previewMarkdown?.trim() ||
       buildHumanizedActionPreview({

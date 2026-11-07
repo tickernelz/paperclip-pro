@@ -114,7 +114,7 @@ vi.mock("../services/instance-settings.js", async (importOriginal) => ({
 
 vi.mock("../adapters/index.js", () => ({
   findServerAdapter: vi.fn(() => mockAdapter),
-  findActiveServerAdapter: vi.fn((adapterType: string) => adapterType === "paperclip_runner"
+  findActiveServerAdapter: vi.fn((adapterType: string) => adapterType === "paperclip_runner" || adapterType === "omp_local"
     ? { ...mockAdapter, supportsInstructionsBundle: true }
     : mockAdapter),
   listAdapterModels: vi.fn(),
@@ -159,7 +159,7 @@ function registerModuleMocks() {
 
   vi.doMock("../adapters/index.js", () => ({
     findServerAdapter: vi.fn(() => mockAdapter),
-    findActiveServerAdapter: vi.fn((adapterType: string) => adapterType === "paperclip_runner"
+    findActiveServerAdapter: vi.fn((adapterType: string) => adapterType === "paperclip_runner" || adapterType === "omp_local"
       ? { ...mockAdapter, supportsInstructionsBundle: true }
       : mockAdapter),
     listAdapterModels: vi.fn(),
@@ -1139,7 +1139,7 @@ describe("agent skill routes", () => {
       .send({
         name: "QA Agent",
         role: "engineer",
-        adapterType: "claude_local",
+        adapterType: "omp_local",
         adapterConfig: {},
         instructionsBundle: {
           files: {
@@ -1175,7 +1175,7 @@ describe("agent skill routes", () => {
       .send({
         name: "QA Agent",
         role: "engineer",
-        adapterType: "claude_local",
+        adapterType: "omp_local",
         adapterConfig: {
           instructionsFilePath: "/tmp/existing/AGENTS.md",
           promptTemplate: "You are QA.",
@@ -1189,7 +1189,7 @@ describe("agent skill routes", () => {
     expect(mockAgentInstructionsService.materializeManagedBundle).not.toHaveBeenCalled();
   });
 
-  it.each(["claude_local", "paperclip_runner"].flatMap((adapterType) =>
+  it.each(["omp_local", "paperclip_runner"].flatMap((adapterType) =>
     ["agents", "agent-hires"].map((route) => ({ adapterType, route })),
   ))("materializes only the CEO entry file for $adapterType via $route", async ({ adapterType, route }) => {
     mockInstanceSettingsService.getExperimental.mockResolvedValue({
@@ -1215,7 +1215,7 @@ describe("agent skill routes", () => {
     );
   });
 
-  it.each(["claude_local", "paperclip_runner"].flatMap((adapterType) =>
+  it.each(["omp_local", "paperclip_runner"].flatMap((adapterType) =>
     ["agents", "agent-hires"].map((route) => ({ adapterType, route })),
   ))("preserves an explicit CEO instruction bundle for $adapterType via $route", async ({ adapterType, route }) => {
     mockInstanceSettingsService.getExperimental.mockResolvedValue({
@@ -1257,7 +1257,7 @@ describe("agent skill routes", () => {
       .send({
         name: "Engineer",
         role: "engineer",
-        adapterType: "claude_local",
+        adapterType: "omp_local",
         adapterConfig: {},
       }));
 
@@ -1268,7 +1268,7 @@ describe("agent skill routes", () => {
         expect.objectContaining({
           id: createdAgentId,
           role: "engineer",
-          adapterType: "claude_local",
+          adapterType: "omp_local",
         }),
         expect.objectContaining({
           "AGENTS.md": "You are an agent in a Paperclip company.\n",
@@ -1284,7 +1284,7 @@ describe("agent skill routes", () => {
       .send({
         name: "Ada",
         role: "general",
-        adapterType: "claude_local",
+        adapterType: "omp_local",
         adapterConfig: {},
         onboardingFirstAgent: true,
       }));
@@ -1355,12 +1355,12 @@ describe("agent skill routes", () => {
   });
 
   it("does not trust an agent-supplied onboarding marker to select chief-of-staff defaults", async () => {
-    mockAgentService.getById.mockResolvedValue(makeAgent("claude_local"));
+    mockAgentService.getById.mockResolvedValue(makeAgent("omp_local"));
     const res = await request(await createApp(createDb(), {
       type: "agent", agentId: "11111111-1111-4111-8111-111111111111", companyId: "company-1",
     }))
       .post("/api/companies/company-1/agent-hires")
-      .send({ name: "Biff", role: "general", adapterType: "claude_local", onboardingFirstAgent: true });
+      .send({ name: "Biff", role: "general", adapterType: "omp_local", onboardingFirstAgent: true });
     expect(res.status, JSON.stringify(res.body)).toBe(201);
     expect(mockAgentService.create.mock.calls[0][1].adapterConfig.paperclipSkillSync).toBeUndefined();
     await vi.waitFor(() => expect(mockAgentInstructionsService.materializeManagedBundle).toHaveBeenCalled());
@@ -1370,7 +1370,7 @@ describe("agent skill routes", () => {
 
   it("creates nothing for rejected Biff payloads and exactly one approval-gated hire after correction", async () => {
     const app = await createApp(createDb(true));
-    const hire = { name: "Biff", role: "general", adapterType: "codex_local", capabilities: "Be a friendly, affable robot" };
+    const hire = { name: "Biff", role: "general", adapterType: "omp_local", capabilities: "Be a friendly, affable robot" };
     const retired = await request(app).post("/api/companies/company-1/agent-hires")
       .send({ ...hire, adapterConfig: { promptTemplate: "Be friendly" } });
     expect(retired.status).toBe(422);
@@ -1592,7 +1592,7 @@ describe("agent skill routes", () => {
       .send({
         name: "QA Agent",
         role: "engineer",
-        adapterType: "claude_local",
+        adapterType: "omp_local",
         adapterConfig: {},
         instructionsBundle: {
           files: {
@@ -1628,7 +1628,7 @@ describe("agent skill routes", () => {
       .send({
         name: "QA Agent",
         role: "engineer",
-        adapterType: "claude_local",
+        adapterType: "omp_local",
         adapterConfig: {
           instructionsFilePath: "/tmp/existing/AGENTS.md",
           promptTemplate: "You are QA.",

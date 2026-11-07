@@ -10,25 +10,6 @@ import {
   startAdapterExecutionTargetProcessSessionBridge,
 } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
 
-// This file is a characterization test. It pins the engine boundary's CURRENT
-// behavior; it never changes production code. Each test states the observed
-// contract of `executeAcpxEngine` as data, so a later refactor that alters an
-// exit path's result form, its finalization set, or its warm-lane decision
-// fails here.
-//
-// Adapter-boundary automatic CLI fallback note (File 1b): the codex, claude, and
-// gemini adapters wrap this engine and fall back to their CLI lane when an
-// AUTOMATIC ACP selection fails, but RETHROW when ACP was EXPLICITLY selected.
-// Those three adapters live in higher packages that depend on this one, so an
-// adapter-utils test cannot import them (a reverse dependency does not exist in
-// package.json). That branch already has REAL coverage in each adapter package:
-//   - packages/adapters/codex-local/src/server/execute.acp-fallback.test.ts
-//   - packages/adapters/claude-local/src/server/execute.acp-fallback.test.ts
-//   - packages/adapters/gemini-local/src/server/execute.acp-fallback.test.ts
-// and each adapter's `normalizeEngine` / `resolveXxxExecutionEngineForRun`
-// classification (explicit acp/cli vs automatic acp) is pinned in each
-// package's acp.test.ts. This file pins the engine-level exit paths those
-// adapters wrap.
 
 // Wrap the staging seam + both sandbox bridges in call-recording spies that
 // still delegate to the real implementations (a runner-backed sandbox test

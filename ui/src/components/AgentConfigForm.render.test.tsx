@@ -16,9 +16,9 @@ import { defaultCreateValues } from "./agent-config-defaults";
 import { buildNewAgentHirePayload } from "../lib/new-agent-hire-payload";
 import { ApiError } from "../api/client";
 import { aiConnectionsApi } from "../api/ai-connections";
-import { CodexLocalConfigFields } from "../adapters/codex-local/config-fields";
+import { CodexLocalConfigFields } from "../adapters/paperclip-runner/config-fields";
 import type { AdapterConfigFieldsProps } from "../adapters/types";
-import { DEFAULT_CODEX_LOCAL_MODEL } from "@tickernelz/paperclip-pro-adapter-codex-local";
+import { DEFAULT_CODEX_LOCAL_MODEL } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/codex";
 
 const mockAgentsApi = vi.hoisted(() => ({
   get: vi.fn(),
@@ -773,23 +773,6 @@ describe("AgentConfigForm environment selector", () => {
     expect(result.container.querySelector('input[aria-label="Variable name"]')).toBeNull();
   });
 
-  it("reads and saves Pi thinking effort using the Pi runtime key", async () => {
-    const result = await renderForm([], { adapterType: "pi_local", adapterConfig: { model: "openrouter/anthropic/claude-sonnet-4.6", thinking: "high" } });
-    roots.push(result.root);
-    const effort = [...result.container.querySelectorAll("button")].find(button => button.textContent?.trim() === "high")!;
-    expect(effort).toBeTruthy();
-    await act(async () => effort.click());
-    await flushReact();
-    const low = [...document.querySelectorAll("button")].find(button => button.textContent?.trim() === "lowlow")!;
-    expect(low).toBeTruthy();
-    await act(async () => low.click());
-    await flushReact();
-    const save = [...result.container.querySelectorAll("button")].find(button => button.textContent?.trim() === "Save")!;
-    await act(async () => save.click());
-    expect(result.onSave).toHaveBeenCalledWith(expect.objectContaining({ adapterConfig: expect.objectContaining({ thinking: "low" }) }));
-    expect(result.onSave.mock.calls[0][0].adapterConfig.effort).toBeUndefined();
-  });
-
   it.each([
     ["Codex", "codex", undefined, DEFAULT_CODEX_LOCAL_MODEL],
     ["ACP agents", "acpx", "claude", "claude-sonnet-5"],
@@ -828,23 +811,6 @@ describe("AgentConfigForm environment selector", () => {
     }
   });
 
-  it("saves Grok 4.7 reasoning effort using the runtime key", async () => {
-    const result = await renderForm([], { adapterType: "grok_local", adapterConfig: { model: "grok-4.7", reasoningEffort: "high" } });
-    roots.push(result.root);
-    const effort = [...result.container.querySelectorAll("button")].find(button => button.textContent?.trim() === "High")!;
-    expect(effort).toBeTruthy();
-    await act(async () => effort.click());
-    await flushReact();
-    const xhigh = [...document.querySelectorAll("button")].find(button => button.textContent?.trim() === "X-Highxhigh")!;
-    expect(xhigh).toBeTruthy();
-    await act(async () => xhigh.click());
-    await flushReact();
-    const save = [...result.container.querySelectorAll("button")].find(button => button.textContent?.trim() === "Save")!;
-    await act(async () => save.click());
-    expect(result.onSave).toHaveBeenCalledWith(expect.objectContaining({ adapterConfig: expect.objectContaining({ reasoningEffort: "xhigh" }) }));
-    expect(result.onSave.mock.calls[0][0].adapterConfig.effort).toBeUndefined();
-  });
-
   it("hides the environment override when Local is the only configured environment", async () => {
     const result = await renderForm([
       makeEnvironment({ id: "local-1", name: "Local", driver: "local" }),
@@ -853,95 +819,6 @@ describe("AgentConfigForm environment selector", () => {
 
     expect(result.container.textContent).not.toContain("Environment override");
     expect(result.container.querySelector("select")).toBeNull();
-  });
-
-  it("renders GPT-6 Astra and its model-specific reasoning efforts", async () => {
-    mockAgentsApi.adapterModels.mockResolvedValue([
-      { id: "gpt-5.6-sol", label: "gpt-5.6-sol" },
-      { id: "gpt-6-astra", label: "gpt-6-astra" },
-    ]);
-    const result = await renderForm(
-      [makeEnvironment({ id: "local-1", name: "Local", driver: "local" })],
-      {
-        adapterConfig: {
-          model: "gpt-6-astra",
-          modelReasoningEffort: "ultra",
-        },
-      },
-    );
-    roots.push(result.root);
-
-    expect(result.container.textContent).toContain("gpt-6-astra");
-    const effortButton = Array.from(result.container.querySelectorAll("button"))
-      .find((button) => button.textContent?.trim() === "Ultra");
-    expect(effortButton).not.toBeUndefined();
-
-    await act(async () => {
-      effortButton!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    });
-    await flushReact();
-
-    const effortChoices = Array.from(document.body.querySelectorAll("button"))
-      .map((button) => button.textContent?.replace(/\s+/g, "").trim());
-    expect(effortChoices).toContain("Maxmax");
-    expect(effortChoices).toContain("Ultraultra");
-    expect(effortChoices).not.toContain("Minimalminimal");
-  });
-
-  it("removes a legacy incompatible effort when the model changes to Astra", async () => {
-    mockAgentsApi.adapterModels.mockResolvedValue([
-      { id: "gpt-5.6-sol", label: "gpt-5.6-sol" },
-      { id: "gpt-6-astra", label: "gpt-6-astra" },
-    ]);
-    const result = await renderForm(
-      [makeEnvironment({ id: "local-1", name: "Local", driver: "local" })],
-      {
-        adapterConfig: {
-          model: "gpt-5.6-sol",
-          reasoningEffort: "minimal",
-        },
-      },
-    );
-    roots.push(result.root);
-
-    const modelButton = Array.from(result.container.querySelectorAll("button"))
-      .find((button) => button.textContent?.trim() === "gpt-5.6-sol");
-    expect(modelButton).not.toBeUndefined();
-    await act(async () => {
-      modelButton!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    });
-    await flushReact();
-
-    const astraOption = Array.from(document.body.querySelectorAll("button"))
-      .find((button) => button.textContent?.trim() === "gpt-6-astra");
-    expect(astraOption).not.toBeUndefined();
-    await act(async () => {
-      astraOption!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    });
-    await flushReact();
-
-    const saveButton = Array.from(result.container.querySelectorAll("button"))
-      .find((button) => button.textContent?.trim() === "Save");
-    expect(saveButton).not.toBeUndefined();
-    await act(async () => {
-      saveButton!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    });
-
-    expect(result.onSave).toHaveBeenCalledWith({
-      adapterConfig: { model: "gpt-6-astra" },
-      replaceAdapterConfig: true,
-    });
-  });
-
-  it("names the Claude default for new and existing agents without pinning it", async () => {
-    const environments = [makeEnvironment({ id: "local-1", name: "Local", driver: "local" })];
-    const existing = await renderForm(environments, { adapterType: "claude_local", adapterConfig: {} });
-    roots.push(existing.root);
-    const created = await renderCreateForm(environments, { adapterType: "claude_local", model: "" });
-    roots.push(created.root);
-    expect(existing.container.textContent).toContain("Default (claude-opus-5)");
-    expect(created.container.textContent).toContain("Default (claude-opus-5)");
-    expect(existing.onSave).not.toHaveBeenCalled();
   });
 
   it("keeps secret access out of the main Configuration content", async () => {
@@ -975,7 +852,7 @@ describe("AgentConfigForm environment selector", () => {
         driver: "sandbox",
         config: { provider: "e2b" },
       }),
-    ]);
+    ], { adapterType: "omp_local" });
     roots.push(result.root);
 
     const text = result.container.textContent ?? "";
@@ -988,50 +865,6 @@ describe("AgentConfigForm environment selector", () => {
     expect(text).not.toContain("Execution");
     expect(text).not.toContain("Leave this unset to inherit the instance default");
     expect(text).not.toContain("Inherit instance default");
-  });
-
-  it("shows the environment override for Grok local agents", async () => {
-    const result = await renderForm(
-      [
-        makeEnvironment({ id: "local-1", name: "Local", driver: "local" }),
-        makeEnvironment({
-          id: "sandbox-1",
-          name: "E2B",
-          driver: "sandbox",
-          config: { provider: "e2b" },
-        }),
-      ],
-      { adapterType: "grok_local" },
-    );
-    roots.push(result.root);
-
-    const text = result.container.textContent ?? "";
-    const selector = result.container.querySelector("select");
-
-    expect(text).toContain("Environment override");
-    expect(selector?.textContent).toContain("E2B · sandbox");
-  });
-
-  it("shows the environment override for Kimi local agents", async () => {
-    const result = await renderForm(
-      [
-        makeEnvironment({ id: "local-1", name: "Local", driver: "local" }),
-        makeEnvironment({
-          id: "sandbox-1",
-          name: "E2B",
-          driver: "sandbox",
-          config: { provider: "e2b" },
-        }),
-      ],
-      { adapterType: "kimi_local" },
-    );
-    roots.push(result.root);
-
-    const text = result.container.textContent ?? "";
-    const selector = result.container.querySelector("select");
-
-    expect(text).toContain("Environment override");
-    expect(selector?.textContent).toContain("E2B · sandbox");
   });
 
   it("keeps an existing non-runnable override visible so it can be cleared", async () => {
@@ -1067,7 +900,7 @@ describe("AgentConfigForm environment selector", () => {
         config: { provider: "daytona" },
         metadata: { managedByPaperclip: true },
       }),
-    ]);
+    ], { adapterType: "omp_local" });
     roots.push(result.root);
 
     const selector = result.container.querySelector("select");
@@ -3825,32 +3658,6 @@ describe("AgentConfigForm managed-sandbox-only host surfaces", () => {
     vi.clearAllMocks();
   });
 
-  it("shows the host path and execution-engine fields when the policy is off", async () => {
-    const result = await renderForm(
-      [makeEnvironment({ id: "local-1", name: "Local", driver: "local" })],
-      { adapterType: "claude_local", adapterConfig: MANAGED_AGENT_CONFIG },
-    );
-    roots.push(result.root);
-
-    await act(async () => {
-      for (const button of result.container.querySelectorAll("button")) {
-        if (["Advanced", "Advanced Run Policy"].includes(button.textContent?.trim() ?? "")) button.click();
-      }
-    });
-    await flushReact();
-    const labels = fieldLabels(result.container);
-    expect(labels).toContain("Working directory (deprecated)");
-    expect(labels).toContain("Command");
-    expect(labels).toContain("Execution engine");
-    expect(labels).toContain("ACP server command");
-    expect(labels).toContain("ACP state directory");
-    expect(choosePathButtons(result.container).length).toBeGreaterThan(0);
-
-    const adapterFields = result.container.querySelector('[data-testid="adapter-config-fields"]');
-    expect(adapterFields?.getAttribute("data-managed-sandbox-only")).toBe("false");
-    expect(adapterFields?.getAttribute("data-hide-instructions-file")).toBe("false");
-  });
-
   it("hides the host path and execution-engine fields for claude_local when the policy is on", async () => {
     setManagedSandboxOnly(true);
     const result = await renderForm(
@@ -3875,25 +3682,6 @@ describe("AgentConfigForm managed-sandbox-only host surfaces", () => {
     // The stored values stay untouched: hiding is presentation, and an import
     // that carries adapter configuration from another instance must still save.
     expect(result.container.textContent).not.toContain("/srv/agents/cody");
-  });
-
-  it("keeps the non-path ACP controls visible when the policy hides the engine choice", async () => {
-    setManagedSandboxOnly(true);
-    const result = await renderForm(
-      [makeEnvironment({ id: "managed-1", name: "Managed", driver: "sandbox", config: { provider: "daytona" } })],
-      { adapterType: "claude_local", adapterConfig: MANAGED_AGENT_CONFIG },
-    );
-    roots.push(result.root);
-
-    await act(async () => {
-      for (const button of result.container.querySelectorAll("button")) {
-        if (["Advanced", "Advanced Run Policy"].includes(button.textContent?.trim() ?? "")) button.click();
-      }
-    });
-    await flushReact();
-    const labels = fieldLabels(result.container);
-    expect(labels).toContain("ACP session mode");
-    expect(labels).toContain("ACP non-interactive permissions");
   });
 
   it("keeps the host-path fields hidden while the policy is still loading", async () => {

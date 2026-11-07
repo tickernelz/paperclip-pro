@@ -15,16 +15,12 @@ import type {
 import { toPublicAdapterAuthSessionStatus } from "@tickernelz/paperclip-pro-shared";
 import {
   CODEX_DEVICE_LOGIN_COMMAND as DEFAULT_CODEX_LOGIN_COMMAND,
-  parseDeviceLoginPrompt,
   runDeviceLogin,
   type DeviceLoginOutcome as RunnerDeviceLoginOutcome,
-  type DeviceLoginPrompt,
   type SandboxLoginDriver,
-} from "@tickernelz/paperclip-pro-adapter-codex-local/server";
-import {
-  GROK_DEVICE_LOGIN_COMMAND as DEFAULT_GROK_LOGIN_COMMAND,
-  parseGrokDeviceLoginPrompt,
-} from "@tickernelz/paperclip-pro-adapter-grok-local/server";
+} from "./ai-providers/codex/device-login-runner.js";
+import { parseDeviceLoginPrompt, type DeviceLoginPrompt } from "./ai-providers/codex/device-login-parse.js";
+import { GROK_DEVICE_LOGIN_COMMAND as DEFAULT_GROK_LOGIN_COMMAND, parseGrokDeviceLoginPrompt } from "./ai-providers/grok/device-login-parse.js";
 import type { AdapterLoginPrompt } from "@tickernelz/paperclip-pro-adapter-utils";
 import {
   createLoginPtyTransport,

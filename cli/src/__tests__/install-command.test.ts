@@ -153,7 +153,7 @@ describe("managed install commands", () => {
     });
 
     await expect(assertReleaseSetPublished("2026.926.0", runCommand)).rejects.toThrow(
-      /2 of 31 packages are not published.*paperclip-pro-server.*paperclip-pro-ui/s,
+      /2 of 20 packages are not published.*paperclip-pro-server.*paperclip-pro-ui/s,
     );
     expect(runCommand).toHaveBeenCalledTimes(RELEASE_PACKAGE_NAMES.length);
   });

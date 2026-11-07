@@ -27,7 +27,7 @@ function createAgent(
     status: "active",
     reportsTo: null,
     capabilities: null,
-    adapterType: "codex_local",
+    adapterType: "omp_local",
     adapterConfig: {},
     runtimeConfig: {},
     budgetMonthlyCents: 0,
@@ -173,7 +173,7 @@ export const issueChatUxLiveRuns: LiveRunForIssue[] = [
     createdAt: "2026-04-06T12:04:00.000Z",
     agentId: primaryAgent.id,
     agentName: primaryAgent.name,
-    adapterType: "codex_local",
+    adapterType: "omp_local",
     issueId: "issue-ux",
   },
 ];

@@ -70,27 +70,7 @@ async function findSkillsStagingSites(): Promise<Map<string, boolean[]>> {
   return sites;
 }
 
-// The known `key: "skills"` staging sites and their reviewed
-// `followSymlinks` setting, as of this test's authorship. Each site's value
-// is a deliberate choice: the remote Claude ACP lane stages an
-// already-materialized, owned copy of the skill bundle (never a symlink),
-// so it must set `followSymlinks: false` — following a link there turns
-// into tar's `-h` flag (`sandbox-managed-runtime.ts`) and dereferences a
-// symlink planted in the bundle directory after it was built. Every other
-// listed site still stages the user's live skills directory directly and
-// relies on `followSymlinks: true` to resolve that directory's own
-// symlinks. A change to any of these values, or a new unlisted site, must
-// fail this test and force a deliberate review.
-const EXPECTED_SKILLS_STAGING_SITES: Record<string, boolean> = {
-  "claude-local/src/server/acp.ts": false,
-  "claude-local/src/server/execute.ts": true,
-  "cursor-local/src/server/execute.ts": true,
-  "gemini-local/src/server/acp.ts": true,
-  "gemini-local/src/server/execute.ts": true,
-  "kimi-local/src/server/execute.ts": true,
-  "opencode-local/src/server/execute.ts": true,
-  "pi-local/src/server/execute.ts": true,
-};
+const EXPECTED_SKILLS_STAGING_SITES: Record<string, boolean> = {};
 
 describe("remote skills staging sites (real source scan)", () => {
   it("matches the reviewed followSymlinks setting at every known site, and finds no unlisted site", async () => {
@@ -119,18 +99,6 @@ describe("remote skills staging sites (real source scan)", () => {
           "or no longer sets followSymlinks in that object literal.",
       ).toBe(true);
     }
-  });
-
-  it("stages the remote Claude ACP skill bundle without following a symlink", async () => {
-    // The one site this change owns: the materialized skill bundle must
-    // never be staged with tar's `-h` flag. A regression here would let a
-    // symlink planted in the bundle directory after it was built escape
-    // into the sandbox.
-    const discoveredSites = await findSkillsStagingSites();
-    const claudeAcpValues = discoveredSites.get(
-      "claude-local/src/server/acp.ts",
-    );
-    expect(claudeAcpValues).toEqual([false]);
   });
 
   it("finds a skills asset's followSymlinks value in either property order", () => {

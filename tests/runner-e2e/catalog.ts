@@ -31,10 +31,11 @@ import { createHash } from "node:crypto";
 import { fileURLToPath } from "node:url";
 import { createAgentSchema } from "../../packages/shared/src/validators/agent.js";
 import { createEnvironmentSchema } from "../../packages/shared/src/validators/environment.js";
-import { DEFAULT_CODEX_LOCAL_MODEL } from "../../packages/adapters/codex-local/src/index.js";
-import { models as claudeModels } from "../../packages/adapters/claude-local/src/index.js";
-import { DEFAULT_KIMI_LOCAL_MODEL } from "../../packages/adapters/kimi-local/src/index.js";
-import { DEFAULT_GROK_LOCAL_MODEL } from "../../packages/adapters/grok-local/src/index.js";
+import { DEFAULT_CODEX_LOCAL_MODEL } from "../../packages/adapter-utils/src/provider-models/codex.js";
+import { models as claudeModels } from "../../packages/adapter-utils/src/provider-models/claude.js";
+import { DEFAULT_GROK_LOCAL_MODEL } from "../../packages/adapter-utils/src/provider-models/grok.js";
+
+const DEFAULT_KIMI_LOCAL_MODEL = "kimi-code/kimi-for-coding";
 import { QUALIFIED_ACPX_PROFILES } from "../../packages/paperclip-runner/src/drivers/acpx/qualified-profiles.js";
 import { ACPX_QUALIFICATION_MODELS } from "../acpx-qualification-models.js";
 import { QUALIFIED_OPENCODE_MODEL } from "../../packages/paperclip-runner/src/drivers/opencode/opencode-server-driver.js";

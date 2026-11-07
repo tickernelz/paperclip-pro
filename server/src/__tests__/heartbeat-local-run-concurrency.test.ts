@@ -90,7 +90,7 @@ describeEmbeddedPostgres("instance-wide local CLI run concurrency", () => {
       name: `LocalRunner${index}`,
       role: "engineer",
       status: "active",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: {},
       runtimeConfig: { heartbeat: { wakeOnDemand: true, maxConcurrentRuns: 1 } },
       permissions: {},

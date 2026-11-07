@@ -187,7 +187,7 @@ describeEmbeddedPostgres("heartbeat plugin environments", () => {
       name: "CodexCoder",
       role: "engineer",
       status: "idle",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: {},
       runtimeConfig: {},
       defaultEnvironmentId: environmentId,
@@ -225,7 +225,7 @@ describeEmbeddedPostgres("heartbeat plugin environments", () => {
       // (per-run adapter / mixed-harness envs). environment-runtime.ts has two
       // drivers calling environmentAcquireLease; regressions here previously
       // shipped by editing only the non-heartbeat one.
-      adapterType: "codex_local",
+      adapterType: "omp_local",
     });
     await vi.waitFor(() => {
       expect(workerManager.call).toHaveBeenCalledWith(pluginId, "environmentReleaseLease", {
@@ -410,7 +410,7 @@ describeEmbeddedPostgres("heartbeat plugin environments", () => {
         name: "SharedEnvAgent",
         role: "engineer",
         status: "idle",
-        adapterType: "codex_local",
+        adapterType: "omp_local",
         adapterConfig: {},
         runtimeConfig: {},
         defaultEnvironmentId: null,
@@ -424,7 +424,7 @@ describeEmbeddedPostgres("heartbeat plugin environments", () => {
         name: "OverrideEnvAgent",
         role: "engineer",
         status: "idle",
-        adapterType: "codex_local",
+        adapterType: "omp_local",
         adapterConfig: {},
         runtimeConfig: {},
         defaultEnvironmentId: overrideEnvironmentId,
@@ -470,7 +470,7 @@ describeEmbeddedPostgres("heartbeat plugin environments", () => {
         config: { template: "shared" },
         agentId: agentAId,
         runId: sharedRun!.id,
-        adapterType: "codex_local",
+        adapterType: "omp_local",
       }),
       expect.objectContaining({
         companyId: companyBId,
@@ -478,7 +478,7 @@ describeEmbeddedPostgres("heartbeat plugin environments", () => {
         config: { template: "override" },
         agentId: agentBId,
         runId: overrideRun!.id,
-        adapterType: "codex_local",
+        adapterType: "omp_local",
       }),
     ]));
   }, 15_000);
@@ -614,7 +614,7 @@ describeEmbeddedPostgres("heartbeat plugin environments", () => {
       name: "CodexCoder",
       role: "engineer",
       status: "idle",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: {},
       runtimeConfig: {},
       defaultEnvironmentId: newEnvironmentId,
@@ -685,7 +685,7 @@ describeEmbeddedPostgres("heartbeat plugin environments", () => {
       agentId,
       runId: run!.id,
       workspaceMode: "shared_workspace",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
     });
   }, 15_000);
 });

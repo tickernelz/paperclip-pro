@@ -27,7 +27,7 @@ describe("heartbeat stop metadata", () => {
 
   it("records configured timeout policy and timeout stop reason", () => {
     const metadata = buildHeartbeatRunStopMetadata({
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: { timeoutSec: 45 },
       outcome: "timed_out",
       errorCode: "timeout",
@@ -58,7 +58,7 @@ describe("heartbeat stop metadata", () => {
     const result = mergeHeartbeatRunStopMetadata(
       { adapterExecutionTimeout, summary: "retained", executionCancellation: { state: "unconfirmed" } },
       buildHeartbeatRunStopMetadata({
-        adapterType: "claude_local", adapterConfig: { timeoutSec: configured }, outcome: "timed_out",
+        adapterType: "omp_local", adapterConfig: { timeoutSec: configured }, outcome: "timed_out",
       }),
     );
     expect(result).toMatchObject({
@@ -76,7 +76,7 @@ describe("heartbeat stop metadata", () => {
   ])("falls back to config for an invalid adapter resolution: %j", (adapterExecutionTimeout) => {
     expect(mergeHeartbeatRunStopMetadata(
       { adapterExecutionTimeout },
-      buildHeartbeatRunStopMetadata({ adapterType: "claude_local", adapterConfig: { timeoutSec: 45 }, outcome: "failed" }),
+      buildHeartbeatRunStopMetadata({ adapterType: "omp_local", adapterConfig: { timeoutSec: 45 }, outcome: "failed" }),
     )).toMatchObject({ effectiveTimeoutSec: 45, timeoutConfigured: true, timeoutSource: "config", timeoutFired: false });
   });
 
@@ -90,7 +90,7 @@ describe("heartbeat stop metadata", () => {
   it("distinguishes budget cancellation from manual cancellation", () => {
     expect(
       buildHeartbeatRunStopMetadata({
-        adapterType: "codex_local",
+        adapterType: "omp_local",
         adapterConfig: {},
         outcome: "cancelled",
         errorCode: "cancelled",
@@ -100,7 +100,7 @@ describe("heartbeat stop metadata", () => {
 
     expect(
       buildHeartbeatRunStopMetadata({
-        adapterType: "codex_local",
+        adapterType: "omp_local",
         adapterConfig: {},
         outcome: "cancelled",
         errorCode: "cancelled",
@@ -112,7 +112,7 @@ describe("heartbeat stop metadata", () => {
   it("records graceful interruption separately from failure", () => {
     expect(
       buildHeartbeatRunStopMetadata({
-        adapterType: "codex_local",
+        adapterType: "omp_local",
         adapterConfig: {},
         outcome: "interrupted",
         errorCode: "server_shutdown_interrupted",
@@ -124,7 +124,7 @@ describe("heartbeat stop metadata", () => {
   it("normalizes max-turn exhaustion stop reasons", () => {
     expect(
       buildHeartbeatRunStopMetadata({
-        adapterType: "claude_local",
+        adapterType: "omp_local",
         adapterConfig: {},
         outcome: "failed",
         errorCode: "turn_limit_exhausted",
@@ -135,7 +135,7 @@ describe("heartbeat stop metadata", () => {
     const merged = mergeHeartbeatRunStopMetadata(
       { stopReason: "turn_limit_exhausted" },
       buildHeartbeatRunStopMetadata({
-        adapterType: "claude_local",
+        adapterType: "omp_local",
         adapterConfig: {},
         outcome: "failed",
         errorCode: "adapter_failed",
@@ -147,7 +147,7 @@ describe("heartbeat stop metadata", () => {
   it("prioritizes succeeded outcome over inconsistent max-turn error metadata", () => {
     expect(
       buildHeartbeatRunStopMetadata({
-        adapterType: "claude_local",
+        adapterType: "omp_local",
         adapterConfig: {},
         outcome: "succeeded",
         errorCode: "max_turns_exhausted",
@@ -159,7 +159,7 @@ describe("heartbeat stop metadata", () => {
     const result = mergeHeartbeatRunStopMetadata(
       { summary: "done" },
       buildHeartbeatRunStopMetadata({
-        adapterType: "openclaw_gateway",
+        adapterType: "omp_local",
         adapterConfig: {},
         outcome: "succeeded",
       }),
@@ -168,8 +168,8 @@ describe("heartbeat stop metadata", () => {
     expect(result).toMatchObject({
       summary: "done",
       stopReason: "completed",
-      effectiveTimeoutSec: 120,
-      timeoutConfigured: true,
+      effectiveTimeoutSec: 0,
+      timeoutConfigured: false,
       timeoutSource: "default",
       timeoutFired: false,
     });

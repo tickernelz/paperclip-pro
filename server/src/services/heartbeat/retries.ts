@@ -203,7 +203,6 @@ export const PROCESS_LOSS_ERROR_CODES: Record<string, true> = {
 export const ADAPTER_SELF_SIGNALLED_ERROR_CODES: Record<string, true> = {
   codex_output_inactivity_monitor: true,
   paperclip_mcp_unavailable: true,
-  hermes_gateway_cancelled: true,
 };
 
 export function isTransientWorkspaceGitScanCode(code: string | null | undefined): boolean {
@@ -245,12 +244,6 @@ const ISOLATED_EXECUTION_WORKSPACE_MODES = [
   "operator_branch",
   "isolated",
 ] as const;
-
-type CodexTransientFallbackMode =
-  | "same_session"
-  | "safer_invocation"
-  | "fresh_session"
-  | "fresh_session_safer_invocation";
 
 export interface SharedWorkspaceHolder {
   runId: string;
@@ -303,15 +296,6 @@ export function computeWorkspaceBusyRetryDelayMs(
     WORKSPACE_BUSY_RETRY_BASE_DELAY_MS +
     Math.floor(jitter * WORKSPACE_BUSY_RETRY_JITTER_MS)
   );
-}
-
-function resolveCodexTransientFallbackMode(
-  attempt: number,
-): CodexTransientFallbackMode {
-  if (attempt <= 1) return "same_session";
-  if (attempt === 2) return "safer_invocation";
-  if (attempt === 3) return "fresh_session";
-  return "fresh_session_safer_invocation";
 }
 
 export function readHeartbeatRunErrorFamily(
@@ -585,11 +569,6 @@ export function createHeartbeatRetries(db: Db, dependencies: HeartbeatRetryDepen
       retryReason === BOUNDED_TRANSIENT_HEARTBEAT_RETRY_REASON
         ? readTransientRecoveryContractFromRun(run)
         : null;
-    const codexTransientFallbackMode =
-      agent.adapterType === "codex_local" &&
-      transientRecovery?.errorFamily === "transient_upstream"
-        ? resolveCodexTransientFallbackMode(nextAttempt)
-        : null;
     const transientRetryNotBefore =
       transientRecovery?.retryNotBefore ?? modelFallbackPlan?.availableAt ?? null;
     const contextSnapshot = parseObject(run.contextSnapshot);
@@ -860,7 +839,6 @@ export function createHeartbeatRetries(db: Db, dependencies: HeartbeatRetryDepen
                 transientRetryNotBefore.toISOString(),
             }
           : {}),
-        ...(codexTransientFallbackMode ? { codexTransientFallbackMode } : {}),
         [MODEL_FALLBACK_STATE_KEY]: undefined,
         ...(modelFallbackPlan
           ? {
@@ -1229,9 +1207,6 @@ export function createHeartbeatRetries(db: Db, dependencies: HeartbeatRetryDepen
                         transientRetryNotBefore.toISOString(),
                     }
                   : {}),
-                ...(codexTransientFallbackMode
-                  ? { codexTransientFallbackMode }
-                  : {}),
               },
               "normal_model",
             ),
@@ -1486,7 +1461,6 @@ export function createHeartbeatRetries(db: Db, dependencies: HeartbeatRetryDepen
                 transientRetryNotBefore.toISOString(),
             }
           : {}),
-        ...(codexTransientFallbackMode ? { codexTransientFallbackMode } : {}),
       },
     });
 

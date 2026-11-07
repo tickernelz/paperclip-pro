@@ -156,22 +156,18 @@ describe("OnboardingWizard adapter selection", () => {
   });
 
   it("snaps a disabled default adapterType to the first enabled adapter", async () => {
-    // A deployment whose adapter registry omits claude_local disables it, so
-    // the wizard's claude_local default must not survive as an invisible
-    // selection (the created agent could never acquire a lease).
     mockAdapterRegistry.list = [
-      { type: "claude_local" },
-      { type: "codex_local" },
-      { type: "opencode_local" },
+      { type: "omp_local" },
+      { type: "acme_local" },
     ];
-    mockAdapterRegistry.disabled = new Set(["claude_local"]);
+    mockAdapterRegistry.disabled = new Set(["omp_local"]);
 
     const { root } = await mount();
 
     const saved = JSON.parse(
       window.localStorage.getItem(ONBOARDING_STORAGE_KEY) ?? "{}",
     );
-    expect(saved.adapterType).toBe("codex_local");
+    expect(saved.adapterType).toBe("acme_local");
 
     await act(async () => {
       root.unmount();
@@ -180,12 +176,12 @@ describe("OnboardingWizard adapter selection", () => {
 
   it("keeps an enabled saved adapterType untouched", async () => {
     mockAdapterRegistry.list = [
-      { type: "claude_local" },
-      { type: "codex_local" },
+      { type: "omp_local" },
+      { type: "acme_local" },
     ];
     window.localStorage.setItem(
       ONBOARDING_STORAGE_KEY,
-      JSON.stringify({ step: 0, adapterType: "claude_local" }),
+      JSON.stringify({ step: 0, adapterType: "acme_local" }),
     );
 
     const { root } = await mount();
@@ -193,17 +189,17 @@ describe("OnboardingWizard adapter selection", () => {
     const saved = JSON.parse(
       window.localStorage.getItem(ONBOARDING_STORAGE_KEY) ?? "{}",
     );
-    expect(saved.adapterType).toBe("claude_local");
+    expect(saved.adapterType).toBe("acme_local");
 
     await act(async () => {
       root.unmount();
     });
   });
 
-  it("keeps onboarding on legacy adapters even when Paperclip Runner is enabled", async () => {
+  it("keeps onboarding on OMP even when Paperclip Runner is enabled", async () => {
     mockAdapterRegistry.list = [
       { type: "paperclip_runner" },
-      { type: "codex_local" },
+      { type: "omp_local" },
     ];
     window.localStorage.setItem(
       ONBOARDING_STORAGE_KEY,
@@ -222,7 +218,7 @@ describe("OnboardingWizard adapter selection", () => {
     const saved = JSON.parse(
       window.localStorage.getItem(ONBOARDING_STORAGE_KEY) ?? "{}",
     );
-    expect(saved.adapterType).toBe("codex_local");
+    expect(saved.adapterType).toBe("omp_local");
     expect(saved.model).toBe("");
     expect(saved.command).toBe("");
     expect(saved.args).toBe("");
@@ -235,7 +231,7 @@ describe("OnboardingWizard adapter selection", () => {
 
   it("normalizes a saved Paperclip Runner draft before adapter discovery resolves", async () => {
     mockAdapterRegistry.loaded = false;
-    mockAdapterRegistry.list = [{ type: "codex_local" }];
+    mockAdapterRegistry.list = [{ type: "omp_local" }];
     window.localStorage.setItem(
       ONBOARDING_STORAGE_KEY,
       JSON.stringify({
@@ -253,7 +249,7 @@ describe("OnboardingWizard adapter selection", () => {
     const saved = JSON.parse(
       window.localStorage.getItem(ONBOARDING_STORAGE_KEY) ?? "{}",
     );
-    expect(saved.adapterType).toBe("claude_local");
+    expect(saved.adapterType).toBe("omp_local");
     expect(saved.model).toBe("");
     expect(saved.command).toBe("");
     expect(saved.args).toBe("");
@@ -274,7 +270,7 @@ describe("OnboardingWizard adapter selection", () => {
       JSON.stringify({ step: 0, adapterType: "acme_external" }),
     );
     mockAdapterRegistry.loaded = false;
-    mockAdapterRegistry.list = [{ type: "codex_local" }];
+    mockAdapterRegistry.list = [{ type: "omp_local" }];
 
     const { root } = await mount();
 

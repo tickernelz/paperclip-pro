@@ -65,15 +65,6 @@ describe("buildAdapterCapabilities login projection", () => {
     expect(caps.login).not.toHaveProperty("completionClaim");
   });
 
-  it("projects panelMode and timeoutPolicy for the registered grok_local adapter, with no function member", () => {
-    const caps = buildAdapterCapabilities(requireServerAdapter("grok_local"));
-    expect(caps.login).toEqual({
-      panelMode: "displayed_code",
-      timeoutPolicy: "caller_bounded",
-    });
-    expect(caps.login).not.toHaveProperty("getCommand");
-    expect(caps.login).not.toHaveProperty("parsePrompt");
-  });
 });
 
 describe("buildAdapterCapabilities OpenWA capability projection", () => {
@@ -85,7 +76,6 @@ describe("buildAdapterCapabilities OpenWA capability projection", () => {
 
   it("projects the registered adapters' declared read-only enforcement and steering", () => {
     expect(buildAdapterCapabilities(requireServerAdapter("omp_local"))).toMatchObject({ readOnlyToolProfile: "enforced", supportsLiveSteering: true });
-    expect(buildAdapterCapabilities(requireServerAdapter("claude_local"))).toMatchObject({ readOnlyToolProfile: "enforced", supportsLiveSteering: false });
-    expect(buildAdapterCapabilities(requireServerAdapter("gemini_local"))).toMatchObject({ readOnlyToolProfile: "instruction_only", supportsLiveSteering: false });
+    expect(buildAdapterCapabilities(requireServerAdapter("process"))).toMatchObject({ readOnlyToolProfile: "instruction_only", supportsLiveSteering: false });
   });
 });

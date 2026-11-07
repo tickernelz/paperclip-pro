@@ -50,7 +50,7 @@ describeEmbeddedPostgres("reconcileAbandonedExecutionControl reports a genuine f
       id: agentId,
       companyId,
       name: "Stuck worker",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       status: "running",
     });
     await db.insert(heartbeatRuns).values({
@@ -143,8 +143,8 @@ describeEmbeddedPostgres("native review execution reconciliation admission", () 
     const now = new Date();
     await db.insert(companies).values({ id: companyId, name: "Reviewer recovery", issuePrefix: admitted ? "RRA" : "RRN" });
     await db.insert(agents).values([
-      { id: workerId, companyId, name: "Worker", adapterType: "codex_local", status: "idle" },
-      { id: reviewerId, companyId, name: "Reviewer", adapterType: "codex_local", status: "running" },
+      { id: workerId, companyId, name: "Worker", adapterType: "omp_local", status: "idle" },
+      { id: reviewerId, companyId, name: "Reviewer", adapterType: "omp_local", status: "running" },
     ]);
     await db.insert(heartbeatRuns).values({
       id: runId, companyId, agentId: reviewerId, status: "running", runtimeMode: "native",

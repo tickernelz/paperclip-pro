@@ -33,7 +33,6 @@ vi.mock("./run-preparation.js", async original => ({
   ...await original<typeof import("./run-preparation.js")>(),
   buildPaperclipRuntimeMcpServers: vi.fn(async () => []),
   createAdapterRuntimeToolAccess: vi.fn(() => null),
-  createManagedMcpRunConfig: vi.fn(async () => null),
   revokeHeartbeatRunGatewayTokens: vi.fn(async () => {}),
 }));
 

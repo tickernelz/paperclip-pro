@@ -1241,10 +1241,8 @@ const support = await getEmbeddedPostgresTestSupport();
     expect(markdown).toContain("durable Paperclip continuation");
     expect(markdown).toContain("never blindly redial");
     expect(markdown).not.toContain("+12015551234");
-    for (const adapter of ["paperclip_runner", "claude_local", "codex_local"]) {
-      expect((await prepareConnectorSkillDelivery({ ...config, engine: "cli" }, adapter)).config.paperclipRuntimeSkills).toEqual([skill]);
-    }
-    expect((await prepareConnectorSkillDelivery(config, "cursor_local")).instructions).toContain("name: speko");
+    expect((await prepareConnectorSkillDelivery({ ...config, engine: "cli" }, "paperclip_runner")).config.paperclipRuntimeSkills).toEqual([skill]);
+    expect((await prepareConnectorSkillDelivery(config, "omp_local")).instructions).toContain("name: speko");
     expect((await prepareConnectorSkillDelivery(config, "paperclip_runner")).instructions).toContain("name: speko");
     expect((await resolveConnectorAssignments(db, { ...binding, agentId: randomUUID() })).filter(item => item.key === "speko")).toEqual([]);
     expect((await resolveConnectorAssignments(db, { ...binding, companyId: randomUUID() })).filter(item => item.key === "speko")).toEqual([]);

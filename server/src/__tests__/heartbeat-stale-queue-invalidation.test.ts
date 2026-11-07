@@ -202,7 +202,7 @@ describeEmbeddedPostgres("heartbeat stale queued-run invalidation", () => {
       name: opts.agentName ?? "ClaudeCoder",
       role: opts.agentRole ?? "engineer",
       status: "active",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: {},
       runtimeConfig: {
         heartbeat: {
@@ -736,7 +736,7 @@ describeEmbeddedPostgres("heartbeat stale queued-run invalidation", () => {
           name: "ReplacementCoder",
           role: "engineer",
           status: "active",
-          adapterType: "codex_local",
+          adapterType: "omp_local",
           adapterConfig: {},
           runtimeConfig: { heartbeat: { wakeOnDemand: true, maxConcurrentRuns: 1 } },
           permissions: {},
@@ -1248,7 +1248,7 @@ describeEmbeddedPostgres("heartbeat stale queued-run invalidation", () => {
     );
   });
 
-  it.each(["codex_local", "gemini_local"].flatMap(adapterType => [
+  it.each(["omp_local"].flatMap(adapterType => [
     { adapterType, inputTokens: 50_000, cachedInputTokens: 550_000, rotate: true, rawInputIncludesCached: false },
     { adapterType, inputTokens: 50_000, cachedInputTokens: 449_999, rotate: false, rawInputIncludesCached: false },
     { adapterType, inputTokens: 0, cachedInputTokens: 500_000, rotate: true, rawInputIncludesCached: false },
@@ -1547,7 +1547,7 @@ describeEmbeddedPostgres("heartbeat stale queued-run invalidation", () => {
       name: "PeerAgent",
       role: "engineer",
       status: "active",
-      adapterType: "codex_local",
+      adapterType: "omp_local",
       adapterConfig: {},
       runtimeConfig: {
         heartbeat: {

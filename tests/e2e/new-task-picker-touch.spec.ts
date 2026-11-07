@@ -77,7 +77,7 @@ test("new-task assignee, model, and project sheets scroll by touch and retain th
     await json(await request.post(`/api/companies/${company.id}/agents`, {
       data: {
         name: `Touch Agent ${String(index).padStart(2, "0")}`, role: "engineer",
-        adapterType: "codex_local", adapterConfig: { model: "gpt-6-sol" },
+        adapterType: "omp_local", adapterConfig: { model: "gpt-6-sol" },
         runtimeConfig: { heartbeat: { enabled: false } },
       },
     }));
@@ -104,7 +104,7 @@ test("new-task assignee, model, and project sheets scroll by touch and retain th
           },
         ],
         agents: agentIds.map((agentId) => ({
-          agentId, name: agentId, adapterType: "codex_local", eligible: true, reason: null,
+          agentId, name: agentId, adapterType: "omp_local", eligible: true, reason: null,
           current: { model: "gpt-6-sol", thinking: null },
         })),
       },
@@ -189,7 +189,7 @@ test.describe("desktop picker scrolling", () => {
       await json(await request.post(`/api/companies/${company.id}/agents`, {
         data: {
           name: `Wheel Agent ${String(index).padStart(2, "0")}`, role: "engineer",
-          adapterType: "codex_local", adapterConfig: { model: "gpt-6-sol" },
+          adapterType: "omp_local", adapterConfig: { model: "gpt-6-sol" },
           runtimeConfig: { heartbeat: { enabled: false } },
         },
       }));
@@ -214,7 +214,7 @@ test.describe("desktop picker scrolling", () => {
           agents: agentIds.map((agentId, index) => ({
             agentId,
             name: `Wheel Agent ${String(index + 1).padStart(2, "0")}`,
-            adapterType: "codex_local",
+            adapterType: "omp_local",
             eligible: true,
             reason: null,
             current: { model: "gpt-6-sol", thinking: null },
