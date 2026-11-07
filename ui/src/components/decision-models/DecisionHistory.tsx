@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { useFastResponsesEnabled } from "@/hooks/useFastResponsesEnabled";
 
 export function DecisionHistoryTable({ entries, fastResponse = false, connectionsEnabled = true }: { entries: (DecisionHistoryEntry & { publicationStatus?: string; connectionName?: string | null })[]; fastResponse?: boolean; connectionsEnabled?: boolean }) {
-  if (!entries.length) return <p className="text-sm text-muted-foreground">{fastResponse ? "No fast responses in this period." : "No decision requests in this period."} <Link to={connectionsEnabled ? "/company/settings/connections" : fastResponse ? "/company/settings/instance/experimental" : "/company/settings"} className="underline underline-offset-4">{fastResponse ? connectionsEnabled ? "Configure fast response" : "Enable experimental fast responses" : "Configure a decision model"}</Link> to run a test.</p>;
+  if (!entries.length) return <p className="text-sm text-muted-foreground">{fastResponse ? "No fast responses in this period." : "No decision requests in this period."} <Link to={connectionsEnabled ? "/company/settings/connections" : fastResponse ? "/company/settings/instance/features" : "/company/settings"} className="underline underline-offset-4">{fastResponse ? connectionsEnabled ? "Configure fast response" : "Turn on fast replies" : "Configure a decision model"}</Link> to run a test.</p>;
   return <div className="space-y-3">
     <p className="text-xs text-muted-foreground">Recent requests. Inputs are not retained.</p>
     <div className="overflow-x-auto"><table className="w-full text-sm" aria-label={fastResponse ? "Fast responses" : "Decision requests"}>

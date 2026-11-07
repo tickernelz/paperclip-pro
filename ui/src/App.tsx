@@ -90,7 +90,8 @@ import { SkillStudio } from "./pages/SkillStudio";
 import { Secrets } from "./pages/Secrets";
 import { CompanyImport } from "./pages/CompanyImport";
 import { DesignGuide } from "./pages/DesignGuide";
-import { InstanceExperimentalSettings } from "./pages/InstanceExperimentalSettings";
+import { InstanceFeatures } from "./pages/InstanceFeatures";
+import { InstanceAdvanced } from "./pages/InstanceAdvanced";
 import { InstanceAccess } from "./pages/InstanceAccess";
 import { ProfileSettings } from "./pages/ProfileSettings";
 import { PluginManager } from "./pages/PluginManager";
@@ -241,7 +242,9 @@ function boardRoutes(combinedInboxTasksEnabled: boolean) {
         <Route path="company/settings/instance/access" element={<InstanceAccess />} />
       </Route>
       <Route element={<HiddenSettingsPageGate pageKey="instance.experimental" />}>
-        <Route path="company/settings/instance/experimental" element={<InstanceExperimentalSettings />} />
+        <Route path="company/settings/instance/features" element={<InstanceFeatures />} />
+        <Route path="company/settings/instance/advanced" element={<InstanceAdvanced />} />
+        <Route path="company/settings/instance/experimental" element={<Navigate to="/company/settings/instance/features" replace />} />
       </Route>
       <Route element={<HiddenSettingsPageGate pageKey="instance.plugins" />}>
         <Route path="company/settings/instance/plugins" element={<PluginManager />} />

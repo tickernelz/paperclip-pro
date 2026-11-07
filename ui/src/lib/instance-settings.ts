@@ -59,6 +59,7 @@ export function normalizeRememberedInstanceSettingsPath(rawPath: string | null):
   const { pathname, search, hash } = normalizePathForMatching(rawPath);
   const suffix = instanceSettingsSuffix(pathname);
   if (!suffix) return DEFAULT_INSTANCE_SETTINGS_PATH;
+  if (suffix === "/experimental") return `${INSTANCE_SETTINGS_PATH_PREFIX}/features${search}${hash}`;
 
   if (
     suffix === "/profile" ||
@@ -66,7 +67,8 @@ export function normalizeRememberedInstanceSettingsPath(rawPath: string | null):
     suffix === "/environments" ||
     suffix === "/access" ||
     suffix === "/plugins" ||
-    suffix === "/experimental" ||
+    suffix === "/features" ||
+    suffix === "/advanced" ||
     suffix === "/adapters"
   ) {
     return `${INSTANCE_SETTINGS_PATH_PREFIX}${suffix}${search}${hash}`;

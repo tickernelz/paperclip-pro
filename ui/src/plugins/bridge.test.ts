@@ -69,7 +69,7 @@ describe("plugin host navigation", () => {
       "/PAP/company/settings/instance/plugins",
     );
     expect(resolveHostNavigationHref("/settings/experimental?x=1#auto", "pap")).toBe(
-      "/PAP/company/settings/instance/experimental?x=1#auto",
+      "/PAP/company/settings/instance/features?x=1#auto",
     );
   });
 

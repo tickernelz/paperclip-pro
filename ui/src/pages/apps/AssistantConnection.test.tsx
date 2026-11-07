@@ -63,7 +63,7 @@ describe("assistant setup from Connections", () => {
   it("shows the enable path while disabled, with no usable setup instructions", async () => {
     mocks.setup.mockResolvedValue({ enabled: false, serverUrl: "https://canonical.example/mcp/paperclip" });
     await render();
-    expect(container.querySelector('a[href="/company/settings/instance/experimental"]')).not.toBeNull();
+    expect(container.querySelector('a[href="/company/settings/instance/features"]')).not.toBeNull();
     expect(container.textContent).not.toContain("opencode mcp auth");
     expect(container.textContent).not.toContain("https://canonical.example");
   });

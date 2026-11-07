@@ -115,8 +115,8 @@ export function AssistantConnection({ initialAssistant = "codex" }: { initialAss
     {setup.error && <div role="alert" className="space-y-3"><p className="text-sm text-destructive">{setupError(setup.error)}</p><Button variant="outline" onClick={() => void setup.refetch()}>Try again</Button></div>}
     {setup.data && !setup.data.enabled && <section className="space-y-3 rounded-lg border border-border bg-muted/30 p-4">
       <h2 className="text-sm font-semibold">Enable assistant connections</h2>
-      <p className="text-sm text-muted-foreground">An instance administrator must turn on Assistant connections (MCP) in Experimental settings. Then return here to connect your assistant.</p>
-      <Button variant="outline" asChild><Link to="/company/settings/instance/experimental">Open Experimental settings</Link></Button>
+      <p className="text-sm text-muted-foreground">An instance administrator must turn on Assistant connections in Settings &gt; Features. Then return here to connect your assistant.</p>
+      <Button variant="outline" asChild><Link to="/company/settings/instance/features">Open Features</Link></Button>
     </section>}
     {setup.data?.enabled && <>
       <section className="space-y-4" aria-label="Invite your assistant">

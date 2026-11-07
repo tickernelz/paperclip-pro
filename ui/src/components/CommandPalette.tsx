@@ -33,6 +33,8 @@ import {
   FileCode2,
   Plus,
   Search,
+  ToggleRight,
+  Wrench,
 } from "lucide-react";
 import { Identity } from "./Identity";
 import { agentUrl, projectUrl } from "../lib/utils";
@@ -414,6 +416,14 @@ export function CommandPalette() {
           <CommandItem onSelect={() => go("/activity")}>
             <History className="mr-2 h-4 w-4" />
             Activity
+          </CommandItem>
+          <CommandItem onSelect={() => go("/company/settings/instance/features")}>
+            <ToggleRight className="mr-2 h-4 w-4" />
+            Features
+          </CommandItem>
+          <CommandItem onSelect={() => go("/company/settings/instance/advanced")}>
+            <Wrench className="mr-2 h-4 w-4" />
+            Advanced settings
           </CommandItem>
         </CommandGroup>
 
