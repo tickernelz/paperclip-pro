@@ -179,7 +179,7 @@ wardmote service restart --drain
 ```
 
 `--ref` is mandatory for a git install and `--repo` defaults to
-`tickernelz/paperclip-pro` (`cli/src/commands/install.ts`). Pass a commit SHA
+`tickernelz/wardmote` (`cli/src/commands/install.ts`). Pass a commit SHA
 instead of `main` for a reproducible install; a 7-40 hex ref is treated as
 pinned.
 
@@ -369,10 +369,10 @@ workflow. `concurrency: release` keeps two releases from overlapping.
 Preview or resume through a dispatch:
 
 ```bash
-gh workflow run release.yml --repo tickernelz/paperclip-pro --ref main \
+gh workflow run release.yml --repo tickernelz/wardmote --ref main \
   -f dry_run=true -f auth=token -f version=
 
-gh workflow run release.yml --repo tickernelz/paperclip-pro --ref main \
+gh workflow run release.yml --repo tickernelz/wardmote --ref main \
   -f dry_run=false -f auth=token -f version=2026.925.3
 ```
 
@@ -408,7 +408,7 @@ One-time owner setup before the first publish:
    bypass-2FA so CI can publish non-interactively.
 2. Store it as the `NPM_TOKEN` repository secret.
 3. After the first successful publish, configure a trusted publisher on each
-   package (GitHub Actions, `tickernelz/paperclip-pro`, workflow
+   package (GitHub Actions, `tickernelz/wardmote`, workflow
    `release.yml`, no environment). That step needs interactive 2FA.
 4. Afterwards `auth=oidc` covers the publishes; keep the token for the
    `latest` promotion.

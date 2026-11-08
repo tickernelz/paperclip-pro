@@ -115,7 +115,7 @@ export function buildPlaceholderFiles(packageName) {
   const deprecationNote =
     `${packageName}@${PLACEHOLDER_VERSION} is a placeholder that reserves the package name ` +
     "for Paperclip's release pipeline. It contains no functionality; the first real release " +
-    "supersedes it. See https://github.com/tickernelz/paperclip-pro";
+    "supersedes it. See https://github.com/tickernelz/wardmote";
 
   const packageJson = {
     name: packageName,
@@ -127,9 +127,9 @@ export function buildPlaceholderFiles(packageName) {
     files: ["index.js"],
     repository: {
       type: "git",
-      url: "git+https://github.com/tickernelz/paperclip-pro.git",
+      url: "git+https://github.com/tickernelz/wardmote.git",
     },
-    homepage: "https://github.com/tickernelz/paperclip-pro",
+    homepage: "https://github.com/tickernelz/wardmote",
     publishConfig: {
       access: "public",
     },
@@ -145,7 +145,7 @@ export function buildPlaceholderFiles(packageName) {
     "release ships from CI. It intentionally contains no functionality.",
     "",
     "Real versions are published by the release workflow of",
-    "[paperclipai/paperclip](https://github.com/tickernelz/paperclip-pro).",
+    "[tickernelz/wardmote](https://github.com/tickernelz/wardmote).",
     "",
   ].join("\n");
 
@@ -329,7 +329,7 @@ function printNextSteps(packageName) {
       "Next:",
       `1. Open https://www.npmjs.com/package/${packageName}`,
       "2. Go to Settings -> Trusted publishing",
-      "3. Add repository tickernelz/paperclip-pro",
+      "3. Add repository tickernelz/wardmote",
       "4. Set workflow filename to release.yml",
       "5. Optionally enable Settings -> Publishing access -> Require two-factor authentication and disallow tokens",
       `6. Only then flip the package to "publishFromCi": true in scripts/release-package-manifest.json`,
