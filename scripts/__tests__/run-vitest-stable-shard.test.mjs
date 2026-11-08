@@ -48,7 +48,7 @@ function dryRunJson(args, envOverrides = {}) {
   return JSON.parse(result.stdout);
 }
 
-const SHARD_COUNT = 5;
+const SHARD_COUNT = 6;
 const SERIALIZED_SHARD_COUNT = 3;
 
 

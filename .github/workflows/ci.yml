@@ -223,25 +223,29 @@ jobs:
       matrix:
         include:
           - group: general-server-without-chat
-            label: server 1/5
+            label: server 1/6
             shard_index: 0
-            shard_count: 5
+            shard_count: 6
           - group: general-server-without-chat
-            label: server 2/5
+            label: server 2/6
             shard_index: 1
-            shard_count: 5
+            shard_count: 6
           - group: general-server-without-chat
-            label: server 3/5
+            label: server 3/6
             shard_index: 2
-            shard_count: 5
+            shard_count: 6
           - group: general-server-without-chat
-            label: server 4/5
+            label: server 4/6
             shard_index: 3
-            shard_count: 5
+            shard_count: 6
           - group: general-server-without-chat
-            label: server 5/5
+            label: server 5/6
             shard_index: 4
-            shard_count: 5
+            shard_count: 6
+          - group: general-server-without-chat
+            label: server 6/6
+            shard_index: 5
+            shard_count: 6
           - group: general-chat
             label: chat
           - group: general-workspaces-a
@@ -255,7 +259,7 @@ jobs:
       - uses: ./.github/actions/setup-workspace
       - name: Run grouped test suites
         env:
-          PAPERCLIP_SERVER_TEST_WORKERS: "4"
+          PAPERCLIP_SERVER_TEST_WORKERS: "3"
         run: |
           echo "runner: $(nproc) CPU, $(free -g | awk '/^Mem:/ {print $2}') GiB RAM"
           if [ -n "${{ matrix.shard_count }}" ]; then
@@ -282,7 +286,7 @@ jobs:
       - uses: ./.github/actions/setup-workspace
       - name: Run serialized server test shard
         env:
-          PAPERCLIP_SERVER_TEST_WORKERS: "4"
+          PAPERCLIP_SERVER_TEST_WORKERS: "3"
         run: pnpm test:run:serialized -- --shard-index ${{ matrix.shard_index }} --shard-count 3
 
   e2e:
