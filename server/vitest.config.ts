@@ -2,6 +2,8 @@ import { fileURLToPath } from "node:url";
 
 import { defineConfig } from "vitest/config";
 
+import { LongestFirstSequencer } from "./src/__tests__/longest-first-sequencer.js";
+
 export default defineConfig({
   resolve: {
     alias: [
@@ -50,6 +52,7 @@ export default defineConfig({
     sequence: {
       concurrent: false,
       hooks: "list",
+      sequencer: LongestFirstSequencer,
     },
     globalSetup: ["./src/__tests__/embedded-postgres-template.global-setup.ts"],
     setupFiles: ["./src/__tests__/setup-supertest.ts"],
