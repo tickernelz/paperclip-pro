@@ -272,7 +272,7 @@ function BuiltinCompanyMenu({ open: controlledOpen, onOpenChange }: SidebarCompa
               : `Open ${switcherNoun} switcher`
           }
         >
-          <span className="flex min-w-0 flex-1 items-center gap-2">
+          <span className={cn("flex min-w-0 flex-1 items-center", rail ? "gap-2.5" : "gap-2")}>
             {selectedCompany ? <WorkspaceIcon company={selectedCompany} /> : null}
             {/* The header has room for ~110px of name beside the collapse
                 control (~142px on mobile, which hides it) — search moved to
