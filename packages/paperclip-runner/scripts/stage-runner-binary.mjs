@@ -31,8 +31,9 @@ export async function stageRunnerBinary(source, destination) {
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const packageRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
   const executable = process.platform === "win32" ? "paperclip-runnerd.exe" : "paperclip-runnerd";
+  const targetDir = process.env.CARGO_TARGET_DIR ? path.resolve(process.env.CARGO_TARGET_DIR) : path.join(packageRoot, "runner", "target");
   await stageRunnerBinary(
-    path.join(packageRoot, "runner", "target", "release", executable),
+    path.join(targetDir, "release", executable),
     path.join(packageRoot, "dist", "bin", executable),
   );
 }
