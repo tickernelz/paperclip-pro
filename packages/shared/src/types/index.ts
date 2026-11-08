@@ -68,7 +68,14 @@ export type {
   DecisionQueueSeedRuleSignal,
   DecisionTriage,
   DecisionTriageDecideBy,
+  ResolvedDecisionActor,
+  ResolvedDecisionEntry,
+  ResolvedDecisionIssueRef,
+  ResolvedDecisionPage,
+  ResolvedDecisionSourceKind,
+  ResolvedDecisionStatus,
 } from "./decision-queue.js";
+export { DECISION_HISTORY_SOURCE_KINDS, DECISION_HISTORY_STATUSES } from "./decision-queue.js";
 export type {
   DecisionTrainingExample,
   DecisionTrainingNotesHistoryEntry,

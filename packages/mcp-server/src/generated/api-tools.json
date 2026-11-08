@@ -20264,6 +20264,101 @@
     ]
   },
   {
+    "name": "paperclipGetDecisionHistory",
+    "operationId": "GET /api/companies/{companyId}/decision-history",
+    "method": "GET",
+    "path": "/companies/{companyId}/decision-history",
+    "description": "List decided or expired decisions, newest first, one cursor page at a time",
+    "toolset": "extended",
+    "authority": "board",
+    "authoritySource": "handler",
+    "tags": [
+      "decision-queues"
+    ],
+    "annotations": {
+      "readOnlyHint": true,
+      "destructiveHint": false,
+      "idempotentHint": true
+    },
+    "guards": [
+      "assertBoard",
+      "assertCompanyAccess"
+    ],
+    "permissions": [],
+    "boardGuard": "assertBoard@decision-queues.ts:89",
+    "authorityCapability": null,
+    "parameters": [
+      {
+        "name": "activitySince",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "activityUntil",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "companyId",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "cursor",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "limit",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "integer"
+        }
+      },
+      {
+        "name": "queue",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "sourceKinds",
+        "in": "query",
+        "required": false,
+        "schema": {
+          "type": "string"
+        }
+      },
+      {
+        "name": "status",
+        "in": "query",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "enum": [
+            "decided",
+            "expired"
+          ]
+        }
+      }
+    ]
+  },
+  {
     "name": "paperclipGetDecisionModel",
     "operationId": "GET /api/companies/{companyId}/decision-model",
     "method": "GET",

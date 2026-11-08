@@ -706,6 +706,8 @@ export const queryKeys = {
   dashboard: (companyId: string) => ["dashboard", companyId] as const,
   attention: (companyId: string) => ["attention", companyId] as const,
   attentionCount: (companyId: string) => ["attention", companyId, "count"] as const,
+  decisionHistory: (companyId: string, filters: Record<string, unknown>) =>
+    ["attention", companyId, "history", filters] as const,
   decisions: {
     list: (companyId: string, status?: string) =>
       ["decisions", companyId, status ?? "__all-statuses__"] as const,
