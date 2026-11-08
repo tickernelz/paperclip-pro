@@ -4,13 +4,13 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="color-scheme" content="light dark" />
-    <title>Paperclip Local Browser &mdash; Control center</title>
+    <title>Wardmote Local Browser &mdash; Control center</title>
     <link rel="stylesheet" href="control.css" />
   </head>
   <body>
     <header class="top">
       <div class="brand">
-        <h1>Paperclip Local Browser</h1>
+        <h1>Wardmote Local Browser</h1>
         <p class="hint">You decide what agents can do in this browser.</p>
       </div>
       <p class="pill" id="pill" data-tone="off"><span class="dot" aria-hidden="true"></span><span id="pill-text">Checking&hellip;</span></p>
@@ -28,13 +28,13 @@
     <main>
       <section id="welcome" data-section="welcome" aria-labelledby="welcome-title" hidden>
         <h2 id="welcome-title">Welcome</h2>
-        <p>Paperclip agents can work in this browser on your behalf. Two steps get them going:</p>
+        <p>Wardmote agents can work in this browser on your behalf. Two steps get them going:</p>
         <ol class="steps">
           <li>
             <strong>Allow access.</strong> Grant the browser permissions agents need. You can revoke any of them later.
             <div class="row"><button id="welcome-allow" type="button" class="primary">Allow all</button></div>
           </li>
-          <li><strong>Pair with Paperclip.</strong> Open the Local Browser page in Paperclip and paste its pairing link on the <a href="#overview">Overview</a>.</li>
+          <li><strong>Pair with Wardmote.</strong> Open the Local Browser page in Wardmote and paste its pairing link on the <a href="#overview">Overview</a>.</li>
         </ol>
       </section>
 
@@ -44,7 +44,7 @@
         <dl class="facts">
           <dt>Label</dt>
           <dd id="label">&mdash;</dd>
-          <dt>Paperclip</dt>
+          <dt>Wardmote</dt>
           <dd id="origin">&mdash;</dd>
           <dt>Tier</dt>
           <dd id="tier">&mdash;</dd>
@@ -62,12 +62,12 @@
         </div>
 
         <form id="pair-form" class="panel" aria-labelledby="pair-title">
-          <h3 id="pair-title">Pair with Paperclip</h3>
-          <p id="pair-note" class="hint">Paste the pairing link from Paperclip's Local Browser page. Codes expire after 10 minutes.</p>
+          <h3 id="pair-title">Pair with Wardmote</h3>
+          <p id="pair-note" class="hint">Paste the pairing link from Wardmote's Local Browser page. Codes expire after 10 minutes.</p>
           <p id="detected" class="hint" hidden></p>
           <label for="pair-input">Pairing link or code</label>
           <div class="row">
-            <input id="pair-input" type="text" placeholder="Paste the link from Paperclip" autocomplete="off" spellcheck="false" />
+            <input id="pair-input" type="text" placeholder="Paste the link from Wardmote" autocomplete="off" spellcheck="false" />
             <button id="pair" type="submit" class="primary">Pair</button>
           </div>
           <p id="pair-error" class="error" role="alert" hidden></p>
@@ -94,7 +94,7 @@
 
       <section id="guards" data-section="guards" aria-labelledby="guards-title" hidden>
         <h2 id="guards-title">Agent guards</h2>
-        <p class="lead">Switches that stay in this browser. Paperclip cannot change them.</p>
+        <p class="lead">Switches that stay in this browser. Wardmote cannot change them.</p>
         <form id="guards-form" class="panel">
           <div id="guard-toggles" class="toggles"></div>
           <label for="buffer-size">Network requests kept per tab</label>

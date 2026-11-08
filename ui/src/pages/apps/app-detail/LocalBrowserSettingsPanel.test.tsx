@@ -189,7 +189,7 @@ describe("Local Browser settings panel", () => {
     await render();
     await act(async () => button("Pair a browser").click());
 
-    const marker = container.querySelector("[data-paperclip-local-browser-pairing]");
+    const marker = container.querySelector("[data-wardmote-local-browser-pairing]");
     expect(marker).toBeTruthy();
     expect(marker?.getAttribute("data-code")).toBe("ABCD2345");
     expect(marker?.getAttribute("data-origin")).toBe("https://example.test");
@@ -202,9 +202,9 @@ describe("Local Browser settings panel", () => {
   it("drops the pairing marker once the pairing is cancelled", async () => {
     await render();
     await act(async () => button("Pair a browser").click());
-    expect(container.querySelector("[data-paperclip-local-browser-pairing]")).toBeTruthy();
+    expect(container.querySelector("[data-wardmote-local-browser-pairing]")).toBeTruthy();
     await act(async () => button("Cancel").click());
-    expect(container.querySelector("[data-paperclip-local-browser-pairing]")).toBeNull();
+    expect(container.querySelector("[data-wardmote-local-browser-pairing]")).toBeNull();
   });
 
   it("offers both extension downloads with the install steps", async () => {

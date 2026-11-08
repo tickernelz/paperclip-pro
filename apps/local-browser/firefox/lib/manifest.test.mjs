@@ -34,7 +34,7 @@ test("no catalog id unsupported in firefox is declared", () => {
 test("the manifest uses the shared popup and control center", () => {
   assert.equal(manifest.browser_action.default_popup, "ui/popup.html");
   assert.deepEqual(manifest.options_ui, { page: "ui/control.html", open_in_tab: true });
-  assert.equal(manifest.browser_specific_settings.gecko.id, "local-browser@paperclip.app");
+  assert.equal(manifest.browser_specific_settings.gecko.id, "local-browser@wardmote");
   assert.equal(manifest.browser_specific_settings.gecko.strict_min_version, "128.0");
 });
 
