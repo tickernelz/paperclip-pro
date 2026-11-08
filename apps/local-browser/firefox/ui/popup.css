@@ -4,38 +4,45 @@
 
 :root {
   color-scheme: light dark;
-  --bg: #ffffff;
-  --surface: #f6f7f9;
-  --border: #d9dde3;
-  --text: #1c2024;
-  --muted: #5f6873;
-  --accent: #2563eb;
-  --accent-text: #ffffff;
-  --ok: #15803d;
-  --wait: #b45309;
-  --warn: #c2410c;
-  --error: #b91c1c;
-  --attention-bg: #fff7ed;
-  --attention-border: #fdba74;
-  --radius: 8px;
-  --font: system-ui, -apple-system, "Segoe UI", sans-serif;
+  --bg: oklch(0.975 0.003 265);
+  --bg-2: oklch(1 0 0);
+  --bg-3: oklch(0.948 0.005 265);
+  --line: oklch(0.885 0.007 265);
+  --ink: oklch(0.225 0.014 268);
+  --ink-3: oklch(0.505 0.014 268);
+  --accent: oklch(0.505 0.2 277);
+  --accent-ink: oklch(0.99 0.004 277);
+  --focus: oklch(0.55 0.2 277);
+  --ok: oklch(0.47 0.12 152);
+  --ok-soft: oklch(0.5 0.12 152 / 0.12);
+  --warn: oklch(0.49 0.11 70);
+  --warn-soft: oklch(0.62 0.13 75 / 0.14);
+  --bad: oklch(0.52 0.19 25);
+  --run: oklch(0.48 0.11 225);
+  --run-soft: oklch(0.51 0.11 225 / 0.12);
+  --r-lg: 10px;
+  --f-sans: "InterVariable", "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --f-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #15171a;
-    --surface: #1e2125;
-    --border: #33383f;
-    --text: #e8eaed;
-    --muted: #9aa3ad;
-    --accent: #60a5fa;
-    --accent-text: #0b1220;
-    --ok: #4ade80;
-    --wait: #fbbf24;
-    --warn: #fb923c;
-    --error: #f87171;
-    --attention-bg: #2a1f12;
-    --attention-border: #9a5b13;
+    --bg: oklch(0.165 0.006 268);
+    --bg-2: oklch(0.2 0.007 268);
+    --bg-3: oklch(0.24 0.008 268);
+    --line: oklch(0.31 0.009 268);
+    --ink: oklch(0.962 0.004 268);
+    --ink-3: oklch(0.715 0.01 268);
+    --accent: oklch(0.73 0.145 277);
+    --accent-ink: oklch(0.17 0.02 277);
+    --focus: oklch(0.79 0.13 277);
+    --ok: oklch(0.79 0.14 152);
+    --ok-soft: oklch(0.79 0.14 152 / 0.14);
+    --warn: oklch(0.83 0.125 80);
+    --warn-soft: oklch(0.83 0.125 80 / 0.14);
+    --bad: oklch(0.73 0.165 22);
+    --run: oklch(0.79 0.11 225);
+    --run-soft: oklch(0.79 0.11 225 / 0.14);
   }
 }
 
@@ -48,8 +55,8 @@ body {
   width: 360px;
   padding: 12px;
   background: var(--bg);
-  color: var(--text);
-  font: 13px/1.45 var(--font);
+  color: var(--ink);
+  font: 13px/1.45 var(--f-sans);
 }
 
 h1,
@@ -79,7 +86,7 @@ h2 {
 .detail,
 .hint,
 .version {
-  color: var(--muted);
+  color: var(--ink-3);
 }
 
 .dot {
@@ -88,7 +95,7 @@ h2 {
   height: 10px;
   margin-top: 6px;
   border-radius: 50%;
-  background: var(--muted);
+  background: var(--ink-3);
 }
 
 .dot[data-tone="ok"] {
@@ -96,7 +103,7 @@ h2 {
 }
 
 .dot[data-tone="wait"] {
-  background: var(--wait);
+  background: var(--run);
 }
 
 .dot[data-tone="warn"] {
@@ -104,7 +111,7 @@ h2 {
 }
 
 .dot[data-tone="error"] {
-  background: var(--error);
+  background: var(--bad);
 }
 
 .card {
@@ -112,14 +119,14 @@ h2 {
   gap: 6px;
   padding: 10px;
   margin-bottom: 10px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
 }
 
 .card.attention {
-  background: var(--attention-bg);
-  border-color: var(--attention-border);
+  background: var(--warn-soft);
+  border-color: var(--warn);
 }
 
 .pending {
@@ -143,7 +150,7 @@ h2 {
 
 .pending .why {
   grid-column: 1;
-  color: var(--muted);
+  color: var(--ink-3);
   overflow-wrap: anywhere;
 }
 
@@ -159,25 +166,25 @@ label {
 input[type="text"] {
   width: 100%;
   padding: 6px 8px;
-  color: var(--text);
+  color: var(--ink);
   background: var(--bg);
-  border: 1px solid var(--border);
+  border: 1px solid var(--line);
   border-radius: 6px;
   font: inherit;
 }
 
 button {
   padding: 6px 12px;
-  color: var(--text);
+  color: var(--ink);
   background: var(--bg);
-  border: 1px solid var(--border);
+  border: 1px solid var(--line);
   border-radius: 6px;
   font: inherit;
   cursor: pointer;
 }
 
 button.primary {
-  color: var(--accent-text);
+  color: var(--accent-ink);
   background: var(--accent);
   border-color: var(--accent);
 }
@@ -205,22 +212,22 @@ button:disabled {
 
 button:focus-visible,
 input:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--focus);
   outline-offset: 2px;
 }
 
 .error {
-  color: var(--error);
+  color: var(--bad);
 }
 
 .message {
   min-height: 1em;
   margin-bottom: 8px;
-  color: var(--muted);
+  color: var(--ink-3);
 }
 
 .message[data-tone="error"] {
-  color: var(--error);
+  color: var(--bad);
 }
 
 .foot {

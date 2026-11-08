@@ -8,7 +8,7 @@
   var C = protocol.ERROR_CODES;
   var PAGE = ["<all_urls>", "scripting"];
   var STITCH_RESERVE_MS = 1500;
-  var PERMISSION_NOTE = "Ask the user to open the Paperclip Local Browser extension and press Allow.";
+  var PERMISSION_NOTE = "Ask the user to open the Wardmote Local Browser extension and press Allow.";
   var TRUSTED_ACTIONS = { click: true, dblclick: true, hover: true, check: true, uncheck: true, type: true, press: true };
   var TRUSTED_OFF_NOTE = "Trusted input is off: start Firefox with remote debugging (see the extension's Trusted input page)";
   var TRUSTED_SETUP_HINT = "Ask the user to start Firefox with remote debugging as the extension's Trusted input page shows, or pass input auto to fall back to page events";
@@ -106,7 +106,7 @@
     delete agentTabs[String(tabId)];
   }
 
-  async function paperclipOrigin() {
+  async function wardmoteOrigin() {
     var stored = null;
     try {
       stored = await browser.storage.local.get(protocol.STORAGE_PAIRING);
@@ -120,12 +120,12 @@
   async function assertNavigationAllowed(tab) {
     var guards = LB.guards.current();
     if (guards.protectPaperclipTab !== false) {
-      var own = await paperclipOrigin();
+      var own = await wardmoteOrigin();
       var current = tab && tab.url ? protocol.originOf(tab.url) : null;
       if (own && current && own === current) {
         throw protocol.error(
           C.navigationBlocked,
-          "This tab belongs to Paperclip itself, so it is never navigated",
+          "This tab belongs to Wardmote itself, so it is never navigated",
           "Call local_browser_open with a url; that always uses a fresh tab. The user can turn this guard off in the extension's Agent guards.",
           false
         );
@@ -164,7 +164,7 @@
       if (!store && candidate.incognito === true) continue;
       if (LB.indicatorTabs.isHeld(candidate.id)) continue;
       if (!ownLoaded) {
-        own = await paperclipOrigin();
+        own = await wardmoteOrigin();
         ownLoaded = true;
       }
       var current = candidate.url ? protocol.originOf(candidate.url) : null;
@@ -214,7 +214,7 @@
     throw protocol.error(
       C.unsupported,
       "This extension is not allowed in private windows, so it cannot open one",
-      "Ask the user to open about:addons, choose Paperclip Local Browser Bridge and set Run in Private Windows to Allow",
+      "Ask the user to open about:addons, choose Wardmote Local Browser and set Run in Private Windows to Allow",
       false
     );
   }

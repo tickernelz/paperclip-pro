@@ -384,7 +384,7 @@ describe("local browser pairing", () => {
     expect(response.headers.get("content-type")).toContain("text/html");
     const html = await response.text();
     expect(html).toContain("connection endpoint, not a page");
-    expect(html).toContain("Paperclip Local Browser extension");
+    expect(html).toContain("Wardmote Local Browser extension");
     expect(html).toContain("ABCD2345");
     expect(html).not.toContain("API route not found");
   });
@@ -1352,7 +1352,7 @@ describe("local browser audit", () => {
 
 const ALL_CAPABILITIES = [...LOCAL_BROWSER_CAPABILITIES];
 const ACCESS = { siteAccess: "limited", granted: ["tabs", "scripting"], missing: ["cookies", "<all_urls>"], pending: [] };
-const UPDATE_HINT = "Update the Paperclip Local Browser extension";
+const UPDATE_HINT = "Update the Wardmote Local Browser extension";
 
 async function readSettings(): Promise<{ tier: string; allowedOrigins: string[]; limits: Record<string, number> }> {
   const response = await fetch(bridgeUrl("/api/local-browser/settings"));

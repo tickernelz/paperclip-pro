@@ -72,7 +72,7 @@ test("state changes are broadcast on the lb-status channel", async () => {
   assert.equal(broadcasts[broadcasts.length - 1].status.guards.protectPaperclipTab, false);
 });
 
-test("detect offers the pairing link found on the active Paperclip page", async () => {
+test("detect offers the pairing link found on the active Wardmote page", async () => {
   const context = await boot({ seed: null, executeScript: async () => [{ result: { origin: "https://p.test", code: "ABCD1234" } }] });
   const answer = await context.control("detect");
   assert.equal(answer.ok, true);

@@ -1,6 +1,6 @@
 # Local Browser Bridge
 
-Client extensions that let a Paperclip agent read and drive the user's real browser. The
+Client extensions that let a Wardmote agent read and drive the user's real browser. The
 server side of the feature lives in `server/src/services/connectors` and the connector
 runtime; the wire contract is `packages/shared/src/local-browser.ts`.
 

@@ -114,7 +114,7 @@ const connectedStatus = {
   version: "1.1.0",
   state: "connected",
   label: "Laptop",
-  origin: "https://paperclip.test",
+  origin: "https://wardmote.test",
   sessionId: "abcdef123456",
   tier: "full",
   allowedOrigins: [],
@@ -191,17 +191,17 @@ test("popup hides the pair form once connected and shows it when unpaired", asyn
 
 test("popup pairs through the lb-control channel", async () => {
   const { byId, sent } = await openPage("popup", { status: { state: "unpaired", client: "chromium" } });
-  byId("pair-input").value = "https://paperclip.test/api/local-browser/bridge?code=F6BX2X8R";
+  byId("pair-input").value = "https://wardmote.test/api/local-browser/bridge?code=F6BX2X8R";
   byId("pair-form").dispatch("submit");
   await flush();
   const pair = sent.find((message) => message.op === "pair");
   assert.equal(pair.channel, "lb-control");
-  assert.equal(pair.input, "https://paperclip.test/api/local-browser/bridge?code=F6BX2X8R");
+  assert.equal(pair.input, "https://wardmote.test/api/local-browser/bridge?code=F6BX2X8R");
 });
 
 test("popup refuses junk pairing input locally", async () => {
   const { byId, sent } = await openPage("popup", { status: { state: "unpaired", client: "chromium" } });
-  byId("pair-input").value = "ftp://paperclip.test";
+  byId("pair-input").value = "ftp://wardmote.test";
   byId("pair-form").dispatch("submit");
   await flush();
   assert.equal(sent.some((message) => message.op === "pair"), false);

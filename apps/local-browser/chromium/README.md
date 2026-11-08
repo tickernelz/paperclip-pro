@@ -1,6 +1,6 @@
-# Paperclip Local Browser Bridge — Chromium extension
+# Wardmote Local Browser — Chromium extension
 
-Manifest V3 extension for Chrome, Edge and Brave. It connects out to a paired Paperclip
+Manifest V3 extension for Chrome, Edge and Brave. It connects out to a paired Wardmote
 server over a WebSocket and lets an agent read and drive the user's real tabs. There is no
 build step and no bundler: the folder is loaded unpacked exactly as it sits in this repo.
 
@@ -32,16 +32,16 @@ Requires Chrome 116 or newer (WebSocket activity keeps the MV3 service worker al
 
 ## Pairing
 
-1. In Paperclip, open the Local Browser page and start a pairing. The page shows a pairing
+1. In Wardmote, open the Local Browser page and start a pairing. The page shows a pairing
    link that carries the server address and an 8-character code.
-2. Click the extension icon. The popup offers the link it finds on the active Paperclip tab;
+2. Click the extension icon. The popup offers the link it finds on the active Wardmote tab;
    otherwise paste the link (or just the code when the server is already known) and press
    **Pair**. The popup turns green when the bridge answers `hello_ack`; from then on the
    extension reconnects with `?session=<token>` and keeps the token across restarts.
 3. Pairing codes expire after 10 minutes. If the code expired, start a new pairing.
 
 **Disconnect** forgets the token on this device. The browser stays signed in to every site;
-only the Paperclip link is removed. **Reconnect** re-opens the socket with the stored token.
+only the Wardmote link is removed. **Reconnect** re-opens the socket with the stored token.
 
 The popup (`ui/popup.html`) and the control center (`ui/control.html`, also the options page)
 are shared with Firefox and live in `apps/local-browser/shared/ui`. They talk to the service
@@ -75,7 +75,7 @@ shows a notification that opens the control center. Agents can also queue reques
 with `local_browser_permissions op:"request"`.
 
 Agent guards are the user's own switches, kept in `lb.guards` and edited in the control center:
-`protectPaperclipTab` (never navigate the Paperclip tab), `protectFocusedTab` (never navigate the
+`protectPaperclipTab` (never navigate the Wardmote tab), `protectFocusedTab` (never navigate the
 tab the user is looking at unless the agent opened it) and `networkBufferSize` (the continuous
 network ring, 50 to 20000 requests). Changes are sent to the server as `guards` events.
 

@@ -14,7 +14,7 @@ const connected = {
   version: "1.1.0",
   state: "connected",
   label: "Work laptop",
-  origin: "https://paperclip.test",
+  origin: "https://wardmote.test",
   sessionId: "abcdef1234567890",
   tier: "refine",
   allowedOrigins: ["https://a.test"],
@@ -28,7 +28,7 @@ test("connection view covers every state", () => {
   const view = uiState.connection(connected);
   assert.equal(view.title, "Connected");
   assert.equal(view.tone, "ok");
-  assert.equal(view.detail, "Work laptop \u00b7 https://paperclip.test");
+  assert.equal(view.detail, "Work laptop \u00b7 https://wardmote.test");
   assert.equal(view.session, "abcdef12");
   assert.equal(view.tier, "Refine");
   assert.equal(view.tabs, "2");
@@ -40,10 +40,10 @@ test("connection view covers every state", () => {
   assert.equal(uiState.connection({ ...connected, tier: "full" }).origins, "Full tier: agents can reach every site this browser allows.");
   assert.match(uiState.connection({ ...connected, allowedOrigins: [] }).origins, /no allowed sites/);
 
-  const retired = uiState.connection({ state: "retired", retiredReason: "revoked in Paperclip" });
+  const retired = uiState.connection({ state: "retired", retiredReason: "revoked in Wardmote" });
   assert.equal(retired.title, "Pairing ended");
   assert.equal(retired.showPairForm, true);
-  assert.match(retired.detail, /revoked in Paperclip/);
+  assert.match(retired.detail, /revoked in Wardmote/);
 
   const down = uiState.connection({ state: "disconnected", origin: "https://p.test", lastError: "socket closed" });
   assert.equal(down.canReconnect, true);

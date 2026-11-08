@@ -1,6 +1,6 @@
 # Local Browser Bridge
 
-Paperclip agents can drive the browser you are already signed in to. The feature is a connector (`Local Browser`) plus a browser extension: the extension connects out to your Paperclip instance, and agents reach it through 17 `local_browser_*` tools.
+Wardmote agents can drive the browser you are already signed in to. The feature is a connector (`Local Browser`) plus a browser extension: the extension connects out to your Wardmote instance, and agents reach it through 17 `local_browser_*` tools.
 
 Use it when the work needs the real signed-in web: a page behind SSO, an internal tool, a site whose state lives in your cookies. Use the hosted Browser Use Cloud connector when you need a disposable browser that is not your own.
 
@@ -47,7 +47,7 @@ them when all three hold:
 2. The connection grants that agent access. A board user approves it on the connection's access
    section; until then `connections_search` reports `needs_user_action` with "Review identity and
    access for this agent" and no browser tool reaches the run.
-3. The run carries a run credential. The tools are advertised over the Paperclip MCP endpoint for
+3. The run carries a run credential. The tools are advertised over the Wardmote MCP endpoint for
    `omp_local`-style runs and through the connector tool authority for the runner, so a bare agent
    key without a run cannot call them.
 
@@ -64,7 +64,7 @@ Board routes under `/api/local-browser` stay board-only: `GET /api/local-browser
 
 Two tabs are off limits for navigation, in both browsers:
 
-- The Paperclip tab. A tab whose origin matches the paired Paperclip address is never navigated or
+- The Wardmote tab. A tab whose origin matches the paired Wardmote address is never navigated or
   reused, because changing its URL would take the operator out of the app they are watching the agent
   in.
 - The tab the user is looking at. Navigating the active tab in the focused window would silently
@@ -105,7 +105,7 @@ Use `local_browser_read` when the task needs the page text rather than its contr
 
 Tabs report `cookieStoreId`, `containerName`, `incognito`, `discarded`, `frozen`, `pinned` and `audible`. `local_browser_open` accepts `cookieStoreId` (a Firefox container or another jar), and `incognito`. A tab always opens in a window the user already has open; a new window appears only when no window of the wanted kind exists (the first private tab), and the result then says so in `note`.
 
-The server tracks which tab each agent operates, so two agents in two tabs of one browser are both known; an agent's tab is dropped when the tab closes, when the browser disconnects, or after five minutes without a call from that agent (input from the Paperclip live view postpones it). An extension that advertises `indicator.v1` receives the internal `local_browser_indicator` call with every operated tab and the names of the agents on it, and draws a small bar in the corner of exactly those tabs: "Paperclip agent <name> is using this tab" with a Take over button. The bar lives in a closed shadow root marked `data-paperclip-agent-indicator`, so snapshot and read never see it; only its button takes pointer events, the hit test moves it to another corner when it would cover the target of an act, it is hidden while the agent takes a screenshot, it is drawn again after every load of the tab, and it is put back when the page removes it. Take over keeps the tab for the user until the user presses Hand back or closes the tab: the hold survives the agent moving to another tab, the agent going idle and a reconnect. While it holds, agent calls that drive or read that tab (navigate, snapshot, act, read, wait, evaluate, screenshot, upload, context, close, network and page storage) fail with `local_browser_navigation_blocked`, `local_browser_open` with a url uses a fresh tab instead, and the bar reads "You have control of this tab" with Hand back. Cookie jar reads and the full-tier `local_browser_api` escape hatch act on the whole browser and are not held.
+The server tracks which tab each agent operates, so two agents in two tabs of one browser are both known; an agent's tab is dropped when the tab closes, when the browser disconnects, or after five minutes without a call from that agent (input from the Wardmote live view postpones it). An extension that advertises `indicator.v1` receives the internal `local_browser_indicator` call with every operated tab and the names of the agents on it, and draws a small bar in the corner of exactly those tabs: "Wardmote agent <name> is using this tab" with a Take over button. The bar lives in a closed shadow root marked `data-wardmote-agent-indicator`, so snapshot and read never see it; only its button takes pointer events, the hit test moves it to another corner when it would cover the target of an act, it is hidden while the agent takes a screenshot, it is drawn again after every load of the tab, and it is put back when the page removes it. Take over keeps the tab for the user until the user presses Hand back or closes the tab: the hold survives the agent moving to another tab, the agent going idle and a reconnect. While it holds, agent calls that drive or read that tab (navigate, snapshot, act, read, wait, evaluate, screenshot, upload, context, close, network and page storage) fail with `local_browser_navigation_blocked`, `local_browser_open` with a url uses a fresh tab instead, and the bar reads "You have control of this tab" with Hand back. Cookie jar reads and the full-tier `local_browser_api` escape hatch act on the whole browser and are not held.
 
 Snapshot, read, screenshot and wait results carry `document`: a per-page `documentId`, `navigationType`, `restoredFromBfcache`, `wasDiscarded`, `ageMs`, request counts since load, and `stale` with `staleReasons`. A stale document is the back-forward-cache or frozen-tab case where the page shows old data; agents reload before trusting it.
 
@@ -141,7 +141,7 @@ The bridge WebSocket accepts frames up to the base64 size of the `transferMaxByt
 
 ## Capabilities
 
-`LOCAL_BROWSER_PROTOCOL_VERSION` stays `1`. New features are negotiated through `hello.capabilities`, and the server refuses a feature the extension does not advertise with `local_browser_unsupported` and the hint "Update the Paperclip Local Browser extension":
+`LOCAL_BROWSER_PROTOCOL_VERSION` stays `1`. New features are negotiated through `hello.capabilities`, and the server refuses a feature the extension does not advertise with `local_browser_unsupported` and the hint "Update the Wardmote Local Browser extension":
 
 | Capability | Unlocks |
 |---|---|
@@ -190,7 +190,7 @@ committed Chromium zip no longer matches the source. Source and the per-browser 
 
 ## Browser permissions and Allow all
 
-The user, not Paperclip, decides what the extension may do in the browser. Both extensions declare only what they cannot run without as required, and everything else as optional, from one catalog (`LOCAL_BROWSER_PERMISSIONS`):
+The user, not Wardmote, decides what the extension may do in the browser. Both extensions declare only what they cannot run without as required, and everything else as optional, from one catalog (`LOCAL_BROWSER_PERMISSIONS`):
 
 - Always required: `storage` and `activeTab` in both browsers; `debugger` and `alarms` in Chromium (Chrome cannot make `debugger` optional); `contextualIdentities` in Firefox (Firefox cannot make it optional).
 - Optional in both: `<all_urls>` (every website), `tabs`, `scripting`, `cookies`, `downloads`, `downloads.open`, `webNavigation`, `history`, `bookmarks`, `browsingData`, `sessions`, `topSites`, `clipboardRead`, `clipboardWrite`, `notifications`, `management`, `privacy`, `search`.
@@ -199,13 +199,13 @@ The user, not Paperclip, decides what the extension may do in the browser. Both 
 
 The extension popup and its control center list every catalog entry for that browser with a one-sentence description of what it grants, its state (granted, missing, required) and Allow / Revoke buttons. **Allow all** requests every optional permission plus `<all_urls>` in one browser prompt.
 
-When a tool needs a permission the user has not granted, the extension queues it as a pending request (badge count, and a desktop notice when `notifications` is granted) and the tool answers `local_browser_permission_required` with the missing ids in `permissions` and `retryable: true`. Agents call `local_browser_permissions` with `op: "request"` and a reason, then ask the user to press Allow; the request alone grants nothing, because browsers only grant on a user click. From Paperclip, **Open permission page in browser** on a live session calls the open-permissions route, which opens the control center on the Permissions section.
+When a tool needs a permission the user has not granted, the extension queues it as a pending request (badge count, and a desktop notice when `notifications` is granted) and the tool answers `local_browser_permission_required` with the missing ids in `permissions` and `retryable: true`. Agents call `local_browser_permissions` with `op: "request"` and a reason, then ask the user to press Allow; the request alone grants nothing, because browsers only grant on a user click. From Wardmote, **Open permission page in browser** on a live session calls the open-permissions route, which opens the control center on the Permissions section.
 
-The extension reports its permission state as `access` (`siteAccess`, `granted`, `missing`, `pending`) in `hello` and in `access` events, so Paperclip always shows the current grants.
+The extension reports its permission state as `access` (`siteAccess`, `granted`, `missing`, `pending`) in `hello` and in `access` events, so Wardmote always shows the current grants.
 
 ## Agent guards
 
-The control center also holds guards the user switches on the extension side, reported to Paperclip as `guards`:
+The control center also holds guards the user switches on the extension side, reported to Wardmote as `guards`:
 
 - `protectPaperclipTab` (default on): never navigate or reuse the Paperclip tab.
 - `protectFocusedTab` (default on): never navigate the tab the user is looking at.

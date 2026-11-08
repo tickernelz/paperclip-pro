@@ -148,7 +148,7 @@
     } catch (error) {
       if (generation === socketGeneration) {
         socketState = "idle";
-        lastError = "Paperclip at " + stored.origin + " could not be reached";
+        lastError = "Wardmote at " + stored.origin + " could not be reached";
         scheduleReconnect();
         scheduleBroadcast();
       }
@@ -443,14 +443,14 @@
   async function parsePairingInput(input) {
     var parsed = LB.pairing.parsePairingInput(String(input || "").trim());
     if (parsed.reason) {
-      throw new ToolFailure(ERROR.protocolError, parsed.reason, "Paperclip shows a pairing link with the code in it on the Local Browser page");
+      throw new ToolFailure(ERROR.protocolError, parsed.reason, "Wardmote shows a pairing link with the code in it on the Local Browser page");
     }
     var stored = (await readPairing()) || {};
     var origin = parsed.origin || stored.origin || "";
     if (!origin) {
       throw new ToolFailure(
         ERROR.protocolError,
-        "Paste the pairing link from Paperclip, or open the pairing page in a tab first",
+        "Paste the pairing link from Wardmote, or open the pairing page in a tab first",
         "The link carries the server address and the code together"
       );
     }
@@ -514,7 +514,7 @@
     if (op === "reconnect") {
       var stored = (await readPairing()) || {};
       if (connectionState(stored) === "retired") {
-        return { ok: false, error: "Paperclip ended this pairing. Paste a new pairing link to connect again.", status: await status() };
+        return { ok: false, error: "Wardmote ended this pairing. Paste a new pairing link to connect again.", status: await status() };
       }
       if (!stored.sessionToken && !stored.code) return { ok: false, error: "This browser is not paired yet.", status: await status() };
       await restart();

@@ -8,11 +8,11 @@ import { bootBackground, flush, plain } from "./harness.test.mjs";
 
 const manifest = JSON.parse(readFileSync(fileURLToPath(new URL("../manifest.json", import.meta.url)), "utf8"));
 
-const PAPERCLIP_TAB = {
+const WARDMOTE_TAB = {
   id: 12,
   windowId: 1,
   title: "Local Browser",
-  url: "https://paperclip.test/apps/conn-1",
+  url: "https://wardmote.test/apps/conn-1",
   active: true,
   status: "complete",
 };
@@ -20,7 +20,7 @@ const PAPERCLIP_TAB = {
 function boot(options = {}) {
   const marker = options.marker === undefined ? null : options.marker;
   return bootBackground({
-    tabs: [options.tab || PAPERCLIP_TAB],
+    tabs: [options.tab || WARDMOTE_TAB],
     executeScript: () => [marker],
     ...options,
   });
@@ -61,29 +61,29 @@ test("status reports narrowed site access and the missing ids", async () => {
   assert.equal(response.status.access.missing.includes("storage"), false);
 });
 
-test("detect offers the pairing link found in the open Paperclip tab", async () => {
-  const harness = boot({ marker: { origin: "https://paperclip.test", code: "F6BX2X8R" } });
+test("detect offers the pairing link found in the open Wardmote tab", async () => {
+  const harness = boot({ marker: { origin: "https://wardmote.test", code: "F6BX2X8R" } });
   const response = await send(harness, "detect");
   assert.equal(response.ok, true);
-  assert.deepEqual(response.detected, { input: "https://paperclip.test/?code=F6BX2X8R" });
+  assert.deepEqual(response.detected, { input: "https://wardmote.test/?code=F6BX2X8R" });
   assert.equal(harness.callsOf("tabs.executeScript").length, 1, "the page is read once");
   assert.equal(harness.callsOf("tabs.executeScript")[0][1], 12);
 });
 
 test("the detected input pairs as it is", async () => {
-  const harness = boot({ marker: { origin: "https://paperclip.test", code: "F6BX2X8R" } });
+  const harness = boot({ marker: { origin: "https://wardmote.test", code: "F6BX2X8R" } });
   const detected = await send(harness, "detect");
   const paired = await send(harness, "pair", { input: detected.detected.input });
   assert.equal(paired.ok, true);
-  assert.equal(harness.store.get("lb.pairing").origin, "https://paperclip.test");
-  assert.match(harness.sockets.at(-1).url, /^wss:\/\/paperclip\.test\/api\/local-browser\/bridge\?code=F6BX2X8R$/);
+  assert.equal(harness.store.get("lb.pairing").origin, "https://wardmote.test");
+  assert.match(harness.sockets.at(-1).url, /^wss:\/\/wardmote\.test\/api\/local-browser\/bridge\?code=F6BX2X8R$/);
   assert.equal(paired.status.state, "connecting");
 });
 
 test("detect falls back to the tab origin when the page gives none", async () => {
   const harness = boot({ marker: { origin: "", code: "F6BX2X8R" } });
   const response = await send(harness, "detect");
-  assert.deepEqual(response.detected, { input: "https://paperclip.test/?code=F6BX2X8R" });
+  assert.deepEqual(response.detected, { input: "https://wardmote.test/?code=F6BX2X8R" });
 });
 
 test("detect returns null when the tab has no pairing marker", async () => {
@@ -94,7 +94,7 @@ test("detect returns null when the tab has no pairing marker", async () => {
 });
 
 test("detect ignores a tab that is not an http page", async () => {
-  const harness = boot({ tab: { ...PAPERCLIP_TAB, url: "about:addons" }, marker: { code: "F6BX2X8R" } });
+  const harness = boot({ tab: { ...WARDMOTE_TAB, url: "about:addons" }, marker: { code: "F6BX2X8R" } });
   const response = await send(harness, "detect");
   assert.equal(response.detected, null);
   assert.equal(harness.callsOf("tabs.executeScript").length, 0);
@@ -102,38 +102,38 @@ test("detect ignores a tab that is not an http page", async () => {
 
 test("pair accepts a bare host link and stores a normalised origin", async () => {
   const harness = boot();
-  const response = await send(harness, "pair", { input: "app.paperclip.example/?code=F6BX2X8R" });
+  const response = await send(harness, "pair", { input: "app.wardmote.example/?code=F6BX2X8R" });
   assert.equal(response.ok, true);
-  assert.equal(harness.store.get("lb.pairing").origin, "https://app.paperclip.example");
+  assert.equal(harness.store.get("lb.pairing").origin, "https://app.wardmote.example");
   assert.equal(harness.sockets.at(-1).url.includes("code=F6BX2X8R"), true);
 });
 
 test("pair refuses a non-web address with a message that names the problem", async () => {
   const harness = boot();
-  const response = await send(harness, "pair", { input: "ftp://paperclip.test/?code=F6BX2X8R" });
+  const response = await send(harness, "pair", { input: "ftp://wardmote.test/?code=F6BX2X8R" });
   assert.equal(response.ok, false);
   assert.match(response.error, /http or https/);
   assert.equal(response.status.state, "unpaired");
   assert.equal(harness.sockets.length, 0);
 });
 
-test("a bare code needs a Paperclip address the browser already knows", async () => {
+test("a bare code needs a Wardmote address the browser already knows", async () => {
   const fresh = boot();
   const refused = await send(fresh, "pair", { input: "F6BX2X8R" });
   assert.equal(refused.ok, false);
   assert.match(refused.error, /whole pairing link/);
 
-  const known = boot({ storage: { "lb.pairing": { origin: "https://paperclip.test", label: "Work", sessionToken: null, retiredAt: "2026-10-01T00:00:00Z", retiredReason: "expired" } } });
+  const known = boot({ storage: { "lb.pairing": { origin: "https://wardmote.test", label: "Work", sessionToken: null, retiredAt: "2026-10-01T00:00:00Z", retiredReason: "expired" } } });
   await known.LB.bridge.start();
   const paired = await send(known, "pair", { input: "F6BX2X8R" });
   assert.equal(paired.ok, true);
-  assert.equal(known.store.get("lb.pairing").origin, "https://paperclip.test");
+  assert.equal(known.store.get("lb.pairing").origin, "https://wardmote.test");
   assert.equal(known.store.get("lb.pairing").label, "Work");
 });
 
 test("a link without a code asks for the whole link", async () => {
   const harness = boot();
-  const response = await send(harness, "pair", { input: "https://paperclip.test" });
+  const response = await send(harness, "pair", { input: "https://wardmote.test" });
   assert.equal(response.ok, false);
   assert.match(response.error, /no pairing code/);
 });
@@ -183,13 +183,13 @@ test("state changes broadcast lb-status with the full status", async () => {
   const harness = boot();
   await flush();
   harness.calls.length = 0;
-  await send(harness, "pair", { input: "https://paperclip.test/?code=F6BX2X8R" });
+  await send(harness, "pair", { input: "https://wardmote.test/?code=F6BX2X8R" });
   await new Promise((resolve) => setTimeout(resolve, 120));
   await flush();
   const broadcasts = harness.callsOf("runtime.sendMessage").map((entry) => entry[1]).filter((message) => message.channel === "lb-status");
   assert.ok(broadcasts.length >= 1);
   assert.equal(broadcasts.at(-1).status.state, "connecting");
-  assert.equal(broadcasts.at(-1).status.origin, "https://paperclip.test");
+  assert.equal(broadcasts.at(-1).status.origin, "https://wardmote.test");
   assert.equal("state" in broadcasts.at(-1), false, "the old state field is gone");
 });
 

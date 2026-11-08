@@ -39,7 +39,7 @@ export const LOCAL_BROWSER_PAIRING_TTL_MS = 10 * 60 * 1000;
 /** Viewer frame and input coordinates are CSS pixels of the page viewport, never device pixels. */
 export const LOCAL_BROWSER_VIEWER_COORDINATE_SPACE = "css-pixels";
 export const LOCAL_BROWSER_COOKIE_CAPABILITY = "cookies.v2";
-export const LOCAL_BROWSER_UPDATE_HINT = "Update the Paperclip Local Browser extension";
+export const LOCAL_BROWSER_UPDATE_HINT = "Update the Wardmote Local Browser extension";
 
 export type LocalBrowserTier = (typeof LOCAL_BROWSER_TIERS)[number];
 export const localBrowserTierSchema = z.enum(LOCAL_BROWSER_TIERS);
@@ -622,12 +622,12 @@ export const LOCAL_BROWSER_TOOLS: readonly LocalBrowserToolDefinition[] = [
   ),
   defineTool(
     "local_browser_open",
-    "Open a URL in the user's real browser. It reuses the tab you already opened for this work and creates one only when you have none, so repeated opens never pile up tabs. The tab always opens inside a window the user already has open and never takes focus unless active is true; a new window appears only when none matches, for example the first private tab, and the result then carries a note. Pass cookieStoreId to open in a container or another cookie jar, incognito for a private window. Never navigates the tab the user is looking at or the Paperclip tab itself. Returns the tab and a first snapshot.",
+    "Open a URL in the user's real browser. It reuses the tab you already opened for this work and creates one only when you have none, so repeated opens never pile up tabs. The tab always opens inside a window the user already has open and never takes focus unless active is true; a new window appears only when none matches, for example the first private tab, and the result then carries a note. Pass cookieStoreId to open in a container or another cookie jar, incognito for a private window. Never navigates the tab the user is looking at or the Wardmote tab itself. Returns the tab and a first snapshot.",
     localBrowserOpenInputSchema,
   ),
   defineTool(
     "local_browser_navigate",
-    "Navigate the current tab: pass url, or one of back, forward, reload. Prefer this over local_browser_open when the tab is already on the site you need. Refused for the tab the user is looking at and for the Paperclip tab itself; call local_browser_open for those.",
+    "Navigate the current tab: pass url, or one of back, forward, reload. Prefer this over local_browser_open when the tab is already on the site you need. Refused for the tab the user is looking at and for the Wardmote tab itself; call local_browser_open for those.",
     localBrowserNavigateInputSchema,
   ),
   defineTool(
@@ -682,7 +682,7 @@ export const LOCAL_BROWSER_TOOLS: readonly LocalBrowserToolDefinition[] = [
   ),
   defineTool(
     "local_browser_close",
-    "Close a tab, or the whole paired browser session, when you are done. Closing a session does not sign the user out; it disconnects Paperclip from that browser.",
+    "Close a tab, or the whole paired browser session, when you are done. Closing a session does not sign the user out; it disconnects Wardmote from that browser.",
     localBrowserCloseInputSchema,
   ),
   defineTool(

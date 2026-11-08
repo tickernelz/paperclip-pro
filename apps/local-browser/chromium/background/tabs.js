@@ -7,7 +7,7 @@
   var ToolFailure = core.ToolFailure;
   var REGULAR_STORE = "0";
   var INCOGNITO_STORE = "1";
-  var INCOGNITO_HINT = "Open chrome://extensions, click Details on Paperclip Local Browser, turn on Allow in Incognito, then retry";
+  var INCOGNITO_HINT = "Open chrome://extensions, click Details on Wardmote Local Browser, turn on Allow in Incognito, then retry";
   var GUARD_HINT = "Call local_browser_open with a url; that always uses a fresh tab. The user can turn this guard off in the extension's Agent guards section";
   var agentTabs = new Set();
 
@@ -207,7 +207,7 @@
     }
   }
 
-  async function paperclipOrigins() {
+  async function wardmoteOrigins() {
     var stored = (await LB.bg.bridge.readPairing()) || {};
     var origins = new Set();
     var paired = core.originOf(stored.origin);
@@ -215,16 +215,16 @@
     return origins;
   }
 
-  async function isPaperclipTab(tab) {
-    var origins = await paperclipOrigins();
+  async function isWardmoteTab(tab) {
+    var origins = await wardmoteOrigins();
     var current = core.originOf(tab.url);
     return Boolean(current && origins.has(current));
   }
 
   async function assertNavigationAllowed(tab) {
     var guards = LB.guards.current();
-    if (guards.protectPaperclipTab !== false && (await isPaperclipTab(tab))) {
-      throw new ToolFailure(ERROR.navigationBlocked, "This tab belongs to Paperclip itself, so it is never navigated", GUARD_HINT);
+    if (guards.protectPaperclipTab !== false && (await isWardmoteTab(tab))) {
+      throw new ToolFailure(ERROR.navigationBlocked, "This tab belongs to Wardmote itself, so it is never navigated", GUARD_HINT);
     }
     if (agentTabs.has(tab.id)) return;
     if (guards.protectFocusedTab === false) return;
@@ -247,7 +247,7 @@
       }
       if ((tab.incognito === true) !== incognito) continue;
       if (LB.bg.indicator.isHeld(tab.id)) continue;
-      if (await isPaperclipTab(tab)) continue;
+      if (await isWardmoteTab(tab)) continue;
       return tab;
     }
     return null;
@@ -393,7 +393,7 @@
     documentOf: documentOf,
     waitForTab: waitForTab,
     trySnapshot: trySnapshot,
-    isPaperclipTab: isPaperclipTab,
+    isWardmoteTab: isWardmoteTab,
     assertNavigationAllowed: assertNavigationAllowed,
     ownAgentTab: ownAgentTab,
     openTab: openTab,
