@@ -16,7 +16,6 @@ export function resolveBaseUrl(req: Request, authPublicBaseUrl?: string): string
   return requestBaseUrl(req);
 }
 
-/** Origin of the first configured public URL, or null when none parses. */
 export function runtimePublicOrigin(env: NodeJS.ProcessEnv = process.env): string | null {
   const candidate = ["WARDMOTE_PUBLIC_URL", "WARDMOTE_AUTH_PUBLIC_BASE_URL", "WARDMOTE_API_URL"]
     .map((key) => env[legacyEnvKey(key)]?.trim())
