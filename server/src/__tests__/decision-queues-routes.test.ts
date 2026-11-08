@@ -9,6 +9,7 @@ import {
   approvals,
   authUsers,
   companies,
+  companyMemberships,
   createDb,
   decisionQueueItems,
   decisionQueues,
@@ -16,6 +17,7 @@ import {
   decisionTriageEvents,
   decisions,
   heartbeatRuns,
+  issueApprovals,
   issueThreadInteractions,
   issueWorkProducts,
   issues,
@@ -56,11 +58,13 @@ describeEmbeddedPostgres("decision queue routes", () => {
     await db.delete(activityLog);
     await db.delete(issueThreadInteractions);
     await db.delete(issueWorkProducts);
+    await db.delete(issueApprovals);
     await db.delete(approvals);
     await db.delete(decisions);
     await db.delete(heartbeatRuns);
     await db.delete(issues);
     await db.delete(agents);
+    await db.delete(companyMemberships);
     await db.delete(companies);
     await db.delete(authUsers);
   });
@@ -587,6 +591,18 @@ describeEmbeddedPostgres("decision queue routes", () => {
       title: "Second open question",
       payload: { version: 1, questions: [] } as never,
     });
+    const idleAt = new Date(Date.now() - 400 * 86_400_000);
+    await db.insert(issueThreadInteractions).values({
+      id: randomUUID(),
+      companyId,
+      issueId,
+      kind: "ask_user_questions",
+      status: "pending",
+      title: "Idle open question",
+      payload: { version: 1, questions: [] } as never,
+      createdAt: idleAt,
+      updatedAt: idleAt,
+    });
     const questionRows = await db.select({ id: issueThreadInteractions.id }).from(issueThreadInteractions)
       .where(and(eq(issueThreadInteractions.companyId, companyId), eq(issueThreadInteractions.kind, "ask_user_questions")));
     await request(app(board)).post(`/api/companies/${companyId}/decision-queues`).send({
@@ -608,16 +624,121 @@ describeEmbeddedPostgres("decision queue routes", () => {
     const feed = attentionService(db);
     for (const queue of listed.body as Array<{ key: string; itemCount: number }>) {
       const page = await feed.list(companyId, { queue: queue.key, all: true, actor: board as never, userId: board.userId, allowUnscopedAll: true });
-      expect({ key: queue.key, count: queue.itemCount }).toEqual({ key: queue.key, count: page.items.length });
+      const live = page.items.filter((item) => !item.shelf);
+      expect({ key: queue.key, count: queue.itemCount }).toEqual({ key: queue.key, count: live.length });
+      if (queue.key === "questions") expect(page.items.filter((item) => item.shelf)).toHaveLength(1);
     }
     const questions = listed.body.find((queue: { key: string }) => queue.key === "questions");
-    expect(questionRows).toHaveLength(4);
+    expect(questionRows).toHaveLength(5);
     expect(questions).toMatchObject({ itemCount: 2, resolvedCount: 2 });
 
     const agentList = await request(app(agentActor(companyId, agentId)))
       .get(`/api/companies/${companyId}/decision-queues`)
       .expect(200);
     expect(agentList.body.every((queue: { resolvedCount: number | null }) => queue.resolvedCount === null)).toBe(true);
+  });
+
+  it("hides decisions tied to a private issue from a session member who cannot read it", async () => {
+    const { companyId, agentId, userId, answeredId } = await seedHistory();
+    const memberId = `member-${randomUUID()}`;
+    const member = {
+      type: "board",
+      source: "session",
+      userId: memberId,
+      companyIds: [companyId],
+      isInstanceAdmin: false,
+    };
+    await request(app(member)).get(`/api/companies/${companyId}/decision-history?status=decided`).expect(403);
+    await db.insert(companyMemberships).values({
+      companyId,
+      principalType: "user",
+      principalId: memberId,
+      status: "active",
+      membershipRole: "member",
+    });
+
+    const privateIssueId = randomUUID();
+    await db.insert(issues).values({
+      id: privateIssueId,
+      companyId,
+      identifier: "DQC-2",
+      title: "Private rollout",
+      status: "in_progress",
+      assigneeUserId: userId,
+      createdByUserId: userId,
+      responsibleUserId: userId,
+      visibility: "private",
+      privacyRootIssueId: privateIssueId,
+    });
+    const secretQuestionId = randomUUID();
+    await db.insert(issueThreadInteractions).values({
+      id: secretQuestionId,
+      companyId,
+      issueId: privateIssueId,
+      kind: "request_confirmation",
+      status: "accepted",
+      title: "Secret question",
+      payload: { version: 1, prompt: "Secret question" } as never,
+      result: { version: 1, outcome: "accepted" } as never,
+      resolvedByUserId: userId,
+      resolvedAt: new Date("2026-11-07T10:00:00.000Z"),
+    });
+    const secretApprovalId = randomUUID();
+    await db.insert(approvals).values({
+      id: secretApprovalId,
+      companyId,
+      type: "request_board_approval",
+      status: "approved",
+      decidedByUserId: userId,
+      decidedAt: new Date("2026-11-07T11:00:00.000Z"),
+      payload: { title: "Secret approval" },
+    });
+    await db.insert(issueApprovals).values({ companyId, issueId: privateIssueId, approvalId: secretApprovalId });
+    const runId = randomUUID();
+    await db.insert(heartbeatRuns).values({ id: runId, companyId, agentId, status: "succeeded", contextSnapshot: { issueId: privateIssueId } });
+    const secretDecisionId = randomUUID();
+    await db.insert(decisions).values({
+      id: secretDecisionId,
+      companyId,
+      originAgentId: agentId,
+      originIssueId: privateIssueId,
+      originRunId: runId,
+      title: "Secret decision",
+      body: "Pick a route",
+      options: [{ id: "keep", label: "Keep" }] as never,
+      expiresAt: new Date("2026-12-01T00:00:00.000Z"),
+      signedSpec: "spec",
+      targetSnapshots: {},
+      status: "decided",
+      chosenOptionId: "keep",
+      decidedByUserId: userId,
+      decidedAt: new Date("2026-11-07T12:00:00.000Z"),
+    });
+
+    const owner = boardActor(companyId, userId);
+    await request(app(owner)).post(`/api/companies/${companyId}/decision-queues`).send({ key: "questions", title: "Questions" }).expect(201);
+    for (const sourceId of [answeredId, secretQuestionId]) {
+      await request(app(owner))
+        .post(`/api/companies/${companyId}/decision-queues/questions/items`)
+        .send({ sourceKind: "issue_thread_interaction", sourceId })
+        .expect(201);
+    }
+
+    const secretIds = [secretQuestionId, secretApprovalId, secretDecisionId];
+    const ownerHistory = await request(app(owner)).get(`/api/companies/${companyId}/decision-history?status=decided`).expect(200);
+    expect(ownerHistory.body.totalCount).toBe(7);
+    expect(ownerHistory.body.items.map((item: { sourceId: string }) => item.sourceId)).toEqual(expect.arrayContaining(secretIds));
+    const memberHistory = await request(app(member)).get(`/api/companies/${companyId}/decision-history?status=decided`).expect(200);
+    expect(memberHistory.body.totalCount).toBe(4);
+    const memberIds: string[] = memberHistory.body.items.map((item: { sourceId: string }) => item.sourceId);
+    expect(memberIds.filter((id) => secretIds.includes(id))).toEqual([]);
+    expect(JSON.stringify(memberHistory.body)).not.toMatch(/Secret|Private rollout|DQC-2/);
+
+    const queueOf = (body: Array<{ key: string; resolvedCount: number | null }>) => body.find((queue) => queue.key === "questions");
+    const ownerQueues = await request(app(owner)).get(`/api/companies/${companyId}/decision-queues`).expect(200);
+    const memberQueues = await request(app(member)).get(`/api/companies/${companyId}/decision-queues`).expect(200);
+    expect(queueOf(ownerQueues.body)?.resolvedCount).toBe(2);
+    expect(queueOf(memberQueues.body)?.resolvedCount).toBe(1);
   });
 
   it("lists decided history from interactions and approvals with decider, outcome, and issue link", async () => {

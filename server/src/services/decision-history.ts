@@ -650,7 +650,7 @@ async function openDecisionCountsByQueue(db: Db, companyId: string, actor: Autho
     all: true,
     allowUnscopedAll: true,
   }, false);
-  let items = feed.items;
+  let items = feed.items.filter((item) => !item.shelf);
   if (actor.type !== "board") {
     const readable = await readableDecisionSourceKeys(db, actor, companyId, items.map((item) => ({
       sourceKind: item.sourceKind,

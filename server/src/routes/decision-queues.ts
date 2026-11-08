@@ -85,8 +85,8 @@ export function decisionQueueRoutes(db: Db) {
 
   router.get("/companies/:companyId/decision-history", async (req, res) => {
     const companyId = req.params.companyId as string;
-    assertCompanyAccess(req, companyId);
     assertBoard(req);
+    await assertDecisionAccess(db, req, companyId, "decision_queue:read");
     const query = decisionHistoryQuerySchema.safeParse(req.query);
     if (!query.success) throw badRequest("Invalid decision history query", query.error.flatten());
     res.json(await history.list(companyId, req.actor, query.data));

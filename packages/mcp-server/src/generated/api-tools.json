@@ -20282,10 +20282,10 @@
     },
     "guards": [
       "assertBoard",
-      "assertCompanyAccess"
+      "assertDecisionAccess"
     ],
     "permissions": [],
-    "boardGuard": "assertBoard@decision-queues.ts:89",
+    "boardGuard": "assertBoard@decision-queues.ts:88",
     "authorityCapability": null,
     "parameters": [
       {

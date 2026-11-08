@@ -38,7 +38,7 @@ export interface DecisionQueue {
   retentionDays: number | null;
   seedRules: DecisionQueueSeedRule[];
   seedRulesEnabled: boolean;
-  /** Open items: exactly the items the queue page lists for this reader. */
+  /** Open items in the queue page's live list for this reader; the Aging shelf is excluded. */
   itemCount: number;
   /** Decided or expired members visible in decision history; null for agent readers. */
   resolvedCount: number | null;
