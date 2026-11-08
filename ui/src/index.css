@@ -1386,9 +1386,11 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
 
 @layer state {
 .sidebar-action-row:is(:hover, :focus-within),
-.sidebar-action-row:has(.sidebar-action-link[aria-current="page"]),
 .sidebar-action-row:has(.sidebar-action-menu[data-state="open"]) {
-  --sidebar-action-surface: var(--bg-3);
+  --sidebar-action-surface: color-mix(in srgb, var(--ink) 6%, var(--sidebar-action-rest-surface, var(--bg)));
+}
+.sidebar-action-row:has(.sidebar-action-link[aria-current="page"]) {
+  --sidebar-action-surface: color-mix(in srgb, var(--accent) 14%, var(--sidebar-action-rest-surface, var(--bg)));
 }
 }
 
