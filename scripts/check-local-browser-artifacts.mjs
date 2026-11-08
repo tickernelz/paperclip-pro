@@ -48,10 +48,19 @@ const firefoxSource = JSON.parse(
   readFileSync(path.join(root, "apps", "local-browser", "firefox", "manifest.json"), "utf8"),
 ).version;
 const firefoxSigned = path.join(root, "ui", "public", "downloads", "local-browser-firefox.xpi");
+const firefoxUnsigned = path.join(root, "ui", "public", "downloads", "local-browser-firefox-unsigned.zip");
 const signedManifest = JSON.parse(
   execFileSync("unzip", ["-p", firefoxSigned, "manifest.json"], { encoding: "utf8" }),
 );
 const signedEntries = execFileSync("unzip", ["-l", firefoxSigned], { encoding: "utf8" });
+const packaged = (file) =>
+  contents(file)
+    .split("\n")
+    .filter((line) => !line.startsWith("META-INF/") && !line.startsWith("manifest.json "))
+    .join("\n");
+const signedSource = packaged(firefoxSigned);
+const unsignedSource = packaged(firefoxUnsigned);
+const sourceManifest = JSON.parse(execFileSync("unzip", ["-p", firefoxUnsigned, "manifest.json"], { encoding: "utf8" }));
 if (!signedEntries.includes("META-INF")) {
   console.error("ui/public/downloads/local-browser-firefox.xpi is not signed by Mozilla.");
   process.exit(1);
@@ -67,6 +76,18 @@ if (signedManifest.version !== firefoxSource) {
   console.error(
     "Export WEB_EXT_API_KEY and WEB_EXT_API_SECRET, run `node apps/local-browser/build-artifacts.mjs --sign`, then commit the xpi.",
   );
+  process.exit(1);
+}
+if (signedSource !== unsignedSource || JSON.stringify(signedManifest) !== JSON.stringify(sourceManifest)) {
+  console.error(
+    "ui/public/downloads/local-browser-firefox.xpi is signed " +
+      signedManifest.version +
+      " but its files differ from the Firefox source. Raise the version in apps/local-browser/firefox/manifest.json and sign again.",
+  );
+  const signedLines = new Set(signedSource.split("\n"));
+  const unsignedLines = new Set(unsignedSource.split("\n"));
+  for (const line of signedLines) if (!unsignedLines.has(line)) console.error("  signed only: " + line);
+  for (const line of unsignedLines) if (!signedLines.has(line)) console.error("  source only: " + line);
   process.exit(1);
 }
 console.log("Firefox download is the signed " + signedManifest.version + " build of the current source.");

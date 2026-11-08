@@ -25,7 +25,7 @@
     if (status.tier === "full") return "Full tier: agents can reach every site this browser allows.";
     var origins = Array.isArray(status.allowedOrigins) ? status.allowedOrigins.filter(Boolean) : [];
     if (origins.length) return "Allowed sites: " + origins.join(", ");
-    return "Refine tier with no allowed sites yet. Add sites on Paperclip's Local Browser page.";
+    return "Refine tier with no allowed sites yet. Add sites on Wardmote's Local Browser page.";
   }
 
   function connection(status) {
@@ -35,15 +35,15 @@
     var label = text(source.label);
     var detail;
     if (state === "retired") {
-      detail = "Paperclip ended this pairing" + (source.retiredReason ? ": " + source.retiredReason : "") + ". Paste a new pairing link to connect again.";
+      detail = "Wardmote ended this pairing" + (source.retiredReason ? ": " + source.retiredReason : "") + ". Paste a new pairing link to connect again.";
     } else if (state === "connected") {
       detail = [label, origin].filter(Boolean).join(" \u00b7 ");
     } else if (state === "connecting") {
-      detail = origin ? "Reaching " + origin + "\u2026" : "Reaching Paperclip\u2026";
+      detail = origin ? "Reaching " + origin + "\u2026" : "Reaching Wardmote\u2026";
     } else if (state === "disconnected") {
-      detail = text(source.lastError) || "Paperclip is unreachable right now. The extension keeps retrying.";
+      detail = text(source.lastError) || "Wardmote is unreachable right now. The extension keeps retrying.";
     } else {
-      detail = "Paste the pairing link from Paperclip's Local Browser page to connect this browser.";
+      detail = "Paste the pairing link from Wardmote's Local Browser page to connect this browser.";
     }
     var tabs = Array.isArray(source.tabs) ? source.tabs.length : typeof source.tabs === "number" ? source.tabs : null;
     return {
@@ -162,10 +162,10 @@
       max: range.max,
       toggles: [
         {
-          key: "protectPaperclipTab",
-          label: "Keep agents away from the Paperclip tab",
-          description: "Agents cannot navigate the tab where Paperclip itself is open.",
-          checked: source.protectPaperclipTab !== false
+          key: "protectWardmoteTab",
+          label: "Keep agents away from the Wardmote tab",
+          description: "Agents cannot navigate the tab where Wardmote itself is open.",
+          checked: source.protectWardmoteTab !== false
         },
         {
           key: "protectFocusedTab",

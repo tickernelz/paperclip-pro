@@ -330,7 +330,7 @@
     },
     "guards": {
       "defaults": {
-        "protectPaperclipTab": true,
+        "protectWardmoteTab": true,
         "protectFocusedTab": true,
         "networkBufferSize": 1000
       },
