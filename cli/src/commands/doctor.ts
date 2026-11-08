@@ -18,7 +18,7 @@ import {
   type CheckResult,
 } from "../checks/index.js";
 import { loadPaperclipEnvFile } from "../config/env.js";
-import { printPaperclipCliBanner } from "../utils/banner.js";
+import { printWardmoteCliBanner } from "../utils/banner.js";
 import { printUpdateNotice } from "../update-notice.js";
 
 const STATUS_ICON = {
@@ -33,7 +33,7 @@ export async function doctor(opts: {
   yes?: boolean;
 }): Promise<{ passed: number; warned: number; failed: number }> {
   await printUpdateNotice(opts.config);
-  printPaperclipCliBanner();
+  printWardmoteCliBanner();
   p.intro(pc.bgCyan(pc.black(" paperclip doctor ")));
 
   const configPath = resolveConfigPath(opts.config);

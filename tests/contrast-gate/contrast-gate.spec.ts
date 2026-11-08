@@ -2,7 +2,7 @@ import { writeFileSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 import { probeRenderedContrast, type ContrastItem } from "./contrast-probe";
 
-const EXPECTED_REST_ITEMS = 2 * 3 * 45;
+const EXPECTED_REST_ITEMS = 2 * 3 * 46;
 const TEXT_MIN = 4.5;
 const LARGE_TEXT_MIN = 3;
 const BOUNDARY_MIN = 3;
