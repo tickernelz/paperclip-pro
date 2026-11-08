@@ -46,7 +46,7 @@ import {
   resolvePaperclipInstanceId,
 } from "../config/home.js";
 import { bootstrapCeoInvite } from "./auth-bootstrap-ceo.js";
-import { printPaperclipCliBanner } from "../utils/banner.js";
+import { printWardmoteCliBanner } from "../utils/banner.js";
 import {
   getTelemetryClient,
   trackInstallStarted,
@@ -412,7 +412,7 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
     throw new Error(`Unsupported bind preset for onboard: ${opts.bind}. Use loopback, lan, or tailnet.`);
   }
 
-  printPaperclipCliBanner();
+  printWardmoteCliBanner();
   p.intro(pc.bgCyan(pc.black(" wardmote onboard ")));
   const configPath = resolveConfigPath(opts.config);
   const instance = describeLocalInstancePaths(resolvePaperclipInstanceId());
