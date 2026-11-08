@@ -2200,8 +2200,8 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
   line-height: inherit;
 }
 
-.paperclip-mdxeditor-content li[class*="_listItemChecked_"],
-.paperclip-mdxeditor-content li[class*="_listItemUnchecked_"] {
+[class*="_contentEditable_"] li[class*="_listItemChecked_"],
+[class*="_contentEditable_"] li[class*="_listItemUnchecked_"] {
   margin-inline-start: -1rem;
 }
 
