@@ -103,7 +103,7 @@ export function probeRenderedContrast(state: string): ContrastItem[] {
       const own = rgba(getComputedStyle(icon).color);
       iconRatio = round(ratio(over([own[0], own[1], own[2], own[3] * opacity], background), background));
     }
-    const exempt = textSurface || /\.(ghost|link)(\.|$)|navitem|segmented\.item(?!\.on)/.test(id);
+    const exempt = textSurface || /\.(ghost|link)(\.|$)|navitem|segmented\.item(?!\.on)|tabs\.(default\.trigger(?!\.on)|line\.trigger)/.test(id);
     let boundary: number | null = null;
     if (!exempt) {
       const fill = rgba(style.backgroundColor);

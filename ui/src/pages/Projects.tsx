@@ -219,7 +219,7 @@ export function Projects() {
                         subtitle={project.description ?? undefined}
                         reserveSubtitleSpace
                         to={projectUrl(project)}
-                        className={state === "left" ? "group text-ink/55" : "group"}
+                        className={state === "left" ? "group text-ink-3" : "group"}
                         trailing={
                           <div className="flex items-center gap-3">
                             {project.visibility === "private" ? <Lock className="size-4 shrink-0 text-ink-3" aria-label="Private project" /> : null}

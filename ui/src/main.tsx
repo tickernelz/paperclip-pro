@@ -24,6 +24,7 @@ import { PluginLauncherProvider } from "./plugins/launchers";
 import { startPerfMeasureReaper } from "./lib/perf-measure-reaper";
 import { getOrCreatePaperclipReactRoot } from "./lib/react-root";
 import { startServiceWorkerUpdates } from "./lib/service-worker-updates";
+import { serviceWorkerBuildIdFromFileName } from "./lib/service-worker-build-id";
 import { captureInstallPrompt, recordAppVisit } from "./lib/pwa-install-prompt";
 import "./index.css";
 
@@ -37,7 +38,7 @@ startPerfMeasureReaper();
 captureInstallPrompt();
 recordAppVisit();
 window.addEventListener("load", () => {
-  startServiceWorkerUpdates();
+  startServiceWorkerUpdates({ pageBuildId: serviceWorkerBuildIdFromFileName(new URL(import.meta.url).pathname) });
 });
 
 const queryClient = new QueryClient({
