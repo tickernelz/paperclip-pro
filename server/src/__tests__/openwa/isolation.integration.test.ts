@@ -197,7 +197,7 @@ describe("OpenWA company isolation and invite-link joins (embedded Postgres + fa
   async function live(service: ChatChannelService, tenants: Tenant[]) {
     expect((await service.reconcileProviderRuntimes()).local).toBe(tenants.length);
     for (const t of tenants) {
-      await t.gateway.waitForSubscription();
+      await t.gateway.waitForFirstCatchUp();
       await until(async () => (await db.select().from(chatEndpoints).where(eq(chatEndpoints.id, t.endpointId)))[0]!.status === "active");
     }
   }

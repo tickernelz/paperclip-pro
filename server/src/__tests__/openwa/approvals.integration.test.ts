@@ -241,7 +241,7 @@ describe("OpenWA owner approvals and grants (embedded Postgres + fake gateway)",
     }
     for (const phone of [MEMBER_A, MEMBER_B]) await service.openwa.addSenderRule(endpoint.id, { list: "allow", e164: "+" + phone }, userId);
     expect((await service.reconcileProviderRuntimes()).local).toBe(1);
-    await gateway.waitForSubscription();
+    await gateway.waitForFirstCatchUp();
     return { gateway, companyId, agentId, userId, ownerUsers, endpointId: endpoint.id, service, wakes, wakeup };
   }
 

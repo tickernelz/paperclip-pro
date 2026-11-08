@@ -163,7 +163,7 @@ describeEmbeddedPostgres("OpenWA run authority through the real admission path",
 
   async function goLive(t: Setup) {
     await t.service.reconcileProviderRuntimes();
-    await t.gateway.waitForSubscription();
+    await t.gateway.waitForFirstCatchUp();
   }
 
   async function wakeCount(t: Setup) {
