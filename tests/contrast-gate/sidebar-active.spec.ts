@@ -9,7 +9,7 @@ const LAYOUTS = [
   { name: "labels", viewport: { width: 1400, height: 900 }, rail: false },
   { name: "rail", viewport: { width: 900, height: 800 }, rail: true },
 ] as const;
-const EXPECTED_ITEMS = 2 * 5;
+const EXPECTED_ITEMS = 2 * 7;
 
 function failuresOf(item: NavItemProbe, hover: NavItemProbe | undefined): string[] {
   const failures: string[] = [];

@@ -60,6 +60,7 @@ export function probeSidebarNav(state: string): NavItemProbe[] {
     const ink = rgba(getComputedStyle(label).color);
     const svg = link.querySelector("svg");
     const iconInk = svg ? rgba(getComputedStyle(svg).color) : null;
+    const iconBackdrop = svg ? backgroundOf(svg, false) : row;
     items.push({
       id: host.dataset.navItem!,
       expect: host.dataset.navExpect as "active" | "rest",
@@ -70,7 +71,7 @@ export function probeSidebarNav(state: string): NavItemProbe[] {
       row: hex(row),
       marker: marker ? hex(marker) : null,
       text: rail ? null : ratio(over(ink, row), row),
-      icon: iconInk ? ratio(over(iconInk, row), row) : null,
+      icon: iconInk ? ratio(over(iconInk, iconBackdrop), iconBackdrop) : null,
       markerVsRow: marker ? ratio(marker, row) : null,
       markerVsSurface: marker ? ratio(marker, surface) : null,
       rowVsSurface: ratio(row, surface),
