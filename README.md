@@ -4,7 +4,7 @@ Wardmote Pro is a self-hosted control plane that runs a team of AI coding agents
 
 It is a **hard fork** of [`paperclipai/paperclip`](https://github.com/paperclipai/paperclip), branched at upstream commit `7b7c4d417` and since diverged. It is not an upstream release and is not endorsed by Paperclip Labs, Inc. All workspace packages are renamed under the `@tickernelz/paperclip-pro` scope, the CLI binary is `wardmote` (`paperclip-pro` still works for one release), and instance state lives under `~/.wardmote` instead of `~/.paperclip`, so this fork installs and runs beside an upstream instance instead of replacing it. An existing `~/.paperclip-pro` home keeps working without any action; `wardmote migrate-home` moves it to `~/.wardmote` when you choose. See [doc/RELEASE-NOTES-wardmote-rename.md](doc/RELEASE-NOTES-wardmote-rename.md).
 
-Report bugs in [this repository](https://github.com/tickernelz/paperclip-pro/issues), never in the upstream tracker.
+Report bugs in [this repository](https://github.com/tickernelz/wardmote/issues), never in the upstream tracker.
 
 ## What this fork adds
 
@@ -75,10 +75,10 @@ The git path builds a GitHub commit from source. It needs pnpm 9.15.4, `git`, `c
 
 ```sh
 wardmote install --ref main --yes
-wardmote install --repo tickernelz/paperclip-pro --ref <commit-sha> --yes
+wardmote install --repo tickernelz/wardmote --ref <commit-sha> --yes
 ```
 
-`--repo` defaults to `tickernelz/paperclip-pro`. `--ref` cannot be combined with `--version` or `--canary`.
+`--repo` defaults to `tickernelz/wardmote`. `--ref` cannot be combined with `--version` or `--canary`.
 
 ### Upgrade and rollback
 
@@ -128,7 +128,7 @@ Day-two operation — state layout, safe restarts, backups, admin bootstrap, pub
 Node 24.18.0 and pnpm 9.15.4 (`packageManager` in `package.json`). Work in a git worktree per change; never point a development instance at `~/.wardmote`.
 
 ```sh
-git clone https://github.com/tickernelz/paperclip-pro.git
+git clone https://github.com/tickernelz/wardmote.git
 cd wardmote
 pnpm install --frozen-lockfile
 pnpm dev

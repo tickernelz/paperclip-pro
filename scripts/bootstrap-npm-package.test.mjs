@@ -62,7 +62,7 @@ test("buildPlaceholderFiles entry point throws with a pointer to the repo", () =
 
   assert.match(files["index.js"], /^throw new Error\(/);
   assert.match(files["index.js"], /placeholder/);
-  assert.match(files["index.js"], /github\.com\/tickernelz\/paperclip-pro/);
+  assert.match(files["index.js"], /github\.com\/tickernelz\/wardmote/);
   // The entry point must be valid JS: evaluating it should throw our message,
   // not a SyntaxError.
   assert.throws(() => new Function(files["index.js"])(), /placeholder that reserves/);

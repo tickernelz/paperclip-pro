@@ -12,7 +12,7 @@ const CLI_PACKAGE = `${SCOPE}/${PREFIX}`;
 const CLI_BIN = PREFIX;
 const TARBALL_STEM = "tickernelz-paperclip-pro";
 const HOME_DIR = ".paperclip-pro";
-const FORK_REPO = "https://github.com/tickernelz/paperclip-pro";
+const FORK_REPO = "https://github.com/tickernelz/wardmote";
 
 const SKIP_PREFIXES = ["releases/", "screenshots/", "report/"];
 const SKIP_FILES = new Set(["pnpm-lock.yaml", "scripts/fork/rename-to-paperclip-pro.mjs"]);
@@ -196,7 +196,7 @@ const FILE_RULES = {
     lit(`(serverNodeModulesScopeDir, "db")`, `(serverNodeModulesScopeDir, "${PREFIX}-db")`),
   ],
   "scripts/bootstrap-npm-package.mjs": [
-    lit(`Add repository paperclipai/paperclip`, `Add repository tickernelz/paperclip-pro`),
+    lit(`Add repository paperclipai/paperclip`, `Add repository tickernelz/wardmote`),
     ...PACKAGE_JSON_RULES,
   ],
   ...ISOLATION_REGRESSION_TESTS,

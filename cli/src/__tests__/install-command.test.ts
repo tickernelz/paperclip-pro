@@ -93,7 +93,7 @@ describe("managed install commands", () => {
 
   it("supports fork overrides, defaults to this fork, and classifies SHA refs as pinned", () => {
     expect(resolveGitInstallRequest({ ref: "feature/test", repo: "HenkDz/paperclip" })).toEqual({ repo: "HenkDz/paperclip", ref: "feature/test", pinned: false });
-    expect(resolveGitInstallRequest({ ref: "abcdef1" })).toEqual({ repo: "tickernelz/paperclip-pro", ref: "abcdef1", pinned: true });
+    expect(resolveGitInstallRequest({ ref: "abcdef1" })).toEqual({ repo: "tickernelz/wardmote", ref: "abcdef1", pinned: true });
     expect(() => resolveGitInstallRequest({ repo: "HenkDz/paperclip" })).toThrow("requires --ref");
   });
 
