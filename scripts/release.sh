@@ -298,16 +298,22 @@ promote_to_latest() {
       continue
     fi
 
+    if [ -n "${NODE_AUTH_TOKEN:-}" ]; then
+      if ! env -u ACTIONS_ID_TOKEN_REQUEST_URL -u ACTIONS_ID_TOKEN_REQUEST_TOKEN \
+        npm dist-tag add "${pkg_name}@${pkg_version}" "$PROMOTE_TAG"; then
+        release_fail "npm dist-tag add failed for ${pkg_name}@${pkg_version}."
+      fi
+      release_info "  ${pkg_name}: ${PROMOTE_TAG} -> ${pkg_version}"
+      continue
+    fi
+
     if npm dist-tag add "${pkg_name}@${pkg_version}" "$PROMOTE_TAG"; then
       release_info "  ${pkg_name}: ${PROMOTE_TAG} -> ${pkg_version}"
       continue
     fi
 
-    if [ -n "${NODE_AUTH_TOKEN:-}" ]; then
-      release_fail "npm dist-tag add failed for ${pkg_name}@${pkg_version}."
-    fi
     if [ -z "${NPM_PROMOTE_TOKEN:-}" ]; then
-      release_fail "npm dist-tag add over OIDC failed for ${pkg_name}; enable \"Allow npm dist-tag\" on its trusted publisher, or rerun this version with auth=token."
+      release_fail "npm dist-tag add over OIDC failed for ${pkg_name}; enable \"Allow npm dist-tag\" on its trusted publisher, or set the NPM_TOKEN repository secret so the run can move it with a token."
     fi
 
     release_warn "  ${pkg_name}: OIDC refused npm dist-tag add; moving ${PROMOTE_TAG} with NPM_PROMOTE_TOKEN"

@@ -151,7 +151,7 @@ function shellFunction(name) {
   return lines.slice(start, end + 1).join("\n");
 }
 
-function runPromote({ mode, promoteToken }) {
+function runPromote({ mode, promoteToken, nodeAuthToken }) {
   const dir = mkdtempSync(path.join(tmpdir(), "release-promote-"));
   const binDir = path.join(dir, "bin");
   mkdirSync(binDir);
@@ -171,7 +171,8 @@ function runPromote({ mode, promoteToken }) {
     "echo PROMOTE_RETURNED_OK",
   ].join("\n");
   const env = { ...process.env, CALLS_LOG: calls, MODE: mode, TMPDIR: dir, ACTIONS_ID_TOKEN_REQUEST_URL: "https://oidc.example", ACTIONS_ID_TOKEN_REQUEST_TOKEN: "id-token" };
-  delete env.NODE_AUTH_TOKEN;
+  if (nodeAuthToken) env.NODE_AUTH_TOKEN = nodeAuthToken;
+  else delete env.NODE_AUTH_TOKEN;
   delete env.NPM_CONFIG_USERCONFIG;
   if (promoteToken) env.NPM_PROMOTE_TOKEN = promoteToken;
   else delete env.NPM_PROMOTE_TOKEN;
@@ -209,6 +210,13 @@ test("promote_to_latest retries a refused OIDC dist-tag with the promote token a
 test("promote_to_latest fails a refused OIDC dist-tag when no promote token is configured", () => {
   const result = runPromote({ mode: "refuse_oidc" });
   assert.equal(result.status, 1);
-  assert.match(result.output, /enable "Allow npm dist-tag" on its trusted publisher/);
+  assert.match(result.output, /enable "Allow npm dist-tag" on its trusted publisher, or set the NPM_TOKEN repository secret/);
   assert.equal(result.log.length, 1);
+});
+
+test("promote_to_latest in token mode moves the tag without the OIDC identity overriding the token", () => {
+  const result = runPromote({ mode: "refuse_oidc", nodeAuthToken: "classic-token" });
+  assert.equal(result.status, 0, result.output);
+  assert.equal(result.log.length, 1);
+  assert.match(result.log[0], /^dist-tag add @tickernelz\/example-package@1\.2\.3 latest\|oidc=\|/);
 });
