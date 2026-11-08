@@ -98,6 +98,9 @@ const serializedServerVitestArgs = [
   "--no-file-parallelism",
   "--maxWorkers=1",
 ];
+const serverTestWorkers = parsePositiveInteger(process.env.PAPERCLIP_SERVER_TEST_WORKERS ?? "1", "PAPERCLIP_SERVER_TEST_WORKERS");
+const parallelServerVitestArgs =
+  serverTestWorkers > 1 ? [`--maxWorkers=${serverTestWorkers}`] : serializedServerVitestArgs;
 const sourceOnlyVitestArgs = ["--exclude", "**/dist/**"];
 
 function walk(dir) {
@@ -462,7 +465,7 @@ function runGeneralGroup(routeTests, groupName, shardIndex = null, shardCount = 
         [
           "--project",
           "@tickernelz/paperclip-pro-server",
-          ...serializedServerVitestArgs,
+          ...parallelServerVitestArgs,
           ...shardFiles,
         ],
         `${groupName} shard ${shardIndex + 1}/${shardCount}`,
@@ -530,6 +533,22 @@ function runSerializedSuites(routeTests, shardIndex, shardCount) {
   console.log(
     `\n[test:run] serialized shard ${shardIndex + 1}/${shardCount} running ${shardTests.length} of ${routeTests.length} suites`,
   );
+
+  if (serverTestWorkers > 1) {
+    if (shardTests.length === 0) return;
+    runVitest(
+      [
+        "--project",
+        "@tickernelz/paperclip-pro-server",
+        ...shardTests.map((routeTest) => routeTest.repoPath),
+        "--pool=forks",
+        "--isolate",
+        ...parallelServerVitestArgs,
+      ],
+      `serialized shard ${shardIndex + 1}/${shardCount} with ${serverTestWorkers} workers`,
+    );
+    return;
+  }
 
   for (const routeTest of shardTests) {
     runVitest(
