@@ -1012,7 +1012,7 @@
     ["packages/db/src/speko-voice-migration.test.ts",1,"belum-diganti"],
     ["packages/db/src/status-card-migrations.test.ts",1,"belum-diganti"],
     ["packages/db/src/test-embedded-postgres.test.ts",3,"belum-diganti"],
-    ["packages/db/src/test-embedded-postgres.ts",20,"turunan"],
+    ["packages/db/src/test-embedded-postgres.ts",19,"turunan"],
     ["packages/db/src/vercel-connect-credential-source-migration.test.ts",3,"belum-diganti"],
     ["packages/google-sheets-mcp-server/README.md",14,"belum-diganti"],
     ["packages/google-sheets-mcp-server/package.json",5,"belum-diganti"],
