@@ -2691,7 +2691,7 @@
     ["scripts/release-package-manifest.json",2,"belum-diganti"],
     ["scripts/release-registry-versions.test.mjs",1,"belum-diganti"],
     ["scripts/release-tag-gate.test.mjs",1,"belum-diganti"],
-    ["scripts/release.sh",6,"belum-diganti"],
+    ["scripts/release.sh",5,"belum-diganti"],
     ["scripts/repair-pr-prep-workspace-attachment.mjs",9,"belum-diganti"],
     ["scripts/request-hot-restart.ts",6,"belum-diganti"],
     ["scripts/retain-runner-qualification-packages.mjs",5,"belum-diganti"],
