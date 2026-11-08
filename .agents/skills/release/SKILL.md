@@ -86,7 +86,7 @@ the mechanical list.
 
 ```bash
 gh workflow run release.yml --repo tickernelz/wardmote --ref main \
-  -f dry_run=true -f auth=token -f version=
+  -f dry_run=true -f auth=oidc -f version=
 ```
 
 Read the run log: every package must reach a publish preview, and no package
@@ -96,12 +96,15 @@ may report unresolved `workspace:` specs.
 
 ```bash
 gh workflow run release.yml --repo tickernelz/wardmote --ref main \
-  -f dry_run=false -f auth=token -f version=
+  -f dry_run=false -f auth=oidc -f version=
 ```
 
-Use `auth=oidc` only once every package has a trusted publisher; the `latest`
-promotion still needs `NPM_TOKEN` because npm OIDC does not authenticate
-`npm dist-tag add`.
+`auth=oidc` covers publishing and the `latest` promotion. Use `auth=token`
+(`NPM_TOKEN`) only for a package without a trusted publisher yet or for
+`npm deprecate`. An `oidc` run moves `latest` with `NPM_TOKEN` (as
+`NPM_PROMOTE_TOKEN`) only for a package whose trusted publisher lacks
+`Allow npm dist-tag`, and logs a warning when it does. `docs/fork/OPERATIONS.md`
+section 9 lists the trusted publisher settings.
 
 ## Step 5 — Confirm
 

@@ -152,12 +152,12 @@ test("require-green-ci fails when no run exists for the commit", () => {
   assert.match(result.stderr, /no ci\.yml run exists for abc123/);
 });
 
-test("resolve reads the version from the tag on a push", () => {
+test("resolve publishes a tag push live over OIDC whatever the dispatch inputs say", () => {
   const result = runGate(["resolve"], {
-    env: { EVENT_NAME: "push", TAG_NAME: "v2026.925.3", INPUT_DRY_RUN: "true", INPUT_AUTH: "oidc" },
+    env: { EVENT_NAME: "push", TAG_NAME: "v2026.925.3", INPUT_DRY_RUN: "true", INPUT_AUTH: "token" },
   });
   assert.equal(result.status, 0);
-  assert.equal(result.stdout, "version=2026.925.3\ndry_run=false\nauth=token\n");
+  assert.equal(result.stdout, "version=2026.925.3\ndry_run=false\nauth=oidc\n");
 });
 
 test("resolve fails a push whose tag is not a calendar version", () => {
@@ -172,15 +172,21 @@ test("resolve keeps the dispatch inputs", () => {
       EVENT_NAME: "workflow_dispatch",
       INPUT_VERSION: "2026.926.1",
       INPUT_DRY_RUN: "true",
-      INPUT_AUTH: "oidc",
+      INPUT_AUTH: "token",
     },
   });
   assert.equal(result.status, 0);
-  assert.equal(result.stdout, "version=2026.926.1\ndry_run=true\nauth=oidc\n");
+  assert.equal(result.stdout, "version=2026.926.1\ndry_run=true\nauth=token\n");
 });
 
-test("resolve defaults an empty dispatch to a token publish", () => {
+test("resolve defaults an empty dispatch to an OIDC publish", () => {
   const result = runGate(["resolve"], { env: { EVENT_NAME: "workflow_dispatch" } });
   assert.equal(result.status, 0);
-  assert.equal(result.stdout, "version=\ndry_run=false\nauth=token\n");
+  assert.equal(result.stdout, "version=\ndry_run=false\nauth=oidc\n");
+});
+
+test("resolve treats an unknown dispatch auth as OIDC", () => {
+  const result = runGate(["resolve"], { env: { EVENT_NAME: "workflow_dispatch", INPUT_AUTH: "bogus" } });
+  assert.equal(result.status, 0);
+  assert.equal(result.stdout, "version=\ndry_run=false\nauth=oidc\n");
 });
