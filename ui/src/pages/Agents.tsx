@@ -418,7 +418,7 @@ export function Agents({ initialView = "list" }: { initialView?: AgentsView } = 
         className={cn(
           "group py-3",
           agent.pausedAt && tab !== "paused" ? "opacity-50" : "",
-          resourceMembershipState(membershipsQuery.data, "agent", agent.id) === "left" ? "sm:text-ink/55" : "",
+          resourceMembershipState(membershipsQuery.data, "agent", agent.id) === "left" ? "sm:text-ink-3" : "",
         )}
         leading={(
           <div className="flex items-center gap-2">
@@ -707,7 +707,7 @@ function OrgTreeNode({
         className={cn(
           "group flex items-center gap-3 rounded-lg px-3 py-2 hover:bg-bg-3/50 transition-colors w-full text-left no-underline text-inherit",
           agent?.pausedAt && tab !== "paused" && "opacity-50",
-          membershipState === "left" && "sm:text-ink/55",
+          membershipState === "left" && "sm:text-ink-3",
         )}
       >
         {hasInvalidOrgChain ? (

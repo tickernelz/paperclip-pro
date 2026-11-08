@@ -271,6 +271,13 @@ describe("service worker update hand-off", () => {
     expect(w.skipWaiting).toHaveBeenCalledOnce();
   });
 
+  it("reports its stamped build id to the page that asks", async () => {
+    const w = worker();
+    const port = { postMessage: vi.fn() };
+    w.handlers.get("message")!({ data: { type: "wardmote.build-id" }, ports: [port], waitUntil: vi.fn() });
+    expect(port.postMessage).toHaveBeenCalledWith({ type: "wardmote.build-id", buildId: "fixture-production" });
+  });
+
   it("takes over at once from a legacy Wardmote worker whose tabs cannot show the update toast", async () => {
     const w = worker(["paperclip-public-assets-old"]);
     await install(w);

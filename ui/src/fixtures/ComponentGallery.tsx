@@ -12,6 +12,7 @@ import { ThemeProvider } from "@/context/ThemeContext";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
 import { Segmented, SegmentedItem } from "@/components/ui/segmented";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
@@ -31,6 +32,7 @@ const STATES = [
 ] as const;
 const SELECTABLE_VARIANTS = new Set(["secondary", "ghost"]);
 const BADGE_TONES = ["default", "danger", "warning"] as const;
+const TAB_VARIANTS = ["default", "line"] as const;
 const MARKDOWN_SAMPLE = "Plain text with a [link](https://example.com), `inline code` and **bold** words.\n\n> A quoted line";
 
 function Surface({ theme, surface }: { theme: string; surface: (typeof GALLERY_SURFACES)[number] }) {
@@ -87,6 +89,20 @@ function Surface({ theme, surface }: { theme: string; surface: (typeof GALLERY_S
         <ToggleSwitch data-gallery-item={id("switch.on")} aria-label="On" checked={switchOn} onCheckedChange={setSwitchOn} />
         <ToggleSwitch data-gallery-item={id("switch.off")} aria-label="Off" checked={switchOff} onCheckedChange={setSwitchOff} />
         <ToggleSwitch data-gallery-item={id("switch.disabled")} aria-label="Disabled" checked={false} onCheckedChange={() => undefined} disabled />
+      </div>
+      <div className="flex flex-wrap items-center gap-4">
+        {TAB_VARIANTS.map((variant) => (
+          <Tabs key={variant} defaultValue="recent">
+            <TabsList variant={variant}>
+              <TabsTrigger value="recent" data-gallery-item={id(`tabs.${variant}.trigger.on`)}>
+                Recent
+              </TabsTrigger>
+              <TabsTrigger value="unread" data-gallery-item={id(`tabs.${variant}.trigger`)}>
+                Unread
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        ))}
       </div>
       <div className="grid grid-cols-3 gap-3">
         <div data-gallery-item={id("markdown.body")} data-gallery-kind="text">
