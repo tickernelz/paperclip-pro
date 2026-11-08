@@ -24,7 +24,7 @@ import { OnboardingFlow } from "./components/onboarding/OnboardingFlow";
 import { IosInstallHelpDialog } from "./components/InstallAppMenuAction";
 import { NewTaskShortcut } from "./components/NewTaskShortcut";
 import { CloudAccessGate } from "./components/CloudAccessGate";
-import { PaperclipLoading } from "./components/AnimatedPaperclipIcon";
+import { MootLoading } from "./components/MootLoading";
 import { Dashboard } from "./pages/Dashboard";
 import { DashboardLive } from "./pages/DashboardLive";
 import { Companies } from "./pages/Companies";
@@ -135,7 +135,7 @@ const TerminalPage = lazy(() =>
 );
 
 function ProductionSurface({ children }: { children: ReactNode }) {
-  return <Suspense fallback={<PaperclipLoading />}>{children}</Suspense>;
+  return <Suspense fallback={<MootLoading />}>{children}</Suspense>;
 }
 
 function boardRoutes(combinedInboxTasksEnabled: boolean) {
@@ -174,7 +174,7 @@ function boardRoutes(combinedInboxTasksEnabled: boolean) {
         <Route
           path="company/export/*"
           element={(
-            <Suspense fallback={<PaperclipLoading />}>
+            <Suspense fallback={<MootLoading />}>
               <CompanyExport />
             </Suspense>
           )}
@@ -534,7 +534,7 @@ function LegacySettingsRedirect() {
   const { hidden: hiddenSettings } = useHiddenSettings();
 
   if (loading) {
-    return <PaperclipLoading />;
+    return <MootLoading />;
   }
 
   const targetCompany =
@@ -673,7 +673,7 @@ function CompanyRootRedirect() {
   const location = useLocation();
 
   if (loading) {
-    return <PaperclipLoading />;
+    return <MootLoading />;
   }
 
   const targetCompany = selectedCompany ?? companies[0] ?? null;
@@ -718,7 +718,7 @@ function UnprefixedBoardRedirect() {
   const { companies, selectedCompany, loading } = useCompany();
 
   if (loading) {
-    return <PaperclipLoading />;
+    return <MootLoading />;
   }
 
   const targetCompany = selectedCompany ?? companies[0] ?? null;
