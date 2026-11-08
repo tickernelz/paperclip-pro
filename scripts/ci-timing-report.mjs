@@ -1,6 +1,10 @@
 #!/usr/bin/env node
 import { execFileSync } from "node:child_process";
 import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const REPO_ROOT = fileURLToPath(new URL("..", import.meta.url));
 
 const USAGE = `Usage: node scripts/ci-timing-report.mjs [options]
   --repo <owner/name>   repository (default: $GITHUB_REPOSITORY or the origin remote)
@@ -329,7 +333,7 @@ function writeDurationManifests(dir, runIds) {
     if (sums.size === 0) continue;
     const target = `${dir}/${file}`;
     const previous = fs.existsSync(target) ? JSON.parse(fs.readFileSync(target, "utf8")).durations ?? {} : {};
-    const merged = new Map(Object.entries(previous).filter(([key]) => !sums.has(key) && fs.existsSync(key)));
+    const merged = new Map(Object.entries(previous).filter(([key]) => !sums.has(key) && fs.existsSync(path.join(REPO_ROOT, key))));
     for (const [key, { total, count }] of sums) merged.set(key, Math.round((total / count) * 1000));
     const durations = Object.fromEntries([...merged.entries()].sort((a, b) => a[0].localeCompare(b[0])));
     const comment = `Per-file wall-clock durations (ms) used to balance the ${kind} CI shards. Mean of the per-file durations reported in the job logs of CI runs ${runIds.join(", ")} (${new Date().toISOString().slice(0, 10)}); files those runs did not report keep their previous value. Regenerate with: node scripts/ci-timing-report.mjs --run <id> [--run <id>] --logs <n> --write-durations scripts`;
