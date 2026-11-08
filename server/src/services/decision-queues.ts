@@ -124,7 +124,14 @@ function eventActorColumns(actor: DecisionMutationActor) {
   };
 }
 
-function toQueue(row: typeof decisionQueues.$inferSelect, itemCount: number): DecisionQueue {
+export type DecisionQueueCounts = {
+  openByKey: ReadonlyMap<string, number>;
+  resolvedByQueueId: ReadonlyMap<string, number> | null;
+};
+
+const EMPTY_QUEUE_COUNTS: DecisionQueueCounts = { openByKey: new Map(), resolvedByQueueId: new Map() };
+
+function toQueue(row: typeof decisionQueues.$inferSelect, counts: DecisionQueueCounts): DecisionQueue {
   return {
     id: row.id,
     companyId: row.companyId,
@@ -138,7 +145,8 @@ function toQueue(row: typeof decisionQueues.$inferSelect, itemCount: number): De
     retentionDays: row.retentionDays ?? null,
     seedRules: row.seedRules ?? [],
     seedRulesEnabled: row.seedRulesEnabled,
-    itemCount,
+    itemCount: counts.openByKey.get(row.key) ?? 0,
+    resolvedCount: counts.resolvedByQueueId ? counts.resolvedByQueueId.get(row.id) ?? 0 : null,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };
@@ -179,8 +187,121 @@ function toTriage(row: typeof decisionTriage.$inferSelect): DecisionTriage {
   };
 }
 
-async function loadIssueResource(db: Db, companyId: string, issueId: string): Promise<AuthorizationResource | null> {
-  return db
+type DecisionSourceRef = { sourceKind: AttentionSourceKind; sourceId: string };
+
+type ResolvedDecisionSource = { issueId: string | null; ownerAgentId?: string | null; agentId?: string | null };
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const AUTHORIZATION_BATCH_SIZE = 16;
+
+function decisionSourceKey(sourceKind: AttentionSourceKind, sourceId: string) {
+  return `${sourceKind}:${sourceId}`;
+}
+
+function runIssueId(contextSnapshot: unknown) {
+  const snapshot = contextSnapshot && typeof contextSnapshot === "object"
+    ? contextSnapshot as Record<string, unknown>
+    : {};
+  if (typeof snapshot.issueId === "string") return snapshot.issueId;
+  return typeof snapshot.taskId === "string" ? snapshot.taskId : null;
+}
+
+async function resolveDecisionSources(
+  db: Db,
+  companyId: string,
+  sources: readonly DecisionSourceRef[],
+): Promise<Map<string, ResolvedDecisionSource>> {
+  const idsByKind = new Map<AttentionSourceKind, string[]>();
+  for (const source of sources) {
+    if (!UUID_PATTERN.test(source.sourceId)) continue;
+    const ids = idsByKind.get(source.sourceKind) ?? [];
+    ids.push(source.sourceId);
+    idsByKind.set(source.sourceKind, ids);
+  }
+  const resolved = new Map<string, ResolvedDecisionSource>();
+  const put = (kind: AttentionSourceKind, id: string, value: ResolvedDecisionSource) => {
+    const key = decisionSourceKey(kind, id);
+    if (!resolved.has(key)) resolved.set(key, value);
+  };
+  await Promise.all([...idsByKind].map(async ([kind, rawIds]) => {
+    const ids = [...new Set(rawIds)];
+    switch (kind) {
+      case "approval": {
+        const rows = await db.select({ id: approvals.id, issueId: issueApprovals.issueId }).from(approvals)
+          .leftJoin(issueApprovals, and(eq(issueApprovals.companyId, companyId), eq(issueApprovals.approvalId, approvals.id)))
+          .where(and(eq(approvals.companyId, companyId), inArray(approvals.id, ids)));
+        for (const row of rows) put(kind, row.id, { issueId: row.issueId ?? null });
+        return;
+      }
+      case "decision": {
+        const rows = await db.select({ id: decisions.id, issueId: decisions.originIssueId }).from(decisions)
+          .where(and(eq(decisions.companyId, companyId), inArray(decisions.id, ids)));
+        for (const row of rows) put(kind, row.id, { issueId: row.issueId ?? null });
+        return;
+      }
+      case "issue_thread_interaction": {
+        const rows = await db.select({ id: issueThreadInteractions.id, issueId: issueThreadInteractions.issueId })
+          .from(issueThreadInteractions)
+          .where(and(eq(issueThreadInteractions.companyId, companyId), inArray(issueThreadInteractions.id, ids)));
+        for (const row of rows) put(kind, row.id, { issueId: row.issueId ?? null });
+        return;
+      }
+      case "recovery_action": {
+        const rows = await db.select({ id: issueRecoveryActions.id, issueId: issueRecoveryActions.sourceIssueId })
+          .from(issueRecoveryActions)
+          .where(and(eq(issueRecoveryActions.companyId, companyId), inArray(issueRecoveryActions.id, ids)));
+        for (const row of rows) put(kind, row.id, { issueId: row.issueId ?? null });
+        return;
+      }
+      // Keep historical decision queue entries accessible after feature retirement.
+      case "productivity_review":
+      case "blocker_attention":
+      case "review": {
+        const rows = await db.select({ id: issues.id }).from(issues)
+          .where(and(eq(issues.companyId, companyId), inArray(issues.id, ids), isNull(issues.hiddenAt)));
+        for (const row of rows) put(kind, row.id, { issueId: row.id });
+        return;
+      }
+      case "failed_run": {
+        const rows = await db.select({
+          id: heartbeatRuns.id,
+          agentId: heartbeatRuns.agentId,
+          contextSnapshot: heartbeatRuns.contextSnapshot,
+        }).from(heartbeatRuns)
+          .where(and(eq(heartbeatRuns.companyId, companyId), inArray(heartbeatRuns.id, ids)));
+        for (const row of rows) {
+          put(kind, row.id, { issueId: runIssueId(row.contextSnapshot), ownerAgentId: row.agentId ?? null });
+        }
+        return;
+      }
+      case "agent_error_alert": {
+        const rows = await db.select({ id: agents.id }).from(agents)
+          .where(and(eq(agents.companyId, companyId), inArray(agents.id, ids)));
+        for (const row of rows) put(kind, row.id, { issueId: null, agentId: row.id });
+        return;
+      }
+      case "join_request": {
+        const rows = await db.select({ id: joinRequests.id }).from(joinRequests)
+          .where(and(eq(joinRequests.companyId, companyId), inArray(joinRequests.id, ids)));
+        for (const row of rows) put(kind, row.id, { issueId: null });
+        return;
+      }
+      case "budget_alert": {
+        const rows = await db.select({ id: budgetIncidents.id }).from(budgetIncidents)
+          .where(and(eq(budgetIncidents.companyId, companyId), inArray(budgetIncidents.id, ids)));
+        for (const row of rows) put(kind, row.id, { issueId: null });
+        return;
+      }
+    }
+  }));
+  return resolved;
+}
+
+async function loadIssueResources(db: Db, companyId: string, issueIds: string[]) {
+  const resources = new Map<string, AuthorizationResource>();
+  const ids = issueIds.filter((id) => UUID_PATTERN.test(id));
+  if (ids.length === 0) return resources;
+  const rows = await db
     .select({
       issueId: issues.id,
       companyId: issues.companyId,
@@ -193,94 +314,75 @@ async function loadIssueResource(db: Db, companyId: string, issueId: string): Pr
       status: issues.status,
     })
     .from(issues)
-    .where(and(eq(issues.companyId, companyId), eq(issues.id, issueId), isNull(issues.hiddenAt)))
-    .then((rows) => rows[0] ? ({ type: "issue", ...rows[0] } as const) : null);
+    .where(and(eq(issues.companyId, companyId), inArray(issues.id, ids), isNull(issues.hiddenAt)));
+  for (const row of rows) resources.set(row.issueId, { type: "issue", ...row } as const);
+  return resources;
 }
 
-async function sourceIssueId(
-  db: Db,
-  companyId: string,
-  sourceKind: AttentionSourceKind,
-  sourceId: string,
-): Promise<{ exists: boolean; issueId: string | null; ownerAgentId?: string | null; agentId?: string | null }> {
-  switch (sourceKind) {
-    case "approval": {
-      const row = await db.select({ id: approvals.id, issueId: issueApprovals.issueId })
-        .from(approvals)
-        .leftJoin(issueApprovals, and(
-          eq(issueApprovals.companyId, companyId),
-          eq(issueApprovals.approvalId, approvals.id),
-        ))
-        .where(and(eq(approvals.companyId, companyId), eq(approvals.id, sourceId)))
-        .then((rows) => rows[0] ?? null);
-      return { exists: Boolean(row), issueId: row?.issueId ?? null };
-    }
-    case "decision": {
-      const row = await db.select({ issueId: decisions.originIssueId })
-        .from(decisions)
-        .where(and(eq(decisions.companyId, companyId), eq(decisions.id, sourceId)))
-        .then((rows) => rows[0] ?? null);
-      return { exists: Boolean(row), issueId: row?.issueId ?? null };
-    }
-    case "issue_thread_interaction": {
-      const row = await db.select({ issueId: issueThreadInteractions.issueId })
-        .from(issueThreadInteractions)
-        .where(and(eq(issueThreadInteractions.companyId, companyId), eq(issueThreadInteractions.id, sourceId)))
-        .then((rows) => rows[0] ?? null);
-      return { exists: Boolean(row), issueId: row?.issueId ?? null };
-    }
-    case "recovery_action": {
-      const row = await db.select({ issueId: issueRecoveryActions.sourceIssueId })
-        .from(issueRecoveryActions)
-        .where(and(eq(issueRecoveryActions.companyId, companyId), eq(issueRecoveryActions.id, sourceId)))
-        .then((rows) => rows[0] ?? null);
-      return { exists: Boolean(row), issueId: row?.issueId ?? null };
-    }
-    // Keep historical decision queue entries accessible after feature retirement.
-    case "productivity_review":
-    case "blocker_attention":
-    case "review": {
-      const row = await db.select({ id: issues.id })
-        .from(issues)
-        .where(and(eq(issues.companyId, companyId), eq(issues.id, sourceId), isNull(issues.hiddenAt)))
-        .then((rows) => rows[0] ?? null);
-      return { exists: Boolean(row), issueId: row?.id ?? null };
-    }
-    case "failed_run": {
-      const row = await db.select({ agentId: heartbeatRuns.agentId, contextSnapshot: heartbeatRuns.contextSnapshot })
-        .from(heartbeatRuns)
-        .where(and(eq(heartbeatRuns.companyId, companyId), eq(heartbeatRuns.id, sourceId)))
-        .then((rows) => rows[0] ?? null);
-      const snapshot = row?.contextSnapshot && typeof row.contextSnapshot === "object"
-        ? row.contextSnapshot as Record<string, unknown>
-        : {};
-      const issueId = typeof snapshot.issueId === "string"
-        ? snapshot.issueId
-        : typeof snapshot.taskId === "string" ? snapshot.taskId : null;
-      return { exists: Boolean(row), issueId, ownerAgentId: row?.agentId ?? null };
-    }
-    case "agent_error_alert": {
-      const row = await db.select({ id: agents.id })
-        .from(agents)
-        .where(and(eq(agents.companyId, companyId), eq(agents.id, sourceId)))
-        .then((rows) => rows[0] ?? null);
-      return { exists: Boolean(row), issueId: null, agentId: row?.id ?? null };
-    }
-    case "join_request": {
-      const row = await db.select({ id: joinRequests.id })
-        .from(joinRequests)
-        .where(and(eq(joinRequests.companyId, companyId), eq(joinRequests.id, sourceId)))
-        .then((rows) => rows[0] ?? null);
-      return { exists: Boolean(row), issueId: null };
-    }
-    case "budget_alert": {
-      const row = await db.select({ id: budgetIncidents.id })
-        .from(budgetIncidents)
-        .where(and(eq(budgetIncidents.companyId, companyId), eq(budgetIncidents.id, sourceId)))
-        .then((rows) => rows[0] ?? null);
-      return { exists: Boolean(row), issueId: null };
-    }
+async function decideEach(keys: string[], decideOne: (key: string) => Promise<boolean>) {
+  const result = new Map<string, boolean>();
+  for (let index = 0; index < keys.length; index += AUTHORIZATION_BATCH_SIZE) {
+    const chunk = keys.slice(index, index + AUTHORIZATION_BATCH_SIZE);
+    const allowed = await Promise.all(chunk.map(decideOne));
+    chunk.forEach((key, offset) => result.set(key, allowed[offset]!));
   }
+  return result;
+}
+
+export async function readableDecisionSourceKeys(
+  db: Db,
+  actor: AuthorizationActor,
+  companyId: string,
+  sources: readonly DecisionSourceRef[],
+): Promise<Set<string>> {
+  const readable = new Set<string>();
+  if (sources.length === 0) return readable;
+  const resolved = await resolveDecisionSources(db, companyId, sources);
+  const authz = authorizationService(db);
+  const issueIds = [...new Set([...resolved.values()].map((source) => source.issueId).filter((id): id is string => Boolean(id)))];
+  const agentIds = [...new Set(sources.flatMap((source) => {
+    const agentId = source.sourceKind === "agent_error_alert"
+      ? resolved.get(decisionSourceKey(source.sourceKind, source.sourceId))?.agentId
+      : null;
+    return agentId ? [agentId] : [];
+  }))];
+  const issueResources = await loadIssueResources(db, companyId, issueIds);
+  const [issueReadable, agentReadable] = await Promise.all([
+    decideEach(issueIds, async (issueId) => {
+      const resource = issueResources.get(issueId);
+      if (!resource) return false;
+      return (await authz.decide({ actor, action: "issue:read", resource })).allowed;
+    }),
+    decideEach(agentIds, async (agentId) =>
+      (await authz.decide({ actor, action: "agent:read", resource: { type: "agent", companyId, agentId } })).allowed),
+  ]);
+  let companyScopeReadable: Promise<boolean> | null = null;
+  const companyScope = () => {
+    companyScopeReadable ??= authz.decide({ actor, action: "company_scope:read", resource: { type: "company", companyId } })
+      .then((decision) => decision.allowed);
+    return companyScopeReadable;
+  };
+  for (const source of sources) {
+    const key = decisionSourceKey(source.sourceKind, source.sourceId);
+    const found = resolved.get(key);
+    if (!found) continue;
+    let allowed: boolean;
+    if (found.issueId) {
+      allowed = issueReadable.get(found.issueId) ?? false;
+    } else if (source.sourceKind === "agent_error_alert" && found.agentId) {
+      allowed = agentReadable.get(found.agentId) ?? false;
+    } else if (source.sourceKind === "failed_run" && actor.type === "agent") {
+      allowed = found.ownerAgentId === actor.agentId;
+    } else if (actor.type !== "board") {
+      // Join requests, unlinked approvals, and budget incidents are board-only
+      // governance data. Same-company existence is deliberately not authority.
+      allowed = false;
+    } else {
+      allowed = await companyScope();
+    }
+    if (allowed) readable.add(key);
+  }
+  return readable;
 }
 
 export async function canReadDecisionSource(
@@ -290,35 +392,10 @@ export async function canReadDecisionSource(
   sourceKind: AttentionSourceKind,
   sourceId: string,
 ) {
-  const source = await sourceIssueId(db, companyId, sourceKind, sourceId);
-  if (!source.exists) return false;
-  const authz = authorizationService(db);
-  if (source.issueId) {
-    const resource = await loadIssueResource(db, companyId, source.issueId);
-    if (!resource) return false;
-    return (await authz.decide({ actor, action: "issue:read", resource })).allowed;
-  }
-
-  if (sourceKind === "agent_error_alert" && source.agentId) {
-    return (await authz.decide({
-      actor,
-      action: "agent:read",
-      resource: { type: "agent", companyId, agentId: source.agentId },
-    })).allowed;
-  }
-  if (sourceKind === "failed_run" && actor.type === "agent") {
-    return source.ownerAgentId === actor.agentId;
-  }
-
-  // Join requests, unlinked approvals, and budget incidents are board-only
-  // governance data. Same-company existence is deliberately not authority.
-  if (actor.type !== "board") return false;
-  return (await authz.decide({
-    actor,
-    action: "company_scope:read",
-    resource: { type: "company", companyId },
-  })).allowed;
+  const readable = await readableDecisionSourceKeys(db, actor, companyId, [{ sourceKind, sourceId }]);
+  return readable.has(decisionSourceKey(sourceKind, sourceId));
 }
+
 
 async function requireSourceRead(
   db: Db,
@@ -371,13 +448,13 @@ export function decisionQueueService(db: Db) {
     const rows = await db.select().from(decisionQueueItems)
       .where(and(eq(decisionQueueItems.companyId, companyId), eq(decisionQueueItems.queueId, queueId)))
       .orderBy(desc(decisionQueueItems.createdAt), desc(decisionQueueItems.id));
-    const visible: DecisionQueueItem[] = [];
-    for (const row of rows) {
-      if (await canReadDecisionSource(db, authActor, companyId, row.sourceKind as AttentionSourceKind, row.sourceId)) {
-        visible.push(toQueueItem(row));
-      }
-    }
-    return visible;
+    const readable = await readableDecisionSourceKeys(db, authActor, companyId, rows.map((row) => ({
+      sourceKind: row.sourceKind as AttentionSourceKind,
+      sourceId: row.sourceId,
+    })));
+    return rows
+      .filter((row) => readable.has(decisionSourceKey(row.sourceKind as AttentionSourceKind, row.sourceId)))
+      .map(toQueueItem);
   }
 
   return {
@@ -387,7 +464,7 @@ export function decisionQueueService(db: Db) {
       title: string;
       description?: string | null;
       retentionDays?: number | null;
-      authActor: AuthorizationActor;
+      loadCounts: () => Promise<DecisionQueueCounts>;
       actor: DecisionMutationActor;
     }) => {
       const result = await db.transaction(async (tx) => {
@@ -422,29 +499,22 @@ export function decisionQueueService(db: Db) {
         }
         return { row, created: Boolean(inserted[0]) };
       });
-      const itemCount = result.created
-        ? 0
-        : (await visibleItems(input.companyId, result.row.id, input.authActor)).length;
-      return { queue: toQueue(result.row, itemCount), created: result.created };
+      const counts = result.created ? EMPTY_QUEUE_COUNTS : await input.loadCounts();
+      return { queue: toQueue(result.row, counts), created: result.created };
     },
 
-    list: async (companyId: string, authActor: AuthorizationActor) => {
+    list: async (companyId: string, counts: DecisionQueueCounts) => {
       const rows = await db.select().from(decisionQueues)
         .where(eq(decisionQueues.companyId, companyId))
         .orderBy(desc(decisionQueues.updatedAt), desc(decisionQueues.id));
-      const result: DecisionQueue[] = [];
-      for (const row of rows) {
-        const items = await visibleItems(companyId, row.id, authActor);
-        result.push(toQueue(row, items.length));
-      }
-      return result;
+      return rows.map((row) => toQueue(row, counts));
     },
 
     update: async (input: {
       companyId: string;
       key: string;
       patch: { title?: string; description?: string | null; retentionDays?: number | null; seedRulesEnabled?: boolean };
-      authActor: AuthorizationActor;
+      loadCounts: () => Promise<DecisionQueueCounts>;
       actor: DecisionMutationActor;
     }) => {
       const row = await db.transaction(async (tx) => {
@@ -469,7 +539,7 @@ export function decisionQueueService(db: Db) {
         });
         return updated;
       });
-      return toQueue(row, (await visibleItems(input.companyId, row.id, input.authActor)).length);
+      return toQueue(row, await input.loadCounts());
     },
 
     listItems: async (companyId: string, key: string, authActor: AuthorizationActor) => {

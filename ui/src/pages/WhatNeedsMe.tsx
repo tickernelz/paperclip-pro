@@ -8,7 +8,6 @@ import { agentsApi } from "../api/agents";
 import { heartbeatsApi } from "../api/heartbeats";
 import { usePublishSharedQueryData, useSharedPollingQuery } from "@/hooks/useSharedPolling";
 import { authApi } from "../api/auth";
-import { decisionsApi } from "../api/decisions";
 import { useCompany } from "../context/CompanyContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { useToastActions } from "../context/ToastContext";
@@ -48,7 +47,7 @@ import { DecisionsToolbar } from "../components/DecisionsToolbar";
 import { Curtain, AgingItemRow } from "../components/DecisionShelf";
 import { DecisionQueueRail } from "../components/DecisionQueueRail";
 import { DecisionDateChips, type AttentionCustomRange } from "../components/DecisionDateChips";
-import { DecisionResolver } from "../components/DecisionResolver";
+import { DecisionHistorySections, withHistorySourceKinds } from "../components/DecisionHistory";
 import { IssueGroupHeader } from "../components/IssueGroupHeader";
 
 /** Curtain rows never expand; module-level so memoized rows see one identity. */
@@ -62,20 +61,9 @@ const noopToggleExpand = () => {};
 const INITIAL_ATTENTION_ROW_RENDER_LIMIT = 50;
 const ATTENTION_ROW_RENDER_BATCH_SIZE = 100;
 const ATTENTION_SCROLL_LOAD_THRESHOLD_PX = 480;
-const DECISION_HISTORY_VISIBLE_LIMIT = 50;
-const DECISION_HISTORY_QUERY_LIMIT = DECISION_HISTORY_VISIBLE_LIMIT + 1;
 
 function offersRetry(item: AttentionItem) {
   return item.sourceKind === "failed_run" || item.sourceKind === "recovery_action";
-}
-
-export function decisionHistoryQueryEnabled(companyId: string | null | undefined, open: boolean) {
-  return Boolean(companyId && open);
-}
-
-export function decisionHistoryCount(count: number | undefined) {
-  if (count == null) return undefined;
-  return count > DECISION_HISTORY_VISIBLE_LIMIT ? `${DECISION_HISTORY_VISIBLE_LIMIT}+` : count;
 }
 
 function findScrollContainer(element: HTMLElement | null): HTMLElement | null {
@@ -195,19 +183,6 @@ export function WhatNeedsMe() {
   });
   usePublishSharedQueryData(sharedLiveRuns, liveRuns, liveRunsUpdatedAt);
 
-  // Decision history — decided / expired decisions leave the open attention
-  // feed (entryRule = open only), so we fetch them directly for the curtains.
-  const { data: decidedDecisions, isLoading: decidedDecisionsLoading } = useQuery({
-    queryKey: queryKeys.decisions.list(selectedCompanyId!, "decided"),
-    queryFn: () => decisionsApi.list(selectedCompanyId!, { status: "decided", limit: DECISION_HISTORY_QUERY_LIMIT }),
-    enabled: decisionHistoryQueryEnabled(selectedCompanyId, decidedOpen),
-  });
-  const { data: expiredDecisions, isLoading: expiredDecisionsLoading } = useQuery({
-    queryKey: queryKeys.decisions.list(selectedCompanyId!, "expired"),
-    queryFn: () => decisionsApi.list(selectedCompanyId!, { status: "expired", limit: DECISION_HISTORY_QUERY_LIMIT }),
-    enabled: decisionHistoryQueryEnabled(selectedCompanyId, expiredOpen),
-  });
-
   const { data: session } = useQuery({
     queryKey: queryKeys.auth.session,
     queryFn: () => authApi.getSession(),
@@ -267,7 +242,7 @@ export function WhatNeedsMe() {
     [allItems, pendingRestore],
   );
 
-  const filterOptions = useMemo(() => buildAttentionFilterOptions(deskItems), [deskItems]);
+  const filterOptions = useMemo(() => withHistorySourceKinds(buildAttentionFilterOptions(deskItems)), [deskItems]);
 
   // Filter → sort → group, all client-side so switching re-buckets without a
   // refetch. In the default (ungrouped) view the desk groups by arrival —
@@ -739,53 +714,16 @@ export function WhatNeedsMe() {
         </div>
       )}
 
-      <div className="space-y-4">
-        <Curtain
-          label="Decided"
-          count={decisionHistoryCount(decidedDecisions?.length)}
-          open={decidedOpen}
-          onToggle={() => setDecidedOpen((prev) => !prev)}
-        >
-          {decidedDecisionsLoading ? (
-            <p className="text-xs text-ink-3">Loading decided decisions…</p>
-          ) : (decidedDecisions?.length ?? 0) > 0 ? (
-            decidedDecisions!.slice(0, DECISION_HISTORY_VISIBLE_LIMIT).map((decision) => (
-              <DecisionResolver
-                key={decision.id}
-                companyId={selectedCompanyId}
-                decisionId={decision.id}
-                agentMap={agentMap}
-                initialDecision={{ ...decision, executions: decision.executions ?? [] }}
-              />
-            ))
-          ) : (
-            <p className="text-xs text-ink-3">No decided decisions.</p>
-          )}
-        </Curtain>
-
-        <Curtain
-          label="Expired"
-          count={decisionHistoryCount(expiredDecisions?.length)}
-          open={expiredOpen}
-          onToggle={() => setExpiredOpen((prev) => !prev)}
-        >
-          {expiredDecisionsLoading ? (
-            <p className="text-xs text-ink-3">Loading expired decisions…</p>
-          ) : (expiredDecisions?.length ?? 0) > 0 ? (
-            expiredDecisions!.slice(0, DECISION_HISTORY_VISIBLE_LIMIT).map((decision) => (
-              <DecisionResolver
-                key={decision.id}
-                companyId={selectedCompanyId}
-                decisionId={decision.id}
-                agentMap={agentMap}
-                initialDecision={{ ...decision, executions: decision.executions ?? [] }}
-              />
-            ))
-          ) : (
-            <p className="text-xs text-ink-3">No expired decisions.</p>
-          )}
-        </Curtain>
-      </div>
+      <DecisionHistorySections
+        companyId={selectedCompanyId}
+        selectedSourceKinds={filters.sourceKinds}
+        bounds={activityBounds}
+        agentMap={agentMap}
+        decidedOpen={decidedOpen}
+        expiredOpen={expiredOpen}
+        onToggleDecided={() => setDecidedOpen((prev) => !prev)}
+        onToggleExpired={() => setExpiredOpen((prev) => !prev)}
+      />
     </div>
   );
 }

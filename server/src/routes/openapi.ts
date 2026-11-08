@@ -128,6 +128,9 @@ import {
   createDecisionQueueSchema,
   createDecisionArchiveProposalSchema,
   decisionAttentionSourceKindSchema,
+  DECISION_HISTORY_PAGE_MAX_LIMIT,
+  DECISION_HISTORY_SOURCE_KINDS,
+  DECISION_HISTORY_STATUSES,
   decisionInputsSchema,
   decisionOptionsSchema,
   removeDecisionQueueItemSchema,
@@ -7141,6 +7144,7 @@ const decisionQueueSchema = z
     seedRules: z.array(decisionQueueSeedRuleSchema),
     seedRulesEnabled: z.boolean(),
     itemCount: z.number().int().nonnegative(),
+    resolvedCount: z.number().int().nonnegative().nullable(),
     createdAt: z.string().datetime(),
     updatedAt: z.string().datetime(),
   })
@@ -7201,6 +7205,65 @@ const decisionRetentionSchema = z
     updatedAt: z.string().datetime(),
   })
   .strict();
+
+const decisionHistoryEntrySchema = z
+  .object({
+    id: z.string(),
+    sourceKind: z.enum(DECISION_HISTORY_SOURCE_KINDS),
+    sourceId: z.string(),
+    kind: z.string(),
+    kindLabel: z.string(),
+    status: z.string(),
+    outcome: z.enum(DECISION_HISTORY_STATUSES),
+    title: z.string(),
+    result: z.string().nullable(),
+    decidedBy: z
+      .object({
+        type: z.enum(["user", "agent", "system"]),
+        userId: z.string().nullable(),
+        agentId: z.string().nullable(),
+        name: z.string().nullable(),
+      })
+      .strict(),
+    decidedAt: z.string().datetime(),
+    issue: z
+      .object({ id: z.string(), identifier: z.string().nullable(), title: z.string(), href: z.string() })
+      .strict()
+      .nullable(),
+    href: z.string().nullable(),
+  })
+  .strict();
+
+registerCurrentRoute({
+  method: "get",
+  path: "/api/companies/{companyId}/decision-history",
+  tags: ["decision-queues"],
+  summary: "List decided or expired decisions, newest first, one cursor page at a time",
+  query: z.object({
+    status: z.enum(DECISION_HISTORY_STATUSES),
+    queue: z.string().optional(),
+    sourceKinds: z.string().optional(),
+    activitySince: z.string().datetime({ offset: true }).optional(),
+    activityUntil: z.string().datetime({ offset: true }).optional(),
+    cursor: z.string().optional(),
+    limit: z.coerce.number().int().min(1).max(DECISION_HISTORY_PAGE_MAX_LIMIT).optional(),
+  }),
+  responses: {
+    200: r.ok(
+      z
+        .object({
+          items: z.array(decisionHistoryEntrySchema),
+          nextCursor: z.string().nullable(),
+          totalCount: z.number().int().nonnegative().nullable(),
+        })
+        .strict(),
+    ),
+    400: r.badRequest,
+    401: r.unauthorized,
+    403: r.forbidden,
+    404: r.notFound,
+  },
+});
 
 registerCurrentRoute({
   method: "get",

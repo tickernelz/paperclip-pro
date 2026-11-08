@@ -78,5 +78,8 @@ export const issueThreadInteractions = pgTable(
     sourceCommentIdx: index("issue_thread_interactions_source_comment_idx").on(table.sourceCommentId),
     addresseeAgentIdx: index("issue_thread_interactions_addressee_agent_idx").on(table.addresseeAgentId),
     addresseeUserIdx: index("issue_thread_interactions_addressee_user_idx").on(table.addresseeUserId),
+    companyResolvedHistoryIdx: index("issue_thread_interactions_company_resolved_history_idx")
+      .on(table.companyId, table.resolvedAt, table.id)
+      .where(sql`${table.resolvedAt} IS NOT NULL`),
   }),
 );
