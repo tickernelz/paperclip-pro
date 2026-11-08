@@ -203,24 +203,6 @@ export function instanceSettingsRoutes(db: Db, pluginWorkers?: PluginWorkerManag
     validate(patchInstanceGeneralSettingsSchema),
     async (req, res) => {
       assertCanManageInstanceSettings(req);
-      // Floor: on cloud-managed instances the execution mode is pinned by the
-      // platform (the execution-policy bootstrap writes it at boot). No
-      // instance admin — including a computed owner-admin — may change it: a
-      // forced provider switch would strand runs on a provider the platform
-      // never provisioned. Same-value writes pass so settings forms that echo
-      // the full general-settings object keep working. Absent and "any" both
-      // mean unrestricted, so they compare equal.
-      if (
-        isCloudManagedInstance() &&
-        Object.prototype.hasOwnProperty.call(req.body, "executionMode")
-      ) {
-        const current = await svc.getGeneral();
-        if ((req.body.executionMode ?? "any") !== (current.executionMode ?? "any")) {
-          throw forbidden("executionMode is platform-managed on cloud-managed instances", {
-            code: "execution_mode_platform_managed",
-          });
-        }
-      }
       const hidden = getHiddenSettings();
       await assertNoHiddenSettingChanges(
         req.body,
@@ -312,14 +294,6 @@ export function instanceSettingsRoutes(db: Db, pluginWorkers?: PluginWorkerManag
       // The report covers every company in this process. Ordinary company
       // members may read process counters, but not instance-wide work state.
       assertCanManageInstanceSettings(req);
-      // A checkpoint performs platform-owned backup work. Tenant owners can
-      // have instance-admin elevation, but that must not grant the manual
-      // backup authority which managed instances deliberately withhold.
-      if (prepareIdleDatabaseBackup && isCloudManagedInstance() && req.actor.source !== "cloud_control") {
-        throw forbidden("Backup checkpoints are platform-managed on cloud-managed instances", {
-          code: "database_backups_platform_managed",
-        });
-      }
       const idleSleepSafety = await readIdleSleepSafety(db, () => heartbeat.getTaskDrainStatus(), Date.now,
         typeof req.query.ownerId === "string" ? req.query.ownerId : undefined,
         () => readIdleLocalWork({ backupCheckpoint: Boolean(prepareIdleDatabaseBackup) }),
