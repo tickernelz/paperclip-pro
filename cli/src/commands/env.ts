@@ -1,5 +1,6 @@
 import * as p from "@clack/prompts";
 import pc from "picocolors";
+import { wardmoteEnvKey } from "@tickernelz/wardmote-shared/env-aliases";
 import type { PaperclipConfig } from "../config/schema.js";
 import { configExists, readConfig, resolveConfigPath } from "../config/store.js";
 import {
@@ -37,7 +38,7 @@ function defaultStorageBaseDir(): string {
 }
 
 export async function envCommand(opts: { config?: string }): Promise<void> {
-  p.intro(pc.bgCyan(pc.black(" paperclip env ")));
+  p.intro(pc.bgCyan(pc.black(" wardmote env ")));
 
   const configPath = resolveConfigPath(opts.config);
   let config: PaperclipConfig | null = null;
@@ -231,7 +232,7 @@ function collectDeploymentEnvRows(config: PaperclipConfig | null, configPath: st
           ? "default"
           : "missing",
       required: false,
-      note: "Comma-separated auth origin allowlist (auto-derived from PAPERCLIP_PUBLIC_URL when possible)",
+      note: "Comma-separated auth origin allowlist (auto-derived from WARDMOTE_PUBLIC_URL when possible)",
     },
     {
       key: "PAPERCLIP_AGENT_JWT_TTL_SECONDS",
@@ -391,7 +392,7 @@ function collectDeploymentEnvRows(config: PaperclipConfig | null, configPath: st
     });
   }
 
-  return rows;
+  return rows.map((row) => ({ ...row, key: wardmoteEnvKey(row.key) }));
 }
 
 function uniqueByKey(rows: EnvVarRow[]): EnvVarRow[] {
