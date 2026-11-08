@@ -1,7 +1,7 @@
 # CLI Reference
 
 > **Fork notice.** This is the `wardmote` CLI from
-> [`tickernelz/paperclip-pro`](https://github.com/tickernelz/paperclip-pro), a hard fork of
+> [`tickernelz/wardmote`](https://github.com/tickernelz/wardmote), a hard fork of
 > `paperclipai/paperclip` at `7b7c4d417`. Nothing is published to npm, so every
 > `npx @tickernelz/paperclip-pro …` and `npm install -g paperclip-pro` example below is
 > inherited from upstream and will fail with a 404. Run the installed
@@ -143,7 +143,7 @@ wardmote onboard --yes
 
 `install` with no source flag installs the published `latest` release from npm.
 For an unreleased commit, pass `--ref <branch|tag|sha>`; `--repo` defaults to
-`tickernelz/paperclip-pro`. The upstream `paperclip.ing/install.sh` bootstrap
+`tickernelz/wardmote`. The upstream `paperclip.ing/install.sh` bootstrap
 installs upstream Paperclip, not this fork.
 
 

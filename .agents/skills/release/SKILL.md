@@ -85,7 +85,7 @@ the mechanical list.
 ## Step 3 — Dry Run
 
 ```bash
-gh workflow run release.yml --repo tickernelz/paperclip-pro --ref main \
+gh workflow run release.yml --repo tickernelz/wardmote --ref main \
   -f dry_run=true -f auth=token -f version=
 ```
 
@@ -95,7 +95,7 @@ may report unresolved `workspace:` specs.
 ## Step 4 — Publish
 
 ```bash
-gh workflow run release.yml --repo tickernelz/paperclip-pro --ref main \
+gh workflow run release.yml --repo tickernelz/wardmote --ref main \
   -f dry_run=false -f auth=token -f version=
 ```
 
@@ -107,7 +107,7 @@ promotion still needs `NPM_TOKEN` because npm OIDC does not authenticate
 
 ```bash
 npm view @tickernelz/paperclip-pro version
-gh release view "v$(./scripts/release.sh --print-version)" --repo tickernelz/paperclip-pro
+gh release view "v$(./scripts/release.sh --print-version)" --repo tickernelz/wardmote
 ```
 
 A failed run is resumable: dispatch the same `version` again and it skips what
