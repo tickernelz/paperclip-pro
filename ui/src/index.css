@@ -3986,7 +3986,10 @@ span.paperclip-mention-chip[data-mention-kind="external-object"] {
   }
 }
 
-@media (pointer: coarse), (max-width: 767px) {
+@media (pointer: coarse), (max-width: 1023px) {
+  :where(a[href], button, [role="button"], [role="switch"], [role="tab"], [role="checkbox"], [role="radio"], [role="menuitem"], summary) {
+    min-block-size: 24px;
+  }
   [data-slot="checkbox"] {
     inline-size: 24px;
     block-size: 24px;
