@@ -99,27 +99,6 @@ describe("GET /health", () => {
     expect(Object.prototype.hasOwnProperty.call(res.body, "cloud")).toBe(false);
   });
 
-  it("exposes public stack metadata on cloud-simulated health", async () => {
-    const app = createApp(undefined, testServerInfo, undefined, {
-      PAPERCLIP_CLOUD_TENANT_SERVER_TOKEN: "tenant-token",
-      PAPERCLIP_CLOUD_STACK_ID: "stack-1",
-      PAPERCLIP_STACK_SLUG: "acme",
-      PAPERCLIP_CLOUD_ACCOUNT_GROUP_ID: "account-group-1",
-      PAPERCLIP_PRIMARY_HOST: "acme.paperclip.app",
-      PAPERCLIP_CLOUD_API_ORIGIN: "https://app.paperclip.app",
-    });
-
-    const res = await request(app).get("/health");
-
-    expect(res.status).toBe(200);
-    expect(res.body.cloud).toEqual({
-      managed: true,
-      managedBy: "paperclip-cloud",
-      stackSlug: "acme",
-      cloudBaseUrl: "https://app.paperclip.app",
-    });
-  });
-
   it("lists operator-hidden settings and drops unknown keys", async () => {
     const app = createApp(undefined, testServerInfo, undefined, {
       PAPERCLIP_HIDDEN_SETTINGS: "instance.plugins,instance.adapters,instance.bogus",
@@ -557,40 +536,4 @@ describe("GET /health", () => {
     });
   });
 
-  it("reports bootstrapStatus ready for cloud-managed instances regardless of instance admin count", async () => {
-    vi.stubEnv("PAPERCLIP_CLOUD_TENANT_SERVER_TOKEN", "test-tenant-server-token");
-    const { healthRoutes } = await import("../routes/health.js");
-    const db = {
-      execute: vi.fn().mockResolvedValue([{ "?column?": 1 }]),
-      select: vi.fn(() => ({
-        from: vi.fn(() => ({
-          where: vi.fn().mockResolvedValue([{ count: 0 }]),
-        })),
-      })),
-    } as unknown as Db;
-    const app = express();
-    app.use((req, _res, next) => {
-      (req as any).actor = { type: "none", source: "none" };
-      next();
-    });
-    app.use(
-      "/health",
-      healthRoutes(db, {
-        deploymentMode: "authenticated",
-        deploymentExposure: "public",
-        authReady: true,
-        companyDeletionEnabled: false,
-        serverInfo: testServerInfo,
-      }),
-    );
-
-    const res = await request(app).get("/health");
-
-    expect(res.status).toBe(200);
-    expect(res.body).toMatchObject({
-      status: "ok",
-      bootstrapStatus: "ready",
-      bootstrapInviteActive: false,
-    });
-  });
 });

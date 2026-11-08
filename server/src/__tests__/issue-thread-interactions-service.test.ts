@@ -505,27 +505,14 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
     }, { userId: "local-board" })).toMatchObject({ status: "answered", resolvedByUserId: "local-board" });
   });
 
-  it.each(["authenticated", "cloud"])("does not infer local-board authority in %s mode", async (mode) => {
-    vi.stubEnv("PAPERCLIP_DEPLOYMENT_MODE", mode === "cloud" ? "local_trusted" : "authenticated");
-    if (mode === "cloud") vi.stubEnv("PAPERCLIP_CLOUD_TENANT_SERVER_TOKEN", "test-cloud-token");
+  it("does not infer local-board authority in authenticated mode", async () => {
+    vi.stubEnv("PAPERCLIP_DEPLOYMENT_MODE", "authenticated");
     const fixture = await seedSourceQuestionFixture({});
     await expect(interactionsSvc.create({ id: fixture.issueId, companyId: fixture.companyId }, {
       ...questionCreateInput(fixture.runId), addresseeUserId: "local-board",
     }, { agentId: fixture.agentId })).rejects.toMatchObject({
       status: 422, details: { code: "interaction_addressee_user_unavailable" },
     });
-    expect(await db.select().from(issueThreadInteractions)).toHaveLength(0);
-  });
-
-  it("does not accept a stale Cloud instance-admin row as recipient authority", async () => {
-    vi.stubEnv("PAPERCLIP_CLOUD_TENANT_SERVER_TOKEN", "test-cloud-token");
-    const fixture = await seedSourceQuestionFixture({});
-    const userId = "paperclip-id:stale-admin";
-    await db.insert(authUsers).values({ id: userId, name: "Stale admin", email: `${randomUUID()}@example.test`, createdAt: new Date(), updatedAt: new Date() });
-    await db.insert(instanceUserRoles).values({ userId, role: "instance_admin" });
-    await expect(interactionsSvc.create({ id: fixture.issueId, companyId: fixture.companyId }, {
-      ...questionCreateInput(fixture.runId), addresseeUserId: userId,
-    }, { agentId: fixture.agentId })).rejects.toMatchObject({ status: 422 });
     expect(await db.select().from(issueThreadInteractions)).toHaveLength(0);
   });
 

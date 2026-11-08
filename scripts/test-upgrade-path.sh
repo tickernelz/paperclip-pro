@@ -3,8 +3,12 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ROOT="$(mktemp -d "${TMPDIR:-/tmp}/wardmote-upgrade-path.XXXXXX")"
+export CARGO_HOME="${CARGO_HOME:-$HOME/.cargo}" RUSTUP_HOME="${RUSTUP_HOME:-$HOME/.rustup}"
 export HOME="$ROOT/home"
 export npm_config_cache="$ROOT/npm-cache"
+if [ -n "${UPGRADE_PNPM_STORE:-}" ]; then
+  export npm_config_store_dir="$UPGRADE_PNPM_STORE"
+fi
 export npm_config_userconfig="$HOME/.npmrc"
 export PATH="$HOME/.local/bin:$PATH"
 unset PAPERCLIP_HOME WARDMOTE_HOME

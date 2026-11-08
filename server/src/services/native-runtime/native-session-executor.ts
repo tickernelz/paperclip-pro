@@ -1,7 +1,6 @@
 import { logger } from "../../middleware/logger.js";
 import { configuredEnvironment } from "../../vendor/paperclip-runner/index.js";
 import { agents } from "@tickernelz/wardmote-db";
-import { isCloudManagedInstance } from "../cloud-instance.js";
 import { dotRunnerBroker } from "../dot-runner-broker.js";
 import { CURSOR_DISTRIBUTION_PINS, QUALIFIED_ACPX_PROFILES, QUALIFIED_ACPX_VERSION } from "../../vendor/paperclip-runner/index.js";
 import { isProviderMode } from "../../vendor/paperclip-runner/index.js";
@@ -7604,11 +7603,6 @@ export async function executePaperclipNativeSession(input: {
     await retireSupersededWarmNativeSessions(
       ownerScope, nativeSessionScopeKey(input.execution),
     );
-    if (input.execution.provider.kind === "openai_dot" && isCloudManagedInstance()
-        && (!input.useRunnerd || input.runnerExecutionTarget?.kind !== "remote"
-          || input.runnerExecutionTarget.transport !== "sandbox")) {
-      throw new Error("dot_cloud_requires_managed_runner");
-    }
     if (!input.useRunnerd) {
       return await executePaperclipNativeSessionWithinScope(input);
     }

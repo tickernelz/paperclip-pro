@@ -65,7 +65,6 @@ import {
   logActivity,
   workTimelineService,
 } from "../services/index.js";
-import { isCloudManagedInstance } from "../services/cloud-instance.js";
 import { getHiddenSettings } from "../services/settings-visibility.js";
 import type { StorageService } from "../storage/types.js";
 import { assertBoard, assertBoardOrAgentAuthority, assertCompanyAccess, assertInstanceAdmin, getActorInfo, hasCompanyAccess, isCompanyOwnerAgentActor } from "./authz.js";
@@ -545,9 +544,6 @@ export function companyRoutes(db: Db, storage?: StorageService, options?: Compan
    * routes. Two independent signals close it, both checked up front — before
    * auth or body work, the same way the company-creation floor does:
    *
-   * - a cloud-managed instance (`cloud_managed`): the hosting platform
-   *   provisions the company, so materializing imported companies on a
-   *   managed instance is disabled unconditionally;
    * - the operator hiding the Import page (`company.import` in
    *   `PAPERCLIP_HIDDEN_SETTINGS` → `settings_operator_managed`): hiding the
    *   page also disables its API, so the hide is real rather than cosmetic.
@@ -556,11 +552,6 @@ export function companyRoutes(db: Db, storage?: StorageService, options?: Compan
    * data-portability escape hatch.
    */
   const importFloor = (_req: Request, _res: Response, next: NextFunction) => {
-    if (isCloudManagedInstance()) {
-      throw forbidden("Company import is disabled on cloud-managed instances", {
-        code: "cloud_managed",
-      });
-    }
     if (hidesCompanyPage(getHiddenSettings(), "company.import")) {
       throw forbidden("Company import is hidden by the hosting operator", {
         code: SETTINGS_OPERATOR_MANAGED_ERROR_CODE,
@@ -1190,15 +1181,7 @@ export function companyRoutes(db: Db, storage?: StorageService, options?: Compan
     res.json(result);
   });
 
-  router.post("/", (req, _res, next) => {
-    assertBoard(req);
-    if (isCloudManagedInstance()) {
-      throw forbidden("Company creation is managed by Paperclip Cloud", {
-        code: "cloud_managed",
-      });
-    }
-    next();
-  }, validate(createCompanySchema), async (req, res) => {
+  router.post("/", validate(createCompanySchema), async (req, res) => {
     assertBoard(req);
     if (!(req.actor.source === "local_implicit" || req.actor.isInstanceAdmin)) {
       throw forbidden("Instance admin required");
