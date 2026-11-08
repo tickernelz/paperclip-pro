@@ -16,7 +16,7 @@ import {
   resolvePaperclipHomeDir,
   resolvePaperclipInstanceId,
 } from "../config/home.js";
-import { assertForegroundRunAllowed } from "../services/service-manager.js";
+import { appendServiceUserBinDirs, assertForegroundRunAllowed } from "../services/service-manager.js";
 import { removeRuntimeInfoForPid, writeRuntimeInfo } from "../runtime-info.js";
 import { printUpdateNotice } from "../update-notice.js";
 import { ensureWorktreeSeeded } from "./worktree.js";
@@ -62,6 +62,7 @@ export async function runCommand(opts: RunOptions): Promise<void> {
   const configPath = resolveConfigPath(opts.config);
   process.env.PAPERCLIP_CONFIG = configPath;
   loadPaperclipEnvFile(configPath);
+  if (process.env.PAPERCLIP_SERVICE_MANAGED === "1") process.env.PATH = appendServiceUserBinDirs(process.env.PATH);
   await printUpdateNotice(configPath);
 
   p.intro(pc.bgCyan(pc.black(` ${opts.introLabel ?? "wardmote run"} `)));

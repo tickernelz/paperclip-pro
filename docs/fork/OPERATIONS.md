@@ -65,6 +65,12 @@ chmod 600 ~/.wardmote/instances/default/service.env
 wardmote service restart --drain
 ```
 
+The service process appends `~/.local/bin` and `~/.bun/bin` to whatever `PATH`
+it inherits (systemd or launchd default, or `service.env`) when they are absent,
+so an `omp` installed by `curl -fsSL https://omp.sh/install | sh` or by bun is
+found without a `service.env` entry. Directories already on `PATH` keep their
+position.
+
 Memory protection in the unit: `OOMPolicy=continue` (the server stays up when the
 kernel kills a run process), `OOMScoreAdjust=0`, `MemoryHigh=infinity`,
 `MemoryMax=62%`, and `MemorySwapMax=25%` of physical memory. `MemoryHigh` is
