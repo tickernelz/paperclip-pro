@@ -1,4 +1,5 @@
 import type { SVGProps } from "react";
+import { cn } from "../lib/utils";
 
 const RING = [
   [24, 7],
@@ -9,11 +10,15 @@ const RING = [
   [9.28, 15.5],
 ] as const;
 
+const ACCENT_INDEX = 1;
+const PULSE_PERIOD_MS = 1200;
+
 interface MootMarkProps extends Omit<SVGProps<SVGSVGElement>, "children"> {
   title?: string;
+  animated?: boolean;
 }
 
-export function MootMark({ title, className, ...rest }: MootMarkProps) {
+export function MootMark({ title, animated = false, className, ...rest }: MootMarkProps) {
   return (
     <svg
       {...rest}
@@ -27,7 +32,15 @@ export function MootMark({ title, className, ...rest }: MootMarkProps) {
     >
       <circle cx="24" cy="24" r="7.4" />
       {RING.map(([cx, cy], index) => (
-        <circle key={index} cx={cx} cy={cy} r="5.6" fill={index === 1 ? "var(--accent)" : undefined} />
+        <circle
+          key={index}
+          cx={cx}
+          cy={cy}
+          r="5.6"
+          fill={index === ACCENT_INDEX ? "var(--accent)" : undefined}
+          className={cn(animated && "moot-mark-dot-pulse")}
+          style={animated ? { animationDelay: `${(((index - ACCENT_INDEX + RING.length) % RING.length) * PULSE_PERIOD_MS) / RING.length - PULSE_PERIOD_MS}ms` } : undefined}
+        />
       ))}
     </svg>
   );

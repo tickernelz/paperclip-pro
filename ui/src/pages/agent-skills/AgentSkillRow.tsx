@@ -1,11 +1,12 @@
 import type { ReactNode } from "react";
-import { Lock, type LucideIcon } from "lucide-react";
+import { Lock } from "lucide-react";
 import { Link } from "@/lib/router";
 import { cn } from "@/lib/utils";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { SkillCardIcon, type SkillIconCard } from "../../components/SkillCardIcon";
 import type { AgentSkillSearchFields } from "./agent-skill-filter";
+import type { AgentSkillSourceMeta } from "./agent-skill-source";
 
 export type AgentSkillRowVariant = "enabled" | "available" | "readonly";
 
@@ -20,10 +21,7 @@ export interface AgentSkillRowData extends AgentSkillSearchFields {
   /** Small chip label for the primary category. */
   chip?: string | null;
   /** Formatted source/provenance text rendered without badge chrome. */
-  sourceMeta?: {
-    icon: LucideIcon;
-    label: string;
-  } | null;
+  sourceMeta?: AgentSkillSourceMeta | null;
   /** Route to the skill detail page; null makes the row non-navigable. */
   linkTo: string | null;
   /** Read-only metadata (adapter-detected skills). */
