@@ -354,7 +354,7 @@ creates the annotated tag on that commit and pushes it.
 On a tag push the workflow:
 
 - takes the version from the tag name, which must be `v<YYYY.MDD.P>`;
-- runs with `dry_run=false` and `auth=token`;
+- runs with `dry_run=false` and `auth=oidc`;
 - fails unless the tagged commit is reachable from `origin/main`;
 - fails unless `ci.yml` completed successfully for that exact commit. A queued
   or running CI run is polled for about 30 minutes, a completed non-success
@@ -370,10 +370,10 @@ Preview or resume through a dispatch:
 
 ```bash
 gh workflow run release.yml --repo tickernelz/wardmote --ref main \
-  -f dry_run=true -f auth=token -f version=
+  -f dry_run=true -f auth=oidc -f version=
 
 gh workflow run release.yml --repo tickernelz/wardmote --ref main \
-  -f dry_run=false -f auth=token -f version=2026.925.3
+  -f dry_run=false -f auth=oidc -f version=2026.925.3
 ```
 
 Dispatch inputs:
@@ -383,10 +383,23 @@ Dispatch inputs:
   never collides. Pass an explicit `YYYY.MDD.P` to pin it.
 - `dry_run` — `true` previews every step and contacts npm only for read-only
   checks.
-- `auth` — `token` uses the `NPM_TOKEN` repository secret; `oidc` uses npm
-  trusted publishing. Keep `token` until every package has a trusted publisher
-  configured, and note that npm OIDC does not authenticate
-  `npm dist-tag add`, so the `latest` promotion always needs the token.
+- `auth` — `oidc` (the default, and what a tag push uses) authenticates both
+  `npm publish` and the `latest` promotion (`npm dist-tag add`) through npm
+  trusted publishing. Every package needs one trusted publisher: GitHub
+  Actions, `tickernelz/wardmote`, workflow `release.yml`, no environment, with
+  `npm publish` and `Allow npm dist-tag` enabled. OIDC dist-tags need npm
+  11.21.0+ (or 12.2.0+), so the workflow installs `npm@11.21.2`, and
+  `release.sh` refuses to publish over OIDC with an older npm. `token` uses the
+  `NPM_TOKEN` repository secret and is only for:
+  - a new package, before its trusted publisher can exist (npm needs the
+    package page first);
+  - moving `latest` for a package whose trusted publisher lacks
+    `Allow npm dist-tag`: an `oidc` run passes `NPM_TOKEN` to `release.sh` as
+    `NPM_PROMOTE_TOKEN`, and a dist-tag OIDC refuses is moved with that token
+    and logged as a warning instead of failing the run. Publishing never
+    falls back to the token; once every package allows dist-tags, the warning
+    stops appearing and the token is unused;
+  - `npm deprecate` and other owner commands, which OIDC does not cover.
 
 The run is idempotent and resumable: a package version already on npm is
 skipped, a dist-tag already pointing at the version is left alone, and an
@@ -409,9 +422,12 @@ One-time owner setup before the first publish:
 2. Store it as the `NPM_TOKEN` repository secret.
 3. After the first successful publish, configure a trusted publisher on each
    package (GitHub Actions, `tickernelz/wardmote`, workflow
-   `release.yml`, no environment). That step needs interactive 2FA.
-4. Afterwards `auth=oidc` covers the publishes; keep the token for the
-   `latest` promotion.
+   `release.yml`, no environment, `npm publish` and `Allow npm dist-tag`).
+   That step needs interactive 2FA. npm keeps a new trusted publisher
+   `Pending validation` until one OIDC publish runs through it; the package
+   page names the deadline, and an unvalidated configuration expires.
+4. Afterwards `auth=oidc` covers publishing and the `latest` promotion; keep
+   the token for the cases listed under `auth` above.
 
 ## 10. Local CLI run concurrency
 

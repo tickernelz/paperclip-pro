@@ -96,7 +96,7 @@ const serializedServerVitestArgs = [
   "--no-file-parallelism",
   "--maxWorkers=1",
 ];
-const serverTestWorkers = parsePositiveInteger(process.env.PAPERCLIP_SERVER_TEST_WORKERS ?? "1", "PAPERCLIP_SERVER_TEST_WORKERS");
+const serverTestWorkers = parsePositiveInteger(process.env.WARDMOTE_SERVER_TEST_WORKERS ?? "1", "WARDMOTE_SERVER_TEST_WORKERS");
 const parallelServerVitestArgs =
   serverTestWorkers > 1 ? [`--maxWorkers=${serverTestWorkers}`] : serializedServerVitestArgs;
 const sourceOnlyVitestArgs = ["--exclude", "**/dist/**"];
