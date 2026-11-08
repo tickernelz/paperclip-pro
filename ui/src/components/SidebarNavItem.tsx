@@ -1,8 +1,9 @@
 import { createContext, useContext, type ReactNode } from "react";
-import { NavLink } from "@/lib/router";
+import { Link, NavLink } from "@/lib/router";
 import { SIDEBAR_SCROLL_RESET_STATE } from "../lib/navigation-scroll";
 import { cn, SIDEBAR_RAIL_HIDDEN_LABEL } from "../lib/utils";
 import { useSidebar } from "../context/SidebarContext";
+import { sidebarNavStateStyles } from "./primary-sidebar-styles";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import type { LucideIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -113,27 +114,20 @@ export function SidebarNavItem({
     ? undefined
     : `${label}${railStatusText ? `, ${railStatusText}` : ""}${trailingLabel ? `, ${trailingLabel}` : ""}`;
 
-  const link = (
-    <NavLink
-      to={to}
-      state={SIDEBAR_SCROLL_RESET_STATE}
-      end={end}
-      aria-label={railAriaLabel}
-      onClick={() => { if (isMobile) setSidebarOpen(false); }}
-      className={({ isActive }) =>
-        cn(
-          // One rhythm and one inset pill highlight: mx-2 floats the row off
-          // the sidebar edges, rounded-lg matches the card anchor, px-2 gives
-          // the icon breathing room inside the pill. Rows with hover menus
-          // (agents/projects) reserve extra right padding via className.
-          "flex items-center gap-2.5 mx-2 rounded-lg px-2 py-1.5 pointer-coarse:py-1 text-(length:--text-compact) font-medium transition-colors",
-          (active ?? isActive)
-            ? "bg-bg-3 text-ink"
-            : "text-ink/80 hover:bg-bg-3 hover:text-ink",
-          className,
-        )
-      }
-    >
+  const rowClassName = (current: boolean) =>
+    cn(
+      // One rhythm and one inset pill highlight: mx-2 floats the row off
+      // the sidebar edges, rounded-lg matches the card anchor, px-2 gives
+      // the icon breathing room inside the pill. Rows with hover menus
+      // (agents/projects) reserve extra right padding via className.
+      "flex items-center gap-2.5 mx-2 rounded-lg px-2 py-1.5 pointer-coarse:py-1 text-(length:--text-compact) font-medium transition-colors",
+      current ? sidebarNavStateStyles.active : cn(sidebarNavStateStyles.rest, "text-ink/80"),
+      className,
+    );
+  const onClick = () => { if (isMobile) setSidebarOpen(false); };
+
+  const content = (
+    <>
       {showIconSlot ? (
         <span data-slot="sidebar-nav-icon" className="relative shrink-0">
           {iconNode ?? (Icon ? <Icon className="h-4 w-4" /> : null)}
@@ -209,7 +203,31 @@ export function SidebarNavItem({
           {badge}
         </Badge>
       )}
+    </>
+  );
+
+  const link = active === undefined ? (
+    <NavLink
+      to={to}
+      state={SIDEBAR_SCROLL_RESET_STATE}
+      end={end}
+      aria-label={railAriaLabel}
+      onClick={onClick}
+      className={({ isActive }) => rowClassName(isActive)}
+    >
+      {content}
     </NavLink>
+  ) : (
+    <Link
+      to={to}
+      state={SIDEBAR_SCROLL_RESET_STATE}
+      aria-label={railAriaLabel}
+      aria-current={active ? "page" : undefined}
+      onClick={onClick}
+      className={rowClassName(active)}
+    >
+      {content}
+    </Link>
   );
 
   if (!rail) return link;

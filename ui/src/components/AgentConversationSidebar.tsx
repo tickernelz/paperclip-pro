@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Link, useNavigate } from "@/lib/router";
 import { agentRouteRef, cn } from "@/lib/utils";
+import { sidebarNavStateStyles } from "./primary-sidebar-styles";
 
 export interface AgentConversationSidebarProps {
   agents: Agent[];
@@ -76,7 +77,7 @@ export function AgentConversationSidebar({ agents, existingChatAgentIds, availab
           aria-current={activeId === agent.id ? "page" : undefined}
           title={`${agent.name}${agent.title ? ` · ${agent.title}` : ""}`}
           onClick={event => { if (onSelect) { event.preventDefault(); onSelect(agent); } }}
-          className={cn("flex min-w-0 items-center gap-3 rounded-md px-2 py-3 text-left transition-colors hover:bg-bg-3/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus", activeId === agent.id && "bg-bg-3 text-ink")}>
+          className={cn("flex min-w-0 items-center gap-3 rounded-md px-2 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-focus", activeId === agent.id ? sidebarNavStateStyles.active : sidebarNavStateStyles.rest)}>
           <AgentAvatar agent={agent} size={32} />
           <span className="flex min-w-0 flex-1 flex-col gap-0.5">
             <span className="truncate text-sm font-medium">{agent.name}</span>
