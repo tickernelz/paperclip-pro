@@ -5,16 +5,15 @@ ROOT="$(mktemp -d "${TMPDIR:-/tmp}/wardmote-upgrade-path.XXXXXX")"
 export HOME="$ROOT/home"
 export npm_config_cache="$ROOT/npm-cache"
 export npm_config_userconfig="$HOME/.npmrc"
-OMP_PIN="$(sed -n 's/^ARG OMP_VERSION=//p' "$(dirname "$0")/../Dockerfile" | head -n 1)"
-mkdir -p "$ROOT/omp-bin"
-printf '#!/bin/sh\necho "omp/%s"\n' "${OMP_PIN:?Dockerfile has no ARG OMP_VERSION}" >"$ROOT/omp-bin/omp"
-chmod +x "$ROOT/omp-bin/omp"
-export PATH="$HOME/.local/bin:$ROOT/omp-bin:$PATH"
+export PATH="$HOME/.local/bin:$PATH"
 unset PAPERCLIP_HOME WARDMOTE_HOME
 REPO="${UPGRADE_REPO:?UPGRADE_REPO is required}"
 SHA="${UPGRADE_SHA:?UPGRADE_SHA is required}"
 PORT="${UPGRADE_PORT:-3197}"
-mkdir -p "$HOME"
+OMP_STUB_VERSION="${UPGRADE_OMP_VERSION:-18.18.0}"
+mkdir -p "$HOME/.paperclip-pro" "$HOME/.local/bin"
+printf '#!/bin/sh\necho "omp/%s"\n' "$OMP_STUB_VERSION" > "$HOME/.local/bin/omp"
+chmod +x "$HOME/.local/bin/omp"
 server_pid=""
 
 stop_server() {
@@ -47,32 +46,23 @@ npm install --prefix "$ROOT/bootstrap" "@tickernelz/paperclip-pro@$OLD_VERSION" 
 "$ROOT/bootstrap/node_modules/.bin/paperclip-pro" install --version "$OLD_VERSION" --yes
 paperclip-pro --version
 start_server before paperclip-pro onboard --yes
-if [ -d "$HOME/.paperclip-pro" ]; then OLD_HOME="$HOME/.paperclip-pro"; else OLD_HOME="$HOME/.wardmote"; fi
-
-only_old_home() {
-  test -d "$OLD_HOME/instances/default"
-  for home in "$HOME/.paperclip-pro" "$HOME/.wardmote"; do
-    [ "$home" = "$OLD_HOME" ] || test ! -e "$home"
-  done
-}
-
-only_old_home
+test -d "$HOME/.paperclip-pro/instances/default"
 curl -fsS -X POST -H 'Content-Type: application/json' -d '{"name":"Upgrade path marker"}' "http://127.0.0.1:$PORT/api/companies" >/dev/null
 stop_server
 
 echo "==> Upgrading with the old CLI to $REPO@$SHA"
 paperclip-pro install --repo "$REPO" --ref "$SHA" --yes
 paperclip-pro --version
-"$OLD_HOME/cli/current/node_modules/.bin/wardmote" --version
-only_old_home
+"$HOME/.paperclip-pro/cli/current/node_modules/.bin/wardmote" --version
+test ! -e "$HOME/.wardmote"
 
 start_server after paperclip-pro run
 curl -fsS "http://127.0.0.1:$PORT/api/companies" | grep -q '"Upgrade path marker"'
-echo "after upgrade: $(basename "$OLD_HOME") home kept, marker company still listed"
+echo "after upgrade: legacy home kept, marker company still listed"
 stop_server
 
 echo "==> Re-running install with the new CLI writes the wardmote shim"
 paperclip-pro install --repo "$REPO" --ref "$SHA" --yes
 wardmote --version
-only_old_home
+test ! -e "$HOME/.wardmote"
 echo "upgrade path ok: $OLD_VERSION -> $SHA"

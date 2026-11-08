@@ -108,7 +108,7 @@ test("require-main-ancestor rejects a shallow checkout without origin/main", () 
 });
 
 test("require-green-ci accepts a completed successful run", () => {
-  const result = runGate(["require-green-ci", "tickernelz/paperclip-pro", "abc123"], {
+  const result = runGate(["require-green-ci", "tickernelz/wardmote", "abc123"], {
     ghOutputs: ["completed success\n"],
   });
   assert.equal(result.status, 0);
@@ -116,7 +116,7 @@ test("require-green-ci accepts a completed successful run", () => {
 });
 
 test("require-green-ci rejects a completed failing run without polling", () => {
-  const result = runGate(["require-green-ci", "tickernelz/paperclip-pro", "abc123"], {
+  const result = runGate(["require-green-ci", "tickernelz/wardmote", "abc123"], {
     ghOutputs: ["completed failure\n"],
     env: { RELEASE_CI_POLL_ATTEMPTS: "5" },
   });
@@ -126,7 +126,7 @@ test("require-green-ci rejects a completed failing run without polling", () => {
 });
 
 test("require-green-ci waits for a running run and accepts it when it turns green", () => {
-  const result = runGate(["require-green-ci", "tickernelz/paperclip-pro", "abc123"], {
+  const result = runGate(["require-green-ci", "tickernelz/wardmote", "abc123"], {
     ghOutputs: ["in_progress null\n", "completed success\n"],
     env: { RELEASE_CI_POLL_ATTEMPTS: "3" },
   });
@@ -135,7 +135,7 @@ test("require-green-ci waits for a running run and accepts it when it turns gree
 });
 
 test("require-green-ci fails once the bounded poll is exhausted", () => {
-  const result = runGate(["require-green-ci", "tickernelz/paperclip-pro", "abc123"], {
+  const result = runGate(["require-green-ci", "tickernelz/wardmote", "abc123"], {
     ghOutputs: ["queued null\n"],
     env: { RELEASE_CI_POLL_ATTEMPTS: "2" },
   });
@@ -144,7 +144,7 @@ test("require-green-ci fails once the bounded poll is exhausted", () => {
 });
 
 test("require-green-ci fails when no run exists for the commit", () => {
-  const result = runGate(["require-green-ci", "tickernelz/paperclip-pro", "abc123"], {
+  const result = runGate(["require-green-ci", "tickernelz/wardmote", "abc123"], {
     ghOutputs: [""],
     env: { RELEASE_CI_POLL_ATTEMPTS: "1" },
   });

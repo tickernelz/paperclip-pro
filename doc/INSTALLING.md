@@ -1,6 +1,6 @@
 # Installing Paperclip Pro
 
-> **Fork notice.** This repository is [`tickernelz/paperclip-pro`](https://github.com/tickernelz/paperclip-pro), a hard fork of `paperclipai/paperclip` at `7b7c4d417`. It publishes its own packages under the `@tickernelz` npm scope. `https://paperclip.ing/install.sh` installs **upstream Paperclip**, not this fork; ignore any vanity-installer instruction that survives from upstream.
+> **Fork notice.** This repository is [`tickernelz/wardmote`](https://github.com/tickernelz/wardmote), a hard fork of `paperclipai/paperclip` at `7b7c4d417`. It publishes its own packages under the `@tickernelz` npm scope. `https://paperclip.ing/install.sh` installs **upstream Paperclip**, not this fork; ignore any vanity-installer instruction that survives from upstream.
 
 Paperclip Pro supports a managed installation from the published npm packages
 and a development installation from a git ref. The npm installation is the
@@ -42,10 +42,10 @@ published packages. It takes minutes instead of seconds and needs pnpm 9.15.4,
 
 ```sh
 wardmote install --ref main --yes
-wardmote install --repo tickernelz/paperclip-pro --ref <commit-sha> --yes
+wardmote install --repo tickernelz/wardmote --ref <commit-sha> --yes
 ```
 
-`--ref` selects the commit and `--repo` defaults to `tickernelz/paperclip-pro`
+`--ref` selects the commit and `--repo` defaults to `tickernelz/wardmote`
 (`cli/src/commands/install.ts`). `--ref` cannot be combined with `--canary` or
 `--version`, which resolve against npm. Pass a commit SHA instead of `main` for
 a reproducible, pinned install.
@@ -139,10 +139,10 @@ Install a git ref instead when you need an unreleased commit:
 
 ```sh
 wardmote install --ref main --yes
-wardmote install --repo tickernelz/paperclip-pro --ref <commit-sha> --yes
+wardmote install --repo tickernelz/wardmote --ref <commit-sha> --yes
 ```
 
-`--repo` defaults to `tickernelz/paperclip-pro`; point it at another GitHub
+`--repo` defaults to `tickernelz/wardmote`; point it at another GitHub
 repository to install a different fork.
 
 Before the shim exists, run the npm install through `npx`
@@ -248,7 +248,7 @@ atomic activation and no rollback. Prefer the managed install above.
 Source checkout for development:
 
 ```sh
-git clone https://github.com/tickernelz/paperclip-pro.git
+git clone https://github.com/tickernelz/wardmote.git
 cd wardmote
 pnpm install --frozen-lockfile
 pnpm dev
