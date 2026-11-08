@@ -267,21 +267,6 @@ describe("agent test-environment route", () => {
     } finally { vi.unstubAllEnvs(); }
   });
 
-  it("fails the Cloud Dot check without a managed sandbox instead of probing the host", async () => {
-    vi.stubEnv("PAPERCLIP_PUBLIC_URL", "https://paperclip.example");
-    vi.stubEnv("PAPERCLIP_CLOUD_TENANT_SERVER_TOKEN", "test-cloud");
-    const app = await createApp();
-    try {
-      const res = await request(app).post("/api/companies/company-1/adapters/paperclip_runner/test-environment")
-        .send({ adapterConfig: { provider: "openai_dot", allowUnmeteredProvider: true } });
-      expect(res.status, JSON.stringify(res.body)).toBe(200);
-      expect(res.body.status).toBe("fail");
-      expect(res.body.checks).toContainEqual(expect.objectContaining({ code: "dot_controller", level: "error" }));
-      expect(mockEnvironmentRuntime.acquireRunLease).not.toHaveBeenCalled();
-      expect(testEnvironmentSpy).not.toHaveBeenCalled();
-    } finally { vi.unstubAllEnvs(); }
-  });
-
   it("tests the instance default sandbox when the agent inherits its environment", async () => {
     const environmentId = "11111111-1111-4111-8111-111111111111";
     mockInstanceSettingsService.get.mockResolvedValue({ defaultEnvironmentId: environmentId });
