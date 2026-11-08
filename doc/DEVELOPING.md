@@ -42,7 +42,7 @@ Shared setup lives in `.github/actions/setup-workspace` and the static gates in
 `.github/actions/policy-checks`; the pnpm store and the Runner Rust caches are
 written only by pushes to `main` and restored everywhere else.
 
-Server test shards run vitest with `PAPERCLIP_SERVER_TEST_WORKERS=3`: one fresh
+Server test shards run vitest with `WARDMOTE_SERVER_TEST_WORKERS=3`: one fresh
 process per file, longest files first by the manifests in
 `scripts/*-shard-durations.json`. Local runs keep one worker. Each server vitest
 run migrates one embedded Postgres data directory in a global setup, and every
