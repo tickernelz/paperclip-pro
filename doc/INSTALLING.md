@@ -1,8 +1,8 @@
-# Installing Paperclip Pro
+# Installing Wardmote
 
 > **Fork notice.** This repository is [`tickernelz/wardmote`](https://github.com/tickernelz/wardmote), a hard fork of `paperclipai/paperclip` at `7b7c4d417`. It publishes its own packages under the `@tickernelz` npm scope. `https://paperclip.ing/install.sh` installs **upstream Paperclip**, not this fork; ignore any vanity-installer instruction that survives from upstream.
 
-Paperclip Pro supports a managed installation from the published npm packages
+Wardmote supports a managed installation from the published npm packages
 and a development installation from a git ref. The npm installation is the
 default and the supported path: it provides atomic updates, rollback, and a
 stable entrypoint for the background service without a local toolchain.
