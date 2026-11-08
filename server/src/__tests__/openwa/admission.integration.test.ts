@@ -367,8 +367,10 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
     }, timeoutMs);
   }
 
-  async function wokenRequests(t: Setup) {
-    return db.select().from(agentWakeupRequests).where(eq(agentWakeupRequests.companyId, t.companyId));
+  function wokenRequestIds(t: Setup) {
+    const ids = t.wakeup.mock.calls.map((call) => call[1].durableChatRequest?.id);
+    expect(ids).not.toContain(undefined);
+    return new Set(ids);
   }
 
   async function settledDeliveries(t: Setup, count: number) {
@@ -924,7 +926,7 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
     await untilSwept(t, async () => (await wakeActions(t)).every((action) => action.status === "processed"));
     wakes = await wakeActions(t);
     expect(burstCode(wakes[0])).toBe("inbound_wakeup_durable");
-    expect(await wokenRequests(t)).toHaveLength(2);
+    expect(wokenRequestIds(t).size).toBe(2);
     expect(wakeCallDeliveryIds(t, wakes[0].id)).toEqual(rows.map((row) => row.id));
     expect(wakeCallDeliveryIds(t, ownerWake.id)).toEqual([ownerRow.id]);
   }, 120_000);
@@ -980,10 +982,10 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
     expect(t.wakeup).not.toHaveBeenCalled();
     clock.advance(100);
     await untilSwept(t, async () => (await wakeActions(t))[0]?.status === "processed");
-    expect(await wokenRequests(t)).toHaveLength(1);
+    expect(wokenRequestIds(t).size).toBe(1);
     expect(wakeCallDeliveryIds(t, wakes[0].id)).toEqual(held.map((delivery) => delivery.id));
     await settle();
-    expect(await wokenRequests(t)).toHaveLength(1);
+    expect(wokenRequestIds(t).size).toBe(1);
   }, 120_000);
 
   it("starts a new batch for a message sent after the previous batch's quiet gap", async () => {
@@ -1087,7 +1089,7 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
       return (await wakeActions(t))[0]?.status === "processed";
     }, 30_000);
     await settle();
-    expect(await wokenRequests(t)).toHaveLength(1);
+    expect(wokenRequestIds(t).size).toBe(1);
     expect(wakeCallDeliveryIds(t, holder.id)).toEqual(held.map((delivery) => delivery.id));
   }, 120_000);
 

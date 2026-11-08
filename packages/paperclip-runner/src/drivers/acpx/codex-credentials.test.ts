@@ -246,12 +246,9 @@ describe("managed Codex credentials", () => {
   });
 
   it("fails before auth mutation when two quorum candidates are occupied", async () => {
-    const fixture = await credentialFixture();
+    const { fixture, occupied } = await occupiedQuorumFixture(2);
     const destination = join(fixture.home, "auth.json");
     await writeFile(destination, '{"sentinel":true}', { mode: 0o600 });
-    const ports = credentialLeasePorts(await realpath(fixture.home));
-    const first = await listenSilently(ports[0]);
-    const second = await listenSilently(ports[1]);
     try {
       await expect(
         stageManagedCodexCredential({
@@ -265,7 +262,7 @@ describe("managed Codex credentials", () => {
         '{"sentinel":true}',
       );
     } finally {
-      await Promise.all([first.close(), second.close()]);
+      await Promise.all(occupied.map((listener) => listener.close()));
     }
   });
 
@@ -1650,6 +1647,22 @@ async function credentialFixture(): Promise<{ root: string; home: string }> {
   await mkdir(home, { mode: 0o700 });
   await chmod(home, 0o700);
   return { root, home: await realpath(home) };
+}
+
+async function occupiedQuorumFixture(count: number) {
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    const fixture = await credentialFixture();
+    const occupied: Array<Awaited<ReturnType<typeof listenSilently>>> = [];
+    try {
+      for (const port of credentialLeasePorts(fixture.home).slice(0, count))
+        occupied.push(await listenSilently(port));
+      return { fixture, occupied };
+    } catch (error) {
+      await Promise.all(occupied.map((listener) => listener.close()));
+      if ((error as NodeJS.ErrnoException).code !== "EADDRINUSE") throw error;
+    }
+  }
+  throw new Error("Occupied credential quorum fixture reservation exhausted.");
 }
 
 async function silentPrimaryQuorumFixture(
