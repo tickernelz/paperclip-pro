@@ -2,6 +2,7 @@ import fs from "node:fs";
 import net from "node:net";
 import os from "node:os";
 import path from "node:path";
+import { legacyEnvKey } from "@tickernelz/wardmote-shared/env-aliases";
 import { applyPendingMigrations, closeRegisteredClients, ensurePostgresDatabase } from "./client.js";
 import {
   createEmbeddedPostgresLogBuffer,
@@ -113,10 +114,10 @@ async function getAvailablePort(): Promise<number> {
   );
 }
 
-export const EMBEDDED_POSTGRES_TEMPLATE_DIR_ENV = "PAPERCLIP_TEST_EMBEDDED_POSTGRES_TEMPLATE_DIR";
+export const EMBEDDED_POSTGRES_TEMPLATE_DIR_ENV = "WARDMOTE_TEST_EMBEDDED_POSTGRES_TEMPLATE_DIR";
 
 function embeddedPostgresTemplateDir(): string | null {
-  const dir = process.env[EMBEDDED_POSTGRES_TEMPLATE_DIR_ENV]?.trim();
+  const dir = (process.env[EMBEDDED_POSTGRES_TEMPLATE_DIR_ENV] ?? process.env[legacyEnvKey(EMBEDDED_POSTGRES_TEMPLATE_DIR_ENV)])?.trim();
   return dir && fs.existsSync(path.join(dir, "PG_VERSION")) ? dir : null;
 }
 
@@ -256,7 +257,7 @@ async function probeEmbeddedPostgresSupport(): Promise<EmbeddedPostgresTestSuppo
   let started: { dataDir: string; instance: EmbeddedPostgresInstance } | null = null;
 
   try {
-    started = await startEmbeddedPostgresWithRetry("paperclip-embedded-postgres-probe-");
+    started = await startEmbeddedPostgresWithRetry("wardmote-embedded-postgres-probe-");
     return { supported: true };
   } catch (error) {
     return {
@@ -318,7 +319,7 @@ export async function startEmbeddedPostgresTestDatabase(
 }
 
 export async function prepareEmbeddedPostgresTestTemplate(): Promise<{ dataDir: string; cleanup: () => void }> {
-  const { port, dataDir, instance } = await startEmbeddedPostgresWithRetry("paperclip-embedded-postgres-template-");
+  const { port, dataDir, instance } = await startEmbeddedPostgresWithRetry("wardmote-embedded-postgres-template-");
   try {
     const adminConnectionString = `postgres://paperclip:paperclip@127.0.0.1:${port}/postgres`;
     await ensurePostgresDatabase(adminConnectionString, "paperclip");

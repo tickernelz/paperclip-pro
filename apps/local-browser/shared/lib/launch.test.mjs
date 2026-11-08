@@ -105,7 +105,7 @@ test("every OS x browser x install combination yields a usable plan", () => {
           assert.equal(result.run.shell, "Terminal", label);
           assert.equal(result.alt, null, label);
           assert.equal(result.run.command, "open -a \"" + entry.mac + "\" --args " + ARGS, label);
-          const file = "~/Desktop/" + entry.label.replace(/ /g, "-") + "-Paperclip.command";
+          const file = "~/Desktop/" + entry.label.replace(/ /g, "-") + "-Wardmote.command";
           assert.equal(result.permanent.command, "printf '#!/bin/sh\\n" + result.run.command + "\\n' > " + file + " && chmod +x " + file, label);
         } else {
           assert.equal(result.run.shell, "Terminal", label);
@@ -152,11 +152,11 @@ test("Windows steps explain the shortcut Target and PowerShell escapes $ and bac
 test("macOS custom paths use the .app bundle or the binary", () => {
   const bundle = plan({ os: "macos", browser: "firefox-nightly", install: "custom", customPath: "/Applications/Firefox Nightly.app/Contents/MacOS/firefox" });
   assert.equal(bundle.run.command, "open -a \"/Applications/Firefox Nightly.app\" --args " + ARGS);
-  assert.equal(bundle.permanent.command, "printf '#!/bin/sh\\nopen -a \"/Applications/Firefox Nightly.app\" --args " + ARGS + "\\n' > ~/Desktop/Firefox-Nightly-Paperclip.command && chmod +x ~/Desktop/Firefox-Nightly-Paperclip.command");
+  assert.equal(bundle.permanent.command, "printf '#!/bin/sh\\nopen -a \"/Applications/Firefox Nightly.app\" --args " + ARGS + "\\n' > ~/Desktop/Firefox-Nightly-Wardmote.command && chmod +x ~/Desktop/Firefox-Nightly-Wardmote.command");
   assert.equal(plan({ os: "macos", browser: "zen", install: "custom", customPath: "~/Apps/Zen.app" }).run.command, "open -a \"~/Apps/Zen.app\" --args " + ARGS);
   const binary = plan({ os: "macos", browser: "other", install: "custom", customPath: "/opt/it's 100%/fox" });
   assert.equal(binary.run.command, "\"/opt/it's 100%/fox\" " + ARGS);
-  assert.equal(binary.permanent.command, "printf '#!/bin/sh\\n\"/opt/it'\\''s 100%%/fox\" " + ARGS + "\\n' > ~/Desktop/Browser-Paperclip.command && chmod +x ~/Desktop/Browser-Paperclip.command");
+  assert.equal(binary.permanent.command, "printf '#!/bin/sh\\n\"/opt/it'\\''s 100%%/fox\" " + ARGS + "\\n' > ~/Desktop/Browser-Wardmote.command && chmod +x ~/Desktop/Browser-Wardmote.command");
   assert.match(plan({ os: "macos", browser: "firefox" }).quit.join(" "), /Cmd\+Q.*red button is not enough/);
 });
 

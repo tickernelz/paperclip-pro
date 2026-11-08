@@ -48,7 +48,7 @@ Use read for words and snapshot for controls. Use wait instead of polling snapsh
 Use a screenshot only when a snapshot cannot answer the question.
 
 \`local_browser_open\` reuses the tab you already opened, so calling it again never piles
-up tabs. Open and navigate refuse the Paperclip tab and the tab the user is looking at;
+up tabs. Open and navigate refuse the Wardmote tab and the tab the user is looking at;
 target your own tab by tabId instead.
 
 ## Permissions
@@ -59,7 +59,7 @@ missing permission ids in \`permissions\`. Then:
 
 1. Call \`local_browser_permissions\` with op \`request\`, those ids, and a one-sentence
    reason.
-2. Tell the user: "Please open the Paperclip Local Browser extension and press Allow
+2. Tell the user: "Please open the Wardmote Local Browser extension and press Allow
    (or Allow all)." The request alone grants nothing; a browser needs the user's click.
 3. Call \`local_browser_permissions\` with op \`status\`, and retry once the id is in
    \`granted\`.
@@ -132,7 +132,7 @@ Scroll, select, focus and scroll_into_view always use page events.
 
 ## Limits
 
-The user sets the limits in the Local Browser settings in Paperclip: result size,
+The user sets the limits in the Local Browser settings in Wardmote: result size,
 snapshot nodes, read characters, screenshot bytes, transfer bytes, call time and
 network entries. When a call asked for more, the result has \`limited: [{ field,
 requested, applied }]\`. Work with what you got, or ask the user to raise that limit.
@@ -143,7 +143,7 @@ requested, applied }]\`. Work with what you got, or ask the user to raise that l
 \`{ value, type }\`. Examples:
 
 - \`{ "path": "history.search", "args": [{ "text": "invoice", "maxResults": 20 }] }\`
-- \`{ "path": "bookmarks.search", "args": ["paperclip"] }\`
+- \`{ "path": "bookmarks.search", "args": ["wardmote"] }\`
 - \`{ "path": "tabs.query", "args": [{ "currentWindow": true }] }\`
 - \`{ "path": "windows.getAll", "args": [{ "populate": true }] }\`
 
