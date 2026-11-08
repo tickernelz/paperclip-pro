@@ -12,7 +12,9 @@ const USAGE = `Usage: node scripts/ci-timing-report.mjs [options]
   --logs <n>            parse test logs of the newest <n> analysed runs (default: 0)
   --top <n>             slowest test files and specs to list (default: 50)
   --queue-grace <s>     queue seconds counted toward the effective time (default: 60)
-  --json <path>         also write the raw measurements as JSON`;
+  --json <path>         also write the raw measurements as JSON
+  --budget <path>       compare one run (--run) with the job and total budgets in <path>;
+                        writes a table to $GITHUB_STEP_SUMMARY and a warning per overrun`;
 
 function parseArgs(argv) {
   const options = { workflow: "ci.yml", limit: 20, event: "all", runs: [], logs: 0, top: 50, queueGrace: 60 };
@@ -33,6 +35,7 @@ function parseArgs(argv) {
     else if (arg === "--top") options.top = Number(next());
     else if (arg === "--queue-grace") options.queueGrace = Number(next());
     else if (arg === "--json") options.json = next();
+    else if (arg === "--budget") options.budget = next();
     else if (arg === "--help" || arg === "-h") {
       console.log(USAGE);
       process.exit(0);
@@ -284,9 +287,46 @@ function collectSlowest(repo, summaries, options) {
   return { runs: picked.length, files: top(files), specs: top(specs), allFiles: Object.fromEntries(files), allSpecs: Object.fromEntries(specs) };
 }
 
+export function budgetFindings(summary, budgets) {
+  const findings = [];
+  const total = budgets.total?.[summary.event] ?? budgets.total?.default;
+  if (total && summary.effective > total) findings.push({ name: "total (effective)", actual: summary.effective, budget: total });
+  for (const job of summary.jobs) {
+    const budget = budgets.jobs?.[job.group] ?? budgets.jobs?.[job.name];
+    if (budget && job.duration > budget) findings.push({ name: job.name, actual: job.duration, budget });
+  }
+  return findings;
+}
+
+function reportBudget(repo, options) {
+  if (options.runs.length !== 1) throw new Error("--budget needs exactly one --run");
+  const budgets = JSON.parse(fs.readFileSync(options.budget, "utf8"));
+  const run = gh([`repos/${repo}/actions/runs/${options.runs[0]}`]);
+  const summary = summariseRun(run, fetchJobs(repo, run.id), options.queueGrace);
+  const findings = budgetFindings(summary, budgets);
+  const overrun = new Set(findings.map((finding) => finding.name));
+  const lines = [`## CI time budget (run ${summary.id}, ${summary.event})`, ""];
+  lines.push(`Wall so far ${fmt(summary.wall)}, effective ${fmt(summary.effective)} (queue counted up to ${options.queueGrace}s per job), longest job queue ${fmt(summary.maxQueue)}, ${summary.jobMinutes.toFixed(0)} job minutes.`, "");
+  lines.push("| job | queue | total | budget | |", "|---|---|---|---|---|");
+  for (const job of [...summary.jobs].sort((a, b) => b.duration - a.duration)) {
+    const budget = budgets.jobs?.[job.group] ?? budgets.jobs?.[job.name];
+    lines.push(`| ${job.name} | ${fmt(job.queue)} | ${fmt(job.duration)} | ${budget ? fmt(budget) : "-"} | ${overrun.has(job.name) ? "over" : ""} |`);
+  }
+  const text = lines.join("\n") + "\n";
+  if (process.env.GITHUB_STEP_SUMMARY) fs.appendFileSync(process.env.GITHUB_STEP_SUMMARY, text);
+  else console.log(text);
+  for (const finding of findings) {
+    console.log(`::warning title=CI time budget::${finding.name} took ${fmt(finding.actual)}, budget ${fmt(finding.budget)}`);
+  }
+}
+
 function main() {
   const options = parseArgs(process.argv.slice(2));
   const repo = options.repo ?? detectRepo();
+  if (options.budget) {
+    reportBudget(repo, options);
+    return;
+  }
   const runs = fetchRuns(repo, options);
   const summaries = runs.map((run) => summariseRun(run, fetchJobs(repo, run.id), options.queueGrace));
   const slowest = options.logs > 0 ? collectSlowest(repo, summaries, options) : null;
