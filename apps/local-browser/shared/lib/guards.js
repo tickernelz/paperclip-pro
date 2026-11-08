@@ -2,7 +2,8 @@
   "use strict";
 
   var STORAGE_KEY = "lb.guards";
-  var FALLBACK = { protectPaperclipTab: true, protectFocusedTab: true, networkBufferSize: 1000 };
+  var LEGACY_TAB_KEY = "protectPaperclipTab";
+  var FALLBACK = { protectWardmoteTab: true, protectFocusedTab: true, networkBufferSize: 1000 };
   var FALLBACK_BUFFER = { min: 50, max: 20000 };
 
   var listeners = [];
@@ -32,7 +33,11 @@
     var bounds = bufferBounds();
     var size = typeof source.networkBufferSize === "number" && Number.isFinite(source.networkBufferSize) ? Math.round(source.networkBufferSize) : base.networkBufferSize;
     return {
-      protectPaperclipTab: typeof source.protectPaperclipTab === "boolean" ? source.protectPaperclipTab : base.protectPaperclipTab,
+      protectWardmoteTab: typeof source.protectWardmoteTab === "boolean"
+        ? source.protectWardmoteTab
+        : typeof source[LEGACY_TAB_KEY] === "boolean"
+          ? source[LEGACY_TAB_KEY]
+          : base.protectWardmoteTab,
       protectFocusedTab: typeof source.protectFocusedTab === "boolean" ? source.protectFocusedTab : base.protectFocusedTab,
       networkBufferSize: Math.min(bounds.max, Math.max(bounds.min, size))
     };
@@ -44,7 +49,7 @@
   }
 
   function same(a, b) {
-    return a.protectPaperclipTab === b.protectPaperclipTab && a.protectFocusedTab === b.protectFocusedTab && a.networkBufferSize === b.networkBufferSize;
+    return a.protectWardmoteTab === b.protectWardmoteTab && a.protectFocusedTab === b.protectFocusedTab && a.networkBufferSize === b.networkBufferSize;
   }
 
   function publish(next) {

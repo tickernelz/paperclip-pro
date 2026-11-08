@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { boot } from "./harness.test.mjs";
 
-const UNGUARDED = { protectPaperclipTab: false, protectFocusedTab: false, networkBufferSize: 1000 };
+const UNGUARDED = { protectWardmoteTab: false, protectFocusedTab: false, networkBufferSize: 1000 };
 
 function historyPage(entries, startIndex) {
   const state = { index: startIndex, origin: 1 };

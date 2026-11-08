@@ -188,7 +188,7 @@ export function bootBackground(options = {}) {
 
   const browser = {
     runtime: {
-      id: "local-browser@paperclip.app",
+      id: "local-browser@wardmote",
       getManifest: () => manifest,
       getURL: (file) => "moz-extension://uuid/" + String(file).replace(/^\//, ""),
       getPlatformInfo: async () => ({ os: "linux" }),

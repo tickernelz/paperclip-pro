@@ -293,7 +293,7 @@
     var command = app
       ? "open -a " + shQuote(app) + " --args " + flags(input.port, input.origin, input.profile, shQuote)
       : shQuote(binary) + " " + flags(input.port, input.origin, input.profile, shQuote);
-    var file = "~/Desktop/" + slug(entry, key) + "-Paperclip.command";
+    var file = "~/Desktop/" + slug(entry, key) + "-Wardmote.command";
     var save = "printf '" + printfFormat(command) + "' > " + file + " && chmod +x " + file;
     return {
       run: { shell: "Terminal", command: command },

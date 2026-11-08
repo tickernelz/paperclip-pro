@@ -176,7 +176,7 @@
         Promise.resolve(action.setBadgeBackgroundColor({ color: PENDING_COLOR })).catch(function () {});
         if (typeof action.setTitle === "function") {
           var noun = count === 1 ? "permission request" : "permission requests";
-          Promise.resolve(action.setTitle({ title: "Paperclip Local Browser: " + count + " " + noun + " waiting" })).catch(function () {});
+          Promise.resolve(action.setTitle({ title: "Wardmote Local Browser: " + count + " " + noun + " waiting" })).catch(function () {});
         }
         return;
       }
@@ -185,7 +185,7 @@
         return;
       }
       Promise.resolve(action.setBadgeText({ text: "" })).catch(function () {});
-      if (typeof action.setTitle === "function") Promise.resolve(action.setTitle({ title: "Paperclip Local Browser" })).catch(function () {});
+      if (typeof action.setTitle === "function") Promise.resolve(action.setTitle({ title: "Wardmote Local Browser" })).catch(function () {});
     } catch (error) {
       return;
     }
@@ -232,8 +232,8 @@
       var names = ids.map(label).join(", ");
       var options = {
         type: "basic",
-        title: "Paperclip needs a browser permission",
-        message: "An agent asked for: " + names + ". Open the Paperclip Local Browser extension to allow it."
+        title: "Wardmote needs a browser permission",
+        message: "An agent asked for: " + names + ". Open the Wardmote Local Browser extension to allow it."
       };
       var icon = iconUrl();
       if (icon) options.iconUrl = icon;
@@ -331,8 +331,8 @@
     var names = ids.map(label).join(", ");
     return {
       code: "local_browser_permission_required",
-      message: "This browser has not granted " + names + " to the Paperclip Local Browser extension.",
-      hint: "Ask the user to open the Paperclip Local Browser extension and press Allow (or Allow all). The request is waiting there.",
+      message: "This browser has not granted " + names + " to the Wardmote Local Browser extension.",
+      hint: "Ask the user to open the Wardmote Local Browser extension and press Allow (or Allow all). The request is waiting there.",
       retryable: true,
       permissions: ids
     };

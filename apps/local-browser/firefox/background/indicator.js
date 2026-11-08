@@ -17,7 +17,7 @@
 
   async function toolIndicator(args) {
     if (!Array.isArray(args.tabs)) {
-      throw protocol.error(protocol.ERROR_CODES.protocolError, "indicator tabs must be a list", "Update the Paperclip server", false);
+      throw protocol.error(protocol.ERROR_CODES.protocolError, "indicator tabs must be a list", "Update the Wardmote server", false);
     }
     await Promise.all(tracker.replace(args.tabs).map(render));
     return { tabs: tracker.tabIds() };

@@ -10,7 +10,7 @@ test("hello advertises every implemented capability with access and guards", asy
   assert.equal(hello.clientVersion, manifest.version);
   assert.equal(hello.access.siteAccess, "all");
   assert.deepEqual(hello.access.missing, []);
-  assert.deepEqual(hello.guards, { protectPaperclipTab: true, protectFocusedTab: true, networkBufferSize: 1000 });
+  assert.deepEqual(hello.guards, { protectWardmoteTab: true, protectFocusedTab: true, networkBufferSize: 1000 });
   assert.equal(hello.tabs[0].cookieStoreId, "0");
 });
 
@@ -33,7 +33,7 @@ test("guards.set persists the guards and sends a guards event", async () => {
   await flush(10);
   const events = frames(context.sent, "guards");
   assert.equal(events.length, 1);
-  assert.deepEqual(events[0].data, { protectPaperclipTab: true, protectFocusedTab: false, networkBufferSize: 5000 });
+  assert.deepEqual(events[0].data, { protectWardmoteTab: true, protectFocusedTab: false, networkBufferSize: 5000 });
   assert.equal(context.stored["lb.guards"].networkBufferSize, 5000);
 });
 
@@ -65,14 +65,14 @@ test("status describes the connection for the popup and control center", async (
 
 test("state changes are broadcast on the lb-status channel", async () => {
   const context = await boot();
-  await context.control("guards.set", { patch: { protectPaperclipTab: false } });
+  await context.control("guards.set", { patch: { protectWardmoteTab: false } });
   await sleep(120);
   const broadcasts = context.callsOf("runtime.sendMessage").map((entry) => entry[1]).filter((message) => message.channel === "lb-status");
   assert.equal(broadcasts.length >= 1, true);
-  assert.equal(broadcasts[broadcasts.length - 1].status.guards.protectPaperclipTab, false);
+  assert.equal(broadcasts[broadcasts.length - 1].status.guards.protectWardmoteTab, false);
 });
 
-test("detect offers the pairing link found on the active Paperclip page", async () => {
+test("detect offers the pairing link found on the active Wardmote page", async () => {
   const context = await boot({ seed: null, executeScript: async () => [{ result: { origin: "https://p.test", code: "ABCD1234" } }] });
   const answer = await context.control("detect");
   assert.equal(answer.ok, true);
