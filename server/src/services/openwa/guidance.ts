@@ -17,7 +17,7 @@ import {
   chatOwnerGrants,
   companyMemberships,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   maskOpenwaPhoneNumber,
   openwaChatSettingsSchema,
@@ -30,7 +30,7 @@ import {
   type OpenwaNumberMode,
   type OpenwaPrincipalRole,
   type OpenwaTriggerClass,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { DEFAULT_ATTACHMENT_CONTENT_TYPE } from "../../attachment-types.js";
 import { openwaAllowedCategories, type OpenwaRunContext, type OpenwaRunProfile } from "./authority.js";
 import { getStorageService } from "../../storage/index.js";

@@ -4,7 +4,7 @@ import { homedir } from "node:os";
 import path from "node:path";
 import type { Readable } from "node:stream";
 import { pipeline } from "node:stream/promises";
-import type { TerminalSshHost } from "@tickernelz/paperclip-pro-shared";
+import type { TerminalSshHost } from "@tickernelz/wardmote-shared";
 import { HttpError, badRequest, conflict, notFound, unprocessable } from "../../errors.js";
 import {
   TERMINAL_UPLOAD_EXISTS_MESSAGE,

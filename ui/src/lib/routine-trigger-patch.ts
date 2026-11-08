@@ -1,4 +1,4 @@
-import type { RoutineTrigger } from "@tickernelz/paperclip-pro-shared";
+import type { RoutineTrigger } from "@tickernelz/wardmote-shared";
 
 export type RoutineTriggerEditorDraft = {
   label: string;

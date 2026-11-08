@@ -4,14 +4,14 @@ import os from "node:os";
 import path from "node:path";
 import { parse as parseYaml } from "yaml";
 
-vi.mock("@tickernelz/paperclip-pro-adapter-utils/execution-target", async (importOriginal) => {
+vi.mock("@tickernelz/wardmote-adapter-utils/execution-target", async (importOriginal) => {
   const actual = (await importOriginal()) as Record<string, unknown>;
   return { ...actual, runAdapterExecutionTargetProcess: vi.fn() };
 });
 
 import { execute } from "./execute.js";
 import { buildOmpSettingsOverlay, renderOmpSettingsOverlay } from "./settings-overlay.js";
-import { runAdapterExecutionTargetProcess } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
+import { runAdapterExecutionTargetProcess } from "@tickernelz/wardmote-adapter-utils/execution-target";
 
 const runProcessMock = vi.mocked(runAdapterExecutionTargetProcess);
 

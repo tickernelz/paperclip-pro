@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { IssueWorkProduct } from "@tickernelz/paperclip-pro-shared";
+import type { IssueWorkProduct } from "@tickernelz/wardmote-shared";
 import {
   formatBytes,
   formatDuration,

@@ -1,7 +1,7 @@
 import { and, eq, inArray } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { agentWakeupRequests, agents, heartbeatRuns, issueAttachments, issueComments, issues } from "@tickernelz/paperclip-pro-db";
-import type { IssueComment, IssueQueuedCommentQueue } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/wardmote-db";
+import { agentWakeupRequests, agents, heartbeatRuns, issueAttachments, issueComments, issues } from "@tickernelz/wardmote-db";
+import type { IssueComment, IssueQueuedCommentQueue } from "@tickernelz/wardmote-shared";
 import {
   buildQueuedCommentQueueSnapshot,
   decideQueuedCommentQueueSteering,

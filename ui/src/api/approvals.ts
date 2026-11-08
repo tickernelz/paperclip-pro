@@ -1,4 +1,4 @@
-import type { Approval, ApprovalComment, Issue } from "@tickernelz/paperclip-pro-shared";
+import type { Approval, ApprovalComment, Issue } from "@tickernelz/wardmote-shared";
 import { api } from "./client";
 
 export const approvalsApi = {

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { CompanySkillVersion } from "@tickernelz/paperclip-pro-shared";
+import type { CompanySkillVersion } from "@tickernelz/wardmote-shared";
 import {
   formatReleaseDate,
   releaseName,

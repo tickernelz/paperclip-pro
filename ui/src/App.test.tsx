@@ -239,7 +239,7 @@ describe("CloudAccessGate", () => {
 
     expect(container.textContent).toContain("Finish setting up this Wardmote");
     expect(container.textContent).toContain("Sign in / Create account");
-    expect(container.textContent).toContain("npx @tickernelz/paperclip-pro auth bootstrap-ceo");
+    expect(container.textContent).toContain("npx @tickernelz/wardmote auth bootstrap-ceo");
     expect(mockAccessApi.getCurrentBoardAccess).not.toHaveBeenCalled();
 
     unmountRoot(root);

@@ -1,5 +1,5 @@
 import { and, eq, inArray, ne, notInArray, sql } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   companyMemberships,
   companySecretBindings,
@@ -13,8 +13,8 @@ import {
   toolAccessAuditEvents,
   toolConnections,
   userSecretDeclarations,
-} from "@tickernelz/paperclip-pro-db";
-import type { PermissionKey, PrincipalType } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import type { PermissionKey, PrincipalType } from "@tickernelz/wardmote-shared";
 import { conflict } from "../errors.js";
 import { assertAssignableAgent } from "./agent-assignability.js";
 import { authorizationService, type AuthorizationActor, type AuthorizationResource } from "./authorization.js";

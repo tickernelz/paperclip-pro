@@ -12,7 +12,7 @@ import type {
   ExternalObjectLivenessState,
   ExternalObjectStatusCategory,
   ExternalObjectStatusTone,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { companies } from "./companies.js";
 import { plugins } from "./plugins.js";
 

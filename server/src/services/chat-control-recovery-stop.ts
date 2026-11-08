@@ -12,7 +12,7 @@ import {
   statusDecisions,
   statusDecisionEffects,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 
 export const CHAT_CONTROL_RECOVERY_STOP_CODE = "chat_control_completed_source";
 export const CHAT_CONTROL_RECOVERY_UNRESOLVED_CODE =

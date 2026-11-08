@@ -1,4 +1,4 @@
-import { appearanceForPalette, type Agent } from "@tickernelz/paperclip-pro-shared";
+import { appearanceForPalette, type Agent } from "@tickernelz/wardmote-shared";
 import { storybookAgents } from "../../fixtures/paperclipData";
 
 export type SidebarScenario = "conversation" | "landing" | "large-team";

@@ -1,6 +1,6 @@
 import path from 'node:path';
-import type { CompanySkillVersionFileInventoryEntry, SkillSourceCandidate, SkillSourceDiscovery, SkillSourcePreviewRequest, SkillSourceFilePreview, SkillSourceScanUpdate, SkillSourceScanProgress } from '@tickernelz/paperclip-pro-shared';
-import { parseFrontmatterMarkdown, parseGitHubSkillRepositoryUrl } from '@tickernelz/paperclip-pro-shared';
+import type { CompanySkillVersionFileInventoryEntry, SkillSourceCandidate, SkillSourceDiscovery, SkillSourcePreviewRequest, SkillSourceFilePreview, SkillSourceScanUpdate, SkillSourceScanProgress } from '@tickernelz/wardmote-shared';
+import { parseFrontmatterMarkdown, parseGitHubSkillRepositoryUrl } from '@tickernelz/wardmote-shared';
 import { notFound, unprocessable } from '../errors.js';
 import { assertSkillSnapshotPath, snapshotFile, skillFileBytes } from './skill-snapshot.js';
 import { indexSkillPackagePaths, inspectSkillPackage } from './skill-package-inspection.js';

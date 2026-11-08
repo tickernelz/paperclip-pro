@@ -1,6 +1,6 @@
 import { Command } from "commander";
-import type { Project } from "@tickernelz/paperclip-pro-shared";
-import { createProjectSchema, updateProjectSchema } from "@tickernelz/paperclip-pro-shared";
+import type { Project } from "@tickernelz/wardmote-shared";
+import { createProjectSchema, updateProjectSchema } from "@tickernelz/wardmote-shared";
 import {
   addCommonClientOptions,
   apiPath,

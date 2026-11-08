@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { agents } from "@tickernelz/paperclip-pro-db";
-import type { HireApprovedPayload } from "@tickernelz/paperclip-pro-adapter-utils";
+import type { Db } from "@tickernelz/wardmote-db";
+import { agents } from "@tickernelz/wardmote-db";
+import type { HireApprovedPayload } from "@tickernelz/wardmote-adapter-utils";
 import { findActiveServerAdapter } from "../adapters/registry.js";
 import { logger } from "../middleware/logger.js";
 import { logActivity } from "./activity-log.js";

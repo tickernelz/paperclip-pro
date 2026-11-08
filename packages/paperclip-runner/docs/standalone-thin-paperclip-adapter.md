@@ -18,13 +18,13 @@ enabled and the kill switch is disabled. Both paths use the public
 
 ```sh
 # Default legacy path
-pnpm --filter @tickernelz/paperclip-pro-paperclip-runner trace:standalone
+pnpm --filter @tickernelz/wardmote-paperclip-runner trace:standalone
 
 # Native standalone path
-pnpm --filter @tickernelz/paperclip-pro-paperclip-runner trace:standalone -- --feature-flag enabled
+pnpm --filter @tickernelz/wardmote-paperclip-runner trace:standalone -- --feature-flag enabled
 
 # Kill-switch rollback
-pnpm --filter @tickernelz/paperclip-pro-paperclip-runner trace:standalone -- --feature-flag enabled --kill-switch enabled
+pnpm --filter @tickernelz/wardmote-paperclip-runner trace:standalone -- --feature-flag enabled --kill-switch enabled
 ```
 
 ## Standalone page
@@ -32,7 +32,7 @@ pnpm --filter @tickernelz/paperclip-pro-paperclip-runner trace:standalone -- --f
 Run:
 
 ```sh
-pnpm --filter @tickernelz/paperclip-pro-paperclip-runner demo:standalone
+pnpm --filter @tickernelz/wardmote-paperclip-runner demo:standalone
 ```
 
 Then open `http://127.0.0.1:4182/standalone-demo/`. The page exposes mode

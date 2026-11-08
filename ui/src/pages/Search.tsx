@@ -9,7 +9,7 @@ import {
   type CompanySearchResult,
   type CompanySearchScope,
   type CompanySearchSort,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -51,7 +51,7 @@ import {
   type FilterChipLookups,
 } from "../lib/search-filters";
 import type { ReactNode } from "react";
-import type { Agent, IssueLabel, Project } from "@tickernelz/paperclip-pro-shared";
+import type { Agent, IssueLabel, Project } from "@tickernelz/wardmote-shared";
 
 const SEARCH_DEBOUNCE_MS = 250;
 const IDENTIFIER_PATTERN = /^[A-Z]+-\d+$/;

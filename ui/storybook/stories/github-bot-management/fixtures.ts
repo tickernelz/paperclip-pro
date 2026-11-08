@@ -2,7 +2,7 @@ import {
   defaultGitHubReviewPolicy,
   type GitHubChatConfiguration,
   type GitHubTaskReview,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import type {
   ChatEndpoint,
   ChatEndpointResource,

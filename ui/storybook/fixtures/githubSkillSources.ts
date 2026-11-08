@@ -1,5 +1,5 @@
-import { parseGitHubSkillRepositoryUrl } from "@tickernelz/paperclip-pro-shared";
-import type { AgentDesiredSkillEntry, CompanySkillDetail, CompanySkillListItem, CompanySkillVersion, CompanySkill, SkillSource, SkillPackageInspection, SkillSourceCandidate, SkillSourceEntry, SkillSourceRefreshResult } from "@tickernelz/paperclip-pro-shared";
+import { parseGitHubSkillRepositoryUrl } from "@tickernelz/wardmote-shared";
+import type { AgentDesiredSkillEntry, CompanySkillDetail, CompanySkillListItem, CompanySkillVersion, CompanySkill, SkillSource, SkillPackageInspection, SkillSourceCandidate, SkillSourceEntry, SkillSourceRefreshResult } from "@tickernelz/wardmote-shared";
 import { companySkillsApi } from "@/api/companySkills";
 import { agentsApi } from "@/api/agents";
 import { foldersApi } from "@/api/folders";

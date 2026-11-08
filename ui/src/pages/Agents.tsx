@@ -29,7 +29,7 @@ import { BulkAgentAdapterConfigDialog } from "../components/BulkAgentAdapterConf
 import { BulkAgentRoleDialog } from "../components/agents-table/BulkAgentRoleDialog";
 import { AgentRoleEditor } from "../components/agent-role/AgentRoleEditor";
 import { AlertTriangle, Bot, Plus, List, Network, SlidersHorizontal } from "lucide-react";
-import { AGENT_ROLE_LABELS, type Agent, type Environment, type EnvironmentCapabilities } from "@tickernelz/paperclip-pro-shared";
+import { AGENT_ROLE_LABELS, type Agent, type Environment, type EnvironmentCapabilities } from "@tickernelz/wardmote-shared";
 import {
   resourceMembershipState,
   useResourceMemberships,

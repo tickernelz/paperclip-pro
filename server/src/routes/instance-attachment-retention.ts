@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { z } from "zod";
-import { attachmentRetentionSettingsSchema, type AttachmentRetentionReport, type AttachmentRetentionSettings, type AttachmentRetentionStatus } from "@tickernelz/paperclip-pro-shared";
+import { attachmentRetentionSettingsSchema, type AttachmentRetentionReport, type AttachmentRetentionSettings, type AttachmentRetentionStatus } from "@tickernelz/wardmote-shared";
 import { assertInstanceAdmin, getActorInfo } from "./authz.js";
 
 /** Optional unsaved settings to preview instead of the saved policy. */

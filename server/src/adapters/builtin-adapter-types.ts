@@ -1,4 +1,4 @@
-import { RETIRED_ADAPTER_TYPES } from "@tickernelz/paperclip-pro-shared";
+import { RETIRED_ADAPTER_TYPES } from "@tickernelz/wardmote-shared";
 
 /**
  * Adapter types shipped with Paperclip. External plugins must not replace these.

@@ -58,7 +58,7 @@ On success the command prints the exact next commands (`cd`, `pnpm install`, `pn
 If `wardmote` is not on PATH in your environment, fall back to:
 
 ```bash
-pnpm --filter @tickernelz/paperclip-pro-create-paperclip-plugin build
+pnpm --filter @tickernelz/wardmote-create-paperclip-plugin build
 node packages/plugins/create-paperclip-plugin/dist/index.js @acme/my-plugin \
   --output /absolute/path \
   --sdk-path /absolute/path/to/paperclip/packages/plugins/sdk

@@ -1,4 +1,4 @@
-import type { IssueCreationSource } from "@tickernelz/paperclip-pro-shared";
+import type { IssueCreationSource } from "@tickernelz/wardmote-shared";
 import { GitBranch } from "lucide-react";
 import {
   createIssueDetailPath,

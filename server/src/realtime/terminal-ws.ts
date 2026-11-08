@@ -1,7 +1,7 @@
 import type { IncomingMessage, Server as HttpServer } from "node:http";
 import { createRequire } from "node:module";
 import type { Duplex } from "node:stream";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   TERMINAL_AUTH_TIMEOUT_MS,
   TERMINAL_WEBSOCKET_PATH,
@@ -9,7 +9,7 @@ import {
   clampTerminalRows,
   type TerminalErrorCode,
   type TerminalServerFrame,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { logger } from "../middleware/logger.js";
 import { logActivity, type LogActivityInput } from "../services/activity-log.js";
 import {

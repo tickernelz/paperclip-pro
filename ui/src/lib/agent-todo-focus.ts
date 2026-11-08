@@ -1,4 +1,4 @@
-import type { AgentTodoSnapshot, AgentTodoTask } from "@tickernelz/paperclip-pro-shared";
+import type { AgentTodoSnapshot, AgentTodoTask } from "@tickernelz/wardmote-shared";
 
 export type AgentTodoFocusKind = "current" | "next" | "blocked" | "done" | "empty";
 

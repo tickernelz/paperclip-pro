@@ -1,7 +1,7 @@
 import express from "express";
 import request from "supertest";
 import { afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { RETIRED_ADAPTER_TYPES } from "@tickernelz/paperclip-pro-shared";
+import { RETIRED_ADAPTER_TYPES } from "@tickernelz/wardmote-shared";
 import { vi } from "vitest";
 import type { ServerAdapterModule } from "../adapters/index.js";
 

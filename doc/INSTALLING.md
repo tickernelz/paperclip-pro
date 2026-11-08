@@ -12,10 +12,10 @@ stable entrypoint for the background service without a local toolchain.
 On macOS, Linux, or WSL2, with Node.js 24.11+ and `npm`:
 
 ```sh
-npx @tickernelz/paperclip-pro@latest install --yes
+npx @tickernelz/wardmote@latest install --yes
 ```
 
-`install` resolves the `latest` dist-tag of `@tickernelz/paperclip-pro` from
+`install` resolves the `latest` dist-tag of `@tickernelz/wardmote` from
 `https://registry.npmjs.org`, installs that version and its package set into a
 payload under `~/.wardmote/cli/installs/npm/<version>`, smoke-tests
 `--version` and the payload's embedded-PostgreSQL native assets, and only then
@@ -126,7 +126,7 @@ the exact `export PATH` command instead of editing shell files silently.
 ## Install Sources
 
 `wardmote install` with no source flag follows the `latest` dist-tag of
-`@tickernelz/paperclip-pro`, and `--version <YYYY.MDD.P>` pins one published
+`@tickernelz/wardmote`, and `--version <YYYY.MDD.P>` pins one published
 version; both resolve against `https://registry.npmjs.org`. `--canary` follows
 the `canary` dist-tag, which the release workflow does not publish today.
 
@@ -146,7 +146,7 @@ wardmote install --repo tickernelz/wardmote --ref <commit-sha> --yes
 repository to install a different fork.
 
 Before the shim exists, run the npm install through `npx`
-(`npx @tickernelz/paperclip-pro@latest install --yes`), or run a git install
+(`npx @tickernelz/wardmote@latest install --yes`), or run a git install
 from a source checkout with
 `node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts install ...`.
 
@@ -239,9 +239,25 @@ wardmote update --rollback
 The `upgrade` command is an alias for `update`. Exact versions and commit SHAs
 are pinned; provide a new target when you want them to move.
 
+## Moving From `@tickernelz/paperclip-pro`
+
+Releases up to 2026.1108.0 were published as `@tickernelz/paperclip-pro`. That
+CLI only resolves its own package name, so `paperclip-pro update` stays on the
+last release published under it. Move an existing managed install once with
+the new package; it keeps the same home, database, shims, and service:
+
+```sh
+npx @tickernelz/wardmote@latest install --yes
+wardmote service restart --drain
+```
+
+`wardmote update --rollback` returns to the payload you moved from. To
+install another release published under the old name, run that release's own
+CLI: `npx @tickernelz/paperclip-pro@<version> install --version <version> --yes`.
+
 ## Other Installation Methods
 
-A global npm install (`npm install -g @tickernelz/paperclip-pro`) works and is
+A global npm install (`npm install -g @tickernelz/wardmote`) works and is
 updated by `wardmote update`, but it has no payload store, so it offers no
 atomic activation and no rollback. Prefer the managed install above.
 

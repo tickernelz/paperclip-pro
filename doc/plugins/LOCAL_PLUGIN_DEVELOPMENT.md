@@ -60,7 +60,7 @@ Paperclip listens on `http://127.0.0.1:3100` by default. The CLI talks to that s
 wardmote plugin init @acme/hello-plugin --output ~/dev/paperclip-plugins
 ```
 
-This creates `~/dev/paperclip-plugins/hello-plugin/` with `src/manifest.ts`, `src/worker.ts`, `src/ui/index.tsx`, an esbuild watch config, a Vitest config, and a snapshot of `@tickernelz/paperclip-pro-plugin-sdk` from your local Paperclip checkout. You can run the package and tests without publishing anything to npm.
+This creates `~/dev/paperclip-plugins/hello-plugin/` with `src/manifest.ts`, `src/worker.ts`, `src/ui/index.tsx`, an esbuild watch config, a Vitest config, and a snapshot of `@tickernelz/wardmote-plugin-sdk` from your local Paperclip checkout. You can run the package and tests without publishing anything to npm.
 
 Useful flags:
 
@@ -204,7 +204,7 @@ When you are done iterating locally, publish the package and reinstall the npm-p
 
 - **Restart cleanly:** `wardmote plugin disable <key>` pauses the plugin without removing it. `wardmote plugin enable <key>` brings it back. `wardmote plugin uninstall <key>` removes the install record; add `--force` to also purge plugin state and settings.
 - **Browse examples:** `wardmote plugin examples` lists the bundled example plugins that ship with the repo, each with a ready-to-run `wardmote plugin install <path>` line.
-- **Go deeper:** [`PLUGIN_AUTHORING_GUIDE.md`](./PLUGIN_AUTHORING_GUIDE.md) covers worker capabilities, managed agents/projects/routines/skills, plugin database namespaces, scoped API routes, and the shared UI components in `@tickernelz/paperclip-pro-plugin-sdk/ui`. [`PLUGIN_SPEC.md`](./PLUGIN_SPEC.md) is the longer-form specification, including future ideas that are not yet implemented.
+- **Go deeper:** [`PLUGIN_AUTHORING_GUIDE.md`](./PLUGIN_AUTHORING_GUIDE.md) covers worker capabilities, managed agents/projects/routines/skills, plugin database namespaces, scoped API routes, and the shared UI components in `@tickernelz/wardmote-plugin-sdk/ui`. [`PLUGIN_SPEC.md`](./PLUGIN_SPEC.md) is the longer-form specification, including future ideas that are not yet implemented.
 - **Routine-first automation:** If your plugin should produce periodic issue work, prefer managed routines and `ctx.routines.managed` reconciliation over custom process loops or unobserved cron code.
 
 ## Troubleshooting

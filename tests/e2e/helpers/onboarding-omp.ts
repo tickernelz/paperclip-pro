@@ -1,5 +1,5 @@
 import type { BrowserContext, Page, Route } from "@playwright/test";
-import type { OnboardingOmpStatus, OnboardingRemoteOmpStatus } from "@tickernelz/paperclip-pro-shared";
+import type { OnboardingOmpStatus, OnboardingRemoteOmpStatus } from "@tickernelz/wardmote-shared";
 
 export const LOGIN_URL = "https://login.example.test/authorize";
 export const E2E_MODEL = { id: "anthropic/claude-e2e", label: "Claude E2E", provider: "anthropic" };

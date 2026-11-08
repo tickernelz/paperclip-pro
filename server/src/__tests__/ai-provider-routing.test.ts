@@ -3,7 +3,7 @@ import {
   aiProviderRoutingSchema,
   createAiConnectionSchema,
   isAiConnectionCompatible,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { managedProviderRouting } from "../services/ai-provider-routing.js";
 
 describe("provider routing", () => {

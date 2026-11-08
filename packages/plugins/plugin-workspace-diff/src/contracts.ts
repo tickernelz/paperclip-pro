@@ -1,4 +1,4 @@
-import { z } from "@tickernelz/paperclip-pro-plugin-sdk";
+import { z } from "@tickernelz/wardmote-plugin-sdk";
 
 export const workspaceDiffViewSchema = z.enum(["working-tree", "head"]);
 

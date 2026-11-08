@@ -1,6 +1,6 @@
 import { and, eq, inArray } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { agents, companySkillPolicies, principalPermissionGrants } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
+import { agents, companySkillPolicies, principalPermissionGrants } from "@tickernelz/wardmote-db";
 import {
   normalizeSkillPolicySourceLocator,
   skillPolicyDocumentSchema,
@@ -11,7 +11,7 @@ import {
   type SkillPolicyEvaluationResource,
   type SkillPolicyRule,
   type SkillPolicySourceType,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { conflict, forbidden, notFound } from "../errors.js";
 import { logActivity, type LogActivityInput } from "./activity-log.js";
 

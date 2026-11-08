@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { IssueRunModelOverrideSubtaskScope } from "@tickernelz/paperclip-pro-shared";
+import type { IssueRunModelOverrideSubtaskScope } from "@tickernelz/wardmote-shared";
 import { createRoot } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { MemoryRouter } from "react-router-dom";
@@ -12,7 +12,7 @@ import { TaskChatComposerDock } from "@/components/task-chat/TaskChatComposerDoc
 import { TaskChatComposer } from "@/components/task-chat/TaskChatComposer";
 import { TaskChatCompactInteractionCard } from "@/components/task-chat/TaskChatCompactInteractionCard";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import type { RequestConfirmationInteraction } from "@tickernelz/paperclip-pro-shared";
+import type { RequestConfirmationInteraction } from "@tickernelz/wardmote-shared";
 import { useComposerDockReserve } from "@/components/task-chat/useComposerDockReserve";
 import { useMobileNavAutoHide } from "@/hooks/useMobileNavAutoHide";
 import { useMobileViewportInsets } from "@/hooks/useMobileViewportInsets";

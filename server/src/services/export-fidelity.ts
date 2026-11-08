@@ -4,8 +4,8 @@ import {
   buildExportFidelityWarnings,
   type ExportFidelityCounts,
   type ExportFidelityReport,
-} from "@tickernelz/paperclip-pro-shared/portability-fidelity";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-shared/portability-fidelity";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   activityLog,
   approvals,
@@ -17,7 +17,7 @@ import {
   issueWorkProducts,
   issues,
   labels,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 
 export async function collectExportFidelityCounts(db: Db, companyId: string): Promise<ExportFidelityCounts> {
   const [

@@ -1,4 +1,4 @@
-import type { Environment } from "@tickernelz/paperclip-pro-shared";
+import type { Environment } from "@tickernelz/wardmote-shared";
 
 /**
  * The managed-sandbox-only policy hides the local environment and runs every

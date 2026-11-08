@@ -15,14 +15,14 @@ import {
   or,
   sql,
 } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   OMP_MODEL_SWITCH_ADAPTER_CONFIG_KEYS,
   OMP_MODEL_SWITCH_OMP_SETTINGS,
   OMP_SESSION_NEUTRAL_ADAPTER_CONFIG_KEYS,
   type BillingType,
   type CostStatus,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   agents,
   agentConfigRevisions,
@@ -31,7 +31,7 @@ import {
   heartbeatRunEvents,
   heartbeatRuns,
   issues,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { notFound } from "../../errors.js";
 import { logger } from "../../middleware/logger.js";
 import { getServerAdapter } from "../../adapters/index.js";
@@ -54,8 +54,8 @@ import {
   hasSessionCompactionThresholds,
   resolveSessionCompactionPolicy,
   type SessionCompactionPolicy,
-} from "@tickernelz/paperclip-pro-adapter-utils";
-import { isUuidLike } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-adapter-utils";
+import { isUuidLike } from "@tickernelz/wardmote-shared";
 import { isUnsafeSessionWorkspaceCwd } from "../session-workspace-cwd.js";
 
 export const EXECUTION_REVIEW_PARTICIPANT_RECOVERY_WAKE_REASON =

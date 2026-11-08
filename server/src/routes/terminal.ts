@@ -4,7 +4,7 @@ import path from "node:path";
 import { pipeline } from "node:stream/promises";
 import { Router, type NextFunction, type Request, type Response } from "express";
 import multer from "multer";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   TERMINAL_MAX_UPLOAD_BYTES,
   TERMINAL_WEBSOCKET_PATH,
@@ -14,7 +14,7 @@ import {
   type TerminalSessionKind,
   type TerminalSshHost,
   type TerminalUploadResult,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { resolveAttachmentUploadTempDir } from "../attachment-upload.js";
 import { HttpError, badRequest, conflict, forbidden, notFound, payloadTooLarge, unprocessable } from "../errors.js";
 import { validate } from "../middleware/validate.js";

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { PixelsOfficeSeatAssignment } from "@tickernelz/paperclip-pro-shared";
+import type { PixelsOfficeSeatAssignment } from "@tickernelz/wardmote-shared";
 import { useCompany } from "../context/CompanyContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { useCompanyLiveEvent } from "../context/LiveUpdatesProvider";

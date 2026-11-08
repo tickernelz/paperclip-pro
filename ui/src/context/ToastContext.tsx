@@ -1,4 +1,4 @@
-import type { AgentAppearance } from "@tickernelz/paperclip-pro-shared";
+import type { AgentAppearance } from "@tickernelz/wardmote-shared";
 import {
   createContext,
   useCallback,

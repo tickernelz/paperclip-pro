@@ -7,7 +7,7 @@ import {
   createIssueSchema,
   runRoutineSchema,
   updateIssueSchema,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { z } from "zod";
 import { errorHandler } from "../middleware/error-handler.js";
 import { validateIssueMutationBody } from "../middleware/validate.js";

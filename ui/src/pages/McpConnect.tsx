@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Globe } from "lucide-react";
 import { MootMark } from "@/components/MootMark";
 import { Link, useParams } from "@/lib/router";
-import type { McpConnection, McpConnectionRequest, McpDotPairingPreview } from "@tickernelz/paperclip-pro-shared";
+import type { McpConnection, McpConnectionRequest, McpDotPairingPreview } from "@tickernelz/wardmote-shared";
 import { deriveInitials, Identity } from "@/components/Identity";
 import { assistantConnectionDisplayName } from "./apps/connection-owner";
 import { Button } from "@/components/ui/button";

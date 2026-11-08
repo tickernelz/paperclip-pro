@@ -9,14 +9,14 @@ import {
   chatIdentityLinks,
   companyMemberships,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   githubCommitSchema,
   githubIdSchema,
   type GitHubReviewEventContext,
   type GitHubIssueEventContext,
   type GitHubAutomaticEventContext,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   effectiveGitHubReviewPolicy,
   githubReviewSchedulingDecision,

@@ -1,4 +1,4 @@
-import type { PipelineCaseLiveness } from "@tickernelz/paperclip-pro-shared";
+import type { PipelineCaseLiveness } from "@tickernelz/wardmote-shared";
 
 /**
  * Visual tone for a pipeline item liveness banner. Each tone maps to a palette

@@ -2,7 +2,7 @@ import type {
   CatalogTeam,
   CatalogTeamSkillPreparation,
   InstalledCatalogTeam,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 // ---------------------------------------------------------------------------
 // Shared Team Catalog fixtures.
@@ -61,7 +61,7 @@ export const sampleTeam: CatalogTeam = {
   trustLevel: "external_sources",
   compatibility: "compatible",
   contentHash: "sha256:deadbeefdeadbeefdeadbeefdeadbeef",
-  packageName: "@tickernelz/paperclip-pro-teams-catalog",
+  packageName: "@tickernelz/wardmote-teams-catalog",
   packageVersion: "0.1.0",
 };
 

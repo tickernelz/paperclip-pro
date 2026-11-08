@@ -8,7 +8,7 @@ import type {
   RoutineDetail as RoutineDetailType,
   RoutineTrigger,
   RoutineVariable,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { Badge } from "@/components/ui/badge";
 import { RunButton } from "@/components/AgentActionButtons";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";

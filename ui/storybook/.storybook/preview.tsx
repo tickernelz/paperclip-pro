@@ -7,7 +7,7 @@ import {
   instanceExperimentalSettingsSchema,
   instanceGeneralSettingsSchema,
   type WorkTimelineResult,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { MemoryRouter } from "@/lib/router";
 import { STORYBOOK_COMPANY_ID } from "../fixtures/storybook-ids";
 import {

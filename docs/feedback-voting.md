@@ -36,7 +36,7 @@ Shows a color-coded summary: vote counts, per-trace details with reasons, and ex
 wardmote feedback report
 
 # Point to a different server or company
-npx @tickernelz/paperclip-pro feedback report --api-base http://127.0.0.1:3000 --company-id <company-id>
+npx @tickernelz/wardmote feedback report --api-base http://127.0.0.1:3000 --company-id <company-id>
 
 # Include raw payload dumps in the report
 pnpm wardmote feedback report --payloads
@@ -112,7 +112,7 @@ Exports are full by default. `traces/` keeps the Wardmote envelope, while `full-
 
 ```bash
 # Custom server and output directory
-npx @tickernelz/paperclip-pro feedback export --api-base http://127.0.0.1:3000 --company-id <company-id> --out ./my-export
+npx @tickernelz/wardmote feedback export --api-base http://127.0.0.1:3000 --company-id <company-id> --out ./my-export
 ```
 
 ### Reading an exported trace

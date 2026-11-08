@@ -4,7 +4,7 @@ import { act, forwardRef, useImperativeHandle, type ForwardedRef, type ReactNode
 import { createRoot, type Root } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { IssueAttachment } from "@tickernelz/paperclip-pro-shared";
+import type { IssueAttachment } from "@tickernelz/wardmote-shared";
 import { issuesApi } from "@/api/issues";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { TooltipProvider } from "@/components/ui/tooltip";

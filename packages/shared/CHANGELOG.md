@@ -1,4 +1,4 @@
-# @tickernelz/paperclip-pro-shared
+# @tickernelz/wardmote-shared
 
 ## 0.3.1
 

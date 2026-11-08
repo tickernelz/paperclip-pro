@@ -6,7 +6,7 @@ import {
   createDb,
   heartbeatRunEvents,
   heartbeatRuns,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   allocateHeartbeatRunEventSeq,
   appendHeartbeatRunEvent,

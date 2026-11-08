@@ -1,4 +1,4 @@
-import { agentAvatarUrl as apiAvatarUrl } from "@tickernelz/paperclip-pro-shared";
+import { agentAvatarUrl as apiAvatarUrl } from "@tickernelz/wardmote-shared";
 
 /** Resolve against iframe.html so CSS backgrounds also work under hosted branch prefixes. */
 export const agentAvatarUrl: typeof apiAvatarUrl = (...args) => {

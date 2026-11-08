@@ -1,4 +1,4 @@
-import { WORKSPACE_RESTORE_LOCK_TIMEOUT_CODE } from "@tickernelz/paperclip-pro-adapter-utils/workspace-restore-merge";
+import { WORKSPACE_RESTORE_LOCK_TIMEOUT_CODE } from "@tickernelz/wardmote-adapter-utils/workspace-restore-merge";
 import { withAccountHomeSecretMutationLock } from "./ai-providers/codex/codex-auth-cache.js";
 import { syncConnectionCredentialBindings } from "./connection-credential-bindings.js";
 import { createHash, randomUUID } from "node:crypto";
@@ -20,7 +20,7 @@ import {
   toolApplications,
   toolConnections,
   toolConnectionInstalls,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   AI_CONNECTION_CAPABILITIES,
   decisionProviderForConnection,
@@ -37,7 +37,7 @@ import {
   type AiConnectionUsage,
   type CreateAiConnection,
   type AiConnectionLoginIntent,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { forbidden, notFound, unprocessable } from "../errors.js";
 import { aiConnectionConfigurationFailure, aiConnectionCredentialNotSharedFailure } from "./ai-connection-configuration-failure.js";
 import { quotaCredentialRecovery, quotaCredentialHash } from "./quota-credential-recovery.js";

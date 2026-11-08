@@ -5,7 +5,7 @@ import { flushSync } from "react-dom";
 import { MemoryRouter } from "react-router-dom";
 import { createRoot, type Root } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { INSTANCE_FEATURE_CATALOG, INSTANCE_FEATURE_KEYS, type InstanceFeatureKey } from "@tickernelz/paperclip-pro-shared";
+import { INSTANCE_FEATURE_CATALOG, INSTANCE_FEATURE_KEYS, type InstanceFeatureKey } from "@tickernelz/wardmote-shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { InstanceFeatures } from "./InstanceFeatures";
 import { InstanceAdvanced } from "./InstanceAdvanced";

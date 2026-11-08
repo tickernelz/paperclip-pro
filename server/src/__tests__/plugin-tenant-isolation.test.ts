@@ -10,7 +10,7 @@ import {
   pluginLogs,
   pluginWebhookDeliveries,
   plugins,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { buildHostServices, flushPluginLogBuffer } from "../services/plugin-host-services.js";
 import { pluginRegistryService } from "../services/plugin-registry.js";
 import {
@@ -71,7 +71,7 @@ describeEmbeddedPostgres("plugin tenant isolation (company_id FK)", () => {
     await db.insert(plugins).values({
       id: pluginId,
       pluginKey: "paperclip.tenant-isolation-test",
-      packageName: "@tickernelz/paperclip-pro-plugin-tenant-isolation-test",
+      packageName: "@tickernelz/wardmote-plugin-tenant-isolation-test",
       version: "0.0.1",
       apiVersion: 1,
       categories: ["automation"],

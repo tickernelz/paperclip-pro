@@ -24,7 +24,7 @@ import {
   GitHubAppBranding,
   GitHubBotMention,
 } from "@/pages/apps/chat/GitHubAppIdentity";
-import { resolveAgentAppearance } from "@tickernelz/paperclip-pro-shared";
+import { resolveAgentAppearance } from "@tickernelz/wardmote-shared";
 import { agentAvatarUrl } from "@/lib/agent-avatar-url";
 import {
   endpoint,

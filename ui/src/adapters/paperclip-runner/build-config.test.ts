@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { buildCodexLocalConfig, buildPaperclipRunnerConfig } from "./build-config.js";
-import type { CreateConfigValues } from "@tickernelz/paperclip-pro-adapter-utils";
+import type { CreateConfigValues } from "@tickernelz/wardmote-adapter-utils";
 
 function makeValues(overrides: Partial<CreateConfigValues> = {}): CreateConfigValues {
   return {

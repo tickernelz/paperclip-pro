@@ -35,14 +35,14 @@ import {
   joinRequests,
   projects,
   projectWorkspaces,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
 } from "./helpers/embedded-postgres.js";
 import { errorHandler } from "../middleware/index.js";
 import { attentionRoutes } from "../routes/attention.js";
-import type { AttentionItem } from "@tickernelz/paperclip-pro-shared";
+import type { AttentionItem } from "@tickernelz/wardmote-shared";
 import { attentionService } from "../services/attention.js";
 import { listAttentionExhaustedRuns } from "../services/attention-exhausted-runs.js";
 import { decisionQueueService } from "../services/decision-queues.js";

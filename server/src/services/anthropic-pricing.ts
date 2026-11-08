@@ -1,5 +1,5 @@
-import { centsToUsd, unitsToCents, usdToUnits } from "@tickernelz/paperclip-pro-shared";
-import type { AdapterUsageCheckpoint } from "@tickernelz/paperclip-pro-adapter-utils";
+import { centsToUsd, unitsToCents, usdToUnits } from "@tickernelz/wardmote-shared";
+import type { AdapterUsageCheckpoint } from "@tickernelz/wardmote-adapter-utils";
 
 // Direct Anthropic API list prices, verified 2026-10-07:
 // https://platform.claude.com/docs/en/about-claude/pricing

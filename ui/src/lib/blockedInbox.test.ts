@@ -6,7 +6,7 @@ import type {
   IssueBlockedInboxAttention,
   IssueBlockedInboxReason,
   IssueBlockedInboxSeverity,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   BLOCKED_REASON_VARIANT_ORDER,
   blockedBadgeTone,

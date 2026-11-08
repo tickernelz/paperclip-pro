@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import type { CompanySkillFileDetail } from '@tickernelz/paperclip-pro-shared';
+import type { CompanySkillFileDetail } from '@tickernelz/wardmote-shared';
 import { Button } from './ui/button';
 export function SkillBinaryFile({ file }: { file: CompanySkillFileDetail }) {
   const [url, setUrl] = useState('');

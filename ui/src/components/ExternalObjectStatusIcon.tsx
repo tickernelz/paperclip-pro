@@ -1,7 +1,7 @@
 import type {
   ExternalObjectLivenessState,
   ExternalObjectStatusCategory,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { Clock } from "lucide-react";
 import {
   externalObjectStatusIcon,

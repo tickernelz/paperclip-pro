@@ -1,6 +1,6 @@
 import { and, eq, inArray, sql } from "drizzle-orm";
-import { aiSubscriptions, aiSubscriptionPrices, aiSubscriptionConnections, connectionGrants, toolConnections, type Db } from "@tickernelz/paperclip-pro-db";
-import { aiConnectionMetadataSchema, normalizeCents, subscriptionPlan, type AiProvider, type UpdateSubscriptionPrice } from "@tickernelz/paperclip-pro-shared";
+import { aiSubscriptions, aiSubscriptionPrices, aiSubscriptionConnections, connectionGrants, toolConnections, type Db } from "@tickernelz/wardmote-db";
+import { aiConnectionMetadataSchema, normalizeCents, subscriptionPlan, type AiProvider, type UpdateSubscriptionPrice } from "@tickernelz/wardmote-shared";
 import { conflict, forbidden, notFound } from "../errors.js";
 import { logActivity, type ActivityPublication } from "./activity-log.js";
 import { publishAccountingActivities } from "./accounting-transaction.js";

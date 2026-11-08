@@ -49,7 +49,7 @@ const mockRunnerGoalService = vi.hoisted(() => ({
 }));
 
 function registerModuleMocks() {
-  vi.doMock("@tickernelz/paperclip-pro-shared/telemetry", () => ({
+  vi.doMock("@tickernelz/wardmote-shared/telemetry", () => ({
     trackAgentTaskCompleted: mockTrackAgentTaskCompleted,
     trackErrorHandlerCrash: vi.fn(),
   }));
@@ -162,7 +162,7 @@ async function createApp(actor: Record<string, unknown>) {
 describe("issue telemetry routes", () => {
   beforeEach(async () => {
     vi.resetModules();
-    vi.doUnmock("@tickernelz/paperclip-pro-shared/telemetry");
+    vi.doUnmock("@tickernelz/wardmote-shared/telemetry");
     vi.doUnmock("../telemetry.js");
     vi.doUnmock("../services/index.js");
     vi.doUnmock("../routes/issues.js");

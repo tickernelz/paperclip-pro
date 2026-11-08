@@ -4,7 +4,7 @@ import { flushSync } from "react-dom";
 import { createRoot, type Root } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { openwaEndpointPolicySchema } from "@tickernelz/paperclip-pro-shared";
+import { openwaEndpointPolicySchema } from "@tickernelz/wardmote-shared";
 import type { ChatEndpoint } from "@/api/chatEndpoints";
 import { ApiError } from "@/api/client";
 import { queryKeys } from "@/lib/queryKeys";

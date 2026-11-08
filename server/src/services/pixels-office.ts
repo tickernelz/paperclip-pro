@@ -1,6 +1,6 @@
 import { and, asc, desc, eq, gte, inArray, isNotNull, like, lt, ne, or, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   activityLog,
   agents,
@@ -8,7 +8,7 @@ import {
   issues,
   issueThreadInteractions,
   pixelsOfficeSeats,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   AGENT_DEFAULT_MAX_CONCURRENT_RUNS,
   AGENT_MAX_MAX_CONCURRENT_RUNS,
@@ -26,7 +26,7 @@ import {
   type PixelsOfficeTimeline,
   type PixelsOfficeTimelineEvent,
   type PixelsOfficeTimelineQuery,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { unprocessable } from "../errors.js";
 import { evaluateAgentInvokability, type AgentOrgRow } from "./agent-invokability.js";
 import { getHeartbeatRunRuntimeStatus } from "./heartbeat-run-runtime-status.js";

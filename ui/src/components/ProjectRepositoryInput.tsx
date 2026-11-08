@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import type { ProjectRepository } from "@tickernelz/paperclip-pro-shared";
+import type { ProjectRepository } from "@tickernelz/wardmote-shared";
 import { projectsApi } from "@/api/projects";
 import { RepositoryEditor } from "./RepositoryEditor";
 import { Button } from "./ui/button";

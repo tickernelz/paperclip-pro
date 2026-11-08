@@ -1,5 +1,5 @@
 {
-  "name": "@tickernelz/paperclip-pro-plugin-kitchen-sink-example",
+  "name": "@tickernelz/wardmote-plugin-kitchen-sink-example",
   "version": "0.1.0",
   "description": "Reference plugin that demonstrates the full Paperclip plugin surface area in one package",
   "type": "module",
@@ -13,14 +13,14 @@
     "ui": "./dist/ui/"
   },
   "scripts": {
-    "prebuild": "pnpm --filter @tickernelz/paperclip-pro-plugin-sdk ensure-build-deps",
+    "prebuild": "pnpm --filter @tickernelz/wardmote-plugin-sdk ensure-build-deps",
     "build": "tsc && node ./scripts/build-ui.mjs",
     "clean": "rm -rf dist",
-    "typecheck": "pnpm --filter @tickernelz/paperclip-pro-plugin-sdk ensure-build-deps && tsc --noEmit"
+    "typecheck": "pnpm --filter @tickernelz/wardmote-plugin-sdk ensure-build-deps && tsc --noEmit"
   },
   "dependencies": {
-    "@tickernelz/paperclip-pro-plugin-sdk": "workspace:*",
-    "@tickernelz/paperclip-pro-shared": "workspace:*"
+    "@tickernelz/wardmote-plugin-sdk": "workspace:*",
+    "@tickernelz/wardmote-shared": "workspace:*"
   },
   "devDependencies": {
     "esbuild": "^0.28.2",

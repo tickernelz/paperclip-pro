@@ -13,7 +13,7 @@ import {
   ServerCog,
   X,
 } from "lucide-react";
-import type { SmokeRun, SmokeRunStep } from "@tickernelz/paperclip-pro-shared";
+import type { SmokeRun, SmokeRunStep } from "@tickernelz/wardmote-shared";
 import { accessApi } from "@/api/access";
 import { smokeLabApi } from "@/api/smokeLab";
 import { queryKeys } from "@/lib/queryKeys";

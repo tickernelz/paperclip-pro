@@ -4,7 +4,7 @@ import { createRoot } from "react-dom/client";
 import type {
   EventSourceLike,
   SessionItemSnapshot,
-} from "@tickernelz/paperclip-pro-paperclip-runner/browser";
+} from "@tickernelz/wardmote-paperclip-runner/browser";
 import {
   Composer,
   ConnectionBanner,
@@ -12,8 +12,8 @@ import {
   ReplayControls,
   RequestCard,
   useRunnerConsole,
-} from "@tickernelz/paperclip-pro-paperclip-runner/react";
-import "@tickernelz/paperclip-pro-paperclip-runner/styles.css";
+} from "@tickernelz/wardmote-paperclip-runner/react";
+import "@tickernelz/wardmote-paperclip-runner/styles.css";
 import "./mini.css";
 
 const injectedFetch: typeof fetch = (input, init) => window.fetch(input, init);

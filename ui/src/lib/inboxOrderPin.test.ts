@@ -1,4 +1,4 @@
-import type { Approval, HeartbeatRun, Issue, JoinRequest } from "@tickernelz/paperclip-pro-shared";
+import type { Approval, HeartbeatRun, Issue, JoinRequest } from "@tickernelz/wardmote-shared";
 import { describe, expect, it } from "vitest";
 import {
   getInboxWorkItemKey,

@@ -13,7 +13,7 @@ import {
   createHeartbeatScheduling,
   formatIssueIdentifierLink,
 } from "./heartbeat/scheduling.js";
-import { FAST_RESPONSE_AGENT_GUIDANCE, fastResponseHistoryBody } from "@tickernelz/paperclip-pro-shared";
+import { FAST_RESPONSE_AGENT_GUIDANCE, fastResponseHistoryBody } from "@tickernelz/wardmote-shared";
 import { agentExecutionsHaveStopped } from "./agent-execution-stop.js";
 import {
   cancelHeartbeatNativeRun,
@@ -243,7 +243,7 @@ import {
 } from "./chat-completion-delivery.js";
 import { AgentDirectoryReuseInvalidatedError, isAgentDirectoryCopy } from "./agent-directory-working-copies.js";
 
-import type { PaperclipTurnContext } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+import type { PaperclipTurnContext } from "@tickernelz/wardmote-adapter-utils/server-utils";
 
 import {
   NativeWorkspaceFinalizationBusyError,
@@ -262,7 +262,7 @@ import {
   prepareConversationTurn,
   settleConversationTurn,
 } from "./agent-conversations.js";
-import { withAdapterExecutionPhase } from "@tickernelz/paperclip-pro-adapter-utils/execution-phase";
+import { withAdapterExecutionPhase } from "@tickernelz/wardmote-adapter-utils/execution-phase";
 import { getConversationConfirmationContext } from "./conversation-confirmation-context.js";
 import {
   recordNativeLocalProcessStop,
@@ -283,7 +283,7 @@ import {
   isAiConnectionBusy,
   AI_AUTH_ENV_KEYS,
 } from "./ai-connection-runtime.js";
-import { AI_CONNECTION_ROUTER_REMOVED_MESSAGE, aiConnectionBindingSchema, aiRuntimeConnectionBindingSchema } from "@tickernelz/paperclip-pro-shared";
+import { AI_CONNECTION_ROUTER_REMOVED_MESSAGE, aiConnectionBindingSchema, aiRuntimeConnectionBindingSchema } from "@tickernelz/wardmote-shared";
 import { aiConnectionSessionCompatibilityInputs, managedAiSessionIdentityCompatible } from "./ai-connection-session.js";
 import {
   getExecutionBlocker,
@@ -303,7 +303,7 @@ import { executionFailureRetryCount } from "./execution-recovery-attempt.js";
 import { buildHeartbeatRunStatusLiveEventPayload } from "./heartbeat-run-status-payload.js";
 export { buildHeartbeatRunStatusLiveEventPayload } from "./heartbeat-run-status-payload.js";
 import { buildExecutionContinuation, StaleExecutionContinuationError } from "./execution-continuation.js";
-import { renderPaperclipWakePrompt } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+import { renderPaperclipWakePrompt } from "@tickernelz/wardmote-adapter-utils/server-utils";
 
 import {
   initializeRunIdentity,
@@ -316,7 +316,7 @@ import {
   cleanupGitHubOperationLaunchers,
   prepareGitHubExecutionEnvironment,
   startAdapterExecutionTargetPaperclipBridge,
-} from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
+} from "@tickernelz/wardmote-adapter-utils/execution-target";
 import { agentInstructionWorkingCopyService, collectStoppedInstructionCopyWithRetries, instructionWorkingCopyGuidance } from "./agent-instruction-working-copies.js";
 
 import fs from "node:fs/promises";
@@ -340,7 +340,7 @@ import {
   or,
   sql,
 } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   CHAT_PROVIDERS,
   ISSUE_DISPOSITION_REPAIR_RETRY_REASON,
@@ -349,7 +349,7 @@ import {
   AGENT_MAX_MAX_CONCURRENT_RUNS,
   AGENT_MIN_MAX_CONCURRENT_RUNS,
   LOCAL_CLI_ADAPTER_TYPES,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   agents,
   agentWakeupRequests,
@@ -361,7 +361,7 @@ import {
   nativeRunFinalizations,
   projects,
   projectWorkspaces,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { HttpError, notFound } from "../errors.js";
 
 import { logger } from "../middleware/logger.js";
@@ -429,7 +429,7 @@ import {
   isNativeRunnerOwnershipHeld,
   NATIVE_OWNERSHIP_UNVERIFIED_ERROR_CODE,
 } from "./native-runtime/native-runner-ownership.js";
-import { trackAgentFirstHeartbeat } from "@tickernelz/paperclip-pro-shared/telemetry";
+import { trackAgentFirstHeartbeat } from "@tickernelz/wardmote-shared/telemetry";
 import { getTelemetryClient } from "../telemetry.js";
 import {
   emitAgentTaskRun,
@@ -603,7 +603,7 @@ import { notifyOpenwaRunStarted } from "./openwa/nudges.js";
 
 import {
   readPaperclipSkillSyncPreference,
-} from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+} from "@tickernelz/wardmote-adapter-utils/server-utils";
 
 import { environmentService } from "./environments.js";
 

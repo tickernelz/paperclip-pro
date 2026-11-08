@@ -2,7 +2,7 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 
 export const PAPERCLIP_MCP_SERVER_NAME = "paperclip";
-export const PAPERCLIP_MCP_PACKAGE = "@tickernelz/paperclip-pro-mcp-server";
+export const PAPERCLIP_MCP_PACKAGE = "@tickernelz/wardmote-mcp-server";
 export const PAPERCLIP_MCP_BIN = "paperclip-mcp-server";
 export const PAPERCLIP_MCP_DEFAULT_TOOLSETS = "core";
 export const PAPERCLIP_MCP_TOOLSETS_ENV = "PAPERCLIP_MCP_TOOLSETS";

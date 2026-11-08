@@ -3,7 +3,7 @@ import {
   photonLineIdSchema,
   photonProjectIdSchema,
   type PhotonProjectInspection,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { IMessageError } from "@photon-ai/advanced-imessage";
 
 const CLOUD_ORIGIN = "https://spectrum.photon.codes";

@@ -12,7 +12,7 @@ import {
   issueWorkProducts,
   issues,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   OPENWA_APPROVAL_CATEGORIES,
   OPENWA_TRIGGER_CLASSES,
@@ -20,8 +20,8 @@ import {
   type OpenwaApprovalCategory,
   type OpenwaEndpointPolicy,
   type OpenwaTriggerClass,
-} from "@tickernelz/paperclip-pro-shared";
-import { RUN_TOOL_PROFILE_CONTEXT_KEY } from "@tickernelz/paperclip-pro-adapter-utils";
+} from "@tickernelz/wardmote-shared";
+import { RUN_TOOL_PROFILE_CONTEXT_KEY } from "@tickernelz/wardmote-adapter-utils";
 import { HttpError, forbidden } from "../../errors.js";
 import { openwaCurrentOwners, openwaPrincipalAuthorization } from "./owners.js";
 import { logOpenwaActivity } from "./audit.js";

@@ -1,5 +1,5 @@
 import { and, eq } from "drizzle-orm";
-import { isUuidLike } from "@tickernelz/paperclip-pro-shared";
+import { isUuidLike } from "@tickernelz/wardmote-shared";
 import {
   agents,
   heartbeatRuns,
@@ -7,7 +7,7 @@ import {
   projects,
   runIdentityContexts,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { forbidden } from "../errors.js";
 import { captureRunIdentity } from "./run-identity.js";
 import {

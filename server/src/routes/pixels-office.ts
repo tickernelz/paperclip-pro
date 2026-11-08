@@ -1,9 +1,9 @@
 import { Router, type Request, type Response } from "express";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   pixelsOfficeSeatAssignmentsSchema,
   pixelsOfficeTimelineQuerySchema,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { notFound } from "../errors.js";
 import { validate } from "../middleware/validate.js";
 import {

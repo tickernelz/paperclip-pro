@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { and, asc, eq, gte, inArray, isNull, or, sql } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   agentWakeupRequests,
   agents,
@@ -14,8 +14,8 @@ import {
   issueThreadInteractions,
   issueWatchdogs,
   issueWorkProducts,
-} from "@tickernelz/paperclip-pro-db";
-import type { IssueWatchdog, IssueWatchdogSummary } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import type { IssueWatchdog, IssueWatchdogSummary } from "@tickernelz/wardmote-shared";
 import { conflict, notFound } from "../errors.js";
 import { parseObject } from "../adapters/utils.js";
 import { logActivity } from "./activity-log.js";

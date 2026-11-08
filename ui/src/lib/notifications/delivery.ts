@@ -1,4 +1,4 @@
-import type { NotificationCreatedLivePayload, PaperclipNotification } from "@tickernelz/paperclip-pro-shared";
+import type { NotificationCreatedLivePayload, PaperclipNotification } from "@tickernelz/wardmote-shared";
 import { getPageVisibility } from "../page-visibility";
 import { NOTIFICATION_BADGE, NOTIFICATION_ICON, getServiceWorkerRegistration, notificationPermission } from "./browser";
 import { claimNotificationKey } from "./dedupe";

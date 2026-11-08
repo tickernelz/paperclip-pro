@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { setTimeout as delay } from "node:timers/promises";
 import { eq, sql } from "drizzle-orm";
-import { heartbeatRuns, type Db } from "@tickernelz/paperclip-pro-db";
+import { heartbeatRuns, type Db } from "@tickernelz/wardmote-db";
 import { getMaxAttachmentBytes } from "../../attachment-types.js";
 import { getStorageService } from "../../storage/index.js";
 import type { StorageService } from "../../storage/types.js";

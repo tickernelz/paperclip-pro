@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Agent } from "@tickernelz/paperclip-pro-shared";
+import type { Agent } from "@tickernelz/wardmote-shared";
 import { sortAgentsByDefaultSidebarOrder, sortAgentsByStoredOrder } from "./agent-order";
 
 function makeAgent(overrides: Partial<Agent> & { id: string; name: string }): Agent {

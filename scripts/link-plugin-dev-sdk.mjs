@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-// Dev-only: link the in-repo @tickernelz/paperclip-pro-plugin-sdk into plugin packages that
+// Dev-only: link the in-repo @tickernelz/wardmote-plugin-sdk into plugin packages that
 // are excluded from the pnpm workspace (see pnpm-workspace.yaml). Workspace
 // members get their SDK link from pnpm automatically; excluded packages do not.
 //
@@ -16,7 +16,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const repoRoot = resolve(__dirname, "..");
 const sdkDir = join(repoRoot, "packages", "plugins", "sdk");
 
-// Plugin packages excluded from the workspace that still need @tickernelz/paperclip-pro-plugin-sdk
+// Plugin packages excluded from the workspace that still need @tickernelz/wardmote-plugin-sdk
 // linked in for local dev. Keep in sync with pnpm-workspace.yaml exclusions.
 function excludedPluginDirs() {
   return [
@@ -44,7 +44,7 @@ export function linkExcludedPlugins() {
 // single package after a fresh install.
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   const { linked, skipped } = linkExcludedPlugins();
-  console.log(`  ✓ Linked @tickernelz/paperclip-pro-plugin-sdk into ${linked} excluded plugin(s) (skipped ${skipped})`);
+  console.log(`  ✓ Linked @tickernelz/wardmote-plugin-sdk into ${linked} excluded plugin(s) (skipped ${skipped})`);
 }
 
 // Recursively collect package directories (those containing a package.json)
@@ -70,7 +70,7 @@ export function readPluginsUnder(parentDir) {
 
 export function linkSdkInto(packageDir) {
   const scopeDir = join(packageDir, "node_modules", "@tickernelz");
-  const linkTarget = join(scopeDir, "paperclip-pro-plugin-sdk");
+  const linkTarget = join(scopeDir, "wardmote-plugin-sdk");
   const relativeSdkDir = relative(scopeDir, sdkDir);
 
   mkdirSync(scopeDir, { recursive: true });
@@ -84,7 +84,7 @@ export function linkSdkInto(packageDir) {
       }
       rmSync(linkTarget, { force: true });
     } else {
-      // A real install has already populated @tickernelz/paperclip-pro-plugin-sdk (e.g. the
+      // A real install has already populated @tickernelz/wardmote-plugin-sdk (e.g. the
       // plugin host did `npm install` of the published tarball). Leave it.
       return false;
     }

@@ -65,7 +65,7 @@ function basePlugin(overrides: Record<string, unknown> = {}) {
   return {
     id: "plugin-1",
     pluginKey: "paperclip.e2b-sandbox-provider",
-    packageName: "@tickernelz/paperclip-pro-plugin-e2b",
+    packageName: "@tickernelz/wardmote-plugin-e2b",
     version: "0.1.0",
     status: "error",
     categories: ["automation"],
@@ -186,7 +186,7 @@ describe("PluginSettings", () => {
     const declaration = wikiFolderDeclaration();
     mockPluginsApi.get.mockResolvedValue(basePlugin({
       pluginKey: "paperclipai.plugin-llm-wiki",
-      packageName: "@tickernelz/paperclip-pro-plugin-llm-wiki",
+      packageName: "@tickernelz/wardmote-plugin-llm-wiki",
       status: "ready",
       manifestJson: {
         displayName: "LLM Wiki",
@@ -222,7 +222,7 @@ describe("PluginSettings", () => {
     const declaration = wikiFolderDeclaration();
     mockPluginsApi.get.mockResolvedValue(basePlugin({
       pluginKey: "paperclipai.plugin-llm-wiki",
-      packageName: "@tickernelz/paperclip-pro-plugin-llm-wiki",
+      packageName: "@tickernelz/wardmote-plugin-llm-wiki",
       status: "ready",
       manifestJson: {
         displayName: "LLM Wiki",

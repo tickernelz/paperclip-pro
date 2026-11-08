@@ -1,5 +1,5 @@
 import { and, eq } from "drizzle-orm";
-import { assets, documents, documentRevisions, heartbeatRuns, issueDocuments, issueAttachments, issueWorkProducts, type Db } from "@tickernelz/paperclip-pro-db";
+import { assets, documents, documentRevisions, heartbeatRuns, issueDocuments, issueAttachments, issueWorkProducts, type Db } from "@tickernelz/wardmote-db";
 import type { PrpStructuredRunResult } from "../../vendor/paperclip-runner/index.js";
 
 function evidenceRefs(value: unknown): string[] {

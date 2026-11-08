@@ -7,7 +7,7 @@
  */
 import type { ComponentType } from "react";
 import { Bot, Cpu } from "lucide-react";
-import { isRetiredAdapterType, retiredAdapterMessage } from "@tickernelz/paperclip-pro-shared";
+import { isRetiredAdapterType, retiredAdapterMessage } from "@tickernelz/wardmote-shared";
 
 // ---------------------------------------------------------------------------
 // Type suffix parsing

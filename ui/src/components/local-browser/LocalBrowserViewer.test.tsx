@@ -3,7 +3,7 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import { localBrowserInputSchema } from "@tickernelz/paperclip-pro-shared";
+import { localBrowserInputSchema } from "@tickernelz/wardmote-shared";
 import { LocalBrowserViewer } from "./LocalBrowserViewer";
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;

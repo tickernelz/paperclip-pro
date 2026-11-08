@@ -2,7 +2,7 @@ import { useState, useMemo } from "react";
 import {
   type LucideIcon,
 } from "lucide-react";
-import { AGENT_ICON_NAMES, type AgentIconName } from "@tickernelz/paperclip-pro-shared";
+import { AGENT_ICON_NAMES, type AgentIconName } from "@tickernelz/wardmote-shared";
 import {
   Popover,
   PopoverContent,

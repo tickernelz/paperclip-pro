@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { Agent, ToolCatalogEntry, ToolPolicy, ToolProfileWithDetails } from "@tickernelz/paperclip-pro-shared";
+import type { Agent, ToolCatalogEntry, ToolPolicy, ToolProfileWithDetails } from "@tickernelz/wardmote-shared";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { Button } from "@/components/ui/button";
 

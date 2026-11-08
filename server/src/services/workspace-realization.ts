@@ -4,7 +4,7 @@ import type {
   ExecutionWorkspaceConfig,
   WorkspaceRealizationRecord,
   WorkspaceRealizationRequest,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import type { RealizedExecutionWorkspace } from "./workspace-runtime.js";
 import { ENVIRONMENT_DRIVER_TRAITS, getEnvironmentDriverTraits } from "./environment-driver-traits.js";
 

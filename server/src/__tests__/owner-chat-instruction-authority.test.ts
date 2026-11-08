@@ -7,7 +7,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   agents, agentWakeupRequests, authUsers, companies, companyMemberships, createDb,
   heartbeatRuns, issueComments, issues, principalPermissionGrants, runIdentityContexts,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";
 import { authorizeInstructionCommit, resolveInstructionActor } from "../services/agent-instruction-authorization.js";
 import { agentInstructionRevisionService } from "../services/agent-instruction-revisions.js";

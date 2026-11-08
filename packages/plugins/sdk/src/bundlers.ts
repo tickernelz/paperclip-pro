@@ -60,8 +60,8 @@ export interface PluginBundlerPresets {
  */
 export function createPluginBundlerPresets(input: PluginBundlerPresetInput = {}): PluginBundlerPresets {
   const uiExternal = [
-    "@tickernelz/paperclip-pro-plugin-sdk/ui",
-    "@tickernelz/paperclip-pro-plugin-sdk/ui/hooks",
+    "@tickernelz/wardmote-plugin-sdk/ui",
+    "@tickernelz/wardmote-plugin-sdk/ui/hooks",
     "react",
     "react-dom",
     "react/jsx-runtime",
@@ -94,7 +94,7 @@ export function createPluginBundlerPresets(input: PluginBundlerPresetInput = {})
     platform: "node",
     target: "node24",
     sourcemap,
-    external: ["@tickernelz/paperclip-pro-plugin-sdk"],
+    external: ["@tickernelz/wardmote-plugin-sdk"],
   };
 
   const esbuildUi = uiEntry
@@ -130,7 +130,7 @@ export function createPluginBundlerPresets(input: PluginBundlerPresetInput = {})
       sourcemap,
       entryFileNames: "manifest.js",
     },
-    external: ["@tickernelz/paperclip-pro-plugin-sdk"],
+    external: ["@tickernelz/wardmote-plugin-sdk"],
   };
 
   const rollupUi = uiEntry

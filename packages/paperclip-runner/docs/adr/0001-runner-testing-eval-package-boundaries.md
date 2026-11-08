@@ -34,9 +34,9 @@ Public runner exports are:
 
 | Export | Stability and purpose |
 |---|---|
-| `@tickernelz/paperclip-pro-paperclip-runner` | Runtime contracts, runner clients/backends, PRP validation/replay, canonical catalog/dispatcher, and compatibility preflight |
-| `@tickernelz/paperclip-pro-paperclip-runner/evals` | Versioned native-attempt/build metadata, compatibility negotiation, and explicit runnerd artifact resolution |
-| `@tickernelz/paperclip-pro-paperclip-runner/testing` | Deterministic mocks, PRP port conformance, and provider-neutral semantic conformance kit |
+| `@tickernelz/wardmote-paperclip-runner` | Runtime contracts, runner clients/backends, PRP validation/replay, canonical catalog/dispatcher, and compatibility preflight |
+| `@tickernelz/wardmote-paperclip-runner/evals` | Versioned native-attempt/build metadata, compatibility negotiation, and explicit runnerd artifact resolution |
+| `@tickernelz/wardmote-paperclip-runner/testing` | Deterministic mocks, PRP port conformance, and provider-neutral semantic conformance kit |
 | `./browser`, `./react`, `./standalone`, `./styles.css` | Existing explicitly named UI/standalone consumers |
 
 Mock adapters and conformance constants are no longer package-root exports.
@@ -51,7 +51,7 @@ after an independent release requirement exists; a directory preference is not
 sufficient.
 
 Generic credential-free matrix orchestration lives in the separately versioned,
-workspace-private `@tickernelz/paperclip-pro-paperclip-eval-kernel` package. It contains no
+workspace-private `@tickernelz/wardmote-paperclip-eval-kernel` package. It contains no
 runner imports, provider configuration, scenario corpus, scorer, or report
 renderer. The runner may use it only as a development dependency; runtime,
 optional, and peer dependency sets remain free of eval packages. Paid provider
@@ -63,12 +63,12 @@ The dependency graph is acyclic:
 Paperclip App production binding
             |
             v
-@tickernelz/paperclip-pro-paperclip-runner (runtime contracts)
+@tickernelz/wardmote-paperclip-runner (runtime contracts)
             ^
             |
-Eval consumers ----> @tickernelz/paperclip-pro-paperclip-runner/evals
-       |             @tickernelz/paperclip-pro-paperclip-runner/testing
-       +-----------> @tickernelz/paperclip-pro-paperclip-eval-kernel
+Eval consumers ----> @tickernelz/wardmote-paperclip-runner/evals
+       |             @tickernelz/wardmote-paperclip-runner/testing
+       +-----------> @tickernelz/wardmote-paperclip-eval-kernel
 ```
 
 No arrow points from App runtime to an external eval repository.
@@ -102,8 +102,8 @@ errors must not stand in for this preflight.
 Run:
 
 ```sh
-pnpm --filter @tickernelz/paperclip-pro-paperclip-runner check:package-boundaries
-pnpm --filter @tickernelz/paperclip-pro-paperclip-runner check:clean-consumers
+pnpm --filter @tickernelz/wardmote-paperclip-runner check:package-boundaries
+pnpm --filter @tickernelz/wardmote-paperclip-runner check:clean-consumers
 ```
 
 The second command builds and packs the runner, installs its tarball into a
@@ -131,7 +131,7 @@ This regression also runs in the Runner's `test:typescript:prep` gate.
 ## Consequences
 
 - Existing tests importing mock/conformance values from the package root must
-  migrate to `@tickernelz/paperclip-pro-paperclip-runner/testing`.
+  migrate to `@tickernelz/wardmote-paperclip-runner/testing`.
 - `ajv` is a runtime dependency because the public dispatcher imports it.
 - The semantic conformance kit defines normalized comparison; real App service
   adapters and risk-weighted vectors may evolve behind its testkit version.

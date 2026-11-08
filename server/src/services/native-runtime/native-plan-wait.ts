@@ -3,8 +3,8 @@ import {
   completionContracts, heartbeatRunEvents, heartbeatRuns, issues, issueComments,
   nativeRunFinalizations, nativeRunResults, statusDecisions,
   issueQuestionResponseDeliveries, issueThreadInteractions, type Db,
-} from "@tickernelz/paperclip-pro-db";
-import type { AskUserQuestionsInteraction } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import type { AskUserQuestionsInteraction } from "@tickernelz/wardmote-shared";
 import {
   parsePaperclipQuestionResponse, parsePaperclipQuestionSet,
   type PrpStructuredRunResult,

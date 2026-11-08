@@ -14,7 +14,7 @@ import {
   issueThreadInteractions,
   issues,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   OPENWA_GRANT_CATEGORIES,
   openwaEndpointPolicySchema,
@@ -23,7 +23,7 @@ import {
   type ChatOwnerGrantScope,
   type OpenwaGrantCategory,
   type OpenwaTriggerClass,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { HttpError, badRequest, forbidden, notFound } from "../../errors.js";
 import { logger } from "../../middleware/logger.js";
 import { createDurableChatWakeupRequest } from "../durable-chat-wakeup.js";

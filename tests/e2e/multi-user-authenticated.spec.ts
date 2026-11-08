@@ -65,7 +65,7 @@ function createBootstrapInvite() {
     pnpmCommand,
     [
       "--filter",
-      "@tickernelz/paperclip-pro-db",
+      "@tickernelz/wardmote-db",
       "exec",
       "tsx",
       BOOTSTRAP_SCRIPT_PATH,

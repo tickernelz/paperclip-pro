@@ -1,12 +1,12 @@
 import { and, asc, desc, eq, inArray } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   documentAnnotationComments,
   documentAnnotationThreads,
   documents,
   pipelineCaseDocuments,
-} from "@tickernelz/paperclip-pro-db";
-import { PIPELINE_CASE_BODY_DOCUMENT_KEY, type SourceTrustMetadata } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import { PIPELINE_CASE_BODY_DOCUMENT_KEY, type SourceTrustMetadata } from "@tickernelz/wardmote-shared";
 import {
   LOW_TRUST_QUARANTINED_BODY,
   isLowTrustQuarantined,

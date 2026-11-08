@@ -7,7 +7,7 @@ import type {
   ToolCatalogEntry,
   ToolConnection,
   ToolPolicy,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { Link } from "@/lib/router";
 import { queryKeys } from "../lib/queryKeys";
 import { toolsApi } from "../api/tools";

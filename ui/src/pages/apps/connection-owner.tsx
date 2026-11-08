@@ -1,5 +1,5 @@
-import type { McpConnection, ToolConnection } from "@tickernelz/paperclip-pro-shared";
-import { humanizeConnectionDisplayName } from "@tickernelz/paperclip-pro-shared";
+import type { McpConnection, ToolConnection } from "@tickernelz/wardmote-shared";
+import { humanizeConnectionDisplayName } from "@tickernelz/wardmote-shared";
 import { Identity } from "@/components/Identity";
 import type { CompanyUserProfile } from "@/lib/company-members";
 

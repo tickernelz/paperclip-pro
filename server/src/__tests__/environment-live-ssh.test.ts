@@ -9,7 +9,7 @@ import {
   startSshEnvLabFixture,
   stopSshEnvLabFixture,
   type SshConnectionConfig,
-} from "@tickernelz/paperclip-pro-adapter-utils/ssh";
+} from "@tickernelz/wardmote-adapter-utils/ssh";
 
 async function readOptionalSecret(
   value: string | undefined,

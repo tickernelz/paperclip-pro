@@ -89,7 +89,7 @@ const mockExternalObjectService = vi.hoisted(() => ({
 }));
 
 function registerModuleMocks() {
-  vi.doMock("@tickernelz/paperclip-pro-shared/telemetry", () => ({
+  vi.doMock("@tickernelz/wardmote-shared/telemetry", () => ({
     trackAgentTaskCompleted: vi.fn(),
     trackErrorHandlerCrash: vi.fn(),
   }));

@@ -1,7 +1,7 @@
 import { schemaFieldSection } from "./config-sections";
 import { useState, useEffect, useRef } from "react";
 
-import type { AdapterConfigSchema, ConfigFieldSchema, CreateConfigValues } from "@tickernelz/paperclip-pro-adapter-utils";
+import type { AdapterConfigSchema, ConfigFieldSchema, CreateConfigValues } from "@tickernelz/wardmote-adapter-utils";
 
 import type { AdapterConfigFieldsProps } from "./types";
 import {
@@ -18,7 +18,7 @@ import {
   fitAgentFallbackEfforts,
   readAgentFallbackEfforts,
   readAgentFallbackModels,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { ChevronDown } from "lucide-react";
 import { ComboboxField, keepsEffort, MODEL_SEARCH_PLACEHOLDER, ModelListCount, ModelListField } from "./model-picker-fields";
 

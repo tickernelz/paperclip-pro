@@ -38,14 +38,14 @@ This is a repo-local example plugin for development. It should not be assumed to
 From the repo root, build the plugin and install it by local path:
 
 ```bash
-pnpm --filter @tickernelz/paperclip-pro-plugin-file-browser-example build
-npx @tickernelz/paperclip-pro plugin install ./packages/plugins/examples/plugin-file-browser-example
+pnpm --filter @tickernelz/wardmote-plugin-file-browser-example build
+npx @tickernelz/wardmote plugin install ./packages/plugins/examples/plugin-file-browser-example
 ```
 
 To uninstall:
 
 ```bash
-npx @tickernelz/paperclip-pro plugin uninstall paperclip-file-browser-example --force
+npx @tickernelz/wardmote plugin uninstall paperclip-file-browser-example --force
 ```
 
 **Local development notes:**

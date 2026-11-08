@@ -1,7 +1,7 @@
 import express from "express";
 import request from "supertest";
 import { describe, expect, it, vi } from "vitest";
-import { DEFAULT_ATTACHMENT_RETENTION, type AttachmentRetentionReport } from "@tickernelz/paperclip-pro-shared";
+import { DEFAULT_ATTACHMENT_RETENTION, type AttachmentRetentionReport } from "@tickernelz/wardmote-shared";
 import { errorHandler } from "../middleware/index.js";
 import {
   instanceAttachmentRetentionRoutes,

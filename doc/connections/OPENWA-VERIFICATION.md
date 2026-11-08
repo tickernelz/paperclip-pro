@@ -88,7 +88,7 @@ not loosened.
 | `go.sh -r typecheck` | pending | pending |
 | Targeted `go.sh vitest run server/src/__tests__/openwa ...` | pending | pending |
 | `go.sh check:token-gates` | pending | pending |
-| `go.sh --filter @tickernelz/paperclip-pro-db run check:migrations` | pending | pending |
+| `go.sh --filter @tickernelz/wardmote-db run check:migrations` | pending | pending |
 | GitHub CI on the PR head | pending | pending |
 | Broad suite against a `main` baseline (checkpoint E) | pending | pending |
 | Comment gate on the staged diff | pending | pending |

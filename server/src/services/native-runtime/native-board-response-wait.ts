@@ -13,7 +13,7 @@ import {
   nativeRunResults,
   statusDecisions,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { nativeSha256 } from "./canonical.js";
 import { isConversation } from "../agent-conversations.js";
 

@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import type { AdapterExecutionTarget } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
-import { writePaperclipMcpMount } from "@tickernelz/paperclip-pro-adapter-utils/paperclip-mcp-mount";
+import type { AdapterExecutionTarget } from "@tickernelz/wardmote-adapter-utils/execution-target";
+import { writePaperclipMcpMount } from "@tickernelz/wardmote-adapter-utils/paperclip-mcp-mount";
 
 export const OMP_PYTHON_ENV_FILE_NAME = "paperclip-env.json";
 export const OMP_PYTHON_SITECUSTOMIZE_FILE_NAME = "sitecustomize.py";

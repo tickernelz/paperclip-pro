@@ -1,7 +1,7 @@
 import express from "express";
 import request from "supertest";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { models as openCodeFallbackModels } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/opencode";
+import { models as openCodeFallbackModels } from "@tickernelz/wardmote-adapter-utils/provider-models/opencode";
 import type { ServerAdapterModule } from "../adapters/index.js";
 
 vi.mock("acpx/runtime", () => ({

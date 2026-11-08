@@ -1,5 +1,5 @@
 import { index, jsonb, pgTable, text, timestamp, uniqueIndex, uuid, integer } from "drizzle-orm/pg-core";
-import type { NotificationKind } from "@tickernelz/paperclip-pro-shared";
+import type { NotificationKind } from "@tickernelz/wardmote-shared";
 
 export const webPushSubscriptions = pgTable(
   "web_push_subscriptions",

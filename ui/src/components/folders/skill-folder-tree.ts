@@ -1,4 +1,4 @@
-import type { FolderListItem, FolderListResult } from "@tickernelz/paperclip-pro-shared";
+import type { FolderListItem, FolderListResult } from "@tickernelz/wardmote-shared";
 
 /**
  * Pure tree helpers for the skill folder browser (Idea A, PAP-14038).

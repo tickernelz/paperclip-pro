@@ -1,5 +1,5 @@
 import { isDeepStrictEqual } from "node:util";
-import type { IssueChanges } from "@tickernelz/paperclip-pro-shared";
+import type { IssueChanges } from "@tickernelz/wardmote-shared";
 
 const ISSUE_CHANGE_TEXT_BUDGET = 200;
 

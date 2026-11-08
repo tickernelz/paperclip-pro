@@ -4,7 +4,7 @@ import {
   isUuidLike,
   normalizeIssueIdentifier,
   type IssueRef,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { issuesApi } from "@/api/issues";
 import { queryKeys } from "@/lib/queryKeys";
 

@@ -1,7 +1,7 @@
 import { ChevronLeft } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { humanizeConnectionDisplayName } from "@tickernelz/paperclip-pro-shared";
-import type { ToolApplication, ToolConnection } from "@tickernelz/paperclip-pro-shared";
+import { humanizeConnectionDisplayName } from "@tickernelz/wardmote-shared";
+import type { ToolApplication, ToolConnection } from "@tickernelz/wardmote-shared";
 import { Link } from "@/lib/router";
 import { toolsApi } from "@/api/tools";
 import { useCompany } from "@/context/CompanyContext";

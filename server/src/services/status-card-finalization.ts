@@ -1,7 +1,7 @@
 import { and, eq, isNull } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { statusCards, statusCardUpdates } from "@tickernelz/paperclip-pro-db";
-import type { IssueStatus } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/wardmote-db";
+import { statusCards, statusCardUpdates } from "@tickernelz/wardmote-db";
+import type { IssueStatus } from "@tickernelz/wardmote-shared";
 
 // A status-card generation run stops making progress when its task reaches one
 // of these statuses. `done`/`cancelled` are terminal; `blocked` is not, but a

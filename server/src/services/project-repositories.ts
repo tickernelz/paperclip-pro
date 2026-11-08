@@ -1,4 +1,4 @@
-import type { ProjectRepository, ProjectWorkspace } from "@tickernelz/paperclip-pro-shared";
+import type { ProjectRepository, ProjectWorkspace } from "@tickernelz/wardmote-shared";
 import { unprocessable } from "../errors.js";
 import { isConnectionGrantAudienceAllowed } from "./tool-gateway.js";
 

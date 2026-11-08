@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useQueryClient } from "@tanstack/react-query";
 import { expect, userEvent, within } from "storybook/test";
-import type { AgentAdapterConfigBatchPreview } from "@tickernelz/paperclip-pro-shared";
+import type { AgentAdapterConfigBatchPreview } from "@tickernelz/wardmote-shared";
 import {
   ComposerRunSettingsPicker,
   useComposerRunSettingsStaging,

@@ -9,7 +9,7 @@ import {
   executionWorkspaces,
   projects,
   workspaceOperations,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { eq } from "drizzle-orm";
 import { getWorkspaceOperationLogStore } from "../services/workspace-operation-log-store.js";
 import {

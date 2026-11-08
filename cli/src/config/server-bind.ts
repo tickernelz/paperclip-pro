@@ -8,7 +8,7 @@ import {
   type BindMode,
   type DeploymentExposure,
   type DeploymentMode,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import type { AuthConfig, ServerConfig } from "./schema.js";
 
 const TAILSCALE_DETECT_TIMEOUT_MS = 3000;

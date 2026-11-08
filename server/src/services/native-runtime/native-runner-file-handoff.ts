@@ -14,7 +14,7 @@ import path from "node:path";
 
 import { and, eq, inArray, isNull, sql } from "drizzle-orm";
 
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   agents,
   assets,
@@ -23,7 +23,7 @@ import {
   issueComments,
   issues,
   issueWorkProducts,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 
 import {
   isAllowedContentType,

@@ -65,7 +65,7 @@ else if (mode === "auth") { console.error("npm error code E401"); process.exit(1
 else if (mode === "mixed") { console.error("npm error code ETARGET\\nnpm error code E401"); process.exit(1); }
 else if (mode === "network") { console.error("npm error code ECONNRESET"); process.exit(1); }
 else if (mode === "tarball-permanent" || mode === "tarball-large" || (mode === "tarball-recover" && attempt === 1)) {
- const url = "https://registry.npmjs.org/@tickernelz/paperclip-pro-server/-/server-" + process.env.PAPERCLIPAI_VERSION + ".tgz";
+ const url = "https://registry.npmjs.org/@tickernelz/wardmote-server/-/server-" + process.env.PAPERCLIPAI_VERSION + ".tgz";
  if (mode === "tarball-large") console.error("npm error code E401\\n" + "x".repeat(70 * 1024));
  console.error("npm error code E404\\nnpm error 404 Not Found - GET " + url + " - Not found"); process.exit(1);
 }
@@ -85,7 +85,7 @@ else {
 import { appendFileSync } from "node:fs";
 globalThis.fetch = async (url, options) => {
  appendFileSync(process.env.FIXTURE_CALLS, JSON.stringify({kind:"metadata", url, redirect:options.redirect, credentials:options.credentials, headers:options.headers}) + "\\n");
- const manifest = {name:"@tickernelz/paperclip-pro-server",version:process.env.PAPERCLIPAI_VERSION,dist:{tarball:"https://registry.npmjs.org/@tickernelz/paperclip-pro-server/-/server-" + process.env.PAPERCLIPAI_VERSION + ".tgz",integrity:"sha512-" + Buffer.alloc(64).toString("base64")}};
+ const manifest = {name:"@tickernelz/wardmote-server",version:process.env.PAPERCLIPAI_VERSION,dist:{tarball:"https://registry.npmjs.org/@tickernelz/wardmote-server/-/server-" + process.env.PAPERCLIPAI_VERSION + ".tgz",integrity:"sha512-" + Buffer.alloc(64).toString("base64")}};
  const body = process.env.FIXTURE_METADATA === "hang" ? new ReadableStream({
   start(controller) { options.signal.addEventListener("abort", () => controller.error(options.signal.reason), {once:true}); },
  }) : JSON.stringify(manifest);

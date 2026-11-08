@@ -1,4 +1,4 @@
-import type { SidebarOrderPreference, UpsertSidebarOrderPreference } from "@tickernelz/paperclip-pro-shared";
+import type { SidebarOrderPreference, UpsertSidebarOrderPreference } from "@tickernelz/wardmote-shared";
 import { api } from "./client";
 
 export const sidebarPreferencesApi = {

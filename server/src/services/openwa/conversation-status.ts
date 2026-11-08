@@ -1,5 +1,5 @@
 import { and, eq, inArray } from "drizzle-orm";
-import { chatConversations, chatEndpoints, issues, type Db } from "@tickernelz/paperclip-pro-db";
+import { chatConversations, chatEndpoints, issues, type Db } from "@tickernelz/wardmote-db";
 import { HttpError } from "../../errors.js";
 import { logger } from "../../middleware/logger.js";
 import { logActivity, publishActivity, type ActivityPublication } from "../activity-log.js";

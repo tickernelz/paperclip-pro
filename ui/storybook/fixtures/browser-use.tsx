@@ -6,7 +6,7 @@ import {
   type BrowserUseViewportState,
   type BrowserUseSettings,
   type TaskBrowser,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { browserUseApi } from "@/api/browser-use";
 import { TaskBrowserPanel } from "@/components/task-side-panel/TaskBrowserPanel";
 

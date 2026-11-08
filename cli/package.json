@@ -1,5 +1,5 @@
 {
-  "name": "@tickernelz/paperclip-pro",
+  "name": "@tickernelz/wardmote",
   "version": "0.3.1",
   "description": "Paperclip CLI — orchestrate AI agent teams to run a business",
   "type": "module",
@@ -38,11 +38,11 @@
   },
   "dependencies": {
     "@clack/prompts": "^1.7.0",
-    "@tickernelz/paperclip-pro-adapter-omp-local": "workspace:*",
-    "@tickernelz/paperclip-pro-adapter-utils": "workspace:*",
-    "@tickernelz/paperclip-pro-db": "workspace:*",
-    "@tickernelz/paperclip-pro-server": "workspace:*",
-    "@tickernelz/paperclip-pro-shared": "workspace:*",
+    "@tickernelz/wardmote-adapter-omp-local": "workspace:*",
+    "@tickernelz/wardmote-adapter-utils": "workspace:*",
+    "@tickernelz/wardmote-db": "workspace:*",
+    "@tickernelz/wardmote-server": "workspace:*",
+    "@tickernelz/wardmote-shared": "workspace:*",
     "drizzle-orm": "0.45.2",
     "dotenv": "^17.4.2",
     "commander": "^15.0.0",

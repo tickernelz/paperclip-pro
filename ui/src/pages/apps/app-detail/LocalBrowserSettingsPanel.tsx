@@ -9,7 +9,7 @@ import {
   type LocalBrowserSettingsUpdate,
   type LocalBrowserTier,
   type ToolConnection,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { localBrowserApi } from "@/api/local-browser";
 import { copyTextToClipboard } from "@/lib/clipboard";
 import { Copy, Download, Monitor } from "lucide-react";

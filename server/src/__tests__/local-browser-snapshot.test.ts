@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { LOCAL_BROWSER_CURSOR_PATTERN, LOCAL_BROWSER_LIMITS } from "@tickernelz/paperclip-pro-shared";
+import { LOCAL_BROWSER_CURSOR_PATTERN, LOCAL_BROWSER_LIMITS } from "@tickernelz/wardmote-shared";
 import {
   clampSnapshotMaxNodes,
   formatSnapshotCursor,

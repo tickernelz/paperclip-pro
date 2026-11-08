@@ -1,4 +1,4 @@
-import type { PaperclipPluginManifestV1 } from "@tickernelz/paperclip-pro-plugin-sdk";
+import type { PaperclipPluginManifestV1 } from "@tickernelz/wardmote-plugin-sdk";
 
 const PLUGIN_ID = "paperclip.kubernetes-sandbox-provider";
 const PLUGIN_VERSION = "0.1.0-alpha.1";

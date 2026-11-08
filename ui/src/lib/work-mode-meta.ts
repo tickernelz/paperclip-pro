@@ -1,4 +1,4 @@
-import type { IssueWorkMode } from "@tickernelz/paperclip-pro-shared";
+import type { IssueWorkMode } from "@tickernelz/wardmote-shared";
 import { ClipboardList, Hammer, MessageCircleQuestion, type LucideIcon } from "lucide-react";
 
 export type WorkModeTone = "neutral" | "ask" | "planning";

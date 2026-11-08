@@ -12,8 +12,8 @@ HOST_PORT=3233 DATA_DIR=./data/release-smoke-stable PAPERCLIPAI_VERSION=latest .
 That is useful because it exercises the same public install surface users hit:
 
 - Docker
-- `npx @tickernelz/paperclip-pro@canary`
-- `npx @tickernelz/paperclip-pro@latest`
+- `npx @tickernelz/wardmote@canary`
+- `npx @tickernelz/wardmote@latest`
 - authenticated bootstrap flow
 
 But it still leaves the most important release questions to a human with a browser:
@@ -65,7 +65,7 @@ That is a good base, but it does not validate the public npm package, Docker pat
 `scripts/docker-onboard-smoke.sh` already does useful setup work:
 
 - builds `Dockerfile.onboard-smoke`
-- runs `@tickernelz/paperclip-pro@${PAPERCLIPAI_VERSION}` inside Docker
+- runs `@tickernelz/wardmote@${PAPERCLIPAI_VERSION}` inside Docker
 - waits for health
 - signs up or signs in a smoke admin user
 - generates and accepts the bootstrap CEO invite in authenticated mode
@@ -384,8 +384,8 @@ This should stay optional until the token-free lane is trustworthy.
 
 The plan is complete when the implemented system can demonstrate all of the following:
 
-1. A published `@tickernelz/paperclip-pro@canary` Docker install can be smoke-tested by Playwright in CI.
-2. A published `@tickernelz/paperclip-pro@latest` Docker install can be smoke-tested by Playwright in CI.
+1. A published `@tickernelz/wardmote@canary` Docker install can be smoke-tested by Playwright in CI.
+2. A published `@tickernelz/wardmote@latest` Docker install can be smoke-tested by Playwright in CI.
 3. The test logs into authenticated mode with the smoke credentials.
 4. The test sees onboarding for a fresh instance.
 5. The test completes onboarding in the browser.

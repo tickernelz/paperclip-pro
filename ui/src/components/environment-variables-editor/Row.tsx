@@ -8,7 +8,7 @@ import {
   UserRound,
   X,
 } from "lucide-react";
-import type { CompanySecret, UserSecretDefinition } from "@tickernelz/paperclip-pro-shared";
+import type { CompanySecret, UserSecretDefinition } from "@tickernelz/wardmote-shared";
 import { cn } from "@/lib/utils";
 import {
   DropdownMenu,

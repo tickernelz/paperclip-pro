@@ -1,4 +1,4 @@
-import type { FinanceByKind } from "@tickernelz/paperclip-pro-shared";
+import type { FinanceByKind } from "@tickernelz/wardmote-shared";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { financeEventKindDisplayName, formatCents } from "@/lib/utils";
 

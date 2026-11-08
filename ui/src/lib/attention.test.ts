@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import type { AttentionItem, AttentionSourceKind } from "@tickernelz/paperclip-pro-shared";
+import type { AttentionItem, AttentionSourceKind } from "@tickernelz/wardmote-shared";
 import {
   ATTENTION_GROUP_BY_KEY,
   ATTENTION_GROUP_BY_OPTIONS,

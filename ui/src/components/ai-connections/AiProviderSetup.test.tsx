@@ -6,7 +6,7 @@ import { expect, it, vi } from "vitest";
 import { AiProviderSetup } from "./AiProviderSetup";
 import { aiConnectionsApi } from "@/api/ai-connections";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { aiProviderSetupPreset } from "@tickernelz/paperclip-pro-shared";
+import { aiProviderSetupPreset } from "@tickernelz/wardmote-shared";
 import type { AiConnectionCredentialStep } from "./AiConnectionCredentialStep";
 
 let credentialProps: ComponentProps<typeof AiConnectionCredentialStep> | undefined;

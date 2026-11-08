@@ -1,13 +1,13 @@
 import { readFile } from "node:fs/promises";
 import { and, eq } from "drizzle-orm";
-import { runnerApiResponseReservations, heartbeatRuns, issues, issueAttachments } from "@tickernelz/paperclip-pro-db";
+import { runnerApiResponseReservations, heartbeatRuns, issues, issueAttachments } from "@tickernelz/wardmote-db";
 import { authorizationService } from "../services/authorization.js";
 import { canActorReadHeartbeatRun } from "../services/heartbeat-run-privacy.js";
 import { Router } from "express";
 import createDOMPurify from "dompurify";
 import { JSDOM } from "jsdom";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { ASSET_NAMESPACE_RULE, isUuidLike, createAssetImageMetadataSchema } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/wardmote-db";
+import { ASSET_NAMESPACE_RULE, isUuidLike, createAssetImageMetadataSchema } from "@tickernelz/wardmote-shared";
 import type { StorageService } from "../storage/types.js";
 import { assetService, logActivity } from "../services/index.js";
 import { isAllowedContentType, normalizeContentType } from "../attachment-types.js";

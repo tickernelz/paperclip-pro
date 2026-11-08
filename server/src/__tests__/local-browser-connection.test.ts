@@ -6,8 +6,8 @@ import {
   companyMemberships,
   createDb,
   toolConnections,
-} from "@tickernelz/paperclip-pro-db";
-import { LOCAL_BROWSER_TOOL_NAMES } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import { LOCAL_BROWSER_TOOL_NAMES } from "@tickernelz/wardmote-shared";
 import { toolAccessService } from "../services/tool-access.js";
 import { getEmbeddedPostgresTestSupport, startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";
 

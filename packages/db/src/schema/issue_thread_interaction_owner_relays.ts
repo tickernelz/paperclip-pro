@@ -1,4 +1,4 @@
-import type { IssueThreadInteractionOwnerRelayChannel } from "@tickernelz/paperclip-pro-shared";
+import type { IssueThreadInteractionOwnerRelayChannel } from "@tickernelz/wardmote-shared";
 import { pgTable, uuid, text, timestamp, index, uniqueIndex } from "drizzle-orm/pg-core";
 import { agents } from "./agents.js";
 import { companies } from "./companies.js";

@@ -11,7 +11,7 @@ function job(name, created, started, completed, conclusion = "success") {
 
 test("parseTestLog sums vitest file durations and playwright spec durations from raw job logs", () => {
   const log = [
-    "2026-11-08T07:01:51.0859320Z  \u001b[32m✓\u001b[39m  @tickernelz/paperclip-pro-server  src/__tests__/workspace-runtime.test.ts (174 tests) 136707ms",
+    "2026-11-08T07:01:51.0859320Z  \u001b[32m✓\u001b[39m  @tickernelz/wardmote-server  src/__tests__/workspace-runtime.test.ts (174 tests) 136707ms",
     "2026-11-08T07:01:51.0860884Z    ✓ realizeExecutionWorkspace (69)",
     "2026-11-08T07:01:51.0862496Z      ✓ fast-forwards an unstarted reused worktree 338ms",
     "2026-11-08T07:02:00.0000000Z  × src/flaky.test.ts (3 tests | 1 failed) 2500ms",
@@ -21,7 +21,7 @@ test("parseTestLog sums vitest file durations and playwright spec durations from
   ].join("\n");
   const { files, specs } = parseTestLog(log);
   assert.deepEqual(Object.fromEntries(files), {
-    "@tickernelz/paperclip-pro-server src/__tests__/workspace-runtime.test.ts": 136.707,
+    "@tickernelz/wardmote-server src/__tests__/workspace-runtime.test.ts": 136.707,
     "src/flaky.test.ts": 2.5,
   });
   assert.equal(specs.get("tests/e2e/agent-chat-sessions.spec.ts").toFixed(1), "25.8");
@@ -73,7 +73,7 @@ test("shard manifests take server files and e2e specs from the lanes that run th
   assert.equal(manifestForJob("Tests (serialized 0/4)"), "serialized");
   assert.equal(manifestForJob("E2E (2/3)"), "e2e");
   assert.equal(manifestForJob("Tests (workspaces-a)"), null);
-  assert.equal(repoPathForTestKey("@tickernelz/paperclip-pro-server src/__tests__/a.test.ts"), "server/src/__tests__/a.test.ts");
+  assert.equal(repoPathForTestKey("@tickernelz/wardmote-server src/__tests__/a.test.ts"), "server/src/__tests__/a.test.ts");
   assert.equal(repoPathForTestKey("tests/e2e/onboarding.spec.ts"), "tests/e2e/onboarding.spec.ts");
-  assert.equal(repoPathForTestKey("@tickernelz/paperclip-pro-ui src/a.test.ts"), null);
+  assert.equal(repoPathForTestKey("@tickernelz/wardmote-ui src/a.test.ts"), null);
 });

@@ -1,6 +1,6 @@
 import { Router, type Request } from "express";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { generateSummarySlotSchema, writeSummarySlotSchema } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/wardmote-db";
+import { generateSummarySlotSchema, writeSummarySlotSchema } from "@tickernelz/wardmote-shared";
 import { validate } from "../middleware/validate.js";
 import { forbidden, notFound } from "../errors.js";
 import { accessService, heartbeatService, instanceSettingsService, logActivity } from "../services/index.js";

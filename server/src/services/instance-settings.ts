@@ -1,5 +1,5 @@
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { companies, instanceSettings } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
+import { companies, instanceSettings } from "@tickernelz/wardmote-db";
 
 /**
  * A `Db` or an open transaction handle — the subset of query builders the
@@ -30,7 +30,7 @@ import {
   type InstanceSettings,
   type PatchInstanceSettings,
   type PatchInstanceExperimentalSettings,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   INSTANCE_FEATURE_CATALOG,
   NEW_INSTALL_FEATURE_DEFAULTS,
@@ -41,7 +41,7 @@ import {
   withUnmetRequirementsDisabled,
   applyOperatorGeneralDefaults,
   stripOperatorGeneralEchoes,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { and, eq, notExists, sql } from "drizzle-orm";
 import { logger } from "../middleware/logger.js";
 import { setAttachmentLimitSetting } from "../attachment-types.js";

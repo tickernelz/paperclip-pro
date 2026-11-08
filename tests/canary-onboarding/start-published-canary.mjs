@@ -212,7 +212,7 @@ export async function startPublishedCanary({
         prefix = await mkdtemp(path.join(workspace, "npm-install-"));
         const result = await run(process.platform === "win32" ? "npm.cmd" : "npm", [
           "install", "--prefix", prefix, "--no-save", "--no-package-lock", "--no-audit", "--no-fund",
-          ...(attempt > 1 ? ["--prefer-online"] : []), `@tickernelz/paperclip-pro@${version}`,
+          ...(attempt > 1 ? ["--prefer-online"] : []), `@tickernelz/wardmote@${version}`,
         ], { env, signal: installSignal, captureStderr: true });
         if (result.code === 0) break;
         const codes = [...result.stderr.matchAll(/^npm (?:error|ERR!) code ([A-Z0-9_]+)\r?$/gm)];

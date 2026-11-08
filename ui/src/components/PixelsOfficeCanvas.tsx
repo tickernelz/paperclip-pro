@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import type { PixelsOfficeSeatAssignment } from "@tickernelz/paperclip-pro-shared";
+import type { PixelsOfficeSeatAssignment } from "@tickernelz/wardmote-shared";
 import { getOfficeController } from "@/lib/pixels-office/engine/registry";
 import { createOfficeOverlays } from "@/lib/pixels-office/engine/overlays";
 import { playEffectSound, setTypingLevel } from "@/lib/pixels-office/audio";

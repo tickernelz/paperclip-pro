@@ -8,7 +8,7 @@ import {
   chatSenderRules,
   companyMemberships,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   openwaChatSettingsSchema,
   openwaEndpointPolicySchema,
@@ -18,7 +18,7 @@ import {
   type OpenwaTriggerClass,
   type OpenwaTriggerOverrides,
   type OpenwaTriggerRules,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { parseOpenwaThreadId } from "./adapter.js";
 import { openwaChatKey } from "./outbound.js";
 import type { OpenwaInboundEvent } from "./receiver.js";

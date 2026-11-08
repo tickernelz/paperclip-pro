@@ -1,7 +1,7 @@
 import { and, count, eq } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { activityLog, heartbeatRuns } from "@tickernelz/paperclip-pro-db";
-import { isUuidLike, issueWriteDenialResponse } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/wardmote-db";
+import { activityLog, heartbeatRuns } from "@tickernelz/wardmote-db";
+import { isUuidLike, issueWriteDenialResponse } from "@tickernelz/wardmote-shared";
 import { forbidden } from "../errors.js";
 import { logger } from "../middleware/logger.js";
 

@@ -10,7 +10,7 @@
 
 import Ajv, { type ErrorObject } from "ajv";
 import addFormats from "ajv-formats";
-import type { JsonSchema } from "@tickernelz/paperclip-pro-shared";
+import type { JsonSchema } from "@tickernelz/wardmote-shared";
 
 export interface ConfigValidationResult {
   valid: boolean;

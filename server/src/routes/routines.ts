@@ -1,5 +1,5 @@
 import { Router, type Request } from "express";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   createRoutineSchema,
   createDocumentAnnotationCommentSchema,
@@ -10,8 +10,8 @@ import {
   updateDocumentAnnotationThreadSchema,
   updateRoutineSchema,
   updateRoutineTriggerSchema,
-} from "@tickernelz/paperclip-pro-shared";
-import { trackRoutineCreated } from "@tickernelz/paperclip-pro-shared/telemetry";
+} from "@tickernelz/wardmote-shared";
+import { trackRoutineCreated } from "@tickernelz/wardmote-shared/telemetry";
 import { validate, validateIssueMutationBody } from "../middleware/validate.js";
 import { accessService, documentAnnotationService, logActivity, routineService } from "../services/index.js";
 import { assertBoardOrAgentAuthority, assertCompanyAccess, getAccessibleResource, getActorInfo, hasCompanyAccess } from "./authz.js";

@@ -1,4 +1,4 @@
-import { getAppStoreDefinition } from "@tickernelz/paperclip-pro-shared";
+import { getAppStoreDefinition } from "@tickernelz/wardmote-shared";
 import { ApiKeyCredentialField } from "./ApiKeyCredentialField";
 
 export const AGENTMAIL_API_KEYS_URL = getAppStoreDefinition("agentmail")!.methods[0]!.consoleLinks!.keys!;

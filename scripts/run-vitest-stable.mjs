@@ -22,17 +22,17 @@ const serverRoot = path.join(repoRoot, "server");
 const serverSrcDir = path.join(repoRoot, "server", "src");
 const serverTestsDir = path.join(repoRoot, "server", "src", "__tests__");
 const nonServerProjects = [
-  "@tickernelz/paperclip-pro-shared",
-  "@tickernelz/paperclip-pro-skills-catalog",
-  "@tickernelz/paperclip-pro-db",
-  "@tickernelz/paperclip-pro-adapter-utils",
-  "@tickernelz/paperclip-pro-adapter-omp-local",
-  "@tickernelz/paperclip-pro-mcp-server",
-  "@tickernelz/paperclip-pro-plugin-daytona",
-  "@tickernelz/paperclip-pro-plugin-sdk",
-  "@tickernelz/paperclip-pro-create-paperclip-plugin",
-  "@tickernelz/paperclip-pro-ui",
-  "@tickernelz/paperclip-pro",
+  "@tickernelz/wardmote-shared",
+  "@tickernelz/wardmote-skills-catalog",
+  "@tickernelz/wardmote-db",
+  "@tickernelz/wardmote-adapter-utils",
+  "@tickernelz/wardmote-adapter-omp-local",
+  "@tickernelz/wardmote-mcp-server",
+  "@tickernelz/wardmote-plugin-daytona",
+  "@tickernelz/wardmote-plugin-sdk",
+  "@tickernelz/wardmote-create-paperclip-plugin",
+  "@tickernelz/wardmote-ui",
+  "@tickernelz/wardmote",
 ];
 const routeTestPattern = /[^/]*(?:route|routes|authz)[^/]*\.test\.ts$/;
 const additionalSerializedServerTests = new Set([
@@ -83,7 +83,7 @@ const withoutChatExcludedSuites = nativeRunnerSuitesRunInRustCachedLane
   : [chatSuite];
 const generalWorkspacesAGroupName = "general-workspaces-a";
 const generalWorkspacesBGroupName = "general-workspaces-b";
-const generalWorkspacesAProjects = ["@tickernelz/paperclip-pro-ui", "@tickernelz/paperclip-pro"];
+const generalWorkspacesAProjects = ["@tickernelz/wardmote-ui", "@tickernelz/wardmote"];
 const generalWorkspacesBProjects = nonServerProjects.filter((project) => !generalWorkspacesAProjects.includes(project));
 const generalGroupNames = [generalServerGroupName, generalWorkspacesAGroupName, generalWorkspacesBGroupName];
 const allowedGeneralGroupNames = [
@@ -426,13 +426,13 @@ function runProjectGroup(projects, groupName, shardIndex = null, shardCount = nu
 
 function runGeneralGroup(routeTests, groupName, shardIndex = null, shardCount = null) {
   if (groupName === generalChatGroupName) {
-    runVitest(["--project", "@tickernelz/paperclip-pro-server", ...serializedServerVitestArgs, chatSuite],
+    runVitest(["--project", "@tickernelz/wardmote-server", ...serializedServerVitestArgs, chatSuite],
       "chat integration test shard", { index: shardIndex ?? 0, count: shardCount ?? 1 });
     return;
   }
   if (groupName === generalServerNativeRunnerGroupName) {
     runVitest(
-      ["--project", "@tickernelz/paperclip-pro-server", ...serializedServerVitestArgs, ...nativeRunnerSuites],
+      ["--project", "@tickernelz/wardmote-server", ...serializedServerVitestArgs, ...nativeRunnerSuites],
       "cargo-building native runner suites",
     );
     return;
@@ -462,7 +462,7 @@ function runGeneralGroup(routeTests, groupName, shardIndex = null, shardCount = 
       runVitest(
         [
           "--project",
-          "@tickernelz/paperclip-pro-server",
+          "@tickernelz/wardmote-server",
           ...parallelServerVitestArgs,
           ...shardFiles,
         ],
@@ -480,7 +480,7 @@ function runGeneralGroup(routeTests, groupName, shardIndex = null, shardCount = 
     runVitest(
       [
         "--project",
-        "@tickernelz/paperclip-pro-server",
+        "@tickernelz/wardmote-server",
         ...serializedServerVitestArgs,
         ...excludeRouteArgs,
       ],
@@ -536,7 +536,7 @@ function runSerializedSuites(routeTests, shardIndex, shardCount) {
   runVitest(
     [
       "--project",
-      "@tickernelz/paperclip-pro-server",
+      "@tickernelz/wardmote-server",
       ...shardTests.map((routeTest) => routeTest.repoPath),
       "--pool=forks",
       "--isolate",

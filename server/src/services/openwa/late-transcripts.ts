@@ -1,5 +1,5 @@
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
-import { chatActions, chatConversations, heartbeatRuns, type Db } from "@tickernelz/paperclip-pro-db";
+import { chatActions, chatConversations, heartbeatRuns, type Db } from "@tickernelz/wardmote-db";
 import type { SpeechToTextErrorCode } from "../speech-to-text.js";
 import { OPENWA_TRANSCRIPT_PAYLOAD_LIMIT, type OpenwaTranscriptListener, type OpenwaTranscriptReady } from "./media.js";
 

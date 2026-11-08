@@ -13,7 +13,7 @@ import {
   statusDecisionEffects,
   workAssessments,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { nativeSha256 } from "./canonical.js";
 import { isNativeRunnerOwnershipHeld } from "./native-runner-ownership.js";
 import { hasChatRunOwnedProviderInteraction } from "../chat-interaction-arbitration.js";

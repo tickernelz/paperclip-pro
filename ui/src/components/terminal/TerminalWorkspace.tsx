@@ -1,7 +1,7 @@
 import { Fragment, useCallback, useEffect, useMemo, useState, type KeyboardEvent } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Columns2, Plus, Server, SquareTerminal, X } from "lucide-react";
-import type { CreateTerminalSessionRequest, TerminalSession, TerminalSshHost } from "@tickernelz/paperclip-pro-shared";
+import type { CreateTerminalSessionRequest, TerminalSession, TerminalSshHost } from "@tickernelz/wardmote-shared";
 import { ApiError } from "@/api/client";
 import { accessApi } from "@/api/access";
 import { environmentsApi } from "@/api/environments";

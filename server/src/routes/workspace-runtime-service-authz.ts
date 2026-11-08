@@ -1,7 +1,7 @@
 import { and, eq, inArray, isNull, ne, or } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { agents, heartbeatRuns, issues, projects } from "@tickernelz/paperclip-pro-db";
-import { isUuidLike } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/wardmote-db";
+import { agents, heartbeatRuns, issues, projects } from "@tickernelz/wardmote-db";
+import { isUuidLike } from "@tickernelz/wardmote-shared";
 import type { Request } from "express";
 import { forbidden, notFound } from "../errors.js";
 import { assertCompanyAccess, hasCompanyAccess, isCompanyOwnerAgentActor } from "./authz.js";

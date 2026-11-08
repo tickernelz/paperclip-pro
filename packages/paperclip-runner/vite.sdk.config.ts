@@ -13,9 +13,9 @@ export default defineConfig({
   plugins: [react(), liveConsoleBrowserServerPlugin()],
   resolve: {
     alias: [
-      { find: "@tickernelz/paperclip-pro-paperclip-runner/browser", replacement: resolve(packageRoot, "src/browser/index.ts") },
-      { find: "@tickernelz/paperclip-pro-paperclip-runner/react", replacement: resolve(packageRoot, "src/react/index.ts") },
-      { find: "@tickernelz/paperclip-pro-paperclip-runner/styles.css", replacement: resolve(packageRoot, "styles.css") },
+      { find: "@tickernelz/wardmote-paperclip-runner/browser", replacement: resolve(packageRoot, "src/browser/index.ts") },
+      { find: "@tickernelz/wardmote-paperclip-runner/react", replacement: resolve(packageRoot, "src/react/index.ts") },
+      { find: "@tickernelz/wardmote-paperclip-runner/styles.css", replacement: resolve(packageRoot, "styles.css") },
     ],
   },
   server: { host: "127.0.0.1" },

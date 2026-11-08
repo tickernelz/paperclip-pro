@@ -1,4 +1,4 @@
-import { maskOpenwaPhoneNumber } from "@tickernelz/paperclip-pro-shared";
+import { maskOpenwaPhoneNumber } from "@tickernelz/wardmote-shared";
 import { randomUUID } from "node:crypto";
 import { mkdtemp, rm } from "node:fs/promises";
 import os from "node:os";
@@ -30,8 +30,8 @@ import {
   runIdentityContexts,
   toolConnections,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
-import { registerAdapterSteerTarget } from "@tickernelz/paperclip-pro-adapter-utils/adapter-steer-registry";
+} from "@tickernelz/wardmote-db";
+import { registerAdapterSteerTarget } from "@tickernelz/wardmote-adapter-utils/adapter-steer-registry";
 import { getEmbeddedPostgresTestSupport, startEmbeddedPostgresTestDatabase } from "../helpers/embedded-postgres.js";
 import { registerServerAdapter, unregisterServerAdapter } from "../../adapters/index.ts";
 import { agentRoutes } from "../../routes/agents.ts";

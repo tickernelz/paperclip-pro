@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import type { AdapterEnvironmentTestResult, Agent } from "@tickernelz/paperclip-pro-shared";
+import type { AdapterEnvironmentTestResult, Agent } from "@tickernelz/wardmote-shared";
 import { storybookAgents, storybookIssues } from "../fixtures/paperclipData";
 
 export type TestOutcome = "pass" | "fail";

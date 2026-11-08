@@ -2,7 +2,7 @@ import { useId, useState } from "react";
 import type { FormEvent, KeyboardEvent } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ArrowUpRight, MessageSquare, ScrollText, Square, TriangleAlert } from "lucide-react";
-import type { Issue, RunModelFallbackState } from "@tickernelz/paperclip-pro-shared";
+import type { Issue, RunModelFallbackState } from "@tickernelz/wardmote-shared";
 import { Link } from "@/lib/router";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";

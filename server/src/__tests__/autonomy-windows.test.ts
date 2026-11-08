@@ -11,8 +11,8 @@ import {
   issueAutonomyWindows,
   issueThreadInteractions,
   issues,
-} from "@tickernelz/paperclip-pro-db";
-import type { IssueThreadInteraction } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import type { IssueThreadInteraction } from "@tickernelz/wardmote-shared";
 import {
   isAutonomyWindowEligibleInteraction,
   issueThreadInteractionService,

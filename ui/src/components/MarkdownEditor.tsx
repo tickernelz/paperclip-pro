@@ -44,7 +44,7 @@ import {
   buildProjectMentionHref,
   buildRoutineMentionHref,
   buildUserMentionHref,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { Boxes, CalendarClock, Flag, Hash, User, X } from "lucide-react";
 import { applyMentionChipDecoration, clearMentionChipDecoration, parseMentionChipHref } from "../lib/mention-chips";
 import { MentionAwareLinkNode, mentionAwareLinkNodeReplacement } from "../lib/mention-aware-link-node";
@@ -68,7 +68,7 @@ export interface MentionOption {
   kind?: "agent" | "project" | "user" | "issue";
   agentId?: string;
   agentIcon?: string | null;
-  agentAppearance?: import("@tickernelz/paperclip-pro-shared").AgentAppearance | null;
+  agentAppearance?: import("@tickernelz/wardmote-shared").AgentAppearance | null;
   projectId?: string;
   projectColor?: string | null;
   userId?: string;

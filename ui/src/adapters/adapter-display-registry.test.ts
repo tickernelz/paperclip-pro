@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { RETIRED_ADAPTER_TYPES, retiredAdapterMessage } from "@tickernelz/paperclip-pro-shared";
+import { RETIRED_ADAPTER_TYPES, retiredAdapterMessage } from "@tickernelz/wardmote-shared";
 import { getAdapterDisplay, getAdapterLabel, getAdapterLabels } from "./adapter-display-registry";
 
 describe("adapter display registry", () => {

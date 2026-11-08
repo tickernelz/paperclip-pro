@@ -14,7 +14,7 @@
  * instead of a driver-name condition.
  */
 
-import type { EnvironmentDriver } from "@tickernelz/paperclip-pro-shared";
+import type { EnvironmentDriver } from "@tickernelz/wardmote-shared";
 import type { SandboxCapabilityKey } from "./environment-runtime.js";
 
 /**
