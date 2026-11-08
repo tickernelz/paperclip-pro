@@ -345,7 +345,7 @@ function normalizeUserSecretKeyForPreview(input: string) {
 
 
 function modeLabel(managedMode: SecretManagedMode) {
-  return managedMode === "paperclip_managed" ? "Paperclip-managed" : "Linked external";
+  return managedMode === "paperclip_managed" ? "Wardmote-managed" : "Linked external";
 }
 
 function modeDescription(managedMode: SecretManagedMode, canWriteExternalValue = false) {
@@ -473,7 +473,7 @@ export function getCreateProviderBlockReason(
 ) {
   if (!provider) return "Select a provider.";
   if (mode === "managed" && provider.supportsManagedValues === false) {
-    return `${provider.label} does not support Paperclip-managed secret values.`;
+    return `${provider.label} does not support Wardmote-managed secret values.`;
   }
   if (mode === "external" && provider.supportsExternalReferences === false) {
     return `${provider.label} does not support linked external references.`;
@@ -2883,7 +2883,7 @@ export function Secrets() {
                 </div>
                 {createMode === "managed" ? (
                   <div className="rounded-md border border-emerald-500/30 bg-emerald-500/5 p-2 text-(length:--text-micro) text-emerald-700 dark:text-emerald-300">
-                    Paperclip-managed secrets are created in the selected provider and future rotations
+                    Wardmote-managed secrets are created in the selected provider and future rotations
                     write a new provider version through Wardmote.
                     {awsManagedPathPreview ? (
                       <div className="mt-1">

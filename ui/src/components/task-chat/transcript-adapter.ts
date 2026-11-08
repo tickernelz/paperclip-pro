@@ -1695,12 +1695,12 @@ function phaseSummary(
         case "paperclip_read":
           text =
             count === 1
-              ? "Read from Paperclip"
-              : `Read from Paperclip ${count} times`;
+              ? "Read from Wardmote"
+              : `Read from Wardmote ${count} times`;
           break;
         case "task_operation":
           text =
-            count === 1 ? "Used Paperclip" : `Used Paperclip ${count} times`;
+            count === 1 ? "Used Wardmote" : `Used Wardmote ${count} times`;
           break;
         default:
           text = count === 1 ? "Used a tool" : `Used ${count} tools`;
