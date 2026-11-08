@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { SKIP_WAITING_MESSAGE, startServiceWorkerUpdates } from "./service-worker-updates";
+import { BUILD_ID_MESSAGE, SKIP_WAITING_MESSAGE, startServiceWorkerUpdates } from "./service-worker-updates";
 
 type Listener = () => void;
 
@@ -19,12 +19,24 @@ function emitter() {
   };
 }
 
-function fakeWorker() {
-  const events = emitter();
-  return Object.assign(events, { state: "installing" as ServiceWorkerState, postMessage: vi.fn() });
+class FakeMessageChannel {
+  port1 = { onmessage: null as ((event: { data: unknown }) => void) | null, close: vi.fn() };
+  port2 = { postMessage: (data: unknown) => this.port1.onmessage?.({ data }) };
 }
 
-function fakeContainer(opts: { controlled: boolean; waiting?: ReturnType<typeof fakeWorker> }) {
+function fakeWorker(buildId?: string) {
+  const events = emitter();
+  const postMessage = vi.fn((message: { type: string }, transfer?: FakeMessageChannel["port2"][]) => {
+    if (message.type === BUILD_ID_MESSAGE && buildId) transfer?.[0]?.postMessage({ type: BUILD_ID_MESSAGE, buildId });
+  });
+  return Object.assign(events, { state: "installing" as ServiceWorkerState, postMessage });
+}
+
+function fakeContainer(opts: {
+  controlled: boolean;
+  waiting?: ReturnType<typeof fakeWorker>;
+  controller?: ReturnType<typeof fakeWorker>;
+}) {
   const regEvents = emitter();
   const registration = Object.assign(regEvents, {
     update: vi.fn(() => Promise.resolve()),
@@ -33,7 +45,7 @@ function fakeContainer(opts: { controlled: boolean; waiting?: ReturnType<typeof 
   });
   const events = emitter();
   const container = Object.assign(events, {
-    controller: opts.controlled ? ({} as ServiceWorker) : null,
+    controller: opts.controlled ? ((opts.controller ?? fakeWorker()) as unknown as ServiceWorker) : null,
     register: vi.fn(() => Promise.resolve(registration)),
   });
   return { container, registration };
@@ -43,7 +55,7 @@ function fakeDocument() {
   return Object.assign(emitter(), { visibilityState: "visible" as DocumentVisibilityState });
 }
 
-function start(container: ReturnType<typeof fakeContainer>["container"], doc = fakeDocument()) {
+function start(container: ReturnType<typeof fakeContainer>["container"], doc = fakeDocument(), pageBuildId?: string) {
   const reload = vi.fn();
   const onUpdateReady = vi.fn();
   const stop = startServiceWorkerUpdates({
@@ -51,6 +63,7 @@ function start(container: ReturnType<typeof fakeContainer>["container"], doc = f
     documentRef: doc as unknown as Document,
     reload,
     onUpdateReady,
+    pageBuildId,
   });
   return { reload, onUpdateReady, stop, doc };
 }
@@ -58,10 +71,12 @@ function start(container: ReturnType<typeof fakeContainer>["container"], doc = f
 describe("startServiceWorkerUpdates", () => {
   beforeEach(() => {
     vi.useFakeTimers();
+    vi.stubGlobal("MessageChannel", FakeMessageChannel);
   });
 
   afterEach(() => {
     vi.useRealTimers();
+    vi.unstubAllGlobals();
   });
 
   it("registers /sw.js", () => {
@@ -116,10 +131,56 @@ describe("startServiceWorkerUpdates", () => {
     const { reload, onUpdateReady } = start(container);
     await vi.runOnlyPendingTimersAsync();
     container.emit("controllerchange");
+    await vi.advanceTimersByTimeAsync(0);
     expect(reload).not.toHaveBeenCalled();
     expect(onUpdateReady).toHaveBeenCalledOnce();
     onUpdateReady.mock.calls[0]![0]();
     expect(reload).toHaveBeenCalledOnce();
+  });
+
+  it("offers nothing when the worker taking control serves the build the page already runs", async () => {
+    const { container } = fakeContainer({ controlled: true, controller: fakeWorker("index-new") });
+    const { reload, onUpdateReady } = start(container, fakeDocument(), "index-new");
+    await vi.runOnlyPendingTimersAsync();
+    container.emit("controllerchange");
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(onUpdateReady).not.toHaveBeenCalled();
+    expect(reload).not.toHaveBeenCalled();
+  });
+
+  it("offers a reload when the worker taking control serves a newer build than the page", async () => {
+    const { container } = fakeContainer({ controlled: true, controller: fakeWorker("index-new") });
+    const { reload, onUpdateReady } = start(container, fakeDocument(), "index-old");
+    await vi.runOnlyPendingTimersAsync();
+    container.emit("controllerchange");
+    await vi.advanceTimersByTimeAsync(0);
+    expect(onUpdateReady).toHaveBeenCalledOnce();
+    expect(reload).not.toHaveBeenCalled();
+  });
+
+  it("does not offer a waiting worker built from the assets the page already runs", async () => {
+    const waiting = fakeWorker("index-new");
+    const { container } = fakeContainer({ controlled: true, waiting });
+    const { onUpdateReady } = start(container, fakeDocument(), "index-new");
+    await vi.advanceTimersByTimeAsync(5000);
+    expect(onUpdateReady).not.toHaveBeenCalled();
+    expect(waiting.postMessage).not.toHaveBeenCalledWith({ type: SKIP_WAITING_MESSAGE });
+  });
+
+  it("offers a waiting worker built from newer assets than the page", async () => {
+    const { container } = fakeContainer({ controlled: true, waiting: fakeWorker("index-new") });
+    const { onUpdateReady } = start(container, fakeDocument(), "index-old");
+    await vi.advanceTimersByTimeAsync(0);
+    expect(onUpdateReady).toHaveBeenCalledOnce();
+  });
+
+  it("still offers the update when the worker does not report its build", async () => {
+    const { container } = fakeContainer({ controlled: true, waiting: fakeWorker() });
+    const { onUpdateReady } = start(container, fakeDocument(), "index-old");
+    await vi.advanceTimersByTimeAsync(1999);
+    expect(onUpdateReady).not.toHaveBeenCalled();
+    await vi.advanceTimersByTimeAsync(1);
+    expect(onUpdateReady).toHaveBeenCalledOnce();
   });
 
   it("offers nothing on the first install of an uncontrolled page", async () => {
