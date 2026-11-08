@@ -52,7 +52,7 @@ confirmed. The shared footer rule applies to its unfinished setup steps.
 | Viewport | Navigation | Lists and side panels | Dialogs |
 | --- | --- | --- | --- |
 | Phone (< 768 px, or landscape up to 430 px tall) | Bottom bar: Home, Inbox, Tasks, Chat, More (with Combined Inbox + Task List, Inbox leaves and its badge moves to Tasks); New Task in the top bar | Stacked rows; detail replaces the list | Bottom sheet, full-width actions, scrolls up to the screen height |
-| Tablet portrait (768-1023 px) | 64 px icon rail | Stacked rows; the side panel covers the page | Centered, at most 560 px |
+| Tablet portrait (768-1023 px) | 72 px icon rail | Stacked rows; the side panel covers the page | Centered, at most 560 px |
 | 1024 px and wider | 232 px sidebar with labels | Full tables (36 px rows); 320 px right panel | Centered, at most 560 px |
 | 1920 px and wider | Same | Content capped at 1440 px and centered; Home adds the run chart | Same |
 
@@ -62,7 +62,8 @@ the 44 px touch floor keep it; fine pointers get a 32 px hit area for compact
 buttons. Row actions are
 visible buttons: actions revealed on hover become visible when the device
 cannot hover. `tests/e2e/responsive-shell.spec.ts` fails on horizontal overflow
-or a target under 24 px on the core screens at six sizes in both themes.
+or a target under 24 px on the core screens at six sizes in both themes, with
+768 px checked under both a touch and a mouse pointer.
 
 Pixels Office and Conference Room are not in the navigation. They open from
 Search and by URL while their features are on.

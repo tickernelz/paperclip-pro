@@ -132,7 +132,7 @@ export function Sidebar({ children }: { children?: ReactNode }) {
         <SidebarCompanyMenu />
       </div>
 
-      <nav className={primarySidebarStyles.nav}>
+      <nav className={rail ? primarySidebarStyles.railNav : primarySidebarStyles.nav}>
         <div className={primarySidebarStyles.group}>
           {/* New Task button aligned with nav items */}
           {(() => {
