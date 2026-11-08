@@ -96,7 +96,7 @@ test("the probe flags an overflowing rule and an undersized target", async ({ pa
   await page.evaluate(() => {
     const target = document.createElement("button");
     target.textContent = "x";
-    target.setAttribute("style", "position: relative; width: 16px; height: 16px; padding: 0; font-size: 10px; line-height: 1");
+    target.setAttribute("style", "position: relative; width: 16px; height: 16px; min-block-size: 0; padding: 0; font-size: 10px; line-height: 1");
     document.getElementById("main-content")?.prepend(target);
   });
   const finding = await probeResponsive(page);
