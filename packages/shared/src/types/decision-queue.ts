@@ -38,7 +38,10 @@ export interface DecisionQueue {
   retentionDays: number | null;
   seedRules: DecisionQueueSeedRule[];
   seedRulesEnabled: boolean;
+  /** Open items in the queue page's live list for this reader; the Aging shelf is excluded. */
   itemCount: number;
+  /** Decided or expired members visible in decision history; null for agent readers. */
+  resolvedCount: number | null;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -61,3 +64,54 @@ export interface DecisionTriage {
   createdAt: Date;
   updatedAt: Date;
 }
+
+export const DECISION_HISTORY_SOURCE_KINDS = [
+  "issue_thread_interaction",
+  "approval",
+  "decision",
+  "join_request",
+] as const satisfies readonly AttentionSourceKind[];
+
+export type ResolvedDecisionSourceKind = (typeof DECISION_HISTORY_SOURCE_KINDS)[number];
+
+export const DECISION_HISTORY_STATUSES = ["decided", "expired"] as const;
+
+export type ResolvedDecisionStatus = (typeof DECISION_HISTORY_STATUSES)[number];
+
+export interface ResolvedDecisionActor {
+  type: "user" | "agent" | "system";
+  userId: string | null;
+  agentId: string | null;
+  name: string | null;
+}
+
+export interface ResolvedDecisionIssueRef {
+  id: string;
+  identifier: string | null;
+  title: string;
+  href: string;
+}
+
+export interface ResolvedDecisionEntry {
+  id: string;
+  sourceKind: ResolvedDecisionSourceKind;
+  sourceId: string;
+  kind: string;
+  kindLabel: string;
+  status: string;
+  outcome: ResolvedDecisionStatus;
+  title: string;
+  result: string | null;
+  decidedBy: ResolvedDecisionActor;
+  decidedAt: string;
+  issue: ResolvedDecisionIssueRef | null;
+  href: string | null;
+}
+
+export interface ResolvedDecisionPage {
+  items: ResolvedDecisionEntry[];
+  nextCursor: string | null;
+  /** Matching rows across every page; returned only for the first page. */
+  totalCount: number | null;
+}
+

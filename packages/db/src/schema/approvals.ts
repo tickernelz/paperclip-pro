@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import { pgTable, uuid, text, timestamp, jsonb, index } from "drizzle-orm/pg-core";
 import { companies } from "./companies.js";
 import { agents } from "./agents.js";
@@ -24,5 +25,8 @@ export const approvals = pgTable(
       table.status,
       table.type,
     ),
+    companyResolvedHistoryIdx: index("approvals_company_resolved_history_idx")
+      .on(table.companyId, sql`coalesce(${table.decidedAt}, ${table.updatedAt})`, table.id)
+      .where(sql`${table.status} IN ('approved', 'rejected', 'cancelled')`),
   }),
 );

@@ -2479,6 +2479,13 @@
       "when": 1794075178154,
       "tag": "0355_overjoyed_ma_gnuci",
       "breakpoints": true
+    },
+    {
+      "idx": 356,
+      "version": "7",
+      "when": 1794125110549,
+      "tag": "0356_normal_thundra",
+      "breakpoints": true
     }
   ]
 }

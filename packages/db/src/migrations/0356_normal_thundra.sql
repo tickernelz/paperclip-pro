@@ -1,0 +1,3 @@
+CREATE INDEX "approvals_company_resolved_history_idx" ON "approvals" USING btree ("company_id",coalesce("decided_at", "updated_at"),"id") WHERE "approvals"."status" IN ('approved', 'rejected', 'cancelled');--> statement-breakpoint
+CREATE INDEX "decisions_company_resolved_history_idx" ON "decisions" USING btree ("company_id",coalesce("decided_at", "updated_at"),"id") WHERE "decisions"."status" IN ('decided', 'expired', 'cancelled');--> statement-breakpoint
+CREATE INDEX "issue_thread_interactions_company_resolved_history_idx" ON "issue_thread_interactions" USING btree ("company_id","resolved_at","id") WHERE "issue_thread_interactions"."resolved_at" IS NOT NULL;
