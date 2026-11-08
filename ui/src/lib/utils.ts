@@ -17,7 +17,7 @@ export function cn(...inputs: ClassValue[]) {
  * but stays in the DOM and the a11y tree as the link's accessible name.
  */
 export const SIDEBAR_RAIL_HIDDEN_LABEL =
-  "block w-0 min-w-0 overflow-hidden whitespace-nowrap text-transparent select-none";
+  "block w-0 min-w-0 -ms-2.5 overflow-hidden whitespace-nowrap text-transparent select-none";
 
 export function asObject(value: unknown): Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value)
