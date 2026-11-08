@@ -29,6 +29,11 @@ vi.mock("@/lib/router", () => ({
       </a>
     );
   },
+  Link: ({ children, to, ...props }: { children: ReactNode; to: string }) => (
+    <a href={to} {...props}>
+      {children}
+    </a>
+  ),
 }));
 
 vi.mock("../context/SidebarContext", () => ({
@@ -98,20 +103,16 @@ describe("SidebarNavItem", () => {
     expect(link().firstElementChild?.textContent).toBe("Recent task");
   });
 
-  it("uses the sidebar accent surface for the active item", () => {
-    render(<SidebarNavItem to="/issues" label="Tasks" icon={Inbox} active />);
+  it("announces an externally active row as the current page", () => {
+    render(<SidebarNavItem to="/agents/ada" label="Ada" icon={Inbox} active />);
 
-    expect(classTokens(link())).toContain("bg-bg-3");
-    expect(classTokens(link())).toContain("text-ink");
-    expect(classTokens(link())).not.toContain("bg-bg");
+    expect(link().getAttribute("aria-current")).toBe("page");
   });
 
-  it("uses the legible sidebar accent surface for hover", () => {
-    render(<SidebarNavItem to="/issues" label="Tasks" icon={Inbox} />);
+  it("keeps aria-current off an externally inactive row", () => {
+    render(<SidebarNavItem to="/agents/bob" label="Bob" icon={Inbox} active={false} />);
 
-    expect(classTokens(link())).toContain("hover:bg-bg-3");
-    expect(classTokens(link())).toContain("hover:text-ink");
-    expect(classTokens(link())).not.toContain("hover:bg-bg");
+    expect(link().getAttribute("aria-current")).toBeNull();
   });
 
   it("clips the label (kept in flow for 1:1 row height) and collapses the badge to a dot in the rail", () => {
