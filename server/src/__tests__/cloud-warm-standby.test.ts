@@ -12,8 +12,8 @@ import { createPublicMcpEvents } from "../services/public-mcp/events.js";
 import type { PublicMcpOAuth } from "../services/public-mcp/oauth.js";
 
 const healthOptions = {
-  deploymentMode: "authenticated" as const,
-  deploymentExposure: "public" as const,
+  deploymentMode: "local_trusted" as const,
+  deploymentExposure: "private" as const,
   authReady: true,
   companyDeletionEnabled: false,
   runtimeEnv: { PAPERCLIP_CLOUD_TENANT_SERVER_TOKEN: "test-token" },

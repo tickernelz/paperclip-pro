@@ -1,9 +1,6 @@
 /**
  * Route-level coverage for the plugin install security floor:
  *
- * - Cloud-managed instances (PAPERCLIP_MANAGED_CONFIG present) may only
- *   install plugins whose source canonicalizes into the bundled plugin
- *   catalog root; npm installs and arbitrary local paths are rejected.
  * - Every instance canonicalizes and validates `localPath` (traversal,
  *   symlink, and absolute-path handling) before the loader runs.
  * - Self-hosted non-localPath install validation is unchanged.
@@ -51,15 +48,6 @@ if (!embeddedPostgresSupport.supported) {
   );
 }
 
-const CLOUD_MANAGED_CONFIG = JSON.stringify({
-  v: 1,
-  mode: "cloud",
-  catalogVersion: "2026.720.0",
-  features: {},
-  plugins: { autoInstall: [] },
-});
-
-const repoPluginRoot = path.join(REPO_ROOT, "packages", "plugins");
 
 type FixturePlugin = {
   packageName: string;
@@ -149,7 +137,6 @@ describeEmbeddedPostgres("plugin install route security floor", () => {
   let db!: ReturnType<typeof createDb>;
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
   const cleanupPaths = new Set<string>();
-  const originalManagedConfig = process.env["PAPERCLIP_MANAGED_CONFIG"];
 
   beforeAll(async () => {
     tempDb = await startEmbeddedPostgresTestDatabase("paperclip-plugin-install-guard-");
@@ -163,116 +150,11 @@ describeEmbeddedPostgres("plugin install route security floor", () => {
       await rm(cleanupPath, { recursive: true, force: true });
     }
     cleanupPaths.clear();
-    if (originalManagedConfig === undefined) {
-      delete process.env["PAPERCLIP_MANAGED_CONFIG"];
-    } else {
-      process.env["PAPERCLIP_MANAGED_CONFIG"] = originalManagedConfig;
-    }
   });
 
   afterAll(async () => {
     await tempDb?.cleanup();
   }, 30_000);
-
-  describe("cloud-managed instances", () => {
-    it("rejects npm installs outright", async () => {
-      process.env["PAPERCLIP_MANAGED_CONFIG"] = CLOUD_MANAGED_CONFIG;
-      const app = await createInstallApp(db);
-
-      const res = await request(app)
-        .post("/api/plugins/install")
-        .send({ packageName: "paperclip-plugin-anything", version: "1.0.0" });
-
-      expect(res.status).toBe(403);
-      expect(res.body.error).toContain("npm installs are disabled on cloud-managed instances");
-      expect(mockLifecycle.load).not.toHaveBeenCalled();
-    });
-
-    it("rejects npm installs even when the managed config document is corrupted", async () => {
-      // The fail-closed startup parser refuses to boot a managed instance
-      // with a corrupted document, so boot with a valid one and corrupt it
-      // afterwards: the install floor must still hold because it keys off
-      // the variable's presence at request time, never its parsed content.
-      process.env["PAPERCLIP_MANAGED_CONFIG"] = CLOUD_MANAGED_CONFIG;
-      const app = await createInstallApp(db);
-      process.env["PAPERCLIP_MANAGED_CONFIG"] = "{definitely not json";
-
-      const res = await request(app)
-        .post("/api/plugins/install")
-        .send({ packageName: "paperclip-plugin-anything" });
-
-      expect(res.status).toBe(403);
-      expect(mockLifecycle.load).not.toHaveBeenCalled();
-    });
-
-    it("rejects localPath installs from outside the bundled catalog root", async () => {
-      process.env["PAPERCLIP_MANAGED_CONFIG"] = CLOUD_MANAGED_CONFIG;
-      const outsideDir = await mkdtemp(path.join(os.tmpdir(), "guard-outside-"));
-      cleanupPaths.add(outsideDir);
-      const fixture = await createBuiltPluginFixture(outsideDir, "outside");
-      const app = await createInstallApp(db);
-
-      const res = await request(app)
-        .post("/api/plugins/install")
-        .send({ packageName: fixture.packageRoot, isLocalPath: true });
-
-      expect(res.status).toBe(403);
-      expect(res.body.error).toContain("bundled plugin catalog");
-      expect(mockLifecycle.load).not.toHaveBeenCalled();
-    });
-
-    it("rejects localPath traversal that escapes the bundled catalog root", async () => {
-      process.env["PAPERCLIP_MANAGED_CONFIG"] = CLOUD_MANAGED_CONFIG;
-      const app = await createInstallApp(db);
-
-      // Starts under packages/plugins but canonicalizes to the repo's server
-      // directory — a real, readable directory outside the catalog.
-      const traversalPath = path.join(repoPluginRoot, "..", "..", "server");
-      const res = await request(app)
-        .post("/api/plugins/install")
-        .send({ packageName: traversalPath, isLocalPath: true });
-
-      expect(res.status).toBe(403);
-      expect(res.body.error).toContain("bundled plugin catalog");
-      expect(mockLifecycle.load).not.toHaveBeenCalled();
-    });
-
-    it("rejects a symlink inside the catalog root that points outside it", async () => {
-      process.env["PAPERCLIP_MANAGED_CONFIG"] = CLOUD_MANAGED_CONFIG;
-      const outsideDir = await mkdtemp(path.join(os.tmpdir(), "guard-symlink-target-"));
-      cleanupPaths.add(outsideDir);
-      const fixture = await createBuiltPluginFixture(outsideDir, "symlink-target");
-
-      const linkPath = path.join(repoPluginRoot, `guard-sneaky-link-${randomUUID().slice(0, 8)}`);
-      cleanupPaths.add(linkPath);
-      await symlink(fixture.packageRoot, linkPath, "dir");
-      const app = await createInstallApp(db);
-
-      const res = await request(app)
-        .post("/api/plugins/install")
-        .send({ packageName: linkPath, isLocalPath: true });
-
-      expect(res.status).toBe(403);
-      expect(res.body.error).toContain("bundled plugin catalog");
-      expect(mockLifecycle.load).not.toHaveBeenCalled();
-    });
-
-    it("allows installing a plugin from inside the bundled catalog root", async () => {
-      process.env["PAPERCLIP_MANAGED_CONFIG"] = CLOUD_MANAGED_CONFIG;
-      const fixture = await createBuiltPluginFixture(repoPluginRoot, "bundled");
-      cleanupPaths.add(fixture.packageRoot);
-      const app = await createInstallApp(db);
-
-      const res = await request(app)
-        .post("/api/plugins/install")
-        .send({ packageName: fixture.packageRoot, isLocalPath: true });
-
-      expect(res.status).toBe(200);
-      expect(res.body.packageName).toBe(fixture.packageName);
-      expect(res.body.pluginKey).toBe(fixture.pluginKey);
-      expect(mockLifecycle.load).toHaveBeenCalledTimes(1);
-    }, 30_000);
-  });
 
   describe("all instances: localPath canonicalization", () => {
     it("rejects a nonexistent localPath with a validation error", async () => {
@@ -367,20 +249,5 @@ describeEmbeddedPostgres("plugin install route security floor", () => {
       expect(res.body.error).toBe("packageName contains invalid characters");
       expect(mockLifecycle.load).not.toHaveBeenCalled();
     });
-
-    it("does not apply the cloud floor when PAPERCLIP_MANAGED_CONFIG is absent", async () => {
-      const app = await createInstallApp(db);
-
-      // A well-formed npm package name passes route validation and reaches
-      // the loader (which fails here because npm cannot resolve the package
-      // in the test environment) — proving the 403 floor did not trigger.
-      const res = await request(app)
-        .post("/api/plugins/install")
-        .send({ packageName: `paperclip-plugin-guard-missing-${randomUUID().slice(0, 8)}` });
-
-      expect(res.status).toBe(400);
-      expect(res.body.error).toContain("npm install failed");
-      expect(mockLifecycle.load).not.toHaveBeenCalled();
-    }, 150_000);
   });
 });

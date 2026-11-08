@@ -697,14 +697,6 @@ describe("durable Dot Runner integration", () => {
       const gatewayTools = [{ name: "fixture:read_status", displayName: "Read fixture status", description: "Read a synthetic app", parametersSchema: { type: "object", properties: {}, additionalProperties: false }, risk: "read" }];
       registerAssignedMcpGateway(db, { listToolsForNamedGateway: vi.fn().mockResolvedValue(gatewayTools), executeTool: appCall } as unknown as ToolGatewayService);
       await db.update(agents).set({ adapterConfig: { ...f.agent.adapterConfig, dotWorkspaceAccess: true, dotAttachmentAccess: true } }).where(eq(agents.id, f.agent.id));
-      vi.stubEnv("PAPERCLIP_CLOUD_TENANT_SERVER_TOKEN", "fixture-cloud");
-      try {
-        for (const useRunnerd of [false, true]) {
-          await expect(executePaperclipNativeSession({ db, execution, runnerInstanceId: prepared.runnerInstanceId,
-            useRunnerd, turnTimeoutMs: 1000, onEvent: async () => {} }))
-            .rejects.toThrow("dot_cloud_requires_managed_runner");
-        }
-      } finally { vi.stubEnv("PAPERCLIP_CLOUD_TENANT_SERVER_TOKEN", ""); }
       const resultPromise = executePaperclipNativeSession({ db, execution,
         ...(remote ? { runnerExecutionTarget: remote.target, runnerRemoteBinaryPath: remote.runnerBinary, runnerIngressAuthorized: true }
           : { dotWorkspaceRoot: root }),

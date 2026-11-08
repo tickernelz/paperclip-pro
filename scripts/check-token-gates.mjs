@@ -342,7 +342,8 @@ function findRawButtonFillIssues(content) {
 }
 
 const PACKAGE_CSS_IMPORT_RE = /(?:^\s*import\s+(?:[^"'`;]*?\s+from\s+)?|\bimport\s*\(\s*)["'`](?![./]|@\/)([^"'`?]+\.css)(?:\?[^"'`]*)?["'`]/gm;
-const UNLAYERED_CSS_IMPORT_RE = /^\s*@import\s+(?:url\()?["'](?![./])(?!tailwindcss["'])([^"']+)["']\)?(?![^;]*\blayer\()[^;]*;/gm;
+const UNLAYERED_CSS_IMPORT_RE = /^\s*@import\s+(?:url\()?["'](?![./])([^"']+)["']\)?(?![^;]*\blayer\()[^;]*;/gm;
+const PACKAGE_CSS_AT_IMPORT_RE = /^\s*@import\s+(?:url\()?["'](?![./])([^"']+)["']/gm;
 
 function findVendorCssImportIssues() {
   const files = [];
@@ -357,9 +358,10 @@ function findVendorCssImportIssues() {
   const issues = [];
   for (const filePath of files.sort()) {
     const content = readFileSync(filePath, "utf8");
-    const pattern = filePath.endsWith(".css") ? UNLAYERED_CSS_IMPORT_RE : PACKAGE_CSS_IMPORT_RE;
+    const pattern = filePath === CSS_PATH ? UNLAYERED_CSS_IMPORT_RE : filePath.endsWith(".css") ? PACKAGE_CSS_AT_IMPORT_RE : PACKAGE_CSS_IMPORT_RE;
     for (const match of content.matchAll(pattern)) {
-      issues.push({ file: relPathToPosix(filePath), index: match.index, content, snippet: `package stylesheet outside @layer vendor: ${match[1]}` });
+      const where = filePath === CSS_PATH ? "outside @layer vendor" : "outside ui/src/index.css";
+      issues.push({ file: relPathToPosix(filePath), index: match.index, content, snippet: `package stylesheet ${where}: ${match[1]}` });
     }
   }
   return issues;

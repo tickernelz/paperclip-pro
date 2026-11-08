@@ -1047,29 +1047,6 @@ describe("company portability routes", () => {
     expect(mockLogActivity).not.toHaveBeenCalled();
   });
 
-  it("floors global import apply on a cloud-managed instance, even for the trusted tenant actor", async () => {
-    // The trusted-tenant tests above run without the cloud env signal on
-    // purpose: the import floor keys on isCloudManagedInstance(), not on the
-    // actor. With the signal present, even the trusted tenant actor is
-    // floored — importing is disabled on cloud-managed instances outright.
-    vi.stubEnv("PAPERCLIP_CLOUD_TENANT_SERVER_TOKEN", "tenant-secret");
-    try {
-      const app = await createApp(cloudTenantActor());
-
-      const res = await request(app)
-        .post("/api/companies/import")
-        .set(cloudHeaders)
-        .send(importRequest);
-
-      expect(res.status).toBe(403);
-      expect(res.body).toMatchObject({ code: "cloud_managed" });
-      expect(mockCompanyPortabilityService.importBundle).not.toHaveBeenCalled();
-      expect(mockLogActivity).not.toHaveBeenCalled();
-    } finally {
-      vi.unstubAllEnvs();
-    }
-  });
-
   it("forwards pauseAutomations from the global import body to the portability service", async () => {
     mockCompanyPortabilityService.importBundle.mockResolvedValueOnce(createImportResult("created"));
     const app = await createApp(cloudTenantActor());

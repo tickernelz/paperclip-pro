@@ -1,11 +1,12 @@
-# Wardmote Pro — Operations Runbook
+# Wardmote — Operations Runbook
 
-Day-two operation of an installed Wardmote Pro instance. Every command and path
+Day-two operation of an installed Wardmote instance. Every command and path
 below is taken from this repository's source; the citations say where.
 
-This fork is not on npm. Commands assume the managed shim installed by
-`wardmote install` is on `PATH` (`~/.local/bin/paperclip-pro`,
-`cli/src/install-store.ts:85`).
+Wardmote is published on npm as `@tickernelz/wardmote`. Commands assume the
+managed shim installed by `wardmote install` is on `PATH`
+(`~/.local/bin/wardmote`, with the `~/.local/bin/paperclip-pro` alias,
+`cli/src/install-store.ts:78-88`).
 
 ## 1. Where state lives
 
@@ -172,7 +173,7 @@ host, that is ~45 s end to end, against 11 m 38 s for the git path.
 Switching an existing instance between a git payload and an npm payload is
 non-destructive. An install writes only `~/.wardmote/cli/installs/<source>/<id>`,
 the `~/.wardmote/cli/current` symlink, `~/.wardmote/cli/install.json`
-and `~/.local/bin/paperclip-pro`. Everything under
+and the `~/.local/bin/wardmote` and `~/.local/bin/paperclip-pro` shims. Everything under
 `~/.wardmote/instances/<id>` — database, `config.json`, `service.env`,
 secrets, logs, storage, backups, workspaces — is untouched, and the two previous
 payloads stay available for `wardmote update --rollback`.
@@ -399,12 +400,10 @@ Dispatch inputs:
   `NPM_TOKEN` repository secret and is only for:
   - a new package, before its trusted publisher can exist (npm needs the
     package page first);
-  - moving `latest` for a package whose trusted publisher lacks
-    `Allow npm dist-tag`: an `oidc` run passes `NPM_TOKEN` to `release.sh` as
-    `NPM_PROMOTE_TOKEN`, and a dist-tag OIDC refuses is moved with that token
-    and logged as a warning instead of failing the run. Publishing never
-    falls back to the token; once every package allows dist-tags, the warning
-    stops appearing and the token is unused;
+  - finishing a version whose `oidc` run failed at the `latest` promotion,
+    for example a package without `Allow npm dist-tag`: rerun that version
+    with `auth=token`; published packages are skipped and only the promotion
+    runs, with the OIDC identity stripped so npm uses the token;
   - `npm deprecate` and other owner commands, which OIDC does not cover.
 
 The run is idempotent and resumable: a package version already on npm is
