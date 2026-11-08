@@ -10,7 +10,10 @@ unset PAPERCLIP_HOME WARDMOTE_HOME
 REPO="${UPGRADE_REPO:?UPGRADE_REPO is required}"
 SHA="${UPGRADE_SHA:?UPGRADE_SHA is required}"
 PORT="${UPGRADE_PORT:-3197}"
-mkdir -p "$HOME"
+OMP_STUB_VERSION="${UPGRADE_OMP_VERSION:-18.18.0}"
+mkdir -p "$HOME/.paperclip-pro" "$HOME/.local/bin"
+printf '#!/bin/sh\necho "omp/%s"\n' "$OMP_STUB_VERSION" > "$HOME/.local/bin/omp"
+chmod +x "$HOME/.local/bin/omp"
 server_pid=""
 
 stop_server() {
