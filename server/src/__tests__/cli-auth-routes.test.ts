@@ -118,8 +118,8 @@ describe("cli auth routes", () => {
     const res = await request(app)
       .post("/api/cli-auth/challenges")
       .send({
-        command: "paperclip-pro company import",
-        clientName: "paperclip-pro cli",
+        command: "wardmote company import",
+        clientName: "wardmote cli",
         requestedAccess: "board",
       });
 
@@ -181,8 +181,8 @@ describe("cli auth routes", () => {
     mockBoardAuthService.describeCliAuthChallenge.mockResolvedValue({
       id: "12345678-1234-4123-8123-123456789abc",
       status: "pending",
-      command: "paperclip-pro company import",
-      clientName: "paperclip-pro cli",
+      command: "wardmote company import",
+      clientName: "wardmote cli",
       requestedAccess: "board",
       requestedCompanyId: null,
       requestedCompanyName: null,

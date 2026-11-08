@@ -14,7 +14,7 @@ export function DecisionHistoryTable({ entries, fastResponse = false, connection
       <thead><tr className="border-b border-line text-ink-3">{["When / feature", "Responsible", "Task", ...(fastResponse ? ["Connection"] : []), "Model", "Status", "Duration", "Tokens in / out", "Cost"].map(label => <th key={label} className="px-3 py-2 text-left font-medium">{label}</th>)}</tr></thead>
       <tbody>{entries.map(row => <tr key={row.id} className="border-b border-line last:border-0">
         <td className="px-3 py-3"><div className="whitespace-nowrap">{formatDateTime(row.startedAt)}</div><div className="text-xs text-ink-3">{row.feature === "settings.test" ? "Setup test" : row.feature}</div></td>
-        <td className="px-3 py-3">{row.actorType === "system" ? "Paperclip services" : row.userName ?? (row.responsibleUserId === "local-board" ? "Board" : "Former user")}</td>
+        <td className="px-3 py-3">{row.actorType === "system" ? "Wardmote services" : row.userName ?? (row.responsibleUserId === "local-board" ? "Board" : "Former user")}</td>
         <td className="px-3 py-3">{row.issueId ? <Link className="underline underline-offset-4" to={`/issues/${row.issueIdentifier ?? row.issueId}`}>{row.issueIdentifier ?? "View task"}</Link> : "—"}</td>
         {fastResponse && <td className="px-3 py-3">{row.connectionName ?? (row.connectionId ? "Removed connection" : "—")}</td>}
         <td className="px-3 py-3 font-mono text-xs">{row.model}</td>

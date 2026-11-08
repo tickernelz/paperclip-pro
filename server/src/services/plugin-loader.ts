@@ -32,6 +32,7 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import type { Db } from "@tickernelz/paperclip-pro-db";
+import { resolveDefaultPaperclipHomeDir } from "@tickernelz/paperclip-pro-shared/home-paths";
 import { PLUGIN_RPC_ERROR_CODES } from "@tickernelz/paperclip-pro-plugin-sdk";
 import type {
   PaperclipPluginManifestV1,
@@ -78,11 +79,7 @@ export const NPM_PLUGIN_PACKAGE_PREFIX = "paperclip-plugin-";
  *
  * @see PLUGIN_SPEC.md §8.1 — On-Disk Layout
  */
-export const DEFAULT_LOCAL_PLUGIN_DIR = path.join(
-  os.homedir(),
-  ".paperclip-pro",
-  "plugins",
-);
+export const DEFAULT_LOCAL_PLUGIN_DIR = path.join(resolveDefaultPaperclipHomeDir(), "plugins");
 
 const DEV_TSX_LOADER_PATH = path.resolve(__dirname, "../../../cli/node_modules/tsx/dist/loader.mjs");
 

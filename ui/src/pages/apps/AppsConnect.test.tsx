@@ -42,7 +42,7 @@ const mockParams = vi.hoisted(() => ({ appKey: undefined as string | undefined }
 const mockCompany = vi.hoisted(() => ({
   value: {
     selectedCompanyId: "company-1" as string | undefined,
-    selectedCompany: { id: "company-1", name: "Paperclip" } as { id: string; name: string } | null,
+    selectedCompany: { id: "company-1", name: "Wardmote" } as { id: string; name: string } | null,
   },
 }));
 
@@ -213,7 +213,7 @@ async function openAccessAdvanced() {
  */
 async function passAccessStep() {
   const onOAuthEntryScreen = Boolean(
-    document.body.textContent?.includes("Paperclip will open")
+    document.body.textContent?.includes("Wardmote will open")
       || document.body.textContent?.includes("Your connection is saved."),
   );
   if (onOAuthEntryScreen) {
@@ -293,7 +293,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     window.sessionStorage.clear();
     mockCompany.value = {
       selectedCompanyId: "company-1",
-      selectedCompany: { id: "company-1", name: "Paperclip" },
+      selectedCompany: { id: "company-1", name: "Wardmote" },
     };
     mockSearch.value = "";
     mockParams.appKey = undefined;
@@ -493,7 +493,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     await vi.waitFor(() => expect(startOAuthMock).toHaveBeenCalledWith(connection.id, { asCurrentUser: true, interactionId: "intent-inline" }));
     expect(popup.location.assign).toHaveBeenCalled();
     popup.closed = true;
-    expect(container.textContent).toContain("Paperclip is waiting for confirmation");
+    expect(container.textContent).toContain("Wardmote is waiting for confirmation");
     expect(container.querySelector('a[target="_blank"]')?.getAttribute("href")).toBe("https://mcp.notion.com/authorize?state=resumed");
     expect(navigateTopLevelMock).not.toHaveBeenCalled();
     expect(putConnectionInstallsMock).not.toHaveBeenCalled();
@@ -525,7 +525,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     connectAppMock.mockResolvedValue({ connectionId: connection.id, connection, catalog: [], auth: { kind: "oauth" } });
     await render(undefined, false, <ConnectionSetupFlow host="dialog" serviceSlug="composio" interactionId="intent-inline" onPhaseChange={onPhaseChange} onComplete={onComplete} />);
     await act(async () => buttonByText("Connect Composio")!.click());
-    await vi.waitFor(() => expect(container.textContent).toContain("Paperclip couldn’t open sign-in"));
+    await vi.waitFor(() => expect(container.textContent).toContain("Wardmote couldn’t open sign-in"));
 
     const link = container.querySelector<HTMLAnchorElement>('a[target="_blank"]')!;
     expect(link.href).toBe("https://mcp.notion.com/authorize?state=resumed");
@@ -535,7 +535,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     await act(async () => link.dispatchEvent(click));
     expect(click.defaultPrevented).toBe(false);
     expect(onPhaseChange).toHaveBeenLastCalledWith("authorizing");
-    expect(container.textContent).not.toContain("Paperclip couldn’t open sign-in");
+    expect(container.textContent).not.toContain("Wardmote couldn’t open sign-in");
     expect(open).toHaveBeenCalledTimes(1);
     expect(connectAppMock).toHaveBeenCalledTimes(1);
     expect(startOAuthMock).toHaveBeenCalledTimes(1);
@@ -552,7 +552,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
       await act(async () => setInputValue(container.querySelector<HTMLInputElement>('input[id$="-url"]')!, "https://provider.example/mcp"));
     }
     await act(async () => buttonByText(`Connect ${provider[0].toUpperCase()}${provider.slice(1)}`)!.click());
-    await vi.waitFor(() => expect(container.textContent).toContain("Paperclip couldn’t open sign-in"));
+    await vi.waitFor(() => expect(container.textContent).toContain("Wardmote couldn’t open sign-in"));
 
     const link = container.querySelector<HTMLAnchorElement>('a[target="_blank"]')!;
     expect(link.textContent).toBe("open sign-in again");
@@ -1157,7 +1157,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
   });
 
   it("shows Gmail's instance configuration notice instead of a dead connect path", async () => {
-    const reason = "Configure Paperclip ID before connecting Gmail.";
+    const reason = "Configure Wardmote ID before connecting Gmail.";
     listGalleryMock.mockResolvedValue({
       apps: [{ ...GMAIL, availability: { available: false, reason } }],
     });
@@ -1221,9 +1221,9 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     expect(container.textContent).toContain("Open Box app settings");
     // The extra work reads as the provider's limitation, not as Box's normal path.
     expect(container.textContent).toContain(
-      "does not let Paperclip register itself automatically",
+      "does not let Wardmote register itself automatically",
     );
-    expect(container.textContent).toContain("Paperclip callback URL");
+    expect(container.textContent).toContain("Wardmote callback URL");
     expect(container.textContent).toContain(
       "https://paperclip.example.test/api/tools/oauth/callback",
     );
@@ -1439,7 +1439,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
 
     expect(startCloudConnectorEnrollmentMock).toHaveBeenCalledWith(
       "company-1",
-      "Paperclip",
+      "Wardmote",
       "/apps/connect?source=gmail&stage=setup",
     );
     expect(navigateTopLevelMock).toHaveBeenCalledWith(
@@ -1470,7 +1470,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     expect(fallback?.textContent).toBe("Open authorization in a new tab");
     expect(fallback?.href).toBe("https://my-staging.paperclip.app/connections/enroll?id=enroll-test");
     expect(navigateTopLevelMock).not.toHaveBeenCalled();
-    expect(startCloudConnectorEnrollmentMock).toHaveBeenCalledWith("company-1", "Paperclip", "/apps/connect?source=gmail&stage=setup&intent=intent-1&enrollment_host=dialog");
+    expect(startCloudConnectorEnrollmentMock).toHaveBeenCalledWith("company-1", "Wardmote", "/apps/connect?source=gmail&stage=setup&intent=intent-1&enrollment_host=dialog");
     listGalleryMock.mockResolvedValue({ apps: [{ ...GMAIL, ownershipAvailability: { ...GMAIL.ownershipAvailability, platform_shared: true } }] });
     getCloudConnectorEnrollmentMock.mockResolvedValue({ status: "active" });
     await act(async () => { await client.invalidateQueries({ queryKey: ["cloud-connector", "enrollment"] }); });
@@ -1478,7 +1478,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     await flushReact();
     if (!popupBlocked) expect(popup.close).toHaveBeenCalled();
     await openAccessAdvanced();
-    expect(container.textContent).toContain("What should Paperclip be able to do?");
+    expect(container.textContent).toContain("What should Wardmote be able to do?");
     connectAppMock.mockResolvedValue({ connectionId: "gmail-1", connection: { id: "gmail-1", credentialPolicy: "per_user" }, auth: { kind: "oauth", startUrl: "https://example.test/unbound" } });
     await act(async () => buttonByText("Continue to sign in")?.click());
     await flushReact();
@@ -1554,7 +1554,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
       await flushReact();
 
       expect(startCloudConnectorEnrollmentMock).toHaveBeenCalledWith(
-        "company-1", "Paperclip", "/apps/connect?source=github&stage=setup",
+        "company-1", "Wardmote", "/apps/connect?source=github&stage=setup",
       );
       expect(navigateTopLevelMock).toHaveBeenCalledWith(
         "https://my-staging.paperclip.app/connections/enroll?id=enroll-test",
@@ -1690,7 +1690,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
 
     await render(queryClient);
 
-    expect(container.textContent).toContain("Paperclip couldn’t check Cloud registration. Try again.");
+    expect(container.textContent).toContain("Wardmote couldn’t check Cloud registration. Try again.");
     expect(container.textContent).not.toContain("Your GitHub key");
 
     await act(async () => {
@@ -1778,7 +1778,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     expect(window.sessionStorage.getItem("paperclip.connector-enrollment-access:github")).toBeNull();
     mockCompany.value = {
       selectedCompanyId: "company-1",
-      selectedCompany: { id: "company-1", name: "Paperclip" },
+      selectedCompany: { id: "company-1", name: "Wardmote" },
     };
     await act(async () => {
       mountedRoot?.render(
@@ -1854,7 +1854,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
       expect(container.textContent).toContain("needs its own OAuth app");
       expect(container.textContent).toContain("Client ID");
       expect(buttonByText("Continue to sign in")?.disabled).toBe(true);
-      const managedAuth = buttonByText("Use Paperclip instead");
+      const managedAuth = buttonByText("Use Wardmote instead");
       expect(managedAuth).toBeDefined();
       expect(managedAuth?.getAttribute("aria-expanded")).toBe("true");
       const fieldsRegion = document.getElementById(managedAuth!.getAttribute("aria-controls")!);
@@ -1897,7 +1897,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     await render();
 
     expect(container.textContent).not.toContain("Google Developer Preview access required");
-    expect(container.textContent).not.toContain("does not enable unrelated Paperclip customers");
+    expect(container.textContent).not.toContain("does not enable unrelated Wardmote customers");
     expect(container.textContent).not.toContain("final project-registration email");
     expect(container.textContent).not.toContain("Apply or verify Developer Preview enrollment");
     await openAccessAdvanced();
@@ -1925,7 +1925,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     );
     expect(duplicateHeadings).toHaveLength(1);
     await openAccessAdvanced();
-    expect(container.textContent).toContain("What should Paperclip be able to do?");
+    expect(container.textContent).toContain("What should Wardmote be able to do?");
     expect(container.textContent).toContain("Review requirements");
     expect(container.textContent).not.toContain("Connect Google Calendar to read and manage events.");
     expect(container.textContent).not.toContain("All event mutations require approval.");
@@ -1936,7 +1936,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     expect(container.querySelector('input[placeholder="My app"]')).toBeNull();
 
     const capabilityQuestion = Array.from(container.querySelectorAll("label")).find(
-      (label) => label.textContent === "What should Paperclip be able to do?",
+      (label) => label.textContent === "What should Wardmote be able to do?",
     );
     expect(capabilityQuestion?.closest(".max-w-xl")?.classList.contains("bg-bg-2")).toBe(false);
   });
@@ -2282,7 +2282,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
 
     expect(container.textContent).toContain("Use your own OAuth app");
     expect(container.querySelector("#curated-oauth-client-id")).toBeTruthy();
-    expect(container.textContent).toContain("Paperclip callback URL");
+    expect(container.textContent).toContain("Wardmote callback URL");
   });
 
   it("shows unavailable Vercel configuration only inside the isolated Vercel entry point", async () => {
@@ -2512,7 +2512,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     );
   });
 
-  it("shows an in-flight state while Paperclip prepares Notion sign-in", async () => {
+  it("shows an in-flight state while Wardmote prepares Notion sign-in", async () => {
     mockSearch.value = "source=notion";
     listGalleryMock.mockResolvedValueOnce({ apps: [NOTION] });
     connectAppMock.mockReturnValueOnce(new Promise(() => {}));
@@ -2958,7 +2958,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     }] });
     await render();
     await flushReact();
-    expect(container.textContent).toContain("Install Paperclip and grant at least one repository");
+    expect(container.textContent).toContain("Install Wardmote and grant at least one repository");
     expect(container.querySelector('a[href="https://github.com/apps/paperclip-for-github/installations/new"]')?.textContent).toBe("Install Paperclip on GitHub");
     expect(container.textContent).not.toContain("Your GitHub key");
     await act(async () => buttonByText("Try again")!.click());
@@ -3196,7 +3196,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
       expect(listConnectionsMock).toHaveBeenCalledTimes(2);
       expect(listApplicationsMock).toHaveBeenCalledTimes(2);
       expect(container.textContent).not.toContain("Couldn’t load connection setup");
-      expect(container.textContent).toContain("Connect Notion to Paperclip");
+      expect(container.textContent).toContain("Connect Notion to Wardmote");
     },
   );
 
@@ -4181,7 +4181,7 @@ describe("AppsConnect — guided generic MCP flow (PAP-17087)", () => {
     await gotoLinkFrame(container, "https://mcp.zapier.com/api/v1/connect?token=t");
 
     // Both routes are present: the branded shortcut and the generic form itself.
-    expect(container.textContent).toContain("Paperclip has a guided setup for Zapier.");
+    expect(container.textContent).toContain("Wardmote has a guided setup for Zapier.");
     expect(container.textContent).toContain("Connect your own MCP server");
     expect(buttonByText("Check link")).toBeTruthy();
   });
@@ -4230,7 +4230,7 @@ describe("AppsConnect — guided generic MCP flow (PAP-17087)", () => {
     await flushReact();
     await flushReact();
 
-    expect(container.textContent).toContain("This Paperclip needs a public HTTPS address first");
+    expect(container.textContent).toContain("This Wardmote needs a public HTTPS address first");
     expect(container.textContent).not.toContain("PAPERCLIP_PUBLIC_URL");
   });
 
@@ -4248,7 +4248,7 @@ describe("AppsConnect — guided generic MCP flow (PAP-17087)", () => {
     await flushReact();
     await flushReact();
 
-    expect(container.textContent).toContain("Paperclip couldn’t name this connection");
+    expect(container.textContent).toContain("Wardmote couldn’t name this connection");
     expect(container.textContent).not.toContain("Choose a different name");
     expect(container.querySelector("#generic-mcp-name")).toBeNull();
   });
@@ -4491,7 +4491,7 @@ describe("AppsConnect — guided generic MCP flow (PAP-17087)", () => {
     });
   });
 
-  it("blocks a header Paperclip refuses to send before making a request", async () => {
+  it("blocks a header Wardmote refuses to send before making a request", async () => {
     await render();
     await gotoLinkFrame(container, "https://mcp.example.test/mcp");
     await openAdvanced();

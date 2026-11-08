@@ -120,6 +120,38 @@ describe("heartbeat run preparation module", () => {
     expect(database.select).toHaveBeenCalledTimes(2);
   });
 
+  it("drops forbidden bindings under their WARDMOTE_* names like their PAPERCLIP_* names", async () => {
+    const forbidden = [
+      "API_KEY", "AGENT_KEY_ID", "AGENT_PUBLIC_KEY", "AGENT_PRIVATE_KEY",
+      "RUNNER_NETWORK_ACCESS", "RUNNER_NETWORK_ROOTS", "GITHUB_AUTH_MODE", "GITHUB_HOST_HOME",
+      "GIT_METADATA_ROOTS", "GITHUB_BROKER_TOKEN", "GITHUB_BROKER_URL", "GITHUB_BRIDGE_TOKEN",
+      "GITHUB_LAUNCHER_DIR",
+    ];
+    const bindings = Object.fromEntries(forbidden.flatMap((name) => [
+      [`WARDMOTE_${name}`, "config-value"],
+      [`wardmote_${name.toLowerCase()}`, "config-value"],
+    ]));
+    const passThrough = (_companyId: string, env: Record<string, unknown>) => ({
+      env: Object.fromEntries(Object.entries(env).filter((entry): entry is [string, string] => typeof entry[1] === "string")),
+      secretKeys: new Set<string>(),
+      manifest: [],
+    });
+    const secretsSvc = {
+      resolveAdapterConfigForRuntime: vi.fn(async (_companyId: string, config: Record<string, unknown>) => ({
+        config, secretKeys: new Set<string>(), manifest: [],
+      })),
+      resolveEnvBindings: vi.fn(async (companyId: string, env: Record<string, unknown>) => passThrough(companyId, env)),
+    };
+    const result = await resolveExecutionRunAdapterConfig({
+      companyId: "company-one",
+      managedGitHubCredentials: true,
+      executionRunConfig: { env: { ...bindings, WARDMOTE_GIT_TOKEN: "agent-token", WARDMOTE_CUSTOM: "kept" } },
+      projectEnv: { ...bindings, WARDMOTE_GIT_TOKEN: "project-token", PROJECT_ONLY: "kept" },
+      secretsSvc: secretsSvc as never,
+    });
+    expect(result.resolvedConfig.env).toEqual({ WARDMOTE_CUSTOM: "kept", PROJECT_ONLY: "kept" });
+  });
+
   it("keeps missing scoped credentials as a pre-dispatch failure", async () => {
     const secretsSvc = {
       resolveAdapterConfigForRuntime: vi.fn(),

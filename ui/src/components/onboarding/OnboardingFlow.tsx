@@ -46,7 +46,7 @@ import {
   type ProviderChoice,
 } from "./onboarding-flow";
 
-const BRAND = "Paperclip";
+const BRAND = "Wardmote";
 const POLL_MS = 2_000;
 const OMP_STATUS_KEY = ["onboarding", "omp-status"] as const;
 

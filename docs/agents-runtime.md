@@ -2,11 +2,11 @@
 
 Status: User-facing guide
 Last updated: 2026-03-26
-Audience: Operators setting up and running agents in Paperclip
+Audience: Operators setting up and running agents in Wardmote
 
 ## 1. What this system does
 
-Agents in Paperclip do not run continuously.  
+Agents in Wardmote do not run continuously.  
 They run in **heartbeats**: short execution windows triggered by a wakeup.
 
 Each heartbeat:
@@ -43,7 +43,7 @@ External plugin adapters (install via the adapter manager or API):
 
 - `droid_local`: runs your local Factory Droid CLI (`@henkey/droid-paperclip-adapter`)
 
-For `omp_local` and other local CLI adapters, Paperclip assumes the CLI is already installed and authenticated on the host machine.
+For `omp_local` and other local CLI adapters, Wardmote assumes the CLI is already installed and authenticated on the host machine.
 
 ## 3.2 Runtime behavior
 
@@ -97,7 +97,7 @@ Changing Model or Thinking keeps the agent's session; other choices start a new 
 
 ## 4. Session resume behavior
 
-Paperclip stores session IDs for resumable adapters.
+Wardmote stores session IDs for resumable adapters.
 
 - Next heartbeat reuses the saved session automatically.
 - This gives continuity across heartbeats.
@@ -122,7 +122,7 @@ In local/dev setups, full logs are stored on disk under the configured run-log p
 
 ## 6. Live updates in the UI
 
-Paperclip pushes runtime/activity updates to the browser in real time.
+Wardmote pushes runtime/activity updates to the browser in real time.
 
 You should see live changes for:
 
@@ -176,7 +176,7 @@ Typical failure causes:
 
 Claude-specific note:
 
-- If `ANTHROPIC_API_KEY` is set in adapter env or host environment, Claude uses API-key auth instead of subscription login. Paperclip surfaces this as a warning in environment tests, not a hard error.
+- If `ANTHROPIC_API_KEY` is set in adapter env or host environment, Claude uses API-key auth instead of subscription login. Wardmote surfaces this as a warning in environment tests, not a hard error.
 
 ## 9. Security and risk notes
 

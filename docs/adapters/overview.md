@@ -1,13 +1,13 @@
 ---
 title: Adapters Overview
-summary: What adapters are and how they connect agents to Paperclip
+summary: What adapters are and how they connect agents to Wardmote
 ---
 
-Adapters are the bridge between Paperclip's orchestration layer and agent runtimes. Each adapter knows how to invoke a specific type of AI agent and capture its results.
+Adapters are the bridge between Wardmote's orchestration layer and agent runtimes. Each adapter knows how to invoke a specific type of AI agent and capture its results.
 
 ## How Adapters Work
 
-When a heartbeat fires, Paperclip:
+When a heartbeat fires, Wardmote:
 
 1. Looks up the agent's `adapterType` and `adapterConfig`
 2. Calls the adapter's `execute()` function with the execution context
@@ -19,7 +19,7 @@ When a heartbeat fires, Paperclip:
 | Adapter | Type Key | Description |
 |---------|----------|-------------|
 | OMP | `omp_local` | Runs the OMP coding agent. This is the only agent runtime offered when you create an agent. |
-| Paperclip Runner | `paperclip_runner` | Experimental native runner, enabled per instance. |
+| Wardmote Runner | `paperclip_runner` | Experimental native runner, enabled per instance. |
 | [Process](/adapters/process) | `process` | Executes arbitrary shell commands. Kept on the server for existing agents; not selectable in the UI. |
 | [HTTP](/adapters/http) | `http` | Sends webhooks to external agents. Kept on the server for existing agents; not selectable in the UI. |
 
@@ -34,7 +34,7 @@ as removed, and cannot run or be selected until you switch it to `omp_local`.
 
 ## External Adapters
 
-You can build and distribute adapters as standalone packages — no changes to Paperclip's source code required. External adapters are loaded at startup via the plugin system.
+You can build and distribute adapters as standalone packages — no changes to Wardmote's source code required. External adapters are loaded at startup via the plugin system.
 
 ```sh
 # Install from npm via API
@@ -62,7 +62,7 @@ my-adapter/
       test.ts           # Environment diagnostics
     ui-parser.ts        # Self-contained UI transcript parser (for external adapters)
     cli/
-      format-event.ts   # Terminal output for `paperclip-pro run --watch`
+      format-event.ts   # Terminal output for `wardmote run --watch`
 ```
 
 | Registry | What it does | Source |
@@ -73,4 +73,4 @@ my-adapter/
 
 ## UI Parser Contract
 
-External adapters can ship a self-contained UI parser that tells the Paperclip web UI how to render their stdout. Without it, the UI uses a generic shell parser. See the [UI Parser Contract](/adapters/adapter-ui-parser) for details.
+External adapters can ship a self-contained UI parser that tells the Wardmote web UI how to render their stdout. Without it, the UI uses a generic shell parser. See the [UI Parser Contract](/adapters/adapter-ui-parser) for details.

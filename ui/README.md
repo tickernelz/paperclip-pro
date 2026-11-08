@@ -1,6 +1,6 @@
 # @tickernelz/paperclip-pro-ui
 
-Published static assets for the Paperclip board UI.
+Published static assets for the Wardmote board UI.
 
 ## What gets published
 

@@ -45,9 +45,12 @@ import {
   refreshPaperclipWorkspaceEnvForExecution,
   renderPaperclipWakePrompt,
   renderTemplate,
+  isForbiddenConfigEnvKey,
+  isPaperclipRuntimeEnvKey,
   sanitizeInheritedPaperclipEnv,
   selectPaperclipTaskMarkdown,
 } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+import { legacyEnvKey } from "@tickernelz/paperclip-pro-shared/env-aliases";
 import {
   paperclipRestGuidance,
   type PaperclipAccessMode,
@@ -643,7 +646,8 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     });
     for (const [key, value] of Object.entries(configuredEnv)) {
       if (typeof value !== "string") continue;
-      if (key.startsWith("PAPERCLIP_") && Object.hasOwn(env, key)) continue;
+      if (isForbiddenConfigEnvKey(key)) continue;
+      if (isPaperclipRuntimeEnvKey(key) && Object.hasOwn(env, legacyEnvKey(key))) continue;
       env[key] = value;
     }
     if (!env.PAPERCLIP_API_KEY && authToken) env.PAPERCLIP_API_KEY = authToken;

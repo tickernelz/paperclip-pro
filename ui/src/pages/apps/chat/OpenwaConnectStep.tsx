@@ -116,7 +116,7 @@ export function OpenwaConnectStep({
       <div className="space-y-2">
         <h1 className="text-xl font-bold">Connect OpenWA</h1>
         <p className="text-sm text-ink-3">
-          Connect {agentName} to one WhatsApp session on your self-hosted OpenWA gateway. Paperclip only reads the
+          Connect {agentName} to one WhatsApp session on your self-hosted OpenWA gateway. Wardmote only reads the
           gateway during inspection; nothing is sent until an owner messages the number.
         </p>
         <p className="text-sm">
@@ -286,7 +286,7 @@ export function OpenwaConnectStep({
                 <span className="font-medium">An owner&apos;s personal number</span>
                 <span className="block text-ink-3">
                   The agent replies as you. Only chats you enable in Settings can trigger it, and its messages carry a
-                  visible prefix so contacts know an assistant wrote them. Paperclip can read every chat this session can see.
+                  visible prefix so contacts know an assistant wrote them. Wardmote can read every chat this session can see.
                 </span>
               </span>
             </label>
@@ -315,7 +315,7 @@ export function OpenwaConnectStep({
                 onChange={(event) => setSoleClient(event.target.checked)}
               />
               <span>
-                Paperclip is the only app sending as this session. Other bots, webhooks, or scripts on the same session
+                Wardmote is the only app sending as this session. Other bots, webhooks, or scripts on the same session
                 could make the agent mistake their messages for yours.
               </span>
             </label>

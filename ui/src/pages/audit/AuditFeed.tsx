@@ -265,7 +265,7 @@ function AuditUpsell() {
       <CardContent className="flex flex-col items-center gap-3 py-14 text-center">
         <ShieldAlert className="h-10 w-10 text-ink-3/50" />
         <div>
-          <p className="text-sm font-medium text-ink">Agent audit is a Paperclip Enterprise view</p>
+          <p className="text-sm font-medium text-ink">Agent audit is a Wardmote Enterprise view</p>
           <p className="mx-auto mt-1 max-w-md text-sm text-ink-3">
             The agent audit log gives you a searchable, exportable record of everything your agents
             did — every comment, task change, approval, and run — with the responsible person for
@@ -720,7 +720,7 @@ export function AuditFeed({
       ) : null}
 
       <p className="text-xs text-ink-3">
-        Recorded by Paperclip — entries can't be edited. Sensitive values are never stored.
+        Recorded by Wardmote — entries can't be edited. Sensitive values are never stored.
       </p>
     </div>
   );

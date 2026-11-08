@@ -158,7 +158,7 @@ export function ChatConnectionPurpose({ provider, onChat, onTools }: {
               </span>
               <span className="mt-1 block text-sm text-ink-3">
                 People in {providerNames[provider]} can start and continue
-                Paperclip tasks.
+                Wardmote tasks.
               </span>
             </span>
           </button>
@@ -832,7 +832,7 @@ function ProviderConnectStep({
       setPrivateKeyFileError(
         error instanceof Error
           ? error.message
-          : "Paperclip couldn't read that file. Choose the .pem file again or paste the private key.",
+          : "Wardmote couldn't read that file. Choose the .pem file again or paste the private key.",
       );
     } finally {
       if (privateKeyReadGuard.isCurrent(readRevision)) {
@@ -882,11 +882,11 @@ function ProviderConnectStep({
               commands: [
                 {
                   title: "/status",
-                  description: "Show the active Paperclip task status",
+                  description: "Show the active Wardmote task status",
                 },
                 {
                   title: "/new",
-                  description: "Start a new Paperclip task in this chat",
+                  description: "Start a new Wardmote task in this chat",
                 },
                 {
                   title: "/close",
@@ -928,7 +928,7 @@ function ProviderConnectStep({
           <p className="mt-1 text-sm text-ink-3">
             {repairing
               ? "Reconnect verifies this same Discord application and server installation. It does not add or remove the bot from the server. Leave fields blank to reuse saved credentials."
-              : "Create one dedicated Discord application and bot for this Paperclip agent."}
+              : "Create one dedicated Discord application and bot for this Wardmote agent."}
           </p>
         </div>
       <ol className="list-decimal space-y-2 pl-5 text-sm">
@@ -970,7 +970,7 @@ function ProviderConnectStep({
         <p className="text-sm text-ink-3">
           The install link grants only View Channels, Send Messages, Create
           Public Threads, Send Messages in Threads, Read Message History, Add
-          Reactions, Embed Links, and Attach Files. Paperclip still requires
+          Reactions, Embed Links, and Attach Files. Wardmote still requires
           each discovered channel to be enabled in Access.
         </p>
         <Button
@@ -998,7 +998,7 @@ function ProviderConnectStep({
           <h1 className="text-xl font-bold">Create {agentName} in Telegram</h1>
           <p className="mt-1 text-sm text-ink-3">
             {repairing
-              ? "Reconnect verifies this same BotFather bot and automatically refreshes its Paperclip webhook and command menu. It does not recreate the bot or change its chat memberships. Leave the token blank to reuse the saved credential."
+              ? "Reconnect verifies this same BotFather bot and automatically refreshes its Wardmote webhook and command menu. It does not recreate the bot or change its chat memberships. Leave the token blank to reuse the saved credential."
               : "Create a bot with BotFather, then paste the token it gives you."}
           </p>
         </div>
@@ -1012,7 +1012,7 @@ function ProviderConnectStep({
           </li>
         </ol>
         <p className="rounded-md border border-line bg-bg-3/40 p-3 text-sm text-ink-3">
-          Paperclip works with Telegram&apos;s default bot privacy mode and
+          Wardmote works with Telegram&apos;s default bot privacy mode and
           registers its command menu automatically. In a group, ordinary
           mentions are not delivered to bots: start or continue work with{" "}
           <code>/task@bot_username &lt;request&gt;</code>, or reply directly to
@@ -1027,7 +1027,7 @@ function ProviderConnectStep({
         {field("botToken", "Bot token")}
         {(!endpoint.setup?.webhookUrl || automaticSlack && !endpoint.setup?.slackOAuthCallbackUri?.startsWith("https://")) && (
           <p className="text-sm text-bad">
-            Configure a public HTTPS URL for this Paperclip instance before
+            Configure a public HTTPS URL for this Wardmote instance before
             connecting Telegram.
           </p>
         )}
@@ -1075,7 +1075,7 @@ function ProviderConnectStep({
           </li>
           <li>
             In Azure, create an Azure Bot. Choose Single Tenant, use that
-            Application ID, set its messaging endpoint to the Paperclip URL
+            Application ID, set its messaging endpoint to the Wardmote URL
             below, and add the Microsoft Teams channel.
           </li>
           <li>
@@ -1119,7 +1119,7 @@ function ProviderConnectStep({
           </Button>
         </div>
         {endpointValue(
-          "Paperclip messaging endpoint",
+          "Wardmote messaging endpoint",
           endpoint.setup?.messagingEndpoint,
         )}
         {field("clientId", "Application / Client ID", "text")}
@@ -1155,7 +1155,7 @@ function ProviderConnectStep({
               <strong>Single Tenant</strong>, set <strong>Creation type</strong>{" "}
               to <strong>Use existing app registration</strong>, and enter the
               Application ID and Tenant ID above. After creation, open{" "}
-              <strong>Settings · Configuration</strong> and paste the Paperclip{" "}
+              <strong>Settings · Configuration</strong> and paste the Wardmote{" "}
               <strong>Messaging endpoint</strong>; then open{" "}
               <strong>Settings · Channels</strong> and enable{" "}
               <strong>Microsoft Teams</strong>.
@@ -1218,7 +1218,7 @@ function ProviderConnectStep({
           the manifest with your app icons.
         </p>
         <p className="text-sm text-ink-3">
-          Paperclip does not use Teams single sign-on in this release. The
+          Wardmote does not use Teams single sign-on in this release. The
           copied <code>webApplicationInfo</code> entry only associates the RSC
           permissions with the same Entra Application ID. Its nonempty resource
           is an RSC placeholder; you do not need to register an Entra
@@ -1227,7 +1227,7 @@ function ProviderConnectStep({
         <p className="text-sm text-ink-3">
           The two application RSC permissions let the bot receive every message,
           without an @mention, in each team or group chat where it is installed.
-          Paperclip retains and acts only on messages admitted by your Paperclip
+          Wardmote retains and acts only on messages admitted by your Wardmote
           reach and access rules. Make this provider access clear in the app
           description shown to installers.
         </p>
@@ -1240,7 +1240,7 @@ function ProviderConnectStep({
         </p>
         {!endpoint.setup?.messagingEndpoint && (
           <p className="text-sm text-bad">
-            Configure a public HTTPS URL for this Paperclip instance before
+            Configure a public HTTPS URL for this Wardmote instance before
             connecting Microsoft Teams.
           </p>
         )}
@@ -1276,7 +1276,7 @@ function ProviderConnectStep({
           <p className="mt-1 text-sm text-ink-3">
             {repairing
               ? "Reconnect verifies this same App and installation, then updates its webhook URL, secret, and secure delivery settings. It does not reinstall the App or change repository access. Leave App ID and private key blank to reuse saved credentials. Keep Webhooks · Active enabled in GitHub; send a test conversation after reconnecting."
-              : "Configure its webhook and permissions, then verify the App with Paperclip."}
+              : "Configure its webhook and permissions, then verify the App with Wardmote."}
           </p>
         </div>
         {!repairing && (
@@ -1284,10 +1284,10 @@ function ProviderConnectStep({
             <li>
               Under the target user or organization, create a new GitHub App.
               Give it a globally unique name (34 characters or fewer), use the
-              Paperclip homepage URL below, and leave user authorization off.
+              Wardmote homepage URL below, and leave user authorization off.
             </li>
             <li>
-              Keep <strong>Webhooks · Active</strong> on. Enter the Paperclip
+              Keep <strong>Webhooks · Active</strong> on. Enter the Wardmote
               webhook URL and the Paperclip-generated webhook secret below, and
               keep <strong>Enable SSL verification</strong> selected.
             </li>
@@ -1314,10 +1314,10 @@ function ProviderConnectStep({
           </ol>
         )}
         {endpointValue(
-          "Paperclip homepage URL",
+          "Wardmote homepage URL",
           publicOrigin(endpoint.setup?.webhookUrl),
         )}
-        {endpointValue("Paperclip webhook URL", endpoint.setup?.webhookUrl)}
+        {endpointValue("Wardmote webhook URL", endpoint.setup?.webhookUrl)}
         <Button
           variant="secondary"
           onClick={() =>
@@ -1447,14 +1447,14 @@ function ProviderConnectStep({
                 </Button>
               </div>
               <p className="text-sm text-ink-3">
-                Copy this value now. Paperclip will not show it again.
+                Copy this value now. Wardmote will not show it again.
               </p>
             </>
           ) : (
             <p className="text-sm text-ink-3">
               {endpoint.setup?.webhookSecretConfigured
                 ? "A webhook secret is configured and cannot be shown again."
-                : "Generate the secret in Paperclip, then paste it into the GitHub App."}
+                : "Generate the secret in Wardmote, then paste it into the GitHub App."}
             </p>
           )}
           <div>
@@ -1491,7 +1491,7 @@ function ProviderConnectStep({
         </div>
         {(!endpoint.setup?.webhookUrl || automaticSlack && !endpoint.setup?.slackOAuthCallbackUri?.startsWith("https://")) && (
           <p className="text-sm text-bad">
-            Configure a public HTTPS URL for this Paperclip instance before
+            Configure a public HTTPS URL for this Wardmote instance before
             connecting GitHub.
           </p>
         )}
@@ -1524,7 +1524,7 @@ function ProviderConnectStep({
       <div className="space-y-5">
         <div>
           <h1 className="text-xl font-bold">{automaticSlack ? "Send a message to your agent" : "Verify Slack connection"}</h1>
-          {!automaticSlack && <p className="mt-1 text-sm text-ink-3">Slack needs to confirm that it can reach your Paperclip instance.</p>}
+          {!automaticSlack && <p className="mt-1 text-sm text-ink-3">Slack needs to confirm that it can reach your Wardmote instance.</p>}
         </div>
         {automaticSlack ? <Button asChild variant="secondary"><a href={endpoint.setup?.slackAccount?.dmChannelId && endpoint.providerAccountId ? `https://app.slack.com/client/${encodeURIComponent(endpoint.providerAccountId)}/${encodeURIComponent(endpoint.setup.slackAccount.dmChannelId)}` : endpoint.setup?.providerUrl ?? "https://app.slack.com"} target="_blank" rel="noopener noreferrer">Open Slack <ExternalLink className="size-4" /></a></Button> : slackRequestUrlInstructions}
         {endpoint.setup?.webhookVerifiedAt ? (
@@ -1542,7 +1542,7 @@ function ProviderConnectStep({
         <SlackSetupAdvanced label={automaticSlack ? "Didn’t work?" : "Troubleshooting"}>
           {automaticSlack && slackRequestUrlInstructions}
           <p className="text-ink-3">If the Request URL is missing or different, paste this URL into Event Subscriptions. If verification fails, check that your public HTTPS server is reachable and your Signing Secret is correct.</p>
-          {endpointValue("Paperclip webhook URL", endpoint.setup?.webhookUrl)}
+          {endpointValue("Wardmote webhook URL", endpoint.setup?.webhookUrl)}
         </SlackSetupAdvanced>
         <div className="flex items-center justify-between gap-3">
           <Button variant="ghost" onClick={() => navigate("/apps")}>Save &amp; exit</Button>
@@ -1564,7 +1564,7 @@ function ProviderConnectStep({
           <div className="space-y-1">
             <p className="text-sm font-semibold">Public HTTPS URL required</p>
             <p className="text-sm">
-              Slack needs a public HTTPS URL to send messages to Paperclip.
+              Slack needs a public HTTPS URL to send messages to Wardmote.
               Configure one for this instance before creating or connecting your Slack app.
             </p>
             <a
@@ -1834,7 +1834,7 @@ function TryStep({
             ? {
                 tone: "warning" as const,
                 title: "Link the account you’re testing",
-                body: `An observed external account is unlinked, and isolated guest work is off, so it cannot safely start ${agentName}. Link the account in Access, then ${freshConversationInstruction}; Paperclip does not replay the refused request.`,
+                body: `An observed external account is unlinked, and isolated guest work is off, so it cannot safely start ${agentName}. Link the account in Access, then ${freshConversationInstruction}; Wardmote does not replay the refused request.`,
               }
             : {
                 tone: "info" as const,
@@ -1859,7 +1859,7 @@ function TryStep({
       "Wait for the agent’s actual reply. Setup completes after that reply is delivered.",
     ] : provider === "imessage-photon" ? [
       photonAllocation === "shared" ? "In your Photon project, enroll your sender in Users and find its assigned number in Get started. Send a fresh message to that number from Apple Messages." : `Open Apple Messages and send a fresh message to ${botUsername ?? botLabel ?? "the dedicated number"}.`,
-      "Link the discovered sender to a Paperclip person in Access, then send a fresh request.",
+      "Link the discovered sender to a Wardmote person in Access, then send a fresh request.",
       "Wait for the agent’s actual reply. Setup completes after that reply is delivered.",
       ...(photonAllocation === "shared" ? ["This Pro-compatible channel supports DMs only. Group messages cannot start work."] : ["For a group: add the number in Messages, send a message, enable the discovered group in Settings, then send a fresh request."]),
     ] : provider === "discord"

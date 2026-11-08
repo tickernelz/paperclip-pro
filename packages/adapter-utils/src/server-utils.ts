@@ -5,6 +5,8 @@ import { constants as fsConstants, promises as fs, type Dirent } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { CONNECTION_INTENT_AGENT_GUIDANCE } from "@tickernelz/paperclip-pro-shared";
+import { legacyEnvKey, withWardmoteEnvAliases } from "@tickernelz/paperclip-pro-shared/env-aliases";
+import { resolveDefaultPaperclipHomeDir } from "@tickernelz/paperclip-pro-shared/home-paths";
 import { sanitizeRemoteExecutionEnv } from "./remote-execution-env.js";
 import {
   buildLocalProcessSandboxSpawnTarget,
@@ -162,7 +164,7 @@ const REDACTED_LOG_VALUE = "***REDACTED***";
 // Paperclip per run (identity, wake, workspace, API access). Adapter/user
 // config env must never override them.
 export function isPaperclipRuntimeEnvKey(key: string): boolean {
-  return key.startsWith("PAPERCLIP_");
+  return legacyEnvKey(key).startsWith("PAPERCLIP_");
 }
 
 // PAPERCLIP_API_KEY is never accepted from adapter/user config env: the
@@ -172,8 +174,9 @@ export function isPaperclipRuntimeEnvKey(key: string): boolean {
 // Other PAPERCLIP_*-named config keys are allowed as long as Paperclip has
 // not assigned the same key for the run (runtime vars always win).
 export function isForbiddenConfigEnvKey(key: string): boolean {
-  return key === "PAPERCLIP_API_KEY" || key === "PAPERCLIP_WAKE_PAYLOAD_JSON" ||
-    AGENT_IDENTITY_ENV_KEYS.includes(key.toUpperCase());
+  const legacyKey = legacyEnvKey(key);
+  return legacyKey === "PAPERCLIP_API_KEY" || legacyKey === "PAPERCLIP_WAKE_PAYLOAD_JSON" ||
+    AGENT_IDENTITY_ENV_KEYS.includes(legacyEnvKey(key.toUpperCase()));
 }
 const PAPERCLIP_SKILL_ROOT_RELATIVE_CANDIDATES = [
   "../../skills",
@@ -199,9 +202,7 @@ export function resolvePaperclipInstanceRootForAdapter(
   const env = input.env ?? process.env;
   const homeRaw = input.homeDir?.trim() || env.PAPERCLIP_HOME?.trim();
   const homeDir = path.resolve(
-    homeRaw
-      ? expandHomePrefix(homeRaw)
-      : path.resolve(os.homedir(), ".paperclip-pro"),
+    homeRaw ? expandHomePrefix(homeRaw) : resolveDefaultPaperclipHomeDir(),
   );
   const instanceId =
     input.instanceId?.trim() ||
@@ -3559,7 +3560,7 @@ export function refreshPaperclipWorkspaceEnvForExecution(input: {
     // identity, wake, and workspace vars authoritative regardless of what a
     // config binding sets.
     if (isForbiddenConfigEnvKey(key)) continue;
-    if (isPaperclipRuntimeEnvKey(key) && key in input.env) continue;
+    if (isPaperclipRuntimeEnvKey(key) && legacyEnvKey(key) in input.env) continue;
     input.env[key] = value;
   }
 
@@ -3575,14 +3576,15 @@ export function sanitizeInheritedPaperclipEnv(
   delete env.WATCHDOG_USEC;
   delete env.WATCHDOG_PID;
   for (const key of Object.keys(env)) {
-    if (AGENT_IDENTITY_ENV_KEYS.includes(key.toUpperCase())) {
+    if (AGENT_IDENTITY_ENV_KEYS.includes(legacyEnvKey(key.toUpperCase()))) {
       delete env[key];
       continue;
     }
-    if (!key.startsWith("PAPERCLIP_")) continue;
-    if (key === "PAPERCLIP_RUNTIME_API_URL") continue;
-    if (key === "PAPERCLIP_LISTEN_HOST") continue;
-    if (key === "PAPERCLIP_LISTEN_PORT") continue;
+    const legacyKey = legacyEnvKey(key);
+    if (!legacyKey.startsWith("PAPERCLIP_")) continue;
+    if (legacyKey === "PAPERCLIP_RUNTIME_API_URL") continue;
+    if (legacyKey === "PAPERCLIP_LISTEN_HOST") continue;
+    if (legacyKey === "PAPERCLIP_LISTEN_PORT") continue;
     delete env[key];
   }
   return env;
@@ -4829,10 +4831,10 @@ export async function runChildProcess(
     opts.onLogError ??
     ((err, id, msg) => console.warn({ err, runId: id }, msg));
   return new Promise<RunProcessResult>((resolve, reject) => {
-    const rawMerged: NodeJS.ProcessEnv = {
+    const rawMerged: NodeJS.ProcessEnv = withWardmoteEnvAliases({
       ...sanitizeInheritedPaperclipEnv(process.env),
       ...opts.env,
-    };
+    });
 
     // Strip Claude Code nesting-guard env vars so spawned `claude` processes
     // don't refuse to start with "cannot be launched inside another session".
@@ -4855,7 +4857,7 @@ export async function runChildProcess(
     }
     void resolveSpawnTarget(command, args, opts.cwd, mergedEnv, {
       remoteExecution: opts.remoteExecution ?? null,
-      remoteEnv: opts.remoteExecution ? opts.env : null,
+      remoteEnv: opts.remoteExecution ? withWardmoteEnvAliases({ ...opts.env }) : null,
       localProcessSandbox: opts.localProcessSandbox ?? null,
     })
       .then((target) => {

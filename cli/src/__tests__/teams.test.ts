@@ -309,7 +309,7 @@ describe("teams CLI commands", () => {
     const result = {
       team: catalogTeam(),
       portabilityImport: {
-        company: { id: "company-1", name: "Paperclip", action: "unchanged" },
+        company: { id: "company-1", name: "Wardmote", action: "unchanged" },
         agents: [],
         projects: [],
         envInputs: [],
@@ -458,7 +458,7 @@ describe("teams CLI commands", () => {
     expect(errorSpy).not.toHaveBeenCalled();
   });
 
-  it("auto-requests board approval for forbidden installs inside a Paperclip task run", async () => {
+  it("auto-requests board approval for forbidden installs inside a Wardmote task run", async () => {
     process.env.PAPERCLIP_TASK_ID = "11111111-1111-4111-8111-111111111111";
     const approval = {
       id: "approval-2",

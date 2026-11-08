@@ -48,6 +48,8 @@ import {
   type AcpxTerminalSessionFailure,
   type AcpxTerminalSessionFailureDiagnostic,
 } from "./terminal-session-failure.js";
+import { legacyEnvKey } from "@tickernelz/paperclip-pro-shared/env-aliases";
+import { resolveDefaultPaperclipHomeDir } from "@tickernelz/paperclip-pro-shared/home-paths";
 export type { AcpxTerminalSessionFailure } from "./terminal-session-failure.js";
 import type { WorkspaceRestoreFailureCode, WorkspaceRestoreOutcome } from "../workspace-restore-merge.js";
 import type { WorkspaceRestoreDiagnostic } from "../workspace-restore-diagnostics.js";
@@ -813,7 +815,7 @@ export async function referencedSourceContentSignature(
 }
 
 function defaultPaperclipInstanceDir(): string {
-  const home = process.env.PAPERCLIP_HOME?.trim() || path.join(os.homedir(), ".paperclip-pro");
+  const home = process.env.PAPERCLIP_HOME?.trim() || resolveDefaultPaperclipHomeDir();
   const instanceId = process.env.PAPERCLIP_INSTANCE_ID?.trim() || "default";
   return resolvePaperclipInstanceRootForAdapter({
     homeDir: home,
@@ -2112,7 +2114,7 @@ async function buildRuntime(input: {
     // A PAPERCLIP_* key Paperclip did NOT set is stable per-run config, so it
     // applies and feeds the fingerprint hash below.
     if (isForbiddenConfigEnvKey(key)) continue;
-    if (isPaperclipRuntimeEnvKey(key) && key in env) continue;
+    if (isPaperclipRuntimeEnvKey(key) && legacyEnvKey(key) in env) continue;
     env[key] = value;
     // The server rotates run-owned scratch paths on every wake. Still forward
     // them, but only hash actual adapter settings. User-supplied temp overrides

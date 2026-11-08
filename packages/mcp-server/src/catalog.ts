@@ -36,6 +36,16 @@ export type ToolListing = {
   }>;
 };
 
+const FEATURE_TOOL_ALIASES: Readonly<Record<string, string>> = {
+  paperclipGetInstanceSettingFeatures: "paperclipGetInstanceSettingExperimental",
+  paperclipUpdateInstanceFeatures: "paperclipUpdateInstanceExperimental",
+};
+
+export function canonicalToolName(name: string): string {
+  const legacy = /^wardmote[A-Z]/.test(name) ? `paperclip${name.slice("wardmote".length)}` : name;
+  return FEATURE_TOOL_ALIASES[legacy] ?? legacy;
+}
+
 export function resolveListingAnnotations(env: NodeJS.ProcessEnv = process.env): boolean {
   const configured = env.PAPERCLIP_MCP_LIST_ANNOTATIONS?.trim().toLowerCase() ?? "";
   return configured === "1" || configured === "true" || configured === "yes";

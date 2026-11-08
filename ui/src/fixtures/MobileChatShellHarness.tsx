@@ -402,7 +402,7 @@ function Harness() {
                         id: "workspaces",
                         label: "Workspaces",
                         options: [
-                          { key: "main", value: "main", label: "main (paperclip-pro worktree, long label)" },
+                          { key: "main", value: "main", label: "main (wardmote worktree, long label)" },
                           { key: "mobile", value: "mobile", label: "mobile-composer-rework (very long branch label here)" },
                         ],
                       },

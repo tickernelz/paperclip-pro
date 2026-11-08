@@ -24,7 +24,7 @@ function renderSection(permissions: Partial<AgentPermissions>) {
           permissions={permissions}
           onChange={onChange}
           companyId="company-1"
-          projectCandidates={[{ id: "project-1", label: "Paperclip App" }]}
+          projectCandidates={[{ id: "project-1", label: "Wardmote App" }]}
           issueCandidates={[{ id: "issue-1", label: "PAP-1 · Review PR" }]}
         />
       </TooltipProvider>,
@@ -67,7 +67,7 @@ describe("TrustPresetSection", () => {
 
     expect(view.text()).toContain("Containment active");
     expect(view.text()).toContain("Boundary type");
-    expect(view.text()).toContain("Paperclip App");
+    expect(view.text()).toContain("Wardmote App");
     expect(view.text()).toContain("Get Paperclip EE.");
     expect(view.text()).not.toContain("Managed by EE/API");
   });

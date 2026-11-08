@@ -136,7 +136,7 @@ export function SetMyUserSecretDialog({
                   autoFocus
                 />
                 <p className="text-(length:--text-micro) text-ink-3">
-                  Points at your own credential in the configured provider. Paperclip stores the
+                  Points at your own credential in the configured provider. Wardmote stores the
                   reference, not the value.
                 </p>
               </div>

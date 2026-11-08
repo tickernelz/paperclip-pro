@@ -231,10 +231,10 @@ Plugins live under the Paperclip instance directory.
 
 Suggested layout:
 
-- `~/.paperclip-pro/instances/default/plugins/package.json`
-- `~/.paperclip-pro/instances/default/plugins/node_modules/`
-- `~/.paperclip-pro/instances/default/plugins/.cache/`
-- `~/.paperclip-pro/instances/default/data/plugins/<plugin-id>/`
+- `~/.wardmote/instances/default/plugins/package.json`
+- `~/.wardmote/instances/default/plugins/node_modules/`
+- `~/.wardmote/instances/default/plugins/.cache/`
+- `~/.wardmote/instances/default/data/plugins/<plugin-id>/`
 
 The package install directory and the plugin data directory are separate.
 
@@ -244,7 +244,7 @@ This on-disk model is the reason the current implementation expects a persistent
 
 Paperclip should add CLI commands:
 
-- `pnpm paperclip-pro plugin list`
+- `pnpm wardmote plugin list`
 - `npx @tickernelz/paperclip-pro plugin install <package[@version]>`
 - `npx @tickernelz/paperclip-pro plugin uninstall <plugin-id>`
 - `npx @tickernelz/paperclip-pro plugin upgrade <plugin-id> [version]`

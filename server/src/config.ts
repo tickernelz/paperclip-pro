@@ -4,6 +4,7 @@ import { execFileSync } from "node:child_process";
 import { existsSync, realpathSync } from "node:fs";
 import { basename, dirname, resolve } from "node:path";
 import { config as loadDotenv } from "dotenv";
+import { applyEnvAliases } from "@tickernelz/paperclip-pro-shared/env-aliases";
 import { resolvePaperclipEnvPath } from "./paths.js";
 import { maybeRepairLegacyWorktreeConfigAndEnvFiles } from "./worktree-config.js";
 import { shouldLoadWorkingDirectoryEnv } from "./env-file-policy.js";
@@ -48,6 +49,7 @@ if (shouldLoadWorkingDirectoryEnv({
 })) {
   loadDotenv({ path: CWD_ENV_PATH, override: false, quiet: true });
 }
+applyEnvAliases();
 
 if (basename(dirname(PAPERCLIP_ENV_FILE_PATH)) === ".paperclip") {
   applyEmptyWorktreeSigningSecrets(dirname(dirname(PAPERCLIP_ENV_FILE_PATH)));

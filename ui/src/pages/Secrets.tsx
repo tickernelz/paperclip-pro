@@ -350,11 +350,11 @@ function modeLabel(managedMode: SecretManagedMode) {
 
 function modeDescription(managedMode: SecretManagedMode, canWriteExternalValue = false) {
   if (managedMode === "paperclip_managed") {
-    return "Paperclip owns create and rotation writes for this provider secret.";
+    return "Wardmote owns create and rotation writes for this provider secret.";
   }
   return canWriteExternalValue
-    ? "Paperclip resolves this provider reference and can write new values to it via Update value."
-    : "Paperclip resolves this provider reference but does not rotate the provider value.";
+    ? "Wardmote resolves this provider reference and can write new values to it via Update value."
+    : "Wardmote resolves this provider reference but does not rotate the provider value.";
 }
 
 function statusLabel(status: SecretStatus) {
@@ -1323,7 +1323,7 @@ export function Secrets() {
     onSuccess: (removed) => {
       pushToast({
         title: "Provider vault removed",
-        body: `${removed.displayName} was removed from Paperclip only.`,
+        body: `${removed.displayName} was removed from Wardmote only.`,
         tone: "info",
       });
       setRemoveVaultConfirm(null);
@@ -2717,7 +2717,7 @@ export function Secrets() {
                   className="font-mono text-xs"
                 />
                 <p className="text-(length:--text-micro) text-ink-3 mt-1">
-                  Existing provider secrets are resolve-only in Paperclip. Rotate the value in the provider,
+                  Existing provider secrets are resolve-only in Wardmote. Rotate the value in the provider,
                   then update this reference only if the path, ARN, or version changes.
                 </p>
               </div>
@@ -2884,7 +2884,7 @@ export function Secrets() {
                 {createMode === "managed" ? (
                   <div className="rounded-md border border-emerald-500/30 bg-emerald-500/5 p-2 text-(length:--text-micro) text-emerald-700 dark:text-emerald-300">
                     Paperclip-managed secrets are created in the selected provider and future rotations
-                    write a new provider version through Paperclip.
+                    write a new provider version through Wardmote.
                     {awsManagedPathPreview ? (
                       <div className="mt-1">
                         AWS managed path:{" "}
@@ -3077,8 +3077,8 @@ export function Secrets() {
               {selectedSecret?.managedMode !== "external_reference"
                 ? "Creates a new provider-backed version. Consumers pinned to latest pick up the new value on the next run."
                 : rotateMode === "reference"
-                  ? "Creates a new Paperclip metadata version that points at an existing provider secret. Paperclip does not write a new provider value."
-                  : "Writes a new version of the referenced provider secret. The new value becomes current for every consumer of that secret, in and outside Paperclip."}
+                  ? "Creates a new Wardmote metadata version that points at an existing provider secret. Wardmote does not write a new provider value."
+                  : "Writes a new version of the referenced provider secret. The new value becomes current for every consumer of that secret, in and outside Wardmote."}
             </DialogDescription>
           </DialogHeader>
           {selectedSecret && secretSupportsExternalValueWrite(selectedSecret) ? (
@@ -3128,7 +3128,7 @@ export function Secrets() {
                 className="font-mono text-xs"
               />
               <p className="mt-1 text-(length:--text-micro) text-ink-3">
-                Rotate the actual value in the provider before changing this Paperclip reference.
+                Rotate the actual value in the provider before changing this Wardmote reference.
               </p>
             </div>
           ) : (
@@ -3241,7 +3241,7 @@ export function Secrets() {
           <DialogHeader>
             <DialogTitle>Remove provider vault</DialogTitle>
             <DialogDescription>
-              Removes <strong>{removeVaultConfirm?.displayName}</strong> from Paperclip only.{" "}
+              Removes <strong>{removeVaultConfirm?.displayName}</strong> from Wardmote only.{" "}
               {removeVaultConfirm?.provider === "aws_secrets_manager"
                 ? "This does not delete the remote AWS Secrets Manager vault, secrets, or any AWS data."
                 : "This does not delete any remote provider data."}{" "}
@@ -3256,7 +3256,7 @@ export function Secrets() {
               disabled={removeVaultMutation.isPending}
             >
               {removeVaultMutation.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : null}
-              Remove from Paperclip
+              Remove from Wardmote
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -3278,7 +3278,7 @@ function SecretsHowToUse() {
           <span className="font-medium text-ink">Secret</span>, and select the stored secret version.
         </p>
         <p>
-          Paperclip resolves the value server-side when the run starts and injects it as that env var. Project env
+          Wardmote resolves the value server-side when the run starts and injects it as that env var. Project env
           applies to every task in the project and overrides agent env on matching keys.
         </p>
       </div>
@@ -3969,7 +3969,7 @@ function AwsProviderVaultDiscoveryError({
             <p className="mt-1 leading-relaxed text-bad/85">
               {isAccessDenied
                 ? details?.actionableMessage ??
-                  "Discovery needs secretsmanager:ListSecrets in the selected region for the Paperclip server runtime/provider credential path."
+                  "Discovery needs secretsmanager:ListSecrets in the selected region for the Wardmote server runtime/provider credential path."
                 : message}
             </p>
           </div>
@@ -4677,7 +4677,7 @@ function SecretDetailsTab({
               providers.find((provider) => provider.id === secret.provider)?.supportsExternalValueWrites,
           ),
         )}{" "}
-        Paperclip never re-displays stored values.
+        Wardmote never re-displays stored values.
       </div>
     </dl>
   );

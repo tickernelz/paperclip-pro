@@ -55,16 +55,16 @@ export function registerConnectCommand(program: Command): void {
 
 async function connectWizard(opts: ConnectOptions) {
   if (!process.stdin.isTTY || !process.stdout.isTTY) {
-    throw new Error("`paperclip-pro connect` is interactive. For scripts, pass --api-base/--api-key or use context set/token commands.");
+    throw new Error("`wardmote connect` is interactive. For scripts, pass --api-base/--api-key or use context set/token commands.");
   }
 
-  p.intro(pc.bgCyan(pc.black(" paperclip-pro connect ")));
+  p.intro(pc.bgCyan(pc.black(" wardmote connect ")));
 
   const context = readContext(opts.context);
   const resolvedProfile = resolveProfile(context, opts.profile);
   const initialApiBase = resolveApiBase(opts, resolvedProfile.profile);
   const apiBaseInput = await p.text({
-    message: "Paperclip API base",
+    message: "Wardmote API base",
     initialValue: initialApiBase,
     placeholder: "http://localhost:3100",
   });
@@ -77,7 +77,7 @@ async function connectWizard(opts: ConnectOptions) {
     apiBase,
     requestedAccess: "board",
     requestedCompanyId: opts.companyId ?? resolvedProfile.profile.companyId ?? null,
-    command: "paperclip-pro connect",
+    command: "wardmote connect",
   });
   const boardApi = new PaperclipApiClient({ apiBase, apiKey: boardLogin.token });
   const companies = (await boardApi.get<Company[]>("/api/companies")) ?? [];

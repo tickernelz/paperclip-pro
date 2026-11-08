@@ -136,8 +136,8 @@ describe("env-lab cleanup command hint", () => {
 
     // The bare `pnpm paperclip-pro` script form is unsafe. The `pnpm exec` form
     // does not resolve the CLI binary. Keep both out of the hint.
-    expect(command).not.toContain("pnpm paperclip-pro");
-    expect(command).not.toContain("pnpm exec paperclip-pro");
+    expect(command).not.toContain("pnpm wardmote");
+    expect(command).not.toContain("pnpm exec wardmote");
   });
 
   // A checkout path can hold shell metacharacters. A contributor copies the hint

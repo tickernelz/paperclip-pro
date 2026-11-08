@@ -107,7 +107,7 @@ export function resolveGitInstallWorkspacePackages(checkoutPath: string): Releas
 
 export function assertSupportedNodeVersion(): void {
   if (!isSupportedNodeVersion(process.versions.node)) {
-    throw new Error(`Installing or updating Paperclip requires Node.js ${MINIMUM_NODE_VERSION} or newer (found ${process.version} at ${process.execPath}). Put a supported Node bin directory first on PATH and run 'npx @tickernelz/paperclip-pro@latest install --yes' to re-pin an existing managed install.`);
+    throw new Error(`Installing or updating Wardmote requires Node.js ${MINIMUM_NODE_VERSION} or newer (found ${process.version} at ${process.execPath}). Put a supported Node bin directory first on PATH and run 'npx @tickernelz/paperclip-pro@latest install --yes' to re-pin an existing managed install.`);
   }
 }
 
@@ -406,7 +406,7 @@ async function ensureShimOnPath(options: InstallOptions): Promise<void> {
   const manualInstruction = `export PATH="$HOME/.local/bin:$PATH"`;
   const rcPath = shellRcPath();
   if (!process.stdin.isTTY || !process.stdout.isTTY || !rcPath) {
-    console.log(pc.yellow(`Add Paperclip to PATH for this shell:\n  ${manualInstruction}`));
+    console.log(pc.yellow(`Add Wardmote to PATH for this shell:\n  ${manualInstruction}`));
     return;
   }
   const confirmed = options.yes === true ? true : await p.confirm({ message: `Add ~/.local/bin to PATH in ${rcPath}?`, initialValue: true });
@@ -457,7 +457,7 @@ export async function installCommand(
       writeManagedShim(paths); pruneInstallPayloads(nextManifest, paths); return payload;
     }, paths);
     await ensureShimOnPath(options);
-    console.log(pc.green(`${installed.reused ? "Activated cached" : "Installed"} paperclip-pro git payload ${sha.slice(0, 12)}.`));
+    console.log(pc.green(`${installed.reused ? "Activated cached" : "Installed"} wardmote git payload ${sha.slice(0, 12)}.`));
     return;
   }
   const request = resolveNpmInstallRequest(options);
@@ -495,7 +495,7 @@ export async function installCommand(
   }, paths);
   await ensureShimOnPath(options);
 
-  console.log(pc.green(`${installed.reused ? "Activated cached" : "Installed"} paperclip-pro ${version} (${request.channel}).`));
+  console.log(pc.green(`${installed.reused ? "Activated cached" : "Installed"} wardmote ${version} (${request.channel}).`));
   console.log(pc.dim(`Payload: ${installed.payloadPath}`));
-  console.log(`Run ${pc.cyan("paperclip-pro --version")} to verify the managed install.`);
+  console.log(`Run ${pc.cyan("wardmote --version")} to verify the managed install.`);
 }

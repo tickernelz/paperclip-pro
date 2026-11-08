@@ -1,3 +1,4 @@
+import "@tickernelz/paperclip-pro-shared/env-aliases-bootstrap";
 import { subscribeAllCompanyLiveEvents } from "./services/live-events.js";
 import { startNotificationDispatcher } from "./services/notifications/dispatcher.js";
 import { createWebPushRuntime } from "./services/notifications/web-push.js";

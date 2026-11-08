@@ -287,7 +287,7 @@ function RetentionForm({ value }: { value: AttachmentRetentionSettings }) {
         <div className="min-w-0 space-y-1">
           <h3 className="text-sm font-medium">Automatic attachment cleanup</h3>
           <p className="max-w-2xl text-sm text-ink-3">
-            Off by default. When on, Paperclip periodically deletes stored files nothing refers to any more and, if you choose, attachments of tasks closed long ago. Each removed attachment leaves a tombstone, so tasks show &ldquo;File removed by retention&rdquo; with the date instead of a broken file.
+            Off by default. When on, Wardmote periodically deletes stored files nothing refers to any more and, if you choose, attachments of tasks closed long ago. Each removed attachment leaves a tombstone, so tasks show &ldquo;File removed by retention&rdquo; with the date instead of a broken file.
           </p>
         </div>
         <ToggleSwitch

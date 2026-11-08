@@ -39,10 +39,10 @@ Current runtime assumptions:
 
 ## 3. CLI-first scaffold workflow
 
-Use `paperclip-pro plugin init`. Do not invoke the scaffold package node entrypoint by hand unless the CLI command is unavailable in the environment.
+Use `wardmote plugin init`. Do not invoke the scaffold package node entrypoint by hand unless the CLI command is unavailable in the environment.
 
 ```bash
-paperclip-pro plugin init @acme/my-plugin --output ~/dev/paperclip-plugins
+wardmote plugin init @acme/my-plugin --output ~/dev/paperclip-plugins
 ```
 
 Useful flags (all optional):
@@ -53,9 +53,9 @@ Useful flags (all optional):
 - `--display-name <name>`, `--description <text>`, `--author <name>` — manifest metadata.
 - `--sdk-path <path>` — snapshot the local SDK from a Paperclip checkout into `.paperclip-sdk/` (useful when developing against an unreleased SDK).
 
-On success the command prints the exact next commands (`cd`, `pnpm install`, `pnpm dev`, `paperclip-pro plugin install <abs-path>`). Run them in order.
+On success the command prints the exact next commands (`cd`, `pnpm install`, `pnpm dev`, `wardmote plugin install <abs-path>`). Run them in order.
 
-If `paperclip-pro` is not on PATH in your environment, fall back to:
+If `wardmote` is not on PATH in your environment, fall back to:
 
 ```bash
 pnpm --filter @tickernelz/paperclip-pro-create-paperclip-plugin build
@@ -71,12 +71,12 @@ In the scaffolded plugin folder:
 ```bash
 pnpm install
 pnpm dev            # esbuild --watch: rebuilds dist/manifest.js, dist/worker.js, dist/ui/
-paperclip-pro plugin install /absolute/path/to/my-plugin
+wardmote plugin install /absolute/path/to/my-plugin
 ```
 
 Notes:
 
-- `paperclip-pro plugin install` auto-detects local paths (absolute, `./`, `../`, `~`, or an existing relative folder) and forwards `isLocalPath: true` to the server. Pass `--local` to force local mode if the heuristic is ambiguous.
+- `wardmote plugin install` auto-detects local paths (absolute, `./`, `../`, `~`, or an existing relative folder) and forwards `isLocalPath: true` to the server. Pass `--local` to force local mode if the heuristic is ambiguous.
 - Paths are resolved to absolute paths before being sent to the server.
 - The server watches built outputs (`dist/`) for local-path plugins and restarts the plugin worker on rebuild — you do not need to reinstall after every edit.
 - UI hot reload via the SDK dev server (`pnpm dev:ui`, port `4177`) is optional and template-dependent; only mention it if the template wires `devUiUrl` and you verified it works end to end.
@@ -85,8 +85,8 @@ Notes:
 After install, inspect with:
 
 ```bash
-paperclip-pro plugin list
-paperclip-pro plugin inspect <plugin-key>
+wardmote plugin list
+wardmote plugin inspect <plugin-key>
 ```
 
 ## 5. After scaffolding, sanity-check the package
@@ -126,8 +126,8 @@ If you changed Paperclip SDK/host/plugin runtime code in addition to the plugin,
 When you finish a local plugin task, report:
 
 - **Scaffold path** — absolute path of the created plugin folder.
-- **Commands run** — the exact `paperclip-pro plugin init`, `pnpm install`, `pnpm dev`, `paperclip-pro plugin install <path>` invocations (and any verification commands).
-- **Install status** — output of `paperclip-pro plugin list` / `plugin inspect` (plugin key, version, status). Note if `status` is anything other than `ready` and include `lastError`.
+- **Commands run** — the exact `wardmote plugin init`, `pnpm install`, `pnpm dev`, `wardmote plugin install <path>` invocations (and any verification commands).
+- **Install status** — output of `wardmote plugin list` / `plugin inspect` (plugin key, version, status). Note if `status` is anything other than `ready` and include `lastError`.
 - **Tests / build result** — `pnpm typecheck`, `pnpm test`, `pnpm build` pass/fail with the failing output if any.
 - **Reload limitations** — call out anything that did not hot-reload (e.g. manifest changes required a reinstall, UI dev server was not wired, etc.).
 

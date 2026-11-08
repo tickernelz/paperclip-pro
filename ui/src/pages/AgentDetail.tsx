@@ -1355,7 +1355,7 @@ export function AgentDetail() {
             </Button>
           }
         >
-          Ships with Paperclip and powers <strong>{builtInFeatureLabel}</strong>. Configure it like
+          Ships with Wardmote and powers <strong>{builtInFeatureLabel}</strong>. Configure it like
           any agent — model, instructions, budget. It can be paused but not deleted; pausing it
           pauses {builtInFeatureLabel}.
         </InlineBanner>
@@ -2720,7 +2720,7 @@ export function PromptsTab({
                       <HelpCircle className="h-3 w-3 text-ink-3 cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent side="right" sideOffset={4}>
-                      Managed: Paperclip stores and serves the instructions bundle. External: you provide a path on disk where the instructions live.
+                      Managed: Wardmote stores and serves the instructions bundle. External: you provide a path on disk where the instructions live.
                     </TooltipContent>
                   </Tooltip>
                 </span>
@@ -2775,7 +2775,7 @@ export function PromptsTab({
                       <HelpCircle className="h-3 w-3 text-ink-3 cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent side="right" sideOffset={4}>
-                      The absolute directory on disk where the instructions bundle lives. In managed mode this is set by Paperclip automatically.
+                      The absolute directory on disk where the instructions bundle lives. In managed mode this is set by Wardmote automatically.
                     </TooltipContent>
                   </Tooltip>
                 </span>
@@ -4685,7 +4685,7 @@ export function KeysTab({ agentId, companyId }: { agentId: string; companyId?: s
           Create API Key
         </h3>
         <p className="text-xs text-ink-3">
-          API keys allow this agent to authenticate calls to the Paperclip server.
+          API keys allow this agent to authenticate calls to the Wardmote server.
         </p>
         <div className="flex items-center gap-2">
           <Input

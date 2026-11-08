@@ -212,7 +212,7 @@ Its host Pi installation is not a Linux provider pack. The operator imports a
 release companion once, before launching agents:
 
 ```sh
-paperclip-pro runtime import-remote /path/to/release/linux-x64 --sha256 MANIFEST_SHA256
+wardmote runtime import-remote /path/to/release/linux-x64 --sha256 MANIFEST_SHA256
 ```
 
 Obtain `MANIFEST_SHA256` from the trusted release channel, separately from the
@@ -1166,7 +1166,7 @@ passes. Restart and refreshed hello are held until this defect is repaired.
 
 ## Explicit host installation
 
-For a published local Paperclip installation, run `paperclip-pro runtime setup pi`
+For a published local Paperclip installation, run `wardmote runtime setup pi`
 with the same installed CLI and account that owns the server package. This is an
 explicit download and verification step; npm installation and agent launch never
 perform it automatically. It installs only this host's supported platform

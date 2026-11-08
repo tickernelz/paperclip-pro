@@ -28,7 +28,7 @@ async function body<T>(
 
 async function setup(page: Page, request: APIRequestContext) {
   await page.addLocatorHandler(
-    page.getByRole("complementary", { name: "Paperclip announcements", exact: true })
+    page.getByRole("complementary", { name: "Wardmote announcements", exact: true })
       .getByRole("button", { name: "Dismiss announcement", exact: true }),
     async (dismiss) => { await dismiss.click(); },
   );

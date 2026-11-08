@@ -54,7 +54,7 @@ function isUnsupported(error: unknown): boolean {
 
 function failureText(error: unknown): string {
   if (isUnsupported(error)) {
-    return "This extension version cannot open its permission page from Paperclip. Update the extension, then pair it again.";
+    return "This extension version cannot open its permission page from Wardmote. Update the extension, then pair it again.";
   }
   const message = error instanceof Error ? error.message.replace(/^\[[a-z_]+\]\s*/, "") : "";
   return `Could not open the permission page.${message ? ` ${message}` : ""}`;

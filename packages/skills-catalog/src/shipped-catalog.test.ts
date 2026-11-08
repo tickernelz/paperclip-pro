@@ -154,7 +154,7 @@ describe("shipped skills catalog", () => {
     expect(issues).toEqual([]);
   });
 
-  it("uses canonical paperclip-pro keys derived from kind/category/slug", () => {
+  it("uses canonical wardmote keys derived from kind/category/slug", () => {
     const violations: string[] = [];
     for (const skill of catalogSkills) {
       const expectedKey = `paperclipai/${skill.kind}/${skill.category}/${skill.slug}`;

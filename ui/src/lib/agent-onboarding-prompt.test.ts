@@ -10,7 +10,7 @@ describe("buildAgentOnboardingPrompt", () => {
 
     expect(prompt).toContain("- http://localhost:3100/api/invites/token-123/onboarding.txt");
     expect(prompt).toContain("http://192.168.1.10:3100/api/invites/token-123/onboarding.txt");
-    expect(prompt).toContain("Do not rotate or invent a Paperclip key manually");
+    expect(prompt).toContain("Do not rotate or invent a Wardmote key manually");
     expect(prompt).toContain("parsed `token` field from the raw HTTP JSON response");
     expect(prompt).toContain("A token value containing literal `...` or `[redacted]`");
     expect(prompt).not.toMatch(/hermes/i);

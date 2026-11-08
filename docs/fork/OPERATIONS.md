@@ -1,33 +1,33 @@
-# Paperclip Pro — Operations Runbook
+# Wardmote Pro — Operations Runbook
 
-Day-two operation of an installed Paperclip Pro instance. Every command and path
+Day-two operation of an installed Wardmote Pro instance. Every command and path
 below is taken from this repository's source; the citations say where.
 
 This fork is not on npm. Commands assume the managed shim installed by
-`paperclip-pro install` is on `PATH` (`~/.local/bin/paperclip-pro`,
+`wardmote install` is on `PATH` (`~/.local/bin/paperclip-pro`,
 `cli/src/install-store.ts:85`).
 
 ## 1. Where state lives
 
-`PAPERCLIP_HOME` defaults to `~/.paperclip-pro` and every instance path is
+`PAPERCLIP_HOME` defaults to `~/.wardmote` and every instance path is
 derived from it (`packages/shared/src/home-paths.ts:16`).
 
 | Path | What it is | Source |
 | --- | --- | --- |
-| `~/.paperclip-pro/instances/<id>/` | Instance root. `<id>` defaults to `default`, overridable with `PAPERCLIP_INSTANCE_ID` or `--instance`. | `packages/shared/src/home-paths.ts:22`, `packages/shared/src/home-paths.ts:30` |
-| `~/.paperclip-pro/instances/default/config.json` | Instance configuration. | `packages/shared/src/home-paths.ts:5`, `packages/shared/src/home-paths.ts:37` |
-| `~/.paperclip-pro/instances/default/service.env` | Operator environment sourced by the systemd unit. Never rewritten by the CLI. | `cli/src/services/service-manager.ts:126` |
-| `~/.paperclip-pro/instances/default/db/` | Embedded PostgreSQL data directory (default port `54329`). | `packages/shared/src/home-paths.ts:59`, `packages/shared/src/config-schema.ts:34` |
-| `~/.paperclip-pro/instances/default/data/storage/` | File storage. | `packages/shared/src/home-paths.ts:80` |
-| `~/.paperclip-pro/instances/default/data/backups/` | Database backups. | `packages/shared/src/home-paths.ts:87` |
-| `~/.paperclip-pro/instances/default/logs/` | Service logs. | `packages/shared/src/home-paths.ts:66` |
-| `~/.paperclip-pro/instances/default/secrets/master.key` | Secrets master key. | `packages/shared/src/home-paths.ts:73` |
-| `~/.paperclip-pro/cli/` | Managed CLI payload store, atomic `current` pointer. | `cli/src/install-store.ts` |
+| `~/.wardmote/instances/<id>/` | Instance root. `<id>` defaults to `default`, overridable with `PAPERCLIP_INSTANCE_ID` or `--instance`. | `packages/shared/src/home-paths.ts:22`, `packages/shared/src/home-paths.ts:30` |
+| `~/.wardmote/instances/default/config.json` | Instance configuration. | `packages/shared/src/home-paths.ts:5`, `packages/shared/src/home-paths.ts:37` |
+| `~/.wardmote/instances/default/service.env` | Operator environment sourced by the systemd unit. Never rewritten by the CLI. | `cli/src/services/service-manager.ts:126` |
+| `~/.wardmote/instances/default/db/` | Embedded PostgreSQL data directory (default port `54329`). | `packages/shared/src/home-paths.ts:59`, `packages/shared/src/config-schema.ts:34` |
+| `~/.wardmote/instances/default/data/storage/` | File storage. | `packages/shared/src/home-paths.ts:80` |
+| `~/.wardmote/instances/default/data/backups/` | Database backups. | `packages/shared/src/home-paths.ts:87` |
+| `~/.wardmote/instances/default/logs/` | Service logs. | `packages/shared/src/home-paths.ts:66` |
+| `~/.wardmote/instances/default/secrets/master.key` | Secrets master key. | `packages/shared/src/home-paths.ts:73` |
+| `~/.wardmote/cli/` | Managed CLI payload store, atomic `current` pointer. | `cli/src/install-store.ts` |
 
 Inspect the resolved set for a live instance:
 
 ```bash
-paperclip-pro doctor
+wardmote doctor
 ```
 
 ## 2. The service unit
@@ -58,11 +58,11 @@ settings — belongs in `service.env`, not in the unit.** Format is systemd
 `EnvironmentFile` syntax, one `KEY=value` per line:
 
 ```bash
-cat >> ~/.paperclip-pro/instances/default/service.env <<'EOF'
+cat >> ~/.wardmote/instances/default/service.env <<'EOF'
 PATH=/home/<user>/.local/share/fnm/node-versions/v24.18.0/installation/bin:/usr/local/bin:/usr/bin:/bin
 EOF
-chmod 600 ~/.paperclip-pro/instances/default/service.env
-paperclip-pro service restart --drain
+chmod 600 ~/.wardmote/instances/default/service.env
+wardmote service restart --drain
 ```
 
 Memory protection in the unit: `OOMPolicy=continue` (the server stays up when the
@@ -85,9 +85,9 @@ the service.
 Supervisor and health status:
 
 ```bash
-paperclip-pro service status
-paperclip-pro service logs -n 200
-paperclip-pro service logs -f
+wardmote service status
+wardmote service logs -n 200
+wardmote service logs -f
 ```
 
 ## 3. Restarting safely
@@ -101,7 +101,7 @@ their issues.
 restart.
 
 ```bash
-paperclip-pro service restart --drain
+wardmote service restart --drain
 ```
 
 The drain posts to `/api/instance/task-drain`, polls `/api/instance/live-runs`
@@ -112,14 +112,14 @@ timeout it **does not restart** (`cli/src/commands/service.ts:283`,
 `cli/src/services/instance-drain.ts:157`).
 
 ```bash
-paperclip-pro service restart --drain --drain-timeout 1800
+wardmote service restart --drain --drain-timeout 1800
 ```
 
 **Last resort:** interrupt live runs immediately.
 
 ```bash
-paperclip-pro service restart --force
-paperclip-pro service stop --force
+wardmote service restart --force
+wardmote service stop --force
 ```
 
 Runs this server interrupts during a graceful shutdown are rescheduled rather
@@ -137,17 +137,17 @@ The fork publishes `@tickernelz/paperclip-pro*` to npm (section 9), so the
 normal update is:
 
 ```bash
-paperclip-pro update --latest
-paperclip-pro update --check
+wardmote update --latest
+wardmote update --check
 ```
 
 `--canary` resolves nothing today, because the release workflow publishes only
 `next` and `latest`. A fresh managed install takes the same npm path:
 
 ```bash
-paperclip-pro install --yes
-paperclip-pro install --version 2026.926.1 --yes
-paperclip-pro service restart --drain
+wardmote install --yes
+wardmote install --version 2026.926.1 --yes
+wardmote service restart --drain
 ```
 
 The npm install resolves one exact version with `npm view`, then verifies that
@@ -157,25 +157,25 @@ before it downloads anything. A partially published release — 2026.926.0 left
 `@tickernelz/paperclip-pro-server` in npm's staging queue — is refused with the
 missing names rather than installed with mixed versions. It then installs
 `@tickernelz/paperclip-pro@<version>` into
-`~/.paperclip-pro/cli/installs/npm/<version>` under a private npm user config
+`~/.wardmote/cli/installs/npm/<version>` under a private npm user config
 that allowlists the `@embedded-postgres/*` install scripts, smoke-tests
 `--version` and the payload's PostgreSQL shared-library links, and only then
 swaps the payload into place (`cli/src/commands/install.ts`). Measured on this
 host, that is ~45 s end to end, against 11 m 38 s for the git path.
 
 Switching an existing instance between a git payload and an npm payload is
-non-destructive. An install writes only `~/.paperclip-pro/cli/installs/<source>/<id>`,
-the `~/.paperclip-pro/cli/current` symlink, `~/.paperclip-pro/cli/install.json`
+non-destructive. An install writes only `~/.wardmote/cli/installs/<source>/<id>`,
+the `~/.wardmote/cli/current` symlink, `~/.wardmote/cli/install.json`
 and `~/.local/bin/paperclip-pro`. Everything under
-`~/.paperclip-pro/instances/<id>` — database, `config.json`, `service.env`,
+`~/.wardmote/instances/<id>` — database, `config.json`, `service.env`,
 secrets, logs, storage, backups, workspaces — is untouched, and the two previous
-payloads stay available for `paperclip-pro update --rollback`.
+payloads stay available for `wardmote update --rollback`.
 
 To install a ref that is not released yet, reinstall from git:
 
 ```bash
-paperclip-pro install --ref main --yes
-paperclip-pro service restart --drain
+wardmote install --ref main --yes
+wardmote service restart --drain
 ```
 
 `--ref` is mandatory for a git install and `--repo` defaults to
@@ -193,7 +193,7 @@ needs pnpm, corepack and the full build toolchain and takes minutes, not seconds
 Roll back to the retained previous payload:
 
 ```bash
-paperclip-pro update --rollback
+wardmote update --rollback
 ```
 
 ## 5. Creating a new admin account
@@ -202,7 +202,7 @@ paperclip-pro update --rollback
 (`cli/src/index.ts:268`, `cli/src/commands/auth-bootstrap-ceo.ts:54`):
 
 ```bash
-paperclip-pro auth bootstrap-ceo
+wardmote auth bootstrap-ceo
 ```
 
 If an admin already exists the command refuses unless you pass `--force`.
@@ -211,7 +211,7 @@ Other flags: `--expires-hours <hours>` for the invite window and `--base-url
 configured bind address:
 
 ```bash
-paperclip-pro auth bootstrap-ceo --force --expires-hours 2 \
+wardmote auth bootstrap-ceo --force --expires-hours 2 \
   --base-url https://paperclip.zhafron.my.id
 ```
 
@@ -232,14 +232,14 @@ tunnel, which maps it to the local instance:
 ```
 
 That mapping lives in `~/.cloudflared/zhafron-apps.yml`. It is tunnel
-configuration, not Paperclip configuration: changing the instance port means
+configuration, not Wardmote configuration: changing the instance port means
 editing both that ingress entry and `server.port` in `config.json`.
 
 When the instance runs in authenticated/private mode, the public hostname must
 also be allowed:
 
 ```bash
-paperclip-pro allowed-hostname paperclip.zhafron.my.id
+wardmote allowed-hostname paperclip.zhafron.my.id
 ```
 
 (`cli/src/index.ts:189`.)
@@ -253,10 +253,10 @@ instance backup directory (`packages/shared/src/config-schema.ts:23`):
 enabled: true
 intervalMinutes: 60
 retentionDays: 7
-dir: ~/.paperclip-pro/instances/default/data/backups
+dir: ~/.wardmote/instances/default/data/backups
 ```
 
-Change them with `paperclip-pro configure --section database`. Backup health is
+Change them with `wardmote configure --section database`. Backup health is
 surfaced on the health endpoint as `database_backup_missing`,
 `database_backup_stale`, `database_backup_last_failure`, and
 `database_backup_check_failed` (`server/src/routes/health.ts:82`).
@@ -264,8 +264,8 @@ surfaced on the health endpoint as `database_backup_missing`,
 Take a one-off backup:
 
 ```bash
-paperclip-pro db:backup
-paperclip-pro db:backup --dir /some/other/place --retention-days 30 --json
+wardmote db:backup
+wardmote db:backup --dir /some/other/place --retention-days 30 --json
 ```
 
 (`cli/src/index.ts:176`.) `update` also takes a pre-update backup unless you pass
@@ -324,10 +324,10 @@ For a manual end-to-end instance instead of the unit suite, use the built-in
 isolated mode, which never installs a service:
 
 ```bash
-paperclip-pro test-drive --data-dir /tmp/pcpro-trial --no-browser
+wardmote test-drive --data-dir /tmp/pcpro-trial --no-browser
 ```
 
-`--data-dir` isolates state from `~/.paperclip-pro` (`cli/src/index.ts:63`).
+`--data-dir` isolates state from `~/.wardmote` (`cli/src/index.ts:63`).
 
 ## 9. Releasing to npm
 
@@ -492,9 +492,9 @@ reports its startup signal, and on a timer armed for the bypass deadline; the
 30-second heartbeat scheduler tick (`HEARTBEAT_SCHEDULER_INTERVAL_MS`) is the
 backstop.
 
-## 11. Paperclip MCP tools per adapter
+## 11. Wardmote MCP tools per adapter
 
-Each adapter arms exactly one Paperclip surface per run and the prompt it sends
+Each adapter arms exactly one Wardmote surface per run and the prompt it sends
 describes that surface. `paperclipAccessMode(config, env)`
 (`packages/adapter-utils/src/paperclip-mcp.ts`) returns `mcp` when the
 `paperclipMcp` toggle is on (default) and the run carries both
@@ -504,7 +504,7 @@ describes that surface. `paperclipAccessMode(config, env)`
 contract from that one value, so prompt text cannot drift from what the runtime
 actually mounted.
 
-| Adapter | Mounts the Paperclip MCP | How |
+| Adapter | Mounts the Wardmote MCP | How |
 | --- | --- | --- |
 | `omp_local` | yes | per-run `--extension <tmpdir>` package with one `.mcp.json` |
 
@@ -531,14 +531,14 @@ and `X-Paperclip-Run-Id`. That costs no process and no extra memory per run.
 also exposes `paperclipMcp` (default on) and `paperclipMcpToolsets`
 (default `core`).
 
-MCP is the agents' only path to Paperclip, so the adapter completes an MCP
+MCP is the agents' only path to Wardmote, so the adapter completes an MCP
 `initialize` before it spawns OMP: a POST against the endpoint with a 5 s
 timeout, or the handshake with the binary under the stdio fallback. Downtime
 fails the run with `errorCode: paperclip_mcp_unavailable`, a 401/403 with
 `errorCode: paperclip_mcp_credential_rejected`, and the unavailable code is
 raised again when OMP itself reports `MCP server "paperclip" failed to
 connect`. Turning `paperclipMcp` off logs a warning on the run's stderr: that
-agent has no Paperclip tools.
+agent has no Wardmote tools.
 
 Why the endpoint is the default, measured on 2026-09-25 (WSL, Node 24.18.0,
 `core` toolset). The run-time figures come from real sandboxed runs, timed from
@@ -555,7 +555,7 @@ so the endpoint costs roughly nothing at startup while the stdio fallback costs
 about half a second and a whole process. That process holds ~127 MB for the life
 of the run (61 `core` tools, `tools/list` 35 kB), most of it a floor: a bare
 Node 24 process is 43 MB and the MCP SDK with Zod adds about 35 MB before any
-Paperclip code, and the same server measured 191–193 MB before its tool
+Wardmote code, and the same server measured 191–193 MB before its tool
 definitions were filtered per toolset. Ten concurrent local runs would hold
 about 1.3 GB in stdio servers alone, which is why HTTP is the default.
 
@@ -711,7 +711,7 @@ single-agent and batch writes both validate it. Design notes:
   and when a run fails with quota or upstream errors. A new run starts on the
   first model that is not cooling down; a task model override counts as the
   primary and the agent list follows it.
-- A refusal is retried by Paperclip on the next model, without a cooldown. A quota
+- A refusal is retried by Wardmote on the next model, without a cooldown. A quota
   or upstream failure is retried on the next free model at the normal backoff; if
   every model is cooling down the existing retry timing applies.
 - Each switch writes a `model.fallback` run event and an `issue.run_model_fallback`
@@ -725,7 +725,7 @@ single-agent and batch writes both validate it. Design notes:
 
 Keep `auth.disableSignUp=true` whenever the tunnel is up. To add a person:
 
-1. Use the invite flow: `paperclip-pro auth bootstrap-ceo --force --base-url https://paperclip.zhafron.my.id` for a new instance admin, or a company invite from the board.
+1. Use the invite flow: `wardmote auth bootstrap-ceo --force --base-url https://paperclip.zhafron.my.id` for a new instance admin, or a company invite from the board.
 2. If sign-up must be opened briefly, first remove the `paperclip.zhafron.my.id` ingress from `~/.cloudflared/zhafron-apps.yml` and restart `zhafron-apps-tunnel.service`, then restore it after `disableSignUp` is back to `true`.
 
 Verify the seal after any auth change:
@@ -740,4 +740,4 @@ Expected: `400 EMAIL_PASSWORD_SIGN_UP_DISABLED`.
 
 ## CLI login for board operations
 
-`paperclip-pro service restart --drain` and other board calls need a board credential. Run `paperclip-pro auth login --instance-admin` and approve the printed URL while signed in to the board. Approval is rejected unless the request carries a trusted browser origin, so approve it from the board in a browser, not with a bare API call.
+`wardmote service restart --drain` and other board calls need a board credential. Run `wardmote auth login --instance-admin` and approve the printed URL while signed in to the board. Approval is rejected unless the request carries a trusted browser origin, so approve it from the board in a browser, not with a bare API call.

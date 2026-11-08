@@ -7,7 +7,7 @@ import {
 import { resolveForcedKubernetesEnvironment } from "../lib/forced-kubernetes-environment";
 
 describe("supportsAdapterModelRefresh", () => {
-  it("enables the model refresh action only for the Paperclip Runner", () => {
+  it("enables the model refresh action only for the Wardmote Runner", () => {
     expect(supportsAdapterModelRefresh("paperclip_runner")).toBe(true);
     expect(supportsAdapterModelRefresh("codex_local")).toBe(false);
     expect(supportsAdapterModelRefresh("process")).toBe(false);

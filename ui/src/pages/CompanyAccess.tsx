@@ -636,7 +636,7 @@ export function CompanyAccessLegacyRoute() {
         <div className="space-y-2">
           <h2 className="text-sm font-semibold">Advanced permissions unavailable</h2>
           <p className="text-sm text-ink-3">
-            Core Paperclip keeps enforcing organization boundaries and any existing restrictive policy data, but editing advanced permissions requires an installed extension.
+            Core Wardmote keeps enforcing organization boundaries and any existing restrictive policy data, but editing advanced permissions requires an installed extension.
           </p>
           {errorMessage ? (
             <p className="text-sm text-bad">Plugin extensions unavailable: {errorMessage}</p>

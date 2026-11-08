@@ -33,6 +33,7 @@ import {
 import { parseOmpModelsOutput } from "./models.js";
 import { OMP_CONTEXT_MANAGEMENT_MIN_VERSION, ompVersionAtLeast } from "./settings-overlay.js";
 import { rewriteRemoteConfigPaths } from "./execute.js";
+import { legacyEnvKey } from "@tickernelz/paperclip-pro-shared/env-aliases";
 
 const AUTH_ERROR_RE = /(?:auth(?:entication|orization)?\s+(?:required|failed)|api[_ -]?key|invalid\s+(?:key|token)|not\s+logged\s+in|login\s+required|credentials?\s+(?:missing|not found)|unauthorized|\b401\b|\b403\b)/i;
 const CONFIG_ERROR_RE = /(?:models\.ya?ml|config\.ya?ml|validation failed|invalid (?:config|profile|yaml)|yaml.*(?:error|invalid)|unknown (?:setting|provider)|failed to load extension)/i;
@@ -274,7 +275,7 @@ export async function testEnvironment(
     const configuredEnv = stringEnv(executionConfig.env);
     const remoteConfiguredEnv = Object.fromEntries(
       Object.entries(configuredEnv).filter(([key]) =>
-        !key.startsWith("PAPERCLIP_") || key === "PAPERCLIP_API_KEY" || key === "PAPERCLIP_API_URL"),
+        !legacyEnvKey(key).startsWith("PAPERCLIP_") || legacyEnvKey(key) === "PAPERCLIP_API_KEY" || legacyEnvKey(key) === "PAPERCLIP_API_URL"),
     );
     const env = remote
       ? stringEnv(ensurePathInEnv(remoteConfiguredEnv))

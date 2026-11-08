@@ -397,7 +397,7 @@ export function InstanceGeneralSettings({ embedded = false }: { embedded?: boole
           <div className="space-y-1.5">
             <h2 className="text-sm font-semibold">Sign out</h2>
             <p className="max-w-2xl text-sm text-ink-3">
-              Sign out of this Paperclip instance. You will be redirected to the login page.
+              Sign out of this Wardmote instance. You will be redirected to the login page.
             </p>
           </div>
           <Button
@@ -446,7 +446,7 @@ function SpeechToTextSection({
             <p className="max-w-2xl text-sm text-ink-3">
               Transcribe voice notes and audio that chat connectors receive, using any OpenAI-compatible
               /audio/transcriptions endpoint. The API key is read from the named server environment variable at call
-              time and is never stored by Paperclip. This is off by default.
+              time and is never stored by Wardmote. This is off by default.
             </p>
           </div>
           <ToggleSwitch

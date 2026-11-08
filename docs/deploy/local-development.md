@@ -1,9 +1,9 @@
 ---
 title: Local Development
-summary: Set up Paperclip for local development
+summary: Set up Wardmote for local development
 ---
 
-Run Paperclip locally with zero external dependencies.
+Run Wardmote locally with zero external dependencies.
 
 ## Prerequisites
 
@@ -22,27 +22,27 @@ This starts:
 - **API server** at `http://localhost:3100`
 - **UI** served by the API server in dev middleware mode (same origin)
 
-No Docker or external database required. Paperclip uses embedded PostgreSQL automatically.
+No Docker or external database required. Wardmote uses embedded PostgreSQL automatically.
 
 ## One-Command Bootstrap
 
 For a first-time install:
 
 ```sh
-pnpm paperclip-pro run
+pnpm wardmote run
 ```
 
 This does:
 
 1. Auto-onboards if config is missing
-2. Runs `paperclip-pro doctor` with repair enabled
+2. Runs `wardmote doctor` with repair enabled
 3. Starts the server when checks pass
 
 ## Bind Presets In Dev
 
 Default `pnpm dev` stays in `local_trusted` with loopback-only binding.
 
-To open Paperclip to a private network with login enabled:
+To open Wardmote to a private network with login enabled:
 
 ```sh
 pnpm dev --bind lan
@@ -86,10 +86,10 @@ For safer parallel local experiments, initialize a dedicated worktree instance i
 ```sh
 npx @tickernelz/paperclip-pro worktree:make local-lab --seed-mode minimal
 cd ~/paperclip-local-lab
-pnpm paperclip-pro worktree env                       # inspect generated env exports
+pnpm wardmote worktree env                       # inspect generated env exports
 eval "$(npx @tickernelz/paperclip-pro worktree env)"             # bash/zsh
-pnpm paperclip-pro run
-pnpm paperclip-pro doctor
+pnpm wardmote run
+pnpm wardmote doctor
 ```
 
 If the experiment gets noisy, repair or reseed the worktree without touching the main branch:
@@ -111,7 +111,7 @@ npx @tickernelz/paperclip-pro worktree:cleanup local-lab --force
 To wipe local data and start fresh:
 
 ```sh
-rm -rf ~/.paperclip-pro/instances/default/db
+rm -rf ~/.wardmote/instances/default/db
 pnpm dev
 ```
 
@@ -119,14 +119,14 @@ pnpm dev
 
 | Data | Path |
 |------|------|
-| Config | `~/.paperclip-pro/instances/default/config.json` |
-| Database | `~/.paperclip-pro/instances/default/db` |
-| Storage | `~/.paperclip-pro/instances/default/data/storage` |
-| Secrets key | `~/.paperclip-pro/instances/default/secrets/master.key` |
-| Logs | `~/.paperclip-pro/instances/default/logs` |
+| Config | `~/.wardmote/instances/default/config.json` |
+| Database | `~/.wardmote/instances/default/db` |
+| Storage | `~/.wardmote/instances/default/data/storage` |
+| Secrets key | `~/.wardmote/instances/default/secrets/master.key` |
+| Logs | `~/.wardmote/instances/default/logs` |
 
 Override with environment variables:
 
 ```sh
-PAPERCLIP_HOME=/custom/path PAPERCLIP_INSTANCE_ID=dev pnpm paperclip-pro run
+PAPERCLIP_HOME=/custom/path PAPERCLIP_INSTANCE_ID=dev pnpm wardmote run
 ```

@@ -1,3 +1,4 @@
+import "@tickernelz/paperclip-pro-shared/env-aliases-bootstrap";
 import { registerRuntimeCommands } from "./commands/runtime.js";
 import { registerEmailCommands } from "./commands/client/email.js";
 import { registerMcpCommands } from "./commands/mcp.js";
@@ -50,6 +51,7 @@ import { registerSkillCommands } from "./commands/client/skill.js";
 import { cliVersion } from "./version.js";
 import { installCommand } from "./commands/install.js";
 import { uninstallCommand } from "./commands/uninstall.js";
+import { migrateHomeCommand } from "./commands/migrate-home.js";
 import { updateCommand } from "./commands/update.js";
 import { registerServiceCommands } from "./commands/service.js";
 import { registerConnectionIntentCommands } from "./commands/client/connections.js";
@@ -62,18 +64,18 @@ import {
 
 const program = new Command();
 const DATA_DIR_OPTION_HELP =
-  "Paperclip data directory root (isolates state from ~/.paperclip-pro)";
+  "Wardmote data directory root (isolates state from ~/.paperclip-pro)";
 
 program.enablePositionalOptions();
 
 program
-  .name("paperclip-pro")
-  .description("Paperclip CLI — setup, diagnose, and configure your instance")
+  .name("wardmote")
+  .description("Wardmote CLI — setup, diagnose, and configure your instance")
   .version(cliVersion);
 
 program
   .command("install")
-  .description("Install Paperclip into a managed per-user CLI store")
+  .description("Install Wardmote into a managed per-user CLI store")
   .option("--canary", "Install the npm canary channel")
   .option("--version <version>", "Install an exact published npm version")
   .option("--ref <ref>", "Install a GitHub branch, tag, or commit SHA")
@@ -87,9 +89,15 @@ program
   .action(uninstallCommand);
 
 program
+  .command("migrate-home")
+  .description("Move an existing ~/.paperclip-pro home to ~/.wardmote; stop the service first")
+  .option("--dry-run", "Print what would move without changing anything")
+  .action((options: { dryRun?: boolean }) => migrateHomeCommand(options));
+
+program
   .command("update")
   .alias("upgrade")
-  .description("Check, update, or roll back the Paperclip CLI")
+  .description("Check, update, or roll back the Wardmote CLI")
   .option("--latest", "Switch to the latest stable channel")
   .option("--canary", "Switch to the canary channel")
   .option("--version <version>", "Install an exact published version")
@@ -103,6 +111,7 @@ program
 
 program.hook("preAction", async (_thisCommand, actionCommand) => {
   if (actionCommand.parent?.name() === "runtime") return; // Public runtime setup never reads instance config or credentials.
+  if (actionCommand.name() === "migrate-home") return;
   const options = actionCommand.optsWithGlobals() as DataDirOptionLike & TestDriveOptions;
   let dataDirOptions: DataDirOptionLike = options;
   if (actionCommand.name() === "test-drive") {
@@ -135,12 +144,12 @@ program
   .option("-y, --yes", "Accept quickstart defaults (trusted local loopback unless --bind is set) and start immediately", false)
   .option("--install-service", "Install and start the background service after onboarding")
   .option("--no-install-service", "Do not install or suggest the background service")
-  .option("--run", "Start Paperclip immediately after saving config", false)
+  .option("--run", "Start Wardmote immediately after saving config", false)
   .action(onboard);
 
 program
   .command("doctor")
-  .description("Run diagnostic checks on your Paperclip setup")
+  .description("Run diagnostic checks on your Wardmote setup")
   .option("-c, --config <path>", "Path to config file")
   .option("-d, --data-dir <path>", DATA_DIR_OPTION_HELP)
   .option("--repair", "Attempt to repair issues automatically")
@@ -196,7 +205,7 @@ program
 
 const run = program
   .command("run")
-  .description("Bootstrap local setup (onboard + doctor) and run Paperclip")
+  .description("Bootstrap local setup (onboard + doctor) and run Wardmote")
   .option("-c, --config <path>", "Path to config file")
   .option("-d, --data-dir <path>", DATA_DIR_OPTION_HELP)
   .option("-i, --instance <id>", "Local instance id (default: default)")
@@ -219,7 +228,7 @@ heartbeat
   .option("-d, --data-dir <path>", DATA_DIR_OPTION_HELP)
   .option("--context <path>", "Path to CLI context file")
   .option("--profile <name>", "CLI context profile name")
-  .option("--api-base <url>", "Base URL for the Paperclip server API")
+  .option("--api-base <url>", "Base URL for the Wardmote server API")
   .option("--api-key <token>", "Bearer token for agent-authenticated calls")
   .option(
     "--source <source>",

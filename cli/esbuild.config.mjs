@@ -68,7 +68,9 @@ export default {
   target: "node24",
   format: "esm",
   outfile: "dist/index.js",
-  banner: { js: "#!/usr/bin/env node" },
+  banner: {
+    js: '#!/usr/bin/env node\nimport { createRequire as __wardmoteCreateRequire } from "node:module";\nconst require = __wardmoteCreateRequire(import.meta.url);',
+  },
   external: [...externals].sort(),
   treeShaking: true,
   sourcemap: true,

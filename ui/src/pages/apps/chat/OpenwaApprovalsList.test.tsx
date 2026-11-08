@@ -161,7 +161,7 @@ describe("OpenWA approvals list", () => {
     click("Approve");
     type("ok");
     click("Confirm approval");
-    await vi.waitFor(() => expect(container.querySelector("[role=alert]")?.textContent).toContain("Couldn't reach Paperclip."));
+    await vi.waitFor(() => expect(container.querySelector("[role=alert]")?.textContent).toContain("Couldn't reach Wardmote."));
     expect(container.querySelector("textarea")?.value).toBe("ok");
     expect(button("Confirm approval")).toBeDefined();
   });

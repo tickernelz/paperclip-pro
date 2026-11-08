@@ -108,6 +108,6 @@ describe("MCP protected credential transport", () => {
       return new Response(null, { status: 503 });
     }));
     await replaceMcpCredential(file, { ...stored(), accessToken: "new-access" }, notify);
-    expect(notify).toHaveBeenCalledWith(expect.stringContaining("revoke it in Paperclip Connections"));
+    expect(notify).toHaveBeenCalledWith(expect.stringContaining("revoke it in Wardmote Connections"));
   });
 });

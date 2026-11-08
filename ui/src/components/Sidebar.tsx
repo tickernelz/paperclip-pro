@@ -128,7 +128,7 @@ export function Sidebar({ children }: { children?: ReactNode }) {
           which is the user's orientation anchor and truncates otherwise.
           Search is the first nav item below instead. */}
       <div className="flex h-(--sz-60px) shrink-0 items-center gap-2 px-3">
-        {rail ? null : <MootMark className="size-5 shrink-0 text-ink" title="Paperclip" />}
+        {rail ? null : <MootMark className="size-5 shrink-0 text-ink" title="Wardmote" />}
         <SidebarCompanyMenu />
       </div>
 

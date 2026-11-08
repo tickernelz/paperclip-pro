@@ -1,3 +1,4 @@
+import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
@@ -13,10 +14,29 @@ export function expandHomePrefix(value: string): string {
   return value;
 }
 
+export const WARDMOTE_HOME_DIRNAME = ".wardmote";
+export const LEGACY_HOME_DIRNAME = ".paperclip-pro";
+
+const defaultHomeByUserHome = new Map<string, string>();
+
+function isLinkTo(link: string, target: string): boolean {
+  return fs.lstatSync(link).isSymbolicLink() && fs.existsSync(target) && fs.realpathSync(link) === fs.realpathSync(target);
+}
+
+export function resolveDefaultPaperclipHomeDir(userHome: string = os.homedir()): string {
+  const cached = defaultHomeByUserHome.get(userHome);
+  if (cached) return cached;
+  const legacy = path.resolve(userHome, LEGACY_HOME_DIRNAME);
+  const wardmote = path.resolve(userHome, WARDMOTE_HOME_DIRNAME);
+  const resolved = fs.existsSync(legacy) && !isLinkTo(legacy, wardmote) ? legacy : wardmote;
+  defaultHomeByUserHome.set(userHome, resolved);
+  return resolved;
+}
+
 export function resolvePaperclipHomeDir(homeOverride?: string): string {
   const raw = homeOverride?.trim() || process.env.PAPERCLIP_HOME?.trim();
   if (raw) return path.resolve(expandHomePrefix(raw));
-  return path.resolve(os.homedir(), ".paperclip-pro");
+  return resolveDefaultPaperclipHomeDir();
 }
 
 export function resolvePaperclipInstanceId(instanceIdOverride?: string): string {
@@ -88,5 +108,11 @@ export function resolveDefaultBackupDir(input: {
 }
 
 export function resolveHomeAwarePath(value: string): string {
-  return path.resolve(expandHomePrefix(value));
+  const resolved = path.resolve(expandHomePrefix(value));
+  const userHome = os.homedir();
+  const homes = [LEGACY_HOME_DIRNAME, WARDMOTE_HOME_DIRNAME].map((name) => path.resolve(userHome, name));
+  const owner = homes.find((home) => resolved === home || resolved.startsWith(home + path.sep));
+  if (!owner || fs.existsSync(owner)) return resolved;
+  const other = homes.find((home) => home !== owner)!;
+  return fs.existsSync(other) ? other + resolved.slice(owner.length) : resolved;
 }

@@ -5,7 +5,7 @@ summary: Add the Wardmote board to an Android, iOS, iPadOS, or desktop home scre
 
 Wardmote ships a web app manifest and service worker, so any HTTPS deployment (or `localhost`) can be installed as an app. The installed app opens without browser chrome, has its own icon and task switcher entry, and offers shortcuts to Inbox, Decisions, Tasks, and New task.
 
-Apps installed under the earlier Paperclip name keep working: the manifest `id`, `scope`, and `start_url` are unchanged, so the browser updates the name and icon in place and existing push subscriptions stay registered.
+Apps installed under the earlier Wardmote name keep working: the manifest `id`, `scope`, and `start_url` are unchanged, so the browser updates the name and icon in place and existing push subscriptions stay registered.
 
 ## Requirements
 

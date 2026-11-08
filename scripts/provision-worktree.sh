@@ -3,7 +3,10 @@ set -euo pipefail
 
 base_cwd="${PAPERCLIP_WORKSPACE_BASE_CWD:?PAPERCLIP_WORKSPACE_BASE_CWD is required}"
 worktree_cwd="${PAPERCLIP_WORKSPACE_CWD:?PAPERCLIP_WORKSPACE_CWD is required}"
-paperclip_home="${PAPERCLIP_HOME:-$HOME/.paperclip-pro}"
+paperclip_home="${WARDMOTE_HOME:-${PAPERCLIP_HOME:-}}"
+if [ -z "$paperclip_home" ]; then
+  if [ -d "$HOME/.paperclip-pro" ]; then paperclip_home="$HOME/.paperclip-pro"; else paperclip_home="$HOME/.wardmote"; fi
+fi
 paperclip_instance_id="${PAPERCLIP_INSTANCE_ID:-default}"
 default_source_config_path="$paperclip_home/instances/$paperclip_instance_id/config.json"
 paperclip_dir="$worktree_cwd/.paperclip"

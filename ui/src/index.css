@@ -38,7 +38,7 @@
 }
 
 @font-face {
-  font-family: "Paperclip Symbols Nerd Font Mono";
+  font-family: "Wardmote Symbols Nerd Font Mono";
   src: url("/fonts/SymbolsNerdFontMono-v3.5.1.woff2") format("woff2");
   font-display: swap;
   font-style: normal;
@@ -3748,7 +3748,7 @@ span.paperclip-mention-chip[data-mention-kind="external-object"] {
 
 :root {
   /* Browser Use live viewer chrome: 30px tab strip + 40px navigation bar.
-     Provider integration measurement (2026-09-29), not Paperclip spacing.
+     Provider integration measurement (2026-09-29), not Wardmote spacing.
      Keep navigation visible; the cross-origin viewer exposes no sizing message. */
   --browser-use-viewer-chrome-height: 70px;
 }

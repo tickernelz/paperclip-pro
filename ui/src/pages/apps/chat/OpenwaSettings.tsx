@@ -203,7 +203,7 @@ function OwnersSection({ endpointId }: { endpointId: string }) {
   return (
     <SettingsSection
       title="Owners"
-      description="Owners can start full-access runs and approve requests. Each owner number must be linked to a Paperclip member who is not a viewer."
+      description="Owners can start full-access runs and approve requests. Each owner number must be linked to a Wardmote member who is not a viewer."
     >
       {owners.isPending ? (
         <p className="text-sm text-ink-3">Loading owners…</p>
@@ -219,7 +219,7 @@ function OwnersSection({ endpointId }: { endpointId: string }) {
                 <p className="font-mono text-sm">{owner.numberMasked}</p>
                 <p className="text-xs text-ink-3">
                   {owner.effective
-                    ? "Linked to " + (owner.displayName ?? "a Paperclip member")
+                    ? "Linked to " + (owner.displayName ?? "a Wardmote member")
                     : owner.linkStatus === "linked"
                       ? "Linked, but the member is inactive or a viewer"
                       : "Waiting for identity-link confirmation"}
@@ -259,7 +259,7 @@ function OwnersSection({ endpointId }: { endpointId: string }) {
       {confirmation ? (
         <div className="space-y-2 border-y border-line py-3">
           <p className="text-sm font-medium">Private identity-link URL</p>
-          <p className="text-xs text-ink-3">Send it only to the owner. They open it while signed in to Paperclip to link this number.</p>
+          <p className="text-xs text-ink-3">Send it only to the owner. They open it while signed in to Wardmote to link this number.</p>
           <p className="break-all font-mono text-xs">{confirmation.url}</p>
           <Button
             size="sm"

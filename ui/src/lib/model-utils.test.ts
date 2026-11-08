@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { adapterCuratesModelOrder } from "./model-utils";
 
 describe("adapterCuratesModelOrder", () => {
-  it("keeps the advertised order for the Paperclip Runner's hand-ordered list", () => {
+  it("keeps the advertised order for the Wardmote Runner's hand-ordered list", () => {
     expect(adapterCuratesModelOrder("paperclip_runner")).toBe(true);
   });
 

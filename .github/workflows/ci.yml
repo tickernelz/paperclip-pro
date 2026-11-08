@@ -395,6 +395,24 @@ jobs:
           path: tests/contrast-gate/test-results/
           retention-days: 14
 
+  upgrade-path:
+    name: Upgrade path (published release to this commit)
+    needs: scope
+    if: needs.scope.outputs.docs_only != 'true' && github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: ./.github/actions/setup-workspace
+      - name: Upgrade an existing install with its own CLI and keep its home
+        env:
+          GH_TOKEN: ${{ github.token }}
+          UPGRADE_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          UPGRADE_SHA: ${{ github.event.pull_request.head.sha }}
+        run: bash scripts/test-upgrade-path.sh
+
   docker-omp-pin:
     name: Docker OMP pin
     needs: scope
@@ -431,7 +449,7 @@ jobs:
   verify:
     name: verify
     if: always()
-    needs: [scope, policy, docs, typecheck, build, extensions, runner, general, serialized, e2e, mobile-shell, contrast-gate, docker-omp-pin]
+    needs: [scope, policy, docs, typecheck, build, extensions, runner, general, serialized, e2e, mobile-shell, contrast-gate, upgrade-path, docker-omp-pin]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:

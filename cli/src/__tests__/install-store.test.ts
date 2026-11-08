@@ -230,7 +230,7 @@ describe("managed install store", () => {
   });
 
   it("places the shim where PAPERCLIP_SHIM_PATH points, matching the service manager", () => {
-    const override = path.join(root, "isolated", "bin", "paperclip-pro");
+    const override = path.join(root, "isolated", "bin", "wardmote");
     const previous = process.env.PAPERCLIP_SHIM_PATH;
     process.env.PAPERCLIP_SHIM_PATH = override;
     try {

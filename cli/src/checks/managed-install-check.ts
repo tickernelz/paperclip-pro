@@ -40,7 +40,7 @@ export function nodeRuntimeCheck(): CheckResult {
         name: "Node.js runtime",
         status: "fail",
         message: `Node.js ${process.versions.node} is unsupported`,
-        repairHint: `Install Node.js ${MINIMUM_NODE_VERSION} or newer before installing or running Paperclip`,
+        repairHint: `Install Node.js ${MINIMUM_NODE_VERSION} or newer before installing or running Wardmote`,
       };
 }
 
@@ -66,7 +66,7 @@ export function managedInstallChecks(
         name: "Managed install manifest",
         status: "fail",
         message: error instanceof Error ? error.message : String(error),
-        repairHint: "Re-run `paperclip-pro install` to rebuild the managed install metadata",
+        repairHint: "Re-run `wardmote install` to rebuild the managed install metadata",
       },
     ];
   }
@@ -77,7 +77,7 @@ export function managedInstallChecks(
         name: "Managed install manifest",
         status: "fail",
         message: `Managed install artifacts exist but ${paths.manifestPath} is missing`,
-        repairHint: "Re-run `paperclip-pro install`",
+        repairHint: "Re-run `wardmote install`",
       },
     ];
   }
@@ -108,7 +108,7 @@ export function managedInstallChecks(
           message: !payloadExists
             ? `Manifest payload is missing or outside the install store: ${manifest.payloadPath}`
             : `Current link does not point to ${manifest.payloadPath}`,
-          repairHint: "Re-run `paperclip-pro install` or roll back to a retained payload",
+          repairHint: "Re-run `wardmote install` or roll back to a retained payload",
         },
   );
 
@@ -125,7 +125,7 @@ export function managedInstallChecks(
           name: "Managed install shim",
           status: "fail",
           message: `Missing or unrecognized shim at ${paths.shimPath}`,
-          repairHint: "Re-run `paperclip-pro install`",
+          repairHint: "Re-run `wardmote install`",
         },
   );
 
@@ -160,7 +160,7 @@ export function managedInstallChecks(
           name: "Managed install retention",
           status: "warn",
           message: `${orphaned.length} orphaned payload${orphaned.length === 1 ? "" : "s"} found`,
-          repairHint: "A successful `paperclip-pro update` prunes unretained payloads",
+          repairHint: "A successful `wardmote update` prunes unretained payloads",
         },
   );
 

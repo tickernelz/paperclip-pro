@@ -17,7 +17,7 @@ npx @tickernelz/paperclip-pro@latest install --yes
 
 `install` resolves the `latest` dist-tag of `@tickernelz/paperclip-pro` from
 `https://registry.npmjs.org`, installs that version and its package set into a
-payload under `~/.paperclip-pro/cli/installs/npm/<version>`, smoke-tests
+payload under `~/.wardmote/cli/installs/npm/<version>`, smoke-tests
 `--version` and the payload's embedded-PostgreSQL native assets, and only then
 flips the `current` pointer and writes the `~/.local/bin/paperclip-pro` shim
 (`cli/src/commands/install.ts`).
@@ -25,7 +25,7 @@ flips the `current` pointer and writes the `~/.local/bin/paperclip-pro` shim
 Pin an exact published version with `--version`:
 
 ```sh
-paperclip-pro install --version 2026.926.1 --yes
+wardmote install --version 2026.926.1 --yes
 ```
 
 The install writes its own npm user config, so the payload never inherits the
@@ -41,8 +41,8 @@ published packages. It takes minutes instead of seconds and needs pnpm 9.15.4,
 `git`, `curl`, `tar`, and `corepack`:
 
 ```sh
-paperclip-pro install --ref main --yes
-paperclip-pro install --repo tickernelz/paperclip-pro --ref <commit-sha> --yes
+wardmote install --ref main --yes
+wardmote install --repo tickernelz/paperclip-pro --ref <commit-sha> --yes
 ```
 
 `--ref` selects the commit and `--repo` defaults to `tickernelz/paperclip-pro`
@@ -53,7 +53,7 @@ a reproducible, pinned install.
 Then onboard:
 
 ```sh
-paperclip-pro onboard --yes
+wardmote onboard --yes
 ```
 
 Day-two operation — state layout, `service.env`, safe restarts, updates,
@@ -73,12 +73,12 @@ in an interactive shell. Systemd and launchd do not load shell version-manager
 configuration. A newer Node installed elsewhere does not upgrade a running
 service or change a custom startup script's `PATH`.
 
-Managed installs pin the validated Node executable in the `paperclip-pro` shim
+Managed installs pin the validated Node executable in the `wardmote` shim
 and prepend its directory to `PATH` for child tools, including ACP servers with
 an `/usr/bin/env node` shebang. Re-run the installer using the supported
 Node runtime after changing runtime installations, then restart the service.
 For example, put the supported Node's bin directory first on `PATH` and run
-`paperclip-pro install --yes` again. Do not use the old managed shim to
+`wardmote install --yes` again. Do not use the old managed shim to
 re-pin Node: it intentionally continues launching its previously pinned runtime.
 Installs and updates refresh existing managed shims in place. Updates reject an
 unsupported running Node before installing or activating a payload; read-only
@@ -104,7 +104,7 @@ the adapter configuration documentation.
 Managed code is separate from instance data:
 
 ```text
-~/.paperclip-pro/cli/
+~/.wardmote/cli/
 ├── install.json
 ├── current -> installs/npm/2026.720.0
 └── installs/
@@ -114,10 +114,10 @@ Managed code is separate from instance data:
 ~/.local/bin/paperclip-pro
 ```
 
-The `paperclip-pro` shim remains stable while `current` switches atomically
+The `wardmote` shim remains stable while `current` switches atomically
 between complete payloads. Paperclip keeps the two previous managed payloads
 for rollback. Configuration, databases, uploads, logs, secrets, and workspaces
-remain under `~/.paperclip-pro/instances/` and are not stored inside CLI payloads.
+remain under `~/.wardmote/instances/` and are not stored inside CLI payloads.
 
 If `~/.local/bin` is not on `PATH`, the installer offers to update the relevant
 shell startup file when running interactively. Non-interactive installs print
@@ -125,21 +125,21 @@ the exact `export PATH` command instead of editing shell files silently.
 
 ## Install Sources
 
-`paperclip-pro install` with no source flag follows the `latest` dist-tag of
+`wardmote install` with no source flag follows the `latest` dist-tag of
 `@tickernelz/paperclip-pro`, and `--version <YYYY.MDD.P>` pins one published
 version; both resolve against `https://registry.npmjs.org`. `--canary` follows
 the `canary` dist-tag, which the release workflow does not publish today.
 
 ```sh
-paperclip-pro install --yes
-paperclip-pro install --version 2026.926.1 --yes
+wardmote install --yes
+wardmote install --version 2026.926.1 --yes
 ```
 
 Install a git ref instead when you need an unreleased commit:
 
 ```sh
-paperclip-pro install --ref main --yes
-paperclip-pro install --repo tickernelz/paperclip-pro --ref <commit-sha> --yes
+wardmote install --ref main --yes
+wardmote install --repo tickernelz/paperclip-pro --ref <commit-sha> --yes
 ```
 
 `--repo` defaults to `tickernelz/paperclip-pro`; point it at another GitHub
@@ -160,7 +160,7 @@ revision's package installation and release build scripts on your machine.
 Run onboarding after a non-interactive installation:
 
 ```sh
-paperclip-pro onboard
+wardmote onboard
 ```
 
 Interactive onboarding asks whether Paperclip should run as a background
@@ -168,9 +168,9 @@ service when the platform supports one. Automated onboarding deliberately does
 not install a service unless explicitly requested:
 
 ```sh
-paperclip-pro onboard --yes                    # configure only; no service install
-paperclip-pro onboard --yes --install-service  # explicit automation opt-in
-paperclip-pro onboard --yes --no-install-service
+wardmote onboard --yes                    # configure only; no service install
+wardmote onboard --yes --install-service  # explicit automation opt-in
+wardmote onboard --yes --no-install-service
 ```
 
 After onboarding installs and starts the service, it waits for the service to
@@ -181,18 +181,18 @@ runs print the URL without trying to launch a browser.
 Service commands are namespaced:
 
 ```sh
-paperclip-pro service install
-paperclip-pro service status
-paperclip-pro service start
-paperclip-pro service stop
-paperclip-pro service restart
-paperclip-pro service logs -f
-paperclip-pro service uninstall
+wardmote service install
+wardmote service status
+wardmote service start
+wardmote service stop
+wardmote service restart
+wardmote service logs -f
+wardmote service uninstall
 ```
 
 Paperclip uses a systemd user service on Linux and WSL2 systems with user
 systemd, and a LaunchAgent on macOS. Containers, WSL1, and systems without a
-supported user service manager receive foreground `paperclip-pro run` guidance
+supported user service manager receive foreground `wardmote run` guidance
 instead of a hard failure.
 
 The service uses the stable managed-install shim, restarts after crashes, and
@@ -200,7 +200,7 @@ can start on login. On Linux, service installation may offer to enable user
 lingering so it can continue without an active login session. The command
 explains and confirms that system-level action before running it.
 
-Use one server process per instance. `paperclip-pro run` refuses to start when
+Use one server process per instance. `wardmote run` refuses to start when
 the same instance is already supervised; stop the service first or use
 `--force` only when you intentionally accept the single-writer risk.
 
@@ -209,31 +209,31 @@ the same instance is already supervised; stop the service first or use
 Update according to the source and channel recorded in the install manifest:
 
 ```sh
-paperclip-pro update
+wardmote update
 ```
 
 Select a different release source explicitly:
 
 ```sh
-paperclip-pro update --latest
-paperclip-pro update --canary
-paperclip-pro update --version 2026.720.0
+wardmote update --latest
+wardmote update --canary
+wardmote update --version 2026.720.0
 ```
 
 Managed updates create a database backup before switching payloads, verify the
 new CLI, atomically flip `current`, and restart an installed service. A failed
 install or verification leaves the previous payload active.
 
-If the service is stopped, start it with `paperclip-pro service start` before
+If the service is stopped, start it with `wardmote service start` before
 updating so Paperclip can take the safety backup. Use
-`paperclip-pro update --no-backup` only when you intentionally accept updating
+`wardmote update --no-backup` only when you intentionally accept updating
 without that rollback safeguard. A never-onboarded instance with no config or
 instance data skips the backup automatically because there is nothing to save.
 
 Roll back to the previous retained payload:
 
 ```sh
-paperclip-pro update --rollback
+wardmote update --rollback
 ```
 
 The `upgrade` command is an alias for `update`. Exact versions and commit SHAs
@@ -242,14 +242,14 @@ are pinned; provide a new target when you want them to move.
 ## Other Installation Methods
 
 A global npm install (`npm install -g @tickernelz/paperclip-pro`) works and is
-updated by `paperclip-pro update`, but it has no payload store, so it offers no
+updated by `wardmote update`, but it has no payload store, so it offers no
 atomic activation and no rollback. Prefer the managed install above.
 
 Source checkout for development:
 
 ```sh
 git clone https://github.com/tickernelz/paperclip-pro.git
-cd paperclip-pro
+cd wardmote
 pnpm install --frozen-lockfile
 pnpm dev
 ```
@@ -260,7 +260,7 @@ Isolated manual trial that never installs a service:
 node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts test-drive --data-dir /tmp/pcpro-trial --no-browser
 ```
 
-The managed `paperclip-pro update` command updates managed installs. For source
+The managed `wardmote update` command updates managed installs. For source
 checkouts it reports the appropriate git workflow instead of modifying the
 checkout automatically.
 
@@ -270,8 +270,8 @@ checkout automatically.
 Run:
 
 ```sh
-paperclip-pro doctor
-paperclip-pro service status
+wardmote doctor
+wardmote service status
 ```
 
 `doctor` checks the managed install store, manifest, `current` link, shim,
@@ -290,11 +290,11 @@ before it starts.
 Remove the background service and managed CLI payloads:
 
 ```sh
-paperclip-pro service uninstall
-paperclip-pro uninstall
+wardmote service uninstall
+wardmote uninstall
 ```
 
-`paperclip-pro uninstall` removes the managed shim, manifest, and CLI payloads.
-It deliberately preserves `~/.paperclip-pro/instances/`, including configuration,
+`wardmote uninstall` removes the managed shim, manifest, and CLI payloads.
+It deliberately preserves `~/.wardmote/instances/`, including configuration,
 databases, uploads, logs, secrets, backups, and workspaces. Back up and remove
 that data separately only when you intend to delete the Paperclip instance.

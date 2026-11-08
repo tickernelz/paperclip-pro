@@ -133,7 +133,7 @@ describe("test-drive data isolation", () => {
     expect(fs.readFileSync(marker, "utf8")).toBe("keep");
   });
 
-  it("discards inherited Paperclip routing", async () => {
+  it("discards inherited Wardmote routing", async () => {
     const root = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-test-drive-env-"));
     cleanupDirectories.push(root);
     process.env.PAPERCLIP_HOME = "/normal/home";
@@ -385,7 +385,7 @@ describe("test-drive foreground lifecycle", () => {
       bind: "loopback",
       installService: false,
       skipServiceManagerCheck: true,
-      introLabel: "paperclip-pro test-drive",
+      introLabel: "wardmote test-drive",
     });
     expect(events).toEqual(["listening", "initialized", "browser"]);
   });

@@ -396,7 +396,7 @@ account, and use the setup screen to claim the first instance admin from the
 browser. The CLI fallback remains:
 
 ```sh
-pnpm paperclip-pro auth bootstrap-ceo
+pnpm wardmote auth bootstrap-ceo
 ```
 
 For Tailscale-only reachability on a detected tailnet address:
@@ -516,7 +516,7 @@ An explicit override remains authoritative and fails closed if invalid.
 For a first-time local install, you can bootstrap and run in one command:
 
 ```sh
-pnpm paperclip-pro run
+pnpm wardmote run
 ```
 
 > **Note: private npm registry `.npmrc` + first-run onboarding**
@@ -535,10 +535,10 @@ pnpm paperclip-pro run
 > npx --registry https://registry.npmjs.org paperclip-pro onboard --yes
 > ```
 
-`paperclip-pro run` does:
+`wardmote run` does:
 
 1. auto-onboard if config is missing
-2. `paperclip-pro doctor` with repair enabled
+2. `wardmote doctor` with repair enabled
 3. starts the server when checks pass
 
 ### One-command isolated manual test drive
@@ -702,7 +702,7 @@ For a separate review-oriented container that keeps `codex`/`claude` login state
 Every local install keeps runtime state directly under the selected instance root:
 
 ```text
-~/.paperclip-pro/instances/default/                  # instance root
+~/.wardmote/instances/default/                  # instance root
   config.json                                    # runtime config
   .env                                           # instance env file
   db/                                            # embedded PostgreSQL data
@@ -719,7 +719,7 @@ Every local install keeps runtime state directly under the selected instance roo
                                                    # per-agent codex_local home
 ```
 
-`PAPERCLIP_HOME` and `PAPERCLIP_INSTANCE_ID` override the home root and instance id respectively. `paperclip-pro onboard` echoes the resolved values in its banner (`Local home: <home> | instance: <id> | config: <path>`) so you can confirm where state will land before continuing.
+`PAPERCLIP_HOME` and `PAPERCLIP_INSTANCE_ID` override the home root and instance id respectively. `wardmote onboard` echoes the resolved values in its banner (`Local home: <home> | instance: <id> | config: <path>`) so you can confirm where state will land before continuing.
 
 Config updates preserve unrecognized top-level and nested keys so provider or
 plugin extensions survive `configure` and worktree port repair. Likely
@@ -734,12 +734,12 @@ runs stop without replacing the original.
 For local development, leave `DATABASE_URL` unset.
 The server will automatically use embedded PostgreSQL and persist data at:
 
-- `~/.paperclip-pro/instances/default/db`
+- `~/.wardmote/instances/default/db`
 
 Override home or instance:
 
 ```sh
-PAPERCLIP_HOME=/custom/path PAPERCLIP_INSTANCE_ID=dev pnpm paperclip-pro run
+PAPERCLIP_HOME=/custom/path PAPERCLIP_INSTANCE_ID=dev pnpm wardmote run
 ```
 
 No Docker or external database is required for this mode.
@@ -778,12 +778,12 @@ maintenance-run visibility.
 
 For local development, the default storage provider is `local_disk`, which persists uploaded images/attachments at:
 
-- `~/.paperclip-pro/instances/default/data/storage`
+- `~/.wardmote/instances/default/data/storage`
 
 Configure storage provider/settings:
 
 ```sh
-pnpm paperclip-pro configure --section storage
+pnpm wardmote configure --section storage
 ```
 
 ## Agent Artifact Uploads
@@ -820,13 +820,13 @@ that file, not as the main completion path for deliverables.
 
 When a local agent run has no resolved project/session workspace, Paperclip falls back to an agent home workspace under the instance root:
 
-- `~/.paperclip-pro/instances/default/workspaces/<agent-id>`
+- `~/.wardmote/instances/default/workspaces/<agent-id>`
 
 This path honors `PAPERCLIP_HOME` and `PAPERCLIP_INSTANCE_ID` in non-default setups.
 
 For `codex_local`, Paperclip assigns new and updated agents an isolated Codex home under the instance root and blocks shared host/company Codex homes:
 
-- `~/.paperclip-pro/instances/default/companies/<company-id>/agents/<agent-id>/codex-home`
+- `~/.wardmote/instances/default/companies/<company-id>/agents/<agent-id>/codex-home`
 
 Paperclip also persists an empty `OPENAI_API_KEY` override for those agents so a host-level `OPENAI_API_KEY` cannot leak into Codex runs through process inheritance. If an operator explicitly configures `adapterConfig.env.CODEX_HOME`, it must not point at the shared company `codex-home`, `$CODEX_HOME`, or `~/.codex`.
 
@@ -894,7 +894,7 @@ When developing from multiple git worktrees, do not point two Paperclip servers 
 Instead, create a repo-local Paperclip config plus an isolated instance for the worktree:
 
 ```sh
-paperclip-pro worktree init
+wardmote worktree init
 # or create the git worktree and initialize it in one step:
 npx @tickernelz/paperclip-pro worktree:make paperclip-pr-432
 ```
@@ -927,9 +927,9 @@ Seeded worktree instances quarantine copied live execution by default for both `
 
 The same quarantine stops copied project/execution-workspace runtime desired states and clears copied runtime process claims. Without this reset, booting the cloned Paperclip database could restart a source workspace's dev service from the isolated instance, creating duplicate runners, port reassignment, and stale public URLs.
 
-After `worktree init`, both the server and the CLI auto-load the repo-local `.paperclip/.env` when run inside that worktree, so normal commands like `pnpm dev`, `paperclip-pro doctor`, and `paperclip-pro db:backup` stay scoped to the worktree instance.
+After `worktree init`, both the server and the CLI auto-load the repo-local `.paperclip/.env` when run inside that worktree, so normal commands like `pnpm dev`, `wardmote doctor`, and `wardmote db:backup` stay scoped to the worktree instance.
 
-`pnpm dev` now fails fast in a linked git worktree when `.paperclip/.env` is missing, instead of silently booting against the default instance/port. If that happens, run `paperclip-pro worktree init` in the worktree first.
+`pnpm dev` now fails fast in a linked git worktree when `.paperclip/.env` is missing, instead of silently booting against the default instance/port. If that happens, run `wardmote worktree init` in the worktree first.
 
 ### Lean worktrees and deferred seeding
 
@@ -939,8 +939,8 @@ Seeding state is tracked in `.paperclip/seed-manifest.json`. The versioned manif
 
 The default `worktree init` still seeds eagerly. A lean worktree (created without an eager seed) has a `pending` manifest until something seeds it on demand:
 
-- `pnpm paperclip-pro worktree ensure-seeded` performs the deferred seed **exactly once**. It is lock-guarded and idempotent: only a complete `verified` manifest short-circuits it, so it is safe to call repeatedly and from concurrent processes. Managed workspaces derive the source from the control-plane-provided base project workspace when it carries its own `.paperclip/config.json`, and otherwise from the control plane's own registered instance config; either way the workspace's manifest never selects it. Manual worktrees must pass `--from-config`.
-- `paperclip-pro run` calls `ensureWorktreeSeeded` automatically before doctor/boot. Managed runs transparently seed a lean worktree from their registered base workspace; an unmanaged lean worktree must first run `worktree ensure-seeded --from-config <source-config>`.
+- `pnpm wardmote worktree ensure-seeded` performs the deferred seed **exactly once**. It is lock-guarded and idempotent: only a complete `verified` manifest short-circuits it, so it is safe to call repeatedly and from concurrent processes. Managed workspaces derive the source from the control-plane-provided base project workspace when it carries its own `.paperclip/config.json`, and otherwise from the control plane's own registered instance config; either way the workspace's manifest never selects it. Manual worktrees must pass `--from-config`.
+- `wardmote run` calls `ensureWorktreeSeeded` automatically before doctor/boot. Managed runs transparently seed a lean worktree from their registered base workspace; an unmanaged lean worktree must first run `worktree ensure-seeded --from-config <source-config>`.
 - Managed Paperclip git worktrees default to the repository's `scripts/provision-worktree.sh` when the strategy omits `provisionCommand`. When a registered source config exists, setup creates the isolated config and pending manifest. Runtime startup also runs `scripts/provision-worktree-runtime.sh` automatically when no explicit runtime provision command is configured and the manifest is not verified. Explicitly configured provision commands still take precedence.
 - An environment-configured server may have no local seed config. If neither the base checkout nor the default control-plane instance has one, a fresh worktree prepares its dependencies without creating a development instance. This also applies when `PAPERCLIP_CONFIG` names the default `$PAPERCLIP_HOME/instances/$PAPERCLIP_INSTANCE_ID/config.json` path, as the Docker image does. Setup creates no config, environment file, or seed manifest and does not claim runtime or seed readiness. A later request for a seeded development runtime still needs a canonical registered source config. Once that source exists, provisioning the checkout again creates the development instance normally.
 - A missing custom `PAPERCLIP_CONFIG`, rejected symlink, or non-regular source file still fails setup. An existing worktree with a config, environment file, or seed state also fails if its source disappears; setup never downgrades that instance to a plain checkout. Repair the source before retrying.
@@ -956,7 +956,7 @@ The seed manifest never grants source-path authority. Its source path and instan
 **Unverified-seed guard.** `pnpm dev` (the dev-runner) refuses to boot a worktree whose manifest is pending, running, failed, malformed, or missing required verification evidence and points you at the fix:
 
 ```
-[paperclip] this worktree database is seed-pending. Run `pnpm paperclip-pro worktree ensure-seeded` before `pnpm dev`.
+[paperclip] this worktree database is seed-pending. Run `pnpm wardmote worktree ensure-seeded` before `pnpm dev`.
 ```
 
 This guard (`isWorktreeSeedPending` in `server/src/dev-runner-worktree.ts`) prevents `pnpm dev` from starting the app against an empty or partially restored database — run `worktree ensure-seeded` once and re-run `pnpm dev`.
@@ -979,9 +979,9 @@ When Paperclip closes a server-managed git worktree, it also reclaims the isolat
 Print shell exports explicitly when needed:
 
 ```sh
-paperclip-pro worktree env
+wardmote worktree env
 # or:
-eval "$(paperclip-pro worktree env)"
+eval "$(wardmote worktree env)"
 ```
 
 ### Workspace login handoff and readiness
@@ -1027,11 +1027,11 @@ The workspace UI surfaces `Provisioning database`, `Validating clone`, `Ready`, 
 Examples:
 
 ```sh
-paperclip-pro worktree init --no-seed
-paperclip-pro worktree init --seed-mode full
-paperclip-pro worktree init --from-instance default
-paperclip-pro worktree init --from-data-dir ~/.paperclip-pro
-paperclip-pro worktree init --force
+wardmote worktree init --no-seed
+wardmote worktree init --seed-mode full
+wardmote worktree init --from-instance default
+wardmote worktree init --from-data-dir ~/.wardmote
+wardmote worktree init --force
 ```
 
 Repair an already-created repo-managed worktree and reseed its isolated instance from the main default install. Point `--from-config` at the instance config:
@@ -1040,7 +1040,7 @@ Repair an already-created repo-managed worktree and reseed its isolated instance
 cd /path/to/paperclip/.paperclip/worktrees/PAP-884-ai-commits-component
 npx @tickernelz/paperclip-pro worktree init --force --seed-mode minimal \
   --name PAP-884-ai-commits-component \
-  --from-config ~/.paperclip-pro/instances/default/config.json
+  --from-config ~/.wardmote/instances/default/config.json
 ```
 
 That rewrites the worktree-local `.paperclip/config.json` + `.paperclip/.env`, recreates the isolated instance under `~/.paperclip-worktrees/instances/<worktree-id>/`, and preserves the git worktree contents themselves.
@@ -1065,7 +1065,7 @@ Examples:
 ```sh
 # From inside a linked worktree, rebuild missing .paperclip metadata and reseed it from the default instance.
 cd /path/to/paperclip/.paperclip/worktrees/PAP-1132-assistant-ui-pap-1131-make-issues-comments-be-like-a-chat
-pnpm paperclip-pro worktree repair
+pnpm wardmote worktree repair
 
 # From the primary checkout, create or repair a linked worktree for a branch under .paperclip/worktrees/.
 # This command repairs the local checkout, so run the checked-out CLI through the direct-exec form.
@@ -1144,8 +1144,8 @@ npx @tickernelz/paperclip-pro worktree:make experiment --no-seed
 Examples:
 
 ```sh
-pnpm paperclip-pro worktree env
-pnpm paperclip-pro worktree env --json
+pnpm wardmote worktree env
+pnpm wardmote worktree env --json
 eval "$(npx @tickernelz/paperclip-pro worktree env)"
 ```
 
@@ -1701,7 +1701,7 @@ The label is hidden on other hosts and when commit metadata is unavailable.
 To wipe local dev data and start fresh:
 
 ```sh
-rm -rf ~/.paperclip-pro/instances/default/db
+rm -rf ~/.wardmote/instances/default/db
 pnpm dev
 ```
 
@@ -1718,23 +1718,23 @@ schemas. Defaults:
 - enabled
 - every 60 minutes
 - retain 30 days
-- backup dir: `~/.paperclip-pro/instances/default/data/backups`
+- backup dir: `~/.wardmote/instances/default/data/backups`
 
 Automatic backups are disabled for isolated worktree instances created with
-`paperclip-pro worktree init` or `paperclip-pro worktree:make`. Existing worktree
+`wardmote worktree init` or `wardmote worktree:make`. Existing worktree
 configs are migrated to the disabled setting when their server next starts. The
 main/default instance keeps the normal enabled-by-default behavior.
 
 Configure these in:
 
 ```sh
-pnpm paperclip-pro configure --section database
+pnpm wardmote configure --section database
 ```
 
 Run a one-off backup manually:
 
 ```sh
-pnpm paperclip-pro db:backup
+pnpm wardmote db:backup
 # or:
 pnpm db:backup
 ```
@@ -1771,7 +1771,7 @@ those providers are enabled.
 
 Agent env vars now support secret references. By default, secret values are stored with local encryption and only secret refs are persisted in agent config.
 
-- Default local key path: `~/.paperclip-pro/instances/default/secrets/master.key`
+- Default local key path: `~/.wardmote/instances/default/secrets/master.key`
 - Override key material directly: `PAPERCLIP_SECRETS_MASTER_KEY`
 - Override key file path: `PAPERCLIP_SECRETS_MASTER_KEY_FILE`
 - Back up the key file and database together; either one alone is not enough to restore local encrypted secrets.
@@ -1787,9 +1787,9 @@ Authenticated deployments default strict mode on unless explicitly overridden.
 
 CLI configuration support:
 
-- `pnpm paperclip-pro onboard` writes a default `secrets` config section (`local_encrypted`, strict mode off, key file path set) and creates a local key file when needed.
-- `pnpm paperclip-pro configure --section secrets` lets you update provider/strict mode/key path and creates the local key file when needed.
-- `pnpm paperclip-pro doctor` validates secrets adapter configuration, can create a missing local key file with `--repair`, and reports missing AWS Secrets Manager bootstrap env when that provider is selected.
+- `pnpm wardmote onboard` writes a default `secrets` config section (`local_encrypted`, strict mode off, key file path set) and creates a local key file when needed.
+- `pnpm wardmote configure --section secrets` lets you update provider/strict mode/key path and creates the local key file when needed.
+- `pnpm wardmote doctor` validates secrets adapter configuration, can create a missing local key file with `--repair`, and reports missing AWS Secrets Manager bootstrap env when that provider is selected.
 - Provider health is available at `GET /api/companies/:companyId/secret-providers/health` and reports local key permission warnings plus backup guidance.
 
 Per-company provider vaults are configured in the board UI under
@@ -1873,8 +1873,8 @@ npx @tickernelz/paperclip-pro context set --api-base http://localhost:3100 --com
 Then run commands without repeating flags:
 
 ```sh
-pnpm paperclip-pro issue list
-pnpm paperclip-pro dashboard get
+pnpm wardmote issue list
+pnpm wardmote dashboard get
 ```
 
 See full command reference in `doc/CLI.md`.

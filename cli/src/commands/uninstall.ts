@@ -88,8 +88,8 @@ export async function uninstallCommand(
   }, paths, { initialize: !hadStore });
 
   if (!shimRemoved) {
-    console.log(pc.yellow(`Left ${paths.shimPath} unchanged because it is not a Paperclip-managed shim.`));
+    console.log(pc.yellow(`Left ${paths.shimPath} or ${paths.wardmoteShimPath} unchanged because it is not a Wardmote-managed shim.`));
   }
-  console.log(pc.green("Removed the managed Paperclip CLI install."));
+  console.log(pc.green("Removed the managed Wardmote CLI install."));
   console.log(pc.dim(`User data was left untouched under ${paths.paperclipHome}.`));
 }

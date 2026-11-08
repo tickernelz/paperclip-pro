@@ -16,6 +16,7 @@ import {
   resolveCommandForLogs,
   runChildProcess,
 } from "../utils.js";
+import { legacyEnvKey } from "@tickernelz/paperclip-pro-shared/env-aliases";
 
 export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExecutionResult> {
   let spawned = false;
@@ -53,7 +54,7 @@ async function executeProcess(ctx: AdapterExecutionContext): Promise<AdapterExec
     // never accepted from config — the harness-minted run token is the only
     // source. Other PAPERCLIP_* keys Paperclip did not assign flow through.
     if (isForbiddenConfigEnvKey(k)) continue;
-    if (isPaperclipRuntimeEnvKey(k) && k in env) continue;
+    if (isPaperclipRuntimeEnvKey(k) && legacyEnvKey(k) in env) continue;
     env[k] = v;
   }
   env.PAPERCLIP_RUN_ID = runId;

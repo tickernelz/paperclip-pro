@@ -684,7 +684,7 @@ ${sdkDependency.startsWith("file:")
 ## Install Into Paperclip
 
 \`\`\`bash
-paperclip-pro plugin install ${shellQuote(toPosixPath(outputDir))}
+wardmote plugin install ${shellQuote(toPosixPath(outputDir))}
 \`\`\`
 
 ## Build Options

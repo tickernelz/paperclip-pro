@@ -129,7 +129,7 @@ describe("onboard service policy", () => {
 
     expect(installed).toBe(true);
     expect(ensureServiceShim).toHaveBeenCalledOnce();
-    expect(success).toHaveBeenCalledWith(expect.stringContaining("managed paperclip-pro payload"));
+    expect(success).toHaveBeenCalledWith(expect.stringContaining("managed wardmote payload"));
     expect(detection.manager.install).toHaveBeenCalledWith({ startNow: true, startOnLogin: true });
   });
 
@@ -150,7 +150,7 @@ describe("onboard service policy", () => {
     expect(installed).toBe(false);
     expect(detection.manager.install).not.toHaveBeenCalled();
     expect(warn).toHaveBeenCalledWith(expect.stringContaining("npm exploded"));
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining("paperclip-pro install"));
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining("wardmote install"));
   });
 
 });
@@ -243,7 +243,7 @@ describe("onboarded service dashboard handoff", () => {
     });
 
     expect(openDashboard).not.toHaveBeenCalled();
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining("paperclip-pro service logs"));
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining("wardmote service logs"));
   });
 });
 

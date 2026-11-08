@@ -185,7 +185,7 @@ or `dangerouslySetInnerHTML` content for inline references.
 Use the CLI scaffold command:
 
 ```bash
-paperclip-pro plugin init @yourscope/plugin-name --output /absolute/path/to/plugin-repos
+wardmote plugin init @yourscope/plugin-name --output /absolute/path/to/plugin-repos
 ```
 
 That creates `<output>/plugin-name/` with:
@@ -203,7 +203,7 @@ Outside this monorepo, the scaffold snapshots `@tickernelz/paperclip-pro-plugin-
 
 ## Local development workflow
 
-See the short [Local Plugin Development guide](./LOCAL_PLUGIN_DEVELOPMENT.md) for the full happy path (`pnpm dev` → `paperclip-pro plugin install <absolute-path>` → `paperclip-pro plugin list`) and reload semantics.
+See the short [Local Plugin Development guide](./LOCAL_PLUGIN_DEVELOPMENT.md) for the full happy path (`pnpm dev` → `wardmote plugin install <absolute-path>` → `wardmote plugin list`) and reload semantics.
 
 Minimum verification from the generated plugin folder:
 

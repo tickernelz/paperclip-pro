@@ -4,6 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
+import { legacyEnvKey } from "@tickernelz/paperclip-pro-shared/env-aliases";
 import { resolvePaperclipHomeDir, resolvePaperclipInstanceId } from "../config/home.js";
 
 const execFileAsync = promisify(execFile);
@@ -169,6 +170,7 @@ function assertOomScoreAdjust(name: string, value: number): number {
 
 export function parseServiceMemoryOverrides(content: string): Partial<SystemdMemoryLimits> {
   const values = new Map<string, string>();
+  const fromWardmote = new Set<string>();
   for (const rawLine of content.split(/\r?\n/)) {
     const line = rawLine.trim();
     if (!line || line.startsWith("#")) continue;
@@ -176,7 +178,13 @@ export function parseServiceMemoryOverrides(content: string): Partial<SystemdMem
     if (separator < 1) continue;
     const key = line.slice(0, separator).trim();
     const value = line.slice(separator + 1).trim().replace(/^(["'])(.*)\1$/, "$2");
-    values.set(key, value);
+    const legacyKey = legacyEnvKey(key);
+    if (legacyKey !== key) {
+      values.set(legacyKey, value);
+      fromWardmote.add(legacyKey);
+    } else if (!fromWardmote.has(key)) {
+      values.set(key, value);
+    }
   }
   const overrides: Partial<SystemdMemoryLimits> = {};
   for (const field of ["high", "max", "swapMax"] as const) {
@@ -212,7 +220,7 @@ export function renderSystemdUnit(input: {
 }): string {
   const limits = { ...DEFAULT_SYSTEMD_MEMORY_LIMITS, ...input.memoryLimits };
   return `[Unit]
-Description=Paperclip AI (${escapeSystemd(input.instanceId)})
+Description=Wardmote (${escapeSystemd(input.instanceId)})
 After=network.target
 StartLimitIntervalSec=60
 StartLimitBurst=5
@@ -222,6 +230,9 @@ Type=notify
 NotifyAccess=all
 ExecStart="${escapeSystemd(input.shimPath)}" run --instance "${escapeSystemd(input.instanceId)}"
 EnvironmentFile=-${escapeSystemdPath(resolveServiceEnvironmentFilePath(input.homeDir, input.instanceId))}
+Environment="WARDMOTE_SERVICE_MANAGED=1"
+Environment="WARDMOTE_INSTANCE_ID=${escapeSystemd(input.instanceId)}"
+Environment="WARDMOTE_HOME=${escapeSystemd(input.homeDir)}"
 Environment="PAPERCLIP_SERVICE_MANAGED=1"
 Environment="PAPERCLIP_INSTANCE_ID=${escapeSystemd(input.instanceId)}"
 Environment="PAPERCLIP_HOME=${escapeSystemd(input.homeDir)}"
@@ -254,6 +265,9 @@ export function renderLaunchdPlist(input: { instanceId: string; shimPath: string
   </array>
   <key>EnvironmentVariables</key>
   <dict>
+    <key>WARDMOTE_SERVICE_MANAGED</key><string>1</string>
+    <key>WARDMOTE_INSTANCE_ID</key><string>${escapeXml(input.instanceId)}</string>
+    <key>WARDMOTE_HOME</key><string>${escapeXml(input.homeDir)}</string>
     <key>PAPERCLIP_SERVICE_MANAGED</key><string>1</string>
     <key>PAPERCLIP_INSTANCE_ID</key><string>${escapeXml(input.instanceId)}</string>
     <key>PAPERCLIP_HOME</key><string>${escapeXml(input.homeDir)}</string>
@@ -453,12 +467,12 @@ export async function detectServiceManager(input: { instanceId?: string; platfor
   const platform = input.platform ?? process.platform;
   const runner = input.runner ?? defaultCommandRunner;
   if (platform === "darwin") return { supported: true, manager: new LaunchdServiceManager(instanceId, runner) };
-  if (platform !== "linux") return { supported: false, reason: `Service management is not supported on ${platform}. Use paperclip-pro run instead.` };
+  if (platform !== "linux") return { supported: false, reason: `Service management is not supported on ${platform}. Use wardmote run instead.` };
   try {
     await runner("systemctl", ["--user", "show-environment"]);
     return { supported: true, manager: new SystemdServiceManager(instanceId, runner) };
   } catch {
-    return { supported: false, reason: "No usable systemd user manager was detected (common in containers and WSL1). Use paperclip-pro run instead." };
+    return { supported: false, reason: "No usable systemd user manager was detected (common in containers and WSL1). Use wardmote run instead." };
   }
 }
 
@@ -467,5 +481,5 @@ export async function assertForegroundRunAllowed(instanceId: string, force = fal
   const detection = await detector({ instanceId });
   if (!detection.supported) return;
   const status = await detection.manager.status();
-  if (status.active) throw new Error(`Paperclip instance '${instanceId}' is already running as ${status.serviceName}. Use 'paperclip-pro service status --instance ${instanceId}' or pass --force to bypass this safety check.`);
+  if (status.active) throw new Error(`Wardmote instance '${instanceId}' is already running as ${status.serviceName}. Use 'wardmote service status --instance ${instanceId}' or pass --force to bypass this safety check.`);
 }

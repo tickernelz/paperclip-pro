@@ -3,7 +3,7 @@ title: Docker
 summary: Docker Compose quickstart
 ---
 
-Run Paperclip in Docker without installing Node or pnpm locally.
+Run Wardmote in Docker without installing Node or pnpm locally.
 
 ## Compose Quickstart (Recommended)
 
@@ -50,7 +50,7 @@ All data is persisted under the bind mount (`./data/docker-paperclip`):
 
 ## Provider CLIs in Docker
 
-The Docker image pre-installs the `claude`, `codex`, and `opencode` CLIs. The experimental Paperclip Runner and AI connection checks use them; OMP agents do not need them.
+The Docker image pre-installs the `claude`, `codex`, and `opencode` CLIs. The experimental Wardmote Runner and AI connection checks use them; OMP agents do not need them.
 
 Pass provider keys when you use those features:
 

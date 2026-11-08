@@ -413,7 +413,7 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
   }
 
   printPaperclipCliBanner();
-  p.intro(pc.bgCyan(pc.black(" paperclip-pro onboard ")));
+  p.intro(pc.bgCyan(pc.black(" wardmote onboard ")));
   const configPath = resolveConfigPath(opts.config);
   const instance = describeLocalInstancePaths(resolvePaperclipInstanceId());
   p.log.message(
@@ -468,9 +468,9 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
 
   if (existingConfig) {
     p.log.message(
-      pc.dim("Existing Paperclip install detected; keeping the current configuration unchanged."),
+      pc.dim("Existing Wardmote install detected; keeping the current configuration unchanged."),
     );
-    p.log.message(pc.dim(`Use ${pc.cyan("paperclip-pro configure")} if you want to change settings.`));
+    p.log.message(pc.dim(`Use ${pc.cyan("wardmote configure")} if you want to change settings.`));
 
     const jwtSecret = ensureAgentJwtSecret(configPath);
     const envFilePath = resolveAgentJwtEnvFile(configPath);
@@ -511,9 +511,9 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
 
     p.note(
       [
-        `Run: ${pc.cyan("paperclip-pro run")}`,
-        `Reconfigure later: ${pc.cyan("paperclip-pro configure")}`,
-        `Diagnose setup: ${pc.cyan("paperclip-pro doctor")}`,
+        `Run: ${pc.cyan("wardmote run")}`,
+        `Reconfigure later: ${pc.cyan("wardmote configure")}`,
+        `Diagnose setup: ${pc.cyan("wardmote doctor")}`,
       ].join("\n"),
       "Next commands",
     );
@@ -527,7 +527,7 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
     let shouldRunNow = !serviceInstalled && (opts.run === true || opts.yes === true);
     if (shouldOfferForegroundStart({ serviceInstalled, startAlreadyDecided: shouldRunNow, invokedByRun: opts.invokedByRun === true, interactive: Boolean(process.stdin.isTTY && process.stdout.isTTY) })) {
       const answer = await p.confirm({
-        message: "Start Paperclip now?",
+        message: "Start Wardmote now?",
         initialValue: true,
       });
       if (!p.isCancel(answer)) {
@@ -540,7 +540,7 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
       return;
     }
 
-    p.outro("Existing Paperclip setup is ready.");
+    p.outro("Existing Wardmote setup is ready.");
     return;
   }
 
@@ -619,7 +619,7 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
         await db.execute("SELECT 1");
         s.stop("Database connection successful");
       } catch {
-        s.stop(pc.yellow("Could not connect to database — you can fix this later with `paperclip-pro doctor`"));
+        s.stop(pc.yellow("Could not connect to database — you can fix this later with `wardmote doctor`"));
       }
     }
 
@@ -776,9 +776,9 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
 
   p.note(
     [
-      `Run: ${pc.cyan("paperclip-pro run")}`,
-      `Reconfigure later: ${pc.cyan("paperclip-pro configure")}`,
-      `Diagnose setup: ${pc.cyan("paperclip-pro doctor")}`,
+      `Run: ${pc.cyan("wardmote run")}`,
+      `Reconfigure later: ${pc.cyan("wardmote configure")}`,
+      `Diagnose setup: ${pc.cyan("wardmote doctor")}`,
     ].join("\n"),
     "Next commands",
   );
@@ -798,7 +798,7 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
   let shouldRunNow = !serviceInstalled && (opts.run === true || opts.yes === true);
   if (shouldOfferForegroundStart({ serviceInstalled, startAlreadyDecided: shouldRunNow, invokedByRun: opts.invokedByRun === true, interactive: Boolean(process.stdin.isTTY && process.stdout.isTTY) })) {
     const answer = await p.confirm({
-      message: "Start Paperclip now?",
+      message: "Start Wardmote now?",
       initialValue: true,
     });
     if (!p.isCancel(answer)) {
@@ -815,8 +815,8 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
     p.log.info(
       [
         "Bootstrap CEO invite will be created after the server starts.",
-        `Next: ${pc.cyan("paperclip-pro run")}`,
-        `Then: ${pc.cyan("paperclip-pro auth bootstrap-ceo")}`,
+        `Next: ${pc.cyan("wardmote run")}`,
+        `Then: ${pc.cyan("wardmote auth bootstrap-ceo")}`,
       ].join("\n"),
     );
   }

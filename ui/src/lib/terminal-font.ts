@@ -8,7 +8,7 @@ const NERD_FONT_FAMILIES = [
   "Symbols Nerd Font Mono",
 ];
 
-export const TERMINAL_ICON_WEB_FONT_FAMILY = "Paperclip Symbols Nerd Font Mono";
+export const TERMINAL_ICON_WEB_FONT_FAMILY = "Wardmote Symbols Nerd Font Mono";
 
 const TERMINAL_ICON_PROBE_TEXT = "\uE0A0\uE0B0\uF017\uF07B\uF313";
 

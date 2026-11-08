@@ -434,7 +434,7 @@ it("keeps watching after the event check until hire verification completes", asy
   await act(async () => { await new Promise(resolve => setTimeout(resolve, 20)); });
   expect(document.body.textContent).not.toContain("Your Dot is connected");
   expect(document.body.textContent).toContain("Test event confirmed: complete");
-  expect(document.body.textContent).toContain("Your Dot confirmed the test event. Paperclip is finishing agent setup.");
+  expect(document.body.textContent).toContain("Your Dot confirmed the test event. Wardmote is finishing agent setup.");
   const finishing = Array.from(document.querySelectorAll("button")).find(button => button.textContent?.includes("Finishing setup…"));
   expect(finishing?.disabled).toBe(true);
   connection.agentLifecycleState = "ready";
@@ -455,7 +455,7 @@ it("keeps completed checks but shows a pause blocker for a paired paused Dot", a
   expect(document.body.textContent).toContain("Test event confirmed: complete");
   expect(document.body.textContent).toContain("Resume this agent before connecting Dot.");
   expect(document.body.textContent).not.toContain("Finishing setup…");
-  expect(document.body.textContent).not.toContain("Paperclip is finishing agent setup.");
+  expect(document.body.textContent).not.toContain("Wardmote is finishing agent setup.");
   const blocked = Array.from(document.querySelectorAll("button")).find(button => button.textContent?.includes("Agent unavailable"));
   expect(blocked?.disabled).toBe(true);
   expect(dotApi.pair).not.toHaveBeenCalled();

@@ -44,7 +44,7 @@ const TIER_OPTIONS = [
 ];
 
 const UNREACHABLE =
-  "The Local Browser service did not answer. Pairing and settings need the Paperclip server, so nothing here was changed.";
+  "The Local Browser service did not answer. Pairing and settings need the Wardmote server, so nothing here was changed.";
 
 function pairingExpiry(expiresAt: string): string {
   const when = new Date(expiresAt);
@@ -180,7 +180,7 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
         </h2>
         <p className="text-sm text-ink-3">
           Agents work in the browser already open on your machine, with your logins. You watch the
-          same tab and can take over at any time. Nothing is installed on the server, and Paperclip
+          same tab and can take over at any time. Nothing is installed on the server, and Wardmote
           never stores your passwords.
         </p>
       </div>
@@ -188,7 +188,7 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
       <div className="space-y-3">
         <h3 className="font-medium">Install the extension</h3>
         <p className="text-sm text-ink-3">
-          Download the extension for the browser you want Paperclip to drive. You install it once,
+          Download the extension for the browser you want Wardmote to drive. You install it once,
           then pair it from this page.
         </p>
         <p className="text-sm text-ink-3">
@@ -219,7 +219,7 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
             <li>Open <code className="font-mono text-xs">chrome://extensions</code>.</li>
             <li>Turn on <strong className="font-medium text-ink">Developer mode</strong> in the top right corner.</li>
             <li>Click <strong className="font-medium text-ink">Load unpacked</strong> and choose the unzipped folder that contains <code className="font-mono text-xs">manifest.json</code>.</li>
-            <li>Pin the Paperclip extension to the toolbar so you can see its status.</li>
+            <li>Pin the Wardmote extension to the toolbar so you can see its status.</li>
             <li>Open the extension control center and press <strong className="font-medium text-ink">Allow all</strong>. Chrome asks once, and every tab and tool works after that.</li>
             <li>Come back to this page, start a pairing, then open the extension and paste the code.</li>
           </ol>
@@ -233,14 +233,14 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
           <h4 className="text-sm font-medium">Firefox</h4>
           <ol className="list-decimal space-y-1 pl-5 text-sm text-ink-3">
             <li>Click <strong className="font-medium text-ink">Install in Firefox</strong> above. Firefox opens its own install prompt.</li>
-            <li>Confirm the install. If Firefox asks, allow the connection to this Paperclip address.</li>
+            <li>Confirm the install. If Firefox asks, allow the connection to this Wardmote address.</li>
             <li>If your Firefox does not open the prompt, save the file, open <code className="font-mono text-xs">about:addons</code>, choose <strong className="font-medium text-ink">Install Add-on From File</strong> from the gear menu and pick the xpi.</li>
             <li>Open the extension control center. Its <strong className="font-medium text-ink">Site access</strong> row should read <em>all sites</em>; press <strong className="font-medium text-ink">Allow all</strong> if it does not, or if any permission is listed as missing.</li>
             <li>Come back to this page, start a pairing, then open the extension and paste the code.</li>
           </ol>
           <p className="text-xs text-ink-3">
             The xpi is signed by Mozilla, so it installs in release Firefox without a developer
-            setting. Firefox may ask you to allow the connection to this Paperclip address the first
+            setting. Firefox may ask you to allow the connection to this Wardmote address the first
             time you pair.
           </p>
           <p className="text-xs text-ink-3">

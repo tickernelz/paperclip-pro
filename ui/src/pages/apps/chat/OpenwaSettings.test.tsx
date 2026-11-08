@@ -397,7 +397,7 @@ describe("OpenWA settings", () => {
       ownerPresent: true,
       participantCount: 6,
     };
-    const bot = { ...project, id: "res-bot", chatId: "120363000000000512@g.us", chatKey: "120363000000000512@g.us", label: "[BOT] DCM Paperclip", participantCount: 2 };
+    const bot = { ...project, id: "res-bot", chatId: "120363000000000512@g.us", chatKey: "120363000000000512@g.us", label: "[BOT] DCM Wardmote", participantCount: 2 };
     const vendor = { ...project, id: "res-vendor", chatId: "120363000000000513@g.us", chatKey: "120363000000000513@g.us", label: "Vendor chat", ownerPresent: false };
     const left = { ...project, id: "res-left", chatId: "120363000000000514@g.us", chatKey: "120363000000000514@g.us", label: "Old group", availability: "unavailable" };
     const direct = { ...project, id: "res-dm", chatId: "628555000555@c.us", chatKey: "628555000555@c.us", type: "direct_message", label: "Supplier", ownerPresent: null };
@@ -413,7 +413,7 @@ describe("OpenWA settings", () => {
     expect(select.value).toBe("");
     expect(Array.from(select.options).map((option) => [option.value, option.textContent])).toEqual([
       ["", "Direct chat (default)"],
-      ["120363000000000512@g.us", "[BOT] DCM Paperclip"],
+      ["120363000000000512@g.us", "[BOT] DCM Wardmote"],
     ]);
     setValue(select, "120363000000000512@g.us");
     click(button(chats, "Save chat"));
@@ -429,7 +429,7 @@ describe("OpenWA settings", () => {
     await act(async () => {
       await client.invalidateQueries();
     });
-    await vi.waitFor(() => expect(section("Chats").textContent).toContain("owner reports to [BOT] DCM Paperclip"));
+    await vi.waitFor(() => expect(section("Chats").textContent).toContain("owner reports to [BOT] DCM Wardmote"));
     const savedRow = Array.from(section("Chats").querySelectorAll("li")).find((row) => row.textContent?.includes("Tim DCM"))!;
     click(button(savedRow, "Edit"));
     expect(field<HTMLSelectElement>("#openwa-chat-owner-report").value).toBe("120363000000000512@g.us");

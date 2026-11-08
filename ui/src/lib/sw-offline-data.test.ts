@@ -271,7 +271,7 @@ describe("service worker update hand-off", () => {
     expect(w.skipWaiting).toHaveBeenCalledOnce();
   });
 
-  it("takes over at once from a legacy Paperclip worker whose tabs cannot show the update toast", async () => {
+  it("takes over at once from a legacy Wardmote worker whose tabs cannot show the update toast", async () => {
     const w = worker(["paperclip-public-assets-old"]);
     await install(w);
     expect(w.skipWaiting).toHaveBeenCalledOnce();

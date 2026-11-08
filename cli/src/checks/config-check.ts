@@ -10,7 +10,7 @@ export function configCheck(configPath?: string): CheckResult {
       status: "fail",
       message: `Config file not found at ${filePath}`,
       canRepair: false,
-      repairHint: "Run `paperclip-pro onboard` to create one",
+      repairHint: "Run `wardmote onboard` to create one",
     };
   }
 
@@ -27,7 +27,7 @@ export function configCheck(configPath?: string): CheckResult {
       status: "fail",
       message: `Invalid config: ${err instanceof Error ? err.message : String(err)}`,
       canRepair: false,
-      repairHint: "Run `paperclip-pro configure --section database` (or `paperclip-pro onboard` to recreate)",
+      repairHint: "Run `wardmote configure --section database` (or `wardmote onboard` to recreate)",
     };
   }
 }

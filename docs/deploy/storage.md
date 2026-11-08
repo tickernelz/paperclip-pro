@@ -3,14 +3,14 @@ title: Storage
 summary: Local disk vs S3-compatible storage
 ---
 
-Paperclip stores uploaded files (issue attachments, images) using a configurable storage provider.
+Wardmote stores uploaded files (issue attachments, images) using a configurable storage provider.
 
 ## Local Disk (Default)
 
 Files are stored at:
 
 ```
-~/.paperclip-pro/instances/default/data/storage
+~/.wardmote/instances/default/data/storage
 ```
 
 No configuration required. Suitable for local development and single-machine deployments.
@@ -22,7 +22,7 @@ For production or multi-node deployments, use S3-compatible object storage (AWS 
 Configure via CLI:
 
 ```sh
-pnpm paperclip-pro configure --section storage
+pnpm wardmote configure --section storage
 ```
 
 ## Configuration
@@ -35,5 +35,5 @@ pnpm paperclip-pro configure --section storage
 Storage configuration is stored in the instance config file:
 
 ```
-~/.paperclip-pro/instances/default/config.json
+~/.wardmote/instances/default/config.json
 ```

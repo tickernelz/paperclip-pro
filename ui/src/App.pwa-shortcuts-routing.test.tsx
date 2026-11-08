@@ -62,7 +62,7 @@ vi.mock("./components/CloudAccessGate", async () => {
 
 const PAP_COMPANY = {
   id: "company-1",
-  name: "Paperclip",
+  name: "Wardmote",
   issuePrefix: "PAP",
   status: "active",
 };

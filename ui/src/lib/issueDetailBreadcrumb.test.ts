@@ -78,7 +78,7 @@ describe("issueDetailBreadcrumb", () => {
         goalId: null,
         goalIds: [],
         goals: [],
-        name: "Paperclip App",
+        name: "Wardmote App",
         description: null,
         status: "in_progress",
         leadAgentId: null,
@@ -182,7 +182,7 @@ describe("issueDetailBreadcrumb", () => {
       status: "todo",
       priority: "medium",
       projectId: "project-1",
-      projectName: "Paperclip App",
+      projectName: "Wardmote App",
       originKind: "manual",
       originId: null,
     });
@@ -205,7 +205,7 @@ describe("issueDetailBreadcrumb", () => {
       status: "todo",
       priority: "medium",
       projectId: "project-1",
-      projectName: "Paperclip App",
+      projectName: "Wardmote App",
       originKind: "manual",
       originId: null,
     });
