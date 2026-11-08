@@ -1,4 +1,4 @@
-import { connectionInstructionsConfig } from "@tickernelz/paperclip-pro-shared";
+import { connectionInstructionsConfig } from "@tickernelz/wardmote-shared";
 
 type ConfiguredConnection = { config: Record<string, unknown>; transportConfig?: Record<string, unknown> };
 

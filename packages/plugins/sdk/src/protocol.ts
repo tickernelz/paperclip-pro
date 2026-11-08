@@ -1,4 +1,4 @@
-import type { AgentLifecycleRequest, AgentLifecycleResult } from "@tickernelz/paperclip-pro-shared";
+import type { AgentLifecycleRequest, AgentLifecycleResult } from "@tickernelz/wardmote-shared";
 /**
  * JSON-RPC 2.0 message types and protocol helpers for the host ↔ worker IPC
  * channel.
@@ -49,8 +49,8 @@ import type {
   ExternalObjectMentionConfidence,
   ExternalObjectMentionSourceKind,
   EnvSecretRefBinding,
-} from "@tickernelz/paperclip-pro-shared";
-export type { PluginLauncherRenderContextSnapshot } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
+export type { PluginLauncherRenderContextSnapshot } from "@tickernelz/wardmote-shared";
 
 import type {
   PluginEvent,

@@ -9,7 +9,7 @@ import type {
   ToolProfileNewToolReviewDecision,
   ToolProfileNewToolReviewItem,
   ToolProfileWithDetails,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { useNavigate, useSearchParams } from "@/lib/router";
 import { toolsApi } from "@/api/tools";
 import { queryKeys } from "@/lib/queryKeys";

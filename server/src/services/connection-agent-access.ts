@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { toolCatalogEntries, toolConnections, toolProfiles, toolProfileEntries, toolPolicies, toolProfileBindings } from "@tickernelz/paperclip-pro-db";
-import type { ConnectionIntentInteraction } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/wardmote-db";
+import { toolCatalogEntries, toolConnections, toolProfiles, toolProfileEntries, toolPolicies, toolProfileBindings } from "@tickernelz/wardmote-db";
+import type { ConnectionIntentInteraction } from "@tickernelz/wardmote-shared";
 import { conflict } from "../errors.js";
 import { toolAccessPolicyService } from "./tool-access-policy.js";
 import { logActivity } from "./activity-log.js";

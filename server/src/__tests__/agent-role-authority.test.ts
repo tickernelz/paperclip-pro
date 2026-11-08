@@ -6,7 +6,7 @@ import {
   AGENT_WORK_AUTHORITY_CAPABILITIES,
   agentAuthorityCapabilities,
   agentAuthorityReason,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   assertBoardOrAgentAuthority,
   assertBoardOrgOrAgentAuthority,
@@ -14,7 +14,7 @@ import {
 } from "../routes/authz.js";
 import { assertNoAgentAuthorityEscalation } from "../services/agent-authority-escalation.js";
 import { agentAuthorityAudit } from "../middleware/agent-authority-audit.js";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import type { HttpError } from "../errors.js";
 import { errorHandler } from "../middleware/index.js";
 

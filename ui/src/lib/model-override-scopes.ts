@@ -1,4 +1,4 @@
-import type { IssueRunModelOverrideSubtaskScope } from "@tickernelz/paperclip-pro-shared";
+import type { IssueRunModelOverrideSubtaskScope } from "@tickernelz/wardmote-shared";
 
 export const MODEL_OVERRIDE_SCOPES: {
   value: IssueRunModelOverrideSubtaskScope;

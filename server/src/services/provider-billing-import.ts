@@ -4,14 +4,14 @@ import {
   companySecrets,
   providerBillingSnapshots,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   centsToUnits,
   usdToUnits,
   unitsToCents,
   importProviderCostsSchema,
   type ImportProviderCosts,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { secretService } from "./secrets.js";
 import { withAccountingTransaction } from "./accounting-transaction.js";
 import { createFinanceEventInTransaction } from "./finance.js";

@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { and, eq, or, sql } from "drizzle-orm";
-import { chatActions, type Db } from "@tickernelz/paperclip-pro-db";
+import { chatActions, type Db } from "@tickernelz/wardmote-db";
 import { conflict } from "../../errors.js";
 import { spekoToolDefinitions } from "./speko-protocol.js";
 import { createSpekoProvider, SpekoProviderError } from "./speko-provider.js";

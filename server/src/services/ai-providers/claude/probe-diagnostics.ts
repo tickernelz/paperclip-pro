@@ -1,4 +1,4 @@
-import type { AdapterEnvironmentCheck } from "@tickernelz/paperclip-pro-adapter-utils";
+import type { AdapterEnvironmentCheck } from "@tickernelz/wardmote-adapter-utils";
 
 /**
  * The fixed label a Test result shows when the probe runs on the local

@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { Writable } from "node:stream";
 
-vi.mock("@tickernelz/paperclip-pro-adapter-utils/execution-target", async (importOriginal) => {
+vi.mock("@tickernelz/wardmote-adapter-utils/execution-target", async (importOriginal) => {
   const actual = (await importOriginal()) as Record<string, unknown>;
   return { ...actual, runAdapterExecutionTargetProcess: vi.fn() };
 });
 
-import { runAdapterExecutionTargetProcess } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
-import type { BoundLiveStdinChannel } from "@tickernelz/paperclip-pro-adapter-utils/live-stdin-channel";
+import { runAdapterExecutionTargetProcess } from "@tickernelz/wardmote-adapter-utils/execution-target";
+import type { BoundLiveStdinChannel } from "@tickernelz/wardmote-adapter-utils/live-stdin-channel";
 import { createOmpRpcSteerSession, runOmpRpcSession } from "./rpc-session.js";
 
 const runProcessMock = vi.mocked(runAdapterExecutionTargetProcess);

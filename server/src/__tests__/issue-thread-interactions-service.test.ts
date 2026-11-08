@@ -26,12 +26,12 @@ import {
   projectWorkspaces,
   projects,
   workspaceOperations,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
 } from "./helpers/embedded-postgres.js";
-import { ONBOARDING_FIRST_TASK_ORIGIN_KIND } from "@tickernelz/paperclip-pro-shared";
+import { ONBOARDING_FIRST_TASK_ORIGIN_KIND } from "@tickernelz/wardmote-shared";
 import { instanceSettingsService } from "../services/instance-settings.js";
 import { issueService } from "../services/issues.js";
 import { issueThreadInteractionService, resolveInteractionNote } from "../services/issue-thread-interactions.js";

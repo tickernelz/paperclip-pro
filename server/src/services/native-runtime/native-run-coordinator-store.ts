@@ -2,14 +2,14 @@ import { createHash } from "node:crypto";
 
 import { and, desc, eq, inArray, lt } from "drizzle-orm";
 
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   heartbeatRunEvents,
   heartbeatRuns,
   issues,
   nativeRunFinalizations,
   nativeRunResults,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   NativeSessionProtocolIntegrityError,
   type PrpEvent,

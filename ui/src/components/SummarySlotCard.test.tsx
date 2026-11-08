@@ -12,7 +12,7 @@ import type {
   SummarySlotDocument,
   SummarySlotIssueRef,
   SummarySlotRevision,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SummarySlotCard } from "./SummarySlotCard";
 

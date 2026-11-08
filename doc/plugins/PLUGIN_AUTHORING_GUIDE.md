@@ -21,7 +21,7 @@ It is intentionally narrower than [PLUGIN_SPEC.md](./PLUGIN_SPEC.md). The spec i
 - Plugin-owned JSON API routes must be declared in the manifest and are mounted
   only under `/api/plugins/:pluginId/api/*`.
 - The host provides a small shared React component kit through
-  `@tickernelz/paperclip-pro-plugin-sdk/ui`; use it for common Paperclip controls before
+  `@tickernelz/wardmote-plugin-sdk/ui`; use it for common Paperclip controls before
   building custom versions.
 - `ctx.assets` is not supported in the current runtime.
 
@@ -66,7 +66,7 @@ lifecycle command commits. The lifecycle module owns admission, progress, and
 retries; a plugin does not need a readiness data handler or a polling job.
 
 ```ts
-import { definePlugin } from "@tickernelz/paperclip-pro-plugin-sdk";
+import { definePlugin } from "@tickernelz/wardmote-plugin-sdk";
 import { reconcileResources } from "./resources.js";
 
 export default definePlugin({
@@ -197,9 +197,9 @@ That creates `<output>/plugin-name/` with:
 - `esbuild.config.mjs`
 - `rollup.config.mjs`
 
-Inside this monorepo, the scaffold uses `workspace:*` for `@tickernelz/paperclip-pro-plugin-sdk`.
+Inside this monorepo, the scaffold uses `workspace:*` for `@tickernelz/wardmote-plugin-sdk`.
 
-Outside this monorepo, the scaffold snapshots `@tickernelz/paperclip-pro-plugin-sdk` from the local Paperclip checkout into a `.paperclip-sdk/` tarball so you can build and test a plugin without publishing anything to npm first. Pass `--sdk-path /absolute/path/to/paperclip/packages/plugins/sdk` if you have more than one Paperclip checkout.
+Outside this monorepo, the scaffold snapshots `@tickernelz/wardmote-plugin-sdk` from the local Paperclip checkout into a `.paperclip-sdk/` tarball so you can build and test a plugin without publishing anything to npm first. Pass `--sdk-path /absolute/path/to/paperclip/packages/plugins/sdk` if you have more than one Paperclip checkout.
 
 ## Local development workflow
 
@@ -218,7 +218,7 @@ pnpm build
 
 ### CreateOS sandbox provider
 
-The in-repo [`@tickernelz/paperclip-pro-plugin-createos`](../../packages/plugins/sandbox-providers/createos/README.md)
+The in-repo [`@tickernelz/wardmote-plugin-createos`](../../packages/plugins/sandbox-providers/createos/README.md)
 package implements environment lifecycle hooks and incremental managed-process
 output and binary workspace transfers using CreateOS's public HTTP API. It does
 not advertise interactive login or template capture. Install
@@ -352,7 +352,7 @@ routine; if a ref is still missing, the routine resolution reports
 `missing_refs` instead of guessing.
 
 ```ts
-import type { PaperclipPluginManifestV1 } from "@tickernelz/paperclip-pro-plugin-sdk";
+import type { PaperclipPluginManifestV1 } from "@tickernelz/wardmote-plugin-sdk";
 
 const manifest: PaperclipPluginManifestV1 = {
   id: "example.research-plugin",
@@ -439,7 +439,7 @@ In the worker, expose a small setup action or settings-page action that
 reconciles the resources for the selected company:
 
 ```ts
-import { definePlugin } from "@tickernelz/paperclip-pro-plugin-sdk";
+import { definePlugin } from "@tickernelz/wardmote-plugin-sdk";
 
 export default definePlugin({
   setup(ctx) {
@@ -486,7 +486,7 @@ UI:
 - `usePluginStream`
 - `usePluginToast`
 - `useHostContext`
-- typed slot props from `@tickernelz/paperclip-pro-plugin-sdk/ui`
+- typed slot props from `@tickernelz/wardmote-plugin-sdk/ui`
 
 Mount surfaces currently wired in the host include:
 
@@ -525,7 +525,7 @@ the user chose as soon as they navigate away.
 
 ## Shared host components
 
-Use shared components from `@tickernelz/paperclip-pro-plugin-sdk/ui` when the plugin needs a
+Use shared components from `@tickernelz/wardmote-plugin-sdk/ui` when the plugin needs a
 Paperclip-native control. The host owns the implementation, so plugins inherit
 the board's current styling, ordering, recent selections, and dark-mode behavior
 without importing `ui/src` internals.
@@ -546,7 +546,7 @@ Currently exposed components include:
 - `ManagedRoutinesList` for plugin-owned routine settings pages.
 
 ```tsx
-import { AssigneePicker, ProjectPicker } from "@tickernelz/paperclip-pro-plugin-sdk/ui";
+import { AssigneePicker, ProjectPicker } from "@tickernelz/wardmote-plugin-sdk/ui";
 
 export function PluginAssignmentControls({ companyId }: { companyId: string }) {
   const [assignee, setAssignee] = useState("");
@@ -578,7 +578,7 @@ data the plugin actually has.
 
 ### When to use the shared `FileTree`
 
-Use `FileTree` from `@tickernelz/paperclip-pro-plugin-sdk/ui` whenever the plugin only needs
+Use `FileTree` from `@tickernelz/wardmote-plugin-sdk/ui` whenever the plugin only needs
 to render a serializable file/directory list and react to selection or
 expand/collapse. The host owns the implementation, so plugin UI inherits the
 board's icons, indent, focus ring, and dark-mode styling without importing host
@@ -588,7 +588,7 @@ internals.
 import {
   FileTree,
   type FileTreeNode,
-} from "@tickernelz/paperclip-pro-plugin-sdk/ui";
+} from "@tickernelz/wardmote-plugin-sdk/ui";
 
 const nodes: FileTreeNode[] = [
   { name: "AGENTS.md", path: "AGENTS.md", kind: "file", children: [] },

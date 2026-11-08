@@ -5,8 +5,8 @@ import type {
   IssueRunModelOverridePropagation,
   IssueRunModelOverrideSubtaskScope,
   IssueRunModelOverrideView,
-} from "@tickernelz/paperclip-pro-shared";
-import { AGENT_FALLBACK_EFFORTS_KEY, readAgentFallbackEfforts } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
+import { AGENT_FALLBACK_EFFORTS_KEY, readAgentFallbackEfforts } from "@tickernelz/wardmote-shared";
 import type { AdapterConfigSchema, ConfigFieldSchema } from "../adapters/types.js";
 import {
   AdapterConfigFieldValueError,

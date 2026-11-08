@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { and, asc, eq, inArray, isNull, lte, or, sql } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { companies, documents, externalObjectMentions, externalObjects, issueComments, issueDocuments, issues, plugins } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
+import { companies, documents, externalObjectMentions, externalObjects, issueComments, issueDocuments, issues, plugins } from "@tickernelz/wardmote-db";
 import {
   formatExternalObjectMentionSourceLabel,
   type ExternalObjectCanonicalUrl,
@@ -11,9 +11,9 @@ import {
   type ExternalObjectStatusCategory,
   type ExternalObjectStatusTone,
   type PaperclipPluginManifestV1,
-} from "@tickernelz/paperclip-pro-shared";
-import { extractExternalObjectCanonicalUrls } from "@tickernelz/paperclip-pro-shared/external-objects-server";
-import type { PluginExternalObjectRecordSnapshot, PluginExternalObjectResolveResult } from "@tickernelz/paperclip-pro-plugin-sdk";
+} from "@tickernelz/wardmote-shared";
+import { extractExternalObjectCanonicalUrls } from "@tickernelz/wardmote-shared/external-objects-server";
+import type { PluginExternalObjectRecordSnapshot, PluginExternalObjectResolveResult } from "@tickernelz/wardmote-plugin-sdk";
 import { notFound } from "../errors.js";
 import { logger } from "../middleware/logger.js";
 import { logActivity, type LogActivityInput } from "./activity-log.js";

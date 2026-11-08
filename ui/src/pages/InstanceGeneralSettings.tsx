@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { BackupRetentionPolicy, SpeechToTextSettings } from "@tickernelz/paperclip-pro-shared";
+import type { BackupRetentionPolicy, SpeechToTextSettings } from "@tickernelz/wardmote-shared";
 import {
   DAILY_RETENTION_PRESETS,
   WEEKLY_RETENTION_PRESETS,
@@ -9,7 +9,7 @@ import {
   DEFAULT_ATTACHMENT_RETENTION,
   SPEECH_TO_TEXT_DEFAULTS,
   DEFAULT_LOCAL_RUN_LIMITS_SETTINGS,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { LogOut, SlidersHorizontal } from "lucide-react";
 import { healthApi } from "@/api/health";
 import { instanceSettingsApi } from "@/api/instanceSettings";

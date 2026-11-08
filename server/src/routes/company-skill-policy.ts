@@ -1,6 +1,6 @@
 import { Router, type NextFunction, type Request, type Response } from "express";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { evaluateSkillPolicySchema, replaceSkillPolicySchema } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/wardmote-db";
+import { evaluateSkillPolicySchema, replaceSkillPolicySchema } from "@tickernelz/wardmote-shared";
 import { ZodError, type ZodSchema } from "zod";
 import { forbidden, HttpError, unprocessable } from "../errors.js";
 import { accessService } from "../services/access.js";

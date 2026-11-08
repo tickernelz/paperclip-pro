@@ -1,6 +1,6 @@
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { useState } from "react";
-import type { Agent } from "@tickernelz/paperclip-pro-shared";
+import type { Agent } from "@tickernelz/wardmote-shared";
 import {
   Popover,
   PopoverContent,

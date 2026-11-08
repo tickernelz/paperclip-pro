@@ -1,10 +1,10 @@
 import { supportsLocalAiLogin } from "../services/local-ai-login-policy.js";
 import { randomUUID, timingSafeEqual } from "node:crypto";
 import { Router } from "express";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import { and, count, eq, gt, inArray, isNull, sql } from "drizzle-orm";
-import { heartbeatRuns, instanceUserRoles, invites } from "@tickernelz/paperclip-pro-db";
-import type { DeploymentExposure, DeploymentMode } from "@tickernelz/paperclip-pro-shared";
+import { heartbeatRuns, instanceUserRoles, invites } from "@tickernelz/wardmote-db";
+import type { DeploymentExposure, DeploymentMode } from "@tickernelz/wardmote-shared";
 import {
   readPersistedDevServerStatus,
   removeDevServerRestartRequest,

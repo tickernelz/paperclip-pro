@@ -4,7 +4,7 @@ import {
   chatActions,
   chatDiscordCommandOwners,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   createDiscordCommandRegistration,
   parseDiscordCommandRegistration,

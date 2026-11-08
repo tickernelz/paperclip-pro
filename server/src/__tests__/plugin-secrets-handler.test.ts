@@ -13,7 +13,7 @@ import {
   createDb,
   plugins,
   secretAccessEvents,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { getEmbeddedPostgresTestSupport, startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";
 import {
   createPluginSecretsHandler,
@@ -124,7 +124,7 @@ describeEmbeddedPostgres("createPluginSecretsHandler shared vault integration", 
     await db.insert(plugins).values({
       id: pluginId,
       pluginKey: "paperclip.plugin-secrets-test",
-      packageName: "@tickernelz/paperclip-pro-plugin-secrets-test",
+      packageName: "@tickernelz/wardmote-plugin-secrets-test",
       version: "0.0.1",
       apiVersion: 1,
       categories: ["automation"],

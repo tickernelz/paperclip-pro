@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { CheckCircle2, Copy } from "lucide-react";
-import { resolveAgentAppearance, type GitHubAppWizardState } from "@tickernelz/paperclip-pro-shared";
+import { resolveAgentAppearance, type GitHubAppWizardState } from "@tickernelz/wardmote-shared";
 import type { ChatEndpoint } from "@/api/chatEndpoints";
 import { githubChatApi } from "@/api/githubChat";
 import { AgentAvatar, type AvatarAgent } from "@/components/AgentAvatar";

@@ -1,6 +1,6 @@
 import { and, inArray } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { adapterAuthSessions } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
+import { adapterAuthSessions } from "@tickernelz/wardmote-db";
 import {
   ADAPTER_AUTH_ACTIVE_STATUSES,
   DISPLAYED_CODE_ADAPTER_TYPES,

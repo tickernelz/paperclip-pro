@@ -1,8 +1,8 @@
 // @vitest-environment jsdom
 
 import { describe, expect, it } from "vitest";
-import type { ToolApplication, ToolConnection } from "@tickernelz/paperclip-pro-shared";
-import { getConnectableAppDefinition } from "@tickernelz/paperclip-pro-shared";
+import type { ToolApplication, ToolConnection } from "@tickernelz/wardmote-shared";
+import { getConnectableAppDefinition } from "@tickernelz/wardmote-shared";
 import {
   isConnectionDefinitionUnavailable,
   isVercelConnectUnavailable,

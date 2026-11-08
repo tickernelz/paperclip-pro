@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
-import type { OpenwaLinkedChat, OpenwaLinkedSessionView } from "@tickernelz/paperclip-pro-shared";
+import type { OpenwaLinkedChat, OpenwaLinkedSessionView } from "@tickernelz/wardmote-shared";
 import { chatEndpointsApi } from "@/api/chatEndpoints";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";

@@ -21,11 +21,11 @@ import {
   issueComments,
   issueReferenceMentions,
   issues,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   companySearchQuerySchema,
   LOW_TRUST_REVIEW_PRESET,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

@@ -1,13 +1,13 @@
 import { and, eq, ne, sql } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   companySecretBindings,
   companySecretProviderConfigs,
   companySecrets,
   companySecretVersions,
   toolConnections,
-} from "@tickernelz/paperclip-pro-db";
-import type { McpConnectionCredentialRef, SecretProvider, ToolCredentialSecretRef } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import type { McpConnectionCredentialRef, SecretProvider, ToolCredentialSecretRef } from "@tickernelz/wardmote-shared";
 import { getSecretProvider } from "../secrets/provider-registry.js";
 import type { SecretProviderVaultRuntimeConfig } from "../secrets/types.js";
 

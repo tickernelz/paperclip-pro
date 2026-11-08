@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { CompanySecret, UserSecretDefinition } from "@tickernelz/paperclip-pro-shared";
+import type { CompanySecret, UserSecretDefinition } from "@tickernelz/wardmote-shared";
 import {
   coverageSummaryLabel,
   myValueLabel,

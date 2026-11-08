@@ -8,7 +8,7 @@ import {
   type SourceTrustMetadata,
   type TrustAuthorizationPolicy,
   type TrustPreset,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 export type LowTrustBoundaryTarget =
   | { type: "project"; id: string }

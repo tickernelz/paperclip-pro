@@ -1,8 +1,8 @@
-import { createIssueThreadInteractionSchema } from "@tickernelz/paperclip-pro-shared";
+import { createIssueThreadInteractionSchema } from "@tickernelz/wardmote-shared";
 import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { issueComments, issueThreadInteractions, issues } from "@tickernelz/paperclip-pro-db";
+import { issueComments, issueThreadInteractions, issues } from "@tickernelz/wardmote-db";
 import { createLocalAgentJwt } from "../../agent-auth-jwt.js";
 import { startRunnerApiTestServer } from "../../__tests__/helpers/runner-api-server.js";
 import { issueThreadInteractionService } from "../issue-thread-interactions.js";

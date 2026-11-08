@@ -20,7 +20,7 @@ import {
   toolInvocations,
   toolActionDeliveries,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import type { heartbeatService } from "./heartbeat.js";
 
 const terminalStatuses: Array<typeof toolActionRequests.$inferSelect.status> = [

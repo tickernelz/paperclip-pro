@@ -6,7 +6,7 @@ import {
   getConnectableAppDefinition,
   type ConnectionInstructionsSnapshot,
   type ToolConnection,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 type InstructionSource = {
   connection: Pick<ToolConnection, "id" | "name" | "agentInstructions" | "config"> & Partial<Pick<ToolConnection, "transportConfig">>;

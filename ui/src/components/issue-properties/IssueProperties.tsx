@@ -17,7 +17,7 @@ import {
   type ExecutionWorkspace,
   type Issue,
   type IssueLabel,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { accessApi } from "../../api/access";
 import { agentsApi } from "../../api/agents";

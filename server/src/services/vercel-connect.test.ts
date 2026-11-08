@@ -7,7 +7,7 @@ import {
   vercelGrantReference,
   vercelTokenRequest,
 } from "./vercel-connect.js";
-import type { VercelConnectCredentialReference } from "@tickernelz/paperclip-pro-shared";
+import type { VercelConnectCredentialReference } from "@tickernelz/wardmote-shared";
 
 const credential: VercelConnectCredentialReference = {
   provider: "vercel_connect",

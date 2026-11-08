@@ -20,8 +20,8 @@ import {
   heartbeatRuns,
   issues,
   issueComments,
-} from "@tickernelz/paperclip-pro-db";
-import { startEmbeddedPostgresTestDatabase } from "@tickernelz/paperclip-pro-db/test-embedded-postgres";
+} from "@tickernelz/wardmote-db";
+import { startEmbeddedPostgresTestDatabase } from "@tickernelz/wardmote-db/test-embedded-postgres";
 import { aiConnectionService } from "../services/ai-connections.js";
 import {
   enqueueFastResponse,

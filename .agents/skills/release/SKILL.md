@@ -57,7 +57,7 @@ One workflow releases everything: **Release**
 `docs/fork/OPERATIONS.md` section 9 is the operator reference.
 
 1. versions are `YYYY.MDD.P` from the UTC date, with `P` resolved to the next
-   patch not already on npm for `@tickernelz/paperclip-pro`
+   patch not already on npm for `@tickernelz/wardmote`
 2. every package publishes under the `next` dist-tag first
 3. `latest` moves onto the version only after npm exposes the whole set
 4. the release commit is tagged `vYYYY.MDD.P` and gets a GitHub release whose
@@ -73,7 +73,7 @@ Resolve the version the run would pick:
 
 ```bash
 ./scripts/release.sh --print-version
-npm view @tickernelz/paperclip-pro version
+npm view @tickernelz/wardmote version
 ```
 
 ## Step 2 — Draft the Changelog
@@ -106,7 +106,7 @@ promotion still needs `NPM_TOKEN` because npm OIDC does not authenticate
 ## Step 5 — Confirm
 
 ```bash
-npm view @tickernelz/paperclip-pro version
+npm view @tickernelz/wardmote version
 gh release view "v$(./scripts/release.sh --print-version)" --repo tickernelz/wardmote
 ```
 

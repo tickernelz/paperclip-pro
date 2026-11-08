@@ -3,7 +3,7 @@ import {
   ompGateFailure,
   probeOmpInstall,
   type OmpInstallProbe,
-} from "@tickernelz/paperclip-pro-adapter-omp-local/readiness";
+} from "@tickernelz/wardmote-adapter-omp-local/readiness";
 
 const GATE_PROBE_TIMEOUT_MS = 5_000;
 

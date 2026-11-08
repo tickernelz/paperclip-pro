@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { instanceSettings, toolConnections } from "@tickernelz/paperclip-pro-db";
-import { LOCAL_BROWSER_TOOL_NAMES } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/wardmote-db";
+import { instanceSettings, toolConnections } from "@tickernelz/wardmote-db";
+import { LOCAL_BROWSER_TOOL_NAMES } from "@tickernelz/wardmote-shared";
 
 const { listSessions, executeTool } = vi.hoisted(() => ({
   listSessions: vi.fn(),

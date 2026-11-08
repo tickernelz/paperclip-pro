@@ -40,14 +40,14 @@ import {
   or,
   sql,
 } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   agents,
   environmentLeases,
   heartbeatRuns,
   issues,
   nativeRunFinalizations,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { logger } from "../../middleware/logger.js";
 import {
   claimNativeRestartRecoveries,

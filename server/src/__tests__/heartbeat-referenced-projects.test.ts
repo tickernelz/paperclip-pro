@@ -10,7 +10,7 @@ import {
   issues,
   projectWorkspaces,
   projects,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -27,7 +27,7 @@ import {
   type ResolveRunReferencedProjectsOptions,
 } from "../services/heartbeat.ts";
 import type { AuthorizationActor, AuthorizationDecision } from "../services/authorization.ts";
-import { buildProjectMentionHref } from "@tickernelz/paperclip-pro-shared";
+import { buildProjectMentionHref } from "@tickernelz/wardmote-shared";
 
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
 const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;

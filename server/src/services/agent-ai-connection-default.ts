@@ -5,7 +5,7 @@ import {
   type AiConnectionBinding,
   type AiRuntimeConnectionBinding,
   type AiProvider,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 // Only keys read by the child's provider express a child auth override.
 // A config copied from another provider can retain unrelated keys.

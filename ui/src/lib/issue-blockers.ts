@@ -1,4 +1,4 @@
-import type { IssueRelationIssueSummary } from "@tickernelz/paperclip-pro-shared";
+import type { IssueRelationIssueSummary } from "@tickernelz/wardmote-shared";
 
 export type WaitingBlockerStatus = "done" | "running" | "queued";
 

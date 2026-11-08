@@ -3,7 +3,7 @@ import { createAgentLifecycle } from "./agent-lifecycle.js";
 import { publishAccountingActivities } from "./accounting-transaction.js";
 import { budgetServiceInTransaction, deliverBudgetEnforcement, type BudgetServiceHooks } from "./budgets.js";
 import { and, count, eq, gte, inArray, isNull, lt, notInArray, sql } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   companies,
   companyLogos,
@@ -17,7 +17,7 @@ import {
   issues,
   heartbeatRuns,
   costEvents,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { notFound, unprocessable } from "../errors.js";
 import { isCloudManagedInstance } from "./cloud-instance.js";
 import { notifyCloudOfPrimaryCompanyLifecycleChange } from "./cloud-lifecycle-sync.js";

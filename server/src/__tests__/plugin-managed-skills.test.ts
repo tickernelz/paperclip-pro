@@ -8,8 +8,8 @@ import {
   createDb,
   pluginManagedResources,
   plugins,
-} from "@tickernelz/paperclip-pro-db";
-import type { PaperclipPluginManifestV1 } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import type { PaperclipPluginManifestV1 } from "@tickernelz/wardmote-shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -95,7 +95,7 @@ describeEmbeddedPostgres("plugin-managed skills", () => {
     await db.insert(plugins).values({
       id: pluginId,
       pluginKey: pluginManifest.id,
-      packageName: "@tickernelz/paperclip-pro-plugin-managed-skills-test",
+      packageName: "@tickernelz/wardmote-plugin-managed-skills-test",
       version: pluginManifest.version,
       apiVersion: pluginManifest.apiVersion,
       categories: pluginManifest.categories,

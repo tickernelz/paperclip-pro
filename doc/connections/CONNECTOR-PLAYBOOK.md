@@ -1055,9 +1055,9 @@ without a test-name filter before handoff.
 Targeted type checks:
 
 ```sh
-pnpm --filter @tickernelz/paperclip-pro-shared typecheck
-pnpm --filter @tickernelz/paperclip-pro-server typecheck
-pnpm --filter @tickernelz/paperclip-pro-ui typecheck
+pnpm --filter @tickernelz/wardmote-shared typecheck
+pnpm --filter @tickernelz/wardmote-server typecheck
+pnpm --filter @tickernelz/wardmote-ui typecheck
 ```
 
 If UI code changed, also run:

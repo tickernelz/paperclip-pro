@@ -1,4 +1,4 @@
-# @tickernelz/paperclip-pro-plugin-kitchen-sink-example
+# @tickernelz/wardmote-plugin-kitchen-sink-example
 
 Kitchen Sink is the first-party reference plugin that demonstrates nearly the full currently implemented Paperclip plugin surface in one package.
 
@@ -20,8 +20,8 @@ This plugin is for local development, contributor onboarding, and runtime regres
 ## Install
 
 ```sh
-pnpm --filter @tickernelz/paperclip-pro-plugin-kitchen-sink-example build
-npx @tickernelz/paperclip-pro plugin install ./packages/plugins/examples/plugin-kitchen-sink-example
+pnpm --filter @tickernelz/wardmote-plugin-kitchen-sink-example build
+npx @tickernelz/wardmote plugin install ./packages/plugins/examples/plugin-kitchen-sink-example
 ```
 
 Or install it from the Paperclip plugin manager as a bundled example once this repo is built.

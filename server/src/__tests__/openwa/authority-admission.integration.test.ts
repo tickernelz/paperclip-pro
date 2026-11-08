@@ -22,7 +22,7 @@ import {
   issues,
   toolConnections,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { getEmbeddedPostgresTestSupport, startEmbeddedPostgresTestDatabase } from "../helpers/embedded-postgres.js";
 import { registerServerAdapter, unregisterServerAdapter } from "../../adapters/index.ts";
 import { agentRoutes } from "../../routes/agents.ts";

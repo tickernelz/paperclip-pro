@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest";
-import { verifyDocumentAnchorSelector } from "@tickernelz/paperclip-pro-shared";
+import { verifyDocumentAnchorSelector } from "@tickernelz/wardmote-shared";
 import {
   buildAnchorFromContainerSelection,
   getContainerTextOffset,

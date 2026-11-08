@@ -1,4 +1,4 @@
-import type { Agent, Issue, IssueWorkMode } from "@tickernelz/paperclip-pro-shared";
+import type { Agent, Issue, IssueWorkMode } from "@tickernelz/wardmote-shared";
 /** Ephemeral view model; never persisted until first send or upload. */
 export function agentChatDraft(
   agent: Agent,

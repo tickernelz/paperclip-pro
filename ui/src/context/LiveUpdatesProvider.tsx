@@ -1,4 +1,4 @@
-import { resolveAgentAppearance } from "@tickernelz/paperclip-pro-shared";
+import { resolveAgentAppearance } from "@tickernelz/wardmote-shared";
 import { getPageVisibility, usePageVisibility } from "../lib/page-visibility";
 import {
   createContext,
@@ -31,7 +31,7 @@ import type {
   Issue,
   IssueComment,
   LiveEvent,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import type { RunForIssue } from "../api/activity";
 import type { AttentionBadgeCount } from "../api/attention";
 import type { ActiveRunForIssue, LiveRunForIssue } from "../api/heartbeats";

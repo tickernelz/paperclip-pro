@@ -1,7 +1,7 @@
 import type {
   IssueRunModelOverridePropagation,
   IssueRunModelOverrideSubtaskScope,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { MODEL_OVERRIDE_SCOPES } from "@/lib/model-override-scopes";
 import { cn } from "@/lib/utils";

@@ -1,12 +1,12 @@
 import { and, eq, isNull, sql } from "drizzle-orm";
-import { assets, companies, instanceSettings, type Db } from "@tickernelz/paperclip-pro-db";
+import { assets, companies, instanceSettings, type Db } from "@tickernelz/wardmote-db";
 import type {
   AttachmentRetentionReport,
   AttachmentRetentionRule,
   AttachmentRetentionRuleSummary,
   AttachmentRetentionSettings,
   AttachmentRetentionStatus,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import type { StorageService } from "../storage/types.js";
 import { conflict } from "../errors.js";
 import { logger } from "../middleware/logger.js";

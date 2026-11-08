@@ -1,4 +1,4 @@
-import { chatConversations, issues, type Db } from "@tickernelz/paperclip-pro-db";
+import { chatConversations, issues, type Db } from "@tickernelz/wardmote-db";
 import { and, eq, sql } from "drizzle-orm";
 
 /** Read-only projection; External chat threads do not acquire Agent Chat identities. */

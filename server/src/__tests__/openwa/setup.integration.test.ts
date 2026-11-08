@@ -19,7 +19,7 @@ import {
   createDb,
   principalPermissionGrants,
   toolConnections,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { startEmbeddedPostgresTestDatabase } from "../helpers/embedded-postgres.js";
 import { describeEmbeddedPostgres } from "../helpers/route-test-harness.js";
 import { errorHandler } from "../../middleware/index.js";
@@ -28,7 +28,7 @@ import { chatChannelService, type ChatChannelService } from "../../services/chat
 import { ChatSdkRuntime, type ChatSdkEndpointRuntime } from "../../services/chat-sdk-runtime.js";
 import { agentService } from "../../services/agents.js";
 import { OPENWA_AGENT_ADAPTER_ATTENTION_MESSAGE } from "../../services/openwa/agent-adapter.js";
-import { OPENWA_GATEWAY_VERSION } from "@tickernelz/paperclip-pro-shared/openwa-operations";
+import { OPENWA_GATEWAY_VERSION } from "@tickernelz/wardmote-shared/openwa-operations";
 
 const OPERATOR_KEY = "operator-key-0123456789";
 const ADMIN_KEY = "admin-key-0123456789";

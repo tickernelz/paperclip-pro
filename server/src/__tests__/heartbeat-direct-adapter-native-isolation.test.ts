@@ -19,7 +19,7 @@ import {
   nativeRunResults,
   statusDecisions,
   workAssessments,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import type { ServerAdapterModule } from "../adapters/index.js";
 import {
   getEmbeddedPostgresTestSupport,

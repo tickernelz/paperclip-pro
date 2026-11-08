@@ -5,7 +5,7 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
-import { isSupportedNodeVersion, MINIMUM_NODE_VERSION } from "@tickernelz/paperclip-pro-shared/node-version";
+import { isSupportedNodeVersion, MINIMUM_NODE_VERSION } from "@tickernelz/wardmote-shared/node-version";
 import {
   addManagedPathBlock,
   assertManagedShimWritable,
@@ -93,7 +93,7 @@ export function resolveGitInstallWorkspacePackages(checkoutPath: string): Releas
       const dependencies = packageJson[section];
       if (!dependencies || typeof dependencies !== "object") continue;
       for (const dependencyName of Object.keys(dependencies)) {
-        if (dependencyName.startsWith("@tickernelz/paperclip-pro-")) visit(dependencyName);
+        if (dependencyName.startsWith("@tickernelz/wardmote-")) visit(dependencyName);
       }
     }
     visiting.delete(packageName);
@@ -101,13 +101,13 @@ export function resolveGitInstallWorkspacePackages(checkoutPath: string): Releas
     ordered.push(entry);
   };
 
-  visit("@tickernelz/paperclip-pro-server");
+  visit("@tickernelz/wardmote-server");
   return ordered;
 }
 
 export function assertSupportedNodeVersion(): void {
   if (!isSupportedNodeVersion(process.versions.node)) {
-    throw new Error(`Installing or updating Wardmote requires Node.js ${MINIMUM_NODE_VERSION} or newer (found ${process.version} at ${process.execPath}). Put a supported Node bin directory first on PATH and run 'npx @tickernelz/paperclip-pro@latest install --yes' to re-pin an existing managed install.`);
+    throw new Error(`Installing or updating Wardmote requires Node.js ${MINIMUM_NODE_VERSION} or newer (found ${process.version} at ${process.execPath}). Put a supported Node bin directory first on PATH and run 'npx @tickernelz/wardmote@latest install --yes' to re-pin an existing managed install.`);
   }
 }
 
@@ -145,7 +145,7 @@ function parseResolvedVersion(stdout: string): string {
 export async function resolvePublishedVersion(spec: string, runCommand: CommandRunner): Promise<string> {
   const result = await runCommand(
     "npm",
-    ["view", `@tickernelz/paperclip-pro@${spec}`, "version", "--json", `--registry=${PUBLIC_NPM_REGISTRY}`],
+    ["view", `@tickernelz/wardmote@${spec}`, "version", "--json", `--registry=${PUBLIC_NPM_REGISTRY}`],
     { maxBuffer: 1024 * 1024 },
   );
   return parseResolvedVersion(result.stdout);
@@ -241,7 +241,7 @@ export function assertPayloadNativeAssets(payloadPath: string): void {
 }
 
 function payloadEntrypoint(payloadPath: string): string {
-  return path.join(payloadPath, "node_modules", "@tickernelz", "paperclip-pro", "dist", "index.js");
+  return path.join(payloadPath, "node_modules", "@tickernelz", "wardmote", "dist", "index.js");
 }
 
 export async function smokePayload(payloadPath: string, expectedVersion: string, runCommand: CommandRunner): Promise<void> {
@@ -285,7 +285,7 @@ export async function installNpmPayload(
         "install",
         "--prefix",
         stagingPath,
-        `@tickernelz/paperclip-pro@${version}`,
+        `@tickernelz/wardmote@${version}`,
         `--registry=${PUBLIC_NPM_REGISTRY}`,
         `--@tickernelz:registry=${PUBLIC_NPM_REGISTRY}`,
         "--no-audit",
@@ -318,7 +318,7 @@ export async function installGitPayload(repo: string, sha: string, runCommand: C
   const identifier = sha.slice(0, 12);
   const payloadPath = payloadPathFor(paths, "git", identifier);
   if (fs.existsSync(payloadPath)) {
-    const metadata = JSON.parse(fs.readFileSync(path.join(payloadPath, "node_modules", "@tickernelz", "paperclip-pro", "package.json"), "utf8")) as { version: string };
+    const metadata = JSON.parse(fs.readFileSync(path.join(payloadPath, "node_modules", "@tickernelz", "wardmote", "package.json"), "utf8")) as { version: string };
     await smokePayload(payloadPath, metadata.version, runCommand);
     return { payloadPath, reused: true, version: metadata.version };
   }
@@ -353,7 +353,7 @@ export async function installGitPayload(repo: string, sha: string, runCommand: C
     await runCommand("corepack", ["enable", "pnpm", "--install-directory", pnpmShimDir], { cwd: checkoutPath, env: buildEnv(), maxBuffer: 4 * 1024 * 1024 });
     await runCommand("corepack", ["pnpm", "install", "--frozen-lockfile"], { cwd: checkoutPath, env: buildEnv(), maxBuffer: 32 * 1024 * 1024 });
     await runCommand("bash", ["scripts/build-npm.sh", "--skip-checks", "--skip-typecheck"], { cwd: checkoutPath, env: buildEnv(), maxBuffer: 32 * 1024 * 1024 });
-    await runCommand("corepack", ["pnpm", "-r", "--filter", "@tickernelz/paperclip-pro-server...", "--if-present", "run", "build"], { cwd: checkoutPath, env: buildEnv(), maxBuffer: 32 * 1024 * 1024 });
+    await runCommand("corepack", ["pnpm", "-r", "--filter", "@tickernelz/wardmote-server...", "--if-present", "run", "build"], { cwd: checkoutPath, env: buildEnv(), maxBuffer: 32 * 1024 * 1024 });
     await runCommand("bash", ["scripts/prepare-release-package-assets.sh"], { cwd: checkoutPath, env: buildEnv(), maxBuffer: 32 * 1024 * 1024 });
     const metadata = JSON.parse(fs.readFileSync(path.join(checkoutPath, "cli", "package.json"), "utf8")) as { version: string };
     const workspacePackages = resolveGitInstallWorkspacePackages(checkoutPath);
@@ -371,7 +371,7 @@ export async function installGitPayload(repo: string, sha: string, runCommand: C
     }
     await runCommand("npm", ["pack", "--pack-destination", stagingRoot], { cwd: path.join(checkoutPath, "cli"), env: buildEnv(), maxBuffer: 16 * 1024 * 1024 });
     const tarballs = fs.readdirSync(stagingRoot).filter((entry) => entry.endsWith(".tgz"));
-    const cliTarball = tarballs.find((entry) => entry === `tickernelz-paperclip-pro-${metadata.version}.tgz`);
+    const cliTarball = tarballs.find((entry) => entry === `tickernelz-wardmote-${metadata.version}.tgz`);
     const workspaceTarballs = tarballs.filter((entry) => entry !== cliTarball);
     if (!cliTarball || workspaceTarballs.length !== workspacePackages.length) {
       throw new Error(`Git install packaging produced ${workspaceTarballs.length} workspace tarballs; expected ${workspacePackages.length}.`);
@@ -461,11 +461,11 @@ export async function installCommand(
     return;
   }
   const request = resolveNpmInstallRequest(options);
-  console.log(`Resolving @tickernelz/paperclip-pro@${request.spec} from ${PUBLIC_NPM_REGISTRY}...`);
+  console.log(`Resolving @tickernelz/wardmote@${request.spec} from ${PUBLIC_NPM_REGISTRY}...`);
   const version = await resolvePublishedVersion(request.spec, runCommand);
   console.log(`Verifying all ${RELEASE_PACKAGE_NAMES.length} packages of release ${version}...`);
   await assertReleaseSetPublished(version, runCommand);
-  console.log(`Installing @tickernelz/paperclip-pro@${version}...`);
+  console.log(`Installing @tickernelz/wardmote@${version}...`);
 
   const paths = resolveInstallStorePaths();
   const installed = await withInstallStoreLock(async () => {

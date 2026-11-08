@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { TranscriptEntry } from "@/adapters";
-import type { HeartbeatRunEvent } from "@tickernelz/paperclip-pro-shared";
+import type { HeartbeatRunEvent } from "@tickernelz/wardmote-shared";
 import {
   assembleThreadItems,
   attachSettledTurns,

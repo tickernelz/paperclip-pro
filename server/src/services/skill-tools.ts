@@ -1,4 +1,4 @@
-import { parseFrontmatterMarkdown, skillFrontmatterSchema } from "@tickernelz/paperclip-pro-shared";
+import { parseFrontmatterMarkdown, skillFrontmatterSchema } from "@tickernelz/wardmote-shared";
 import { z } from "zod";
 
 /** A complete single-file skill. Identity and permissions come from the run. */

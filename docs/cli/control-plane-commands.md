@@ -9,39 +9,39 @@ Client-side commands for managing issues, agents, approvals, and more.
 
 ```sh
 # List issues
-npx @tickernelz/paperclip-pro issue list [--status todo,in_progress] [--assignee-agent-id <id>] [--match text]
+npx @tickernelz/wardmote issue list [--status todo,in_progress] [--assignee-agent-id <id>] [--match text]
 
 # Get issue details
-npx @tickernelz/paperclip-pro issue get <issue-id-or-identifier>
+npx @tickernelz/wardmote issue get <issue-id-or-identifier>
 
 # Create issue
-npx @tickernelz/paperclip-pro issue create --title "..." [--description "..."] [--status todo] [--priority high]
+npx @tickernelz/wardmote issue create --title "..." [--description "..."] [--status todo] [--priority high]
 
 # Update issue
-npx @tickernelz/paperclip-pro issue update <issue-id> [--status in_progress] [--comment "..."]
+npx @tickernelz/wardmote issue update <issue-id> [--status in_progress] [--comment "..."]
 
 # Add comment
-npx @tickernelz/paperclip-pro issue comment <issue-id> --body "..." [--reopen]
+npx @tickernelz/wardmote issue comment <issue-id> --body "..." [--reopen]
 
 # Checkout task
-npx @tickernelz/paperclip-pro issue checkout <issue-id> --agent-id <agent-id>
+npx @tickernelz/wardmote issue checkout <issue-id> --agent-id <agent-id>
 
 # Release task
-npx @tickernelz/paperclip-pro issue release <issue-id>
+npx @tickernelz/wardmote issue release <issue-id>
 ```
 
 ## Company Commands
 
 ```sh
-npx @tickernelz/paperclip-pro company list
-npx @tickernelz/paperclip-pro company get <company-id>
-npx @tickernelz/paperclip-pro company current [--company-id <company-id>]
+npx @tickernelz/wardmote company list
+npx @tickernelz/wardmote company get <company-id>
+npx @tickernelz/wardmote company current [--company-id <company-id>]
 
 # Export to portable folder package (writes manifest + markdown files)
-npx @tickernelz/paperclip-pro company export <company-id> --out ./exports/acme --include company,agents
+npx @tickernelz/wardmote company export <company-id> --out ./exports/acme --include company,agents
 
 # Preview import (no writes)
-npx @tickernelz/paperclip-pro company import \
+npx @tickernelz/wardmote company import \
   <owner>/<repo>/<path> \
   --target existing \
   --company-id <company-id> \
@@ -50,7 +50,7 @@ npx @tickernelz/paperclip-pro company import \
   --dry-run
 
 # Apply import
-npx @tickernelz/paperclip-pro company import \
+npx @tickernelz/wardmote company import \
   ./exports/acme \
   --target new \
   --new-company-name "Acme Imported" \
@@ -71,80 +71,80 @@ command.
 ## Agent Commands
 
 ```sh
-npx @tickernelz/paperclip-pro agent list
-npx @tickernelz/paperclip-pro agent get <agent-id>
+npx @tickernelz/wardmote agent list
+npx @tickernelz/wardmote agent get <agent-id>
 ```
 
 ## Skills Commands
 
 ```sh
 # Browse app-shipped catalog skills without changing company state
-npx @tickernelz/paperclip-pro skills browse [--kind bundled|optional] [--category software-development] [--query github]
-npx @tickernelz/paperclip-pro skills search "pull request" [--json]
+npx @tickernelz/wardmote skills browse [--kind bundled|optional] [--category software-development] [--query github]
+npx @tickernelz/wardmote skills search "pull request" [--json]
 
 # Inspect catalog metadata and file inventory before install
-npx @tickernelz/paperclip-pro skills inspect github-pr-workflow
+npx @tickernelz/wardmote skills inspect github-pr-workflow
 
 # Install a catalog skill into the company skill library
 # This does not attach the skill to any agent.
-npx @tickernelz/paperclip-pro skills install github-pr-workflow --company-id <company-id>
-npx @tickernelz/paperclip-pro skills install github-pr-workflow --as pr-flow --force --company-id <company-id>
+npx @tickernelz/wardmote skills install github-pr-workflow --company-id <company-id>
+npx @tickernelz/wardmote skills install github-pr-workflow --as pr-flow --force --company-id <company-id>
 
 # External sources still use import instead of catalog install
-npx @tickernelz/paperclip-pro skills import ./skills/my-skill --company-id <company-id>
-npx @tickernelz/paperclip-pro skills import owner/repo/path/to/skill --company-id <company-id>
+npx @tickernelz/wardmote skills import ./skills/my-skill --company-id <company-id>
+npx @tickernelz/wardmote skills import owner/repo/path/to/skill --company-id <company-id>
 
 # Attach desired company skills to an agent after install/import
-npx @tickernelz/paperclip-pro skills agent sync <agent-id> --skill github-pr-workflow --mode add --company-id <company-id>
+npx @tickernelz/wardmote skills agent sync <agent-id> --skill github-pr-workflow --mode add --company-id <company-id>
 ```
 
 ## Approval Commands
 
 ```sh
 # List approvals
-npx @tickernelz/paperclip-pro approval list [--status pending]
+npx @tickernelz/wardmote approval list [--status pending]
 
 # Get approval
-npx @tickernelz/paperclip-pro approval get <approval-id>
+npx @tickernelz/wardmote approval get <approval-id>
 
 # Create approval
-npx @tickernelz/paperclip-pro approval create --type hire_agent --payload '{"name":"..."}' [--issue-ids <id1,id2>]
+npx @tickernelz/wardmote approval create --type hire_agent --payload '{"name":"..."}' [--issue-ids <id1,id2>]
 
 # Approve
-npx @tickernelz/paperclip-pro approval approve <approval-id> [--decision-note "..."]
+npx @tickernelz/wardmote approval approve <approval-id> [--decision-note "..."]
 
 # Reject
-npx @tickernelz/paperclip-pro approval reject <approval-id> [--decision-note "..."]
+npx @tickernelz/wardmote approval reject <approval-id> [--decision-note "..."]
 
 # Request revision
-npx @tickernelz/paperclip-pro approval request-revision <approval-id> [--decision-note "..."]
+npx @tickernelz/wardmote approval request-revision <approval-id> [--decision-note "..."]
 
 # Resubmit
-npx @tickernelz/paperclip-pro approval resubmit <approval-id> [--payload '{"..."}']
+npx @tickernelz/wardmote approval resubmit <approval-id> [--payload '{"..."}']
 
 # Comment
-npx @tickernelz/paperclip-pro approval comment <approval-id> --body "..."
+npx @tickernelz/wardmote approval comment <approval-id> --body "..."
 ```
 
 ## Activity Commands
 
 ```sh
-npx @tickernelz/paperclip-pro activity list [--agent-id <id>] [--entity-type issue] [--entity-id <id>]
+npx @tickernelz/wardmote activity list [--agent-id <id>] [--entity-type issue] [--entity-id <id>]
 ```
 
 ## Dashboard
 
 ```sh
-npx @tickernelz/paperclip-pro dashboard get
+npx @tickernelz/wardmote dashboard get
 ```
 
 ## Instance Settings
 
 ```sh
-npx @tickernelz/paperclip-pro instance settings:general
-npx @tickernelz/paperclip-pro instance settings:general:update --payload-json '{...}'
-npx @tickernelz/paperclip-pro instance settings:experimental
-npx @tickernelz/paperclip-pro instance settings:experimental:update --payload-json '{...}'
+npx @tickernelz/wardmote instance settings:general
+npx @tickernelz/wardmote instance settings:general:update --payload-json '{...}'
+npx @tickernelz/wardmote instance settings:experimental
+npx @tickernelz/wardmote instance settings:experimental:update --payload-json '{...}'
 ```
 
 Experimental features are opt-in and are provided without compatibility guarantees. They may break, change, or be removed at any time. Use them at your own risk.
@@ -152,5 +152,5 @@ Experimental features are opt-in and are provided without compatibility guarante
 ## Heartbeat
 
 ```sh
-npx @tickernelz/paperclip-pro heartbeat run --agent-id <agent-id> [--api-base http://localhost:3100]
+npx @tickernelz/wardmote heartbeat run --agent-id <agent-id> [--api-base http://localhost:3100]
 ```

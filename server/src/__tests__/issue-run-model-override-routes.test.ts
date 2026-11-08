@@ -2,8 +2,8 @@ import { randomUUID } from "node:crypto";
 import request from "supertest";
 import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, expect, it } from "vitest";
-import { activityLog, agents, agentWakeupRequests, heartbeatRunEvents, heartbeatRuns, issues } from "@tickernelz/paperclip-pro-db";
-import type { IssueRunModelOverrideView } from "@tickernelz/paperclip-pro-shared";
+import { activityLog, agents, agentWakeupRequests, heartbeatRunEvents, heartbeatRuns, issues } from "@tickernelz/wardmote-db";
+import type { IssueRunModelOverrideView } from "@tickernelz/wardmote-shared";
 import {
   registerServerAdapter,
   unregisterServerAdapter,

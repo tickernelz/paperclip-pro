@@ -281,15 +281,15 @@ Wardmote is a full control plane, not a wrapper. Before you build any of this yo
 Open source. Self-hosted. No Wardmote account required.
 
 ```bash
-npx @tickernelz/paperclip-pro onboard --yes
+npx @tickernelz/wardmote onboard --yes
 ```
 
 That quickstart path now defaults to trusted local loopback mode for the fastest first run. To start in authenticated/private mode instead, choose a bind preset explicitly:
 
 ```bash
-npx @tickernelz/paperclip-pro onboard --yes --bind lan
+npx @tickernelz/wardmote onboard --yes --bind lan
 # or:
-npx @tickernelz/paperclip-pro onboard --yes --bind tailnet
+npx @tickernelz/wardmote onboard --yes --bind tailnet
 ```
 
 If you already have Wardmote configured, rerunning `onboard` keeps the existing config in place. Use `wardmote configure` to edit settings.

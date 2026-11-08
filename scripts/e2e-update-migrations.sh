@@ -103,7 +103,7 @@ else
   mkdir -p "$HOME/e2e-upd-bootstrap-cli"
   ( cd "$HOME/e2e-upd-bootstrap-cli" && npm install --no-fund --no-audit "$BOOT/cli/$TARBALL" > "$HOME/e2e-upd-bootstrap-npm.log" 2>&1 ) \
     || { tail -40 "$HOME/e2e-upd-bootstrap-npm.log"; fail_ "1c bootstrap npm install"; exit 1; }
-  BOOTSTRAP_CLI="$HOME/e2e-upd-bootstrap-cli/node_modules/@tickernelz/paperclip-pro/dist/index.js"
+  BOOTSTRAP_CLI="$HOME/e2e-upd-bootstrap-cli/node_modules/@tickernelz/wardmote/dist/index.js"
 fi
 node "$BOOTSTRAP_CLI" --version >/dev/null || { fail_ "1d bootstrap CLI smoke"; exit 1; }
 pass "1 bootstrap CLI ready"

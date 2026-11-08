@@ -16,7 +16,7 @@ import {
 import {
   compareCents,
   hasWorkspaceRestoreFailure,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { nonIdleSlackIssueCondition } from "../slack-conversation-state.js";
 import { readQueuedInteractionResponse } from "../queued-interaction-response.js";
 import {
@@ -50,7 +50,7 @@ import {
   unadmittedChatWakeupCondition,
 } from "../durable-chat-wakeup.js";
 import { agentService } from "../agents.js";
-import { normalizeLegacyRunnerProvider } from "@tickernelz/paperclip-pro-adapter-utils";
+import { normalizeLegacyRunnerProvider } from "@tickernelz/wardmote-adapter-utils";
 import { randomUUID } from "node:crypto";
 import {
   and,
@@ -68,8 +68,8 @@ import {
   or,
   sql,
 } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { AGENT_DEFAULT_MAX_CONCURRENT_RUNS } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/wardmote-db";
+import { AGENT_DEFAULT_MAX_CONCURRENT_RUNS } from "@tickernelz/wardmote-shared";
 import {
   agents,
   agentWakeupRequests,
@@ -87,7 +87,7 @@ import {
   issueRelations,
   issues,
   nativeRunFinalizations,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   conflict,
   HttpError,
@@ -151,7 +151,7 @@ import {
   type AgentOrgRow,
 } from "../agent-invokability.js";
 import { isHeartbeatWakeOnDemandEnabled } from "../heartbeat-policy.js";
-import { isUuidLike, type EffectiveLocalRunLimits } from "@tickernelz/paperclip-pro-shared";
+import { isUuidLike, type EffectiveLocalRunLimits } from "@tickernelz/wardmote-shared";
 import { retryChatControlAdmission } from "../chat-control-admission-retry.js";
 
 import type { HeartbeatServiceOptions } from "../heartbeat.js";

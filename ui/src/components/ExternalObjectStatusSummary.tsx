@@ -1,4 +1,4 @@
-import type { ExternalObjectSummary } from "@tickernelz/paperclip-pro-shared";
+import type { ExternalObjectSummary } from "@tickernelz/wardmote-shared";
 import {
   dominantExternalObjectTone,
   externalObjectCategoryLabel,

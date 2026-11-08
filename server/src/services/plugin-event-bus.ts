@@ -20,8 +20,8 @@
  * @see PLUGIN_SPEC.md §16.2 — Plugin-to-Plugin Events
  */
 
-import type { PluginEventType } from "@tickernelz/paperclip-pro-shared";
-import type { PluginEvent, EventFilter } from "@tickernelz/paperclip-pro-plugin-sdk";
+import type { PluginEventType } from "@tickernelz/wardmote-shared";
+import type { PluginEvent, EventFilter } from "@tickernelz/wardmote-plugin-sdk";
 
 // ---------------------------------------------------------------------------
 // Internal types

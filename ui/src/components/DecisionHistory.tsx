@@ -1,12 +1,12 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { DECISION_HISTORY_SOURCE_KINDS } from "@tickernelz/paperclip-pro-shared";
+import { DECISION_HISTORY_SOURCE_KINDS } from "@tickernelz/wardmote-shared";
 import type {
   Agent,
   AttentionSourceKind,
   ResolvedDecisionEntry,
   ResolvedDecisionSourceKind,
   ResolvedDecisionStatus,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { Link } from "@/lib/router";
 import { decisionQueuesApi } from "../api/decisionQueues";
 import type { AttentionActivityBounds, AttentionFilterOptions } from "../lib/attention";

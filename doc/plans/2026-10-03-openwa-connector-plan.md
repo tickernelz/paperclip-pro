@@ -88,7 +88,7 @@ Ask-first boundary (spec §20). Alternative if refused: a minimal Engine.IO v4 +
 - [ ] `openwaEndpointPolicySchema` and per-chat settings schema validate defaults from spec §6/§7; `ISSUE_THREAD_INTERACTION_CANONICAL_RESOLVER_POLICIES` includes `chat_endpoint_owner`.
 
 **Verification:**
-- [ ] `bash /tmp/pb/go.sh db:generate` produces one migration; `bash /tmp/pb/go.sh -r typecheck` and `bash /tmp/pb/go.sh --filter @tickernelz/paperclip-pro-db run check:migrations` pass.
+- [ ] `bash /tmp/pb/go.sh db:generate` produces one migration; `bash /tmp/pb/go.sh -r typecheck` and `bash /tmp/pb/go.sh --filter @tickernelz/wardmote-db run check:migrations` pass.
 - [ ] Migration applies to a fresh PGlite DB and to a DB at `0286` (test).
 - [ ] Validator unit tests: defaults, bounds, rejection of unknown keys.
 
@@ -341,7 +341,7 @@ Ask-first boundary (spec §20). Alternative if refused: a minimal Engine.IO v4 +
 
 **Acceptance criteria:**
 - [ ] Every AC has a live result or an explicit "fixture only" reason.
-- [ ] `bash /tmp/pb/go.sh -r typecheck`, `bash /tmp/pb/go.sh build`, `bash /tmp/pb/go.sh check:token-gates`, `bash /tmp/pb/go.sh --filter @tickernelz/paperclip-pro-db run check:migrations` green; broad `bash /tmp/pb/go.sh vitest run --exclude '**/vitest-chat-shards.test.ts' --exclude '**/dist/**'` with every failure classified against a `main` baseline; suites not run listed.
+- [ ] `bash /tmp/pb/go.sh -r typecheck`, `bash /tmp/pb/go.sh build`, `bash /tmp/pb/go.sh check:token-gates`, `bash /tmp/pb/go.sh --filter @tickernelz/wardmote-db run check:migrations` green; broad `bash /tmp/pb/go.sh vitest run --exclude '**/vitest-chat-shards.test.ts' --exclude '**/dist/**'` with every failure classified against a `main` baseline; suites not run listed.
 
 **Verification:** the verification record itself.
 

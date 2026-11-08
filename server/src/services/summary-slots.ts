@@ -1,5 +1,5 @@
 import { and, desc, eq, gte, inArray, isNull } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   documentRevisions,
   documents,
@@ -8,7 +8,7 @@ import {
   projectWorkspaces,
   projects,
   summarySlots,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   type GenerateSummarySlotResponse,
   type GetSummarySlotResponse,
@@ -22,7 +22,7 @@ import {
   type SummarySlotScopeSelector,
   summarySlotScopeSelectorSchema,
   type WriteSummarySlotResponse,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { conflict, forbidden, notFound, unprocessable } from "../errors.js";
 import { readBuiltInAgentMarker } from "../lib/built-in-agent-metadata.js";
 import { builtInAgentService } from "./built-in-agents.js";

@@ -2,8 +2,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { randomBytes } from "node:crypto";
 import { config as loadDotenv, parse as parseEnvFileContents } from "dotenv";
-import { applyEnvAliases } from "@tickernelz/paperclip-pro-shared/env-aliases";
-import { updateEnvFileContents, writeEnvFileAtomicallyIfChanged } from "@tickernelz/paperclip-pro-shared/env-file";
+import { applyEnvAliases } from "@tickernelz/wardmote-shared/env-aliases";
+import { updateEnvFileContents, writeEnvFileAtomicallyIfChanged } from "@tickernelz/wardmote-shared/env-file";
 import { resolveConfigPath } from "./store.js";
 
 const JWT_SECRET_ENV_KEY = "PAPERCLIP_AGENT_JWT_SECRET";

@@ -37,7 +37,7 @@ const workspacePaths = [
 // Workspace packages that are NOT bundled and must stay as npm dependencies.
 // These get published separately and resolved at runtime.
 const externalWorkspacePackages = new Set([
-  "@tickernelz/paperclip-pro-server",
+  "@tickernelz/wardmote-server",
 ]);
 
 // Collect all external dependencies from all workspace packages
@@ -50,11 +50,11 @@ for (const pkgPath of workspacePaths) {
   const optDeps = pkg.optionalDependencies || {};
 
   for (const [name, version] of Object.entries(deps)) {
-    if (name.startsWith("@tickernelz/paperclip-pro-") && !externalWorkspacePackages.has(name)) continue;
+    if (name.startsWith("@tickernelz/wardmote-") && !externalWorkspacePackages.has(name)) continue;
     if (bundledCliNpmDependencies.has(name)) continue;
     // For external workspace packages, read their version directly
     if (externalWorkspacePackages.has(name)) {
-      const pkgDirMap = { "@tickernelz/paperclip-pro-server": "server" };
+      const pkgDirMap = { "@tickernelz/wardmote-server": "server" };
       const wsPkg = readPkg(pkgDirMap[name]);
       allDeps[name] = wsPkg.version;
       continue;

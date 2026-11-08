@@ -5,7 +5,7 @@ import type {
   BrowserUseViewportState,
   BrowserUseViewportRequest,
   TaskBrowser,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { api } from "./client";
 export const browserUseApi = {
   list: (issueId: string) =>

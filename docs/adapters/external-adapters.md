@@ -55,7 +55,7 @@ my-adapter/
     "build": "tsc"
   },
   "dependencies": {
-    "@tickernelz/paperclip-pro-adapter-utils": "^2026.325.0",
+    "@tickernelz/wardmote-adapter-utils": "^2026.325.0",
     "picocolors": "^1.1.0"
   },
   "devDependencies": {
@@ -119,7 +119,7 @@ export { createServerAdapter } from "./server/index.js";
 ### src/server/index.ts
 
 ```ts
-import type { ServerAdapterModule } from "@tickernelz/paperclip-pro-adapter-utils";
+import type { ServerAdapterModule } from "@tickernelz/wardmote-adapter-utils";
 import { type, models, agentConfigurationDoc } from "../index.js";
 import { execute } from "./execute.js";
 import { testEnvironment } from "./test.js";
@@ -143,13 +143,13 @@ The core execution function. Receives an `AdapterExecutionContext` and returns a
 import type {
   AdapterExecutionContext,
   AdapterExecutionResult,
-} from "@tickernelz/paperclip-pro-adapter-utils";
+} from "@tickernelz/wardmote-adapter-utils";
 
 import {
   runChildProcess,
   buildPaperclipEnv,
   renderTemplate,
-} from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+} from "@tickernelz/wardmote-adapter-utils/server-utils";
 
 export async function execute(
   ctx: AdapterExecutionContext,
@@ -197,7 +197,7 @@ export async function execute(
 }
 ```
 
-#### Available Helpers from `@tickernelz/paperclip-pro-adapter-utils`
+#### Available Helpers from `@tickernelz/wardmote-adapter-utils`
 
 | Helper | Purpose |
 |--------|---------|
@@ -214,7 +214,7 @@ Validates the adapter configuration before running. Returns structured diagnosti
 import type {
   AdapterEnvironmentTestContext,
   AdapterEnvironmentTestResult,
-} from "@tickernelz/paperclip-pro-adapter-utils";
+} from "@tickernelz/wardmote-adapter-utils";
 
 export async function testEnvironment(
   ctx: AdapterEnvironmentTestContext,
@@ -302,7 +302,7 @@ For development, you can also edit `~/.wardmote/adapter-plugins.json` directly:
 If your agent runtime supports sessions (conversation continuity across heartbeats), implement a session codec:
 
 ```ts
-import type { AdapterSessionCodec } from "@tickernelz/paperclip-pro-adapter-utils";
+import type { AdapterSessionCodec } from "@tickernelz/wardmote-adapter-utils";
 
 export const sessionCodec: AdapterSessionCodec = {
   deserialize(raw) {

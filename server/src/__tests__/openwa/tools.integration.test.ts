@@ -32,8 +32,8 @@ import {
   issues,
   toolConnections,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
-import type { OpenwaPrincipalRole, OpenwaTriggerClass } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import type { OpenwaPrincipalRole, OpenwaTriggerClass } from "@tickernelz/wardmote-shared";
 import { startEmbeddedPostgresTestDatabase } from "../helpers/embedded-postgres.js";
 import { createLocalDiskStorageProvider } from "../../storage/local-disk-provider.js";
 import { createStorageService } from "../../storage/service.js";

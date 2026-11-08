@@ -4,10 +4,10 @@ import path from "node:path";
 import {
   type AdapterExecutionTarget,
   runAdapterExecutionTargetShellCommand,
-} from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
-import { asBoolean } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+} from "@tickernelz/wardmote-adapter-utils/execution-target";
+import { asBoolean } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import { stringify as stringifyYaml } from "yaml";
-import { isWellFormedOmpSettingKey } from "@tickernelz/paperclip-pro-shared";
+import { isWellFormedOmpSettingKey } from "@tickernelz/wardmote-shared";
 import { ompFallbackChain } from "./model-fallback.js";
 
 export interface OmpSettingsOverlay {

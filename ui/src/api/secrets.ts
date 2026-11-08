@@ -18,7 +18,7 @@ import type {
   RejectSecretProposalInput,
   UserSecretCoverageSummary,
   UserSecretDefinition,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { api } from "./client";
 
 export interface SecretUsageResponse {

@@ -3,7 +3,7 @@ import type { Request, Response } from "express";
 import {
   issues as issueRows,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { and, eq, inArray, isNotNull } from "drizzle-orm";
 import { getExecutionBlocker } from "../services/execution-blocker.js";
 import { conflict } from "../errors.js";
@@ -12,7 +12,7 @@ import {
   isUuidLike,
   previewIssueTreeControlSchema,
   releaseIssueTreeHoldSchema,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { validate } from "../middleware/validate.js";
 import {
   accessService,

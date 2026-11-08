@@ -1,4 +1,4 @@
-import type { HeartbeatRunEvent } from "@tickernelz/paperclip-pro-shared";
+import type { HeartbeatRunEvent } from "@tickernelz/wardmote-shared";
 import type { TranscriptEntry } from "@/adapters";
 import { isRunLogOnlyProviderEvent } from "./run-log-only-events";
 import { describeModelFallbackEvent } from "@/lib/model-fallback";

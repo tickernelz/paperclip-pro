@@ -9,7 +9,7 @@ import type {
   RoutineEnvConfig,
   RoutineRevision,
   RoutineRevisionSnapshotV1,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { EnvironmentVariablesEditor } from "@/components/environment-variables-editor";
 import { RoutineHistoryTab } from "@/components/RoutineHistoryTab";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";

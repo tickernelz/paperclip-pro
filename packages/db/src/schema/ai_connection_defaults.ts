@@ -8,7 +8,7 @@ import {
   check,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
-import type { AiProvider, AiAuthMethod } from "@tickernelz/paperclip-pro-shared";
+import type { AiProvider, AiAuthMethod } from "@tickernelz/wardmote-shared";
 import { companies } from "./companies.js";
 import { connectionGrants } from "./tool_access.js";
 

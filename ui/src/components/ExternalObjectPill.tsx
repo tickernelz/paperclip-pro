@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import type {
   ExternalObjectLivenessState,
   ExternalObjectStatusCategory,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { ExternalObjectStatusIcon } from "./ExternalObjectStatusIcon";
 import {
   externalObjectStatusIcon,

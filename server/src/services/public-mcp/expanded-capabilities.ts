@@ -5,7 +5,7 @@ import {
   aiRuntimeConnectionBindingSchema, createProjectSchema, updateProjectSchema,
   companySkillCreateSchema, companySkillUpdateSchema, companySkillFileUpdateSchema,
   createIssueWorkProductSchema, updateIssueWorkProductSchema,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { McpApiError, company, task, requestId, pathId, object, pick, rows, taskFields, documentFields, type Capability } from "./contracts.js";
 
 const agent = { ...company, agentId: z.uuid() };

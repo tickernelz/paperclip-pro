@@ -1,4 +1,4 @@
-import { createDb, heartbeatRuns } from "@tickernelz/paperclip-pro-db";
+import { createDb, heartbeatRuns } from "@tickernelz/wardmote-db";
 import type { heartbeatService } from "../../services/heartbeat.js";
 
 type Db = ReturnType<typeof createDb>;

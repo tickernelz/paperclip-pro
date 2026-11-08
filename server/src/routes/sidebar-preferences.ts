@@ -1,6 +1,6 @@
 import { Router, type Request, type Response } from "express";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { upsertSidebarOrderPreferenceSchema } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/wardmote-db";
+import { upsertSidebarOrderPreferenceSchema } from "@tickernelz/wardmote-shared";
 import { validate } from "../middleware/validate.js";
 import { logActivity, sidebarPreferenceService } from "../services/index.js";
 import { assertBoard, assertCompanyAccess, getActorInfo } from "./authz.js";

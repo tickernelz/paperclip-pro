@@ -7,7 +7,7 @@ import {
   type LocalBrowserSettings,
   type LocalBrowserTab,
   type LocalBrowserTier,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { closeActivity, reconcileActivityWithTabs } from "./activity.js";
 import { localBrowserFailure } from "./errors.js";
 import type { BridgeSocket, LiveSession, PendingCall, ViewerListener, ViewerPayload } from "./types.js";

@@ -121,7 +121,7 @@ async function fixtureBoundary(t, { manifest = {}, files = {} } = {}) {
   return checkForbiddenImports({ packageRoot: root, scanRoots: ["src"], cargoRoots: [] });
 }
 
-const kernel = "@tickernelz/paperclip-pro-paperclip-eval-kernel";
+const kernel = "@tickernelz/wardmote-paperclip-eval-kernel";
 const harness = "src/eval/workflow-harness.ts";
 const reviewedManifest = {
   exports: { "./evals": "./dist/evals.js" },
@@ -132,13 +132,13 @@ test("only exact declared public subpaths are admitted", async (t) => {
   const violations = await fixtureBoundary(t, {
     manifest: reviewedManifest,
     files: { "src/consumer.ts": [
-      'import "@tickernelz/paperclip-pro-paperclip-runner/evals";',
-      'import "@tickernelz/paperclip-pro-paperclip-runner/evals/private";',
-      'import "@tickernelz/paperclip-pro-paperclip-runner/undeclared";',
+      'import "@tickernelz/wardmote-paperclip-runner/evals";',
+      'import "@tickernelz/wardmote-paperclip-runner/evals/private";',
+      'import "@tickernelz/wardmote-paperclip-runner/undeclared";',
     ].join("\n") },
   });
   assert.deepEqual(violations.map(({ specifier }) => specifier), [
-    "@tickernelz/paperclip-pro-paperclip-runner/evals/private", "@tickernelz/paperclip-pro-paperclip-runner/undeclared",
+    "@tickernelz/wardmote-paperclip-runner/evals/private", "@tickernelz/wardmote-paperclip-runner/undeclared",
   ]);
 });
 
@@ -148,7 +148,7 @@ test("ADR0001 permits only the private development harness and reviewed package"
     files: { [harness]: `import { scenario } from "${kernel}";`, "src/evals.ts": "export const publicApi = true;" },
   }), []);
   for (const [file, specifier] of [
-    ["src/other.ts", kernel], [harness, `${kernel}/private`], [harness, "@tickernelz/paperclip-pro-other"],
+    ["src/other.ts", kernel], [harness, `${kernel}/private`], [harness, "@tickernelz/wardmote-other"],
   ]) {
     const violations = await fixtureBoundary(t, {
       manifest: reviewedManifest, files: { [file]: `import "${specifier}";` },

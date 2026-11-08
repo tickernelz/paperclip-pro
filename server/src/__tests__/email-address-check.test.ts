@@ -1,6 +1,6 @@
 import express from "express";
 import request from "supertest";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { forbidden } from "../errors.js";
 import { errorHandler } from "../middleware/error-handler.js";

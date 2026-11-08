@@ -1,13 +1,13 @@
 import { and, eq, inArray, sql } from "drizzle-orm";
 
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { heartbeatRuns, issueThreadInteractions } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
+import { heartbeatRuns, issueThreadInteractions } from "@tickernelz/wardmote-db";
 import type {
   AskUserQuestionsInteraction,
   RespondIssueThreadInteraction,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
-import { questionSetToAskUserQuestionsPayload } from "@tickernelz/paperclip-pro-shared";
+import { questionSetToAskUserQuestionsPayload } from "@tickernelz/wardmote-shared";
 
 import type { PrpEvent } from "../../vendor/paperclip-runner/index.js";
 import {

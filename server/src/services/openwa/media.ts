@@ -8,8 +8,8 @@ import {
   issueAttachments,
   issues,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
-import type { SpeechToTextSettings } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import type { SpeechToTextSettings } from "@tickernelz/wardmote-shared";
 import {
   getMaxAttachmentBytes,
   isAllowedContentType,

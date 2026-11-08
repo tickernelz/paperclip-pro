@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { RoutineTrigger } from "@tickernelz/paperclip-pro-shared";
+import type { RoutineTrigger } from "@tickernelz/wardmote-shared";
 import { buildRoutineTriggerPatch } from "./routine-trigger-patch";
 
 function makeScheduleTrigger(overrides: Partial<RoutineTrigger> = {}): RoutineTrigger {

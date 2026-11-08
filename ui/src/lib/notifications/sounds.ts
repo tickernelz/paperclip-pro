@@ -1,4 +1,4 @@
-import type { NotificationKind } from "@tickernelz/paperclip-pro-shared";
+import type { NotificationKind } from "@tickernelz/wardmote-shared";
 
 export interface NotificationSound {
   id: string;

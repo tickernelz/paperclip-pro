@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import type { ToolConnection } from "@tickernelz/paperclip-pro-shared";
-import { isConnectableAppSlug } from "@tickernelz/paperclip-pro-shared";
+import type { ToolConnection } from "@tickernelz/wardmote-shared";
+import { isConnectableAppSlug } from "@tickernelz/wardmote-shared";
 import { Navigate, useNavigate, useParams } from "@/lib/router";
 import { useCompany } from "@/context/CompanyContext";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";

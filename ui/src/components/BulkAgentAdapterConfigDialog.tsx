@@ -9,7 +9,7 @@ import {
   type AgentAdapterConfigBatchField,
   type AgentAdapterConfigBatchResult,
   type AgentAdapterConfigBatchTarget,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   Dialog,
   DialogContent,

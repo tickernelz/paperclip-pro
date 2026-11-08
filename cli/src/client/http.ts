@@ -233,7 +233,7 @@ function buildConnectionErrorMessage(input: {
     "This usually means the Wardmote server is not running, the configured URL is wrong, or the request is being blocked before it reaches Wardmote.",
     "",
     "Try:",
-    "- Start Wardmote with `pnpm dev` (from a source checkout) or `npx @tickernelz/paperclip-pro run`.",
+    "- Start Wardmote with `pnpm dev` (from a source checkout) or `npx @tickernelz/wardmote run`.",
     `- Verify the server is reachable with \`curl ${healthUrl}\`.`,
     `- If Wardmote is running elsewhere, pass \`--api-base ${input.apiBase.replace(/\/+$/, "")}\` or set \`PAPERCLIP_API_URL\`.`,
   );

@@ -20,8 +20,8 @@ import {
   startEmbeddedPostgresTestDatabase,
   toolApplications,
   toolConnections,
-} from "@tickernelz/paperclip-pro-db";
-import type { ChatFileTransferPhase } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import type { ChatFileTransferPhase } from "@tickernelz/wardmote-shared";
 import type { TeamsFileTransferSummary } from "./chat-teams-file-transfers.js";
 import { projectTeamsFilePublication } from "./chat-teams-file-publication.js";
 

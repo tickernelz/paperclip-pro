@@ -2,12 +2,12 @@ import type {
   AdapterEnvironmentCheck,
   AdapterEnvironmentTestContext,
   AdapterEnvironmentTestResult,
-} from "@tickernelz/paperclip-pro-adapter-utils";
+} from "@tickernelz/wardmote-adapter-utils";
 import {
   asString,
   parseObject,
   ensurePathInEnv,
-} from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+} from "@tickernelz/wardmote-adapter-utils/server-utils";
 import {
   ensureAdapterExecutionTargetCommandResolvable,
   ensureAdapterExecutionTargetDirectory,
@@ -16,12 +16,12 @@ import {
   describeAdapterExecutionTarget,
   resolveAdapterExecutionTargetCwd,
   prepareAdapterExecutionTargetRuntime,
-} from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
+} from "@tickernelz/wardmote-adapter-utils/execution-target";
 import fs from "node:fs/promises";
 import path from "node:path";
 import os from "node:os";
 import { parseCodexJsonl } from "./parse.js";
-import { SANDBOX_INSTALL_COMMAND } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/codex";
+import { SANDBOX_INSTALL_COMMAND } from "@tickernelz/wardmote-adapter-utils/provider-models/codex";
 import { codexHomeDir, readCodexAuthInfo } from "./quota.js";
 import { buildCodexExecArgs, isInsideGitWorkTree } from "./codex-args.js";
 import {

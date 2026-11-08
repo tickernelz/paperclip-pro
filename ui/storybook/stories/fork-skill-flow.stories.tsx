@@ -7,7 +7,7 @@ import type {
   CompanySkillForkPrecheckResult,
   CompanySkillForkSummary,
   CompanySkillUsageAgent,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { ForkSkillDialog } from "@/components/skill-studio/ForkSkillDialog";
 import {
   ProjectScanNotice,

@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { summarySlots } from "@tickernelz/paperclip-pro-db";
-import type { IssueStatus } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/wardmote-db";
+import { summarySlots } from "@tickernelz/wardmote-db";
+import type { IssueStatus } from "@tickernelz/wardmote-shared";
 
 const TERMINAL_ISSUE_STATUSES = new Set<IssueStatus>(["done", "cancelled"]);
 

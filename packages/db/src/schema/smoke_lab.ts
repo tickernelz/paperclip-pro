@@ -4,7 +4,7 @@ import type {
   SmokeRunStepPath,
   SmokeRunStepStatus,
   SmokeRunTrigger,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { companies } from "./companies.js";
 
 export const smokeRuns = pgTable(

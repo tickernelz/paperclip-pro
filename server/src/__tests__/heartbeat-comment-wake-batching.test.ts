@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { and, asc, eq, sql } from "drizzle-orm";
-import { FAST_RESPONSE_AGENT_GUIDANCE } from "@tickernelz/paperclip-pro-shared";
+import { FAST_RESPONSE_AGENT_GUIDANCE } from "@tickernelz/wardmote-shared";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import {
   agents,
@@ -27,7 +27,7 @@ import {
   nativeRunFinalizations,
   toolApplications,
   toolConnections,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { runningProcesses, registerServerAdapter, unregisterServerAdapter } from "../adapters/index.js";
 import {
   hydrateFreshSessionHandoff,
@@ -36,7 +36,7 @@ import {
   selectInitialCommunicationGuidance,
   selectPaperclipPromptSections,
   stringifyPaperclipWakePayload,
-} from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+} from "@tickernelz/wardmote-adapter-utils/server-utils";
 
 const GATEWAY_ADAPTER = "acme_gateway";
 import { heartbeatService } from "../services/heartbeat.ts";

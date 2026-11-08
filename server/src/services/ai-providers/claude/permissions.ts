@@ -1,4 +1,4 @@
-import type { RunToolProfile } from "@tickernelz/paperclip-pro-adapter-utils/tool-profile";
+import type { RunToolProfile } from "@tickernelz/wardmote-adapter-utils/tool-profile";
 
 export const CLAUDE_READ_ONLY_DISALLOWED_TOOLS = ["Edit", "Write", "MultiEdit", "NotebookEdit"] as const;
 

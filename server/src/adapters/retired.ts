@@ -1,4 +1,4 @@
-import { retiredAdapterMessage } from "@tickernelz/paperclip-pro-shared";
+import { retiredAdapterMessage } from "@tickernelz/wardmote-shared";
 import type { ServerAdapterModule } from "./types.js";
 
 const retiredAdapters = new WeakSet<ServerAdapterModule>();

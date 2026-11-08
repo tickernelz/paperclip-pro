@@ -1,5 +1,5 @@
-import type { AggregatorAppsResponse, ArcadeDiscoverySetupInput } from "@tickernelz/paperclip-pro-shared/aggregator-apps";
-import type { ComposioAppAccountInput, ComposioAppSetupInput, ComposioAppSetupResult, ComposioAppSnapshot, ComposioAppsResponse } from "@tickernelz/paperclip-pro-shared";
+import type { AggregatorAppsResponse, ArcadeDiscoverySetupInput } from "@tickernelz/wardmote-shared/aggregator-apps";
+import type { ComposioAppAccountInput, ComposioAppSetupInput, ComposioAppSetupResult, ComposioAppSnapshot, ComposioAppsResponse } from "@tickernelz/wardmote-shared";
 import type {
   ToolApplication,
   ConfigureRailwaySsh,
@@ -65,7 +65,7 @@ import type {
   ConnectionGrantsResponse,
   ToolConnectionCreateCapabilities,
   ToolAppMetadataPreflightResult,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { api, detachInflightGet } from "./client";
 
 /**
@@ -160,7 +160,7 @@ export interface CreateToolConnectionInput {
 }
 
 export interface UpdateToolConnectionInput {
-  agentInstructions?: import("@tickernelz/paperclip-pro-shared").ConnectionAgentInstructions | null;
+  agentInstructions?: import("@tickernelz/wardmote-shared").ConnectionAgentInstructions | null;
   name?: string;
   status?: ToolConnection["status"];
   config?: Record<string, unknown>;
@@ -325,7 +325,7 @@ export const toolsApi = {
     enabledCatalogEntryIds: string[];
     askFirstCatalogEntryIds: string[];
     reviewedCatalogEntryIds?: string[];
-    agentInstructions?: import("@tickernelz/paperclip-pro-shared").ConnectionAgentInstructions | null;
+    agentInstructions?: import("@tickernelz/wardmote-shared").ConnectionAgentInstructions | null;
     access: "all_agents" | { agentIds: string[] };
   }) =>
     api.post<FinishToolAppResult>(

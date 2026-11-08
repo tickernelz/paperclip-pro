@@ -5,7 +5,7 @@ import type {
   FileTreeBadge,
   FileTreeProps,
   IssuesListProps,
-} from "@tickernelz/paperclip-pro-plugin-sdk/ui";
+} from "@tickernelz/wardmote-plugin-sdk/ui";
 
 // ---------------------------------------------------------------------------
 // Bridge mocks. The real SDK runtime hooks read from a global registry; we

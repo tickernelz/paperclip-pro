@@ -15,7 +15,7 @@ import {
   type OpenwaGatewayAdminToolLevel,
   type OpenwaReplyPolicy,
   type OpenwaSenderPolicyMode,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { chatEndpointsApi, type ChatEndpoint, type OpenwaSenderRule } from "@/api/chatEndpoints";
 import { agentsApi } from "@/api/agents";
 import { useAdapterCapabilities } from "@/adapters/use-adapter-capabilities";

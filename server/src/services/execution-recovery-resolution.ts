@@ -1,4 +1,4 @@
-import { hasWorkspaceRestoreFailure } from "@tickernelz/paperclip-pro-shared";
+import { hasWorkspaceRestoreFailure } from "@tickernelz/wardmote-shared";
 import { randomUUID } from "node:crypto";
 import { claimedAdapterType, conversationRecoveryActionPredicate, getConversationOwnershipBlocker } from "./conversation-continuation.js";
 import { persistActivity } from "./activity-log.js";
@@ -13,13 +13,13 @@ import {
   issues,
   nativeRunFinalizations,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { conflict } from "../errors.js";
 import { buildExecutionContinuation, UNVERIFIED_ACTIONS_NOT_REPEATED_NOTE } from "./execution-continuation.js";
 import {
   EXECUTION_RECONCILIATION_CAUSES,
   type ExecutionReconciliation,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { parseIssueExecutionState } from "./issue-execution-policy.js";
 import { isSupersededConversationRun } from "./agent-conversations.js";
 import { hasRequiredWorkspaceRecovery } from "./workspace-restore-recovery-state.js";

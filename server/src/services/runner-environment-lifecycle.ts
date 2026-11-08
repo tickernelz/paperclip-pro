@@ -1,4 +1,4 @@
-import type { Environment } from "@tickernelz/paperclip-pro-shared";
+import type { Environment } from "@tickernelz/wardmote-shared";
 
 /** Resolve runner retention before acquiring a sandbox, not after it is ephemeral.
  * This is a run-scoped view; never persist it over a shared environment's config.

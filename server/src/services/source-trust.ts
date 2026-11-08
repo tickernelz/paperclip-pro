@@ -1,10 +1,10 @@
 import { and, eq } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { agents, heartbeatRuns, projects } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
+import { agents, heartbeatRuns, projects } from "@tickernelz/wardmote-db";
 import {
   LOW_TRUST_REVIEW_PRESET,
   type SourceTrustMetadata,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { forbidden } from "../errors.js";
 import { readObject } from "../lib/objects.js";
 import { resolveCoreTrustPreset } from "./trust-preset-resolver.js";

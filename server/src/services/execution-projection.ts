@@ -5,8 +5,8 @@ import {
   issueThreadInteractions,
   nativeRunFinalizations,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
-import type { ExecutionProjection } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import type { ExecutionProjection } from "@tickernelz/wardmote-shared";
 import { EXECUTION_CONTROL_DEADLINE_MS } from "./execution-control-deadline.js";
 import { jsonbRecordFields } from "./jsonb-projection.js";
 import { executionFailureRetryCount } from "./execution-recovery-attempt.js";

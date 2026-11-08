@@ -1,6 +1,6 @@
 import { and, eq, sql } from "drizzle-orm";
-import { agents, agentRuntimeState, companies, heartbeatRuns, type Db } from "@tickernelz/paperclip-pro-db";
-import { normalizeCents, usdToCents, type AccountingFinding, type AccountingHealth, type AccountingInspection } from "@tickernelz/paperclip-pro-shared";
+import { agents, agentRuntimeState, companies, heartbeatRuns, type Db } from "@tickernelz/wardmote-db";
+import { normalizeCents, usdToCents, type AccountingFinding, type AccountingHealth, type AccountingInspection } from "@tickernelz/wardmote-shared";
 import { conflict, notFound } from "../errors.js";
 import { receiptFingerprint } from "./receipt-fingerprint.js";
 import { withAccountingReadSnapshot, withAccountingTransaction } from "./accounting-transaction.js";

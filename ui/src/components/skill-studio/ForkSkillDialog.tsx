@@ -4,7 +4,7 @@ import { GitFork, Loader2, Users } from "lucide-react";
 import type {
   CompanySkillDetail,
   CompanySkillForkPrecheckResult,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { useNavigate } from "@/lib/router";
 import { companySkillsApi } from "@/api/companySkills";
 import { queryKeys } from "@/lib/queryKeys";

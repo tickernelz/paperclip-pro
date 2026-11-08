@@ -1,4 +1,4 @@
-import { createSshCommandManagedRuntimeRunner } from "@tickernelz/paperclip-pro-adapter-utils/ssh";
+import { createSshCommandManagedRuntimeRunner } from "@tickernelz/wardmote-adapter-utils/ssh";
 import { getMaxAttachmentBytes } from "../../attachment-types.js";
 
 /** The command transport used by a native session on an operator-bound SSH host. */

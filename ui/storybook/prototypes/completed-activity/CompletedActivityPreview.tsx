@@ -26,7 +26,7 @@ const read = tool(
 const command = tool(
   "command",
   "exec_command",
-  "pnpm --filter @tickernelz/paperclip-pro-ui typecheck",
+  "pnpm --filter @tickernelz/wardmote-ui typecheck",
   "completed",
   "Typecheck passed.",
 );

@@ -1,6 +1,6 @@
 import express from "express";
 import request from "supertest";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { errorHandler } from "../middleware/error-handler.js";
 import { chatChannelRoutes } from "../routes/chat-channels.js";

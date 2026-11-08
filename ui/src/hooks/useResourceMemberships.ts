@@ -3,7 +3,7 @@ import type {
   ResourceMembershipResourceType,
   ResourceMembershipState,
   ResourceMemberships,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { resourceMembershipsApi } from "../api/resourceMemberships";
 import { useToastActions } from "../context/ToastContext";
 import { queryKeys } from "../lib/queryKeys";

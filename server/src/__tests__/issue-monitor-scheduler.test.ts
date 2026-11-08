@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { eq, sql } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
-import { PROVIDER_QUOTA_MONITOR_SERVICE_NAME } from "@tickernelz/paperclip-pro-shared";
+import { PROVIDER_QUOTA_MONITOR_SERVICE_NAME } from "@tickernelz/wardmote-shared";
 import {
   costEvents,
   activityLog,
@@ -21,7 +21,7 @@ import {
   issueDocuments,
   issues,
   workspaceRuntimeServices,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

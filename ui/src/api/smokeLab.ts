@@ -5,7 +5,7 @@ import type {
   SmokeRun,
   SmokeRunStep,
   UpdateSmokeRun,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { api } from "./client";
 
 /**

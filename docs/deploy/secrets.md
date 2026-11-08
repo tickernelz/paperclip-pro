@@ -203,7 +203,7 @@ Validate secrets config:
 
 ```sh
 pnpm wardmote doctor
-npx @tickernelz/paperclip-pro secrets doctor --company-id <company-id>
+npx @tickernelz/wardmote secrets doctor --company-id <company-id>
 ```
 
 ### Environment Overrides
@@ -475,8 +475,8 @@ store.
 If you have existing agents with inline API keys in their config, migrate them to encrypted secret refs:
 
 ```sh
-npx @tickernelz/paperclip-pro secrets migrate-inline-env --company-id <company-id>
-npx @tickernelz/paperclip-pro secrets migrate-inline-env --company-id <company-id> --apply
+npx @tickernelz/wardmote secrets migrate-inline-env --company-id <company-id>
+npx @tickernelz/wardmote secrets migrate-inline-env --company-id <company-id> --apply
 
 # low-level script for direct database maintenance
 pnpm secrets:migrate-inline-env         # dry run
@@ -493,7 +493,7 @@ Company exports include only environment declarations. They do not include
 secret IDs, provider references, encrypted material, or plaintext values.
 
 ```sh
-npx @tickernelz/paperclip-pro secrets declarations --company-id <company-id> --kind secret
+npx @tickernelz/wardmote secrets declarations --company-id <company-id> --kind secret
 ```
 
 Before importing a package into another instance, use those declarations to

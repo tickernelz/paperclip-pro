@@ -1,5 +1,5 @@
-import { PERMISSION_KEYS } from "@tickernelz/paperclip-pro-shared";
-import type { HumanCompanyMembershipRole } from "@tickernelz/paperclip-pro-shared";
+import { PERMISSION_KEYS } from "@tickernelz/wardmote-shared";
+import type { HumanCompanyMembershipRole } from "@tickernelz/wardmote-shared";
 import { NEW_STANDARD_AGENT_DEFAULT_GRANT_KEYS, newStandardAgentGrantScope } from "../lib/agent-permissions.js";
 import { grantsForHumanRole } from "./company-member-roles.js";
 

@@ -15,7 +15,7 @@ import {
   statusDecisionEffects,
   statusDecisions,
   workAssessments,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { and, eq } from "drizzle-orm";
 import { startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";
 import {

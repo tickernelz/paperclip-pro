@@ -10,7 +10,7 @@ import type {
   ToolProfileEntry,
   ToolProfileSummary,
   ToolProfileWithDetails,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const navigate = vi.hoisted(() => vi.fn());

@@ -1,5 +1,5 @@
 import { clearIssueExecutionRun } from "./optimistic-issue-runs";
-import type { Issue } from "@tickernelz/paperclip-pro-shared";
+import type { Issue } from "@tickernelz/wardmote-shared";
 // @vitest-environment jsdom
 
 import { beforeEach, describe, expect, it, vi } from "vitest";

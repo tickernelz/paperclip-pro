@@ -6,7 +6,7 @@ import type {
   LocalBrowserTab,
   LocalBrowserTier,
   LocalBrowserViewerEvent,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 export interface LocalBrowserBinding {
   companyId: string;

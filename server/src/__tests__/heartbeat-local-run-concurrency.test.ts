@@ -7,7 +7,7 @@ import {
   createDb,
   heartbeatRuns,
   issues,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -16,7 +16,7 @@ import { heartbeatService, markLocalCliRunStarting } from "../services/heartbeat
 import { instanceSettingsService } from "../services/instance-settings.ts";
 import { logger } from "../middleware/logger.js";
 import { runningProcesses } from "../adapters/index.ts";
-import { isOmpStartupComplete } from "@tickernelz/paperclip-pro-adapter-omp-local/server";
+import { isOmpStartupComplete } from "@tickernelz/wardmote-adapter-omp-local/server";
 
 type AdapterLog = (stream: "stdout" | "stderr", chunk: string) => Promise<void>;
 

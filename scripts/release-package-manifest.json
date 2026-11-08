@@ -1,117 +1,117 @@
 [
   {
     "dir": "packages/adapter-utils",
-    "name": "@tickernelz/paperclip-pro-adapter-utils",
+    "name": "@tickernelz/wardmote-adapter-utils",
     "publishFromCi": true
   },
   {
     "dir": "packages/adapters/omp-local",
-    "name": "@tickernelz/paperclip-pro-adapter-omp-local",
+    "name": "@tickernelz/wardmote-adapter-omp-local",
     "publishFromCi": true
   },
   {
     "dir": "packages/shared",
-    "name": "@tickernelz/paperclip-pro-shared",
+    "name": "@tickernelz/wardmote-shared",
     "publishFromCi": true
   },
   {
     "dir": "packages/skills-catalog",
-    "name": "@tickernelz/paperclip-pro-skills-catalog",
+    "name": "@tickernelz/wardmote-skills-catalog",
     "publishFromCi": true
   },
   {
     "dir": "packages/teams-catalog",
-    "name": "@tickernelz/paperclip-pro-teams-catalog",
+    "name": "@tickernelz/wardmote-teams-catalog",
     "publishFromCi": true
   },
   {
     "dir": "packages/db",
-    "name": "@tickernelz/paperclip-pro-db",
+    "name": "@tickernelz/wardmote-db",
     "publishFromCi": true
   },
   {
     "dir": "packages/plugins/sdk",
-    "name": "@tickernelz/paperclip-pro-plugin-sdk",
+    "name": "@tickernelz/wardmote-plugin-sdk",
     "publishFromCi": true
   },
   {
     "dir": "packages/plugins/plugin-workspace-diff",
-    "name": "@tickernelz/paperclip-pro-plugin-workspace-diff",
+    "name": "@tickernelz/wardmote-plugin-workspace-diff",
     "publishFromCi": true
   },
   {
     "dir": "server",
-    "name": "@tickernelz/paperclip-pro-server",
+    "name": "@tickernelz/wardmote-server",
     "publishFromCi": true
   },
   {
     "dir": "cli",
-    "name": "@tickernelz/paperclip-pro",
+    "name": "@tickernelz/wardmote",
     "publishFromCi": true
   },
   {
     "dir": "packages/mcp-server",
-    "name": "@tickernelz/paperclip-pro-mcp-server",
+    "name": "@tickernelz/wardmote-mcp-server",
     "publishFromCi": true
   },
   {
     "dir": "packages/google-sheets-mcp-server",
-    "name": "@tickernelz/paperclip-pro-google-sheets-mcp-server",
+    "name": "@tickernelz/wardmote-google-sheets-mcp-server",
     "publishFromCi": false
   },
   {
     "dir": "packages/kv-demo-mcp-server",
-    "name": "@tickernelz/paperclip-pro-kv-demo-mcp-server",
+    "name": "@tickernelz/wardmote-kv-demo-mcp-server",
     "publishFromCi": false
   },
   {
     "dir": "packages/plugins/create-paperclip-plugin",
-    "name": "@tickernelz/paperclip-pro-create-paperclip-plugin",
+    "name": "@tickernelz/wardmote-create-paperclip-plugin",
     "publishFromCi": true
   },
   {
     "dir": "packages/plugins/sandbox-providers/cloudflare",
-    "name": "@tickernelz/paperclip-pro-plugin-cloudflare-sandbox",
+    "name": "@tickernelz/wardmote-plugin-cloudflare-sandbox",
     "publishFromCi": true
   },
   {
     "dir": "packages/plugins/sandbox-providers/createos",
-    "name": "@tickernelz/paperclip-pro-plugin-createos",
+    "name": "@tickernelz/wardmote-plugin-createos",
     "publishFromCi": false
   },
   {
     "dir": "packages/plugins/sandbox-providers/daytona",
-    "name": "@tickernelz/paperclip-pro-plugin-daytona",
+    "name": "@tickernelz/wardmote-plugin-daytona",
     "publishFromCi": true
   },
   {
     "dir": "packages/plugins/sandbox-providers/exe-dev",
-    "name": "@tickernelz/paperclip-pro-plugin-exe-dev",
+    "name": "@tickernelz/wardmote-plugin-exe-dev",
     "publishFromCi": true
   },
   {
     "dir": "packages/plugins/sandbox-providers/e2b",
-    "name": "@tickernelz/paperclip-pro-plugin-e2b",
+    "name": "@tickernelz/wardmote-plugin-e2b",
     "publishFromCi": true
   },
   {
     "dir": "packages/plugins/sandbox-providers/modal",
-    "name": "@tickernelz/paperclip-pro-plugin-modal",
+    "name": "@tickernelz/wardmote-plugin-modal",
     "publishFromCi": true
   },
   {
     "dir": "packages/plugins/sandbox-providers/kubernetes",
-    "name": "@tickernelz/paperclip-pro-plugin-kubernetes",
+    "name": "@tickernelz/wardmote-plugin-kubernetes",
     "publishFromCi": true
   },
   {
     "dir": "packages/plugins/sandbox-providers/novita",
-    "name": "@tickernelz/paperclip-pro-plugin-novita-sandbox",
+    "name": "@tickernelz/wardmote-plugin-novita-sandbox",
     "publishFromCi": true
   },
   {
     "dir": "ui",
-    "name": "@tickernelz/paperclip-pro-ui",
+    "name": "@tickernelz/wardmote-ui",
     "publishFromCi": true
   }
 ]

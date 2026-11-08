@@ -1,5 +1,5 @@
 import { eq } from "drizzle-orm";
-import { companies, type Db } from "@tickernelz/paperclip-pro-db";
+import { companies, type Db } from "@tickernelz/wardmote-db";
 import { publishActivity, type ActivityPublication } from "./activity-log.js";
 import { notFound } from "../errors.js";
 import { logger } from "../middleware/logger.js";

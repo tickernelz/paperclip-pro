@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { createServer } from "node:net";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { Agent, Company, InstanceExperimentalSettings } from "@tickernelz/paperclip-pro-shared";
+import type { Agent, Company, InstanceExperimentalSettings } from "@tickernelz/wardmote-shared";
 import {
   assertTestDriveDatabaseIsolation,
   bootstrapTestDrive,

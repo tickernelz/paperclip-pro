@@ -1,4 +1,4 @@
-import type { AdapterRuntimeEvent } from "@tickernelz/paperclip-pro-adapter-utils";
+import type { AdapterRuntimeEvent } from "@tickernelz/wardmote-adapter-utils";
 import { classifyFallbackReason, retryDelayMsFromText, type OmpFallbackReason } from "./failure.js";
 
 const THINKING_SUFFIX_RE = /:(?:auto|off|minimal|low|medium|high|xhigh|max)$/i;

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { CompanySecret } from "@tickernelz/paperclip-pro-shared";
+import type { CompanySecret } from "@tickernelz/wardmote-shared";
 import type { MyUserSecretEntry } from "../api/secrets";
 import {
   savedProviderKeys,

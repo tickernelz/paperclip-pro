@@ -1,4 +1,4 @@
-import type { Agent } from "@tickernelz/paperclip-pro-shared";
+import type { Agent } from "@tickernelz/wardmote-shared";
 import { describe, expect, it } from "vitest";
 import { derivePausedAgentBanner } from "./Dashboard";
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ChatPublicationSummary } from "@tickernelz/paperclip-pro-shared";
+import type { ChatPublicationSummary } from "@tickernelz/wardmote-shared";
 import {
   chatFileTransferResolutionActions,
   projectChatFileTransfer,

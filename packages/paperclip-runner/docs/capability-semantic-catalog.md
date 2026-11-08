@@ -13,7 +13,7 @@ root:
 import {
   CapabilitySemanticDispatcher,
   createCapabilityProviderNeutralBinding,
-} from "@tickernelz/paperclip-pro-paperclip-runner";
+} from "@tickernelz/wardmote-paperclip-runner";
 
 const dispatcher = new CapabilitySemanticDispatcher(mockPort, {
   scenario: {

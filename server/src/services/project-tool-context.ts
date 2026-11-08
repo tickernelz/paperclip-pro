@@ -1,6 +1,6 @@
 import type { Request } from "express";
 import { and, eq } from "drizzle-orm";
-import { issues, type Db } from "@tickernelz/paperclip-pro-db";
+import { issues, type Db } from "@tickernelz/wardmote-db";
 import { forbidden } from "../errors.js";
 import { captureRunIdentity } from "./run-identity.js";
 import { assertOpenwaRunMay } from "./openwa/authority.js";

@@ -1,4 +1,4 @@
-import type { ToolOAuthStartResult } from "@tickernelz/paperclip-pro-shared";
+import type { ToolOAuthStartResult } from "@tickernelz/wardmote-shared";
 import { resolveAuthorizationTarget } from "./authorizationUrl";
 
 const CLOUD_HANDOFF_PATH = "/cloud/connections/handoff";

@@ -5,7 +5,7 @@ import type {
   FakeSandboxEnvironmentConfig,
   SandboxEnvironmentConfig,
   SandboxEnvironmentProvider,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 export interface SandboxProviderValidationResult {
   ok: boolean;

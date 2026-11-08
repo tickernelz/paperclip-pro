@@ -2,7 +2,7 @@ import {
   agentTodoCurrentTask,
   agentTodoOpLabel,
   buildAgentTodoPayloadFromOmpDetails,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import type { TaskChatTodoItem } from "./task-chat-model";
 
 const SUBJECT_MAX = 80;

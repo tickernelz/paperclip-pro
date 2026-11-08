@@ -3,7 +3,7 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import type { IssueDocument } from "@tickernelz/paperclip-pro-shared";
+import type { IssueDocument } from "@tickernelz/wardmote-shared";
 import { ThemeProvider } from "@/context/ThemeContext";
 import {
   planPreviewContent,

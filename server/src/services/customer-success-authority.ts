@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
-import { agents, heartbeatRuns, type Db } from "@tickernelz/paperclip-pro-db";
-import type { RunAuthority } from "@tickernelz/paperclip-pro-shared";
+import { agents, heartbeatRuns, type Db } from "@tickernelz/wardmote-db";
+import type { RunAuthority } from "@tickernelz/wardmote-shared";
 import { verifyLocalAgentJwt } from "../agent-auth-jwt.js";
 import { agentRunWritesRevoked } from "../agent-run-cancellation.js";
 import { forbidden } from "../errors.js";

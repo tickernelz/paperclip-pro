@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ActivityEvent } from "@tickernelz/paperclip-pro-shared";
+import type { ActivityEvent } from "@tickernelz/wardmote-shared";
 import { projectCreatedItems } from "./project-created-items";
 const event = (overrides: Partial<ActivityEvent> = {}): ActivityEvent =>
   ({
@@ -75,7 +75,7 @@ describe("project creation repository hydration", () => {
         repoUrl: "https://github.com/org/docs",
       },
     ],
-  } as import("@tickernelz/paperclip-pro-shared").Project;
+  } as import("@tickernelz/wardmote-shared").Project;
 
   it("includes repositories added after creation without adding another card", () => {
     const receipt = event({

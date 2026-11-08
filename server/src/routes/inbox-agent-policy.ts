@@ -1,6 +1,6 @@
 import { Router, type Request } from "express";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { updateInboxAgentPolicySchema } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/wardmote-db";
+import { updateInboxAgentPolicySchema } from "@tickernelz/wardmote-shared";
 import { forbidden, notFound, unauthorized } from "../errors.js";
 import { validate } from "../middleware/validate.js";
 import { accessService, inboxAgentPolicyService, logActivity } from "../services/index.js";

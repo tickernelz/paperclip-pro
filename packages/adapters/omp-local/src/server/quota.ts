@@ -1,5 +1,5 @@
-import type { ProviderQuotaResult, QuotaWindow } from "@tickernelz/paperclip-pro-adapter-utils";
-import { runChildProcess } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+import type { ProviderQuotaResult, QuotaWindow } from "@tickernelz/wardmote-adapter-utils";
+import { runChildProcess } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import { detectionEnv, resolveOmpCommand } from "./config.js";
 
 const QUOTA_PROBE_TIMEOUT_SEC_WITHIN_PROVIDER_DROP_WINDOW = 12;

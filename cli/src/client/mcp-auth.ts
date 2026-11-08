@@ -4,7 +4,7 @@ import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
 import { createHash, randomUUID } from "node:crypto";
 import { setTimeout as sleep } from "node:timers/promises";
-import { PUBLIC_MCP_PATH, PUBLIC_MCP_SCOPES } from "@tickernelz/paperclip-pro-shared";
+import { PUBLIC_MCP_PATH, PUBLIC_MCP_SCOPES } from "@tickernelz/wardmote-shared";
 import { resolvePaperclipHomeDir } from "../config/home.js";
 
 const deviceGrant = "urn:ietf:params:oauth:grant-type:device_code";

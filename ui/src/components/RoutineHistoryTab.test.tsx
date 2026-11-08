@@ -10,7 +10,7 @@ import type {
   RoutineEnvConfig,
   RoutineRevision,
   RoutineRevisionSnapshotV1,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { RoutineHistoryTab } from "./RoutineHistoryTab";
 

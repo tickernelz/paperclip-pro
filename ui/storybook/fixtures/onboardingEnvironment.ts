@@ -1,5 +1,5 @@
-import { ADAPTER_AUTH_MISSING_CHECK_CODE } from "@tickernelz/paperclip-pro-shared";
-import type { AdapterAuthSignal } from "@tickernelz/paperclip-pro-shared";
+import { ADAPTER_AUTH_MISSING_CHECK_CODE } from "@tickernelz/wardmote-shared";
+import type { AdapterAuthSignal } from "@tickernelz/wardmote-shared";
 
 /**
  * The environment and auth state the connect step reads, as something a story

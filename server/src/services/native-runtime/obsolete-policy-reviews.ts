@@ -3,7 +3,7 @@ import {
   approvals, issueApprovals, issueThreadInteractions, issues,
   nativeRunFinalizations, statusDecisionEffects, statusDecisions, workAssessments,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { logger } from "../../middleware/logger.js";
 import { issueService } from "../issues.js";
 import { issueThreadInteractionService } from "../issue-thread-interactions.js";

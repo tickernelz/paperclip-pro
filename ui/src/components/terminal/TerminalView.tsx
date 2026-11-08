@@ -22,7 +22,7 @@ import {
   clampTerminalRows,
   type TerminalClientFrame,
   type TerminalSession,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { ApiError } from "@/api/client";
 import { terminalApi } from "@/api/terminal";
 import { Button } from "@/components/ui/button";

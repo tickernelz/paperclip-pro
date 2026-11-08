@@ -5,7 +5,7 @@ import {
   TERMINAL_MIN_COLS,
   TERMINAL_MIN_ROWS,
   TERMINAL_WEBSOCKET_PATH,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 export const createTerminalSessionSchema = z
   .object({

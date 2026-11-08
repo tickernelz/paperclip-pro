@@ -1,4 +1,4 @@
-import type { ExternalObjectSummary, Issue } from "@tickernelz/paperclip-pro-shared";
+import type { ExternalObjectSummary, Issue } from "@tickernelz/wardmote-shared";
 
 export type IssueFilterWorkspaceLookup = {
   mode?: string | null;

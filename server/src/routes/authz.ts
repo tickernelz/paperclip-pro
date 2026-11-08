@@ -5,7 +5,7 @@ import {
   isCompanyOwnerAgent,
   type AgentAuthorityCapability,
   type SecretBindingTargetType,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { forbidden, HttpError, unauthorized } from "../errors.js";
 import { logger } from "../middleware/logger.js";
 import { responsibleUserAuthzShadowMode } from "../services/authorization.js";

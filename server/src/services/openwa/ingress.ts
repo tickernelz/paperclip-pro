@@ -4,7 +4,7 @@ import {
   chatEndpoints,
   toolConnections,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import type { ChatSdkStatePersistence } from "../chat-sdk-state.js";
 import type { OpenwaGatewayClient } from "./gateway.js";
 import type { OpenwaOutboundRegistry } from "./outbound.js";

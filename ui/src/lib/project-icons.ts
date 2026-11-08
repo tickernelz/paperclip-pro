@@ -40,7 +40,7 @@ import {
   Zap,
   type LucideIcon,
 } from "lucide-react";
-import { PROJECT_ICON_NAMES, type ProjectIconName } from "@tickernelz/paperclip-pro-shared";
+import { PROJECT_ICON_NAMES, type ProjectIconName } from "@tickernelz/wardmote-shared";
 
 export const PROJECT_ICONS: Record<ProjectIconName, LucideIcon> = {
   folder: Folder,

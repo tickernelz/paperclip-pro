@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import { documentService, extractLegacyPlanBody } from "../services/documents.js";
 
 describe("extractLegacyPlanBody", () => {

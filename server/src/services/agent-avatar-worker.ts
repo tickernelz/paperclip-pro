@@ -1,7 +1,7 @@
 import { parentPort } from "node:worker_threads";
 import sharp from "sharp";
-import { renderAgentSvg } from "@tickernelz/paperclip-pro-shared/cliplab/static";
-import { PAPERCLIP_DARK_AVATAR_BACKGROUND } from "@tickernelz/paperclip-pro-shared";
+import { renderAgentSvg } from "@tickernelz/wardmote-shared/cliplab/static";
+import { PAPERCLIP_DARK_AVATAR_BACKGROUND } from "@tickernelz/wardmote-shared";
 import type { AgentAvatarRequest } from "./agent-avatars.js";
 
 parentPort!.on("message", async (request: AgentAvatarRequest) => {

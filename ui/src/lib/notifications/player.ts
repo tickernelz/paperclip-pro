@@ -1,4 +1,4 @@
-import type { NotificationKind } from "@tickernelz/paperclip-pro-shared";
+import type { NotificationKind } from "@tickernelz/wardmote-shared";
 import { loadCustomSound, subscribeCustomSounds } from "./custom-sounds";
 import type { NotificationSettings } from "./settings";
 import { CUSTOM_SOUND_ID, DEFAULT_KIND_SOUNDS, SILENT_SOUND_ID, isLibrarySoundId, librarySoundUrl } from "./sounds";

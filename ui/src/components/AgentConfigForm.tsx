@@ -1,7 +1,7 @@
 import { useConnectionModels } from "./ai-connections/useConnectionModels";
-import { aiRoutingHarness } from "@tickernelz/paperclip-pro-shared";
+import { aiRoutingHarness } from "@tickernelz/wardmote-shared";
 import { AiConnectionField } from "./ai-connections/AiConnectionField";
-import { aiConnectionBindingSchema, aiRuntimeConnectionBindingSchema } from "@tickernelz/paperclip-pro-shared";
+import { aiConnectionBindingSchema, aiRuntimeConnectionBindingSchema } from "@tickernelz/wardmote-shared";
 import { testAgentSetup } from "@/lib/test-agent-setup";
 import { RuntimeTestCard } from "./RuntimeTestCard";
 import { useState, useEffect, useRef, useMemo, useCallback, Children, isValidElement, type ReactNode } from "react";
@@ -19,8 +19,8 @@ import type {
   EnvBinding,
   EnvSecretRefBinding,
   Environment,
-} from "@tickernelz/paperclip-pro-shared";
-import { AGENT_DEFAULT_MAX_CONCURRENT_RUNS, supportedEnvironmentDriversForAdapter, isValidBrowserCode, ADAPTER_AUTH_MISSING_CHECK_CODE } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
+import { AGENT_DEFAULT_MAX_CONCURRENT_RUNS, supportedEnvironmentDriversForAdapter, isValidBrowserCode, ADAPTER_AUTH_MISSING_CHECK_CODE } from "@tickernelz/wardmote-shared";
 import type { AdapterModel } from "../api/agents";
 import { agentsApi } from "../api/agents";
 import { ApiError } from "../api/client";
@@ -31,7 +31,7 @@ import { assetsApi } from "../api/assets";
 import {
   DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX,
   DEFAULT_CODEX_LOCAL_MODEL,
-} from "@tickernelz/paperclip-pro-adapter-utils/provider-models/codex";
+} from "@tickernelz/wardmote-adapter-utils/provider-models/codex";
 import {
   Popover,
   PopoverContent,
@@ -101,14 +101,14 @@ import { resolveForcedKubernetesEnvironment } from "../lib/forced-kubernetes-env
 
 /* ---- Create mode values ---- */
 
-// Canonical type lives in @tickernelz/paperclip-pro-adapter-utils; re-exported here
+// Canonical type lives in @tickernelz/wardmote-adapter-utils; re-exported here
 // so existing imports from this file keep working.
-export type { CreateConfigValues } from "@tickernelz/paperclip-pro-adapter-utils";
+export type { CreateConfigValues } from "@tickernelz/wardmote-adapter-utils";
 import {
   PAPERCLIP_RUNNER_PERMISSION_CAPABILITIES,
   paperclipRunnerTransitionConfig,
   type CreateConfigValues,
-} from "@tickernelz/paperclip-pro-adapter-utils";
+} from "@tickernelz/wardmote-adapter-utils";
 import { Badge } from "@/components/ui/badge";
 
 /* ---- Props ---- */
@@ -2195,7 +2195,7 @@ export type AdapterLoginDescriptor = {
 // correctly, and the first thing to rot would have been the timeout and
 // cleanup paths, which are the ones nobody exercises by hand.
 export type AdapterLoginPanelProps = AdapterLoginDescriptor & {
-  aiConnection?: import("@tickernelz/paperclip-pro-shared").AiConnectionLoginIntent;
+  aiConnection?: import("@tickernelz/wardmote-shared").AiConnectionLoginIntent;
   onStored?: (storedSessionId: string) => void;
   onApplyStored?: () => void;
   // Applies the non-secret Codex account-binding claim from an authenticated

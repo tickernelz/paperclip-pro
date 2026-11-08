@@ -10,7 +10,7 @@ import {
   createDb,
   environmentLeases,
   environments,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

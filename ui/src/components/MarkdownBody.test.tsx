@@ -12,7 +12,7 @@ import {
   buildSkillMentionHref,
   buildUserMentionHref,
   appearanceForPalette,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { ThemeProvider } from "../context/ThemeContext";
 import { MarkdownBody } from "./MarkdownBody";
 import { queryKeys } from "../lib/queryKeys";

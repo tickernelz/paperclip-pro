@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import type { HeartbeatRun, Issue } from "@tickernelz/paperclip-pro-shared";
+import type { HeartbeatRun, Issue } from "@tickernelz/wardmote-shared";
 import {
   Archive,
   Bot,

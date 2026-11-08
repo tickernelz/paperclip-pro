@@ -1,7 +1,7 @@
 import type {
   ChatProvider,
   ChatResourceAvailability,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 export type ChatProviderLifecycleEffect =
   | {

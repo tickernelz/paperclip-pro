@@ -1,4 +1,4 @@
-import { FAST_RESPONSE_AGENT_GUIDANCE, fastResponseHistoryBody } from "@tickernelz/paperclip-pro-shared";
+import { FAST_RESPONSE_AGENT_GUIDANCE, fastResponseHistoryBody } from "@tickernelz/wardmote-shared";
 import {
   persistActivity,
   publishActivity,
@@ -16,7 +16,7 @@ import {
   issueThreadInteractions,
   issues,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 
 import { sanitizeQuarantinedCommentForHigherTrust } from "./source-trust.js";
 import { isAgentAwaitingSetup } from "../modules/agent-lifecycle/index.js";

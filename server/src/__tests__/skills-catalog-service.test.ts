@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { CatalogSkill } from "@tickernelz/paperclip-pro-shared";
+import type { CatalogSkill } from "@tickernelz/wardmote-shared";
 
 const mockExistsSync = vi.hoisted(() => vi.fn());
 const mockReadFileSync = vi.hoisted(() => vi.fn());
@@ -68,7 +68,7 @@ function sha256(value: string | Buffer) {
 function manifest(skills: CatalogSkill[], packageVersion = "0.3.1") {
   return JSON.stringify({
     schemaVersion: 1,
-    packageName: "@tickernelz/paperclip-pro-skills-catalog",
+    packageName: "@tickernelz/wardmote-skills-catalog",
     packageVersion,
     generatedAt: "2026-05-28T00:00:00.000Z",
     skills,
@@ -93,11 +93,11 @@ describe("skills catalog service", () => {
     }));
     mockReadFile.mockImplementation(async (filePath: string) => `content:${filePath}`);
     mockRequireResolve.mockImplementation((specifier: string) => {
-      if (specifier === "@tickernelz/paperclip-pro-skills-catalog/package.json") {
-        return "/published/node_modules/@tickernelz/paperclip-pro-skills-catalog/package.json";
+      if (specifier === "@tickernelz/wardmote-skills-catalog/package.json") {
+        return "/published/node_modules/@tickernelz/wardmote-skills-catalog/package.json";
       }
-      if (specifier === "@tickernelz/paperclip-pro-skills-catalog/catalog.json") {
-        return "/published/node_modules/@tickernelz/paperclip-pro-skills-catalog/generated/catalog.json";
+      if (specifier === "@tickernelz/wardmote-skills-catalog/catalog.json") {
+        return "/published/node_modules/@tickernelz/wardmote-skills-catalog/generated/catalog.json";
       }
       throw new Error(`Unexpected specifier: ${specifier}`);
     });
@@ -123,7 +123,7 @@ describe("skills catalog service", () => {
     expect(mockReadFileSync).toHaveBeenCalledTimes(2);
     expect(() => service.getCatalogSkillOrThrow("old-skill")).toThrow("Catalog skill not found");
     expect(service.getCatalogPackageMetadata()).toEqual({
-      packageName: "@tickernelz/paperclip-pro-skills-catalog",
+      packageName: "@tickernelz/wardmote-skills-catalog",
       packageVersion: "0.3.2",
     });
   });
@@ -194,7 +194,7 @@ describe("skills catalog service", () => {
     const service = await import("../services/skills-catalog.js");
 
     expect(service.getCatalogPackageMetadata()).toEqual({
-      packageName: "@tickernelz/paperclip-pro-skills-catalog",
+      packageName: "@tickernelz/wardmote-skills-catalog",
       packageVersion: "0.3.2",
     });
     await expect(service.readCatalogSkillFile(publishedSkill.id, "SKILL.md")).resolves.toMatchObject({
@@ -204,14 +204,14 @@ describe("skills catalog service", () => {
       markdown: true,
     });
     expect(mockReadFileSync).toHaveBeenCalledWith(
-      "/published/node_modules/@tickernelz/paperclip-pro-skills-catalog/generated/catalog.json",
+      "/published/node_modules/@tickernelz/wardmote-skills-catalog/generated/catalog.json",
       "utf8",
     );
     expect(mockReadFile).toHaveBeenCalledWith(
-      "/published/node_modules/@tickernelz/paperclip-pro-skills-catalog/catalog/bundled/software-development/published-skill/SKILL.md",
+      "/published/node_modules/@tickernelz/wardmote-skills-catalog/catalog/bundled/software-development/published-skill/SKILL.md",
     );
-    expect(mockRequireResolve).toHaveBeenCalledWith("@tickernelz/paperclip-pro-skills-catalog/package.json");
-    expect(mockRequireResolve).toHaveBeenCalledWith("@tickernelz/paperclip-pro-skills-catalog/catalog.json");
+    expect(mockRequireResolve).toHaveBeenCalledWith("@tickernelz/wardmote-skills-catalog/package.json");
+    expect(mockRequireResolve).toHaveBeenCalledWith("@tickernelz/wardmote-skills-catalog/catalog.json");
   });
 
   it("returns an empty list, caches package-resolution failure, and logs only once when the manifest cannot be resolved", async () => {

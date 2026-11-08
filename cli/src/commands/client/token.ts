@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import { createAgentKeySchema, createBoardApiKeySchema, type Agent } from "@tickernelz/paperclip-pro-shared";
+import { createAgentKeySchema, createBoardApiKeySchema, type Agent } from "@tickernelz/wardmote-shared";
 import {
   addCommonClientOptions,
   apiPath,

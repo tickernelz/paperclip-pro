@@ -1,5 +1,5 @@
 import { useContext } from "react";
-import type { InstanceExperimentalSettings } from "@tickernelz/paperclip-pro-shared";
+import type { InstanceExperimentalSettings } from "@tickernelz/wardmote-shared";
 import { QueryClient, QueryClientContext, useQuery } from "@tanstack/react-query";
 import { instanceSettingsApi } from "@/api/instanceSettings";
 import { queryKeys } from "@/lib/queryKeys";

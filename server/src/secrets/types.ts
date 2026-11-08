@@ -2,8 +2,8 @@ import type {
   SecretProvider,
   SecretProviderConfigDiscoveryPreviewResult,
   SecretProviderDescriptor,
-} from "@tickernelz/paperclip-pro-shared";
-import type { DeploymentMode } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
+import type { DeploymentMode } from "@tickernelz/wardmote-shared";
 
 export interface StoredSecretVersionMaterial {
   [key: string]: unknown;

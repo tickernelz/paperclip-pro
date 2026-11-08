@@ -5,7 +5,7 @@ import { createRoot, type Root } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { act, type ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { RunModelFallbackState } from "@tickernelz/paperclip-pro-shared";
+import type { RunModelFallbackState } from "@tickernelz/wardmote-shared";
 import {
   RESTORE_PRIMARY_MODEL_COMMENT,
   RestorePrimaryModelControl,

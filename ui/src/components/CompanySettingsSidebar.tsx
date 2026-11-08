@@ -17,7 +17,7 @@ import {
   Users,
   Wrench,
 } from "lucide-react";
-import type { PluginRecord } from "@tickernelz/paperclip-pro-shared";
+import type { PluginRecord } from "@tickernelz/wardmote-shared";
 import { sidebarBadgesApi } from "@/api/sidebarBadges";
 import { pluginsApi } from "@/api/plugins";
 import { ApiError } from "@/api/client";

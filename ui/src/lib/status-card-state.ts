@@ -1,4 +1,4 @@
-import type { StatusCard, StatusCardRefreshPolicy } from "@tickernelz/paperclip-pro-shared";
+import type { StatusCard, StatusCardRefreshPolicy } from "@tickernelz/wardmote-shared";
 
 /**
  * The lifecycle states a status card renders as on the board (plan §7,

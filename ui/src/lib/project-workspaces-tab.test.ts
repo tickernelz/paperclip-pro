@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ExecutionWorkspace, Issue, Project, ProjectWorkspace, WorkspaceRuntimeService } from "@tickernelz/paperclip-pro-shared";
+import type { ExecutionWorkspace, Issue, Project, ProjectWorkspace, WorkspaceRuntimeService } from "@tickernelz/wardmote-shared";
 import { buildProjectWorkspaceSummaries } from "./project-workspaces-tab";
 
 function createProjectWorkspace(overrides: Partial<ProjectWorkspace>): ProjectWorkspace {

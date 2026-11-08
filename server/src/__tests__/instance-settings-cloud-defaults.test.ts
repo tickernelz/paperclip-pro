@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { INSTANCE_FEATURE_CATALOG } from "@tickernelz/paperclip-pro-shared";
+import { INSTANCE_FEATURE_CATALOG } from "@tickernelz/wardmote-shared";
 import {
   applyCloudCatalogDefaults,
   applyExperimentalSettingsPatch,

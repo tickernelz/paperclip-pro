@@ -1,4 +1,4 @@
-import type { IssueChangeReceiptEntry } from "@tickernelz/paperclip-pro-shared";
+import type { IssueChangeReceiptEntry } from "@tickernelz/wardmote-shared";
 import { formatReviewPolicyValue } from "./review-policy";
 
 /**

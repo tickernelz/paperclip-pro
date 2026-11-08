@@ -7,7 +7,7 @@ import {
   BannerText,
   Button,
   ReplayControls,
-} from "@tickernelz/paperclip-pro-paperclip-runner/react";
+} from "@tickernelz/wardmote-paperclip-runner/react";
 import type { CapabilityRunArtifact, CapabilityScenarioIndexEntry } from "@paperclip-runner-local/capability";
 
 import { ASSERTION_CLASS_LABEL, groupLabel, PARITY_TONE } from "../labels.js";

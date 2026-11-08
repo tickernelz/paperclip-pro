@@ -7,10 +7,10 @@ import { fileURLToPath } from "node:url";
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", "..");
 
 const SCOPE = "@tickernelz";
-const PREFIX = "paperclip-pro";
+const PREFIX = "wardmote";
 const CLI_PACKAGE = `${SCOPE}/${PREFIX}`;
-const CLI_BIN = PREFIX;
-const TARBALL_STEM = "tickernelz-paperclip-pro";
+const CLI_BIN = "paperclip-pro";
+const TARBALL_STEM = "tickernelz-wardmote";
 const HOME_DIR = ".paperclip-pro";
 const FORK_REPO = "https://github.com/tickernelz/wardmote";
 
@@ -178,7 +178,7 @@ const FILE_RULES = {
     ),
   ],
   "cli/src/__tests__/http.test.ts": [
-    lit(String.raw`npx paperclipai run/`, String.raw`npx @tickernelz\/paperclip-pro run/`),
+    lit(String.raw`npx paperclipai run/`, String.raw`npx @tickernelz\/wardmote run/`),
   ],
   "cli/src/__tests__/install-command.test.ts": [
     lit(`? "paperclipai-db" : "paperclipai"`, `? "${PREFIX}-db" : "${TARBALL_STEM}"`),

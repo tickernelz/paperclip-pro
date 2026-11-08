@@ -7,7 +7,7 @@ import type {
   ToolCatalogEntry,
   ToolPolicy,
   ToolProfileEffectiveSummary,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createElement } from "react";
 

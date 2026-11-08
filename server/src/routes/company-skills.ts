@@ -1,17 +1,17 @@
 import { skillSourceService, type SkillSourceContext } from "../services/skill-sources.js";
 import { skillSourceGitHubReader } from "../services/skill-source-github-access.js";
 import { toolAccessService } from "../services/tool-access.js";
-import { skillSourceCreateSchema, skillSourceDiscoverySchema, skillSourcePreviewSchema, skillSourceSelectionSchema } from "@tickernelz/paperclip-pro-shared";
+import { skillSourceCreateSchema, skillSourceDiscoverySchema, skillSourcePreviewSchema, skillSourceSelectionSchema } from "@tickernelz/wardmote-shared";
 import type { ActivityPublication } from "../services/activity-log.js";
 import { once } from "node:events";
-import type { SkillSourceDiscoveryEvent } from "@tickernelz/paperclip-pro-shared";
+import type { SkillSourceDiscoveryEvent } from "@tickernelz/wardmote-shared";
 import { createHash } from "node:crypto";
 import { and, eq, sql } from "drizzle-orm";
-import { activityLog, companySkills } from "@tickernelz/paperclip-pro-db";
+import { activityLog, companySkills } from "@tickernelz/wardmote-db";
 import { persistActivity, publishActivity } from "../services/activity-log.js";
 import { projectToolContext } from "../services/project-tool-context.js";
 import { Router, type Request } from "express";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   catalogSkillListQuerySchema,
   companySkillCommentCreateSchema,
@@ -36,8 +36,8 @@ import {
   companySkillTestRunListQuerySchema,
   companySkillUpdateSchema,
   companySkillVersionCreateSchema,
-} from "@tickernelz/paperclip-pro-shared";
-import { trackSkillImported } from "@tickernelz/paperclip-pro-shared/telemetry";
+} from "@tickernelz/wardmote-shared";
+import { trackSkillImported } from "@tickernelz/wardmote-shared/telemetry";
 import { validate } from "../middleware/validate.js";
 import {
   accessService,
@@ -66,7 +66,7 @@ import {
   type SkillPolicyAction,
   type SkillPolicyDecision,
   type SkillPolicyEvaluationResource,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 type SkillTelemetryInput = {
   key: string;

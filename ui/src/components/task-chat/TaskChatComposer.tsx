@@ -64,7 +64,7 @@ import type {
   IssueRunModelOverrideUpdate,
   IssueWorkMode,
   RunnerGoalCapability,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import type { ActionCommandOption } from "@/context/EditorAutocompleteContext";
 import {
   describeDeliveryDowngrade,
@@ -78,7 +78,7 @@ import { TaskChatComposerTakeoverActionsContext } from "./TaskChatComposerTakeov
 import { TaskChatPausedTakeover, type TaskComposerPause } from "./TaskChatPausedTakeover";
 import { TaskChatComposerBar } from "./TaskChatComposerBar";
 import { ComposerAddMenu, ComposerModeChip, ComposerPrivacyChip } from "./ComposerAddMenu";
-import type { Agent, IssueAssigneeAdapterOverrides } from "@tickernelz/paperclip-pro-shared";
+import type { Agent, IssueAssigneeAdapterOverrides } from "@tickernelz/wardmote-shared";
 
 /** Structurally identical to IssueChatThread's module-private CommentReassignment. */
 export interface CommentReassignment {

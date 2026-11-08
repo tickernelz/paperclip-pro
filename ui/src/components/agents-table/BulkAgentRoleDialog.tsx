@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { AgentRole } from "@tickernelz/paperclip-pro-shared";
+import type { AgentRole } from "@tickernelz/wardmote-shared";
 import {
   Dialog,
   DialogContent,

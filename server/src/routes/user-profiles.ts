@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { and, desc, eq, gte, isNull, sql } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   activityLog,
   agents,
@@ -9,13 +9,13 @@ import {
   costEvents,
   issueComments,
   issues,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import type {
   UserProfileDailyPoint,
   UserProfileIdentity,
   UserProfileResponse,
   UserProfileWindowStats,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { notFound } from "../errors.js";
 import { visibleIssueCondition } from "../services/issue-visibility.js";
 import { assertCompanyAccess } from "./authz.js";
