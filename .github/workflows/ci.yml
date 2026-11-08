@@ -411,7 +411,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           UPGRADE_REPO: ${{ github.event.pull_request.head.repo.full_name }}
           UPGRADE_SHA: ${{ github.event.pull_request.head.sha }}
-        run: bash scripts/test-upgrade-path.sh
+        run: |
+          UPGRADE_PNPM_STORE="$(pnpm store path --silent)" bash scripts/test-upgrade-path.sh
 
   docker-omp-pin:
     name: Docker OMP pin
