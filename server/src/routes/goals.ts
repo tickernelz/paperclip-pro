@@ -1,7 +1,7 @@
 import { Router } from "express";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { createGoalSchema, updateGoalSchema } from "@tickernelz/paperclip-pro-shared";
-import { trackGoalCreated } from "@tickernelz/paperclip-pro-shared/telemetry";
+import type { Db } from "@tickernelz/wardmote-db";
+import { createGoalSchema, updateGoalSchema } from "@tickernelz/wardmote-shared";
+import { trackGoalCreated } from "@tickernelz/wardmote-shared/telemetry";
 import { validate } from "../middleware/validate.js";
 import { goalService, logActivity } from "../services/index.js";
 import { assertCompanyAccess, getAccessibleResource, getActorInfo } from "./authz.js";

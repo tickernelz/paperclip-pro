@@ -1,4 +1,4 @@
-import type { AgentSkillEntry } from "@tickernelz/paperclip-pro-shared";
+import type { AgentSkillEntry } from "@tickernelz/wardmote-shared";
 
 export interface AgentSkillDraftState {
   draft: string[];

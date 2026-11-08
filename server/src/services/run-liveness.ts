@@ -1,5 +1,5 @@
 import { isAiAuthenticationRepairable } from "./ai-auth-failure.js";
-import type { HeartbeatRunStatus, IssueStatus, RunLivenessState } from "@tickernelz/paperclip-pro-shared";
+import type { HeartbeatRunStatus, IssueStatus, RunLivenessState } from "@tickernelz/wardmote-shared";
 
 export type RunLivenessActionability =
   | "runnable"

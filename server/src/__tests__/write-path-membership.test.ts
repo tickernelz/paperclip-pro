@@ -36,7 +36,7 @@ const mockGoalService = vi.hoisted(() => ({
 const mockLogActivity = vi.hoisted(() => vi.fn());
 const mockGetTelemetryClient = vi.hoisted(() => vi.fn());
 
-vi.mock("@tickernelz/paperclip-pro-shared/telemetry", () => ({
+vi.mock("@tickernelz/wardmote-shared/telemetry", () => ({
   trackGoalCreated: vi.fn(),
 }));
 

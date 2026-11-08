@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, fn, userEvent, waitFor, within } from "storybook/test";
-import { MCP_CONFIG_HELP_PROMPT } from "@tickernelz/paperclip-pro-shared";
+import { MCP_CONFIG_HELP_PROMPT } from "@tickernelz/wardmote-shared";
 import { BookOpen, KeyRound } from "lucide-react";
 import { AgentSetupPrompt } from "@/components/AgentSetupPrompt";
 import { Button } from "@/components/ui/button";

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { IssueComment } from "@tickernelz/paperclip-pro-shared";
+import type { IssueComment } from "@tickernelz/wardmote-shared";
 import {
   createDiscardQueuedComment,
   createEditQueuedComment,

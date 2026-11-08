@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { openwaEndpointPolicySchema, type OpenwaChatSettings } from "@tickernelz/paperclip-pro-shared";
+import { openwaEndpointPolicySchema, type OpenwaChatSettings } from "@tickernelz/wardmote-shared";
 import {
   classifyOpenwaEvent,
   detectApprovalReply,

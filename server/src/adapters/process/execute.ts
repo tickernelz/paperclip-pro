@@ -16,7 +16,7 @@ import {
   resolveCommandForLogs,
   runChildProcess,
 } from "../utils.js";
-import { legacyEnvKey } from "@tickernelz/paperclip-pro-shared/env-aliases";
+import { legacyEnvKey } from "@tickernelz/wardmote-shared/env-aliases";
 
 export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExecutionResult> {
   let spawned = false;

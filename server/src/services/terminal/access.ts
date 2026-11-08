@@ -1,7 +1,7 @@
 import { and, eq, gt } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { authSessions, authUsers, companyMemberships, instanceUserRoles } from "@tickernelz/paperclip-pro-db";
-import type { TerminalSessionKind } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/wardmote-db";
+import { authSessions, authUsers, companyMemberships, instanceUserRoles } from "@tickernelz/wardmote-db";
+import type { TerminalSessionKind } from "@tickernelz/wardmote-shared";
 
 export type TerminalActor = Pick<
   Express.Request["actor"],

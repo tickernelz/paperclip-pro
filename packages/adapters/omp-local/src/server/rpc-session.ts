@@ -1,11 +1,11 @@
 import { randomUUID } from "node:crypto";
-import type { AdapterExecutionTarget } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
-import { runAdapterExecutionTargetProcess } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
-import type { RunProcessResult } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+import type { AdapterExecutionTarget } from "@tickernelz/wardmote-adapter-utils/execution-target";
+import { runAdapterExecutionTargetProcess } from "@tickernelz/wardmote-adapter-utils/execution-target";
+import type { RunProcessResult } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import {
   createLiveStdinChannel,
   type BoundLiveStdinChannel,
-} from "@tickernelz/paperclip-pro-adapter-utils/live-stdin-channel";
+} from "@tickernelz/wardmote-adapter-utils/live-stdin-channel";
 
 const STEER_ACK_TIMEOUT_MS = 12_000;
 const DEFAULT_CONTINUATION_IDLE_MS = 60_000;

@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
-import { agents, heartbeatRuns, type Db } from "@tickernelz/paperclip-pro-db";
-import { trackAgentTaskRun } from "@tickernelz/paperclip-pro-shared/telemetry";
+import { agents, heartbeatRuns, type Db } from "@tickernelz/wardmote-db";
+import { trackAgentTaskRun } from "@tickernelz/wardmote-shared/telemetry";
 import { parseObject } from "../adapters/utils.js";
 import { logger } from "../middleware/logger.js";
 import { getTelemetryClient } from "../telemetry.js";

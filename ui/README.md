@@ -1,4 +1,4 @@
-# @tickernelz/paperclip-pro-ui
+# @tickernelz/wardmote-ui
 
 Published static assets for the Wardmote board UI.
 
@@ -11,13 +11,13 @@ The npm package contains the production build under `dist/`. It does not ship th
 Storybook config, stories, and fixtures live under `ui/storybook/`.
 
 ```sh
-pnpm --filter @tickernelz/paperclip-pro-ui storybook
-pnpm --filter @tickernelz/paperclip-pro-ui build-storybook
+pnpm --filter @tickernelz/wardmote-ui storybook
+pnpm --filter @tickernelz/wardmote-ui build-storybook
 ```
 
 ## Typical use
 
-Install the package, then serve or copy the built files from `node_modules/@tickernelz/paperclip-pro-ui/dist`.
+Install the package, then serve or copy the built files from `node_modules/@tickernelz/wardmote-ui/dist`.
 
 ## Editor dependency identity
 

@@ -10,7 +10,7 @@ import {
   uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
-import type { CompanySkillFileInventoryEntry, CompanySkillSharingScope } from "@tickernelz/paperclip-pro-shared";
+import type { CompanySkillFileInventoryEntry, CompanySkillSharingScope } from "@tickernelz/wardmote-shared";
 import { agents } from "./agents.js";
 import { companies } from "./companies.js";
 import { issues } from "./issues.js";

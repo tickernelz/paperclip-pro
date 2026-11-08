@@ -101,7 +101,7 @@ export interface CatalogTeam {
 
 export interface CatalogManifest {
   schemaVersion: 1;
-  packageName: "@tickernelz/paperclip-pro-teams-catalog";
+  packageName: "@tickernelz/wardmote-teams-catalog";
   packageVersion: string;
   generatedAt: string;
   teams: CatalogTeam[];

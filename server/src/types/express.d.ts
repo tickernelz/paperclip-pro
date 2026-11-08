@@ -4,7 +4,7 @@ import type {
   AgentApiKeyScope,
   AgentAuthorityCapability,
   AgentAuthorityReason,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 declare global {
   namespace Express {

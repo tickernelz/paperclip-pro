@@ -1,7 +1,7 @@
 import {
   COMPANY_SEARCH_SORTS,
   type CompanySearchSort,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import type { ParsedSearchQuery } from "./search-query-parser";
 
 /**

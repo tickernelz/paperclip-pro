@@ -22,7 +22,7 @@ import type {
   ExternalObjectStatusTone,
   ExternalObjectSummary,
   ExternalObjectSummaryItem,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 /**
  * Lucide icon for each status category. The mapping is host-owned per the

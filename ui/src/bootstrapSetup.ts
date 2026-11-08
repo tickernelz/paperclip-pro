@@ -1,1 +1,1 @@
-export const BOOTSTRAP_FALLBACK_COMMAND = "npx @tickernelz/paperclip-pro auth bootstrap-ceo";
+export const BOOTSTRAP_FALLBACK_COMMAND = "npx @tickernelz/wardmote auth bootstrap-ceo";

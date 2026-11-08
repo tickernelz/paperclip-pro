@@ -1,4 +1,4 @@
-import type { ProviderTraceMetadata } from "@tickernelz/paperclip-pro-shared";
+import type { ProviderTraceMetadata } from "@tickernelz/wardmote-shared";
 import { Bug, CircleOff } from "lucide-react";
 import { cn } from "@/lib/utils";
 

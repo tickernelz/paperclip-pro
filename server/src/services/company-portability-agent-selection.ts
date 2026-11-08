@@ -1,4 +1,4 @@
-import { normalizeAgentUrlKey } from "@tickernelz/paperclip-pro-shared";
+import { normalizeAgentUrlKey } from "@tickernelz/wardmote-shared";
 import { readBuiltInAgentMarker } from "../lib/built-in-agent-metadata.js";
 
 interface ExportAgentCandidate {

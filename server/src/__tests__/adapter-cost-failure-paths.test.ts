@@ -1,9 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
-import type { AdapterExecutionContext } from "@tickernelz/paperclip-pro-adapter-utils";
+import type { AdapterExecutionContext } from "@tickernelz/wardmote-adapter-utils";
 
 const processResult = vi.hoisted(() => vi.fn());
-vi.mock("@tickernelz/paperclip-pro-adapter-utils/execution-target", async (original) => ({
-  ...await original<typeof import("@tickernelz/paperclip-pro-adapter-utils/execution-target")>(),
+vi.mock("@tickernelz/wardmote-adapter-utils/execution-target", async (original) => ({
+  ...await original<typeof import("@tickernelz/wardmote-adapter-utils/execution-target")>(),
   runAdapterExecutionTargetProcess: processResult,
 }));
 

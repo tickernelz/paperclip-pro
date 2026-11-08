@@ -4,7 +4,7 @@ import {
   type IssueWriteDenialCode,
   type IssueWriteDenialContext,
   type IssueWriteDenialTone,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { cn } from "../lib/utils";
 
 /**

@@ -1,7 +1,7 @@
 import { Router } from "express";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import { and, eq } from "drizzle-orm";
-import { inboxDismissals, joinRequests } from "@tickernelz/paperclip-pro-db";
+import { inboxDismissals, joinRequests } from "@tickernelz/wardmote-db";
 import { sidebarBadgeService } from "../services/sidebar-badges.js";
 import { accessService } from "../services/access.js";
 import { collapseDuplicatePendingHumanJoinRequests } from "../lib/join-request-dedupe.js";

@@ -1,9 +1,9 @@
 import { type BudgetServiceHooks } from "./budgets.js";
 
 import { and, desc, eq, inArray, ne } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { agents, agentConfigRevisions, agentApiKeys, heartbeatRuns } from "@tickernelz/paperclip-pro-db";
-import { isUuidLike, normalizeAgentApiKeyScope, normalizeAgentUrlKey, type AgentApiKeyScope } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/wardmote-db";
+import { agents, agentConfigRevisions, agentApiKeys, heartbeatRuns } from "@tickernelz/wardmote-db";
+import { isUuidLike, normalizeAgentApiKeyScope, normalizeAgentUrlKey, type AgentApiKeyScope } from "@tickernelz/wardmote-shared";
 
 import { conflict, notFound, unprocessable } from "../errors.js";
 

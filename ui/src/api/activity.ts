@@ -1,7 +1,7 @@
-import type { ActivityEvent, ExecutionProjection, RunLivenessState } from "@tickernelz/paperclip-pro-shared";
+import type { ActivityEvent, ExecutionProjection, RunLivenessState } from "@tickernelz/wardmote-shared";
 import { api, type RequestOptions } from "./client";
 
-export type { RunLivenessState } from "@tickernelz/paperclip-pro-shared";
+export type { RunLivenessState } from "@tickernelz/wardmote-shared";
 
 export interface RunForIssue {
   runId: string;

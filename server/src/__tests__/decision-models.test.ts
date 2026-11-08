@@ -8,9 +8,9 @@ import {
   createDb, companies, agents, companyMemberships, companyDecisionModels, costEvents, decisionInvocations,
   connectionGrants, connectionGrantMembers, toolConnectionInstalls, budgetPolicies, budgetReservations,
   heartbeatRuns, issues, projects, runIdentityContexts, secretAccessEvents, companySecrets,
-} from "@tickernelz/paperclip-pro-db";
-import { startEmbeddedPostgresTestDatabase } from "@tickernelz/paperclip-pro-db/test-embedded-postgres";
-import { DECISION_TEST_REQUEST, updateDecisionModelSchema, createCostEventSchema } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import { startEmbeddedPostgresTestDatabase } from "@tickernelz/wardmote-db/test-embedded-postgres";
+import { DECISION_TEST_REQUEST, updateDecisionModelSchema, createCostEventSchema } from "@tickernelz/wardmote-shared";
 import { aiConnectionService } from "../services/ai-connections.js";
 import { agentService } from "../services/agents.js";
 import { decisionModelService, settingsDecisionTest, defineDecisionFeature, type DecisionContext } from "../services/decision-models.js";

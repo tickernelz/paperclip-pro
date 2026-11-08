@@ -22,7 +22,7 @@ Does:
 Choose a specific instance:
 
 ```sh
-npx @tickernelz/paperclip-pro run --instance dev
+npx @tickernelz/wardmote run --instance dev
 ```
 
 ## `wardmote onboard`
@@ -114,7 +114,7 @@ This now includes bind-oriented deployment settings such as `PAPERCLIP_BIND` and
 Allow a private hostname for authenticated/private mode:
 
 ```sh
-npx @tickernelz/paperclip-pro allowed-hostname my-tailscale-host
+npx @tickernelz/wardmote allowed-hostname my-tailscale-host
 ```
 
 ## Local Storage Paths
@@ -136,6 +136,6 @@ PAPERCLIP_HOME=/custom/home PAPERCLIP_INSTANCE_ID=dev pnpm wardmote run
 Or pass `--data-dir` directly on any command:
 
 ```sh
-npx @tickernelz/paperclip-pro run --data-dir ./tmp/paperclip-dev
-npx @tickernelz/paperclip-pro doctor --data-dir ./tmp/paperclip-dev
+npx @tickernelz/wardmote run --data-dir ./tmp/paperclip-dev
+npx @tickernelz/wardmote doctor --data-dir ./tmp/paperclip-dev
 ```

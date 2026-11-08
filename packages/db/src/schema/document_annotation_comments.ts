@@ -1,4 +1,4 @@
-import type { IssueCommentAuthorType, SourceTrustMetadata } from "@tickernelz/paperclip-pro-shared";
+import type { IssueCommentAuthorType, SourceTrustMetadata } from "@tickernelz/wardmote-shared";
 import { sql } from "drizzle-orm";
 import { check, index, jsonb, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core";
 import { agents } from "./agents.js";

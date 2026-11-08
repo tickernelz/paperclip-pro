@@ -1,5 +1,5 @@
 {
-  "name": "@tickernelz/paperclip-pro-adapter-utils",
+  "name": "@tickernelz/wardmote-adapter-utils",
   "version": "0.3.1",
   "license": "MIT",
   "homepage": "https://github.com/tickernelz/wardmote",
@@ -43,7 +43,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@tickernelz/paperclip-pro-shared": "workspace:*",
+    "@tickernelz/wardmote-shared": "workspace:*",
     "acpx": "0.12.0",
     "picocolors": "^1.1.1"
   },

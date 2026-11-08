@@ -18,7 +18,7 @@ import {
   type Agent,
   type AgentSettingsPatch,
   type OmpSettingType,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { agentDefaultsApi } from "@/api/agentDefaults";
 import { agentsApi } from "@/api/agents";
 import { ApiError } from "@/api/client";

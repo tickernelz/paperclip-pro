@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import request from "supertest";
 import { expect, it } from "vitest";
-import { issueLabels, issues, labels } from "@tickernelz/paperclip-pro-db";
+import { issueLabels, issues, labels } from "@tickernelz/wardmote-db";
 import { issueRoutes } from "../routes/issues.js";
 import {
   describeEmbeddedPostgres,

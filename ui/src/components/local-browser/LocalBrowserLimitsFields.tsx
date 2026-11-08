@@ -4,7 +4,7 @@ import {
   LOCAL_BROWSER_LIMITS,
   type LocalBrowserLimitKey,
   type LocalBrowserLimits,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

@@ -1,10 +1,10 @@
 import { and, eq } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   companyUserSidebarPreferences,
   userSidebarPreferences,
-} from "@tickernelz/paperclip-pro-db";
-import type { SidebarOrderPreference } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import type { SidebarOrderPreference } from "@tickernelz/wardmote-shared";
 
 function normalizeOrderedIds(value: unknown): string[] {
   if (!Array.isArray(value)) return [];

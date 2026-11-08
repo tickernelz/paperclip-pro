@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ExternalLink } from "lucide-react";
-import type { ToolConnection } from "@tickernelz/paperclip-pro-shared";
-import { AGGREGATOR_NAMES, aggregatorManagementUrl, isAppAggregator } from "@tickernelz/paperclip-pro-shared/aggregator-apps";
-import type { AggregatorAppCatalogEntry } from "@tickernelz/paperclip-pro-shared/aggregator-app-catalog";
+import type { ToolConnection } from "@tickernelz/wardmote-shared";
+import { AGGREGATOR_NAMES, aggregatorManagementUrl, isAppAggregator } from "@tickernelz/wardmote-shared/aggregator-apps";
+import type { AggregatorAppCatalogEntry } from "@tickernelz/wardmote-shared/aggregator-app-catalog";
 import { toolsApi } from "@/api/tools";
 import { useAccountIdentity } from "@/api/companies-query";
 import { queryKeys } from "@/lib/queryKeys";

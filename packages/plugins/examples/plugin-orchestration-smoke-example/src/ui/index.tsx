@@ -4,7 +4,7 @@ import {
   type PluginDetailTabProps,
   type PluginSettingsPageProps,
   type PluginWidgetProps,
-} from "@tickernelz/paperclip-pro-plugin-sdk/ui";
+} from "@tickernelz/wardmote-plugin-sdk/ui";
 import type React from "react";
 
 type SurfaceStatus = {

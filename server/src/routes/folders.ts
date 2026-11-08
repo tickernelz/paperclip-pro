@@ -1,5 +1,5 @@
 import { Router } from "express";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   createFolderSchema,
   ensureMySkillFolderSchema,
@@ -7,7 +7,7 @@ import {
   moveFolderItemSchema,
   moveFolderSchema,
   updateFolderSchema,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { validate } from "../middleware/validate.js";
 import { badRequest, forbidden } from "../errors.js";
 import { folderService, logActivity } from "../services/index.js";

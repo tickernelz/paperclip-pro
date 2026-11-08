@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ExternalLink, Loader2, Pause, Play, Zap } from "lucide-react";
-import type { Agent, PixelsOfficeAgent } from "@tickernelz/paperclip-pro-shared";
+import type { Agent, PixelsOfficeAgent } from "@tickernelz/wardmote-shared";
 import { Link } from "@/lib/router";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

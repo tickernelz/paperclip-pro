@@ -2,8 +2,8 @@ import { createHash, randomBytes } from "node:crypto";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
 import { and, eq, gt, isNull } from "drizzle-orm";
-import { createDb, instanceUserRoles, invites } from "@tickernelz/paperclip-pro-db";
-import { inferBindModeFromHost } from "@tickernelz/paperclip-pro-shared";
+import { createDb, instanceUserRoles, invites } from "@tickernelz/wardmote-db";
+import { inferBindModeFromHost } from "@tickernelz/wardmote-shared";
 import { loadPaperclipEnvFile } from "../config/env.js";
 import { readConfig, resolveConfigPath } from "../config/store.js";
 

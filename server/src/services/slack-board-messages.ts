@@ -12,7 +12,7 @@ import {
   issueComments,
   issues,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { projectSafeChatPublication } from "./chat-publication-projection.js";
 import { logActivity } from "./activity-log.js";
 import { instanceSettingsService } from "./instance-settings.js";

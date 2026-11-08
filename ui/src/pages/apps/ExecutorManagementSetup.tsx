@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { ToolConnection } from "@tickernelz/paperclip-pro-shared";
-import { aggregatorManagementUrl } from "@tickernelz/paperclip-pro-shared/aggregator-apps";
+import type { ToolConnection } from "@tickernelz/wardmote-shared";
+import { aggregatorManagementUrl } from "@tickernelz/wardmote-shared/aggregator-apps";
 import { toolsApi } from "@/api/tools";
 import { useAccountIdentity } from "@/api/companies-query";
 import { queryKeys } from "@/lib/queryKeys";

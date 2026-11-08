@@ -1,8 +1,8 @@
 import { and, eq, inArray } from "drizzle-orm";
 import type { Request } from "express";
-import { heartbeatRuns, issueComments, type Db } from "@tickernelz/paperclip-pro-db";
-import type { AttentionFeedQuery, AttentionItem, DeskDecision, DeskDecisionList } from "@tickernelz/paperclip-pro-shared";
-import { isCompanyOwnerAgent } from "@tickernelz/paperclip-pro-shared";
+import { heartbeatRuns, issueComments, type Db } from "@tickernelz/wardmote-db";
+import type { AttentionFeedQuery, AttentionItem, DeskDecision, DeskDecisionList } from "@tickernelz/wardmote-shared";
+import { isCompanyOwnerAgent } from "@tickernelz/wardmote-shared";
 import { forbidden, HttpError } from "../errors.js";
 import { attentionService } from "./attention.js";
 import { boardAuthService } from "./board-auth.js";

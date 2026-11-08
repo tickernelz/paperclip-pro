@@ -1,6 +1,6 @@
 import { and, eq, inArray } from "drizzle-orm";
-import { type Db, toolConnections, companySecretBindings, connectionGrants, companySecrets, userSecretDefinitions } from "@tickernelz/paperclip-pro-db";
-import type { ToolCredentialSecretRef } from "@tickernelz/paperclip-pro-shared";
+import { type Db, toolConnections, companySecretBindings, connectionGrants, companySecrets, userSecretDefinitions } from "@tickernelz/wardmote-db";
+import type { ToolCredentialSecretRef } from "@tickernelz/wardmote-shared";
 import { secretService } from "./secrets.js";
 import { connectionCredentialConfigPath as credentialRefConfigPath } from "./connection-credentials.js";
 export async function syncConnectionCredentialBindings(

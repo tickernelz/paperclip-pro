@@ -5,7 +5,7 @@ import { createServer } from "node:net";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
 import { Option, type Command } from "commander";
-import type { Agent, Company, InstanceExperimentalSettings } from "@tickernelz/paperclip-pro-shared";
+import type { Agent, Company, InstanceExperimentalSettings } from "@tickernelz/wardmote-shared";
 import { PaperclipApiClient } from "../client/http.js";
 import { openUrl } from "../client/board-auth.js";
 import {
@@ -17,7 +17,7 @@ import { readConfig } from "../config/store.js";
 import type { PaperclipConfig } from "../config/schema.js";
 import { runCommand, type StartedServer } from "./run.js";
 import { isLinkedGitWorktree } from "./git-workspace.js";
-import { legacyEnvKey } from "@tickernelz/paperclip-pro-shared/env-aliases";
+import { legacyEnvKey } from "@tickernelz/wardmote-shared/env-aliases";
 
 export interface TestDriveOptions {
   dataDir?: string;

@@ -1,4 +1,4 @@
-import type { IssueAttachment } from "@tickernelz/paperclip-pro-shared";
+import type { IssueAttachment } from "@tickernelz/wardmote-shared";
 
 const PURGEABLE_CONTENT_PATH_RE =
   /^\/api\/(?:attachments\/[^/?#]+|assets\/[^/?#]+|public\/share\/[^/?#]+\/assets\/[^/?#]+)\/content\/?$/;

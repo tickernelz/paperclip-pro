@@ -10,7 +10,7 @@ import {
   renderOmpToolGuardExtension,
   writeOmpToolGuardExtension,
 } from "./tool-guard.js";
-import type { RunToolProfile } from "@tickernelz/paperclip-pro-adapter-utils/tool-profile";
+import type { RunToolProfile } from "@tickernelz/wardmote-adapter-utils/tool-profile";
 
 type ToolCallHandler = (event: {
   type: "tool_call";

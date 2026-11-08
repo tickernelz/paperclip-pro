@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ShieldCheck, X } from "lucide-react";
-import type { IssueAutonomyWindow } from "@tickernelz/paperclip-pro-shared";
+import type { IssueAutonomyWindow } from "@tickernelz/wardmote-shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";

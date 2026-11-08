@@ -18,8 +18,8 @@ import {
   heartbeatRuns,
   issues,
   nativeRunFinalizations,
-} from "@tickernelz/paperclip-pro-db";
-import type { NativeExecutionInputV1 } from "@tickernelz/paperclip-pro-paperclip-runner";
+} from "@tickernelz/wardmote-db";
+import type { NativeExecutionInputV1 } from "@tickernelz/wardmote-paperclip-runner";
 import { describe, expect, it, vi } from "vitest";
 import { nativeSha256 } from "./canonical.js";
 import {

@@ -42,7 +42,7 @@ pnpm wardmote onboard
 Allow custom Tailscale hostnames:
 
 ```sh
-npx @tickernelz/paperclip-pro allowed-hostname my-machine
+npx @tickernelz/wardmote allowed-hostname my-machine
 ```
 
 ### `authenticated` + `public`

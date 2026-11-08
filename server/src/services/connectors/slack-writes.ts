@@ -11,8 +11,8 @@ import {
   issueAttachments,
   toolInvocations,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
-import { SLACK_TOOLS } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import { SLACK_TOOLS } from "@tickernelz/wardmote-shared";
 import { conflict, forbidden, HttpError, unprocessable } from "../../errors.js";
 import { getStorageService } from "../../storage/index.js";
 import {

@@ -1,4 +1,4 @@
-import { inferBindModeFromHost } from "@tickernelz/paperclip-pro-shared";
+import { inferBindModeFromHost } from "@tickernelz/wardmote-shared";
 import type { PaperclipConfig } from "../config/schema.js";
 import type { CheckResult } from "./index.js";
 

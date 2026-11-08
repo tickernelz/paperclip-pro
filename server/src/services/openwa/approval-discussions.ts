@@ -1,6 +1,6 @@
 import { and, asc, desc, eq, gte, inArray, lte, or, sql } from "drizzle-orm";
-import { chatActions, chatDeliveries, chatOwnerApprovalRequests, type Db } from "@tickernelz/paperclip-pro-db";
-import type { OpenwaGrantCategory } from "@tickernelz/paperclip-pro-shared";
+import { chatActions, chatDeliveries, chatOwnerApprovalRequests, type Db } from "@tickernelz/wardmote-db";
+import type { OpenwaGrantCategory } from "@tickernelz/wardmote-shared";
 import { openwaChatKey } from "./outbound.js";
 
 type DbOrTransaction = Db | Parameters<Parameters<Db["transaction"]>[0]>[0];

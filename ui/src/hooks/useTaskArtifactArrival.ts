@@ -5,7 +5,7 @@ import {
   type IssueAttachment,
   type IssueDocumentSummary,
   type IssueWorkProduct,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { isAgentAttachment } from "@/lib/issue-artifacts";
 
 interface TaskArtifactArrivalOptions {

@@ -1,5 +1,5 @@
 import { Flag } from "lucide-react";
-import type { Agent } from "@tickernelz/paperclip-pro-shared";
+import type { Agent } from "@tickernelz/wardmote-shared";
 import { Button } from "@/components/ui/button";
 
 interface IssueAssignedBacklogNoticeProps {

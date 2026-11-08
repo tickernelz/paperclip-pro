@@ -1,5 +1,5 @@
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import type { LiveEvent, NotificationCreatedLivePayload } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/wardmote-db";
+import type { LiveEvent, NotificationCreatedLivePayload } from "@tickernelz/wardmote-shared";
 import { logger } from "../../middleware/logger.js";
 import { publishLiveEvent, subscribeAllCompanyLiveEvents } from "../live-events.js";
 import { classifyTrigger, parseNotificationTrigger } from "./classify.js";

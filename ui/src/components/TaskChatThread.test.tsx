@@ -13,11 +13,11 @@ import type {
   IssueQueuedCommentQueue,
   IssueThreadInteraction,
   TaskBrowser,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { heartbeatsApi } from "@/api/heartbeats";
 import { nativeRunEventsToTranscript } from "./transcript/native-run-events";
 import { pendingConnectionIntentInteraction } from "@/fixtures/issueThreadInteractionFixtures";
-import type { HeartbeatRunEvent } from "@tickernelz/paperclip-pro-shared";
+import type { HeartbeatRunEvent } from "@tickernelz/wardmote-shared";
 
 const transcriptState = vi.hoisted(() => ({
   transcriptByRun: new Map(),

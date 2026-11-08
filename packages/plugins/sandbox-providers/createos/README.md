@@ -1,4 +1,4 @@
-# `@tickernelz/paperclip-pro-plugin-createos`
+# `@tickernelz/wardmote-plugin-createos`
 
 CreateOS sandbox provider for Paperclip. This package lives alongside Daytona
 and E2B, outside the root pnpm workspace, and uses CreateOS's public HTTP API.

@@ -21,7 +21,7 @@ import {
   issueRelations,
   issueWorkProducts,
   issues,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -33,7 +33,7 @@ import { publicIssueShareRoutes } from "../routes/public-issue-share.js";
 import { errorHandler } from "../middleware/index.js";
 import { createInviteRateLimiter } from "../services/invite-rate-limit.js";
 import { issueService } from "../services/issues.js";
-import { LOW_TRUST_REVIEW_PRESET } from "@tickernelz/paperclip-pro-shared";
+import { LOW_TRUST_REVIEW_PRESET } from "@tickernelz/wardmote-shared";
 
 const renderDocumentPdfMock = vi.hoisted(() => vi.fn(async () => Buffer.from("%PDF-share")));
 

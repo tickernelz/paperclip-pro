@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { createServer, type Server } from "node:http";
 import express from "express";
 import { afterAll, beforeAll, expect, it } from "vitest";
-import { agents, heartbeatRuns, issues, principalPermissionGrants } from "@tickernelz/paperclip-pro-db";
+import { agents, heartbeatRuns, issues, principalPermissionGrants } from "@tickernelz/wardmote-db";
 import { errorHandler } from "../middleware/index.js";
 import { accessRoutes } from "../routes/access.js";
 import { issueRoutes } from "../routes/issues.js";

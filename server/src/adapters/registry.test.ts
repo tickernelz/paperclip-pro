@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { assertValidAdapterLoginCapability } from "@tickernelz/paperclip-pro-adapter-utils";
+import { assertValidAdapterLoginCapability } from "@tickernelz/wardmote-adapter-utils";
 import { listServerAdapters, requireRunnerHarness, requireServerAdapter } from "./registry.js";
-import * as executionTarget from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
+import * as executionTarget from "@tickernelz/wardmote-adapter-utils/execution-target";
 import { BUILTIN_ADAPTER_TYPES } from "./builtin-adapter-types.js";
-import { RETIRED_ADAPTER_TYPES } from "@tickernelz/paperclip-pro-shared";
+import { RETIRED_ADAPTER_TYPES } from "@tickernelz/wardmote-shared";
 
 const { probeInstallation, probeGrokInstallation, probePiInstallation } = vi.hoisted(() => ({
   probeInstallation: vi.fn(),

@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { AlertTriangle, CircleHelp } from "lucide-react";
-import type { OpenwaNumberMode } from "@tickernelz/paperclip-pro-shared";
+import type { OpenwaNumberMode } from "@tickernelz/wardmote-shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";

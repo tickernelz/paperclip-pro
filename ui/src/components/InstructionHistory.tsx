@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
-import type { AgentInstructionsFileDetail } from "@tickernelz/paperclip-pro-shared";
+import type { AgentInstructionsFileDetail } from "@tickernelz/wardmote-shared";
 import { agentsApi } from "../api/agents";
 import { Button } from "./ui/button";
 

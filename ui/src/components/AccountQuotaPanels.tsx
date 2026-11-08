@@ -1,4 +1,4 @@
-import type { ProviderQuotaResult } from "@tickernelz/paperclip-pro-shared";
+import type { ProviderQuotaResult } from "@tickernelz/wardmote-shared";
 import { formatDateTime } from "../lib/utils";
 import { QuotaBar } from "./QuotaBar";
 import { quotaUnavailableMessage } from "../lib/quota-refresh";

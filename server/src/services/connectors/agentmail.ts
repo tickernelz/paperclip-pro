@@ -1,6 +1,6 @@
 import { z } from "zod";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { emailSendSchema } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/wardmote-db";
+import { emailSendSchema } from "@tickernelz/wardmote-shared";
 import { emailChannelService } from "../email-channels.js";
 import { forbidden, notFound } from "../../errors.js";
 

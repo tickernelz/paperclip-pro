@@ -5,7 +5,7 @@ import type {
   BrowserUseControl,
   BrowserUseViewportPreset,
   TaskBrowser,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { TaskBrowserFooter } from "@/components/task-side-panel/TaskBrowserFooter";
 import { browserFixture } from "../fixtures/browser-use";
 const now = Date.parse("2026-09-29T16:00:00Z");

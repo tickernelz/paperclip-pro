@@ -5,7 +5,7 @@ import {
   issueDocuments,
   issues,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { redactQuarantinedBodyForHigherTrust } from "./source-trust.js";
 
 /** Read the task's durable plan before constructing any provider's assignment. */

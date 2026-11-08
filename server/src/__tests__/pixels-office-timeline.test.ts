@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import express from "express";
 import request from "supertest";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   activityLog,
   agents,
@@ -11,8 +11,8 @@ import {
   heartbeatRuns,
   instanceSettings,
   issues,
-} from "@tickernelz/paperclip-pro-db";
-import { PIXELS_OFFICE_TIMELINE_PAGE_LIMIT } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import { PIXELS_OFFICE_TIMELINE_PAGE_LIMIT } from "@tickernelz/wardmote-shared";
 import { errorHandler } from "../middleware/index.js";
 import { pixelsOfficeRoutes } from "../routes/pixels-office.js";
 import { instanceSettingsService } from "../services/instance-settings.js";

@@ -1,4 +1,4 @@
-import type { CompanySkillVersion } from "@tickernelz/paperclip-pro-shared";
+import type { CompanySkillVersion } from "@tickernelz/wardmote-shared";
 import { Badge } from "@/components/ui/badge";
 import {
   Select,

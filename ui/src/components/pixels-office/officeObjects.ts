@@ -1,4 +1,4 @@
-import type { RoutineListItem } from "@tickernelz/paperclip-pro-shared";
+import type { RoutineListItem } from "@tickernelz/wardmote-shared";
 import type { OfficeObjectKind } from "@/lib/pixels-office/officeModel";
 
 export const OFFICE_OBJECT_LABELS: Record<OfficeObjectKind, string> = {

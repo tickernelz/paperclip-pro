@@ -14,7 +14,7 @@ import {
   issueRelations,
   issueWorkProducts,
   issues,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { and, eq, sql } from "drizzle-orm";
 import {
   getEmbeddedPostgresTestSupport,
@@ -24,7 +24,7 @@ import { companyPortabilityService } from "../services/company-portability.js";
 import { issueService } from "../services/issues.js";
 import { workProductService } from "../services/work-products.js";
 import type { ImportIssueWorkProductRow } from "../services/import-write-types.js";
-import type { CompanyPortabilityFileEntry } from "@tickernelz/paperclip-pro-shared";
+import type { CompanyPortabilityFileEntry } from "@tickernelz/wardmote-shared";
 import { randomUUID } from "node:crypto";
 
 // This suite proves the company-import writers batch their inserts: it runs a

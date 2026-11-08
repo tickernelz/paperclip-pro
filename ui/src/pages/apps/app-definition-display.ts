@@ -1,4 +1,4 @@
-import { aiConnectionCatalogSlug, aiConnectionMetadataSchema, type AppDefinition, type ToolApplication, type ToolConnection } from "@tickernelz/paperclip-pro-shared";
+import { aiConnectionCatalogSlug, aiConnectionMetadataSchema, type AppDefinition, type ToolApplication, type ToolConnection } from "@tickernelz/wardmote-shared";
 
 export type AppGalleryDisplayEntry = AppDefinition & {
   key?: string;

@@ -1,6 +1,6 @@
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { agents } from "@tickernelz/paperclip-pro-db";
-import { getAgentWorkEligibility, retiredAdapterMessage, type AgentEligibilityAgent, type AgentOrgChainHealth } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/wardmote-db";
+import { agents } from "@tickernelz/wardmote-db";
+import { getAgentWorkEligibility, retiredAdapterMessage, type AgentEligibilityAgent, type AgentOrgChainHealth } from "@tickernelz/wardmote-shared";
 import { eq } from "drizzle-orm";
 import { findActiveServerAdapter } from "../adapters/registry.js";
 import { isRetiredAdapterModule } from "../adapters/retired.js";

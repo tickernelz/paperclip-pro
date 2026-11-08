@@ -1,4 +1,4 @@
-import type { ToolProfileWithDetails } from "@tickernelz/paperclip-pro-shared";
+import type { ToolProfileWithDetails } from "@tickernelz/wardmote-shared";
 import { Link } from "@/lib/router";
 import { cn } from "@/lib/utils";
 import { allowedToolsLabel, type GatewayAppRow, gatewayAppDisplayName } from "../gateway-helpers";

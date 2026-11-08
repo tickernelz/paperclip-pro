@@ -1,5 +1,5 @@
 import { and, eq } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   agents,
   pluginManagedResources,
@@ -7,7 +7,7 @@ import {
   projects,
   routines,
   routineTriggers,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import type {
   CreateRoutineTrigger,
   PluginManagedResourceRef,
@@ -16,8 +16,8 @@ import type {
   Routine,
   RoutineManagedByPlugin,
   RoutineStatus,
-} from "@tickernelz/paperclip-pro-shared";
-import { ROUTINE_STATUSES } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
+import { ROUTINE_STATUSES } from "@tickernelz/wardmote-shared";
 import { notFound, unprocessable } from "../errors.js";
 import { logActivity } from "./activity-log.js";
 import { routineService } from "./routines.js";
@@ -28,7 +28,7 @@ const MANAGED_ROUTINE_RESOURCE_KIND = "routine";
 interface PluginManagedRoutineServiceOptions {
   pluginId: string;
   pluginKey: string;
-  manifest?: import("@tickernelz/paperclip-pro-shared").PaperclipPluginManifestV1 | null;
+  manifest?: import("@tickernelz/wardmote-shared").PaperclipPluginManifestV1 | null;
   pluginWorkerManager?: PluginWorkerManager;
 }
 

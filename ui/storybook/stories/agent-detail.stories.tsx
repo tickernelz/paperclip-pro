@@ -7,7 +7,7 @@ import type {
   AgentRuntimeState,
   BudgetOverview,
   HeartbeatRun,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { AgentDetail } from "@/pages/AgentDetail";
 import { useCompany } from "@/context/CompanyContext";
 import { queryKeys } from "@/lib/queryKeys";

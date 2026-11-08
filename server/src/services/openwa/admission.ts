@@ -6,12 +6,12 @@ import {
   chatEndpointResources,
   chatExternalPrincipals,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   maskOpenwaPhoneNumber,
   type OpenwaPrincipalRole,
   type OpenwaTriggerClass,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import type { ChatSdkMessageTrigger } from "../chat-sdk-runtime.js";
 import { openwaThreadId, type OpenwaChatAdapter } from "./adapter.js";
 import { findNewestPendingOpenwaApprovalBubble, findOpenwaApprovalBubble, type OpenwaApprovalBubbleMatch, type OpenwaApprovalRequestStatus } from "./approvals.js";

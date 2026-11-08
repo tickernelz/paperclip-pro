@@ -5,7 +5,7 @@ import type { AddressInfo } from "node:net";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import type { TerminalServerFrame } from "@tickernelz/paperclip-pro-shared";
+import type { TerminalServerFrame } from "@tickernelz/wardmote-shared";
 import type { LogActivityInput } from "../services/activity-log.js";
 import type { TerminalActor } from "../services/terminal/access.js";
 import { localTerminalFiles } from "../services/terminal/files.js";

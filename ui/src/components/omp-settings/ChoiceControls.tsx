@@ -10,7 +10,7 @@ import {
   type AgentSettingsPatch,
   type OmpChoiceModel,
   type OmpControlId,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { NativeSelect } from "@/components/ui/select";

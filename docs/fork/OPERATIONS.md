@@ -133,7 +133,7 @@ process died, remove the stale lock and retry
 
 ## 4. Updating from npm, or from an unreleased commit
 
-The fork publishes `@tickernelz/paperclip-pro*` to npm (section 9), so the
+The fork publishes `@tickernelz/wardmote*` to npm (section 9), so the
 normal update is:
 
 ```bash
@@ -154,9 +154,9 @@ The npm install resolves one exact version with `npm view`, then verifies that
 every package in `cli/src/release-packages.ts` (31 packages, kept in step with
 `scripts/release-package-manifest.json` by a test) exists at that exact version
 before it downloads anything. A partially published release — 2026.926.0 left
-`@tickernelz/paperclip-pro-server` in npm's staging queue — is refused with the
+`@tickernelz/wardmote-server` in npm's staging queue — is refused with the
 missing names rather than installed with mixed versions. It then installs
-`@tickernelz/paperclip-pro@<version>` into
+`@tickernelz/wardmote@<version>` into
 `~/.wardmote/cli/installs/npm/<version>` under a private npm user config
 that allowlists the `@embedded-postgres/*` install scripts, smoke-tests
 `--version` and the payload's PostgreSQL shared-library links, and only then
@@ -379,7 +379,7 @@ gh workflow run release.yml --repo tickernelz/wardmote --ref main \
 Dispatch inputs:
 
 - `version` — empty resolves the UTC date slot `YYYY.MDD` plus the next patch
-  not already published for `@tickernelz/paperclip-pro`, so a same-day rerun
+  not already published for `@tickernelz/wardmote`, so a same-day rerun
   never collides. Pass an explicit `YYYY.MDD.P` to pin it.
 - `dry_run` — `true` previews every step and contacts npm only for read-only
   checks.

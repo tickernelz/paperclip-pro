@@ -2,7 +2,7 @@ import {
   attachmentArtifactWorkProductMetadataSchema,
   type AttachmentArtifactWorkProductMetadata,
   type IssueWorkProduct,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 /**
  * Helpers + selectors for the issue Output surface (PAP-10162 Phase 3).

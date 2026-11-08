@@ -5,7 +5,7 @@ import { createRoot } from "react-dom/client";
 import { MemoryRouter } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { ConnectToolAppResult, McpJsonImportPreview } from "@tickernelz/paperclip-pro-shared";
+import type { ConnectToolAppResult, McpJsonImportPreview } from "@tickernelz/wardmote-shared";
 import { PasteConfigTab } from "./PasteConfigTab";
 
 const toolsApiMock = vi.hoisted(() => ({

@@ -3,7 +3,7 @@ import type {
   DecisionTrainingRetentionPolicy,
   DecisionTrainingSnapshotV1,
   DecisionTrainingSourceKind,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { index, jsonb, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 import { companies } from "./companies.js";
 import { issues } from "./issues.js";

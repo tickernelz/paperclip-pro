@@ -1,4 +1,4 @@
-import type { CreateConfigValues } from "@tickernelz/paperclip-pro-adapter-utils";
+import type { CreateConfigValues } from "@tickernelz/wardmote-adapter-utils";
 
 export const defaultCreateValues: CreateConfigValues = {
   adapterType: "omp_local",

@@ -1,4 +1,4 @@
-import type { PrimaryAgentPreference, UpdatePrimaryAgent } from "@tickernelz/paperclip-pro-shared";
+import type { PrimaryAgentPreference, UpdatePrimaryAgent } from "@tickernelz/wardmote-shared";
 import { api } from "./client";
 
 export const primaryAgentApi = {

@@ -1,5 +1,5 @@
 import { and, eq, inArray, isNull, or, sql, type SQL } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import { withHumanDirectedWork } from "./human-directed-work.js";
 import { hasOwnerChatInstructionAuthority } from "./owner-chat-instruction-authority.js";
 import {
@@ -21,7 +21,7 @@ import {
   projectAccessMembers,
   projects,
   userInboxAgentPolicies,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import type {
   AgentApiKeyScope,
   InboxAgentPolicyMode,
@@ -29,7 +29,7 @@ import type {
   PrincipalType,
   SkillTestAgentKeyScope,
   TaskBridgeAgentKeyScope,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   LOW_TRUST_REVIEW_PRESET,
   agentAuthorityReason,
@@ -43,7 +43,7 @@ import {
   type AgentAuthorityCapability,
   type AgentAuthorityReason,
   type LowTrustBoundary,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   LOW_TRUST_ISSUE_ANCESTRY_MAX_DEPTH,
   isIssueWithinLowTrustBoundary,

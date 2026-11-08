@@ -47,7 +47,7 @@ import type {
   ChatPublicationState,
   ChatResourceAvailability,
   SafeChatPublicationPayload,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { agents } from "./agents.js";
 import { companies } from "./companies.js";
 import { heartbeatRuns } from "./heartbeat_runs.js";

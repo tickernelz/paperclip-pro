@@ -1,4 +1,4 @@
-import type { DashboardRunActivityDay, HeartbeatRun } from "@tickernelz/paperclip-pro-shared";
+import type { DashboardRunActivityDay, HeartbeatRun } from "@tickernelz/wardmote-shared";
 import { cn } from "../lib/utils";
 
 /* ---- Utilities ---- */

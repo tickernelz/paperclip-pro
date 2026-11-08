@@ -1,4 +1,4 @@
-import type { ToolConnectionInstall } from "@tickernelz/paperclip-pro-shared";
+import type { ToolConnectionInstall } from "@tickernelz/wardmote-shared";
 
 /**
  * Shared "Permitted vs Installed" helpers (Phase 3b, PAP-13618).

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { models as DIRECT_MODELS } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/claude";
+import { models as DIRECT_MODELS } from "@tickernelz/wardmote-adapter-utils/provider-models/claude";
 import { parseClaudeModelId, sortClaudeModels } from "./model-order.js";
 
 const ids = (models: { id: string }[]) => models.map((model) => model.id);

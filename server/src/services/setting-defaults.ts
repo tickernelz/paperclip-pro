@@ -2,7 +2,7 @@ import {
   SETTING_DEFAULTS_ENV_KEY,
   parseSettingDefaults,
   type OperatorSettingDefaults,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { logger } from "../middleware/logger.js";
 
 export { SETTING_DEFAULTS_ENV_KEY };

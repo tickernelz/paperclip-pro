@@ -8,8 +8,8 @@ import {
   isCompanyOwnerAgent,
   type CreateTerminalSshHostRequest,
   type TerminalSshHost,
-} from "@tickernelz/paperclip-pro-shared";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-shared";
+import type { Db } from "@tickernelz/wardmote-db";
 import { errorHandler } from "../middleware/index.js";
 import type { LogActivityInput } from "../services/activity-log.js";
 import { runnerApiRestriction } from "../services/native-runtime/runner-api-policy.js";

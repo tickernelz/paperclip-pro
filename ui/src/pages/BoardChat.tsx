@@ -32,7 +32,7 @@ import {
   agentBubbleDateLabel,
 } from "../components/AgentBubbleActionRow";
 import { cn, formatDateTime } from "../lib/utils";
-import type { FeedbackVoteValue } from "@tickernelz/paperclip-pro-shared";
+import type { FeedbackVoteValue } from "@tickernelz/wardmote-shared";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 /**

@@ -1,4 +1,4 @@
-# @tickernelz/paperclip-pro-adapter-utils
+# @tickernelz/wardmote-adapter-utils
 
 ## Unreleased
 

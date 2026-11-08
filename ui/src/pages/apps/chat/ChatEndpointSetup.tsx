@@ -1,4 +1,4 @@
-import { buildSlackAppManifest, defaultSlackAppConfiguration } from "@tickernelz/paperclip-pro-shared";
+import { buildSlackAppManifest, defaultSlackAppConfiguration } from "@tickernelz/wardmote-shared";
 import { SlackAppDetails, SlackSetupAdvanced } from "./SlackAppDetails";
 import { SlackAutomaticSetup } from "./SlackAutomaticSetup";
 import { defaultSlackAppName } from "./slack-app-name";
@@ -44,7 +44,7 @@ import { useNavigate, useSearchParams } from "@/lib/router";
 import { queryKeys } from "@/lib/queryKeys";
 import { copyTextToClipboard } from "@/lib/clipboard";
 import { useCopyAction } from "@/lib/use-copy-action";
-import { isAgentStatusInvokable, maskOpenwaPhoneNumber, slackAppConfigurationSchema, type SlackAppConfiguration } from "@tickernelz/paperclip-pro-shared";
+import { isAgentStatusInvokable, maskOpenwaPhoneNumber, slackAppConfigurationSchema, type SlackAppConfiguration } from "@tickernelz/wardmote-shared";
 import { sanitizedSetupErrorMessage } from "./chat-setup-error";
 import {
   createGitHubPrivateKeyReadGuard,
@@ -1770,7 +1770,7 @@ function TryStep({
   botLabel?: string | null;
   botUsername?: string | null;
   botExternalId?: string | null;
-  slackAccount?: import("@tickernelz/paperclip-pro-shared").SlackAccountState;
+  slackAccount?: import("@tickernelz/wardmote-shared").SlackAccountState;
   photonAllocation?: "dedicated" | "shared";
   providerUrl?: string | null;
   guestIsolationState: "loading" | "enabled" | "disabled" | "unknown";

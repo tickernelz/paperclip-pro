@@ -1,6 +1,6 @@
 import { Router, type Request } from "express";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import type { AttentionSortMode } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/wardmote-db";
+import type { AttentionSortMode } from "@tickernelz/wardmote-shared";
 import { attentionService } from "../services/attention.js";
 import { canReadDesk, listDeskDecisions, resolveDeskReader } from "../services/decision-desk.js";
 import { listPendingDecisions } from "../services/owner-decision-relay.js";

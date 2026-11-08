@@ -8,7 +8,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import {
   listPaperclipSkillEntries,
   removeMaintainerOnlySkillSymlinks,
-} from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+} from "@tickernelz/wardmote-adapter-utils/server-utils";
 
 async function makeTempDir(prefix: string): Promise<string> {
   return fs.mkdtemp(path.join(os.tmpdir(), prefix));
@@ -283,7 +283,7 @@ describe("paperclip skill utils", () => {
     expect(referenceBody).toContain("--retry-unknown-upload");
     expect(referenceBody).toContain("was **not**");
     expect(normalizedReferenceBody).toContain("bound to the response comment");
-    expect(referenceBody).not.toContain("npx @tickernelz/paperclip-pro issue comment");
+    expect(referenceBody).not.toContain("npx @tickernelz/wardmote issue comment");
     expect(helperBody).toContain("--chat-comment TEXT");
     expect(helperBody).toContain("--retry-unknown-upload");
     expect(helperBody).toContain('"$api_base/issues/$issue_id/comments"');

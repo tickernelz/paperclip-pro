@@ -1,5 +1,5 @@
 import { and, eq, gt, inArray, sql } from "drizzle-orm";
-import { heartbeatRuns, modelCooldowns, type Db } from "@tickernelz/paperclip-pro-db";
+import { heartbeatRuns, modelCooldowns, type Db } from "@tickernelz/wardmote-db";
 import { unprocessable } from "../errors.js";
 import {
   AGENT_FALLBACK_EFFORTS_KEY,
@@ -11,7 +11,7 @@ import {
   validateAgentFallbackModels,
   type RunModelFallbackReason,
   type RunModelFallbackState,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 export const MODEL_FALLBACK_DEFAULT_COOLDOWN_MS = 5 * 60_000;
 export const MODEL_FALLBACK_STATE_KEY = "paperclipModelFallback";

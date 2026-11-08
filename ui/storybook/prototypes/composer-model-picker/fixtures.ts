@@ -1,7 +1,7 @@
-import { codexLocalReasoningEffortsForModel, isCodexLocalFastModeSupported, isCodexLocalKnownModel } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/codex";
-import { claudeLocalReasoningEffortsForModel } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/claude";
-import { DEFAULT_GROK_LOCAL_MODEL, grokLocalReasoningEffortsForModel } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/grok";
-import { AGENT_PALETTE_IDS, appearanceForPalette } from "@tickernelz/paperclip-pro-shared";
+import { codexLocalReasoningEffortsForModel, isCodexLocalFastModeSupported, isCodexLocalKnownModel } from "@tickernelz/wardmote-adapter-utils/provider-models/codex";
+import { claudeLocalReasoningEffortsForModel } from "@tickernelz/wardmote-adapter-utils/provider-models/claude";
+import { DEFAULT_GROK_LOCAL_MODEL, grokLocalReasoningEffortsForModel } from "@tickernelz/wardmote-adapter-utils/provider-models/grok";
+import { AGENT_PALETTE_IDS, appearanceForPalette } from "@tickernelz/wardmote-shared";
 
 export type ModelOption = { id: string; label: string; detail?: string };
 export type ComposerAgent = {

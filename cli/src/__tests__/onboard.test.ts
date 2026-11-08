@@ -14,8 +14,8 @@ vi.mock("../commands/run.js", () => ({
 const READY_OMP = { state: "ready", version: "18.18.0", path: "/usr/local/bin/omp", copies: [], minVersion: "18.1.16" } as const;
 const probeOmpInstallMock = vi.hoisted(() => vi.fn());
 
-vi.mock("@tickernelz/paperclip-pro-adapter-omp-local/readiness", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@tickernelz/paperclip-pro-adapter-omp-local/readiness")>()),
+vi.mock("@tickernelz/wardmote-adapter-omp-local/readiness", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@tickernelz/wardmote-adapter-omp-local/readiness")>()),
   probeOmpInstall: probeOmpInstallMock,
 }));
 

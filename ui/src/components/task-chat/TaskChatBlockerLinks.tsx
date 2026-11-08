@@ -1,7 +1,7 @@
 import type {
   IssueBlockerAttentionIssueSummary,
   IssueRelationIssueSummary,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { CheckCircle2, Circle } from "lucide-react";
 import { createIssueDetailPath } from "@/lib/issueDetailBreadcrumb";
 import {

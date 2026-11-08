@@ -1,6 +1,6 @@
 import { and, asc, eq } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { remoteAgentProfiles } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
+import { remoteAgentProfiles } from "@tickernelz/wardmote-db";
 
 import { conflict, notFound, unprocessable } from "../errors.js";
 import {

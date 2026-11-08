@@ -5,7 +5,7 @@ import type {
   RoutineDetail as RoutineDetailType,
   RoutineEnvConfig,
   RoutineVariable,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import type { MarkdownEditorRef, MentionOption } from "../MarkdownEditor";
 import type { InlineEntityOption } from "../InlineEntitySelector";
 import type { RoutineHistoryDirtyFieldDescriptor } from "../RoutineHistoryTab";

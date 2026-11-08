@@ -1,6 +1,6 @@
 import { lt, sql } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { pluginLogs } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
+import { pluginLogs } from "@tickernelz/wardmote-db";
 import { logger } from "../middleware/logger.js";
 
 /** Default retention period: 7 days. */

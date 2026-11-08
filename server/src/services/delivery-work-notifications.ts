@@ -1,4 +1,4 @@
-import { signalDatabaseWork, subscribeDatabaseWork } from "@tickernelz/paperclip-pro-db";
+import { signalDatabaseWork, subscribeDatabaseWork } from "@tickernelz/wardmote-db";
 
 /** Topics for existing durable queues; register intent before their writes. */
 export const DELIVERY_QUEUES = {

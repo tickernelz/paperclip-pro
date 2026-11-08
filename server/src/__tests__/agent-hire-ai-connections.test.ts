@@ -1,5 +1,5 @@
 import * as codexAdapter from "../services/ai-providers/codex/codex-auth-cache.js";
-import { WORKSPACE_RESTORE_LOCK_TIMEOUT_CODE } from "@tickernelz/paperclip-pro-adapter-utils/workspace-restore-merge";
+import { WORKSPACE_RESTORE_LOCK_TIMEOUT_CODE } from "@tickernelz/wardmote-adapter-utils/workspace-restore-merge";
 import { randomUUID } from "node:crypto";
 import { mkdtemp, rm } from "node:fs/promises";
 import os from "node:os";
@@ -8,8 +8,8 @@ import express from "express";
 import request from "supertest";
 import { and, eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { agents, companies, companyMemberships, createDb, closeRegisteredClients, heartbeatRuns, issues, principalPermissionGrants, toolConnectionInstalls } from "@tickernelz/paperclip-pro-db";
-import { AI_CONNECTION_ROUTER_REMOVED_MESSAGE, type AiConnectionBinding } from "@tickernelz/paperclip-pro-shared";
+import { agents, companies, companyMemberships, createDb, closeRegisteredClients, heartbeatRuns, issues, principalPermissionGrants, toolConnectionInstalls } from "@tickernelz/wardmote-db";
+import { AI_CONNECTION_ROUTER_REMOVED_MESSAGE, type AiConnectionBinding } from "@tickernelz/wardmote-shared";
 import { startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";
 import { agentRoutes } from "../routes/agents.js";
 import { errorHandler } from "../middleware/index.js";

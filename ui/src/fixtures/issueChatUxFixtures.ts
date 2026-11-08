@@ -1,4 +1,4 @@
-import type { Agent, FeedbackVote } from "@tickernelz/paperclip-pro-shared";
+import type { Agent, FeedbackVote } from "@tickernelz/wardmote-shared";
 import type { LiveRunForIssue } from "../api/heartbeats";
 import type { InlineEntityOption } from "../components/InlineEntitySelector";
 import type { MentionOption } from "../components/MarkdownEditor";

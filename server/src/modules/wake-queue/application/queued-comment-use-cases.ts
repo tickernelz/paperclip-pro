@@ -1,4 +1,4 @@
-import type { IssueComment } from "@tickernelz/paperclip-pro-shared";
+import type { IssueComment } from "@tickernelz/wardmote-shared";
 import {
   decideQueuedCommentActorOwnsEntry,
   decideQueuedCommentReorder,

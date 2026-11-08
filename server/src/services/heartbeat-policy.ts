@@ -1,4 +1,4 @@
-import { agents } from "@tickernelz/paperclip-pro-db";
+import { agents } from "@tickernelz/wardmote-db";
 import { asBoolean, parseObject } from "../adapters/utils.js";
 
 export function isHeartbeatWakeOnDemandEnabled(

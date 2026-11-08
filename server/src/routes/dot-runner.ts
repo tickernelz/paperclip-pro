@@ -1,6 +1,6 @@
 import { Router, type Request } from "express";
 import { z } from "zod";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import { assertBoard, assertCompanyAccess } from "./authz.js";
 import { forbidden, HttpError } from "../errors.js";
 import { publicMcpConfig, McpOAuthError } from "../services/public-mcp/oauth.js";

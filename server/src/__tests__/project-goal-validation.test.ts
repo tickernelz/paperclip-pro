@@ -6,7 +6,7 @@ import {
   goals,
   projectGoals,
   projects as projectsTable,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

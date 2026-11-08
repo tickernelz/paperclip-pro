@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
-import { heartbeatRuns, type Db } from "@tickernelz/paperclip-pro-db";
-import { classifyWorkspaceRestoreFailure } from "@tickernelz/paperclip-pro-adapter-utils/workspace-restore-merge";
+import { heartbeatRuns, type Db } from "@tickernelz/wardmote-db";
+import { classifyWorkspaceRestoreFailure } from "@tickernelz/wardmote-adapter-utils/workspace-restore-merge";
 import { appendHeartbeatRunEvent } from "../heartbeat-run-events.js";
 import { logger } from "../../middleware/logger.js";
 

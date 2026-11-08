@@ -1,5 +1,5 @@
-import type { IssueAttachment } from "@tickernelz/paperclip-pro-shared";
-import { isMarkdownAttachmentContent } from "@tickernelz/paperclip-pro-shared";
+import type { IssueAttachment } from "@tickernelz/wardmote-shared";
+import { isMarkdownAttachmentContent } from "@tickernelz/wardmote-shared";
 import { isImageLikeOutput, isVideoLikeOutput } from "./issue-output";
 import { isHtmlPreview } from "./html-preview";
 

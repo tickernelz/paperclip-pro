@@ -1,4 +1,4 @@
-import type { ToolProfileBindingTargetType } from "@tickernelz/paperclip-pro-shared";
+import type { ToolProfileBindingTargetType } from "@tickernelz/wardmote-shared";
 
 type BindingLike = {
   profileId: string;

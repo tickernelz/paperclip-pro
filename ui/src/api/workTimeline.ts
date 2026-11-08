@@ -1,4 +1,4 @@
-import type { WorkTimelineResult } from "@tickernelz/paperclip-pro-shared";
+import type { WorkTimelineResult } from "@tickernelz/wardmote-shared";
 import { api, type RequestOptions } from "./client";
 
 export interface WorkTimelineParams {

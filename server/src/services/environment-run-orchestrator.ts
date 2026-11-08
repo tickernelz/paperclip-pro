@@ -15,7 +15,7 @@
  * and transport logic.
  */
 
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import type {
   Environment,
   EnvironmentLease,
@@ -24,7 +24,7 @@ import type {
   ExecutionWorkspace,
   ExecutionWorkspaceConfig,
   IssueExecutionWorkspaceSettings,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { resolveRunnerEnvironmentForRun } from "./runner-environment-lifecycle.js";
 import { environmentService } from "./environments.js";
 import {
@@ -44,8 +44,8 @@ import {
   type AdapterExecutionTarget,
   type AdapterRemoteExecutionSpec,
   type AdapterWorkspaceRealization,
-} from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
-import type { DuplexObservabilityRecorder } from "@tickernelz/paperclip-pro-adapter-utils/duplex-observability";
+} from "@tickernelz/wardmote-adapter-utils/execution-target";
+import type { DuplexObservabilityRecorder } from "@tickernelz/wardmote-adapter-utils/duplex-observability";
 import { buildWorkspaceRealizationRequest } from "./workspace-realization.js";
 import { executionWorkspaceService } from "./execution-workspaces.js";
 import { logActivity } from "./activity-log.js";

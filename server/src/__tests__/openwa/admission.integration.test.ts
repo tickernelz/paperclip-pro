@@ -26,8 +26,8 @@ import {
   issues,
   toolConnections,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
-import { maskOpenwaPhoneNumber, OPENWA_BURST_MAX_WAIT_SECONDS, OPENWA_DEFAULT_BURST_WINDOW_SECONDS } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import { maskOpenwaPhoneNumber, OPENWA_BURST_MAX_WAIT_SECONDS, OPENWA_DEFAULT_BURST_WINDOW_SECONDS } from "@tickernelz/wardmote-shared";
 import { startEmbeddedPostgresTestDatabase } from "../helpers/embedded-postgres.js";
 import { chatChannelService, type ChatChannelService, type ChatChannelServiceOptions } from "../../services/chat-channels.js";
 import { ChatSdkRuntime } from "../../services/chat-sdk-runtime.js";
@@ -86,12 +86,50 @@ async function until(predicate: () => boolean | Promise<boolean>, timeoutMs = 15
   }
 }
 
+type EmptyHeadGate = { skip: number; reached: () => void; release: Promise<void> };
+
+let emptyHeadGate: EmptyHeadGate | null = null;
+
+function holdEmptyHeadRead(builder: any): any {
+  return new Proxy(builder, {
+    get(inner, property) {
+      if (property === "then")
+        return (resolve: (value: unknown) => unknown, reject: (reason: unknown) => unknown) =>
+          inner
+            .then(async (rows: unknown) => {
+              const gate = emptyHeadGate;
+              const query = String(inner.toSQL?.().sql ?? "");
+              if (gate && Array.isArray(rows) && rows.length === 0 && query.includes("providerSentAt") && query.includes("inbound_wakeup")) {
+                if (gate.skip-- > 0) return rows;
+                emptyHeadGate = null;
+                gate.reached();
+                await gate.release;
+              }
+              return rows;
+            })
+            .then(resolve, reject);
+      const member = Reflect.get(inner, property);
+      if (typeof member !== "function") return member;
+      return (...args: unknown[]) => {
+        const out = member.apply(inner, args);
+        return out && typeof out.then === "function" ? holdEmptyHeadRead(out) : out;
+      };
+    },
+  });
+}
+
 function countingDb(db: Db) {
   const counts = { queries: 0, transactions: 0 };
   const proxy = new Proxy(db, {
     get(target, property, receiver) {
       const value = Reflect.get(target, property, receiver);
       if (typeof value !== "function") return value;
+      if (property === "select")
+        return (...args: unknown[]) => {
+          counts.queries++;
+          const builder = value.apply(target, args);
+          return emptyHeadGate ? holdEmptyHeadRead(builder) : builder;
+        };
       if (typeof property === "string" && QUERY_METHODS.has(property))
         return (...args: unknown[]) => {
           counts.queries++;
@@ -124,6 +162,7 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
     process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE = path.join(secrets, "master.key");
   }, 60_000);
   afterEach(async () => {
+    emptyHeadGate = null;
     await Promise.all(services.splice(0).map((service) => service.shutdown()));
     await Promise.all(gateways.splice(0).map((gateway) => gateway.close()));
     for (const id of endpointIds.splice(0)) await db.update(chatEndpoints).set({ status: "archived" }).where(eq(chatEndpoints.id, id));
@@ -976,6 +1015,30 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
     await until(() => t.wakeup.mock.calls.length === 1);
     const [wake] = await wakeActions(t);
     expect(wakeCallDeliveryIds(t, wake.id)).toEqual(held.map((delivery) => delivery.id));
+  }, 120_000);
+
+  it("dispatches a wake whose burst is released while the conversation drain is finishing", async () => {
+    const clock = new ManualClock();
+    clock.time = Date.now() + 3_600_000;
+    const t = await burstSetup(clock);
+    let reached!: () => void;
+    const drainFinishing = new Promise<void>((resolve) => (reached = resolve));
+    let release!: () => void;
+    emptyHeadGate = { skip: 1, reached, release: new Promise<void>((resolve) => (release = resolve)) };
+    try {
+      await send(t, { chatId: jid(OWNER_PHONE), body: "first request" });
+      await drainFinishing;
+      await until(async () => burstCode((await wakeActions(t))[0]) === "openwa_burst_held", 5_000);
+      clock.advance(OPENWA_DEFAULT_BURST_WINDOW_SECONDS * 1_000);
+      await until(async () => burstCode((await wakeActions(t))[0]) === "openwa_burst_released", 5_000);
+      await settle();
+      expect(t.wakeup).not.toHaveBeenCalled();
+    } finally {
+      release();
+    }
+    await until(() => t.wakeup.mock.calls.length === 1, 5_000);
+    const [wake] = await wakeActions(t);
+    expect(wakeCallDeliveryIds(t, wake.id)).toEqual((await deliveries(t)).map((delivery) => delivery.id));
   }, 120_000);
 
   it("starts each message's wake immediately when the endpoint burst window is 0", async () => {

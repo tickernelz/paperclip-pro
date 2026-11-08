@@ -3,7 +3,7 @@ import type {
   AgentAdapterConfigBatchFailure,
   AgentAdapterConfigBatchPreview,
   AgentAdapterConfigBatchTarget,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   AGENT_FALLBACK_EFFORTS_KEY,
   AGENT_FALLBACK_MODELS_KEY,
@@ -12,7 +12,7 @@ import {
   fitAgentFallbackModels,
   readAgentFallbackEfforts,
   readAgentFallbackModels,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import type { ConfigFieldSchema } from "../adapters/types.js";
 import {
   AdapterConfigFieldValueError,

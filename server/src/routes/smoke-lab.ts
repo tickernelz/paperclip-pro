@@ -1,11 +1,11 @@
 import { Router, urlencoded, type Request } from "express";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import type { DeploymentExposure, DeploymentMode } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/wardmote-db";
+import type { DeploymentExposure, DeploymentMode } from "@tickernelz/wardmote-shared";
 import {
   createSmokeRunSchema,
   recordSmokeRunStepSchema,
   updateSmokeRunSchema,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { validate } from "../middleware/validate.js";
 import { assertBoard, assertBoardOrAgent, assertCompanyAccess, assertInstanceAdmin, getActorInfo } from "./authz.js";
 import { logActivity, smokeLabService } from "../services/index.js";

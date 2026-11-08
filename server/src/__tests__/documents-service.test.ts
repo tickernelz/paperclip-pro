@@ -7,8 +7,8 @@ import {
   documents,
   issueDocuments,
   issues,
-} from "@tickernelz/paperclip-pro-db";
-import { ISSUE_CONTINUATION_SUMMARY_DOCUMENT_KEY } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import { ISSUE_CONTINUATION_SUMMARY_DOCUMENT_KEY } from "@tickernelz/wardmote-shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

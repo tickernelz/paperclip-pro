@@ -1,11 +1,11 @@
-import { readConnectionFailure, type GitConnectionFailure } from "@tickernelz/paperclip-pro-adapter-utils/connection-failure";
+import { readConnectionFailure, type GitConnectionFailure } from "@tickernelz/wardmote-adapter-utils/connection-failure";
 import { classifyGitCloneFailure, GitConnectionFailureError, readGitConnectionFailure } from "../git-connection-failure.js";
 import { managedAiSessionFingerprintConfig } from "../ai-connection-runtime.js";
 import {
   PROJECT_REPOSITORIES_DIR,
   readGitWorkspaceSnapshot,
   disposeGitWorkspaceSnapshot,
-} from "@tickernelz/paperclip-pro-adapter-utils/git-workspace-sync";
+} from "@tickernelz/wardmote-adapter-utils/git-workspace-sync";
 import {
   isWorkspaceGitScanError,
   WorkspaceGitScanError,
@@ -14,7 +14,7 @@ import {
   captureDirectorySnapshot,
   disposeDirectorySnapshot,
   mergeDirectoryWithBaseline,
-} from "@tickernelz/paperclip-pro-adapter-utils/workspace-restore-merge";
+} from "@tickernelz/wardmote-adapter-utils/workspace-restore-merge";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { execFile as execFileCallback } from "node:child_process";
@@ -28,21 +28,21 @@ import {
   asc,
   eq,
 } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   OMP_MODEL_SWITCH_ADAPTER_CONFIG_KEYS,
   OMP_MODEL_SWITCH_OMP_SETTINGS,
   OMP_SESSION_NEUTRAL_ADAPTER_CONFIG_KEYS,
   type ExecutionWorkspace,
   type ExecutionWorkspaceConfig,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   agents,
   heartbeatRuns,
   issues,
   projects,
   projectWorkspaces,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { logger } from "../../middleware/logger.js";
 import {
   createGitRemoteAuthProvider,

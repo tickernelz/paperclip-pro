@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useId, useState } from "react";
 import { Bell, LoaderCircle, Play, Send, Trash2, Upload } from "lucide-react";
-import { NOTIFICATION_KINDS, type NotificationKind } from "@tickernelz/paperclip-pro-shared";
+import { NOTIFICATION_KINDS, type NotificationKind } from "@tickernelz/wardmote-shared";
 import { notificationsApi } from "@/api/notifications";
 import {
   isIosWithoutHomeScreenInstall,

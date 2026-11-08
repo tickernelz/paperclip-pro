@@ -1,7 +1,7 @@
 // @vitest-environment node
 
 import { describe, expect, it } from "vitest";
-import type { ToolCatalogEntry, ToolProfileEntry } from "@tickernelz/paperclip-pro-shared";
+import type { ToolCatalogEntry, ToolProfileEntry } from "@tickernelz/wardmote-shared";
 import {
   appCheckState,
   appSelectionLabel,

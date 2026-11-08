@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildAgentMentionHref } from "@tickernelz/paperclip-pro-shared";
+import { buildAgentMentionHref } from "@tickernelz/wardmote-shared";
 import {
   bodyHasAgentMention,
   classifyAssigneeHandoff,

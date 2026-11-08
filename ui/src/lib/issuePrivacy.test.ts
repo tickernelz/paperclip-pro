@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { IssueAccessGrant } from "@tickernelz/paperclip-pro-shared";
+import type { IssueAccessGrant } from "@tickernelz/wardmote-shared";
 import {
   agentVisibilityFromPermissions,
   canManageIssuePrivacy,

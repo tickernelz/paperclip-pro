@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { Project } from "@tickernelz/paperclip-pro-shared";
+import type { Project } from "@tickernelz/wardmote-shared";
 import { Boxes, ChevronRight, ChevronsUpDown, CircleCheck, Folder, History, Inbox, LayoutDashboard, Menu, Package, Repeat, Search, SquarePen, Star, Unplug, Users } from "lucide-react";
 import { ProjectProperties } from "@/components/ProjectProperties";
 import { PageTabBar } from "@/components/PageTabBar";

@@ -3,7 +3,7 @@ import { readFileSync, readdirSync, existsSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { z } from "zod";
-import * as sharedSchemas from "@tickernelz/paperclip-pro-shared";
+import * as sharedSchemas from "@tickernelz/wardmote-shared";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const routesDir = join(repoRoot, "server/src/routes");

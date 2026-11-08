@@ -11,9 +11,9 @@ import { generateReadme } from "../services/company-export-readme.js";
 // `paperclip-pro` as a `package.json` script. It appends the argument to a
 // double-quoted `/bin/sh` command string, so the shell reads the argument first
 // and runs command substitution (a backtick pair or `$( )`) and variable
-// expansion (`$NAME`) before the CLI starts. `npx @tickernelz/paperclip-pro` runs the CLI
+// expansion (`$NAME`) before the CLI starts. `npx @tickernelz/wardmote` runs the CLI
 // binary directly. It passes the argument as an inert argv value and does not
-// run a shell over the value. `npx @tickernelz/paperclip-pro` is the safe form.
+// run a shell over the value. `npx @tickernelz/wardmote` is the safe form.
 //
 // `pnpm exec paperclip-pro` is not a safe substitute. The root workspace does not
 // depend on the `paperclip-pro` package, so `pnpm` never links its binary into
@@ -27,7 +27,7 @@ import { generateReadme } from "../services/company-export-readme.js";
 // placeholder, no example value the reader replaces, no interpolation, no path,
 // no ref, no id, and no name. It holds the subcommand and, at most, flags that
 // take no value. Every other `pnpm paperclip-pro` line is an offender and must use
-// `npx @tickernelz/paperclip-pro` (or the direct-exec form for local source).
+// `npx @tickernelz/wardmote` (or the direct-exec form for local source).
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(here, "../../..");
@@ -565,7 +565,7 @@ describe("wardmote CLI invocation safety", () => {
     expect(
       offenders,
       `Each pnpm wardmote line must match an exact allowlist entry, else use ` +
-        `npx @tickernelz/paperclip-pro (or the direct-exec form for local source):\n${offenders.join("\n")}`,
+        `npx @tickernelz/wardmote (or the direct-exec form for local source):\n${offenders.join("\n")}`,
     ).toEqual([]);
   });
 
@@ -573,7 +573,7 @@ describe("wardmote CLI invocation safety", () => {
     const offenders = scanForBrokenExecForm();
     expect(
       offenders,
-      `\`pnpm exec paperclip-pro\` does not resolve the CLI binary; use \`npx @tickernelz/paperclip-pro\`:\n${offenders.join("\n")}`,
+      `\`pnpm exec paperclip-pro\` does not resolve the CLI binary; use \`npx @tickernelz/wardmote\`:\n${offenders.join("\n")}`,
     ).toEqual([]);
   });
 
@@ -581,7 +581,7 @@ describe("wardmote CLI invocation safety", () => {
   //
   // Each case fails before this change and passes after it. Before, the guard
   // recognized only a limited flag set and skipped any line that mentioned
-  // `npx @tickernelz/paperclip-pro`. So it missed `--config`, `--data-dir`, `--instance`,
+  // `npx @tickernelz/wardmote`. So it missed `--config`, `--data-dir`, `--instance`,
   // `--bind`, a context-profile value, and worktree path/ref/id/name options,
   // and a mixed safe/unsafe line hid behind its `npx` mention.
 
@@ -605,7 +605,7 @@ describe("wardmote CLI invocation safety", () => {
 
   it("does not let an npx mention on the same line suppress detection", () => {
     // A mixed line names the safe form but still shows the unsafe command.
-    const mixed = "Prefer npx @tickernelz/paperclip-pro, but pnpm paperclip-pro issue create --title x also works.";
+    const mixed = "Prefer npx @tickernelz/wardmote, but pnpm paperclip-pro issue create --title x also works.";
     expect(scanText("doc/E.md", mixed)).toHaveLength(1);
   });
 
@@ -803,7 +803,7 @@ describe("wardmote CLI invocation safety", () => {
     // can paste the guidance into a shell, and that outer shell evaluates a
     // metacharacter span in the host before any CLI receives argv. A direct-exec
     // form does not stop the outer shell. Emit a static `<host>` placeholder only.
-    expect(source).toContain("run npx @tickernelz/paperclip-pro allowed-hostname <host>");
+    expect(source).toContain("run npx @tickernelz/wardmote allowed-hostname <host>");
     expect(source).not.toContain("allowed-hostname ${hostname}");
     expect(source).not.toContain("pnpm wardmote allowed-hostname");
     expect(source).not.toContain("pnpm exec wardmote allowed-hostname");
@@ -813,7 +813,7 @@ describe("wardmote CLI invocation safety", () => {
     const source = read("server/src/routes/access.ts");
     expect(source).not.toMatch(/pnpm wardmote allowed-hostname/);
     expect(source).not.toContain("pnpm exec wardmote allowed-hostname");
-    expect(source).toContain("npx @tickernelz/paperclip-pro allowed-hostname <host>");
+    expect(source).toContain("npx @tickernelz/wardmote allowed-hostname <host>");
     // The onboarding host comes from the request base URL, so a requester
     // controls it. The emitted command must carry a static `<host>` placeholder
     // and never interpolate that value.
@@ -824,7 +824,7 @@ describe("wardmote CLI invocation safety", () => {
     const source = read("ui/src/lib/agent-onboarding-prompt.ts");
     expect(source).not.toContain("pnpm wardmote allowed-hostname");
     expect(source).not.toContain("pnpm exec wardmote allowed-hostname");
-    expect(source).toContain("npx @tickernelz/paperclip-pro allowed-hostname <host>");
+    expect(source).toContain("npx @tickernelz/wardmote allowed-hostname <host>");
   });
 
   it("emits the safe form in the generated company-export README", () => {
@@ -832,7 +832,7 @@ describe("wardmote CLI invocation safety", () => {
       { agents: [], projects: [], skills: [], issues: [] } as never,
       { companyName: "Acme", companyDescription: null },
     );
-    expect(readme).toContain("npx @tickernelz/paperclip-pro company import this-github-url-or-folder");
+    expect(readme).toContain("npx @tickernelz/wardmote company import this-github-url-or-folder");
     expect(readme).not.toContain("pnpm wardmote company import");
     expect(readme).not.toContain("pnpm exec wardmote company import");
   });
@@ -841,7 +841,7 @@ describe("wardmote CLI invocation safety", () => {
     const source = read("ui/src/pages/CompanyExport.tsx");
     expect(source).not.toContain("pnpm wardmote company import");
     expect(source).not.toContain("pnpm exec wardmote company import");
-    expect(source).toContain("npx @tickernelz/paperclip-pro company import");
+    expect(source).toContain("npx @tickernelz/wardmote company import");
   });
 
   // ── Runtime surfaces and their fixed literal lifecycle hints ─────────────
@@ -850,21 +850,21 @@ describe("wardmote CLI invocation safety", () => {
   // emit the onboard, bootstrap, and board-setup hints. These three surfaces
   // reach readers on the published install, who have no monorepo checkout. The
   // `pnpm paperclip-pro` script resolves only inside a checkout, so each surface
-  // must pin the `npx @tickernelz/paperclip-pro` form. The client connection-error hint also
+  // must pin the `npx @tickernelz/wardmote` form. The client connection-error hint also
   // reaches a reader who may run an installed package, so it keeps `npx`. The
   // env-lab cleanup hint runs from a source checkout and must work from any
   // subdirectory, so it uses the module-resolved direct-exec form (see below).
 
   it("emits the onboard hint from the server startup banner", () => {
     const source = read("server/src/startup-banner.ts");
-    expect(source).toContain("npx @tickernelz/paperclip-pro onboard");
+    expect(source).toContain("npx @tickernelz/wardmote onboard");
     expect(source).not.toContain("pnpm wardmote onboard");
     expect(source).not.toContain("pnpm exec wardmote onboard");
   });
 
   it("emits the safe run form from the client connection-error hint", () => {
     const source = read("cli/src/client/http.ts");
-    expect(source).toContain("npx @tickernelz/paperclip-pro run");
+    expect(source).toContain("npx @tickernelz/wardmote run");
     expect(source).not.toContain("pnpm wardmote run");
   });
 
@@ -892,14 +892,14 @@ describe("wardmote CLI invocation safety", () => {
 
   it("emits the bootstrap fallback command from the UI", () => {
     const source = read("ui/src/bootstrapSetup.ts");
-    expect(source).toContain("npx @tickernelz/paperclip-pro auth bootstrap-ceo");
+    expect(source).toContain("npx @tickernelz/wardmote auth bootstrap-ceo");
     expect(source).not.toContain("pnpm wardmote auth bootstrap-ceo");
     expect(source).not.toContain("pnpm exec wardmote auth bootstrap-ceo");
   });
 
   it("emits the setup form from the board skill", () => {
     const source = read("skills/paperclip-board/SKILL.md");
-    expect(source).toContain("npx @tickernelz/paperclip-pro board setup");
+    expect(source).toContain("npx @tickernelz/wardmote board setup");
     expect(source).not.toContain("pnpm wardmote board setup");
     expect(source).not.toContain("pnpm exec wardmote board setup");
   });
@@ -909,7 +909,7 @@ describe("wardmote CLI invocation safety", () => {
   it("documents the safe form in doc/CLI.md", () => {
     const cli = read("doc/CLI.md");
     expect(cli).toContain("Security: safe invocation for content-bearing arguments");
-    expect(cli).toContain("npx @tickernelz/paperclip-pro");
+    expect(cli).toContain("npx @tickernelz/wardmote");
     expect(cli).toContain("inert `argv`");
     // The policy section states the exact-allowlist rule.
     expect(cli).toContain("allowlist entry is an offender");
@@ -935,7 +935,7 @@ describe("wardmote CLI invocation safety", () => {
   it("documents the safe form in the agent-facing skill", () => {
     const skill = read("skills/paperclip/SKILL.md");
     expect(skill).toContain("CLI safety");
-    expect(skill).toContain("npx @tickernelz/paperclip-pro");
+    expect(skill).toContain("npx @tickernelz/wardmote");
     expect(skill).toContain("Do not use `pnpm paperclip-pro`");
   });
 
@@ -967,9 +967,9 @@ describe("wardmote CLI invocation safety", () => {
     expect(offenders[0]).toContain("--name");
   });
 
-  it("does not flag a continued npx @tickernelz/paperclip-pro command", () => {
+  it("does not flag a continued npx @tickernelz/wardmote command", () => {
     const source = [
-      "npx @tickernelz/paperclip-pro issue create \\",
+      "npx @tickernelz/wardmote issue create \\",
       "  --company-id <company-id> \\",
       '  --title "Investigate checkout conflict"',
     ].join("\n");

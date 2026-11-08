@@ -1,4 +1,4 @@
-# `@tickernelz/paperclip-pro-plugin-exe-dev`
+# `@tickernelz/wardmote-plugin-exe-dev`
 
 Published exe.dev sandbox provider plugin for Paperclip.
 
@@ -9,7 +9,7 @@ This package lives in the Paperclip monorepo, but it is intentionally excluded f
 From a Paperclip instance, install:
 
 ```text
-@tickernelz/paperclip-pro-plugin-exe-dev
+@tickernelz/wardmote-plugin-exe-dev
 ```
 
 ## Configuration
@@ -50,7 +50,7 @@ pnpm test
 pnpm typecheck
 ```
 
-These commands assume the repo root has already been installed once so the local `@tickernelz/paperclip-pro-plugin-sdk` workspace package is available to the compiler during development.
+These commands assume the repo root has already been installed once so the local `@tickernelz/wardmote-plugin-sdk` workspace package is available to the compiler during development.
 
 ## Package layout
 

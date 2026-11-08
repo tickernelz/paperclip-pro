@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { afterEach, describe, expect, it } from "vitest";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { instanceSettings, localBrowserConnections, toolConnections } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
+import { instanceSettings, localBrowserConnections, toolConnections } from "@tickernelz/wardmote-db";
 import { localBrowserService } from "../services/local-browser/service.js";
 import { registerSession, resetSessions } from "../services/local-browser/registry.js";
 import type { BridgeSocket } from "../services/local-browser/types.js";

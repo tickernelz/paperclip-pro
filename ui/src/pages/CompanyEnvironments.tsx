@@ -17,7 +17,7 @@ import {
   type EnvironmentProbeResult,
   type EnvironmentCustomImageSetupSession,
   type JsonSchema,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   environmentsApi,
   type EnvironmentCustomImageActiveTemplateDrift,

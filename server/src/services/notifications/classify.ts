@@ -1,4 +1,4 @@
-import type { LiveEvent, NotificationKind, PaperclipNotification } from "@tickernelz/paperclip-pro-shared";
+import type { LiveEvent, NotificationKind, PaperclipNotification } from "@tickernelz/wardmote-shared";
 
 export const NOTIFICATION_BODY_MAX_CHARS = 300;
 

@@ -1,11 +1,11 @@
 import { eq } from "drizzle-orm";
-import { toolConnections, toolInvocations, type Db } from "@tickernelz/paperclip-pro-db";
-import { getConnectableAppDefinition } from "@tickernelz/paperclip-pro-shared";
+import { toolConnections, toolInvocations, type Db } from "@tickernelz/wardmote-db";
+import { getConnectableAppDefinition } from "@tickernelz/wardmote-shared";
 import {
   trackConnectionCreated,
   trackConnectionUpdated,
   trackConnectionInvoked,
-} from "@tickernelz/paperclip-pro-shared/telemetry";
+} from "@tickernelz/wardmote-shared/telemetry";
 import { logger } from "../middleware/logger.js";
 import { getTelemetryClient } from "../telemetry.js";
 

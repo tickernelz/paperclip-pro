@@ -5,13 +5,13 @@ import { createHash, randomUUID } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { and, eq } from "drizzle-orm";
-import { heartbeatRuns, type Db } from "@tickernelz/paperclip-pro-db";
-import type { PaperclipSkillEntry } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
-import { isToolConnectionAttentionHealth } from "@tickernelz/paperclip-pro-shared";
+import { heartbeatRuns, type Db } from "@tickernelz/wardmote-db";
+import type { PaperclipSkillEntry } from "@tickernelz/wardmote-adapter-utils/server-utils";
+import { isToolConnectionAttentionHealth } from "@tickernelz/wardmote-shared";
 import {
   PAPERCLIP_OPERATIONAL_SKILL_KEY,
   resolvePaperclipDesiredSkillNames,
-} from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+} from "@tickernelz/wardmote-adapter-utils/server-utils";
 import {
   NATIVE_RUNTIME_ASSET_SCHEMA,
   PAPERCLIP_EXECUTION_PROMPT,

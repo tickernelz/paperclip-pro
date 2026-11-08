@@ -23,7 +23,7 @@ import {
   issues,
   toolConnections,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { registerServerAdapter } from "../../adapters/registry.js";
 import { chatChannelService, type ChatChannelService, type ChatChannelServiceOptions } from "../../services/chat-channels.js";
 import { ChatSdkRuntime } from "../../services/chat-sdk-runtime.js";
@@ -1209,10 +1209,10 @@ async function toolOverhead(db: Db, root: string, fixture: Fixture, options: Ben
 }
 
 async function contextBudget(): Promise<{ result: unknown; budgets: BudgetRow[] }> {
-  const shared = (await import("@tickernelz/paperclip-pro-shared")) as Record<string, unknown>;
+  const shared = (await import("@tickernelz/wardmote-shared")) as Record<string, unknown>;
   const tools = shared.OPENWA_TOOLS;
   if (!Array.isArray(tools)) {
-    const reason = "requires T9: OPENWA_TOOLS is not exported from @tickernelz/paperclip-pro-shared on this branch";
+    const reason = "requires T9: OPENWA_TOOLS is not exported from @tickernelz/wardmote-shared on this branch";
     return {
       result: { status: "not available", reason },
       budgets: [{ seam: "Context", metric: "tool schema tokens", value: null, budget: "<= ~3000", status: "not available", evidence: reason }],

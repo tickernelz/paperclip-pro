@@ -4,8 +4,8 @@ import type {
   IssueStatus,
   RoutineRunSummary,
   RoutineTrigger,
-} from "@tickernelz/paperclip-pro-shared";
-import { ISSUE_PRIORITIES, ISSUE_STATUSES } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
+import { ISSUE_PRIORITIES, ISSUE_STATUSES } from "@tickernelz/wardmote-shared";
 import { CalendarClock, Clock3, Play, Repeat, UserRound } from "lucide-react";
 import { IssueRow } from "@/components/IssueRow";
 import { MarkdownBody } from "@/components/MarkdownBody";

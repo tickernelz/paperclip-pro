@@ -2,8 +2,8 @@ import { readFileSync } from "node:fs";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { createTestHarness } from "@tickernelz/paperclip-pro-plugin-sdk/testing";
-import type { Agent, Issue, PluginManagedRoutineResolution, Project } from "@tickernelz/paperclip-pro-plugin-sdk";
+import { createTestHarness } from "@tickernelz/wardmote-plugin-sdk/testing";
+import type { Agent, Issue, PluginManagedRoutineResolution, Project } from "@tickernelz/wardmote-plugin-sdk";
 import manifest, {
   CURSOR_WINDOW_ROUTINE_KEY,
   INDEX_REFRESH_ROUTINE_KEY,

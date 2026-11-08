@@ -6,7 +6,7 @@ import {
   chatIdentityLinks,
   companyMemberships,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 
 type Database = Db | Parameters<Parameters<Db["transaction"]>[0]>[0];
 

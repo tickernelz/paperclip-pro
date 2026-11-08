@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from "react";
-import { NOTIFICATION_KINDS, type NotificationKind } from "@tickernelz/paperclip-pro-shared";
+import { NOTIFICATION_KINDS, type NotificationKind } from "@tickernelz/wardmote-shared";
 import { DEFAULT_KIND_SOUNDS, isKnownSoundId } from "./sounds";
 
 export const NOTIFICATION_SETTINGS_STORAGE_KEY = "paperclip.notifications.v1";

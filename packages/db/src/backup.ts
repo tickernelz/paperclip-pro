@@ -5,7 +5,7 @@ import {
   expandHomePrefix,
   resolveDefaultBackupDir,
   resolvePaperclipConfigPathForInstance,
-} from "@tickernelz/paperclip-pro-shared/home-paths";
+} from "@tickernelz/wardmote-shared/home-paths";
 
 type PartialConfig = {
   database?: {

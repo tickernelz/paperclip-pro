@@ -4,12 +4,12 @@ import { mkdtemp, mkdir, writeFile, readFile, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { and, eq } from "drizzle-orm";
-import { type Db, companySecrets, connectionGrants } from "@tickernelz/paperclip-pro-db";
+import { type Db, companySecrets, connectionGrants } from "@tickernelz/wardmote-db";
 import {
   AI_CONNECTION_CAPABILITIES,
   aiConnectionMetadataSchema, aiRoutingHarness,
   type AiConnectionBinding,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { managedProviderRouting } from "./ai-provider-routing.js";
 import { aiConnectionService } from "./ai-connections.js";
 import { subscriptionService } from "./subscriptions.js";
@@ -17,9 +17,9 @@ import { refreshSubscriptionConnection } from "./subscription-refresh.js";
 import { secretService } from "./secrets.js";
 import { decideCodexAuthMerge } from "./ai-providers/codex/codex-auth-merge-decision.js";
 import { withAccountHomeSecretMutationLock } from "./ai-providers/codex/codex-auth-cache.js";
-import { WORKSPACE_RESTORE_LOCK_TIMEOUT_CODE } from "@tickernelz/paperclip-pro-adapter-utils/workspace-restore-merge";
-import type { AdapterExecutionTarget } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
-import { runAdapterExecutionTargetProcess } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
+import { WORKSPACE_RESTORE_LOCK_TIMEOUT_CODE } from "@tickernelz/wardmote-adapter-utils/workspace-restore-merge";
+import type { AdapterExecutionTarget } from "@tickernelz/wardmote-adapter-utils/execution-target";
+import { runAdapterExecutionTargetProcess } from "@tickernelz/wardmote-adapter-utils/execution-target";
 import { decideGrokAuthMerge } from "./ai-providers/grok/grok-auth-merge-decision.js";
 
 export function isAiConnectionBusy(error: unknown): error is HttpError {

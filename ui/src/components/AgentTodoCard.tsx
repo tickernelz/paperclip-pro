@@ -5,7 +5,7 @@ import type {
   AgentTodoSnapshot,
   AgentTodoStatus,
   AgentTodoTask,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { StatusIcon } from "@/components/task-chat/TaskChatProtocolCard";
 import { Button } from "@/components/ui/button";
 import { AgentTodoPanelContext } from "@/context/AgentTodoPanelContext";

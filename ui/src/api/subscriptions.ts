@@ -1,4 +1,4 @@
-import type { SubscriptionCostReport, UpdateSubscriptionPrice } from "@tickernelz/paperclip-pro-shared";
+import type { SubscriptionCostReport, UpdateSubscriptionPrice } from "@tickernelz/wardmote-shared";
 import { api } from "./client";
 
 export const subscriptionsApi = {

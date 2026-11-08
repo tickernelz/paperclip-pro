@@ -4,7 +4,7 @@ import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import userEvent from "@testing-library/user-event";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { AgentDetail, HeartbeatRun, Issue } from "@tickernelz/paperclip-pro-shared";
+import type { AgentDetail, HeartbeatRun, Issue } from "@tickernelz/wardmote-shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { queryKeys } from "../lib/queryKeys";
 import { CEO_ACCESS_WARNING } from "../components/agent-role/use-agent-role-change";

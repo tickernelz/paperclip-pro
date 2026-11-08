@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { SmokeRun, SmokeRunStep } from "@tickernelz/paperclip-pro-shared";
+import type { SmokeRun, SmokeRunStep } from "@tickernelz/wardmote-shared";
 import {
   buildSmokeMatrix,
   cellKey,

@@ -1,4 +1,4 @@
-import type { ExecutionWorkspaceMode, ProjectExecutionWorkspaceDefaultMode } from "@tickernelz/paperclip-pro-shared";
+import type { ExecutionWorkspaceMode, ProjectExecutionWorkspaceDefaultMode } from "@tickernelz/wardmote-shared";
 
 type ProjectWorkspaceDefaultSource = {
   workspaces?: Array<{ id: string; isPrimary: boolean }>;

@@ -31,7 +31,7 @@ import {
   nativeRunFinalizations,
   nativeRunResults,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   CURSOR_DISTRIBUTION_PINS,
   QUALIFIED_ACPX_PROFILES,
@@ -46,16 +46,16 @@ import {
   type NativeExecutionInputV3,
   type NativeExecutionInput,
   type PrpEvent,
-} from "@tickernelz/paperclip-pro-paperclip-runner";
+} from "@tickernelz/wardmote-paperclip-runner";
 import { createHash, generateKeyPairSync, randomUUID } from "node:crypto";
-import { registerAdapterSteerTarget } from "@tickernelz/paperclip-pro-adapter-utils/adapter-steer-registry";
+import { registerAdapterSteerTarget } from "@tickernelz/wardmote-adapter-utils/adapter-steer-registry";
 import { DatabaseSync } from "node:sqlite";
 import { nativeSha256 } from "./canonical.js";
 import { agentDirectoryWorkingCopyService } from "../agent-directory-working-copies.js";
 import { probeAgentDirectory } from "../agent-directory-probe.js";
 import { AGENT_FILES_CONTRACT } from "../agent-file-store.js";
-import { captureDirectorySnapshot, directorySnapshotSha256, serializeDirectorySnapshot } from "@tickernelz/paperclip-pro-adapter-utils/workspace-restore-merge";
-import { agentInstructionWorkingCopies } from "@tickernelz/paperclip-pro-db";
+import { captureDirectorySnapshot, directorySnapshotSha256, serializeDirectorySnapshot } from "@tickernelz/wardmote-adapter-utils/workspace-restore-merge";
+import { agentInstructionWorkingCopies } from "@tickernelz/wardmote-db";
 import * as noLaunchProofModule from "./native-maintenance-no-launch.js";
 import {
   NativeSessionCleanupQuarantinedError,
@@ -2576,7 +2576,7 @@ describe("remote runner build metadata", () => {
   const current = {
     schema: "paperclip-runner/runnerd-build-metadata/v1",
     binaryName: "paperclip-runnerd",
-    packageName: "@tickernelz/paperclip-pro-paperclip-runner",
+    packageName: "@tickernelz/wardmote-paperclip-runner",
     binaryContractVersion: 2,
     durableSessionCapabilities: ["unlimited_runtime", "connection_lease_renewal"],
     prpTransportModes: ["dial_ws_loopback", "dial_wss", "listen_ws"],
@@ -5522,9 +5522,9 @@ describe("native startup restart detachment", () => {
 
 describe("native terminal-turn accounting", () => {
   it.each([false, true])("prices only complete direct Claude API turn accounting (%s)", async complete => {
-    const { rehydrateRunnerdUsageNotification } = await import("@tickernelz/paperclip-pro-paperclip-runner/live");
+    const { rehydrateRunnerdUsageNotification } = await import("@tickernelz/wardmote-paperclip-runner/live");
     const { priceAnthropicReceipt } = await import("../anthropic-pricing.js");
-    const onUsage = vi.fn(async (_receipt: import("@tickernelz/paperclip-pro-adapter-utils").AdapterUsageCheckpoint) => {});
+    const onUsage = vi.fn(async (_receipt: import("@tickernelz/wardmote-adapter-utils").AdapterUsageCheckpoint) => {});
     const counts = { inputTokens: 12, outputTokens: 4, cacheReadTokens: 30, cacheWriteTokens: 20, providerCostUsd: 0 };
     state.execute.mockReset().mockImplementationOnce(async () => {
       const notification = rehydrateRunnerdUsageNotification({ provider: "acpx", cumulative: { ...counts, providerCostUsd: 10 }, runDelta: counts, runDeltaAvailable: complete }, "session", "turn");
@@ -5541,8 +5541,8 @@ describe("native terminal-turn accounting", () => {
   it.each(["claude", "codex"].flatMap(agent => [false, true].flatMap(restart =>
     [false, true].flatMap(partialFirst => [false, true].map(zeroFirst => ({ agent, restart, partialFirst, zeroFirst }))),
   )))("accumulates ACPX turns for $agent (restart: $restart, partial: $partialFirst, zero first: $zeroFirst)", async ({ agent, restart, partialFirst, zeroFirst }) => {
-    const { rehydrateRunnerdUsageNotification } = await import("@tickernelz/paperclip-pro-paperclip-runner/live");
-    const onUsage = vi.fn(async (_receipt: import("@tickernelz/paperclip-pro-adapter-utils").AdapterUsageCheckpoint) => {});
+    const { rehydrateRunnerdUsageNotification } = await import("@tickernelz/wardmote-paperclip-runner/live");
+    const onUsage = vi.fn(async (_receipt: import("@tickernelz/wardmote-adapter-utils").AdapterUsageCheckpoint) => {});
     const event = (eventType: string, turnId: string, sourceSeq: number, payload: object = {}) => ({
       eventType, turnId, sourceSeq, sourceInstanceId: "provider", emittedAt: new Date().toISOString(), payload,
     }) as unknown as PrpEvent;
@@ -5583,8 +5583,8 @@ describe("native terminal-turn accounting", () => {
   it.each(["claude", "codex"].flatMap(agent =>
     ["missing", "partial", "complete_zero", "later_partial", "recovered"].map(scenario => ({ agent, scenario })),
   ))("honors runner completeness for ACPX $agent ($scenario)", async ({ agent, scenario }) => {
-    const { rehydrateRunnerdUsageNotification } = await import("@tickernelz/paperclip-pro-paperclip-runner/live");
-    const onUsage = vi.fn(async (_receipt: import("@tickernelz/paperclip-pro-adapter-utils").AdapterUsageCheckpoint) => {});
+    const { rehydrateRunnerdUsageNotification } = await import("@tickernelz/wardmote-paperclip-runner/live");
+    const onUsage = vi.fn(async (_receipt: import("@tickernelz/wardmote-adapter-utils").AdapterUsageCheckpoint) => {});
     const complete = ["complete_zero", "recovered"].includes(scenario);
     const zero = { inputTokens: 0, outputTokens: 0, cacheReadTokens: 0, cacheWriteTokens: 0, providerCostUsd: 0 };
     const full = { ...zero, inputTokens: 12, outputTokens: 4 };
@@ -5615,8 +5615,8 @@ describe("native terminal-turn accounting", () => {
   });
 
   it.each([0, 0.25])("keeps interrupted AgentCore accounting pending despite cumulative cost %s", async providerCostUsd => {
-    const { rehydrateRunnerdUsageNotification } = await import("@tickernelz/paperclip-pro-paperclip-runner/live");
-    const onUsage = vi.fn(async (_receipt: import("@tickernelz/paperclip-pro-adapter-utils").AdapterUsageCheckpoint) => {});
+    const { rehydrateRunnerdUsageNotification } = await import("@tickernelz/wardmote-paperclip-runner/live");
+    const onUsage = vi.fn(async (_receipt: import("@tickernelz/wardmote-adapter-utils").AdapterUsageCheckpoint) => {});
     const total = { inputTokens: 10, outputTokens: 2, cacheReadTokens: 0, cacheWriteTokens: 0, providerCostUsd };
     const notification = rehydrateRunnerdUsageNotification({ provider: "aws_agentcore", cumulative: total, runDelta: null, runDeltaAvailable: false }, "session", "turn");
     state.execute.mockReset().mockImplementationOnce(async () => {
@@ -5633,8 +5633,8 @@ describe("native terminal-turn accounting", () => {
   });
 
   it.each(["claude_managed", "aws_agentcore"] as const)("settles fresh runner receipts for %s and preserves estimated pricing", async kind => {
-    const { rehydrateRunnerdUsageNotification } = await import("@tickernelz/paperclip-pro-paperclip-runner/live");
-    const onUsage = vi.fn(async (_receipt: import("@tickernelz/paperclip-pro-adapter-utils").AdapterUsageCheckpoint) => {});
+    const { rehydrateRunnerdUsageNotification } = await import("@tickernelz/wardmote-paperclip-runner/live");
+    const onUsage = vi.fn(async (_receipt: import("@tickernelz/wardmote-adapter-utils").AdapterUsageCheckpoint) => {});
     const total = { inputTokens: 121, outputTokens: 18, cacheReadTokens: 33, cacheWriteTokens: 15, providerCostUsd: 1.25 };
     const delta = { inputTokens: 21, outputTokens: 8, cacheReadTokens: 13, cacheWriteTokens: 5, providerCostUsd: 0.25 };
     const notification = rehydrateRunnerdUsageNotification({ provider: kind, cumulative: total, runDelta: delta, runDeltaAvailable: true }, "session", "turn");
@@ -5657,7 +5657,7 @@ describe("native terminal-turn accounting", () => {
     { provider: "codex", restart: false }, { provider: "codex", restart: true },
     { provider: "opencode", restart: false }, { provider: "opencode", restart: true },
   ] as const)("preserves earlier turns for $provider (restart: $restart)", async ({ provider, restart }) => {
-    const onUsage = vi.fn(async (_receipt: import("@tickernelz/paperclip-pro-adapter-utils").AdapterUsageCheckpoint) => {});
+    const onUsage = vi.fn(async (_receipt: import("@tickernelz/wardmote-adapter-utils").AdapterUsageCheckpoint) => {});
     const event = (eventType: string, turnId: string, sourceSeq: number, payload: object = {}) => ({
       eventType, turnId, sourceSeq, sourceInstanceId: "provider", emittedAt: new Date().toISOString(), payload,
     }) as unknown as PrpEvent;
@@ -5688,7 +5688,7 @@ describe("native terminal-turn accounting", () => {
   });
 
   it.each(["missing_usage", "partial_usage", "missing_terminal", "unknown_price", "late_update"] as const)("keeps OpenCode retry accounting conservative (%s)", async scenario => {
-    const onUsage = vi.fn(async (_receipt: import("@tickernelz/paperclip-pro-adapter-utils").AdapterUsageCheckpoint) => {});
+    const onUsage = vi.fn(async (_receipt: import("@tickernelz/wardmote-adapter-utils").AdapterUsageCheckpoint) => {});
     let seq = 0;
     const emit = (eventType: string, turnId: string, payload: object = {}) => accountingEvents.committed!({
       eventType, turnId, sourceSeq: ++seq, sourceInstanceId: "provider", emittedAt: new Date().toISOString(), payload,
@@ -5722,7 +5722,7 @@ describe("native terminal-turn accounting", () => {
   });
 
   it.each(["committed", "duplicate"] as const)("saves completed usage before returning to result commitment (%s)", async mode => {
-    const onUsage = vi.fn(async (_receipt: import("@tickernelz/paperclip-pro-adapter-utils").AdapterUsageCheckpoint) => {});
+    const onUsage = vi.fn(async (_receipt: import("@tickernelz/wardmote-adapter-utils").AdapterUsageCheckpoint) => {});
     const failure = new Error("stopped after result commit, before executor returns");
     state.execute.mockReset().mockImplementationOnce(async () => {
       const observe = accountingEvents[mode]!;
@@ -5752,7 +5752,7 @@ describe("native terminal-turn accounting", () => {
   });
 
   it.each(["stale_warm_zero", "partial", "fresh", "fresh_zero", "new_turn", "later_partial", "merged_partial"])("requires fresh complete usage at native completion (%s)", async scenario => {
-    const onUsage = vi.fn(async (_receipt: import("@tickernelz/paperclip-pro-adapter-utils").AdapterUsageCheckpoint) => {});
+    const onUsage = vi.fn(async (_receipt: import("@tickernelz/wardmote-adapter-utils").AdapterUsageCheckpoint) => {});
     const usage = { inputTokens: 120, cacheReadTokens: 100, outputTokens: 10, providerCostUsd: 0 };
     const runDelta = scenario === "partial" ? { inputTokens: 120 } : scenario === "fresh_zero" ? { inputTokens: 0, outputTokens: 0 } : usage;
     state.execute.mockReset().mockImplementationOnce(async () => {
@@ -5781,7 +5781,7 @@ describe("native terminal-turn accounting", () => {
   beforeEach(() => vi.spyOn(issueServiceModule, "issueService").mockReturnValue({ update: vi.fn(async () => ({ status: "blocked", statusVersion: 1 })) } as unknown as ReturnType<typeof issueServiceModule.issueService>));
   afterEach(() => vi.restoreAllMocks());
   it.each(["turn.failed", "turn.cancelled", "turn.interrupted", "missing_terminal", "session_total", "empty_usage", "different_turn"])("preserves run usage for %s without certifying incomplete evidence", async (scenario) => {
-    const onUsage = vi.fn(async (_receipt: import("@tickernelz/paperclip-pro-adapter-utils").AdapterUsageCheckpoint) => {});
+    const onUsage = vi.fn(async (_receipt: import("@tickernelz/wardmote-adapter-utils").AdapterUsageCheckpoint) => {});
     const failure = new Error("provider_transport_failed: no semantic result");
     state.execute.mockReset().mockImplementationOnce(async () => {
       const usage = { inputTokens: 120, cacheReadTokens: 100, outputTokens: 10, providerCostUsd: 0.25 };
@@ -6837,7 +6837,7 @@ describe("bounded stopped instruction collection", () => {
 
 describe("native warm session supervision", () => {
   it.each(["collect", "close-failure", "stopped", "destroyed", "missing-lease", "foreign-run", "foreign-environment", "deleted-environment", "claim-edit", "claim-add", "claim-remove", "claim-remove-entry", "claim-canonical", "claim-config", "claim-uncertain"])("composes remote warm ownership with real DB successor leases and current-run collection: %s", async ending => {
-    const tables = await import("@tickernelz/paperclip-pro-db");
+    const tables = await import("@tickernelz/wardmote-db");
     const { eq } = await import("drizzle-orm");
     const { randomUUID } = await import("node:crypto");
     const { promisify } = await import("node:util");
@@ -6858,7 +6858,7 @@ describe("native warm session supervision", () => {
     const canonical = resolveManagedInstructionsRoot({ id: agentId, companyId, name: "Warm remote", adapterConfig: {} }), remoteCwd = join(home, "remote");
     let currentLease = "", failCleanup = false, failProbe = false, closed = false;
     const commands: Array<{ leaseId: string; command: string }> = [];
-    const commandRunner = (leaseId: string): import("@tickernelz/paperclip-pro-adapter-utils/command-managed-runtime").CommandManagedRuntimeRunner => ({ execute: async input => {
+    const commandRunner = (leaseId: string): import("@tickernelz/wardmote-adapter-utils/command-managed-runtime").CommandManagedRuntimeRunner => ({ execute: async input => {
       expect(leaseId).toBe(currentLease); // The replaced collector must never execute.
       commands.push({ leaseId, command: `${input.command} ${(input.args ?? []).join(" ")}` });
       if (failProbe) {
@@ -12653,7 +12653,7 @@ describe("runnerd provider runtime wiring", () => {
       if (command.args?.[0] === "--build-metadata") return {
         exitCode: 0, timedOut: false, stdout: JSON.stringify({
           schema: "paperclip-runner/runnerd-build-metadata/v1", binaryName: "paperclip-runnerd",
-          packageName: "@tickernelz/paperclip-pro-paperclip-runner", binaryContractVersion: 2,
+          packageName: "@tickernelz/wardmote-paperclip-runner", binaryContractVersion: 2,
           durableSessionCapabilities: ["unlimited_runtime", "connection_lease_renewal"],
           prpTransportModes: ["listen_ws"],
         }), stderr: "",
@@ -12730,7 +12730,7 @@ describe("runnerd provider runtime wiring", () => {
       if (command.args?.[0] === "--build-metadata") return {
         exitCode: 0, timedOut: false, stdout: JSON.stringify({
           schema: "paperclip-runner/runnerd-build-metadata/v1", binaryName: "paperclip-runnerd",
-          packageName: "@tickernelz/paperclip-pro-paperclip-runner", binaryContractVersion: 2,
+          packageName: "@tickernelz/wardmote-paperclip-runner", binaryContractVersion: 2,
           durableSessionCapabilities: ["unlimited_runtime", "connection_lease_renewal"],
           prpTransportModes: ["listen_ws"],
         }), stderr: "",
@@ -12850,7 +12850,7 @@ describe("runnerd provider runtime wiring", () => {
           stdout = JSON.stringify({
             schema: "paperclip-runner/runnerd-build-metadata/v1",
             binaryName: "paperclip-runnerd",
-            packageName: "@tickernelz/paperclip-pro-paperclip-runner",
+            packageName: "@tickernelz/wardmote-paperclip-runner",
             binaryContractVersion: 2,
             durableSessionCapabilities: (image === "stale" || retained) && command.command === "/usr/local/bin/paperclip-runnerd"
               ? undefined
@@ -12994,7 +12994,7 @@ describe("runnerd provider runtime wiring", () => {
           stdout = JSON.stringify({
             schema: "paperclip-runner/runnerd-build-metadata/v1",
             binaryName: "paperclip-runnerd",
-            packageName: "@tickernelz/paperclip-pro-paperclip-runner",
+            packageName: "@tickernelz/wardmote-paperclip-runner",
             binaryContractVersion: 2,
             durableSessionCapabilities: ["unlimited_runtime", "connection_lease_renewal"],
             prpTransportModes: ["listen_ws"],

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { agentAppearanceSchema, randomAgentAppearance } from "@tickernelz/paperclip-pro-shared";
+import { agentAppearanceSchema, randomAgentAppearance } from "@tickernelz/wardmote-shared";
 
 /** Non-secret visual identity, retained across navigation and company changes. */
 export function useAgentAppearanceDraft(draftKey: string) {

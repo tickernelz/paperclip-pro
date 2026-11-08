@@ -1,4 +1,4 @@
-import { announcementIdSchema } from "@tickernelz/paperclip-pro-shared";
+import { announcementIdSchema } from "@tickernelz/wardmote-shared";
 
 const memory = new Map<string, boolean>();
 export function announcementStoragePrefix(userId: string) {

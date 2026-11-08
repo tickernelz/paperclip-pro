@@ -1,5 +1,5 @@
 import type { RequestHandler } from "express";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import { logger } from "./logger.js";
 import {
   applyCloudRuntimeIdentityAssertion,

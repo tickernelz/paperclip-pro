@@ -1,7 +1,7 @@
 /**
  * esbuild configuration for building the paperclip-pro CLI for npm.
  *
- * Bundles all workspace packages (@tickernelz/paperclip-pro-*) into a single file.
+ * Bundles all workspace packages (@tickernelz/wardmote-*) into a single file.
  * External npm packages remain as regular dependencies.
  */
 
@@ -24,9 +24,9 @@ const workspacePaths = [
 ];
 
 // Workspace packages that should NOT be bundled — they'll be published
-// to npm and resolved at runtime (e.g. @tickernelz/paperclip-pro-server uses dynamic import).
+// to npm and resolved at runtime (e.g. @tickernelz/wardmote-server uses dynamic import).
 const externalWorkspacePackages = new Set([
-  "@tickernelz/paperclip-pro-server",
+  "@tickernelz/wardmote-server",
 ]);
 
 // Collect all external (non-workspace) npm package names
@@ -36,7 +36,7 @@ for (const p of workspacePaths) {
   for (const name of Object.keys(pkg.dependencies || {})) {
     if (externalWorkspacePackages.has(name)) {
       externals.add(name);
-    } else if (!name.startsWith("@tickernelz/paperclip-pro-") && !bundledCliNpmDependencies.has(name)) {
+    } else if (!name.startsWith("@tickernelz/wardmote-") && !bundledCliNpmDependencies.has(name)) {
       externals.add(name);
     }
   }

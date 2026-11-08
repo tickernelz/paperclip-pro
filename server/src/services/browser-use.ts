@@ -17,14 +17,14 @@ import {
   heartbeatRuns,
   agents,
   costEvents,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   BROWSER_USE_IDLE_MS,
   type BrowserUseControl,
   type BrowserUseSettings,
   type BrowserUseViewportRequest,
   type TaskBrowser,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   browserUseClient,
   browserUseCostCap,

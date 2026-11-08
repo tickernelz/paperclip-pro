@@ -1,6 +1,6 @@
 import { createContext, useContext, useMemo, type ReactNode } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { buildRoutineMentionHref, buildSkillMentionHref } from "@tickernelz/paperclip-pro-shared";
+import { buildRoutineMentionHref, buildSkillMentionHref } from "@tickernelz/wardmote-shared";
 import { companySkillsApi } from "../api/companySkills";
 import { routinesApi } from "../api/routines";
 import { useCompany } from "./CompanyContext";

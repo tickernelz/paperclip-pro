@@ -6,7 +6,7 @@ import {
   getAppStoreDefinition,
   getConnectableAppDefinition,
   type AppDefinition,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 export function appSupportsToolCatalogSetup(entry: AppDefinition | null | undefined): boolean {
   return Boolean(

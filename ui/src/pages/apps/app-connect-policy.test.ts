@@ -1,4 +1,4 @@
-import { APP_STORE_DEFINITIONS, appSupportsCatalogSetup } from "@tickernelz/paperclip-pro-shared";
+import { APP_STORE_DEFINITIONS, appSupportsCatalogSetup } from "@tickernelz/wardmote-shared";
 import { describe, expect, it } from "vitest";
 import {
   MCP_DIRECT_OAUTH_CONNECT_SLUGS,
