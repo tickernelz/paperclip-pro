@@ -9,9 +9,9 @@
  * @see PLUGIN_SPEC.md §10 — Plugin Manifest
  * @see packages/shared/src/validators/plugin.ts — Zod schema definition
  */
-import { pluginManifestV1Schema } from "@tickernelz/paperclip-pro-shared";
-import type { PaperclipPluginManifestV1 } from "@tickernelz/paperclip-pro-shared";
-import { PLUGIN_API_VERSION } from "@tickernelz/paperclip-pro-shared";
+import { pluginManifestV1Schema } from "@tickernelz/wardmote-shared";
+import type { PaperclipPluginManifestV1 } from "@tickernelz/wardmote-shared";
+import { PLUGIN_API_VERSION } from "@tickernelz/wardmote-shared";
 import { badRequest } from "../errors.js";
 
 // ---------------------------------------------------------------------------

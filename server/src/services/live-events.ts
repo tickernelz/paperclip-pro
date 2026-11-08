@@ -1,5 +1,5 @@
 import { EventEmitter } from "node:events";
-import type { LiveEvent, LiveEventType } from "@tickernelz/paperclip-pro-shared";
+import type { LiveEvent, LiveEventType } from "@tickernelz/wardmote-shared";
 
 type LiveEventPayload = Record<string, unknown>;
 type LiveEventListener = (event: LiveEvent) => void;

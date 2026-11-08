@@ -1,6 +1,6 @@
-import { withAgentAppearance } from "@tickernelz/paperclip-pro-shared";
+import { withAgentAppearance } from "@tickernelz/wardmote-shared";
 import { and, asc, desc, eq, gte, inArray, isNull, lte, or, sql } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   activityLog,
   agents,
@@ -11,10 +11,10 @@ import {
   issueComments,
   issues,
   issueThreadInteractions,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { executionIssueCondition } from "./issue-visibility.js";
 
-// DTO types are shared with the UI via @tickernelz/paperclip-pro-shared so both sides consume
+// DTO types are shared with the UI via @tickernelz/wardmote-shared so both sides consume
 // one contract. Re-exported here for back-compat with existing server imports.
 import type {
   TimelineActorType,
@@ -23,7 +23,7 @@ import type {
   WorkTimelineEvent,
   WorkTimelineEdge,
   WorkTimelineResult,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 export type {
   TimelineActorType,
@@ -34,7 +34,7 @@ export type {
   WorkTimelineEvent,
   WorkTimelineEdge,
   WorkTimelineResult,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 export interface WorkTimelineQuery {
   companyId: string;

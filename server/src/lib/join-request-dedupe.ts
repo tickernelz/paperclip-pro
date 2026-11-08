@@ -1,4 +1,4 @@
-import { joinRequests } from "@tickernelz/paperclip-pro-db";
+import { joinRequests } from "@tickernelz/wardmote-db";
 
 type JoinRequestLike = Pick<
   typeof joinRequests.$inferSelect,

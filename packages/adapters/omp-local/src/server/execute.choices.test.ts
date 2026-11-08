@@ -4,7 +4,7 @@ import {
   ompChoicePatch,
   type OmpChoiceModel,
   type OmpControlId,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { buildOmpArgs } from "./execute.js";
 import { buildOmpSettingsOverlay } from "./settings-overlay.js";
 

@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { eq, sql } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
-import type { AttentionItem } from "@tickernelz/paperclip-pro-shared";
+import type { AttentionItem } from "@tickernelz/wardmote-shared";
 import {
   activityLog,
   agents,
@@ -10,7 +10,7 @@ import {
   decisionArchiveNotificationOutbox,
   decisionRetention,
   issues,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { getEmbeddedPostgresTestSupport, startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";
 import { attentionService } from "../services/attention.js";
 import { decisionRetentionService } from "../services/decision-retention.js";

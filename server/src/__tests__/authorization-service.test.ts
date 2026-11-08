@@ -15,8 +15,8 @@ import {
   projectAccessMembers,
   projects,
   userInboxAgentPolicies,
-} from "@tickernelz/paperclip-pro-db";
-import { LOW_TRUST_REVIEW_PRESET, type PermissionKey } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import { LOW_TRUST_REVIEW_PRESET, type PermissionKey } from "@tickernelz/wardmote-shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

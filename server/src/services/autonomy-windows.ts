@@ -1,12 +1,12 @@
 import { and, desc, eq, inArray, lte, sql } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { issueAutonomyWindows, issues } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
+import { issueAutonomyWindows, issues } from "@tickernelz/wardmote-db";
 import {
   AUTONOMY_WINDOW_DEFAULT_HOURS,
   AUTONOMY_WINDOW_MAX_HOURS,
   type AutonomyWindowGrantChannel,
   type IssueAutonomyWindow,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { conflict, notFound, unprocessable } from "../errors.js";
 import { logActivity } from "./activity-log.js";
 

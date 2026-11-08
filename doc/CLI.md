@@ -3,7 +3,7 @@
 > **Fork notice.** This is the `wardmote` CLI from
 > [`tickernelz/wardmote`](https://github.com/tickernelz/wardmote), a hard fork of
 > `paperclipai/paperclip` at `7b7c4d417`. Nothing is published to npm, so every
-> `npx @tickernelz/paperclip-pro …` and `npm install -g paperclip-pro` example below is
+> `npx @tickernelz/wardmote …` and `npm install -g paperclip-pro` example below is
 > inherited from upstream and will fail with a 404. Run the installed
 > `wardmote` shim, or the direct-exec form
 > `node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts <command> <args>` from a source
@@ -19,11 +19,11 @@ Paperclip CLI now supports both:
 
 ## Security: safe invocation for content-bearing arguments
 
-Use `npx @tickernelz/paperclip-pro` for any command whose argument can hold untrusted or
+Use `npx @tickernelz/wardmote` for any command whose argument can hold untrusted or
 semi-trusted content. Untrusted content includes issue text, comment bodies,
 Markdown, pasted snippets, and model output. `npx` runs the CLI binary directly.
 It passes the argument as an inert `argv` value. It does not run a shell over the
-value. `npx @tickernelz/paperclip-pro` works on any machine with Node: it runs a local install
+value. `npx @tickernelz/wardmote` works on any machine with Node: it runs a local install
 of the `wardmote` package, and it fetches the published package when no local
 install is present.
 
@@ -43,7 +43,7 @@ re-evaluates the value in its own shell.
 
 Safe forms:
 
-- `npx @tickernelz/paperclip-pro <command> <args>` — the documented default. It passes an inert
+- `npx @tickernelz/wardmote <command> <args>` — the documented default. It passes an inert
   `argv` value and runs on any machine.
 - `node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts <command> <args>` —
   the safe form to run the local source from a monorepo checkout. It is the exact
@@ -82,25 +82,25 @@ allowlist entry is an offender. The allowlist holds commands such as `run`,
 `worktree ensure-seeded`, and `worktree env`.
 
 Every invocation that carries a positional value or an option value uses
-`npx @tickernelz/paperclip-pro` instead. This covers a hostname (`allowed-hostname`), an import
+`npx @tickernelz/wardmote` instead. This covers a hostname (`allowed-hostname`), an import
 URL or folder (`company import`), an identifier or secret (`--company-id`,
 `--agent-id`, `--claim-secret`), a payload (`--payload-json`), free text
 (`--body`, `--title`, `--comment`), a data directory (`--data-dir`), an instance
 (`--instance`), a bind preset (`--bind`), a context-profile name, and every
 worktree path, ref, id, or name option. A runtime value counts as non-fixed even
 when it looks safe. The private-hostname guard builds `allowed-hostname <value>`
-from the request Host header, so it uses `npx @tickernelz/paperclip-pro`.
+from the request Host header, so it uses `npx @tickernelz/wardmote`.
 
 For a command that must run the local checked-out source with a value, use the
 direct-exec form: `node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts
 <command> <args>`.
 
-The `pnpm --filter @tickernelz/paperclip-pro-*` build and test commands are not CLI
+The `pnpm --filter @tickernelz/wardmote-*` build and test commands are not CLI
 invocation. They do not change.
 
 ### Offline and air-gapped use
 
-`npx @tickernelz/paperclip-pro` runs offline when the `paperclip-pro` package is already in a
+`npx @tickernelz/wardmote` runs offline when the `paperclip-pro` package is already in a
 local install or in the npm cache. It reaches the network only when the package
 is in neither place.
 
@@ -110,12 +110,12 @@ wardmote` when you accept a fetch only for a missing package.
 
 To prepare an air-gapped host, install the package one time while the host is
 online. Run `npm install -g paperclip-pro`, or run the documented `install.sh`
-path. After that step, both `npx @tickernelz/paperclip-pro` and the installed `paperclip-pro`
+path. After that step, both `npx @tickernelz/wardmote` and the installed `paperclip-pro`
 binary run offline. Both pass an inert `argv` value.
 
 To move the package without a registry, run `npm pack paperclip-pro` on an online
 host. Copy the tarball to the air-gapped host. Run `npm install -g
-./tickernelz-paperclip-pro-<version>.tgz`.
+./tickernelz-wardmote-<version>.tgz`.
 
 Do not use `pnpm wardmote` as an offline fallback for a content-bearing
 argument. It runs the argument through a shell first, offline or online. It also
@@ -137,7 +137,7 @@ pnpm wardmote --help
 Recommended installation and interactive onboarding:
 
 ```sh
-npx @tickernelz/paperclip-pro@latest install --yes
+npx @tickernelz/wardmote@latest install --yes
 wardmote onboard --yes
 ```
 
@@ -168,7 +168,7 @@ installs a background service and never creates a goal, project, issue, task,
 or heartbeat.
 
 ```sh
-npx @tickernelz/paperclip-pro test-drive \
+npx @tickernelz/wardmote test-drive \
   [-d, --data-dir <path>] \
   [--company-name <name>] \
   [--agent-name <name>] \
@@ -203,7 +203,7 @@ OpenCode model references retain their complete path, including additional
 slashes:
 
 ```sh
-OPENROUTER_API_KEY=... npx @tickernelz/paperclip-pro test-drive \
+OPENROUTER_API_KEY=... npx @tickernelz/wardmote test-drive \
   --harness opencode \
   --model openrouter/anthropic/claude-sonnet-4.5
 ```
@@ -214,7 +214,7 @@ and `--api-key-env` are mutually exclusive. A custom source variable is still
 stored and projected under the canonical target variable:
 
 ```sh
-MY_ROUTER_KEY=... npx @tickernelz/paperclip-pro test-drive \
+MY_ROUTER_KEY=... npx @tickernelz/wardmote test-drive \
   --harness opencode \
   --model openrouter/openai/gpt-5.4 \
   --api-key-env MY_ROUTER_KEY
@@ -314,7 +314,7 @@ Canonical behavior is documented in `doc/DEPLOYMENT-MODES.md`.
 Allow an authenticated/private hostname (for example custom Tailscale DNS):
 
 ```sh
-npx @tickernelz/paperclip-pro allowed-hostname dotta-macbook-pro
+npx @tickernelz/wardmote allowed-hostname dotta-macbook-pro
 ```
 
 Bring up the default local SSH fixture for environment testing:
@@ -363,8 +363,8 @@ Profiles store token env-var names, not plaintext tokens. The wizard prints shel
 Use `--data-dir` on any CLI command to isolate all default local state (config/context/db/logs/storage/secrets) away from `~/.wardmote`:
 
 ```sh
-npx @tickernelz/paperclip-pro run --data-dir ./tmp/paperclip-dev
-npx @tickernelz/paperclip-pro issue list --data-dir ./tmp/paperclip-dev
+npx @tickernelz/wardmote run --data-dir ./tmp/paperclip-dev
+npx @tickernelz/wardmote issue list --data-dir ./tmp/paperclip-dev
 ```
 
 ## Context Profiles
@@ -372,45 +372,45 @@ npx @tickernelz/paperclip-pro issue list --data-dir ./tmp/paperclip-dev
 Store local defaults in `~/.wardmote/context.json`:
 
 ```sh
-npx @tickernelz/paperclip-pro context set --api-base http://localhost:3100 --company-id <company-id>
-npx @tickernelz/paperclip-pro context set --persona agent --agent-id <agent-id> --api-key-env-var-name PAPERCLIP_API_KEY
+npx @tickernelz/wardmote context set --api-base http://localhost:3100 --company-id <company-id>
+npx @tickernelz/wardmote context set --persona agent --agent-id <agent-id> --api-key-env-var-name PAPERCLIP_API_KEY
 pnpm wardmote context show
 pnpm wardmote context list
-npx @tickernelz/paperclip-pro context use default
+npx @tickernelz/wardmote context use default
 ```
 
 To avoid storing secrets in context, set `apiKeyEnvVarName` and keep the key in env:
 
 ```sh
-npx @tickernelz/paperclip-pro context set --api-key-env-var-name PAPERCLIP_API_KEY
+npx @tickernelz/wardmote context set --api-key-env-var-name PAPERCLIP_API_KEY
 export PAPERCLIP_API_KEY=...
 ```
 
 ## Organization Commands
 
 ```sh
-npx @tickernelz/paperclip-pro company list
-npx @tickernelz/paperclip-pro company get <company-id>
-npx @tickernelz/paperclip-pro company current [--company-id <company-id>]
-npx @tickernelz/paperclip-pro company stats
-npx @tickernelz/paperclip-pro company create --payload-json '{...}'
-npx @tickernelz/paperclip-pro company update <company-id> --payload-json '{...}'
-npx @tickernelz/paperclip-pro company branding:update <company-id> --payload-json '{...}'
-npx @tickernelz/paperclip-pro company archive <company-id>
-npx @tickernelz/paperclip-pro company export <company-id> --out ./company --include company,agents,projects,issues,skills
-npx @tickernelz/paperclip-pro company export:preview <company-id> --payload-json '{...}'
-npx @tickernelz/paperclip-pro company export:api <company-id> --payload-json '{...}'
-npx @tickernelz/paperclip-pro company import ./company --target new --new-company-name "Imported Company"
-npx @tickernelz/paperclip-pro company import:preview <company-id> --payload-json '{...}'
-npx @tickernelz/paperclip-pro company import:apply <company-id> --payload-json '{...}'
-npx @tickernelz/paperclip-pro company delete <company-id-or-prefix> --yes --confirm <same-id-or-prefix>
+npx @tickernelz/wardmote company list
+npx @tickernelz/wardmote company get <company-id>
+npx @tickernelz/wardmote company current [--company-id <company-id>]
+npx @tickernelz/wardmote company stats
+npx @tickernelz/wardmote company create --payload-json '{...}'
+npx @tickernelz/wardmote company update <company-id> --payload-json '{...}'
+npx @tickernelz/wardmote company branding:update <company-id> --payload-json '{...}'
+npx @tickernelz/wardmote company archive <company-id>
+npx @tickernelz/wardmote company export <company-id> --out ./company --include company,agents,projects,issues,skills
+npx @tickernelz/wardmote company export:preview <company-id> --payload-json '{...}'
+npx @tickernelz/wardmote company export:api <company-id> --payload-json '{...}'
+npx @tickernelz/wardmote company import ./company --target new --new-company-name "Imported Company"
+npx @tickernelz/wardmote company import:preview <company-id> --payload-json '{...}'
+npx @tickernelz/wardmote company import:apply <company-id> --payload-json '{...}'
+npx @tickernelz/wardmote company delete <company-id-or-prefix> --yes --confirm <same-id-or-prefix>
 ```
 
 Examples:
 
 ```sh
-npx @tickernelz/paperclip-pro company delete PAP --yes --confirm PAP
-npx @tickernelz/paperclip-pro company delete 5cbe79ee-acb3-4597-896e-7662742593cd --yes --confirm 5cbe79ee-acb3-4597-896e-7662742593cd
+npx @tickernelz/wardmote company delete PAP --yes --confirm PAP
+npx @tickernelz/wardmote company delete 5cbe79ee-acb3-4597-896e-7662742593cd --yes --confirm 5cbe79ee-acb3-4597-896e-7662742593cd
 ```
 
 Notes:
@@ -427,22 +427,22 @@ Notes:
 ## Issue Commands
 
 ```sh
-npx @tickernelz/paperclip-pro issue list --company-id <company-id> [--status todo,in_progress] [--assignee-agent-id <agent-id>] [--match text]
-npx @tickernelz/paperclip-pro issue get <issue-id-or-identifier>
-npx @tickernelz/paperclip-pro issue create --company-id <company-id> --title "..." [--description "..."] [--status todo] [--priority high] [--parent-id <issue-id> | --standalone]
-npx @tickernelz/paperclip-pro issue update <issue-id> [--status in_progress] [--comment "..."]
-npx @tickernelz/paperclip-pro issue delete <issue-id> --yes
-npx @tickernelz/paperclip-pro issue comment <issue-id> --body "..." [--attachment-id <id...>] [--reopen]
-npx @tickernelz/paperclip-pro issue comments <issue-id> [--limit 50]
-npx @tickernelz/paperclip-pro issue comment:get <issue-id> <comment-id>
-npx @tickernelz/paperclip-pro issue comment:delete <issue-id> <comment-id>
-npx @tickernelz/paperclip-pro issue runs <issue-id-or-identifier>
-npx @tickernelz/paperclip-pro issue live-runs <issue-id-or-identifier>
-npx @tickernelz/paperclip-pro issue active-run <issue-id-or-identifier>
-npx @tickernelz/paperclip-pro issue heartbeat-context <issue-id>
-npx @tickernelz/paperclip-pro issue checkout <issue-id> --agent-id <agent-id> [--expected-statuses todo,backlog,blocked]
-npx @tickernelz/paperclip-pro issue release <issue-id>
-npx @tickernelz/paperclip-pro issue force-release <issue-id>
+npx @tickernelz/wardmote issue list --company-id <company-id> [--status todo,in_progress] [--assignee-agent-id <agent-id>] [--match text]
+npx @tickernelz/wardmote issue get <issue-id-or-identifier>
+npx @tickernelz/wardmote issue create --company-id <company-id> --title "..." [--description "..."] [--status todo] [--priority high] [--parent-id <issue-id> | --standalone]
+npx @tickernelz/wardmote issue update <issue-id> [--status in_progress] [--comment "..."]
+npx @tickernelz/wardmote issue delete <issue-id> --yes
+npx @tickernelz/wardmote issue comment <issue-id> --body "..." [--attachment-id <id...>] [--reopen]
+npx @tickernelz/wardmote issue comments <issue-id> [--limit 50]
+npx @tickernelz/wardmote issue comment:get <issue-id> <comment-id>
+npx @tickernelz/wardmote issue comment:delete <issue-id> <comment-id>
+npx @tickernelz/wardmote issue runs <issue-id-or-identifier>
+npx @tickernelz/wardmote issue live-runs <issue-id-or-identifier>
+npx @tickernelz/wardmote issue active-run <issue-id-or-identifier>
+npx @tickernelz/wardmote issue heartbeat-context <issue-id>
+npx @tickernelz/wardmote issue checkout <issue-id> --agent-id <agent-id> [--expected-statuses todo,backlog,blocked]
+npx @tickernelz/wardmote issue release <issue-id>
+npx @tickernelz/wardmote issue force-release <issue-id>
 ```
 
 `issue create` sent from an agent run bound to an ordinary execution task is parented under that task when `--parent-id` is omitted; pass `--standalone` to create intentionally top-level work (`parentId: null`). The two flags are mutually exclusive.
@@ -450,127 +450,127 @@ npx @tickernelz/paperclip-pro issue force-release <issue-id>
 Issue subresources are exposed as Paperclip API wrappers. Commands that map to broad server schemas accept JSON payloads and validate them with shared schemas before sending.
 
 ```sh
-npx @tickernelz/paperclip-pro issue child:create <issue-id> --payload-json '{"title":"Child task"}'
-npx @tickernelz/paperclip-pro issue approvals <issue-id>
-npx @tickernelz/paperclip-pro issue approval:link <issue-id> <approval-id>
-npx @tickernelz/paperclip-pro issue approval:unlink <issue-id> <approval-id>
-npx @tickernelz/paperclip-pro issue read <issue-id>
-npx @tickernelz/paperclip-pro issue unread <issue-id>
-npx @tickernelz/paperclip-pro issue archive <issue-id>
-npx @tickernelz/paperclip-pro issue unarchive <issue-id>
-npx @tickernelz/paperclip-pro issue recovery-actions <issue-id>
-npx @tickernelz/paperclip-pro issue recovery:resolve <issue-id> --outcome restored --source-issue-status todo
+npx @tickernelz/wardmote issue child:create <issue-id> --payload-json '{"title":"Child task"}'
+npx @tickernelz/wardmote issue approvals <issue-id>
+npx @tickernelz/wardmote issue approval:link <issue-id> <approval-id>
+npx @tickernelz/wardmote issue approval:unlink <issue-id> <approval-id>
+npx @tickernelz/wardmote issue read <issue-id>
+npx @tickernelz/wardmote issue unread <issue-id>
+npx @tickernelz/wardmote issue archive <issue-id>
+npx @tickernelz/wardmote issue unarchive <issue-id>
+npx @tickernelz/wardmote issue recovery-actions <issue-id>
+npx @tickernelz/wardmote issue recovery:resolve <issue-id> --outcome restored --source-issue-status todo
 ```
 
 ```sh
-npx @tickernelz/paperclip-pro issue documents <issue-id> [--include-system]
-npx @tickernelz/paperclip-pro issue document:get <issue-id> <key>
-npx @tickernelz/paperclip-pro issue document:put <issue-id> <key> --body-file ./plan.md [--title Plan]
-npx @tickernelz/paperclip-pro issue document:lock <issue-id> <key>
-npx @tickernelz/paperclip-pro issue document:unlock <issue-id> <key>
-npx @tickernelz/paperclip-pro issue document:revisions <issue-id> <key>
-npx @tickernelz/paperclip-pro issue document:restore <issue-id> <key> <revision-id>
-npx @tickernelz/paperclip-pro issue document:delete <issue-id> <key>
+npx @tickernelz/wardmote issue documents <issue-id> [--include-system]
+npx @tickernelz/wardmote issue document:get <issue-id> <key>
+npx @tickernelz/wardmote issue document:put <issue-id> <key> --body-file ./plan.md [--title Plan]
+npx @tickernelz/wardmote issue document:lock <issue-id> <key>
+npx @tickernelz/wardmote issue document:unlock <issue-id> <key>
+npx @tickernelz/wardmote issue document:revisions <issue-id> <key>
+npx @tickernelz/wardmote issue document:restore <issue-id> <key> <revision-id>
+npx @tickernelz/wardmote issue document:delete <issue-id> <key>
 ```
 
 ```sh
-npx @tickernelz/paperclip-pro issue work-products <issue-id>
-npx @tickernelz/paperclip-pro issue work-product:create <issue-id> --payload-json '{"type":"pull_request","provider":"github","title":"PR"}'
-npx @tickernelz/paperclip-pro issue work-product:update <work-product-id> --payload-json '{"status":"archived"}'
-npx @tickernelz/paperclip-pro issue work-product:delete <work-product-id>
-npx @tickernelz/paperclip-pro issue interactions <issue-id>
-npx @tickernelz/paperclip-pro issue interaction:create <issue-id> --payload-json '{"kind":"request_confirmation","payload":{"version":1,"prompt":"Continue?"}}'
-npx @tickernelz/paperclip-pro issue interaction:accept <issue-id> <interaction-id> [--selected-client-keys key1,key2]
-npx @tickernelz/paperclip-pro issue interaction:reject <issue-id> <interaction-id> [--reason "..."]
-npx @tickernelz/paperclip-pro issue interaction:respond <issue-id> <interaction-id> --answers-json '[{"questionId":"q1","optionIds":["yes"]}]'
-npx @tickernelz/paperclip-pro issue interaction:cancel <issue-id> <interaction-id> [--reason "..."]
+npx @tickernelz/wardmote issue work-products <issue-id>
+npx @tickernelz/wardmote issue work-product:create <issue-id> --payload-json '{"type":"pull_request","provider":"github","title":"PR"}'
+npx @tickernelz/wardmote issue work-product:update <work-product-id> --payload-json '{"status":"archived"}'
+npx @tickernelz/wardmote issue work-product:delete <work-product-id>
+npx @tickernelz/wardmote issue interactions <issue-id>
+npx @tickernelz/wardmote issue interaction:create <issue-id> --payload-json '{"kind":"request_confirmation","payload":{"version":1,"prompt":"Continue?"}}'
+npx @tickernelz/wardmote issue interaction:accept <issue-id> <interaction-id> [--selected-client-keys key1,key2]
+npx @tickernelz/wardmote issue interaction:reject <issue-id> <interaction-id> [--reason "..."]
+npx @tickernelz/wardmote issue interaction:respond <issue-id> <interaction-id> --answers-json '[{"questionId":"q1","optionIds":["yes"]}]'
+npx @tickernelz/wardmote issue interaction:cancel <issue-id> <interaction-id> [--reason "..."]
 ```
 
 ```sh
-npx @tickernelz/paperclip-pro issue tree-state <issue-id>
-npx @tickernelz/paperclip-pro issue tree-preview <issue-id> --payload-json '{"mode":"pause"}'
-npx @tickernelz/paperclip-pro issue tree-holds <issue-id> [--status active] [--include-members]
-npx @tickernelz/paperclip-pro issue tree-hold:create <issue-id> --payload-json '{"mode":"pause","reason":"review"}'
-npx @tickernelz/paperclip-pro issue tree-hold:get <issue-id> <hold-id>
-npx @tickernelz/paperclip-pro issue tree-hold:release <issue-id> <hold-id> [--payload-json '{"reason":"done"}']
-npx @tickernelz/paperclip-pro issue attachments <issue-id>
-npx @tickernelz/paperclip-pro issue attachment:upload <issue-id> --company-id <company-id> --file ./artifact.txt
-npx @tickernelz/paperclip-pro issue attachment:download <attachment-id> [--out ./artifact.txt]
-npx @tickernelz/paperclip-pro issue attachment:delete <attachment-id>
-npx @tickernelz/paperclip-pro issue label:list --company-id <company-id>
-npx @tickernelz/paperclip-pro issue label:create --company-id <company-id> --name bug --color '#ff0000'
-npx @tickernelz/paperclip-pro issue label:delete <label-id>
-npx @tickernelz/paperclip-pro issue feedback:votes <issue-id>
-npx @tickernelz/paperclip-pro issue feedback:vote <issue-id> --payload-json '{"targetType":"issue_comment","targetId":"...","vote":"up"}'
+npx @tickernelz/wardmote issue tree-state <issue-id>
+npx @tickernelz/wardmote issue tree-preview <issue-id> --payload-json '{"mode":"pause"}'
+npx @tickernelz/wardmote issue tree-holds <issue-id> [--status active] [--include-members]
+npx @tickernelz/wardmote issue tree-hold:create <issue-id> --payload-json '{"mode":"pause","reason":"review"}'
+npx @tickernelz/wardmote issue tree-hold:get <issue-id> <hold-id>
+npx @tickernelz/wardmote issue tree-hold:release <issue-id> <hold-id> [--payload-json '{"reason":"done"}']
+npx @tickernelz/wardmote issue attachments <issue-id>
+npx @tickernelz/wardmote issue attachment:upload <issue-id> --company-id <company-id> --file ./artifact.txt
+npx @tickernelz/wardmote issue attachment:download <attachment-id> [--out ./artifact.txt]
+npx @tickernelz/wardmote issue attachment:delete <attachment-id>
+npx @tickernelz/wardmote issue label:list --company-id <company-id>
+npx @tickernelz/wardmote issue label:create --company-id <company-id> --name bug --color '#ff0000'
+npx @tickernelz/wardmote issue label:delete <label-id>
+npx @tickernelz/wardmote issue feedback:votes <issue-id>
+npx @tickernelz/wardmote issue feedback:vote <issue-id> --payload-json '{"targetType":"issue_comment","targetId":"...","vote":"up"}'
 ```
 
 ## Project Commands
 
 ```sh
-npx @tickernelz/paperclip-pro project list --company-id <company-id>
-npx @tickernelz/paperclip-pro project get <project-id-or-shortname> [--company-id <company-id>]
-npx @tickernelz/paperclip-pro project create --company-id <company-id> --name "Launch Site" [--goal-ids <id1,id2>] [--lead-agent-id <id>]
-npx @tickernelz/paperclip-pro project update <project-id-or-shortname> [--status in_progress] [--company-id <company-id>]
-npx @tickernelz/paperclip-pro project delete <project-id-or-shortname> --yes [--company-id <company-id>]
+npx @tickernelz/wardmote project list --company-id <company-id>
+npx @tickernelz/wardmote project get <project-id-or-shortname> [--company-id <company-id>]
+npx @tickernelz/wardmote project create --company-id <company-id> --name "Launch Site" [--goal-ids <id1,id2>] [--lead-agent-id <id>]
+npx @tickernelz/wardmote project update <project-id-or-shortname> [--status in_progress] [--company-id <company-id>]
+npx @tickernelz/wardmote project delete <project-id-or-shortname> --yes [--company-id <company-id>]
 ```
 
 Advanced project fields accept JSON:
 
 ```sh
-npx @tickernelz/paperclip-pro project create --company-id <company-id> --name "Ops" --env-json '{"OPENAI_API_KEY":{"kind":"secret","secretName":"openai-api-key"}}'
-npx @tickernelz/paperclip-pro project update <project-id> --execution-workspace-policy-json '{"enabled":true,"defaultMode":"shared_workspace"}'
+npx @tickernelz/wardmote project create --company-id <company-id> --name "Ops" --env-json '{"OPENAI_API_KEY":{"kind":"secret","secretName":"openai-api-key"}}'
+npx @tickernelz/wardmote project update <project-id> --execution-workspace-policy-json '{"enabled":true,"defaultMode":"shared_workspace"}'
 ```
 
 ## Goal Commands
 
 ```sh
-npx @tickernelz/paperclip-pro goal list --company-id <company-id>
-npx @tickernelz/paperclip-pro goal get <goal-id>
-npx @tickernelz/paperclip-pro goal create --company-id <company-id> --title "Grow revenue" [--level company] [--status active]
-npx @tickernelz/paperclip-pro goal update <goal-id> [--title "..."] [--status achieved]
-npx @tickernelz/paperclip-pro goal delete <goal-id> --yes
+npx @tickernelz/wardmote goal list --company-id <company-id>
+npx @tickernelz/wardmote goal get <goal-id>
+npx @tickernelz/wardmote goal create --company-id <company-id> --title "Grow revenue" [--level company] [--status active]
+npx @tickernelz/wardmote goal update <goal-id> [--title "..."] [--status achieved]
+npx @tickernelz/wardmote goal delete <goal-id> --yes
 ```
 
 ## Agent Commands
 
 ```sh
-npx @tickernelz/paperclip-pro agent list --company-id <company-id>
-npx @tickernelz/paperclip-pro agent get <agent-id>
-npx @tickernelz/paperclip-pro agent create --company-id <company-id> --payload-json '{"name":"Builder","adapterType":"codex_local"}'
-npx @tickernelz/paperclip-pro agent hire --company-id <company-id> --payload-json '{...}'
-npx @tickernelz/paperclip-pro agent update <agent-id> --payload-json '{"title":"Senior Builder"}'
-npx @tickernelz/paperclip-pro agent delete <agent-id> --yes
-npx @tickernelz/paperclip-pro agent me
-npx @tickernelz/paperclip-pro agent inbox
-npx @tickernelz/paperclip-pro agent inbox-mine --user-id <board-user-id>
-npx @tickernelz/paperclip-pro agent wake <agent-id-or-shortname> [--company-id <company-id>] [--reason "..."] [--payload '{"issueId":"..."}']
-npx @tickernelz/paperclip-pro agent pause <agent-id>
-npx @tickernelz/paperclip-pro agent resume <agent-id>
-npx @tickernelz/paperclip-pro agent approve <agent-id>
-npx @tickernelz/paperclip-pro agent terminate <agent-id>
-npx @tickernelz/paperclip-pro agent heartbeat:invoke <agent-id>
-npx @tickernelz/paperclip-pro agent local-cli <agent-id-or-shortname> --company-id <company-id>
+npx @tickernelz/wardmote agent list --company-id <company-id>
+npx @tickernelz/wardmote agent get <agent-id>
+npx @tickernelz/wardmote agent create --company-id <company-id> --payload-json '{"name":"Builder","adapterType":"codex_local"}'
+npx @tickernelz/wardmote agent hire --company-id <company-id> --payload-json '{...}'
+npx @tickernelz/wardmote agent update <agent-id> --payload-json '{"title":"Senior Builder"}'
+npx @tickernelz/wardmote agent delete <agent-id> --yes
+npx @tickernelz/wardmote agent me
+npx @tickernelz/wardmote agent inbox
+npx @tickernelz/wardmote agent inbox-mine --user-id <board-user-id>
+npx @tickernelz/wardmote agent wake <agent-id-or-shortname> [--company-id <company-id>] [--reason "..."] [--payload '{"issueId":"..."}']
+npx @tickernelz/wardmote agent pause <agent-id>
+npx @tickernelz/wardmote agent resume <agent-id>
+npx @tickernelz/wardmote agent approve <agent-id>
+npx @tickernelz/wardmote agent terminate <agent-id>
+npx @tickernelz/wardmote agent heartbeat:invoke <agent-id>
+npx @tickernelz/wardmote agent local-cli <agent-id-or-shortname> --company-id <company-id>
 ```
 
 Agent configuration and runtime endpoints:
 
 ```sh
-npx @tickernelz/paperclip-pro agent permissions:update <agent-id> --payload-json '{"canCreateAgents":true,"canCreateSkills":true,"canAssignTasks":true}'
-npx @tickernelz/paperclip-pro agent configuration <agent-id>
-npx @tickernelz/paperclip-pro agent config-revisions <agent-id>
-npx @tickernelz/paperclip-pro agent config-revision:get <agent-id> <revision-id>
-npx @tickernelz/paperclip-pro agent config-revision:rollback <agent-id> <revision-id>
-npx @tickernelz/paperclip-pro agent runtime-state <agent-id>
-npx @tickernelz/paperclip-pro agent runtime-state:reset-session <agent-id> [--task-key <key>]
-npx @tickernelz/paperclip-pro agent task-sessions <agent-id>
-npx @tickernelz/paperclip-pro agent skills <agent-id>
-npx @tickernelz/paperclip-pro agent skills:sync <agent-id> --desired-skills paperclip,github --mode add
-npx @tickernelz/paperclip-pro agent instructions-path:update <agent-id> --payload-json '{"path":"/path/to/AGENTS.md"}'
-npx @tickernelz/paperclip-pro agent instructions-bundle <agent-id>
-npx @tickernelz/paperclip-pro agent instructions-bundle:update <agent-id> --payload-json '{"mode":"managed"}'
-npx @tickernelz/paperclip-pro agent instructions-file:get <agent-id> --path AGENTS.md
-npx @tickernelz/paperclip-pro agent instructions-file:put <agent-id> --path AGENTS.md --content-file ./AGENTS.md
-npx @tickernelz/paperclip-pro agent instructions-file:delete <agent-id> --path AGENTS.md
+npx @tickernelz/wardmote agent permissions:update <agent-id> --payload-json '{"canCreateAgents":true,"canCreateSkills":true,"canAssignTasks":true}'
+npx @tickernelz/wardmote agent configuration <agent-id>
+npx @tickernelz/wardmote agent config-revisions <agent-id>
+npx @tickernelz/wardmote agent config-revision:get <agent-id> <revision-id>
+npx @tickernelz/wardmote agent config-revision:rollback <agent-id> <revision-id>
+npx @tickernelz/wardmote agent runtime-state <agent-id>
+npx @tickernelz/wardmote agent runtime-state:reset-session <agent-id> [--task-key <key>]
+npx @tickernelz/wardmote agent task-sessions <agent-id>
+npx @tickernelz/wardmote agent skills <agent-id>
+npx @tickernelz/wardmote agent skills:sync <agent-id> --desired-skills paperclip,github --mode add
+npx @tickernelz/wardmote agent instructions-path:update <agent-id> --payload-json '{"path":"/path/to/AGENTS.md"}'
+npx @tickernelz/wardmote agent instructions-bundle <agent-id>
+npx @tickernelz/wardmote agent instructions-bundle:update <agent-id> --payload-json '{"mode":"managed"}'
+npx @tickernelz/wardmote agent instructions-file:get <agent-id> --path AGENTS.md
+npx @tickernelz/wardmote agent instructions-file:put <agent-id> --path AGENTS.md --content-file ./AGENTS.md
+npx @tickernelz/wardmote agent instructions-file:delete <agent-id> --path AGENTS.md
 ```
 
 Agent config, instructions, skills, project env, environment, secret, and workspace edits affect the next run. Active runs finish with the config they started with. When a saved session, reused workspace, or sandbox lease no longer matches the effective next-run config, Paperclip may start fresh execution and records non-sensitive freshness categories in run result JSON and workspace operation logs.
@@ -584,8 +584,8 @@ Agent config, instructions, skills, project env, environment, secret, and worksp
 Example for shortname-based local setup:
 
 ```sh
-npx @tickernelz/paperclip-pro agent local-cli codexcoder --company-id <company-id>
-npx @tickernelz/paperclip-pro agent local-cli claudecoder --company-id <company-id>
+npx @tickernelz/wardmote agent local-cli codexcoder --company-id <company-id>
+npx @tickernelz/wardmote agent local-cli claudecoder --company-id <company-id>
 ```
 
 ## Token Commands
@@ -593,18 +593,18 @@ npx @tickernelz/paperclip-pro agent local-cli claudecoder --company-id <company-
 Agent API keys are scoped to one company and one agent. Plaintext tokens are printed once at creation.
 
 ```sh
-npx @tickernelz/paperclip-pro token agent create --company-id <company-id> --agent <agent-id-or-name> --name external-worker
-npx @tickernelz/paperclip-pro token agent list --company-id <company-id> --agent <agent-id-or-name>
-npx @tickernelz/paperclip-pro token agent revoke --company-id <company-id> --agent <agent-id-or-name> <key-id>
+npx @tickernelz/wardmote token agent create --company-id <company-id> --agent <agent-id-or-name> --name external-worker
+npx @tickernelz/wardmote token agent list --company-id <company-id> --agent <agent-id-or-name>
+npx @tickernelz/wardmote token agent revoke --company-id <company-id> --agent <agent-id-or-name> <key-id>
 ```
 
 Named board API keys use the board authorization model, support revocation and expiration metadata, and are audited server-side.
 
 ```sh
-npx @tickernelz/paperclip-pro token board create --company-id <company-id> --name external-admin
-npx @tickernelz/paperclip-pro token board create --name short-lived --ttl-days 7
-npx @tickernelz/paperclip-pro token board list
-npx @tickernelz/paperclip-pro token board revoke <key-id>
+npx @tickernelz/wardmote token board create --company-id <company-id> --name external-admin
+npx @tickernelz/wardmote token board create --name short-lived --ttl-days 7
+npx @tickernelz/wardmote token board list
+npx @tickernelz/wardmote token board revoke <key-id>
 ```
 
 ## Run Commands
@@ -612,16 +612,16 @@ npx @tickernelz/paperclip-pro token board revoke <key-id>
 `wardmote run` without a subcommand still bootstraps and starts a local Paperclip instance. The subcommands below inspect and control API heartbeat runs.
 
 ```sh
-npx @tickernelz/paperclip-pro run list --company-id <company-id> [--agent-id <agent-id>] [--limit 50]
-npx @tickernelz/paperclip-pro run live --company-id <company-id> [--limit 50] [--min-count 0]
-npx @tickernelz/paperclip-pro run get <run-id>
-npx @tickernelz/paperclip-pro run events <run-id> [--after-seq 0] [--limit 200]
-npx @tickernelz/paperclip-pro run log <run-id> [--offset 0] [--limit-bytes 16384] [--text]
-npx @tickernelz/paperclip-pro run cancel <run-id>
-npx @tickernelz/paperclip-pro run issues <run-id>
-npx @tickernelz/paperclip-pro run workspace-operations <run-id>
-npx @tickernelz/paperclip-pro run workspace-log <operation-id> [--offset 0] [--limit-bytes 16384] [--text]
-npx @tickernelz/paperclip-pro run watchdog-decision <run-id> --decision continue [--reason "..."]
+npx @tickernelz/wardmote run list --company-id <company-id> [--agent-id <agent-id>] [--limit 50]
+npx @tickernelz/wardmote run live --company-id <company-id> [--limit 50] [--min-count 0]
+npx @tickernelz/wardmote run get <run-id>
+npx @tickernelz/wardmote run events <run-id> [--after-seq 0] [--limit 200]
+npx @tickernelz/wardmote run log <run-id> [--offset 0] [--limit-bytes 16384] [--text]
+npx @tickernelz/wardmote run cancel <run-id>
+npx @tickernelz/wardmote run issues <run-id>
+npx @tickernelz/wardmote run workspace-operations <run-id>
+npx @tickernelz/wardmote run workspace-log <operation-id> [--offset 0] [--limit-bytes 16384] [--text]
+npx @tickernelz/wardmote run watchdog-decision <run-id> --decision continue [--reason "..."]
 ```
 
 ## Routine Commands
@@ -629,19 +629,19 @@ npx @tickernelz/paperclip-pro run watchdog-decision <run-id> --decision continue
 `wardmote routines disable-all` remains the local maintenance command. The singular `routine` group maps to the REST API.
 
 ```sh
-npx @tickernelz/paperclip-pro routine list --company-id <company-id> [--project-id <project-id>]
-npx @tickernelz/paperclip-pro routine create --company-id <company-id> --payload-json '{...}'
-npx @tickernelz/paperclip-pro routine get <routine-id>
-npx @tickernelz/paperclip-pro routine update <routine-id> --payload-json '{...}'
-npx @tickernelz/paperclip-pro routine revisions <routine-id>
-npx @tickernelz/paperclip-pro routine revision:restore <routine-id> <revision-id>
-npx @tickernelz/paperclip-pro routine runs <routine-id> [--limit 50]
-npx @tickernelz/paperclip-pro routine run <routine-id> [--payload-json '{...}']
-npx @tickernelz/paperclip-pro routine trigger:create <routine-id> --payload-json '{...}'
-npx @tickernelz/paperclip-pro routine trigger:update <trigger-id> --payload-json '{...}'
-npx @tickernelz/paperclip-pro routine trigger:delete <trigger-id>
-npx @tickernelz/paperclip-pro routine trigger:rotate-secret <trigger-id>
-npx @tickernelz/paperclip-pro routine trigger:fire <public-id> [--payload-json '{...}']
+npx @tickernelz/wardmote routine list --company-id <company-id> [--project-id <project-id>]
+npx @tickernelz/wardmote routine create --company-id <company-id> --payload-json '{...}'
+npx @tickernelz/wardmote routine get <routine-id>
+npx @tickernelz/wardmote routine update <routine-id> --payload-json '{...}'
+npx @tickernelz/wardmote routine revisions <routine-id>
+npx @tickernelz/wardmote routine revision:restore <routine-id> <revision-id>
+npx @tickernelz/wardmote routine runs <routine-id> [--limit 50]
+npx @tickernelz/wardmote routine run <routine-id> [--payload-json '{...}']
+npx @tickernelz/wardmote routine trigger:create <routine-id> --payload-json '{...}'
+npx @tickernelz/wardmote routine trigger:update <trigger-id> --payload-json '{...}'
+npx @tickernelz/wardmote routine trigger:delete <trigger-id>
+npx @tickernelz/wardmote routine trigger:rotate-secret <trigger-id>
+npx @tickernelz/wardmote routine trigger:fire <public-id> [--payload-json '{...}']
 ```
 
 ## Prompt Handoff
@@ -649,10 +649,10 @@ npx @tickernelz/paperclip-pro routine trigger:fire <public-id> [--payload-json '
 Prompt handoff creates Paperclip work. It does not create a chat session.
 
 ```sh
-npx @tickernelz/paperclip-pro agent-prompt <agent-name-or-id> <agent-api-key> "Prompt here"
-npx @tickernelz/paperclip-pro agent prompt --agent <agent-name-or-id> --api-key-env PAPERCLIP_API_KEY "Prompt here"
-npx @tickernelz/paperclip-pro agent prompt --profile my-agent "Prompt here"
-npx @tickernelz/paperclip-pro board prompt --company-id <company-id> --agent <agent-name-or-id> "Prompt here"
+npx @tickernelz/wardmote agent-prompt <agent-name-or-id> <agent-api-key> "Prompt here"
+npx @tickernelz/wardmote agent prompt --agent <agent-name-or-id> --api-key-env PAPERCLIP_API_KEY "Prompt here"
+npx @tickernelz/wardmote agent prompt --profile my-agent "Prompt here"
+npx @tickernelz/wardmote board prompt --company-id <company-id> --agent <agent-name-or-id> "Prompt here"
 ```
 
 By default the command creates a `todo` issue assigned to the target agent and wakes the agent. Use `--issue <issue-id>` to add a comment to existing work, and `--no-wake` to skip the wakeup.
@@ -684,15 +684,15 @@ also creates agents.
 
 ### Catalog (app-shipped skills)
 
-The Paperclip app ships a curated catalog under `@tickernelz/paperclip-pro-skills-catalog`.
+The Paperclip app ships a curated catalog under `@tickernelz/wardmote-skills-catalog`.
 Browse and inspect commands never mutate company state; `install` adds a catalog
 skill to the company library.
 
 ```sh
-npx @tickernelz/paperclip-pro skills browse [--kind bundled|optional] [--category <slug>] [--query <text>]
-npx @tickernelz/paperclip-pro skills search "<text>" [--kind bundled|optional] [--category <slug>]
-npx @tickernelz/paperclip-pro skills inspect <catalog-id-or-key-or-slug>
-npx @tickernelz/paperclip-pro skills install <catalog-id-or-key-or-slug> [--as <slug>] [--force] --company-id <company-id>
+npx @tickernelz/wardmote skills browse [--kind bundled|optional] [--category <slug>] [--query <text>]
+npx @tickernelz/wardmote skills search "<text>" [--kind bundled|optional] [--category <slug>]
+npx @tickernelz/wardmote skills inspect <catalog-id-or-key-or-slug>
+npx @tickernelz/wardmote skills install <catalog-id-or-key-or-slug> [--as <slug>] [--force] --company-id <company-id>
 ```
 
 Catalog semantics:
@@ -713,11 +713,11 @@ Catalog semantics:
 Examples:
 
 ```sh
-npx @tickernelz/paperclip-pro skills browse --kind bundled --company-id <company-id>
-npx @tickernelz/paperclip-pro skills search "pull request" --kind bundled
-npx @tickernelz/paperclip-pro skills inspect github-pr-workflow
-npx @tickernelz/paperclip-pro skills install github-pr-workflow --company-id <company-id>
-npx @tickernelz/paperclip-pro skills install paperclipai:optional:browser:agent-browser --company-id <company-id>
+npx @tickernelz/wardmote skills browse --kind bundled --company-id <company-id>
+npx @tickernelz/wardmote skills search "pull request" --kind bundled
+npx @tickernelz/wardmote skills inspect github-pr-workflow
+npx @tickernelz/wardmote skills install github-pr-workflow --company-id <company-id>
+npx @tickernelz/wardmote skills install paperclipai:optional:browser:agent-browser --company-id <company-id>
 ```
 
 External GitHub, skills.sh, local-path, and URL sources still go through
@@ -726,18 +726,18 @@ External GitHub, skills.sh, local-path, and URL sources still go through
 ### Organization library
 
 ```sh
-npx @tickernelz/paperclip-pro skills list --company-id <company-id>
-npx @tickernelz/paperclip-pro skills show <skill-id-or-key-or-slug> --company-id <company-id>
-npx @tickernelz/paperclip-pro skills file <skill-id-or-key-or-slug> [--path SKILL.md] --company-id <company-id>
-npx @tickernelz/paperclip-pro skills import <source> --company-id <company-id>
-npx @tickernelz/paperclip-pro skills create --name "Review PRs" [--slug review-prs] [--description "..."] [--body-file SKILL.md] --company-id <company-id>
-npx @tickernelz/paperclip-pro skills scan-projects [--project-id <id>...] [--workspace-id <id>...] --company-id <company-id>
-npx @tickernelz/paperclip-pro skills check [skill-id-or-key-or-slug] --company-id <company-id>
-npx @tickernelz/paperclip-pro skills update <skill-id-or-key-or-slug> [--force] --company-id <company-id>
-npx @tickernelz/paperclip-pro skills update --all [--force] --company-id <company-id>
-npx @tickernelz/paperclip-pro skills audit [skill-id-or-key-or-slug] --company-id <company-id>
-npx @tickernelz/paperclip-pro skills reset <skill-id-or-key-or-slug> [--yes] [--force] --company-id <company-id>
-npx @tickernelz/paperclip-pro skills remove <skill-id-or-key-or-slug> --yes --company-id <company-id>
+npx @tickernelz/wardmote skills list --company-id <company-id>
+npx @tickernelz/wardmote skills show <skill-id-or-key-or-slug> --company-id <company-id>
+npx @tickernelz/wardmote skills file <skill-id-or-key-or-slug> [--path SKILL.md] --company-id <company-id>
+npx @tickernelz/wardmote skills import <source> --company-id <company-id>
+npx @tickernelz/wardmote skills create --name "Review PRs" [--slug review-prs] [--description "..."] [--body-file SKILL.md] --company-id <company-id>
+npx @tickernelz/wardmote skills scan-projects [--project-id <id>...] [--workspace-id <id>...] --company-id <company-id>
+npx @tickernelz/wardmote skills check [skill-id-or-key-or-slug] --company-id <company-id>
+npx @tickernelz/wardmote skills update <skill-id-or-key-or-slug> [--force] --company-id <company-id>
+npx @tickernelz/wardmote skills update --all [--force] --company-id <company-id>
+npx @tickernelz/wardmote skills audit [skill-id-or-key-or-slug] --company-id <company-id>
+npx @tickernelz/wardmote skills reset <skill-id-or-key-or-slug> [--yes] [--force] --company-id <company-id>
+npx @tickernelz/wardmote skills remove <skill-id-or-key-or-slug> --yes --company-id <company-id>
 ```
 
 `skills import <source>` accepts a skills.sh URL, the equivalent
@@ -763,9 +763,9 @@ maintenance loop for catalog-installed skills:
 ### Agent attach
 
 ```sh
-npx @tickernelz/paperclip-pro skills agent list <agent-id-or-shortname> --company-id <company-id>
-npx @tickernelz/paperclip-pro skills agent sync <agent-id-or-shortname> --skill <skill-id-or-key-or-slug> [--skill <skill-id-or-key-or-slug>...] --mode <add|remove|replace> --company-id <company-id>
-npx @tickernelz/paperclip-pro skills agent clear <agent-id-or-shortname> --yes --company-id <company-id>
+npx @tickernelz/wardmote skills agent list <agent-id-or-shortname> --company-id <company-id>
+npx @tickernelz/wardmote skills agent sync <agent-id-or-shortname> --skill <skill-id-or-key-or-slug> [--skill <skill-id-or-key-or-slug>...] --mode <add|remove|replace> --company-id <company-id>
+npx @tickernelz/wardmote skills agent clear <agent-id-or-shortname> --yes --company-id <company-id>
 ```
 
 `skills agent sync` requires a merge mode and returns the resulting adapter
@@ -788,16 +788,16 @@ still enforced by the server in both cases.
 ## Teams Commands
 
 `wardmote teams` works with the app-shipped team catalog in
-`@tickernelz/paperclip-pro-teams-catalog`. Browse, search, inspect, and file reads do not
+`@tickernelz/wardmote-teams-catalog`. Browse, search, inspect, and file reads do not
 change company state. `preview` runs the company import planner, and `install`
 imports the catalog team into an existing company.
 
 ```sh
-npx @tickernelz/paperclip-pro teams browse [--kind bundled|optional] [--category <slug>] [--query <text>]
-npx @tickernelz/paperclip-pro teams search "<text>" [--kind bundled|optional] [--category <slug>]
-npx @tickernelz/paperclip-pro teams inspect <catalog-id-or-key-or-slug> [--file TEAM.md]
-npx @tickernelz/paperclip-pro teams preview <catalog-id-or-key-or-slug> --company-id <company-id>
-npx @tickernelz/paperclip-pro teams install <catalog-id-or-key-or-slug> --company-id <company-id>
+npx @tickernelz/wardmote teams browse [--kind bundled|optional] [--category <slug>] [--query <text>]
+npx @tickernelz/wardmote teams search "<text>" [--kind bundled|optional] [--category <slug>]
+npx @tickernelz/wardmote teams inspect <catalog-id-or-key-or-slug> [--file TEAM.md]
+npx @tickernelz/wardmote teams preview <catalog-id-or-key-or-slug> --company-id <company-id>
+npx @tickernelz/wardmote teams install <catalog-id-or-key-or-slug> --company-id <company-id>
 ```
 
 Preview/install options:
@@ -827,22 +827,22 @@ Preview/install options:
 ## Secrets Commands
 
 ```sh
-npx @tickernelz/paperclip-pro secrets list --company-id <company-id>
-npx @tickernelz/paperclip-pro secrets declarations --company-id <company-id> [--include agents,projects] [--kind secret]
-npx @tickernelz/paperclip-pro secrets create --company-id <company-id> --name anthropic-api-key --value-env ANTHROPIC_API_KEY
-npx @tickernelz/paperclip-pro secrets link --company-id <company-id> --name prod-stripe-key --provider aws_secrets_manager --external-ref <provider-ref>
-npx @tickernelz/paperclip-pro secrets doctor --company-id <company-id>
-npx @tickernelz/paperclip-pro secrets provider-configs --company-id <company-id>
-npx @tickernelz/paperclip-pro secrets provider-config:create --company-id <company-id> --payload-json '{...}'
-npx @tickernelz/paperclip-pro secrets provider-config:discovery-preview --company-id <company-id> --payload-json '{...}'
-npx @tickernelz/paperclip-pro secrets provider-config:get <config-id>
-npx @tickernelz/paperclip-pro secrets provider-config:update <config-id> --payload-json '{...}'
-npx @tickernelz/paperclip-pro secrets provider-config:default <config-id>
-npx @tickernelz/paperclip-pro secrets provider-config:health <config-id>
-npx @tickernelz/paperclip-pro secrets provider-config:delete <config-id>
-npx @tickernelz/paperclip-pro secrets remote-import:preview --company-id <company-id> --payload-json '{...}'
-npx @tickernelz/paperclip-pro secrets remote-import --company-id <company-id> --payload-json '{...}'
-npx @tickernelz/paperclip-pro secrets migrate-inline-env --company-id <company-id> [--apply]
+npx @tickernelz/wardmote secrets list --company-id <company-id>
+npx @tickernelz/wardmote secrets declarations --company-id <company-id> [--include agents,projects] [--kind secret]
+npx @tickernelz/wardmote secrets create --company-id <company-id> --name anthropic-api-key --value-env ANTHROPIC_API_KEY
+npx @tickernelz/wardmote secrets link --company-id <company-id> --name prod-stripe-key --provider aws_secrets_manager --external-ref <provider-ref>
+npx @tickernelz/wardmote secrets doctor --company-id <company-id>
+npx @tickernelz/wardmote secrets provider-configs --company-id <company-id>
+npx @tickernelz/wardmote secrets provider-config:create --company-id <company-id> --payload-json '{...}'
+npx @tickernelz/wardmote secrets provider-config:discovery-preview --company-id <company-id> --payload-json '{...}'
+npx @tickernelz/wardmote secrets provider-config:get <config-id>
+npx @tickernelz/wardmote secrets provider-config:update <config-id> --payload-json '{...}'
+npx @tickernelz/wardmote secrets provider-config:default <config-id>
+npx @tickernelz/wardmote secrets provider-config:health <config-id>
+npx @tickernelz/wardmote secrets provider-config:delete <config-id>
+npx @tickernelz/wardmote secrets remote-import:preview --company-id <company-id> --payload-json '{...}'
+npx @tickernelz/wardmote secrets remote-import --company-id <company-id> --payload-json '{...}'
+npx @tickernelz/wardmote secrets migrate-inline-env --company-id <company-id> [--apply]
 ```
 
 Secret listing and declarations never print secret values. `create` accepts
@@ -862,78 +862,78 @@ commands above. See the
 ## Approval Commands
 
 ```sh
-npx @tickernelz/paperclip-pro approval list --company-id <company-id> [--status pending]
-npx @tickernelz/paperclip-pro approval get <approval-id>
-npx @tickernelz/paperclip-pro approval create --company-id <company-id> --type hire_agent --payload '{"name":"..."}' [--issue-ids <id1,id2>]
-npx @tickernelz/paperclip-pro approval approve <approval-id> [--decision-note "..."]
-npx @tickernelz/paperclip-pro approval reject <approval-id> [--decision-note "..."]
-npx @tickernelz/paperclip-pro approval request-revision <approval-id> [--decision-note "..."]
-npx @tickernelz/paperclip-pro approval resubmit <approval-id> [--payload '{"...":"..."}']
-npx @tickernelz/paperclip-pro approval comment <approval-id> --body "..."
+npx @tickernelz/wardmote approval list --company-id <company-id> [--status pending]
+npx @tickernelz/wardmote approval get <approval-id>
+npx @tickernelz/wardmote approval create --company-id <company-id> --type hire_agent --payload '{"name":"..."}' [--issue-ids <id1,id2>]
+npx @tickernelz/wardmote approval approve <approval-id> [--decision-note "..."]
+npx @tickernelz/wardmote approval reject <approval-id> [--decision-note "..."]
+npx @tickernelz/wardmote approval request-revision <approval-id> [--decision-note "..."]
+npx @tickernelz/wardmote approval resubmit <approval-id> [--payload '{"...":"..."}']
+npx @tickernelz/wardmote approval comment <approval-id> --body "..."
 ```
 
 ## Activity Commands
 
 ```sh
-npx @tickernelz/paperclip-pro activity list --company-id <company-id> [--agent-id <agent-id>] [--entity-type issue] [--entity-id <id>]
-npx @tickernelz/paperclip-pro activity create --company-id <company-id> --payload-json '{...}'
-npx @tickernelz/paperclip-pro activity issue <issue-id>
+npx @tickernelz/wardmote activity list --company-id <company-id> [--agent-id <agent-id>] [--entity-type issue] [--entity-id <id>]
+npx @tickernelz/wardmote activity create --company-id <company-id> --payload-json '{...}'
+npx @tickernelz/wardmote activity issue <issue-id>
 ```
 
 ## Dashboard Commands
 
 ```sh
-npx @tickernelz/paperclip-pro dashboard get --company-id <company-id>
+npx @tickernelz/wardmote dashboard get --company-id <company-id>
 ```
 
 ## Org And Agent Config Commands
 
 ```sh
-npx @tickernelz/paperclip-pro whoami
-npx @tickernelz/paperclip-pro openapi
-npx @tickernelz/paperclip-pro org get --company-id <company-id>
-npx @tickernelz/paperclip-pro org svg --company-id <company-id> [--out org.svg]
-npx @tickernelz/paperclip-pro org png --company-id <company-id> [--out org.png]
-npx @tickernelz/paperclip-pro agent-config list --company-id <company-id>
+npx @tickernelz/wardmote whoami
+npx @tickernelz/wardmote openapi
+npx @tickernelz/wardmote org get --company-id <company-id>
+npx @tickernelz/wardmote org svg --company-id <company-id> [--out org.svg]
+npx @tickernelz/wardmote org png --company-id <company-id> [--out org.png]
+npx @tickernelz/wardmote agent-config list --company-id <company-id>
 ```
 
 ## Access, Profile, And Instance Commands
 
 ```sh
-npx @tickernelz/paperclip-pro profile session
-npx @tickernelz/paperclip-pro profile get
-npx @tickernelz/paperclip-pro profile update --payload-json '{...}'
-npx @tickernelz/paperclip-pro profile company-user <user-slug> --company-id <company-id>
-npx @tickernelz/paperclip-pro invite list --company-id <company-id>
-npx @tickernelz/paperclip-pro invite create --company-id <company-id> --payload-json '{...}'
-npx @tickernelz/paperclip-pro invite revoke <invite-id>
-npx @tickernelz/paperclip-pro invite show <token>
-npx @tickernelz/paperclip-pro invite accept <token> [--payload-json '{...}']
-npx @tickernelz/paperclip-pro invite onboarding:text <token>
-npx @tickernelz/paperclip-pro join list --company-id <company-id> [--status pending_approval]
-npx @tickernelz/paperclip-pro join approve <request-id> --company-id <company-id>
-npx @tickernelz/paperclip-pro join reject <request-id> --company-id <company-id>
-npx @tickernelz/paperclip-pro join claim-key <request-id> --claim-secret <secret>
-npx @tickernelz/paperclip-pro member list --company-id <company-id>
-npx @tickernelz/paperclip-pro member update <member-id> --company-id <company-id> --payload-json '{...}'
-npx @tickernelz/paperclip-pro member role-and-grants <member-id> --company-id <company-id> --payload-json '{...}'
-npx @tickernelz/paperclip-pro member permissions <member-id> --company-id <company-id> --payload-json '{...}'
-npx @tickernelz/paperclip-pro member archive <member-id> --company-id <company-id> [--payload-json '{...}']
-npx @tickernelz/paperclip-pro admin user list [--query <text>]
-npx @tickernelz/paperclip-pro admin user promote <user-id>
-npx @tickernelz/paperclip-pro admin user demote <user-id>
-npx @tickernelz/paperclip-pro admin user company-access <user-id>
-npx @tickernelz/paperclip-pro admin user company-access:update <user-id> --payload-json '{...}'
+npx @tickernelz/wardmote profile session
+npx @tickernelz/wardmote profile get
+npx @tickernelz/wardmote profile update --payload-json '{...}'
+npx @tickernelz/wardmote profile company-user <user-slug> --company-id <company-id>
+npx @tickernelz/wardmote invite list --company-id <company-id>
+npx @tickernelz/wardmote invite create --company-id <company-id> --payload-json '{...}'
+npx @tickernelz/wardmote invite revoke <invite-id>
+npx @tickernelz/wardmote invite show <token>
+npx @tickernelz/wardmote invite accept <token> [--payload-json '{...}']
+npx @tickernelz/wardmote invite onboarding:text <token>
+npx @tickernelz/wardmote join list --company-id <company-id> [--status pending_approval]
+npx @tickernelz/wardmote join approve <request-id> --company-id <company-id>
+npx @tickernelz/wardmote join reject <request-id> --company-id <company-id>
+npx @tickernelz/wardmote join claim-key <request-id> --claim-secret <secret>
+npx @tickernelz/wardmote member list --company-id <company-id>
+npx @tickernelz/wardmote member update <member-id> --company-id <company-id> --payload-json '{...}'
+npx @tickernelz/wardmote member role-and-grants <member-id> --company-id <company-id> --payload-json '{...}'
+npx @tickernelz/wardmote member permissions <member-id> --company-id <company-id> --payload-json '{...}'
+npx @tickernelz/wardmote member archive <member-id> --company-id <company-id> [--payload-json '{...}']
+npx @tickernelz/wardmote admin user list [--query <text>]
+npx @tickernelz/wardmote admin user promote <user-id>
+npx @tickernelz/wardmote admin user demote <user-id>
+npx @tickernelz/wardmote admin user company-access <user-id>
+npx @tickernelz/wardmote admin user company-access:update <user-id> --payload-json '{...}'
 ```
 
 CLI auth challenge endpoints are also exposed for tooling that needs the raw challenge lifecycle:
 
 ```sh
-npx @tickernelz/paperclip-pro auth challenge create --payload-json '{...}'
-PAPERCLIP_CHALLENGE_SECRET=<challenge-secret> npx @tickernelz/paperclip-pro auth challenge get <challenge-id> --token-env PAPERCLIP_CHALLENGE_SECRET
-PAPERCLIP_CHALLENGE_SECRET=<challenge-secret> npx @tickernelz/paperclip-pro auth challenge approve <challenge-id> --token-env PAPERCLIP_CHALLENGE_SECRET
-PAPERCLIP_CHALLENGE_SECRET=<challenge-secret> npx @tickernelz/paperclip-pro auth challenge cancel <challenge-id> --token-env PAPERCLIP_CHALLENGE_SECRET
-npx @tickernelz/paperclip-pro auth revoke-current
+npx @tickernelz/wardmote auth challenge create --payload-json '{...}'
+PAPERCLIP_CHALLENGE_SECRET=<challenge-secret> npx @tickernelz/wardmote auth challenge get <challenge-id> --token-env PAPERCLIP_CHALLENGE_SECRET
+PAPERCLIP_CHALLENGE_SECRET=<challenge-secret> npx @tickernelz/wardmote auth challenge approve <challenge-id> --token-env PAPERCLIP_CHALLENGE_SECRET
+PAPERCLIP_CHALLENGE_SECRET=<challenge-secret> npx @tickernelz/wardmote auth challenge cancel <challenge-id> --token-env PAPERCLIP_CHALLENGE_SECRET
+npx @tickernelz/wardmote auth revoke-current
 ```
 
 `--token <challenge-secret>` is still supported for compatibility, but `--token-env` avoids putting challenge secrets in shell history or process arguments.
@@ -947,131 +947,131 @@ HTTP 404. Approval requires board authentication, checked before ID validation.
 ## Instance Settings Commands
 
 ```sh
-npx @tickernelz/paperclip-pro instance scheduler-heartbeats
-npx @tickernelz/paperclip-pro instance settings:general
-npx @tickernelz/paperclip-pro instance settings:general:update --payload-json '{...}'
-npx @tickernelz/paperclip-pro instance settings:experimental
-npx @tickernelz/paperclip-pro instance settings:experimental:update --payload-json '{...}'
-npx @tickernelz/paperclip-pro instance database-backup
+npx @tickernelz/wardmote instance scheduler-heartbeats
+npx @tickernelz/wardmote instance settings:general
+npx @tickernelz/wardmote instance settings:general:update --payload-json '{...}'
+npx @tickernelz/wardmote instance settings:experimental
+npx @tickernelz/wardmote instance settings:experimental:update --payload-json '{...}'
+npx @tickernelz/wardmote instance database-backup
 ```
 
 Experimental features are opt-in and are provided without compatibility guarantees. They may break, change, or be removed at any time. Use them at your own risk.
 
 ```sh
-npx @tickernelz/paperclip-pro sidebar preferences
-npx @tickernelz/paperclip-pro sidebar preferences:update --payload-json '{...}'
-npx @tickernelz/paperclip-pro sidebar project-preferences --company-id <company-id>
-npx @tickernelz/paperclip-pro sidebar project-preferences:update --company-id <company-id> --payload-json '{...}'
-npx @tickernelz/paperclip-pro sidebar badges --company-id <company-id>
-npx @tickernelz/paperclip-pro inbox dismissals --company-id <company-id>
-npx @tickernelz/paperclip-pro inbox dismiss --company-id <company-id> --payload-json '{"itemKey":"run:<run-id>"}'
-npx @tickernelz/paperclip-pro board-claim show <token>
-npx @tickernelz/paperclip-pro board-claim claim <token> [--payload-json '{...}']
-npx @tickernelz/paperclip-pro available-skill list
-npx @tickernelz/paperclip-pro available-skill index
-npx @tickernelz/paperclip-pro available-skill get <skill-name>
-npx @tickernelz/paperclip-pro llm agent-configuration
-npx @tickernelz/paperclip-pro llm agent-configuration:adapter <adapter-type>
-npx @tickernelz/paperclip-pro llm agent-icons
+npx @tickernelz/wardmote sidebar preferences
+npx @tickernelz/wardmote sidebar preferences:update --payload-json '{...}'
+npx @tickernelz/wardmote sidebar project-preferences --company-id <company-id>
+npx @tickernelz/wardmote sidebar project-preferences:update --company-id <company-id> --payload-json '{...}'
+npx @tickernelz/wardmote sidebar badges --company-id <company-id>
+npx @tickernelz/wardmote inbox dismissals --company-id <company-id>
+npx @tickernelz/wardmote inbox dismiss --company-id <company-id> --payload-json '{"itemKey":"run:<run-id>"}'
+npx @tickernelz/wardmote board-claim show <token>
+npx @tickernelz/wardmote board-claim claim <token> [--payload-json '{...}']
+npx @tickernelz/wardmote available-skill list
+npx @tickernelz/wardmote available-skill index
+npx @tickernelz/wardmote available-skill get <skill-name>
+npx @tickernelz/wardmote llm agent-configuration
+npx @tickernelz/wardmote llm agent-configuration:adapter <adapter-type>
+npx @tickernelz/wardmote llm agent-icons
 ```
 
 ## Adapter, Asset, And Skill Commands
 
 ```sh
-npx @tickernelz/paperclip-pro adapter list
-npx @tickernelz/paperclip-pro adapter install --payload-json '{"packageName":"@scope/adapter","version":"1.2.3"}'
-npx @tickernelz/paperclip-pro adapter get <adapter-type>
-npx @tickernelz/paperclip-pro adapter update <adapter-type> --payload-json '{"disabled":true}'
-npx @tickernelz/paperclip-pro adapter override <adapter-type> --payload-json '{"paused":true}'
-npx @tickernelz/paperclip-pro adapter reload <adapter-type>
-npx @tickernelz/paperclip-pro adapter reinstall <adapter-type>
-npx @tickernelz/paperclip-pro adapter delete <adapter-type>
-npx @tickernelz/paperclip-pro adapter config-schema <adapter-type>
-npx @tickernelz/paperclip-pro adapter ui-parser <adapter-type>
-npx @tickernelz/paperclip-pro adapter models <adapter-type> --company-id <company-id> [--refresh] [--environment-id <id>]
-npx @tickernelz/paperclip-pro adapter detect-model <adapter-type> --company-id <company-id>
-npx @tickernelz/paperclip-pro adapter test-environment <adapter-type> --company-id <company-id> --payload-json '{...}'
+npx @tickernelz/wardmote adapter list
+npx @tickernelz/wardmote adapter install --payload-json '{"packageName":"@scope/adapter","version":"1.2.3"}'
+npx @tickernelz/wardmote adapter get <adapter-type>
+npx @tickernelz/wardmote adapter update <adapter-type> --payload-json '{"disabled":true}'
+npx @tickernelz/wardmote adapter override <adapter-type> --payload-json '{"paused":true}'
+npx @tickernelz/wardmote adapter reload <adapter-type>
+npx @tickernelz/wardmote adapter reinstall <adapter-type>
+npx @tickernelz/wardmote adapter delete <adapter-type>
+npx @tickernelz/wardmote adapter config-schema <adapter-type>
+npx @tickernelz/wardmote adapter ui-parser <adapter-type>
+npx @tickernelz/wardmote adapter models <adapter-type> --company-id <company-id> [--refresh] [--environment-id <id>]
+npx @tickernelz/wardmote adapter detect-model <adapter-type> --company-id <company-id>
+npx @tickernelz/wardmote adapter test-environment <adapter-type> --company-id <company-id> --payload-json '{...}'
 ```
 
 ```sh
-npx @tickernelz/paperclip-pro asset image:upload --company-id <company-id> --file ./image.png [--namespace docs] [--alt "..."]
-npx @tickernelz/paperclip-pro asset logo:upload --company-id <company-id> --file ./logo.svg
-npx @tickernelz/paperclip-pro asset content <asset-id> --out ./asset.bin
+npx @tickernelz/wardmote asset image:upload --company-id <company-id> --file ./image.png [--namespace docs] [--alt "..."]
+npx @tickernelz/wardmote asset logo:upload --company-id <company-id> --file ./logo.svg
+npx @tickernelz/wardmote asset content <asset-id> --out ./asset.bin
 ```
 
 ```sh
-npx @tickernelz/paperclip-pro skill list --company-id <company-id>
-npx @tickernelz/paperclip-pro skill get <skill-id> --company-id <company-id>
-npx @tickernelz/paperclip-pro skill file <skill-id> --company-id <company-id> [--path SKILL.md]
-npx @tickernelz/paperclip-pro skill create --company-id <company-id> --payload-json '{...}'
-npx @tickernelz/paperclip-pro skill file:update <skill-id> --company-id <company-id> --payload-json '{...}'
-npx @tickernelz/paperclip-pro skill import --company-id <company-id> --payload-json '{"source":"github:owner/repo/path"}'
-npx @tickernelz/paperclip-pro skill scan-projects --company-id <company-id> --payload-json '{...}'
-npx @tickernelz/paperclip-pro skill update-status <skill-id> --company-id <company-id>
-npx @tickernelz/paperclip-pro skill install-update <skill-id> --company-id <company-id>
-npx @tickernelz/paperclip-pro skill delete <skill-id> --company-id <company-id>
+npx @tickernelz/wardmote skill list --company-id <company-id>
+npx @tickernelz/wardmote skill get <skill-id> --company-id <company-id>
+npx @tickernelz/wardmote skill file <skill-id> --company-id <company-id> [--path SKILL.md]
+npx @tickernelz/wardmote skill create --company-id <company-id> --payload-json '{...}'
+npx @tickernelz/wardmote skill file:update <skill-id> --company-id <company-id> --payload-json '{...}'
+npx @tickernelz/wardmote skill import --company-id <company-id> --payload-json '{"source":"github:owner/repo/path"}'
+npx @tickernelz/wardmote skill scan-projects --company-id <company-id> --payload-json '{...}'
+npx @tickernelz/wardmote skill update-status <skill-id> --company-id <company-id>
+npx @tickernelz/wardmote skill install-update <skill-id> --company-id <company-id>
+npx @tickernelz/wardmote skill delete <skill-id> --company-id <company-id>
 ```
 
 ## Cost, Finance, And Budget Commands
 
 ```sh
-npx @tickernelz/paperclip-pro cost summary --company-id <company-id>
-npx @tickernelz/paperclip-pro cost by-agent --company-id <company-id>
-npx @tickernelz/paperclip-pro cost by-agent-model --company-id <company-id>
-npx @tickernelz/paperclip-pro cost by-provider --company-id <company-id>
-npx @tickernelz/paperclip-pro cost by-biller --company-id <company-id>
-npx @tickernelz/paperclip-pro cost by-project --company-id <company-id>
-npx @tickernelz/paperclip-pro cost window-spend --company-id <company-id>
-npx @tickernelz/paperclip-pro cost quota-windows --company-id <company-id>
-npx @tickernelz/paperclip-pro cost issue <issue-id>
-npx @tickernelz/paperclip-pro cost event:create --company-id <company-id> --payload-json '{...}'
+npx @tickernelz/wardmote cost summary --company-id <company-id>
+npx @tickernelz/wardmote cost by-agent --company-id <company-id>
+npx @tickernelz/wardmote cost by-agent-model --company-id <company-id>
+npx @tickernelz/wardmote cost by-provider --company-id <company-id>
+npx @tickernelz/wardmote cost by-biller --company-id <company-id>
+npx @tickernelz/wardmote cost by-project --company-id <company-id>
+npx @tickernelz/wardmote cost window-spend --company-id <company-id>
+npx @tickernelz/wardmote cost quota-windows --company-id <company-id>
+npx @tickernelz/wardmote cost issue <issue-id>
+npx @tickernelz/wardmote cost event:create --company-id <company-id> --payload-json '{...}'
 ```
 
 ```sh
-npx @tickernelz/paperclip-pro finance event:create --company-id <company-id> --payload-json '{...}'
-npx @tickernelz/paperclip-pro finance events --company-id <company-id>
-npx @tickernelz/paperclip-pro finance summary --company-id <company-id>
-npx @tickernelz/paperclip-pro finance by-biller --company-id <company-id>
-npx @tickernelz/paperclip-pro finance by-kind --company-id <company-id>
-npx @tickernelz/paperclip-pro budget overview --company-id <company-id>
-npx @tickernelz/paperclip-pro budget policy:upsert --company-id <company-id> --payload-json '{...}'
-npx @tickernelz/paperclip-pro budget company:update --company-id <company-id> --payload-json '{...}'
-npx @tickernelz/paperclip-pro budget agent:update <agent-id> --payload-json '{...}'
-npx @tickernelz/paperclip-pro budget incident:resolve <incident-id> --company-id <company-id> [--payload-json '{...}']
+npx @tickernelz/wardmote finance event:create --company-id <company-id> --payload-json '{...}'
+npx @tickernelz/wardmote finance events --company-id <company-id>
+npx @tickernelz/wardmote finance summary --company-id <company-id>
+npx @tickernelz/wardmote finance by-biller --company-id <company-id>
+npx @tickernelz/wardmote finance by-kind --company-id <company-id>
+npx @tickernelz/wardmote budget overview --company-id <company-id>
+npx @tickernelz/wardmote budget policy:upsert --company-id <company-id> --payload-json '{...}'
+npx @tickernelz/wardmote budget company:update --company-id <company-id> --payload-json '{...}'
+npx @tickernelz/wardmote budget agent:update <agent-id> --payload-json '{...}'
+npx @tickernelz/wardmote budget incident:resolve <incident-id> --company-id <company-id> [--payload-json '{...}']
 ```
 
 ## Workspace And Environment Commands
 
 ```sh
-npx @tickernelz/paperclip-pro workspace list --company-id <company-id>
-npx @tickernelz/paperclip-pro workspace get <execution-workspace-id>
-npx @tickernelz/paperclip-pro workspace close-readiness <execution-workspace-id>
-npx @tickernelz/paperclip-pro workspace operations <execution-workspace-id>
-npx @tickernelz/paperclip-pro workspace update <execution-workspace-id> --payload-json '{...}'
-npx @tickernelz/paperclip-pro workspace runtime-service <execution-workspace-id> start --payload-json '{...}'
-npx @tickernelz/paperclip-pro workspace runtime-command <execution-workspace-id> run --payload-json '{...}'
+npx @tickernelz/wardmote workspace list --company-id <company-id>
+npx @tickernelz/wardmote workspace get <execution-workspace-id>
+npx @tickernelz/wardmote workspace close-readiness <execution-workspace-id>
+npx @tickernelz/wardmote workspace operations <execution-workspace-id>
+npx @tickernelz/wardmote workspace update <execution-workspace-id> --payload-json '{...}'
+npx @tickernelz/wardmote workspace runtime-service <execution-workspace-id> start --payload-json '{...}'
+npx @tickernelz/wardmote workspace runtime-command <execution-workspace-id> run --payload-json '{...}'
 ```
 
 ```sh
-npx @tickernelz/paperclip-pro environment list --company-id <company-id>
-npx @tickernelz/paperclip-pro environment capabilities --company-id <company-id>
-npx @tickernelz/paperclip-pro environment create --company-id <company-id> --payload-json '{...}'
-npx @tickernelz/paperclip-pro environment get <environment-id>
-npx @tickernelz/paperclip-pro environment leases <environment-id>
-npx @tickernelz/paperclip-pro environment lease <lease-id>
-npx @tickernelz/paperclip-pro environment update <environment-id> --payload-json '{...}'
-npx @tickernelz/paperclip-pro environment delete <environment-id>
-npx @tickernelz/paperclip-pro environment probe <environment-id>
-npx @tickernelz/paperclip-pro environment probe-config --company-id <company-id> --payload-json '{...}'
+npx @tickernelz/wardmote environment list --company-id <company-id>
+npx @tickernelz/wardmote environment capabilities --company-id <company-id>
+npx @tickernelz/wardmote environment create --company-id <company-id> --payload-json '{...}'
+npx @tickernelz/wardmote environment get <environment-id>
+npx @tickernelz/wardmote environment leases <environment-id>
+npx @tickernelz/wardmote environment lease <lease-id>
+npx @tickernelz/wardmote environment update <environment-id> --payload-json '{...}'
+npx @tickernelz/wardmote environment delete <environment-id>
+npx @tickernelz/wardmote environment probe <environment-id>
+npx @tickernelz/wardmote environment probe-config --company-id <company-id> --payload-json '{...}'
 ```
 
 ```sh
-npx @tickernelz/paperclip-pro project-workspace list <project-id>
-npx @tickernelz/paperclip-pro project-workspace create <project-id> --payload-json '{...}'
-npx @tickernelz/paperclip-pro project-workspace update <project-id> <workspace-id> --payload-json '{...}'
-npx @tickernelz/paperclip-pro project-workspace delete <project-id> <workspace-id>
-npx @tickernelz/paperclip-pro project-workspace runtime-service <project-id> <workspace-id> restart --payload-json '{...}'
-npx @tickernelz/paperclip-pro project-workspace runtime-command <project-id> <workspace-id> run --payload-json '{...}'
+npx @tickernelz/wardmote project-workspace list <project-id>
+npx @tickernelz/wardmote project-workspace create <project-id> --payload-json '{...}'
+npx @tickernelz/wardmote project-workspace update <project-id> <workspace-id> --payload-json '{...}'
+npx @tickernelz/wardmote project-workspace delete <project-id> <workspace-id>
+npx @tickernelz/wardmote project-workspace runtime-service <project-id> <workspace-id> restart --payload-json '{...}'
+npx @tickernelz/wardmote project-workspace runtime-command <project-id> <workspace-id> run --payload-json '{...}'
 ```
 
 ## Plugin Commands
@@ -1079,36 +1079,36 @@ npx @tickernelz/paperclip-pro project-workspace runtime-command <project-id> <wo
 Existing plugin lifecycle commands remain available: `plugin init`, `list`, `install`, `uninstall`, `enable`, `disable`, `inspect`, and `examples`.
 
 ```sh
-npx @tickernelz/paperclip-pro plugin ui-contributions
-npx @tickernelz/paperclip-pro plugin tools
-npx @tickernelz/paperclip-pro plugin tool:execute --payload-json '{...}'
-npx @tickernelz/paperclip-pro plugin health <plugin-id>
-npx @tickernelz/paperclip-pro plugin logs <plugin-id>
-npx @tickernelz/paperclip-pro plugin upgrade <plugin-id>
-npx @tickernelz/paperclip-pro plugin config <plugin-id> --company-id <company-id>
-npx @tickernelz/paperclip-pro plugin config:set <plugin-id> --company-id <company-id> --payload-json '{"configJson":{...}}'
-npx @tickernelz/paperclip-pro plugin config:test <plugin-id> --company-id <company-id> --payload-json '{"configJson":{...}}'
-npx @tickernelz/paperclip-pro plugin jobs <plugin-id>
-npx @tickernelz/paperclip-pro plugin job:runs <plugin-id> <job-id>
-npx @tickernelz/paperclip-pro plugin job:trigger <plugin-id> <job-id> [--payload-json '{...}']
-npx @tickernelz/paperclip-pro plugin webhook <plugin-id> <endpoint-key> [--payload-json '{...}']
-npx @tickernelz/paperclip-pro plugin dashboard <plugin-id>
-npx @tickernelz/paperclip-pro plugin bridge:data <plugin-id> --payload-json '{...}'
-npx @tickernelz/paperclip-pro plugin bridge:action <plugin-id> --payload-json '{...}'
-npx @tickernelz/paperclip-pro plugin bridge:stream <plugin-id> <channel> [--duration-ms 10000]
-npx @tickernelz/paperclip-pro plugin data <plugin-id> <key> --payload-json '{...}'
-npx @tickernelz/paperclip-pro plugin action <plugin-id> <key> --payload-json '{...}'
-npx @tickernelz/paperclip-pro plugin local-folders <plugin-id> --company-id <company-id>
-npx @tickernelz/paperclip-pro plugin local-folder:status <plugin-id> <folder-key> --company-id <company-id>
-npx @tickernelz/paperclip-pro plugin local-folder:validate <plugin-id> <folder-key> --company-id <company-id> [--payload-json '{...}']
-npx @tickernelz/paperclip-pro plugin local-folder:set <plugin-id> <folder-key> --company-id <company-id> --payload-json '{...}'
+npx @tickernelz/wardmote plugin ui-contributions
+npx @tickernelz/wardmote plugin tools
+npx @tickernelz/wardmote plugin tool:execute --payload-json '{...}'
+npx @tickernelz/wardmote plugin health <plugin-id>
+npx @tickernelz/wardmote plugin logs <plugin-id>
+npx @tickernelz/wardmote plugin upgrade <plugin-id>
+npx @tickernelz/wardmote plugin config <plugin-id> --company-id <company-id>
+npx @tickernelz/wardmote plugin config:set <plugin-id> --company-id <company-id> --payload-json '{"configJson":{...}}'
+npx @tickernelz/wardmote plugin config:test <plugin-id> --company-id <company-id> --payload-json '{"configJson":{...}}'
+npx @tickernelz/wardmote plugin jobs <plugin-id>
+npx @tickernelz/wardmote plugin job:runs <plugin-id> <job-id>
+npx @tickernelz/wardmote plugin job:trigger <plugin-id> <job-id> [--payload-json '{...}']
+npx @tickernelz/wardmote plugin webhook <plugin-id> <endpoint-key> [--payload-json '{...}']
+npx @tickernelz/wardmote plugin dashboard <plugin-id>
+npx @tickernelz/wardmote plugin bridge:data <plugin-id> --payload-json '{...}'
+npx @tickernelz/wardmote plugin bridge:action <plugin-id> --payload-json '{...}'
+npx @tickernelz/wardmote plugin bridge:stream <plugin-id> <channel> [--duration-ms 10000]
+npx @tickernelz/wardmote plugin data <plugin-id> <key> --payload-json '{...}'
+npx @tickernelz/wardmote plugin action <plugin-id> <key> --payload-json '{...}'
+npx @tickernelz/wardmote plugin local-folders <plugin-id> --company-id <company-id>
+npx @tickernelz/wardmote plugin local-folder:status <plugin-id> <folder-key> --company-id <company-id>
+npx @tickernelz/wardmote plugin local-folder:validate <plugin-id> <folder-key> --company-id <company-id> [--payload-json '{...}']
+npx @tickernelz/wardmote plugin local-folder:set <plugin-id> <folder-key> --company-id <company-id> --payload-json '{...}'
 ```
 
 Feedback traces can be fetched directly by ID when automating export workflows:
 
 ```sh
-npx @tickernelz/paperclip-pro feedback trace <trace-id>
-npx @tickernelz/paperclip-pro feedback bundle <trace-id>
+npx @tickernelz/wardmote feedback trace <trace-id>
+npx @tickernelz/wardmote feedback bundle <trace-id>
 ```
 
 ## Heartbeat Command
@@ -1116,7 +1116,7 @@ npx @tickernelz/paperclip-pro feedback bundle <trace-id>
 `heartbeat run` now also supports context/api-key options and uses the shared client stack:
 
 ```sh
-npx @tickernelz/paperclip-pro heartbeat run --agent-id <agent-id> [--api-base http://localhost:3100] [--api-key <token>]
+npx @tickernelz/wardmote heartbeat run --agent-id <agent-id> [--api-base http://localhost:3100] [--api-key <token>]
 ```
 
 ## Local Storage Defaults

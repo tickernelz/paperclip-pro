@@ -1,5 +1,5 @@
 import { and, eq, sql } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   agentMemberships,
   agents,
@@ -7,13 +7,13 @@ import {
   documents,
   projectMemberships,
   projects,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import type {
   ResourceMembershipResourceType,
   ResourceMembershipState,
   ResourceMemberships,
   ResourceMembershipUpdateResult,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { forbidden, notFound } from "../errors.js";
 import { clearPrimaryAgent } from "./primary-agent.js";
 import { logger } from "../middleware/logger.js";

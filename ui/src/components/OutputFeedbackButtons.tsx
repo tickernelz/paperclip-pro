@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import type { FeedbackDataSharingPreference, FeedbackVoteValue } from "@tickernelz/paperclip-pro-shared";
+import type { FeedbackDataSharingPreference, FeedbackVoteValue } from "@tickernelz/wardmote-shared";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
 import { Textarea } from "@/components/ui/textarea";

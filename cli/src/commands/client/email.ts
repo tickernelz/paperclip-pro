@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { Command } from "commander";
-import { emailSendSchema } from "@tickernelz/paperclip-pro-shared";
+import { emailSendSchema } from "@tickernelz/wardmote-shared";
 import {
   addCommonClientOptions,
   resolveCommandContext,

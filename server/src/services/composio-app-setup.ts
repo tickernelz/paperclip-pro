@@ -1,4 +1,4 @@
-import type { ComposioAppAccount, ComposioAppSetupResult } from "@tickernelz/paperclip-pro-shared";
+import type { ComposioAppAccount, ComposioAppSetupResult } from "@tickernelz/wardmote-shared";
 import { extractRemoteMcpPending } from "./remote-mcp-pending.js";
 import { unprocessable } from "../errors.js";
 

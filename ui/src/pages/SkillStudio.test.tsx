@@ -8,7 +8,7 @@ import type {
   CompanySkillDetail,
   CompanySkillLastEditor,
   CompanySkillListItem,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SkillStudio } from "./SkillStudio";
 

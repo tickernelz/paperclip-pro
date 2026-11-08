@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import type { CostByBiller, CostByProviderModel } from "@tickernelz/paperclip-pro-shared";
+import type { CostByBiller, CostByProviderModel } from "@tickernelz/wardmote-shared";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { QuotaBar } from "./QuotaBar";
 import { billingTypeDisplayName, formatCents, formatTokens, providerDisplayName } from "@/lib/utils";

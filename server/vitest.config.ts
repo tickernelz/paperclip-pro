@@ -8,13 +8,13 @@ export default defineConfig({
   resolve: {
     alias: [
       {
-        find: /^@tickernelz\/paperclip-pro-paperclip-runner\/live$/,
+        find: /^@tickernelz\/wardmote-paperclip-runner\/live$/,
         replacement: fileURLToPath(
           new URL("../packages/paperclip-runner/src/live/index.ts", import.meta.url),
         ),
       },
       {
-        find: /^@tickernelz\/paperclip-pro-paperclip-runner$/,
+        find: /^@tickernelz\/wardmote-paperclip-runner$/,
         replacement: fileURLToPath(
           new URL("../packages/paperclip-runner/src/index.ts", import.meta.url),
         ),

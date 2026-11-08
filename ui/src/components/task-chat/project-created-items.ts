@@ -1,4 +1,4 @@
-import type { ActivityEvent, Project } from "@tickernelz/paperclip-pro-shared";
+import type { ActivityEvent, Project } from "@tickernelz/wardmote-shared";
 import type { TaskChatProjectCreatedItem } from "./task-chat-model";
 
 export function projectCreatedItems(

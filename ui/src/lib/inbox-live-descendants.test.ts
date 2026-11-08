@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Issue, IssueBlockerAttention } from "@tickernelz/paperclip-pro-shared";
+import type { Issue, IssueBlockerAttention } from "@tickernelz/wardmote-shared";
 import {
   resolveInboxIssueBlockerAttention,
   resolveIssueLiveDescendantCount,

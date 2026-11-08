@@ -1,4 +1,4 @@
-import type { CompanySecret, UserSecretDefinition } from "@tickernelz/paperclip-pro-shared";
+import type { CompanySecret, UserSecretDefinition } from "@tickernelz/wardmote-shared";
 import { type MyValueState, myValueLabel, myValueTone } from "./user-secret-presentation";
 
 export type { MyValueState };

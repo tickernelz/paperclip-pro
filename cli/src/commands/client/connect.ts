@@ -1,8 +1,8 @@
 import { Command } from "commander";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
-import type { Agent, Company } from "@tickernelz/paperclip-pro-shared";
-import { createAgentKeySchema, createBoardApiKeySchema } from "@tickernelz/paperclip-pro-shared";
+import type { Agent, Company } from "@tickernelz/wardmote-shared";
+import { createAgentKeySchema, createBoardApiKeySchema } from "@tickernelz/wardmote-shared";
 import { loginBoardCli } from "../../client/board-auth.js";
 import { PaperclipApiClient } from "../../client/http.js";
 import { resolveProfile, readContext, setCurrentProfile, upsertProfile } from "../../client/context.js";

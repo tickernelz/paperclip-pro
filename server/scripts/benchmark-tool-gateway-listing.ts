@@ -11,7 +11,7 @@ import { eq } from "drizzle-orm";
 import {
   createDb, heartbeatRuns, toolCatalogEntries, toolConnections, toolPolicies,
   toolProfileEntries, startEmbeddedPostgresTestDatabase,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { createListingFixture, recordingDb } from "../src/__tests__/helpers/tool-gateway-listing-fixture.js";
 import type { createToolGatewayService } from "../src/services/tool-gateway.js";
 

@@ -12,7 +12,7 @@ export default defineConfig({
   resolve: {
     alias: [
       {
-        find: "@tickernelz/paperclip-pro-paperclip-runner/standalone",
+        find: "@tickernelz/wardmote-paperclip-runner/standalone",
         replacement: resolve(packageRoot, "src/standalone/index.ts"),
       },
     ],

@@ -1,4 +1,4 @@
-import { announcementSchema, type Announcement } from "@tickernelz/paperclip-pro-shared";
+import { announcementSchema, type Announcement } from "@tickernelz/wardmote-shared";
 import { ApiError } from "./client";
 
 async function request(path: string, init: RequestInit) {

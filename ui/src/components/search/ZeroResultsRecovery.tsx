@@ -1,5 +1,5 @@
 import { FilterX, RotateCcw } from "lucide-react";
-import type { CompanySearchZeroResults } from "@tickernelz/paperclip-pro-shared";
+import type { CompanySearchZeroResults } from "@tickernelz/wardmote-shared";
 import { Button } from "@/components/ui/button";
 import {
   clearFilterDimension,

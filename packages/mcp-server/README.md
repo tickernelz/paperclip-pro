@@ -45,13 +45,13 @@ Names, descriptions, toolsets and annotations are refined in `src/tool-overrides
 ## Usage
 
 ```sh
-npx -y @tickernelz/paperclip-pro-mcp-server
+npx -y @tickernelz/wardmote-mcp-server
 ```
 
 Or locally in this repo:
 
 ```sh
-pnpm --filter @tickernelz/paperclip-pro-mcp-server build
+pnpm --filter @tickernelz/wardmote-mcp-server build
 node packages/mcp-server/dist/stdio.js
 ```
 

@@ -9,7 +9,7 @@ import {
   goals,
   issueThreadInteractions,
   issues,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   extractGitHubPullRequestReferences,
   getMergeConfirmationPullRequestReferences,

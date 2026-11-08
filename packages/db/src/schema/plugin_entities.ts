@@ -9,7 +9,7 @@ import {
 } from "drizzle-orm/pg-core";
 import { companies } from "./companies.js";
 import { plugins } from "./plugins.js";
-import type { PluginStateScopeKind } from "@tickernelz/paperclip-pro-shared";
+import type { PluginStateScopeKind } from "@tickernelz/wardmote-shared";
 
 /**
  * `plugin_entities` table — persistent high-level mapping between Paperclip

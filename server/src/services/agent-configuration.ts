@@ -1,8 +1,8 @@
 import { and, eq } from "drizzle-orm";
 import { markOpenwaEndpointsForAgentAdapter } from "./openwa/agent-adapter.js";
-import { assets, agentConfigRevisions, agentTaskSessions, agentRuntimeState, type Db } from "@tickernelz/paperclip-pro-db";
-import { normalizeAgentUrlKey } from "@tickernelz/paperclip-pro-shared";
-import { normalizePaperclipRunnerAdapterConfig } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+import { assets, agentConfigRevisions, agentTaskSessions, agentRuntimeState, type Db } from "@tickernelz/wardmote-db";
+import { normalizeAgentUrlKey } from "@tickernelz/wardmote-shared";
+import { normalizePaperclipRunnerAdapterConfig } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import { conflict, notFound, unprocessable } from "../errors.js";
 import { agentRecordQueries, type UpdateAgentOptions, type AgentConfigurationPatch, type AgentConfigurationRecord, isPlainRecord, buildConfigSnapshot,
   hasConfigPatchFields, changedPendingApprovalConfigFields, diffConfigSnapshot } from "../lib/agent-records.js";

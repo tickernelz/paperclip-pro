@@ -11,7 +11,7 @@ import {
   type AgentAdapterConfigBatchFailure,
   type AgentAdapterConfigBatchField,
   type IssueRunModelOverrideOption,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { agentsApi } from "@/api/agents";
 import { ApiError } from "@/api/client";
 import { modelPickerOption } from "@/adapters/model-picker-fields";

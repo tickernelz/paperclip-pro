@@ -11,7 +11,7 @@ import type {
   RoutineRevisionSnapshotTriggerV1,
   RoutineVariable,
   SecretVersionSelector,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   routinesApi,
   type RestoreRoutineRevisionResponse,

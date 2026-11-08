@@ -19,7 +19,7 @@ import {
   type EffectiveLocalRunLimits,
   type LocalRunLimitKey,
   type LocalRunLimitsSettings,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 const localCliRunStarts = new Map<string, { at: number; signalled: boolean }>();
 const localCliStdoutBuffers = new Map<string, string>();

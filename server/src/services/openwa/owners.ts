@@ -11,7 +11,7 @@ import {
   companyMemberships,
   toolConnections,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   maskOpenwaPhoneNumber,
   openwaChatSettingsSchema,
@@ -21,7 +21,7 @@ import {
   type OpenwaEndpointHealth,
   type OpenwaPrincipalRole,
   type OpenwaTriggerClass,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { badRequest, conflict, notFound, unprocessable } from "../../errors.js";
 import { logActivity, publishActivity, type ActivityPublication } from "../activity-log.js";
 import { openwaThreadId, parseOpenwaThreadId } from "./adapter.js";
@@ -29,7 +29,7 @@ import type { OpenwaGatewayClient } from "./gateway.js";
 import { openwaChatKey } from "./outbound.js";
 import { loadOpenwaPolicySnapshot, openwaDigits, openwaGroupEnabled } from "./policy.js";
 import { openwaPhoneDigits, openwaSetupError } from "./setup.js";
-import { OPENWA_GATEWAY_VERSION } from "@tickernelz/paperclip-pro-shared/openwa-operations";
+import { OPENWA_GATEWAY_VERSION } from "@tickernelz/wardmote-shared/openwa-operations";
 import { openwaAuditRetentionDays, recordOpenwaAudit } from "./audit.js";
 import { assertOpenwaOwnerReportChat } from "./owner-report.js";
 

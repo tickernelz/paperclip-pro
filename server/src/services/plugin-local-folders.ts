@@ -7,7 +7,7 @@ import type {
   PluginLocalFolderListing,
   PluginLocalFolderProblem,
   PluginLocalFolderStatus,
-} from "@tickernelz/paperclip-pro-plugin-sdk";
+} from "@tickernelz/wardmote-plugin-sdk";
 import { badRequest, forbidden, notFound } from "../errors.js";
 import { resolvePaperclipHomeDir } from "../home-paths.js";
 

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 
 import { unprocessable } from "../errors.js";
 import { logActivity } from "../services/activity-log.js";

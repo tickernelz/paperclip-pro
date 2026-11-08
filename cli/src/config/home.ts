@@ -11,7 +11,7 @@ import {
   resolvePaperclipHomeDir,
   resolvePaperclipInstanceId,
   resolvePaperclipInstanceRoot as resolveSharedPaperclipInstanceRoot,
-} from "@tickernelz/paperclip-pro-shared/home-paths";
+} from "@tickernelz/wardmote-shared/home-paths";
 
 export {
   expandHomePrefix,

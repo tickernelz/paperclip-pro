@@ -3,8 +3,8 @@ import { describe, expect, it } from "vitest";
 import {
   capabilitySemanticToolDescriptor,
   paperclipSemanticAction,
-} from "@tickernelz/paperclip-pro-paperclip-runner";
-import { PROJECT_ICON_NAMES } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-paperclip-runner";
+import { PROJECT_ICON_NAMES } from "@tickernelz/wardmote-shared";
 
 // Cross-package parity belongs at the App boundary: the standalone runner
 // must not import the App's shared package, even from its own tests.

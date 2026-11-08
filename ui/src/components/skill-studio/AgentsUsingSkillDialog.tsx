@@ -7,7 +7,7 @@ import type {
   CompanySkillDetail,
   CompanySkillUsageAgent,
   CompanySkillVersion,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { Link } from "@/lib/router";
 import { agentsApi } from "@/api/agents";
 import { companySkillsApi } from "@/api/companySkills";

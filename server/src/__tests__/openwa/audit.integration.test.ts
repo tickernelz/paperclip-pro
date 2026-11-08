@@ -22,8 +22,8 @@ import {
   issues,
   toolApplications,
   toolConnections,
-} from "@tickernelz/paperclip-pro-db";
-import { CHAT_AUDIT_ENTRY_KINDS, type ChatAuditEntryKind } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import { CHAT_AUDIT_ENTRY_KINDS, type ChatAuditEntryKind } from "@tickernelz/wardmote-shared";
 import { accessService } from "../../services/access.js";
 import { assertOpenwaRunMay, restoreOpenwaGrant } from "../../services/openwa/authority.js";
 import { startEmbeddedPostgresTestDatabase } from "../helpers/embedded-postgres.js";

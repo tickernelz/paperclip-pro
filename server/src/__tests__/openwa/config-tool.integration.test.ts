@@ -24,8 +24,8 @@ import {
   issues,
   toolConnections,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
-import { openwaEndpointPolicySchema, type OpenwaTriggerClass } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import { openwaEndpointPolicySchema, type OpenwaTriggerClass } from "@tickernelz/wardmote-shared";
 import { startEmbeddedPostgresTestDatabase } from "../helpers/embedded-postgres.js";
 import { chatChannelService, type ChatChannelService } from "../../services/chat-channels.js";
 import { ChatSdkRuntime } from "../../services/chat-sdk-runtime.js";

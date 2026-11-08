@@ -30,7 +30,7 @@ import {
   toolPolicies,
   toolProfileEntries,
   userSecretDefinitions,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import type { RuntimeToolsTokenClaims } from "../runtime-tools-token.js";
 import { wakeConnectionIntentAfterResolution } from "../routes/connection-intents.js";
 import { connectionIntentDeliveryService } from "../services/connection-intent-delivery.js";

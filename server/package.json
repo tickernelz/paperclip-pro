@@ -1,5 +1,5 @@
 {
-  "name": "@tickernelz/paperclip-pro-server",
+  "name": "@tickernelz/wardmote-server",
   "version": "0.3.1",
   "license": "MIT",
   "homepage": "https://github.com/tickernelz/wardmote",
@@ -40,8 +40,8 @@
     "postpack": "rm -rf ui-dist",
     "clean": "rm -rf dist",
     "start": "node dist/index.js",
-    "prepare:runner-vendor": "pnpm --filter @tickernelz/paperclip-pro-paperclip-runner build",
-    "typecheck": "pnpm run prepare:runner-vendor && pnpm --filter @tickernelz/paperclip-pro-plugin-sdk ensure-build-deps && tsc --noEmit"
+    "prepare:runner-vendor": "pnpm --filter @tickernelz/wardmote-paperclip-runner build",
+    "typecheck": "pnpm run prepare:runner-vendor && pnpm --filter @tickernelz/wardmote-plugin-sdk ensure-build-deps && tsc --noEmit"
   },
   "dependencies": {
     "@agentclientprotocol/codex-acp": "1.6.2",
@@ -63,14 +63,14 @@
     "@openrouter/ai-sdk-provider": "3.1.0",
     "@opentelemetry/api": "^1.9.0",
     "@photon-ai/advanced-imessage": "2.1.0",
-    "@tickernelz/paperclip-pro-adapter-omp-local": "workspace:*",
-    "@tickernelz/paperclip-pro-adapter-utils": "workspace:*",
-    "@tickernelz/paperclip-pro-db": "workspace:*",
-    "@tickernelz/paperclip-pro-mcp-server": "workspace:*",
-    "@tickernelz/paperclip-pro-plugin-sdk": "workspace:*",
-    "@tickernelz/paperclip-pro-shared": "workspace:*",
-    "@tickernelz/paperclip-pro-skills-catalog": "workspace:*",
-    "@tickernelz/paperclip-pro-teams-catalog": "workspace:*",
+    "@tickernelz/wardmote-adapter-omp-local": "workspace:*",
+    "@tickernelz/wardmote-adapter-utils": "workspace:*",
+    "@tickernelz/wardmote-db": "workspace:*",
+    "@tickernelz/wardmote-mcp-server": "workspace:*",
+    "@tickernelz/wardmote-plugin-sdk": "workspace:*",
+    "@tickernelz/wardmote-shared": "workspace:*",
+    "@tickernelz/wardmote-skills-catalog": "workspace:*",
+    "@tickernelz/wardmote-teams-catalog": "workspace:*",
     "@vercel/connect": "2.3.3",
     "@xterm/addon-serialize": "0.14.0",
     "@xterm/headless": "6.0.0",
@@ -128,7 +128,7 @@
     "acpx"
   ],
   "devDependencies": {
-    "@tickernelz/paperclip-pro-paperclip-runner": "workspace:*",
+    "@tickernelz/wardmote-paperclip-runner": "workspace:*",
     "@types/compression": "^1.8.1",
     "@types/express": "^5.0.0",
     "@types/express-serve-static-core": "^5.1.3",

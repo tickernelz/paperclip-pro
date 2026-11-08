@@ -1,5 +1,5 @@
 import { and, eq, or } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   approvals,
   agents,
@@ -8,7 +8,7 @@ import {
   issueAttachments,
   issueThreadInteractions,
   issueWorkProducts,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   normalizePrpResultSignals,
   type PrpIgnoredAttentionRequest,

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { AiConnectionMetadata } from "@tickernelz/paperclip-pro-shared";
+import type { AiConnectionMetadata } from "@tickernelz/wardmote-shared";
 import {
   fastResponsePrompt,
   fastResponseReceipt,

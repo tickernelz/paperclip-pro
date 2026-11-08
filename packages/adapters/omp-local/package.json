@@ -1,5 +1,5 @@
 {
-  "name": "@tickernelz/paperclip-pro-adapter-omp-local",
+  "name": "@tickernelz/wardmote-adapter-omp-local",
   "version": "0.3.1",
   "license": "MIT",
   "homepage": "https://github.com/tickernelz/wardmote",
@@ -55,9 +55,9 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@tickernelz/paperclip-pro-adapter-utils": "workspace:*",
-    "@tickernelz/paperclip-pro-mcp-server": "workspace:*",
-    "@tickernelz/paperclip-pro-shared": "workspace:*",
+    "@tickernelz/wardmote-adapter-utils": "workspace:*",
+    "@tickernelz/wardmote-mcp-server": "workspace:*",
+    "@tickernelz/wardmote-shared": "workspace:*",
     "picocolors": "^1.1.1",
     "yaml": "^2.9.0"
   },

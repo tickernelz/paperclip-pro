@@ -17,7 +17,7 @@ v8.setFlagsFromString("--expose-gc");
 
 const runnerSource = pathToFileURL(path.join(root, "packages/paperclip-runner/src/index.ts")).href;
 const resolver = `export async function resolve(specifier, context, next) {
-  if (specifier === "@tickernelz/paperclip-pro-paperclip-runner") return { url: ${JSON.stringify(runnerSource)}, shortCircuit: true };
+  if (specifier === "@tickernelz/wardmote-paperclip-runner") return { url: ${JSON.stringify(runnerSource)}, shortCircuit: true };
   return next(specifier, context);
 }`;
 register("data:text/javascript," + encodeURIComponent(resolver));

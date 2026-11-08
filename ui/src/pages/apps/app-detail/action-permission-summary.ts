@@ -1,4 +1,4 @@
-import type { ToolCatalogEntry } from "@tickernelz/paperclip-pro-shared";
+import type { ToolCatalogEntry } from "@tickernelz/wardmote-shared";
 
 export type ActionPermissionSummary = {
   allowedCount: number;

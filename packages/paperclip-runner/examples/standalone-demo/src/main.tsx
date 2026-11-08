@@ -4,7 +4,7 @@ import { createRoot } from "react-dom/client";
 import {
   runStandaloneStandaloneDemo,
   type StandaloneStandaloneDemoResult,
-} from "@tickernelz/paperclip-pro-paperclip-runner/standalone";
+} from "@tickernelz/wardmote-paperclip-runner/standalone";
 
 import "./styles.css";
 

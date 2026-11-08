@@ -1,7 +1,7 @@
 import * as cloudIdentity from "../cloud-runtime-identity.js";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import { randomUUID } from "node:crypto";
-import { upsertIssueDocumentSchema } from "@tickernelz/paperclip-pro-shared";
+import { upsertIssueDocumentSchema } from "@tickernelz/wardmote-shared";
 import { and, eq, inArray } from "drizzle-orm";
 import {
   activityLog,
@@ -17,7 +17,7 @@ import {
   issueComments,
   issueThreadInteractions,
   issues,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { startEmbeddedPostgresTestDatabase } from "../../__tests__/helpers/embedded-postgres.js";
 import { initializeRunIdentity, reserveSteeredIdentity, reconcileSteeredIdentity } from "../run-identity.js";
 import { documentService } from "../documents.js";

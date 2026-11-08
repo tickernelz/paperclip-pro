@@ -66,7 +66,7 @@ import type {
   ToolRuntimeSlotStatus,
   VercelConnectCredentialReference,
   VercelConnectGrantReference,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { agents } from "./agents.js";
 import { approvals } from "./approvals.js";
 import { companies } from "./companies.js";

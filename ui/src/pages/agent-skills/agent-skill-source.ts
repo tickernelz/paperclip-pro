@@ -2,7 +2,7 @@ import type { ComponentType } from "react";
 import { Boxes, Folder, Link2 } from "lucide-react";
 import { GithubIcon } from "@/components/icons/github-icon";
 import { MootMark } from "@/components/MootMark";
-import type { CompanySkillListItem } from "@tickernelz/paperclip-pro-shared";
+import type { CompanySkillListItem } from "@tickernelz/wardmote-shared";
 
 export interface AgentSkillSourceMeta {
   icon: ComponentType<{ className?: string }>;

@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import type { IssueWorkMode } from "@tickernelz/paperclip-pro-shared";
+import type { IssueWorkMode } from "@tickernelz/wardmote-shared";
 import {
   Check,
   ClipboardList,

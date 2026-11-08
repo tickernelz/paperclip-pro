@@ -1,19 +1,19 @@
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import type { Environment, EnvironmentLease } from "@tickernelz/paperclip-pro-shared";
-import { adapterSupportsRemoteManagedEnvironments } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/wardmote-db";
+import type { Environment, EnvironmentLease } from "@tickernelz/wardmote-shared";
+import { adapterSupportsRemoteManagedEnvironments } from "@tickernelz/wardmote-shared";
 import {
   adapterExecutionTargetToRemoteSpec,
   type AdapterExecutionTarget,
   type SandboxLeaseAcquisition,
-} from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
-import type { DuplexObservabilityRecorder } from "@tickernelz/paperclip-pro-adapter-utils/duplex-observability";
+} from "@tickernelz/wardmote-adapter-utils/execution-target";
+import type { DuplexObservabilityRecorder } from "@tickernelz/wardmote-adapter-utils/duplex-observability";
 import {
   clampSpanLabel,
   getActiveStepContext,
   normalizeProviderFamily,
   SANDBOX_STARTUP_OUTCOME,
   SANDBOX_STARTUP_SPAN_ATTRS,
-} from "@tickernelz/paperclip-pro-adapter-utils/acpx-engine/startup-timing";
+} from "@tickernelz/wardmote-adapter-utils/acpx-engine/startup-timing";
 import { parseObject } from "../adapters/utils.js";
 import { getStartupTracer } from "../instrumentation.js";
 import { logger } from "../middleware/logger.js";

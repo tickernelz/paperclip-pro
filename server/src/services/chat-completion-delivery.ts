@@ -1,7 +1,7 @@
 import { notifyDeliveryWork, DELIVERY_QUEUES } from "./delivery-work-notifications.js";
 import { and, asc, desc, eq, inArray, lte, sql } from "drizzle-orm";
 import { agents, agentWakeupRequests, authUsers, chatCompletionDeliveries as deliveries, chatTaskHandoffs as handoffs,
-  heartbeatRuns, issueComments, issueDocuments, issueRelations, issues, type Db } from "@tickernelz/paperclip-pro-db";
+  heartbeatRuns, issueComments, issueDocuments, issueRelations, issues, type Db } from "@tickernelz/wardmote-db";
 import { instanceSettingsService } from "./instance-settings.js";
 import { publicChatTaskUrl } from "./chat-task-url.js";
 

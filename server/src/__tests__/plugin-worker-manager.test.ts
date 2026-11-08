@@ -1,14 +1,14 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it, vi } from "vitest";
-import type { PaperclipPluginManifestV1 } from "@tickernelz/paperclip-pro-shared";
+import type { PaperclipPluginManifestV1 } from "@tickernelz/wardmote-shared";
 import {
   createHostClientHandlers,
   JsonRpcCallError,
   PLUGIN_RPC_ERROR_CODES,
   type HostServices,
   type HostToWorkerMethods,
-} from "@tickernelz/paperclip-pro-plugin-sdk";
+} from "@tickernelz/wardmote-plugin-sdk";
 
 // Mock the shared logger, so a test reads the exact calls the manager makes
 // when it logs a route event. The child logger returns the same mock object,

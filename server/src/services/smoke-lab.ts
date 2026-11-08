@@ -5,7 +5,7 @@ import { createServer as createNetServer } from "node:net";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { and, desc, eq, inArray } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   connectionGrants,
   smokeRuns,
@@ -17,7 +17,7 @@ import {
   toolProfileEntries,
   toolProfiles,
   toolStdioCommandTemplates,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import type {
   CreateSmokeRun,
   DeploymentExposure,
@@ -27,7 +27,7 @@ import type {
   SmokeRun,
   SmokeRunStep,
   UpdateSmokeRun,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { badRequest, conflict, forbidden, notFound, unprocessable } from "../errors.js";
 import { instanceSettingsService } from "./instance-settings.js";
 

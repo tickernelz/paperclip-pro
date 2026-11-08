@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { agents, companies, createDb, heartbeatRuns } from "@tickernelz/paperclip-pro-db";
+import { agents, companies, createDb, heartbeatRuns } from "@tickernelz/wardmote-db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -13,9 +13,9 @@ vi.mock("../telemetry.js", () => ({
   getTelemetryClient: () => mockTelemetryClient,
 }));
 
-vi.mock("@tickernelz/paperclip-pro-shared/telemetry", async () => {
-  const actual = await vi.importActual<typeof import("@tickernelz/paperclip-pro-shared/telemetry")>(
-    "@tickernelz/paperclip-pro-shared/telemetry",
+vi.mock("@tickernelz/wardmote-shared/telemetry", async () => {
+  const actual = await vi.importActual<typeof import("@tickernelz/wardmote-shared/telemetry")>(
+    "@tickernelz/wardmote-shared/telemetry",
   );
   return {
     ...actual,

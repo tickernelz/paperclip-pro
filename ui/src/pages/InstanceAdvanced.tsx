@@ -9,7 +9,7 @@ import {
   type InstanceExperimentalSettings,
   type InstanceFeatureKey,
   type PatchInstanceExperimentalSettings,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FeatureSettingGroup, FeatureSettingRow, ManagedByCloudBadge } from "@/components/FeatureSettingRow";

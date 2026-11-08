@@ -1,5 +1,5 @@
-import { checkMcpRemoteHeaderName, checkMcpRemoteHeaderValue, mcpRemoteHeaderRejectionMessage } from "@tickernelz/paperclip-pro-shared";
-import type { GenericMcpAuthMode } from "@tickernelz/paperclip-pro-shared";
+import { checkMcpRemoteHeaderName, checkMcpRemoteHeaderValue, mcpRemoteHeaderRejectionMessage } from "@tickernelz/wardmote-shared";
+import type { GenericMcpAuthMode } from "@tickernelz/wardmote-shared";
 
 /**
  * Logic behind the guided "Connect your own MCP server" flow (PAP-17087).

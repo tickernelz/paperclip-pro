@@ -2,7 +2,7 @@ import { ShieldX, UserX } from "lucide-react";
 import {
   describeResponsibleUserDenial,
   type ResponsibleUserDenialCode,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { cn } from "../lib/utils";
 
 /**

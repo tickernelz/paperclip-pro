@@ -19,7 +19,7 @@ import type {
   ConnectionGrantKind,
   VercelConnectCredentialReference,
   VercelConnectGrantReference,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 export type VercelConnectFailureCode =
   | "vercel_connect_unavailable"

@@ -1,4 +1,4 @@
-import type { Environment, InstanceExecutionMode } from "@tickernelz/paperclip-pro-shared";
+import type { Environment, InstanceExecutionMode } from "@tickernelz/wardmote-shared";
 
 /**
  * Provider key (== plugin driverKey) of the first-party Kubernetes sandbox

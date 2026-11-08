@@ -4,8 +4,8 @@ import {
   createDb,
   heartbeatRuns,
   nativeRunFinalizations,
-} from "@tickernelz/paperclip-pro-db";
-import { resolveMigrationConnection } from "@tickernelz/paperclip-pro-db/migration-runtime";
+} from "@tickernelz/wardmote-db";
+import { resolveMigrationConnection } from "@tickernelz/wardmote-db/migration-runtime";
 
 import { instanceSettingsService } from "./services/instance-settings.js";
 

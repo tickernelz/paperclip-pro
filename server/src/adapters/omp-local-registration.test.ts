@@ -1,13 +1,13 @@
 import { describe, expect, it, vi } from "vitest";
-import { AGENT_ADAPTER_TYPES } from "@tickernelz/paperclip-pro-shared";
-import { adapterSupportsRemoteManagedEnvironments } from "@tickernelz/paperclip-pro-shared/environment-support";
-import { getAdapterSessionManagement } from "@tickernelz/paperclip-pro-adapter-utils";
+import { AGENT_ADAPTER_TYPES } from "@tickernelz/wardmote-shared";
+import { adapterSupportsRemoteManagedEnvironments } from "@tickernelz/wardmote-shared/environment-support";
+import { getAdapterSessionManagement } from "@tickernelz/wardmote-adapter-utils";
 import { isConversationAdapter } from "../services/conversation-continuation.js";
 import { BUILTIN_ADAPTER_TYPES } from "./builtin-adapter-types.js";
 import { listServerAdapters, requireServerAdapter } from "./registry.js";
 
 const { probeInstallation } = vi.hoisted(() => ({ probeInstallation: vi.fn() }));
-vi.mock("@tickernelz/paperclip-pro-paperclip-runner/live", () => ({ probeAcpxClaudeInstallation: probeInstallation }));
+vi.mock("@tickernelz/wardmote-paperclip-runner/live", () => ({ probeAcpxClaudeInstallation: probeInstallation }));
 
 vi.mock("./plugin-loader.js", () => ({
   buildExternalAdapters: vi.fn(async () => []),

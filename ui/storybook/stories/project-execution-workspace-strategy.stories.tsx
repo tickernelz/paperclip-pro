@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useQueryClient } from "@tanstack/react-query";
-import type { Project } from "@tickernelz/paperclip-pro-shared";
+import type { Project } from "@tickernelz/wardmote-shared";
 import { ProjectProperties, type ProjectConfigFieldKey, type ProjectFieldSaveState } from "@/components/ProjectProperties";
 import { queryKeys } from "@/lib/queryKeys";
 import { storybookProjects } from "../fixtures/paperclipData";

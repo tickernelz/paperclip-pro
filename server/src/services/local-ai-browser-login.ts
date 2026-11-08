@@ -4,7 +4,7 @@ import { constants } from "node:fs";
 import path from "node:path";
 import { runSetupTokenLogin } from "./ai-providers/claude/setup-token-runner.js";
 import { runDeviceLogin } from "./ai-providers/codex/device-login-runner.js";
-import { ensureCommandResolvable, resolveCommandForLogs } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+import { ensureCommandResolvable, resolveCommandForLogs } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import { resolveCodexCommand } from "../vendor/paperclip-runner/index.js";
 
 export type LocalBrowserLoginState = {

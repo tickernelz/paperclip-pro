@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import {
   getAttachmentArtifactWorkProductMetadata,
   type IssueWorkProduct,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { IssueGalleryContext } from "@/context/IssueGalleryContext";
 import { TextAttachmentContext } from "@/context/TextAttachmentContext";
 import { ImageGalleryModal } from "@/components/ImageGalleryModal";

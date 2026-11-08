@@ -6,7 +6,7 @@ import {
   type DocumentAnnotationAnchorSelector,
   type DocumentTextProjection,
   type DocumentTextRange,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 export interface ContainerTextOffset {
   /** Byte offset of the selection start within the flattened container text. */

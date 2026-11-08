@@ -32,7 +32,7 @@ import {
   type SetupTokenLoginProcessFactory,
   type SetupTokenSecretWriter,
 } from "../services/setup-token-session.js";
-import { SETUP_TOKEN_TRANSPORT_ADVISORY_CODE } from "@tickernelz/paperclip-pro-shared";
+import { SETUP_TOKEN_TRANSPORT_ADVISORY_CODE } from "@tickernelz/wardmote-shared";
 
 // --- Test fixtures -----------------------------------------------------------
 

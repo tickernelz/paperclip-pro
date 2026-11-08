@@ -2,9 +2,9 @@ import {
   LOCAL_BROWSER_TOOLS,
   LOCAL_BROWSER_TOOL_NAMES,
   type LocalBrowserSession,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { and, eq, sql } from "drizzle-orm";
-import { localBrowserConnections, toolConnections, type Db } from "@tickernelz/paperclip-pro-db";
+import { localBrowserConnections, toolConnections, type Db } from "@tickernelz/wardmote-db";
 import { localBrowserService } from "../../local-browser/service.js";
 import { forbidden } from "../../../errors.js";
 

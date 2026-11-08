@@ -1,4 +1,4 @@
-import type { AdapterModel } from "@tickernelz/paperclip-pro-adapter-utils";
+import type { AdapterModel } from "@tickernelz/wardmote-adapter-utils";
 
 let cached: { until: number; models: AdapterModel[] } | undefined;
 let pending: Promise<AdapterModel[]> | undefined;

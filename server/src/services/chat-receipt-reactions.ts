@@ -7,7 +7,7 @@ import {
   chatMessageLinks,
   heartbeatRuns,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   parseGitHubReceiptIdentity,
   type GitHubReceiptIdentity,

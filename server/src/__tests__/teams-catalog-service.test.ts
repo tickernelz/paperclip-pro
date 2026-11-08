@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { readFile } from "node:fs/promises";
-import { parseFrontmatterMarkdown } from "@tickernelz/paperclip-pro-shared/frontmatter";
-import type { CatalogTeam } from "@tickernelz/paperclip-pro-shared";
+import { parseFrontmatterMarkdown } from "@tickernelz/wardmote-shared/frontmatter";
+import type { CatalogTeam } from "@tickernelz/wardmote-shared";
 
 const mockAgentService = vi.hoisted(() => ({
   getById: vi.fn(),

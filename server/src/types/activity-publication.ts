@@ -1,4 +1,4 @@
-import type { PluginEvent } from "@tickernelz/paperclip-pro-plugin-sdk";
+import type { PluginEvent } from "@tickernelz/wardmote-plugin-sdk";
 
 export interface ActivityPublication {
   companyId: string;

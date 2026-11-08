@@ -1,4 +1,4 @@
-import type { HeartbeatRun } from "@tickernelz/paperclip-pro-shared";
+import type { HeartbeatRun } from "@tickernelz/wardmote-shared";
 
 export type SourceResolvedFoldCleanupOutcome =
   | "terminated"

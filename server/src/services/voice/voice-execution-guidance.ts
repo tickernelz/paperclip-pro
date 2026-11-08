@@ -1,5 +1,5 @@
 import { and, eq, gt, inArray, isNull, sql } from "drizzle-orm";
-import { chatEndpoints, chatVoiceSessions, chatVoiceToolCalls, toolConnections, type Db } from "@tickernelz/paperclip-pro-db";
+import { chatEndpoints, chatVoiceSessions, chatVoiceToolCalls, toolConnections, type Db } from "@tickernelz/wardmote-db";
 
 export const LIVE_VOICE_EXECUTION_GUIDANCE = [
   "## Live voice request",

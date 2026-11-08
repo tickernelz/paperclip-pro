@@ -1,4 +1,4 @@
-import type { Issue, IssueStatus } from "@tickernelz/paperclip-pro-shared";
+import type { Issue, IssueStatus } from "@tickernelz/wardmote-shared";
 import { workflowSort } from "./workflow-sort";
 
 export type SubIssueProgressTargetKind = "next" | "blocked";

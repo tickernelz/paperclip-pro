@@ -4,7 +4,7 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${0}")/.." && pwd)"
 . "${REPO_ROOT}/scripts/release-lib.sh"
 CLI_DIR="${REPO_ROOT}/cli"
-CLI_PACKAGE="@tickernelz/paperclip-pro"
+CLI_PACKAGE="@tickernelz/wardmote"
 PUBLISH_TAG="next"
 PROMOTE_TAG="latest"
 PACK_CONCURRENCY="${PACK_CONCURRENCY:-4}"
@@ -28,7 +28,7 @@ usage() {
 Usage:
   ./scripts/release.sh [--version YYYY.MDD.P] [--dry-run] [--skip-build] [--print-version]
 
-Publishes every @tickernelz/paperclip-pro package at one calendar version, in
+Publishes every @tickernelz/wardmote package at one calendar version, in
 dependency order, under the "next" dist-tag, then moves "latest" onto that
 version once npm exposes the whole set, tags the release commit and opens a
 GitHub release with notes generated since the previous v* tag.

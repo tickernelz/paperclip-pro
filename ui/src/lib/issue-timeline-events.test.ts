@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ActivityEvent } from "@tickernelz/paperclip-pro-shared";
+import type { ActivityEvent } from "@tickernelz/wardmote-shared";
 import {
   extractIssueTimelineEvents,
   extractIssueWorkModeChanges,

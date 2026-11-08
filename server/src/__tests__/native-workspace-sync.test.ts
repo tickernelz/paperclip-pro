@@ -7,7 +7,7 @@ import {
   serializeDirectorySnapshot,
   captureDirectorySnapshot,
   disposeDirectorySnapshot,
-} from "@tickernelz/paperclip-pro-adapter-utils/workspace-restore-merge";
+} from "@tickernelz/wardmote-adapter-utils/workspace-restore-merge";
 
 import {
   classifyNativeWorkspaceInbound,

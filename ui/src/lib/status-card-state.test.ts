@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { StatusCard, StatusCardRefreshPolicy } from "@tickernelz/paperclip-pro-shared";
+import type { StatusCard, StatusCardRefreshPolicy } from "@tickernelz/wardmote-shared";
 import {
   deriveStatusCardLifecycle,
   describeRefreshPolicy,

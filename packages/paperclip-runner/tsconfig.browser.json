@@ -16,16 +16,16 @@
     ],
     "baseUrl": ".",
     "paths": {
-      "@tickernelz/paperclip-pro-paperclip-runner/browser": [
+      "@tickernelz/wardmote-paperclip-runner/browser": [
         "src/browser/index.ts"
       ],
-      "@tickernelz/paperclip-pro-paperclip-runner/react": [
+      "@tickernelz/wardmote-paperclip-runner/react": [
         "src/react/index.ts"
       ],
-      "@tickernelz/paperclip-pro-paperclip-runner/standalone": [
+      "@tickernelz/wardmote-paperclip-runner/standalone": [
         "src/standalone/index.ts"
       ],
-      "@tickernelz/paperclip-pro-paperclip-runner/styles.css": [
+      "@tickernelz/wardmote-paperclip-runner/styles.css": [
         "styles.css"
       ],
       "@paperclip-runner-local/capability": [

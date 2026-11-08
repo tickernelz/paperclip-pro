@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { definePlugin, runWorker, type PluginApiRequestInput } from "@tickernelz/paperclip-pro-plugin-sdk";
+import { definePlugin, runWorker, type PluginApiRequestInput } from "@tickernelz/wardmote-plugin-sdk";
 
 type SmokeInput = {
   companyId: string;

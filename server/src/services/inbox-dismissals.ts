@@ -1,7 +1,7 @@
 import { and, desc, eq } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { inboxDismissals } from "@tickernelz/paperclip-pro-db";
-import type { InboxDismissalKind } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/wardmote-db";
+import { inboxDismissals } from "@tickernelz/wardmote-db";
+import type { InboxDismissalKind } from "@tickernelz/wardmote-shared";
 
 export function inboxDismissalService(db: Db) {
   async function upsert(

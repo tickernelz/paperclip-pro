@@ -9,7 +9,7 @@ export default defineConfig({
   root: repoRoot,
   resolve: {
     alias: {
-      "@tickernelz/paperclip-pro-plugin-sdk": path.resolve(dirname, "../../sdk/src/index.ts"),
+      "@tickernelz/wardmote-plugin-sdk": path.resolve(dirname, "../../sdk/src/index.ts"),
     },
   },
   test: {

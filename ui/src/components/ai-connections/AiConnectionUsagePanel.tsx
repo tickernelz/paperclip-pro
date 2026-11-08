@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
-import type { AiConnectionUsage, AiConnectionUsageLimit, AiManagedConnectionSummary } from "@tickernelz/paperclip-pro-shared";
-import { supportsAiConnectionUsage } from "@tickernelz/paperclip-pro-shared";
+import type { AiConnectionUsage, AiConnectionUsageLimit, AiManagedConnectionSummary } from "@tickernelz/wardmote-shared";
+import { supportsAiConnectionUsage } from "@tickernelz/wardmote-shared";
 import { aiConnectionsApi } from "@/api/ai-connections";
 import { Button } from "@/components/ui/button";
 import { QuotaBar } from "@/components/QuotaBar";

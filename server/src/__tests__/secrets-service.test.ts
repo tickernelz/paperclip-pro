@@ -21,8 +21,8 @@ import {
   secretAccessEvents,
   userSecretDeclarations,
   userSecretDefinitions,
-} from "@tickernelz/paperclip-pro-db";
-import { LOW_TRUST_REVIEW_PRESET } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import { LOW_TRUST_REVIEW_PRESET } from "@tickernelz/wardmote-shared";
 import { getEmbeddedPostgresTestSupport, startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";
 import { awsSecretsManagerProvider } from "../secrets/aws-secrets-manager-provider.js";
 import { localEncryptedProvider } from "../secrets/local-encrypted-provider.js";

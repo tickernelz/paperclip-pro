@@ -1,4 +1,4 @@
-import type { OnboardingOmpStatus, OnboardingRemoteOmpStatus } from "@tickernelz/paperclip-pro-shared";
+import type { OnboardingOmpStatus, OnboardingRemoteOmpStatus } from "@tickernelz/wardmote-shared";
 
 export type OnboardingStepIndex = 0 | 1 | 2;
 export const ONBOARDING_STEP_NAMES = ["Check OMP", "Connect a model", "First task"] as const;

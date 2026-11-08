@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
-import { agents, userCompanyPreferences, type Db } from "@tickernelz/paperclip-pro-db";
-import type { PrimaryAgentPreference } from "@tickernelz/paperclip-pro-shared";
+import { agents, userCompanyPreferences, type Db } from "@tickernelz/wardmote-db";
+import type { PrimaryAgentPreference } from "@tickernelz/wardmote-shared";
 import { notFound, unprocessable } from "../errors.js";
 import { persistActivity, publishActivity } from "./activity-log.js";
 import { resourceMembershipService } from "./resource-memberships.js";

@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import type { ActivityEvent } from "@tickernelz/paperclip-pro-shared";
+import type { ActivityEvent } from "@tickernelz/wardmote-shared";
 import {
   addCommonClientOptions,
   apiPath,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { RUNTIME_EXPOSURE_APP_PORT_MIN, deriveViteHmrPort } from "@tickernelz/paperclip-pro-shared";
+import { RUNTIME_EXPOSURE_APP_PORT_MIN, deriveViteHmrPort } from "@tickernelz/wardmote-shared";
 
 import {
   BrokerClientError,

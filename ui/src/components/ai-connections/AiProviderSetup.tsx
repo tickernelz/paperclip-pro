@@ -8,7 +8,7 @@ import {
   type AiProviderRouting,
   type AiConnectionBinding,
   type AiManagedConnectionSummary,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { aiConnectionsApi } from "@/api/ai-connections";
 import { agentsApi } from "@/api/agents";
 import { ConnectionChoiceList } from "@/features/connections/ConnectionChoiceList";

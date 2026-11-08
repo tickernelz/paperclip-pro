@@ -16,7 +16,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: `pnpm --filter @tickernelz/paperclip-pro-ui exec vite --host 127.0.0.1 --port ${PORT} --strictPort`,
+    command: `pnpm --filter @tickernelz/wardmote-ui exec vite --host 127.0.0.1 --port ${PORT} --strictPort`,
     url: `${BASE_URL}/tests/mobile-chat-shell.html`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

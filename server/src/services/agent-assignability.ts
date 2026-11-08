@@ -1,11 +1,11 @@
 import { eq } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { agents } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
+import { agents } from "@tickernelz/wardmote-db";
 import {
   getAgentWorkEligibility,
   type AgentEligibilityAgent,
   type AgentOrgChainHealth,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { conflict, notFound, unprocessable } from "../errors.js";
 
 type AgentAssignmentKind = "work" | "routine";

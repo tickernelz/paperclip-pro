@@ -24,7 +24,7 @@ import {
   issueRelations,
   issues,
   runIdentityContexts,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { errorHandler } from "../middleware/index.js";
 import { issueRoutes } from "../routes/issues.js";
 import { heartbeatService } from "../services/heartbeat.js";
@@ -33,7 +33,7 @@ import { issueThreadInteractionService } from "../services/issue-thread-interact
 import { questionResponseDeliveryService } from "../services/question-response-delivery.js";
 import { remoteTerminationReceipt } from "../services/remote-execution-termination.js";
 import { initializeRunIdentity, reconcileSteeredIdentity } from "../services/run-identity.js";
-import { registerAdapterSteerTarget } from "@tickernelz/paperclip-pro-adapter-utils/adapter-steer-registry";
+import { registerAdapterSteerTarget } from "@tickernelz/wardmote-adapter-utils/adapter-steer-registry";
 import { appendHeartbeatRunEvent } from "../services/heartbeat-run-events.js";
 import {
   getEmbeddedPostgresTestSupport,

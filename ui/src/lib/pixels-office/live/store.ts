@@ -2,7 +2,7 @@ import type {
   LiveEvent,
   PixelsOfficeSnapshot,
   PixelsOfficeTimelineEvent,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import type { LiveRunForIssue } from "../../../api/heartbeats";
 import type { AgentVisual, OfficeEffect } from "../officeModel";
 import {

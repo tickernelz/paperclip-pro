@@ -11,8 +11,8 @@ import {
   issueComments,
   issues,
   webPushSubscriptions,
-} from "@tickernelz/paperclip-pro-db";
-import { buildUserMentionHref, type LiveEvent, type NotificationKind } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import { buildUserMentionHref, type LiveEvent, type NotificationKind } from "@tickernelz/wardmote-shared";
 import { errorHandler } from "../middleware/index.js";
 import { notificationRoutes } from "../routes/notifications.js";
 import { subscribeCompanyLiveEvents } from "../services/live-events.js";

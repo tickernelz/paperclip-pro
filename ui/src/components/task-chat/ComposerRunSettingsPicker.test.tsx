@@ -3,7 +3,7 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { AgentAdapterConfigBatchPreview } from "@tickernelz/paperclip-pro-shared";
+import type { AgentAdapterConfigBatchPreview } from "@tickernelz/wardmote-shared";
 import { agentsApi } from "@/api/agents";
 import {
   ComposerRunSettingsPicker,

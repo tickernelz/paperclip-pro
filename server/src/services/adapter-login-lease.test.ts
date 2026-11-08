@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Environment } from "@tickernelz/paperclip-pro-shared";
+import type { Environment } from "@tickernelz/wardmote-shared";
 import { buildLoginLeaseAcquireArgs } from "./adapter-login-lease.js";
 
 // A minimal environment stand-in. The helper copies the reference without a

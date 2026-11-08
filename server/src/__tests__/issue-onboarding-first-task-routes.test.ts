@@ -18,8 +18,8 @@ import {
   issueComments,
   issueThreadInteractions,
   issues,
-} from "@tickernelz/paperclip-pro-db";
-import { ONBOARDING_FIRST_TASK_ORIGIN_KIND } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import { ONBOARDING_FIRST_TASK_ORIGIN_KIND } from "@tickernelz/wardmote-shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

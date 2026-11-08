@@ -2,13 +2,13 @@ import { resolve } from "node:path";
 
 import { and, eq } from "drizzle-orm";
 
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   agents,
   completionContracts,
   heartbeatRuns,
   issues,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   DurablePrpControlPlane,
   type PaperclipSemanticToolDefinition,

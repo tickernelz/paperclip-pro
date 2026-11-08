@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { RotateCcw } from "lucide-react";
-import type { RunModelFallbackState } from "@tickernelz/paperclip-pro-shared";
+import type { RunModelFallbackState } from "@tickernelz/wardmote-shared";
 import { heartbeatsApi } from "../../api/heartbeats";
 import { issuesApi } from "../../api/issues";
 import { queryKeys } from "../../lib/queryKeys";

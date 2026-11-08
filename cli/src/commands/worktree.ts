@@ -25,12 +25,12 @@ import { and, eq, inArray, sql } from "drizzle-orm";
 import {
   resolveCanonicalWorktreeSeedSource,
   resolveRegisteredWorktreeSeedSource,
-} from "@tickernelz/paperclip-pro-shared/worktree-seed-source";
+} from "@tickernelz/wardmote-shared/worktree-seed-source";
 import {
   readWorktreePortRegistry,
   withWorktreePortRegistryLock,
   writeWorktreePortRegistry,
-} from "@tickernelz/paperclip-pro-shared/worktree-port-registry";
+} from "@tickernelz/wardmote-shared/worktree-port-registry";
 import {
   applyPendingMigrations,
   agents,
@@ -65,7 +65,7 @@ import {
   formatEmbeddedPostgresError,
   loadWithoutEmbeddedPostgresExitHooks,
   prepareEmbeddedPostgresNativeRuntime,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import type { Command } from "commander";
 import { ensureAgentJwtSecret, ensureToolActionSigningSecret, loadPaperclipEnvFile, mergePaperclipEnvEntries, readPaperclipEnvEntries, resolvePaperclipEnvFile } from "../config/env.js";
 import { expandHomePrefix, resolvePaperclipHomeDir } from "../config/home.js";

@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { RefreshCw } from "lucide-react";
-import type { OpenwaEndpointHealth } from "@tickernelz/paperclip-pro-shared";
+import type { OpenwaEndpointHealth } from "@tickernelz/wardmote-shared";
 import { chatEndpointsApi, type ChatEndpoint } from "@/api/chatEndpoints";
 import { Button } from "@/components/ui/button";
 import { formatDateTime } from "@/lib/utils";

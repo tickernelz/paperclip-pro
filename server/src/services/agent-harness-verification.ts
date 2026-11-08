@@ -1,8 +1,8 @@
 import { and, eq } from "drizzle-orm";
-import { agents, companies, type Db } from "@tickernelz/paperclip-pro-db";
-import type { AdapterEnvironmentTestResult } from "@tickernelz/paperclip-pro-adapter-utils";
-import { ADAPTER_AUTH_MISSING_CHECK_CODE, AI_CONNECTION_ROUTER_REMOVED_MESSAGE, aiRuntimeConnectionBindingSchema } from "@tickernelz/paperclip-pro-shared";
-import { isForbiddenConfigEnvKey, parseObject } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+import { agents, companies, type Db } from "@tickernelz/wardmote-db";
+import type { AdapterEnvironmentTestResult } from "@tickernelz/wardmote-adapter-utils";
+import { ADAPTER_AUTH_MISSING_CHECK_CODE, AI_CONNECTION_ROUTER_REMOVED_MESSAGE, aiRuntimeConnectionBindingSchema } from "@tickernelz/wardmote-shared";
+import { isForbiddenConfigEnvKey, parseObject } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import { requireServerAdapter } from "../adapters/index.js";
 import { agentEnvironmentTestService } from "./agent-environment-test.js";
 import { withManagedAiProbe, stripAiAuthBindings } from "./ai-connection-runtime.js";

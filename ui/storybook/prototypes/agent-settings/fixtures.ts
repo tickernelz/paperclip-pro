@@ -3,17 +3,17 @@ import type {
   AgentInstructionsBundle,
   AgentSkillSnapshot,
   CompanySkillListItem,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   storybookHiredAgent,
   storybookAgents,
   storybookIssues,
   storybookSecrets,
 } from "../../fixtures/paperclipData";
-import { models as claudeModels } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/claude";
-import { models as openCodeModels } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/opencode";
+import { models as claudeModels } from "@tickernelz/wardmote-adapter-utils/provider-models/claude";
+import { models as openCodeModels } from "@tickernelz/wardmote-adapter-utils/provider-models/opencode";
 import { storybookEnvironments } from "../../fixtures/onboardingEnvironment";
-import { models as codexModels } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/codex";
+import { models as codexModels } from "@tickernelz/wardmote-adapter-utils/provider-models/codex";
 import { runtimeTestResult, type TestOutcome } from "../new-agent-fixtures";
 export const COMPANY = "company-storybook";
 export const ID = "agent-settings-preview";

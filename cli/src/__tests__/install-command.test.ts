@@ -142,8 +142,8 @@ describe("managed install commands", () => {
 
   it("refuses a half-published release and names the packages that are missing", async () => {
     const ABSENT: Record<string, true> = {
-      "@tickernelz/paperclip-pro-server": true,
-      "@tickernelz/paperclip-pro-ui": true,
+      "@tickernelz/wardmote-server": true,
+      "@tickernelz/wardmote-ui": true,
     };
     const runCommand = vi.fn(async (_file: string, args: string[]) => {
       const spec = args[1] ?? "";
@@ -153,7 +153,7 @@ describe("managed install commands", () => {
     });
 
     await expect(assertReleaseSetPublished("2026.926.0", runCommand)).rejects.toThrow(
-      /2 of 20 packages are not published.*paperclip-pro-server.*paperclip-pro-ui/s,
+      /2 of 20 packages are not published.*wardmote-server.*wardmote-ui/s,
     );
     expect(runCommand).toHaveBeenCalledTimes(RELEASE_PACKAGE_NAMES.length);
   });
@@ -169,7 +169,7 @@ describe("managed install commands", () => {
       calls.push(`${file} ${args[0]}`);
       if (file === "npm" && args[0] === "view") {
         const spec = args[1] ?? "";
-        if (spec.startsWith("@tickernelz/paperclip-pro-db@")) {
+        if (spec.startsWith("@tickernelz/wardmote-db@")) {
           throw new Error(`npm ERR! 404 '${spec}' is not in this registry.`);
         }
         return { stdout: JSON.stringify("2026.926.0"), stderr: "" };
@@ -178,7 +178,7 @@ describe("managed install commands", () => {
     });
 
     await expect(installCommand({ version: "2026.926.0" }, { runCommand })).rejects.toThrow(
-      "paperclip-pro-db",
+      "wardmote-db",
     );
     expect(calls.every((call) => call === "npm view")).toBe(true);
     expect(fs.existsSync(resolveInstallStorePaths().shimPath)).toBe(false);
@@ -197,7 +197,7 @@ describe("managed install commands", () => {
     const sha = "b".repeat(40);
     const paths = resolveInstallStorePaths();
     const payloadPath = payloadPathFor(paths, "git", sha.slice(0, 12));
-    const packageRoot = path.join(payloadPath, "node_modules", "@tickernelz", "paperclip-pro");
+    const packageRoot = path.join(payloadPath, "node_modules", "@tickernelz", "wardmote");
     fs.mkdirSync(path.join(packageRoot, "dist"), { recursive: true });
     fs.writeFileSync(path.join(packageRoot, "package.json"), JSON.stringify({ version: "0.3.1" }));
     fs.writeFileSync(path.join(packageRoot, "dist", "index.js"), "#!/usr/bin/env node\n");
@@ -214,9 +214,9 @@ describe("managed install commands", () => {
       if (file === "tar") {
         const checkout = args[args.indexOf("-C") + 1];
         const packages = [
-          { dir: "packages/shared", name: "@tickernelz/paperclip-pro-shared", packageJson: { name: "@tickernelz/paperclip-pro-shared", version: "0.3.1" } },
-          { dir: "packages/db", name: "@tickernelz/paperclip-pro-db", packageJson: { name: "@tickernelz/paperclip-pro-db", version: "0.3.1", dependencies: { "@tickernelz/paperclip-pro-shared": "workspace:*" }, bundleDependencies: ["embedded-postgres"] } },
-          { dir: "server", name: "@tickernelz/paperclip-pro-server", packageJson: { name: "@tickernelz/paperclip-pro-server", version: "0.3.1", dependencies: { "@tickernelz/paperclip-pro-db": "workspace:*" } } },
+          { dir: "packages/shared", name: "@tickernelz/wardmote-shared", packageJson: { name: "@tickernelz/wardmote-shared", version: "0.3.1" } },
+          { dir: "packages/db", name: "@tickernelz/wardmote-db", packageJson: { name: "@tickernelz/wardmote-db", version: "0.3.1", dependencies: { "@tickernelz/wardmote-shared": "workspace:*" }, bundleDependencies: ["embedded-postgres"] } },
+          { dir: "server", name: "@tickernelz/wardmote-server", packageJson: { name: "@tickernelz/wardmote-server", version: "0.3.1", dependencies: { "@tickernelz/wardmote-db": "workspace:*" } } },
         ];
         fs.mkdirSync(path.join(checkout, "cli"), { recursive: true });
         fs.writeFileSync(path.join(checkout, "cli", "package.json"), JSON.stringify({ version: "0.3.1" }));
@@ -232,21 +232,21 @@ describe("managed install commands", () => {
         if (args.includes("pack")) {
           const destination = args[args.indexOf("--pack-destination") + 1];
           const packageDir = args[args.indexOf("--dir") + 1];
-          const packageName = packageDir === "server" ? "paperclip-pro-server" : "paperclip-pro-shared";
+          const packageName = packageDir === "server" ? "wardmote-server" : "wardmote-shared";
           fs.writeFileSync(path.join(destination, `${packageName}-0.3.1.tgz`), "package");
         }
         return { stdout: "", stderr: "" };
       }
       if (file === "bash") return { stdout: "", stderr: "" };
       if (file === "npm" && args[0] === "pack") {
-        const packageName = args[1]?.includes("workspace-package-") ? "paperclip-pro-db" : "tickernelz-paperclip-pro";
+        const packageName = args[1]?.includes("workspace-package-") ? "wardmote-db" : "tickernelz-wardmote";
         fs.writeFileSync(path.join(args[args.indexOf("--pack-destination") + 1], `${packageName}-0.3.1.tgz`), "package");
         return { stdout: "", stderr: "" };
       }
-      if (file === "npm" && args[0] === "install") { const prefix = args[args.indexOf("--prefix") + 1]; const packageRoot = path.join(prefix, "node_modules", "@tickernelz", "paperclip-pro"); fs.mkdirSync(path.join(packageRoot, "dist"), { recursive: true }); fs.writeFileSync(path.join(packageRoot, "package.json"), JSON.stringify({ version: "0.3.1" })); fs.writeFileSync(path.join(packageRoot, "dist", "index.js"), "#!/usr/bin/env node\n"); return { stdout: "", stderr: "" }; }
+      if (file === "npm" && args[0] === "install") { const prefix = args[args.indexOf("--prefix") + 1]; const packageRoot = path.join(prefix, "node_modules", "@tickernelz", "wardmote"); fs.mkdirSync(path.join(packageRoot, "dist"), { recursive: true }); fs.writeFileSync(path.join(packageRoot, "package.json"), JSON.stringify({ version: "0.3.1" })); fs.writeFileSync(path.join(packageRoot, "dist", "index.js"), "#!/usr/bin/env node\n"); return { stdout: "", stderr: "" }; }
       if (file === process.execPath && args[0]?.endsWith("prepare-bundled-package.mjs")) {
         fs.mkdirSync(args[2], { recursive: true });
-        fs.writeFileSync(path.join(args[2], "package.json"), JSON.stringify({ name: "@tickernelz/paperclip-pro-db", version: "0.3.1" }));
+        fs.writeFileSync(path.join(args[2], "package.json"), JSON.stringify({ name: "@tickernelz/wardmote-db", version: "0.3.1" }));
         return { stdout: "", stderr: "" };
       }
       if (file === process.execPath) return { stdout: "0.3.1\n", stderr: "" };
@@ -294,7 +294,7 @@ describe("managed install commands", () => {
     const sha = "a".repeat(40);
     const runCommand = createGitCheckoutRunCommand(sha);
     await expect(installGitPayload("paperclipai/paperclip", sha, runCommand, resolveInstallStorePaths())).resolves.toMatchObject({ reused: false });
-    const serverBuild = runCommand.mock.calls.find(([file, args]) => file === "corepack" && args.includes("@tickernelz/paperclip-pro-server..."));
+    const serverBuild = runCommand.mock.calls.find(([file, args]) => file === "corepack" && args.includes("@tickernelz/wardmote-server..."));
     expect(serverBuild?.[2]?.env?.PAPERCLIP_BUILD_COMMIT).toBe(sha);
   });
 
@@ -319,9 +319,9 @@ describe("managed install commands", () => {
   it("resolves the complete server workspace dependency closure in dependency order", () => {
     const checkout = path.join(root, "checkout");
     const packages = [
-      { dir: "packages/shared", name: "@tickernelz/paperclip-pro-shared", dependencies: {} },
-      { dir: "packages/db", name: "@tickernelz/paperclip-pro-db", dependencies: { "@tickernelz/paperclip-pro-shared": "workspace:*" } },
-      { dir: "server", name: "@tickernelz/paperclip-pro-server", dependencies: { "@tickernelz/paperclip-pro-db": "workspace:*" } },
+      { dir: "packages/shared", name: "@tickernelz/wardmote-shared", dependencies: {} },
+      { dir: "packages/db", name: "@tickernelz/wardmote-db", dependencies: { "@tickernelz/wardmote-shared": "workspace:*" } },
+      { dir: "server", name: "@tickernelz/wardmote-server", dependencies: { "@tickernelz/wardmote-db": "workspace:*" } },
     ];
     fs.mkdirSync(path.join(checkout, "scripts"), { recursive: true });
     fs.writeFileSync(path.join(checkout, "scripts", "release-package-manifest.json"), JSON.stringify(packages.map(({ dir, name }) => ({ dir, name }))));
@@ -331,17 +331,17 @@ describe("managed install commands", () => {
     }
 
     expect(resolveGitInstallWorkspacePackages(checkout).map(({ name }) => name)).toEqual([
-      "@tickernelz/paperclip-pro-shared",
-      "@tickernelz/paperclip-pro-db",
-      "@tickernelz/paperclip-pro-server",
+      "@tickernelz/wardmote-shared",
+      "@tickernelz/wardmote-db",
+      "@tickernelz/wardmote-server",
     ]);
   });
 
   it("stages every workspace dependency of the shipped server from the repository manifest", () => {
     const repoRoot = path.resolve(import.meta.dirname, "..", "..", "..");
     const staged = resolveGitInstallWorkspacePackages(repoRoot).map(({ name }) => name);
-    expect(staged).toContain("@tickernelz/paperclip-pro-adapter-omp-local");
-    expect(staged).toContain("@tickernelz/paperclip-pro-server");
+    expect(staged).toContain("@tickernelz/wardmote-adapter-omp-local");
+    expect(staged).toContain("@tickernelz/wardmote-server");
   });
 
   it("includes child-process stderr in command failures", async () => {
@@ -361,7 +361,7 @@ describe("managed install commands", () => {
       if (file === "npm" && args[0] === "view") return { stdout: JSON.stringify(version), stderr: "" };
       if (file === "npm" && args[0] === "install") {
         const prefix = args[args.indexOf("--prefix") + 1];
-        const entrypoint = path.join(prefix, "node_modules", "@tickernelz", "paperclip-pro", "dist", "index.js");
+        const entrypoint = path.join(prefix, "node_modules", "@tickernelz", "wardmote", "dist", "index.js");
         fs.mkdirSync(path.dirname(entrypoint), { recursive: true });
         fs.writeFileSync(entrypoint, "#!/usr/bin/env node\n");
         return { stdout: "", stderr: "" };
@@ -386,7 +386,7 @@ describe("managed install commands", () => {
     expect(installCall?.[1]).toContain("--@tickernelz:registry=https://registry.npmjs.org");
     const installOptions = installCall?.[2] as { env?: NodeJS.ProcessEnv } | undefined;
     expect(installOptions?.env?.npm_config_userconfig).toContain(".npmrc-");
-    const entrypoint = path.join(manifest!.payloadPath, "node_modules", "@tickernelz", "paperclip-pro", "dist", "index.js");
+    const entrypoint = path.join(manifest!.payloadPath, "node_modules", "@tickernelz", "wardmote", "dist", "index.js");
     expect(resolveCliVersion(entrypoint)).toContain(`managed npm latest; payload ${manifest!.payloadPath}`);
 
     const userData = path.join(process.env.PAPERCLIP_HOME!, "instances", "default", "keep.txt");

@@ -28,7 +28,7 @@ function bundle(): EvalBundle {
     },
     grants: ["control_plane:wakes", "governance:approvals:decide"],
     runner: {
-      package: "@tickernelz/paperclip-pro-paperclip-runner",
+      package: "@tickernelz/wardmote-paperclip-runner",
       binary: "node",
       version: "0.1.2",
     },

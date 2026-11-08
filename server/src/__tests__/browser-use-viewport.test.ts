@@ -6,7 +6,7 @@ import {
   browserUseCdpUrl,
   createBrowserUseViewportManager,
 } from "../services/browser-use-viewport.js";
-import { browserUseViewportSchema } from "@tickernelz/paperclip-pro-shared";
+import { browserUseViewportSchema } from "@tickernelz/wardmote-shared";
 
 function fixture(allowResize = true, now?: () => number) {
   const id = randomUUID();

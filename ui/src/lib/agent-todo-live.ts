@@ -4,7 +4,7 @@ import {
   parseAgentTodoPayload,
   type AgentTodoSnapshot,
   type LiveEvent,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { queryKeys } from "./queryKeys";
 
 function readString(value: unknown): string | null {

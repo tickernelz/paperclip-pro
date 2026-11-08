@@ -33,7 +33,7 @@ import { fileURLToPath } from "node:url";
 
 export const PLACEHOLDER_VERSION = "0.0.0";
 
-const SCOPE_RE = /^@tickernelz\/paperclip-pro-[a-z0-9][a-z0-9._-]*$/;
+const SCOPE_RE = /^@tickernelz\/wardmote-[a-z0-9][a-z0-9._-]*$/;
 
 const REGISTRY_POLL_INTERVAL_MS = 15_000;
 const REGISTRY_POLL_ATTEMPTS = 40; // ~10 minutes
@@ -58,8 +58,8 @@ function usage() {
       "environment, so codes never appear on a command line.",
       "",
       "Examples:",
-      "  node scripts/bootstrap-npm-package.mjs @tickernelz/paperclip-pro-new-package",
-      "  node scripts/bootstrap-npm-package.mjs @tickernelz/paperclip-pro-new-package --publish",
+      "  node scripts/bootstrap-npm-package.mjs @tickernelz/wardmote-new-package",
+      "  node scripts/bootstrap-npm-package.mjs @tickernelz/wardmote-new-package --publish",
       "",
     ].join("\n"),
   );

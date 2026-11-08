@@ -4,7 +4,7 @@ import type {
   CompanySkillProjectScanCandidate,
   Project,
   ProjectWorkspace,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { describe, expect, it } from "vitest";
 import {
   defaultSelection,

@@ -6,7 +6,7 @@ import type {
   ToolCatalogEntry,
   ToolConnection,
   ToolConnectionCapabilities,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { IssueThreadInteractionCard } from "@/components/IssueThreadInteractionCard";
 import {
   issueThreadInteractionFixtureMeta,

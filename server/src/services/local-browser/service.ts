@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { agents, localBrowserConnections, localBrowserSettings as localBrowserSettingsTable } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
+import { agents, localBrowserConnections, localBrowserSettings as localBrowserSettingsTable } from "@tickernelz/wardmote-db";
 import {
   LOCAL_BROWSER_COOKIE_CAPABILITY,
   LOCAL_BROWSER_LIMIT_KEYS,
@@ -19,7 +19,7 @@ import {
   type LocalBrowserSession,
   type LocalBrowserSettings,
   type LocalBrowserTab,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import type { StorageService } from "../../storage/types.js";
 import { logActivity } from "../activity-log.js";
 import { decodeDataUrl, readTaskAttachment, storeLocalBrowserAttachment } from "./attachments.js";

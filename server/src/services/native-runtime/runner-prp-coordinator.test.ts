@@ -17,12 +17,12 @@ import {
   issues,
   nativeRunFinalizations,
   nativeRunResults,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import type {
   PrpEvent,
   PrpStructuredRunResult,
   PrpTerminalState,
-} from "@tickernelz/paperclip-pro-paperclip-runner";
+} from "@tickernelz/wardmote-paperclip-runner";
 import { NativeSessionProtocolIntegrityError } from "../../vendor/paperclip-runner/index.js";
 
 import {

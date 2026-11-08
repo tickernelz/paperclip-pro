@@ -191,7 +191,7 @@ function getMissingModuleSpecifier(err: unknown): string | null {
 function maybeEnableUiDevMiddleware(entrypoint: string): void {
   if (process.env.PAPERCLIP_UI_DEV_MIDDLEWARE !== undefined) return;
   const normalized = entrypoint.replaceAll("\\", "/");
-  if (normalized.endsWith("/server/src/index.ts") || normalized.endsWith("@tickernelz/paperclip-pro-server/src/index.ts")) {
+  if (normalized.endsWith("/server/src/index.ts") || normalized.endsWith("@tickernelz/wardmote-server/src/index.ts")) {
     process.env.PAPERCLIP_UI_DEV_MIDDLEWARE = "true";
   }
 }
@@ -230,17 +230,17 @@ async function importServerEntry(): Promise<StartedServer> {
     return await startServerFromModule(mod, devEntry);
   }
 
-  // Production mode: import the published @tickernelz/paperclip-pro-server package
+  // Production mode: import the published @tickernelz/wardmote-server package
   try {
-    const mod = await import("@tickernelz/paperclip-pro-server");
-    return await startServerFromModule(mod, "@tickernelz/paperclip-pro-server");
+    const mod = await import("@tickernelz/wardmote-server");
+    return await startServerFromModule(mod, "@tickernelz/wardmote-server");
   } catch (err) {
     const missingSpecifier = getMissingModuleSpecifier(err);
-    const missingServerEntrypoint = !missingSpecifier || missingSpecifier === "@tickernelz/paperclip-pro-server";
+    const missingServerEntrypoint = !missingSpecifier || missingSpecifier === "@tickernelz/wardmote-server";
     if (isModuleNotFoundError(err) && missingServerEntrypoint) {
       throw new Error(
         `Could not locate a Wardmote server entrypoint.\n` +
-          `Tried: ${devEntry}, @tickernelz/paperclip-pro-server\n` +
+          `Tried: ${devEntry}, @tickernelz/wardmote-server\n` +
           `${formatError(err)}`,
       );
     }

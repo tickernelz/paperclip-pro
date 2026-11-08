@@ -3,7 +3,7 @@ import {
   localBrowserPermissionsForClient,
   type LocalBrowserPermissionDefinition,
   type LocalBrowserSession,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { ApiError } from "@/api/client";
 import { localBrowserApi } from "@/api/local-browser";
 import { Badge } from "@/components/ui/badge";

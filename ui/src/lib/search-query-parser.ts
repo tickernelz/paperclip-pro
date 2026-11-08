@@ -6,7 +6,7 @@ import {
   normalizeAgentUrlKey,
   type IssuePriority,
   type IssueStatus,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import type { CompanySearchParams } from "@/api/search";
 import type { IssueListFilters } from "@/api/issues";
 import type { IssueFilterState } from "./issue-filters";

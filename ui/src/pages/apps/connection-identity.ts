@@ -4,7 +4,7 @@ import type {
   ConnectionGrant,
   ConnectionGrantStatus,
   ToolConnectionCredentialPolicy,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 /**
  * Canonical user-facing vocabulary for connection identity (PAP-17835).

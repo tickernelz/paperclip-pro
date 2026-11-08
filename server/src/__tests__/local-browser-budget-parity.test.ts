@@ -4,7 +4,7 @@ import {
   LOCAL_BROWSER_EXTENSION_BUDGET_MARGIN_MS,
   LOCAL_BROWSER_LIMITS,
   LOCAL_BROWSER_TOOL_NAMES,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { localBrowserCallBudget } from "../services/local-browser/timeouts.js";
 
 const LEGACY_LONG_TOOLS = new Set(["local_browser_network", "local_browser_upload", "local_browser_download"]);

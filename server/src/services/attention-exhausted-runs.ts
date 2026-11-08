@@ -1,6 +1,6 @@
 import { and, asc, desc, eq, gt, inArray, notExists, notInArray, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
-import { agents, heartbeatRunEvents, heartbeatRuns, type Db } from "@tickernelz/paperclip-pro-db";
+import { agents, heartbeatRunEvents, heartbeatRuns, type Db } from "@tickernelz/wardmote-db";
 
 export function listAttentionExhaustedRuns(db: Db, companyId: string) {
   // Recovery can revisit an exhausted run. Deduplicate its historical events

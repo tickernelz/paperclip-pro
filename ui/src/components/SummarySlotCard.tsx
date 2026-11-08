@@ -7,7 +7,7 @@ import type {
   SummarySlotKey,
   SummarySlotRevision,
   SummarySlotScopeKind,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { Bot, Clock3, History, Loader2, RefreshCw, Sparkles } from "lucide-react";
 
 import { agentsApi } from "@/api/agents";

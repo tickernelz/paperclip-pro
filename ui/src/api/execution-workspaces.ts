@@ -7,7 +7,7 @@ import type {
   WorkspaceLoginHandoffTicketResponse,
   WorkspaceOperation,
   WorkspaceRuntimeControlTarget,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { api } from "./client";
 import { sanitizeWorkspaceRuntimeControlTarget } from "./workspace-runtime-control";
 

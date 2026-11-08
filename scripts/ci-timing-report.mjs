@@ -319,7 +319,7 @@ export function manifestForJob(name) {
 
 export function repoPathForTestKey(key) {
   if (key.startsWith("tests/")) return key;
-  const match = key.match(/^@tickernelz\/paperclip-pro-server (src\/\S+)$/);
+  const match = key.match(/^@tickernelz\/wardmote-server (src\/\S+)$/);
   return match ? `server/${match[1]}` : null;
 }
 

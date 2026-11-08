@@ -9,13 +9,13 @@ import { extractImportSpecifiers, scanModuleBoundaries } from "./check-module-bo
 test("extractImportSpecifiers recognizes supported TypeScript dependency forms", () => {
   assert.deepEqual(
     extractImportSpecifiers([
-      'import type { Db } from "@tickernelz/paperclip-pro-db";',
+      'import type { Db } from "@tickernelz/wardmote-db";',
       'export { helper } from "./helper.js";',
       'const adapter = await import("../adapters/postgres.js");',
       'const postgres = require("postgres");',
       'import fs = require("node:fs");',
     ].join("\n")),
-    ["@tickernelz/paperclip-pro-db", "./helper.js", "../adapters/postgres.js", "postgres", "node:fs"],
+    ["@tickernelz/wardmote-db", "./helper.js", "../adapters/postgres.js", "postgres", "node:fs"],
   );
 });
 
@@ -43,7 +43,7 @@ test("scanModuleBoundaries rejects outward dependencies and module-internal impo
         'import { parse } from "../../../adapters/application-utils.js";',
         'import { forbidden } from "../../../errors.js";',
         'import { helper } from "../../../services/example.js";',
-        'import db = require("@tickernelz/paperclip-pro-db");',
+        'import db = require("@tickernelz/wardmote-db");',
       ].join("\n"),
     );
     write("modules/watchdog/adapters/postgres.ts", 'import { eq } from "drizzle-orm";\n');
@@ -64,7 +64,7 @@ test("scanModuleBoundaries rejects outward dependencies and module-internal impo
           specifier: "../../../services/example.js",
           reason: "application cannot import server services or routes",
         },
-        { specifier: "@tickernelz/paperclip-pro-db", reason: "application cannot import database packages" },
+        { specifier: "@tickernelz/wardmote-db", reason: "application cannot import database packages" },
         { specifier: "drizzle-orm", reason: "domain cannot import database packages" },
         {
           specifier: "../../../services/example.js",

@@ -23,7 +23,7 @@ import {
   toolProfileEntries,
   toolProfiles,
   toolRateLimitCounters,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

@@ -3,7 +3,7 @@ import fs from "node:fs";
 import { createRequire } from "node:module";
 import { fileURLToPath } from "node:url";
 
-import { EMBEDDED_POSTGRES_TEMPLATE_DIR_ENV } from "@tickernelz/paperclip-pro-db/test-embedded-postgres";
+import { EMBEDDED_POSTGRES_TEMPLATE_DIR_ENV } from "@tickernelz/wardmote-db/test-embedded-postgres";
 
 const require = createRequire(import.meta.url);
 

@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { aggregatorManagementUrl } from "@tickernelz/paperclip-pro-shared/aggregator-apps";
+import { aggregatorManagementUrl } from "@tickernelz/wardmote-shared/aggregator-apps";
 import { Label } from "@/components/ui/label";
 import { ExternalLink } from "lucide-react";
-import type { AggregatorAppCatalogEntry, AggregatorAppRoute } from "@tickernelz/paperclip-pro-shared/aggregator-app-catalog";
-import { isToolConnectionAttentionHealth, type ToolConnection } from "@tickernelz/paperclip-pro-shared";
+import type { AggregatorAppCatalogEntry, AggregatorAppRoute } from "@tickernelz/wardmote-shared/aggregator-app-catalog";
+import { isToolConnectionAttentionHealth, type ToolConnection } from "@tickernelz/wardmote-shared";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AppLogo } from "./AppLogo";

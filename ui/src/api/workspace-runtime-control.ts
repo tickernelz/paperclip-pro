@@ -1,4 +1,4 @@
-import type { WorkspaceRuntimeControlTarget } from "@tickernelz/paperclip-pro-shared";
+import type { WorkspaceRuntimeControlTarget } from "@tickernelz/wardmote-shared";
 
 export function sanitizeWorkspaceRuntimeControlTarget(
   target: WorkspaceRuntimeControlTarget = {},

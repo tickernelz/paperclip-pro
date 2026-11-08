@@ -9,8 +9,8 @@ import type {
   IssueExecutionStagePrincipal,
   IssueExecutionState,
   IssueMonitorScheduledBy,
-} from "@tickernelz/paperclip-pro-shared";
-import { issueExecutionPolicySchema, issueExecutionStateSchema } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
+import { issueExecutionPolicySchema, issueExecutionStateSchema } from "@tickernelz/wardmote-shared";
 import { unprocessable } from "../errors.js";
 
 type AssigneeLike = {

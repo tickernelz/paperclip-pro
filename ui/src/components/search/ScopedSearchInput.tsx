@@ -5,7 +5,7 @@ import {
   COMPANY_SEARCH_UPDATED_WITHIN_OPTIONS,
   ISSUE_PRIORITIES,
   ISSUE_STATUSES,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { updatedWithinLabel } from "@/lib/search-filters";

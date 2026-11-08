@@ -6,7 +6,7 @@ MIN_NODE_MINOR=11
 MIN_NODE_PATCH=0
 MIN_NODE_VERSION="${MIN_NODE_MAJOR}.${MIN_NODE_MINOR}.${MIN_NODE_PATCH}"
 DEFAULT_NODE_MAJOR=24
-PAPERCLIP_PACKAGE="@tickernelz/paperclip-pro"
+PAPERCLIP_PACKAGE="@tickernelz/wardmote"
 PUBLIC_NPM_REGISTRY="https://registry.npmjs.org"
 HOMEBREW_INSTALL_COMMIT="99e13e96cbbdc1ac1ac09c0a40b450bf219ef3aa"
 HOMEBREW_INSTALL_SHA256="99287f194a8b3c9e6b0203a11a5fa54518be57209343e6bb954dec4635796d9d"
@@ -53,7 +53,7 @@ Every option also has a PAPERCLIP_INSTALL_* environment equivalent, for example
 PAPERCLIP_INSTALL_VERSION=2026.722.0 and PAPERCLIP_INSTALL_NO_PROMPT=1.
 
 To install from a git branch, tag, or commit, use the Paperclip CLI directly:
-npx @tickernelz/paperclip-pro install --ref <ref>
+npx @tickernelz/wardmote install --ref <ref>
 EOF
 }
 
@@ -165,7 +165,7 @@ if [ "$CANARY" = "1" ] && [ -n "$VERSION" ]; then
 fi
 
 if [ -n "$REF" ] || [ -n "$REPO" ]; then
-  fail "git-ref installs are not supported by install.sh; run 'npx @tickernelz/paperclip-pro install --ref <ref>' instead"
+  fail "git-ref installs are not supported by install.sh; run 'npx @tickernelz/wardmote install --ref <ref>' instead"
 fi
 
 if { [ ! -t 0 ] || [ ! -t 1 ]; } && [ "$NO_PROMPT" != "1" ]; then

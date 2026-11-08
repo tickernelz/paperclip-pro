@@ -18,7 +18,7 @@ import {
   type SetupTokenSessionScope,
   type SetupTokenSessionState,
 } from "./setup-token-session.js";
-import type { LoginPtySessionOpener } from "@tickernelz/paperclip-pro-adapter-utils/login-pty-transport";
+import type { LoginPtySessionOpener } from "@tickernelz/wardmote-adapter-utils/login-pty-transport";
 import { CLAUDE_SETUP_TOKEN_COMMAND } from "./ai-providers/claude/setup-token-runner.js";
 import { SETUP_TOKEN_AFTER_ANCHOR, SETUP_TOKEN_BEFORE_ANCHOR } from "./ai-providers/claude/setup-token-parse.js";
 

@@ -1,4 +1,4 @@
-import type { CostByAgent } from "@tickernelz/paperclip-pro-shared";
+import type { CostByAgent } from "@tickernelz/wardmote-shared";
 import { Badge } from "./ui/badge";
 
 /** Use this group's ledger counts, never the page-wide estimate count. */

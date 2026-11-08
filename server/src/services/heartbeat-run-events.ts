@@ -1,11 +1,11 @@
 import { and, asc, desc, eq, or, sql } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { heartbeatRunEvents, heartbeatRuns } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
+import { heartbeatRunEvents, heartbeatRuns } from "@tickernelz/wardmote-db";
 import {
   AGENT_TODO_EVENT_TYPE,
   parseAgentTodoPayload,
   type AgentTodoSnapshot,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { nativeSha256 } from "./native-runtime/canonical.js";
 
 export interface AppendHeartbeatRunEventInput {

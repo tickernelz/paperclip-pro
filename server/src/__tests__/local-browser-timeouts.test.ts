@@ -5,7 +5,7 @@ import {
   LOCAL_BROWSER_DEFAULT_WAIT_MS,
   localBrowserCallBudget,
 } from "../services/local-browser/timeouts.js";
-import { LOCAL_BROWSER_CALL_TIMEOUT_MS, LOCAL_BROWSER_LIMITS } from "@tickernelz/paperclip-pro-shared";
+import { LOCAL_BROWSER_CALL_TIMEOUT_MS, LOCAL_BROWSER_LIMITS } from "@tickernelz/wardmote-shared";
 
 const DEFAULT_CALL_MAX = LOCAL_BROWSER_LIMITS.callMaxMs.default;
 

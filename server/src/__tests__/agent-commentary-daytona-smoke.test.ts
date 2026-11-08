@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { PluginEnvironmentCreationCleanupError } from "@tickernelz/paperclip-pro-plugin-sdk";
+import { PluginEnvironmentCreationCleanupError } from "@tickernelz/wardmote-plugin-sdk";
 import { acquireDaytonaLeaseWithCleanup } from "../../scripts/agent-commentary-daytona.js";
 
 const scope = { companyId: "company", environmentId: "environment", runId: "run" };

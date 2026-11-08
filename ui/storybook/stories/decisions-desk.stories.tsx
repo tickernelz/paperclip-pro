@@ -7,7 +7,7 @@ import type {
   AttentionItem,
   AttentionSeverity,
   AttentionSourceKind,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { Routes, Route } from "@/lib/router";
 import { WhatNeedsMe } from "@/pages/WhatNeedsMe";
 import { DecisionQueuePage } from "@/pages/DecisionQueuePage";

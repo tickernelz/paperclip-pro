@@ -2,8 +2,8 @@ import { createRequire } from "node:module";
 import type { IncomingMessage, Server as HttpServer } from "node:http";
 import type { Duplex } from "node:stream";
 import { eq } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { localBrowserConnections } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
+import { localBrowserConnections } from "@tickernelz/wardmote-db";
 import {
   LOCAL_BROWSER_LIMITS,
   LOCAL_BROWSER_PROTOCOL_VERSION,
@@ -12,7 +12,7 @@ import {
   type LocalBrowserExtensionEventFrame,
   type LocalBrowserTab,
   type LocalBrowserViewerEvent,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { logger } from "../middleware/logger.js";
 import { setLocalBrowserIndicatorSender } from "../services/local-browser/activity.js";
 import { localBrowserFailure } from "../services/local-browser/errors.js";

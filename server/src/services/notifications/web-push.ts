@@ -1,5 +1,5 @@
 import webpush from "web-push";
-import type { WebPushConfig } from "@tickernelz/paperclip-pro-shared";
+import type { WebPushConfig } from "@tickernelz/wardmote-shared";
 import { logger } from "../../middleware/logger.js";
 import { loadOrCreateVapidKeys, resolveVapidSubject, type VapidKeys } from "./vapid.js";
 

@@ -1,13 +1,13 @@
 import { randomBytes } from "node:crypto";
 import { and, eq, inArray } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { chatActions } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
+import { chatActions } from "@tickernelz/wardmote-db";
 import type {
   AskUserQuestionsAnswer,
   AskUserQuestionsInteraction,
   AskUserQuestionsQuestion,
   PaperclipQuestionSetQuestion,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   Modal,
   Select,

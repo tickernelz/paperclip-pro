@@ -348,7 +348,7 @@ import {
   type RequestItemVerdictValue,
   type SuggestTasksInteraction,
   type IssueTreeControlMode,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 // Stable empty array for React Query `data` defaults. A literal `= []` default
 // creates a new array reference on every render while `data` is undefined
@@ -1096,7 +1096,7 @@ function InboxMobileToolbar({
 
 type IssueDetailChatTabProps = {
   queryIssueId?: string;
-  browsers?: import("@tickernelz/paperclip-pro-shared").TaskBrowser[];
+  browsers?: import("@tickernelz/wardmote-shared").TaskBrowser[];
   onOpenBrowser?: (browserId: string) => void;
   onOpenSkill?: (skillId: string, name: string) => void;
   issueId: string;

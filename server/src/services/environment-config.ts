@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { randomUUID } from "node:crypto";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import type {
   Environment,
   EnvironmentDriver,
@@ -12,7 +12,7 @@ import type {
   SecretProvider,
   SecretVersionSelector,
   SshEnvironmentConfig,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { unprocessable } from "../errors.js";
 import { parseObject } from "../adapters/utils.js";
 import { secretService } from "./secrets.js";

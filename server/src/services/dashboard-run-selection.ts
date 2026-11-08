@@ -1,5 +1,5 @@
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { heartbeatRuns } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
+import { heartbeatRuns } from "@tickernelz/wardmote-db";
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
 
 const MAX_CANDIDATES_PER_POOL = 1_000;

@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { connectionGrants, connectionGrantMembers, heartbeatRuns } from "@tickernelz/paperclip-pro-db";
+import { connectionGrants, connectionGrantMembers, heartbeatRuns } from "@tickernelz/wardmote-db";
 
 /** Diagnostic names are visible to the affected user and the human grant audience.
  * Callers obtain viewer identity from authentication, never request parameters.

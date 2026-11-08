@@ -32,8 +32,8 @@ recorded walkthrough in [doc/MCP-DEMO-SCRIPT.md](../../doc/MCP-DEMO-SCRIPT.md).
 From the repo root:
 
 ```sh
-pnpm --filter @tickernelz/paperclip-pro-kv-demo-mcp-server build
-pnpm --filter @tickernelz/paperclip-pro-kv-demo-mcp-server start
+pnpm --filter @tickernelz/wardmote-kv-demo-mcp-server build
+pnpm --filter @tickernelz/wardmote-kv-demo-mcp-server start
 ```
 
 Or run the source directly during development:

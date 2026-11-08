@@ -1,10 +1,10 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import { createCharacter } from "@tickernelz/paperclip-pro-shared/cliplab/runtime";
-import { characterDefinition } from "@tickernelz/paperclip-pro-shared/cliplab/definition";
-import { appearanceForPalette } from "@tickernelz/paperclip-pro-shared";
+import { createCharacter } from "@tickernelz/wardmote-shared/cliplab/runtime";
+import { characterDefinition } from "@tickernelz/wardmote-shared/cliplab/definition";
+import { appearanceForPalette } from "@tickernelz/wardmote-shared";
 const renderer = vi.hoisted(() => ({ render: vi.fn(), resize: vi.fn(), dispose: vi.fn() }));
-vi.mock("@tickernelz/paperclip-pro-shared/cliplab/renderer", () => ({ CharacterRenderer: class { render = renderer.render; resize = renderer.resize; dispose = renderer.dispose; } }));
+vi.mock("@tickernelz/wardmote-shared/cliplab/renderer", () => ({ CharacterRenderer: class { render = renderer.render; resize = renderer.resize; dispose = renderer.dispose; } }));
 let intersect: (entries: any[]) => void;
 let hidden = false;
 let frames: Map<number, FrameRequestCallback>;

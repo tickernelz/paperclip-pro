@@ -1,4 +1,4 @@
-import type { Goal } from "@tickernelz/paperclip-pro-shared";
+import type { Goal } from "@tickernelz/wardmote-shared";
 import { api } from "./client";
 
 export const goalsApi = {

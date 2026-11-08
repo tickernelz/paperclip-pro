@@ -1,4 +1,4 @@
-import type { IssueWorkProduct } from "@tickernelz/paperclip-pro-shared";
+import type { IssueWorkProduct } from "@tickernelz/wardmote-shared";
 import { describe, expect, it } from "vitest";
 import { getIssuePullRequests, pullRequestHref, pullRequestLabel, pullRequestNeedsReview } from "./issue-pull-requests";
 

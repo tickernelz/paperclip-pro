@@ -1,8 +1,8 @@
 import { randomBytes } from "node:crypto";
 import { and, eq } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { companies, companyMemberships, instanceUserRoles } from "@tickernelz/paperclip-pro-db";
-import type { DeploymentMode } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/wardmote-db";
+import { companies, companyMemberships, instanceUserRoles } from "@tickernelz/wardmote-db";
+import type { DeploymentMode } from "@tickernelz/wardmote-shared";
 import { ensureHumanRoleDefaultGrants } from "./services/principal-access-compatibility.js";
 
 const LOCAL_BOARD_USER_ID = "local-board";

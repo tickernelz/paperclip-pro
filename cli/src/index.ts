@@ -1,9 +1,9 @@
-import "@tickernelz/paperclip-pro-shared/env-aliases-bootstrap";
+import "@tickernelz/wardmote-shared/env-aliases-bootstrap";
 import { registerRuntimeCommands } from "./commands/runtime.js";
 import { registerEmailCommands } from "./commands/client/email.js";
 import { registerMcpCommands } from "./commands/mcp.js";
 import { Command } from "commander";
-import { warnIfUnsupportedNodeVersion } from "@tickernelz/paperclip-pro-shared/node-version";
+import { warnIfUnsupportedNodeVersion } from "@tickernelz/wardmote-shared/node-version";
 import { onboard } from "./commands/onboard.js";
 import { doctor } from "./commands/doctor.js";
 import { envCommand } from "./commands/env.js";

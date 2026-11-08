@@ -1,13 +1,13 @@
 import fs from "node:fs/promises";
-import { createProviderStoppedBoundary } from "@tickernelz/paperclip-pro-adapter-utils/provider-stopped-boundary";
+import { createProviderStoppedBoundary } from "@tickernelz/wardmote-adapter-utils/provider-stopped-boundary";
 import os from "node:os";
 import path from "node:path";
-import { createUsageCheckpointLog } from "@tickernelz/paperclip-pro-adapter-utils/usage-checkpoint";
+import { createUsageCheckpointLog } from "@tickernelz/wardmote-adapter-utils/usage-checkpoint";
 import {
   inferOpenAiCompatibleBiller,
   type AdapterExecutionContext,
   type AdapterExecutionResult,
-} from "@tickernelz/paperclip-pro-adapter-utils";
+} from "@tickernelz/wardmote-adapter-utils";
 import {
   type AdapterExecutionTargetPaperclipBridgeHandle,
   adapterExecutionTargetIsRemote,
@@ -27,7 +27,7 @@ import {
   resolveAdapterExecutionTargetTimeoutSec,
   runAdapterExecutionTargetProcess,
   startAdapterExecutionTargetPaperclipBridge,
-} from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
+} from "@tickernelz/wardmote-adapter-utils/execution-target";
 import {
   paperclipAgentPromptTemplate,
   appendWithCap,
@@ -49,12 +49,12 @@ import {
   isPaperclipRuntimeEnvKey,
   sanitizeInheritedPaperclipEnv,
   selectPaperclipTaskMarkdown,
-} from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
-import { legacyEnvKey } from "@tickernelz/paperclip-pro-shared/env-aliases";
+} from "@tickernelz/wardmote-adapter-utils/server-utils";
+import { legacyEnvKey } from "@tickernelz/wardmote-shared/env-aliases";
 import {
   paperclipRestGuidance,
   type PaperclipAccessMode,
-} from "@tickernelz/paperclip-pro-adapter-utils/paperclip-mcp";
+} from "@tickernelz/wardmote-adapter-utils/paperclip-mcp";
 import { OMP_INSTALL_COMMAND } from "../metadata.js";
 import {
   prepareOmpRuntimeConfig,
@@ -72,8 +72,8 @@ import {
 import { classifyOmpFailure } from "./failure.js";
 import { createOmpProgressReporter } from "./progress.js";
 import { createOmpRpcSteerSession, runOmpRpcSession } from "./rpc-session.js";
-import { registerAdapterSteerTarget } from "@tickernelz/paperclip-pro-adapter-utils/adapter-steer-registry";
-import { runToolProfile } from "@tickernelz/paperclip-pro-adapter-utils/tool-profile";
+import { registerAdapterSteerTarget } from "@tickernelz/wardmote-adapter-utils/adapter-steer-registry";
+import { runToolProfile } from "@tickernelz/wardmote-adapter-utils/tool-profile";
 import { ensureOmpSkills } from "./skills.js";
 import { writeOmpSettingsOverlay, type OmpSettingsOverlay } from "./settings-overlay.js";
 import { createOmpModelFallbackTracker, ompFallbackChain, type OmpModelFallbackTracker } from "./model-fallback.js";

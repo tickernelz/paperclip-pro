@@ -7,7 +7,7 @@ import { ensureOmpSkills } from "./skills.js";
 const SKILLS = ["paperclip", "paperclip-board", "para-memory-files"];
 
 function bundled(root: string, version: string, skill: string): string {
-  return path.join(root, "installs", version, "node_modules", "@tickernelz", "paperclip-pro-server", "skills", skill);
+  return path.join(root, "installs", version, "node_modules", "@tickernelz", "wardmote-server", "skills", skill);
 }
 
 describe("ensureOmpSkills", () => {
@@ -52,5 +52,29 @@ describe("ensureOmpSkills", () => {
       expect(await fs.readlink(path.join(skillsHome, skill))).toBe(bundled(root, "new", skill));
     }
     expect(await fs.readlink(path.join(skillsHome, "notes"))).toBe(foreign);
+  });
+
+  it("moves bundled skill links off an install published under the legacy package name", async () => {
+    for (const skill of SKILLS) {
+      const legacy = path.join(root, "installs", "legacy", "node_modules", "@tickernelz", "paperclip-pro-server", "skills", skill);
+      await fs.mkdir(legacy, { recursive: true });
+      await fs.symlink(legacy, path.join(skillsHome, skill));
+    }
+
+    await ensureOmpSkills(
+      {
+        paperclipRuntimeSkills: SKILLS.map((skill) => ({
+          key: `paperclipai/paperclip/${skill}`,
+          runtimeName: skill,
+          source: bundled(root, "new", skill),
+        })),
+        paperclipSkillSync: { desiredSkills: ["paperclipai/paperclip/paperclip"] },
+      },
+      agentDir,
+    );
+
+    for (const skill of SKILLS) {
+      expect(await fs.readlink(path.join(skillsHome, skill))).toBe(bundled(root, "new", skill));
+    }
   });
 });

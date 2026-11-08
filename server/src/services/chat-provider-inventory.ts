@@ -1,4 +1,4 @@
-import type { ChatProvider } from "@tickernelz/paperclip-pro-shared";
+import type { ChatProvider } from "@tickernelz/wardmote-shared";
 
 export interface ChatProviderResourceInventoryItem {
   providerResourceId: string;

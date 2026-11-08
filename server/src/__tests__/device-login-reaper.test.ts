@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { describe, expect, it } from "vitest";
-import type { AgentAdapterType } from "@tickernelz/paperclip-pro-shared";
+import type { AgentAdapterType } from "@tickernelz/wardmote-shared";
 import {
   createDeviceLoginReaper,
   type LoginLeaseRef,

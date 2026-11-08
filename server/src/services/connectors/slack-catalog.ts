@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { and, eq, isNull, sql } from "drizzle-orm";
-import { SLACK_TOOLS } from "@tickernelz/paperclip-pro-shared";
+import { SLACK_TOOLS } from "@tickernelz/wardmote-shared";
 import {
   chatEndpoints,
   toolConnections,
@@ -10,7 +10,7 @@ import {
   toolProfileEntries,
   toolProfileBindings,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import type {
   ToolGatewayDescriptor,
   ToolGatewaySession,

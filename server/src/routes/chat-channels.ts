@@ -1,4 +1,4 @@
-import { slackRegistrationSchema, slackSetupActionSchema } from "@tickernelz/paperclip-pro-shared";
+import { slackRegistrationSchema, slackSetupActionSchema } from "@tickernelz/wardmote-shared";
 import { isCrossSiteOAuthCallbackNavigation, oauthCallbackInterstitialHtml } from "../lib/oauth-browser-return.js";
 import {
   Router,
@@ -7,8 +7,8 @@ import {
 } from "express";
 import { z } from "zod";
 import { githubChatManagementService } from "../services/chat-github-management.js";
-import { updateGitHubChatConfigurationSchema } from "@tickernelz/paperclip-pro-shared";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import { updateGitHubChatConfigurationSchema } from "@tickernelz/wardmote-shared";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   CHAT_AUDIT_ACTOR_KINDS,
   CHAT_AUDIT_ENTRY_KINDS,
@@ -37,7 +37,7 @@ import {
   resolveChatPublicationSchema,
   updateChatEndpointSchema,
   type ChatProvider,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { validate } from "../middleware/validate.js";
 import {
   chatChannelService,

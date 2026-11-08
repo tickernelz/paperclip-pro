@@ -10,8 +10,8 @@ import {
   heartbeatRunEvents,
   heartbeatRuns,
   issues,
-} from "@tickernelz/paperclip-pro-db";
-import { AGENT_TODO_EVENT_TYPE, type AgentTodoPayload } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import { AGENT_TODO_EVENT_TYPE, type AgentTodoPayload } from "@tickernelz/wardmote-shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

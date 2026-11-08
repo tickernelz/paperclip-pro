@@ -126,7 +126,7 @@ jobs:
         with:
           save-store: "true"
       - name: Build Runner Evalbook viewer
-        run: pnpm --filter @tickernelz/paperclip-pro-paperclip-runner build:issue-thread
+        run: pnpm --filter @tickernelz/wardmote-paperclip-runner build:issue-thread
       - name: Runner Rust release cache
         uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6
         with:
@@ -220,13 +220,13 @@ jobs:
           save-if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
 
       - name: Static checks
-        run: pnpm --filter @tickernelz/paperclip-pro-paperclip-runner check:static
+        run: pnpm --filter @tickernelz/wardmote-paperclip-runner check:static
 
       - name: Rust checks
-        run: pnpm --filter @tickernelz/paperclip-pro-paperclip-runner check:runner
+        run: pnpm --filter @tickernelz/wardmote-paperclip-runner check:runner
 
       - name: TypeScript suites
-        run: pnpm --filter @tickernelz/paperclip-pro-paperclip-runner test:typescript:vitest
+        run: pnpm --filter @tickernelz/wardmote-paperclip-runner test:typescript:vitest
 
   general:
     name: Tests (${{ matrix.label }})
@@ -443,7 +443,7 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-workspace
-      - name: Upgrade an existing install with its own CLI and keep its home
+      - name: Upgrade an existing install to this commit and keep its home
         env:
           GH_TOKEN: ${{ github.token }}
           UPGRADE_REPO: ${{ github.event.pull_request.head.repo.full_name }}

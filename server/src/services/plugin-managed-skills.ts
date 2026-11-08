@@ -1,15 +1,15 @@
 import { and, eq } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   pluginManagedResources,
-} from "@tickernelz/paperclip-pro-db";
-import { normalizeAgentUrlKey } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import { normalizeAgentUrlKey } from "@tickernelz/wardmote-shared";
 import type {
   CompanySkill,
   PaperclipPluginManifestV1,
   PluginManagedSkillDeclaration,
   PluginManagedSkillResolution,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { notFound } from "../errors.js";
 import { logActivity } from "./activity-log.js";
 import { companySkillService } from "./company-skills.js";

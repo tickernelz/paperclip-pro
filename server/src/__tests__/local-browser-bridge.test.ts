@@ -4,7 +4,7 @@ import { createRequire } from "node:module";
 import express from "express";
 import { eq } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { activityLog, agents, localBrowserConnections, localBrowserSettings } from "@tickernelz/paperclip-pro-db";
+import { activityLog, agents, localBrowserConnections, localBrowserSettings } from "@tickernelz/wardmote-db";
 import {
   LOCAL_BROWSER_CAPABILITIES,
   LOCAL_BROWSER_CURSOR_PATTERN,
@@ -12,7 +12,7 @@ import {
   LOCAL_BROWSER_LIMIT_KEYS,
   LOCAL_BROWSER_LIMITS,
   type LocalBrowserBridgeFrame,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { errorHandler } from "../middleware/index.js";
 import {
   LOCAL_BROWSER_BRIDGE_MAX_PAYLOAD_BYTES,

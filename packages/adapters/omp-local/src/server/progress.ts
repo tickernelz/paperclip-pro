@@ -1,9 +1,9 @@
-import type { AdapterExecutionContext } from "@tickernelz/paperclip-pro-adapter-utils";
+import type { AdapterExecutionContext } from "@tickernelz/wardmote-adapter-utils";
 import {
   AGENT_TODO_EVENT_TYPE,
   agentTodoEventMessage,
   buildAgentTodoPayloadFromOmpDetails,
-} from "@tickernelz/paperclip-pro-adapter-utils/agent-todo";
+} from "@tickernelz/wardmote-adapter-utils/agent-todo";
 import { parseOmpJsonLine } from "./parse.js";
 
 type ProgressSink = NonNullable<AdapterExecutionContext["onRuntimeProgress"]>;

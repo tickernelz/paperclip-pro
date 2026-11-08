@@ -4,7 +4,7 @@ import { Pause, Play, Radio } from "lucide-react";
 import {
   PIXELS_OFFICE_TIMELINE_MAX_WINDOW_MS,
   type PixelsOfficeTimelineEvent,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { Button } from "@/components/ui/button";
 import { pixelsOfficeApi } from "@/api/pixelsOffice";
 import { queryKeys } from "@/lib/queryKeys";

@@ -1,10 +1,10 @@
 import { randomUUID } from "node:crypto";
 import { and, desc, eq, inArray, lte } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   environmentCustomImageSetupSessions,
   environmentCustomImageTemplates,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   ENVIRONMENT_CUSTOM_IMAGE_SETUP_CONNECTION_TYPES,
   ENVIRONMENT_CUSTOM_IMAGE_SETUP_SESSION_STATUSES,
@@ -16,14 +16,14 @@ import {
   type EnvironmentCustomImageTemplateKind,
   type SandboxEnvironmentConfig,
   redactEnvironmentCustomImageValue,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import type {
   PluginEnvironmentCancelInteractiveSetupResult,
   PluginEnvironmentCaptureTemplateResult,
   PluginEnvironmentInteractiveSetupConnectionPayload,
   PluginEnvironmentInteractiveSetupSession,
   PluginEnvironmentTemplateRefKind,
-} from "@tickernelz/paperclip-pro-plugin-sdk";
+} from "@tickernelz/wardmote-plugin-sdk";
 import { conflict, notFound, unprocessable } from "../errors.js";
 import {
   parseEnvironmentDriverConfig,

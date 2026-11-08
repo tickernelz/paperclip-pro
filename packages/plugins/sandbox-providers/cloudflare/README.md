@@ -1,4 +1,4 @@
-# `@tickernelz/paperclip-pro-plugin-cloudflare-sandbox`
+# `@tickernelz/wardmote-plugin-cloudflare-sandbox`
 
 Published Cloudflare sandbox provider plugin for Paperclip.
 
@@ -9,7 +9,7 @@ This package lives in the Paperclip monorepo, but it is intentionally excluded f
 From a Paperclip instance, install:
 
 ```text
-@tickernelz/paperclip-pro-plugin-cloudflare-sandbox
+@tickernelz/wardmote-plugin-cloudflare-sandbox
 ```
 
 Configure Cloudflare from `Instance Settings -> Environments`, not from the plugin's plugin page.
@@ -45,4 +45,4 @@ pnpm test
 pnpm typecheck
 ```
 
-These commands assume the repo root has already been installed once so the local `@tickernelz/paperclip-pro-plugin-sdk` workspace package is available to the compiler during development.
+These commands assume the repo root has already been installed once so the local `@tickernelz/wardmote-plugin-sdk` workspace package is available to the compiler during development.

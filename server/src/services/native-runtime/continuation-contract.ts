@@ -6,7 +6,7 @@ import {
   nativeRunFinalizations,
   nativeRunResults,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import type { NativeExecutionInput } from "../../vendor/paperclip-runner/index.js";
 
 /** Revise an uncompleted contract at a fenced dispatch boundary; retain its old revision for audit. */

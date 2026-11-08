@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { and, asc, desc, eq } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { documentRevisions, documents, issueDocuments, issues } from "@tickernelz/paperclip-pro-db";
-import { isSystemIssueDocumentKey, issueDocumentKeySchema } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/wardmote-db";
+import { documentRevisions, documents, issueDocuments, issues } from "@tickernelz/wardmote-db";
+import { isSystemIssueDocumentKey, issueDocumentKeySchema } from "@tickernelz/wardmote-shared";
 import { conflict, notFound, unprocessable } from "../errors.js";
 import { isUniqueViolation } from "../db-errors.js";
 import { insertRowsInChunks } from "./batch-insert.js";

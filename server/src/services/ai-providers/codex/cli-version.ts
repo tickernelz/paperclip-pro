@@ -1,13 +1,13 @@
-import type { AdapterEnvironmentCheck } from "@tickernelz/paperclip-pro-adapter-utils";
-import type { AdapterExecutionTarget } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
-import { runAdapterExecutionTargetProcess } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
+import type { AdapterEnvironmentCheck } from "@tickernelz/wardmote-adapter-utils";
+import type { AdapterExecutionTarget } from "@tickernelz/wardmote-adapter-utils/execution-target";
+import { runAdapterExecutionTargetProcess } from "@tickernelz/wardmote-adapter-utils/execution-target";
 import {
   CODEX_CHATGPT_MODEL_REJECTION_RE,
   codexCliVersionAtLeast,
   minimumCodexCliVersionForModel,
   normalizeCodexModel,
   parseCodexCliVersionOutput,
-} from "@tickernelz/paperclip-pro-adapter-utils/provider-models/codex";
+} from "@tickernelz/wardmote-adapter-utils/provider-models/codex";
 
 export const CODEX_CLI_VERSION_INCOMPATIBLE_CHECK_CODE = "codex_cli_version_incompatible";
 export const CODEX_CLI_VERSION_COMPATIBLE_CHECK_CODE = "codex_cli_version_compatible";

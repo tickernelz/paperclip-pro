@@ -4,7 +4,7 @@ import {
   normalizePaperclipRunnerAdapterConfig,
   PAPERCLIP_OPERATIONAL_SKILL_KEY,
   resolveLegacyPaperclipDesiredSkillNames,
-} from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+} from "@tickernelz/wardmote-adapter-utils/server-utils";
 
 const legacyConfig = {
   paperclipSkillSync: {

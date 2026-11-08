@@ -15,7 +15,7 @@ import type {
   ToolMcpGatewayClientSnippet,
   ToolMcpGatewayTokenCreated,
   ToolMcpGatewayWithTokens,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { toolsApi } from "@/api/tools";
 import { SearchableSelect, type SearchableSelectGroup } from "@/components/SearchableSelect";
 import { Button } from "@/components/ui/button";

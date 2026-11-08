@@ -1,4 +1,4 @@
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 
 type CompanyDeletionTransaction = Parameters<Parameters<Db["transaction"]>[0]>[0];
 

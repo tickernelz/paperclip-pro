@@ -10,15 +10,15 @@ import {
   statusCards,
   statusCardUpdates,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import type {
   CompanySearchIssueSummary,
   CreateStatusCard,
   PatchStatusCard,
   WriteStatusCardQuery,
   WriteStatusCardSummary,
-} from "@tickernelz/paperclip-pro-shared";
-import { companySearchQuerySchema, STATUS_CARD_AGENT_MAX_CARDS } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
+import { companySearchQuerySchema, STATUS_CARD_AGENT_MAX_CARDS } from "@tickernelz/wardmote-shared";
 import { conflict, forbidden, notFound, unprocessable } from "../errors.js";
 import { logger } from "../middleware/logger.js";
 import { readBuiltInAgentMarker } from "../lib/built-in-agent-metadata.js";

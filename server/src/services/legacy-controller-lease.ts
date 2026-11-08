@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { and, eq, gt, lte, sql } from "drizzle-orm";
-import { heartbeatRuns, type Db } from "@tickernelz/paperclip-pro-db";
+import { heartbeatRuns, type Db } from "@tickernelz/wardmote-db";
 import { logger } from "../middleware/logger.js";
 
 // A boot UUID has meaning across containers; a numeric PID does not.

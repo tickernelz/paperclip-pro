@@ -5,7 +5,7 @@ import {
   CONNECTABLE_APP_DEFINITIONS,
   type AppDefinition,
   type McpJsonImportPreview,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { queryKeys } from "@/lib/queryKeys";
 import { AppsConnect } from "@/pages/apps/AppsConnect";
 import { PasteConfigTab } from "@/pages/tools/PasteConfigTab";

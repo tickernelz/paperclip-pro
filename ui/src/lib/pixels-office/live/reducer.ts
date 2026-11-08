@@ -4,7 +4,7 @@ import {
   type PixelsOfficeAgentStatus,
   type PixelsOfficeSnapshot,
   type PixelsOfficeTimelineEvent,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import type { LiveRunForIssue } from "../../../api/heartbeats";
 import type { ActivityIcon, AgentVisual, AgentVisualStatus, OfficeEffect } from "../officeModel";
 import { activityIconForTool } from "./activityIcons";

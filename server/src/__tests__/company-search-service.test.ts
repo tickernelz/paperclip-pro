@@ -14,8 +14,8 @@ import {
   labels,
   projectAccessMembers,
   projects,
-} from "@tickernelz/paperclip-pro-db";
-import { companySearchQuerySchema, COMPANY_SEARCH_MAX_QUERY_LENGTH } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import { companySearchQuerySchema, COMPANY_SEARCH_MAX_QUERY_LENGTH } from "@tickernelz/wardmote-shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

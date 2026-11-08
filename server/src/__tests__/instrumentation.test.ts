@@ -102,14 +102,14 @@ describe("checkExactPeerVersions", () => {
   it("reports a package as missing when it cannot be resolved", async () => {
     const { checkExactPeerVersions } = await importFreshInstrumentation();
 
-    const result = checkExactPeerVersions(["@tickernelz/paperclip-pro-does-not-exist-anywhere"], {
-      "@tickernelz/paperclip-pro-does-not-exist-anywhere": "1.0.0",
+    const result = checkExactPeerVersions(["@tickernelz/wardmote-does-not-exist-anywhere"], {
+      "@tickernelz/wardmote-does-not-exist-anywhere": "1.0.0",
     });
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.diagnostic).toContain("@opentelemetry/* packages are not installed");
-      expect(result.diagnostic).toContain("@tickernelz/paperclip-pro-does-not-exist-anywhere");
+      expect(result.diagnostic).toContain("@tickernelz/wardmote-does-not-exist-anywhere");
     }
   });
 

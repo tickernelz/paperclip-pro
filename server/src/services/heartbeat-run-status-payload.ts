@@ -1,4 +1,4 @@
-import type { heartbeatRuns } from "@tickernelz/paperclip-pro-db";
+import type { heartbeatRuns } from "@tickernelz/wardmote-db";
 import { buildHeartbeatRunIssueComment } from "./heartbeat-run-summary.js";
 
 export function buildHeartbeatRunStatusLiveEventPayload(

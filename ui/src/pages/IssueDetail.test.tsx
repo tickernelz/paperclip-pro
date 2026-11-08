@@ -15,8 +15,8 @@ import type {
   IssueTreeControlPreview,
   IssueTreeHold,
   IssueWorkProduct,
-} from "@tickernelz/paperclip-pro-shared";
-import { ONBOARDING_FIRST_TASK_ORIGIN_KIND } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
+import { ONBOARDING_FIRST_TASK_ORIGIN_KIND } from "@tickernelz/wardmote-shared";
 import type {
   AnchorHTMLAttributes,
   ButtonHTMLAttributes,

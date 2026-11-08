@@ -1,7 +1,7 @@
 import { Router, type Request } from "express";
-import { agents, heartbeatRuns, type Db } from "@tickernelz/paperclip-pro-db";
+import { agents, heartbeatRuns, type Db } from "@tickernelz/wardmote-db";
 import { and, eq } from "drizzle-orm";
-import { agentAuthorityCapabilities, isCompanyOwnerAgent } from "@tickernelz/paperclip-pro-shared";
+import { agentAuthorityCapabilities, isCompanyOwnerAgent } from "@tickernelz/wardmote-shared";
 import {
   canonicalToolName,
   OpenwaMcpToolError,
@@ -9,9 +9,9 @@ import {
   parseToolsets,
   PaperclipApiClient,
   type ToolsetName,
-} from "@tickernelz/paperclip-pro-mcp-server/catalog";
-import { createConnectorToolDefinitions } from "@tickernelz/paperclip-pro-mcp-server/connector-tools";
-import { sharedToolNotes } from "@tickernelz/paperclip-pro-mcp-server/generated-tools";
+} from "@tickernelz/wardmote-mcp-server/catalog";
+import { createConnectorToolDefinitions } from "@tickernelz/wardmote-mcp-server/connector-tools";
+import { sharedToolNotes } from "@tickernelz/wardmote-mcp-server/generated-tools";
 import { accessService } from "../services/access.js";
 import { connectionIntentService } from "../services/connection-intents.js";
 import { executeConnectorTool, resolveConnectorAssignments } from "../services/connector-runtime.js";

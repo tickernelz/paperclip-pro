@@ -1,4 +1,4 @@
-import type { AttentionFeed, AttentionFeedQuery } from "@tickernelz/paperclip-pro-shared";
+import type { AttentionFeed, AttentionFeedQuery } from "@tickernelz/wardmote-shared";
 import { api } from "./client";
 
 export interface AttentionBadgeCount {

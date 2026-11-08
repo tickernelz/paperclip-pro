@@ -5,10 +5,10 @@ import {
   createRequest, definePlugin, isJsonRpcResponse, JsonRpcCallError, parseMessage,
   readEnvironmentSyncErrorDiagnostic, withEnvironmentSyncTransferStep, recordEnvironmentSyncError,
   PLUGIN_RPC_ERROR_CODES, serializeMessage, startWorkerRpcHost, type JsonRpcResponse,
-} from "@tickernelz/paperclip-pro-plugin-sdk";
+} from "@tickernelz/wardmote-plugin-sdk";
 import {
   getWorkspaceRestoreDiagnostic, withWorkspaceRestoreDiagnostics, withWorkspaceRestoreStep,
-} from "@tickernelz/paperclip-pro-adapter-utils/workspace-restore-diagnostics";
+} from "@tickernelz/wardmote-adapter-utils/workspace-restore-diagnostics";
 import { preserveEnvironmentSyncOutErrorDiagnostic } from "../services/environment-sync-out-error.js";
 
 async function roundTrip(method: string, error: unknown): Promise<{ error: JsonRpcCallError; wire: string }> {

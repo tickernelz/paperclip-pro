@@ -1,5 +1,5 @@
 import { and, asc, eq, inArray, isNull, notInArray, or, sql } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   agentWakeupRequests,
   heartbeatRuns,
@@ -7,7 +7,7 @@ import {
   issueTreeHoldMembers,
   issueTreeHolds,
   issues,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   ISSUE_STATUSES,
   type IssueStatus,
@@ -20,7 +20,7 @@ import {
   type IssueTreePreviewIssue,
   type IssueTreePreviewRun,
   type IssueTreePreviewWarning,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { conflict, notFound, unprocessable } from "../errors.js";
 import type { IssuePostCommitAction } from "./issues.js";
 

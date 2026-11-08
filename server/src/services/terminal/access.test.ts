@@ -8,7 +8,7 @@ import {
   companyMemberships,
   createDb,
   instanceUserRoles,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

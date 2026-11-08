@@ -21,8 +21,8 @@ import {
   issueThreadInteractions,
   issueWorkProducts,
   issues,
-} from "@tickernelz/paperclip-pro-db";
-import type { AttentionItem } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import type { AttentionItem } from "@tickernelz/wardmote-shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
