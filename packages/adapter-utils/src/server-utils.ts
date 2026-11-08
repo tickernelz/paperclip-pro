@@ -1,12 +1,12 @@
-import type { ExecutionContinuationEnvelope } from "@tickernelz/paperclip-pro-shared";
+import type { ExecutionContinuationEnvelope } from "@tickernelz/wardmote-shared";
 import { spawn, type ChildProcess } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
 import { constants as fsConstants, promises as fs, type Dirent } from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { CONNECTION_INTENT_AGENT_GUIDANCE } from "@tickernelz/paperclip-pro-shared";
-import { legacyEnvKey, withWardmoteEnvAliases } from "@tickernelz/paperclip-pro-shared/env-aliases";
-import { resolveDefaultPaperclipHomeDir } from "@tickernelz/paperclip-pro-shared/home-paths";
+import { CONNECTION_INTENT_AGENT_GUIDANCE } from "@tickernelz/wardmote-shared";
+import { legacyEnvKey, withWardmoteEnvAliases } from "@tickernelz/wardmote-shared/env-aliases";
+import { resolveDefaultPaperclipHomeDir } from "@tickernelz/wardmote-shared/home-paths";
 import { sanitizeRemoteExecutionEnv } from "./remote-execution-env.js";
 import {
   buildLocalProcessSandboxSpawnTarget,
@@ -4467,13 +4467,21 @@ async function placePaperclipSkillLink(
   }
 }
 
-const BUNDLED_SKILL_ROOT = `${path.sep}node_modules${path.sep}@tickernelz${path.sep}paperclip-pro-server${path.sep}skills${path.sep}`;
+const BUNDLED_SKILL_ROOTS = ["wardmote-server", "paperclip-pro-server"].map(
+  (serverPackage) => `${path.sep}node_modules${path.sep}@tickernelz${path.sep}${serverPackage}${path.sep}skills${path.sep}`,
+);
+
+function bundledSkillRelativePath(skillPath: string): string | null {
+  for (const root of BUNDLED_SKILL_ROOTS) {
+    const at = skillPath.lastIndexOf(root);
+    if (at >= 0) return skillPath.slice(at + root.length);
+  }
+  return null;
+}
 
 function isSameBundledSkillFromAnotherInstall(linkedPath: string, source: string): boolean {
-  const linkedAt = linkedPath.lastIndexOf(BUNDLED_SKILL_ROOT);
-  const sourceAt = source.lastIndexOf(BUNDLED_SKILL_ROOT);
-  if (linkedAt < 0 || sourceAt < 0) return false;
-  return linkedPath.slice(linkedAt) === source.slice(sourceAt);
+  const linked = bundledSkillRelativePath(linkedPath);
+  return linked !== null && linked === bundledSkillRelativePath(source);
 }
 
 export async function relinkPaperclipSkillsFromOtherInstalls(
@@ -4839,7 +4847,7 @@ export async function runChildProcess(
     // Strip Claude Code nesting-guard env vars so spawned `claude` processes
     // don't refuse to start with "cannot be launched inside another session".
     // These vars leak in when the Paperclip server itself is started from
-    // within a Claude Code session (e.g. `npx @tickernelz/paperclip-pro run` in a terminal
+    // within a Claude Code session (e.g. `npx @tickernelz/wardmote run` in a terminal
     // owned by Claude Code) or when cron inherits a contaminated shell env.
     const CLAUDE_CODE_NESTING_VARS = [
       "CLAUDECODE",

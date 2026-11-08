@@ -2,14 +2,14 @@ import { restoreNativeWorkspaceBestEffort } from "./native-workspace-best-effort
 import { withNativeWorkspaceFinalizationOwnership } from "./native-workspace-finalization-ownership.js";
 import fs from "node:fs/promises";
 import { and, desc, eq } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   executionWorkspaces,
   heartbeatRuns,
   issues,
   nativeRunFinalizations,
   workspaceOperations,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { workspaceOperationService } from "../workspace-operations.js";
 import { inspectManagedGitWorktreeBranch } from "../workspace-runtime.js";
 import { environmentService } from "../environments.js";

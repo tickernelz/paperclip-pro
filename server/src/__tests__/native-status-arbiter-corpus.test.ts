@@ -23,7 +23,7 @@ import {
   statusDecisions,
   workAssessments,
   workspaceOperations,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import type { NativeEvidenceAssessment } from "../services/native-runtime/evidence-classifier.js";
 import { classifyNativeEvidence } from "../services/native-runtime/evidence-classifier.js";
 import {

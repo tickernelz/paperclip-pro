@@ -9,12 +9,12 @@ import {
   companyMemberships,
   toolConnections,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import type {
   GitHubAppRegistrationInput,
   GitHubAppWizardState,
   GitHubAppCloudState,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { badRequest, conflict, forbidden, notFound } from "../errors.js";
 import { logActivity } from "./activity-log.js";
 import {

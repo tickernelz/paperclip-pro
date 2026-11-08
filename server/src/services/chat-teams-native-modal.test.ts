@@ -1,4 +1,4 @@
-import type { AskUserQuestionsInteraction } from "@tickernelz/paperclip-pro-shared";
+import type { AskUserQuestionsInteraction } from "@tickernelz/wardmote-shared";
 import type { ModalResponse } from "chat";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {

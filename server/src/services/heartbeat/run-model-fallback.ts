@@ -1,9 +1,9 @@
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   agents,
   heartbeatRuns,
   heartbeatRunEvents,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { and, eq } from "drizzle-orm";
 import { parseObject } from "../../adapters/utils.js";
 import { logActivity } from "../activity-log.js";
@@ -23,7 +23,7 @@ import {
   recordModelCooldown,
   type ModelFallbackRetryPlan,
 } from "../model-fallback.js";
-import type { RunModelFallbackReason } from "@tickernelz/paperclip-pro-shared";
+import type { RunModelFallbackReason } from "@tickernelz/wardmote-shared";
 
 type Run = typeof heartbeatRuns.$inferSelect;
 type RunEvent = {

@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { eq } from "drizzle-orm";
-import { adapterAuthSessions, companies, createDb, environmentLeases, environments } from "@tickernelz/paperclip-pro-db";
-import type { AgentAdapterType } from "@tickernelz/paperclip-pro-shared";
+import { adapterAuthSessions, companies, createDb, environmentLeases, environments } from "@tickernelz/wardmote-db";
+import type { AgentAdapterType } from "@tickernelz/wardmote-shared";
 import { DEVICE_LOGIN_URL } from "../services/ai-providers/codex/device-login-parse.js";
 import {
   getEmbeddedPostgresTestSupport,

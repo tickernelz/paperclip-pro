@@ -1,8 +1,8 @@
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import type { AdapterExecutionTarget } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
-import type { AdapterEnvironmentCheck } from "@tickernelz/paperclip-pro-adapter-utils";
-import { parseObject } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
-import { aiRoutingHarness, ADAPTER_AUTH_MISSING_CHECK_CODE, AI_CONNECTION_CAPABILITIES, type AiConnectionBinding } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/wardmote-db";
+import type { AdapterExecutionTarget } from "@tickernelz/wardmote-adapter-utils/execution-target";
+import type { AdapterEnvironmentCheck } from "@tickernelz/wardmote-adapter-utils";
+import { parseObject } from "@tickernelz/wardmote-adapter-utils/server-utils";
+import { aiRoutingHarness, ADAPTER_AUTH_MISSING_CHECK_CODE, AI_CONNECTION_CAPABILITIES, type AiConnectionBinding } from "@tickernelz/wardmote-shared";
 import { requireRunnerHarness, requireServerAdapter } from "../adapters/index.js";
 import { forbidden, HttpError, unprocessable } from "../errors.js";
 import { instanceSettingsService } from "./instance-settings.js";

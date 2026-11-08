@@ -1,9 +1,9 @@
 import { isCrossSiteOAuthCallbackNavigation, oauthCallbackInterstitialHtml } from "../lib/oauth-browser-return.js";
-import { composioAppSetupSchema, composioAppsRefreshSchema, composioAppsSyncSchema, composioAppAccountSchema } from "@tickernelz/paperclip-pro-shared";
-import { aggregatorAppsSyncSchema, aggregatorAppsRefreshSchema, arcadeDiscoverySetupSchema } from "@tickernelz/paperclip-pro-shared/aggregator-apps";
+import { composioAppSetupSchema, composioAppsRefreshSchema, composioAppsSyncSchema, composioAppAccountSchema } from "@tickernelz/wardmote-shared";
+import { aggregatorAppsSyncSchema, aggregatorAppsRefreshSchema, arcadeDiscoverySetupSchema } from "@tickernelz/wardmote-shared/aggregator-apps";
 import { Router, type Request, type Response } from "express";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { agents, companies, connectionGrants, issueThreadInteractions, toolConnectionInstalls } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
+import { agents, companies, connectionGrants, issueThreadInteractions, toolConnectionInstalls } from "@tickernelz/wardmote-db";
 import { and, eq, or } from "drizzle-orm";
 import {
   APP_STORE_DEFINITIONS,
@@ -54,7 +54,7 @@ import {
   updateToolPolicySchema,
   updateToolProfileEntrySchema,
   updateToolProfileWithEntriesSchema,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { validate } from "../middleware/validate.js";
 import { getActorInfo, assertBoard, assertCompanyAccess, assertInstanceAdmin, getAccessibleResource, hasCompanyAccess } from "./authz.js";
 import { badRequest, forbidden, HttpError, notFound, unprocessable } from "../errors.js";

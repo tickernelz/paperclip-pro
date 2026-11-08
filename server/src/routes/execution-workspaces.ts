@@ -5,8 +5,8 @@ import { accessSync, constants as fsConstants, existsSync, readFileSync } from "
 import path from "node:path";
 import { and, eq } from "drizzle-orm";
 import { Router, type Request, type Response } from "express";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { issues, projects, projectWorkspaces } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
+import { issues, projects, projectWorkspaces } from "@tickernelz/wardmote-db";
 import {
   findWorkspaceCommandDefinition,
   matchWorkspaceRuntimeServiceToCommand,
@@ -14,13 +14,13 @@ import {
   updateExecutionWorkspaceSchema,
   workspaceOverviewQuerySchema,
   workspaceRuntimeControlTargetSchema,
-} from "@tickernelz/paperclip-pro-shared";
-import type { WorkspaceRuntimeDesiredState, WorkspaceRuntimeServiceStateMap } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
+import type { WorkspaceRuntimeDesiredState, WorkspaceRuntimeServiceStateMap } from "@tickernelz/wardmote-shared";
 import {
   baseWorkspaceDeclaresInstanceConfig,
   resolveCanonicalWorktreeSeedSource,
   type CanonicalWorktreeSeedSource,
-} from "@tickernelz/paperclip-pro-shared/worktree-seed-source";
+} from "@tickernelz/wardmote-shared/worktree-seed-source";
 import { resolvePaperclipConfigPath } from "../paths.js";
 import { validate } from "../middleware/validate.js";
 import {

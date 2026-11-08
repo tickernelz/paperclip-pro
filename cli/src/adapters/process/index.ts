@@ -1,4 +1,4 @@
-import type { CLIAdapterModule } from "@tickernelz/paperclip-pro-adapter-utils";
+import type { CLIAdapterModule } from "@tickernelz/wardmote-adapter-utils";
 import { printProcessStdoutEvent } from "./format-event.js";
 
 export const processCLIAdapter: CLIAdapterModule = {

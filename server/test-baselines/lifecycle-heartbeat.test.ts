@@ -14,7 +14,7 @@ import {
   statusDecisions,
   issueComments,
   issueThreadInteractions,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   startEmbeddedPostgresTestDatabase,
   getEmbeddedPostgresTestSupport,
@@ -24,7 +24,7 @@ import type {
   NativeExecutionInput,
   NativeSessionBackend,
   NativeSession,
-} from "@tickernelz/paperclip-pro-paperclip-runner";
+} from "@tickernelz/wardmote-paperclip-runner";
 import {
   CONTROL_PLANE_CONFORMANCE_RESULT,
   CONTROL_PLANE_CONFORMANCE_TERMINAL,

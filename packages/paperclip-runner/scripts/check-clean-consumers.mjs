@@ -201,7 +201,7 @@ async function verifyRunnerConsumer({
     type: "module",
     packageManager: "pnpm@9.15.4",
     dependencies: {
-      "@tickernelz/paperclip-pro-paperclip-runner": `file:${runnerTarball}`,
+      "@tickernelz/wardmote-paperclip-runner": `file:${runnerTarball}`,
     },
     pnpm: { overrides: localOverrides(runtimeDependencyTarballs) },
   }, null, 2)}\n`);
@@ -212,12 +212,12 @@ import { access, readFile, realpath, writeFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { defaultCapabilityRunnerdBinary } from "@tickernelz/paperclip-pro-paperclip-runner";
-import { parsePaperclipRunnerdBuildMetadata, PAPERCLIP_RUNNER_BUILD_METADATA } from "@tickernelz/paperclip-pro-paperclip-runner/evals";
+import { defaultCapabilityRunnerdBinary } from "@tickernelz/wardmote-paperclip-runner";
+import { parsePaperclipRunnerdBuildMetadata, PAPERCLIP_RUNNER_BUILD_METADATA } from "@tickernelz/wardmote-paperclip-runner/evals";
 // This is the installed package's default lookup. The separate eval artifact
 // below must not hide an unusable bundled daemon or repair its permissions.
 const bundledRunnerd = defaultCapabilityRunnerdBinary();
-const installedEntry = fileURLToPath(import.meta.resolve("@tickernelz/paperclip-pro-paperclip-runner"));
+const installedEntry = fileURLToPath(import.meta.resolve("@tickernelz/wardmote-paperclip-runner"));
 const expectedBundledRunnerd = resolve(dirname(installedEntry), "bin",
   "paperclip-runnerd" + (process.platform === "win32" ? ".exe" : ""));
 if (await realpath(bundledRunnerd) !== await realpath(expectedBundledRunnerd)) {
@@ -244,9 +244,9 @@ import { createHash } from "node:crypto";
 import { readFile, stat, writeFile } from "node:fs/promises";
 import { basename } from "node:path";
 
-import * as runtime from "@tickernelz/paperclip-pro-paperclip-runner";
-import * as evals from "@tickernelz/paperclip-pro-paperclip-runner/evals";
-import * as testing from "@tickernelz/paperclip-pro-paperclip-runner/testing";
+import * as runtime from "@tickernelz/wardmote-paperclip-runner";
+import * as evals from "@tickernelz/wardmote-paperclip-runner/evals";
+import * as testing from "@tickernelz/wardmote-paperclip-runner/testing";
 
 if ("MockControlPlaneAdapter" in runtime || "runControlPlanePortConformance" in runtime) {
   throw new Error("test helpers leaked through the runtime root");
@@ -373,9 +373,9 @@ await writeFile(process.env.PAPERCLIP_CONFORMANCE_RECORD, JSON.stringify({
   consumer: {
     installMode: "offline-packed-artifact",
     imports: [
-      "@tickernelz/paperclip-pro-paperclip-runner",
-      "@tickernelz/paperclip-pro-paperclip-runner/evals",
-      "@tickernelz/paperclip-pro-paperclip-runner/testing",
+      "@tickernelz/wardmote-paperclip-runner",
+      "@tickernelz/wardmote-paperclip-runner/evals",
+      "@tickernelz/wardmote-paperclip-runner/testing",
     ],
     appSourceTreeImports: false,
     providerCalls: 0,

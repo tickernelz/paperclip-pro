@@ -1,5 +1,5 @@
 import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   agents,
   approvals,
@@ -16,7 +16,7 @@ import {
   issueWorkProducts,
   issues,
   joinRequests,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import type {
   AttentionItem,
   AttentionSourceKind,
@@ -24,7 +24,7 @@ import type {
   DecisionQueueItem,
   DecisionQueueSeedRule,
   DecisionTriage,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { notFound, unprocessable } from "../errors.js";
 import { logActivity } from "./activity-log.js";
 import {

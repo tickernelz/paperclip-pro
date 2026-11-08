@@ -1,5 +1,5 @@
 import { useCallback, useSyncExternalStore } from "react";
-import type { Agent } from "@tickernelz/paperclip-pro-shared";
+import type { Agent } from "@tickernelz/wardmote-shared";
 const eventName = "paperclip:recent-agent-chats";
 const key = (company: string, user?: string | null) =>
   `paperclip.recentAgentChats:${company}:${user ?? "__local_board__"}`;

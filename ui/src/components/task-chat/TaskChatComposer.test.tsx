@@ -7,11 +7,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   buildAgentMentionHref,
   buildSkillMentionHref,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { parseRunnerGoalCommand, TaskChatComposer } from "./TaskChatComposer";
 import { QuestionForm } from "./QuestionForm";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { IssueRunModelOverrideView } from "@tickernelz/paperclip-pro-shared";
+import type { IssueRunModelOverrideView } from "@tickernelz/wardmote-shared";
 import { issuesApi } from "@/api/issues";
 import { agentsApi } from "@/api/agents";
 import { ThemeProvider } from "@/context/ThemeContext";

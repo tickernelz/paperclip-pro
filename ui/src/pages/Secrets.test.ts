@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { describe, expect, it } from "vitest";
-import type { CompanySecretProviderConfig, SecretProviderDescriptor } from "@tickernelz/paperclip-pro-shared";
+import type { CompanySecretProviderConfig, SecretProviderDescriptor } from "@tickernelz/wardmote-shared";
 import {
   findCreateProviderReplacement,
   getAwsManagedPathPreview,

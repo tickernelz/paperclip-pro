@@ -1,4 +1,4 @@
-import type { Agent, Approval } from "@tickernelz/paperclip-pro-shared";
+import type { Agent, Approval } from "@tickernelz/wardmote-shared";
 import { api } from "./client";
 
 /**

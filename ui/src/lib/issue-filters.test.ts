@@ -1,7 +1,7 @@
 // @vitest-environment node
 
 import { describe, expect, it } from "vitest";
-import type { ExternalObjectSummary, Issue } from "@tickernelz/paperclip-pro-shared";
+import type { ExternalObjectSummary, Issue } from "@tickernelz/wardmote-shared";
 import {
   applyIssueFilters,
   countActiveIssueFilters,

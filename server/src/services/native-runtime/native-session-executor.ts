@@ -1,6 +1,6 @@
 import { logger } from "../../middleware/logger.js";
 import { configuredEnvironment } from "../../vendor/paperclip-runner/index.js";
-import { agents } from "@tickernelz/paperclip-pro-db";
+import { agents } from "@tickernelz/wardmote-db";
 import { isCloudManagedInstance } from "../cloud-instance.js";
 import { dotRunnerBroker } from "../dot-runner-broker.js";
 import { CURSOR_DISTRIBUTION_PINS, QUALIFIED_ACPX_PROFILES, QUALIFIED_ACPX_VERSION } from "../../vendor/paperclip-runner/index.js";
@@ -16,7 +16,7 @@ import { readLocalAiCredentialFile } from "../local-ai-credential-file.js";
 import { prepareGrokRunnerCredentials } from "./grok-runner-credentials.js";
 import { copyBackGrokAuth } from "../ai-providers/grok/grok-auth-copyback.js";
 
-import { inferOpenAiCompatibleBiller, type AdapterUsageCheckpoint } from "@tickernelz/paperclip-pro-adapter-utils";
+import { inferOpenAiCompatibleBiller, type AdapterUsageCheckpoint } from "@tickernelz/wardmote-adapter-utils";
 import { createAgentIdentityRedactor } from "../agent-identity-redaction.js";
 import {
   isSupportedRemoteCodexVersion,
@@ -35,7 +35,7 @@ import {
   codexCliVersionAtLeast,
   minimumCodexCliVersionForModel,
   normalizeCodexModel,
-} from "@tickernelz/paperclip-pro-adapter-utils/provider-models/codex";
+} from "@tickernelz/wardmote-adapter-utils/provider-models/codex";
 import { nativeCompletionFeedback } from "./native-completion-feedback.js";
 import { hasAcknowledgedNativeReassignmentStopIntent, hasAcknowledgedNativeStopIntent } from "../acknowledged-native-stop.js";
 import { stoppedCodexTurnIsTextOnly } from "./stopped-codex-turn.js";
@@ -77,7 +77,7 @@ import type {
   AdapterExecutionResult,
   AdapterRuntimeEvent,
 } from "../../adapters/index.js";
-import { usdToUnits, type NativeFinalizationResult } from "@tickernelz/paperclip-pro-shared";
+import { usdToUnits, type NativeFinalizationResult } from "@tickernelz/wardmote-shared";
 import type {
   HarnessRuntimeRequestResolution,
   NativeExecutionInput,
@@ -113,17 +113,17 @@ import {
   type RunnerProcessLaunchSpec,
   type NativeSessionGoalControl,
 } from "../../vendor/paperclip-runner/index.js";
-import type { AdapterExecutionTarget } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
-import { getAdapterSteerTarget } from "@tickernelz/paperclip-pro-adapter-utils/adapter-steer-registry";
+import type { AdapterExecutionTarget } from "@tickernelz/wardmote-adapter-utils/execution-target";
+import { getAdapterSteerTarget } from "@tickernelz/wardmote-adapter-utils/adapter-steer-registry";
 import { createNativeSshCommandRunner } from "./native-ssh-command-runner.js";
 import { discoverRemoteExecutable, parseRemoteExecutableCandidate } from "./codex-model-fallback.js";
 export { parseRemoteExecutableCandidate } from "./codex-model-fallback.js";
-import type { CommandManagedRuntimeRunner } from "@tickernelz/paperclip-pro-adapter-utils/command-managed-runtime";
+import type { CommandManagedRuntimeRunner } from "@tickernelz/wardmote-adapter-utils/command-managed-runtime";
 import {
   resolvePaperclipRunnerTransport,
   type PaperclipRunnerTransport,
-} from "@tickernelz/paperclip-pro-adapter-utils/runner-connectivity";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-adapter-utils/runner-connectivity";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   and,
   desc,
@@ -147,7 +147,7 @@ import {
   issues,
   nativeRunFinalizations,
   nativeRunResults,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { PaperclipControlPlanePort } from "./paperclip-control-plane-port.js";
 import { appendHeartbeatRunEvent } from "../heartbeat-run-events.js";
 import { nativeSha256 } from "./canonical.js";
@@ -10223,7 +10223,7 @@ export function assertRemoteRunnerBuildMetadata(
   if (
     metadata.schema !== RUNNERD_BUILD_METADATA_SCHEMA ||
     metadata.binaryName !== "paperclip-runnerd" ||
-    metadata.packageName !== "@tickernelz/paperclip-pro-paperclip-runner" ||
+    metadata.packageName !== "@tickernelz/wardmote-paperclip-runner" ||
     metadata.binaryContractVersion !== RUNNERD_BINARY_CONTRACT_VERSION
   ) {
     throw new Error("runner_remote_artifact_contract_incompatible");

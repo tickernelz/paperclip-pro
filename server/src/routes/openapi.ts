@@ -1,7 +1,7 @@
-import { updateFastResponseSchema } from "@tickernelz/paperclip-pro-shared";
-import { onboardingOmpLoginRequestSchema, onboardingRemoteOmpRequestSchema } from "@tickernelz/paperclip-pro-shared";
-import { agentTodoSnapshotSchema } from "@tickernelz/paperclip-pro-shared";
-import { slackRegistrationSchema, slackSetupActionSchema, slackInstallAuthorizationSchema, slackRegistrationStateSchema, slackAppConfigurationSchema, slackAvatarStateSchema, slackAccountStateSchema } from "@tickernelz/paperclip-pro-shared";
+import { updateFastResponseSchema } from "@tickernelz/wardmote-shared";
+import { onboardingOmpLoginRequestSchema, onboardingRemoteOmpRequestSchema } from "@tickernelz/wardmote-shared";
+import { agentTodoSnapshotSchema } from "@tickernelz/wardmote-shared";
+import { slackRegistrationSchema, slackSetupActionSchema, slackInstallAuthorizationSchema, slackRegistrationStateSchema, slackAppConfigurationSchema, slackAvatarStateSchema, slackAccountStateSchema } from "@tickernelz/wardmote-shared";
 import { experimentalApiMetadata } from "./experimental-api-metadata.js";
 import { attachmentRetentionPreviewSchema } from "./instance-attachment-retention.js";
 import {
@@ -19,7 +19,7 @@ import {
   experimentalApiQueries,
 } from "./experimental-api-paths.js";
 import { Router } from "express";
-import { subscriptionPriceSchema, mergeSubscriptionsSchema } from "@tickernelz/paperclip-pro-shared";
+import { subscriptionPriceSchema, mergeSubscriptionsSchema } from "@tickernelz/wardmote-shared";
 import { z } from "zod";
 import {
   gitHubRepositoryPageQuerySchema,
@@ -379,13 +379,13 @@ import {
   replaceChatEndpointResourcesSchema,
   updateChatEndpointSchema,
   pixelsOfficeSeatAssignmentsSchema,
-} from "@tickernelz/paperclip-pro-shared";
-import { aggregatorAppsSyncSchema, aggregatorAppsRefreshSchema, arcadeDiscoverySetupSchema } from "@tickernelz/paperclip-pro-shared/aggregator-apps";
-import { composioAppsSyncSchema, composioAppsRefreshSchema, composioAppSetupSchema, composioAppAccountSchema } from "@tickernelz/paperclip-pro-shared/composio-app-setup";
+} from "@tickernelz/wardmote-shared";
+import { aggregatorAppsSyncSchema, aggregatorAppsRefreshSchema, arcadeDiscoverySetupSchema } from "@tickernelz/wardmote-shared/aggregator-apps";
+import { composioAppsSyncSchema, composioAppsRefreshSchema, composioAppSetupSchema, composioAppAccountSchema } from "@tickernelz/wardmote-shared/composio-app-setup";
 import {
   COMPANY_IMPORT_TRANSFERS_API_PATH,
   companyImportTransferDeclarationSchema,
-} from "@tickernelz/paperclip-pro-shared/company-import-transfer";
+} from "@tickernelz/wardmote-shared/company-import-transfer";
 
 type JsonSchema = Record<string, unknown>;
 type OpenApiResponse = Record<string, unknown>;

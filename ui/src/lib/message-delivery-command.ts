@@ -2,7 +2,7 @@ import type { ActionCommandOption } from "@/context/EditorAutocompleteContext";
 import type {
   InstanceMessageDelivery,
   IssueCommentDeliveryReason,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 export type MessageDeliveryMode = InstanceMessageDelivery;
 

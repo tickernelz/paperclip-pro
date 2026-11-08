@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import type { IssueQueuedCommentQueue } from "@tickernelz/paperclip-pro-shared";
+import type { IssueQueuedCommentQueue } from "@tickernelz/wardmote-shared";
 import { TaskChatQueuedMessages } from "@/components/task-chat/TaskChatQueuedMessages";
 
 function queueWithBodies(bodies: string[]): IssueQueuedCommentQueue {

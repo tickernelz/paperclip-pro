@@ -1,4 +1,4 @@
-import type { heartbeatRuns, issues } from "@tickernelz/paperclip-pro-db";
+import type { heartbeatRuns, issues } from "@tickernelz/wardmote-db";
 
 /**
  * This claim must be settled by queue-first recovery, not generic terminal-lock

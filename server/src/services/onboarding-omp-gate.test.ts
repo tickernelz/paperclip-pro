@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { OmpInstallProbe } from "@tickernelz/paperclip-pro-adapter-omp-local/readiness";
+import type { OmpInstallProbe } from "@tickernelz/wardmote-adapter-omp-local/readiness";
 import { onboardingOmpGateFailure } from "./onboarding-omp-gate.js";
 
 function probeOf(state: OmpInstallProbe["state"], version: string | null): OmpInstallProbe {

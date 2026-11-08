@@ -76,7 +76,7 @@ describe("shipped teams catalog", () => {
 
   it("exposes a stable manifest header for downstream consumers", () => {
     expect(catalogManifest.schemaVersion).toBe(1);
-    expect(catalogManifest.packageName).toBe("@tickernelz/paperclip-pro-teams-catalog");
+    expect(catalogManifest.packageName).toBe("@tickernelz/wardmote-teams-catalog");
     expect(catalogTeams.length).toBe(EXPECTED_BUNDLED_KEYS.length + EXPECTED_OPTIONAL_KEYS.length);
   });
 

@@ -1,6 +1,6 @@
 import { createPrivateKey, createSign } from "node:crypto";
 import { and, eq } from "drizzle-orm";
-import { chatEndpoints, toolConnections, type Db } from "@tickernelz/paperclip-pro-db";
+import { chatEndpoints, toolConnections, type Db } from "@tickernelz/wardmote-db";
 import { secretService } from "./secrets.js";
 import { conflict, forbidden, unprocessable } from "../errors.js";
 

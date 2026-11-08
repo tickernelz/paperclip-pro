@@ -1,7 +1,7 @@
 import path from "node:path";
-import type { AdapterExecutionTarget } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
-import { writePaperclipMcpMount } from "@tickernelz/paperclip-pro-adapter-utils/paperclip-mcp-mount";
-import type { RunToolProfile } from "@tickernelz/paperclip-pro-adapter-utils/tool-profile";
+import type { AdapterExecutionTarget } from "@tickernelz/wardmote-adapter-utils/execution-target";
+import { writePaperclipMcpMount } from "@tickernelz/wardmote-adapter-utils/paperclip-mcp-mount";
+import type { RunToolProfile } from "@tickernelz/wardmote-adapter-utils/tool-profile";
 
 export const OMP_ASYNC_BASH_TIMEOUT_SEC = 3600;
 export const OMP_TOOL_GUARD_FILE_NAME = "paperclip-tool-guard.js";

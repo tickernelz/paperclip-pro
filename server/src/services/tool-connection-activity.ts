@@ -1,15 +1,15 @@
 import { and, desc, eq, gte, ilike, inArray, lt, or, sql, type SQL } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   activityLog,
   agents,
   authUsers,
   toolAccessAuditEvents,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import type {
   ToolConnectionLifecycleEvent,
   ToolConnectionLifecycleEventType,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 /** Activity-log actions rendered as connection lifecycle rows. */
 export const CONNECTION_LIFECYCLE_ACTIONS = [

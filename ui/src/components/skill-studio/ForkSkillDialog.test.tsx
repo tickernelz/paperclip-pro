@@ -9,7 +9,7 @@ import type {
   CompanySkillForkPrecheckResult,
   CompanySkillForkSummary,
   CompanySkillUsageAgent,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ForkSkillDialog } from "./ForkSkillDialog";
 

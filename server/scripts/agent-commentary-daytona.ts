@@ -3,11 +3,11 @@ import assert from "node:assert/strict";
 import { randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { parse } from "dotenv";
-import { environmentLeases, environments, type Db } from "@tickernelz/paperclip-pro-db";
+import { environmentLeases, environments, type Db } from "@tickernelz/wardmote-db";
 import { eq } from "drizzle-orm";
-import type { AdapterSandboxExecutionTarget } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
+import type { AdapterSandboxExecutionTarget } from "@tickernelz/wardmote-adapter-utils/execution-target";
 import { readEnvironmentCreationCleanupError, type PluginEnvironmentCreationCleanup,
-  type PluginEnvironmentLease, type PluginEnvironmentTerminationReceipt } from "@tickernelz/paperclip-pro-plugin-sdk";
+  type PluginEnvironmentLease, type PluginEnvironmentTerminationReceipt } from "@tickernelz/wardmote-plugin-sdk";
 
 export async function acquireDaytonaLeaseWithCleanup(input: {
   companyId: string; environmentId: string; runId: string;

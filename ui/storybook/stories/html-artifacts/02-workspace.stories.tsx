@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { ResolvedWorkspaceResource } from "@tickernelz/paperclip-pro-shared";
+import type { ResolvedWorkspaceResource } from "@tickernelz/wardmote-shared";
 import { TaskWorkspaceFilePanel } from "@/components/task-side-panel/TaskWorkspaceFilePanel";
 import { FileViewerSheet } from "@/components/FileViewerSheet";
 import { FileViewerProvider } from "@/context/FileViewerContext";

@@ -7,14 +7,14 @@ import path from "node:path";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { createHash, randomUUID } from "node:crypto";
-import { parseFrontmatterMarkdown } from "@tickernelz/paperclip-pro-shared";
+import { parseFrontmatterMarkdown } from "@tickernelz/wardmote-shared";
 import { fileURLToPath } from "node:url";
 import type {
   AdapterBillingType,
   AdapterExecutionContext,
   AdapterExecutionResult,
   UsageSummary,
-} from "@tickernelz/paperclip-pro-adapter-utils";
+} from "@tickernelz/wardmote-adapter-utils";
 import {
   adapterExecutionTargetSessionIdentity,
   describeAdapterExecutionTarget,
@@ -37,7 +37,7 @@ import {
   type PreparedAdapterExecutionTargetRuntime,
   type ReferencedSourceIgnoreResolution,
   type SandboxAdditionalSource,
-} from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
+} from "@tickernelz/wardmote-adapter-utils/execution-target";
 import { captureLocalProcess, capturedProcessExited, killCapturedLocalProcess } from "./local-process-control.js";
 import type { DuplexLossReason } from "../duplex-observability.js";
 import { DUPLEX_CHANNEL_LOST_ERROR_CODE } from "../bridge-transport-contract.js";
@@ -48,8 +48,8 @@ import {
   type AcpxTerminalSessionFailure,
   type AcpxTerminalSessionFailureDiagnostic,
 } from "./terminal-session-failure.js";
-import { legacyEnvKey } from "@tickernelz/paperclip-pro-shared/env-aliases";
-import { resolveDefaultPaperclipHomeDir } from "@tickernelz/paperclip-pro-shared/home-paths";
+import { legacyEnvKey } from "@tickernelz/wardmote-shared/env-aliases";
+import { resolveDefaultPaperclipHomeDir } from "@tickernelz/wardmote-shared/home-paths";
 export type { AcpxTerminalSessionFailure } from "./terminal-session-failure.js";
 import type { WorkspaceRestoreFailureCode, WorkspaceRestoreOutcome } from "../workspace-restore-merge.js";
 import type { WorkspaceRestoreDiagnostic } from "../workspace-restore-diagnostics.js";
@@ -87,17 +87,17 @@ import {
   rewriteWorkspaceCwdEnvVarsForExecution,
   shapePaperclipWorkspaceEnvForExecution,
   type PaperclipSkillEntry,
-} from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+} from "@tickernelz/wardmote-adapter-utils/server-utils";
 import {
   PAPERCLIP_MCP_SERVER_NAME,
   paperclipAccessGuidance,
   paperclipAccessMode,
   paperclipMcpToolsets,
   type PaperclipAccessMode,
-} from "@tickernelz/paperclip-pro-adapter-utils/paperclip-mcp";
-import { paperclipMcpHttpTarget } from "@tickernelz/paperclip-pro-adapter-utils/paperclip-mcp-mount";
-import { shellQuote } from "@tickernelz/paperclip-pro-adapter-utils/ssh";
-import { runToolProfile, type RunToolProfile } from "@tickernelz/paperclip-pro-adapter-utils/tool-profile";
+} from "@tickernelz/wardmote-adapter-utils/paperclip-mcp";
+import { paperclipMcpHttpTarget } from "@tickernelz/wardmote-adapter-utils/paperclip-mcp-mount";
+import { shellQuote } from "@tickernelz/wardmote-adapter-utils/ssh";
+import { runToolProfile, type RunToolProfile } from "@tickernelz/wardmote-adapter-utils/tool-profile";
 import { createEphemeralSessionEnvironmentStore } from "./ephemeral-session-environment.js";
 import {
   createAcpRuntime,
@@ -286,7 +286,7 @@ export interface AcpxEngineBillingIdentity {
  * credential/home helpers (`copyBackCodexAuth`, `stageCodexHomeForSync`,
  * `prepareClaudeConfigSeed`, the Gemini skills stager, …) live in the adapter
  * packages, and the shared engine — which lives *inside*
- * `@tickernelz/paperclip-pro-adapter-utils`, a dependency of those packages — cannot import
+ * `@tickernelz/wardmote-adapter-utils`, a dependency of those packages — cannot import
  * them without a circular dependency. So the engine exposes this seam and each
  * adapter supplies it, reusing the exact same vetted helpers (no duplication of
  * the security-critical copy-back path).

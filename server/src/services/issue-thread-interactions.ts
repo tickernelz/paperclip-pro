@@ -1,4 +1,4 @@
-import { normalizeEscapedLineBreaks } from "@tickernelz/paperclip-pro-shared/validators/text";
+import { normalizeEscapedLineBreaks } from "@tickernelz/wardmote-shared/validators/text";
 import { notifyDeliveryWork, DELIVERY_QUEUES } from "./delivery-work-notifications.js";
 import { activeIssueInteractionCondition, historicalQuestionCondition } from "./issue-question-context.js";
 import {
@@ -8,7 +8,7 @@ import {
 import { parseQuestionInteractionAnswers } from "./question-interaction-answers.js";
 import { isUniqueViolation } from "../db-errors.js";
 import { assertAgentRunWriteAllowed } from "../agent-run-cancellation.js";
-import { connectionIntentDeliveries } from "@tickernelz/paperclip-pro-db";
+import { connectionIntentDeliveries } from "@tickernelz/wardmote-db";
 import { isDeepStrictEqual } from "node:util";
 import {
   and,
@@ -23,7 +23,7 @@ import {
   or,
   sql,
 } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   agents,
   chatVoiceSessions,
@@ -40,11 +40,11 @@ import {
   issues,
   toolActionRequests,
   toolOauthStates,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   trackInteractionCreated,
   trackInteractionResolved,
-} from "@tickernelz/paperclip-pro-shared/telemetry";
+} from "@tickernelz/wardmote-shared/telemetry";
 import type {
   AcceptIssueThreadInteraction,
   AskUserQuestionsAnswer,
@@ -75,7 +75,7 @@ import type {
   SuggestTasksResultCreatedTask,
   SubmitIssueThreadInteractionVerdicts,
   WithdrawIssueThreadInteraction,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   AUTONOMY_WINDOW_RESOLUTION_SOURCE,
   AUTONOMY_WINDOW_SYSTEM_ACTOR_ID,
@@ -101,7 +101,7 @@ import {
   suggestTasksResultSchema,
   submitIssueThreadInteractionVerdictsSchema,
   withdrawIssueThreadInteractionSchema,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { z } from "zod";
 import { conflict, forbidden, notFound, unprocessable } from "../errors.js";
 import { getTelemetryClient } from "../telemetry.js";

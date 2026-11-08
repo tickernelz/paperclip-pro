@@ -11,7 +11,7 @@ export default defineConfig({
   use: { baseURL: BASE_URL, trace: "retain-on-failure" },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"], viewport: { width: 1400, height: 900 } } }],
   webServer: {
-    command: `pnpm --filter @tickernelz/paperclip-pro-ui exec vite --host 127.0.0.1 --port ${PORT} --strictPort`,
+    command: `pnpm --filter @tickernelz/wardmote-ui exec vite --host 127.0.0.1 --port ${PORT} --strictPort`,
     url: `${BASE_URL}/tests/component-gallery.html`,
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

@@ -1,4 +1,4 @@
-import type { IssueCommentPresentation } from "@tickernelz/paperclip-pro-shared";
+import type { IssueCommentPresentation } from "@tickernelz/wardmote-shared";
 import type { SystemNoticeTone } from "../components/SystemNotice";
 
 /**

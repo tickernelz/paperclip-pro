@@ -18,7 +18,7 @@ import {
   type PluginRouteSidebarProps,
   type PluginSettingsPageProps,
   type PluginSidebarProps,
-} from "@tickernelz/paperclip-pro-plugin-sdk/ui";
+} from "@tickernelz/wardmote-plugin-sdk/ui";
 import { useCallback, useEffect, useMemo, useRef, useState, type AnchorHTMLAttributes, type CSSProperties, type ReactElement, type ReactNode } from "react";
 import { readIngestOperationIssueId, uploadIssueAttachmentFile } from "./issue-attachments.js";
 

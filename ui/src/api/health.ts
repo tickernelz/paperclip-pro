@@ -1,4 +1,4 @@
-import type { EffectiveAttachmentLimit, ServerInfoSnapshot } from "@tickernelz/paperclip-pro-shared";
+import type { EffectiveAttachmentLimit, ServerInfoSnapshot } from "@tickernelz/wardmote-shared";
 import { setAttachmentLimit } from "@/lib/attachment-limit";
 import { tenantSessionRecovery } from "@/lib/tenant-session-recovery";
 import { ApiError } from "./client";

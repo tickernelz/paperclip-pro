@@ -17,15 +17,15 @@ import type { buildExecutionContinuation } from "../execution-continuation.js";
 import type { agentInstructionWorkingCopyService } from "../agent-instruction-working-copies.js";
 import { createHash, randomUUID } from "node:crypto";
 import { and, eq, inArray, sql } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { CHAT_PROVIDERS } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/wardmote-db";
+import { CHAT_PROVIDERS } from "@tickernelz/wardmote-shared";
 import {
   type agents,
   completionContracts,
   heartbeatRunEvents,
   heartbeatRuns,
   nativeRunFinalizations,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { getStartupTracer } from "../../instrumentation.js";
 import { documentService } from "../documents.js";
 import { managedAgentProfileService } from "../managed-agent-profiles.js";
@@ -72,8 +72,8 @@ import {
 import { CHAT_CONTROL_RECOVERY_ADMISSION_KEY } from "../chat-control-recovery-stop.js";
 import type { issueService } from "../issues.js";
 import { buildPlanReviewContext } from "../plan-review-context.js";
-import { resolvePaperclipRunnerIdleTimeoutMs } from "@tickernelz/paperclip-pro-adapter-utils";
-import { selectPaperclipTaskMarkdown } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+import { resolvePaperclipRunnerIdleTimeoutMs } from "@tickernelz/wardmote-adapter-utils";
+import { selectPaperclipTaskMarkdown } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import type { ProviderResourceDisposition } from "../environment-runtime.js";
 
 type Run = typeof heartbeatRuns.$inferSelect;

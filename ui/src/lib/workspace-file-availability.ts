@@ -1,4 +1,4 @@
-import type { ResolvedWorkspaceResource, WorkspaceFileSelector } from "@tickernelz/paperclip-pro-shared";
+import type { ResolvedWorkspaceResource, WorkspaceFileSelector } from "@tickernelz/wardmote-shared";
 import type { ParsedWorkspaceFileRef } from "./workspace-file-parser";
 
 /** Server cap on `POST /file-resources/availability` (`queries` max length). */

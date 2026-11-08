@@ -15,7 +15,7 @@ import { isConversation, settleConversationTurn } from "../agent-conversations.j
 import { legacyExecutionNeedsReconciliationWithEvidence } from "../legacy-execution-recovery.js";
 import { isWorkspaceGitScanError } from "../workspace-git-operation-scheduler.js";
 import { and, eq, sql } from "drizzle-orm";
-import { heartbeatRuns, issues, nativeRunFinalizations } from "@tickernelz/paperclip-pro-db";
+import { heartbeatRuns, issues, nativeRunFinalizations } from "@tickernelz/wardmote-db";
 import { HttpError } from "../../errors.js";
 import { logger } from "../../middleware/logger.js";
 import { normalizeResponsibleUserDenialCode } from "../responsible-user-denial-run-outcomes.js";
@@ -41,11 +41,11 @@ import type { BudgetServiceHooks } from "../budgets.js";
 import type { providerTraceStore } from "../provider-trace-store.js";
 import type { createAgentIdentityRedactor } from "../agent-identity-redaction.js";
 import type { CurrentUserRedactionOptions } from "../../log-redaction.js";
-import type { AdapterExecutionResult } from "@tickernelz/paperclip-pro-adapter-utils";
+import type { AdapterExecutionResult } from "@tickernelz/wardmote-adapter-utils";
 import type { getRunLogStore, RunLogHandle } from "../run-log-store.js";
 import type { createHeartbeatRunState, getAdapterSessionCodec } from "./run-state.js";
 import type { EffectiveRunSessionConfigMetadata } from "./workspaces.js";
-import type { Db, agents } from "@tickernelz/paperclip-pro-db";
+import type { Db, agents } from "@tickernelz/wardmote-db";
 import {
   heartbeatServerShutdown,
   wasShutdownTerminatedRun,
@@ -54,7 +54,7 @@ import { ADAPTER_SELF_SIGNALLED_ERROR_CODES } from "./retries.js";
 import {
   UNMANAGED_BACKGROUND_TASK_LIVENESS_REASON,
   UNMANAGED_BACKGROUND_TASK_STOP_REASON,
-} from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+} from "@tickernelz/wardmote-adapter-utils/server-utils";
 
 function hasUnmanagedBackgroundTaskEvidence(resultJson: Record<string, unknown> | null | undefined) {
   const evidence = parseObject(resultJson?.unmanagedBackgroundTask);

@@ -45,7 +45,7 @@ import {
   chatEndpointResources,
   issueAttachments,
   assets,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { startEmbeddedPostgresTestDatabase } from "../helpers/embedded-postgres.js";
 import {
   chatChannelService,

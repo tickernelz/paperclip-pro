@@ -1,4 +1,4 @@
-import type { IssueRecoveryAction, IssueScheduledRetry } from "@tickernelz/paperclip-pro-shared";
+import type { IssueRecoveryAction, IssueScheduledRetry } from "@tickernelz/wardmote-shared";
 import { formatMonitorOffset } from "./issue-monitor";
 
 /**

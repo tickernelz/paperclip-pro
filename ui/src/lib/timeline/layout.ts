@@ -18,7 +18,7 @@ import type {
   WorkTimelineEvent,
   WorkTimelineResult,
   WorkTimelineSpan,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 export interface LayoutOptions {
   /** px per minute along the x axis (set by the zoom level). */

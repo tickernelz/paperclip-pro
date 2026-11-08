@@ -1,4 +1,4 @@
-import type { AgentDetail } from "@tickernelz/paperclip-pro-shared";
+import type { AgentDetail } from "@tickernelz/wardmote-shared";
 
 const INSTRUCTION_CONFIG_KEYS = [
   "instructionsBundleMode",

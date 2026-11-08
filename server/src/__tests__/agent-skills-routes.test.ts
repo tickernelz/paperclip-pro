@@ -76,7 +76,7 @@ function expectResponseId(value: unknown): string {
   return String(value);
 }
 
-vi.mock("@tickernelz/paperclip-pro-shared/telemetry", () => ({
+vi.mock("@tickernelz/wardmote-shared/telemetry", () => ({
   trackAgentCreated: mockTrackAgentCreated,
   trackErrorHandlerCrash: vi.fn(),
 }));
@@ -128,7 +128,7 @@ vi.mock("../adapters/index.js", () => ({
 }));
 
 function registerModuleMocks() {
-  vi.doMock("@tickernelz/paperclip-pro-shared/telemetry", () => ({
+  vi.doMock("@tickernelz/wardmote-shared/telemetry", () => ({
     trackAgentCreated: mockTrackAgentCreated,
     trackErrorHandlerCrash: vi.fn(),
   }));

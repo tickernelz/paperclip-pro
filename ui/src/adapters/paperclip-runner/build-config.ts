@@ -9,8 +9,8 @@ import {
   resolvePaperclipRunnerPiThinkingLevel,
   PAPERCLIP_RUNNER_ACPX_PROFILES,
   type CreateConfigValues,
-} from "@tickernelz/paperclip-pro-adapter-utils";
-import { DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/codex";
+} from "@tickernelz/wardmote-adapter-utils";
+import { DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX } from "@tickernelz/wardmote-adapter-utils/provider-models/codex";
 
 function parseCommaArgs(value: string): string[] {
   return value

@@ -1,4 +1,4 @@
-import type { DecisionInput, DecisionOption } from "@tickernelz/paperclip-pro-shared";
+import type { DecisionInput, DecisionOption } from "@tickernelz/wardmote-shared";
 import { sql } from "drizzle-orm";
 import {
   index,

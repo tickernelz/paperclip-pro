@@ -51,7 +51,7 @@ echo "repo=$E2E_REPO ref=$E2E_REF home=$HOME"
 
 note "1. Bootstrap: build the new CLI from the GitHub tarball of $E2E_REF"
 # Nothing published on npm has the install/update/service commands yet, so the
-# bootstrap simulates what `npx @tickernelz/paperclip-pro@<channel> install` will run post-release:
+# bootstrap simulates what `npx @tickernelz/wardmote@<channel> install` will run post-release:
 # the same CLI code, built from the exact ref under test.
 BOOT="$HOME/e2e-bootstrap"
 mkdir -p "$BOOT"
@@ -83,7 +83,7 @@ if (cd "$HOME/e2e-bootstrap-cli" && npm install --no-fund --no-audit "$BOOT/cli/
 else
   tail -40 "$HOME/e2e-bootstrap-npm.log"; fail_ "1d bootstrap CLI npm install"; exit 1
 fi
-BOOTSTRAP_CLI="$HOME/e2e-bootstrap-cli/node_modules/@tickernelz/paperclip-pro/dist/index.js"
+BOOTSTRAP_CLI="$HOME/e2e-bootstrap-cli/node_modules/@tickernelz/wardmote/dist/index.js"
 node "$BOOTSTRAP_CLI" --version >/dev/null || { fail_ "1e bootstrap CLI smoke"; exit 1; }
 cd "$HOME"
 

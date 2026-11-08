@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { and, desc, eq, inArray } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { toolAccessAuditEvents, toolRuntimeSlots } from "@tickernelz/paperclip-pro-db";
-import type { DeploymentExposure, DeploymentMode, ToolRuntimeSlotStatus } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/wardmote-db";
+import { toolAccessAuditEvents, toolRuntimeSlots } from "@tickernelz/wardmote-db";
+import type { DeploymentExposure, DeploymentMode, ToolRuntimeSlotStatus } from "@tickernelz/wardmote-shared";
 import { logActivity } from "./activity-log.js";
 
 const ACTIVE_SLOT_STATUSES: ToolRuntimeSlotStatus[] = ["starting", "running", "idle"];

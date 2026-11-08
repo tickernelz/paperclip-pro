@@ -4,8 +4,8 @@ import type {
   InstanceExperimentalSettingsWithManaged,
   InstanceFeatureKey,
   PatchInstanceExperimentalSettings,
-} from "@tickernelz/paperclip-pro-shared";
-import { experimentalSettingKey } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
+import { experimentalSettingKey } from "@tickernelz/wardmote-shared";
 import { instanceSettingsApi } from "@/api/instanceSettings";
 import { useHiddenSettings } from "@/hooks/useHiddenSettings";
 import { queryKeys } from "@/lib/queryKeys";

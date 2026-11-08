@@ -1,5 +1,5 @@
 import type { InfiniteData, Query, QueryClient } from "@tanstack/react-query";
-import type { Issue } from "@tickernelz/paperclip-pro-shared";
+import type { Issue } from "@tickernelz/wardmote-shared";
 import { queryKeys } from "./queryKeys";
 
 export const LARGE_ISSUE_LIST_ROW_COUNT = 100;

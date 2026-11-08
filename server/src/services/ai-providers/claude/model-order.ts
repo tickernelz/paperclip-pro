@@ -1,4 +1,4 @@
-import type { AdapterModel } from "@tickernelz/paperclip-pro-adapter-utils";
+import type { AdapterModel } from "@tickernelz/wardmote-adapter-utils";
 
 /**
  * Order Claude models the way the Claude app does (#14877): the newest release of each

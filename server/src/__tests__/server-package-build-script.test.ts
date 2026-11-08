@@ -52,13 +52,13 @@ describe("server package build script", () => {
     };
 
     expect(
-      packageJson.dependencies?.["@tickernelz/paperclip-pro-paperclip-runner"],
+      packageJson.dependencies?.["@tickernelz/wardmote-paperclip-runner"],
     ).toBeUndefined();
-    expect(packageJson.devDependencies?.["@tickernelz/paperclip-pro-paperclip-runner"]).toBe(
+    expect(packageJson.devDependencies?.["@tickernelz/wardmote-paperclip-runner"]).toBe(
       "workspace:*",
     );
     expect(packageJson.scripts?.["prepare:runner-vendor"]).toBe(
-      "pnpm --filter @tickernelz/paperclip-pro-paperclip-runner build",
+      "pnpm --filter @tickernelz/wardmote-paperclip-runner build",
     );
     expect(packageJson.scripts?.build).toContain(
       "cp -Rf ../packages/paperclip-runner/dist/. dist/vendor/paperclip-runner/",
@@ -150,7 +150,7 @@ describe("server package build script", () => {
       '"../../../../packages/paperclip-runner/src/index.ts"',
     );
     expect(shim).not.toContain(
-      'export * from "@tickernelz/paperclip-pro-paperclip-runner"',
+      'export * from "@tickernelz/wardmote-paperclip-runner"',
     );
   });
 
@@ -162,7 +162,7 @@ describe("server package build script", () => {
       const consumer = readFileSync(consumerPath, "utf8");
 
       expect(consumer).toContain('vendor/paperclip-runner/index.js"');
-      expect(consumer).not.toContain('from "@tickernelz/paperclip-pro-paperclip-runner"');
+      expect(consumer).not.toContain('from "@tickernelz/wardmote-paperclip-runner"');
     }
   });
 });

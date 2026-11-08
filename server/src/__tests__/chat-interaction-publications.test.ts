@@ -18,8 +18,8 @@ import {
   issues,
   toolApplications,
   toolConnections,
-} from "@tickernelz/paperclip-pro-db";
-import type { ChatProvider } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import type { ChatProvider } from "@tickernelz/wardmote-shared";
 import { enqueueIssueInteractionChatPublications, enqueueTerminalIssueInteractionChatPublications } from "../services/chat-interaction-publications.js";
 import { issueThreadInteractionService } from "../services/issue-thread-interactions.js";
 import {

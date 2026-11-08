@@ -17,7 +17,7 @@ import {
   RUNTIME_EXPOSURE_APP_PORT_MAX,
   deriveViteHmrPort,
   isRuntimeExposureAppPort,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 export interface ExposurePortPair {
   appPort: number;

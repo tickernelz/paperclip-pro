@@ -22,11 +22,11 @@ import {
   Search,
   X,
 } from "lucide-react";
-import type { IssueDocument } from "@tickernelz/paperclip-pro-shared";
+import type { IssueDocument } from "@tickernelz/wardmote-shared";
 import type {
   PaperclipQuestionResponse,
   PaperclipQuestionSet,
-} from "@tickernelz/paperclip-pro-adapter-utils";
+} from "@tickernelz/wardmote-adapter-utils";
 import { InteractionPreparationNotice } from "@/components/InteractionPreparationNotice";
 import { IssueThreadInteractionCard } from "@/components/IssueThreadInteractionCard";
 import { ConnectionIntentInteractionBody } from "@/features/connections/ConnectionIntentInteractionBody";

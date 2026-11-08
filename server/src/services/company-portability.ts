@@ -1,5 +1,5 @@
 import { createAgentLifecycle } from "./agent-lifecycle.js";
-import { agentAppearanceSchema } from "@tickernelz/paperclip-pro-shared";
+import { agentAppearanceSchema } from "@tickernelz/wardmote-shared";
 import { createHash, randomUUID } from "node:crypto";
 import { promises as fs } from "node:fs";
 import { execFile } from "node:child_process";
@@ -11,7 +11,7 @@ import {
   issueRelations,
   principalPermissionGrants,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import type {
   CompanyPortabilityAgentManifestEntry,
   CompanyPortabilityBlobManifestEntry,
@@ -45,7 +45,7 @@ import type {
   AgentEnvConfig,
   PermissionKey,
   RoutineVariable,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   AGENT_DEFAULT_MAX_CONCURRENT_RUNS,
   ISSUE_PRIORITIES,
@@ -64,12 +64,12 @@ import {
   issueCommentPresentationSchema,
   normalizeAgentUrlKey,
   PERMISSION_KEYS,
-} from "@tickernelz/paperclip-pro-shared";
-import { sha256HexOfBytes } from "@tickernelz/paperclip-pro-shared/portability-hash";
+} from "@tickernelz/wardmote-shared";
+import { sha256HexOfBytes } from "@tickernelz/wardmote-shared/portability-hash";
 import {
   readPaperclipSkillSyncPreference,
   writePaperclipSkillSyncPreference,
-} from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+} from "@tickernelz/wardmote-adapter-utils/server-utils";
 import { findServerAdapter } from "../adapters/index.js";
 import { formatAttachmentSize, getMaxAttachmentBytes } from "../attachment-types.js";
 import { forbidden, notFound, unprocessable } from "../errors.js";
@@ -704,7 +704,7 @@ type ProjectLike = {
   targetDate: string | null;
   color: string | null;
   icon: string | null;
-  appearance?: import("@tickernelz/paperclip-pro-shared").AgentAppearance | null;
+  appearance?: import("@tickernelz/wardmote-shared").AgentAppearance | null;
   status: string;
   env: Record<string, unknown> | null;
   executionWorkspacePolicy: Record<string, unknown> | null;

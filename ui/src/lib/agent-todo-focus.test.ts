@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { AgentTodoSnapshot } from "@tickernelz/paperclip-pro-shared";
+import type { AgentTodoSnapshot } from "@tickernelz/wardmote-shared";
 import { agentTodoFocus, agentTodoFocusText } from "./agent-todo-focus";
 
 type Input = Pick<AgentTodoSnapshot, "phases" | "counts">;

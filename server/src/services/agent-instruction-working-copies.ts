@@ -5,12 +5,12 @@ import { promisify } from "node:util";
 import fs from "node:fs/promises";
 import path from "node:path";
 import { and, asc, desc, eq, inArray, lte, or, isNull, isNotNull, sql } from "drizzle-orm";
-import { agents, heartbeatRuns, agentInstructionWorkingCopies as copies, type Db } from "@tickernelz/paperclip-pro-db";
+import { agents, heartbeatRuns, agentInstructionWorkingCopies as copies, type Db } from "@tickernelz/wardmote-db";
 import {
   prepareAdapterExecutionTargetRuntime,
   runAdapterExecutionTargetShellCommand,
   type AdapterExecutionTarget,
-} from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
+} from "@tickernelz/wardmote-adapter-utils/execution-target";
 import { conflict, notFound } from "../errors.js";
 import { agentInstructionsService, agentInstructionsBundleMode } from "./agent-instructions.js";
 import { agentInstructionRevisionService } from "./agent-instruction-revisions.js";

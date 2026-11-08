@@ -27,8 +27,8 @@ test("release package list only contains CI-enrolled packages", () => {
 test("release package list publishes the installable channel entrypoint last", () => {
   const enabledPackages = getReleasePackages();
 
-  assert.equal(enabledPackages.at(-1)?.name, "@tickernelz/paperclip-pro");
-  assert.ok(enabledPackages.slice(0, -1).some((pkg) => pkg.name === "@tickernelz/paperclip-pro-server"));
+  assert.equal(enabledPackages.at(-1)?.name, "@tickernelz/wardmote");
+  assert.ok(enabledPackages.slice(0, -1).some((pkg) => pkg.name === "@tickernelz/wardmote-server"));
 });
 
 test("release package list keeps runtime workspace dependencies ahead of consumers", () => {
@@ -55,7 +55,7 @@ test("release surface publishes omp-local as the only agent adapter package", ()
   const adapterPackages = buildReleasePackagePlan()
     .filter((pkg) => pkg.dir.startsWith("packages/adapters/"))
     .map((pkg) => pkg.name);
-  assert.deepEqual(adapterPackages, ["@tickernelz/paperclip-pro-adapter-omp-local"]);
+  assert.deepEqual(adapterPackages, ["@tickernelz/wardmote-adapter-omp-local"]);
 });
 
 test("release package configuration validates successfully", () => {
@@ -64,27 +64,27 @@ test("release package configuration validates successfully", () => {
 
 test("guard flags a publishFromCi:true package depending on a publishFromCi:false package", () => {
   const problems = findUnpublishableWorkspaceEdges([
-    pkg("@tickernelz/paperclip-pro-server", {
+    pkg("@tickernelz/wardmote-server", {
       publishFromCi: true,
-      dependencies: { "@tickernelz/paperclip-pro-skills-catalog": "workspace:*" },
+      dependencies: { "@tickernelz/wardmote-skills-catalog": "workspace:*" },
     }),
-    pkg("@tickernelz/paperclip-pro-skills-catalog", { publishFromCi: false }),
+    pkg("@tickernelz/wardmote-skills-catalog", { publishFromCi: false }),
   ]);
 
   assert.equal(problems.length, 1);
-  assert.match(problems[0], /@tickernelz\/paperclip-pro-server/);
-  assert.match(problems[0], /@tickernelz\/paperclip-pro-skills-catalog/);
+  assert.match(problems[0], /@tickernelz\/wardmote-server/);
+  assert.match(problems[0], /@tickernelz\/wardmote-skills-catalog/);
 });
 
 test("guard inspects optional and peer dependency sections too", () => {
   const problems = findUnpublishableWorkspaceEdges([
-    pkg("@tickernelz/paperclip-pro-server", {
+    pkg("@tickernelz/wardmote-server", {
       publishFromCi: true,
-      optionalDependencies: { "@tickernelz/paperclip-pro-opt": "workspace:^" },
-      peerDependencies: { "@tickernelz/paperclip-pro-peer": "workspace:*" },
+      optionalDependencies: { "@tickernelz/wardmote-opt": "workspace:^" },
+      peerDependencies: { "@tickernelz/wardmote-peer": "workspace:*" },
     }),
-    pkg("@tickernelz/paperclip-pro-opt", { publishFromCi: false }),
-    pkg("@tickernelz/paperclip-pro-peer", { publishFromCi: false }),
+    pkg("@tickernelz/wardmote-opt", { publishFromCi: false }),
+    pkg("@tickernelz/wardmote-peer", { publishFromCi: false }),
   ]);
 
   assert.equal(problems.length, 2);
@@ -92,9 +92,9 @@ test("guard inspects optional and peer dependency sections too", () => {
 
 test("guard treats a workspace dep on an unknown @tickernelz package as unpublishable", () => {
   const problems = findUnpublishableWorkspaceEdges([
-    pkg("@tickernelz/paperclip-pro-server", {
+    pkg("@tickernelz/wardmote-server", {
       publishFromCi: true,
-      dependencies: { "@tickernelz/paperclip-pro-private-internal": "workspace:*" },
+      dependencies: { "@tickernelz/wardmote-private-internal": "workspace:*" },
     }),
   ]);
 
@@ -103,11 +103,11 @@ test("guard treats a workspace dep on an unknown @tickernelz package as unpublis
 
 test("guard allows true->true workspace edges", () => {
   const problems = findUnpublishableWorkspaceEdges([
-    pkg("@tickernelz/paperclip-pro-server", {
+    pkg("@tickernelz/wardmote-server", {
       publishFromCi: true,
-      dependencies: { "@tickernelz/paperclip-pro-shared": "workspace:*" },
+      dependencies: { "@tickernelz/wardmote-shared": "workspace:*" },
     }),
-    pkg("@tickernelz/paperclip-pro-shared", { publishFromCi: true }),
+    pkg("@tickernelz/wardmote-shared", { publishFromCi: true }),
   ]);
 
   assert.deepEqual(problems, []);
@@ -115,19 +115,19 @@ test("guard allows true->true workspace edges", () => {
 
 test("guard ignores non-workspace specs, non-internal deps, and edges from off-train packages", () => {
   const problems = findUnpublishableWorkspaceEdges([
-    pkg("@tickernelz/paperclip-pro-server", {
+    pkg("@tickernelz/wardmote-server", {
       publishFromCi: true,
       dependencies: {
-        "@tickernelz/paperclip-pro-pinned": "0.3.1",
+        "@tickernelz/wardmote-pinned": "0.3.1",
         zod: "^3.0.0",
       },
     }),
-    pkg("@tickernelz/paperclip-pro-pinned", { publishFromCi: false }),
-    pkg("@tickernelz/paperclip-pro-offtrain", {
+    pkg("@tickernelz/wardmote-pinned", { publishFromCi: false }),
+    pkg("@tickernelz/wardmote-offtrain", {
       publishFromCi: false,
-      dependencies: { "@tickernelz/paperclip-pro-also-off": "workspace:*" },
+      dependencies: { "@tickernelz/wardmote-also-off": "workspace:*" },
     }),
-    pkg("@tickernelz/paperclip-pro-also-off", { publishFromCi: false }),
+    pkg("@tickernelz/wardmote-also-off", { publishFromCi: false }),
   ]);
 
   assert.deepEqual(problems, []);

@@ -18,10 +18,10 @@ command content wraps at mobile widths without horizontal page scrolling.
 
 | Import | Purpose |
 | --- | --- |
-| `@tickernelz/paperclip-pro-paperclip-runner` | Protocol, reducer, and existing package contracts |
-| `@tickernelz/paperclip-pro-paperclip-runner/browser` | Framework-free HTTP/SSE client, protocol types, transcript projection |
-| `@tickernelz/paperclip-pro-paperclip-runner/react` | Hook, reference console, and reusable React components |
-| `@tickernelz/paperclip-pro-paperclip-runner/styles.css` | Scoped light-theme token and component styles |
+| `@tickernelz/wardmote-paperclip-runner` | Protocol, reducer, and existing package contracts |
+| `@tickernelz/wardmote-paperclip-runner/browser` | Framework-free HTTP/SSE client, protocol types, transcript projection |
+| `@tickernelz/wardmote-paperclip-runner/react` | Hook, reference console, and reusable React components |
+| `@tickernelz/wardmote-paperclip-runner/styles.css` | Scoped light-theme token and component styles |
 
 React and React DOM are peer dependencies. The extracted surface adds no
 runtime dependency. It is client-only: it uses `window`, `sessionStorage`,
@@ -31,7 +31,7 @@ than render it on the server.
 ## Framework-free client
 
 ```ts
-import { createRunnerClient } from "@tickernelz/paperclip-pro-paperclip-runner/browser";
+import { createRunnerClient } from "@tickernelz/wardmote-paperclip-runner/browser";
 
 const client = createRunnerClient({ baseUrl: "/api/liveConsole" });
 const manifests = await client.fetchManifests();
@@ -49,7 +49,7 @@ identities, or removes duplicate events before the shared reducer sees them.
 ## React hook
 
 ```tsx
-import { useRunnerConsole } from "@tickernelz/paperclip-pro-paperclip-runner/react";
+import { useRunnerConsole } from "@tickernelz/wardmote-paperclip-runner/react";
 
 function Console() {
   const runner = useRunnerConsole({ baseUrl: "/api/liveConsole" });

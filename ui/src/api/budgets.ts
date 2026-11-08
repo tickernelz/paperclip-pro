@@ -4,7 +4,7 @@ import type {
   BudgetOverview,
   BudgetPolicySummary,
   BudgetPolicyUpsertInput,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { api } from "./client";
 
 export const budgetsApi = {

@@ -1,6 +1,6 @@
 import { Router, type Request } from "express";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { AGENT_ICON_NAMES } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/wardmote-db";
+import { AGENT_ICON_NAMES } from "@tickernelz/wardmote-shared";
 import { forbidden } from "../errors.js";
 import { listServerAdapters } from "../adapters/index.js";
 import { isRetiredAdapterModule } from "../adapters/retired.js";

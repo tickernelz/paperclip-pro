@@ -506,7 +506,7 @@ bash /tmp/pb/go.sh db:generate
 bash /tmp/pb/go.sh -r typecheck
 bash /tmp/pb/go.sh build
 bash /tmp/pb/go.sh check:token-gates
-bash /tmp/pb/go.sh --filter @tickernelz/paperclip-pro-db run check:migrations
+bash /tmp/pb/go.sh --filter @tickernelz/wardmote-db run check:migrations
 bash /tmp/pb/go.sh vitest run server/src/__tests__/openwa <test paths owning touched modules>
 bash /tmp/pb/go.sh vitest run --exclude '**/vitest-chat-shards.test.ts' --exclude '**/dist/**'
 node scripts/bench/openwa-ingest.mjs

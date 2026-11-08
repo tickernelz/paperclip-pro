@@ -1,8 +1,8 @@
 import { and, desc, eq, isNull, ne, sql } from "drizzle-orm";
-import { activityLog, agents, companies, dotAgentBindings, type Db } from "@tickernelz/paperclip-pro-db";
+import { activityLog, agents, companies, dotAgentBindings, type Db } from "@tickernelz/wardmote-db";
 import { agentService } from "./agents.js";
 import { createAgentLifecycle, scheduleAgentLifecycle } from "./agent-lifecycle.js";
-import { withDedicatedDbConnection } from "@tickernelz/paperclip-pro-db";
+import { withDedicatedDbConnection } from "@tickernelz/wardmote-db";
 import { approvalService } from "./approvals.js";
 import { accessService } from "./access.js";
 import { agentInstructionsService } from "./agent-instructions.js";

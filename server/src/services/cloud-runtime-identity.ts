@@ -1,7 +1,7 @@
 import { createPublicKey, timingSafeEqual, verify, type JsonWebKey } from "node:crypto";
 import { eq } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { instanceSettings } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
+import { instanceSettings } from "@tickernelz/wardmote-db";
 
 export const CLOUD_RUNTIME_IDENTITY_HEADER = "x-paperclip-cloud-runtime-identity";
 export const CLOUD_RUNTIME_IDENTITY_AUDIENCE = "paperclip-runtime-identity/v1";

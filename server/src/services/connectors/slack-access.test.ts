@@ -7,8 +7,8 @@ import {
 } from "./slack-access.js";
 import { slackClient } from "./slack-client.js";
 import type { SlackTaskAuthority } from "./slack-authority.js";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { SLACK_TOOLS } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/wardmote-db";
+import { SLACK_TOOLS } from "@tickernelz/wardmote-shared";
 import { tooManyRequests, unprocessable } from "../../errors.js";
 const authority = {
   endpoint: {

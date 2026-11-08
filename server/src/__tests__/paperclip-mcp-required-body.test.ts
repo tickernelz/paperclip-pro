@@ -10,7 +10,7 @@ import {
   connectionGrants,
   toolApplications,
   toolConnections,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { errorHandler } from "../middleware/index.js";
 import { companySkillRoutes } from "../routes/company-skills.js";
 import { paperclipMcpRoutes } from "../routes/paperclip-mcp.js";

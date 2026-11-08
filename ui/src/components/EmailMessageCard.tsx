@@ -5,7 +5,7 @@ import type {
   EmailMessage,
   EmailPublicationSummary,
   EmailThreadSummary,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { useEmailThread } from "@/hooks/useEmailThread";
 import { issuesApi } from "@/api/issues";
 const EmailContext = createContext<EmailThreadSummary | null>(null);

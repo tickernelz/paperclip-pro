@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { openwaEndpointPolicySchema } from "@tickernelz/paperclip-pro-shared";
+import { openwaEndpointPolicySchema } from "@tickernelz/wardmote-shared";
 import type { OpenwaChat } from "@/api/chatEndpoints";
 import { OpenwaChatsSettings } from "@/pages/apps/chat/OpenwaChatsSettings";
 

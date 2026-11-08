@@ -1,6 +1,6 @@
 import { Boxes, Folder, Link2, Paperclip, type LucideIcon } from "lucide-react";
 import { GithubIcon } from "@/components/icons/github-icon";
-import type { CompanySkillListItem } from "@tickernelz/paperclip-pro-shared";
+import type { CompanySkillListItem } from "@tickernelz/wardmote-shared";
 
 export interface AgentSkillSourceMeta {
   icon: LucideIcon;

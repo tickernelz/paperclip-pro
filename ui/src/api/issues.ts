@@ -1,5 +1,5 @@
-import type { SetIssueTitle } from "@tickernelz/paperclip-pro-shared";
-import type { ExecutionReconciliation } from "@tickernelz/paperclip-pro-shared";
+import type { SetIssueTitle } from "@tickernelz/wardmote-shared";
+import type { ExecutionReconciliation } from "@tickernelz/wardmote-shared";
 import type {
   AcceptedPlanDecompositionSummary,
   AskUserQuestionsAnswer,
@@ -43,7 +43,7 @@ import type {
   UpsertIssueWatchdog,
   UpsertIssueDocument,
   AgentTodoSnapshot,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { api, ApiError, detachInflightGet, oversizedUploadError, type RequestOptions } from "./client";
 import type { MessageDeliveryDisposition, MessageDeliveryMode } from "@/lib/message-delivery-command";
 import { CommentSubmissionUnknownError } from "../lib/comment-submit-result";

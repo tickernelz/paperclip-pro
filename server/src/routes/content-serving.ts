@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
-import { documentExportFileName, isMarkdownAttachmentContent } from "@tickernelz/paperclip-pro-shared";
+import { documentExportFileName, isMarkdownAttachmentContent } from "@tickernelz/wardmote-shared";
 import type { StorageService } from "../storage/types.js";
 import {
   assetServingContentType,

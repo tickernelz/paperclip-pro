@@ -6,7 +6,7 @@ import {
   type GitHubReviewAssessment,
   type GitHubReviewEventContext,
   type GitHubIssueEventContext,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   githubManualMessagePrompt,
   githubConfiguredInstructionSources,

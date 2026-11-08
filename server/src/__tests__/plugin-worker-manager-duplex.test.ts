@@ -1,7 +1,7 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it, vi } from "vitest";
-import type { PaperclipPluginManifestV1 } from "@tickernelz/paperclip-pro-shared";
+import type { PaperclipPluginManifestV1 } from "@tickernelz/wardmote-shared";
 import {
   createDuplexRouteSlotController,
   createPluginWorkerHandle,

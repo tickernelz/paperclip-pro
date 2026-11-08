@@ -1,8 +1,8 @@
 import express from "express";
 import request from "supertest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { DEFAULT_OPENCODE_LOCAL_MODEL } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/opencode";
-import { LOW_TRUST_REVIEW_PRESET } from "@tickernelz/paperclip-pro-shared";
+import { DEFAULT_OPENCODE_LOCAL_MODEL } from "@tickernelz/wardmote-adapter-utils/provider-models/opencode";
+import { LOW_TRUST_REVIEW_PRESET } from "@tickernelz/wardmote-shared";
 import { hoistModuleGraph } from "./helpers/hoist-module-graph.js";
 
 vi.mock("acpx/runtime", () => ({
@@ -132,7 +132,7 @@ function registerModuleMocks() {
     };
   });
 
-  vi.doMock("@tickernelz/paperclip-pro-shared/telemetry", () => ({
+  vi.doMock("@tickernelz/wardmote-shared/telemetry", () => ({
     trackAgentCreated: mockTrackAgentCreated,
     trackErrorHandlerCrash: vi.fn(),
   }));

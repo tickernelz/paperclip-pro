@@ -12,7 +12,7 @@ import {
   RotateCcw,
   X,
 } from "lucide-react";
-import type { Agent, AttentionDetailImage, AttentionItem } from "@tickernelz/paperclip-pro-shared";
+import type { Agent, AttentionDetailImage, AttentionItem } from "@tickernelz/wardmote-shared";
 import { Link } from "@/lib/router";
 import { accessApi } from "../api/access";
 import { approvalsApi } from "../api/approvals";

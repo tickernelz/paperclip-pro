@@ -8,7 +8,7 @@ import {
   type OpenwaEndpointPolicy,
   type OpenwaEndpointPolicyInput,
   type OpenwaTriggerOverrides,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { ApiError } from "@/api/client";
 
 export type FieldErrors = Record<string, string>;

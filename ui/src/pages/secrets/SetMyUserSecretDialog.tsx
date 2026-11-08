@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { CompanySecret, UserSecretDefinition } from "@tickernelz/paperclip-pro-shared";
+import type { CompanySecret, UserSecretDefinition } from "@tickernelz/wardmote-shared";
 import {
   Dialog,
   DialogContent,

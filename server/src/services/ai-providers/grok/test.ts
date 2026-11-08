@@ -2,14 +2,14 @@ import type {
   AdapterEnvironmentCheck,
   AdapterEnvironmentTestContext,
   AdapterEnvironmentTestResult,
-} from "@tickernelz/paperclip-pro-adapter-utils";
+} from "@tickernelz/wardmote-adapter-utils";
 import {
   asNumber,
   asString,
   asStringArray,
   ensurePathInEnv,
   parseObject,
-} from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+} from "@tickernelz/wardmote-adapter-utils/server-utils";
 import {
   describeAdapterExecutionTarget,
   prepareAdapterExecutionTargetRuntime,
@@ -17,15 +17,15 @@ import {
   ensureAdapterExecutionTargetDirectory,
   resolveAdapterExecutionTargetCwd,
   runAdapterExecutionTargetProcess,
-} from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
+} from "@tickernelz/wardmote-adapter-utils/execution-target";
 import { mkdtemp, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { stageGrokHomeForSync } from "./grok-home.js";
 import { copyBackGrokAuth } from "./grok-auth-copyback.js";
-import { DEFAULT_GROK_LOCAL_MODEL } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/grok";
+import { DEFAULT_GROK_LOCAL_MODEL } from "@tickernelz/wardmote-adapter-utils/provider-models/grok";
 import { parseGrokJsonl } from "./parse.js";
-import { ADAPTER_AUTH_MISSING_CHECK_CODE } from "@tickernelz/paperclip-pro-shared";
+import { ADAPTER_AUTH_MISSING_CHECK_CODE } from "@tickernelz/wardmote-shared";
 
 export interface GrokModelsProbe {
   authenticated: boolean;

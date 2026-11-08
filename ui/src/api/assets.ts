@@ -1,4 +1,4 @@
-import { sanitizeAssetNamespace, type AssetImage } from "@tickernelz/paperclip-pro-shared";
+import { sanitizeAssetNamespace, type AssetImage } from "@tickernelz/wardmote-shared";
 import { api, oversizedUploadError } from "./client";
 
 export const assetsApi = {

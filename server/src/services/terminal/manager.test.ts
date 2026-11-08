@@ -1,6 +1,6 @@
 import headless from "@xterm/headless";
 import { describe, expect, it } from "vitest";
-import type { TerminalServerFrame } from "@tickernelz/paperclip-pro-shared";
+import type { TerminalServerFrame } from "@tickernelz/wardmote-shared";
 import { localTerminalFiles } from "./files.js";
 import { TerminalSessionManager } from "./manager.js";
 import type { TerminalExit, TerminalProcess } from "./process.js";

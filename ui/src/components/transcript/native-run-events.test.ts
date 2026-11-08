@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import type { HeartbeatRunEvent } from "@tickernelz/paperclip-pro-shared";
+import type { HeartbeatRunEvent } from "@tickernelz/wardmote-shared";
 import { nativeRunEventsToTranscript } from "./native-run-events";
 
 const RUN_ID = "10000000-0000-4000-8000-000000000001";

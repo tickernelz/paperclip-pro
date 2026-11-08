@@ -1,7 +1,7 @@
 import { setTimeout as delay } from "node:timers/promises";
 import { and, eq, inArray, sql } from "drizzle-orm";
-import { agents, chatActions, chatDeliveries, chatEndpoints, heartbeatRuns, issues, type Db } from "@tickernelz/paperclip-pro-db";
-import { maskOpenwaPhoneNumber, OPENWA_BURST_MAX_WAIT_SECONDS, type ChatInflightMode, type OpenwaTriggerClass } from "@tickernelz/paperclip-pro-shared";
+import { agents, chatActions, chatDeliveries, chatEndpoints, heartbeatRuns, issues, type Db } from "@tickernelz/wardmote-db";
+import { maskOpenwaPhoneNumber, OPENWA_BURST_MAX_WAIT_SECONDS, type ChatInflightMode, type OpenwaTriggerClass } from "@tickernelz/wardmote-shared";
 import { findActiveServerAdapter } from "../../adapters/registry.js";
 import { logger } from "../../middleware/logger.js";
 import type { StorageService } from "../../storage/types.js";

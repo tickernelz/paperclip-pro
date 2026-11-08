@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # prepare-server-ui-dist.sh — Build the UI and copy it into server/ui-dist.
-# This keeps @tickernelz/paperclip-pro-server publish artifacts self-contained for static UI serving.
+# This keeps @tickernelz/wardmote-server publish artifacts self-contained for static UI serving.
 # When PAPERCLIP_RELEASE_REUSE_UI_DIST=1 and ui/dist already exists, reuse that
 # output instead of rebuilding it again inside the release packaging flow.
 
@@ -18,10 +18,10 @@ case "${PAPERCLIP_RELEASE_REUSE_UI_DIST:-}" in
 esac
 
 if [ "$should_reuse_existing_ui_dist" = true ] && [ -f "$UI_DIST/index.html" ]; then
-  echo "  -> Reusing existing @tickernelz/paperclip-pro-ui dist output"
+  echo "  -> Reusing existing @tickernelz/wardmote-ui dist output"
 else
-  echo "  -> Building @tickernelz/paperclip-pro-ui..."
-  pnpm --dir "$REPO_ROOT" --filter @tickernelz/paperclip-pro-ui build
+  echo "  -> Building @tickernelz/wardmote-ui..."
+  pnpm --dir "$REPO_ROOT" --filter @tickernelz/wardmote-ui build
 fi
 
 if [ ! -f "$UI_DIST/index.html" ]; then

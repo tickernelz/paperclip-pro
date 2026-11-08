@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
-import { chatEndpoints, type Db } from "@tickernelz/paperclip-pro-db";
-import type { OpenwaBoardGatewayOperation, OpenwaGatewayAdminResult } from "@tickernelz/paperclip-pro-shared";
+import { chatEndpoints, type Db } from "@tickernelz/wardmote-db";
+import type { OpenwaBoardGatewayOperation, OpenwaGatewayAdminResult } from "@tickernelz/wardmote-shared";
 import { HttpError, badRequest, conflict, notFound, unprocessable } from "../../errors.js";
 import { logOpenwaActivity, recordOpenwaAudit } from "./audit.js";
 import { OPENWA_SECRET_ISSUING_OPERATIONS, OPENWA_SELF_SESSION_OPERATIONS } from "./catalog.js";

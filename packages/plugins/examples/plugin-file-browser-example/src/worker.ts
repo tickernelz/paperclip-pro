@@ -1,4 +1,4 @@
-import { definePlugin, runWorker } from "@tickernelz/paperclip-pro-plugin-sdk";
+import { definePlugin, runWorker } from "@tickernelz/wardmote-plugin-sdk";
 import * as fs from "node:fs";
 import * as path from "node:path";
 

@@ -6,9 +6,9 @@ import os from "node:os";
 import { createHash, randomUUID } from "node:crypto";
 import path from "node:path";
 import { setTimeout as delay } from "node:timers/promises";
-import type { AdapterRuntimeServiceReport } from "@tickernelz/paperclip-pro-adapter-utils";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { executionWorkspaces, issueComments, issues, projectWorkspaces, workspaceRuntimeServices } from "@tickernelz/paperclip-pro-db";
+import type { AdapterRuntimeServiceReport } from "@tickernelz/wardmote-adapter-utils";
+import type { Db } from "@tickernelz/wardmote-db";
+import { executionWorkspaces, issueComments, issues, projectWorkspaces, workspaceRuntimeServices } from "@tickernelz/wardmote-db";
 import {
   DEFAULT_TAILSCALE_HTTPS_EXPOSURE,
   deriveViteHmrPort,
@@ -31,7 +31,7 @@ import {
   type WorkspaceOperationPhase,
   type WorkspaceRuntimeDesiredState,
   type WorkspaceRuntimeServiceStateMap,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { and, desc, eq, gte, inArray, isNull, lte, ne, or } from "drizzle-orm";
 import { asNumber, asString, parseObject, renderTemplate } from "../adapters/utils.js";
 import { conflict } from "../errors.js";
@@ -106,7 +106,7 @@ import {
   type PersistedExposureRowSnapshot,
 } from "./runtime-exposure/port-reservation.js";
 import { resolveTailscaleDnsName } from "./runtime-exposure/tailscale-hostname.js";
-import { legacyEnvKey } from "@tickernelz/paperclip-pro-shared/env-aliases";
+import { legacyEnvKey } from "@tickernelz/wardmote-shared/env-aliases";
 
 export function resolveShell(): string {
   const fallback = process.platform === "win32" ? "sh" : "/bin/sh";

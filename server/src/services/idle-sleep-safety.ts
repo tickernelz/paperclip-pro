@@ -1,6 +1,6 @@
 import { idleWorkSnapshot } from "./task-admission.js";
 import { readIdleLocalWork, type IdleLocalWork } from "./idle-local-work.js";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import { sql } from "drizzle-orm";
 
 export interface IdleSleepDrainStatus {

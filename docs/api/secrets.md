@@ -172,7 +172,7 @@ credentials must not be stored in Wardmote `company_secrets`.
 The equivalent CLI check is:
 
 ```sh
-npx @tickernelz/paperclip-pro secrets doctor --company-id {companyId}
+npx @tickernelz/wardmote secrets doctor --company-id {companyId}
 ```
 
 ## Provider Vaults
@@ -543,7 +543,7 @@ as declarations in the package manifest. Exports omit secret values, secret IDs,
 provider references, and encrypted provider material. Use:
 
 ```sh
-npx @tickernelz/paperclip-pro secrets declarations --company-id {companyId}
+npx @tickernelz/wardmote secrets declarations --company-id {companyId}
 ```
 
 to inspect the declarations that an export would emit before moving a package.

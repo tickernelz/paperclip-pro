@@ -1,4 +1,4 @@
-import type { IssueWriteDenialCode, IssueWriteDenialContext } from "@tickernelz/paperclip-pro-shared";
+import type { IssueWriteDenialCode, IssueWriteDenialContext } from "@tickernelz/wardmote-shared";
 
 /**
  * Map the activity events the server writes when it refuses an issue write onto

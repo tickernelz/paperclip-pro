@@ -3,13 +3,13 @@ import {
   ISSUE_DETAIL_CONTENT_MEASURE,
   scheduleIssueDetailPaintMeasure,
 } from "@/lib/issue-detail-performance";
-import { hasWorkspaceRestoreFailure } from "@tickernelz/paperclip-pro-shared";
+import { hasWorkspaceRestoreFailure } from "@tickernelz/wardmote-shared";
 import { workspaceRestoreMarkerDetail } from "@/lib/workspace-restore-marker";
 import { credentialAccessNotice } from "@/lib/credential-access-notice";
-import type { ActivityEvent, IssueQueuedCommentQueue, TaskBrowser } from "@tickernelz/paperclip-pro-shared";
+import type { ActivityEvent, IssueQueuedCommentQueue, TaskBrowser } from "@tickernelz/wardmote-shared";
 import { useProjectCreatedItems } from "@/hooks/useProjectCreatedItems";
 import { skillCreatedItems } from "@/components/task-chat/skill-created-items";
-import { requiresExecutionReconciliation } from "@tickernelz/paperclip-pro-shared";
+import { requiresExecutionReconciliation } from "@tickernelz/wardmote-shared";
 import {
   TaskChatExpansionState,
   useIssueExpansionMemory,
@@ -98,7 +98,7 @@ import type {
   FeedbackVoteValue,
   IssueDocument,
   IssueThreadInteraction,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   TaskChatThreadView,
   taskChatContentKey,

@@ -13,7 +13,7 @@ import {
   type FeaturePresetId,
   type InstanceFeatureKey,
   type PatchInstanceExperimentalSettings,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";

@@ -1,7 +1,7 @@
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { activityLog, agentWakeupRequests, heartbeatRuns } from "@tickernelz/paperclip-pro-db";
-import type { SuccessfulRunHandoffState } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/wardmote-db";
+import { activityLog, agentWakeupRequests, heartbeatRuns } from "@tickernelz/wardmote-db";
+import type { SuccessfulRunHandoffState } from "@tickernelz/wardmote-shared";
 import { logActivity } from "./activity-log.js";
 
 export const SUCCESSFUL_RUN_HANDOFF_LIVE_RUN_STATUSES = ["queued", "running", "scheduled_retry"] as const;

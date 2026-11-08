@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { Composer, Dialog, Button } from "@tickernelz/paperclip-pro-paperclip-runner/react";
+import { Composer, Dialog, Button } from "@tickernelz/wardmote-paperclip-runner/react";
 import {
   CapabilityChatSession,
   type CapabilityChatSessionArtifact,

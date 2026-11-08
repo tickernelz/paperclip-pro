@@ -24,7 +24,7 @@ import {
   projects,
   projectWorkspaces,
   workspaceOperations,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -46,9 +46,9 @@ vi.mock("../telemetry.ts", () => ({
   getTelemetryClient: () => ({ track: vi.fn() }),
 }));
 
-vi.mock("@tickernelz/paperclip-pro-shared/telemetry", async () => {
-  const actual = await vi.importActual<typeof import("@tickernelz/paperclip-pro-shared/telemetry")>(
-    "@tickernelz/paperclip-pro-shared/telemetry",
+vi.mock("@tickernelz/wardmote-shared/telemetry", async () => {
+  const actual = await vi.importActual<typeof import("@tickernelz/wardmote-shared/telemetry")>(
+    "@tickernelz/wardmote-shared/telemetry",
   );
   return {
     ...actual,

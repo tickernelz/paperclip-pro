@@ -7,8 +7,8 @@ import { z } from "zod";
 import type { Request } from "express";
 import {
   type Db, activityLog, agents, authUsers, companies, companyLogos, dotAgentBindings, mcpOauthClients, mcpOauthGrants, mcpOauthRequests, mcpOauthTokens, mcpOauthDeviceRequests, mcpOauthMetadataAdmissions,
-} from "@tickernelz/paperclip-pro-db";
-import { DOT_RUNNER_MCP_PATH, DOT_RUNNER_MCP_SCOPES, PUBLIC_MCP_PATH, PUBLIC_MCP_SCOPES, type McpConnectionRequest, type McpDotPairingPreview } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import { DOT_RUNNER_MCP_PATH, DOT_RUNNER_MCP_SCOPES, PUBLIC_MCP_PATH, PUBLIC_MCP_SCOPES, type McpConnectionRequest, type McpDotPairingPreview } from "@tickernelz/wardmote-shared";
 import { boardAuthService } from "../board-auth.js";
 import { logActivity } from "../activity-log.js";
 import { createClientMetadataResolver, mcpRedirectMatches, validMcpRedirect as validRedirect, type MetadataFetch } from "./client-metadata.js";

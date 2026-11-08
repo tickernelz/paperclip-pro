@@ -1,4 +1,4 @@
-import type { StatusCard, StatusCardUpdate } from "@tickernelz/paperclip-pro-shared";
+import type { StatusCard, StatusCardUpdate } from "@tickernelz/wardmote-shared";
 
 /**
  * Board/drawer view of a status card.

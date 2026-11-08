@@ -1,13 +1,13 @@
 import { and, eq, exists, inArray, ne, or, sql } from "drizzle-orm";
 
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   chatConversations,
   chatEndpoints,
   chatPublications,
   heartbeatRuns,
   issueThreadInteractions,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { isOpenwaConversationIssue } from "./openwa/authority.js";
 
 type ChatInteractionArbitrationDb = Pick<Db, "select">;

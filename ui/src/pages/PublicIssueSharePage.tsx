@@ -10,7 +10,7 @@ import {
   type PublicShareAttachment,
   type PublicShareDocument,
   type PublicShareWorkProduct,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { Link, useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";

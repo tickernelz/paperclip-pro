@@ -5,7 +5,7 @@ import { flushSync } from "react-dom";
 import { useState, type AnchorHTMLAttributes, type ReactElement } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { Agent, AttentionItem } from "@tickernelz/paperclip-pro-shared";
+import type { Agent, AttentionItem } from "@tickernelz/wardmote-shared";
 import { agentsApi } from "../api/agents";
 import type { LiveRunForIssue } from "../api/heartbeats";
 import { issuesApi } from "../api/issues";

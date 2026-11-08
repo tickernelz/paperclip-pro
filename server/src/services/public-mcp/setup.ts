@@ -1,4 +1,4 @@
-import { assistantClientNames, mcpAuthorizationHandoffInstructions, mcpSetupMarkdown, mcpSetupSteps, type AssistantClient } from "@tickernelz/paperclip-pro-shared";
+import { assistantClientNames, mcpAuthorizationHandoffInstructions, mcpSetupMarkdown, mcpSetupSteps, type AssistantClient } from "@tickernelz/wardmote-shared";
 
 const escapeHtml = (text: string) => text.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 

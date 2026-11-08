@@ -1,4 +1,4 @@
-import { asNumber, asString, parseJson, parseObject } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+import { asNumber, asString, parseJson, parseObject } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import { applyTurnBoundary, createTurnBoundaryState } from "./turn-boundary.js";
 
 export interface ParsedGrokJsonl {

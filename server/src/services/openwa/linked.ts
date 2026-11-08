@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { and, asc, eq, inArray } from "drizzle-orm";
-import { chatEndpoints, chatOpenwaLinkedSessions, type Db } from "@tickernelz/paperclip-pro-db";
+import { chatEndpoints, chatOpenwaLinkedSessions, type Db } from "@tickernelz/wardmote-db";
 import {
   maskOpenwaPhoneNumber,
   type OpenwaLinkableSession,
@@ -8,7 +8,7 @@ import {
   type OpenwaLinkedGatewayChat,
   type OpenwaLinkedSessionView,
   type OpenwaLinkedUnlinkResult,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { HttpError, badRequest, conflict, notFound, unprocessable } from "../../errors.js";
 import { logger } from "../../middleware/logger.js";
 import { publishActivity, type ActivityPublication } from "../activity-log.js";

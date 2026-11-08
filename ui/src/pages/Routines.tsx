@@ -43,8 +43,8 @@ import {
 import { auditSectionHref } from "./audit/audit-navigation";
 import { routineDetailHref } from "../components/RoutineContextualSidebar";
 import { usePublishSharedQueryData, useSharedPollingQuery } from "../hooks/useSharedPolling";
-import type { RoutineListItem, RoutineVariable } from "@tickernelz/paperclip-pro-shared";
-import type { FolderListItem } from "@tickernelz/paperclip-pro-shared";
+import type { RoutineListItem, RoutineVariable } from "@tickernelz/wardmote-shared";
+import type { FolderListItem } from "@tickernelz/wardmote-shared";
 import {
   AllUnfiledBanner,
   BulkBar,

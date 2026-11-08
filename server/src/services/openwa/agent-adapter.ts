@@ -1,5 +1,5 @@
 import { and, eq, inArray } from "drizzle-orm";
-import { chatEndpoints, type Db } from "@tickernelz/paperclip-pro-db";
+import { chatEndpoints, type Db } from "@tickernelz/wardmote-db";
 import { findActiveServerAdapter } from "../../adapters/registry.js";
 import { unprocessable } from "../../errors.js";
 

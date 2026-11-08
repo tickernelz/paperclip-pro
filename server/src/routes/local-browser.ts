@@ -1,6 +1,6 @@
 import { Router, type Request } from "express";
 import { z } from "zod";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   LOCAL_BROWSER_UPDATE_HINT,
   LOCAL_BROWSER_VIEWER_FRAME_INTERVAL_MS,
@@ -10,7 +10,7 @@ import {
   localBrowserSettingsUpdateSchema,
   localBrowserViewerEventSchema,
   type LocalBrowserViewerEvent,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { badRequest, forbidden, notFound, payloadTooLarge } from "../errors.js";
 import { assertBoard, assertCompanyAccess, getActorInfo } from "./authz.js";
 import { touchActivity } from "../services/local-browser/activity.js";

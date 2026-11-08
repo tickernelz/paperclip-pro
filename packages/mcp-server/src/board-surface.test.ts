@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   AGENT_MEMBER_AUTHORITY_PERMISSION_KEYS,
   agentAuthorityCapabilities,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   ACTOR_NEUTRAL_GUARDS,
   AGENT_ADMITTING_GUARDS,

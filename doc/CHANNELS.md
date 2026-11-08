@@ -6,10 +6,10 @@ install.
 
 | Channel | What it is | Updates | npm | Docker |
 | --- | --- | --- | --- | --- |
-| `stable` | The recommended release | every week or two | `@tickernelz/paperclip-pro@latest` | `ghcr.io/paperclipai/paperclip:latest` |
-| `beta` | Release candidates soaking before stable | when promoted | `@tickernelz/paperclip-pro@beta` | `ghcr.io/paperclipai/paperclip:beta` |
-| `nightly` | Yesterday's merges, smoke-tested as a unit | once a night | `@tickernelz/paperclip-pro@nightly` | `ghcr.io/paperclipai/paperclip:nightly` |
-| `canary` | Every merge to `master`, as it happens | many times a day | `@tickernelz/paperclip-pro@canary` | `ghcr.io/paperclipai/paperclip:canary` |
+| `stable` | The recommended release | every week or two | `@tickernelz/wardmote@latest` | `ghcr.io/paperclipai/paperclip:latest` |
+| `beta` | Release candidates soaking before stable | when promoted | `@tickernelz/wardmote@beta` | `ghcr.io/paperclipai/paperclip:beta` |
+| `nightly` | Yesterday's merges, smoke-tested as a unit | once a night | `@tickernelz/wardmote@nightly` | `ghcr.io/paperclipai/paperclip:nightly` |
+| `canary` | Every merge to `master`, as it happens | many times a day | `@tickernelz/wardmote@canary` | `ghcr.io/paperclipai/paperclip:canary` |
 
 ## Choosing a channel
 
@@ -38,10 +38,10 @@ but it's available to anyone who wants the newest bits and accepts the risk.
 npm / npx:
 
 ```bash
-npx @tickernelz/paperclip-pro@latest onboard    # stable
-npx @tickernelz/paperclip-pro@beta onboard
-npx @tickernelz/paperclip-pro@nightly onboard
-npx @tickernelz/paperclip-pro@canary onboard
+npx @tickernelz/wardmote@latest onboard    # stable
+npx @tickernelz/wardmote@beta onboard
+npx @tickernelz/wardmote@nightly onboard
+npx @tickernelz/wardmote@canary onboard
 ```
 
 Docker:
@@ -59,7 +59,7 @@ stable images additionally get `:YYYY.MDD.P` version tags.
 ## Seeing where you are
 
 ```bash
-npx @tickernelz/paperclip-pro channels
+npx @tickernelz/wardmote channels
 ```
 
 prints every channel with the version it currently resolves to, the install

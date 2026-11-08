@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { and, eq, inArray, isNotNull, isNull, lte, ne, or, sql } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { adapterAuthSessions } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
+import { adapterAuthSessions } from "@tickernelz/wardmote-db";
 import type {
   AdapterAuthSessionFailure,
   AdapterAuthSessionInternalStatus,
@@ -11,8 +11,8 @@ import type {
   AgentAdapterType,
   Environment,
   EnvironmentLease,
-} from "@tickernelz/paperclip-pro-shared";
-import { toPublicAdapterAuthSessionStatus } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
+import { toPublicAdapterAuthSessionStatus } from "@tickernelz/wardmote-shared";
 import {
   CODEX_DEVICE_LOGIN_COMMAND as DEFAULT_CODEX_LOGIN_COMMAND,
   runDeviceLogin,
@@ -21,11 +21,11 @@ import {
 } from "./ai-providers/codex/device-login-runner.js";
 import { parseDeviceLoginPrompt, type DeviceLoginPrompt } from "./ai-providers/codex/device-login-parse.js";
 import { GROK_DEVICE_LOGIN_COMMAND as DEFAULT_GROK_LOGIN_COMMAND, parseGrokDeviceLoginPrompt } from "./ai-providers/grok/device-login-parse.js";
-import type { AdapterLoginPrompt } from "@tickernelz/paperclip-pro-adapter-utils";
+import type { AdapterLoginPrompt } from "@tickernelz/wardmote-adapter-utils";
 import {
   createLoginPtyTransport,
   type LoginPtySessionOpener,
-} from "@tickernelz/paperclip-pro-adapter-utils/login-pty-transport";
+} from "@tickernelz/wardmote-adapter-utils/login-pty-transport";
 import type { EnvironmentRuntimeService } from "./environment-runtime.js";
 import { buildLoginLeaseAcquireArgs } from "./adapter-login-lease.js";
 import { environmentService } from "./environments.js";
@@ -204,7 +204,7 @@ export interface LoginSessionActivityEvent {
 export type LoginSessionActivityRecorder = (event: LoginSessionActivityEvent) => void;
 
 export interface StartDeviceLoginInput {
-  aiConnection?: import("@tickernelz/paperclip-pro-shared").AiConnectionLoginIntent;
+  aiConnection?: import("@tickernelz/wardmote-shared").AiConnectionLoginIntent;
   companyId: string;
   environmentId: string;
   adapterType: AgentAdapterType;
@@ -259,7 +259,7 @@ export class AdapterAuthSessionConflictError extends Error {
 // ---------------------------------------------------------------------------
 
 export interface AdapterAuthSessionRow {
-  aiConnection?: import("@tickernelz/paperclip-pro-shared").AiConnectionLoginIntent;
+  aiConnection?: import("@tickernelz/wardmote-shared").AiConnectionLoginIntent;
   id: string;
   /** The public, CSPRNG session identifier. The API returns and looks up this
    *  value. It never equals the internal primary-key `id`, so a caller cannot
@@ -284,7 +284,7 @@ export interface AdapterAuthSessionRow {
 }
 
 export interface InsertAdapterAuthSessionInput {
-  aiConnection?: import("@tickernelz/paperclip-pro-shared").AiConnectionLoginIntent;
+  aiConnection?: import("@tickernelz/wardmote-shared").AiConnectionLoginIntent;
   id: string;
   /** The public, CSPRNG session identifier. The service builds it and returns it
    *  to the client; the store persists it in `public_session_id`. */

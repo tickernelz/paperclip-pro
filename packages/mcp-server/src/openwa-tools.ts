@@ -1,4 +1,4 @@
-import { OPENWA_TOOLS, type OpenwaToolName } from "@tickernelz/paperclip-pro-shared/openwa-tools";
+import { OPENWA_TOOLS, type OpenwaToolName } from "@tickernelz/wardmote-shared/openwa-tools";
 import { formatErrorResponse, formatTextResponse } from "./format.js";
 import type { ToolDefinition } from "./tools.js";
 

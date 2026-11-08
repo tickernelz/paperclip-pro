@@ -1,4 +1,4 @@
-import type { IssueRunModelOverrideOption, RunModelFallbackReason, RunModelFallbackState } from "@tickernelz/paperclip-pro-shared";
+import type { IssueRunModelOverrideOption, RunModelFallbackReason, RunModelFallbackState } from "@tickernelz/wardmote-shared";
 import {
   describeModelValue,
   modelValueText,

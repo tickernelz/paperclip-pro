@@ -2,7 +2,7 @@ import { readFileSync, readdirSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import * as sharedSchemas from "@tickernelz/paperclip-pro-shared";
+import * as sharedSchemas from "@tickernelz/wardmote-shared";
 import { generatedToolSpecs, sharedToolNotes } from "./generated-tools.js";
 import {
   canonicalOperationKey,

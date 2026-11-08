@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { posix } from "node:path";
-import type { CommandManagedRuntimeRunner } from "@tickernelz/paperclip-pro-adapter-utils/command-managed-runtime";
+import type { CommandManagedRuntimeRunner } from "@tickernelz/wardmote-adapter-utils/command-managed-runtime";
 
 import { getMaxAttachmentBytes } from "../../attachment-types.js";
 

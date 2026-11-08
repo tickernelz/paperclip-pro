@@ -1,5 +1,5 @@
 import { and, asc, eq, inArray, isNull } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   documentAnnotationComments,
   documents,
@@ -7,15 +7,15 @@ import {
   issueDocuments,
   issueReferenceMentions,
   issues,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import type {
   IssueReferenceSource,
   IssueReferenceSourceKind,
   IssueRelatedWorkItem,
   IssueRelatedWorkSummary,
   IssueRelationIssueSummary,
-} from "@tickernelz/paperclip-pro-shared";
-import { extractIssueReferenceMatches } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
+import { extractIssueReferenceMatches } from "@tickernelz/wardmote-shared";
 import { notFound } from "../errors.js";
 
 const SOURCE_KIND_ORDER: Record<IssueReferenceSourceKind, number> = {

@@ -1,9 +1,9 @@
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import type {
   EnvironmentProbeResult,
   PluginEnvironmentConfig,
   PluginEnvironmentDriverDeclaration,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import type {
   PluginEnvironmentExecuteParams,
   PluginEnvironmentExecuteResult,
@@ -19,7 +19,7 @@ import type {
   PluginEnvironmentLease,
   PluginEnvironmentRealizeWorkspaceParams,
   PluginEnvironmentRealizeWorkspaceResult,
-} from "@tickernelz/paperclip-pro-plugin-sdk";
+} from "@tickernelz/wardmote-plugin-sdk";
 import { unprocessable } from "../errors.js";
 import {
   collectSecretRefPaths,

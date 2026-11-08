@@ -1,4 +1,4 @@
-# @tickernelz/paperclip-pro-plugin-kubernetes (alpha)
+# @tickernelz/wardmote-plugin-kubernetes (alpha)
 
 First-party Paperclip sandbox-provider plugin for Kubernetes.
 
@@ -20,7 +20,7 @@ First-party Paperclip sandbox-provider plugin for Kubernetes.
 ## Installation
 
 ```bash
-wardmote plugin install @tickernelz/paperclip-pro-plugin-kubernetes
+wardmote plugin install @tickernelz/wardmote-plugin-kubernetes
 ```
 
 Or, for local development:

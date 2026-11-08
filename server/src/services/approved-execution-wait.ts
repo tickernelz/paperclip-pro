@@ -1,4 +1,4 @@
-import type { ToolInvocationStatus } from "@tickernelz/paperclip-pro-shared";
+import type { ToolInvocationStatus } from "@tickernelz/wardmote-shared";
 
 const PREPARATION_STATUSES = new Set<ToolInvocationStatus>([
   "pending",

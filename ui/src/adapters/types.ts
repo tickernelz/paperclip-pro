@@ -1,18 +1,18 @@
 import type { ComponentType } from "react";
-import type { CreateConfigValues } from "@tickernelz/paperclip-pro-adapter-utils";
+import type { CreateConfigValues } from "@tickernelz/wardmote-adapter-utils";
 
 // Re-export shared types so local consumers don't need to change imports
-export type { TranscriptEntry, StdoutLineParser, CreateConfigValues } from "@tickernelz/paperclip-pro-adapter-utils";
+export type { TranscriptEntry, StdoutLineParser, CreateConfigValues } from "@tickernelz/wardmote-adapter-utils";
 
 export interface StatefulStdoutParser {
-  parseLine: (line: string, ts: string) => import("@tickernelz/paperclip-pro-adapter-utils").TranscriptEntry[];
+  parseLine: (line: string, ts: string) => import("@tickernelz/wardmote-adapter-utils").TranscriptEntry[];
   reset: () => void;
 }
 
 export type StdoutParserFactory = () => StatefulStdoutParser;
 
 export interface TranscriptParserSource {
-  parseStdoutLine: (line: string, ts: string) => import("@tickernelz/paperclip-pro-adapter-utils").TranscriptEntry[];
+  parseStdoutLine: (line: string, ts: string) => import("@tickernelz/wardmote-adapter-utils").TranscriptEntry[];
   createStdoutParser?: StdoutParserFactory;
 }
 

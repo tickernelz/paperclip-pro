@@ -14,7 +14,7 @@ import type {
   IssueRunModelOverrideKey,
   IssueRunModelOverrideUpdate,
   IssueRunModelOverrideView,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { agentsApi } from "@/api/agents";
 import { issuesApi } from "@/api/issues";
 import { queryKeys } from "@/lib/queryKeys";

@@ -2,7 +2,7 @@ import {
   LOCAL_BROWSER_CALL_GRACE_MS,
   LOCAL_BROWSER_CALL_TIMEOUT_MS,
   LOCAL_BROWSER_LIMITS,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 export { LOCAL_BROWSER_CALL_GRACE_MS };
 export const LOCAL_BROWSER_DEFAULT_NAVIGATE_MS = 15_000;

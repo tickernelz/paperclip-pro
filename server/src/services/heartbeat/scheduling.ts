@@ -7,14 +7,14 @@ import {
   agentTaskSessions,
   agentSessionGoalActions,
   agents,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   type IssueExecutionMonitorPolicy,
   type IssueExecutionMonitorClearReason,
   type IssueExecutionMonitorRecoveryPolicy,
   PROVIDER_QUOTA_MONITOR_SERVICE_NAME,
   isUuidLike,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   and,
   eq,
@@ -52,7 +52,7 @@ import {
 import { logger } from "../../middleware/logger.js";
 import { failRunnerGoalAction } from "../runner-goals.js";
 import { evaluateAgentInvokability } from "../agent-invokability.js";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import type { issueService } from "../issues.js";
 import type { createHeartbeatQueue } from "./queue.js";
 import type { createHeartbeatRetries, HeartbeatRetryDependencies } from "./retries.js";

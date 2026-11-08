@@ -1,4 +1,4 @@
-import type { HeartbeatRunStatusPhase } from "@tickernelz/paperclip-pro-shared";
+import type { HeartbeatRunStatusPhase } from "@tickernelz/wardmote-shared";
 import { redactSensitiveText } from "../redaction.js";
 
 export const HEARTBEAT_RUN_RUNTIME_STATUS_TTL_MS = 90_000;

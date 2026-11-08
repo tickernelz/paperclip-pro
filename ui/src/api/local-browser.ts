@@ -3,7 +3,7 @@ import type {
   LocalBrowserSession,
   LocalBrowserSettings,
   LocalBrowserSettingsUpdate,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { api } from "./client";
 
 export interface LocalBrowserPairingStatus {

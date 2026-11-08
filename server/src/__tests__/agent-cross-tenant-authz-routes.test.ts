@@ -1,8 +1,8 @@
 import express from "express";
 import request from "supertest";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { AgentAuthorityCapability } from "@tickernelz/paperclip-pro-shared";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { AgentAuthorityCapability } from "@tickernelz/wardmote-shared";
+import type { Db } from "@tickernelz/wardmote-db";
 
 vi.unmock("http");
 vi.unmock("node:http");
@@ -112,7 +112,7 @@ const mockWorkspaceOperationService = vi.hoisted(() => ({}));
 const mockLogActivity = vi.hoisted(() => vi.fn());
 const mockGetTelemetryClient = vi.hoisted(() => vi.fn());
 
-vi.mock("@tickernelz/paperclip-pro-shared/telemetry", () => ({
+vi.mock("@tickernelz/wardmote-shared/telemetry", () => ({
   trackAgentCreated: vi.fn(),
   trackErrorHandlerCrash: vi.fn(),
 }));
@@ -123,7 +123,7 @@ vi.mock("../telemetry.js", () => ({
 
 vi.mock("../routes/authz.js", async () => {
   const { forbidden, unauthorized } = await vi.importActual<typeof import("../errors.js")>("../errors.js");
-  const { agentRoleHasAuthority } = await vi.importActual<typeof import("@tickernelz/paperclip-pro-shared")>("@tickernelz/paperclip-pro-shared");
+  const { agentRoleHasAuthority } = await vi.importActual<typeof import("@tickernelz/wardmote-shared")>("@tickernelz/wardmote-shared");
   function assertAuthenticated(req: Express.Request) {
     if (req.actor.type === "none") {
       throw unauthorized();

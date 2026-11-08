@@ -1,6 +1,6 @@
 import { Router } from "express";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { openIssueAutonomyWindowSchema } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/wardmote-db";
+import { openIssueAutonomyWindowSchema } from "@tickernelz/wardmote-shared";
 import { validate } from "../middleware/validate.js";
 import { autonomyWindowService } from "../services/autonomy-windows.js";
 import { assertBoard, assertCompanyAccess, getAccessibleResource, getActorInfo } from "./authz.js";

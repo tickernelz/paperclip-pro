@@ -1,6 +1,6 @@
 import { and, desc, eq, or, sql } from "drizzle-orm";
-import { chatEndpointResources, type Db } from "@tickernelz/paperclip-pro-db";
-import { openwaChatSettingsSchema } from "@tickernelz/paperclip-pro-shared";
+import { chatEndpointResources, type Db } from "@tickernelz/wardmote-db";
+import { openwaChatSettingsSchema } from "@tickernelz/wardmote-shared";
 import { unprocessable } from "../../errors.js";
 import { openwaThreadId, parseOpenwaThreadId } from "./adapter.js";
 import { recordOpenwaAudit } from "./audit.js";

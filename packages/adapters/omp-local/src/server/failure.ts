@@ -1,4 +1,4 @@
-import type { AdapterExecutionResult } from "@tickernelz/paperclip-pro-adapter-utils";
+import type { AdapterExecutionResult } from "@tickernelz/wardmote-adapter-utils";
 
 type AdapterExecutionErrorFamily = NonNullable<AdapterExecutionResult["errorFamily"]>;
 

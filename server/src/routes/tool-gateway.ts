@@ -1,17 +1,17 @@
 import { Router, type Request, type Response } from "express";
 import { and, desc, eq, gte, ilike, inArray, lt, or, sql } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { agents, toolApplications, toolCallEvents, toolConnections, toolInvocations } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
+import { agents, toolApplications, toolCallEvents, toolConnections, toolInvocations } from "@tickernelz/wardmote-db";
 import {
   humanizeConnectionDisplayName,
   type PermissionKey,
   type ToolConnectionLifecycleEventType,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   createToolMcpGatewaySchema,
   createToolMcpGatewayTokenSchema,
   updateToolMcpGatewaySchema,
-} from "@tickernelz/paperclip-pro-shared/validators/tool-access";
+} from "@tickernelz/wardmote-shared/validators/tool-access";
 import { assertBoard, assertBoardOrAgent, assertCompanyAccess, getActorInfo } from "./authz.js";
 import { ToolGatewayHttpError, type ToolGatewayService } from "../services/tool-gateway.js";
 import { forbidden, HttpError } from "../errors.js";

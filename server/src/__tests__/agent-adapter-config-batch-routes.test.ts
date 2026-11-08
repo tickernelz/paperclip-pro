@@ -2,8 +2,8 @@ import { randomUUID } from "node:crypto";
 import request from "supertest";
 import { and, eq } from "drizzle-orm";
 import { afterAll, beforeAll, expect, it } from "vitest";
-import { activityLog, agents } from "@tickernelz/paperclip-pro-db";
-import type { AgentAdapterConfigBatchPreview } from "@tickernelz/paperclip-pro-shared";
+import { activityLog, agents } from "@tickernelz/wardmote-db";
+import type { AgentAdapterConfigBatchPreview } from "@tickernelz/wardmote-shared";
 import {
   registerServerAdapter,
   unregisterServerAdapter,

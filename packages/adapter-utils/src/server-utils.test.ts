@@ -4,7 +4,7 @@ import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { CONNECTION_INTENT_AGENT_GUIDANCE } from "@tickernelz/paperclip-pro-shared";
+import { CONNECTION_INTENT_AGENT_GUIDANCE } from "@tickernelz/wardmote-shared";
 import {
   readPaperclipRuntimeSkillEntries,
   applyPaperclipWorkspaceEnv,
@@ -48,7 +48,7 @@ import {
 
 describe("ensurePaperclipSkillSymlink", () => {
   const bundled = (root: string, version: string, skill: string) =>
-    path.join(root, "installs", version, "node_modules", "@tickernelz", "paperclip-pro-server", "skills", skill);
+    path.join(root, "installs", version, "node_modules", "@tickernelz", "wardmote-server", "skills", skill);
 
   it("moves a skill link from an older Paperclip install to the current one and leaves foreign links alone", async () => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-skill-link-"));

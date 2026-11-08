@@ -1,4 +1,4 @@
-import { checkOAuthEndpointUrl, oauthEndpointUrlRejectionMessage } from "@tickernelz/paperclip-pro-shared";
+import { checkOAuthEndpointUrl, oauthEndpointUrlRejectionMessage } from "@tickernelz/wardmote-shared";
 
 export type AuthorizationTarget =
   | { ok: true; url: string; host: string }

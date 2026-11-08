@@ -1,5 +1,5 @@
-import { redactCommandText } from "@tickernelz/paperclip-pro-adapter-utils";
-import { isPublicExecutorToolSelector, looksLikeCredentialJwt } from "@tickernelz/paperclip-pro-adapter-utils/command-redaction";
+import { redactCommandText } from "@tickernelz/wardmote-adapter-utils";
+import { isPublicExecutorToolSelector, looksLikeCredentialJwt } from "@tickernelz/wardmote-adapter-utils/command-redaction";
 
 export const SECRET_FIELD_NAME_PATTERN = String.raw`[A-Za-z0-9_-]*(?:api[-_]?key|access[-_]?token|auth(?:_?token)?|token|authorization(?:[-_]?code)?|bearer|secrets?|passwd|passwords?|credentials?|jwt|private[-_]?key|cookie|connectionstring|browser[-_]?code|login[-_]?url)(?:[-_]?(?:value|header|prod(?:uction)?|dev(?:elopment)?|test|staging|primary|secondary))*`;
 

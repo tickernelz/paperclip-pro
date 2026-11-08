@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { Issue } from "@tickernelz/paperclip-pro-shared";
+import type { Issue } from "@tickernelz/wardmote-shared";
 import {
   applyLocalQueuedIssueCommentState,
   applyOptimisticIssueFieldUpdate,

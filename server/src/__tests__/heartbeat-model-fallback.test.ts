@@ -14,8 +14,8 @@ import {
   heartbeatRuns,
   issues,
   modelCooldowns,
-} from "@tickernelz/paperclip-pro-db";
-import type { AdapterExecutionContext, AdapterExecutionResult } from "@tickernelz/paperclip-pro-adapter-utils";
+} from "@tickernelz/wardmote-db";
+import type { AdapterExecutionContext, AdapterExecutionResult } from "@tickernelz/wardmote-adapter-utils";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

@@ -16,8 +16,8 @@ import {
   issues,
   principalPermissionGrants,
   userInboxAgentPolicies,
-} from "@tickernelz/paperclip-pro-db";
-import { LOW_TRUST_REVIEW_PRESET } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import { LOW_TRUST_REVIEW_PRESET } from "@tickernelz/wardmote-shared";
 import { errorHandler } from "../middleware/index.js";
 import { issueRoutes } from "../routes/issues.js";
 import { issueService } from "../services/issues.js";

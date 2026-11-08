@@ -1,4 +1,4 @@
-import type { ExecutionWorkspace, Issue, Project } from "@tickernelz/paperclip-pro-shared";
+import type { ExecutionWorkspace, Issue, Project } from "@tickernelz/wardmote-shared";
 
 type ProjectWorkspaceLike = Pick<Project, "workspaces" | "primaryWorkspace">;
 

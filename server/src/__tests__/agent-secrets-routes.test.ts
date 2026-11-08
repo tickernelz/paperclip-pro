@@ -17,8 +17,8 @@ import {
   createDb,
   heartbeatRuns,
   secretAccessEvents,
-} from "@tickernelz/paperclip-pro-db";
-import { LOW_TRUST_REVIEW_PRESET, type AgentApiKeyScope } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import { LOW_TRUST_REVIEW_PRESET, type AgentApiKeyScope } from "@tickernelz/wardmote-shared";
 import { REDACTED_EVENT_VALUE } from "../redaction.js";
 import { errorHandler } from "../middleware/error-handler.js";
 import { secretRoutes } from "../routes/secrets.js";

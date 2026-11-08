@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import type { createDb } from "@tickernelz/paperclip-pro-db";
+import type { createDb } from "@tickernelz/wardmote-db";
 
 type Db = ReturnType<typeof createDb>;
 

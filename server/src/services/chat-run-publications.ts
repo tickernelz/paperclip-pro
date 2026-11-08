@@ -15,7 +15,7 @@ import {
   sql,
 } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   agents,
   chatActions,
@@ -29,7 +29,7 @@ import {
   heartbeatRuns,
   issueComments,
   issues,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { projectSafeChatPublication } from "./chat-publication-projection.js";
 import { safeChatTaskUrl } from "./chat-task-url.js";
 import { hasChatRunOwnedProviderInteraction } from "./chat-interaction-arbitration.js";

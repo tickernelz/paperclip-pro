@@ -3,7 +3,7 @@ import {
   COMPANY_SEARCH_MAX_QUERY_LENGTH,
   COMPANY_SEARCH_MAX_TOKENS,
   ISSUE_CONTINUATION_SUMMARY_DOCUMENT_KEY,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { visibleIssueCondition } from "./issue-visibility.js";
 
 // Only grammatical filler is ignored, only in multi-term queries, and never

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { RoutineVariable } from "@tickernelz/paperclip-pro-shared";
+import type { RoutineVariable } from "@tickernelz/wardmote-shared";
 import { dedupedTriggerLabel, runRowSubtitle } from "./routine-run-display";
 
 const variables: RoutineVariable[] = [

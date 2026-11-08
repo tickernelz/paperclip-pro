@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { IssueAutonomyWindow } from "@tickernelz/paperclip-pro-shared";
+import type { IssueAutonomyWindow } from "@tickernelz/wardmote-shared";
 import { coveringAutonomyWindow } from "./IssueAutonomyWindowBadge";
 
 const now = Date.parse("2026-10-08T12:00:00.000Z");

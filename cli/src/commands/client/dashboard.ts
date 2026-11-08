@@ -1,5 +1,5 @@
 import { Command } from "commander";
-import type { DashboardSummary } from "@tickernelz/paperclip-pro-shared";
+import type { DashboardSummary } from "@tickernelz/wardmote-shared";
 import {
   addCommonClientOptions,
   apiPath,

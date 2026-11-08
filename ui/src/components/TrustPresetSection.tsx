@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import type { AgentPermissions, TrustPreset } from "@tickernelz/paperclip-pro-shared";
+import type { AgentPermissions, TrustPreset } from "@tickernelz/wardmote-shared";
 import { Lock, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Field, CollapsibleSection } from "./agent-config-primitives";

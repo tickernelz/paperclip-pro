@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Agent } from "@tickernelz/paperclip-pro-shared";
+import type { Agent } from "@tickernelz/wardmote-shared";
 import {
   buildAssistantPartsFromTranscript,
   buildIssueChatMessages,

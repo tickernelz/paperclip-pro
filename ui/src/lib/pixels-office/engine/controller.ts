@@ -1,4 +1,4 @@
-import type { PixelsOfficeSeatAssignment } from '@tickernelz/paperclip-pro-shared';
+import type { PixelsOfficeSeatAssignment } from '@tickernelz/wardmote-shared';
 import type { CameraBounds, OfficeCameraBounds } from '../assetLoader';
 import { getCatalogEntry } from '../layout/furnitureCatalog';
 import type {

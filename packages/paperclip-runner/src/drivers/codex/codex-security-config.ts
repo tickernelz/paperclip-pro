@@ -82,7 +82,7 @@ function normalizedCodexPlatformManifest(runtimeManifest: string, platformPackag
     const serverManifest = resolve(root, "package.json");
     if (existsSync(serverManifest)) {
       const server = readCodexPackageManifest(serverManifest);
-      if (server.name === "@tickernelz/paperclip-pro-server") {
+      if (server.name === "@tickernelz/wardmote-server") {
         const bridgeDeclaration = server.dependencies?.[profile.agentServerPackage];
         const platformDeclaration = server.optionalDependencies?.[platformPackage];
         const declarationPrefix = `npm:${profile.agentRuntimePackage}@`;

@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import type { CompanySearchIssueSummary, StatusCardRefreshPolicy } from "@tickernelz/paperclip-pro-shared";
+import type { CompanySearchIssueSummary, StatusCardRefreshPolicy } from "@tickernelz/wardmote-shared";
 
 export type StatusCardFingerprintEntry = {
   status: string;

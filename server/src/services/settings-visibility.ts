@@ -1,4 +1,4 @@
-import { parseHiddenSettingsList } from "@tickernelz/paperclip-pro-shared";
+import { parseHiddenSettingsList } from "@tickernelz/wardmote-shared";
 import { logger } from "../middleware/logger.js";
 
 /**

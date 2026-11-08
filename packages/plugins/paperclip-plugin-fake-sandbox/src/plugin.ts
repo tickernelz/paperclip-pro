@@ -3,7 +3,7 @@ import { mkdir, mkdtemp, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { spawn } from "node:child_process";
-import { definePlugin } from "@tickernelz/paperclip-pro-plugin-sdk";
+import { definePlugin } from "@tickernelz/wardmote-plugin-sdk";
 import type {
   PluginEnvironmentAcquireLeaseParams,
   PluginEnvironmentCancelInteractiveSetupParams,
@@ -27,7 +27,7 @@ import type {
   PluginEnvironmentStartInteractiveSetupParams,
   PluginEnvironmentValidateConfigParams,
   PluginEnvironmentValidationResult,
-} from "@tickernelz/paperclip-pro-plugin-sdk";
+} from "@tickernelz/wardmote-plugin-sdk";
 
 interface FakeDriverConfig {
   image: string;

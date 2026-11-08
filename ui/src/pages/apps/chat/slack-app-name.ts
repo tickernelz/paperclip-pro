@@ -1,4 +1,4 @@
-import { defaultSlackAppConfiguration } from "@tickernelz/paperclip-pro-shared";
+import { defaultSlackAppConfiguration } from "@tickernelz/wardmote-shared";
 
 export function slackBotNameForAgent(agentName: string): string {
   return defaultSlackAppConfiguration(agentName).botName;

@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { workspaceOperations } from "@tickernelz/paperclip-pro-db";
-import type { WorkspaceOperation, WorkspaceOperationPhase, WorkspaceOperationStatus } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/wardmote-db";
+import { workspaceOperations } from "@tickernelz/wardmote-db";
+import type { WorkspaceOperation, WorkspaceOperationPhase, WorkspaceOperationStatus } from "@tickernelz/wardmote-shared";
 import { asc, desc, eq, gte, inArray, isNull, lt, or, and } from "drizzle-orm";
 import { conflict, notFound } from "../errors.js";
 import { redactCurrentUserText, redactCurrentUserValue } from "../log-redaction.js";

@@ -4,7 +4,7 @@ import type {
   OnboardingOmpLoginResult,
   OnboardingOmpStatus,
   OnboardingRemoteOmpStatus,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { api } from "./client";
 
 export const onboardingOmpApi = {

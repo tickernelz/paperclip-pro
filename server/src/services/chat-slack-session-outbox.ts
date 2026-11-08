@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { chatActions, type Db } from "@tickernelz/paperclip-pro-db";
+import { chatActions, type Db } from "@tickernelz/wardmote-db";
 
 import { notifyChatActionWork } from "./chat-work-notifications.js";
 

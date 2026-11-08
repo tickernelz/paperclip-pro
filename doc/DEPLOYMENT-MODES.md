@@ -127,8 +127,8 @@ Examples:
 
 ```sh
 pnpm wardmote onboard --yes
-npx @tickernelz/paperclip-pro onboard --yes --bind lan
-npx @tickernelz/paperclip-pro run --bind tailnet
+npx @tickernelz/wardmote onboard --yes --bind lan
+npx @tickernelz/wardmote run --bind tailnet
 ```
 
 `configure --section server` follows the same interactive behavior.

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import type { IssueRef } from "@tickernelz/paperclip-pro-shared";
+import type { IssueRef } from "@tickernelz/wardmote-shared";
 import { useOptionalCompany } from "@/context/CompanyContext";
 import { queryKeys } from "@/lib/queryKeys";
 import {

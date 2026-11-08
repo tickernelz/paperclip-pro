@@ -30,8 +30,8 @@ import {
   issues,
   toolConnections,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
-import type { OpenwaGrantCategory, OpenwaPrincipalRole, OpenwaTriggerClass } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import type { OpenwaGrantCategory, OpenwaPrincipalRole, OpenwaTriggerClass } from "@tickernelz/wardmote-shared";
 import { startEmbeddedPostgresTestDatabase } from "../helpers/embedded-postgres.js";
 import type { StorageService } from "../../storage/types.js";
 import { chatChannelService, type ChatChannelService } from "../../services/chat-channels.js";

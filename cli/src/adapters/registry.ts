@@ -1,5 +1,5 @@
-import type { CLIAdapterModule } from "@tickernelz/paperclip-pro-adapter-utils";
-import { printOmpStreamEvent } from "@tickernelz/paperclip-pro-adapter-omp-local/cli";
+import type { CLIAdapterModule } from "@tickernelz/wardmote-adapter-utils";
+import { printOmpStreamEvent } from "@tickernelz/wardmote-adapter-omp-local/cli";
 import { processCLIAdapter } from "./process/index.js";
 import { httpCLIAdapter } from "./http/index.js";
 

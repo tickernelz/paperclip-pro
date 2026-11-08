@@ -1,5 +1,5 @@
-import { issueExecutionMonitorPolicySchema, PROVIDER_QUOTA_MONITOR_SERVICE_NAME } from "@tickernelz/paperclip-pro-shared";
-import type { issues } from "@tickernelz/paperclip-pro-db";
+import { issueExecutionMonitorPolicySchema, PROVIDER_QUOTA_MONITOR_SERVICE_NAME } from "@tickernelz/wardmote-shared";
+import type { issues } from "@tickernelz/wardmote-db";
 import { z } from "zod";
 import { forbidden, unprocessable } from "../errors.js";
 import type { accessService } from "./access.js";

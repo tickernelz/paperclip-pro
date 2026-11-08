@@ -1,4 +1,4 @@
-import type { IssueRunModelOverrideOption } from "@tickernelz/paperclip-pro-shared";
+import type { IssueRunModelOverrideOption } from "@tickernelz/wardmote-shared";
 import { cn } from "@/lib/utils";
 
 /** How a stored model value reads: display name, provider, and the full id. */

@@ -6,7 +6,7 @@ import type {
   WorkspaceFileContent,
   WorkspaceFileListFileItem,
   WorkspaceFileListResponse,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { FileViewerProvider, useRequiredFileViewer } from "@/context/FileViewerContext";
 import { FileViewerSheet } from "@/components/FileViewerSheet";
 import { IssueWorkspaceCard } from "@/components/IssueWorkspaceCard";

@@ -1,5 +1,5 @@
 import { ArrowRight, ShieldCheck } from "lucide-react";
-import type { ActivityEvent } from "@tickernelz/paperclip-pro-shared";
+import type { ActivityEvent } from "@tickernelz/wardmote-shared";
 import {
   issueAuthorizationReasonLabel,
   readIssueChangeReceipt,

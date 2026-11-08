@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import type {
   AdapterSkillContext,
   AdapterSkillSnapshot,
-} from "@tickernelz/paperclip-pro-adapter-utils";
+} from "@tickernelz/wardmote-adapter-utils";
 import {
   buildPersistentSkillSnapshot,
   ensurePaperclipSkillSymlink,
@@ -13,7 +13,7 @@ import {
   readPaperclipRuntimeSkillEntries,
   relinkPaperclipSkillsFromOtherInstalls,
   resolvePaperclipDesiredSkillNames,
-} from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+} from "@tickernelz/wardmote-adapter-utils/server-utils";
 import { resolveOmpProfile } from "./profile.js";
 
 const __moduleDir = path.dirname(fileURLToPath(import.meta.url));

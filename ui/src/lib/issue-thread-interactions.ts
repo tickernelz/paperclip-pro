@@ -38,7 +38,7 @@ export type {
   SuggestTasksPayload,
   SuggestTasksResult,
   SuggestTasksResultCreatedTask,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import type {
   AskUserQuestionsAnswer,
   AskUserQuestionsInteraction,
@@ -56,7 +56,7 @@ import type {
   SuggestedTaskDraft,
   SuggestTasksInteraction,
   SuggestTasksResultCreatedTask,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 export function isInteractionPreparingApproval(interaction: IssueThreadInteraction): boolean {
   return interaction.status === "pending"

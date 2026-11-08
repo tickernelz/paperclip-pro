@@ -110,7 +110,7 @@ Use this when validating Paperclip itself (assignment flow, checkouts, run visib
 1. Create a throwaway issue assigned to a known local agent (`claudecoder` or `codexcoder`):
 
 ```bash
-npx @tickernelz/paperclip-pro issue create \
+npx @tickernelz/wardmote issue create \
   --company-id "$PAPERCLIP_COMPANY_ID" \
   --title "Self-test: assignment/watch flow" \
   --description "Temporary validation issue" \
@@ -121,19 +121,19 @@ npx @tickernelz/paperclip-pro issue create \
 2. Trigger and watch a heartbeat for that assignee:
 
 ```bash
-npx @tickernelz/paperclip-pro heartbeat run --agent-id "$PAPERCLIP_AGENT_ID"
+npx @tickernelz/wardmote heartbeat run --agent-id "$PAPERCLIP_AGENT_ID"
 ```
 
 3. Verify the issue transitions (`todo -> in_progress -> done` or `blocked`) and that comments are posted:
 
 ```bash
-npx @tickernelz/paperclip-pro issue get <issue-id-or-identifier>
+npx @tickernelz/wardmote issue get <issue-id-or-identifier>
 ```
 
 4. Reassignment test (optional): move the same issue between `claudecoder` and `codexcoder` and confirm wake/run behavior:
 
 ```bash
-npx @tickernelz/paperclip-pro issue update <issue-id> --assignee-agent-id <other-agent-id> --status todo
+npx @tickernelz/wardmote issue update <issue-id> --assignee-agent-id <other-agent-id> --status todo
 ```
 
 5. Cleanup: mark temporary issues done/cancelled with a clear note.
