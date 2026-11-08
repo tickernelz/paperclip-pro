@@ -4834,7 +4834,7 @@
     ["tests/e2e/playwright-multiuser-authenticated.config.ts",2,"belum-diganti"],
     ["tests/e2e/playwright-multiuser.config.ts",1,"belum-diganti"],
     ["tests/e2e/playwright.config.ts",43,"belum-diganti"],
-    ["tests/e2e/responsive-shell.spec.ts",1,"belum-diganti"],
+    ["tests/e2e/responsive-shell.shared.ts",1,"belum-diganti"],
     ["tests/e2e/runner-e2e-dashboard.spec.ts",2,"belum-diganti"],
     ["tests/e2e/sidebar-takeover.spec.ts",2,"belum-diganti"],
     ["tests/e2e/signoff-policy.spec.ts",7,"belum-diganti"],
