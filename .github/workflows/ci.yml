@@ -406,18 +406,22 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-workspace
-      - name: Set up sccache
-        uses: mozilla-actions/sccache-action@fc920bf0ec8de6ee65d409111f7ec508035751ba # v0.0.11
+      - name: Runner Rust release cache
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6
+        with:
+          workspaces: packages/paperclip-runner/runner -> target
+          shared-key: runner-build-v1
+          cache-workspace-crates: false
+          cache-bin: false
+          save-if: true
       - name: Upgrade an existing install with its own CLI and keep its home
         env:
-          SCCACHE_GHA_ENABLED: "true"
-          RUSTC_WRAPPER: sccache
+          CARGO_TARGET_DIR: ${{ github.workspace }}/packages/paperclip-runner/runner/target
           GH_TOKEN: ${{ github.token }}
           UPGRADE_REPO: ${{ github.event.pull_request.head.repo.full_name }}
           UPGRADE_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
           UPGRADE_PNPM_STORE="$(pnpm store path --silent)" bash scripts/test-upgrade-path.sh
-          sccache --show-stats
 
   docker-omp-pin:
     name: Docker OMP pin
