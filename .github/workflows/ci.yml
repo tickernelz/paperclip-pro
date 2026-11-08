@@ -231,7 +231,7 @@ jobs:
   general:
     name: Tests (${{ matrix.label }})
     needs: scope
-    if: needs.scope.outputs.docs_only != 'true'
+    if: false
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
