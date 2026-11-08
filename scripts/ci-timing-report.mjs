@@ -14,7 +14,8 @@ const USAGE = `Usage: node scripts/ci-timing-report.mjs [options]
   --queue-grace <s>     queue seconds counted toward the effective time (default: 60)
   --json <path>         also write the raw measurements as JSON
   --budget <path>       compare one run (--run) with the job and total budgets in <path>;
-                        writes a table to $GITHUB_STEP_SUMMARY and a warning per overrun`;
+                        writes a table to $GITHUB_STEP_SUMMARY and a warning per overrun
+  --write-durations <dir>  with --logs, write the shard duration manifests into <dir>`;
 
 function parseArgs(argv) {
   const options = { workflow: "ci.yml", limit: 20, event: "all", runs: [], logs: 0, top: 50, queueGrace: 60 };
@@ -36,6 +37,7 @@ function parseArgs(argv) {
     else if (arg === "--queue-grace") options.queueGrace = Number(next());
     else if (arg === "--json") options.json = next();
     else if (arg === "--budget") options.budget = next();
+    else if (arg === "--write-durations") options.writeDurations = next();
     else if (arg === "--help" || arg === "-h") {
       console.log(USAGE);
       process.exit(0);
@@ -256,9 +258,9 @@ function renderReport(repo, options, summaries, slowest) {
   const reruns = summaries.filter((run) => run.attempt > 1);
   lines.push(`Reruns: ${reruns.length} of ${summaries.length} analysed runs had run_attempt > 1 (${reruns.map((run) => `${run.id}#${run.attempt}`).join(", ") || "none"}).`, "");
   if (slowest) {
-    lines.push(`## Slowest test files (max over ${slowest.runs} runs)`, "", "| file | seconds |", "|---|---|");
+    lines.push(`## Slowest test files (max over ${slowest.runs.length} runs)`, "", "| file | seconds |", "|---|---|");
     for (const [file, value] of slowest.files) lines.push(`| ${file} | ${value.toFixed(1)} |`);
-    lines.push("", `## Slowest Playwright spec files (max over ${slowest.runs} runs)`, "", "| spec | seconds |", "|---|---|");
+    lines.push("", `## Slowest Playwright spec files (max over ${slowest.runs.length} runs)`, "", "| spec | seconds |", "|---|---|");
     for (const [spec, value] of slowest.specs) lines.push(`| ${spec} | ${value.toFixed(1)} |`);
     lines.push("");
   }
@@ -281,10 +283,58 @@ function collectSlowest(repo, summaries, options) {
       const parsed = parseTestLog(text);
       for (const [key, value] of parsed.files) files.set(key, Math.max(files.get(key) ?? 0, value));
       for (const [key, value] of parsed.specs) specs.set(key, Math.max(specs.get(key) ?? 0, value));
+      const manifest = manifestForJob(job.name);
+      if (manifest) {
+        const entries = manifest === "e2e" ? parsed.specs : parsed.files;
+        for (const [key, value] of entries) {
+          const repoPath = repoPathForTestKey(key);
+          if (!repoPath) continue;
+          const sums = durationSums[manifest];
+          const entry = sums.get(repoPath) ?? { total: 0, count: 0 };
+          entry.total += value;
+          entry.count += 1;
+          sums.set(repoPath, entry);
+        }
+      }
     }
   }
   const top = (map) => [...map.entries()].sort((a, b) => b[1] - a[1]).slice(0, options.top);
-  return { runs: picked.length, files: top(files), specs: top(specs), allFiles: Object.fromEntries(files), allSpecs: Object.fromEntries(specs) };
+  return { runs: picked.map((run) => run.id), files: top(files), specs: top(specs), allFiles: Object.fromEntries(files), allSpecs: Object.fromEntries(specs) };
+}
+
+const durationSums = { general: new Map(), serialized: new Map(), e2e: new Map() };
+
+export const SHARD_MANIFESTS = {
+  general: "general-server-shard-durations.json",
+  serialized: "serialized-shard-durations.json",
+  e2e: "e2e-shard-durations.json",
+};
+
+export function manifestForJob(name) {
+  if (/^Tests \((server|chat)\b/.test(name)) return "general";
+  if (/^Tests \(serialized\b/.test(name)) return "serialized";
+  if (/^E2E\b/.test(name)) return "e2e";
+  return null;
+}
+
+export function repoPathForTestKey(key) {
+  if (key.startsWith("tests/")) return key;
+  const match = key.match(/^@tickernelz\/paperclip-pro-server (src\/\S+)$/);
+  return match ? `server/${match[1]}` : null;
+}
+
+function writeDurationManifests(dir, runIds) {
+  for (const [kind, file] of Object.entries(SHARD_MANIFESTS)) {
+    const sums = durationSums[kind];
+    if (sums.size === 0) continue;
+    const target = `${dir}/${file}`;
+    const previous = fs.existsSync(target) ? JSON.parse(fs.readFileSync(target, "utf8")).durations ?? {} : {};
+    const merged = new Map(Object.entries(previous).filter(([key]) => !sums.has(key) && fs.existsSync(key)));
+    for (const [key, { total, count }] of sums) merged.set(key, Math.round((total / count) * 1000));
+    const durations = Object.fromEntries([...merged.entries()].sort((a, b) => a[0].localeCompare(b[0])));
+    const comment = `Per-file wall-clock durations (ms) used to balance the ${kind} CI shards. Mean of the per-file durations reported in the job logs of CI runs ${runIds.join(", ")} (${new Date().toISOString().slice(0, 10)}); files those runs did not report keep their previous value. Regenerate with: node scripts/ci-timing-report.mjs --run <id> [--run <id>] --logs <n> --write-durations scripts`;
+    fs.writeFileSync(target, `${JSON.stringify({ $comment: comment, durations }, null, 2)}\n`);
+  }
 }
 
 export function budgetFindings(summary, budgets) {
@@ -333,6 +383,10 @@ function main() {
   const report = renderReport(repo, options, summaries, slowest);
   console.log(report);
   if (options.json) fs.writeFileSync(options.json, JSON.stringify({ repo, options, summaries, slowest }, null, 2));
+  if (options.writeDurations) {
+    if (!slowest) throw new Error("--write-durations needs --logs");
+    writeDurationManifests(options.writeDurations, slowest.runs);
+  }
 }
 
 if (import.meta.url === `file://${process.argv[1]}`) main();

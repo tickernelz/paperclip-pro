@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { budgetFindings, parseTestLog, quantile, summariseRun } from "../ci-timing-report.mjs";
+import { budgetFindings, manifestForJob, parseTestLog, quantile, repoPathForTestKey, summariseRun } from "../ci-timing-report.mjs";
 
 const at = (seconds) => new Date(Date.UTC(2026, 10, 8, 6, 0, 0) + seconds * 1000).toISOString().replace(".000", "");
 
@@ -65,4 +65,15 @@ test("quantile uses the nearest-rank value", () => {
   assert.equal(quantile([5, 1, 3, 2, 4], 0.5), 3);
   assert.equal(quantile([1, 2, 3, 4, 5, 6, 7, 8, 9, 10], 0.9), 9);
   assert.equal(quantile([], 0.5), null);
+});
+
+test("shard manifests take server files and e2e specs from the lanes that run them", () => {
+  assert.equal(manifestForJob("Tests (server 3/5)"), "general");
+  assert.equal(manifestForJob("Tests (chat 1/2)"), "general");
+  assert.equal(manifestForJob("Tests (serialized 0/4)"), "serialized");
+  assert.equal(manifestForJob("E2E (2/3)"), "e2e");
+  assert.equal(manifestForJob("Tests (workspaces-a)"), null);
+  assert.equal(repoPathForTestKey("@tickernelz/paperclip-pro-server src/__tests__/a.test.ts"), "server/src/__tests__/a.test.ts");
+  assert.equal(repoPathForTestKey("tests/e2e/onboarding.spec.ts"), "tests/e2e/onboarding.spec.ts");
+  assert.equal(repoPathForTestKey("@tickernelz/paperclip-pro-ui src/a.test.ts"), null);
 });
