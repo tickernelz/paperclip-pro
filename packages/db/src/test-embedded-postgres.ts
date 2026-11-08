@@ -113,8 +113,16 @@ async function getAvailablePort(): Promise<number> {
   );
 }
 
-async function createEmbeddedPostgresTestInstance(tempDirPrefix: string) {
+export const EMBEDDED_POSTGRES_TEMPLATE_DIR_ENV = "WARDMOTE_TEST_EMBEDDED_POSTGRES_TEMPLATE_DIR";
+
+function embeddedPostgresTemplateDir(): string | null {
+  const dir = process.env[EMBEDDED_POSTGRES_TEMPLATE_DIR_ENV]?.trim();
+  return dir && fs.existsSync(path.join(dir, "PG_VERSION")) ? dir : null;
+}
+
+async function createEmbeddedPostgresTestInstance(tempDirPrefix: string, templateDir: string | null = null) {
   const dataDir = fs.mkdtempSync(path.join(os.tmpdir(), tempDirPrefix));
+  if (templateDir) fs.cpSync(templateDir, dataDir, { recursive: true });
   const port = await getAvailablePort();
   const EmbeddedPostgres = await getEmbeddedPostgresCtor();
   // Postgres writes the true reason for a failed start to its output, for
@@ -206,7 +214,7 @@ const EMBEDDED_POSTGRES_START_MAX_ATTEMPTS = 5;
 // fresh port and a fresh data directory. On a failed attempt we stop the cluster
 // and remove its data directory before the next attempt. After the last attempt
 // we throw with the real Postgres output so the failure is loud and diagnosable.
-async function startEmbeddedPostgresWithRetry(tempDirPrefix: string): Promise<{
+async function startEmbeddedPostgresWithRetry(tempDirPrefix: string, templateDir: string | null = null): Promise<{
   port: number;
   dataDir: string;
   instance: EmbeddedPostgresInstance;
@@ -214,9 +222,9 @@ async function startEmbeddedPostgresWithRetry(tempDirPrefix: string): Promise<{
   let lastError = new Error("embedded Postgres startup failed");
 
   for (let attempt = 1; attempt <= EMBEDDED_POSTGRES_START_MAX_ATTEMPTS; attempt += 1) {
-    const created = await createEmbeddedPostgresTestInstance(tempDirPrefix);
+    const created = await createEmbeddedPostgresTestInstance(tempDirPrefix, templateDir);
     try {
-      await created.instance.initialise();
+      if (!templateDir) await created.instance.initialise();
       await created.instance.start();
       return { port: created.port, dataDir: created.dataDir, instance: created.instance };
     } catch (error) {
@@ -244,10 +252,11 @@ export const __startEmbeddedPostgresWithRetryForTests = startEmbeddedPostgresWit
 export const __embeddedPostgresStartMaxAttemptsForTests = EMBEDDED_POSTGRES_START_MAX_ATTEMPTS;
 
 async function probeEmbeddedPostgresSupport(): Promise<EmbeddedPostgresTestSupport> {
+  if (embeddedPostgresTemplateDir()) return { supported: true };
   let started: { dataDir: string; instance: EmbeddedPostgresInstance } | null = null;
 
   try {
-    started = await startEmbeddedPostgresWithRetry("paperclip-embedded-postgres-probe-");
+    started = await startEmbeddedPostgresWithRetry("wardmote-embedded-postgres-probe-");
     return { supported: true };
   } catch (error) {
     return {
@@ -276,7 +285,7 @@ export async function startEmbeddedPostgresTestDatabase(
 ): Promise<EmbeddedPostgresTestDatabase> {
   // The bounded retry hardens the cluster start against the port race. It throws
   // with the real Postgres output if every attempt fails.
-  const { port, dataDir, instance } = await startEmbeddedPostgresWithRetry(tempDirPrefix);
+  const { port, dataDir, instance } = await startEmbeddedPostgresWithRetry(tempDirPrefix, embeddedPostgresTemplateDir());
 
   try {
     const adminConnectionString = `postgres://paperclip:paperclip@127.0.0.1:${port}/postgres`;
@@ -306,4 +315,21 @@ export async function startEmbeddedPostgresTestDatabase(
       }`,
     );
   }
+}
+
+export async function prepareEmbeddedPostgresTestTemplate(): Promise<{ dataDir: string; cleanup: () => void }> {
+  const { port, dataDir, instance } = await startEmbeddedPostgresWithRetry("wardmote-embedded-postgres-template-");
+  try {
+    const adminConnectionString = `postgres://paperclip:paperclip@127.0.0.1:${port}/postgres`;
+    await ensurePostgresDatabase(adminConnectionString, "paperclip");
+    const connectionString = `postgres://paperclip:paperclip@127.0.0.1:${port}/paperclip`;
+    await applyPendingMigrations(connectionString);
+    await closeRegisteredClients(connectionString);
+    await instance.stop();
+  } catch (error) {
+    await stopEmbeddedPostgresBounded(instance, () => cleanupEmbeddedPostgresTestDirs(dataDir));
+    throw error;
+  }
+  fs.rmSync(path.join(dataDir, "postmaster.pid"), { force: true });
+  return { dataDir, cleanup: () => cleanupEmbeddedPostgresTestDirs(dataDir) };
 }

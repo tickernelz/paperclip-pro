@@ -16,13 +16,13 @@ on:
         type: boolean
         default: false
       auth:
-        description: npm authentication (token until every package has a trusted publisher)
+        description: npm authentication (oidc trusted publisher; token only for a package or step OIDC refuses)
         required: true
         type: choice
         options:
-          - token
           - oidc
-        default: token
+          - token
+        default: oidc
 
 concurrency:
   group: release
@@ -95,10 +95,14 @@ jobs:
           restore-keys: |
             release-cargo-${{ runner.os }}-
 
+      - name: Install npm with OIDC dist-tag support
+        run: npm install -g npm@11.21.2
+
       - name: Release
         env:
           GH_TOKEN: ${{ github.token }}
           NODE_AUTH_TOKEN: ${{ steps.params.outputs.auth == 'token' && secrets.NPM_TOKEN || '' }}
+          NPM_PROMOTE_TOKEN: ${{ steps.params.outputs.auth == 'oidc' && secrets.NPM_TOKEN || '' }}
           RELEASE_VERSION: ${{ steps.params.outputs.version }}
           RELEASE_DRY_RUN: ${{ steps.params.outputs.dry_run }}
         run: |

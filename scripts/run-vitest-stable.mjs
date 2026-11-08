@@ -72,16 +72,14 @@ const generalServerWithoutChatGroupName = "general-server-without-chat";
 const generalChatGroupName = "general-chat";
 const generalServerNativeRunnerGroupName = "general-server-native-runner";
 const chatSuite = "server/src/__tests__/chat-channels.integration.test.ts";
-// This suite rebuilds the Runner release binaries with cargo in beforeAll.
-// Inside the plain server shards, which carry no Rust cache,
-// that build was a ~4m30s cold compile of every third-party crate on each run
-// (277s of a 291s shard vitest step, actions run 35246999382, 2026-09-17).
-const nativeRunnerSuite =
-  "server/src/services/native-runtime/native-codex-runner.integration.test.ts";
+const nativeRunnerSuites = [
+  "server/src/services/native-runtime/native-codex-runner.integration.test.ts",
+  "server/src/__tests__/dot-runner.test.ts",
+];
 const ciWorkflowName = "CI";
-const nativeRunnerSuiteRunsInRustCachedLane = process.env.GITHUB_WORKFLOW === ciWorkflowName;
-const withoutChatExcludedSuites = nativeRunnerSuiteRunsInRustCachedLane
-  ? [chatSuite, nativeRunnerSuite]
+const nativeRunnerSuitesRunInRustCachedLane = process.env.GITHUB_WORKFLOW === ciWorkflowName;
+const withoutChatExcludedSuites = nativeRunnerSuitesRunInRustCachedLane
+  ? [chatSuite, ...nativeRunnerSuites]
   : [chatSuite];
 const generalWorkspacesAGroupName = "general-workspaces-a";
 const generalWorkspacesBGroupName = "general-workspaces-b";
@@ -98,6 +96,9 @@ const serializedServerVitestArgs = [
   "--no-file-parallelism",
   "--maxWorkers=1",
 ];
+const serverTestWorkers = parsePositiveInteger(process.env.WARDMOTE_SERVER_TEST_WORKERS ?? "1", "WARDMOTE_SERVER_TEST_WORKERS");
+const parallelServerVitestArgs =
+  serverTestWorkers > 1 ? [`--maxWorkers=${serverTestWorkers}`] : serializedServerVitestArgs;
 const sourceOnlyVitestArgs = ["--exclude", "**/dist/**"];
 
 function walk(dir) {
@@ -431,8 +432,8 @@ function runGeneralGroup(routeTests, groupName, shardIndex = null, shardCount = 
   }
   if (groupName === generalServerNativeRunnerGroupName) {
     runVitest(
-      ["--project", "@tickernelz/wardmote-server", ...serializedServerVitestArgs, nativeRunnerSuite],
-      "native runner vertical-slice suite",
+      ["--project", "@tickernelz/wardmote-server", ...serializedServerVitestArgs, ...nativeRunnerSuites],
+      "cargo-building native runner suites",
     );
     return;
   }
@@ -462,7 +463,7 @@ function runGeneralGroup(routeTests, groupName, shardIndex = null, shardCount = 
         [
           "--project",
           "@tickernelz/wardmote-server",
-          ...serializedServerVitestArgs,
+          ...parallelServerVitestArgs,
           ...shardFiles,
         ],
         `${groupName} shard ${shardIndex + 1}/${shardCount}`,
@@ -531,18 +532,18 @@ function runSerializedSuites(routeTests, shardIndex, shardCount) {
     `\n[test:run] serialized shard ${shardIndex + 1}/${shardCount} running ${shardTests.length} of ${routeTests.length} suites`,
   );
 
-  for (const routeTest of shardTests) {
-    runVitest(
-      [
-        "--project",
-        "@tickernelz/wardmote-server",
-        routeTest.repoPath,
-        "--pool=forks",
-        "--isolate",
-      ],
-      routeTest.repoPath,
-    );
-  }
+  if (shardTests.length === 0) return;
+  runVitest(
+    [
+      "--project",
+      "@tickernelz/wardmote-server",
+      ...shardTests.map((routeTest) => routeTest.repoPath),
+      "--pool=forks",
+      "--isolate",
+      ...parallelServerVitestArgs,
+    ],
+    `serialized shard ${shardIndex + 1}/${shardCount} with ${serverTestWorkers} worker(s)`,
+  );
 }
 
 const routeTests = walk(serverTestsDir)
@@ -585,7 +586,7 @@ if (options.dryRun) {
         generalServerSuiteCount: generalServerTestFiles.length,
         selectedGeneralServerSuites:
           options.mode === generalModeName && options.group === generalServerNativeRunnerGroupName
-            ? [nativeRunnerSuite]
+            ? nativeRunnerSuites
             : options.mode === generalModeName &&
                 [generalServerGroupName, generalServerWithoutChatGroupName].includes(options.group) &&
                 options.shardCount !== null
