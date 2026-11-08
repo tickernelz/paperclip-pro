@@ -25,6 +25,7 @@ import { NavLink } from "@/lib/router";
 import { INSTANCE_SETTINGS_PATH_PREFIX } from "@/lib/instance-settings";
 import { SIDEBAR_SCROLL_RESET_STATE } from "@/lib/navigation-scroll";
 import { queryKeys } from "@/lib/queryKeys";
+import { cn } from "@/lib/utils";
 import { useCompany } from "@/context/CompanyContext";
 import { useCloudInstance } from "@/hooks/useCloudInstance";
 import { useHiddenSettings } from "@/hooks/useHiddenSettings";
@@ -32,7 +33,7 @@ import { useFastResponsesEnabled } from "@/hooks/useFastResponsesEnabled";
 import { usePluginSlots } from "@/plugins/slots";
 import { SidebarNavItem } from "./SidebarNavItem";
 import { ContextualSidebarFrame } from "./ContextualSidebarFrame";
-import { primarySidebarStyles } from "./primary-sidebar-styles";
+import { primarySidebarStyles, sidebarNavStateStyles } from "./primary-sidebar-styles";
 
 /**
  * Sandbox-provider-only plugins (e.g. E2B, exe.dev, Modal) have no per-plugin
@@ -196,12 +197,10 @@ export function CompanySettingsSidebar() {
                   to={`${INSTANCE_SETTINGS_PATH_PREFIX}/plugins/${plugin.id}`}
                   state={SIDEBAR_SCROLL_RESET_STATE}
                   className={({ isActive }) =>
-                    [
+                    cn(
                       "rounded-md px-2 py-1.5 text-xs transition-colors",
-                      isActive
-                        ? "bg-bg-3 text-ink"
-                        : "text-ink-3 hover:bg-bg-3/50 hover:text-ink",
-                    ].join(" ")
+                      isActive ? sidebarNavStateStyles.active : cn(sidebarNavStateStyles.rest, "text-ink-3"),
+                    )
                   }
                 >
                   {plugin.manifestJson.displayName ?? plugin.packageName}

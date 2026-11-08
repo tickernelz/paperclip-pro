@@ -14,18 +14,15 @@ const mockResourceMembershipsApi = vi.hoisted(() => ({ listMine: vi.fn(), update
 const mockPushToast = vi.hoisted(() => vi.fn());
 const mockSetSidebarOpen = vi.hoisted(() => vi.fn());
 const mockSidebarState = vi.hoisted(() => ({ isMobile: false, collapsed: false, peeking: false }));
+const mockLocation = vi.hoisted(() => ({ pathname: "/PAP/dashboard" }));
 
 vi.mock("@/lib/router", () => ({
-  NavLink: ({ children, className, to, ...props }: {
-    children: ReactNode;
-    className?: string | ((state: { isActive: boolean }) => string);
-    to: string;
-  }) => (
-    <a href={to} className={typeof className === "function" ? className({ isActive: false }) : className} {...props}>
+  Link: ({ children, to, state: _state, ...props }: { children: ReactNode; to: string; state?: unknown }) => (
+    <a href={to} {...props}>
       {children}
     </a>
   ),
-  useLocation: () => ({ pathname: "/PAP/dashboard", search: "", hash: "", state: null }),
+  useLocation: () => ({ pathname: mockLocation.pathname, search: "", hash: "", state: null }),
 }));
 
 vi.mock("../context/CompanyContext", () => ({
@@ -126,6 +123,7 @@ describe("SidebarStarredProjects", () => {
     mockSidebarState.isMobile = false;
     mockSidebarState.collapsed = false;
     mockSidebarState.peeking = false;
+    mockLocation.pathname = "/PAP/dashboard";
     container = document.createElement("div");
     document.body.appendChild(container);
     root = null;
@@ -203,6 +201,29 @@ describe("SidebarStarredProjects", () => {
     expect(railProjectLink?.className).not.toContain("pl-6");
     const nameSpan = Array.from(container.querySelectorAll("span")).find((el) => el.textContent === "Alpha");
     expect(nameSpan?.className).toContain("w-0");
+  });
+
+  it("marks the starred project as the current page on any of its routes, not only its issues list", async () => {
+    mockProjectsApi.list.mockResolvedValue([
+      makeProject({ id: "project-a", name: "Alpha", urlKey: "alpha" }),
+      makeProject({ id: "project-b", name: "Bravo", urlKey: "bravo" }),
+    ]);
+    memberships = { ...memberships, starredProjectIds: ["project-a", "project-b"] };
+    mockLocation.pathname = "/PAP/projects/alpha/overview";
+
+    await render();
+
+    expect(projectLink(container, "alpha")?.getAttribute("aria-current")).toBe("page");
+    expect(projectLink(container, "bravo")?.hasAttribute("aria-current")).toBe(false);
+  });
+
+  it("marks no starred project as current outside project routes", async () => {
+    mockProjectsApi.list.mockResolvedValue([makeProject({ id: "project-a", name: "Alpha", urlKey: "alpha" })]);
+    memberships = { ...memberships, starredProjectIds: ["project-a"] };
+
+    await render();
+
+    expect(projectLink(container, "alpha")?.hasAttribute("aria-current")).toBe(false);
   });
 
   it("renders nothing when no projects are starred", async () => {
