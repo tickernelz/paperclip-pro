@@ -66,7 +66,6 @@ export const OWNER_AGENT_ADMITTING_GUARDS: Readonly<Record<string, true>> = {
 
 export const ACTOR_NEUTRAL_GUARDS: Readonly<Record<string, true>> = {
   assertAccessAdminVisible: true,
-  assertAdapterCodeInstallAllowed: true,
   assertAdapterManagementVisible: true,
   assertAuthenticated: true,
   assertCanTestAsAgent: true,

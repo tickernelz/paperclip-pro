@@ -4,7 +4,6 @@ import { createAgentLifecycle } from "../services/agent-lifecycle.js";
 
 import { agentIdentityService } from "../services/agent-identity.js";
 import { connectionIntentService } from "../services/connection-intents.js";
-import { isCloudManagedInstance } from "../services/cloud-instance.js";
 import { dotRunnerBroker } from "../services/dot-runner-broker.js";
 import { publicMcpConfig } from "../services/public-mcp/oauth.js";
 import { connectionIntentDeliveryService } from "../services/connection-intent-delivery.js";
@@ -3079,7 +3078,7 @@ export function agentRoutes(
         let resource: ReturnType<typeof publicMcpConfig> = null;
         try { resource = publicMcpConfig(process.env); } catch { /* diagnostic below */ }
         let environment = requestedEnvironmentId ? await environmentsSvc.getById(requestedEnvironmentId) : null;
-        const managedOnly = isCloudManagedInstance() || (await instanceSettings.getExperimental()).enableManagedSandboxOnly === true;
+        const managedOnly = (await instanceSettings.getExperimental()).enableManagedSandboxOnly === true;
         if (managedOnly && (!environment || environment.driver === "local")) {
           environment = await environmentsSvc.findManagedSandboxEnvironment(companyId);
         }
