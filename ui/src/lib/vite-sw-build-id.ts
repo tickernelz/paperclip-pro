@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { Plugin } from "vite";
+import { serviceWorkerBuildIdFromFileName } from "./service-worker-build-id";
 
 /**
  * Stamp the service worker with a per-build id so bundle-only deploys still
@@ -38,18 +39,6 @@ export function stampServiceWorkerBuildId(source: string, buildId: string): stri
   return source.split(SERVICE_WORKER_BUILD_ID_PLACEHOLDER).join(buildId);
 }
 
-/**
- * Derive a build id from the emitted bundle. The entry chunk's file name
- * carries a content hash that changes whenever the app code changes and stays
- * stable when it does not, so the worker rotates precisely with the app.
- */
-export function deriveBuildIdFromEntryFileName(entryFileName: string): string {
-  const base = path.basename(entryFileName).replace(/\.js$/, "");
-  // Keep only characters that are safe inside a Cache Storage name.
-  const sanitized = base.replace(/[^A-Za-z0-9_-]/g, "-");
-  return sanitized || "build";
-}
-
 export function serviceWorkerBuildIdPlugin(
   options: { serviceWorkerFileName?: string } = {},
 ): Plugin {
@@ -70,7 +59,7 @@ export function serviceWorkerBuildIdPlugin(
         (chunk) => chunk.type === "chunk" && chunk.isEntry,
       );
       if (entry) {
-        buildId = deriveBuildIdFromEntryFileName(entry.fileName);
+        buildId = serviceWorkerBuildIdFromFileName(entry.fileName);
       }
     },
     closeBundle() {

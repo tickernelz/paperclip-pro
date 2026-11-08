@@ -1425,7 +1425,7 @@ export function DesignGuide() {
             <EntityRow
               title="Left resource"
               subtitle="Persistent action with dimmed row content."
-              className="group text-ink/55"
+              className="group text-ink-3"
               trailing={
                 <MembershipAction
                   state="left"
@@ -1438,7 +1438,7 @@ export function DesignGuide() {
             <EntityRow
               title="Leaving resource"
               subtitle="Disabled while the optimistic mutation is pending."
-              className="group text-ink/55"
+              className="group text-ink-3"
               trailing={
                 <MembershipAction
                   state="left"

@@ -7,6 +7,7 @@ const CACHED_AT_HEADER = "x-wardmote-cached-at";
 const MAX_DATA_ENTRIES = 400;
 const STORE_INTERVAL_MS = 30_000;
 const SKIP_WAITING_MESSAGE = "wardmote.skip-waiting";
+const BUILD_ID_MESSAGE = "wardmote.build-id";
 const CLEAR_OFFLINE_DATA_MESSAGE = "wardmote.clear-offline-data";
 const SESSION_PATH = "/api/auth/get-session";
 const NO_STORE_READABLE_API = new Set([SESSION_PATH, "/api/health"]);
@@ -250,6 +251,8 @@ self.addEventListener("message", (event) => {
     self.skipWaiting();
   } else if (type === CLEAR_OFFLINE_DATA_MESSAGE) {
     event.waitUntil(clearOfflineData().catch(() => {}));
+  } else if (type === BUILD_ID_MESSAGE) {
+    event.ports?.[0]?.postMessage({ type: BUILD_ID_MESSAGE, buildId: BUILD_ID });
   }
 });
 
