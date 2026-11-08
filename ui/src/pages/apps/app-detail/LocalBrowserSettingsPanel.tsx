@@ -292,7 +292,7 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
         {pairing && (
           <div
             className="space-y-3 rounded-lg border border-line bg-bg-3/40 p-4"
-            data-paperclip-local-browser-pairing=""
+            data-wardmote-local-browser-pairing=""
             data-origin={pairingOrigin(pairing.connectUrls)}
             data-code={pairing.code}
           >

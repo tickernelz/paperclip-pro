@@ -130,7 +130,7 @@
     byId("reconnect").disabled = !connection.canReconnect;
     byId("disconnect").disabled = !connection.canDisconnect;
     byId("pair-note").textContent = connection.showPairForm
-      ? "Paste the pairing link from Paperclip's Local Browser page. Codes expire after 10 minutes."
+      ? "Paste the pairing link from Wardmote's Local Browser page. Codes expire after 10 minutes."
       : "Pasting a new pairing link replaces the current pairing.";
 
     var permissions = view.permissions;
@@ -366,7 +366,7 @@
     var input = byId("pair-input").value.trim();
     var parsed = LB.pairing.parsePairingInput(input);
     if (!input || parsed.reason) {
-      showPairError(parsed.reason || "Paste the pairing link from Paperclip.");
+      showPairError(parsed.reason || "Paste the pairing link from Wardmote.");
       return;
     }
     showPairError("");
