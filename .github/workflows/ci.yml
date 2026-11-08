@@ -450,12 +450,21 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-workspace
+      - name: Runner Rust release cache
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6
+        with:
+          workspaces: packages/paperclip-runner/runner -> target
+          shared-key: runner-build-v1
+          cache-workspace-crates: false
+          cache-bin: false
+          save-if: false
       - name: Upgrade an existing install to this commit and keep its home
         env:
+          CARGO_TARGET_DIR: ${{ github.workspace }}/packages/paperclip-runner/runner/target
           GH_TOKEN: ${{ github.token }}
           UPGRADE_REPO: ${{ github.event.pull_request.head.repo.full_name }}
           UPGRADE_SHA: ${{ github.event.pull_request.head.sha }}
-        run: bash scripts/test-upgrade-path.sh
+        run: UPGRADE_PNPM_STORE="$(pnpm store path --silent)" bash scripts/test-upgrade-path.sh
 
   docker-omp-pin:
     name: Docker OMP pin
