@@ -393,12 +393,10 @@ Dispatch inputs:
   `NPM_TOKEN` repository secret and is only for:
   - a new package, before its trusted publisher can exist (npm needs the
     package page first);
-  - moving `latest` for a package whose trusted publisher lacks
-    `Allow npm dist-tag`: an `oidc` run passes `NPM_TOKEN` to `release.sh` as
-    `NPM_PROMOTE_TOKEN`, and a dist-tag OIDC refuses is moved with that token
-    and logged as a warning instead of failing the run. Publishing never
-    falls back to the token; once every package allows dist-tags, the warning
-    stops appearing and the token is unused;
+  - finishing a version whose `oidc` run failed at the `latest` promotion,
+    for example a package without `Allow npm dist-tag`: rerun that version
+    with `auth=token`; published packages are skipped and only the promotion
+    runs, with the OIDC identity stripped so npm uses the token;
   - `npm deprecate` and other owner commands, which OIDC does not cover.
 
 The run is idempotent and resumable: a package version already on npm is
