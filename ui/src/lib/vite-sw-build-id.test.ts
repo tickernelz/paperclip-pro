@@ -2,11 +2,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import {
-  SERVICE_WORKER_BUILD_ID_PLACEHOLDER,
-  deriveBuildIdFromEntryFileName,
-  stampServiceWorkerBuildId,
-} from "./vite-sw-build-id";
+import { serviceWorkerBuildIdFromFileName } from "./service-worker-build-id";
+import { SERVICE_WORKER_BUILD_ID_PLACEHOLDER, stampServiceWorkerBuildId } from "./vite-sw-build-id";
 
 const swSource = () =>
   `const BUILD_ID = "${SERVICE_WORKER_BUILD_ID_PLACEHOLDER}";\n` +
@@ -41,13 +38,19 @@ describe("stampServiceWorkerBuildId", () => {
   });
 });
 
-describe("deriveBuildIdFromEntryFileName", () => {
+describe("serviceWorkerBuildIdFromFileName", () => {
   it("uses the content-hashed entry file name", () => {
-    expect(deriveBuildIdFromEntryFileName("assets/index-BHbrFFmp.js")).toBe("index-BHbrFFmp");
+    expect(serviceWorkerBuildIdFromFileName("assets/index-BHbrFFmp.js")).toBe("index-BHbrFFmp");
+  });
+
+  it("derives the same id from the page's entry script URL path", () => {
+    expect(serviceWorkerBuildIdFromFileName(new URL("https://w.example/assets/index-BHbrFFmp.js").pathname)).toBe(
+      serviceWorkerBuildIdFromFileName("assets/index-BHbrFFmp.js"),
+    );
   });
 
   it("sanitizes characters that are unsafe in a cache name", () => {
-    expect(deriveBuildIdFromEntryFileName("assets/index @weird!.js")).toBe("index--weird-");
+    expect(serviceWorkerBuildIdFromFileName("assets/index @weird!.js")).toBe("index--weird-");
   });
 });
 
