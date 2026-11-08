@@ -2488,7 +2488,6 @@ export function emailChannelService(db: Db, options: EmailChannelOptions) {
         }
       }
       await stopEndpoint(endpoint);
-      // Only registrations and scoped keys created by Wardmote are removed.
       if (config.webhookId)
         await api
           .deleteWebhook(endpoint.botExternalId!, config.webhookId)
