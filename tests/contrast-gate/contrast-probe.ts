@@ -78,7 +78,8 @@ export function probeRenderedContrast(state: string): ContrastItem[] {
   for (const host of document.querySelectorAll<HTMLElement>("[data-gallery-item]")) {
     const id = host.dataset.galleryItem!;
     const textSurface = host.dataset.galleryKind === "text";
-    const el = textSurface || host.matches("a, button, [role=switch], [role=group]") ? host : host.querySelector<HTMLElement>("a, button") ?? host;
+    const graphic = host.dataset.galleryKind === "graphic";
+    const el = textSurface || graphic || host.matches("a, button, [role=switch], [role=group]") ? host : host.querySelector<HTMLElement>("a, button") ?? host;
     const focusable = !textSurface && el.matches("button:not([disabled]), a[href]");
     const style = getComputedStyle(el);
     const opacity = opacityOf(el);
@@ -100,10 +101,13 @@ export function probeRenderedContrast(state: string): ContrastItem[] {
     let iconRatio: number | null = null;
     const icon = el.querySelector("svg");
     if (icon && texts.length === 0) {
-      const own = rgba(getComputedStyle(icon).color);
-      iconRatio = round(ratio(over([own[0], own[1], own[2], own[3] * opacity], background), background));
+      const paints = graphic ? [...icon.querySelectorAll("circle, path")].map((shape) => getComputedStyle(shape).fill) : [getComputedStyle(icon).color];
+      iconRatio = Math.min(...paints.map((paint) => {
+        const own = rgba(paint);
+        return round(ratio(over([own[0], own[1], own[2], own[3] * opacity], background), background));
+      }));
     }
-    const exempt = textSurface || /\.(ghost|link)(\.|$)|navitem|segmented\.item(?!\.on)|tabs\.(default\.trigger(?!\.on)|line\.trigger)/.test(id);
+    const exempt = textSurface || graphic || /\.(ghost|link)(\.|$)|navitem|segmented\.item(?!\.on)|tabs\.(default\.trigger(?!\.on)|line\.trigger)/.test(id);
     let boundary: number | null = null;
     if (!exempt) {
       const fill = rgba(style.backgroundColor);

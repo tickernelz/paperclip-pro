@@ -8,6 +8,7 @@ import { SidebarProvider } from "@/context/SidebarContext";
 import { SidebarNavItem } from "@/components/SidebarNavItem";
 import { MarkdownBody } from "@/components/MarkdownBody";
 import { MarkdownEditor } from "@/components/MarkdownEditor";
+import { MootLoading } from "@/components/MootLoading";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
@@ -105,6 +106,9 @@ function Surface({ theme, surface }: { theme: string; surface: (typeof GALLERY_S
         ))}
       </div>
       <div className="grid grid-cols-3 gap-3">
+        <div data-gallery-item={id("moot.loading")} data-gallery-kind="graphic">
+          <MootLoading className="min-h-0" />
+        </div>
         <div data-gallery-item={id("markdown.body")} data-gallery-kind="text">
           <MarkdownBody>{MARKDOWN_SAMPLE}</MarkdownBody>
         </div>
