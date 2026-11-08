@@ -151,7 +151,8 @@ function shellFunction(name) {
   return lines.slice(start, end + 1).join("\n");
 }
 
-function runPromote({ mode, promoteToken, nodeAuthToken }) {
+
+function runPromote({ mode, nodeAuthToken }) {
   const dir = mkdtempSync(path.join(tmpdir(), "release-promote-"));
   const binDir = path.join(dir, "bin");
   mkdirSync(binDir);
@@ -165,17 +166,14 @@ function runPromote({ mode, promoteToken, nodeAuthToken }) {
     `export PATH=${JSON.stringify(binDir)}:$PATH`,
     "PROMOTE_TAG=latest",
     "dry_run=false",
-    shellFunction("promote_with_token"),
     shellFunction("promote_to_latest"),
     `promote_to_latest "$(printf 'pkg\\t%s\\t%s' ${JSON.stringify(NAME)} ${JSON.stringify(VERSION)})"`,
     "echo PROMOTE_RETURNED_OK",
   ].join("\n");
-  const env = { ...process.env, CALLS_LOG: calls, MODE: mode, TMPDIR: dir, ACTIONS_ID_TOKEN_REQUEST_URL: "https://oidc.example", ACTIONS_ID_TOKEN_REQUEST_TOKEN: "id-token" };
+  const env = { ...process.env, CALLS_LOG: calls, MODE: mode, ACTIONS_ID_TOKEN_REQUEST_URL: "https://oidc.example", ACTIONS_ID_TOKEN_REQUEST_TOKEN: "id-token" };
   if (nodeAuthToken) env.NODE_AUTH_TOKEN = nodeAuthToken;
   else delete env.NODE_AUTH_TOKEN;
   delete env.NPM_CONFIG_USERCONFIG;
-  if (promoteToken) env.NPM_PROMOTE_TOKEN = promoteToken;
-  else delete env.NPM_PROMOTE_TOKEN;
   let output;
   let status = 0;
   try {
@@ -185,32 +183,21 @@ function runPromote({ mode, promoteToken, nodeAuthToken }) {
     output = `${error.stdout ?? ""}${error.stderr ?? ""}`;
   }
   const log = existsSync(calls) ? readFileSync(calls, "utf8").trim().split("\n") : [];
-  const leftover = execFileSync("bash", ["-c", `ls ${JSON.stringify(dir)} | grep -c npmrc-promote || true`], { encoding: "utf8" }).trim();
   rmSync(dir, { recursive: true, force: true });
-  return { status, output, log, leftover };
+  return { status, output, log };
 }
 
-test("promote_to_latest moves the tag over OIDC without touching the promote token", () => {
-  const result = runPromote({ mode: "accept_oidc", promoteToken: "promote-secret" });
+test("promote_to_latest moves the tag over OIDC", () => {
+  const result = runPromote({ mode: "accept_oidc" });
   assert.equal(result.status, 0, result.output);
   assert.equal(result.log.length, 1);
   assert.match(result.log[0], /\|oidc=https:\/\/oidc\.example\|userconfig=\|token=$/);
 });
 
-test("promote_to_latest retries a refused OIDC dist-tag with the promote token and no OIDC identity", () => {
-  const result = runPromote({ mode: "refuse_oidc", promoteToken: "promote-secret" });
-  assert.equal(result.status, 0, result.output);
-  assert.match(result.output, /OIDC refused npm dist-tag add/);
-  assert.doesNotMatch(result.output, /promote-secret/);
-  assert.equal(result.log.length, 2);
-  assert.match(result.log[1], /^dist-tag add @tickernelz\/example-package@1\.2\.3 latest\|oidc=\|userconfig=\S+\|token=\/\/registry\.npmjs\.org\/:_authToken=promote-secret$/);
-  assert.equal(result.leftover, "0");
-});
-
-test("promote_to_latest fails a refused OIDC dist-tag when no promote token is configured", () => {
+test("promote_to_latest fails a refused OIDC dist-tag and points at a token rerun", () => {
   const result = runPromote({ mode: "refuse_oidc" });
   assert.equal(result.status, 1);
-  assert.match(result.output, /enable "Allow npm dist-tag" on its trusted publisher, or set the NPM_TOKEN repository secret/);
+  assert.match(result.output, /enable "Allow npm dist-tag" on its trusted publisher, or rerun this version with auth=token/);
   assert.equal(result.log.length, 1);
 });
 
