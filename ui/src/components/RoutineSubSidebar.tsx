@@ -13,6 +13,7 @@ import {
 import type { LucideIcon } from "lucide-react";
 import { Link } from "@/lib/router";
 import { cn } from "@/lib/utils";
+import { sidebarNavStateStyles } from "./primary-sidebar-styles";
 import {
   ROUTINE_SECTION_KEYS,
   type RoutineSectionKey,
@@ -142,8 +143,8 @@ export function RoutineSubSidebar({
                   // inset pill, type scale, and icon size.
                   "flex items-center gap-2.5 mx-2 rounded-lg px-2 py-1.5 pointer-coarse:py-1 text-(length:--text-compact) font-medium transition-colors motion-safe:duration-150",
                   isActive
-                    ? "bg-bg-3 text-ink"
-                    : "text-ink/80 hover:bg-bg-3/50 hover:text-ink",
+                    ? sidebarNavStateStyles.active
+                    : cn(sidebarNavStateStyles.rest, "text-ink/80"),
                 )}
               >
                 <Icon className="h-4 w-4 shrink-0" />
