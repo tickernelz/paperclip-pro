@@ -2513,6 +2513,8 @@
     ["packages/shared/src/issue-thread-interactions.test.ts",15,"belum-diganti"],
     ["packages/shared/src/issue-write-denial.test.ts",2,"belum-diganti"],
     ["packages/shared/src/issue-write-denial.ts",2,"belum-diganti"],
+    ["packages/shared/src/local-browser.test.ts",3,"migrasi-otomatis"],
+    ["packages/shared/src/local-browser.ts",1,"migrasi-otomatis"],
     ["packages/shared/src/markdown-work-products.test.ts",3,"belum-diganti"],
     ["packages/shared/src/markdown-work-products.ts",1,"belum-diganti"],
     ["packages/shared/src/mcp-config-help-prompt.ts",5,"belum-diganti"],
