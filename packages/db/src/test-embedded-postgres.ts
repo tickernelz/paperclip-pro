@@ -2,6 +2,7 @@ import fs from "node:fs";
 import net from "node:net";
 import os from "node:os";
 import path from "node:path";
+import { legacyEnvKey } from "@tickernelz/wardmote-shared/env-aliases";
 import { applyPendingMigrations, closeRegisteredClients, ensurePostgresDatabase } from "./client.js";
 import {
   createEmbeddedPostgresLogBuffer,
@@ -116,7 +117,7 @@ async function getAvailablePort(): Promise<number> {
 export const EMBEDDED_POSTGRES_TEMPLATE_DIR_ENV = "WARDMOTE_TEST_EMBEDDED_POSTGRES_TEMPLATE_DIR";
 
 function embeddedPostgresTemplateDir(): string | null {
-  const dir = process.env[EMBEDDED_POSTGRES_TEMPLATE_DIR_ENV]?.trim();
+  const dir = (process.env[EMBEDDED_POSTGRES_TEMPLATE_DIR_ENV] ?? process.env[legacyEnvKey(EMBEDDED_POSTGRES_TEMPLATE_DIR_ENV)])?.trim();
   return dir && fs.existsSync(path.join(dir, "PG_VERSION")) ? dir : null;
 }
 
