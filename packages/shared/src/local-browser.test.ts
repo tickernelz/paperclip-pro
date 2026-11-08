@@ -187,7 +187,7 @@ describe("local browser limits and frames", () => {
       access,
       guards: {},
     });
-    expect(hello).toMatchObject({ access, guards: { protectPaperclipTab: true, protectFocusedTab: true, networkBufferSize: 1000 } });
+    expect(hello).toMatchObject({ access, guards: { protectWardmoteTab: true, protectFocusedTab: true, networkBufferSize: 1000 } });
     const broken = localBrowserBridgeFrameSchema.parse({ type: "hello", protocol: 1, client: "chromium", clientVersion: "1", label: "x", profileName: null, tabs: [], access: { siteAccess: "nope" } });
     expect(broken).toMatchObject({ type: "hello" });
     expect((broken as { access?: unknown }).access).toBeUndefined();
@@ -195,5 +195,15 @@ describe("local browser limits and frames", () => {
     expect(localBrowserExtensionEventFrameSchema.safeParse({ type: "event", event: "access", data: access }).success).toBe(true);
     expect(localBrowserExtensionEventFrameSchema.safeParse({ type: "event", event: "guards", data: { networkBufferSize: 10 } }).success).toBe(false);
     expect(localBrowserGuardsSchema.parse({ networkBufferSize: 20_000 }).networkBufferSize).toBe(20_000);
+  });
+
+  it("keeps a tab guard an older extension reports under its previous key", () => {
+    const tabs: never[] = [];
+    const hello = localBrowserBridgeFrameSchema.parse({ type: "hello", protocol: 1, client: "firefox", clientVersion: "1.3.1", label: "x", profileName: null, tabs, guards: { protectPaperclipTab: false, protectFocusedTab: true, networkBufferSize: 1000 } });
+    expect((hello as { guards?: unknown }).guards).toEqual({ protectWardmoteTab: false, protectFocusedTab: true, networkBufferSize: 1000 });
+    const event = localBrowserExtensionEventFrameSchema.parse({ type: "event", event: "guards", data: { protectPaperclipTab: false, protectFocusedTab: false, networkBufferSize: 500 } });
+    expect(event).toMatchObject({ data: { protectWardmoteTab: false, protectFocusedTab: false, networkBufferSize: 500 } });
+    const both = localBrowserExtensionEventFrameSchema.parse({ type: "event", event: "guards", data: { protectPaperclipTab: false, protectWardmoteTab: true } });
+    expect(both).toMatchObject({ data: { protectWardmoteTab: true } });
   });
 });

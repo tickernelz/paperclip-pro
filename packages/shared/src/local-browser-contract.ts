@@ -147,7 +147,7 @@ export const LOCAL_BROWSER_LIMITS: Readonly<Record<LocalBrowserLimitKey, LocalBr
 };
 
 export const LOCAL_BROWSER_GUARD_DEFAULTS = {
-  protectPaperclipTab: true,
+  protectWardmoteTab: true,
   protectFocusedTab: true,
   networkBufferSize: 1_000,
 } as const;

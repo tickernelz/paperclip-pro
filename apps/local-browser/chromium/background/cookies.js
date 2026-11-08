@@ -119,7 +119,7 @@
     if (failed.length) {
       result.failed = failed;
       result.note = denied
-        ? "The browser refused " + failed.length + " cookie(s) because this extension has no site access there yet; ask the user to press Allow all in the Paperclip extension"
+        ? "The browser refused " + failed.length + " cookie(s) because this extension has no site access there yet; ask the user to press Allow all in the Wardmote extension"
         : "The browser refused " + failed.length + " cookie(s); check the domain against the url";
     }
     return result;

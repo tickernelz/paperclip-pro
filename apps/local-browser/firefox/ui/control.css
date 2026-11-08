@@ -4,45 +4,45 @@
 
 :root {
   color-scheme: light dark;
-  --bg: #ffffff;
-  --surface: #f6f7f9;
-  --border: #d9dde3;
-  --text: #1c2024;
-  --muted: #5f6873;
-  --accent: #2563eb;
-  --accent-text: #ffffff;
-  --ok: #15803d;
-  --wait: #b45309;
-  --warn: #c2410c;
-  --error: #b91c1c;
-  --attention-bg: #fff7ed;
-  --attention-border: #fdba74;
-  --chip-ok-bg: #dcfce7;
-  --chip-missing-bg: #f1f2f4;
-  --chip-pending-bg: #ffedd5;
-  --radius: 10px;
-  --font: system-ui, -apple-system, "Segoe UI", sans-serif;
-  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --bg: oklch(0.975 0.003 265);
+  --bg-2: oklch(1 0 0);
+  --bg-3: oklch(0.948 0.005 265);
+  --line: oklch(0.885 0.007 265);
+  --ink: oklch(0.225 0.014 268);
+  --ink-3: oklch(0.505 0.014 268);
+  --accent: oklch(0.505 0.2 277);
+  --accent-ink: oklch(0.99 0.004 277);
+  --focus: oklch(0.55 0.2 277);
+  --ok: oklch(0.47 0.12 152);
+  --ok-soft: oklch(0.5 0.12 152 / 0.12);
+  --warn: oklch(0.49 0.11 70);
+  --warn-soft: oklch(0.62 0.13 75 / 0.14);
+  --bad: oklch(0.52 0.19 25);
+  --run: oklch(0.48 0.11 225);
+  --run-soft: oklch(0.51 0.11 225 / 0.12);
+  --r-lg: 10px;
+  --f-sans: "InterVariable", "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --f-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #15171a;
-    --surface: #1e2125;
-    --border: #33383f;
-    --text: #e8eaed;
-    --muted: #9aa3ad;
-    --accent: #60a5fa;
-    --accent-text: #0b1220;
-    --ok: #4ade80;
-    --wait: #fbbf24;
-    --warn: #fb923c;
-    --error: #f87171;
-    --attention-bg: #2a1f12;
-    --attention-border: #9a5b13;
-    --chip-ok-bg: #133b22;
-    --chip-missing-bg: #2a2e33;
-    --chip-pending-bg: #3b2a12;
+    --bg: oklch(0.165 0.006 268);
+    --bg-2: oklch(0.2 0.007 268);
+    --bg-3: oklch(0.24 0.008 268);
+    --line: oklch(0.31 0.009 268);
+    --ink: oklch(0.962 0.004 268);
+    --ink-3: oklch(0.715 0.01 268);
+    --accent: oklch(0.73 0.145 277);
+    --accent-ink: oklch(0.17 0.02 277);
+    --focus: oklch(0.79 0.13 277);
+    --ok: oklch(0.79 0.14 152);
+    --ok-soft: oklch(0.79 0.14 152 / 0.14);
+    --warn: oklch(0.83 0.125 80);
+    --warn-soft: oklch(0.83 0.125 80 / 0.14);
+    --bad: oklch(0.73 0.165 22);
+    --run: oklch(0.79 0.11 225);
+    --run-soft: oklch(0.79 0.11 225 / 0.14);
   }
 }
 
@@ -55,8 +55,8 @@ body {
   margin: 0 auto;
   padding: 24px 20px 40px;
   background: var(--bg);
-  color: var(--text);
-  font: 14px/1.5 var(--font);
+  color: var(--ink);
+  font: 14px/1.5 var(--f-sans);
 }
 
 h1,
@@ -85,7 +85,7 @@ a {
 }
 
 .hint {
-  color: var(--muted);
+  color: var(--ink-3);
 }
 
 .lead {
@@ -106,9 +106,9 @@ a {
   gap: 8px;
   align-items: center;
   padding: 4px 12px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--line);
   border-radius: 999px;
-  background: var(--surface);
+  background: var(--bg-2);
   font-weight: 600;
 }
 
@@ -116,7 +116,7 @@ a {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: var(--muted);
+  background: var(--ink-3);
 }
 
 [data-tone="ok"] .dot {
@@ -124,7 +124,7 @@ a {
 }
 
 [data-tone="wait"] .dot {
-  background: var(--wait);
+  background: var(--run);
 }
 
 [data-tone="warn"] .dot {
@@ -132,7 +132,7 @@ a {
 }
 
 [data-tone="error"] .dot {
-  background: var(--error);
+  background: var(--bad);
 }
 
 .tabs {
@@ -140,18 +140,18 @@ a {
   flex-wrap: wrap;
   gap: 4px;
   margin-bottom: 16px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--line);
 }
 
 .tabs a {
   padding: 8px 12px;
-  color: var(--muted);
+  color: var(--ink-3);
   text-decoration: none;
   border-bottom: 2px solid transparent;
 }
 
 .tabs a[aria-current="page"] {
-  color: var(--text);
+  color: var(--ink);
   border-bottom-color: var(--accent);
   font-weight: 600;
 }
@@ -161,8 +161,8 @@ a {
   min-width: 18px;
   padding: 0 5px;
   border-radius: 999px;
-  background: var(--wait);
-  color: var(--accent-text);
+  background: var(--run);
+  color: var(--accent-ink);
   font-size: 12px;
   text-align: center;
 }
@@ -170,11 +170,11 @@ a {
 .message {
   min-height: 1.5em;
   margin-bottom: 8px;
-  color: var(--muted);
+  color: var(--ink-3);
 }
 
 .message[data-tone="error"] {
-  color: var(--error);
+  color: var(--bad);
 }
 
 .facts {
@@ -185,7 +185,7 @@ a {
 }
 
 .facts dt {
-  color: var(--muted);
+  color: var(--ink-3);
 }
 
 .facts dd {
@@ -198,14 +198,14 @@ a {
   gap: 8px;
   margin-top: 16px;
   padding: 14px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
+  background: var(--bg-2);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
 }
 
 .panel.attention {
-  background: var(--attention-bg);
-  border-color: var(--attention-border);
+  background: var(--warn-soft);
+  border-color: var(--warn);
 }
 
 .row {
@@ -232,31 +232,31 @@ label {
 input[type="text"],
 input[type="number"] {
   padding: 7px 10px;
-  color: var(--text);
+  color: var(--ink);
   background: var(--bg);
-  border: 1px solid var(--border);
+  border: 1px solid var(--line);
   border-radius: 6px;
   font: inherit;
 }
 
 button {
   padding: 7px 14px;
-  color: var(--text);
+  color: var(--ink);
   background: var(--bg);
-  border: 1px solid var(--border);
+  border: 1px solid var(--line);
   border-radius: 6px;
   font: inherit;
   cursor: pointer;
 }
 
 button.primary {
-  color: var(--accent-text);
+  color: var(--accent-ink);
   background: var(--accent);
   border-color: var(--accent);
 }
 
 button.danger {
-  color: var(--error);
+  color: var(--bad);
 }
 
 button:disabled {
@@ -268,12 +268,12 @@ a:focus-visible,
 button:focus-visible,
 input:focus-visible,
 pre:focus-visible {
-  outline: 2px solid var(--accent);
+  outline: 2px solid var(--focus);
   outline-offset: 2px;
 }
 
 .error {
-  color: var(--error);
+  color: var(--bad);
 }
 
 .pending,
@@ -293,7 +293,7 @@ pre:focus-visible {
   align-items: center;
   padding: 10px 12px;
   background: var(--bg);
-  border: 1px solid var(--border);
+  border: 1px solid var(--line);
   border-radius: 8px;
 }
 
@@ -302,8 +302,8 @@ pre:focus-visible {
 }
 
 .permissions li.is-pending {
-  border-color: var(--attention-border);
-  background: var(--attention-bg);
+  border-color: var(--warn);
+  background: var(--warn-soft);
 }
 
 .item-name {
@@ -312,7 +312,7 @@ pre:focus-visible {
 
 .item-text {
   grid-column: 1;
-  color: var(--muted);
+  color: var(--ink-3);
   overflow-wrap: anywhere;
 }
 
@@ -333,18 +333,18 @@ pre:focus-visible {
 
 .chip[data-status="granted"],
 .chip[data-status="required"] {
-  background: var(--chip-ok-bg);
+  background: var(--ok-soft);
   color: var(--ok);
 }
 
 .chip[data-status="missing"] {
-  background: var(--chip-missing-bg);
-  color: var(--muted);
+  background: var(--bg-3);
+  color: var(--ink-3);
 }
 
 .chip[data-status="pending"] {
-  background: var(--chip-pending-bg);
-  color: var(--wait);
+  background: var(--run-soft);
+  color: var(--run);
 }
 
 .toggles {
@@ -370,7 +370,7 @@ pre:focus-visible {
 
 .toggle span {
   grid-column: 2;
-  color: var(--muted);
+  color: var(--ink-3);
 }
 
 .command {
@@ -378,9 +378,9 @@ pre:focus-visible {
   padding: 10px;
   overflow-x: auto;
   background: var(--bg);
-  border: 1px solid var(--border);
+  border: 1px solid var(--line);
   border-radius: 6px;
-  font: 13px/1.4 var(--mono);
+  font: 13px/1.4 var(--f-mono);
   white-space: pre-wrap;
   word-break: break-all;
   overflow-wrap: anywhere;
@@ -389,9 +389,9 @@ pre:focus-visible {
 select {
   max-width: 100%;
   padding: 7px 10px;
-  color: var(--text);
+  color: var(--ink);
   background: var(--bg);
-  border: 1px solid var(--border);
+  border: 1px solid var(--line);
   border-radius: 6px;
   font: inherit;
 }
@@ -482,7 +482,7 @@ details.panel {
 }
 
 .notes {
-  color: var(--muted);
+  color: var(--ink-3);
 }
 
 #notes-title {

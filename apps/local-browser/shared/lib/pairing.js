@@ -53,7 +53,7 @@
 
   function parsePairingInput(raw) {
     var text = String(raw == null ? "" : raw).trim();
-    if (!text) return { origin: null, code: null, needsCode: false, reason: "Paste the pairing link from Paperclip" };
+    if (!text) return { origin: null, code: null, needsCode: false, reason: "Paste the pairing link from Wardmote" };
     var bare = codeFrom(text);
     if (bare) return { origin: null, code: bare, needsCode: false, reason: null };
     var code = readCode(text);

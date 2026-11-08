@@ -32,7 +32,7 @@ test("hello advertises every capability with the access snapshot and guards", as
   assert.deepEqual([...hello.capabilities].sort(), [...harness.sandbox.LB.protocol.CAPABILITIES].sort());
   assert.equal(hello.access.siteAccess, "all");
   assert.ok(Array.isArray(hello.access.granted));
-  assert.deepEqual(hello.guards, { protectPaperclipTab: true, protectFocusedTab: true, networkBufferSize: 1000 });
+  assert.deepEqual(hello.guards, { protectWardmoteTab: true, protectFocusedTab: true, networkBufferSize: 1000 });
   assert.equal(hello.tabs[0].cookieStoreId, "firefox-default");
 });
 
