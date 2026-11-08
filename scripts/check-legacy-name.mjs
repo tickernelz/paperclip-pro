@@ -43,11 +43,11 @@ const excludes = SELF_PATHS.map((entry) => `:(exclude)${entry}`);
 
 export function countOccurrences(repoRoot) {
   const counts = new Map();
-  const byLine = git(repoRoot, ["grep", "-z", "-c", "-I", "-i", "-e", LEGACY_NAME, "--", ".", ...excludes]);
-  for (const record of byLine.split("\n")) {
+  const matches = git(repoRoot, ["grep", "-z", "-o", "-I", "-i", "-e", LEGACY_NAME, "--", ".", ...excludes]);
+  for (const record of matches.split("\n")) {
     if (!record) continue;
-    const [file, count] = record.split("\0");
-    counts.set(file, Number(count));
+    const file = record.slice(0, record.indexOf("\0"));
+    counts.set(file, (counts.get(file) ?? 0) + 1);
   }
   const files = git(repoRoot, ["ls-files", "-z", "--", ".", ...excludes]).split("\0");
   for (const file of files) {

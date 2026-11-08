@@ -60,6 +60,14 @@ test("fails when an allowlisted file gains an occurrence", () => {
   });
 });
 
+test("fails when an occurrence is added to a line that already has one", () => {
+  withRepo({ "a.ts": "paperclip paperclip\n" }, [["a.ts", 1, "belum-diganti"]], (root) => {
+    const result = check(root);
+    assert.equal(result.code, 1);
+    assert.match(result.text, /a\.ts: 2 occurrence\(s\), allowlist permits 1/);
+  });
+});
+
 test("counts the legacy name in a file path, including binary files", () => {
   withRepo({ "skills/paperclip/logo.bin": Buffer.from([0, 1, 2, 0]) }, [], (root) => {
     assert.deepEqual([...countOccurrences(root)], [["skills/paperclip/logo.bin", 1]]);
