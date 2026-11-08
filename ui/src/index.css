@@ -1850,44 +1850,24 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
   animation: shimmer-text-fade 2.5s ease-in-out infinite;
 }
 
-.paperclip-thinking-icon {
-  transform-origin: 50% 50%;
+.moot-mark-dot-pulse {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: moot-mark-dot-pulse 1.2s ease-in-out infinite;
 }
 }
 
-@keyframes paperclip-thinking-draw {
-  0% {
-    stroke-dasharray: 0 85.717;
-    stroke-dashoffset: -85.717;
-    opacity: 1;
-    animation-timing-function: cubic-bezier(0.455, 0.03, 0.515, 0.955);
-  }
-  39.0625% {
-    stroke-dasharray: 85.717 85.717;
-    stroke-dashoffset: 0;
-    opacity: 1;
-    animation-timing-function: cubic-bezier(0.55, 0.055, 0.675, 0.19);
-  }
-  78.125% {
-    stroke-dasharray: 0 85.717;
-    stroke-dashoffset: 0;
-    opacity: 1;
-  }
-  78.225% {
-    opacity: 0;
-  }
+@keyframes moot-mark-dot-pulse {
+  0%,
+  60%,
   100% {
-    stroke-dasharray: 0 85.717;
-    stroke-dashoffset: 0;
-    opacity: 0;
+    opacity: 0.35;
+    transform: scale(0.72);
   }
-}
-
-@layer components {
-
-.paperclip-thinking-icon-path {
-  animation: paperclip-thinking-draw 1s linear infinite;
-}
+  25% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @layer layout {
@@ -1931,11 +1911,8 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
     opacity: 1;
   }
 
-  .paperclip-thinking-icon-path {
+  .moot-mark-dot-pulse {
     animation: none;
-    opacity: 1;
-    stroke-dasharray: 85.717 85.717;
-    stroke-dashoffset: 0;
   }
 }
 }
