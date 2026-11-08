@@ -101,6 +101,14 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-workspace
+      - name: Runner Rust release cache
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6
+        with:
+          workspaces: packages/paperclip-runner/runner -> target
+          shared-key: runner-typecheck-v1
+          cache-workspace-crates: false
+          cache-bin: false
+          save-if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
       - name: Typecheck workspaces whose build scripts skip TypeScript
         run: pnpm run typecheck:build-gaps
 
@@ -119,6 +127,14 @@ jobs:
           save-store: "true"
       - name: Build Runner Evalbook viewer
         run: pnpm --filter @tickernelz/paperclip-pro-paperclip-runner build:issue-thread
+      - name: Runner Rust release cache
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6
+        with:
+          workspaces: packages/paperclip-runner/runner -> target
+          shared-key: runner-build-v1
+          cache-workspace-crates: false
+          cache-bin: false
+          save-if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
       - name: Build
         run: pnpm build
 
@@ -243,9 +259,21 @@ jobs:
             shard_index: 4
             shard_count: 5
           - group: general-chat
-            label: chat
+            label: chat 1/2
+            shard_index: 0
+            shard_count: 2
+          - group: general-chat
+            label: chat 2/2
+            shard_index: 1
+            shard_count: 2
           - group: general-workspaces-a
-            label: workspaces-a
+            label: workspaces-a 1/2
+            shard_index: 0
+            shard_count: 2
+          - group: general-workspaces-a
+            label: workspaces-a 2/2
+            shard_index: 1
+            shard_count: 2
           - group: general-workspaces-b
             label: workspaces-b
     steps:
@@ -286,7 +314,7 @@ jobs:
         run: pnpm test:run:serialized -- --shard-index ${{ matrix.shard_index }} --shard-count 3
 
   e2e:
-    name: E2E (${{ matrix.shard_index }}/3)
+    name: E2E (${{ matrix.shard_index }}/4)
     needs: scope
     if: needs.scope.outputs.docs_only != 'true'
     runs-on: ubuntu-latest
@@ -294,7 +322,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard_index: [0, 1, 2]
+        shard_index: [0, 1, 2, 3]
     steps:
       - uses: actions/checkout@v7
         with:
@@ -324,7 +352,7 @@ jobs:
           PAPERCLIP_E2E_SKIP_LLM: "true"
           PAPERCLIP_PLAYWRIGHT_CHANNEL: "chrome"
         run: |
-          specs="$(node ./scripts/e2e-shard.mjs --shard-index ${{ matrix.shard_index }} --shard-count 3)"
+          specs="$(node ./scripts/e2e-shard.mjs --shard-index ${{ matrix.shard_index }} --shard-count 4)"
           echo "shard ${{ matrix.shard_index }} specs: $specs"
           # shellcheck disable=SC2086
           pnpm run test:e2e $specs
@@ -457,7 +485,22 @@ jobs:
     needs: [scope, policy, docs, typecheck, build, extensions, runner, general, serialized, e2e, mobile-shell, contrast-gate, upgrade-path, docker-omp-pin]
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    permissions:
+      contents: read
+      actions: read
     steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+          sparse-checkout: |
+            scripts/ci-timing-report.mjs
+            .github/ci-budgets.json
+          sparse-checkout-cone-mode: false
+      - name: Report CI time against the budget
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/ci-timing-report.mjs --run "${{ github.run_id }}" --budget .github/ci-budgets.json
       - name: Fail if any lane failed
         env:
           RESULTS: ${{ toJSON(needs) }}

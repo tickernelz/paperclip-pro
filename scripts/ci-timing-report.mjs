@@ -288,7 +288,7 @@ function collectSlowest(repo, summaries, options) {
         const entries = manifest === "e2e" ? parsed.specs : parsed.files;
         for (const [key, value] of entries) {
           const repoPath = repoPathForTestKey(key);
-          if (!repoPath) continue;
+          if (!repoPath || (manifest === "e2e" && !repoPath.endsWith(".spec.ts"))) continue;
           const sums = durationSums[manifest];
           const entry = sums.get(repoPath) ?? { total: 0, count: 0 };
           entry.total += value;
@@ -342,10 +342,14 @@ export function budgetFindings(summary, budgets) {
   const total = budgets.total?.[summary.event] ?? budgets.total?.default;
   if (total && summary.effective > total) findings.push({ name: "total (effective)", actual: summary.effective, budget: total });
   for (const job of summary.jobs) {
-    const budget = budgets.jobs?.[job.group] ?? budgets.jobs?.[job.name];
+    const budget = jobBudget(budgets, job);
     if (budget && job.duration > budget) findings.push({ name: job.name, actual: job.duration, budget });
   }
   return findings;
+}
+
+function jobBudget(budgets, job) {
+  return budgets.jobs?.[job.name] ?? budgets.jobs?.[job.group] ?? budgets.jobs?.default;
 }
 
 function reportBudget(repo, options) {
@@ -359,7 +363,7 @@ function reportBudget(repo, options) {
   lines.push(`Wall so far ${fmt(summary.wall)}, effective ${fmt(summary.effective)} (queue counted up to ${options.queueGrace}s per job), longest job queue ${fmt(summary.maxQueue)}, ${summary.jobMinutes.toFixed(0)} job minutes.`, "");
   lines.push("| job | queue | total | budget | |", "|---|---|---|---|---|");
   for (const job of [...summary.jobs].sort((a, b) => b.duration - a.duration)) {
-    const budget = budgets.jobs?.[job.group] ?? budgets.jobs?.[job.name];
+    const budget = jobBudget(budgets, job);
     lines.push(`| ${job.name} | ${fmt(job.queue)} | ${fmt(job.duration)} | ${budget ? fmt(budget) : "-"} | ${overrun.has(job.name) ? "over" : ""} |`);
   }
   const text = lines.join("\n") + "\n";

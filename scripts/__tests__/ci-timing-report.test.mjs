@@ -59,6 +59,8 @@ test("budgetFindings flags jobs by shard group and the effective total by event"
   const findings = budgetFindings(summary, { total: { default: 600, push: 720 }, jobs: { "Tests (server)": 480 } });
   assert.deepEqual(findings.map((finding) => finding.name), ["Tests (server 1/5)"]);
   assert.deepEqual(budgetFindings({ ...summary, event: "pull_request" }, { total: { default: 600 } }).map((finding) => finding.name), ["total (effective)"]);
+  assert.deepEqual(budgetFindings(summary, { jobs: { default: 485, Build: 1000 } }).map((finding) => finding.name), []);
+  assert.deepEqual(budgetFindings(summary, { jobs: { default: 470 } }).map((finding) => finding.name), ["Tests (server 1/5)", "Tests (server 2/5)", "Build"]);
 });
 
 test("quantile uses the nearest-rank value", () => {
