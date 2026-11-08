@@ -1,6 +1,6 @@
-# Wardmote Pro — Operations Runbook
+# Wardmote — Operations Runbook
 
-Day-two operation of an installed Wardmote Pro instance. Every command and path
+Day-two operation of an installed Wardmote instance. Every command and path
 below is taken from this repository's source; the citations say where.
 
 This fork is not on npm. Commands assume the managed shim installed by
