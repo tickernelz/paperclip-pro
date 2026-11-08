@@ -3,7 +3,7 @@ import {
   CONNECTION_INTENT_AGENT_GUIDANCE,
   connectionRequestInputSchema,
   connectionsSearchInputSchema,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 interface RuntimeConnectionOptions {
   retryProviderChoice?: boolean;

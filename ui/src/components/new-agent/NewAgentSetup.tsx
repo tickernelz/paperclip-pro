@@ -2,8 +2,8 @@ import { useConnectionModels } from "../ai-connections/useConnectionModels";
 import { AgentCharacter } from "../AgentCharacter";
 import { useAgentAppearanceDraft } from "../../hooks/useAgentAppearanceDraft";
 import { AiConnectionField, aiProviderForAdapter } from "../ai-connections/AiConnectionField";
-import type { AiConnectionBinding } from "@tickernelz/paperclip-pro-shared";
-import { DEFAULT_CODEX_LOCAL_MODEL } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/codex";
+import type { AiConnectionBinding } from "@tickernelz/wardmote-shared";
+import { DEFAULT_CODEX_LOCAL_MODEL } from "@tickernelz/wardmote-adapter-utils/provider-models/codex";
 import { testAgentSetup } from "@/lib/test-agent-setup";
 import { useCloudInstance } from "@/hooks/useCloudInstance";
 import { isNewAgentAdapterAllowed } from "@/lib/new-agent-adapters";
@@ -15,8 +15,8 @@ import type {
   AdapterEnvironmentTestResult,
   Agent,
   EnvBinding,
-} from "@tickernelz/paperclip-pro-shared";
-import { ADAPTER_AUTH_MISSING_CHECK_CODE } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
+import { ADAPTER_AUTH_MISSING_CHECK_CODE } from "@tickernelz/wardmote-shared";
 import { useNavigate, useSearchParams } from "@/lib/router";
 import { agentsApi } from "@/api/agents";
 import { adaptersApi } from "@/api/adapters";

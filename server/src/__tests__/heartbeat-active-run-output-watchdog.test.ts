@@ -14,7 +14,7 @@ import {
   issueRecoveryActions,
   issueRelations,
   issues,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

@@ -21,7 +21,7 @@ import {
   secretAccessEvents,
   userSecretDeclarations,
   userSecretDefinitions,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { and, eq } from "drizzle-orm";
 import { HttpError } from "../errors.js";
 import { getEmbeddedPostgresTestSupport, startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";

@@ -2,7 +2,7 @@ import type {
   IssueComment,
   IssueShareLink,
   PublicIssueShareView,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { api, ApiError } from "./client";
 import { readApiJson } from "./response";
 

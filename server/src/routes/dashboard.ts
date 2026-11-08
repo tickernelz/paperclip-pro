@@ -1,5 +1,5 @@
 import { Router } from "express";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import { dashboardService } from "../services/dashboard.js";
 import {
   DEFAULT_RECOVERY_RATE_THRESHOLD_PERCENT,

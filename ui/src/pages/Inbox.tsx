@@ -1,7 +1,7 @@
 import { type ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "@/lib/router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { deriveOriginatingActor, INBOX_MINE_ISSUE_STATUS_FILTER, isHeartbeatRunVisibleInMine } from "@tickernelz/paperclip-pro-shared";
+import { deriveOriginatingActor, INBOX_MINE_ISSUE_STATUS_FILTER, isHeartbeatRunVisibleInMine } from "@tickernelz/wardmote-shared";
 import { usePublishSharedQueryData, useSharedPollingQuery } from "@/hooks/useSharedPolling";
 import { approvalsApi } from "../api/approvals";
 import { accessApi } from "../api/access";
@@ -130,7 +130,7 @@ import {
   type SearchQueryParserContext,
 } from "../lib/search-query-parser";
 import { PageTabBar } from "../components/PageTabBar";
-import type { Approval, HeartbeatRun, Issue, JoinRequest } from "@tickernelz/paperclip-pro-shared";
+import type { Approval, HeartbeatRun, Issue, JoinRequest } from "@tickernelz/wardmote-shared";
 import {
   ACTIONABLE_APPROVAL_STATUSES,
   DEFAULT_INBOX_ISSUE_COLUMNS,

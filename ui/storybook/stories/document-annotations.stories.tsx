@@ -6,7 +6,7 @@ import type {
   DocumentAnnotationThreadWithComments,
   Issue,
   IssueDocument,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { DocumentAnnotationPanel } from "@/components/DocumentAnnotationPanel";
 import { DocumentAnnotationLayer, type PendingAnchor } from "@/components/DocumentAnnotationLayer";
 import {

@@ -1,4 +1,4 @@
-import type { AiProvider } from "@tickernelz/paperclip-pro-shared";
+import type { AiProvider } from "@tickernelz/wardmote-shared";
 import { unprocessable } from "../errors.js";
 
 /** Fixed provider endpoints; credentials are never sent to a caller-supplied URL or through a redirect. */

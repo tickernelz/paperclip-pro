@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { workAssessments } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
+import { workAssessments } from "@tickernelz/wardmote-db";
 import type { NativeEvidenceAssessment } from "./evidence-classifier.js";
 import { nativeSha256 } from "./canonical.js";
 

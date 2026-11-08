@@ -49,7 +49,7 @@ test("published server resolves workspace dependencies to the versions the works
       `${name} must be published at the version its own package.json declares`,
     );
   }
-  assert.notEqual(workspaceVersions.get("@tickernelz/paperclip-pro-plugin-sdk"), serverPackage.version);
+  assert.notEqual(workspaceVersions.get("@tickernelz/wardmote-plugin-sdk"), serverPackage.version);
 });
 
 for (const [name, version] of required) {

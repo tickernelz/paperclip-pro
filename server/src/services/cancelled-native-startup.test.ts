@@ -11,7 +11,7 @@ import {
   heartbeatRuns,
   issues,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { getEmbeddedPostgresTestSupport, startEmbeddedPostgresTestDatabase } from "../__tests__/helpers/embedded-postgres.js";
 import { agentExecutionsHaveStopped } from "./agent-execution-stop.js";
 import { canRetryStoppedRun } from "./cancelled-native-startup.js";

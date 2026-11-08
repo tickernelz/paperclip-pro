@@ -1,4 +1,4 @@
-import { EXTERNAL_AGENT_TOOL_GUIDANCE } from "@tickernelz/paperclip-pro-shared/external-agent-guidance";
+import { EXTERNAL_AGENT_TOOL_GUIDANCE } from "@tickernelz/wardmote-shared/external-agent-guidance";
 
 export type AgentOnboardingPromptInput = {
   onboardingTextUrl: string;
@@ -20,13 +20,13 @@ export function buildAgentOnboardingPrompt(input: AgentOnboardingPromptInput) {
       ? `No candidate URLs are available. Ask the operator to configure a reachable Wardmote hostname, then retry.
 Suggested steps for the operator:
 - choose a hostname that resolves to the Wardmote host from your runtime
-- run: npx @tickernelz/paperclip-pro allowed-hostname <host>
+- run: npx @tickernelz/wardmote allowed-hostname <host>
 - restart Wardmote
 - verify with: curl -fsS http://<host>:3100/api/health
 - regenerate this agent onboarding prompt`
       : `If none are reachable, ask the operator to add a reachable Wardmote hostname, restart, and retry.
 Suggested command for the operator:
-- npx @tickernelz/paperclip-pro allowed-hostname <host>
+- npx @tickernelz/wardmote allowed-hostname <host>
 Then verify with: curl -fsS <base-url>/api/health`;
 
   const resolutionLine = resolutionTestUrl

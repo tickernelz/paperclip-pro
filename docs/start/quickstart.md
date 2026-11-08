@@ -8,7 +8,7 @@ Get Wardmote running locally in under 5 minutes.
 ## Quick Start (Recommended)
 
 ```sh
-npx @tickernelz/paperclip-pro onboard --yes
+npx @tickernelz/wardmote onboard --yes
 ```
 
 This walks you through setup, configures your environment, and gets Wardmote running.
@@ -18,10 +18,10 @@ If you already have a Wardmote install, rerunning `onboard` keeps your current c
 To start Wardmote again later:
 
 ```sh
-npx @tickernelz/paperclip-pro run
+npx @tickernelz/wardmote run
 ```
 
-> **Note:** If you used `npx` for setup, always use `npx @tickernelz/paperclip-pro` to run commands. The `pnpm paperclip-pro` form only works inside a cloned copy of the Wardmote repository (see Local Development below).
+> **Note:** If you used `npx` for setup, always use `npx @tickernelz/wardmote` to run commands. The `pnpm paperclip-pro` form only works inside a cloned copy of the Wardmote repository (see Local Development below).
 
 ## Local Development
 

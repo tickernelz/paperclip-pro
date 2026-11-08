@@ -3,7 +3,7 @@
 import { flushSync } from "react-dom";
 import { createRoot, type Root } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { DEFAULT_ATTACHMENT_RETENTION, type AttachmentRetentionReport } from "@tickernelz/paperclip-pro-shared";
+import { DEFAULT_ATTACHMENT_RETENTION, type AttachmentRetentionReport } from "@tickernelz/wardmote-shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { queryKeys } from "@/lib/queryKeys";
 import { FilesAndStorageSection } from "./FilesAndStorageSection";

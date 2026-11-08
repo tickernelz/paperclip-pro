@@ -36,7 +36,7 @@ import {
   INSTANCE_FEATURE_CATALOG,
   instanceExperimentalSettingsSchema,
   type ManagedExperimentalFeatureKey,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 export type ManagedConfigEnv = Record<string, string | undefined>;
 

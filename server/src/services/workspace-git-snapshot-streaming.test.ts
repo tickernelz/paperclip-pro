@@ -4,9 +4,9 @@ import os from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
 import { afterEach, expect, it } from "vitest";
-import { disposeGitWorkspaceSnapshot, readGitWorkspaceSnapshot, runLocalGit, setExpensiveWorkspaceGitExecutor, type GitWorkspaceSnapshot } from "@tickernelz/paperclip-pro-adapter-utils/git-workspace-sync";
-import { isPathManifest, workspacePaths } from "@tickernelz/paperclip-pro-adapter-utils/workspace-manifest";
-import { prepareSandboxManagedRuntime, type PreparedSandboxManagedRuntime, type SandboxManagedRuntimeClient } from "@tickernelz/paperclip-pro-adapter-utils/sandbox-managed-runtime";
+import { disposeGitWorkspaceSnapshot, readGitWorkspaceSnapshot, runLocalGit, setExpensiveWorkspaceGitExecutor, type GitWorkspaceSnapshot } from "@tickernelz/wardmote-adapter-utils/git-workspace-sync";
+import { isPathManifest, workspacePaths } from "@tickernelz/wardmote-adapter-utils/workspace-manifest";
+import { prepareSandboxManagedRuntime, type PreparedSandboxManagedRuntime, type SandboxManagedRuntimeClient } from "@tickernelz/wardmote-adapter-utils/sandbox-managed-runtime";
 import { createWorkspaceGitOperationScheduler } from "./workspace-git-operation-scheduler.js";
 
 const exec = promisify(execFile);
@@ -51,8 +51,7 @@ function localClient(commands: string[]): SandboxManagedRuntimeClient {
   };
 }
 
-// macOS adds per-file process and filesystem overhead to the real deletion lane.
-const realGitTimeoutMs = process.platform === "darwin" ? 300_000 : 180_000;
+const realGitTimeoutMs = 300_000;
 it("streams and stages all four real Git filename lanes above 32 MiB through the shared scheduler", async () => {
   const root = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), "pc-stream-git-")));
   directories.push(root);

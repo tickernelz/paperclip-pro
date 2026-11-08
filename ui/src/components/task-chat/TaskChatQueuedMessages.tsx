@@ -30,7 +30,7 @@ import {
 import type {
   IssueQueuedCommentEntry,
   IssueQueuedCommentQueue,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { cn } from "@/lib/utils";
 import { TaskChatComposerBar } from "./TaskChatComposerBar";
 import {

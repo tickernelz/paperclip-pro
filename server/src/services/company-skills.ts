@@ -8,7 +8,7 @@ import os from "node:os";
 import { skillFileBytes, snapshotFile, assertSkillSnapshotPath } from "./skill-snapshot.js";
 import { fileURLToPath } from "node:url";
 import { and, asc, desc, eq, inArray, isNull, lt, sql } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   agents as agentsTable,
   assets,
@@ -28,9 +28,9 @@ import {
   issues,
   issueThreadInteractions,
   issueWorkProducts,
-} from "@tickernelz/paperclip-pro-db";
-import { readPaperclipSkillSyncPreference, writePaperclipSkillSyncPreference } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
-import type { PaperclipDesiredSkillEntry, PaperclipSkillEntry } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+} from "@tickernelz/wardmote-db";
+import { readPaperclipSkillSyncPreference, writePaperclipSkillSyncPreference } from "@tickernelz/wardmote-adapter-utils/server-utils";
+import type { PaperclipDesiredSkillEntry, PaperclipSkillEntry } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import type {
   AgentDesiredSkillEntry,
   CatalogSkill,
@@ -96,7 +96,7 @@ import type {
   CompanySkillVersionFileInventoryEntry,
   IssueAttachment,
   IssueDocument,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   isUuidLike,
   joinFrontmatterBlock,
@@ -104,7 +104,7 @@ import {
   parseFrontmatterMarkdown,
   splitFrontmatterBlock,
   stringifyFrontmatter,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { resolvePaperclipInstanceRoot } from "../home-paths.js";
 import { conflict, forbidden, notFound, unprocessable } from "../errors.js";
 import { ghFetch, gitHubApiBase, resolveRawGitHubUrl } from "./github-fetch.js";

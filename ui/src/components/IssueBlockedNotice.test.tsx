@@ -11,7 +11,7 @@ import type {
   IssueRecoveryAction,
   IssueRetryNowOutcome,
   IssueScheduledRetry,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { IssueBlockedNotice } from "./IssueBlockedNotice";
 import { deriveRecoveryCardState } from "./IssueRecoveryActionCard";
 import { ToastProvider } from "../context/ToastContext";

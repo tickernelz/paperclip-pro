@@ -1,24 +1,24 @@
 import { chatCredentialMutationLease } from "./chat-credential-mutation-lease.js";
 import { removeSlackRegistration } from "./chat-slack-registration-cleanup.js";
-import { chatEndpoints } from "@tickernelz/paperclip-pro-db";
-import { AGGREGATOR_NAMES, isAppAggregator, type AggregatorAppsResponse, type ArcadeDiscoverySetupInput } from "@tickernelz/paperclip-pro-shared/aggregator-apps";
-import { resolveAggregatorApp, type AppCatalogAggregator } from "@tickernelz/paperclip-pro-shared/aggregator-app-catalog";
+import { chatEndpoints } from "@tickernelz/wardmote-db";
+import { AGGREGATOR_NAMES, isAppAggregator, type AggregatorAppsResponse, type ArcadeDiscoverySetupInput } from "@tickernelz/wardmote-shared/aggregator-apps";
+import { resolveAggregatorApp, type AppCatalogAggregator } from "@tickernelz/wardmote-shared/aggregator-app-catalog";
 import { AggregatorDiscoveryUnavailableError, discoverArcadeApps, discoverExecutorApps, type DiscoveredApp } from "./aggregator-app-discovery.js";
-import { COMPOSIO_APP_TOOLKITS, findComposioCatalogApp } from "@tickernelz/paperclip-pro-shared/aggregator-app-catalog";
-import type { ComposioAppAccount, ComposioAppAccountInput, ComposioAppSetupInput, ComposioAppSetupResult, ComposioAppSnapshot, ComposioAppsResponse } from "@tickernelz/paperclip-pro-shared";
+import { COMPOSIO_APP_TOOLKITS, findComposioCatalogApp } from "@tickernelz/wardmote-shared/aggregator-app-catalog";
+import type { ComposioAppAccount, ComposioAppAccountInput, ComposioAppSetupInput, ComposioAppSetupResult, ComposioAppSnapshot, ComposioAppsResponse } from "@tickernelz/wardmote-shared";
 import { composioAppAccounts, composioAppSetupResult } from "./composio-app-setup.js";
 import { honchoManagedArguments } from "./honcho-connection.js";
-import { defaultConnectionAgentInstructions } from "@tickernelz/paperclip-pro-shared";
+import { defaultConnectionAgentInstructions } from "@tickernelz/wardmote-shared";
 import { isInsufficientConnectionScope, INSUFFICIENT_CONNECTION_SCOPE_MESSAGE } from "./connection-permission-errors.js";
 import { mcpDiscoveryHttpFailure, retainMcpConnectionFailure, withMcpConnectionFailure } from "./mcp-connection-failure.js";
-import { ASANA_CONNECTOR_SCOPES, isAsanaConnectorProfileId, type AsanaConnectorProfileId } from "@tickernelz/paperclip-pro-shared";
-import { BROWSER_USE_TOOLS } from "@tickernelz/paperclip-pro-shared";
+import { ASANA_CONNECTOR_SCOPES, isAsanaConnectorProfileId, type AsanaConnectorProfileId } from "@tickernelz/wardmote-shared";
+import { BROWSER_USE_TOOLS } from "@tickernelz/wardmote-shared";
 import { browserUseClient, isBrowserUseConnection } from "./browser-use-client.js";
 import { isLocalBrowserConnection } from "./connectors/local-browser/connection.js";
 import { LOCAL_BROWSER_CONNECTOR_TOOLS } from "./connectors/local-browser/tools.js";
 import { browserUseService } from "./browser-use.js";
 import { COGNEE_STDIO_TEMPLATE, cogneeCloudUrl } from "./cognee-connection.js";
-import { isMemoryConnectorId, isRemoteMcpConnectorMethod, connectionPurposeTransportSchema } from "@tickernelz/paperclip-pro-shared";
+import { isMemoryConnectorId, isRemoteMcpConnectorMethod, connectionPurposeTransportSchema } from "@tickernelz/wardmote-shared";
 import { instanceSettingsService } from "./instance-settings.js";
 import { githubBotRequest } from "./chat-github-client.js";
 import { syncConnectionCredentialBindings } from "./connection-credential-bindings.js";
@@ -46,7 +46,7 @@ import {
   or,
   sql,
 } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   agents,
   connectionGrantMembers,
@@ -88,7 +88,7 @@ import {
   toolProfiles,
   toolRuntimeMetricCounters,
   toolRuntimeSlots,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import type {
   AppDefinition,
   ConnectionGrantKind,
@@ -171,7 +171,7 @@ import type {
   UnbindToolProfileBinding,
   VercelConnectCredentialReference,
   VercelConnectGrantReference,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   CLASS3_STATIC_LEASE_ALLOWLIST,
   GITHUB_CONNECTOR_PROFILES,
@@ -189,19 +189,19 @@ import {
   resolveConnectionMethodServerUrl,
   type GitHubConnectorProfileId,
   type GoogleWorkspaceConnectorProfileId,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   checkMcpRemoteHeaderName,
   checkMcpRemoteHeaderValue,
   mcpRemoteHeaderNameFromConfigPath,
   mcpRemoteHeaderRejectionMessage,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   checkOAuthEndpointUrl,
   oauthEndpointUrlRejectionMessage,
   type OAuthEndpointKind,
   type OAuthEndpointUrlRejection,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   badRequest,
   conflict,
@@ -240,7 +240,7 @@ import {
 import { secretService } from "./secrets.js";
 import { connectionCredentialConfigPath as credentialRefConfigPath, connectionGrantCredentialRef, connectionSecretsUsedByOtherConsumers, resolveConnectionGrantSecret, validateConnectionGrantSecretOwnership, writeConnectionCredential } from "./connection-credentials.js";
 import { agentmailApi } from "./agentmail-api.js";
-import type { ConfigureRailwaySsh, RailwaySshSetup } from "@tickernelz/paperclip-pro-shared";
+import type { ConfigureRailwaySsh, RailwaySshSetup } from "@tickernelz/wardmote-shared";
 import { generateRailwaySshKey, RAILWAY_SSH_SECRET_PATH, validateRailwayKnownHosts } from "./railway-ssh.js";
 import { createRailwayClient, discoverRailwayWorkspace, isRailwayConnection, isRailwayEndpoint, isRailwayToolBlocked, normalizeRailwayToolName, RAILWAY_TOOLS, RAILWAY_TOOL_PREFIX, railwayRisk, RailwayError } from "./railway.js";
 import { toolAccessPolicyService } from "./tool-access-policy.js";
@@ -263,7 +263,7 @@ import {
   ToolRuntimeSupervisorError,
 } from "./tool-runtime-supervisor.js";
 import { listConnectionLifecycleEvents } from "./tool-connection-activity.js";
-import { isRetiredComposioConnection, RETIRED_COMPOSIO_MESSAGE } from "@tickernelz/paperclip-pro-shared";
+import { isRetiredComposioConnection, RETIRED_COMPOSIO_MESSAGE } from "@tickernelz/wardmote-shared";
 import {
   appWithPaperclipCloudConnectorAvailability,
   paperclipCloudConnectorCapabilitiesFromEnv,
@@ -17913,7 +17913,7 @@ export function toolAccessService(
       ]);
       const repositories = new Map<
         string,
-        import("@tickernelz/paperclip-pro-shared").ProjectRepository
+        import("@tickernelz/wardmote-shared").ProjectRepository
       >();
       const usableConnections: Array<{ id: string; name: string }> = [];
       let connectionCount = 0;

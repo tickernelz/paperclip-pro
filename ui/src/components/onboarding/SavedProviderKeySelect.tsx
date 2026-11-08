@@ -1,5 +1,5 @@
 import { aiConnectionsApi } from "@/api/ai-connections";
-import type { AiProvider } from "@tickernelz/paperclip-pro-shared";
+import type { AiProvider } from "@tickernelz/wardmote-shared";
 import { useQuery } from "@tanstack/react-query";
 import { agentsApi } from "@/api/agents";
 import { ApiError } from "@/api/client";

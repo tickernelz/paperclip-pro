@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { models as claudeFallbackModels } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/claude";
+import { models as claudeFallbackModels } from "@tickernelz/wardmote-adapter-utils/provider-models/claude";
 import { resetClaudeModelsCacheForTests } from "../services/ai-providers/claude/models.js";
-import { models as codexFallbackModels } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/codex";
-import { models as opencodeFallbackModels } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/opencode";
+import { models as codexFallbackModels } from "@tickernelz/wardmote-adapter-utils/provider-models/codex";
+import { models as opencodeFallbackModels } from "@tickernelz/wardmote-adapter-utils/provider-models/opencode";
 import { resetOpenCodeModelsCacheForTests } from "../services/ai-providers/opencode/models.js";
 import { listAdapterModels, listRunnerHarnessModels, listServerAdapters, refreshRunnerHarnessModels } from "../adapters/index.js";
 import { resetCodexModelsCacheForTests } from "../adapters/codex-models.js";

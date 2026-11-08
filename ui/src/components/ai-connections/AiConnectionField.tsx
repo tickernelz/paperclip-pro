@@ -9,7 +9,7 @@ import {
   type AiConnectionBinding,
   type AiProvider,
   type AiManagedConnectionSummary,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { aiConnectionsApi } from "@/api/ai-connections";
 import { AiConnectionSelect } from "./AiConnectionSelect";
 import { AiProviderSetup } from "./AiProviderSetup";

@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { and, eq, sql } from "drizzle-orm";
-import { agentWakeupRequests, type Db } from "@tickernelz/paperclip-pro-db";
+import { agentWakeupRequests, type Db } from "@tickernelz/wardmote-db";
 
 type WakeRequest = typeof agentWakeupRequests.$inferInsert;
 

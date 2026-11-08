@@ -1,4 +1,4 @@
-import type { ToolCatalogEntry } from "@tickernelz/paperclip-pro-shared";
+import type { ToolCatalogEntry } from "@tickernelz/wardmote-shared";
 
 export type ToolPermission = "allowed" | "ask_first" | "off";
 export type SetupStep = "access" | "connect" | "permissions" | "management" | "draft";

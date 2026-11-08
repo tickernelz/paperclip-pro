@@ -2,7 +2,7 @@ import {
   localBrowserViewerEventSchema,
   type LocalBrowserInput,
   type LocalBrowserViewerEvent,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 export type { LocalBrowserInput, LocalBrowserViewerEvent };
 

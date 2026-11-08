@@ -2,8 +2,8 @@ import { spawn } from 'node:child_process';
 import { chmod, mkdtemp, readdir, rm, stat } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import type { SkillSourceScanProgress } from '@tickernelz/paperclip-pro-shared';
-import { parseGitHubSkillRepositoryUrl } from '@tickernelz/paperclip-pro-shared';
+import type { SkillSourceScanProgress } from '@tickernelz/wardmote-shared';
+import { parseGitHubSkillRepositoryUrl } from '@tickernelz/wardmote-shared';
 import { unprocessable } from '../errors.js';
 import { buildGitAuthInvocation } from './git-credentials.js';
 

@@ -25,7 +25,7 @@ import {
   statusDecisionEffects,
   statusDecisions,
   workAssessments,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   type NativeExecutionInputV1,
   type NativeExecutionInput,
@@ -33,7 +33,7 @@ import {
   type NativeSessionBackend,
   type PersistedNativeSession,
   type PrpEvent,
-} from "@tickernelz/paperclip-pro-paperclip-runner";
+} from "@tickernelz/wardmote-paperclip-runner";
 import {
   CONTROL_PLANE_CONFORMANCE_RESULT,
   CONTROL_PLANE_CONFORMANCE_TERMINAL,

@@ -8,7 +8,7 @@ import {
   statusDecisions,
   workAssessments,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   persistActivity,
   publishActivity,

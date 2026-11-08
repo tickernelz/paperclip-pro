@@ -17,7 +17,7 @@ import {
   CODEX_LOCAL_FAST_MODE_SUPPORTED_MODELS,
   isCodexLocalFastModeSupported,
   isCodexLocalManualModel,
-} from "@tickernelz/paperclip-pro-adapter-utils/provider-models/codex";
+} from "@tickernelz/wardmote-adapter-utils/provider-models/codex";
 import {
   PAPERCLIP_RUNNER_IDLE_TIMEOUT_DEFAULT_MS,
   PAPERCLIP_RUNNER_IDLE_TIMEOUT_MAX_MS,
@@ -28,7 +28,7 @@ import {
   resolvePaperclipRunnerPermissionMode,
   type PaperclipRunnerPermissionMode,
   type PaperclipRunnerProvider,
-} from "@tickernelz/paperclip-pro-adapter-utils";
+} from "@tickernelz/wardmote-adapter-utils";
 
 const inputClass =
   "w-full rounded-md border border-line px-2.5 py-1.5 bg-transparent outline-none text-sm font-mono placeholder:text-ink-3/40";

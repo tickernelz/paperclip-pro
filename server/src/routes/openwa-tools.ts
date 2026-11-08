@@ -1,6 +1,6 @@
 import { Router } from "express";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { isUuidLike, openwaToolCallSchema } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/wardmote-db";
+import { isUuidLike, openwaToolCallSchema } from "@tickernelz/wardmote-shared";
 import { badRequest, forbidden } from "../errors.js";
 import { executeConnectorTool } from "../services/connector-runtime.js";
 import { instanceSettingsService } from "../services/instance-settings.js";

@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import request from "supertest";
 import { eq, sql } from "drizzle-orm";
 import { expect, it } from "vitest";
-import { activityLog, agentConfigRevisions, agents, companies } from "@tickernelz/paperclip-pro-db";
+import { activityLog, agentConfigRevisions, agents, companies } from "@tickernelz/wardmote-db";
 import { agentRoutes } from "../routes/agents.js";
 import {
   describeEmbeddedPostgres,

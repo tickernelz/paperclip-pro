@@ -6,7 +6,7 @@ import {
   type IssueThreadInteractionCanonicalResolverPolicy,
   type IssueThreadInteractionKind,
   type IssueThreadInteractionResolverPolicy,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   Select,
   SelectContent,

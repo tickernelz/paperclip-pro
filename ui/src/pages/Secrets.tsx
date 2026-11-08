@@ -50,8 +50,8 @@ import type {
   SecretStatus,
   UserSecretCoverageSummary,
   UserSecretDefinition,
-} from "@tickernelz/paperclip-pro-shared";
-import { hidesCompanySection } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
+import { hidesCompanySection } from "@tickernelz/wardmote-shared";
 import { useCompany } from "../context/CompanyContext";
 import { useHiddenSettings } from "../hooks/useHiddenSettings";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";

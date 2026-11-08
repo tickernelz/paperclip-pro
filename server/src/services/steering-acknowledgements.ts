@@ -1,5 +1,5 @@
 import { sql, type SQL } from "drizzle-orm";
-import { heartbeatRuns } from "@tickernelz/paperclip-pro-db";
+import { heartbeatRuns } from "@tickernelz/wardmote-db";
 
 const ACKNOWLEDGEMENTS_KEY = "queuedSteeringAcknowledgements";
 

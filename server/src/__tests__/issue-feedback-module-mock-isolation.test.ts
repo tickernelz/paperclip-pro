@@ -78,7 +78,7 @@ const mockIssueReferenceService = vi.hoisted(() => ({
   syncIssue: vi.fn(async () => undefined),
 }));
 
-vi.mock("@tickernelz/paperclip-pro-shared/telemetry", () => ({
+vi.mock("@tickernelz/wardmote-shared/telemetry", () => ({
   trackAgentTaskCompleted: vi.fn(),
   trackErrorHandlerCrash: vi.fn(),
 }));

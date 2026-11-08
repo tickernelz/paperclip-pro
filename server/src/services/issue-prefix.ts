@@ -1,7 +1,7 @@
 import { and, eq, sql } from "drizzle-orm";
 import type { PgColumn } from "drizzle-orm/pg-core";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { cases, companies, issues } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
+import { cases, companies, issues } from "@tickernelz/wardmote-db";
 
 type DbTransaction = Parameters<Parameters<Db["transaction"]>[0]>[0];
 

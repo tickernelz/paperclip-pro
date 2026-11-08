@@ -9,7 +9,7 @@ import type {
   ToolProfileNewToolsReview,
   ToolProfileSummary,
   ToolProfileWithDetails,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { queryKeys } from "@/lib/queryKeys";
 import { AgentToolsTab } from "@/pages/AgentToolsTab";
 import { ProfileDetail } from "@/pages/tools/profiles/ProfileDetail";

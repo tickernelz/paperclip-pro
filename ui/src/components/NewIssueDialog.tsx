@@ -7,7 +7,7 @@ import type {
   EnvBinding,
   IssueRunModelOverrideSubtaskScope,
   IssueWorkMode,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { useDialog } from "../context/DialogContext";
 import { useCompany } from "../context/CompanyContext";
 import { executionWorkspacesApi } from "../api/execution-workspaces";

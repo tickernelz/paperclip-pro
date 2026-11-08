@@ -1,5 +1,5 @@
 import { and, asc, eq, sql } from "drizzle-orm";
-import { chatActions, type Db } from "@tickernelz/paperclip-pro-db";
+import { chatActions, type Db } from "@tickernelz/wardmote-db";
 import { logger } from "../../middleware/logger.js";
 import { SpekoProviderError, type createSpekoProvider } from "./speko-provider.js";
 import type { VoiceSessionRow } from "./voice-session-store.js";

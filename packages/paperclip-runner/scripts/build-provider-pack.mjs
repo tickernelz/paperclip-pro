@@ -107,7 +107,7 @@ try {
     "pnpm",
     [
       "--filter",
-      "@tickernelz/paperclip-pro-paperclip-runner",
+      "@tickernelz/wardmote-paperclip-runner",
       "deploy",
       "--prod",
       temporaryRoot,
@@ -217,7 +217,7 @@ try {
       ".pnpm",
       "node_modules",
       "@tickernelz",
-      "paperclip-pro-paperclip-runner",
+      "wardmote-paperclip-runner",
     ),
     { recursive: true, force: true },
   );

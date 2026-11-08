@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Globe, Lock, Users } from "lucide-react";
-import type { Issue, IssueVisibility } from "@tickernelz/paperclip-pro-shared";
+import type { Issue, IssueVisibility } from "@tickernelz/wardmote-shared";
 import {
   AlertDialog,
   AlertDialogAction,

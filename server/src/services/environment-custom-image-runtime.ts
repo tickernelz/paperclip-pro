@@ -1,13 +1,13 @@
 import { createHash } from "node:crypto";
 import { and, desc, eq } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { environmentCustomImageTemplates } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
+import { environmentCustomImageTemplates } from "@tickernelz/wardmote-db";
 import {
   ENVIRONMENT_CUSTOM_IMAGE_TEMPLATE_KINDS,
   type EnvironmentCustomImageTemplate,
   type EnvironmentCustomImageTemplateKind,
   type SandboxEnvironmentConfig,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { readConfigValueAtPath, writeConfigValueAtPath } from "./json-schema-secret-refs.js";
 
 type TemplateRow = typeof environmentCustomImageTemplates.$inferSelect;

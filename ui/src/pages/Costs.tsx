@@ -18,7 +18,7 @@ import type {
   FinanceEvent,
   QuotaWindow,
   ProviderQuotaResult,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { ArrowDownLeft, ArrowUpRight, ChevronDown, ChevronRight, Coins, DollarSign, ReceiptText } from "lucide-react";
 import { budgetsApi } from "../api/budgets";
 import { costsApi } from "../api/costs";

@@ -8,7 +8,7 @@ import {
   type OpenwaChatSettings,
   type OpenwaEndpointPolicy,
   type OpenwaReplyPolicy,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { chatEndpointsApi, type OpenwaChat } from "@/api/chatEndpoints";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

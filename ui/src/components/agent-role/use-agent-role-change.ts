@@ -1,6 +1,6 @@
 import { useCallback } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { AGENT_ROLES, AGENT_ROLE_LABELS, type Agent, type AgentRole } from "@tickernelz/paperclip-pro-shared";
+import { AGENT_ROLES, AGENT_ROLE_LABELS, type Agent, type AgentRole } from "@tickernelz/wardmote-shared";
 import { agentsApi } from "@/api/agents";
 import { ApiError } from "@/api/client";
 import { queryKeys } from "@/lib/queryKeys";

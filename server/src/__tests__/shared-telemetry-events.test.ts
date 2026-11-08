@@ -8,8 +8,8 @@ import {
   trackInteractionCreated,
   trackInteractionResolved,
   trackInstallCompleted,
-} from "@tickernelz/paperclip-pro-shared/telemetry";
-import type { EventDimensionsMap, TelemetryClient } from "@tickernelz/paperclip-pro-shared/telemetry";
+} from "@tickernelz/wardmote-shared/telemetry";
+import type { EventDimensionsMap, TelemetryClient } from "@tickernelz/wardmote-shared/telemetry";
 
 function createClient(): TelemetryClient {
   return {

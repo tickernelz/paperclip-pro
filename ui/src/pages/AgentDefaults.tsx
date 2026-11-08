@@ -11,7 +11,7 @@ import {
   defaultsAsConfig,
   planAgentDefaultsApply,
   type AgentSettingsPatch,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { agentDefaultsApi } from "@/api/agentDefaults";
 import { agentsApi } from "@/api/agents";
 import { ChoiceControl, ChoiceRow, SaveBar } from "@/components/omp-settings/ChoiceControls";

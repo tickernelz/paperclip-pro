@@ -1,4 +1,4 @@
-import { definePlugin, PluginEnvironmentCreationCleanupError, runWorker } from "@tickernelz/paperclip-pro-plugin-sdk";
+import { definePlugin, PluginEnvironmentCreationCleanupError, runWorker } from "@tickernelz/wardmote-plugin-sdk";
 
 function failure(params) {
   const cleanup = {

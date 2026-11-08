@@ -1,4 +1,4 @@
-import type { Issue } from "@tickernelz/paperclip-pro-shared";
+import type { Issue } from "@tickernelz/wardmote-shared";
 import type { ActiveRunForIssue, LiveRunForIssue } from "../api/heartbeats";
 
 export function shouldTrackIssueActiveRun(

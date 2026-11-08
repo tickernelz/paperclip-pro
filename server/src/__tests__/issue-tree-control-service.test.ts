@@ -13,7 +13,7 @@ import {
   issueTreeHoldMembers,
   issueTreeHolds,
   issues,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

@@ -2,8 +2,8 @@ import { randomUUID } from "node:crypto";
 import request from "supertest";
 import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, expect, it } from "vitest";
-import { activityLog, agents, issues } from "@tickernelz/paperclip-pro-db";
-import type { IssueRunModelOverrideView } from "@tickernelz/paperclip-pro-shared";
+import { activityLog, agents, agentWakeupRequests, heartbeatRuns, issues } from "@tickernelz/wardmote-db";
+import type { IssueRunModelOverrideView } from "@tickernelz/wardmote-shared";
 import {
   registerServerAdapter,
   unregisterServerAdapter,
@@ -56,12 +56,26 @@ interface Seeded extends SeededCompany {
   rootIssueId: string;
 }
 
+async function deleteAgentsAfterStragglingWakes(db: Parameters<typeof resetCompanyIssueFixtures>[0]) {
+  for (let attempt = 0; ; attempt += 1) {
+    await db.delete(agentWakeupRequests);
+    await db.delete(heartbeatRuns);
+    try {
+      await db.delete(agents);
+      return;
+    } catch (error) {
+      if (attempt >= 50) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    }
+  }
+}
+
 describeEmbeddedPostgres("per-task model override inheritance", () => {
   const ctx = useEmbeddedPostgres("paperclip-run-model-inheritance-", {
     resetEach: async (db) => {
       await db.delete(activityLog);
       await db.delete(issues);
-      await db.delete(agents);
+      await deleteAgentsAfterStragglingWakes(db);
       await resetCompanyIssueFixtures(db);
     },
   });

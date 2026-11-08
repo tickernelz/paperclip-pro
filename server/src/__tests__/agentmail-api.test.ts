@@ -12,7 +12,7 @@ import {
   normalizeAgentmailEvent,
   verifyAgentmailWebhook,
 } from "../services/agentmail-api.js";
-import { emailSendSchema } from "@tickernelz/paperclip-pro-shared";
+import { emailSendSchema } from "@tickernelz/wardmote-shared";
 import { buildRunnerApiCatalog } from "../services/native-runtime/runner-api-catalog.js";
 
 const message = (extra = {}) =>

@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
-import { agents, companies, createDb, heartbeatRuns, issues } from "@tickernelz/paperclip-pro-db";
-import { LOW_TRUST_REVIEW_PRESET } from "@tickernelz/paperclip-pro-shared";
+import { agents, companies, createDb, heartbeatRuns, issues } from "@tickernelz/wardmote-db";
+import { LOW_TRUST_REVIEW_PRESET } from "@tickernelz/wardmote-shared";
 import {
   LOW_TRUST_QUARANTINED_BODY,
   buildPromotedSourceTrust,

@@ -1,4 +1,4 @@
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import { createGitHubExternalObjectProvider } from "./github-external-object-provider.js";
 
 export type GitHubPullRequestReference = {

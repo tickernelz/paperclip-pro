@@ -1,4 +1,4 @@
-import { toolConnections, toolInvocations, type Db } from "@tickernelz/paperclip-pro-db";
+import { toolConnections, toolInvocations, type Db } from "@tickernelz/wardmote-db";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const track = vi.fn();

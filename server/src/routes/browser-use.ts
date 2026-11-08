@@ -1,13 +1,13 @@
 import { Router } from "express";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { issues, type Db } from "@tickernelz/paperclip-pro-db";
+import { issues, type Db } from "@tickernelz/wardmote-db";
 import {
   browserUseControlSchema,
   browserUseSettingsSchema,
   browserUseViewportSchema,
   browserUseViewerSchema,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   assertBoard,
   assertCompanyAccess,

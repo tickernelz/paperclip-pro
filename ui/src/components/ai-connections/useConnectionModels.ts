@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { aiRoutingModel, type AiConnectionBinding, type AiProviderRouting } from "@tickernelz/paperclip-pro-shared";
+import { aiRoutingModel, type AiConnectionBinding, type AiProviderRouting } from "@tickernelz/wardmote-shared";
 import { aiConnectionsApi } from "@/api/ai-connections";
 import { agentsApi, type AdapterModel } from "@/api/agents";
 import { queryKeys } from "@/lib/queryKeys";

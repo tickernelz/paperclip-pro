@@ -1,8 +1,8 @@
 import type {
   IssueThreadInteractionCanonicalResolverPolicy,
   IssueThreadInteractionResolverPolicy,
-} from "@tickernelz/paperclip-pro-shared";
-import { normalizeIssueThreadInteractionResolverPolicy } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
+import { normalizeIssueThreadInteractionResolverPolicy } from "@tickernelz/wardmote-shared";
 import { HttpError } from "../errors.js";
 
 export const ISSUE_THREAD_INTERACTION_RESOLUTION_DENIAL_CODES = [

@@ -3,7 +3,7 @@ import {
   TelemetryClient,
   resolveTelemetryConfig,
   loadOrCreateState,
-} from "@tickernelz/paperclip-pro-shared/telemetry";
+} from "@tickernelz/wardmote-shared/telemetry";
 import { resolvePaperclipInstanceRoot } from "./home-paths.js";
 import { serverVersion } from "./version.js";
 

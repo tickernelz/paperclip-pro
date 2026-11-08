@@ -1,9 +1,9 @@
 import { parseObject } from "../adapters/utils.js";
 import { enqueueFastResponse } from "../services/fast-responses.js";
-import { deferUntilAdapterTurnActive } from "@tickernelz/paperclip-pro-adapter-utils/adapter-steer-registry";
+import { deferUntilAdapterTurnActive } from "@tickernelz/wardmote-adapter-utils/adapter-steer-registry";
 import { hasRequiredWorkspaceRecovery, LEGACY_WORKSPACE_RECOVERY_SCHEMA } from "../services/workspace-restore-recovery-state.js";
 import { monitorPoliciesEqual, applyActorMonitorScheduledBy, assertCanManageIssueMonitor, summarizeIssueMonitor } from "../services/issue-monitors.js";
-import type { IssuePrivacyConstraints } from "@tickernelz/paperclip-pro-shared";
+import type { IssuePrivacyConstraints } from "@tickernelz/wardmote-shared";
 import { canActorReadHeartbeatRun } from "../services/heartbeat-run-privacy.js";
 import {
   loadCreationSourceAgent,
@@ -12,8 +12,8 @@ import {
 } from "../services/issue-creation-source.js";
 import { activeIssueInteractionCondition, readTaskQuestionContext } from "../services/issue-question-context.js";
 import { setIssueTitle } from "../services/issue-title.js";
-import { setIssueTitleSchema } from "@tickernelz/paperclip-pro-shared";
-import { ISSUE_REFS_MAX, issueRefsQuerySchema, parseIssueRefIds, type IssueRef } from "@tickernelz/paperclip-pro-shared";
+import { setIssueTitleSchema } from "@tickernelz/wardmote-shared";
+import { ISSUE_REFS_MAX, issueRefsQuerySchema, parseIssueRefIds, type IssueRef } from "@tickernelz/wardmote-shared";
 import { resolveConfirmationFromComment } from "../services/confirmation-comment-resolution.js";
 import {
   OWNER_CONFIRMATION_REQUIRED_CODE,
@@ -28,7 +28,7 @@ import {
 } from "../services/owner-decision-relay.js";
 import { boardAuthService } from "../services/board-auth.js";
 import { createIssueReadTiming } from "../services/issue-read-timing.js";
-import { isNativeWorkspaceExportRepairCause } from "@tickernelz/paperclip-pro-shared";
+import { isNativeWorkspaceExportRepairCause } from "@tickernelz/wardmote-shared";
 import { retryNativeWorkspaceExport } from "../services/native-runtime/native-workspace-export-retry.js";
 import { queuedInteractionId, readQueuedInteractionResponse, hasQueuedInteractionResponse } from "../services/queued-interaction-response.js";
 import {
@@ -56,10 +56,10 @@ import {
   writeIssueRunModelOverride,
 } from "../services/issue-run-model-override.js";
 import type { IssueRunModelOverrideValues } from "../services/issue-run-model-override.js";
-import type { IssueRunModelOverrideInheritance } from "@tickernelz/paperclip-pro-shared";
+import type { IssueRunModelOverrideInheritance } from "@tickernelz/wardmote-shared";
 import { applyIssueRunModelOverrideToSubtree } from "../services/issue-model-override-inheritance.js";
 import { releaseDependencyGateRecoveryHold } from "../services/dependency-gate-recovery-hold.js";
-import { requiresExecutionReconciliation } from "@tickernelz/paperclip-pro-shared";
+import { requiresExecutionReconciliation } from "@tickernelz/wardmote-shared";
 import { sendIssueDocumentPdf, serveAttachmentContent } from "./content-serving.js";
 import { issueShareLinkService, toIssueShareLink } from "../services/issue-share-links.js";
 import { resolveBaseUrl } from "../lib/public-base-url.js";
@@ -79,7 +79,7 @@ import { createHash, randomUUID } from "node:crypto";
 import { Router, type NextFunction, type Request, type Response } from "express";
 import { z } from "zod";
 import { and, asc, desc, eq, inArray, isNull, or, notInArray, sql, type SQL } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import type { ChatChannelService } from "../services/chat-channels.js";
 import {
   activityLog,
@@ -112,7 +112,7 @@ import {
   projectWorkspaces,
   projectAccessMembers,
   projects,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   addIssueCommentSchema,
   acceptIssueThreadInteractionSchema,
@@ -209,8 +209,8 @@ import {
   issueWriteDenialResponse,
   type IssueWriteDenialCode,
   type IssueWriteDenialContext,
-} from "@tickernelz/paperclip-pro-shared";
-import { trackAgentTaskCompleted } from "@tickernelz/paperclip-pro-shared/telemetry";
+} from "@tickernelz/wardmote-shared";
+import { trackAgentTaskCompleted } from "@tickernelz/wardmote-shared/telemetry";
 import { getTelemetryClient } from "../telemetry.js";
 import { isUniqueViolation } from "../db-errors.js";
 import type { StorageService } from "../storage/types.js";

@@ -24,7 +24,7 @@ import {
   heartbeatRuns,
   toolConnections,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { startEmbeddedPostgresTestDatabase } from "../helpers/embedded-postgres.js";
 import { createLocalDiskStorageProvider } from "../../storage/local-disk-provider.js";
 import { createStorageService } from "../../storage/service.js";
@@ -241,7 +241,7 @@ describe("OpenWA owner report routing (embedded Postgres + fake gateway)", () =>
     await service.confirmIdentityLink(token, userId);
     await service.openwa.addSenderRule(endpoint.id, { list: "allow", e164: "+" + MEMBER_A }, userId);
     expect((await service.reconcileProviderRuntimes()).local).toBe(1);
-    await gateway.waitForSubscription();
+    await gateway.waitForFirstCatchUp();
     const t = { gateway, clock, companyId, agentId, userId, endpointId: endpoint.id, service, wakes };
     const before = service.openwaAdmissionStats.discoveries;
     const warmAt = Math.floor(Date.now() / 1000) - 600;

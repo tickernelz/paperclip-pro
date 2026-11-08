@@ -4,7 +4,7 @@ import {
   createDb,
   heartbeatRunEvents,
   heartbeatRuns,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { asc, eq } from "drizzle-orm";
 import { describe, expect, it } from "vitest";
 

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Trash2 } from "lucide-react";
-import type { TerminalSshHost } from "@tickernelz/paperclip-pro-shared";
+import type { TerminalSshHost } from "@tickernelz/wardmote-shared";
 import { terminalApi, terminalQueryKeys } from "@/api/terminal";
 import { Button } from "@/components/ui/button";
 import {

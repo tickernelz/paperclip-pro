@@ -2,7 +2,7 @@ import type {
   PixelsOfficeSeatAssignment,
   PixelsOfficeSnapshot,
   PixelsOfficeTimeline,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { api } from "./client";
 
 export const pixelsOfficeApi = {

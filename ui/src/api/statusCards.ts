@@ -7,7 +7,7 @@ import type {
   StatusCard,
   StatusCardSummaryRevision,
   StatusCardUpdate,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { api } from "./client";
 
 export interface StatusCardDryRun {

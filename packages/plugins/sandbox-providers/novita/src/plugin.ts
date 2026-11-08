@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { definePlugin } from "@tickernelz/paperclip-pro-plugin-sdk";
+import { definePlugin } from "@tickernelz/wardmote-plugin-sdk";
 import type {
   PluginEnvironmentAcquireLeaseParams,
   PluginEnvironmentDestroyLeaseParams,
@@ -14,7 +14,7 @@ import type {
   PluginEnvironmentResumeLeaseParams,
   PluginEnvironmentValidateConfigParams,
   PluginEnvironmentValidationResult,
-} from "@tickernelz/paperclip-pro-plugin-sdk";
+} from "@tickernelz/wardmote-plugin-sdk";
 import { Sandbox } from "novita-sandbox";
 
 export interface NovitaDriverConfig {

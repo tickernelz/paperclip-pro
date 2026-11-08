@@ -35,7 +35,7 @@ const mockAccessService = vi.hoisted(() => ({
 const mockLogActivity = vi.hoisted(() => vi.fn(async () => undefined));
 
 function registerRouteMocks() {
-  vi.doMock("@tickernelz/paperclip-pro-shared/telemetry", () => ({
+  vi.doMock("@tickernelz/wardmote-shared/telemetry", () => ({
     trackAgentTaskCompleted: vi.fn(),
     trackErrorHandlerCrash: vi.fn(),
   }));
@@ -251,7 +251,7 @@ describe("issue attachment routes", () => {
     vi.stubEnv("PAPERCLIP_INSTANCE_ID", "default");
     vi.stubEnv("PAPERCLIP_ATTACHMENT_MAX_BYTES", "");
     vi.resetModules();
-    vi.doUnmock("@tickernelz/paperclip-pro-shared/telemetry");
+    vi.doUnmock("@tickernelz/wardmote-shared/telemetry");
     vi.doUnmock("../telemetry.js");
     vi.doUnmock("../services/issues.js");
     vi.doUnmock("../services/index.js");

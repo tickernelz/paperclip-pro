@@ -21,8 +21,8 @@ import {
   toolApplications,
   toolConnections,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
-import { SPEECH_TO_TEXT_DEFAULTS, type SpeechToTextSettings } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import { SPEECH_TO_TEXT_DEFAULTS, type SpeechToTextSettings } from "@tickernelz/wardmote-shared";
 import { startEmbeddedPostgresTestDatabase } from "../helpers/embedded-postgres.js";
 import { createLocalDiskStorageProvider } from "../../storage/local-disk-provider.js";
 import { createStorageService } from "../../storage/service.js";

@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { and, eq, inArray, lt, or, sql } from "drizzle-orm";
-import { chatActions, chatOutboundMessages, type Db } from "@tickernelz/paperclip-pro-db";
+import { chatActions, chatOutboundMessages, type Db } from "@tickernelz/wardmote-db";
 import { OpenwaGatewayError, type OpenwaGatewayClient, type OpenwaSendResult } from "./gateway.js";
 import { sendThroughRegistry, type OpenwaOutboundRegistry } from "./outbound.js";
 

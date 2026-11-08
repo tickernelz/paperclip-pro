@@ -2,7 +2,7 @@ import type {
   Issue,
   IssueComment,
   IssueRunModelOverrideUpdate,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 /**
  * First-page size for the issue-detail comment feed. Single source of truth so

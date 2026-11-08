@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { and, asc, eq, inArray, isNotNull, isNull, lte, or, sql } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   agents,
   approvals,
@@ -12,12 +12,12 @@ import {
   issueRecoveryActions,
   issueThreadInteractions,
   issues,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import type {
   AttentionArchiveManifestEntry,
   AttentionItem,
   AttentionSourceKind,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { conflict, notFound, unprocessable } from "../errors.js";
 import { logActivity } from "./activity-log.js";
 import type { AuthorizationActor } from "./authorization.js";

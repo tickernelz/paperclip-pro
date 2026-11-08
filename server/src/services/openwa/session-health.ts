@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { and, desc, eq, inArray, lt, notInArray, or, sql } from "drizzle-orm";
-import { chatActions, chatConversations, chatEndpoints, issues, type Db } from "@tickernelz/paperclip-pro-db";
-import { openwaEndpointPolicySchema } from "@tickernelz/paperclip-pro-shared";
+import { chatActions, chatConversations, chatEndpoints, issues, type Db } from "@tickernelz/wardmote-db";
+import { openwaEndpointPolicySchema } from "@tickernelz/wardmote-shared";
 import { forbidden } from "../../errors.js";
 import { logger } from "../../middleware/logger.js";
 import { createDurableChatWakeupRequest } from "../durable-chat-wakeup.js";

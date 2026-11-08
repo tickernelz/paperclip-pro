@@ -1,4 +1,4 @@
-import type { Issue } from "@tickernelz/paperclip-pro-shared";
+import type { Issue } from "@tickernelz/wardmote-shared";
 
 type SubIssueDefaultSource = Pick<
   Issue,

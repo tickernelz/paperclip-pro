@@ -1,10 +1,10 @@
 import { and, eq, gte, inArray, or, sql } from "drizzle-orm";
-import { chatActions, chatDeliveries, chatOutboundMessages, heartbeatRuns, type Db } from "@tickernelz/paperclip-pro-db";
+import { chatActions, chatDeliveries, chatOutboundMessages, heartbeatRuns, type Db } from "@tickernelz/wardmote-db";
 import {
   maskOpenwaPhoneNumber,
   type OpenwaGatewayInspection,
-} from "@tickernelz/paperclip-pro-shared";
-import { OPENWA_GATEWAY_VERSION } from "@tickernelz/paperclip-pro-shared/openwa-operations";
+} from "@tickernelz/wardmote-shared";
+import { OPENWA_GATEWAY_VERSION } from "@tickernelz/wardmote-shared/openwa-operations";
 import { HttpError, unprocessable } from "../../errors.js";
 import {
   createOpenwaGatewayClient,

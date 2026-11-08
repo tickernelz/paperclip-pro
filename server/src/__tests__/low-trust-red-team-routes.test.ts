@@ -35,11 +35,11 @@ import {
   issueWorkProducts,
   principalPermissionGrants,
   projects,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   ISSUE_CONTINUATION_SUMMARY_DOCUMENT_KEY,
   LOW_TRUST_REVIEW_PRESET,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -60,7 +60,7 @@ import {
   selectInitialCommunicationGuidance,
   selectPaperclipPromptSections,
   stringifyPaperclipWakePayload,
-} from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+} from "@tickernelz/wardmote-adapter-utils/server-utils";
 
 const GATEWAY_ADAPTER = "acme_gateway";
 

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import type { SecretStatus, UserSecretDefinition } from "@tickernelz/paperclip-pro-shared";
+import type { SecretStatus, UserSecretDefinition } from "@tickernelz/wardmote-shared";
 import { AlertCircle, Pencil, Plus, Trash2, UserRound, Users } from "lucide-react";
 import {
   Dialog,

@@ -6,7 +6,7 @@ import {
   chatEndpoints, chatExternalPrincipals, chatIdentityLinks, chatMessageLinks,
   companies, companyMemberships, createDb, issueComments, issues,
   toolApplications, toolConnections,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   registerServerAdapter, unregisterServerAdapter, type AdapterExecutionContext,
 } from "../adapters/index.js";

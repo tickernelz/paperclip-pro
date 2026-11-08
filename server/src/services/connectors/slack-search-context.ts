@@ -1,4 +1,4 @@
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import { object } from "./slack-client.js";
 
 // Event-scoped credentials are deliberately memory-only. Recovery can use the

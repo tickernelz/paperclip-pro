@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Copy } from "lucide-react";
-import type { OpenwaGatewayAdminCallInput, OpenwaGatewayAdminResult } from "@tickernelz/paperclip-pro-shared";
+import type { OpenwaGatewayAdminCallInput, OpenwaGatewayAdminResult } from "@tickernelz/wardmote-shared";
 import { chatEndpointsApi } from "@/api/chatEndpoints";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";

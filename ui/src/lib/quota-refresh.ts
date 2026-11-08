@@ -1,4 +1,4 @@
-import type { ProviderQuotaResult } from "@tickernelz/paperclip-pro-shared";
+import type { ProviderQuotaResult } from "@tickernelz/wardmote-shared";
 
 const invalidCredentials = new Set([
   "credentials_unavailable",

@@ -4,7 +4,7 @@ import path from "node:path";
 import express from "express";
 import request from "supertest";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { activityLog, assets, companies, createDb, instanceSettings } from "@tickernelz/paperclip-pro-db";
+import { activityLog, assets, companies, createDb, instanceSettings } from "@tickernelz/wardmote-db";
 import { startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";
 import { setAttachmentLimitSetting } from "../attachment-types.js";
 import { errorHandler } from "../middleware/index.js";

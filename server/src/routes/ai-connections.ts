@@ -12,7 +12,7 @@ import {
   toolConnections,
   connectionGrants,
   agents,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   createAiConnectionSchema,
   aiConnectionLoginIntentSchema,
@@ -24,7 +24,7 @@ import {
   type AiProvider,
   type AiConnectionBinding,
   type AiConnectionList,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { assertBoard, assertBoardOrAgentAuthority, assertCompanyAccess, getActorInfo } from "./authz.js";
 import { forbidden, notFound, unprocessable } from "../errors.js";
 import { accessService } from "../services/access.js";

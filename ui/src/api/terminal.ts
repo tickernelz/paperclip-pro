@@ -8,7 +8,7 @@ import {
   type TerminalSshHost,
   type TerminalSshHostList,
   type TerminalUploadResult,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { api, ApiError } from "./client";
 
 const API_PREFIX = "/api";

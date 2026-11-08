@@ -8,7 +8,7 @@ import {
   createDb,
   invites,
   principalPermissionGrants,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { buildHostServices } from "../services/plugin-host-services.js";
 import {
   getEmbeddedPostgresTestSupport,

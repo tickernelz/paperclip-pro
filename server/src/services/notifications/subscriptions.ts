@@ -1,12 +1,12 @@
 import { and, eq, inArray, sql } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { webPushSubscriptions } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
+import { webPushSubscriptions } from "@tickernelz/wardmote-db";
 import type {
   NotificationKind,
   PaperclipNotification,
   UpsertWebPushSubscription,
   WebPushSubscriptionRecord,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { logger } from "../../middleware/logger.js";
 import type { WebPushSender } from "./web-push.js";
 

@@ -2,7 +2,8 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { writeManagedShim, flipCurrentAtomic, initializeInstallStore, payloadPathFor, readInstallManifest, resolveInstallStorePaths, writeInstallManifestAtomic, type InstallManifest, type InstallRecord } from "../install-store.js";
+import { execFileSync } from "node:child_process";
+import { buildNextManifest, writeManagedShim, flipCurrentAtomic, initializeInstallStore, payloadPathFor, readInstallManifest, resolveInstallStorePaths, writeInstallManifestAtomic, type InstallManifest, type InstallRecord } from "../install-store.js";
 import type { CommandRunner } from "../commands/install.js";
 import { compareVersions, detectInstallMode, resolveUpdateRequest, rollbackManagedInstall, updateCommand } from "../commands/update.js";
 
@@ -14,7 +15,7 @@ function record(payloadPath: string, version: string, channel: "latest" | "canar
   return { source: "npm", version, channel, payloadPath, installedAt: `2026-07-22T00:00:0${version}.000Z` };
 }
 function createPayload(payloadPath: string, version: string): string {
-  const entrypoint = path.join(payloadPath, "node_modules", "@tickernelz", "paperclip-pro", "dist", "index.js");
+  const entrypoint = path.join(payloadPath, "node_modules", "@tickernelz", "wardmote", "dist", "index.js");
   fs.mkdirSync(path.dirname(entrypoint), { recursive: true });
   fs.writeFileSync(entrypoint, version);
   return entrypoint;
@@ -51,9 +52,9 @@ describe("update command", () => {
     try {
       await expect(updateCommand({ yes: true }, {
         paths,
-        executablePath: source === "global-npm" ? path.join(root, "lib", "node_modules", "@tickernelz", "paperclip-pro", "dist", "index.js") : entrypoint,
+        executablePath: source === "global-npm" ? path.join(root, "lib", "node_modules", "@tickernelz", "wardmote", "dist", "index.js") : entrypoint,
         runCommand, backup, restartActiveService,
-      })).rejects.toThrow("npx @tickernelz/paperclip-pro@latest install --yes");
+      })).rejects.toThrow("npx @tickernelz/wardmote@latest install --yes");
       expect(runCommand).not.toHaveBeenCalled();
       expect(backup).not.toHaveBeenCalled();
       expect(restartActiveService).not.toHaveBeenCalled();
@@ -98,8 +99,8 @@ describe("update command", () => {
     flipCurrentAtomic(payload, paths);
     writeInstallManifestAtomic({ schemaVersion: 1, ...record(payload, "1.0.0"), previous: [] }, paths);
     expect(detectInstallMode(entrypoint, paths)).toBe("managed");
-    expect(detectInstallMode(path.join(root, "lib", "node_modules", "@tickernelz", "paperclip-pro", "dist", "index.js"), paths)).toBe("global-npm");
-    expect(detectInstallMode(path.join(root, ".npm", "_npx", "abc", "node_modules", "@tickernelz", "paperclip-pro", "dist", "index.js"), paths)).toBe("npx");
+    expect(detectInstallMode(path.join(root, "lib", "node_modules", "@tickernelz", "wardmote", "dist", "index.js"), paths)).toBe("global-npm");
+    expect(detectInstallMode(path.join(root, ".npm", "_npx", "abc", "node_modules", "@tickernelz", "wardmote", "dist", "index.js"), paths)).toBe("npx");
     const source = path.join(root, "source"); fs.mkdirSync(path.join(source, ".git"), { recursive: true });
     expect(detectInstallMode(path.join(source, "cli", "src", "index.ts"), paths)).toBe("source");
   });
@@ -116,10 +117,10 @@ describe("update command", () => {
     const oldSha = "1".repeat(40); const newSha = "2".repeat(40);
     const oldPayload = payloadPathFor(paths, "git", oldSha.slice(0, 12));
     const executable = createPayload(oldPayload, "0.3.1");
-    fs.writeFileSync(path.join(oldPayload, "node_modules", "@tickernelz", "paperclip-pro", "package.json"), JSON.stringify({ version: "0.3.1" }));
+    fs.writeFileSync(path.join(oldPayload, "node_modules", "@tickernelz", "wardmote", "package.json"), JSON.stringify({ version: "0.3.1" }));
     const newPayload = payloadPathFor(paths, "git", newSha.slice(0, 12));
     createPayload(newPayload, "0.3.1");
-    fs.writeFileSync(path.join(newPayload, "node_modules", "@tickernelz", "paperclip-pro", "package.json"), JSON.stringify({ version: "0.3.1" }));
+    fs.writeFileSync(path.join(newPayload, "node_modules", "@tickernelz", "wardmote", "package.json"), JSON.stringify({ version: "0.3.1" }));
     flipCurrentAtomic(oldPayload, paths);
     writeInstallManifestAtomic({ schemaVersion: 1, source: "git", version: "0.3.1", channel: "pinned", repo: "paperclipai/paperclip", ref: "master", sha: oldSha, payloadPath: oldPayload, installedAt: "2026-07-22T00:00:00.000Z", previous: [] }, paths);
     writeManagedShim(paths);
@@ -158,7 +159,7 @@ describe("update command", () => {
 
   it("requires explicit confirmation before a global npm downgrade", async () => {
     const paths = resolveInstallStorePaths();
-    const executable = path.join(root, "lib", "node_modules", "@tickernelz", "paperclip-pro", "dist", "index.js");
+    const executable = path.join(root, "lib", "node_modules", "@tickernelz", "wardmote", "dist", "index.js");
     const runCommand = vi.fn(async () => ({ stdout: '"0.2.0"\n', stderr: "" }));
     await expect(updateCommand({ version: "0.2.0" }, { paths, executablePath: executable, runCommand, confirm: async () => false })).rejects.toThrow("Downgrade cancelled");
     expect(runCommand).toHaveBeenCalledTimes(1);
@@ -166,7 +167,7 @@ describe("update command", () => {
 
   it("isolates global npm updates from hostile registry configuration", async () => {
     const paths = resolveInstallStorePaths();
-    const executable = path.join(root, "lib", "node_modules", "@tickernelz", "paperclip-pro", "dist", "index.js");
+    const executable = path.join(root, "lib", "node_modules", "@tickernelz", "wardmote", "dist", "index.js");
     vi.stubEnv("NPM_CONFIG_REGISTRY", "http://attacker-registry.invalid");
     fs.mkdirSync(process.env.HOME!, { recursive: true });
     fs.writeFileSync(path.join(process.env.HOME!, ".npmrc"), "registry=http://attacker-registry.invalid\n");
@@ -209,6 +210,32 @@ describe("update command", () => {
     expect(fs.realpathSync(paths.currentPath)).toBe(fs.realpathSync(oldPayload));
   });
 
+  it("keeps the shim working after rolling back to a payload published under the legacy package name", () => {
+    const paths = resolveInstallStorePaths(); initializeInstallStore(paths);
+    const install = (version: string, packageName: string, bins: string[]) => {
+      const payload = payloadPathFor(paths, "npm", version);
+      const entrypoint = path.join(payload, "node_modules", "@tickernelz", packageName, "dist", "index.js");
+      fs.mkdirSync(path.dirname(entrypoint), { recursive: true });
+      fs.writeFileSync(entrypoint, `console.log(${JSON.stringify(version)})`);
+      fs.mkdirSync(path.join(payload, "node_modules", ".bin"), { recursive: true });
+      for (const bin of bins) fs.symlinkSync(`../@tickernelz/${packageName}/dist/index.js`, path.join(payload, "node_modules", ".bin", bin));
+      return payload;
+    };
+    const legacyPayload = install("2026.1105.1", "paperclip-pro", ["paperclip-pro"]);
+    flipCurrentAtomic(legacyPayload, paths);
+    const legacyManifest: InstallManifest = { schemaVersion: 1, ...record(legacyPayload, "2026.1105.1"), previous: [] };
+    writeInstallManifestAtomic(legacyManifest, paths);
+    const movedPayload = install("2026.1109.0", "wardmote", ["wardmote", "paperclip-pro"]);
+    const moved = buildNextManifest(record(movedPayload, "2026.1109.0"), legacyManifest);
+    flipCurrentAtomic(movedPayload, paths);
+    writeInstallManifestAtomic(moved, paths);
+    writeManagedShim(paths);
+    expect(execFileSync(paths.shimPath, [], { encoding: "utf8" }).trim()).toBe("2026.1109.0");
+
+    expect(rollbackManagedInstall(paths).version).toBe("2026.1105.1");
+    expect(execFileSync(paths.shimPath, [], { encoding: "utf8" }).trim()).toBe("2026.1105.1");
+  });
+
   it("explains how to recover when the pre-update database is unreachable", async () => {
     const paths = resolveInstallStorePaths(); initializeInstallStore(paths);
     const oldPayload = payloadPathFor(paths, "npm", "1.0.0"); const executable = createPayload(oldPayload, "1.0.0"); flipCurrentAtomic(oldPayload, paths);
@@ -247,10 +274,10 @@ describe("update command", () => {
     const paths = resolveInstallStorePaths(); initializeInstallStore(paths);
     const managedPayload = payloadPathFor(paths, "npm", "1.2.3"); createPayload(managedPayload, "1.2.3");
     writeInstallManifestAtomic({ schemaVersion: 1, ...record(managedPayload, "1.2.3"), channel: "pinned", previous: [] }, paths);
-    const executable = path.join(root, "lib", "node_modules", "@tickernelz", "paperclip-pro", "dist", "index.js");
+    const executable = path.join(root, "lib", "node_modules", "@tickernelz", "wardmote", "dist", "index.js");
     const runCommand = vi.fn(async (_file: string, args: string[]) => args[0] === "view" ? { stdout: '"2.0.0"\n', stderr: "" } : { stdout: "", stderr: "" });
     await updateCommand({ dryRun: true }, { paths, executablePath: executable, runCommand });
-    expect(runCommand).toHaveBeenCalledWith("npm", expect.arrayContaining(["view", "@tickernelz/paperclip-pro@latest"]), expect.anything());
+    expect(runCommand).toHaveBeenCalledWith("npm", expect.arrayContaining(["view", "@tickernelz/wardmote@latest"]), expect.anything());
   });
 
   it("rolls back the active payload when restart validation fails", async () => {

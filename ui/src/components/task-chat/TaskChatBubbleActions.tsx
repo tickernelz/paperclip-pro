@@ -1,7 +1,7 @@
 import type {
   FeedbackDataSharingPreference,
   FeedbackVoteValue,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { useCopyAction } from "@/lib/use-copy-action";
 import { IssueChatFeedbackButtons } from "@/components/AgentBubbleActionRow";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";

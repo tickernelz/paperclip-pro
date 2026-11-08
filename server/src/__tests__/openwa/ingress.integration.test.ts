@@ -18,7 +18,7 @@ import {
   createDb,
   toolConnections,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { startEmbeddedPostgresTestDatabase } from "../helpers/embedded-postgres.js";
 import { chatChannelService, type ChatChannelService } from "../../services/chat-channels.js";
 import { ChatSdkRuntime } from "../../services/chat-sdk-runtime.js";
@@ -198,9 +198,11 @@ describe("OpenWA ingress (embedded Postgres + fake gateway)", () => {
   }
 
   async function goLive(t: Awaited<ReturnType<typeof setup>>, service: ChatChannelService) {
+    const catchUpPagesBefore = t.gateway.catchUpPages;
     const result = await service.reconcileProviderRuntimes();
     expect(result.local).toBe(1);
     await t.gateway.waitForSubscription();
+    await until(() => t.gateway.catchUpPages > catchUpPagesBefore);
     await until(async () => {
       const [endpoint] = await db.select().from(chatEndpoints).where(eq(chatEndpoints.id, t.endpointId));
       return endpoint.status === "active";

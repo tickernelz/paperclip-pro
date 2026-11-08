@@ -26,7 +26,7 @@ The CLI exposes the same surface:
 
 ```sh
 pnpm wardmote instance settings:experimental
-npx @tickernelz/paperclip-pro instance settings:experimental:update --payload-json '{...}'
+npx @tickernelz/wardmote instance settings:experimental:update --payload-json '{...}'
 ```
 
 Those commands change the same opt-in settings that the UI manages.

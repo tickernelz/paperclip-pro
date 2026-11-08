@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { queryKeys } from "@/lib/queryKeys";
 import { createIssue, storybookLiveRuns } from "../fixtures/paperclipData";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import type { ExecutionProjection } from "@tickernelz/paperclip-pro-shared";
+import type { ExecutionProjection } from "@tickernelz/wardmote-shared";
 import { expect, userEvent, within } from "storybook/test";
 
 const base: ExecutionProjection = {

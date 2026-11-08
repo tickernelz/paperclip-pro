@@ -1,12 +1,12 @@
 import { and, eq } from "drizzle-orm";
-import { chatEndpoints } from "@tickernelz/paperclip-pro-db";
+import { chatEndpoints } from "@tickernelz/wardmote-db";
 import {
   OPENWA_CONFIG_UI_ONLY_FIELDS,
   maskOpenwaPhoneNumber,
   openwaChatSettingsSchema,
   openwaEndpointPolicySchema,
   type OpenwaChatSettings,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { HttpError } from "../../errors.js";
 import type { OpenwaAgentConfigOrigin } from "./owners.js";
 import { OpenwaToolError, chatRef, fitPage, openwaToolOwners, resolveTarget, type ToolContext } from "./tools.js";

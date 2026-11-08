@@ -1,13 +1,13 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-import { asBoolean, asString, asStringArray } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
-import type { RunToolProfile } from "@tickernelz/paperclip-pro-adapter-utils/tool-profile";
+import { asBoolean, asString, asStringArray } from "@tickernelz/wardmote-adapter-utils/server-utils";
+import type { RunToolProfile } from "@tickernelz/wardmote-adapter-utils/tool-profile";
 import {
   CODEX_LOCAL_FAST_MODE_SUPPORTED_MODELS,
   DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX,
   isCodexLocalFastModeSupported,
   normalizeCodexModel,
-} from "@tickernelz/paperclip-pro-adapter-utils/provider-models/codex";
+} from "@tickernelz/wardmote-adapter-utils/provider-models/codex";
 
 const SKIP_GIT_REPO_CHECK_FLAG = "--skip-git-repo-check";
 const READ_ONLY_SANDBOX_ARGS = ["--sandbox", "read-only", "-c", 'approval_policy="never"'];

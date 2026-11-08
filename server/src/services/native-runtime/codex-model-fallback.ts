@@ -5,9 +5,9 @@ import {
   minimumCodexCliVersionForModel,
   models,
   normalizeCodexModel,
-} from "@tickernelz/paperclip-pro-adapter-utils/provider-models/codex";
-import type { AdapterExecutionTarget } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
-import type { CommandManagedRuntimeRunner } from "@tickernelz/paperclip-pro-adapter-utils/command-managed-runtime";
+} from "@tickernelz/wardmote-adapter-utils/provider-models/codex";
+import type { AdapterExecutionTarget } from "@tickernelz/wardmote-adapter-utils/execution-target";
+import type { CommandManagedRuntimeRunner } from "@tickernelz/wardmote-adapter-utils/command-managed-runtime";
 import { createNativeSshCommandRunner } from "./native-ssh-command-runner.js";
 import { isSupportedRemoteCodexVersion, parseCodexCliVersion } from "./codex-runtime-compatibility.js";
 

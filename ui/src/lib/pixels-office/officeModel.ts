@@ -1,4 +1,4 @@
-import type { PixelsOfficeSeatAssignment } from "@tickernelz/paperclip-pro-shared";
+import type { PixelsOfficeSeatAssignment } from "@tickernelz/wardmote-shared";
 
 export type AgentVisualStatus =
   | "running"

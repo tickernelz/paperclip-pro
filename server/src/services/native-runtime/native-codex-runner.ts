@@ -5,9 +5,9 @@ import { dirname, isAbsolute, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { and, eq } from "drizzle-orm";
 
-import type { AdapterExecutionResult } from "@tickernelz/paperclip-pro-adapter-utils";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { agentSessionGoalActions, agentTaskSessions } from "@tickernelz/paperclip-pro-db";
+import type { AdapterExecutionResult } from "@tickernelz/wardmote-adapter-utils";
+import type { Db } from "@tickernelz/wardmote-db";
+import { agentSessionGoalActions, agentTaskSessions } from "@tickernelz/wardmote-db";
 
 import { resolvePaperclipInstanceRoot } from "../../home-paths.js";
 import { failRunnerGoalAction } from "../runner-goals.js";
@@ -202,7 +202,7 @@ export function resolvePaperclipRunnerBinary(
     }
   }
   throw new Error(
-    "paperclip_runner_binary_missing: build @tickernelz/paperclip-pro-paperclip-runner or set PAPERCLIP_RUNNER_BINARY",
+    "paperclip_runner_binary_missing: build @tickernelz/wardmote-paperclip-runner or set PAPERCLIP_RUNNER_BINARY",
   );
 }
 

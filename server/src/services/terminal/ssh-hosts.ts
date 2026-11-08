@@ -2,13 +2,13 @@ import { promises as fs } from "node:fs";
 import { homedir } from "node:os";
 import path from "node:path";
 import { and, asc, eq } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { terminalSshHosts } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
+import { terminalSshHosts } from "@tickernelz/wardmote-db";
 import type {
   CreateTerminalSshHostRequest,
   TerminalSshHost,
   TerminalSshHostList,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 export const SSH_CONFIG_HOST_ID_PREFIX = "config:";
 export const SSH_SAVED_HOST_ID_PREFIX = "saved:";

@@ -26,7 +26,7 @@ import {
   type IssueComment,
   upsertIssueDocumentSchema,
   upsertIssueFeedbackVoteSchema,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   addCommonClientOptions,
   apiPath,

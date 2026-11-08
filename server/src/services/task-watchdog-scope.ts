@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { heartbeatRuns, issues, issueWatchdogs } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
+import { heartbeatRuns, issues, issueWatchdogs } from "@tickernelz/wardmote-db";
 
 const MAX_WATCHDOG_SCOPE_ANCESTRY_DEPTH = 100;
 export const TASK_WATCHDOG_ORIGIN_KIND = "task_watchdog";

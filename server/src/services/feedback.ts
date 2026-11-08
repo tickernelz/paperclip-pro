@@ -1,6 +1,6 @@
 import { notifyDeliveryWork, DELIVERY_QUEUES } from "./delivery-work-notifications.js";
 import { and, asc, desc, eq, getTableColumns, gte, isNull, lte, ne, or } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   agents,
   companies,
@@ -16,8 +16,8 @@ import {
   issueComments,
   issueDocuments,
   issues,
-} from "@tickernelz/paperclip-pro-db";
-import { readPaperclipSkillSyncPreference } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+} from "@tickernelz/wardmote-db";
+import { readPaperclipSkillSyncPreference } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import {
   DEFAULT_FEEDBACK_DATA_SHARING_PREFERENCE,
   DEFAULT_FEEDBACK_DATA_SHARING_TERMS_VERSION,
@@ -31,7 +31,7 @@ import {
   type FeedbackTraceStatus,
   type FeedbackTraceTargetSummary,
   type FeedbackVoteValue,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { notFound, unprocessable } from "../errors.js";
 import { agentInstructionsBundleMode, agentInstructionsService } from "./agent-instructions.js";
 import {

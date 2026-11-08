@@ -6,7 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type {
   AgentAdapterConfigBatchPreview,
   IssueRunModelOverrideView,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { agentsApi } from "@/api/agents";
 import { issuesApi } from "@/api/issues";
 import { TaskModelOverrideControl } from "./TaskModelOverrideControl";

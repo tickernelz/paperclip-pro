@@ -42,14 +42,14 @@ import {
   or,
   sql,
 } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   agents,
   agentWakeupRequests,
   executionWorkspaces,
   heartbeatRuns,
   issues,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   HttpError,
   notFound,

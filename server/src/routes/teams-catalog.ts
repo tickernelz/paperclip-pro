@@ -1,10 +1,10 @@
 import { Router, type Request } from "express";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   catalogTeamInstallSchema,
   catalogTeamListQuerySchema,
   catalogTeamPreviewSchema,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { validate } from "../middleware/validate.js";
 import { accessService, agentService } from "../services/index.js";
 import {

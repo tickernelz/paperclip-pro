@@ -17,11 +17,11 @@ import type {
   IssueDocument,
   IssueDocumentSummary,
   IssueWorkProduct,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import type {
   PaperclipQuestionResponse,
   PaperclipQuestionSet,
-} from "@tickernelz/paperclip-pro-adapter-utils";
+} from "@tickernelz/wardmote-adapter-utils";
 
 export type { PaperclipQuestionResponse, PaperclipQuestionSet };
 

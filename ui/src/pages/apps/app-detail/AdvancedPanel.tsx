@@ -6,8 +6,8 @@ import type {
   ConnectionGrant,
   ToolConnection,
   ToolConnectionCredentialPolicy,
-} from "@tickernelz/paperclip-pro-shared";
-import { connectionCredentialConfigPath, credentialConfigPath, getAvailableConnectionMethod, humanizeConnectionDisplayName } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
+import { connectionCredentialConfigPath, credentialConfigPath, getAvailableConnectionMethod, humanizeConnectionDisplayName } from "@tickernelz/wardmote-shared";
 import { toolsApi } from "@/api/tools";
 import { Button } from "@/components/ui/button";
 import {

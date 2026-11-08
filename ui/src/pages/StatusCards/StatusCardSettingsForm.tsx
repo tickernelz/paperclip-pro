@@ -1,4 +1,4 @@
-import type { StatusCardRefreshPolicy } from "@tickernelz/paperclip-pro-shared";
+import type { StatusCardRefreshPolicy } from "@tickernelz/wardmote-shared";
 import { ChevronDown } from "lucide-react";
 
 import { Checkbox } from "@/components/ui/checkbox";

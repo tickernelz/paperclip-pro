@@ -1,5 +1,5 @@
 import { and, asc, eq, ne, sql } from "drizzle-orm";
-import { agents, companies, type Db } from "@tickernelz/paperclip-pro-db";
+import { agents, companies, type Db } from "@tickernelz/wardmote-db";
 import {
   OMP_ADAPTER_ALIASES,
   OMP_ADAPTER_SETTINGS,
@@ -15,7 +15,7 @@ import {
   validateOmpSettingsMap,
   type AgentSettingsValues,
   type OmpSettingsCatalogEntry,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 export const OMP_DEFAULTS_ADAPTER_TYPE = "omp_local";
 

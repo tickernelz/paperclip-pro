@@ -63,10 +63,10 @@ if [[ "$SMOKE_FORCE" != "true" ]]; then
   fi
 fi
 
-echo "==> Onboarding @tickernelz/paperclip-pro@$PAPERCLIPAI_VERSION with --install-service"
+echo "==> Onboarding @tickernelz/wardmote@$PAPERCLIPAI_VERSION with --install-service"
 echo "    Data dir: $DATA_DIR"
 if ! timeout "$ONBOARD_TIMEOUT_SECONDS" \
-  npx --yes "@tickernelz/paperclip-pro@${PAPERCLIPAI_VERSION}" onboard --yes --install-service --data-dir "$DATA_DIR"; then
+  npx --yes "@tickernelz/wardmote@${PAPERCLIPAI_VERSION}" onboard --yes --install-service --data-dir "$DATA_DIR"; then
   diagnostics
   fail "onboard exited non-zero"
 fi

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { OnboardingOmpStatus, OnboardingRemoteOmpStatus } from "@tickernelz/paperclip-pro-shared";
+import type { OnboardingOmpStatus, OnboardingRemoteOmpStatus } from "@tickernelz/wardmote-shared";
 import {
   checkView,
   companyNameForFolder,

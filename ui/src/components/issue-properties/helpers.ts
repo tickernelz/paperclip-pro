@@ -1,4 +1,4 @@
-import type { Issue, Project } from "@tickernelz/paperclip-pro-shared";
+import type { Issue, Project } from "@tickernelz/wardmote-shared";
 
 export function defaultProjectWorkspaceIdForProject(project: {
   workspaces?: Array<{ id: string; isPrimary: boolean }>;

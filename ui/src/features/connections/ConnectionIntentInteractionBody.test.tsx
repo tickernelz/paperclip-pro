@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import type {
   ConnectionIntentInteraction,
   ToolConnection,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   connectedConnectionIntentInteraction,

@@ -3,7 +3,7 @@
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { TerminalSession } from "@tickernelz/paperclip-pro-shared";
+import type { TerminalSession } from "@tickernelz/wardmote-shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/api/client";
 import { TaskTerminalPanel } from "./TaskTerminalPanel";

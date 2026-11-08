@@ -1,7 +1,7 @@
 import { useId, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
-import type { IssueRecoveryAction } from "@tickernelz/paperclip-pro-shared";
-import { isNativeWorkspaceExportRepairCause } from "@tickernelz/paperclip-pro-shared";
+import type { IssueRecoveryAction } from "@tickernelz/wardmote-shared";
+import { isNativeWorkspaceExportRepairCause } from "@tickernelz/wardmote-shared";
 import { issuesApi } from "../api/issues";
 import { cn } from "../lib/utils";
 import { Button } from "./ui/button";

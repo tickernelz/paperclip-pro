@@ -110,7 +110,7 @@ import {
   // Instance settings
   patchInstanceGeneralSettingsSchema,
   patchInstanceExperimentalSettingsSchema,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 extendZodWithOpenApi(z);
 

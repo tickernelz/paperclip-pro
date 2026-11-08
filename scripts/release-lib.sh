@@ -515,7 +515,7 @@ verify_npm_installable() {
     return 1
   fi
 
-  installed_version="$(node -e "console.log(require(process.argv[1]).version)" "$install_dir/node_modules/@tickernelz/paperclip-pro/package.json")"
+  installed_version="$(node -e "console.log(require(process.argv[1]).version)" "$install_dir/node_modules/@tickernelz/wardmote/package.json")"
   rm -rf "$install_dir"
 
   [ "$installed_version" = "$expected_version" ]

@@ -1,6 +1,6 @@
 import { useEffect, useId, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import type { ConfigureRailwaySsh, ConnectionGrantsResponse, RailwaySshSetup, ToolConnection } from "@tickernelz/paperclip-pro-shared";
+import type { ConfigureRailwaySsh, ConnectionGrantsResponse, RailwaySshSetup, ToolConnection } from "@tickernelz/wardmote-shared";
 import { toolsApi } from "@/api/tools";
 import { queryKeys } from "@/lib/queryKeys";
 import { Button } from "@/components/ui/button";

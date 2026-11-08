@@ -32,8 +32,8 @@ import {
   issues,
   toolConnections,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
-import { SPEECH_TO_TEXT_DEFAULTS } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import { SPEECH_TO_TEXT_DEFAULTS } from "@tickernelz/wardmote-shared";
 import { startEmbeddedPostgresTestDatabase } from "../helpers/embedded-postgres.js";
 import { createLocalDiskStorageProvider } from "../../storage/local-disk-provider.js";
 import { createStorageService } from "../../storage/service.js";
@@ -241,7 +241,7 @@ describe("OpenWA owner approvals and grants (embedded Postgres + fake gateway)",
     }
     for (const phone of [MEMBER_A, MEMBER_B]) await service.openwa.addSenderRule(endpoint.id, { list: "allow", e164: "+" + phone }, userId);
     expect((await service.reconcileProviderRuntimes()).local).toBe(1);
-    await gateway.waitForSubscription();
+    await gateway.waitForFirstCatchUp();
     return { gateway, companyId, agentId, userId, ownerUsers, endpointId: endpoint.id, service, wakes, wakeup };
   }
 

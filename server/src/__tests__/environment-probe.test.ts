@@ -13,7 +13,7 @@ const mockEnvironmentRuntimeService = vi.hoisted(() => vi.fn(() => ({
   })),
 })));
 
-vi.mock("@tickernelz/paperclip-pro-adapter-utils/ssh", () => ({
+vi.mock("@tickernelz/wardmote-adapter-utils/ssh", () => ({
   ensureSshWorkspaceReady: mockEnsureSshWorkspaceReady,
 }));
 

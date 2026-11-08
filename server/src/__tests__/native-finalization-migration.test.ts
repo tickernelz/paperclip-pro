@@ -7,7 +7,7 @@ import {
   createDb,
   heartbeatRunEvents,
   heartbeatRuns,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";
 
 describe("P6-18 / MIG-01..04 native finalization migration", () => {

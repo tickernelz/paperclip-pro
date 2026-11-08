@@ -1,9 +1,9 @@
 import { and, eq, inArray } from "drizzle-orm";
-import { issues, type Db } from "@tickernelz/paperclip-pro-db";
+import { issues, type Db } from "@tickernelz/wardmote-db";
 import type {
   IssueRunModelOverridePropagation,
   IssueRunModelOverrideSubtaskScope,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   hasExplicitIssueRunModelOverride,
   writeIssueRunModelOverride,

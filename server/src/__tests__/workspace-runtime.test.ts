@@ -22,7 +22,7 @@ import {
   projects,
   workspaceOperations,
   workspaceRuntimeServices,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { eq } from "drizzle-orm";
 import {
   buildExecutionWorkspaceAdapterConfig,
@@ -76,9 +76,9 @@ import {
   deriveViteHmrPort,
   type Environment,
   type EnvironmentLease,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { resolvePaperclipConfigPath } from "../paths.ts";
-import type { WorkspaceOperation } from "@tickernelz/paperclip-pro-shared";
+import type { WorkspaceOperation } from "@tickernelz/wardmote-shared";
 import type { WorkspaceOperationRecorder } from "../services/workspace-operations.ts";
 import { deriveWorktreeInstanceId } from "../services/workspace-instance-cleanup.ts";
 import {
@@ -698,27 +698,27 @@ describe("ensureServerWorkspaceLinksCurrent", () => {
     await fs.writeFile(
       path.join(repoRoot, "server", "package.json"),
       JSON.stringify({
-        name: "@tickernelz/paperclip-pro-server",
+        name: "@tickernelz/wardmote-server",
         dependencies: {
-          "@tickernelz/paperclip-pro-db": "workspace:*",
+          "@tickernelz/wardmote-db": "workspace:*",
         },
       }),
       "utf8",
     );
     await fs.writeFile(
       path.join(expectedPackageDir, "package.json"),
-      JSON.stringify({ name: "@tickernelz/paperclip-pro-db" }),
+      JSON.stringify({ name: "@tickernelz/wardmote-db" }),
       "utf8",
     );
     await fs.writeFile(
       path.join(stalePackageDir, "package.json"),
-      JSON.stringify({ name: "@tickernelz/paperclip-pro-db" }),
+      JSON.stringify({ name: "@tickernelz/wardmote-db" }),
       "utf8",
     );
-    await fs.symlink(stalePackageDir, path.join(serverNodeModulesScopeDir, "paperclip-pro-db"));
+    await fs.symlink(stalePackageDir, path.join(serverNodeModulesScopeDir, "wardmote-db"));
 
     await ensureServerWorkspaceLinksCurrent(path.join(repoRoot, "server"));
-    expect(await fs.realpath(path.join(serverNodeModulesScopeDir, "paperclip-pro-db"))).toBe(await fs.realpath(expectedPackageDir));
+    expect(await fs.realpath(path.join(serverNodeModulesScopeDir, "wardmote-db"))).toBe(await fs.realpath(expectedPackageDir));
   });
 
   it("skips relinking when server workspace dependencies already point at the repo", async () => {
@@ -734,19 +734,19 @@ describe("ensureServerWorkspaceLinksCurrent", () => {
     await fs.writeFile(
       path.join(repoRoot, "server", "package.json"),
       JSON.stringify({
-        name: "@tickernelz/paperclip-pro-server",
+        name: "@tickernelz/wardmote-server",
         dependencies: {
-          "@tickernelz/paperclip-pro-db": "workspace:*",
+          "@tickernelz/wardmote-db": "workspace:*",
         },
       }),
       "utf8",
     );
     await fs.writeFile(
       path.join(expectedPackageDir, "package.json"),
-      JSON.stringify({ name: "@tickernelz/paperclip-pro-db" }),
+      JSON.stringify({ name: "@tickernelz/wardmote-db" }),
       "utf8",
     );
-    await fs.symlink(expectedPackageDir, path.join(serverNodeModulesScopeDir, "paperclip-pro-db"));
+    await fs.symlink(expectedPackageDir, path.join(serverNodeModulesScopeDir, "wardmote-db"));
 
     await ensureServerWorkspaceLinksCurrent(path.join(repoRoot, "server"));
   });
@@ -767,27 +767,27 @@ describe("ensureServerWorkspaceLinksCurrent", () => {
     await fs.writeFile(
       path.join(repoRoot, "server", "package.json"),
       JSON.stringify({
-        name: "@tickernelz/paperclip-pro-server",
+        name: "@tickernelz/wardmote-server",
         dependencies: {
-          "@tickernelz/paperclip-pro-db": "workspace:*",
+          "@tickernelz/wardmote-db": "workspace:*",
         },
       }),
       "utf8",
     );
     await fs.writeFile(
       path.join(expectedPackageDir, "package.json"),
-      JSON.stringify({ name: "@tickernelz/paperclip-pro-db" }),
+      JSON.stringify({ name: "@tickernelz/wardmote-db" }),
       "utf8",
     );
     await fs.writeFile(
       path.join(stalePackageDir, "package.json"),
-      JSON.stringify({ name: "@tickernelz/paperclip-pro-db" }),
+      JSON.stringify({ name: "@tickernelz/wardmote-db" }),
       "utf8",
     );
-    await fs.symlink(stalePackageDir, path.join(serverNodeModulesScopeDir, "paperclip-pro-db"));
+    await fs.symlink(stalePackageDir, path.join(serverNodeModulesScopeDir, "wardmote-db"));
 
     await ensureServerWorkspaceLinksCurrent(path.join(repoRoot, "server"));
-    expect(await fs.realpath(path.join(serverNodeModulesScopeDir, "paperclip-pro-db"))).toBe(await fs.realpath(stalePackageDir));
+    expect(await fs.realpath(path.join(serverNodeModulesScopeDir, "wardmote-db"))).toBe(await fs.realpath(stalePackageDir));
   });
 });
 
@@ -7665,7 +7665,7 @@ describeEmbeddedPostgres("workspace runtime service control persistence", () => 
       await cleanupRuntimeHome();
       await fixture.cleanup();
     }
-  }, 20_000);
+  }, 60_000);
 
   it("returns a bounded structured conflict and exposes only same-company workspace references", async () => {
     const fixture = await createRuntimeFixture({

@@ -5,7 +5,7 @@ import {
   AGENT_FALLBACK_MODELS_MAX,
   fitAgentFallbackEfforts,
   type Agent,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { Loader2, Pencil } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";

@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 
 /**
  * A direct owner-chat turn may edit its own instructions, subject to the normal

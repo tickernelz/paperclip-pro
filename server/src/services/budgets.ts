@@ -1,6 +1,6 @@
-import { compareCents, normalizeCents } from "@tickernelz/paperclip-pro-shared";
+import { compareCents, normalizeCents } from "@tickernelz/wardmote-shared";
 import { and, desc, eq, gte, inArray, lt, ne, sql, or, isNull, type SQL } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 
 import {
   agents,
@@ -12,7 +12,7 @@ import {
   heartbeatRuns,
   nativeRunFinalizations,
   projects,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import type {
   BudgetIncident,
   BudgetIncidentResolutionInput,
@@ -25,7 +25,7 @@ import type {
   BudgetScopeType,
   BudgetThresholdType,
   BudgetWindowKind,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { HttpError, notFound, unprocessable } from "../errors.js";
 import { logger } from "../middleware/logger.js";
 import { withAccountingTransaction } from "./accounting-transaction.js";

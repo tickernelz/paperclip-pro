@@ -1,4 +1,4 @@
-import type { PaperclipQuestion, PaperclipQuestionResponse, PaperclipQuestionSet, TranscriptEntry } from "@tickernelz/paperclip-pro-adapter-utils";
+import type { PaperclipQuestion, PaperclipQuestionResponse, PaperclipQuestionSet, TranscriptEntry } from "@tickernelz/wardmote-adapter-utils";
 import type { UIAdapterModule } from "../types";
 import { parseCodexStdoutLine } from "./parse-stdout";
 import { buildPaperclipRunnerConfig } from "./build-config";

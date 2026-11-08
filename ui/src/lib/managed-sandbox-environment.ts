@@ -1,4 +1,4 @@
-import type { Environment } from "@tickernelz/paperclip-pro-shared";
+import type { Environment } from "@tickernelz/wardmote-shared";
 
 /**
  * True iff the environment row was provisioned by the platform (the

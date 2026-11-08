@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { AdapterExecutionTarget } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
+import type { AdapterExecutionTarget } from "@tickernelz/wardmote-adapter-utils/execution-target";
 import {
   codexModelFallbackCandidates,
   compatibleCodexModel,

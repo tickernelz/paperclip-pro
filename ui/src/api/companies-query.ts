@@ -1,5 +1,5 @@
 import { useQuery, type QueryClient } from "@tanstack/react-query";
-import type { Company } from "@tickernelz/paperclip-pro-shared";
+import type { Company } from "@tickernelz/wardmote-shared";
 import { authApi } from "./auth";
 import { companiesApi } from "./companies";
 import { ApiError } from "./client";

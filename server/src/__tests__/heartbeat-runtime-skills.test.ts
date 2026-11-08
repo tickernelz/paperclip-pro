@@ -15,9 +15,9 @@ import {
   toolProfileBindings,
   toolProfileEntries,
   toolProfiles,
-} from "@tickernelz/paperclip-pro-db";
-import type { AdapterRuntimeMcpServer } from "@tickernelz/paperclip-pro-adapter-utils";
-import type { PaperclipSkillEntry } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+} from "@tickernelz/wardmote-db";
+import type { AdapterRuntimeMcpServer } from "@tickernelz/wardmote-adapter-utils";
+import type { PaperclipSkillEntry } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

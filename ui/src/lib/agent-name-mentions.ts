@@ -1,4 +1,4 @@
-import { buildAgentMentionHref } from "@tickernelz/paperclip-pro-shared";
+import { buildAgentMentionHref } from "@tickernelz/wardmote-shared";
 
 type MarkdownNode = {
   type: string;

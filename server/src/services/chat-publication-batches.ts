@@ -5,7 +5,7 @@ import {
   type ChatPublicationBatchStatus,
   type ChatPublicationState,
   type ChatPublicationSummary,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 /** Explicit safe columns only. Never pass a transfer's encrypted private state. */
 export interface ChatFileTransferProjection {

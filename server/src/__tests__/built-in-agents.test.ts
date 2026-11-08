@@ -28,8 +28,8 @@ import {
   principalPermissionGrants,
   routines,
   routineTriggers,
-} from "@tickernelz/paperclip-pro-db";
-import { readPaperclipSkillSyncPreference } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+} from "@tickernelz/wardmote-db";
+import { readPaperclipSkillSyncPreference } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

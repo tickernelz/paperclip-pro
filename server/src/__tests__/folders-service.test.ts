@@ -3,14 +3,14 @@ import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 import { eq, sql } from "drizzle-orm";
 import {
   folderSlugSchema,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   companies,
   companySkills,
   createDb,
   folders,
   routines,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

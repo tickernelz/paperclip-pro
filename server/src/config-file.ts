@@ -5,7 +5,7 @@ import {
   paperclipConfigSchema,
   type PaperclipConfig,
   type DeploymentMode,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { ZodError } from "zod";
 import { resolvePaperclipConfigPath } from "./paths.js";
 

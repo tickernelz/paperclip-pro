@@ -1,4 +1,4 @@
-import type { ExecutionWorkspace } from "@tickernelz/paperclip-pro-shared";
+import type { ExecutionWorkspace } from "@tickernelz/wardmote-shared";
 
 /** Short-lived display cache only. Destructive operations must inspect afresh. */
 export function createWorkspaceGitInspectionCache<T>(inspect: (workspace: ExecutionWorkspace) => Promise<T>) {

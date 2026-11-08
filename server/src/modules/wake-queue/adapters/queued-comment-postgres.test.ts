@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { activityLog, agentWakeupRequests, agents, companies, createDb, heartbeatRuns, issueComments, issues } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
+import { activityLog, agentWakeupRequests, agents, companies, createDb, heartbeatRuns, issueComments, issues } from "@tickernelz/wardmote-db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

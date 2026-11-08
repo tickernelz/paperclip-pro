@@ -10,7 +10,7 @@ import type {
   EnvBinding,
   SecretProvider,
   SecretProviderDescriptor,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   addCommonClientOptions,
   apiPath,

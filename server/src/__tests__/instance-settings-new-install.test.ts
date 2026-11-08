@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
-import { createDb, companies, instanceSettings } from "@tickernelz/paperclip-pro-db";
-import { startEmbeddedPostgresTestDatabase } from "@tickernelz/paperclip-pro-db/test-embedded-postgres";
-import { FEATURE_PRESETS, featureKeysWithDestination } from "@tickernelz/paperclip-pro-shared";
+import { createDb, companies, instanceSettings } from "@tickernelz/wardmote-db";
+import { startEmbeddedPostgresTestDatabase } from "@tickernelz/wardmote-db/test-embedded-postgres";
+import { FEATURE_PRESETS, featureKeysWithDestination } from "@tickernelz/wardmote-shared";
 import { instanceSettingsService } from "../services/instance-settings.js";
 
 let database: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;

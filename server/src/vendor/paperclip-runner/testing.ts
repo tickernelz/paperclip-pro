@@ -6,7 +6,7 @@
  * export, which the server build prepares before compiling, so TypeScript does
  * not pull the runner source tree outside the server's rootDir.
  */
-type RunnerTestingModule = typeof import("@tickernelz/paperclip-pro-paperclip-runner/testing");
+type RunnerTestingModule = typeof import("@tickernelz/wardmote-paperclip-runner/testing");
 
 export type {
   CapabilityCommandEnvelope,
@@ -18,7 +18,7 @@ export type {
   SemanticConformanceAdapter,
   SemanticConformanceObservation,
   SemanticConformanceVector,
-} from "@tickernelz/paperclip-pro-paperclip-runner/testing";
+} from "@tickernelz/wardmote-paperclip-runner/testing";
 
 const sourceUrl = new URL(
   "../../../../packages/paperclip-runner/src/testing.ts",

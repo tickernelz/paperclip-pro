@@ -1,10 +1,10 @@
-import type { ProviderQuotaResult } from "@tickernelz/paperclip-pro-shared";
-import { redactDiagnosticText } from "@tickernelz/paperclip-pro-adapter-utils";
+import type { ProviderQuotaResult } from "@tickernelz/wardmote-shared";
+import { redactDiagnosticText } from "@tickernelz/wardmote-adapter-utils";
 import { listServerAdapters } from "../adapters/registry.js";
 import { logger } from "../middleware/logger.js";
 import { createHash } from "node:crypto";
 import { eq, inArray, and } from "drizzle-orm";
-import { companySecrets, companySecretVersions, userSecretDefinitions, type Db } from "@tickernelz/paperclip-pro-db";
+import { companySecrets, companySecretVersions, userSecretDefinitions, type Db } from "@tickernelz/wardmote-db";
 import { fetchCodexQuota } from "./ai-providers/codex/quota.js";
 import { fetchClaudeQuota } from "./ai-providers/claude/quota.js";
 import { aiConnectionService } from "./ai-connections.js";

@@ -14,7 +14,7 @@ import {
   type CompanySkillListItem,
   type CompanySkillProjectScanResult,
   type CompanySkillUpdateStatus,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { readFile } from "node:fs/promises";
 import { stdin as input, stdout as output } from "node:process";
 import { createInterface } from "node:readline/promises";

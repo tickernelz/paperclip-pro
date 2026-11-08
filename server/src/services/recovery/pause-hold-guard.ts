@@ -1,4 +1,4 @@
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import { issueTreeControlService } from "../issue-tree-control.js";
 
 type IssueTreeControlService = ReturnType<typeof issueTreeControlService>;

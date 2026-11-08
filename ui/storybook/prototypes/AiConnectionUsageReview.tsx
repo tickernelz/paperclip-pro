@@ -6,7 +6,7 @@ import type {
   AiManagedConnectionSummary,
   ConnectionGrantsResponse,
   ToolConnection,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { ManagedAiConnectionDetails } from "@/components/ai-connections/ManagedAiConnectionDetails";
 
 const companyId = "company-storybook";

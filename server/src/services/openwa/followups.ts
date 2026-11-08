@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { and, asc, eq, inArray, isNull, lt, or, sql } from "drizzle-orm";
-import { chatActions, chatAuditEntries, chatConversations, chatDeliveries, chatOutboundMessages, heartbeatRuns, issues, type Db } from "@tickernelz/paperclip-pro-db";
+import { chatActions, chatAuditEntries, chatConversations, chatDeliveries, chatOutboundMessages, heartbeatRuns, issues, type Db } from "@tickernelz/wardmote-db";
 import { openwaChatKey } from "./outbound.js";
 import { OPENWA_TOOL_WRITE_ACTION_KIND } from "./tool-writes.js";
 import { forbidden } from "../../errors.js";

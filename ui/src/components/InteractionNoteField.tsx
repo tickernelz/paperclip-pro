@@ -1,6 +1,6 @@
 import { useId, useState } from "react";
 import { MessageSquarePlus, X } from "lucide-react";
-import { INTERACTION_NOTE_MAX_LENGTH } from "@tickernelz/paperclip-pro-shared";
+import { INTERACTION_NOTE_MAX_LENGTH } from "@tickernelz/wardmote-shared";
 import {
   MarkdownBody,
   type MarkdownExternalReferenceMap,

@@ -24,7 +24,7 @@ import {
   issues,
   toolConnections,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { startEmbeddedPostgresTestDatabase } from "../helpers/embedded-postgres.js";
 import { chatChannelService, type ChatChannelService, type ChatChannelServiceOptions } from "../../services/chat-channels.js";
 import { ChatSdkRuntime } from "../../services/chat-sdk-runtime.js";
@@ -365,7 +365,7 @@ describe("OpenWA scheduled wakes (embedded Postgres + fake gateway)", () => {
   async function goLive(t: Pick<Setup, "service" | "gateway">, options: { discover?: boolean } = {}) {
     const result = await t.service.reconcileProviderRuntimes();
     expect(result.local).toBe(1);
-    await t.gateway.waitForSubscription();
+    await t.gateway.waitForFirstCatchUp();
     if (options.discover === false) return;
     const groups = [...t.gateway.groups.keys()];
     const before = t.service.openwaAdmissionStats.discoveries;

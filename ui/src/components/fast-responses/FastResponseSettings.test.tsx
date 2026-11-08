@@ -3,7 +3,7 @@ import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { MemoryRouter } from "react-router-dom";
 import { expect, it, vi } from "vitest";
-import { updateFastResponseSchema } from "@tickernelz/paperclip-pro-shared";
+import { updateFastResponseSchema } from "@tickernelz/wardmote-shared";
 import { FastResponseSettingsView } from "./FastResponseSettings";
 import { choices } from "../../../storybook/stories/decision-models/fixtures";
 vi.mock("@/context/CompanyContext", () => ({

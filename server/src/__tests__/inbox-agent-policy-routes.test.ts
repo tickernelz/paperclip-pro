@@ -11,7 +11,7 @@ import {
   createDb,
   principalPermissionGrants,
   userInboxAgentPolicies,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { errorHandler } from "../middleware/index.js";
 import { inboxAgentPolicyRoutes } from "../routes/inbox-agent-policy.js";
 import {

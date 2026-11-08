@@ -9,7 +9,7 @@ import type {
   FeedbackVote,
   FeedbackVoteValue,
   IssueComment,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Check, Copy, Paperclip } from "lucide-react";

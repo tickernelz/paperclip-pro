@@ -1,5 +1,5 @@
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import type { ExternalObjectCanonicalUrl } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/wardmote-db";
+import type { ExternalObjectCanonicalUrl } from "@tickernelz/wardmote-shared";
 import { DEFAULT_GITHUB_TOKEN_SECRET_NAMES } from "./git-credentials.js";
 import { ghFetch, gitHubApiBase } from "./github-fetch.js";
 import { secretService } from "./secrets.js";

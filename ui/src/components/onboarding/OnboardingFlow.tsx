@@ -5,7 +5,7 @@ import {
   randomAgentAppearance,
   type OnboardingOmpStatus,
   type OnboardingRemoteOmpStatus,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { agentsApi } from "../../api/agents";
 import { approvalsApi } from "../../api/approvals";
 import { ApiError } from "../../api/client";

@@ -1,5 +1,5 @@
 {
-  "name": "@tickernelz/paperclip-pro-create-paperclip-plugin",
+  "name": "@tickernelz/wardmote-create-paperclip-plugin",
   "version": "0.1.0",
   "license": "MIT",
   "homepage": "https://github.com/tickernelz/wardmote",
@@ -42,7 +42,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@tickernelz/paperclip-pro-plugin-sdk": "workspace:*"
+    "@tickernelz/wardmote-plugin-sdk": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

@@ -13,7 +13,7 @@ import {
   typeLabel,
 } from "./ApprovalPayload";
 import { timeAgo } from "../lib/timeAgo";
-import type { Approval, Agent } from "@tickernelz/paperclip-pro-shared";
+import type { Approval, Agent } from "@tickernelz/wardmote-shared";
 import { cn } from "@/lib/utils";
 import { Card } from "@/components/ui/card";
 

@@ -22,7 +22,7 @@ import {
   issues,
   toolConnections,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { startEmbeddedPostgresTestDatabase } from "../helpers/embedded-postgres.js";
 import { createLocalDiskStorageProvider } from "../../storage/local-disk-provider.js";
 import { createStorageService } from "../../storage/service.js";
@@ -166,7 +166,7 @@ describe("OpenWA delegated task reports (embedded Postgres + fake gateway)", () 
       })
       .where(eq(chatEndpoints.id, endpoint.id));
     expect((await service.reconcileProviderRuntimes()).local).toBe(1);
-    await gateway.waitForSubscription();
+    await gateway.waitForFirstCatchUp();
     await until(async () => (await db.select().from(chatEndpoints).where(eq(chatEndpoints.id, endpoint.id)))[0]!.status === "active");
 
     const threadId = openwaThreadId({ sessionId: SESSION_ID, chatId, isGroup });

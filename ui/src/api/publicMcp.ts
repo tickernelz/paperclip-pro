@@ -1,4 +1,4 @@
-import type { McpConnection, McpConnectionSetup } from "@tickernelz/paperclip-pro-shared";
+import type { McpConnection, McpConnectionSetup } from "@tickernelz/wardmote-shared";
 import { api } from "./client";
 
 export const publicMcpApi = {

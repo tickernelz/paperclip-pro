@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { GitConnectionFailure } from "@tickernelz/paperclip-pro-adapter-utils/connection-failure";
+import type { GitConnectionFailure } from "@tickernelz/wardmote-adapter-utils/connection-failure";
 import {
   classifyGitCloneFailure,
   GitConnectionFailureError,

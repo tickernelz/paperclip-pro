@@ -7,7 +7,7 @@ import {
   issueThreadInteractions,
   issues,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { persistActivity } from "./activity-log.js";
 import {
   dependencyGateRecoveryHoldPredicate,

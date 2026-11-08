@@ -1,4 +1,4 @@
-import { DEFAULT_ATTACHMENT_MAX_MEGABYTES, type EffectiveAttachmentLimit } from "@tickernelz/paperclip-pro-shared";
+import { DEFAULT_ATTACHMENT_MAX_MEGABYTES, type EffectiveAttachmentLimit } from "@tickernelz/wardmote-shared";
 /** Attachment content-type policy: every type is accepted unless `PAPERCLIP_ALLOWED_ATTACHMENT_TYPES` restricts it to comma-separated MIME patterns. */
 export const ALLOW_ALL_ATTACHMENT_TYPES: readonly string[] = ["*"];
 

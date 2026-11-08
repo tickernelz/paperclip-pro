@@ -1,7 +1,7 @@
 import { and, desc, eq, inArray, ne, sql } from "drizzle-orm";
-import { chatActions, issueThreadInteractions } from "@tickernelz/paperclip-pro-db";
-import { OPENWA_TOOL_RESULT_LIMIT_BYTES, type OpenwaApprovalCategory } from "@tickernelz/paperclip-pro-shared";
-import type { OpenwaOperation } from "@tickernelz/paperclip-pro-shared/openwa-operations";
+import { chatActions, issueThreadInteractions } from "@tickernelz/wardmote-db";
+import { OPENWA_TOOL_RESULT_LIMIT_BYTES, type OpenwaApprovalCategory } from "@tickernelz/wardmote-shared";
+import type { OpenwaOperation } from "@tickernelz/wardmote-shared/openwa-operations";
 import { HttpError } from "../../errors.js";
 import { listOpenwaAudit, logOpenwaActivity } from "./audit.js";
 import { OpenwaApprovalRequiredError, assertOpenwaRunMay, openwaHeldGrantValid, restoreOpenwaGrant } from "./authority.js";

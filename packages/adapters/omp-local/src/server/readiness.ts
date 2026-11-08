@@ -3,7 +3,7 @@ import { constants as fsConstants } from "node:fs";
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { ensurePathInEnv } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+import { ensurePathInEnv } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import { parse as parseYaml } from "yaml";
 import { OMP_CONTEXT_MANAGEMENT_MIN_VERSION, ompVersionAtLeast } from "./settings-overlay.js";
 

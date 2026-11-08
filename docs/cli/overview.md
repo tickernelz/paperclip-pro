@@ -29,7 +29,7 @@ Company-scoped commands also accept `--company-id <id>`.
 For clean local instances, pass `--data-dir` on the command you run:
 
 ```sh
-npx @tickernelz/paperclip-pro run --data-dir ./tmp/paperclip-dev
+npx @tickernelz/wardmote run --data-dir ./tmp/paperclip-dev
 ```
 
 ## Context Profiles
@@ -38,7 +38,7 @@ Store defaults to avoid repeating flags:
 
 ```sh
 # Set defaults
-npx @tickernelz/paperclip-pro context set --api-base http://localhost:3100 --company-id <id>
+npx @tickernelz/wardmote context set --api-base http://localhost:3100 --company-id <id>
 
 # View current context
 pnpm wardmote context show
@@ -47,24 +47,24 @@ pnpm wardmote context show
 pnpm wardmote context list
 
 # Switch profile
-npx @tickernelz/paperclip-pro context use default
+npx @tickernelz/wardmote context use default
 ```
 
 To avoid storing secrets in context, use an env var:
 
 ```sh
-npx @tickernelz/paperclip-pro context set --api-key-env-var-name PAPERCLIP_API_KEY
+npx @tickernelz/wardmote context set --api-key-env-var-name PAPERCLIP_API_KEY
 export PAPERCLIP_API_KEY=...
 ```
 
 Secret operations are available under `wardmote secrets`:
 
 ```sh
-npx @tickernelz/paperclip-pro secrets declarations --company-id <company-id> --kind secret
-npx @tickernelz/paperclip-pro secrets create --company-id <company-id> --name anthropic-api-key --value-env ANTHROPIC_API_KEY
-npx @tickernelz/paperclip-pro secrets link --company-id <company-id> --name prod-stripe-key --provider aws_secrets_manager --external-ref <provider-ref>
-npx @tickernelz/paperclip-pro secrets doctor --company-id <company-id>
-npx @tickernelz/paperclip-pro secrets migrate-inline-env --company-id <company-id> --apply
+npx @tickernelz/wardmote secrets declarations --company-id <company-id> --kind secret
+npx @tickernelz/wardmote secrets create --company-id <company-id> --name anthropic-api-key --value-env ANTHROPIC_API_KEY
+npx @tickernelz/wardmote secrets link --company-id <company-id> --name prod-stripe-key --provider aws_secrets_manager --external-ref <provider-ref>
+npx @tickernelz/wardmote secrets doctor --company-id <company-id>
+npx @tickernelz/wardmote secrets migrate-inline-env --company-id <company-id> --apply
 ```
 
 Context is stored at `~/.wardmote/context.json`.

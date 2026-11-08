@@ -2,8 +2,8 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import type { WorkspaceReadinessProbeResult } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/wardmote-db";
+import type { WorkspaceReadinessProbeResult } from "@tickernelz/wardmote-shared";
 import {
   isManagedWorkspaceInstance,
   resetManagedWorkspaceInstanceCacheForTests,

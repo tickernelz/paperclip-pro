@@ -6,11 +6,11 @@ import type {
   AdapterModel,
   ConfigFieldOption,
   ConfigFieldSchema,
-} from "@tickernelz/paperclip-pro-adapter-utils";
+} from "@tickernelz/wardmote-adapter-utils";
 import {
   ensurePathInEnv,
   runChildProcess,
-} from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+} from "@tickernelz/wardmote-adapter-utils/server-utils";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import { listOmpModels } from "./models.js";
 import { normalizeOmpProfile, resolveOmpProfile } from "./profile.js";

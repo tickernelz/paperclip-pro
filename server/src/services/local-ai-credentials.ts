@@ -4,7 +4,7 @@ import path from "node:path";
 import { readIsolatedClaudeKeychainToken } from "./ai-providers/claude/quota.js";
 import { readCodexAuthInfo, fetchCodexQuota } from "./ai-providers/codex/quota.js";
 import { parseGrokAuthPayload, hasUsableGrokAuthValue } from "./ai-providers/grok/grok-home.js";
-import type { AiProvider } from "@tickernelz/paperclip-pro-shared";
+import type { AiProvider } from "@tickernelz/wardmote-shared";
 import { unprocessable } from "../errors.js";
 
 /** Read and verify a connection-specific login home. */

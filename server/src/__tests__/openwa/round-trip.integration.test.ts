@@ -23,8 +23,8 @@ import {
   issues,
   toolConnections,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
-import { SPEECH_TO_TEXT_DEFAULTS } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import { SPEECH_TO_TEXT_DEFAULTS } from "@tickernelz/wardmote-shared";
 import { startEmbeddedPostgresTestDatabase } from "../helpers/embedded-postgres.js";
 import { createLocalDiskStorageProvider } from "../../storage/local-disk-provider.js";
 import { createStorageService } from "../../storage/service.js";
@@ -243,7 +243,7 @@ describe("OpenWA round trip (embedded Postgres + fake gateway)", () => {
 
   async function goLive(t: Setup) {
     expect((await t.service.reconcileProviderRuntimes()).local).toBe(1);
-    await t.gateway.waitForSubscription();
+    await t.gateway.waitForFirstCatchUp();
   }
 
   async function deliveries(t: Setup) {

@@ -6,7 +6,7 @@ import {
   type ChatOwnerApprovalStatus,
   type ChatOwnerGrantScope,
   type OpenwaGrantCategory,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { chatEndpointsApi, type OpenwaApproval } from "@/api/chatEndpoints";
 import { ApiError } from "@/api/client";
 import { StatusBadge } from "@/components/StatusBadge";

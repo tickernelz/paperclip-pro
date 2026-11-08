@@ -1,4 +1,4 @@
-import type { IssueWorkProduct } from "@tickernelz/paperclip-pro-shared";
+import type { IssueWorkProduct } from "@tickernelz/wardmote-shared";
 import { workProductHref } from "./issue-artifacts";
 
 const TERMINAL_STATES = new Set(["merged", "closed", "archived"]);

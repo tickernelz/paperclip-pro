@@ -1,9 +1,9 @@
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { workspaceRuntimeServices } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
+import { workspaceRuntimeServices } from "@tickernelz/wardmote-db";
 import {
   listWorkspaceServiceCommandDefinitions,
   matchWorkspaceRuntimeServiceToCommand,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { and, desc, eq, inArray } from "drizzle-orm";
 
 type WorkspaceRuntimeServiceRow = typeof workspaceRuntimeServices.$inferSelect;

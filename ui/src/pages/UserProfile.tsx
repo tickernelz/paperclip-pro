@@ -5,7 +5,7 @@ import {
   hidesInstancePage,
   type UserProfileDailyPoint,
   type UserProfileWindowStats,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { Link, useParams } from "@/lib/router";
 import { authApi } from "../api/auth";
 import { userProfilesApi } from "../api/userProfiles";

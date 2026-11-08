@@ -2,7 +2,7 @@
 
 Wardmote Pro is a self-hosted control plane that runs a team of AI coding agents as an organisation: an org chart, tasks and approvals, scheduled heartbeats, budgets, and an audit trail, with a Node.js server, an embedded PostgreSQL, and a React board.
 
-It is a **hard fork** of [`paperclipai/paperclip`](https://github.com/paperclipai/paperclip), branched at upstream commit `7b7c4d417` and since diverged. It is not an upstream release and is not endorsed by Paperclip Labs, Inc. All workspace packages are renamed under the `@tickernelz/paperclip-pro` scope, the CLI binary is `wardmote` (`paperclip-pro` still works for one release), and instance state lives under `~/.wardmote` instead of `~/.paperclip`, so this fork installs and runs beside an upstream instance instead of replacing it. An existing `~/.paperclip-pro` home keeps working without any action; `wardmote migrate-home` moves it to `~/.wardmote` when you choose. See [doc/RELEASE-NOTES-wardmote-rename.md](doc/RELEASE-NOTES-wardmote-rename.md).
+It is a **hard fork** of [`paperclipai/paperclip`](https://github.com/paperclipai/paperclip), branched at upstream commit `7b7c4d417` and since diverged. It is not an upstream release and is not endorsed by Paperclip Labs, Inc. All workspace packages are renamed under the `@tickernelz/wardmote` scope, the CLI binary is `wardmote` (`paperclip-pro` still works for one release), and instance state lives under `~/.wardmote` instead of `~/.paperclip`, so this fork installs and runs beside an upstream instance instead of replacing it. An existing `~/.paperclip-pro` home keeps working without any action; `wardmote migrate-home` moves it to `~/.wardmote` when you choose. See [doc/RELEASE-NOTES-wardmote-rename.md](doc/RELEASE-NOTES-wardmote-rename.md).
 
 Report bugs in [this repository](https://github.com/tickernelz/wardmote/issues), never in the upstream tracker.
 
@@ -28,15 +28,15 @@ Operators: read [`docs/fork/OPERATIONS.md`](docs/fork/OPERATIONS.md).
 Requirements: Node.js 24.11 or newer, `npm`, macOS/Linux/WSL2. Nothing else — the published packages ship prebuilt.
 
 ```sh
-npx @tickernelz/paperclip-pro@latest install --yes
+npx @tickernelz/wardmote@latest install --yes
 wardmote onboard --yes
 ```
 
-`install` resolves one exact version — the `latest` dist-tag of `@tickernelz/paperclip-pro`, or `--version` — then verifies that all 31 packages of the release exist at that exact version before it downloads anything. A half-published release is refused with the missing package names; versions are never mixed across packages. It then installs the set into `~/.wardmote/cli/installs/npm/<version>`, smoke-tests the payload, and only then atomically flips `~/.wardmote/cli/current` and writes the `~/.local/bin/wardmote` and `~/.local/bin/paperclip-pro` shims. Measured on a WSL2 box: 44 s, against 11 m 38 s for the same commit through the git path.
+`install` resolves one exact version — the `latest` dist-tag of `@tickernelz/wardmote`, or `--version` — then verifies that all 31 packages of the release exist at that exact version before it downloads anything. A half-published release is refused with the missing package names; versions are never mixed across packages. It then installs the set into `~/.wardmote/cli/installs/npm/<version>`, smoke-tests the payload, and only then atomically flips `~/.wardmote/cli/current` and writes the `~/.local/bin/wardmote` and `~/.local/bin/paperclip-pro` shims. Measured on a WSL2 box: 44 s, against 11 m 38 s for the same commit through the git path.
 
 `latest` currently points at **2026.926.2**. Prefer it.
 
-`2026.926.0` is an incomplete release: its run left `@tickernelz/paperclip-pro-server` in npm's staging queue, so `latest` was never moved and no GitHub release was created. npm has since published that package, so all 31 packages now exist at that version and the completeness check no longer refuses it — but the release was never validated end to end. Use `2026.926.2`.
+`2026.926.0` is an incomplete release: its run left `@tickernelz/wardmote-server` in npm's staging queue, so `latest` was never moved and no GitHub release was created. npm has since published that package, so all 31 packages now exist at that version and the completeness check no longer refuses it — but the release was never validated end to end. Use `2026.926.2`.
 
 Releases up to and including `2026.926.1` cannot bootstrap under npm 12, which changed the shape of `npm view --json` and denies dependency install scripts by default. Under npm 11 — the version Node 24.18.0 bundles — the same command works. `2026.926.2` and later handle both.
 

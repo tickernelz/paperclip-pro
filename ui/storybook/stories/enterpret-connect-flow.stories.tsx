@@ -6,7 +6,7 @@ import {
   CONNECTABLE_APP_DEFINITIONS,
   type AppDefinition,
   type ToolConnection,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { queryKeys } from "@/lib/queryKeys";
 import { Browse } from "@/pages/apps/Browse";
 import {

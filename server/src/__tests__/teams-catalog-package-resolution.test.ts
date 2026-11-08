@@ -5,11 +5,11 @@ import { pathToFileURL } from "node:url";
 import { describe, expect, it } from "vitest";
 import { resolveCatalogPackageRoot } from "../services/teams-catalog.js";
 
-const PACKAGE_NAME = "@tickernelz/paperclip-pro-teams-catalog";
+const PACKAGE_NAME = "@tickernelz/wardmote-teams-catalog";
 
 function fakeInstall(manifestSubpath: string) {
   const root = mkdtempSync(path.join(tmpdir(), "teams-catalog-install-"));
-  const serviceDir = path.join(root, "node_modules", "@tickernelz", "paperclip-pro-server", "dist", "services");
+  const serviceDir = path.join(root, "node_modules", "@tickernelz", "wardmote-server", "dist", "services");
   const packageRoot = path.join(root, "node_modules", ...PACKAGE_NAME.split("/"));
   mkdirSync(serviceDir, { recursive: true });
   mkdirSync(path.dirname(path.join(packageRoot, manifestSubpath)), { recursive: true });

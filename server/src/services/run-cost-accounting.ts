@@ -1,6 +1,6 @@
-import { usdToUnits, unitsToCents } from "@tickernelz/paperclip-pro-shared";
+import { usdToUnits, unitsToCents } from "@tickernelz/wardmote-shared";
 import { and, asc, eq, inArray, sql } from "drizzle-orm";
-import { accountingRuntimeBaselines, budgetReservations, agentRuntimeState, agents, costEvents, heartbeatRuns, nativeRunFinalizations, issues, projects, type Db } from "@tickernelz/paperclip-pro-db";
+import { accountingRuntimeBaselines, budgetReservations, agentRuntimeState, agents, costEvents, heartbeatRuns, nativeRunFinalizations, issues, projects, type Db } from "@tickernelz/wardmote-db";
 import { withAccountingTransaction } from "./accounting-transaction.js";
 import { conflict } from "../errors.js";
 import { createCostEventInTransaction } from "./costs.js";

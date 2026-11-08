@@ -1,6 +1,6 @@
-import { agentAppearanceSchema, randomAgentAppearance } from "@tickernelz/paperclip-pro-shared";
-import { normalizePaperclipRunnerAdapterConfig } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
-import { agents, toolConnectionInstalls, principalPermissionGrants, type Db } from "@tickernelz/paperclip-pro-db";
+import { agentAppearanceSchema, randomAgentAppearance } from "@tickernelz/wardmote-shared";
+import { normalizePaperclipRunnerAdapterConfig } from "@tickernelz/wardmote-adapter-utils/server-utils";
+import { agents, toolConnectionInstalls, principalPermissionGrants, type Db } from "@tickernelz/wardmote-db";
 import { eq } from "drizzle-orm";
 import { unprocessable } from "../errors.js";
 import { agentRecordQueries, isPlainRecord, configPatchFromApprovalPayload, normalizeRuntimeConfigForNewAgent,

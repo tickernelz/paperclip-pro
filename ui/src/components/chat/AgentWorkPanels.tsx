@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowUpDown, File, FileText, Image, Video } from "lucide-react";
-import type { CompanyArtifact, Issue } from "@tickernelz/paperclip-pro-shared";
+import type { CompanyArtifact, Issue } from "@tickernelz/wardmote-shared";
 import { artifactsApi } from "@/api/artifacts";
 import { issuesApi } from "@/api/issues";
 import { projectsApi } from "@/api/projects";
