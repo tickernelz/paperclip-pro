@@ -1325,7 +1325,7 @@ Browser-only regressions exercise delayed rendering without provider calls:
 ```sh
 pnpm test:e2e:runner:browser-support
 # To use an installed Chrome instead of Playwright's Chromium:
-PAPERCLIP_PLAYWRIGHT_CHANNEL=chrome pnpm test:e2e:runner:browser-support
+WARDMOTE_PLAYWRIGHT_CHANNEL=chrome pnpm test:e2e:runner:browser-support
 ```
 
 ### Native provider continuity

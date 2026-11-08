@@ -165,7 +165,7 @@ jobs:
           }
 
   runner:
-    name: Verify Paperclip Runner
+    name: Verify Wardmote Runner
     needs: scope
     if: needs.scope.outputs.docs_only != 'true'
     runs-on: ubuntu-latest
@@ -308,10 +308,10 @@ jobs:
       - name: Verify runner Chrome
         run: google-chrome --version
 
-      - name: Generate Paperclip config
+      - name: Generate Wardmote config
         run: |
-          mkdir -p ~/.paperclip-pro/instances/default
-          cat > ~/.paperclip-pro/instances/default/config.json << 'CONF'
+          mkdir -p ~/.wardmote/instances/default
+          cat > ~/.wardmote/instances/default/config.json << 'CONF'
           {
             "$meta": { "version": 1, "updatedAt": "2026-01-01T00:00:00.000Z", "source": "onboard" },
             "database": { "mode": "embedded-postgres" },
@@ -325,8 +325,7 @@ jobs:
 
       - name: Run e2e tests
         env:
-          PAPERCLIP_E2E_SKIP_LLM: "true"
-          PAPERCLIP_PLAYWRIGHT_CHANNEL: "chrome"
+          WARDMOTE_PLAYWRIGHT_CHANNEL: "chrome"
         run: |
           specs="$(node ./scripts/e2e-shard.mjs --shard-index ${{ matrix.shard_index }} --shard-count 3)"
           echo "shard ${{ matrix.shard_index }} specs: $specs"

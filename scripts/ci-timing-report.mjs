@@ -276,7 +276,7 @@ function collectSlowest(repo, summaries, options) {
   const specs = new Map();
   const picked = summaries.slice(0, options.logs);
   for (const run of picked) {
-    const jobs = fetchJobs(repo, run.id).filter((job) => /^(Tests|E2E|Verify Paperclip Runner|Mobile shell|Contrast gate|Docs)/.test(job.name) && job.conclusion !== "skipped");
+    const jobs = fetchJobs(repo, run.id).filter((job) => /^(Tests|E2E|Verify Wardmote Runner|Mobile shell|Contrast gate|Docs)/.test(job.name) && job.conclusion !== "skipped");
     for (const job of jobs) {
       let text;
       try {

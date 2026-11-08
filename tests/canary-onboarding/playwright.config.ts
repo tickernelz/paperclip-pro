@@ -64,8 +64,8 @@ export default defineConfig({
       name: "chromium",
       use: {
         browserName: "chromium",
-        ...(process.env.PAPERCLIP_PLAYWRIGHT_CHANNEL
-          ? { channel: process.env.PAPERCLIP_PLAYWRIGHT_CHANNEL }
+        ...(process.env.WARDMOTE_PLAYWRIGHT_CHANNEL
+          ? { channel: process.env.WARDMOTE_PLAYWRIGHT_CHANNEL }
           : {}),
       },
     },

@@ -33,7 +33,7 @@ only documentation (`**/*.md`, `docs/**`, `doc/**`, `LICENSE`, the issue and pul
 request templates) the heavy lanes stay skipped and a `Docs` lane runs instead:
 the static gates plus the suites that read repository documentation, selected by
 `scripts/docs-lane-suites.mjs` and run with `pnpm test:run:docs`. Everything else
-runs `Policy`, `Typecheck`, `Build`, `Verify Paperclip Runner`, the sharded
+runs `Policy`, `Typecheck`, `Build`, `Verify Wardmote Runner`, the sharded
 `Tests` and `E2E` matrices. The `verify` aggregate fails when any lane that ran
 did not succeed, and it rejects a run where the heavy lanes and the `Docs` lane
 are inconsistent. The workflow never uses `paths`/`paths-ignore`, because the
