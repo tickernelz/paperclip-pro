@@ -342,7 +342,7 @@ function findRawButtonFillIssues(content) {
 }
 
 const PACKAGE_CSS_IMPORT_RE = /(?:^\s*import\s+(?:[^"'`;]*?\s+from\s+)?|\bimport\s*\(\s*)["'`](?![./]|@\/)([^"'`?]+\.css)(?:\?[^"'`]*)?["'`]/gm;
-const UNLAYERED_CSS_IMPORT_RE = /^\s*@import\s+(?:url\()?["'](?![./])(?!tailwindcss["'])([^"']+)["']\)?(?![^;]*\blayer\()[^;]*;/gm;
+const UNLAYERED_CSS_IMPORT_RE = /^\s*@import\s+(?:url\()?["'](?![./])([^"']+)["']\)?(?![^;]*\blayer\()[^;]*;/gm;
 const PACKAGE_CSS_AT_IMPORT_RE = /^\s*@import\s+(?:url\()?["'](?![./])([^"']+)["']/gm;
 
 function findVendorCssImportIssues() {
