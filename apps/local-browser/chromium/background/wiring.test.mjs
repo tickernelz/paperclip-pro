@@ -36,7 +36,7 @@ test("navigate refuses the tab the user is looking at and names the way out", as
   assert.equal(context.tabsById.get(8).url, "https://app.test/x", "the tab keeps its url");
 });
 
-test("navigate refuses the Paperclip tab even when it is not focused", async () => {
+test("navigate refuses the Wardmote tab even when it is not focused", async () => {
   const context = await boot();
   context.tabsById.get(7).active = false;
   context.tabsById.set(55, { id: 55, windowId: 1, title: "P", url: "https://p.test/apps", active: false, status: "complete" });
@@ -44,7 +44,7 @@ test("navigate refuses the Paperclip tab even when it is not focused", async () 
   const result = await context.call("local_browser_navigate", { tabId: 55, url: "https://elsewhere.test" });
   assert.equal(result.ok, false);
   assert.equal(result.error.code, "local_browser_navigation_blocked");
-  assert.match(result.error.message, /belongs to Paperclip/);
+  assert.match(result.error.message, /belongs to Wardmote/);
   assert.equal(context.tabsById.get(55).url, "https://p.test/apps");
 });
 

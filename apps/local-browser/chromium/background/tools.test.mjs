@@ -218,8 +218,8 @@ test("turning off the focused-tab guard lets navigate drive the tab the user is 
   assert.equal(context.tabsById.get(8).url, "https://elsewhere.test/");
 });
 
-test("turning off the Paperclip-tab guard lets navigate move the Paperclip tab", async () => {
-  const context = await boot({ storage: { "lb.guards": { protectPaperclipTab: false, protectFocusedTab: true, networkBufferSize: 1000 } } });
+test("turning off the Wardmote-tab guard lets navigate move the Wardmote tab", async () => {
+  const context = await boot({ storage: { "lb.guards": { protectWardmoteTab: false, protectFocusedTab: true, networkBufferSize: 1000 } } });
   context.tabsById.get(7).active = false;
   context.tabsById.set(55, { id: 55, windowId: 1, title: "P", url: "https://p.test/apps", active: false, status: "complete" });
   context.tabsById.set(56, { id: 56, windowId: 1, title: "O", url: "https://other.test/", active: true, status: "complete" });
