@@ -164,7 +164,7 @@ describe("openwa_endpoint_config (embedded Postgres + fake gateway)", () => {
       })
       .where(eq(chatEndpoints.id, endpoint.id));
     expect((await service.reconcileProviderRuntimes()).local).toBe(1);
-    await gateway.waitForSubscription();
+    await gateway.waitForFirstCatchUp();
     await until(async () => (await db.select().from(chatEndpoints).where(eq(chatEndpoints.id, endpoint.id)))[0]!.status === "active");
     return { gateway, companyId, agentId, userId, endpointId: endpoint.id, service };
   }
