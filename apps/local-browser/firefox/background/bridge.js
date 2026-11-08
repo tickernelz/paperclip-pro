@@ -574,7 +574,7 @@
       .executeScript(tab.id, {
         code: [
           "(function(){",
-          "var el=document.querySelector('[data-paperclip-local-browser-pairing]');",
+          "var el=document.querySelector('[data-wardmote-local-browser-pairing]');",
           "if(!el)return null;",
           "return {origin:el.getAttribute('data-origin')||'',code:el.getAttribute('data-code')||''};",
           "})()"
@@ -596,7 +596,7 @@
   async function pair(options) {
     var opts = options || {};
     var origin = LB.pairing.normalizeOrigin(opts.origin);
-    if (!origin) throw new Error("Use an http or https address, such as https://paperclip.example");
+    if (!origin) throw new Error("Use an http or https address, such as https://wardmote.example");
     var code = String(opts.code || "").trim();
     if (!/^[A-Za-z0-9]{4,32}$/.test(code)) throw new Error("The pairing code looks wrong");
     var label = String(opts.label || "").trim() || (await defaultLabel());
@@ -613,11 +613,11 @@
   async function pairFromInput(input) {
     var parsed = LB.pairing.parsePairingInput(input);
     if (parsed.reason) throw new Error(parsed.reason);
-    if (parsed.needsCode || !parsed.code) throw new Error("This link has no pairing code. Copy the whole pairing link from Paperclip.");
+    if (parsed.needsCode || !parsed.code) throw new Error("This link has no pairing code. Copy the whole pairing link from Wardmote.");
     var scheme = /^\s*([A-Za-z][A-Za-z0-9+.-]*):\/\//.exec(String(input || ""));
     if (!parsed.origin && scheme) throw new Error("Use an http or https address, not " + scheme[1] + ":");
     var origin = parsed.origin || (pairing ? pairing.origin : null);
-    if (!origin) throw new Error("A bare code needs the Paperclip address. Paste the whole pairing link instead.");
+    if (!origin) throw new Error("A bare code needs the Wardmote address. Paste the whole pairing link instead.");
     var label = pairing && pairing.origin === origin ? pairing.label : "";
     await pair({ origin: origin, code: parsed.code, label: label });
   }
