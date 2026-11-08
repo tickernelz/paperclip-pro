@@ -51,6 +51,7 @@ export default defineConfig({
       concurrent: false,
       hooks: "list",
     },
+    globalSetup: ["./src/__tests__/embedded-postgres-template.global-setup.ts"],
     setupFiles: ["./src/__tests__/setup-supertest.ts"],
   },
 });
