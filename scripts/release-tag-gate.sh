@@ -100,13 +100,13 @@ resolve() {
   if [ "$event" = "push" ]; then
     version="$(version_from_tag "${TAG_NAME:-}")"
     dry_run=false
-    auth=token
+    auth=oidc
   else
     version="${INPUT_VERSION:-}"
     dry_run="${INPUT_DRY_RUN:-false}"
-    auth="${INPUT_AUTH:-token}"
+    auth="${INPUT_AUTH:-oidc}"
     [ "$dry_run" = "true" ] || dry_run=false
-    [ "$auth" = "oidc" ] || auth=token
+    [ "$auth" = "token" ] || auth=oidc
   fi
 
   printf 'version=%s\n' "$version"

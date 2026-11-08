@@ -287,7 +287,7 @@ jobs:
       - uses: ./.github/actions/setup-workspace
       - name: Run grouped test suites
         env:
-          PAPERCLIP_SERVER_TEST_WORKERS: "3"
+          WARDMOTE_SERVER_TEST_WORKERS: "3"
         run: |
           echo "runner: $(nproc) CPU, $(free -g | awk '/^Mem:/ {print $2}') GiB RAM"
           if [ -n "${{ matrix.shard_count }}" ]; then
@@ -314,7 +314,7 @@ jobs:
       - uses: ./.github/actions/setup-workspace
       - name: Run serialized server test shard
         env:
-          PAPERCLIP_SERVER_TEST_WORKERS: "3"
+          WARDMOTE_SERVER_TEST_WORKERS: "3"
         run: pnpm test:run:serialized -- --shard-index ${{ matrix.shard_index }} --shard-count 3
 
   e2e:
