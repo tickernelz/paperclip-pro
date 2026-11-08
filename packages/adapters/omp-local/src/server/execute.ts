@@ -45,6 +45,7 @@ import {
   refreshPaperclipWorkspaceEnvForExecution,
   renderPaperclipWakePrompt,
   renderTemplate,
+  isForbiddenConfigEnvKey,
   isPaperclipRuntimeEnvKey,
   sanitizeInheritedPaperclipEnv,
   selectPaperclipTaskMarkdown,
@@ -645,6 +646,7 @@ export async function execute(ctx: AdapterExecutionContext): Promise<AdapterExec
     });
     for (const [key, value] of Object.entries(configuredEnv)) {
       if (typeof value !== "string") continue;
+      if (isForbiddenConfigEnvKey(key)) continue;
       if (isPaperclipRuntimeEnvKey(key) && Object.hasOwn(env, legacyEnvKey(key))) continue;
       env[key] = value;
     }

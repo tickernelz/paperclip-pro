@@ -17,6 +17,7 @@ import { readConfig } from "../config/store.js";
 import type { PaperclipConfig } from "../config/schema.js";
 import { runCommand, type StartedServer } from "./run.js";
 import { isLinkedGitWorktree } from "./git-workspace.js";
+import { legacyEnvKey } from "@tickernelz/paperclip-pro-shared/env-aliases";
 
 export interface TestDriveOptions {
   dataDir?: string;
@@ -110,7 +111,7 @@ export async function prepareTestDriveEnvironment(
   cwd = process.cwd(),
 ): Promise<{ dataDir: string; linkedWorktree: boolean }> {
   for (const key of Object.keys(process.env)) {
-    if (key.startsWith("PAPERCLIP_")) {
+    if (legacyEnvKey(key).startsWith("PAPERCLIP_")) {
       delete process.env[key];
     }
   }

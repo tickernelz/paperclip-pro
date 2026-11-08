@@ -435,6 +435,23 @@ describe("OMP local Paperclip MCP wiring", () => {
     }
   });
 
+  it("never takes the API key or agent identity from config under either name", async () => {
+    const previous = process.env.PAPERCLIP_API_KEY;
+    delete process.env.PAPERCLIP_API_KEY;
+    try {
+      const invocation = await run({
+        env: { WARDMOTE_API_KEY: "config-key", WARDMOTE_AGENT_PRIVATE_KEY: "config-identity", WARDMOTE_CUSTOM: "kept" },
+      }, null);
+      expect(invocation.env.PAPERCLIP_API_KEY).toBeUndefined();
+      expect(invocation.env.WARDMOTE_API_KEY).toBeUndefined();
+      expect(invocation.env.WARDMOTE_AGENT_PRIVATE_KEY).toBeUndefined();
+      expect(invocation.env.WARDMOTE_CUSTOM).toBe("kept");
+      expect(invocation.mcpServer).toBeNull();
+    } finally {
+      if (previous !== undefined) process.env.PAPERCLIP_API_KEY = previous;
+    }
+  });
+
   it("removes the generated MCP extension once the run finishes", async () => {
     const invocation = await run({});
     await expect(fs.access(invocation.mcpDir as string)).rejects.toThrow();

@@ -14,7 +14,7 @@ function deps(overrides: Partial<MigrateHomeDependencies> = {}): Partial<Migrate
     userHomeDir: userHome,
     env: {},
     platform: "linux",
-    isUnitActive: async () => false,
+    serviceState: async () => "stopped",
     reloadUnits: vi.fn(async () => undefined),
     log: () => undefined,
     ...overrides,
@@ -54,8 +54,26 @@ describe("migrate-home", () => {
   });
 
   it("refuses while the service is active", async () => {
-    await expect(migrateHomeCommand({}, deps({ isUnitActive: async () => true }))).rejects.toThrow("service paperclip-pro.service");
+    await expect(migrateHomeCommand({}, deps({ serviceState: async () => "running" }))).rejects.toThrow("service paperclip-pro.service");
     expect(fs.lstatSync(legacy).isDirectory()).toBe(true);
+  });
+
+  it("refuses when the service state cannot be read", async () => {
+    await expect(migrateHomeCommand({}, deps({ serviceState: async () => "unknown" }))).rejects.toThrow("state could not be read");
+    expect(fs.lstatSync(legacy).isDirectory()).toBe(true);
+  });
+
+  it("checks launchd agents on macOS", async () => {
+    const plist = path.join(userHome, "Library", "LaunchAgents", "ing.paperclip.paperclip-pro.plist");
+    fs.mkdirSync(path.dirname(plist), { recursive: true });
+    fs.writeFileSync(plist, "<plist/>");
+    const seen: string[] = [];
+    const serviceState = async (platform: NodeJS.Platform, definition: string) => {
+      seen.push(`${platform}:${path.basename(definition)}`);
+      return "running" as const;
+    };
+    await expect(migrateHomeCommand({}, deps({ platform: "darwin", serviceState }))).rejects.toThrow("service ing.paperclip.paperclip-pro.plist");
+    expect(seen).toEqual(["darwin:ing.paperclip.paperclip-pro.plist"]);
   });
 
   it("refuses while the embedded database is running", async () => {

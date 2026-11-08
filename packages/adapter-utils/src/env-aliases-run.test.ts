@@ -31,10 +31,19 @@ describe("agent run env aliases", () => {
   });
 
   it("treats WARDMOTE_* config keys like their PAPERCLIP_* names", () => {
-    expect(isForbiddenConfigEnvKey("WARDMOTE_API_KEY")).toBe(true);
-    expect(isForbiddenConfigEnvKey("WARDMOTE_WAKE_PAYLOAD_JSON")).toBe(true);
+    for (const name of ["API_KEY", "WAKE_PAYLOAD_JSON", "AGENT_KEY_ID", "AGENT_PUBLIC_KEY", "AGENT_PRIVATE_KEY"]) {
+      expect(isForbiddenConfigEnvKey(`PAPERCLIP_${name}`), name).toBe(true);
+      expect(isForbiddenConfigEnvKey(`WARDMOTE_${name}`), name).toBe(true);
+    }
+    expect(isForbiddenConfigEnvKey("wardmote_agent_private_key")).toBe(true);
     expect(isForbiddenConfigEnvKey("WARDMOTE_CUSTOM")).toBe(false);
-    expect(sanitizeInheritedPaperclipEnv({ WARDMOTE_API_KEY: "leak", WARDMOTE_LISTEN_PORT: "3100", PATH: "/bin" })).toEqual({
+    expect(sanitizeInheritedPaperclipEnv({
+      WARDMOTE_API_KEY: "leak",
+      WARDMOTE_AGENT_PRIVATE_KEY: "leak",
+      wardmote_agent_key_id: "leak",
+      WARDMOTE_LISTEN_PORT: "3100",
+      PATH: "/bin",
+    })).toEqual({
       WARDMOTE_LISTEN_PORT: "3100",
       PATH: "/bin",
     });

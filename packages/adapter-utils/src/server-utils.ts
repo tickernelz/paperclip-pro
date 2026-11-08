@@ -176,7 +176,7 @@ export function isPaperclipRuntimeEnvKey(key: string): boolean {
 export function isForbiddenConfigEnvKey(key: string): boolean {
   const legacyKey = legacyEnvKey(key);
   return legacyKey === "PAPERCLIP_API_KEY" || legacyKey === "PAPERCLIP_WAKE_PAYLOAD_JSON" ||
-    AGENT_IDENTITY_ENV_KEYS.includes(key.toUpperCase());
+    AGENT_IDENTITY_ENV_KEYS.includes(legacyEnvKey(key.toUpperCase()));
 }
 const PAPERCLIP_SKILL_ROOT_RELATIVE_CANDIDATES = [
   "../../skills",
@@ -3576,7 +3576,7 @@ export function sanitizeInheritedPaperclipEnv(
   delete env.WATCHDOG_USEC;
   delete env.WATCHDOG_PID;
   for (const key of Object.keys(env)) {
-    if (AGENT_IDENTITY_ENV_KEYS.includes(key.toUpperCase())) {
+    if (AGENT_IDENTITY_ENV_KEYS.includes(legacyEnvKey(key.toUpperCase()))) {
       delete env[key];
       continue;
     }

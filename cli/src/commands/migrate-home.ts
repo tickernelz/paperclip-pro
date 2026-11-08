@@ -14,10 +14,15 @@ export type MigrateHomeDependencies = {
   userHomeDir: string;
   env: NodeJS.ProcessEnv;
   platform: NodeJS.Platform;
-  isUnitActive: (unit: string) => Promise<boolean>;
+  serviceState: (platform: NodeJS.Platform, definitionPath: string) => Promise<ServiceState>;
   reloadUnits: () => Promise<void>;
   log: (message: string) => void;
 };
+
+export type ServiceState = "running" | "stopped" | "unknown";
+
+const STOPPED_SYSTEMD_STATES = new Set(["inactive", "failed"]);
+const RUNNING_SYSTEMD_STATES = new Set(["active", "activating", "reloading", "deactivating"]);
 
 const SYSTEMD_UNIT_PATTERN = /^paperclip-pro(?:-.+)?\.service$/;
 const LAUNCHD_PLIST_PATTERN = /^ing\.paperclip\.paperclip-pro(?:\..+)?\.plist$/;
@@ -26,11 +31,34 @@ async function systemctl(args: string[]): Promise<string> {
   return (await execFileAsync("systemctl", ["--user", ...args], { encoding: "utf8" })).stdout.trim();
 }
 
+async function commandOutput(file: string, args: string[]): Promise<{ code: number; stdout: string } | null> {
+  try {
+    return { code: 0, stdout: (await execFileAsync(file, args, { encoding: "utf8" })).stdout.trim() };
+  } catch (error) {
+    const failure = error as { code?: unknown; stdout?: unknown };
+    if (typeof failure.code !== "number") return null;
+    return { code: failure.code, stdout: typeof failure.stdout === "string" ? failure.stdout.trim() : "" };
+  }
+}
+
+async function readServiceState(platform: NodeJS.Platform, definitionPath: string): Promise<ServiceState> {
+  if (platform === "darwin") {
+    const result = await commandOutput("launchctl", ["list", path.basename(definitionPath, ".plist")]);
+    if (!result) return "unknown";
+    if (result.code !== 0) return "stopped";
+    return /"PID"\s*=\s*\d+/.test(result.stdout) ? "running" : "stopped";
+  }
+  const result = await commandOutput("systemctl", ["--user", "is-active", path.basename(definitionPath)]);
+  if (!result) return "unknown";
+  if (RUNNING_SYSTEMD_STATES.has(result.stdout)) return "running";
+  return STOPPED_SYSTEMD_STATES.has(result.stdout) ? "stopped" : "unknown";
+}
+
 const defaultDependencies: MigrateHomeDependencies = {
   userHomeDir: os.homedir(),
   env: process.env,
   platform: process.platform,
-  isUnitActive: async (unit) => (await systemctl(["is-active", unit]).catch(() => "inactive")) === "active",
+  serviceState: readServiceState,
   reloadUnits: async () => {
     await systemctl(["daemon-reload"]).catch(() => undefined);
   },
@@ -83,11 +111,11 @@ export async function migrateHomeCommand(
 
   const live = liveEmbeddedPostgres(source);
   const definitions = serviceDefinitions(deps.platform, deps.userHomeDir);
-  if (deps.platform === "linux") {
-    for (const definition of definitions) {
-      const unit = path.basename(definition);
-      if (await deps.isUnitActive(unit)) live.push(`service ${unit}`);
-    }
+  for (const definition of definitions) {
+    const unit = path.basename(definition);
+    const state = await deps.serviceState(deps.platform, definition);
+    if (state === "running") live.push(`service ${unit}`);
+    if (state === "unknown") live.push(`service ${unit} (state could not be read)`);
   }
   if (live.length > 0) {
     throw new Error(`Stop Wardmote before migrating the home; still running: ${live.join(", ")}.`);
