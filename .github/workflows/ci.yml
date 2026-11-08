@@ -456,6 +456,7 @@ jobs:
       - name: Fail if any lane failed
         env:
           RESULTS: ${{ toJSON(needs) }}
+          PULL_REQUEST_ONLY_LANES: ${{ github.event_name == 'pull_request' && '[]' || '["upgrade-path"]' }}
         run: |
           set -euo pipefail
           echo "$RESULTS"
@@ -466,8 +467,9 @@ jobs:
           fi
 
           docs="$(jq -r '.docs.result' <<<"$RESULTS")"
-          skipped_heavy="$(jq -r '[to_entries[] | select(.key != "scope" and .key != "docs") | select(.value.result == "skipped")] | length' <<<"$RESULTS")"
-          heavy_total="$(jq -r '[to_entries[] | select(.key != "scope" and .key != "docs")] | length' <<<"$RESULTS")"
+          heavy_lanes='(env.PULL_REQUEST_ONLY_LANES | fromjson) as $pr_only | [to_entries[] | select(.key != "scope" and .key != "docs" and (.key as $k | $pr_only | any(. == $k) | not))]'
+          skipped_heavy="$(jq -r "$heavy_lanes | map(select(.value.result == \"skipped\")) | length" <<<"$RESULTS")"
+          heavy_total="$(jq -r "$heavy_lanes | length" <<<"$RESULTS")"
 
           if [ "$docs" = "success" ] && [ "$skipped_heavy" -eq "$heavy_total" ]; then
             echo "docs-only lane: all $heavy_total heavy lanes skipped, Docs green"
