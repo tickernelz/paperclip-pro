@@ -101,7 +101,11 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-workspace
+      - uses: mozilla-actions/sccache-action@fc920bf0ec8de6ee65d409111f7ec508035751ba # v0.0.11
       - name: Typecheck workspaces whose build scripts skip TypeScript
+        env:
+          SCCACHE_GHA_ENABLED: "true"
+          RUSTC_WRAPPER: sccache
         run: pnpm run typecheck:build-gaps
 
   build:
@@ -119,7 +123,11 @@ jobs:
           save-store: "true"
       - name: Build Runner Evalbook viewer
         run: pnpm --filter @tickernelz/paperclip-pro-paperclip-runner build:issue-thread
+      - uses: mozilla-actions/sccache-action@fc920bf0ec8de6ee65d409111f7ec508035751ba # v0.0.11
       - name: Build
+        env:
+          SCCACHE_GHA_ENABLED: "true"
+          RUSTC_WRAPPER: sccache
         run: pnpm build
 
   extensions:
@@ -243,9 +251,21 @@ jobs:
             shard_index: 4
             shard_count: 5
           - group: general-chat
-            label: chat
+            label: chat 1/2
+            shard_index: 0
+            shard_count: 2
+          - group: general-chat
+            label: chat 2/2
+            shard_index: 1
+            shard_count: 2
           - group: general-workspaces-a
-            label: workspaces-a
+            label: workspaces-a 1/2
+            shard_index: 0
+            shard_count: 2
+          - group: general-workspaces-a
+            label: workspaces-a 2/2
+            shard_index: 1
+            shard_count: 2
           - group: general-workspaces-b
             label: workspaces-b
     steps:
