@@ -534,34 +534,18 @@ function runSerializedSuites(routeTests, shardIndex, shardCount) {
     `\n[test:run] serialized shard ${shardIndex + 1}/${shardCount} running ${shardTests.length} of ${routeTests.length} suites`,
   );
 
-  if (serverTestWorkers > 1) {
-    if (shardTests.length === 0) return;
-    runVitest(
-      [
-        "--project",
-        "@tickernelz/paperclip-pro-server",
-        ...shardTests.map((routeTest) => routeTest.repoPath),
-        "--pool=forks",
-        "--isolate",
-        ...parallelServerVitestArgs,
-      ],
-      `serialized shard ${shardIndex + 1}/${shardCount} with ${serverTestWorkers} workers`,
-    );
-    return;
-  }
-
-  for (const routeTest of shardTests) {
-    runVitest(
-      [
-        "--project",
-        "@tickernelz/paperclip-pro-server",
-        routeTest.repoPath,
-        "--pool=forks",
-        "--isolate",
-      ],
-      routeTest.repoPath,
-    );
-  }
+  if (shardTests.length === 0) return;
+  runVitest(
+    [
+      "--project",
+      "@tickernelz/paperclip-pro-server",
+      ...shardTests.map((routeTest) => routeTest.repoPath),
+      "--pool=forks",
+      "--isolate",
+      ...parallelServerVitestArgs,
+    ],
+    `serialized shard ${shardIndex + 1}/${shardCount} with ${serverTestWorkers} worker(s)`,
+  );
 }
 
 const routeTests = walk(serverTestsDir)
