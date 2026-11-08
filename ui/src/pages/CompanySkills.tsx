@@ -153,7 +153,6 @@ import {
   ExternalLink,
   FlaskConical,
   MoreHorizontal,
-  Paperclip,
   Pause,
   Pencil,
   Pin,
@@ -173,6 +172,7 @@ import {
   XOctagon,
 } from "lucide-react";
 import { GithubIcon } from "../components/icons/github-icon";
+import { MootMark } from "../components/MootMark";
 import type { FolderListItem, FolderListResult } from "@tickernelz/paperclip-pro-shared";
 
 type SkillTreeNode = {
@@ -280,7 +280,7 @@ function sourceMeta(sourceBadge: CompanySkillSourceBadge, sourceLabel: string | 
     case "local":
       return { icon: Folder, label: sourceLabel ?? "Folder", managedLabel: "Folder managed" };
     case "paperclip":
-      return { icon: Paperclip, label: sourceLabel ?? "Wardmote", managedLabel: "Wardmote managed" };
+      return { icon: MootMark, label: sourceLabel ?? "Wardmote", managedLabel: "Wardmote managed" };
     default:
       return { icon: Boxes, label: sourceLabel ?? "Catalog", managedLabel: "Catalog managed" };
   }

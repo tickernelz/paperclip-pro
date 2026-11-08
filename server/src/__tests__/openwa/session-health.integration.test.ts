@@ -180,7 +180,7 @@ describe("OpenWA session_health wakes (embedded Postgres + fake gateway)", () =>
     const token = new URL(added.confirmationUrl!, "https://paperclip.example").searchParams.get("token")!;
     await service.confirmIdentityLink(token, userId);
     expect((await service.reconcileProviderRuntimes()).local).toBe(1);
-    await gateway.waitForSubscription();
+    await gateway.waitForFirstCatchUp();
     return { gateway, companyId, agentId, userId, endpointId: endpoint.id, service, wakes, wakeup };
   }
 

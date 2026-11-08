@@ -88,6 +88,7 @@ export class FakeOpenwaGateway {
   readonly lids = new Map<string, string | null>();
   strictQuotes = false;
   catchUpPages = 0;
+  private catchUpPagesAtSubscribe = 0;
   readonly documents: Array<{ chatId: string; filename: string; mimetype: string; caption: string | null; content: string; quotedMessageId?: string; messageId: string }> = [];
   readonly typing: Array<{ chatId: string; state: string }> = [];
   readonly reactions: Array<{ chatId: string; messageId: string; emoji: string }> = [];
@@ -152,6 +153,7 @@ export class FakeOpenwaGateway {
           return;
         }
         this.subscriptions.push({ sessionId: frame.sessionId, events: [...(frame.events ?? [])] });
+        this.catchUpPagesAtSubscribe = this.catchUpPages;
         this.subscribed.add(socket);
         socket.emit("message", { type: "subscribed", sessionId: frame.sessionId, events: frame.events, requestId: frame.requestId });
         for (const resolve of this.subscribedWaiters.splice(0)) resolve();
@@ -163,6 +165,11 @@ export class FakeOpenwaGateway {
   waitForSubscription(): Promise<void> {
     if (this.subscribed.size) return Promise.resolve();
     return new Promise((resolve) => this.subscribedWaiters.push(resolve));
+  }
+
+  async waitForFirstCatchUp(): Promise<void> {
+    await this.waitForSubscription();
+    while (this.catchUpPages <= this.catchUpPagesAtSubscribe) await new Promise((resolve) => setTimeout(resolve, 10));
   }
 
   killSocket(): void {

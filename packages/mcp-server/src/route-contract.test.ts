@@ -302,6 +302,7 @@ describe("generated tool input contracts", () => {
         .sort(),
     ).toEqual([
       "GET /agents/me/inbox/mine userId",
+      "GET /companies/{}/decision-history status",
       "GET /companies/{}/issues/count attention",
       "GET /companies/{}/issues/refs ids",
       "GET /companies/{}/pixels-office/timeline from,to",

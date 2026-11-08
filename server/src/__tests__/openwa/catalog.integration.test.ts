@@ -215,7 +215,7 @@ describe("OpenWA catalog, describe and call (embedded Postgres + fake gateway)",
       })
       .where(eq(chatEndpoints.id, endpoint.id));
     expect((await service.reconcileProviderRuntimes()).local).toBe(1);
-    await gateway.waitForSubscription();
+    await gateway.waitForFirstCatchUp();
     return { gateway, companyId, agentId, userId, endpointId: endpoint.id, service };
   }
 

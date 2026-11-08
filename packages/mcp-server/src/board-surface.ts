@@ -11,6 +11,7 @@ export const AGENT_ADMITTING_GUARDS: Readonly<Record<string, true>> = {
   assertCanUpdateAgent: true,
   assertCompanyAccess: true,
   assertCompanyPermission: true,
+  assertDecisionAccess: true,
   assertIssueReadAllowed: true,
   assertIssueThreadInteractionWithdrawalAllowed: true,
   assertIssueWriteInfluenceAllowed: true,

@@ -298,7 +298,7 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
     await service.confirmIdentityLink(token, userId);
     await service.openwa.addSenderRule(endpoint.id, { list: "allow", e164: "+" + MEMBER_PHONE }, userId);
     await service.reconcileProviderRuntimes();
-    await gateway.waitForSubscription();
+    await gateway.waitForFirstCatchUp();
     return { gateway, companyId, agentId, userId, endpointId: endpoint.id, service, heartbeat };
   }
 

@@ -9,13 +9,13 @@ const PAPERCLIP_ART = [
   "╚═╝     ╚═╝  ╚═╝╚═╝     ╚══════╝╚═╝  ╚═╝ ╚═════╝╚══════╝╚═╝╚═╝     ",
 ] as const;
 
-const TAGLINE = "The app people use to manage AI agents for work";
+const TAGLINE = "Run a company of AI agents: tasks, decisions, approvals and live runs.";
 
-export function printPaperclipCliBanner(): void {
+export function printWardmoteCliBanner(): void {
   const lines = [
     "",
     ...PAPERCLIP_ART.map((line) => pc.cyan(line)),
-    pc.blue("  ───────────────────────────────────────────────────────"),
+    pc.blue(`  ${"─".repeat(TAGLINE.length)}`),
     pc.bold(pc.white(`  ${TAGLINE}`)),
     "",
   ];
