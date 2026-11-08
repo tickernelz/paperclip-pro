@@ -13,12 +13,19 @@ function prepareTemplateInChildProcess(): string | null {
     [require.resolve("tsx/cli"), fileURLToPath(new URL("./embedded-postgres-template.prepare.ts", import.meta.url))],
     { encoding: "utf8", env: process.env, timeout: 120_000 },
   );
-  if (result.status !== 0) return null;
+  if (result.status !== 0) {
+    const reason = result.error?.message ?? `exit status ${result.status ?? result.signal}`;
+    console.warn(`[embedded-postgres-template] template preparation failed (${reason}); every test file falls back to its own initdb.\n${result.stderr ?? ""}`);
+    return null;
+  }
   const lastLine = result.stdout.trim().split("\n").at(-1) ?? "";
   try {
     const { dataDir } = JSON.parse(lastLine) as { dataDir?: unknown };
-    return typeof dataDir === "string" && fs.existsSync(dataDir) ? dataDir : null;
-  } catch {
+    if (typeof dataDir === "string" && fs.existsSync(dataDir)) return dataDir;
+    console.warn(`[embedded-postgres-template] template output names no existing data dir: ${lastLine}; every test file falls back to its own initdb.`);
+    return null;
+  } catch (error) {
+    console.warn(`[embedded-postgres-template] template output is not JSON (${error instanceof Error ? error.message : String(error)}): ${lastLine}; every test file falls back to its own initdb.`);
     return null;
   }
 }
