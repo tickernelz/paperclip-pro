@@ -3,19 +3,15 @@
   "classes": {
     "arsip": {
       "reason": "Dokumen sejarah (doc/plans, catatan rilis lama, CHANGELOG, log konflik sinkron upstream) menggambarkan masa lalu; menulis ulang menjadi Wardmote memalsukan catatan.",
-      "approvedBy": "Wira, rekomendasi deskripsi ZHA-5279 (2026-11-08); konfirmasi Zhafron di kartu fase 3"
+      "approvedBy": "Wira, rekomendasi deskripsi ZHA-5279 (2026-11-08); belum dikonfirmasi Zhafron"
     },
     "belum-diganti": {
-      "reason": "Sisa yang ada saat gerbang dipasang, dijadwalkan diganti di fase 1-3 ZHA-5279. Jumlah hanya boleh turun; entri baru atau batas yang naik tidak boleh memakai kelas ini.",
+      "reason": "Sisa yang ada saat gerbang dipasang, dijadwalkan diganti di fase 1-2 ZHA-5279 (satu rilis, tanpa fallback nama lama). Jumlah hanya boleh turun; entri baru atau batas yang naik tidak boleh memakai kelas ini.",
       "approvedBy": "Deskripsi ZHA-5279 butir fase 1f (Wira atas permintaan Zhafron 2026-11-08): gerbang dipasang sekarang sementara fase lain jalan"
     },
     "ikon-pustaka": {
       "reason": "Ikon Paperclip dari lucide-react dipakai sebagai ikon lampiran, bukan merek.",
-      "approvedBy": "Belum ada entri; tiap entri butuh ukuran pemakaian nyata dan keputusan Zhafron di kartu fase 3"
-    },
-    "kompatibilitas": {
-      "reason": "Fallback baca nama lama (PAPERCLIP_*, X-Paperclip-*, tool MCP paperclip*, ~/.paperclip-pro) selama 21 agent produksi belum dipindah; dikosongkan di fase 3.",
-      "approvedBy": "Deskripsi ZHA-5279 fase 2 (Wira atas permintaan Zhafron 2026-11-08)"
+      "approvedBy": "Belum ada entri; tiap entri butuh ukuran pemakaian nyata, dan mengganti ikon atau tidak diputuskan Zhafron"
     },
     "lisensi": {
       "reason": "LICENSE MIT: notice hak cipta upstream \"Copyright (c) 2025 Paperclip AI\" wajib tetap ada pada salinan.",
@@ -25,17 +21,17 @@
       "reason": "Migrasi database yang sudah diterapkan bersifat append-only; pengenal baru hanya lewat migrasi baru.",
       "approvedBy": "Deskripsi ZHA-5279 bagian risiko (Wira atas permintaan Zhafron 2026-11-08)"
     },
-    "pihak-ketiga": {
-      "reason": "Nama layanan orang lain (Paperclip Cloud, Paperclip Labs, dan sejenisnya), bukan teks produk kita.",
-      "approvedBy": "Belum ada entri; tiap entri dikonfirmasi sebagai layanan luar sebelum masuk"
+    "migrasi-otomatis": {
+      "reason": "Kode migrasi otomatis saat install/upgrade (home, nama skill di database, teks instruction bundle, kunci env lama di adapterConfig) harus mengenali nama lama untuk menggantinya; hanya modul migrasi dan tesnya.",
+      "approvedBy": "Keputusan Zhafron 2026-11-08 11:54 UTC (migrasi otomatis di install/upgrade), deskripsi ZHA-5279 butir keputusan 2"
     },
     "uji-regresi": {
       "reason": "Tes yang memastikan nama lama tidak lagi tampil ke pengguna; pola yang diuji harus memuat nama itu.",
       "approvedBy": "Raka (ZHA-5279), ditinjau Hendra di PR gerbang"
     },
     "upstream": {
-      "reason": "Alamat repo upstream paperclipai/paperclip untuk alur merge upstream; menggantinya memutus sinkron.",
-      "approvedBy": "Deskripsi ZHA-5279 bagian atribusi upstream (Wira atas permintaan Zhafron 2026-11-08)"
+      "reason": "Sementara: alamat repo upstream paperclipai/paperclip untuk sinkron upstream, sampai Zhafron memutuskan nasib sinkron (rekomendasi Wira: hentikan, hard fork).",
+      "approvedBy": "Deskripsi ZHA-5279 butir keputusan 5 (menunggu keputusan Zhafron; tidak diubah sebelum itu)"
     }
   },
   "entries": [
