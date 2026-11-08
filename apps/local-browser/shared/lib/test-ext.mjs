@@ -37,7 +37,7 @@ export function firefoxManifest() {
   return {
     manifest_version: 2,
     version: "1.1.1",
-    browser_specific_settings: { gecko: { id: "local-browser@paperclip.app" } },
+    browser_specific_settings: { gecko: { id: "local-browser@wardmote" } },
     permissions: ["contextualIdentities", "storage", "activeTab"],
     optional_permissions: ["<all_urls>", "tabs", "scripting", "cookies", "webRequest", "webRequestBlocking", "notifications", "history", "proxy"],
     icons: { 48: "icons/icon.svg", 96: "icons/icon.svg" },
