@@ -13,12 +13,6 @@ import {
 } from "../dev-server-status.js";
 import { logger } from "../middleware/logger.js";
 import { getServerInfoSnapshot, type ServerInfoSnapshot } from "../server-info.js";
-import {
-  getCloudStackContext,
-  isCloudManagedInstance,
-  type CloudInstanceEnv,
-} from "../services/cloud-instance.js";
-import { getCloudRuntimeIdentity } from "../services/cloud-runtime-identity.js";
 import { getHiddenSettings } from "../services/settings-visibility.js";
 import { getEffectiveAttachmentLimit } from "../attachment-types.js";
 import {
@@ -99,25 +93,6 @@ function redactedDatabaseBackupHealth(databaseBackup: DatabaseBackupHealthStatus
   };
 }
 
-function getCloudHealthStatus(env: CloudInstanceEnv) {
-  const context = getCloudStackContext(env);
-  if (!context) return undefined;
-  const runtimeIdentity = env === process.env ? getCloudRuntimeIdentity() : null;
-
-  return {
-    managed: true as const,
-    managedBy: "paperclip-cloud" as const,
-    stackSlug: context.stackSlug,
-    cloudBaseUrl: context.cloudOrigin,
-    ...(runtimeIdentity ? {
-      runtimeIdentity: {
-        canonicalOrigin: runtimeIdentity.canonicalOrigin,
-        stackSlug: runtimeIdentity.stackSlug,
-      },
-    } : {}),
-  };
-}
-
 export function healthRoutes(
   db?: Db,
   opts: {
@@ -127,7 +102,7 @@ export function healthRoutes(
     companyDeletionEnabled: boolean;
     serverInfo?: ServerInfoSnapshot;
     databaseBackupHealth?: InspectDatabaseBackupHealthOptions;
-    runtimeEnv?: CloudInstanceEnv;
+    runtimeEnv?: Record<string, string | undefined>;
     isWarmStandby?: () => boolean;
   } = {
     deploymentMode: "local_trusted",
@@ -241,8 +216,7 @@ export function healthRoutes(
     const startupRecovery = getStartupRecoveryState();
     const healthStatus =
       startupRecovery.phase === "ready" ? "ok" : "starting";
-    const cloud = getCloudHealthStatus(runtimeEnv);
-    // Operator-hidden settings ride every response (like `cloud`): the list
+    // Operator-hidden settings ride every response: the list
     // holds UI surface names only, and the settings nav needs it before any
     // fuller-detail fetch. Omitted entirely when nothing is hidden, so
     // deployments without the env var keep today's byte-identical responses.
@@ -282,7 +256,6 @@ export function healthRoutes(
               serverVersion: serverVersion,
               commit,
               serverInfo,
-              ...(cloud ? { cloud } : {}),
               ...(hiddenSettings.length ? { hiddenSettings } : {}),
               attachmentLimit,
             }
@@ -292,7 +265,6 @@ export function healthRoutes(
               serverVersion,
               deploymentMode: opts.deploymentMode,
               commit,
-              ...(cloud ? { cloud } : {}),
               ...(hiddenSettings.length ? { hiddenSettings } : {}),
             },
       );
@@ -310,7 +282,6 @@ export function healthRoutes(
         deploymentExposure: opts.deploymentExposure,
         commit,
         warmStandby: true,
-        ...(cloud ? { cloud } : {}),
         ...(hiddenSettings.length ? { hiddenSettings } : {}),
       });
       return;
@@ -334,20 +305,13 @@ export function healthRoutes(
         error: "database_unreachable",
         ...(exposeFullDetails ? { serverInfo } : {}),
         ...(workspace ? { workspace } : {}),
-        ...(cloud ? { cloud } : {}),
       });
       return;
     }
 
     let bootstrapStatus: "ready" | "bootstrap_pending" = "ready";
     let bootstrapInviteActive = false;
-    // Cloud-managed instances have no first-admin concept: the control
-    // plane owns identity and its trusted-header users are deliberately
-    // never instance_admin, so the role-count gate below would report
-    // bootstrap_pending forever and lock every managed tenant out at the
-    // claim screen. Self-hosted deployments (neither canonical managed signal)
-    // are unaffected.
-    if (opts.deploymentMode === "authenticated" && !isCloudManagedInstance(runtimeEnv)) {
+    if (opts.deploymentMode === "authenticated") {
       const roleCount = await db
         .select({ count: count() })
         .from(instanceUserRoles)
@@ -428,7 +392,6 @@ export function healthRoutes(
         // plane needs readiness without a board session, and nothing else about
         // this instance becomes visible.
         ...(workspaceReadiness ? { workspace: workspaceReadiness } : {}),
-        ...(cloud ? { cloud } : {}),
         ...(hiddenSettings.length ? { hiddenSettings } : {}),
       });
       return;
@@ -455,7 +418,6 @@ export function healthRoutes(
       ...(warnings ? { warnings } : {}),
       ...(devServer ? { devServer } : {}),
       ...(workspaceReadiness ? { workspace: workspaceReadiness } : {}),
-      ...(cloud ? { cloud } : {}),
       ...(hiddenSettings.length ? { hiddenSettings } : {}),
       attachmentLimit,
     });

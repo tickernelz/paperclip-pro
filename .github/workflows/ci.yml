@@ -75,7 +75,7 @@ jobs:
           echo "docs_only=$docs_only" >> "$GITHUB_OUTPUT"
 
   policy:
-    name: Policy
+    name: Policy, browser extensions, Docker OMP pin
     needs: scope
     if: needs.scope.outputs.docs_only != 'true'
     runs-on: ubuntu-latest
@@ -89,6 +89,44 @@ jobs:
       - uses: ./.github/actions/setup-workspace
 
       - uses: ./.github/actions/policy-checks
+
+      - name: Check the bundled OMP matches the pin
+        if: ${{ !cancelled() }}
+        run: bash scripts/check-docker-omp-pin.sh Dockerfile
+
+      - name: Check the shared protocol contract is current
+        if: ${{ !cancelled() }}
+        run: node scripts/generate-local-browser-protocol.mjs --check
+      - name: Check the synced extension copies match apps/local-browser/shared
+        if: ${{ !cancelled() }}
+        run: node scripts/sync-local-browser-shared.mjs --check
+      - name: Check every extension script parses
+        if: ${{ !cancelled() }}
+        run: |
+          set -euo pipefail
+          find apps/local-browser -name '*.js' -o -name '*.mjs' | while read -r file; do
+            node --check "$file"
+          done
+      - name: Run the extension suites
+        if: ${{ !cancelled() }}
+        run: |
+          set -euo pipefail
+          node --test apps/local-browser/shared/lib/*.test.mjs
+          node --test apps/local-browser/chromium/lib/*.test.mjs apps/local-browser/chromium/background/*.test.mjs
+          node --test apps/local-browser/firefox/lib/*.test.mjs
+      - name: Check the download artifacts match the source
+        if: ${{ !cancelled() }}
+        run: |
+          set -euo pipefail
+          node scripts/check-local-browser-artifacts.mjs
+          test -s ui/public/downloads/local-browser-firefox.xpi || {
+            echo "ui/public/downloads/local-browser-firefox.xpi is missing."
+            exit 1
+          }
+          unzip -p ui/public/downloads/local-browser-firefox.xpi manifest.json > /dev/null || {
+            echo "ui/public/downloads/local-browser-firefox.xpi is not a readable add-on."
+            exit 1
+          }
 
   typecheck:
     name: Typecheck
@@ -138,54 +176,16 @@ jobs:
       - name: Build
         run: pnpm build
 
-  extensions:
-    name: Browser extensions
-    needs: scope
-    if: needs.scope.outputs.docs_only != 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "24"
-      - name: Check the shared protocol contract is current
-        run: node scripts/generate-local-browser-protocol.mjs --check
-      - name: Check the synced extension copies match apps/local-browser/shared
-        run: node scripts/sync-local-browser-shared.mjs --check
-      - name: Check every extension script parses
-        run: |
-          set -euo pipefail
-          find apps/local-browser -name '*.js' -o -name '*.mjs' | while read -r file; do
-            node --check "$file"
-          done
-      - name: Run the extension suites
-        run: |
-          set -euo pipefail
-          node --test apps/local-browser/shared/lib/*.test.mjs
-          node --test apps/local-browser/chromium/lib/*.test.mjs apps/local-browser/chromium/background/*.test.mjs
-          node --test apps/local-browser/firefox/lib/*.test.mjs
-      - name: Check the download artifacts match the source
-        run: |
-          set -euo pipefail
-          node scripts/check-local-browser-artifacts.mjs
-          test -s ui/public/downloads/local-browser-firefox.xpi || {
-            echo "ui/public/downloads/local-browser-firefox.xpi is missing."
-            exit 1
-          }
-          unzip -p ui/public/downloads/local-browser-firefox.xpi manifest.json > /dev/null || {
-            echo "ui/public/downloads/local-browser-firefox.xpi is not a readable add-on."
-            exit 1
-          }
-
   runner:
-    name: Verify Wardmote Runner
+    name: Verify Wardmote Runner (${{ matrix.part }})
     needs: scope
     if: needs.scope.outputs.docs_only != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [checks, suites]
     steps:
       - uses: actions/checkout@v7
         with:
@@ -220,12 +220,15 @@ jobs:
           save-if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
 
       - name: Static checks
+        if: matrix.part == 'checks'
         run: pnpm --filter @tickernelz/wardmote-paperclip-runner check:static
 
       - name: Rust checks
+        if: matrix.part == 'checks'
         run: pnpm --filter @tickernelz/wardmote-paperclip-runner check:runner
 
       - name: TypeScript suites
+        if: matrix.part == 'suites'
         run: pnpm --filter @tickernelz/wardmote-paperclip-runner test:typescript:vitest
 
   general:
@@ -380,49 +383,36 @@ jobs:
             tests/e2e/test-results/
           retention-days: 7
 
-  mobile-shell:
-    name: Mobile shell (WebKit)
+  browser-gates:
+    name: Mobile shell (WebKit) and contrast gate (rendered colours)
     needs: scope
     if: needs.scope.outputs.docs_only != 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-workspace
 
-      - name: Install WebKit
-        run: pnpm exec playwright install --with-deps webkit
+      - name: Install WebKit and Chromium
+        run: pnpm exec playwright install --with-deps webkit chromium
 
       - name: Run mobile shell tests
+        id: mobile-shell
         run: pnpm exec playwright test --config tests/mobile-shell/playwright.config.ts
 
-      - name: Upload Playwright report
+      - name: Run contrast gate
+        if: ${{ !cancelled() }}
+        run: pnpm exec playwright test --config tests/contrast-gate/playwright.config.ts
+
+      - name: Upload mobile shell Playwright report
         uses: actions/upload-artifact@v7
-        if: failure()
+        if: ${{ !cancelled() && steps.mobile-shell.outcome == 'failure' }}
         with:
           name: mobile-shell-test-results
           path: tests/mobile-shell/test-results/
           retention-days: 7
-
-  contrast-gate:
-    name: Contrast gate (rendered colours)
-    needs: scope
-    if: needs.scope.outputs.docs_only != 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-      - uses: ./.github/actions/setup-workspace
-
-      - name: Install Chromium
-        run: pnpm exec playwright install --with-deps chromium
-
-      - name: Run contrast gate
-        run: pnpm exec playwright test --config tests/contrast-gate/playwright.config.ts
 
       - name: Upload contrast report
         uses: actions/upload-artifact@v7
@@ -443,26 +433,21 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-workspace
+      - name: Runner Rust release cache
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6
+        with:
+          workspaces: packages/paperclip-runner/runner -> target
+          shared-key: runner-build-v1
+          cache-workspace-crates: false
+          cache-bin: false
+          save-if: false
       - name: Upgrade an existing install to this commit and keep its home
         env:
+          CARGO_TARGET_DIR: ${{ github.workspace }}/packages/paperclip-runner/runner/target
           GH_TOKEN: ${{ github.token }}
           UPGRADE_REPO: ${{ github.event.pull_request.head.repo.full_name }}
           UPGRADE_SHA: ${{ github.event.pull_request.head.sha }}
-        run: bash scripts/test-upgrade-path.sh
-
-  docker-omp-pin:
-    name: Docker OMP pin
-    needs: scope
-    if: needs.scope.outputs.docs_only != 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-
-      - name: Check the bundled OMP matches the pin
-        run: bash scripts/check-docker-omp-pin.sh Dockerfile
+        run: UPGRADE_PNPM_STORE="$(pnpm store path --silent)" bash scripts/test-upgrade-path.sh
 
   docs:
     name: Docs
@@ -486,7 +471,7 @@ jobs:
   verify:
     name: verify
     if: always()
-    needs: [scope, policy, docs, typecheck, build, extensions, runner, general, serialized, e2e, mobile-shell, contrast-gate, upgrade-path, docker-omp-pin]
+    needs: [scope, policy, docs, typecheck, build, runner, general, serialized, e2e, browser-gates, upgrade-path]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:

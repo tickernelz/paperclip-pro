@@ -87,59 +87,14 @@ function expectNoImportWork() {
   expect(mockTransferRunService.getRunForActor).not.toHaveBeenCalled();
 }
 
-describe("company import Cloud floor", () => {
+describe("company import floor", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    delete process.env.PAPERCLIP_CLOUD_TENANT_SERVER_TOKEN;
-    delete process.env.PAPERCLIP_MANAGED_CONFIG;
     delete process.env.PAPERCLIP_HIDDEN_SETTINGS;
   });
 
   afterEach(() => {
-    delete process.env.PAPERCLIP_CLOUD_TENANT_SERVER_TOKEN;
-    delete process.env.PAPERCLIP_MANAGED_CONFIG;
     delete process.env.PAPERCLIP_HIDDEN_SETTINGS;
-  });
-
-  it("returns 403 cloud_managed on every import route on a cloud-managed instance", async () => {
-    process.env.PAPERCLIP_CLOUD_TENANT_SERVER_TOKEN = "tenant-secret";
-    const app = await createApp(boardAdmin);
-
-    for (const route of IMPORT_ROUTES) {
-      const res = await request(app)[route.method](route.path).send({});
-      expect(res.status, `${route.method.toUpperCase()} ${route.path}`).toBe(403);
-      expect(res.body, `${route.method.toUpperCase()} ${route.path}`).toMatchObject({
-        code: "cloud_managed",
-      });
-    }
-    expectNoImportWork();
-  });
-
-  it("floors on the managed-config signal alone", async () => {
-    process.env.PAPERCLIP_MANAGED_CONFIG = JSON.stringify({ v: 1, mode: "cloud" });
-    const app = await createApp(boardAdmin);
-
-    const res = await request(app).post("/api/companies/import").send({});
-
-    expect(res.status).toBe(403);
-    expect(res.body).toMatchObject({ code: "cloud_managed" });
-    expectNoImportWork();
-  });
-
-  it("applies the floor before auth and request-body validation", async () => {
-    process.env.PAPERCLIP_CLOUD_TENANT_SERVER_TOKEN = "tenant-secret";
-    // An agent actor never passes the import routes' own assertBoard, and the
-    // body is not schema-valid either — the floor must still answer first so a
-    // Cloud caller sees one consistent refusal.
-    const app = await createApp({ type: "agent", agentId: "agent-1", companyId: "company-1" });
-
-    const res = await request(app)
-      .post("/api/companies/import/transfers")
-      .send({ nonsense: true });
-
-    expect(res.status).toBe(403);
-    expect(res.body).toMatchObject({ code: "cloud_managed" });
-    expectNoImportWork();
   });
 
   it("floors every import route with settings_operator_managed when company.import is hidden", async () => {
@@ -164,19 +119,6 @@ describe("company import Cloud floor", () => {
 
     expect(res.status).toBe(404);
     expect(res.body).toMatchObject({ error: "Import job not found" });
-  });
-
-  it("keeps company export open on a cloud-managed instance", async () => {
-    process.env.PAPERCLIP_CLOUD_TENANT_SERVER_TOKEN = "tenant-secret";
-    mockPortabilityService.exportBundle.mockResolvedValue({ ok: true });
-    const app = await createApp(boardAdmin);
-
-    const res = await request(app)
-      .post("/api/companies/11111111-2222-4333-8444-555555555555/exports")
-      .send({});
-
-    expect(res.status).toBe(200);
-    expect(mockPortabilityService.exportBundle).toHaveBeenCalledTimes(1);
   });
 
   it("preserves self-hosted import preview", async () => {

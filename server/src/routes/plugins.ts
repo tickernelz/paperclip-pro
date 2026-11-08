@@ -86,9 +86,7 @@ import {
 } from "../services/plugin-secrets-handler.js";
 import {
   canonicalizeLocalPluginPath,
-  isWithinBundledPluginRoot,
 } from "../services/plugin-install-guard.js";
-import { isCloudManagedInstance } from "../services/cloud-instance.js";
 import { getHiddenSettings } from "../services/settings-visibility.js";
 import { secretService } from "../services/secrets.js";
 import { badRequest, forbidden, notFound, unauthorized, unprocessable } from "../errors.js";
@@ -1172,17 +1170,6 @@ export function pluginRoutes(
       return;
     }
 
-    // Cloud install floor: on harness-managed instances only bundled-catalog
-    // sources are installable, regardless of actor privileges or flag state.
-    const cloudManaged = isCloudManagedInstance();
-    if (cloudManaged && !isLocalPath) {
-      res.status(403).json({
-        error:
-          "npm installs are disabled on cloud-managed instances; only plugins bundled with the application may be installed",
-      });
-      return;
-    }
-
     // Canonicalize local install paths on every instance so traversal
     // segments and symlinks cannot smuggle an aliased path past validation.
     let canonicalLocalPath: string | undefined;
@@ -1190,13 +1177,6 @@ export function pluginRoutes(
       const validated = await canonicalizeLocalPluginPath(trimmedPackage);
       if (!validated.ok) {
         res.status(400).json({ error: `Invalid localPath: ${validated.reason}` });
-        return;
-      }
-      if (cloudManaged && !(await isWithinBundledPluginRoot(validated.canonicalPath))) {
-        res.status(403).json({
-          error:
-            "cloud-managed instances may only install plugins from the bundled plugin catalog",
-        });
         return;
       }
       canonicalLocalPath = validated.canonicalPath;
