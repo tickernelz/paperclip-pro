@@ -29,6 +29,10 @@
       "reason": "Nama layanan orang lain (Paperclip Cloud, Paperclip Labs, dan sejenisnya), bukan teks produk kita.",
       "approvedBy": "Belum ada entri; tiap entri dikonfirmasi sebagai layanan luar sebelum masuk"
     },
+    "uji-regresi": {
+      "reason": "Tes yang memastikan nama lama tidak lagi tampil ke pengguna; pola yang diuji harus memuat nama itu.",
+      "approvedBy": "Raka (ZHA-5279), ditinjau Hendra di PR gerbang"
+    },
     "upstream": {
       "reason": "Alamat repo upstream paperclipai/paperclip untuk alur merge upstream; menggantinya memutus sinkron.",
       "approvedBy": "Deskripsi ZHA-5279 bagian atribusi upstream (Wira atas permintaan Zhafron 2026-11-08)"
@@ -351,7 +355,7 @@
     ["doc/README-draft.md",4,"belum-diganti"],
     ["doc/RELEASE-NOTES-mcp-access-governance.md",9,"arsip"],
     ["doc/RELEASE-NOTES-wardmote-features.md",3,"arsip"],
-    ["doc/RELEASE-NOTES-wardmote-rename.md",13,"arsip"],
+    ["doc/RELEASE-NOTES-wardmote-rename.md",15,"arsip"],
     ["doc/SECRETS-AWS-PROVIDER.md",92,"belum-diganti"],
     ["doc/SPEC-implementation.md",34,"belum-diganti"],
     ["doc/SPEC.md",50,"belum-diganti"],
@@ -867,7 +871,7 @@
     ["packages/adapters/omp-local/src/server/rpc-session.ts",9,"belum-diganti"],
     ["packages/adapters/omp-local/src/server/settings-overlay.test.ts",4,"belum-diganti"],
     ["packages/adapters/omp-local/src/server/settings-overlay.ts",7,"belum-diganti"],
-    ["packages/adapters/omp-local/src/server/skills.test.ts",6,"belum-diganti"],
+    ["packages/adapters/omp-local/src/server/skills.test.ts",9,"belum-diganti"],
     ["packages/adapters/omp-local/src/server/skills.ts",17,"belum-diganti"],
     ["packages/adapters/omp-local/src/server/test.ts",10,"belum-diganti"],
     ["packages/adapters/omp-local/src/server/tool-guard.test.ts",3,"belum-diganti"],
@@ -2587,6 +2591,7 @@
     ["packages/shared/src/node-version.ts",4,"belum-diganti"],
     ["packages/shared/src/oauth-endpoint-url.test.ts",5,"belum-diganti"],
     ["packages/shared/src/oauth-endpoint-url.ts",11,"belum-diganti"],
+    ["packages/shared/src/omp-agent-settings.test.ts",1,"uji-regresi"],
     ["packages/shared/src/omp-agent-settings.ts",2,"belum-diganti"],
     ["packages/shared/src/openwa-tools.test.ts",2,"belum-diganti"],
     ["packages/shared/src/openwa-tools.ts",2,"belum-diganti"],
@@ -5641,6 +5646,7 @@
     ["ui/src/components/new-agent/NewAgentSetup.tsx",5,"belum-diganti"],
     ["ui/src/components/omp-settings/ChoiceControls.tsx",1,"belum-diganti"],
     ["ui/src/components/omp-settings/omp-settings-model.ts",1,"belum-diganti"],
+    ["ui/src/components/onboarding/OnboardingFlow.test.tsx",1,"uji-regresi"],
     ["ui/src/components/onboarding/OnboardingFlow.tsx",1,"belum-diganti"],
     ["ui/src/components/onboarding/SavedProviderKeySelect.tsx",1,"belum-diganti"],
     ["ui/src/components/onboarding/onboarding-flow.test.ts",1,"belum-diganti"],
