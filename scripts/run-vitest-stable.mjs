@@ -72,10 +72,6 @@ const generalServerWithoutChatGroupName = "general-server-without-chat";
 const generalChatGroupName = "general-chat";
 const generalServerNativeRunnerGroupName = "general-server-native-runner";
 const chatSuite = "server/src/__tests__/chat-channels.integration.test.ts";
-// These suites rebuild the Runner release binaries with cargo in beforeAll.
-// Inside the plain server shards, which carry no Rust cache,
-// that build was a ~4m30s cold compile of every third-party crate on each run
-// (277s of a 291s shard vitest step, actions run 35246999382, 2026-09-17).
 const nativeRunnerSuites = [
   "server/src/services/native-runtime/native-codex-runner.integration.test.ts",
   "server/src/__tests__/dot-runner.test.ts",
