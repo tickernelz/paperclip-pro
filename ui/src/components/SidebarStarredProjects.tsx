@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import { NavLink, useLocation } from "@/lib/router";
+import { Link, useLocation } from "@/lib/router";
 import { useQuery } from "@tanstack/react-query";
 import { Lock, Loader2, LogOut, MoreHorizontal, Star } from "lucide-react";
 import { useCompany } from "../context/CompanyContext";
@@ -16,6 +16,7 @@ import {
 } from "../hooks/useResourceMemberships";
 import { BudgetSidebarMarker } from "./BudgetSidebarMarker";
 import { ProjectTile } from "./ProjectTile";
+import { sidebarNavStateStyles } from "./primary-sidebar-styles";
 import { StarToggle } from "./StarToggle";
 import { Button } from "@/components/ui/button";
 import {
@@ -114,27 +115,14 @@ export function SidebarStarredProjects() {
         const starred = isStarred(membershipsQuery.data, "project", project.id);
 
         const link = (
-          <NavLink
-            to={`/projects/${routeRef}/issues`}
-            state={SIDEBAR_SCROLL_RESET_STATE}
-            onClick={() => {
+          <SidebarStarredProjectLink
+            project={project}
+            active={isActive}
+            rail={rail}
+            onNavigate={() => {
               if (isMobile) setSidebarOpen(false);
             }}
-            className={cn(
-              "flex min-w-0 flex-1 items-center gap-2.5 mx-2 rounded-lg px-2 py-1.5 pointer-coarse:py-1 text-(length:--text-compact) font-medium transition-colors",
-              !rail && "pl-6 pr-8",
-              isActive
-                ? "bg-bg-3 text-ink"
-                : "text-ink/80 hover:bg-bg-3 hover:text-ink",
-            )}
-          >
-            <ProjectTile color={project.color ?? null} icon={project.icon ?? null} size="xs" />
-            <span className={rail ? SIDEBAR_RAIL_HIDDEN_LABEL : "flex-1 truncate"}>{project.name}</span>
-            {!rail && project.visibility === "private" ? <Lock className="size-3.5 shrink-0 text-ink-3" aria-label="Private project" /> : null}
-            {!rail && project.pauseReason === "budget" ? (
-              <BudgetSidebarMarker title="Project paused by budget" />
-            ) : null}
-          </NavLink>
+          />
         );
 
         return (
@@ -215,5 +203,37 @@ export function SidebarStarredProjects() {
         );
       })}
     </div>
+  );
+}
+export function SidebarStarredProjectLink({
+  project,
+  active,
+  rail,
+  onNavigate,
+}: {
+  project: Project;
+  active: boolean;
+  rail: boolean;
+  onNavigate?: () => void;
+}) {
+  return (
+    <Link
+      to={`/projects/${projectRouteRef(project)}/issues`}
+      state={SIDEBAR_SCROLL_RESET_STATE}
+      aria-current={active ? "page" : undefined}
+      onClick={onNavigate}
+      className={cn(
+        "flex min-w-0 flex-1 items-center gap-2.5 mx-2 rounded-lg px-2 py-1.5 pointer-coarse:py-1 text-(length:--text-compact) font-medium transition-colors",
+        !rail && "pl-6 pr-8",
+        active ? sidebarNavStateStyles.active : cn(sidebarNavStateStyles.rest, "text-ink/80"),
+      )}
+    >
+      <ProjectTile color={project.color ?? null} icon={project.icon ?? null} size="xs" />
+      <span className={rail ? SIDEBAR_RAIL_HIDDEN_LABEL : "flex-1 truncate"}>{project.name}</span>
+      {!rail && project.visibility === "private" ? <Lock className="size-3.5 shrink-0 text-ink-3" aria-label="Private project" /> : null}
+      {!rail && project.pauseReason === "budget" ? (
+        <BudgetSidebarMarker title="Project paused by budget" />
+      ) : null}
+    </Link>
   );
 }

@@ -8,3 +8,9 @@ export const primarySidebarStyles = {
   railNav: "flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto scrollbar-none px-3 py-2 pointer-coarse:gap-3",
   group: "flex flex-col gap-0.5",
 } as const;
+
+export const sidebarNavStateStyles = {
+  active:
+    "relative bg-accent/14 text-ink before:absolute before:inset-y-1.5 before:left-0 before:w-0.75 before:rounded-full before:bg-accent",
+  rest: "relative hover:bg-ink/6 hover:text-ink",
+} as const;
