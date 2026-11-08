@@ -85,7 +85,6 @@ export type AuthorizationActor =
       | "agent_jwt"
       | "mcp_oauth"
       | "cloud_tenant"
-      | "cloud_control"
       | "none";
   };
 

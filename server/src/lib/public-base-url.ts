@@ -1,5 +1,5 @@
 import type { Request } from "express";
-import { runtimeCanonicalOrigin } from "../services/cloud-runtime-identity.js";
+import { legacyEnvKey } from "@tickernelz/wardmote-shared/env-aliases";
 
 export function requestBaseUrl(req: Request) {
   const forwardedProto = req.header("x-forwarded-proto");
@@ -12,8 +12,19 @@ export function requestBaseUrl(req: Request) {
 
 /** Public origin for links handed to people outside the board. */
 export function resolveBaseUrl(req: Request, authPublicBaseUrl?: string): string {
-  const runtimeOrigin = runtimeCanonicalOrigin();
-  if (runtimeOrigin) return runtimeOrigin;
   if (authPublicBaseUrl) return authPublicBaseUrl.replace(/\/+$/, "");
   return requestBaseUrl(req);
+}
+
+/** Origin of the first configured public URL, or null when none parses. */
+export function runtimePublicOrigin(env: NodeJS.ProcessEnv = process.env): string | null {
+  const candidate = ["WARDMOTE_PUBLIC_URL", "WARDMOTE_AUTH_PUBLIC_BASE_URL", "WARDMOTE_API_URL"]
+    .map((key) => env[legacyEnvKey(key)]?.trim())
+    .find((value) => value);
+  if (!candidate) return null;
+  try {
+    return new URL(candidate).origin;
+  } catch {
+    return null;
+  }
 }

@@ -7,8 +7,6 @@ import type { createDeliveryWorkCoordinator } from "./services/delivery-work-coo
 import { isIdleTaskDrainActive, beginIdleTrackedWork, trackIdleWork } from "./services/task-admission.js";
 import { markIdleStartupComplete } from "./services/idle-local-work.js";
 import { clearIdleBackupWakeRequired, idleBackupWakeMarker, markIdleBackupWakeRequired, verifyIdleDatabaseBackup } from "./services/idle-database-backup.js";
-import { cloudWarmStandbyServerOptions } from "./middleware/cloud-warm-standby.js";
-import { createCloudWarmStandby } from "./services/cloud-warm-standby.js";
 import { chatCompletionDeliveryService } from "./services/chat-completion-delivery.js";
 /// <reference path="./types/express.d.ts" />
 // Kicks off the OTel bootstrap as early as possible (no-op unless
@@ -136,7 +134,6 @@ import {
   finalizeServerShutdown,
   loadWithoutCoordinatedShutdownSignalHooks,
 } from "./shutdown.js";
-import { initializeCloudRuntimeIdentity } from "./services/cloud-runtime-identity.js";
 import { systemdNotify } from "./services/systemd-notify.js";
 import { flushInFlightRunLogMirrors } from "./services/run-log-store.js";
 import { getMaxAttachmentBytes } from "./attachment-types.js";
@@ -663,12 +660,6 @@ async function startServerWithDatabaseTeardown(
   };
   startupDatabase.close = closeDatabaseClients;
   
-  // A claimed warm-pool stack may restart while its provider environment still
-  // names the pool host. Restore the signed, durable identity before Better
-  // Auth, routes, or child-runtime configuration capture any public URL.
-  const restoredCloudRuntimeIdentity = await initializeCloudRuntimeIdentity(db as any);
-  if (restoredCloudRuntimeIdentity) config = loadConfig();
-  const isWarmStandby = await createCloudWarmStandby(db as any);
 
   if (config.deploymentMode === "local_trusted" && !isLoopbackHost(config.host)) {
     throw new Error(
@@ -922,7 +913,6 @@ async function startServerWithDatabaseTeardown(
     prepareIdleDatabaseBackup: idleDatabaseBackupEnabled
       ? async () => (await runServerDatabaseBackup("idle")) !== null
       : undefined,
-    cloudWarmStandby: isWarmStandby,
     uiMode,
     serverPort: listenPort,
     storageService,
@@ -978,7 +968,7 @@ async function startServerWithDatabaseTeardown(
   // Upgrade admission runs before every WebSocket listener, outside Express.
   const server = createPaperclipHttpServer(app as unknown as RequestListener, {
     apiUrl: configuredApiUrl,
-    httpOptions: cloudWarmStandbyServerOptions(() => isWarmStandby() || isIdleTaskDrainActive()),
+    httpOptions: { shouldUpgradeCallback: () => !isIdleTaskDrainActive() },
   });
   // Outlive reverse-proxy idle timeouts to avoid intermittent resets.
   server.keepAliveTimeout = 185000;
@@ -1212,7 +1202,7 @@ async function startServerWithDatabaseTeardown(
     ["local_ai_login_cleanup", () => localAiLoginService(db).reapExpired()],
   ] as const;
   const sweepExecutionControl = () => {
-    if (isIdleTaskDrainActive() || heartbeatSchedulerStopped || isWarmStandby()) return;
+    if (isIdleTaskDrainActive() || heartbeatSchedulerStopped) return;
     // Independent durable queues must not block one another. Each queue remains
     // single-flight; a later sweep observes committed transitions from its peers.
     for (const [queue, work] of executionControlSweeps) {
@@ -1228,7 +1218,7 @@ async function startServerWithDatabaseTeardown(
   sweepExecutionControl();
   const startHeartbeatSchedulerInterval = (callback: () => void) => {
     heartbeatSchedulerInterval = setInterval(() => {
-      if (!isWarmStandby() && !isIdleTaskDrainActive()) callback();
+      if (!isIdleTaskDrainActive()) callback();
     }, config.heartbeatSchedulerIntervalMs);
     heartbeatSchedulerInterval?.unref?.();
   };
@@ -1297,7 +1287,7 @@ async function startServerWithDatabaseTeardown(
   // Preserve the existing task-scoped activity fast path. Claims in the
   // delivery service arbitrate with the coordinator's startup/recovery sweep.
   const unsubscribeChatCompletions = subscribeAllCompanyLiveEvents(event => {
-    if (isIdleTaskDrainActive() || isWarmStandby() || heartbeatSchedulerStopped || event.type !== "activity.logged" ||
+    if (isIdleTaskDrainActive() || heartbeatSchedulerStopped || event.type !== "activity.logged" ||
       event.payload.action !== "issue.updated" || typeof event.payload.entityId !== "string") return;
     trackHeartbeatSchedulerWork(chatCompletionDeliveries.sweepPending({ companyId: event.companyId, taskId: event.payload.entityId })
       .catch(err => logger.error({ err }, "post-commit chat completion delivery failed")));
@@ -1936,11 +1926,11 @@ async function startServerWithDatabaseTeardown(
     // The final pre-sleep dump remains on the volume throughout sleep. Take
     // a fresh backup on restart before idle eligibility is enabled, including
     // after rollback of the opt-in flag. Failure retains the marker for retry.
-    if (!isWarmStandby() && existsSync(idleBackupWakeMarker(config.databaseBackupDir))) {
+    if (existsSync(idleBackupWakeMarker(config.databaseBackupDir))) {
       await runServerDatabaseBackup("scheduled").catch(() => {});
     }
     setInterval(() => {
-      if (isWarmStandby() || isIdleTaskDrainActive()) return;
+      if (isIdleTaskDrainActive()) return;
       void runServerDatabaseBackup("scheduled").catch(() => {
         // runServerDatabaseBackup already logs the failure with context.
       });

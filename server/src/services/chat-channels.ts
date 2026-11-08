@@ -59,7 +59,6 @@ import { githubChatPrincipalAccess } from "./chat-github-access.js";
 import { githubAppJwt } from "./chat-github-client.js";
 import { resumeExternalConversation } from "./slack-conversation-state.js";
 import { settleExternalConversation } from "./slack-conversation-lifecycle.js";
-import { runtimeCanonicalOrigin } from "./cloud-runtime-identity.js";
 import { takePhotonCompanion } from "./photon/attachments.js";
 import { writePhotonCheckpoint } from "./photon/receiver.js";
 import { PhotonState } from "./photon/state.js";
@@ -669,36 +668,10 @@ type SlackCallbackInspection = {
   isUrlVerification: boolean;
 };
 
-// Cloud records the public request host in dedicated headers so provider edges
-// cannot replace it with their upstream host. Only use callback-health evidence on a
-// claimed Cloud instance, after provider authentication succeeded. It must not
-// change the Request passed to the adapter, signature verification, routing,
-// board identity, or the configured URL used to generate callbacks.
-function slackCallbackObservationUrl(request: Request): string | null {
-  const directUrl = canonicalCallbackUrl(request.url);
-  if (!directUrl || !runtimeCanonicalOrigin()) return directUrl;
-  const hasCloudEvidence = request.headers.has("x-paperclip-cloud-forwarded-host");
-  const host = request.headers.get(hasCloudEvidence ? "x-paperclip-cloud-forwarded-host" : "x-forwarded-host")?.trim();
-  const protocol = request.headers.get(hasCloudEvidence ? "x-paperclip-cloud-forwarded-proto" : "x-forwarded-proto")?.trim();
-  if (!host || /[\s/@\\?#,]/.test(host) || (protocol !== "https" && protocol !== "http")) return directUrl;
-  try {
-    const origin = new URL(`${protocol}://${host}`);
-    // Accept one authority only, never credentials, paths, queries, or lists.
-    if (!origin.host || origin.username || origin.password || origin.pathname !== "/" || origin.search || origin.hash) return directUrl;
-    const observed = new URL(directUrl);
-    observed.protocol = origin.protocol;
-    observed.host = origin.host;
-    observed.port = origin.port;
-    return canonicalCallbackUrl(observed.toString());
-  } catch {
-    return directUrl;
-  }
-}
-
 async function inspectSlackCallback(
   request: Request,
 ): Promise<SlackCallbackInspection | null> {
-  const url = slackCallbackObservationUrl(request);
+  const url = canonicalCallbackUrl(request.url);
   if (!url) return null;
   const contentType = request.headers.get("content-type")?.toLowerCase() ?? "";
   let body: string;
@@ -3150,10 +3123,10 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
   // A warm Cloud instance is constructed before it receives its signed claim.
   // Resolve its live identity when producing URLs, not once at service startup.
   // An explicit webhook ingress remains separate from board/identity links.
-  const getPublicBaseUrl = () => runtimeCanonicalOrigin() ?? configuredPublicBaseUrl;
+  const getPublicBaseUrl = () => configuredPublicBaseUrl;
   // Task links must validate the original configured URL before normalization
   // can remove credentials or other evidence that makes it unsafe to publish.
-  const getTaskBaseUrl = () => runtimeCanonicalOrigin() ?? options.publicBaseUrl;
+  const getTaskBaseUrl = () => options.publicBaseUrl;
   const getWebhookPublicBaseUrl = () => configuredWebhookPublicBaseUrl ?? getPublicBaseUrl();
   const voiceStore = voiceSessionStore(db, { allowLocalBoard: options.allowLocalVoiceBoard === true });
   const voice = voiceSessionService(db, {

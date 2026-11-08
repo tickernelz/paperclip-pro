@@ -4,7 +4,7 @@ import {
   GitHubPublicationLeaseLost,
   withGitHubPublicationLease,
 } from "./chat-github-publication-lease.js";
-import { runtimePublicOrigin } from "./cloud-runtime-identity.js";
+import { runtimePublicOrigin } from "../lib/public-base-url.js";
 import { projectSafeChatPublicationText } from "./chat-publication-projection.js";
 import { githubReviewCheckService } from "./chat-github-checks.js";
 import { createHash } from "node:crypto";

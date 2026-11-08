@@ -1,16 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { buildPaperclipTaskMarkdown } from "../services/heartbeat.js";
-import { runtimeCanonicalOrigin } from "../services/cloud-runtime-identity.js";
 import { readConfigFile } from "../config-file.js";
 
-vi.mock("../services/cloud-runtime-identity.js", () => ({
-  runtimeCanonicalOrigin: vi.fn(() => null),
-}));
 vi.mock("../config-file.js", () => ({ readConfigFile: vi.fn(() => null) }));
 
 afterEach(() => {
   vi.unstubAllEnvs();
-  vi.mocked(runtimeCanonicalOrigin).mockReturnValue(null);
   vi.mocked(readConfigFile).mockReturnValue(null);
 });
 
@@ -20,16 +15,14 @@ describe("external chat task link context", () => {
   it.each(["slack", "discord", "telegram", "agentmail"])(
     "supplies the public task link for fresh and resumed %s turns",
     (externalChatProvider) => {
-      vi.stubEnv("PAPERCLIP_AUTH_PUBLIC_BASE_URL", "https://pool.example");
+      vi.stubEnv("PAPERCLIP_AUTH_PUBLIC_BASE_URL", "https://board.example");
       vi.stubEnv("PAPERCLIP_API_URL", "http://localhost:3100");
-      vi.mocked(runtimeCanonicalOrigin).mockReturnValue("https://vanity.example");
       for (const includeDescription of [true, false]) {
         for (const nativeRunner of [true, false]) {
           const markdown = buildPaperclipTaskMarkdown({ issue, externalChatProvider, nativeRunner, includeDescription });
-          expect(markdown).toContain("Public task URL: https://vanity.example/issues/task-123");
+          expect(markdown).toContain("Public task URL: https://board.example/issues/task-123");
           expect(markdown).toContain("use this exact URL");
           expect(markdown).toContain("Opening it still requires Paperclip access");
-          expect(markdown).not.toContain("https://pool.example");
           expect(markdown).not.toContain("http://localhost:3100");
         }
       }
