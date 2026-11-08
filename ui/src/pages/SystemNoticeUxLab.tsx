@@ -152,7 +152,7 @@ export function SystemNoticeUxLab() {
               First-class system notice treatment
             </h1>
             <p className="mt-3 max-w-3xl text-sm leading-6 text-ink-3">
-              Replaces the current pattern where a Paperclip-authored warning renders inside a user-style
+              Replaces the current pattern where a Wardmote-authored warning renders inside a user-style
               chat bubble. The notice is one container, system-styled, with hidden-by-default operational
               metadata. Tone is conveyed by icon, label, and color together so it stays accessible.
             </p>

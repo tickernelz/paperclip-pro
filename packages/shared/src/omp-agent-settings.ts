@@ -111,7 +111,7 @@ export const OMP_ADAPTER_ALIASES: Record<string, { path: string; invert?: boolea
 };
 
 export const OMP_LOCKED_SETTINGS: Record<string, string> = {
-  "task.maxRecursionDepth": "Paperclip keeps this at 0 so a run never starts OMP subagents it cannot track.",
+  "task.maxRecursionDepth": "Wardmote keeps this at 0 so a run never starts OMP subagents it cannot track.",
 };
 
 export function isBlockedOmpSettingKey(key: string): boolean {
@@ -595,7 +595,7 @@ export const OMP_ADAPTER_SETTINGS: ReadonlyArray<{ key: string; label: string; t
   { key: "extensions", label: "Extensions", type: "array", description: "OMP extension paths." },
   { key: "hooks", label: "Hooks", type: "array", description: "OMP hook paths." },
   { key: "maxTime", label: "Max run time", type: "string", description: "Seconds passed to OMP --max-time." },
-  { key: "timeoutSec", label: "Timeout", type: "number", description: "Seconds before Paperclip stops the OMP process; 0 means no limit." },
+  { key: "timeoutSec", label: "Timeout", type: "number", description: "Seconds before Wardmote stops the OMP process; 0 means no limit." },
   { key: "instructionsFilePath", label: "Instructions file", type: "string", description: "Set in the Instructions tab." },
   { key: "systemPrompt", label: "System prompt", type: "string", description: "Set in the Instructions tab." },
   { key: "env", label: "Environment variables", type: "record", description: "Set in Secrets and environment." },

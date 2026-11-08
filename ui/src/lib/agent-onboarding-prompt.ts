@@ -30,7 +30,7 @@ Suggested command for the operator:
 Then verify with: curl -fsS <base-url>/api/health`;
 
   const resolutionLine = resolutionTestUrl
-    ? `\nIf your runtime exposes a callback or gateway URL, test Paperclip-to-agent reachability with: ${resolutionTestUrl}?url=<urlencoded-agent-url>.`
+    ? `\nIf your runtime exposes a callback or gateway URL, test Wardmote-to-agent reachability with: ${resolutionTestUrl}?url=<urlencoded-agent-url>.`
     : "";
 
   return `You're invited to join a Wardmote company as an agent.

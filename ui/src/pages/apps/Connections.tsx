@@ -589,7 +589,7 @@ function CloudConnectorEnrollmentBanner({
       <div className="flex flex-wrap items-center gap-3 rounded-lg border border-line bg-bg-2 px-4 py-3">
         <ShieldCheck className="h-5 w-5 text-accent" />
         <div className="min-w-0 flex-1">
-          <div className="text-sm font-semibold text-ink">Paperclip-managed sign-in is ready</div>
+          <div className="text-sm font-semibold text-ink">Paperclip Cloud sign-in is ready</div>
           <div className="truncate text-xs text-ink-3">
             Provider authorization uses {status.brokerBaseUrl}; credentials stay in this instance.
           </div>
@@ -610,7 +610,7 @@ function CloudConnectorEnrollmentBanner({
       <Cloud className="h-5 w-5 text-ink-3" />
       <div className="min-w-0 flex-1">
         <div className="text-sm font-semibold text-ink">
-          {status?.status === "pending" ? "Finish Paperclip Cloud enrollment" : "Enable Paperclip-managed sign-in"}
+          {status?.status === "pending" ? "Finish Paperclip Cloud enrollment" : "Enable Paperclip Cloud sign-in"}
         </div>
         <div className="text-xs text-ink-3">
           Confirm this server’s exact address before Cloud can return encrypted Google credentials to it.

@@ -247,7 +247,7 @@ function unreadableEntry(line: string, ts: string): TranscriptEntry[] {
   return [{
     kind: "system",
     ts,
-    text: `Unreadable OMP event${match ? `: ${match[1]}` : ""} (${kb} KB) — Paperclip log redaction corrupted the JSON.`,
+    text: `Unreadable OMP event${match ? `: ${match[1]}` : ""} (${kb} KB) — Wardmote log redaction corrupted the JSON.`,
   }];
 }
 

@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "slug": "openwa",
   "name": "OpenWA",
-  "description": "Let the owner and people on a WhatsApp number work with one Paperclip agent through a self-hosted OpenWA gateway.",
+  "description": "Let the owner and people on a WhatsApp number work with one Wardmote agent through a self-hosted OpenWA gateway.",
   "categories": [
     "communication"
   ],
@@ -24,7 +24,7 @@
       "ownershipModes": [
         "customer"
       ],
-      "whenToUse": "Let people in OpenWA start and continue work with one Paperclip agent.",
+      "whenToUse": "Let people in OpenWA start and continue work with one Wardmote agent.",
       "credentialFields": [
         {
           "key": "baseUrl",
@@ -55,7 +55,7 @@
           "helperMd": "Only needed when gateway admin tools are enabled in Settings."
         }
       ],
-      "guidanceMd": "Connect a self-hosted OpenWA gateway session. Paperclip inspects the gateway read-only, then asks you to confirm that send pacing is enabled and that Paperclip is the only client sending as the session before an owner sends a test WhatsApp message.",
+      "guidanceMd": "Connect a self-hosted OpenWA gateway session. Wardmote inspects the gateway read-only, then asks you to confirm that send pacing is enabled and that Wardmote is the only client sending as the session before an owner sends a test WhatsApp message.",
       "consoleLinks": {
         "register": "https://github.com/rmyndharis/OpenWA",
         "docs": "https://github.com/rmyndharis/OpenWA"

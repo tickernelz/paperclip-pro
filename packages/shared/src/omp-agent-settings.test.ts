@@ -1,7 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+  OMP_ADAPTER_SETTINGS,
   OMP_CONTROL_PATHS,
   OMP_ESSENTIAL_SETTINGS,
+  OMP_LOCKED_SETTINGS,
   agentDiffersFromDefaults,
   applyAgentSettingsPatch,
   deriveOmpBackupModels,
@@ -211,5 +213,18 @@ describe("agent defaults and per-agent overrides", () => {
     expect(agentDiffersFromDefaults(own, previous, ["model"])).toBe(true);
     const reset = applyAgentSettingsPatch(own, resetToDefaultsPatch(previous, ["model"]));
     expect(agentDiffersFromDefaults(reset, previous, ["model"])).toBe(false);
+  });
+});
+
+describe("Setup copy", () => {
+  it("names the product Wardmote in every adapter setting and locked-setting note the Setup screen shows", () => {
+    const shown = [
+      ...OMP_ADAPTER_SETTINGS.flatMap((setting) => [setting.label, setting.description]),
+      ...Object.values(OMP_LOCKED_SETTINGS),
+    ];
+    expect(shown.filter((text) => /\bPaperclip\b/.test(text))).toEqual([]);
+    expect(OMP_ADAPTER_SETTINGS.find((setting) => setting.key === "timeoutSec")?.description).toBe(
+      "Seconds before Wardmote stops the OMP process; 0 means no limit.",
+    );
   });
 });

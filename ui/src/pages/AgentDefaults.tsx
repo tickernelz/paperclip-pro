@@ -146,7 +146,7 @@ export function AgentDefaults() {
       <div className="space-y-1">
         <h1 className="text-lg font-semibold">Agent defaults</h1>
         <p className="text-sm text-ink-3">
-          Every OMP agent starts from these. {plural(ownCount, "agent")} {ownCount === 1 ? "has" : "have"} its own values for some of them.
+          Every OMP agent starts from these. {plural(ownCount, "agent")} {ownCount === 1 ? "has its" : "have their"} own values for some of them.
         </p>
       </div>
 

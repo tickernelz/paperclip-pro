@@ -35,7 +35,7 @@ function warnDeprecatedToolset(name: string, canonical: string) {
   if (warnedDeprecatedToolsets.has(name)) return;
   warnedDeprecatedToolsets.add(name);
   console.warn(
-    `Paperclip MCP toolset "${name}" is deprecated and now resolves to "${canonical}". Use "${canonical}".`,
+    `Wardmote MCP toolset "${name}" is deprecated and now resolves to "${canonical}". Use "${canonical}".`,
   );
 }
 
@@ -76,7 +76,7 @@ export function resolveToolsets(
     env.PAPERCLIP_MCP_TOOLSETS;
   for (const name of (requested ?? "").split(",").map((entry) => entry.trim().toLowerCase())) {
     if (name && !TOOLSET_SELECTIONS.has(name) && !DEPRECATED_TOOLSET_SELECTIONS[name]) {
-      console.error(`Ignoring unknown Paperclip MCP toolset "${name}"`);
+      console.error(`Ignoring unknown Wardmote MCP toolset "${name}"`);
     }
   }
   return parseToolsets(requested);
@@ -98,11 +98,11 @@ export function normalizeApiUrl(apiUrl: string): string {
 export function readConfigFromEnv(env: NodeJS.ProcessEnv = process.env): PaperclipMcpConfig {
   const apiUrl = nonEmpty(env.PAPERCLIP_API_URL);
   if (!apiUrl) {
-    throw new Error("Missing PAPERCLIP_API_URL");
+    throw new Error("Missing WARDMOTE_API_URL (or PAPERCLIP_API_URL)");
   }
   const apiKey = nonEmpty(env.PAPERCLIP_API_KEY);
   if (!apiKey) {
-    throw new Error("Missing PAPERCLIP_API_KEY");
+    throw new Error("Missing WARDMOTE_API_KEY (or PAPERCLIP_API_KEY)");
   }
 
   return {

@@ -1212,7 +1212,7 @@ function ProviderConnectStep({
         <p className="text-sm text-ink-3">
           Enter the Application / Client ID above before copying so the block
           contains the real bot identity. This block contains the
-          Paperclip-specific fields to verify in Developer Portal or merge into
+          Wardmote-specific fields to verify in Developer Portal or merge into
           a complete Teams app manifest. It is not a complete app package;
           Developer Portal supplies the remaining required metadata and packages
           the manifest with your app icons.
@@ -1288,7 +1288,7 @@ function ProviderConnectStep({
             </li>
             <li>
               Keep <strong>Webhooks · Active</strong> on. Enter the Wardmote
-              webhook URL and the Paperclip-generated webhook secret below, and
+              webhook URL and the Wardmote-generated webhook secret below, and
               keep <strong>Enable SSL verification</strong> selected.
             </li>
             <li>

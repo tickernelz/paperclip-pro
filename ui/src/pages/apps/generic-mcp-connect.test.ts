@@ -106,7 +106,7 @@ describe("genericConnectGuidance", () => {
   it("passes a rejected header's own message through", () => {
     const guidance = genericConnectGuidance(
       "mcp_header_rejected",
-      'Paperclip manages the "Host" header and cannot send a custom value for it.',
+      'Wardmote manages the "Host" header and cannot send a custom value for it.',
     );
     expect(guidance.body).toContain('"Host"');
     expect(guidance.focus).toBe("credentials");
@@ -128,7 +128,7 @@ describe("customHeaderError", () => {
 
   it("rejects headers Wardmote refuses to send", () => {
     expect(customHeaderError([{ id: "a", name: "Host", value: "evil.example" }]))
-      .toContain('Paperclip manages the "Host" header');
+      .toContain('Wardmote manages the "Host" header');
   });
 
   it("rejects a value that would split the request", () => {
