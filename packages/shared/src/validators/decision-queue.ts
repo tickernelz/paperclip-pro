@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { ATTENTION_SOURCE_KINDS } from "../types/attention.js";
+import { DECISION_HISTORY_SOURCE_KINDS, DECISION_HISTORY_STATUSES } from "../types/decision-queue.js";
 
 export const decisionAttentionSourceKindSchema = z.enum(ATTENTION_SOURCE_KINDS);
 
@@ -69,6 +70,29 @@ export const createDecisionArchiveProposalSchema = z.object({
   });
 });
 
+export const DECISION_HISTORY_PAGE_MAX_LIMIT = 50;
+
+export const decisionHistoryQuerySchema = z.object({
+  status: z.enum(DECISION_HISTORY_STATUSES),
+  queue: decisionQueueKeySchema.optional(),
+  sourceKinds: z.string().trim().max(200).optional().transform((value, ctx) => {
+    if (!value) return undefined;
+    const kinds = [...new Set(value.split(",").map((kind) => kind.trim()).filter(Boolean))];
+    const allowed = new Set<string>(DECISION_HISTORY_SOURCE_KINDS);
+    const unknown = kinds.filter((kind) => !allowed.has(kind));
+    if (unknown.length > 0) {
+      ctx.addIssue({ code: z.ZodIssueCode.custom, message: `Unknown history source kind: ${unknown.join(", ")}` });
+      return z.NEVER;
+    }
+    return kinds as Array<(typeof DECISION_HISTORY_SOURCE_KINDS)[number]>;
+  }),
+  activitySince: z.string().datetime({ offset: true }).optional(),
+  activityUntil: z.string().datetime({ offset: true }).optional(),
+  cursor: z.string().trim().min(1).max(500).optional(),
+  limit: z.coerce.number().int().min(1).max(DECISION_HISTORY_PAGE_MAX_LIMIT).optional(),
+}).strict();
+
+export type ResolvedDecisionQuery = z.infer<typeof decisionHistoryQuerySchema>;
 export type CreateDecisionQueueInput = z.infer<typeof createDecisionQueueSchema>;
 export type UpdateDecisionQueueInput = z.infer<typeof updateDecisionQueueSchema>;
 export type AddDecisionQueueItemInput = z.infer<typeof addDecisionQueueItemSchema>;

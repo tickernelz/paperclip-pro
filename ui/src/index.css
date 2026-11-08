@@ -2309,6 +2309,10 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
   caret-color: #cdd6f4 !important;
 }
 
+.xterm .xterm-helper-textarea {
+  opacity: 0;
+}
+
 /* MDXEditor code block language selector – show on hover only */
 
 .paperclip-mdxeditor-content [class*="_codeMirrorToolbar_"],
