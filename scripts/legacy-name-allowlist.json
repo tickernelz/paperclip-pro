@@ -25,6 +25,10 @@
       "reason": "Kode migrasi otomatis saat install/upgrade (home, nama skill di database, teks instruction bundle, kunci env lama di adapterConfig) harus mengenali nama lama untuk menggantinya; hanya modul migrasi dan tesnya.",
       "approvedBy": "Keputusan Zhafron 2026-11-08 11:54 UTC (migrasi otomatis di install/upgrade), deskripsi ZHA-5279 butir keputusan 2"
     },
+    "turunan": {
+      "reason": "Teks yang harus sama persis dengan pengenal lama di tempat lain dan berubah bersamanya: jalur berkas tes di data durasi shard, user/database Postgres tertanam yang dipakai 22 berkas, nama job CI 'Verify Paperclip Runner'. Hilang saat pengenal asalnya diganti di fase rename.",
+      "approvedBy": "Raka (ZHA-5279), ditinjau Hendra di PR perbaikan main"
+    },
     "uji-regresi": {
       "reason": "Tes yang memastikan nama lama tidak lagi tampil ke pengguna; pola yang diuji harus memuat nama itu.",
       "approvedBy": "Raka (ZHA-5279), ditinjau Hendra di PR gerbang"
@@ -1008,7 +1012,7 @@
     ["packages/db/src/speko-voice-migration.test.ts",1,"belum-diganti"],
     ["packages/db/src/status-card-migrations.test.ts",1,"belum-diganti"],
     ["packages/db/src/test-embedded-postgres.test.ts",3,"belum-diganti"],
-    ["packages/db/src/test-embedded-postgres.ts",14,"belum-diganti"],
+    ["packages/db/src/test-embedded-postgres.ts",20,"turunan"],
     ["packages/db/src/vercel-connect-credential-source-migration.test.ts",3,"belum-diganti"],
     ["packages/google-sheets-mcp-server/README.md",14,"belum-diganti"],
     ["packages/google-sheets-mcp-server/package.json",5,"belum-diganti"],
@@ -2811,6 +2815,7 @@
     ["scripts/check-release-package-bootstrap.mjs",1,"belum-diganti"],
     ["scripts/check-release-package-bootstrap.test.mjs",18,"belum-diganti"],
     ["scripts/check-token-gates.mjs",1,"belum-diganti"],
+    ["scripts/ci-timing-report.mjs",1,"turunan"],
     ["scripts/clean-install-git.sh",18,"belum-diganti"],
     ["scripts/clean-install-npm.sh",15,"belum-diganti"],
     ["scripts/clean-onboard-git.sh",5,"belum-diganti"],
@@ -2845,7 +2850,7 @@
     ["scripts/extract-proposed-events.mjs",9,"belum-diganti"],
     ["scripts/extract-proposed-events.test.mjs",5,"belum-diganti"],
     ["scripts/fork/rename-to-paperclip-pro.mjs",80,"belum-diganti"],
-    ["scripts/general-server-shard-durations.json",11,"belum-diganti"],
+    ["scripts/general-server-shard-durations.json",13,"turunan"],
     ["scripts/generate-company-assets.ts",1,"belum-diganti"],
     ["scripts/generate-mcp-tools.ts",4,"belum-diganti"],
     ["scripts/generate-npm-package-json.mjs",3,"belum-diganti"],
@@ -2895,6 +2900,7 @@
     ["scripts/screenshot-recovery-card.cjs",4,"belum-diganti"],
     ["scripts/screenshot-subissues.mjs",1,"belum-diganti"],
     ["scripts/screenshot.cjs",6,"belum-diganti"],
+    ["scripts/serialized-shard-durations.json",2,"turunan"],
     ["scripts/serve-storybook-static.mjs",1,"belum-diganti"],
     ["scripts/service-onboard-smoke.sh",10,"belum-diganti"],
     ["scripts/smoke/chat-webhook-ingress.test.mjs",2,"belum-diganti"],

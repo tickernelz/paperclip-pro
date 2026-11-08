@@ -113,7 +113,7 @@ async function getAvailablePort(): Promise<number> {
   );
 }
 
-export const EMBEDDED_POSTGRES_TEMPLATE_DIR_ENV = "PAPERCLIP_TEST_EMBEDDED_POSTGRES_TEMPLATE_DIR";
+export const EMBEDDED_POSTGRES_TEMPLATE_DIR_ENV = "WARDMOTE_TEST_EMBEDDED_POSTGRES_TEMPLATE_DIR";
 
 function embeddedPostgresTemplateDir(): string | null {
   const dir = process.env[EMBEDDED_POSTGRES_TEMPLATE_DIR_ENV]?.trim();
@@ -318,7 +318,7 @@ export async function startEmbeddedPostgresTestDatabase(
 }
 
 export async function prepareEmbeddedPostgresTestTemplate(): Promise<{ dataDir: string; cleanup: () => void }> {
-  const { port, dataDir, instance } = await startEmbeddedPostgresWithRetry("paperclip-embedded-postgres-template-");
+  const { port, dataDir, instance } = await startEmbeddedPostgresWithRetry("wardmote-embedded-postgres-template-");
   try {
     const adminConnectionString = `postgres://paperclip:paperclip@127.0.0.1:${port}/postgres`;
     await ensurePostgresDatabase(adminConnectionString, "paperclip");
