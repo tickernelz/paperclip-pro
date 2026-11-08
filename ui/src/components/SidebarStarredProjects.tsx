@@ -121,8 +121,8 @@ export function SidebarStarredProjects() {
               if (isMobile) setSidebarOpen(false);
             }}
             className={cn(
-              "flex min-w-0 flex-1 items-center gap-2.5 mx-2 rounded-lg px-2 py-1.5 pointer-coarse:py-1 pr-8 text-(length:--text-compact) font-medium transition-colors",
-              !rail && "pl-6",
+              "flex min-w-0 flex-1 items-center gap-2.5 mx-2 rounded-lg px-2 py-1.5 pointer-coarse:py-1 text-(length:--text-compact) font-medium transition-colors",
+              !rail && "pl-6 pr-8",
               isActive
                 ? "bg-bg-3 text-ink"
                 : "text-ink/80 hover:bg-bg-3 hover:text-ink",

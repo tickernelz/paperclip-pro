@@ -18,6 +18,7 @@ const SCREENS = [
   ["Projects", "projects"],
   ["Costs", "activity/costs"],
   ["Settings", "company/settings"],
+  ["Features", "company/settings/instance/features"],
   ["Agent defaults", "company/settings/agent-defaults"],
   ["All settings", "company/settings/agent-defaults/all"],
   ["Models and providers", "company/settings/models"],
@@ -46,6 +47,9 @@ async function seedCompany(request: APIRequestContext): Promise<Seed> {
   await json(await request.post(`/api/companies/${company.id}/projects`, { data: { name: "Responsive project with a long descriptive name" } }));
   const issue = await json(await request.post(`/api/companies/${company.id}/issues`, {
     data: { title: "Check every core screen from a narrow phone to a wide desktop monitor", status: "backlog" },
+  }));
+  await json(await request.post(`/api/companies/${company.id}/issues`, {
+    data: { title: "Sub-task row with its own status control", status: "todo", parentId: issue.id },
   }));
   await json(await request.post(`/api/issues/${issue.id}/comments`, {
     data: { body: "A long comment with a link https://example.com/a/very/long/path/that/should/wrap/instead/of/overflowing/the/viewport" },
@@ -100,11 +104,16 @@ test("the probe flags an overflowing rule and an undersized target", async ({ pa
   expect(finding.smallTargets.some((target) => target.endsWith(":16x16"))).toBe(true);
 });
 
+function pointersFor(width: number) {
+  if (width >= TOUCH_TARGET_BREAKPOINT) return ["fine"] as const;
+  return width >= 768 ? (["coarse", "fine"] as const) : (["coarse"] as const);
+}
+
 for (const theme of THEMES) {
-  for (const size of RESPONSIVE_SIZES) {
-    test(`core screens fit ${size.width}x${size.height} (${theme})`, async ({ browser, baseURL }) => {
+  for (const size of RESPONSIVE_SIZES) for (const pointer of pointersFor(size.width)) {
+    test(`core screens fit ${size.width}x${size.height} (${theme}, ${pointer} pointer)`, async ({ browser, baseURL }) => {
       test.setTimeout(180_000);
-      const touch = size.width < TOUCH_TARGET_BREAKPOINT;
+      const touch = pointer === "coarse";
       const context = await browser.newContext({ baseURL, viewport: size, hasTouch: touch, isMobile: touch });
       const page = await context.newPage();
       await page.addInitScript((value) => window.localStorage.setItem("paperclip.theme", value), theme);
@@ -116,7 +125,7 @@ for (const theme of THEMES) {
         const finding = await probeResponsive(page);
         if (hasOverflow(finding) || finding.smallTargets.length > 0) failures.push({ screen, ...finding });
       }
-      await test.info().attach(`responsive-${size.width}-${theme}.json`, {
+      await test.info().attach(`responsive-${size.width}-${theme}-${pointer}.json`, {
         contentType: "application/json",
         body: Buffer.from(JSON.stringify(failures, null, 2)),
       });

@@ -507,8 +507,8 @@ describe("Agents", () => {
     expect(row?.querySelector(".sm\\:hidden")).toBeNull();
     expect(row?.querySelector(".hidden.sm\\:flex")).not.toBeNull();
     expect(row?.querySelector(".flex-1.hidden.\\@5xl\\:block")).not.toBeNull();
-    expect(row?.classList.contains("text-ink/55")).toBe(false);
-    expect(row?.classList.contains("sm:text-ink/55")).toBe(true);
+    expect(row?.classList.contains("text-ink-3")).toBe(false);
+    expect(row?.classList.contains("sm:text-ink-3")).toBe(true);
     const name = row?.querySelector("span[title='Wardmote Engineer With A Much Longer Display Name']");
     const subtitle = Array.from(row?.querySelectorAll("p") ?? []).find((node) =>
       node.textContent?.includes("Software Engineer With A Much Longer Specialty Title"),
@@ -1080,8 +1080,8 @@ describe("Agents", () => {
 
     const row = findAgentRow(container, "Alpha");
     expect(row).not.toBeNull();
-    expect(row?.classList.contains("text-ink/55")).toBe(false);
-    expect(row?.classList.contains("sm:text-ink/55")).toBe(true);
+    expect(row?.classList.contains("text-ink-3")).toBe(false);
+    expect(row?.classList.contains("sm:text-ink-3")).toBe(true);
   });
 
   it("keeps invalid-org-chain agents visible with a warning marker", async () => {
