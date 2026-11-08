@@ -181,11 +181,15 @@ jobs:
           }
 
   runner:
-    name: Verify Paperclip Runner
+    name: Verify Paperclip Runner (${{ matrix.part }})
     needs: scope
     if: needs.scope.outputs.docs_only != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [checks, suites]
     steps:
       - uses: actions/checkout@v7
         with:
@@ -220,12 +224,15 @@ jobs:
           save-if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
 
       - name: Static checks
+        if: matrix.part == 'checks'
         run: pnpm --filter @tickernelz/wardmote-paperclip-runner check:static
 
       - name: Rust checks
+        if: matrix.part == 'checks'
         run: pnpm --filter @tickernelz/wardmote-paperclip-runner check:runner
 
       - name: TypeScript suites
+        if: matrix.part == 'suites'
         run: pnpm --filter @tickernelz/wardmote-paperclip-runner test:typescript:vitest
 
   general:
