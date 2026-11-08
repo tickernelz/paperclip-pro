@@ -91,7 +91,7 @@ US-7, with:
 pnpm test:e2e:mcp-user-stories -- --include-gated
 ```
 
-The browser side uses the same `WARDMOTE_PLAYWRIGHT_CHANNEL` override as the
+The browser side uses the same `PAPERCLIP_PLAYWRIGHT_CHANNEL` override as the
 rest of `tests/e2e`. In minimal containers, install the Playwright system
-dependencies or point `WARDMOTE_PLAYWRIGHT_CHANNEL` at the managed branch
+dependencies or point `PAPERCLIP_PLAYWRIGHT_CHANNEL` at the managed branch
 service's known-good Chromium wrapper before running the browser smoke.

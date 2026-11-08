@@ -17,12 +17,12 @@ const privateDir = required("PAPERCLIP_RUNNER_E2E_PRIVATE_DIR");
 const paperclipHome = required("PAPERCLIP_HOME");
 const configPath = required("PAPERCLIP_CONFIG");
 const baseURL = `http://127.0.0.1:${port}`;
-const playwrightChannel = process.env.WARDMOTE_PLAYWRIGHT_CHANNEL?.trim();
+const playwrightChannel = process.env.PAPERCLIP_PLAYWRIGHT_CHANNEL?.trim();
 const chromiumExecutable =
   process.env.PAPERCLIP_RUNNER_E2E_CHROMIUM_EXECUTABLE?.trim();
 if (playwrightChannel && chromiumExecutable) {
   throw new Error(
-    "WARDMOTE_PLAYWRIGHT_CHANNEL and PAPERCLIP_RUNNER_E2E_CHROMIUM_EXECUTABLE are mutually exclusive",
+    "PAPERCLIP_PLAYWRIGHT_CHANNEL and PAPERCLIP_RUNNER_E2E_CHROMIUM_EXECUTABLE are mutually exclusive",
   );
 }
 if (chromiumExecutable && !path.isAbsolute(chromiumExecutable)) {

@@ -9,8 +9,8 @@ export default defineConfig({
   timeout: 10_000,
   use: {
     headless: true,
-    ...(process.env.WARDMOTE_PLAYWRIGHT_CHANNEL
-      ? { channel: process.env.WARDMOTE_PLAYWRIGHT_CHANNEL }
+    ...(process.env.PAPERCLIP_PLAYWRIGHT_CHANNEL
+      ? { channel: process.env.PAPERCLIP_PLAYWRIGHT_CHANNEL }
       : {}),
   },
   outputDir: "./results/browser-support",

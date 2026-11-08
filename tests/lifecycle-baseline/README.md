@@ -186,4 +186,4 @@ module revalidation across repeated reloads:
 pnpm exec playwright test --config tests/runner-e2e/playwright-support.config.ts
 ```
 
-Set `WARDMOTE_PLAYWRIGHT_CHANNEL=chrome` to use an installed Chrome browser.
+Set `PAPERCLIP_PLAYWRIGHT_CHANNEL=chrome` to use an installed Chrome browser.
