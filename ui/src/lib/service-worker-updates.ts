@@ -2,7 +2,9 @@ import { useSyncExternalStore } from "react";
 
 const DEFAULT_UPDATE_INTERVAL_MS = 60 * 60 * 1000;
 const APPLY_FALLBACK_MS = 3000;
+const BUILD_ID_TIMEOUT_MS = 2000;
 export const SKIP_WAITING_MESSAGE = "wardmote.skip-waiting";
+export const BUILD_ID_MESSAGE = "wardmote.build-id";
 
 export type ApplyServiceWorkerUpdate = () => void;
 
@@ -30,6 +32,22 @@ export function resetServiceWorkerUpdateForTests() {
   listeners.clear();
 }
 
+function requestWorkerBuildId(worker: ServiceWorker): Promise<string | null> {
+  return new Promise((resolve) => {
+    const channel = new MessageChannel();
+    const finish = (buildId: string | null) => {
+      clearTimeout(timer);
+      channel.port1.close();
+      resolve(buildId);
+    };
+    const timer = setTimeout(() => finish(null), BUILD_ID_TIMEOUT_MS);
+    channel.port1.onmessage = (event: MessageEvent<{ buildId?: unknown }>) => {
+      finish(typeof event.data?.buildId === "string" ? event.data.buildId : null);
+    };
+    worker.postMessage({ type: BUILD_ID_MESSAGE }, [channel.port2]);
+  });
+}
+
 export function startServiceWorkerUpdates(
   options: {
     container?: ServiceWorkerContainer;
@@ -37,6 +55,7 @@ export function startServiceWorkerUpdates(
     reload?: () => void;
     updateIntervalMs?: number;
     onUpdateReady?: (apply: ApplyServiceWorkerUpdate) => void;
+    pageBuildId?: string;
   } = {},
 ): () => void {
   const container =
@@ -56,13 +75,24 @@ export function startServiceWorkerUpdates(
   let applyRequested = false;
   let reloaded = false;
   let fallbackTimer: ReturnType<typeof setTimeout> | undefined;
+  let stopped = false;
+  const servesNewerBuild = async (worker: ServiceWorker) => {
+    if (!options.pageBuildId) return true;
+    return (await requestWorkerBuildId(worker)) !== options.pageBuildId;
+  };
   const reloadOnce = () => {
     if (reloaded) return;
     reloaded = true;
     if (fallbackTimer !== undefined) clearTimeout(fallbackTimer);
     reload();
   };
-  const offerWaiting = (worker: ServiceWorker) => {
+  const offerWaiting = async (worker: ServiceWorker) => {
+    const newer = await servesNewerBuild(worker);
+    if (stopped) return;
+    if (!newer) {
+      worker.postMessage({ type: SKIP_WAITING_MESSAGE });
+      return;
+    }
     onUpdateReady(() => {
       applyRequested = true;
       worker.postMessage({ type: SKIP_WAITING_MESSAGE });
@@ -74,8 +104,15 @@ export function startServiceWorkerUpdates(
       wasControlled = true;
       return;
     }
-    if (applyRequested) reloadOnce();
-    else onUpdateReady(reloadOnce);
+    if (applyRequested) {
+      reloadOnce();
+      return;
+    }
+    const controller = container.controller;
+    if (!controller) return;
+    void servesNewerBuild(controller).then((newer) => {
+      if (newer && !stopped && !applyRequested) onUpdateReady(reloadOnce);
+    });
   };
   container.addEventListener("controllerchange", onControllerChange);
 
@@ -84,7 +121,7 @@ export function startServiceWorkerUpdates(
     const worker = registration?.installing;
     if (!worker) return;
     worker.addEventListener("statechange", () => {
-      if (worker.state === "installed" && container.controller) offerWaiting(worker);
+      if (worker.state === "installed" && container.controller) void offerWaiting(worker);
     });
   };
   const checkForUpdates = () => {
@@ -100,12 +137,13 @@ export function startServiceWorkerUpdates(
     .register("/sw.js")
     .then((reg) => {
       registration = reg;
-      if (reg.waiting && container.controller) offerWaiting(reg.waiting);
+      if (reg.waiting && container.controller) void offerWaiting(reg.waiting);
       reg.addEventListener("updatefound", watchInstalling);
     })
     .catch(() => {});
 
   return () => {
+    stopped = true;
     container.removeEventListener("controllerchange", onControllerChange);
     documentRef.removeEventListener("visibilitychange", onVisibilityChange);
     registration?.removeEventListener("updatefound", watchInstalling);
