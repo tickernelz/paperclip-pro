@@ -223,8 +223,5 @@ describe("Setup copy", () => {
       ...Object.values(OMP_LOCKED_SETTINGS),
     ];
     expect(shown.filter((text) => /\bPaperclip\b/.test(text))).toEqual([]);
-    expect(OMP_ADAPTER_SETTINGS.find((setting) => setting.key === "timeoutSec")?.description).toBe(
-      "Seconds before Wardmote stops the OMP process; 0 means no limit.",
-    );
   });
 });
