@@ -243,7 +243,7 @@ describe("OpenWA round trip (embedded Postgres + fake gateway)", () => {
 
   async function goLive(t: Setup) {
     expect((await t.service.reconcileProviderRuntimes()).local).toBe(1);
-    await t.gateway.waitForSubscription();
+    await t.gateway.waitForFirstCatchUp();
   }
 
   async function deliveries(t: Setup) {
