@@ -248,10 +248,10 @@ the new package; it keeps the same home, database, shims, and service:
 
 ```sh
 npx @tickernelz/wardmote@latest install --yes
-wardmote service restart
+wardmote service restart --drain
 ```
 
-`wardmote update --rollback` returns to the retained 2026.1108.0 payload. To
+`wardmote update --rollback` returns to the payload you moved from. To
 install another release published under the old name, run that release's own
 CLI: `npx @tickernelz/paperclip-pro@<version> install --version <version> --yes`.
 

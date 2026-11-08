@@ -2,7 +2,8 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { writeManagedShim, flipCurrentAtomic, initializeInstallStore, payloadPathFor, readInstallManifest, resolveInstallStorePaths, writeInstallManifestAtomic, type InstallManifest, type InstallRecord } from "../install-store.js";
+import { execFileSync } from "node:child_process";
+import { buildNextManifest, writeManagedShim, flipCurrentAtomic, initializeInstallStore, payloadPathFor, readInstallManifest, resolveInstallStorePaths, writeInstallManifestAtomic, type InstallManifest, type InstallRecord } from "../install-store.js";
 import type { CommandRunner } from "../commands/install.js";
 import { compareVersions, detectInstallMode, resolveUpdateRequest, rollbackManagedInstall, updateCommand } from "../commands/update.js";
 
@@ -207,6 +208,32 @@ describe("update command", () => {
     const rolledBack = rollbackManagedInstall(paths);
     expect(rolledBack.version).toBe("1.0.0");
     expect(fs.realpathSync(paths.currentPath)).toBe(fs.realpathSync(oldPayload));
+  });
+
+  it("keeps the shim working after rolling back to a payload published under the legacy package name", () => {
+    const paths = resolveInstallStorePaths(); initializeInstallStore(paths);
+    const install = (version: string, packageName: string, bins: string[]) => {
+      const payload = payloadPathFor(paths, "npm", version);
+      const entrypoint = path.join(payload, "node_modules", "@tickernelz", packageName, "dist", "index.js");
+      fs.mkdirSync(path.dirname(entrypoint), { recursive: true });
+      fs.writeFileSync(entrypoint, `console.log(${JSON.stringify(version)})`);
+      fs.mkdirSync(path.join(payload, "node_modules", ".bin"), { recursive: true });
+      for (const bin of bins) fs.symlinkSync(`../@tickernelz/${packageName}/dist/index.js`, path.join(payload, "node_modules", ".bin", bin));
+      return payload;
+    };
+    const legacyPayload = install("2026.1105.1", "paperclip-pro", ["paperclip-pro"]);
+    flipCurrentAtomic(legacyPayload, paths);
+    const legacyManifest: InstallManifest = { schemaVersion: 1, ...record(legacyPayload, "2026.1105.1"), previous: [] };
+    writeInstallManifestAtomic(legacyManifest, paths);
+    const movedPayload = install("2026.1109.0", "wardmote", ["wardmote", "paperclip-pro"]);
+    const moved = buildNextManifest(record(movedPayload, "2026.1109.0"), legacyManifest);
+    flipCurrentAtomic(movedPayload, paths);
+    writeInstallManifestAtomic(moved, paths);
+    writeManagedShim(paths);
+    expect(execFileSync(paths.shimPath, [], { encoding: "utf8" }).trim()).toBe("2026.1109.0");
+
+    expect(rollbackManagedInstall(paths).version).toBe("2026.1105.1");
+    expect(execFileSync(paths.shimPath, [], { encoding: "utf8" }).trim()).toBe("2026.1105.1");
   });
 
   it("explains how to recover when the pre-update database is unreachable", async () => {
