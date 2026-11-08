@@ -47,23 +47,32 @@ npm install --prefix "$ROOT/bootstrap" "@tickernelz/paperclip-pro@$OLD_VERSION" 
 "$ROOT/bootstrap/node_modules/.bin/paperclip-pro" install --version "$OLD_VERSION" --yes
 paperclip-pro --version
 start_server before paperclip-pro onboard --yes
-test -d "$HOME/.paperclip-pro/instances/default"
+if [ -d "$HOME/.paperclip-pro" ]; then OLD_HOME="$HOME/.paperclip-pro"; else OLD_HOME="$HOME/.wardmote"; fi
+
+only_old_home() {
+  test -d "$OLD_HOME/instances/default"
+  for home in "$HOME/.paperclip-pro" "$HOME/.wardmote"; do
+    [ "$home" = "$OLD_HOME" ] || test ! -e "$home"
+  done
+}
+
+only_old_home
 curl -fsS -X POST -H 'Content-Type: application/json' -d '{"name":"Upgrade path marker"}' "http://127.0.0.1:$PORT/api/companies" >/dev/null
 stop_server
 
 echo "==> Upgrading with the old CLI to $REPO@$SHA"
 paperclip-pro install --repo "$REPO" --ref "$SHA" --yes
 paperclip-pro --version
-"$HOME/.paperclip-pro/cli/current/node_modules/.bin/wardmote" --version
-test ! -e "$HOME/.wardmote"
+"$OLD_HOME/cli/current/node_modules/.bin/wardmote" --version
+only_old_home
 
 start_server after paperclip-pro run
 curl -fsS "http://127.0.0.1:$PORT/api/companies" | grep -q '"Upgrade path marker"'
-echo "after upgrade: legacy home kept, marker company still listed"
+echo "after upgrade: $(basename "$OLD_HOME") home kept, marker company still listed"
 stop_server
 
 echo "==> Re-running install with the new CLI writes the wardmote shim"
 paperclip-pro install --repo "$REPO" --ref "$SHA" --yes
 wardmote --version
-test ! -e "$HOME/.wardmote"
+only_old_home
 echo "upgrade path ok: $OLD_VERSION -> $SHA"
