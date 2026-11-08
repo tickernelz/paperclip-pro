@@ -2,6 +2,7 @@ import fs from "node:fs";
 import net from "node:net";
 import os from "node:os";
 import path from "node:path";
+import { legacyEnvKey } from "@tickernelz/wardmote-shared/env-aliases";
 import { applyPendingMigrations, closeRegisteredClients, ensurePostgresDatabase } from "./client.js";
 import {
   createEmbeddedPostgresLogBuffer,
@@ -113,10 +114,10 @@ async function getAvailablePort(): Promise<number> {
   );
 }
 
-export const EMBEDDED_POSTGRES_TEMPLATE_DIR_ENV = "PAPERCLIP_TEST_EMBEDDED_POSTGRES_TEMPLATE_DIR";
+export const EMBEDDED_POSTGRES_TEMPLATE_DIR_ENV = "WARDMOTE_TEST_EMBEDDED_POSTGRES_TEMPLATE_DIR";
 
 function embeddedPostgresTemplateDir(): string | null {
-  const dir = process.env[EMBEDDED_POSTGRES_TEMPLATE_DIR_ENV]?.trim();
+  const dir = (process.env[EMBEDDED_POSTGRES_TEMPLATE_DIR_ENV] ?? process.env[legacyEnvKey(EMBEDDED_POSTGRES_TEMPLATE_DIR_ENV)])?.trim();
   return dir && fs.existsSync(path.join(dir, "PG_VERSION")) ? dir : null;
 }
 
@@ -280,6 +281,14 @@ export async function getEmbeddedPostgresTestSupport(): Promise<EmbeddedPostgres
   return await embeddedPostgresSupportPromise;
 }
 
+async function migrateTestDatabase(port: number): Promise<string> {
+  const adminConnectionString = `postgres://paperclip:paperclip@127.0.0.1:${port}/postgres`;
+  await ensurePostgresDatabase(adminConnectionString, "paperclip");
+  const connectionString = `postgres://paperclip:paperclip@127.0.0.1:${port}/paperclip`;
+  await applyPendingMigrations(connectionString);
+  return connectionString;
+}
+
 export async function startEmbeddedPostgresTestDatabase(
   tempDirPrefix: string,
 ): Promise<EmbeddedPostgresTestDatabase> {
@@ -288,10 +297,7 @@ export async function startEmbeddedPostgresTestDatabase(
   const { port, dataDir, instance } = await startEmbeddedPostgresWithRetry(tempDirPrefix, embeddedPostgresTemplateDir());
 
   try {
-    const adminConnectionString = `postgres://paperclip:paperclip@127.0.0.1:${port}/postgres`;
-    await ensurePostgresDatabase(adminConnectionString, "paperclip");
-    const connectionString = `postgres://paperclip:paperclip@127.0.0.1:${port}/paperclip`;
-    await applyPendingMigrations(connectionString);
+    const connectionString = await migrateTestDatabase(port);
 
     return {
       connectionString,
@@ -318,13 +324,9 @@ export async function startEmbeddedPostgresTestDatabase(
 }
 
 export async function prepareEmbeddedPostgresTestTemplate(): Promise<{ dataDir: string; cleanup: () => void }> {
-  const { port, dataDir, instance } = await startEmbeddedPostgresWithRetry("paperclip-embedded-postgres-template-");
+  const { port, dataDir, instance } = await startEmbeddedPostgresWithRetry("wardmote-embedded-postgres-template-");
   try {
-    const adminConnectionString = `postgres://paperclip:paperclip@127.0.0.1:${port}/postgres`;
-    await ensurePostgresDatabase(adminConnectionString, "paperclip");
-    const connectionString = `postgres://paperclip:paperclip@127.0.0.1:${port}/paperclip`;
-    await applyPendingMigrations(connectionString);
-    await closeRegisteredClients(connectionString);
+    await closeRegisteredClients(await migrateTestDatabase(port));
     await instance.stop();
   } catch (error) {
     await stopEmbeddedPostgresBounded(instance, () => cleanupEmbeddedPostgresTestDirs(dataDir));

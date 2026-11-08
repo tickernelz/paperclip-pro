@@ -32,6 +32,10 @@
     "upstream": {
       "reason": "Sementara: alamat repo upstream paperclipai/paperclip untuk sinkron upstream, sampai Zhafron memutuskan nasib sinkron (rekomendasi Wira: hentikan, hard fork).",
       "approvedBy": "Deskripsi ZHA-5279 butir keputusan 5 (menunggu keputusan Zhafron; tidak diubah sebelum itu)"
+    },
+    "manifest-jalur-tes": {
+      "reason": "Manifest durasi shard CI dibuat dari log run nyata dan dikunci oleh path berkas tes yang sudah ada; isinya hanya path itu, jadi jumlahnya turun sendiri saat berkasnya di-rename (ZHA-5279) dan manifest dibuat ulang.",
+      "approvedBy": "Raka (ZHA-5264), ditinjau Hendra di PR perbaikan gerbang setelah #180"
     }
   },
   "entries": [
@@ -2845,7 +2849,7 @@
     ["scripts/extract-proposed-events.mjs",9,"belum-diganti"],
     ["scripts/extract-proposed-events.test.mjs",5,"belum-diganti"],
     ["scripts/fork/rename-to-paperclip-pro.mjs",80,"belum-diganti"],
-    ["scripts/general-server-shard-durations.json",11,"belum-diganti"],
+    ["scripts/general-server-shard-durations.json",13,"manifest-jalur-tes"],
     ["scripts/generate-company-assets.ts",1,"belum-diganti"],
     ["scripts/generate-mcp-tools.ts",4,"belum-diganti"],
     ["scripts/generate-npm-package-json.mjs",3,"belum-diganti"],
@@ -2895,6 +2899,7 @@
     ["scripts/screenshot-recovery-card.cjs",4,"belum-diganti"],
     ["scripts/screenshot-subissues.mjs",1,"belum-diganti"],
     ["scripts/screenshot.cjs",6,"belum-diganti"],
+    ["scripts/serialized-shard-durations.json",2,"manifest-jalur-tes"],
     ["scripts/serve-storybook-static.mjs",1,"belum-diganti"],
     ["scripts/service-onboard-smoke.sh",10,"belum-diganti"],
     ["scripts/smoke/chat-webhook-ingress.test.mjs",2,"belum-diganti"],
