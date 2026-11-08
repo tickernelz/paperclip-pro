@@ -35,7 +35,7 @@ export const INSTALL_SCRIPT_ALLOWLIST = [
   "@embedded-postgres/linux-x64",
   "@embedded-postgres/windows-x64",
 ];
-const DEFAULT_GITHUB_REPO = "tickernelz/paperclip-pro";
+const DEFAULT_GITHUB_REPO = "tickernelz/wardmote";
 const EXACT_VERSION_PATTERN = /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/;
 
 export type InstallOptions = { canary?: boolean; version?: string; ref?: string; repo?: string; yes?: boolean };
