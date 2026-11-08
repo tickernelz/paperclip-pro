@@ -10,7 +10,7 @@ afterEach(async () => { await Promise.all(roots.splice(0).map(root => rm(root, {
 async function fixture() {
   const root = await realpath(await mkdtemp(join(tmpdir(), "paperclip-cli-runtime-"))); roots.push(root);
   const cli = join(root, "dist/vendor/paperclip-runner/cli"); await mkdir(cli, { recursive: true });
-  await writeFile(join(root, "package.json"), '{"name":"@tickernelz/paperclip-pro-server"}');
+  await writeFile(join(root, "package.json"), '{"name":"@tickernelz/wardmote-server"}');
   await writeFile(join(root, "dist/index.js"), "throw new Error('server must not start during setup resolution')");
   await writeFile(join(cli, "provision-pi.cjs"), "fixture");
   return { root, cli, url: pathToFileURL(join(root, "dist/index.js")).href };
@@ -22,7 +22,7 @@ it("rejects foreign package identity and a setup entrypoint outside that package
   const f = await fixture(); const other = await fixture();
   await writeFile(join(f.root, "package.json"), '{"name":"foreign"}');
   await expect(resolvePiProvisioner(f.url)).rejects.toThrow("identity");
-  await writeFile(join(f.root, "package.json"), '{"name":"@tickernelz/paperclip-pro-server"}');
+  await writeFile(join(f.root, "package.json"), '{"name":"@tickernelz/wardmote-server"}');
   await rm(join(f.cli, "provision-pi.cjs")); await symlink(join(other.cli, "provision-pi.cjs"), join(f.cli, "provision-pi.cjs"));
   await expect(resolvePiProvisioner(f.url)).rejects.toThrow("escapes");
 });

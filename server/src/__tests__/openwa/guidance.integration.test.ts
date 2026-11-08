@@ -28,9 +28,9 @@ import {
   issues,
   toolApplications,
   toolConnections,
-} from "@tickernelz/paperclip-pro-db";
-import { OPENWA_APPROVAL_CATEGORIES, type OpenwaApprovalCategory } from "@tickernelz/paperclip-pro-shared";
-import { selectPaperclipTaskMarkdown } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+} from "@tickernelz/wardmote-db";
+import { OPENWA_APPROVAL_CATEGORIES, type OpenwaApprovalCategory } from "@tickernelz/wardmote-shared";
+import { selectPaperclipTaskMarkdown } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

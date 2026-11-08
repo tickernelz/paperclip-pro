@@ -8,7 +8,7 @@ import {
   parseUserMentionHref,
   resolveAgentAppearance,
   type AgentAppearance,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { agentAvatarUrl } from "@/lib/agent-avatar-url";
 import { hexToRgb, pickTextColorForPillBg } from "./color-contrast";
 

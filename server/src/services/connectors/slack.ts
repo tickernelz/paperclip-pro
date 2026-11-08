@@ -3,13 +3,13 @@ import { slackDelivery } from "./slack-delivery.js";
 import { slackMessage } from "./slack-message.js";
 import { executeSlackWrite } from "./slack-writes.js";
 import { syncSlackBotTools } from "./slack-catalog.js";
-import { SLACK_TOOLS } from "@tickernelz/paperclip-pro-shared";
+import { SLACK_TOOLS } from "@tickernelz/wardmote-shared";
 import {
   toolProfiles,
   toolProfileBindings,
   toolProfileEntries,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { and, eq } from "drizzle-orm";
 import { badRequest, forbidden } from "../../errors.js";
 import {

@@ -20,9 +20,9 @@ vi.mock("../services/plugin-environment-driver.js", async (importActual) => ({
   resolvePluginSandboxProviderDriverById: mockResolvePluginSandboxProviderDriverById,
 }));
 
-import type { EffectiveExecutionCapabilities } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
-import { createSshCommandManagedRuntimeRunner } from "@tickernelz/paperclip-pro-adapter-utils/ssh";
-import type { Environment, EnvironmentLease } from "@tickernelz/paperclip-pro-shared";
+import type { EffectiveExecutionCapabilities } from "@tickernelz/wardmote-adapter-utils/execution-target";
+import { createSshCommandManagedRuntimeRunner } from "@tickernelz/wardmote-adapter-utils/ssh";
+import type { Environment, EnvironmentLease } from "@tickernelz/wardmote-shared";
 import { resolveEnvironmentExecutionTarget } from "../services/environment-execution-target.js";
 import {
   buildSandboxCapabilityNarrowing,

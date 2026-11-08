@@ -26,7 +26,7 @@ Namun, import-nya menunjuk SDK upstream yang tidak ada di repo ini:
 
 - `src/worker.ts:1` → `from "@paperclipai/plugin-sdk"`
 - `src/ui/index.tsx:2` → `from "@paperclipai/plugin-sdk/ui"`
-- Kita punya `@tickernelz/paperclip-pro-plugin-sdk` (`packages/plugins/sdk/package.json:2`)
+- Kita punya `@tickernelz/wardmote-plugin-sdk` (`packages/plugins/sdk/package.json:2`)
 
 API-nya **identik**. Semua simbol yang dipakai upstream ada di SDK kita:
 
@@ -238,7 +238,7 @@ Setiap M punya perintah verifikasi yang bisa dijalankan.
 ### M0 — Pakai repo apa adanya (spike wajib, ≤ 1 jam)
 **Tujuan:** buktikan engine-nya hidup sebelum menulis satu baris pun di repo.
 
-- Clone ke worktree terisolasi, rewire 6 import ke `@tickernelz/paperclip-pro-plugin-sdk`
+- Clone ke worktree terisolasi, rewire 6 import ke `@tickernelz/wardmote-plugin-sdk`
 - Bangun, instal sebagai plugin lokal di instance dev
 
 **Acceptance (bisa difalsifikasi):** dengan N=3 agen yang di-seed, karakter

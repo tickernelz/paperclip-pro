@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import type { DecisionHistoryEntry } from "@tickernelz/paperclip-pro-shared";
+import type { DecisionHistoryEntry } from "@tickernelz/wardmote-shared";
 import { decisionModelsApi } from "@/api/decision-models";
 import { Link } from "@/lib/router";
 import { formatDateTime, formatTokens, formatDetailedCents } from "@/lib/utils";

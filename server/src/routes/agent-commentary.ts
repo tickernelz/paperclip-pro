@@ -1,5 +1,5 @@
 import { Router } from "express";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import { forbidden } from "../errors.js";
 import { submitAgentCommentary } from "../services/agent-commentary.js";
 import { assertCompanyAccess } from "./authz.js";

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { CHAT_AUDIT_ACTOR_KINDS, CHAT_AUDIT_ENTRY_KINDS, type ChatAuditActorKind, type ChatAuditEntryKind } from "@tickernelz/paperclip-pro-shared";
+import { CHAT_AUDIT_ACTOR_KINDS, CHAT_AUDIT_ENTRY_KINDS, type ChatAuditActorKind, type ChatAuditEntryKind } from "@tickernelz/wardmote-shared";
 import { chatEndpointsApi, type OpenwaAuditEntry, type OpenwaAuditFilters } from "@/api/chatEndpoints";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

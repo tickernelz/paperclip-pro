@@ -1,4 +1,4 @@
-import { extractAgentMentionIds } from "@tickernelz/paperclip-pro-shared";
+import { extractAgentMentionIds } from "@tickernelz/wardmote-shared";
 
 export interface AncestorHandoffCandidate<TIssue = unknown> {
   agentId: string;

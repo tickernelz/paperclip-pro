@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
 import { and, asc, desc, eq, inArray, isNull, or, sql } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   agents,
   authUsers,
@@ -13,7 +13,7 @@ import {
   issueWorkProducts,
   issues,
   projects,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   agentAvatarUrl,
   isSystemIssueDocumentKey,
@@ -31,7 +31,7 @@ import {
   type PublicShareActor,
   type PublicShareAttachment,
   type PublicShareWorkProduct,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { isUniqueViolation } from "../db-errors.js";
 import { assetService } from "./assets.js";
 import { documentService } from "./documents.js";

@@ -411,14 +411,14 @@ async function runPnpm(args: string[], options: {
 
 async function getMigrationStatusPayload() {
   const status = await runPnpm(
-    ["--silent", "--filter", "@tickernelz/paperclip-pro-db", "exec", "tsx", "src/migration-status.ts", "--json"],
+    ["--silent", "--filter", "@tickernelz/wardmote-db", "exec", "tsx", "src/migration-status.ts", "--json"],
     { env },
   );
   if (status.code !== 0) {
     process.stderr.write(
       status.stderr ||
         status.stdout ||
-        `[paperclip] Command failed with code ${status.code}: pnpm --filter @tickernelz/paperclip-pro-db exec tsx src/migration-status.ts --json\n`,
+        `[paperclip] Command failed with code ${status.code}: pnpm --filter @tickernelz/wardmote-db exec tsx src/migration-status.ts --json\n`,
     );
     process.exit(status.code);
   }
@@ -516,7 +516,7 @@ async function maybePreflightMigrations(options: { interactive?: boolean; autoAp
 async function buildPluginSdk() {
   console.log("[paperclip] building plugin sdk...");
   const result = await runPnpm(
-    ["--filter", "@tickernelz/paperclip-pro-plugin-sdk", "build"],
+    ["--filter", "@tickernelz/wardmote-plugin-sdk", "build"],
     { stdio: "inherit" },
   );
   if (result.signal) {
@@ -534,7 +534,7 @@ async function getNativeRunnerRequired(): Promise<boolean> {
     [
       "--silent",
       "--filter",
-      "@tickernelz/paperclip-pro-server",
+      "@tickernelz/wardmote-server",
       "exec",
       "tsx",
       "src/dev-native-runner-status.ts",
@@ -561,7 +561,7 @@ async function getNativeRunnerRequired(): Promise<boolean> {
 async function buildPaperclipRunner() {
   console.log("[paperclip] building paperclip runner...");
   const typescriptResult = await runPnpm(
-    ["--filter", "@tickernelz/paperclip-pro-paperclip-runner", "build:typescript"],
+    ["--filter", "@tickernelz/wardmote-paperclip-runner", "build:typescript"],
     { stdio: "inherit" },
   );
   if (typescriptResult.signal) {
@@ -585,7 +585,7 @@ async function buildPaperclipRunner() {
 
   console.log("[paperclip] building paperclip runner native binary...");
   const binaryResult = await runPnpm(
-    ["--filter", "@tickernelz/paperclip-pro-paperclip-runner", "build:binary"],
+    ["--filter", "@tickernelz/wardmote-paperclip-runner", "build:binary"],
     { stdio: "inherit" },
   );
   if (binaryResult.signal) {
@@ -629,7 +629,7 @@ function uiBundleIsFresh(): boolean {
 async function buildUiBundleForManagedRuntime(): Promise<boolean> {
   console.log("[paperclip] managed runtime: building the UI bundle for static serving...");
   const result = await runPnpm(
-    ["--filter", "@tickernelz/paperclip-pro-ui", "build"],
+    ["--filter", "@tickernelz/wardmote-ui", "build"],
     { stdio: "inherit" },
   );
   if (result.signal) {
@@ -713,7 +713,7 @@ async function startServerChild() {
   const serverScript = mode === "watch" ? "dev:watch" : "dev";
   child = spawn(
     pnpmBin,
-    ["--filter", "@tickernelz/paperclip-pro-server", serverScript, ...forwardedArgs],
+    ["--filter", "@tickernelz/wardmote-server", serverScript, ...forwardedArgs],
     { stdio: "inherit", env, shell: process.platform === "win32" },
   );
 

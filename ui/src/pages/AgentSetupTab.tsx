@@ -11,7 +11,7 @@ import {
   resetToDefaultsPatch,
   type Agent,
   type AgentSettingsPatch,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { agentsApi } from "@/api/agents";
 import { Button } from "@/components/ui/button";
 import { ChoiceControl, ChoiceRow, SaveBar } from "@/components/omp-settings/ChoiceControls";

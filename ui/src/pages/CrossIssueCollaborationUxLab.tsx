@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { ISSUE_WRITE_DENIAL_CODES } from "@tickernelz/paperclip-pro-shared";
+import { ISSUE_WRITE_DENIAL_CODES } from "@tickernelz/wardmote-shared";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
 import { CommentAttributionChip } from "@/components/CommentAttributionChip";

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { pluginManifestV1Schema } from "@tickernelz/paperclip-pro-shared";
+import { pluginManifestV1Schema } from "@tickernelz/wardmote-shared";
 import { pluginCapabilityValidator } from "../services/plugin-capability-validator.js";
 
 describe("organization switcher installation", () => {

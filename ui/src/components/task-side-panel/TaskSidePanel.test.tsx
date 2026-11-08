@@ -3,7 +3,7 @@
 import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { Issue, IssueDocument } from "@tickernelz/paperclip-pro-shared";
+import type { Issue, IssueDocument } from "@tickernelz/wardmote-shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { issuesApi } from "@/api/issues";
@@ -26,7 +26,7 @@ class ResizeObserverStub {
 
 (globalThis as { ResizeObserver?: typeof ResizeObserver }).ResizeObserver = ResizeObserverStub as unknown as typeof ResizeObserver;
 
-const browserFixture = vi.hoisted(() => ({ data: [] as import("@tickernelz/paperclip-pro-shared").TaskBrowser[], viewer: vi.fn(async () => ({ url: "https://live.browser-use.com/test-viewer" })), control: vi.fn(async () => ({})) }));
+const browserFixture = vi.hoisted(() => ({ data: [] as import("@tickernelz/wardmote-shared").TaskBrowser[], viewer: vi.fn(async () => ({ url: "https://live.browser-use.com/test-viewer" })), control: vi.fn(async () => ({})) }));
 const accessFixture = vi.hoisted(() => ({ isInstanceAdmin: true }));
 vi.mock("@/api/access", () => ({
   accessApi: {

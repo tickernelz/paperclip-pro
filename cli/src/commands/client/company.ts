@@ -12,7 +12,7 @@ import type {
   CompanyPortabilityInclude,
   CompanyPortabilityPreviewResult,
   CompanyPortabilityImportResult,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   buildAlreadyImportedMessage,
   companyImportTransferApplyPath,
@@ -21,7 +21,7 @@ import {
   COMPANY_IMPORT_TRANSFERS_ROUTE_PATH,
   type CompanyImportTransferCreated,
   type CompanyImportTransferDeclaration,
-} from "@tickernelz/paperclip-pro-shared/company-import-transfer";
+} from "@tickernelz/wardmote-shared/company-import-transfer";
 import { getTelemetryClient, trackCompanyImported } from "../../telemetry.js";
 import { ApiRequestError, type PaperclipApiClient } from "../../client/http.js";
 import { openUrl } from "../../client/board-auth.js";

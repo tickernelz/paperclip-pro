@@ -1,4 +1,4 @@
-import type { AdapterSessionCodec } from "@tickernelz/paperclip-pro-adapter-utils";
+import type { AdapterSessionCodec } from "@tickernelz/wardmote-adapter-utils";
 
 function readString(value: unknown): string | null {
   return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;

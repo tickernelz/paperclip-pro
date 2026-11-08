@@ -9,7 +9,7 @@ import type {
   BrowserUseViewportPreset,
   BrowserUseViewportRequest,
   BrowserUseViewportState,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { browserUseApi } from "@/api/browser-use";
 
 // Network scheduling, not animation timing. During a drag the existing frame scales.

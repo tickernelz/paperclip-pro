@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { createIssueThreadInteractionSchema, pluginOperationIssueOriginKind } from "@tickernelz/paperclip-pro-shared";
+import { createIssueThreadInteractionSchema, pluginOperationIssueOriginKind } from "@tickernelz/wardmote-shared";
 import type {
   PaperclipPluginManifestV1,
   PluginCapability,
@@ -21,7 +21,7 @@ import type {
   Agent,
   Goal,
   Approval,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import type {
   EventFilter,
   PluginContext,

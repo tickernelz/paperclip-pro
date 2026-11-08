@@ -1,6 +1,6 @@
-import { isNativeWorkspaceExportRepairCause } from "@tickernelz/paperclip-pro-shared";
+import { isNativeWorkspaceExportRepairCause } from "@tickernelz/wardmote-shared";
 import { useWorkspaceIsolationControls } from "@/hooks/useWorkspaceIsolationControls";
-import { requiresExecutionReconciliation } from "@tickernelz/paperclip-pro-shared";
+import { requiresExecutionReconciliation } from "@tickernelz/wardmote-shared";
 import { useMemo, useState } from "react";
 import type {
   Agent,
@@ -10,7 +10,7 @@ import type {
   IssueRecoveryActionOutcome,
   IssueRecoveryActionStatus,
   IssueScheduledRetry,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   Eye,
   GitBranch,

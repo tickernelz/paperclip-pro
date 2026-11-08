@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { assets, issueAttachments } from "@tickernelz/paperclip-pro-db";
-import { isUuidLike } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/wardmote-db";
+import { assets, issueAttachments } from "@tickernelz/wardmote-db";
+import { isUuidLike } from "@tickernelz/wardmote-shared";
 import { assetService } from "../assets.js";
 import { getStorageService } from "../../storage/index.js";
 import type { StorageService } from "../../storage/types.js";

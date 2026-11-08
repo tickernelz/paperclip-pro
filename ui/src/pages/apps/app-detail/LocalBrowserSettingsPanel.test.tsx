@@ -6,7 +6,7 @@ import {
   LOCAL_BROWSER_LIMIT_DEFAULTS,
   type LocalBrowserSession,
   type ToolConnection,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const { sessions, settings, saveSettings, startPairing, pairingStatus, disconnect, openPermissions } = vi.hoisted(() => ({

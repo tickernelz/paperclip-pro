@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Check, Copy, Download, FileDown } from "lucide-react";
-import { documentExportExtension, documentExportFileName } from "@tickernelz/paperclip-pro-shared";
+import { documentExportExtension, documentExportFileName } from "@tickernelz/wardmote-shared";
 import { issuesApi } from "@/api/issues";
 import { useCopyAction } from "@/lib/use-copy-action";
 import { downloadBlob, downloadTextFile } from "@/lib/document-export";

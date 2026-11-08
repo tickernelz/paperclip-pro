@@ -1,4 +1,4 @@
-import type { TranscriptEntry } from "@tickernelz/paperclip-pro-adapter-utils";
+import type { TranscriptEntry } from "@tickernelz/wardmote-adapter-utils";
 
 type JsonRecord = Record<string, unknown>;
 

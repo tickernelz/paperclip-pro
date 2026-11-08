@@ -17,8 +17,8 @@ import {
   issueComments,
   issueWorkProducts,
   issues,
-} from "@tickernelz/paperclip-pro-db";
-import { DEFAULT_ATTACHMENT_RETENTION, type AttachmentRetentionSettings } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import { DEFAULT_ATTACHMENT_RETENTION, type AttachmentRetentionSettings } from "@tickernelz/wardmote-shared";
 import { getEmbeddedPostgresTestSupport, startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";
 import { errorHandler } from "../middleware/index.js";
 import { assetRoutes } from "../routes/assets.js";

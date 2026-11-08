@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { AdapterLoginCapability, ServerAdapterModule } from "@tickernelz/paperclip-pro-adapter-utils";
+import type { AdapterLoginCapability, ServerAdapterModule } from "@tickernelz/wardmote-adapter-utils";
 import { requireServerAdapter } from "../adapters/registry.js";
 import { buildAdapterCapabilities } from "./adapters.js";
 

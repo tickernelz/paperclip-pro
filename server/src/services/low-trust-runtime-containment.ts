@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { issues } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
+import { issues } from "@tickernelz/wardmote-db";
 import { unprocessable } from "../errors.js";
 import type { TrustPresetResolution } from "./trust-preset-resolver.js";
 import {

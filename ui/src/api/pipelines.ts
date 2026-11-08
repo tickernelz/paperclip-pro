@@ -10,10 +10,10 @@ import type {
   PipelineCaseOutputsResponse,
   PipelineHealthReport,
   RoutineEnvConfig,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { api } from "./client";
 
-export type { PipelineHealthReport, PipelineHealthWarning } from "@tickernelz/paperclip-pro-shared";
+export type { PipelineHealthReport, PipelineHealthWarning } from "@tickernelz/wardmote-shared";
 
 export type PipelineConnectionRef =
   | string

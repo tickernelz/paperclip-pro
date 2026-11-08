@@ -2,13 +2,13 @@ import { z } from "zod";
 import {
   CONNECTION_REQUEST_TOOL_DESCRIPTION,
   CONNECTIONS_SEARCH_TOOL_DESCRIPTION,
-} from "@tickernelz/paperclip-pro-shared/connection-intent-guidance";
-import { createApprovalSchema } from "@tickernelz/paperclip-pro-shared/validators/approval";
+} from "@tickernelz/wardmote-shared/connection-intent-guidance";
+import { createApprovalSchema } from "@tickernelz/wardmote-shared/validators/approval";
 import {
   connectionRequestInputSchema,
   connectionsSearchInputSchema,
-} from "@tickernelz/paperclip-pro-shared/validators/connection-intent";
-import { ISSUE_STATUSES } from "@tickernelz/paperclip-pro-shared/constants";
+} from "@tickernelz/wardmote-shared/validators/connection-intent";
+import { ISSUE_STATUSES } from "@tickernelz/wardmote-shared/constants";
 import {
   addIssueCommentSchema,
   askUserQuestionsPayloadSchema,
@@ -22,7 +22,7 @@ import {
   suggestTasksPayloadSchema,
   updateIssueSchema,
   upsertIssueDocumentSchema,
-} from "@tickernelz/paperclip-pro-shared/validators/issue";
+} from "@tickernelz/wardmote-shared/validators/issue";
 import { PaperclipApiClient } from "./client.js";
 import { assertKnownArguments, formatErrorResponse, formatTextResponse } from "./format.js";
 

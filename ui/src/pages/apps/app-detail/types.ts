@@ -6,7 +6,7 @@ import type {
   ToolConnectionLifecycleEvent,
   ToolCatalogEntry,
   ToolConnection,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 export type AccessDraft = { mode: "all" | "specific"; agentIds: Set<string> };
 

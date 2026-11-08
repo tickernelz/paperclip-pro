@@ -1,14 +1,14 @@
 import { and, asc, desc, eq, gte, inArray, isNull, or, sql } from "drizzle-orm";
 import type { SQL, SQLWrapper } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { documents, issueComments, issueDocuments, issues } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
+import { documents, issueComments, issueDocuments, issues } from "@tickernelz/wardmote-db";
 import {
   type CompanySearchExtractIssueResult,
   type CompanySearchExtractMatch,
   type CompanySearchExtractQuery,
   type CompanySearchExtractResponse,
   type CompanySearchExtractSourceRef,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { visibleIssueCondition } from "./issue-visibility.js";
 
 const EXCERPT_MAX_CHARS = 180;

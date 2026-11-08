@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { LiveEvent } from "@tickernelz/paperclip-pro-shared";
+import type { LiveEvent } from "@tickernelz/wardmote-shared";
 import { classifyLiveEvent, type NotificationContext } from "../services/notifications/classify.js";
 
 const COMPANY_ID = "company-1";

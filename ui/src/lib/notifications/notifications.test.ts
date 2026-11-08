@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { NOTIFICATION_KINDS, type NotificationCreatedLivePayload, type PaperclipNotification } from "@tickernelz/paperclip-pro-shared";
+import { NOTIFICATION_KINDS, type NotificationCreatedLivePayload, type PaperclipNotification } from "@tickernelz/wardmote-shared";
 import {
   NOTIFICATION_SETTINGS_STORAGE_KEY,
   defaultNotificationSettings,

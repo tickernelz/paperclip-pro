@@ -1,4 +1,4 @@
-import type { IssueRelationIssueSummary } from "@tickernelz/paperclip-pro-shared";
+import type { IssueRelationIssueSummary } from "@tickernelz/wardmote-shared";
 import { useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { expect, userEvent, within } from "storybook/test";

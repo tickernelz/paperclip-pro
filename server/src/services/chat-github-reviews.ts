@@ -27,13 +27,13 @@ import {
   issues,
   projects,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   githubCommitSchema,
   type GitHubAutomaticEventContext,
   type GitHubReviewEventContext,
   type GitHubReviewPolicy,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { HttpError, conflict, forbidden, notFound } from "../errors.js";
 import {
   githubBotRepositoryToken,

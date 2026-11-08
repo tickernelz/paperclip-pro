@@ -9,7 +9,7 @@ import {
   environmentCustomImageTemplates,
   environments,
   plugins,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import type { PluginWorkerManager } from "../services/plugin-worker-manager.js";
 import {
   environmentCustomImageService,

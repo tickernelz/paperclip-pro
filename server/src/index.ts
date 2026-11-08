@@ -1,4 +1,4 @@
-import "@tickernelz/paperclip-pro-shared/env-aliases-bootstrap";
+import "@tickernelz/wardmote-shared/env-aliases-bootstrap";
 import { subscribeAllCompanyLiveEvents } from "./services/live-events.js";
 import { startNotificationDispatcher } from "./services/notifications/dispatcher.js";
 import { createWebPushRuntime } from "./services/notifications/web-push.js";
@@ -34,7 +34,7 @@ import { createInterface } from "node:readline/promises";
 import { stdin, stdout } from "node:process";
 import { pathToFileURL } from "node:url";
 import type { Request as ExpressRequest, RequestHandler } from "express";
-import { warnIfUnsupportedNodeVersion } from "@tickernelz/paperclip-pro-shared/node-version";
+import { warnIfUnsupportedNodeVersion } from "@tickernelz/wardmote-shared/node-version";
 import { and, eq } from "drizzle-orm";
 import {
   createDb,
@@ -52,7 +52,7 @@ import {
   companies,
   companyMemberships,
   instanceUserRoles,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import detectPort from "detect-port";
 import { createApp } from "./app.js";
 import { shouldEnablePrivateHostnameGuard } from "./middleware/private-hostname-guard.js";
@@ -140,7 +140,7 @@ import { initializeCloudRuntimeIdentity } from "./services/cloud-runtime-identit
 import { systemdNotify } from "./services/systemd-notify.js";
 import { flushInFlightRunLogMirrors } from "./services/run-log-store.js";
 import { getMaxAttachmentBytes } from "./attachment-types.js";
-import { setPaperclipBridgeAttachmentMaxBytesSource } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
+import { setPaperclipBridgeAttachmentMaxBytesSource } from "@tickernelz/wardmote-adapter-utils/execution-target";
 import {
   createEmbeddedPostgresSupervisor,
   type EmbeddedPostgresSupervisor,

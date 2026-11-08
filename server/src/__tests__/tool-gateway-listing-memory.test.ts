@@ -17,9 +17,9 @@ import {
   toolProfileEntries,
   toolProfiles,
   toolMcpGatewayTokens,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { eq } from "drizzle-orm";
-import type { ToolAccessDecisionInput } from "@tickernelz/paperclip-pro-shared";
+import type { ToolAccessDecisionInput } from "@tickernelz/wardmote-shared";
 import {
   createToolAccessDecisionCache,
   toolAccessPolicyService,

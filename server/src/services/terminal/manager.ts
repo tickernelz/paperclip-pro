@@ -8,7 +8,7 @@ import {
   type TerminalServerFrame,
   type TerminalSession,
   type TerminalSessionKind,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { conflict } from "../../errors.js";
 import { logger } from "../../middleware/logger.js";
 import type { TerminalFileAccess } from "./files.js";

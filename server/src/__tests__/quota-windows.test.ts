@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import os from "node:os";
 import path from "node:path";
-import type { QuotaWindow } from "@tickernelz/paperclip-pro-adapter-utils";
+import type { QuotaWindow } from "@tickernelz/wardmote-adapter-utils";
 
 // Pure utility functions — import directly from adapter source
 import {

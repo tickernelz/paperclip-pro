@@ -1,6 +1,6 @@
 import { and, asc, eq, max, sql } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { companySkills, folders, routines } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
+import { companySkills, folders, routines } from "@tickernelz/wardmote-db";
 import type {
   CreateFolder,
   Folder,
@@ -9,7 +9,7 @@ import type {
   MoveFolder,
   MoveFolderItem,
   UpdateFolder,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { conflict, forbidden, notFound, unprocessable } from "../errors.js";
 
 const MAX_FOLDER_DEPTH = 4;

@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { agentWakeupRequests, heartbeatRuns } from "@tickernelz/paperclip-pro-db";
+import { agentWakeupRequests, heartbeatRuns } from "@tickernelz/wardmote-db";
 
 export type BackstopTerminalRunStatus = "interrupted" | "succeeded" | "cancelled";
 

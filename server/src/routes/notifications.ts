@@ -1,11 +1,11 @@
 import { randomUUID } from "node:crypto";
 import { Router, type Request, type Response } from "express";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   deleteWebPushSubscriptionSchema,
   upsertWebPushSubscriptionSchema,
   type PaperclipNotification,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { validate } from "../middleware/validate.js";
 import {
   deleteWebPushSubscription,

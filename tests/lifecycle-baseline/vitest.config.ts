@@ -11,7 +11,7 @@ export default defineConfig({
   resolve: {
     alias: [
       {
-        find: /^@tickernelz\/paperclip-pro-paperclip-runner$/,
+        find: /^@tickernelz\/wardmote-paperclip-runner$/,
         replacement: resolve(root, "packages/paperclip-runner/src/index.ts"),
       },
     ],

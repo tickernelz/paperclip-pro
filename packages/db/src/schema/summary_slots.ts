@@ -1,5 +1,5 @@
 import { index, pgTable, text, timestamp, unique, uniqueIndex, uuid } from "drizzle-orm/pg-core";
-import type { SummarySlotKey, SummarySlotScopeKind, SummarySlotStatus } from "@tickernelz/paperclip-pro-shared";
+import type { SummarySlotKey, SummarySlotScopeKind, SummarySlotStatus } from "@tickernelz/wardmote-shared";
 import { agents } from "./agents.js";
 import { companies } from "./companies.js";
 import { documents } from "./documents.js";

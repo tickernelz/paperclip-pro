@@ -1,4 +1,4 @@
-import type { IssueAutonomyWindow } from "@tickernelz/paperclip-pro-shared";
+import type { IssueAutonomyWindow } from "@tickernelz/wardmote-shared";
 import { HttpError } from "../../errors.js";
 import { autonomyWindowService, type AutonomyWindowActor } from "../autonomy-windows.js";
 import { assertOpenwaConfigOwnerRun } from "./config-tool.js";

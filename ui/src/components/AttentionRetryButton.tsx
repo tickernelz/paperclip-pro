@@ -6,7 +6,7 @@ import {
   requiresExecutionReconciliation,
   type Agent,
   type AttentionItem,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { agentsApi } from "../api/agents";
 import type { LiveRunForIssue } from "../api/heartbeats";
 import { issuesApi } from "../api/issues";

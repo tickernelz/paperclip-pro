@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
 import { useState } from "react";
-import type { AdapterConfigSchema } from "@tickernelz/paperclip-pro-adapter-utils";
+import type { AdapterConfigSchema } from "@tickernelz/wardmote-adapter-utils";
 import type { AdapterModel } from "@/api/agents";
 import { ModelDropdown } from "@/components/AgentConfigForm";
 import { SchemaConfigFields } from "@/adapters/schema-config-fields";

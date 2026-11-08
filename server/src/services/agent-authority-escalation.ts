@@ -1,5 +1,5 @@
 import type { Request } from "express";
-import { AGENT_COMPANY_AUTHORITY_ROLES, isCompanyOwnerAgent } from "@tickernelz/paperclip-pro-shared";
+import { AGENT_COMPANY_AUTHORITY_ROLES, isCompanyOwnerAgent } from "@tickernelz/wardmote-shared";
 import { forbidden } from "../errors.js";
 import { normalizeAgentPermissions } from "../lib/agent-permissions.js";
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { AdapterEnvironmentTestResult } from "@tickernelz/paperclip-pro-adapter-utils";
-import { ADAPTER_AUTH_MISSING_CHECK_CODE } from "@tickernelz/paperclip-pro-shared";
+import type { AdapterEnvironmentTestResult } from "@tickernelz/wardmote-adapter-utils";
+import { ADAPTER_AUTH_MISSING_CHECK_CODE } from "@tickernelz/wardmote-shared";
 import { assertHarnessTestPassed } from "../services/agent-harness-verification.js";
 
 describe("saved harness verification", () => {

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import type { FastResponseHistoryEntry } from "@tickernelz/paperclip-pro-shared";
+import type { FastResponseHistoryEntry } from "@tickernelz/wardmote-shared";
 import { DecisionHistoryTable } from "@/components/decision-models/DecisionHistory";
 import { entry } from "../decision-models/fixtures";
 const receipt: FastResponseHistoryEntry = {

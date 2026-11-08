@@ -64,7 +64,7 @@ pnpm dev --authenticated-private
 Allow additional private hostnames:
 
 ```sh
-npx @tickernelz/paperclip-pro allowed-hostname dotta-macbook-pro
+npx @tickernelz/wardmote allowed-hostname dotta-macbook-pro
 ```
 
 For full setup and troubleshooting, see [Tailscale Private Access](/deploy/tailscale-private-access).
@@ -84,10 +84,10 @@ curl http://localhost:3100/api/companies
 For safer parallel local experiments, initialize a dedicated worktree instance instead of reusing your main checkout:
 
 ```sh
-npx @tickernelz/paperclip-pro worktree:make local-lab --seed-mode minimal
+npx @tickernelz/wardmote worktree:make local-lab --seed-mode minimal
 cd ~/paperclip-local-lab
 pnpm wardmote worktree env                       # inspect generated env exports
-eval "$(npx @tickernelz/paperclip-pro worktree env)"             # bash/zsh
+eval "$(npx @tickernelz/wardmote worktree env)"             # bash/zsh
 pnpm wardmote run
 pnpm wardmote doctor
 ```
@@ -97,13 +97,13 @@ If the experiment gets noisy, repair or reseed the worktree without touching the
 ```sh
 # worktree repair rebuilds the local checkout metadata, so run the checked-out CLI through the direct-exec form.
 node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts worktree repair --branch paperclip-local-lab
-npx @tickernelz/paperclip-pro worktree reseed --from . --to paperclip-local-lab
+npx @tickernelz/wardmote worktree reseed --from . --to paperclip-local-lab
 ```
 
 When done, shut it down and remove the isolated state explicitly:
 
 ```sh
-npx @tickernelz/paperclip-pro worktree:cleanup local-lab --force
+npx @tickernelz/wardmote worktree:cleanup local-lab --force
 ```
 
 ## Reset Dev Data

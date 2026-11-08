@@ -10,8 +10,8 @@ import {
   issueThreadInteractions,
   issues,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
-import type { ExecutionContinuationEnvelope } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import type { ExecutionContinuationEnvelope } from "@tickernelz/wardmote-shared";
 import { sanitizeQuarantinedCommentForHigherTrust } from "./source-trust.js";
 import { hasConversationContinuationPolicy } from "./conversation-continuation.js";
 import { queuedCommentIdsFromWakePayload } from "./issue-queued-comment-queue.js";

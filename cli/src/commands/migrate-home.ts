@@ -4,7 +4,7 @@ import path from "node:path";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import pc from "picocolors";
-import { LEGACY_HOME_DIRNAME, WARDMOTE_HOME_DIRNAME } from "@tickernelz/paperclip-pro-shared/home-paths";
+import { LEGACY_HOME_DIRNAME, WARDMOTE_HOME_DIRNAME } from "@tickernelz/wardmote-shared/home-paths";
 
 const execFileAsync = promisify(execFile);
 

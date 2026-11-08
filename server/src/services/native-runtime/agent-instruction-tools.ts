@@ -1,6 +1,6 @@
-import type { AgentInstructionCommitReceipt } from "@tickernelz/paperclip-pro-shared";
+import type { AgentInstructionCommitReceipt } from "@tickernelz/wardmote-shared";
 import { z } from "zod";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import { badRequest, notFound } from "../../errors.js";
 import { agentInstructionRevisionService } from "../agent-instruction-revisions.js";
 import { agentInstructionWorkingCopyService } from "../agent-instruction-working-copies.js";

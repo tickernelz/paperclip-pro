@@ -1,4 +1,4 @@
-import type { InboxAgentPolicy, UpdateInboxAgentPolicy } from "@tickernelz/paperclip-pro-shared";
+import type { InboxAgentPolicy, UpdateInboxAgentPolicy } from "@tickernelz/wardmote-shared";
 import { api } from "./client";
 
 /**

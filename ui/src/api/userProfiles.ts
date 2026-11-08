@@ -1,4 +1,4 @@
-import type { UserProfileResponse } from "@tickernelz/paperclip-pro-shared";
+import type { UserProfileResponse } from "@tickernelz/wardmote-shared";
 import { api } from "./client";
 
 export const userProfilesApi = {

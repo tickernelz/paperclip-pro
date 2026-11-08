@@ -73,7 +73,7 @@ production.
 To rebuild and serve:
 
 ```sh
-pnpm --filter @tickernelz/paperclip-pro-ui build-storybook
+pnpm --filter @tickernelz/wardmote-ui build-storybook
 node scripts/serve-storybook-static.mjs --port 6137
 ```
 
@@ -151,10 +151,10 @@ they are not Linux visual-regression baselines.
 Commands:
 
 ```sh
-pnpm --filter @tickernelz/paperclip-pro-ui typecheck
+pnpm --filter @tickernelz/wardmote-ui typecheck
 pnpm check:token-gates
 pnpm exec vitest run ui/src/components/SetupWizard.test.tsx ui/src/components/JsonSchemaForm.test.tsx ui/src/features/connections/ConnectionSetupFlow.architecture.test.ts ui/src/pages/apps/app-detail/TestPanel.test.tsx
-pnpm --filter @tickernelz/paperclip-pro-ui build-storybook
+pnpm --filter @tickernelz/wardmote-ui build-storybook
 pnpm exec playwright test --config tests/storybook-visual/remote-mcp-connections.config.ts
 ```
 

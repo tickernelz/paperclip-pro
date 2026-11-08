@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Copy, ExternalLink, Link2, Share2 } from "lucide-react";
-import type { IssueShareLink } from "@tickernelz/paperclip-pro-shared";
+import type { IssueShareLink } from "@tickernelz/wardmote-shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   updateCompanyMemberWithPermissionsSchema,
   updateCurrentUserProfileSchema,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 describe("access validators", () => {
   it("accepts HTTP(S) and Paperclip asset image URLs", () => {

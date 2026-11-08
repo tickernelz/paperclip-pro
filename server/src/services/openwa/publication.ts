@@ -11,13 +11,13 @@ import {
   heartbeatRuns,
   issueComments,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   openwaChatSettingsSchema,
   openwaEndpointPolicySchema,
   type OpenwaGrantCategory,
   type OpenwaTriggerClass,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { parseOpenwaThreadId } from "./adapter.js";
 import { formatOpenwaPublication } from "./format.js";
 import type { OpenwaGatewayClient, OpenwaSendResult } from "./gateway.js";

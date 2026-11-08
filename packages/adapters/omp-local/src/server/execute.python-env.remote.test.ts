@@ -2,9 +2,9 @@ import { mkdir, mkdtemp, rm } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type * as ServerUtils from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
-import type * as Ssh from "@tickernelz/paperclip-pro-adapter-utils/ssh";
-import type * as ExecutionTarget from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
+import type * as ServerUtils from "@tickernelz/wardmote-adapter-utils/server-utils";
+import type * as Ssh from "@tickernelz/wardmote-adapter-utils/ssh";
+import type * as ExecutionTarget from "@tickernelz/wardmote-adapter-utils/execution-target";
 
 const {
   runAdapterExecutionTargetProcess,
@@ -41,16 +41,16 @@ const {
   })),
 }));
 
-vi.mock("@tickernelz/paperclip-pro-adapter-utils/server-utils", async () => {
+vi.mock("@tickernelz/wardmote-adapter-utils/server-utils", async () => {
   const actual = await vi.importActual<typeof ServerUtils>(
-    "@tickernelz/paperclip-pro-adapter-utils/server-utils",
+    "@tickernelz/wardmote-adapter-utils/server-utils",
   );
   return { ...actual, ensureCommandResolvable, resolveCommandForLogs };
 });
 
-vi.mock("@tickernelz/paperclip-pro-adapter-utils/ssh", async () => {
+vi.mock("@tickernelz/wardmote-adapter-utils/ssh", async () => {
   const actual = await vi.importActual<typeof Ssh>(
-    "@tickernelz/paperclip-pro-adapter-utils/ssh",
+    "@tickernelz/wardmote-adapter-utils/ssh",
   );
   return {
     ...actual,
@@ -61,9 +61,9 @@ vi.mock("@tickernelz/paperclip-pro-adapter-utils/ssh", async () => {
   };
 });
 
-vi.mock("@tickernelz/paperclip-pro-adapter-utils/execution-target", async () => {
+vi.mock("@tickernelz/wardmote-adapter-utils/execution-target", async () => {
   const actual = await vi.importActual<typeof ExecutionTarget>(
-    "@tickernelz/paperclip-pro-adapter-utils/execution-target",
+    "@tickernelz/wardmote-adapter-utils/execution-target",
   );
   return { ...actual, runAdapterExecutionTargetProcess, startAdapterExecutionTargetPaperclipBridge };
 });

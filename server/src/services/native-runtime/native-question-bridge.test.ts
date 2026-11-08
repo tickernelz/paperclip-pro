@@ -21,9 +21,9 @@ import {
   issueThreadInteractions,
   issues,
   nativeRunFinalizations,
-} from "@tickernelz/paperclip-pro-db";
-import type { PrpEvent } from "@tickernelz/paperclip-pro-paperclip-runner";
-import { respondIssueThreadInteractionSchema } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import type { PrpEvent } from "@tickernelz/wardmote-paperclip-runner";
+import { respondIssueThreadInteractionSchema } from "@tickernelz/wardmote-shared";
 
 import {
   getEmbeddedPostgresTestSupport,

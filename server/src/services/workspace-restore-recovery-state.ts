@@ -1,4 +1,4 @@
-import { hasWorkspaceRestoreFailure } from "@tickernelz/paperclip-pro-shared";
+import { hasWorkspaceRestoreFailure } from "@tickernelz/wardmote-shared";
 
 export const LEGACY_WORKSPACE_RECOVERY_KEY = "workspaceRestoreRecovery";
 export const LEGACY_WORKSPACE_RECOVERY_SCHEMA = "paperclip.workspace-restore-recovery.v1";

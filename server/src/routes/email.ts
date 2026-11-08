@@ -6,8 +6,8 @@ import {
   emailEndpointSetupSchema,
   emailSendSchema,
   isUuidLike,
-} from "@tickernelz/paperclip-pro-shared";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-shared";
+import type { Db } from "@tickernelz/wardmote-db";
 import { validate } from "../middleware/validate.js";
 import { assertBoard, assertCompanyAccess, hasCompanyAccess } from "./authz.js";
 import { emailConnectionService } from "../services/email-connections.js";

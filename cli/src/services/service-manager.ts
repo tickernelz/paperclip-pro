@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { legacyEnvKey } from "@tickernelz/paperclip-pro-shared/env-aliases";
+import { legacyEnvKey } from "@tickernelz/wardmote-shared/env-aliases";
 import { resolvePaperclipHomeDir, resolvePaperclipInstanceId } from "../config/home.js";
 
 const execFileAsync = promisify(execFile);

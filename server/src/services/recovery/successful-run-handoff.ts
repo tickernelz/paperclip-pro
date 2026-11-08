@@ -1,12 +1,12 @@
 import { and, eq, inArray } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { agentWakeupRequests, agents, heartbeatRuns, issues } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
+import { agentWakeupRequests, agents, heartbeatRuns, issues } from "@tickernelz/wardmote-db";
 import {
   isUuidLike,
   type IssueCommentMetadata,
   type IssueCommentPresentation,
   type RunLivenessState,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { withRecoveryContext } from "./status-only-context.js";
 import {
   agentLinkRow,

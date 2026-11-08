@@ -5,7 +5,7 @@ import type {
   RunnerGoalAction,
   RunnerGoalActionRequest,
   RunnerGoalProjection,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { issuesApi } from "@/api/issues";
 import { useCompanyLiveEvent } from "@/context/LiveUpdatesProvider";
 import { queryKeys } from "@/lib/queryKeys";

@@ -1,4 +1,4 @@
-import type { DocumentRevision, IssueDocument } from "@tickernelz/paperclip-pro-shared";
+import type { DocumentRevision, IssueDocument } from "@tickernelz/wardmote-shared";
 import { describe, expect, it } from "vitest";
 import { deriveDocumentRevisionState } from "./document-revisions";
 

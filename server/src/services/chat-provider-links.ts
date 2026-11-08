@@ -1,4 +1,4 @@
-import type { ChatProvider } from "@tickernelz/paperclip-pro-shared";
+import type { ChatProvider } from "@tickernelz/wardmote-shared";
 
 type ProviderLinkInput = {
   provider: ChatProvider;

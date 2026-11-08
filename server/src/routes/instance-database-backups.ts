@@ -1,5 +1,5 @@
 import { Router } from "express";
-import type { BackupRetentionPolicy, RunDatabaseBackupResult } from "@tickernelz/paperclip-pro-db";
+import type { BackupRetentionPolicy, RunDatabaseBackupResult } from "@tickernelz/wardmote-db";
 import { forbidden } from "../errors.js";
 import { isCloudManagedInstance } from "../services/cloud-instance.js";
 import { assertInstanceAdmin } from "./authz.js";

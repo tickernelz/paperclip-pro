@@ -1,4 +1,4 @@
-import type { NotificationKind } from "@tickernelz/paperclip-pro-shared";
+import type { NotificationKind } from "@tickernelz/wardmote-shared";
 
 export const CUSTOM_SOUND_MAX_BYTES = 512 * 1024;
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ROOT="$(mktemp -d "${TMPDIR:-/tmp}/wardmote-upgrade-path.XXXXXX")"
 export HOME="$ROOT/home"
 export npm_config_cache="$ROOT/npm-cache"
@@ -40,9 +41,10 @@ start_server() {
   return 1
 }
 
-OLD_VERSION="$(npm view @tickernelz/paperclip-pro version)"
-echo "==> Installing the published release $OLD_VERSION the way an existing user has it"
-npm install --prefix "$ROOT/bootstrap" "@tickernelz/paperclip-pro@$OLD_VERSION" --no-audit --no-fund >/dev/null
+LEGACY_PACKAGE="@tickernelz/paperclip-pro"
+OLD_VERSION="$(npm view "$LEGACY_PACKAGE" version)"
+echo "==> Installing the published release $LEGACY_PACKAGE@$OLD_VERSION the way an existing user has it"
+npm install --prefix "$ROOT/bootstrap" "$LEGACY_PACKAGE@$OLD_VERSION" --no-audit --no-fund >/dev/null
 "$ROOT/bootstrap/node_modules/.bin/paperclip-pro" install --version "$OLD_VERSION" --yes
 paperclip-pro --version
 start_server before paperclip-pro onboard --yes
@@ -50,8 +52,8 @@ test -d "$HOME/.paperclip-pro/instances/default"
 curl -fsS -X POST -H 'Content-Type: application/json' -d '{"name":"Upgrade path marker"}' "http://127.0.0.1:$PORT/api/companies" >/dev/null
 stop_server
 
-echo "==> Upgrading with the old CLI to $REPO@$SHA"
-paperclip-pro install --repo "$REPO" --ref "$SHA" --yes
+echo "==> Upgrading to $REPO@$SHA with this commit's @tickernelz/wardmote CLI, as npx @tickernelz/wardmote install does"
+(cd "$REPO_ROOT" && node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts install --repo "$REPO" --ref "$SHA" --yes)
 paperclip-pro --version
 "$HOME/.paperclip-pro/cli/current/node_modules/.bin/wardmote" --version
 test ! -e "$HOME/.wardmote"

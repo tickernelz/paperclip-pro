@@ -2,7 +2,7 @@ import serializeAddon from "@xterm/addon-serialize";
 import type { SerializeAddon } from "@xterm/addon-serialize";
 import headless from "@xterm/headless";
 import type { ITerminalAddon, Terminal as HeadlessTerminal } from "@xterm/headless";
-import { TERMINAL_SCROLLBACK_ROWS } from "@tickernelz/paperclip-pro-shared";
+import { TERMINAL_SCROLLBACK_ROWS } from "@tickernelz/wardmote-shared";
 
 const { SerializeAddon: SerializeAddonImpl } = serializeAddon;
 const { Terminal } = headless;

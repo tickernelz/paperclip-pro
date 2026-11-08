@@ -1,4 +1,4 @@
-import type { CompanyPortabilityFileEntry } from "@tickernelz/paperclip-pro-shared";
+import type { CompanyPortabilityFileEntry } from "@tickernelz/wardmote-shared";
 
 const contentTypeByExtension: Record<string, string> = {
   ".gif": "image/gif",

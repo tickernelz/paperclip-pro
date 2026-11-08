@@ -4,7 +4,7 @@ import type {
   FastResponseTestResult,
   FastResponseHistoryEntry,
   UpdateFastResponse,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { api } from "./client";
 export const fastResponsesApi = {
   settings: (companyId: string) =>

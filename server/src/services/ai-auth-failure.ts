@@ -1,4 +1,4 @@
-import { AI_PROVIDERS, AI_CONNECTION_CAPABILITIES, isAiConnectionCompatible, type AiConnectionBinding, type AiProvider } from "@tickernelz/paperclip-pro-shared";
+import { AI_PROVIDERS, AI_CONNECTION_CAPABILITIES, isAiConnectionCompatible, type AiConnectionBinding, type AiProvider } from "@tickernelz/wardmote-shared";
 
 type AuthenticationFailure = {
   errorCode?: string | null;

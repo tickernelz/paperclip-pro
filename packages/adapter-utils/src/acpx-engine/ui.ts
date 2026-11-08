@@ -1,4 +1,4 @@
-import type { TranscriptEntry } from "@tickernelz/paperclip-pro-adapter-utils";
+import type { TranscriptEntry } from "@tickernelz/wardmote-adapter-utils";
 
 function parseJson(line: string): Record<string, unknown> | null {
   try {

@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import path from "node:path";
-import type { AdapterModel } from "@tickernelz/paperclip-pro-adapter-utils";
-import { ensurePathInEnv, runChildProcess } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+import type { AdapterModel } from "@tickernelz/wardmote-adapter-utils";
+import { ensurePathInEnv, runChildProcess } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import { resolveOmpProfile } from "./profile.js";
 
 const MODEL_CACHE_TTL_MS = 60_000;

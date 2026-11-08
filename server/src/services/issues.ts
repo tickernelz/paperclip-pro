@@ -12,7 +12,7 @@ import { parseStatusFilter } from "./issue-list-query.js";
 import { createdFromIssueCondition } from "./issue-creation-origin.js";
 import { executionProjectionsForRuns } from "./execution-projection.js";
 import { inheritIssueRunModelOverrideForChild } from "./issue-run-model-override.js";
-import type { ExecutionProjection } from "@tickernelz/paperclip-pro-shared";
+import type { ExecutionProjection } from "@tickernelz/wardmote-shared";
 import { Buffer } from "node:buffer";
 import { isDeepStrictEqual } from "node:util";
 import { createHash, randomUUID } from "node:crypto";
@@ -39,7 +39,7 @@ import {
   sql,
   type SQL,
 } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   activityLog,
   chatActions,
@@ -86,7 +86,7 @@ import {
   projects,
   toolConnections,
   workspaceOperations,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import type {
   AcceptedPlanDecomposition,
   IssueComment,
@@ -103,7 +103,7 @@ import type {
   IssueWatchdogSummary,
   LowTrustBoundary,
   SuccessfulRunHandoffState,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   clampIssueRequestDepth,
   extractAgentMentionIds,
@@ -113,7 +113,7 @@ import {
   issueCommentPresentationSchema,
   isUuidLike,
   normalizeIssueIdentifier as normalizeIssueReferenceIdentifier,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { conflict, HttpError, notFound, unprocessable } from "../errors.js";
 import { isForeignKeyViolation } from "../db-errors.js";
 import { logger } from "../middleware/logger.js";

@@ -124,9 +124,11 @@ describe("managed install store", () => {
   });
 
   it("uses the pinned Node for child tools even with an older node first on the service PATH", () => {
-    const entrypoint = path.join(paths.currentPath, "node_modules", "@tickernelz", "paperclip-pro", "dist", "index.js");
+    const entrypoint = path.join(paths.currentPath, "node_modules", "@tickernelz", "wardmote", "dist", "index.js");
     fs.mkdirSync(path.dirname(entrypoint), { recursive: true });
     fs.writeFileSync(entrypoint, `console.log(require("node:child_process").execFileSync("node", ["-p", "process.execPath"], {encoding: "utf8"}).trim())`);
+    fs.mkdirSync(path.join(paths.currentPath, "node_modules", ".bin"), { recursive: true });
+    fs.symlinkSync("../@tickernelz/wardmote/dist/index.js", path.join(paths.currentPath, "node_modules", ".bin", "paperclip-pro"));
     const oldBin = path.join(root, "old-bin");
     fs.mkdirSync(oldBin);
     fs.writeFileSync(path.join(oldBin, "node"), "#!/bin/sh\nexit 42\n", { mode: 0o755 });
@@ -177,7 +179,7 @@ describe("managed install store", () => {
   it("reports managed provenance only for the payload selected by current", () => {
     const manifestPayload = payloadPathFor(paths, "npm", "1.0.0");
     const currentPayload = payloadPathFor(paths, "npm", "2.0.0");
-    const executable = path.join(manifestPayload, "node_modules", "@tickernelz", "paperclip-pro", "dist", "index.js");
+    const executable = path.join(manifestPayload, "node_modules", "@tickernelz", "wardmote", "dist", "index.js");
     fs.mkdirSync(path.dirname(executable), { recursive: true });
     fs.writeFileSync(executable, "");
     fs.mkdirSync(currentPayload, { recursive: true });

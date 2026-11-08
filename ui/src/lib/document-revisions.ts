@@ -1,4 +1,4 @@
-import type { DocumentRevision, IssueDocument } from "@tickernelz/paperclip-pro-shared";
+import type { DocumentRevision, IssueDocument } from "@tickernelz/wardmote-shared";
 
 type DocumentRevisionState = {
   currentRevision: DocumentRevision;

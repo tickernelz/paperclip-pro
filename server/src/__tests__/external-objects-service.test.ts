@@ -10,7 +10,7 @@ import {
   issueComments,
   issues,
   plugins,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -21,8 +21,8 @@ import {
   externalObjectService,
   type ExternalObjectResolver,
 } from "../services/external-objects.js";
-import { canonicalizeExternalObjectUrl } from "@tickernelz/paperclip-pro-shared/external-objects-server";
-import type { PaperclipPluginManifestV1 } from "@tickernelz/paperclip-pro-shared";
+import { canonicalizeExternalObjectUrl } from "@tickernelz/wardmote-shared/external-objects-server";
+import type { PaperclipPluginManifestV1 } from "@tickernelz/wardmote-shared";
 import type { PluginWorkerManager } from "../services/plugin-worker-manager.js";
 import { createGitHubExternalObjectProvider } from "../services/github-external-object-provider.js";
 

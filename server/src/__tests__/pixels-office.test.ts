@@ -13,7 +13,7 @@ import {
   issues,
   issueThreadInteractions,
   pixelsOfficeSeats,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { errorHandler } from "../middleware/index.js";
 import { pixelsOfficeRoutes } from "../routes/pixels-office.js";
 import { instanceSettingsService } from "../services/instance-settings.js";

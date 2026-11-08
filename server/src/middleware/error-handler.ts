@@ -1,10 +1,10 @@
 import { AgentLifecycleConflict } from "../modules/agent-lifecycle/index.js";
 import type { Request, Response, NextFunction } from "express";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import { ZodError } from "zod";
 import { HttpError } from "../errors.js";
 import { foreignKeyViolationConstraint } from "../db-errors.js";
-import { trackErrorHandlerCrash } from "@tickernelz/paperclip-pro-shared/telemetry";
+import { trackErrorHandlerCrash } from "@tickernelz/wardmote-shared/telemetry";
 import { getTelemetryClient } from "../telemetry.js";
 import { captureException } from "../sentry.js";
 import { COMPANY_IMPORT_API_PATH } from "../routes/company-import-paths.js";

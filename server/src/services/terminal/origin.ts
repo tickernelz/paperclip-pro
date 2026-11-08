@@ -1,4 +1,4 @@
-import type { DeploymentMode } from "@tickernelz/paperclip-pro-shared";
+import type { DeploymentMode } from "@tickernelz/wardmote-shared";
 import { resolvePrivateHostnameAllowSet } from "../../middleware/private-hostname-guard.js";
 
 export interface TerminalOriginPolicy {

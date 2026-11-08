@@ -6,7 +6,7 @@ import {
   heartbeatRuns,
   runIdentityContexts,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { forbidden } from "../errors.js";
 import {
   authorizationService,

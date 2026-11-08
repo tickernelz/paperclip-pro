@@ -1,6 +1,6 @@
 import { and, desc, eq, inArray, isNotNull, isNull, sql, type SQL } from "drizzle-orm";
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   agents,
   approvals,
@@ -12,7 +12,7 @@ import {
   issueThreadInteractions,
   issues,
   joinRequests,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   DECISION_HISTORY_SOURCE_KINDS,
   DECISION_HISTORY_PAGE_MAX_LIMIT,
@@ -23,7 +23,7 @@ import {
   type ResolvedDecisionQuery,
   type ResolvedDecisionSourceKind,
   type ResolvedDecisionStatus,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { badRequest, notFound } from "../errors.js";
 import { approvalTitle, attentionService, companyPrefix, interactionLabel, issueHref } from "./attention.js";
 import { issueReadSqlCondition, type AuthorizationActor } from "./authorization.js";

@@ -1,13 +1,13 @@
 import { trackIdleWork } from "../services/task-admission.js";
 import { Router, type Request } from "express";
-import { companies, heartbeatRuns, type Db } from "@tickernelz/paperclip-pro-db";
+import { companies, heartbeatRuns, type Db } from "@tickernelz/wardmote-db";
 import { inArray, sql } from "drizzle-orm";
 import {
   patchInstanceSettingsSchema,
   patchInstanceExperimentalSettingsSchema,
   patchInstanceGeneralSettingsSchema,
   startTaskDrainRequestSchema,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { conflict, forbidden } from "../errors.js";
 import {
   cloudTenantPrimaryCompanyId,

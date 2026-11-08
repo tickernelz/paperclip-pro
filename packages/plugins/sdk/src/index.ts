@@ -1,13 +1,13 @@
 /**
- * `@tickernelz/paperclip-pro-plugin-sdk` — Paperclip plugin worker-side SDK.
+ * `@tickernelz/wardmote-plugin-sdk` — Paperclip plugin worker-side SDK.
  *
  * This is the main entrypoint for plugin worker code.  For plugin UI bundles,
- * import from `@tickernelz/paperclip-pro-plugin-sdk/ui` instead.
+ * import from `@tickernelz/wardmote-plugin-sdk/ui` instead.
  *
  * @example
  * ```ts
  * // Plugin worker entrypoint (dist/worker.ts)
- * import { definePlugin, runWorker, z } from "@tickernelz/paperclip-pro-plugin-sdk";
+ * import { definePlugin, runWorker, z } from "@tickernelz/wardmote-plugin-sdk";
  *
  * const plugin = definePlugin({
  *   async setup(ctx) {
@@ -329,9 +329,9 @@ export type {
   EnvSecretRefBinding,
 } from "./types.js";
 
-// Manifest and constant types re-exported from @tickernelz/paperclip-pro-shared
+// Manifest and constant types re-exported from @tickernelz/wardmote-shared
 // Plugin authors import manifest types from here so they have a single
-// dependency (@tickernelz/paperclip-pro-plugin-sdk) for all plugin authoring needs.
+// dependency (@tickernelz/wardmote-plugin-sdk) for all plugin authoring needs.
 export type {
   PaperclipPluginManifestV1,
   PluginJobDeclaration,
@@ -414,7 +414,7 @@ export type {
  *
  * @example
  * ```ts
- * import { z } from "@tickernelz/paperclip-pro-plugin-sdk";
+ * import { z } from "@tickernelz/wardmote-plugin-sdk";
  *
  * const configSchema = z.object({
  *   apiKey: z.string().describe("Your API key"),
@@ -448,11 +448,11 @@ export {
   HUMAN_COMPANY_MEMBERSHIP_ROLE_LABELS,
   MEMBERSHIP_STATUSES,
   PRINCIPAL_TYPES,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 export { PluginEnvironmentCreationCleanupError, environmentCreationCleanupErrorData, readEnvironmentCreationCleanupError, readEnvironmentAcquisitionDiagnostic } from "./environment-creation-cleanup.js";
 export type { PluginEnvironmentCreationCleanup, PluginEnvironmentAcquisitionDiagnostic } from "./environment-creation-cleanup.js";
 export { preserveEnvironmentSyncErrorDiagnostic, environmentSyncErrorData, readEnvironmentSyncErrorDiagnostic, withEnvironmentSyncErrorCapture, withEnvironmentSyncTransferStep, recordEnvironmentSyncError } from "./environment-sync-error.js";
 export type { PluginEnvironmentSyncErrorDiagnostic } from "./environment-sync-error.js";
 
-export type { AgentLifecycleRequest, AgentLifecycleResult } from "@tickernelz/paperclip-pro-shared";
+export type { AgentLifecycleRequest, AgentLifecycleResult } from "@tickernelz/wardmote-shared";

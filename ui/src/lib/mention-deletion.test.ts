@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { $createLinkNode, LinkNode } from "@lexical/link";
-import { buildAgentMentionHref } from "@tickernelz/paperclip-pro-shared";
+import { buildAgentMentionHref } from "@tickernelz/wardmote-shared";
 import {
   createEditor,
   $createParagraphNode,

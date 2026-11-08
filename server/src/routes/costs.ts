@@ -1,16 +1,16 @@
 import { importProviderDailyCosts } from "../services/provider-billing-import.js";
-import { subscriptionPriceSchema, mergeSubscriptionsSchema } from "@tickernelz/paperclip-pro-shared";
+import { subscriptionPriceSchema, mergeSubscriptionsSchema } from "@tickernelz/wardmote-shared";
 import { subscriptionService } from "../services/subscriptions.js";
 import { subscriptionCostReport } from "../services/subscription-report.js";
 import { refreshCompanySubscriptions } from "../services/subscription-refresh.js";
 import { canManageAiConnections } from "./ai-connections.js";
-import { importProviderCostsSchema } from "@tickernelz/paperclip-pro-shared";
+import { importProviderCostsSchema } from "@tickernelz/wardmote-shared";
 import { accountingIntegrityService } from "../services/accounting-integrity.js";
 import { billingReconciliationService } from "../services/billing-reconciliation.js";
-import { adjustCostSchema, importBillingInvoiceSchema, repairAccountingSchema, retryAccountingSchema } from "@tickernelz/paperclip-pro-shared";
+import { adjustCostSchema, importBillingInvoiceSchema, repairAccountingSchema, retryAccountingSchema } from "@tickernelz/wardmote-shared";
 import { Router } from "express";
 import { z } from "zod";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   createCostEventSchema,
   createFinanceEventSchema,
@@ -18,7 +18,7 @@ import {
   resolveBudgetIncidentSchema,
   updateBudgetSchema,
   upsertBudgetPolicySchema,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { validate } from "../middleware/validate.js";
 import {
   budgetService,

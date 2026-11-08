@@ -3,7 +3,7 @@ import {
   CHAT_AUDIT_ACTOR_KINDS,
   CHAT_AUDIT_ENTRY_KINDS,
   type OpenwaGatewayAdminToolLevel,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   OPENWA_GATEWAY_VERSION,
   OPENWA_OPERATIONS,
@@ -11,7 +11,7 @@ import {
   type OpenwaJsonSchema,
   type OpenwaOperation,
   type OpenwaOperationCategory,
-} from "@tickernelz/paperclip-pro-shared/openwa-operations";
+} from "@tickernelz/wardmote-shared/openwa-operations";
 
 export const OPENWA_AUDIT_LIST_OPERATION = "paperclip.audit.list";
 export const OPENWA_SELF_SESSION_OPERATIONS: ReadonlySet<string> = new Set([

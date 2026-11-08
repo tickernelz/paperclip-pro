@@ -8,8 +8,8 @@ import {
   companyMemberships,
   heartbeatRuns,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
-import type { ChatAuditActorKind, ChatAuditEntryKind } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import type { ChatAuditActorKind, ChatAuditEntryKind } from "@tickernelz/wardmote-shared";
 import { badRequest, forbidden, notFound } from "../../errors.js";
 import { sanitizeRecord } from "../../redaction.js";
 import { logActivity, type ActivityPublication } from "../activity-log.js";

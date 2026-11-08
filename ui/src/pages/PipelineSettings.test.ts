@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { PIPELINE_AUTOMATION_DEFAULT_TITLE_TEMPLATE } from "@tickernelz/paperclip-pro-shared";
+import { PIPELINE_AUTOMATION_DEFAULT_TITLE_TEMPLATE } from "@tickernelz/wardmote-shared";
 import {
   buildStageAutomationForSave,
   isPipelineSettingsStageSectionAvailable,

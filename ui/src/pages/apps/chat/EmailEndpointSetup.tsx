@@ -1,4 +1,4 @@
-import { isUuidLike } from "@tickernelz/paperclip-pro-shared";
+import { isUuidLike } from "@tickernelz/wardmote-shared";
 import { ApiError } from "@/api/client";
 import { AgentMailCredentialField } from "@/features/connections/AgentMailCredentialField";
 import { AgentMailApiKeyField } from "@/features/connections/AgentMailApiKeyField";
@@ -48,7 +48,7 @@ import { queryKeys } from "@/lib/queryKeys";
 import type {
   AgentPermissions,
   EmailEndpointSummary,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 const selectClass =
   "w-full rounded-md border border-line-strong bg-bg px-3 py-2 text-sm";
 

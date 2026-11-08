@@ -7,7 +7,7 @@ import express from "express";
 import request from "supertest";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { eq, sql } from "drizzle-orm";
-import * as schema from "@tickernelz/paperclip-pro-db";
+import * as schema from "@tickernelz/wardmote-db";
 import {
   INSPECTION_AUDIENCE,
   INSPECTION_HEADER,
@@ -16,7 +16,7 @@ import {
   parseInspectionQuery,
   type InspectionQuery,
   type InspectionPermit,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { customerSuccessRunAuthority } from "../services/customer-success-authority.js";
 import {
   readCustomerSuccessResource,

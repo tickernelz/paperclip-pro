@@ -14,7 +14,7 @@ import {
   type IssueExecutionWorkspaceSettings,
   type RoutineEnvConfig,
   type RoutineVariable,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   Activity as ActivityIcon,
   AlertTriangle,

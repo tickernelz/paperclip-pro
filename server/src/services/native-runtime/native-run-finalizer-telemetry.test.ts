@@ -17,7 +17,7 @@ import {
   agentWakeupRequests,
   workspaceOperations,
   activityLog,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

@@ -11,7 +11,7 @@ import {
   type DurableChatWakeupRequest,
 } from "../durable-chat-wakeup.js";
 import { createHash } from "node:crypto";
-import { legacyEnvKey } from "@tickernelz/paperclip-pro-shared/env-aliases";
+import { legacyEnvKey } from "@tickernelz/wardmote-shared/env-aliases";
 import {
   and,
   asc,
@@ -21,7 +21,7 @@ import {
   isNull,
   sql,
 } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   CHAT_PROVIDERS,
   CONNECTION_INTENT_AGENT_GUIDANCE,
@@ -31,7 +31,7 @@ import {
   type ChatProvider,
   type RoutineRevisionSnapshotV1,
   type SourceTrustMetadata,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   agents,
   assets,
@@ -59,7 +59,7 @@ import {
   toolMcpGatewayTokens,
   toolConnections,
   toolProfiles,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { HttpError } from "../../errors.js";
 import { filterResolvedGitHubConnectionsForRun } from "../git-credentials.js";
 import type {
@@ -106,11 +106,11 @@ import { createRunSecretRedactionRegistry } from "../run-secret-redaction.js";
 import {
   readPaperclipSkillSyncPreference,
   writePaperclipSkillSyncPreference,
-} from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+} from "@tickernelz/wardmote-adapter-utils/server-utils";
 import {
   extractSkillMentionIds,
   isUuidLike,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import type { TrustPresetResolution } from "../trust-preset-resolver.js";
 
 const EXTERNAL_ATTACHMENT_OMISSIONS_KEY = "externalAttachmentOmissions";

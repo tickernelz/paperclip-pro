@@ -4,29 +4,29 @@ import {
   buildSandboxNpmInstallCommand,
   getAdapterSessionManagement,
   PAPERCLIP_RUNNER_PERMISSION_CAPABILITIES,
-} from "@tickernelz/paperclip-pro-adapter-utils";
-import type { AdapterLoginCapability } from "@tickernelz/paperclip-pro-adapter-utils";
-import { runAdapterExecutionTargetShellCommand } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
+} from "@tickernelz/wardmote-adapter-utils";
+import type { AdapterLoginCapability } from "@tickernelz/wardmote-adapter-utils";
+import { runAdapterExecutionTargetShellCommand } from "@tickernelz/wardmote-adapter-utils/execution-target";
 import { CODEX_DEVICE_LOGIN_COMMAND } from "../services/ai-providers/codex/device-login-runner.js";
 import { parseDeviceLoginPrompt } from "../services/ai-providers/codex/device-login-parse.js";
 import { CLAUDE_SETUP_TOKEN_COMMAND } from "../services/ai-providers/claude/setup-token-runner.js";
 import { parseSetupTokenCredential, parseSetupTokenPrompt } from "../services/ai-providers/claude/setup-token-parse.js";
 import { GROK_DEVICE_LOGIN_COMMAND, parseGrokDeviceLoginPrompt } from "../services/ai-providers/grok/device-login-parse.js";
-import { models as codexModels } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/codex";
+import { models as codexModels } from "@tickernelz/wardmote-adapter-utils/provider-models/codex";
 import { testEnvironment as codexTestEnvironment } from "../services/ai-providers/codex/test.js";
 import { listCodexSkills, syncCodexSkills } from "../services/ai-providers/codex/skills.js";
 import { sessionCodec as codexSessionCodec } from "../services/ai-providers/codex/session-codec.js";
 import { testEnvironment as openCodeTestEnvironment } from "../services/ai-providers/opencode/test.js";
 import { listCodexModels, refreshCodexModels } from "./codex-models.js";
-import { models as claudeModels } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/claude";
-import { models as grokModels } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/grok";
-import { models as openCodeModels } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/opencode";
+import { models as claudeModels } from "@tickernelz/wardmote-adapter-utils/provider-models/claude";
+import { models as grokModels } from "@tickernelz/wardmote-adapter-utils/provider-models/grok";
+import { models as openCodeModels } from "@tickernelz/wardmote-adapter-utils/provider-models/opencode";
 import { testEnvironment as claudeTestEnvironment } from "../services/ai-providers/claude/test.js";
 import { listClaudeModels, refreshClaudeModels } from "../services/ai-providers/claude/models.js";
 import { testEnvironment as grokTestEnvironment } from "../services/ai-providers/grok/test.js";
 import { listOpenCodeModels } from "../services/ai-providers/opencode/models.js";
-import { createServerAdapter as createOmpLocalAdapter } from "@tickernelz/paperclip-pro-adapter-omp-local/server";
-import { RETIRED_ADAPTER_TYPES } from "@tickernelz/paperclip-pro-shared";
+import { createServerAdapter as createOmpLocalAdapter } from "@tickernelz/wardmote-adapter-omp-local/server";
+import { RETIRED_ADAPTER_TYPES } from "@tickernelz/wardmote-shared";
 import { createRetiredAdapter } from "./retired.js";
 import { BUILTIN_ADAPTER_TYPES } from "./builtin-adapter-types.js";
 import { buildExternalAdapters } from "./plugin-loader.js";

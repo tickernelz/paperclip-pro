@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import type { WorkTimelineResult } from "@tickernelz/paperclip-pro-shared";
+import type { WorkTimelineResult } from "@tickernelz/wardmote-shared";
 import { Minus, Plus, RotateCcw } from "lucide-react";
 import { Timeline } from "@/pages/Timeline";
 import {

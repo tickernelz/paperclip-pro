@@ -6,7 +6,7 @@ import {
   type Db,
   chatEndpoints,
   type chatConversations,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { and, eq, inArray } from "drizzle-orm";
 import { captureRunIdentity } from "../run-identity.js";
 import { forbidden } from "../../errors.js";

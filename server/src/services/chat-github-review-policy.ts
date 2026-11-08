@@ -9,7 +9,7 @@ import {
   type GitHubReviewEventContext,
   type GitHubAutomaticEventContext,
   type GitHubReviewPolicy,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 export function effectiveGitHubReviewPolicy(
   configuration: GitHubChatConfiguration,

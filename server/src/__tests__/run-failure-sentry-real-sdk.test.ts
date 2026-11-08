@@ -6,14 +6,14 @@ import path from "node:path";
 import { buildHeartbeatRunStopMetadata, mergeHeartbeatRunStopMetadata } from "../services/heartbeat-stop-metadata.js";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { collectRunFailureDiagnostics, sanitizeRunFailureDiagnostics } from "../services/run-failure-diagnostics.js";
-import type { heartbeatRuns } from "@tickernelz/paperclip-pro-db";
+import type { heartbeatRuns } from "@tickernelz/wardmote-db";
 import {
   preserveWorkspaceRestoreErrorDiagnostic,
   withWorkspaceRestoreDiagnostics,
   withWorkspaceRestoreStep,
   withWorkspaceRestoreGitCommand,
-} from "@tickernelz/paperclip-pro-adapter-utils/workspace-restore-diagnostics";
-import { createWorkspaceRestoreTeardown } from "@tickernelz/paperclip-pro-adapter-utils/workspace-restore-teardown";
+} from "@tickernelz/wardmote-adapter-utils/workspace-restore-diagnostics";
+import { createWorkspaceRestoreTeardown } from "@tickernelz/wardmote-adapter-utils/workspace-restore-teardown";
 
 // Sentry is an optional peer. When installed, exercise the real SDK with an
 // in-memory transport, including its context behavior without an OTel manager.
@@ -43,7 +43,7 @@ afterEach(async () => {
   vi.unstubAllEnvs();
   vi.doUnmock("@sentry/node");
   vi.doUnmock("../peer-version-check.js");
-  vi.doUnmock("@tickernelz/paperclip-pro-adapter-utils/execution-target");
+  vi.doUnmock("@tickernelz/wardmote-adapter-utils/execution-target");
   vi.resetModules();
 });
 

@@ -1,4 +1,4 @@
-import type { CompanyPortabilityFileEntry } from "@tickernelz/paperclip-pro-shared";
+import type { CompanyPortabilityFileEntry } from "@tickernelz/wardmote-shared";
 
 const textEncoder = new TextEncoder();
 const textDecoder = new TextDecoder();

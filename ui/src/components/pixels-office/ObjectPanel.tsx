@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import type { HeartbeatRun } from "@tickernelz/paperclip-pro-shared";
+import type { HeartbeatRun } from "@tickernelz/wardmote-shared";
 import { Link } from "@/lib/router";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";

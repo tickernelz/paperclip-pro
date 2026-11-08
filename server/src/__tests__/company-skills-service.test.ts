@@ -14,8 +14,8 @@ import {
   folders,
   projects,
   projectWorkspaces,
-} from "@tickernelz/paperclip-pro-db";
-import { parseFrontmatterMarkdown } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import { parseFrontmatterMarkdown } from "@tickernelz/wardmote-shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

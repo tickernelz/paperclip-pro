@@ -4,7 +4,7 @@ import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { renderToStaticMarkup } from "react-dom/server";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { ResolvedDecisionEntry, ResolvedDecisionPage } from "@tickernelz/paperclip-pro-shared";
+import type { ResolvedDecisionEntry, ResolvedDecisionPage } from "@tickernelz/wardmote-shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { QueueEmptyState } from "../pages/DecisionQueuePage";
 import { DecisionHistorySections, historySourceKinds } from "./DecisionHistory";

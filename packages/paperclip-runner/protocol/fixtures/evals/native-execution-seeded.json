@@ -14,7 +14,7 @@
   },
   "runner": {
     "package": {
-      "name": "@tickernelz/paperclip-pro-paperclip-runner",
+      "name": "@tickernelz/wardmote-paperclip-runner",
       "version": "0.0.0"
     },
     "binary": {

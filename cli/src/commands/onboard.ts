@@ -16,7 +16,7 @@ import {
   type DeploymentMode,
   type SecretProvider,
   type StorageProvider,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   backupInvalidConfig,
   configExists,
@@ -62,7 +62,7 @@ import {
   bundledOmpVersion,
   ompGateFailure,
   probeOmpInstall,
-} from "@tickernelz/paperclip-pro-adapter-omp-local/readiness";
+} from "@tickernelz/wardmote-adapter-omp-local/readiness";
 
 type SetupMode = "quickstart" | "advanced";
 
@@ -614,7 +614,7 @@ export async function onboard(opts: OnboardOptions): Promise<void> {
       const s = p.spinner();
       s.start("Testing database connection...");
       try {
-        const { createDb } = await import("@tickernelz/paperclip-pro-db");
+        const { createDb } = await import("@tickernelz/wardmote-db");
         const db = createDb(database.connectionString);
         await db.execute("SELECT 1");
         s.stop("Database connection successful");

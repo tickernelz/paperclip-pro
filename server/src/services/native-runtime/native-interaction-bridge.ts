@@ -1,4 +1,4 @@
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import type { NativeInteractionResponseEnvelope } from "../../vendor/paperclip-runner/index.js";
 import { and, asc, eq, inArray } from "drizzle-orm";
 import {
@@ -12,8 +12,8 @@ import {
   nativeRunResults,
   statusDecisions,
   workAssessments,
-} from "@tickernelz/paperclip-pro-db";
-import { getAgentWorkEligibility } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import { getAgentWorkEligibility } from "@tickernelz/wardmote-shared";
 import { issueThreadInteractionService } from "../issue-thread-interactions.js";
 import { commitNativeStatusDecision } from "./status-decision-committer.js";
 import { nativeSha256 } from "./canonical.js";

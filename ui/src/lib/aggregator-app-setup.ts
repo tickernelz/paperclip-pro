@@ -1,5 +1,5 @@
-import { aggregatorContinuationInstruction, type Agent, type ToolConnection } from "@tickernelz/paperclip-pro-shared";
-import type { AggregatorAppRoute } from "@tickernelz/paperclip-pro-shared/aggregator-app-catalog";
+import { aggregatorContinuationInstruction, type Agent, type ToolConnection } from "@tickernelz/wardmote-shared";
+import type { AggregatorAppRoute } from "@tickernelz/wardmote-shared/aggregator-app-catalog";
 import { isAgentTaskTarget } from "./company-members";
 
 // Connect consumer accounts live in For You, separately from developer projects.

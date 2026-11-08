@@ -59,7 +59,7 @@ test("linkSdkInto creates the plugin-sdk symlink and is idempotent", () => {
 
   assert.equal(linkSdkInto(pkg), true);
 
-  const link = join(pkg, "node_modules", "@tickernelz", "paperclip-pro-plugin-sdk");
+  const link = join(pkg, "node_modules", "@tickernelz", "wardmote-plugin-sdk");
   assert.ok(lstatSync(link).isSymbolicLink());
 
   // Second call is a no-op because the link already points at the in-repo SDK.
@@ -71,19 +71,19 @@ test("linkSdkInto leaves a real (non-symlink) install in place", () => {
   const scopeDir = join(pkg, "node_modules", "@tickernelz");
   mkdirSync(scopeDir, { recursive: true });
   // Simulate a published-tarball install: a real directory, not a symlink.
-  makePackage(join(scopeDir, "paperclip-pro-plugin-sdk"));
+  makePackage(join(scopeDir, "wardmote-plugin-sdk"));
 
   assert.equal(linkSdkInto(pkg), false);
-  assert.ok(!lstatSync(join(scopeDir, "paperclip-pro-plugin-sdk")).isSymbolicLink());
+  assert.ok(!lstatSync(join(scopeDir, "wardmote-plugin-sdk")).isSymbolicLink());
 });
 
 test("linkSdkInto replaces a symlink that points somewhere else", () => {
   const pkg = makePackage(join(workDir, "stale-link"));
   const scopeDir = join(pkg, "node_modules", "@tickernelz");
   mkdirSync(scopeDir, { recursive: true });
-  symlinkSync("../somewhere-else", join(scopeDir, "paperclip-pro-plugin-sdk"), "dir");
+  symlinkSync("../somewhere-else", join(scopeDir, "wardmote-plugin-sdk"), "dir");
 
   assert.equal(linkSdkInto(pkg), true);
-  assert.notEqual(readlinkSync(join(scopeDir, "paperclip-pro-plugin-sdk")), "../somewhere-else");
+  assert.notEqual(readlinkSync(join(scopeDir, "wardmote-plugin-sdk")), "../somewhere-else");
   assert.ok(existsSync(scopeDir));
 });

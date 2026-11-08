@@ -7,7 +7,7 @@ import {
   index,
   unique,
 } from "drizzle-orm/pg-core";
-import type { PluginStateScopeKind } from "@tickernelz/paperclip-pro-shared";
+import type { PluginStateScopeKind } from "@tickernelz/wardmote-shared";
 import { plugins } from "./plugins.js";
 
 /**

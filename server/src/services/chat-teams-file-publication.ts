@@ -1,7 +1,7 @@
 import { notifyChatPublicationWork } from "./chat-work-notifications.js";
 import { and, eq, sql } from "drizzle-orm";
 import { z } from "zod";
-import { CHAT_FILE_TRANSFER_PHASES } from "@tickernelz/paperclip-pro-shared";
+import { CHAT_FILE_TRANSFER_PHASES } from "@tickernelz/wardmote-shared";
 import {
   chatActions,
   chatConversations,
@@ -13,7 +13,7 @@ import {
   issueComments,
   issues,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { projectChatFileTransfer } from "./chat-publication-batches.js";
 import type { TeamsFileTransferSummary } from "./chat-teams-file-transfers.js";
 

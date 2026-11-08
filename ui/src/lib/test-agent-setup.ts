@@ -1,5 +1,5 @@
-import type { AdapterEnvironmentTestResult } from "@tickernelz/paperclip-pro-shared";
-import { ADAPTER_AUTH_MISSING_CHECK_CODE } from "@tickernelz/paperclip-pro-shared";
+import type { AdapterEnvironmentTestResult } from "@tickernelz/wardmote-shared";
+import { ADAPTER_AUTH_MISSING_CHECK_CODE } from "@tickernelz/wardmote-shared";
 import { agentsApi } from "../api/agents";
 
 /** ACP readiness checks do not authenticate a provider. Verify credentials with
@@ -10,7 +10,7 @@ export async function testAgentSetup(input: {
   adapterType: string;
   providerAdapter: string;
   adapterConfig: Record<string, unknown>;
-  aiConnection?: import("@tickernelz/paperclip-pro-shared").AiRuntimeConnectionBinding;
+  aiConnection?: import("@tickernelz/wardmote-shared").AiRuntimeConnectionBinding;
   testCredentials?: Record<string, string>;
   environmentId: string | null;
 }): Promise<AdapterEnvironmentTestResult> {

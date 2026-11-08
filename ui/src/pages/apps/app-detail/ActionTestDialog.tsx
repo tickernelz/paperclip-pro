@@ -19,8 +19,8 @@ import type {
   ToolConnectionTestCallStatus,
   ToolConnectionTestDecision,
   ToolUpstreamPending,
-} from "@tickernelz/paperclip-pro-shared";
-import { checkOAuthEndpointUrl } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
+import { checkOAuthEndpointUrl } from "@tickernelz/wardmote-shared";
 import { Link } from "@/lib/router";
 import { toolsApi } from "@/api/tools";
 import { queryKeys } from "@/lib/queryKeys";

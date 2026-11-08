@@ -14,10 +14,10 @@ pnpm test
 ## Install Into Paperclip
 
 ```bash
-npx @tickernelz/paperclip-pro plugin install ./
+npx @tickernelz/wardmote plugin install ./
 ```
 
 ## Build Options
 
-- `pnpm build` uses esbuild presets from `@tickernelz/paperclip-pro-plugin-sdk/bundlers`.
+- `pnpm build` uses esbuild presets from `@tickernelz/wardmote-plugin-sdk/bundlers`.
 - `pnpm build:rollup` uses rollup presets from the same SDK.

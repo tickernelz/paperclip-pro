@@ -2,7 +2,7 @@ import { credentialAccessConnectionNameSql } from "./credential-access-visibilit
 import { executionProjectionsForRunRows } from "./execution-projection.js";
 import { jsonbRecordFields } from "./jsonb-projection.js";
 import { and, asc, desc, eq, getTableColumns, inArray, isNull, or, sql, type SQL } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   activityLog,
   agents,
@@ -17,8 +17,8 @@ import {
   issues,
   issueWorkProducts,
   workspaceOperations,
-} from "@tickernelz/paperclip-pro-db";
-import { hasWorkspaceRestoreFailure, safeWorkspaceRestorePath, ISSUE_CONTINUATION_SUMMARY_DOCUMENT_KEY } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import { hasWorkspaceRestoreFailure, safeWorkspaceRestorePath, ISSUE_CONTINUATION_SUMMARY_DOCUMENT_KEY } from "@tickernelz/wardmote-shared";
 import { logger } from "../middleware/logger.js";
 import { visibleIssueCondition } from "./issue-visibility.js";
 import { classifyRunLiveness } from "./run-liveness.js";

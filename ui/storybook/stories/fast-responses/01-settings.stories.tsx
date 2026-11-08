@@ -5,7 +5,7 @@ import { choices } from "../decision-models/fixtures";
 import type {
   FastResponseSettings,
   FastResponseTestResult,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 export const empty: FastResponseSettings = {
   companyId: "company-storybook",
   enabled: false,

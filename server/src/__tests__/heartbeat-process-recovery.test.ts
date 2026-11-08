@@ -97,7 +97,7 @@ import {
   toolConnections,
   workAssessments,
   workspaceOperations,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -113,7 +113,7 @@ import { NativeRunnerOwnershipUnverifiedError } from "../services/native-runtime
 import { nativeCompletionSource } from "../services/native-runtime/completion-contracts.js";
 import { nativeCompletionFeedback } from "../services/native-runtime/native-completion-feedback.js";
 import type { PrpStructuredRunResult } from "../vendor/paperclip-runner/index.js";
-import { buildNativeModelEnvelope } from "@tickernelz/paperclip-pro-paperclip-runner";
+import { buildNativeModelEnvelope } from "@tickernelz/wardmote-paperclip-runner";
 import {
   CHAT_CONTROL_RECOVERY_ADMISSION_KEY,
   CHAT_CONTROL_RECOVERY_STOP_CODE,
@@ -207,10 +207,10 @@ vi.mock("../services/local-service-supervisor.js", async () => {
   };
 });
 
-vi.mock("@tickernelz/paperclip-pro-shared/telemetry", async () => {
+vi.mock("@tickernelz/wardmote-shared/telemetry", async () => {
   const actual = await vi.importActual<
-    typeof import("@tickernelz/paperclip-pro-shared/telemetry")
-  >("@tickernelz/paperclip-pro-shared/telemetry");
+    typeof import("@tickernelz/wardmote-shared/telemetry")
+  >("@tickernelz/wardmote-shared/telemetry");
   return {
     ...actual,
     trackAgentFirstHeartbeat: mockTrackAgentFirstHeartbeat,
@@ -274,7 +274,7 @@ import { collectDispositionRepairSourceState } from "../services/recovery/dispos
 import {
   UNMANAGED_BACKGROUND_TASK_LIVENESS_REASON,
   UNMANAGED_BACKGROUND_TASK_STOP_REASON,
-} from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+} from "@tickernelz/wardmote-adapter-utils/server-utils";
 const externalTestDatabaseUrl = process.env.PAPERCLIP_TEST_DATABASE_URL?.trim();
 const embeddedPostgresSupport = externalTestDatabaseUrl
   ? { supported: true }
@@ -4568,7 +4568,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     await db.insert(plugins).values({
       id: pluginId,
       pluginKey: "paperclip.kubernetes-sandbox-provider",
-      packageName: "@tickernelz/paperclip-pro-kubernetes-sandbox-provider",
+      packageName: "@tickernelz/wardmote-kubernetes-sandbox-provider",
       version: "1.0.0",
       apiVersion: 1,
       categories: ["automation"],
@@ -4781,7 +4781,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     await db.insert(plugins).values({
       id: pluginId,
       pluginKey: "paperclip.kubernetes-sandbox-provider",
-      packageName: "@tickernelz/paperclip-pro-kubernetes-sandbox-provider",
+      packageName: "@tickernelz/wardmote-kubernetes-sandbox-provider",
       version: "1.0.0",
       apiVersion: 1,
       categories: ["automation"],
@@ -7662,7 +7662,7 @@ describeEmbeddedPostgres("heartbeat orphaned process recovery", () => {
     await db.insert(budgetPolicies).values({ companyId, scopeType: "company", scopeId: companyId,
       metric: "billed_cents", windowKind: "calendar_month_utc", amount: 100, reservationCents: "10.0000000", isActive: true });
     mockAdapterExecute.mockImplementationOnce(async (raw?: unknown) => {
-      const input = raw as { onUsage: (receipt: import("@tickernelz/paperclip-pro-adapter-utils").AdapterUsageCheckpoint) => Promise<void> };
+      const input = raw as { onUsage: (receipt: import("@tickernelz/wardmote-adapter-utils").AdapterUsageCheckpoint) => Promise<void> };
       await input.onUsage({ costUsd: 0, complete: true });
       const transaction = vi.spyOn(db, "transaction").mockRejectedValueOnce(new Error("Database temporarily unavailable"));
       const rename = vi.spyOn(fs, "rename").mockRejectedValueOnce(new Error("Receipt disk full"));

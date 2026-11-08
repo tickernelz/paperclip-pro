@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import type { AdapterRuntimeEvent } from "@tickernelz/paperclip-pro-adapter-utils";
+import type { AdapterRuntimeEvent } from "@tickernelz/wardmote-adapter-utils";
 import { createOmpModelFallbackTracker, ompFallbackChain, stripOmpThinkingSuffix } from "./model-fallback.js";
 
 describe("OMP model fallback tracker", () => {

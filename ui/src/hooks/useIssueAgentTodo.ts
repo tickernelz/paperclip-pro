@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import type { AgentTodoSnapshot } from "@tickernelz/paperclip-pro-shared";
+import type { AgentTodoSnapshot } from "@tickernelz/wardmote-shared";
 import { issuesApi } from "@/api/issues";
 import { queryKeys } from "@/lib/queryKeys";
 

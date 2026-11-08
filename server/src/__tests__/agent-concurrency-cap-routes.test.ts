@@ -6,7 +6,7 @@ import express from "express";
 import request from "supertest";
 import { and, eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
-import { activityLog, agentConfigRevisions, agents, companies, companyMemberships, createDb, closeRegisteredClients, heartbeatRuns, principalPermissionGrants } from "@tickernelz/paperclip-pro-db";
+import { activityLog, agentConfigRevisions, agents, companies, companyMemberships, createDb, closeRegisteredClients, heartbeatRuns, principalPermissionGrants } from "@tickernelz/wardmote-db";
 import { startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";
 import { agentRoutes } from "../routes/agents.js";
 import { errorHandler } from "../middleware/index.js";

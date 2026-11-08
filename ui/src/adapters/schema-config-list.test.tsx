@@ -2,7 +2,7 @@
 import { act, useState } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { AdapterConfigSchema, CreateConfigValues } from "@tickernelz/paperclip-pro-adapter-utils";
+import type { AdapterConfigSchema, CreateConfigValues } from "@tickernelz/wardmote-adapter-utils";
 import { SchemaConfigFields, buildSchemaAdapterConfig, invalidateConfigSchemaCache } from "./schema-config-fields";
 import userEvent from "@testing-library/user-event";
 import { TooltipProvider } from "../components/ui/tooltip";

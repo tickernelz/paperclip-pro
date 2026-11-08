@@ -1,5 +1,5 @@
 import { useEffect, useId, useState, type KeyboardEvent, type ReactNode } from "react";
-import { validateAgentFallbackModels, type IssueRunModelOverrideOption } from "@tickernelz/paperclip-pro-shared";
+import { validateAgentFallbackModels, type IssueRunModelOverrideOption } from "@tickernelz/wardmote-shared";
 import { ArrowDown, ArrowUp, Check, ChevronDown, Plus, Search, X } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "../components/ui/popover";
 import { Button } from "../components/ui/button";

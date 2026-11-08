@@ -58,7 +58,7 @@ import type {
   Agent,
   ExternalObjectLivenessState,
   ExternalObjectStatusCategory,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 const noCacheSubscription = () => () => {};
 

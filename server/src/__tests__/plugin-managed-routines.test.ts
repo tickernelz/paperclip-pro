@@ -18,8 +18,8 @@ import {
   routineRuns,
   routineTriggers,
   routines,
-} from "@tickernelz/paperclip-pro-db";
-import type { PaperclipPluginManifestV1 } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import type { PaperclipPluginManifestV1 } from "@tickernelz/wardmote-shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -145,7 +145,7 @@ describeEmbeddedPostgres("plugin-managed routines", () => {
     await db.insert(plugins).values({
       id: pluginId,
       pluginKey: pluginManifest.id,
-      packageName: "@tickernelz/paperclip-pro-plugin-managed-routines-test",
+      packageName: "@tickernelz/wardmote-plugin-managed-routines-test",
       version: pluginManifest.version,
       apiVersion: pluginManifest.apiVersion,
       categories: pluginManifest.categories,

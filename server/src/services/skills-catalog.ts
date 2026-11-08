@@ -9,7 +9,7 @@ import type {
   CatalogSkillFileDetail,
   CatalogSkillListQuery,
   CatalogSkillSource,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { HttpError, conflict, notFound, unprocessable } from "../errors.js";
 import { logger } from "../middleware/logger.js";
 import { ghFetch, resolveRawGitHubUrl } from "./github-fetch.js";
@@ -24,7 +24,7 @@ interface CatalogManifestFile {
 const serviceDir = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(serviceDir, "../../..");
 const require = createRequire(import.meta.url);
-const catalogPackageName = "@tickernelz/paperclip-pro-skills-catalog";
+const catalogPackageName = "@tickernelz/wardmote-skills-catalog";
 const catalogPackageJsonSpecifier = `${catalogPackageName}/package.json`;
 const catalogManifestSpecifier = `${catalogPackageName}/catalog.json`;
 const devCatalogPackageRoot = path.join(repoRoot, "packages/skills-catalog");
@@ -64,7 +64,7 @@ export function isCatalogManifestUnavailableError(error: unknown): error is Cata
 }
 
 function manifestUnavailableMessage(manifestPath: string) {
-  return `Skills catalog manifest not found at ${manifestPath}. Run pnpm --filter @tickernelz/paperclip-pro-skills-catalog build:manifest.`;
+  return `Skills catalog manifest not found at ${manifestPath}. Run pnpm --filter @tickernelz/wardmote-skills-catalog build:manifest.`;
 }
 
 function packageResolutionFailureMessage() {

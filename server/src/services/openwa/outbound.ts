@@ -1,10 +1,10 @@
 import { createHash, randomUUID } from "node:crypto";
 import { and, asc, desc, eq, gte, inArray, isNull, or } from "drizzle-orm";
-import { chatOutboundMessages, type Db } from "@tickernelz/paperclip-pro-db";
+import { chatOutboundMessages, type Db } from "@tickernelz/wardmote-db";
 import type {
   ChatOutboundMessageSource,
   ChatOutboundMessageState,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   OpenwaGatewayError,
   type OpenwaGatewayClient,

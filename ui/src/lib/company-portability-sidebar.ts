@@ -1,5 +1,5 @@
-import type { Agent, CompanyPortabilitySidebarOrder, Project } from "@tickernelz/paperclip-pro-shared";
-import { deriveProjectUrlKey, normalizeAgentUrlKey } from "@tickernelz/paperclip-pro-shared";
+import type { Agent, CompanyPortabilitySidebarOrder, Project } from "@tickernelz/wardmote-shared";
+import { deriveProjectUrlKey, normalizeAgentUrlKey } from "@tickernelz/wardmote-shared";
 
 function uniqueSlug(base: string, used: Set<string>) {
   if (!used.has(base)) {

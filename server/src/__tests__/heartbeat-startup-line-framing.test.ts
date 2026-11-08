@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { describe, expect, it } from "vitest";
-import { isOmpStartupComplete } from "@tickernelz/paperclip-pro-adapter-omp-local/server";
+import { isOmpStartupComplete } from "@tickernelz/wardmote-adapter-omp-local/server";
 import {
   clearLocalCliRunStarting,
   reportsStartupComplete,

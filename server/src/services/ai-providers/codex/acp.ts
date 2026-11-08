@@ -8,38 +8,38 @@ import type {
   AdapterEnvironmentTestResult,
   AdapterExecutionContext,
   AdapterExecutionResult,
-} from "@tickernelz/paperclip-pro-adapter-utils";
+} from "@tickernelz/wardmote-adapter-utils";
 import {
   parseLocalProcessFilesystemScope,
   parseLocalProcessNetworkScope,
-} from "@tickernelz/paperclip-pro-adapter-utils/local-process-sandbox";
-import { inferOpenAiCompatibleBiller, resolveManagedOpenAiBilling } from "@tickernelz/paperclip-pro-adapter-utils";
+} from "@tickernelz/wardmote-adapter-utils/local-process-sandbox";
+import { inferOpenAiCompatibleBiller, resolveManagedOpenAiBilling } from "@tickernelz/wardmote-adapter-utils";
 import {
   ensureAdapterExecutionTargetCommandResolvable,
   readAdapterExecutionTarget,
   resolveAdapterExecutionTargetCwd,
-} from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
+} from "@tickernelz/wardmote-adapter-utils/execution-target";
 import {
   DEFAULT_ACP_ENGINE_MODE,
   DEFAULT_ACP_ENGINE_NON_INTERACTIVE_PERMISSIONS,
   DEFAULT_ACP_ENGINE_PERMISSION_MODE,
   DEFAULT_ACP_ENGINE_WARM_HANDLE_IDLE_MS,
-} from "@tickernelz/paperclip-pro-adapter-utils/acpx-engine/constants";
+} from "@tickernelz/wardmote-adapter-utils/acpx-engine/constants";
 import type {
   AcpxEngineExecutorOptions,
   AcpxRemoteManagedHomeContext,
   AcpxRemoteManagedHomeResult,
   AcpxTerminalFailureClassification,
   AcpxTerminalSessionFailure,
-} from "@tickernelz/paperclip-pro-adapter-utils/acpx-engine/execute";
+} from "@tickernelz/wardmote-adapter-utils/acpx-engine/execute";
 import {
   asNumber,
   asString,
   asStringArray,
   parseObject,
-} from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
-import { createWorkspaceRestoreTeardown } from "@tickernelz/paperclip-pro-adapter-utils/workspace-restore-teardown";
-import { normalizeCodexModel } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/codex";
+} from "@tickernelz/wardmote-adapter-utils/server-utils";
+import { createWorkspaceRestoreTeardown } from "@tickernelz/wardmote-adapter-utils/workspace-restore-teardown";
+import { normalizeCodexModel } from "@tickernelz/wardmote-adapter-utils/provider-models/codex";
 import { classifyCodexAuthRefreshFailure, extractCodexRetryNotBefore } from "./parse.js";
 import { copyBackCodexAuth } from "./codex-auth-copyback.js";
 import { buildCodexAuthInboundProvision } from "./codex-auth-merge-scripts.js";
@@ -359,7 +359,7 @@ export function createCodexAcpExecutor(options: CodexAcpExecutorOptions = {}): C
   return async (ctx) => {
     let currentExecutor = executor;
     if (!currentExecutor) {
-      const { createAcpxEngineExecutor } = await import("@tickernelz/paperclip-pro-adapter-utils/acpx-engine/execute");
+      const { createAcpxEngineExecutor } = await import("@tickernelz/wardmote-adapter-utils/acpx-engine/execute");
       currentExecutor = createAcpxEngineExecutor(withCodexAcpDefaults(options));
       executor = currentExecutor;
     }

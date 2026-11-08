@@ -1,6 +1,6 @@
-import { requiresExecutionReconciliation } from "@tickernelz/paperclip-pro-shared";
+import { requiresExecutionReconciliation } from "@tickernelz/wardmote-shared";
 import type { ReactNode } from "react";
-import type { ExternalObjectSummary, Issue, IssueRecoveryAction } from "@tickernelz/paperclip-pro-shared";
+import type { ExternalObjectSummary, Issue, IssueRecoveryAction } from "@tickernelz/wardmote-shared";
 import { Link } from "@/lib/router";
 import { Archive, Flag } from "lucide-react";
 import {

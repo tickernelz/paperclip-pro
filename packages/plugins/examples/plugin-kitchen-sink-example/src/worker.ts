@@ -21,8 +21,8 @@ import {
   type ScopeKey,
   type ToolResult,
   type ToolRunContext,
-} from "@tickernelz/paperclip-pro-plugin-sdk";
-import type { Goal, Issue } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-plugin-sdk";
+import type { Goal, Issue } from "@tickernelz/wardmote-shared";
 import {
   DEFAULT_CONFIG,
   JOB_KEYS,

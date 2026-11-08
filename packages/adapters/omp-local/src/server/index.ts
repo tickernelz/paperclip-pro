@@ -3,7 +3,7 @@ import type {
   AdapterSessionCodec,
   AdapterSessionManagement,
   ServerAdapterModule,
-} from "@tickernelz/paperclip-pro-adapter-utils";
+} from "@tickernelz/wardmote-adapter-utils";
 import {
   agentConfigurationDoc,
   models,

@@ -12,8 +12,8 @@ import {
   issueAttachments,
   issueDocuments,
   issues,
-} from "@tickernelz/paperclip-pro-db";
-import { artifactReviewDocumentKey } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import { artifactReviewDocumentKey } from "@tickernelz/wardmote-shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

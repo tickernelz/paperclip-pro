@@ -1,4 +1,4 @@
-import type { SecretProvider, SecretProviderDescriptor } from "@tickernelz/paperclip-pro-shared";
+import type { SecretProvider, SecretProviderDescriptor } from "@tickernelz/wardmote-shared";
 import { awsSecretsManagerProvider } from "./aws-secrets-manager-provider.js";
 import { localEncryptedProvider } from "./local-encrypted-provider.js";
 import {

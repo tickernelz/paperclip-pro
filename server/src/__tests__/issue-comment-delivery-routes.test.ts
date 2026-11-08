@@ -19,9 +19,9 @@ import {
   issues,
   issueThreadInteractions,
   runIdentityContexts,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { runningProcesses } from "../adapters/index.js";
-import { LOW_TRUST_REVIEW_PRESET } from "@tickernelz/paperclip-pro-shared";
+import { LOW_TRUST_REVIEW_PRESET } from "@tickernelz/wardmote-shared";
 import { LOW_TRUST_QUARANTINED_BODY } from "../services/source-trust.js";
 import {
   adapterExecutionControls,
@@ -38,7 +38,7 @@ import {
 import type * as NativeSessionExecutor from "../services/native-runtime/native-session-executor.js";
 import { appendHeartbeatRunEvent } from "../services/heartbeat-run-events.js";
 import { queuedCommentIdsFromWakePayload } from "../services/issue-queued-comment-queue.js";
-import { registerAdapterSteerTarget } from "@tickernelz/paperclip-pro-adapter-utils/adapter-steer-registry";
+import { registerAdapterSteerTarget } from "@tickernelz/wardmote-adapter-utils/adapter-steer-registry";
 import { createOmpRpcSteerSession } from "../../../packages/adapters/omp-local/src/server/rpc-session.js";
 import type * as Services from "../services/index.js";
 import {

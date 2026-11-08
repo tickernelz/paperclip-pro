@@ -1,6 +1,6 @@
 import { Router } from "express";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { applyOnboardingSeedSchema } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/wardmote-db";
+import { applyOnboardingSeedSchema } from "@tickernelz/wardmote-shared";
 import { validate } from "../middleware/index.js";
 import { onboardingSeedService } from "../services/onboarding-seed.js";
 import { assertCompanyAccess, getActorInfo } from "./authz.js";
