@@ -158,13 +158,17 @@ describe("startServiceWorkerUpdates", () => {
     expect(reload).not.toHaveBeenCalled();
   });
 
-  it("does not offer a waiting worker built from the assets the page already runs", async () => {
+  it("activates a waiting worker built from the assets the page already runs without offering a reload", async () => {
     const waiting = fakeWorker("index-new");
-    const { container } = fakeContainer({ controlled: true, waiting });
-    const { onUpdateReady } = start(container, fakeDocument(), "index-new");
+    const { container } = fakeContainer({ controlled: true, waiting, controller: fakeWorker("index-old") });
+    const { onUpdateReady, reload } = start(container, fakeDocument(), "index-new");
+    await vi.advanceTimersByTimeAsync(0);
+    expect(waiting.postMessage).toHaveBeenCalledWith({ type: SKIP_WAITING_MESSAGE });
+    container.controller = waiting as unknown as ServiceWorker;
+    container.emit("controllerchange");
     await vi.advanceTimersByTimeAsync(5000);
     expect(onUpdateReady).not.toHaveBeenCalled();
-    expect(waiting.postMessage).not.toHaveBeenCalledWith({ type: SKIP_WAITING_MESSAGE });
+    expect(reload).not.toHaveBeenCalled();
   });
 
   it("offers a waiting worker built from newer assets than the page", async () => {

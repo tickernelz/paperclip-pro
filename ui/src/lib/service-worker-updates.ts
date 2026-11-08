@@ -87,7 +87,12 @@ export function startServiceWorkerUpdates(
     reload();
   };
   const offerWaiting = async (worker: ServiceWorker) => {
-    if (!(await servesNewerBuild(worker)) || stopped) return;
+    const newer = await servesNewerBuild(worker);
+    if (stopped) return;
+    if (!newer) {
+      worker.postMessage({ type: SKIP_WAITING_MESSAGE });
+      return;
+    }
     onUpdateReady(() => {
       applyRequested = true;
       worker.postMessage({ type: SKIP_WAITING_MESSAGE });
