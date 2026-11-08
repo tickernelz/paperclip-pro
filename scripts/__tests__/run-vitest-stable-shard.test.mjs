@@ -48,7 +48,7 @@ function dryRunJson(args, envOverrides = {}) {
   return JSON.parse(result.stdout);
 }
 
-const SHARD_COUNT = 5;
+const SHARD_COUNT = 6;
 const SERIALIZED_SHARD_COUNT = 3;
 
 
@@ -255,11 +255,9 @@ test("the real shard partition is duration-balanced", () => {
   // bound. The chat and native-runner suites run in their own lanes, so
   // exclude them here.
   const chat = "server/src/__tests__/chat-channels.integration.test.ts";
-  const nativeRunner =
-    "server/src/services/native-runtime/native-codex-runner.integration.test.ts";
   const heaviest = Math.max(
     ...Object.entries(durations)
-      .filter(([file]) => file !== chat && file !== nativeRunner)
+      .filter(([file]) => file !== chat && !nativeRunnerSuitePaths.includes(file))
       .map(([, ms]) => ms),
   );
   assert.ok(
@@ -270,8 +268,10 @@ test("the real shard partition is duration-balanced", () => {
 
 
 const chatSuitePath = "server/src/__tests__/chat-channels.integration.test.ts";
-const nativeRunnerSuitePath =
-  "server/src/services/native-runtime/native-codex-runner.integration.test.ts";
+const nativeRunnerSuitePaths = [
+  "server/src/services/native-runtime/native-codex-runner.integration.test.ts",
+  "server/src/__tests__/dot-runner.test.ts",
+];
 
 // Mirrors ci.yml: the chat suite runs in its dedicated lane and the
 // cargo-dependent native-runner suite in the Rust-cached Verify Paperclip
@@ -285,8 +285,8 @@ test("the without-chat shards plus the dedicated chat and native-runner lanes co
   ], ciEnv));
   const files = shards.flatMap((shard) => shard.selectedGeneralServerSuites);
   assert.ok(!files.includes(chatSuitePath));
-  assert.ok(!files.includes(nativeRunnerSuitePath));
-  assert.deepEqual([...files, chatSuitePath, nativeRunnerSuitePath].sort(), full.selectedGeneralServerSuites.sort());
+  for (const suite of nativeRunnerSuitePaths) assert.ok(!files.includes(suite));
+  assert.deepEqual([...files, chatSuitePath, ...nativeRunnerSuitePaths].sort(), full.selectedGeneralServerSuites.sort());
   assert.equal(new Set(files).size, files.length);
   const defaultRun = dryRunJson([], ciEnv);
   assert.ok(defaultRun.generalServerSuiteCount === full.generalServerSuiteCount);
@@ -303,22 +303,20 @@ for (const [caller, envOverrides] of [["Release", { GITHUB_WORKFLOW: "Release" }
     ], envOverrides));
     const files = shards.flatMap((shard) => shard.selectedGeneralServerSuites);
     assert.ok(!files.includes(chatSuitePath));
-    assert.ok(files.includes(nativeRunnerSuitePath));
+    for (const suite of nativeRunnerSuitePaths) assert.ok(files.includes(suite));
     assert.deepEqual([...files, chatSuitePath].sort(), full.selectedGeneralServerSuites.sort());
     assert.equal(new Set(files).size, files.length);
   });
 }
 
-test("the native-runner lane runs exactly the cargo-dependent vertical-slice suite", () => {
+test("the native-runner lane runs exactly the cargo-building suites", () => {
   const lane = dryRunJson(["--mode", "general", "--group", "general-server-native-runner"]);
-  assert.deepEqual(lane.selectedGeneralServerSuites, [
-    "server/src/services/native-runtime/native-codex-runner.integration.test.ts",
-  ]);
+  assert.deepEqual(lane.selectedGeneralServerSuites, nativeRunnerSuitePaths);
 });
 
 test("shard flags are rejected for the native-runner group", () => {
   const result = dryRun(["--mode", "general", "--group", "general-server-native-runner", "--shard-index", "0", "--shard-count", "2"]);
-  assert.notEqual(result.status, 0, "the native-runner lane is a single suite and must not accept shard flags");
+  assert.notEqual(result.status, 0, "the native-runner lane is one unsharded lane and must not accept shard flags");
 });
 
 test("the docs mode reports the documentation-reading suites and nothing else", () => {

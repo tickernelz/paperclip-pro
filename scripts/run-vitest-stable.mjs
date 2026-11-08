@@ -72,16 +72,14 @@ const generalServerWithoutChatGroupName = "general-server-without-chat";
 const generalChatGroupName = "general-chat";
 const generalServerNativeRunnerGroupName = "general-server-native-runner";
 const chatSuite = "server/src/__tests__/chat-channels.integration.test.ts";
-// This suite rebuilds the Runner release binaries with cargo in beforeAll.
-// Inside the plain server shards, which carry no Rust cache,
-// that build was a ~4m30s cold compile of every third-party crate on each run
-// (277s of a 291s shard vitest step, actions run 35246999382, 2026-09-17).
-const nativeRunnerSuite =
-  "server/src/services/native-runtime/native-codex-runner.integration.test.ts";
+const nativeRunnerSuites = [
+  "server/src/services/native-runtime/native-codex-runner.integration.test.ts",
+  "server/src/__tests__/dot-runner.test.ts",
+];
 const ciWorkflowName = "CI";
-const nativeRunnerSuiteRunsInRustCachedLane = process.env.GITHUB_WORKFLOW === ciWorkflowName;
-const withoutChatExcludedSuites = nativeRunnerSuiteRunsInRustCachedLane
-  ? [chatSuite, nativeRunnerSuite]
+const nativeRunnerSuitesRunInRustCachedLane = process.env.GITHUB_WORKFLOW === ciWorkflowName;
+const withoutChatExcludedSuites = nativeRunnerSuitesRunInRustCachedLane
+  ? [chatSuite, ...nativeRunnerSuites]
   : [chatSuite];
 const generalWorkspacesAGroupName = "general-workspaces-a";
 const generalWorkspacesBGroupName = "general-workspaces-b";
@@ -434,8 +432,8 @@ function runGeneralGroup(routeTests, groupName, shardIndex = null, shardCount = 
   }
   if (groupName === generalServerNativeRunnerGroupName) {
     runVitest(
-      ["--project", "@tickernelz/paperclip-pro-server", ...serializedServerVitestArgs, nativeRunnerSuite],
-      "native runner vertical-slice suite",
+      ["--project", "@tickernelz/paperclip-pro-server", ...serializedServerVitestArgs, ...nativeRunnerSuites],
+      "cargo-building native runner suites",
     );
     return;
   }
@@ -588,7 +586,7 @@ if (options.dryRun) {
         generalServerSuiteCount: generalServerTestFiles.length,
         selectedGeneralServerSuites:
           options.mode === generalModeName && options.group === generalServerNativeRunnerGroupName
-            ? [nativeRunnerSuite]
+            ? nativeRunnerSuites
             : options.mode === generalModeName &&
                 [generalServerGroupName, generalServerWithoutChatGroupName].includes(options.group) &&
                 options.shardCount !== null
