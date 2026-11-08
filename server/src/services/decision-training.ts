@@ -10,7 +10,7 @@ import {
   sql,
   type SQL,
 } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   approvals,
   decisionTrainingExamples,
@@ -22,13 +22,13 @@ import {
   issues,
   issueThreadInteractions,
   projectWorkspaces,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import type {
   DecisionTrainingNotesHistoryEntry,
   DecisionTrainingSnapshotV1,
   DecisionTrainingSourceKind,
-} from "@tickernelz/paperclip-pro-shared";
-import { DECISION_TRAINING_RETENTION_POLICY } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
+import { DECISION_TRAINING_RETENTION_POLICY } from "@tickernelz/wardmote-shared";
 import { conflict, notFound } from "../errors.js";
 
 type CaptureInput = {

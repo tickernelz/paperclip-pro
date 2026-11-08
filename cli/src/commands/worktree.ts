@@ -25,12 +25,12 @@ import { and, eq, inArray, sql } from "drizzle-orm";
 import {
   resolveCanonicalWorktreeSeedSource,
   resolveRegisteredWorktreeSeedSource,
-} from "@tickernelz/paperclip-pro-shared/worktree-seed-source";
+} from "@tickernelz/wardmote-shared/worktree-seed-source";
 import {
   readWorktreePortRegistry,
   withWorktreePortRegistryLock,
   writeWorktreePortRegistry,
-} from "@tickernelz/paperclip-pro-shared/worktree-port-registry";
+} from "@tickernelz/wardmote-shared/worktree-port-registry";
 import {
   applyPendingMigrations,
   agents,
@@ -65,13 +65,13 @@ import {
   formatEmbeddedPostgresError,
   loadWithoutEmbeddedPostgresExitHooks,
   prepareEmbeddedPostgresNativeRuntime,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import type { Command } from "commander";
 import { ensureAgentJwtSecret, ensureToolActionSigningSecret, loadPaperclipEnvFile, mergePaperclipEnvEntries, readPaperclipEnvEntries, resolvePaperclipEnvFile } from "../config/env.js";
 import { expandHomePrefix, resolvePaperclipHomeDir } from "../config/home.js";
 import type { PaperclipConfig } from "../config/schema.js";
 import { readConfig, resolveConfigPath, writeConfig } from "../config/store.js";
-import { printPaperclipCliBanner } from "../utils/banner.js";
+import { printWardmoteCliBanner } from "../utils/banner.js";
 import { resolveRuntimeLikePath } from "../utils/path-resolver.js";
 import {
   buildWorktreeConfig,
@@ -2603,13 +2603,13 @@ async function runWorktreeInit(opts: WorktreeInitOptions): Promise<void> {
 }
 
 export async function worktreeInitCommand(opts: WorktreeInitOptions): Promise<void> {
-  printPaperclipCliBanner();
+  printWardmoteCliBanner();
   p.intro(pc.bgCyan(pc.black(" wardmote worktree init ")));
   await runWorktreeInit(opts);
 }
 
 export async function worktreeEnsureSeededCommand(opts: WorktreeEnsureSeededOptions): Promise<void> {
-  printPaperclipCliBanner();
+  printWardmoteCliBanner();
   p.intro(pc.bgCyan(pc.black(" wardmote worktree ensure-seeded ")));
 
   const spinner = p.spinner();
@@ -2647,7 +2647,7 @@ export async function worktreeEnsureSeededCommand(opts: WorktreeEnsureSeededOpti
 }
 
 export async function worktreeMakeCommand(nameArg: string, opts: WorktreeMakeOptions): Promise<void> {
-  printPaperclipCliBanner();
+  printWardmoteCliBanner();
   p.intro(pc.bgCyan(pc.black(" wardmote worktree:make ")));
 
   const name = resolveWorktreeMakeName(nameArg);
@@ -2880,7 +2880,7 @@ function worktreePathHasUncommittedChanges(worktreePath: string): boolean {
 }
 
 export async function worktreeCleanupCommand(nameArg: string, opts: WorktreeCleanupOptions): Promise<void> {
-  printPaperclipCliBanner();
+  printWardmoteCliBanner();
   p.intro(pc.bgCyan(pc.black(" wardmote worktree:cleanup ")));
 
   const name = resolveWorktreeMakeName(nameArg);
@@ -4370,13 +4370,13 @@ async function runWorktreeReseed(opts: WorktreeReseedOptions): Promise<void> {
 }
 
 export async function worktreeReseedCommand(opts: WorktreeReseedOptions): Promise<void> {
-  printPaperclipCliBanner();
+  printWardmoteCliBanner();
   p.intro(pc.bgCyan(pc.black(" wardmote worktree reseed ")));
   await runWorktreeReseed(opts);
 }
 
 export async function worktreeRepairCommand(opts: WorktreeRepairOptions): Promise<void> {
-  printPaperclipCliBanner();
+  printWardmoteCliBanner();
   p.intro(pc.bgCyan(pc.black(" wardmote worktree repair ")));
 
   const seedMode = opts.seedMode ?? "minimal";

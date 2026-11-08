@@ -1,5 +1,5 @@
 import { and, asc, desc, eq, inArray, isNotNull, isNull, notInArray, or, sql, type SQL } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   agents,
   approvals,
@@ -25,8 +25,8 @@ import {
   documents,
   projects,
   projectWorkspaces,
-} from "@tickernelz/paperclip-pro-db";
-import { deriveProjectUrlKey } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import { deriveProjectUrlKey } from "@tickernelz/wardmote-shared";
 import type {
   AttentionDecisionVerb,
   AttentionFeed,
@@ -47,7 +47,7 @@ import type {
   IssueThreadInteractionResolverPolicyProvenance,
   IssueReviewAttention,
   IssueReviewPolicy,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { badRequest } from "../errors.js";
 import {
   listAttentionExhaustedRuns,
@@ -365,7 +365,7 @@ function interactionDetail(input: {
   };
 }
 
-function issueHref(prefix: string, issue: Pick<IssueSubjectRow, "id" | "identifier">) {
+export function issueHref(prefix: string, issue: Pick<IssueSubjectRow, "id" | "identifier">) {
   return `/${prefix}/issues/${issue.identifier ?? issue.id}`;
 }
 
@@ -693,7 +693,7 @@ function betterDuplicate(left: AttentionItem, right: AttentionItem) {
   return compareAttentionItems(left, right) <= 0 ? left : right;
 }
 
-function approvalTitle(type: string, payload: Record<string, unknown>) {
+export function approvalTitle(type: string, payload: Record<string, unknown>) {
   const title = typeof payload.title === "string" ? payload.title.trim() : "";
   if (title) return title;
   const summary = typeof payload.summary === "string" ? payload.summary.trim() : "";
@@ -701,7 +701,7 @@ function approvalTitle(type: string, payload: Record<string, unknown>) {
   return type.replaceAll("_", " ");
 }
 
-function interactionLabel(kind: string) {
+export function interactionLabel(kind: string) {
   switch (kind) {
     case "request_confirmation":
       return "Confirmation requested";
@@ -831,7 +831,7 @@ function budgetObservedPercent(amountObserved: number, amountLimit: number) {
   return amountLimit > 0 ? Math.round((amountObserved / amountLimit) * 10_000) / 100 : 0;
 }
 
-async function companyPrefix(db: Db, companyId: string) {
+export async function companyPrefix(db: Db, companyId: string) {
   const row = await db
     .select({ issuePrefix: companies.issuePrefix })
     .from(companies)

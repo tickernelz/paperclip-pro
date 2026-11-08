@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 
 import { and, desc, eq, inArray, isNull, sql } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   assets,
   agents,
@@ -19,7 +19,7 @@ import {
   issueComments,
   issues,
   issueWorkProducts,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 
 import {
   isAllowedContentType,

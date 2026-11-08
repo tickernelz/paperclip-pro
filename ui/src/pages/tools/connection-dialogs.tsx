@@ -5,7 +5,7 @@ import type {
   CompanySecret,
   McpConnectionCredentialRef,
   ToolConnection,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { queryKeys } from "@/lib/queryKeys";
 import { toolsApi, type CreateToolConnectionInput } from "@/api/tools";
 import { secretsApi } from "@/api/secrets";

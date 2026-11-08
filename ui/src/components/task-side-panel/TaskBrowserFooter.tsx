@@ -13,7 +13,7 @@ import {
   type BrowserUseViewportPreset,
   type BrowserUseControl,
   type TaskBrowser,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,

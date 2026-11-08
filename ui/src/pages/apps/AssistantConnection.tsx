@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
-import { assistantClientNames, mcpAuthorizationHandoffInstructions, mcpInvitation, mcpSetupSteps, type AssistantClient, type McpConnection } from "@tickernelz/paperclip-pro-shared";
+import { assistantClientNames, mcpAuthorizationHandoffInstructions, mcpInvitation, mcpSetupSteps, type AssistantClient, type McpConnection } from "@tickernelz/wardmote-shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Check, Copy, ExternalLink, Globe, Paperclip, Plug, Terminal } from "lucide-react";
+import { Check, Copy, ExternalLink, Globe, Plug, Terminal } from "lucide-react";
 import { publicMcpApi } from "@/api/publicMcp";
 import { ApiError } from "@/api/client";
 import { useCompany } from "@/context/CompanyContext";
@@ -9,6 +9,7 @@ import { useBreadcrumbs } from "@/context/BreadcrumbContext";
 import { Link } from "@/lib/router";
 import { copyTextToClipboard } from "@/lib/clipboard";
 import { deriveInitials, Identity } from "@/components/Identity";
+import { MootMark } from "@/components/MootMark";
 import { assistantConnectionDisplayName } from "./connection-owner";
 import { AgentSetupPrompt } from "@/components/AgentSetupPrompt";
 import { OpenCodeLogoIcon } from "@/components/OpenCodeLogoIcon";
@@ -44,7 +45,7 @@ export function AssistantConnectionCard({ onNavigate }: { onNavigate: (href: str
   const action = !connections.isSuccess ? "Open" : active.length ? "Manage" : "Set up";
   return <div role="listitem" data-app-slug="assistant-connection" data-connected={connections.isSuccess ? String(active.length > 0) : undefined} className="overflow-hidden rounded-xl border border-line">
     <div className="flex flex-wrap items-center gap-3 px-4 py-4">
-      <Paperclip className="size-9 shrink-0 p-1 text-ink" aria-hidden="true" />
+      <MootMark className="size-9 shrink-0 p-1 text-ink" aria-hidden="true" />
       <div className="min-w-0 flex-1">
         <h2 className="text-sm font-semibold text-ink">Assistant Connection (MCP)</h2>
         <p className="mt-0.5 text-xs text-ink-3">Use your Wardmote organization from Codex, Claude, OpenCode, or another assistant.</p>
@@ -105,7 +106,7 @@ export function AssistantConnection({ initialAssistant = "codex" }: { initialAss
   const invitation = serverUrl ? mcpInvitation(serverUrl, { id: selectedCompanyId, name: selectedCompany.name }) : "";
   return <div className="max-w-3xl space-y-6 pb-8">
     <header className="space-y-4">
-      <div className="flex items-center gap-3"><Paperclip className="size-7 shrink-0" /><h1 className="text-xl font-semibold">Assistant Connection (MCP)</h1></div>
+      <div className="flex items-center gap-3"><MootMark className="size-7 shrink-0 text-ink" /><h1 className="text-xl font-semibold">Assistant Connection (MCP)</h1></div>
       <div className="flex items-center gap-3">
         <CompanyPatternIcon companyName={selectedCompany.name} logoUrl={selectedCompany.logoUrl} className="size-12 shrink-0 rounded-lg" />
         <div className="space-y-1"><p className="font-medium">{selectedCompany.name}</p><p className="text-sm text-ink-3">Connect your assistant to Wardmote. Review work, create tasks, and follow up using your account’s access to this organization.</p></div>

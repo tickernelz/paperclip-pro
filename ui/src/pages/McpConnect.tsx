@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Globe, Paperclip } from "lucide-react";
+import { Globe } from "lucide-react";
+import { MootMark } from "@/components/MootMark";
 import { Link, useParams } from "@/lib/router";
-import type { McpConnection, McpConnectionRequest, McpDotPairingPreview } from "@tickernelz/paperclip-pro-shared";
+import type { McpConnection, McpConnectionRequest, McpDotPairingPreview } from "@tickernelz/wardmote-shared";
 import { deriveInitials, Identity } from "@/components/Identity";
 import { assistantConnectionDisplayName } from "./apps/connection-owner";
 import { Button } from "@/components/ui/button";
@@ -37,7 +38,7 @@ export function McpDevicePage({ initialCode }: { initialCode?: string } = {}) {
   const [code, setCode] = useState(initialCode ?? new URLSearchParams(window.location.search).get("user_code") ?? "");
   const [submitted, setSubmitted] = useState(code);
   if (submitted) return <McpConnectRequest key={submitted} id={submitted} device onEditCode={() => setSubmitted("")} />;
-  return <div className="mx-auto max-w-xl py-10"><Card className="space-y-4 p-6"><div className="flex items-center gap-3"><Paperclip className="size-8 shrink-0" /><h1 className="min-w-0 text-xl font-semibold">Connect your assistant to Wardmote</h1></div>
+  return <div className="mx-auto max-w-xl py-10"><Card className="space-y-4 p-6"><div className="flex items-center gap-3"><MootMark className="size-8 shrink-0 text-ink" /><h1 className="min-w-0 text-xl font-semibold">Connect your assistant to Wardmote</h1></div>
     <form className="space-y-4" onSubmit={event => { event.preventDefault(); setSubmitted(code.trim()); }}>
       <label htmlFor="device-code" className="text-sm">Enter the code shown by your assistant</label>
       <Input id="device-code" autoComplete="off" value={code} onChange={event => setCode(event.target.value)} required maxLength={12} />
@@ -84,12 +85,12 @@ function McpConnectRequest({ id, device = false, agentPairingOnly = false, onEdi
     mutationFn: () => api.post<{ redirectUrl: string }>(`${requestPrefix}/${encodeURIComponent(id)}/dot-pairing`, { pairingCode: pairingCode.trim() }),
     onSuccess: ({ redirectUrl }) => { setPairingCode(""); window.location.assign(redirectUrl); },
   });
-  if (deviceResult) return <div className="mx-auto max-w-xl py-10"><Card className="block space-y-4 p-6"><Paperclip className="size-8" /><h1 className="text-xl font-semibold">{deviceResult === "approved" ? "Access approved" : "Connection declined"}</h1><p className="text-sm">{deviceResult === "approved" ? "Return to your assistant. It will finish connecting automatically." : "No access was granted. You can start a new connection from your assistant."}</p><Button variant="secondary" asChild><Link to="/">Back to Wardmote</Link></Button></Card></div>;
+  if (deviceResult) return <div className="mx-auto max-w-xl py-10"><Card className="block space-y-4 p-6"><MootMark className="size-8 text-ink" /><h1 className="text-xl font-semibold">{deviceResult === "approved" ? "Access approved" : "Connection declined"}</h1><p className="text-sm">{deviceResult === "approved" ? "Return to your assistant. It will finish connecting automatically." : "No access was granted. You can start a new connection from your assistant."}</p><Button variant="secondary" asChild><Link to="/">Back to Wardmote</Link></Button></Card></div>;
   const returnPath = device ? `/mcp-device?user_code=${encodeURIComponent(id)}` : `${agentPairingOnly ? "/dot-connect" : "/mcp-connect"}/${id}`;
   return <div className="mx-auto max-w-xl py-10">
     <Card className="block space-y-4 p-6">
       <div className="flex items-center gap-3">
-        <Paperclip className="size-8 shrink-0 text-ink" role="img" aria-label="Wardmote" />
+        <MootMark className="size-8 shrink-0 text-ink" title="Wardmote" />
         <h1 className="min-w-0 break-words text-xl font-semibold">Connect <bdi>{assistantName}</bdi> to Wardmote</h1>
       </div>
       {clientOrigin && <ClientOrigin key={clientOrigin} origin={clientOrigin} />}

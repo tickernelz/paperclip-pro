@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { ArrowUp } from "lucide-react";
-import type { Agent, IssueWorkMode } from "@tickernelz/paperclip-pro-shared";
+import type { Agent, IssueWorkMode } from "@tickernelz/wardmote-shared";
 import { AgentAvatar } from "@/components/AgentAvatar";
 import { ComposerRunSettingsPicker, useComposerRunSettingsStaging } from "@/components/task-chat/ComposerRunSettingsPicker";
 import { ComposerAddMenu, ComposerModeChip } from "@/components/task-chat/ComposerAddMenu";

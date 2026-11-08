@@ -1,4 +1,4 @@
-import type { ExternalObjectMentionGroup, ExternalObjectSummary } from "@tickernelz/paperclip-pro-shared";
+import type { ExternalObjectMentionGroup, ExternalObjectSummary } from "@tickernelz/wardmote-shared";
 import { api } from "./client";
 
 export const externalObjectsApi = {

@@ -1,7 +1,7 @@
 import { and, desc, eq, inArray, sql } from "drizzle-orm";
 
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { heartbeatRunEvents } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
+import { heartbeatRunEvents } from "@tickernelz/wardmote-db";
 import type { HarnessRuntimeRequestKind } from "../../vendor/paperclip-runner/index.js";
 
 const TERMINAL_RUNTIME_REQUEST_EVENTS = [

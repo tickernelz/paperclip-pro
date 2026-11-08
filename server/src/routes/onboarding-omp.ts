@@ -16,7 +16,7 @@ import {
   readOmpDefaultModel,
   recommendOmpModel,
   type OmpInstallProbe,
-} from "@tickernelz/paperclip-pro-adapter-omp-local/readiness";
+} from "@tickernelz/wardmote-adapter-omp-local/readiness";
 import {
   onboardingOmpLoginRequestSchema,
   onboardingRemoteOmpRequestSchema,
@@ -27,7 +27,7 @@ import {
   type OnboardingOmpLoginResult,
   type OnboardingOmpStatus,
   type OnboardingRemoteOmpStatus,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { listAdapterModels, refreshAdapterModels } from "../adapters/registry.js";
 import { badRequest, conflict, unprocessable } from "../errors.js";
 import { logger } from "../middleware/logger.js";

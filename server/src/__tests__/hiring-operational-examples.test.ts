@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { createAgentHireSchema, createIssueThreadInteractionSchema, updateIssueSchema } from "@tickernelz/paperclip-pro-shared";
+import { createAgentHireSchema, createIssueThreadInteractionSchema, updateIssueSchema } from "@tickernelz/wardmote-shared";
 
 const reference = readFileSync(new URL("../../../skills/paperclip/references/api-reference.md", import.meta.url), "utf8");
 const uuid = "11111111-1111-4111-8111-111111111111";

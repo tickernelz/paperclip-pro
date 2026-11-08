@@ -10,14 +10,14 @@ import {
   agentInstructionHeads as heads,
   agentInstructionRevisions as revisions,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import type {
   AgentInstructionCommitReceipt,
   AgentInstructionDiff,
   AgentInstructionHistory,
   AgentInstructionSnapshot,
   AgentInstructionSource,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { conflict, forbidden, notFound, unprocessable } from "../errors.js";
 import {
   agentInstructionsBundleMode,

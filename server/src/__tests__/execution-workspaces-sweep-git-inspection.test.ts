@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { beforeEach, expect, it, vi } from "vitest";
 import { eq } from "drizzle-orm";
-import { executionWorkspaces, issues, projects } from "@tickernelz/paperclip-pro-db";
-import type { ExecutionWorkspace } from "@tickernelz/paperclip-pro-shared";
+import { executionWorkspaces, issues, projects } from "@tickernelz/wardmote-db";
+import type { ExecutionWorkspace } from "@tickernelz/wardmote-shared";
 import { executionWorkspaceService } from "../services/execution-workspaces.js";
 import type { GitCloseReadinessInspection } from "../services/execution-workspaces.js";
 import {

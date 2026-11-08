@@ -1,4 +1,4 @@
-import type { CompanySecret, EnvBinding, SecretVersionSelector, UserSecretDefinition } from "@tickernelz/paperclip-pro-shared";
+import type { CompanySecret, EnvBinding, SecretVersionSelector, UserSecretDefinition } from "@tickernelz/wardmote-shared";
 
 export type RowSource = "text" | "secret" | "user_secret";
 

@@ -1,4 +1,4 @@
-import type { WorkspaceOperation, WorkspaceRuntimeService } from "@tickernelz/paperclip-pro-shared";
+import type { WorkspaceOperation, WorkspaceRuntimeService } from "@tickernelz/wardmote-shared";
 import { describe, expect, it } from "vitest";
 import {
   describeWorkspaceReadinessCause,

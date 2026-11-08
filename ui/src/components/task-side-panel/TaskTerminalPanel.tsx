@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { SquareTerminal } from "lucide-react";
-import type { Issue, TerminalSession } from "@tickernelz/paperclip-pro-shared";
+import type { Issue, TerminalSession } from "@tickernelz/wardmote-shared";
 import { terminalApi, terminalQueryKeys } from "@/api/terminal";
 import { TerminalView } from "@/components/terminal/TerminalView";
 import { terminalAccessErrorMessage } from "@/components/terminal/terminal-access";

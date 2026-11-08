@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { resolveRuntimeBind, validateConfiguredBindMode } from "@tickernelz/paperclip-pro-shared";
+import { resolveRuntimeBind, validateConfiguredBindMode } from "@tickernelz/wardmote-shared";
 import { buildPresetServerConfig } from "../config/server-bind.js";
 
 const ORIGINAL_PATH = process.env.PATH;

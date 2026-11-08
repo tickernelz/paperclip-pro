@@ -36,11 +36,11 @@ import type {
   ChatPublicationSummary,
   ChatActivityItem,
   ChatFileTransferResolutionPrecondition,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 export type {
   ChatPublicationSummary,
   ChatActivityItem,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 export type ChatProvider =
   "slack" | "github" | "discord" | "microsoft-teams" | "telegram" | "agentmail" | "imessage-photon" | "openwa" | "speko";
@@ -155,7 +155,7 @@ export interface ChatEndpoint {
   conversations?: ChatConversation[];
   activity?: ChatActivityItem[];
   setup?: {
-    github?: import("@tickernelz/paperclip-pro-shared").ChatEndpointSetupState["github"];
+    github?: import("@tickernelz/wardmote-shared").ChatEndpointSetupState["github"];
     step: string;
     testStartedAt?: string | null;
     testSkipped?: boolean;

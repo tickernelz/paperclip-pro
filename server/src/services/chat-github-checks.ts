@@ -14,8 +14,8 @@ import {
   companies,
   heartbeatRuns,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
-import type { GitHubReviewEventContext } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import type { GitHubReviewEventContext } from "@tickernelz/wardmote-shared";
 import { runtimePublicOrigin } from "./cloud-runtime-identity.js";
 import {
   githubBotRepositoryToken,

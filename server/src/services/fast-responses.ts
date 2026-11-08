@@ -34,7 +34,7 @@ import {
   issues,
   chatPublications,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   aiConnectionCatalogSlug,
   aiConnectionMetadataSchema,
@@ -47,7 +47,7 @@ import {
   type FastResponseHistoryEntry,
   type UpdateFastResponse,
   type FastResponseTestResult,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { aiConnectionService } from "./ai-connections.js";
 import { instanceSettingsService } from "./instance-settings.js";
 import { isAutomaticRecoverySuppressedByPauseHold } from "./recovery/pause-hold-guard.js";

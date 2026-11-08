@@ -16,6 +16,7 @@ import { issuesApi } from "../api/issues";
 import { goalsApi } from "../api/goals";
 import { queryKeys } from "../lib/queryKeys";
 import { MarkdownBody } from "../components/MarkdownBody";
+import { MootMark } from "../components/MootMark";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
@@ -31,7 +32,7 @@ import {
   agentBubbleDateLabel,
 } from "../components/AgentBubbleActionRow";
 import { cn, formatDateTime } from "../lib/utils";
-import type { FeedbackVoteValue } from "@tickernelz/paperclip-pro-shared";
+import type { FeedbackVoteValue } from "@tickernelz/wardmote-shared";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
 /**
@@ -890,7 +891,7 @@ export function BoardChat() {
               {/* Status bar — always visible while sending, independent from the chat bubble */}
               {sending && (
                 <div className="flex items-center gap-2 pl-1 text-xs text-ink-3">
-                  <img src="/paperclip-thinking.svg" alt="" className="inline-block shrink-0" style={{ width: 14, height: 14 }} />
+                  <MootMark animated className="size-3.5 shrink-0" />
                   <span>{statusText || "Thinking..."}</span>
                   {elapsedSec > 0 && (
                     <span className="opacity-50">{elapsedSec.toFixed(1)}s</span>

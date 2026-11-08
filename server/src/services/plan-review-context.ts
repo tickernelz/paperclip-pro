@@ -1,12 +1,12 @@
 import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   documentAnnotationComments,
   documentAnnotationThreads,
   documents,
   issueDocuments,
   issueThreadInteractions,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import type {
   DocumentReviewContext,
   DocumentReviewContextDocument,
@@ -15,7 +15,7 @@ import type {
   PlanReviewInteractionContext,
   PlanReviewInteractionResultContext,
   PlanReviewInteractionTargetContext,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { parseObject } from "../adapters/utils.js";
 
 export const PLAN_REVIEW_CONTEXT_LIMITS = {

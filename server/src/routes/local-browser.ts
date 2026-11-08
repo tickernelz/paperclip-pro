@@ -1,6 +1,6 @@
 import { Router, type Request } from "express";
 import { z } from "zod";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   LOCAL_BROWSER_UPDATE_HINT,
   LOCAL_BROWSER_VIEWER_FRAME_INTERVAL_MS,
@@ -10,7 +10,7 @@ import {
   localBrowserSettingsUpdateSchema,
   localBrowserViewerEventSchema,
   type LocalBrowserViewerEvent,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { badRequest, forbidden, notFound, payloadTooLarge } from "../errors.js";
 import { assertBoard, assertCompanyAccess, getActorInfo } from "./authz.js";
 import { touchActivity } from "../services/local-browser/activity.js";
@@ -103,7 +103,7 @@ function bridgeHelpPage(code: string): string {
     "<!doctype html>",
     '<html lang="en"><head><meta charset="utf-8">',
     '<meta name="viewport" content="width=device-width, initial-scale=1">',
-    "<title>Paperclip Local Browser bridge</title>",
+    "<title>Wardmote Local Browser bridge</title>",
     "<style>",
     "body{margin:0;padding:48px 24px;font:16px/1.55 system-ui,-apple-system,'Segoe UI',sans-serif;",
     "color:#0a0a0a;background:#fff}",
@@ -118,17 +118,17 @@ function bridgeHelpPage(code: string): string {
     "code{background:#262626}}",
     "</style></head><body><main>",
     "<h1>This address is a connection endpoint, not a page</h1>",
-    "<p>The Paperclip Local Browser extension opens this address itself over a WebSocket. ",
+    "<p>The Wardmote Local Browser extension opens this address itself over a WebSocket. ",
     "Opening it in a browser tab cannot pair a browser, so this message is the whole page.</p>",
     "<p>To connect a browser:</p>",
     "<ol>",
-    "<li>Copy the pairing link from the Local Browser page in Paperclip, or copy the code below.</li>",
-    "<li>Open the Paperclip Local Browser extension from your browser toolbar.</li>",
+    "<li>Copy the pairing link from the Local Browser page in Wardmote, or copy the code below.</li>",
+    "<li>Open the Wardmote Local Browser extension from your browser toolbar.</li>",
     "<li>Paste the link into the extension and press Connect.</li>",
     "</ol>",
     code
       ? "<p style=\"margin-top:16px\">Pairing code: <code>" + shown + "</code></p>"
-      : "<p style=\"margin-top:16px\">This address carries no pairing code. Start a pairing in Paperclip first.</p>",
+      : "<p style=\"margin-top:16px\">This address carries no pairing code. Start a pairing in Wardmote first.</p>",
     "</main></body></html>",
   ].join("");
 }

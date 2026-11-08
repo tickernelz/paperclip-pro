@@ -7,7 +7,7 @@
   var DEFAULTS = core.DEFAULTS;
   var ToolFailure = core.ToolFailure;
   var SITE = ["<all_urls>", "scripting"];
-  var PERMISSION_NOTE = "Ask the user to open the Paperclip Local Browser extension and press Allow.";
+  var PERMISSION_NOTE = "Ask the user to open the Wardmote Local Browser extension and press Allow.";
   var TRUSTED_ACTIONS = { click: true, dblclick: true, hover: true, check: true, uncheck: true, type: true, press: true };
   var COVERED_NOTE = "Another element covers this target, so force ran page events on the target itself instead of a real click that would hit the cover";
   var REFUSED_NOTE = "Trusted input is off for this tab: Chrome refused the debugger (DevTools may be open on it), so page events ran instead";

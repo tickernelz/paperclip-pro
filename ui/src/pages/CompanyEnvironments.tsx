@@ -9,7 +9,6 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, Check, Link2, Lock, Play, Plus, RefreshCw, RotateCcw, Terminal, Trash2, X } from "lucide-react";
 import { FitAddon } from "@xterm/addon-fit";
 import { Terminal as XTermTerminal } from "@xterm/xterm";
-import "@/components/terminal/xterm-vendor.css";
 import {
   type EnvBinding,
   type Environment,
@@ -18,7 +17,7 @@ import {
   type EnvironmentProbeResult,
   type EnvironmentCustomImageSetupSession,
   type JsonSchema,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   environmentsApi,
   type EnvironmentCustomImageActiveTemplateDrift,

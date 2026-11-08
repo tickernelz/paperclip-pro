@@ -1,6 +1,6 @@
 import { createAgentLifecycle } from "./agent-lifecycle.js";
 import { and, eq, isNull, ne } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   agents,
   companies,
@@ -8,14 +8,14 @@ import {
   pluginManagedResources,
   plugins,
   activityLog,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import type {
   Agent,
   PaperclipPluginManifestV1,
   PluginManagedAgentDeclaration,
   PluginManagedAgentResolution,
-} from "@tickernelz/paperclip-pro-shared";
-import { isUuidLike } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
+import { isUuidLike } from "@tickernelz/wardmote-shared";
 import { conflict, forbidden, notFound } from "../errors.js";
 import { agentService } from "./agents.js";
 import { approvalService } from "./approvals.js";

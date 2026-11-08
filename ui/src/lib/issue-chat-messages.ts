@@ -1,4 +1,4 @@
-import type { ExecutionProjection } from "@tickernelz/paperclip-pro-shared";
+import type { ExecutionProjection } from "@tickernelz/wardmote-shared";
 import type {
   ReasoningMessagePart,
   TextMessagePart,
@@ -8,7 +8,7 @@ import type {
   ThreadSystemMessage,
   ThreadUserMessage,
 } from "@assistant-ui/react";
-import type { Agent, IssueComment } from "@tickernelz/paperclip-pro-shared";
+import type { Agent, IssueComment } from "@tickernelz/wardmote-shared";
 import type { ActiveRunForIssue, LiveRunForIssue } from "../api/heartbeats";
 import { formatAssigneeUserLabel } from "./assignees";
 import { isOperatorInterruptedRun } from "./interrupt-handoff";

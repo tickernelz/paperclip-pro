@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { openwaEndpointPolicySchema, type OpenwaEndpointHealth } from "@tickernelz/paperclip-pro-shared";
+import { openwaEndpointPolicySchema, type OpenwaEndpointHealth } from "@tickernelz/wardmote-shared";
 import { openwaAuditSearch } from "@/api/chatEndpoints";
 import { openwaHealthRows } from "./OpenwaHealthCard";
 import {

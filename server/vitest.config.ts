@@ -2,17 +2,19 @@ import { fileURLToPath } from "node:url";
 
 import { defineConfig } from "vitest/config";
 
+import { LongestFirstSequencer } from "./src/__tests__/longest-first-sequencer.js";
+
 export default defineConfig({
   resolve: {
     alias: [
       {
-        find: /^@tickernelz\/paperclip-pro-paperclip-runner\/live$/,
+        find: /^@tickernelz\/wardmote-paperclip-runner\/live$/,
         replacement: fileURLToPath(
           new URL("../packages/paperclip-runner/src/live/index.ts", import.meta.url),
         ),
       },
       {
-        find: /^@tickernelz\/paperclip-pro-paperclip-runner$/,
+        find: /^@tickernelz\/wardmote-paperclip-runner$/,
         replacement: fileURLToPath(
           new URL("../packages/paperclip-runner/src/index.ts", import.meta.url),
         ),
@@ -51,7 +53,9 @@ export default defineConfig({
     sequence: {
       concurrent: false,
       hooks: "list",
+      sequencer: LongestFirstSequencer,
     },
+    globalSetup: ["./src/__tests__/embedded-postgres-template.global-setup.ts"],
     setupFiles: ["./src/__tests__/setup-supertest.ts"],
   },
 });

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Check, Loader2, Settings2, X } from "lucide-react";
-import type { Agent, AttentionItem } from "@tickernelz/paperclip-pro-shared";
+import type { Agent, AttentionItem } from "@tickernelz/wardmote-shared";
 import { useParams } from "@/lib/router";
 import { attentionApi } from "../api/attention";
 import { agentsApi } from "../api/agents";
@@ -42,6 +42,7 @@ import { PageSkeleton } from "../components/PageSkeleton";
 import { AttentionQueueRow } from "../components/AttentionQueueRow";
 import { DecisionsToolbar } from "../components/DecisionsToolbar";
 import { Curtain, AgingItemRow } from "../components/DecisionShelf";
+import { DecisionHistorySections, withHistorySourceKinds } from "../components/DecisionHistory";
 import { DecisionQueueRail } from "../components/DecisionQueueRail";
 import { DecisionDateChips, type AttentionCustomRange } from "../components/DecisionDateChips";
 import { IssueGroupHeader } from "../components/IssueGroupHeader";
@@ -75,6 +76,8 @@ export function DecisionQueuePage() {
   const [filters, setFilters] = useState<AttentionFilterState>(() => defaultAttentionFilterState);
   const [collapsedGroupKeys, setCollapsedGroupKeys] = useState<Set<string>>(() => new Set());
   const [agingOpen, setAgingOpen] = useState(false);
+  const [decidedOpen, setDecidedOpen] = useState(false);
+  const [expiredOpen, setExpiredOpen] = useState(false);
 
   // Date-range chips (§4.2) — resolve to server-side activity bounds.
   const [dateRange, setDateRange] = useState<AttentionDateRangeId>("all");
@@ -154,7 +157,7 @@ export function DecisionQueuePage() {
   const agingItems = useMemo(() => activeItems.filter(attentionIsAging), [activeItems]);
   const listItems = useMemo(() => activeItems.filter((item) => !attentionIsAging(item)), [activeItems]);
 
-  const filterOptions = useMemo(() => buildAttentionFilterOptions(listItems), [listItems]);
+  const filterOptions = useMemo(() => withHistorySourceKinds(buildAttentionFilterOptions(listItems)), [listItems]);
 
   // Filter → sort → group, matching the desk. In the default (ungrouped) view the
   // list groups by arrival ("New today" / "Earlier", plus a "Decide now" shelf
@@ -265,12 +268,14 @@ export function DecisionQueuePage() {
       {error && <p className="text-sm text-bad">{(error as Error).message}</p>}
 
       {isEmpty ? (
-        <div className="rounded-xl border border-dashed border-line py-14 text-center">
-          <p className="text-sm font-medium text-ink">This queue is empty.</p>
-          <p className="mt-1 text-xs text-ink-3">
-            Decisions land here when they match the queue's rules or an agent adds them.
-          </p>
-        </div>
+        <QueueEmptyState
+          title={queue?.title ?? queueKey}
+          resolvedCount={queue?.resolvedCount ?? null}
+          onShowHistory={() => {
+            setDecidedOpen(true);
+            document.getElementById("decision-history")?.scrollIntoView({ behavior: "smooth", block: "start" });
+          }}
+        />
       ) : (
         <div className="space-y-4">
           {visibleCount === 0 ? (
@@ -348,6 +353,46 @@ export function DecisionQueuePage() {
             </Curtain>
           )}
         </div>
+      )}
+
+      <DecisionHistorySections
+        companyId={selectedCompanyId}
+        queueKey={queueKey}
+        selectedSourceKinds={filters.sourceKinds}
+        bounds={activityBounds}
+        agentMap={agentMap}
+        decidedOpen={decidedOpen}
+        expiredOpen={expiredOpen}
+        onToggleDecided={() => setDecidedOpen((prev) => !prev)}
+        onToggleExpired={() => setExpiredOpen((prev) => !prev)}
+      />
+    </div>
+  );
+}
+
+export function QueueEmptyState({
+  title,
+  resolvedCount,
+  onShowHistory,
+}: {
+  title: string;
+  resolvedCount: number | null;
+  onShowHistory: () => void;
+}) {
+  return (
+    <div className="rounded-xl border border-dashed border-line py-14 text-center" data-queue-empty>
+      <p className="text-sm font-medium text-ink">Nothing in {title} is waiting for a decision.</p>
+      {resolvedCount ? (
+        <p className="mt-1 text-xs text-ink-3">
+          {resolvedCount} already resolved.{" "}
+          <button type="button" className="font-medium text-accent hover:underline" onClick={onShowHistory}>
+            See history
+          </button>
+        </p>
+      ) : (
+        <p className="mt-1 text-xs text-ink-3">
+          Decisions land here when they match the queue's rules or an agent adds them.
+        </p>
       )}
     </div>
   );

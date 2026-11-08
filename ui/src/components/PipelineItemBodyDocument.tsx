@@ -5,7 +5,7 @@ import {
   type Agent,
   type Issue,
   type PipelineCaseDocumentPayload,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { FilePenLine, FileText, Loader2 } from "lucide-react";
 import { ApiError } from "../api/client";
 import { issuesApi } from "../api/issues";

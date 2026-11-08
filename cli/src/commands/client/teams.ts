@@ -8,7 +8,7 @@ import type {
   CatalogTeamImportOptions,
   CatalogTeamSourcePolicy,
   InstalledCatalogTeam,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   addCommonClientOptions,
   apiPath,

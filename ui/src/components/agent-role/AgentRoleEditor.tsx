@@ -1,5 +1,5 @@
 import { useEffect, useState, type KeyboardEvent, type MouseEvent } from "react";
-import type { AgentRole } from "@tickernelz/paperclip-pro-shared";
+import type { AgentRole } from "@tickernelz/wardmote-shared";
 import { Check, ChevronDown, Loader2 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import {

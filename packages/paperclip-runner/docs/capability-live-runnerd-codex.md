@@ -38,7 +38,7 @@ attempt's immutable authority tuple:
 import {
   CapabilityLiveSessionService,
   DurableCapabilityLiveSessionStore,
-} from "@tickernelz/paperclip-pro-paperclip-runner/live";
+} from "@tickernelz/wardmote-paperclip-runner/live";
 
 const binding = { sessionId, runId, companyId, actorId, taskId };
 const store = new DurableCapabilityLiveSessionStore({ directory, binding });
@@ -107,13 +107,13 @@ its next response.
 Run the deterministic contract suite:
 
 ```sh
-pnpm --filter @tickernelz/paperclip-pro-paperclip-runner test:scenarios
+pnpm --filter @tickernelz/wardmote-paperclip-runner test:scenarios
 ```
 
 Run a real runnerd and Codex app-server smoke:
 
 ```sh
-pnpm --filter @tickernelz/paperclip-pro-paperclip-runner trace:live-runner -- --json
+pnpm --filter @tickernelz/wardmote-paperclip-runner trace:live-runner -- --json
 ```
 
 The smoke requires an authenticated local Codex installation. It checks a real

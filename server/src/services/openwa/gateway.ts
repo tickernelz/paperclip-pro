@@ -5,7 +5,7 @@ import { getMaxAttachmentBytes } from "../../attachment-types.js";
 import {
   OPENWA_OPERATIONS,
   type OpenwaOperation,
-} from "@tickernelz/paperclip-pro-shared/openwa-operations";
+} from "@tickernelz/wardmote-shared/openwa-operations";
 
 export type OpenwaGatewayErrorCode =
   | "unavailable_on_engine"

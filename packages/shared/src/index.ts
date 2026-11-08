@@ -220,9 +220,19 @@ export type {
   DecisionQueueSeedRuleSignal,
   DecisionTriage,
   DecisionTriageDecideBy,
+  ResolvedDecisionActor,
+  ResolvedDecisionEntry,
+  ResolvedDecisionIssueRef,
+  ResolvedDecisionPage,
+  ResolvedDecisionSourceKind,
+  ResolvedDecisionStatus,
 } from "./types/decision-queue.js";
+export { DECISION_HISTORY_SOURCE_KINDS, DECISION_HISTORY_STATUSES } from "./types/decision-queue.js";
 export {
   decisionAttentionSourceKindSchema,
+  decisionHistoryQuerySchema,
+  DECISION_HISTORY_PAGE_MAX_LIMIT,
+  type ResolvedDecisionQuery,
   decisionQueueKeySchema,
   createDecisionQueueSchema,
   updateDecisionQueueSchema,

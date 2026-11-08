@@ -2,12 +2,12 @@ import fs from "node:fs/promises";
 import path from "node:path";
 import { createHash, randomUUID } from "node:crypto";
 import { and, eq, gt, inArray, isNull, lte, ne, or } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { providerTraceRecords } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
+import { providerTraceRecords } from "@tickernelz/wardmote-db";
 import type {
   ProviderTraceFrame,
   ProviderTraceMetadata,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { resolvePaperclipInstanceRoot } from "../home-paths.js";
 import { logActivity } from "./activity-log.js";
 

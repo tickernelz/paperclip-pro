@@ -6,7 +6,7 @@ import type {
   AdapterExecutionContext,
   AdapterEnvironmentCheck,
   AdapterRuntimeMcpServer,
-} from "@tickernelz/paperclip-pro-adapter-utils";
+} from "@tickernelz/wardmote-adapter-utils";
 import {
   adapterExecutionTargetUsesManagedHome,
   maybeRunSandboxInstallCommand,
@@ -14,11 +14,11 @@ import {
   runAdapterExecutionTargetShellCommand,
   type AdapterExecutionTarget,
   type AdapterExecutionTargetShellOptions,
-} from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
-import { PAPERCLIP_MCP_SERVER_NAME } from "@tickernelz/paperclip-pro-adapter-utils/paperclip-mcp";
-import type { PaperclipMcpHttpTarget } from "@tickernelz/paperclip-pro-adapter-utils/paperclip-mcp-mount";
-import { resolvePaperclipInstanceRootForAdapter } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
-import { shellQuote } from "@tickernelz/paperclip-pro-adapter-utils/ssh";
+} from "@tickernelz/wardmote-adapter-utils/execution-target";
+import { PAPERCLIP_MCP_SERVER_NAME } from "@tickernelz/wardmote-adapter-utils/paperclip-mcp";
+import type { PaperclipMcpHttpTarget } from "@tickernelz/wardmote-adapter-utils/paperclip-mcp-mount";
+import { resolvePaperclipInstanceRootForAdapter } from "@tickernelz/wardmote-adapter-utils/server-utils";
+import { shellQuote } from "@tickernelz/wardmote-adapter-utils/ssh";
 import { classifyThrownErrorClass, logSandboxProbeDiagnostic } from "./probe-diagnostics.js";
 
 const SEEDED_SHARED_FILES = ["settings.json", "CLAUDE.md"] as const;

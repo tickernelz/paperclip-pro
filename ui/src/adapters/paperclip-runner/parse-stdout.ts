@@ -1,5 +1,5 @@
-import { type TranscriptEntry } from "@tickernelz/paperclip-pro-adapter-utils";
-import { parseAcpxStdoutLine } from "@tickernelz/paperclip-pro-adapter-utils/acpx-engine/ui";
+import { type TranscriptEntry } from "@tickernelz/wardmote-adapter-utils";
+import { parseAcpxStdoutLine } from "@tickernelz/wardmote-adapter-utils/acpx-engine/ui";
 
 function safeJsonParse(text: string): unknown {
   try {

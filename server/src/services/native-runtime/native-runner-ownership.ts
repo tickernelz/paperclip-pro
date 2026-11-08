@@ -1,4 +1,4 @@
-import { heartbeatRuns } from "@tickernelz/paperclip-pro-db";
+import { heartbeatRuns } from "@tickernelz/wardmote-db";
 import { sql } from "drizzle-orm";
 
 export const NATIVE_OWNERSHIP_UNVERIFIED_ERROR_CODE =

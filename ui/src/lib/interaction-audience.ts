@@ -26,7 +26,7 @@ import {
   type IssueThreadInteractionEffectiveResolverPolicySource,
   type IssueThreadInteractionResolverPolicy,
   type IssueThreadInteractionResolverPolicyProvenance,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import type { IssueThreadInteraction } from "./issue-thread-interactions";
 
 /**

@@ -1,7 +1,7 @@
 import { and, eq } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { agents, companies, companyMemberships, issueComments, issues } from "@tickernelz/paperclip-pro-db";
-import { extractUserMentionIds } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/wardmote-db";
+import { agents, companies, companyMemberships, issueComments, issues } from "@tickernelz/wardmote-db";
+import { extractUserMentionIds } from "@tickernelz/wardmote-shared";
 import { listIssueInboxUserIds } from "../issues.js";
 import type { NotificationContext, NotificationTrigger } from "./classify.js";
 

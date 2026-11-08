@@ -12,7 +12,7 @@ import {
   issueThreadInteractionOwnerRelays,
   issueThreadInteractions,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import type {
   AnswerDecisionForOwner,
   AttentionItem,
@@ -22,7 +22,7 @@ import type {
   PendingDecision,
   PendingDecisionOption,
   PendingDecisionQuestion,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { conflict, HttpError, unprocessable } from "../errors.js";
 import { attentionService } from "./attention.js";
 import { boardAuthService } from "./board-auth.js";

@@ -7,7 +7,7 @@
  * tree so published server packages have no workspace runtime dependency.
  * Keep server imports pointed at this relative boundary.
  */
-type RunnerModule = typeof import("@tickernelz/paperclip-pro-paperclip-runner");
+type RunnerModule = typeof import("@tickernelz/wardmote-paperclip-runner");
 
 export type {
   DotHarnessDriver,
@@ -65,11 +65,11 @@ export type {
   RunnerProcessLaunchSpec,
   StrictCompletionContractInput,
   TransportCloseReason,
-} from "@tickernelz/paperclip-pro-paperclip-runner";
+} from "@tickernelz/wardmote-paperclip-runner";
 export type DurablePrpControlPlane =
-  import("@tickernelz/paperclip-pro-paperclip-runner").DurablePrpControlPlane;
+  import("@tickernelz/wardmote-paperclip-runner").DurablePrpControlPlane;
 export type PaperclipSemanticDispatcher =
-  import("@tickernelz/paperclip-pro-paperclip-runner").PaperclipSemanticDispatcher;
+  import("@tickernelz/wardmote-paperclip-runner").PaperclipSemanticDispatcher;
 
 const sourceUrl = new URL(
   "../../../../packages/paperclip-runner/src/index.ts",
@@ -105,8 +105,8 @@ export const describeRunnerdNativeSessionBackend = runner.describeRunnerdNativeS
 export const createPaperclipRunnerAuthorizedToolSet =
   runner.createPaperclipRunnerAuthorizedToolSet;
 export const createRunnerdCodexTransport: (
-  options?: import("@tickernelz/paperclip-pro-paperclip-runner").RunnerdCodexTransportOptions,
-) => import("@tickernelz/paperclip-pro-paperclip-runner").RunnerdCodexTransport =
+  options?: import("@tickernelz/wardmote-paperclip-runner").RunnerdCodexTransportOptions,
+) => import("@tickernelz/wardmote-paperclip-runner").RunnerdCodexTransport =
   runner.createRunnerdCodexTransport;
 export const defaultCapabilityRunnerdBinary =
   runner.defaultCapabilityRunnerdBinary;

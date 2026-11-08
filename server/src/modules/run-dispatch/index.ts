@@ -1,4 +1,4 @@
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import { createPostgresRunDispatchAdapter, type RetryPromotedHook } from "./adapters/postgres.js";
 import {
   createCancelStaleQueuedRun,

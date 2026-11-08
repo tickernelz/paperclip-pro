@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from "react";
 import { RefreshCw, Star, Unplug } from "lucide-react";
-import type { ConnectionGrant } from "@tickernelz/paperclip-pro-shared";
+import type { ConnectionGrant } from "@tickernelz/wardmote-shared";
 import { RevokeGrantDialog } from "@/pages/apps/app-detail/IdentitiesSection";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";

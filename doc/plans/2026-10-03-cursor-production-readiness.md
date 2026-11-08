@@ -379,7 +379,7 @@ installed configuration probe also passed without credentials.
 | `cursor-v11-268497-installed-local-file-edit-validate-01` | `b9a0180c1a96cf0fd0448cc69d6f47a5de8d258e` | 8/8 matchers, cleanup pass | `26cdd34a8b7c3dc19f0afd3cf94c22e1700bad217d2af92877aeb10dbe1f58bc` |
 | `cursor-v11-268497-installed-daytona-hello-complete-02` | `327f6df095d38f0e2213cb4572376e01d4629946` | 6/6 matchers, cleanup pass | `7f2f23d1c5dec8e030866781cc09e06990d5149758c0d467df49e63366b29dd1` |
 
-These launch the actual installed `@tickernelz/paperclip-pro/dist/index.js` from its consumer
+These launch the actual installed `@tickernelz/wardmote/dist/index.js` from its consumer
 root. The server removes qualification admission, native binary paths, provider
 pack overrides, repository executables and TypeScript loader injection. Credentials
 use company secret bindings. The Daytona plugin is a compiled public npm package
@@ -745,7 +745,7 @@ Public release packaging now selects the daemon beside its own compiled module,
 including the server's vendored layout, and verifies its actual executable
 architecture. Release assembly requires one source revision and all three
 independently built daemons. Run
-`pnpm --filter @tickernelz/paperclip-pro-paperclip-runner stage:release-binaries /path/to/manifest.json`
+`pnpm --filter @tickernelz/wardmote-paperclip-runner stage:release-binaries /path/to/manifest.json`
 with a JSON manifest containing `sourceRevision` and `platforms`, whose exact
 keys are `darwin-arm64`, `darwin-x64`, and `linux-x64`; each entry contains an
 absolute artifact `path` and `sha256:<64 hex digits>` digest. Assembly verifies

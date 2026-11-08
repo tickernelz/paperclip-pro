@@ -6,7 +6,7 @@ import type {
   CompanySearchExtractResponse,
   CompanySearchQuery,
   CompanySearchResponse,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { issueRoutes } from "../routes/issues.js";
 import { createCompanySearchRateLimiter } from "../services/company-search-rate-limit.js";
 

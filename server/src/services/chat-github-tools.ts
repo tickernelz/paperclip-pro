@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { z } from "zod";
-import { githubReviewAssessmentSchema } from "@tickernelz/paperclip-pro-shared";
+import { githubReviewAssessmentSchema } from "@tickernelz/wardmote-shared";
 import { and, eq, isNull } from "drizzle-orm";
 import {
   chatDeliveries,
@@ -16,7 +16,7 @@ import {
   toolProfileEntries,
   toolProfiles,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import type {
   ToolGatewayDescriptor,
   ToolGatewaySession,

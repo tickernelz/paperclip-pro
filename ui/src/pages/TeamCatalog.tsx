@@ -17,8 +17,8 @@ import type {
   InstalledCatalogTeam,
   CompanyPortabilityAdapterOverride,
   CompanyPortabilityCollisionStrategy,
-} from "@tickernelz/paperclip-pro-shared";
-import { AGENT_ADAPTER_TYPES } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
+import { AGENT_ADAPTER_TYPES } from "@tickernelz/wardmote-shared";
 import { teamCatalogApi } from "../api/teamCatalog";
 import { agentsApi } from "../api/agents";
 import { getAdapterLabel } from "../adapters/adapter-display-registry";

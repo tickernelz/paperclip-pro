@@ -5,7 +5,7 @@ import type {
   ConnectionGrant,
   ConnectionGrantsResponse,
   ToolConnectionCredentialPolicy,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { Button } from "@/components/ui/button";
 import { Identity } from "@/components/Identity";
 import { GithubIcon } from "@/components/icons/github-icon";

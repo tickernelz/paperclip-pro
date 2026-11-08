@@ -1,4 +1,4 @@
-import { AGGREGATOR_NAMES, aggregatorManagementUrl, isAppAggregator, type AggregatorAppSnapshot, type AggregatorAppsResponse } from "@tickernelz/paperclip-pro-shared/aggregator-apps";
+import { AGGREGATOR_NAMES, aggregatorManagementUrl, isAppAggregator, type AggregatorAppSnapshot, type AggregatorAppsResponse } from "@tickernelz/wardmote-shared/aggregator-apps";
 import { CatalogSourceFilters, type CatalogSource } from "./CatalogSourceFilters";
 import { ExecutorManagementSetup } from "./ExecutorManagementSetup";
 import { ArcadeDiscoverySetup } from "./ArcadeDiscoverySetup";
@@ -8,7 +8,7 @@ import {
   getConnectableAppDefinition,
   isRetiredComposioConnection,
   RETIRED_COMPOSIO_MESSAGE,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { AssistantConnectionCard, useAssistantConnections } from "./AssistantConnection";
 import { ManagedAiConnectionRow } from "@/components/ai-connections/ManagedAiConnectionDetails";
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
@@ -28,7 +28,7 @@ import {
   ServerCog,
   Trash2,
 } from "lucide-react";
-import type { ComposioAppSnapshot, ToolApplication, ToolConnection } from "@tickernelz/paperclip-pro-shared";
+import type { ComposioAppSnapshot, ToolApplication, ToolConnection } from "@tickernelz/wardmote-shared";
 import {
   getAppDefinitionForUrl,
   isMemoryConnectorId,
@@ -38,7 +38,7 @@ import {
   GOOGLE_WORKSPACE_CONNECTOR_PROFILES,
   CONNECTABLE_APP_DEFINITIONS,
   normalizeConnectionQuery,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { useNavigate } from "@/lib/router";
 import { useChatConnectorsEnabled, chatProviderVisible } from "@/hooks/useChatConnectorsEnabled";
 import { useMemoryConnectorsEnabled } from "@/hooks/useMemoryConnectorsEnabled";
@@ -78,7 +78,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { AGGREGATOR_APP_CATALOG, aggregatorAppIdentity, findComposioCatalogApp, type AggregatorAppCatalogEntry } from "@tickernelz/paperclip-pro-shared/aggregator-app-catalog";
+import { AGGREGATOR_APP_CATALOG, aggregatorAppIdentity, findComposioCatalogApp, type AggregatorAppCatalogEntry } from "@tickernelz/wardmote-shared/aggregator-app-catalog";
 import { AggregatorConnectDialog, aggregatorAppConnectHref } from "./AggregatorConnectDialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { buildCompanyUserProfileMap } from "@/lib/company-members";

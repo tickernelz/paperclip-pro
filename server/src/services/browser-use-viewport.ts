@@ -5,7 +5,7 @@ import {
   type BrowserUseViewportPreset,
   type BrowserUseViewportRequest,
   type BrowserUseViewportState,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   BrowserUseError,
   type BrowserUseRequest,

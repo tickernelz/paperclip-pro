@@ -12,8 +12,8 @@ import {
   issueThreadInteractions,
   issues,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
-import { openwaEndpointPolicySchema, type ChatScheduledWakeKind } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import { openwaEndpointPolicySchema, type ChatScheduledWakeKind } from "@tickernelz/wardmote-shared";
 import { logger } from "../../middleware/logger.js";
 import type { IssueAssignmentWakeupDeps } from "../issue-assignment-wakeup.js";
 import type { OpenwaTimerHooks } from "./admission.js";

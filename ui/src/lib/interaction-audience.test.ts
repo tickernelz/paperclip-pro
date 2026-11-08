@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { AttentionItem, AttentionResolverAudience } from "@tickernelz/paperclip-pro-shared";
+import type { AttentionItem, AttentionResolverAudience } from "@tickernelz/wardmote-shared";
 import type { RequestConfirmationInteraction } from "./issue-thread-interactions";
 import {
   DEFAULT_RESOLVER_POLICY,

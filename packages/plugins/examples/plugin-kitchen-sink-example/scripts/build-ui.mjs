@@ -18,7 +18,7 @@ await esbuild.build({
     "react",
     "react-dom",
     "react/jsx-runtime",
-    "@tickernelz/paperclip-pro-plugin-sdk/ui",
+    "@tickernelz/wardmote-plugin-sdk/ui",
   ],
   logLevel: "info",
 });

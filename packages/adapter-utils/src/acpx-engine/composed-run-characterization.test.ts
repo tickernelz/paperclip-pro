@@ -3,12 +3,12 @@ import os from "node:os";
 import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { AcpRuntimeOptions } from "acpx/runtime";
-import type { AdapterExecutionContext, AdapterRuntimeMcpAccess } from "@tickernelz/paperclip-pro-adapter-utils";
+import type { AdapterExecutionContext, AdapterRuntimeMcpAccess } from "@tickernelz/wardmote-adapter-utils";
 import {
   prepareAdapterExecutionTargetRuntime,
   startAdapterExecutionTargetPaperclipBridge,
   startAdapterExecutionTargetProcessSessionBridge,
-} from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
+} from "@tickernelz/wardmote-adapter-utils/execution-target";
 
 
 // Wrap the staging seam + both sandbox bridges in call-recording spies that
@@ -16,8 +16,8 @@ import {
 // exercises them end-to-end against a local runner). This lets the staging
 // tests assert the exact `runtimeRootDir`/`workspaceLocalDir`/`assets` the
 // engine threads without changing any real behavior for the other tests.
-vi.mock("@tickernelz/paperclip-pro-adapter-utils/execution-target", async (importActual) => {
-  const actual = await importActual<typeof import("@tickernelz/paperclip-pro-adapter-utils/execution-target")>();
+vi.mock("@tickernelz/wardmote-adapter-utils/execution-target", async (importActual) => {
+  const actual = await importActual<typeof import("@tickernelz/wardmote-adapter-utils/execution-target")>();
   return {
     ...actual,
     prepareAdapterExecutionTargetRuntime: vi.fn(actual.prepareAdapterExecutionTargetRuntime),

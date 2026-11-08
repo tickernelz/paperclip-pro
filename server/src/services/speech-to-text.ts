@@ -1,5 +1,5 @@
 import type { Readable } from "node:stream";
-import type { SpeechToTextSettings } from "@tickernelz/paperclip-pro-shared";
+import type { SpeechToTextSettings } from "@tickernelz/wardmote-shared";
 import { getMaxAttachmentBytes } from "../attachment-types.js";
 
 export type SpeechToTextErrorCode =

@@ -1,4 +1,4 @@
-import type { LocalBrowserErrorCode, LocalBrowserToolError } from "@tickernelz/paperclip-pro-shared";
+import type { LocalBrowserErrorCode, LocalBrowserToolError } from "@tickernelz/wardmote-shared";
 import { HttpError } from "../../errors.js";
 
 const STATUS_BY_CODE: Record<LocalBrowserErrorCode, number> = {

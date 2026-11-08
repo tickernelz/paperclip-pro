@@ -1,9 +1,18 @@
-@layer vendor, theme, base, utilities, components, layout, state;
+@layer preflight, vendor, theme, base, utilities, components, layout, state;
 
 @import "@mdxeditor/editor/style.css" layer(vendor);
+@import "@xterm/xterm/css/xterm.css" layer(vendor);
 @import "./motion-tokens.css";
-@import "tailwindcss";
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(preflight);
+@import "tailwindcss/utilities.css" layer(utilities);
 @plugin "@tailwindcss/typography";
+
+@layer preflight {
+  * {
+    @apply border-line outline-focus;
+  }
+}
 
 @font-face {
   font-family: "InterVariable";
@@ -646,9 +655,6 @@ html[data-keyboard-open="true"] #main-content:has([data-testid="task-chat-compos
     transition: background-color 100000s ease-in-out 0s;
   }
 
-  * {
-    @apply border-line outline-focus;
-  }
   html {
     height: 100%;
     -webkit-tap-highlight-color: color-mix(in oklab, var(--ink) 20%, transparent);
@@ -1852,44 +1858,24 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
   animation: shimmer-text-fade 2.5s ease-in-out infinite;
 }
 
-.paperclip-thinking-icon {
-  transform-origin: 50% 50%;
+.moot-mark-dot-pulse {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: moot-mark-dot-pulse 1.2s ease-in-out infinite;
 }
 }
 
-@keyframes paperclip-thinking-draw {
-  0% {
-    stroke-dasharray: 0 85.717;
-    stroke-dashoffset: -85.717;
-    opacity: 1;
-    animation-timing-function: cubic-bezier(0.455, 0.03, 0.515, 0.955);
-  }
-  39.0625% {
-    stroke-dasharray: 85.717 85.717;
-    stroke-dashoffset: 0;
-    opacity: 1;
-    animation-timing-function: cubic-bezier(0.55, 0.055, 0.675, 0.19);
-  }
-  78.125% {
-    stroke-dasharray: 0 85.717;
-    stroke-dashoffset: 0;
-    opacity: 1;
-  }
-  78.225% {
-    opacity: 0;
-  }
+@keyframes moot-mark-dot-pulse {
+  0%,
+  60%,
   100% {
-    stroke-dasharray: 0 85.717;
-    stroke-dashoffset: 0;
-    opacity: 0;
+    opacity: 0.35;
+    transform: scale(0.72);
   }
-}
-
-@layer components {
-
-.paperclip-thinking-icon-path {
-  animation: paperclip-thinking-draw 1s linear infinite;
-}
+  25% {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @layer layout {
@@ -1933,11 +1919,8 @@ select:where(:not([multiple]):not(.appearance-none)):where(:not([size]), [size="
     opacity: 1;
   }
 
-  .paperclip-thinking-icon-path {
+  .moot-mark-dot-pulse {
     animation: none;
-    opacity: 1;
-    stroke-dasharray: 85.717 85.717;
-    stroke-dashoffset: 0;
   }
 }
 }
@@ -2217,6 +2200,11 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
   line-height: inherit;
 }
 
+[class*="_contentEditable_"] li[class*="_listItemChecked_"],
+[class*="_contentEditable_"] li[class*="_listItemUnchecked_"] {
+  margin-inline-start: -1rem;
+}
+
 .paperclip-mdxeditor-content li::marker {
   color: var(--ink-3);
 }
@@ -2307,6 +2295,10 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
 
 .paperclip-mdxeditor .cm-content {
   caret-color: #cdd6f4 !important;
+}
+
+.xterm .xterm-helper-textarea {
+  opacity: 0;
 }
 
 /* MDXEditor code block language selector – show on hover only */

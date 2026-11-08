@@ -2,7 +2,7 @@ import { promises as fs, readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import type {
   CatalogManifest,
   CatalogTeam,
@@ -20,9 +20,9 @@ import type {
   CompanyPortabilityPreview,
   CompanyPortabilityPreviewResult,
   CompanyPortabilitySource,
-} from "@tickernelz/paperclip-pro-shared";
-import { normalizeAgentUrlKey } from "@tickernelz/paperclip-pro-shared";
-import { parseFrontmatterMarkdown } from "@tickernelz/paperclip-pro-shared/frontmatter";
+} from "@tickernelz/wardmote-shared";
+import { normalizeAgentUrlKey } from "@tickernelz/wardmote-shared";
+import { parseFrontmatterMarkdown } from "@tickernelz/wardmote-shared/frontmatter";
 import { conflict, forbidden, HttpError, notFound, unprocessable } from "../errors.js";
 import { agentService } from "./agents.js";
 import { companyPortabilityService } from "./company-portability.js";
@@ -142,7 +142,7 @@ let cachedCatalogManifest: {
   size: number;
 } | null = null;
 
-const CATALOG_PACKAGE_NAME = "@tickernelz/paperclip-pro-teams-catalog";
+const CATALOG_PACKAGE_NAME = "@tickernelz/wardmote-teams-catalog";
 
 function readPackageName(dir: string): string | null {
   try {
@@ -193,7 +193,7 @@ async function statCatalogManifest() {
     }
   }
   throw new Error(
-    `Teams catalog manifest not found. Checked: ${catalogPackageRootCandidates.map((root) => path.join(root, "generated/catalog.json")).join(", ")}. Run pnpm --filter @tickernelz/paperclip-pro-teams-catalog build:manifest.`,
+    `Teams catalog manifest not found. Checked: ${catalogPackageRootCandidates.map((root) => path.join(root, "generated/catalog.json")).join(", ")}. Run pnpm --filter @tickernelz/wardmote-teams-catalog build:manifest.`,
   );
 }
 

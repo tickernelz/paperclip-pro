@@ -7,7 +7,7 @@ import type {
   AttentionItem,
   AttentionSeverity,
   AttentionSourceKind,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { Routes, Route } from "@/lib/router";
 import { WhatNeedsMe } from "@/pages/WhatNeedsMe";
 import { DecisionQueuePage } from "@/pages/DecisionQueuePage";
@@ -180,6 +180,7 @@ const PRS_QUEUE: DecisionQueueDto = {
   ],
   seedRulesEnabled: true,
   itemCount: 4,
+  resolvedCount: 12,
   createdAt: iso(NOW - 9 * DAY),
   updatedAt: iso(NOW - 20 * 60 * 1000),
 };
@@ -200,6 +201,7 @@ const QUEUES: DecisionQueueDto[] = [
       },
     ],
     itemCount: 2,
+    resolvedCount: 0,
     updatedAt: iso(NOW - 3 * HOUR),
   },
   {
@@ -217,6 +219,7 @@ const QUEUES: DecisionQueueDto[] = [
     ],
     seedRulesEnabled: false,
     itemCount: 1,
+    resolvedCount: 3,
     updatedAt: iso(NOW - 30 * HOUR),
   },
 ];

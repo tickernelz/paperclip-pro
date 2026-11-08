@@ -1,5 +1,5 @@
 import { and, asc, desc, eq, inArray, isNull, lte, or, sql } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   agentWakeupRequests,
   agents,
@@ -10,11 +10,11 @@ import {
   issueQuestionResponseDeliveries,
   issues,
   issueThreadInteractions,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import type {
   AskUserQuestionsInteraction,
   PaperclipQuestionSetPayload,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import type { PaperclipQuestionResponse } from "../vendor/paperclip-runner/index.js";
 import { isUniqueViolation } from "../db-errors.js";
 import { getTelemetryClient } from "../telemetry.js";

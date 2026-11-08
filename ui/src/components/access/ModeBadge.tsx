@@ -1,4 +1,4 @@
-import type { DeploymentExposure, DeploymentMode } from "@tickernelz/paperclip-pro-shared";
+import type { DeploymentExposure, DeploymentMode } from "@tickernelz/wardmote-shared";
 import { Badge } from "@/components/ui/badge";
 
 export function ModeBadge({

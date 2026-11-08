@@ -12,7 +12,7 @@ import type {
   SecretProviderDescriptor,
   UserSecretCoverageSummary,
   UserSecretDefinition,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ProviderVaultsTab, Secrets } from "./Secrets";
 import { ApiError } from "../api/client";

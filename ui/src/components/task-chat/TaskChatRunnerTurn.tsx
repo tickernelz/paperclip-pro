@@ -1,5 +1,5 @@
 import { useMemo, useRef } from "react";
-import type { ExecutionProjection } from "@tickernelz/paperclip-pro-shared";
+import type { ExecutionProjection } from "@tickernelz/wardmote-shared";
 import { useSecondTick } from "@/hooks/useSecondTick";
 import { cn } from "@/lib/utils";
 import type {

@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { describe, expect, it } from "vitest";
-import { AGENT_DEFAULT_MAX_CONCURRENT_RUNS } from "@tickernelz/paperclip-pro-shared";
+import { AGENT_DEFAULT_MAX_CONCURRENT_RUNS } from "@tickernelz/wardmote-shared";
 import { buildNewAgentRuntimeConfig } from "./new-agent-runtime-config";
 
 describe("buildNewAgentRuntimeConfig", () => {

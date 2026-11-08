@@ -1,4 +1,4 @@
-import type { AgentSettingsValues, OmpSettingsCatalogEntry } from "@tickernelz/paperclip-pro-shared";
+import type { AgentSettingsValues, OmpSettingsCatalogEntry } from "@tickernelz/wardmote-shared";
 import { api } from "./client";
 
 export interface AgentDefaultsSaveResult {

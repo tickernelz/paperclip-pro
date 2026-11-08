@@ -27,7 +27,7 @@ import {
   startEmbeddedPostgresTestDatabase,
   toolApplications,
   toolConnections,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   installTeamsFileConsentHook,
   restoreTeamsFileConsentBinding,

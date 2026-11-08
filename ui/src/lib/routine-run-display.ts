@@ -1,4 +1,4 @@
-import type { RoutineRunSummary, RoutineVariable } from "@tickernelz/paperclip-pro-shared";
+import type { RoutineRunSummary, RoutineVariable } from "@tickernelz/wardmote-shared";
 
 /**
  * Format a single resolved variable value for the runs-row subtitle (§3.6).

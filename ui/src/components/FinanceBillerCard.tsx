@@ -1,4 +1,4 @@
-import type { FinanceByBiller } from "@tickernelz/paperclip-pro-shared";
+import type { FinanceByBiller } from "@tickernelz/wardmote-shared";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCents, providerDisplayName } from "@/lib/utils";
 

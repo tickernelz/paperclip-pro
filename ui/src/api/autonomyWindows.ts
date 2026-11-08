@@ -1,4 +1,4 @@
-import type { IssueAutonomyWindow, IssueAutonomyWindowList } from "@tickernelz/paperclip-pro-shared";
+import type { IssueAutonomyWindow, IssueAutonomyWindowList } from "@tickernelz/wardmote-shared";
 import { api } from "./client";
 
 export const autonomyWindowsApi = {

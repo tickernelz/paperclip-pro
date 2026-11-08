@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { describe, expect, it } from "vitest";
-import { pluginManifestV1Schema, type Issue } from "@tickernelz/paperclip-pro-shared";
-import { createTestHarness } from "@tickernelz/paperclip-pro-plugin-sdk/testing";
+import { pluginManifestV1Schema, type Issue } from "@tickernelz/wardmote-shared";
+import { createTestHarness } from "@tickernelz/wardmote-plugin-sdk/testing";
 import manifest from "../src/manifest.js";
 import plugin from "../src/worker.js";
 

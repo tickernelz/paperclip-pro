@@ -4,7 +4,7 @@ import {
   LOCAL_BROWSER_PAIRING_TTL_MS,
   type LocalBrowserClient,
   type LocalBrowserPairingStartResult,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 

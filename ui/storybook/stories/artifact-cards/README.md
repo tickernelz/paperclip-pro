@@ -61,7 +61,7 @@ app does not inspect arbitrary archive bytes.
 ```sh
 pnpm storybook
 pnpm build-storybook
-pnpm --filter @tickernelz/paperclip-pro-ui typecheck
+pnpm --filter @tickernelz/wardmote-ui typecheck
 pnpm check:token-gates
 ```
 

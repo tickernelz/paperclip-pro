@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
-import type { AdapterModel } from "@tickernelz/paperclip-pro-adapter-utils";
-import { models as DIRECT_MODELS } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/claude";
+import type { AdapterModel } from "@tickernelz/wardmote-adapter-utils";
+import { models as DIRECT_MODELS } from "@tickernelz/wardmote-adapter-utils/provider-models/claude";
 import { sortClaudeModels } from "./model-order.js";
 
 const ANTHROPIC_MODELS_ENDPOINT = "/v1/models";

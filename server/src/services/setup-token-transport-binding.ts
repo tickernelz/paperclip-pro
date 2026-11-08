@@ -37,12 +37,12 @@ import { secretService } from "./secrets.js";
 import type { environmentService } from "./environments.js";
 import type { environmentRuntimeService } from "./environment-runtime.js";
 import { buildLoginLeaseAcquireArgs } from "./adapter-login-lease.js";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   createLoginPtyTransport,
   type LoginPtySession,
   type LoginPtySessionOpener,
-} from "@tickernelz/paperclip-pro-adapter-utils/login-pty-transport";
+} from "@tickernelz/wardmote-adapter-utils/login-pty-transport";
 import { runSetupTokenLogin, CLAUDE_SETUP_TOKEN_COMMAND } from "./ai-providers/claude/setup-token-runner.js";
 import { randomUUID } from "node:crypto";
 import {

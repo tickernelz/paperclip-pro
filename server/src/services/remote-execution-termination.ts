@@ -1,5 +1,5 @@
 import { and, eq } from "drizzle-orm";
-import { environmentLeases, type Db } from "@tickernelz/paperclip-pro-db";
+import { environmentLeases, type Db } from "@tickernelz/wardmote-db";
 
 type LeaseIdentity = {
   id: string; companyId: string; heartbeatRunId: string | null;

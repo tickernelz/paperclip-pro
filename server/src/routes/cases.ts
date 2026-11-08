@@ -19,7 +19,7 @@ import {
 import { Router, type Request } from "express";
 import { z } from "zod";
 import { and, asc, desc, eq, ilike, inArray, isNull, or, sql } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   agents,
   assets,
@@ -35,13 +35,13 @@ import {
   issues,
   labels,
   projects,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   createDocumentAnnotationCommentSchema,
   createDocumentAnnotationThreadSchema,
   updateDocumentAnnotationThreadSchema,
   isUuidLike,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { normalizeContentType } from "../attachment-types.js";
 import { removeStagedUpload, stageSingleFileUpload } from "../attachment-upload.js";
 import { badRequest, conflict, forbidden, notFound, unprocessable } from "../errors.js";

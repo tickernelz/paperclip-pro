@@ -7,7 +7,7 @@ import {
   createDb,
   issues,
   principalPermissionGrants,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { afterAll, afterEach, beforeAll, describe } from "vitest";
 import { errorHandler } from "../../middleware/index.js";
 import { ensureHumanRoleDefaultGrants } from "../../services/principal-access-compatibility.js";

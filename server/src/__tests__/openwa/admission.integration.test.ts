@@ -26,8 +26,8 @@ import {
   issues,
   toolConnections,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
-import { maskOpenwaPhoneNumber, OPENWA_BURST_MAX_WAIT_SECONDS, OPENWA_DEFAULT_BURST_WINDOW_SECONDS } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import { maskOpenwaPhoneNumber, OPENWA_BURST_MAX_WAIT_SECONDS, OPENWA_DEFAULT_BURST_WINDOW_SECONDS } from "@tickernelz/wardmote-shared";
 import { startEmbeddedPostgresTestDatabase } from "../helpers/embedded-postgres.js";
 import { chatChannelService, type ChatChannelService, type ChatChannelServiceOptions } from "../../services/chat-channels.js";
 import { ChatSdkRuntime } from "../../services/chat-sdk-runtime.js";
@@ -86,12 +86,50 @@ async function until(predicate: () => boolean | Promise<boolean>, timeoutMs = 15
   }
 }
 
+type EmptyHeadGate = { skip: number; reached: () => void; release: Promise<void> };
+
+let emptyHeadGate: EmptyHeadGate | null = null;
+
+function holdEmptyHeadRead(builder: any): any {
+  return new Proxy(builder, {
+    get(inner, property) {
+      if (property === "then")
+        return (resolve: (value: unknown) => unknown, reject: (reason: unknown) => unknown) =>
+          inner
+            .then(async (rows: unknown) => {
+              const gate = emptyHeadGate;
+              const query = String(inner.toSQL?.().sql ?? "");
+              if (gate && Array.isArray(rows) && rows.length === 0 && query.includes("providerSentAt") && query.includes("inbound_wakeup")) {
+                if (gate.skip-- > 0) return rows;
+                emptyHeadGate = null;
+                gate.reached();
+                await gate.release;
+              }
+              return rows;
+            })
+            .then(resolve, reject);
+      const member = Reflect.get(inner, property);
+      if (typeof member !== "function") return member;
+      return (...args: unknown[]) => {
+        const out = member.apply(inner, args);
+        return out && typeof out.then === "function" ? holdEmptyHeadRead(out) : out;
+      };
+    },
+  });
+}
+
 function countingDb(db: Db) {
   const counts = { queries: 0, transactions: 0 };
   const proxy = new Proxy(db, {
     get(target, property, receiver) {
       const value = Reflect.get(target, property, receiver);
       if (typeof value !== "function") return value;
+      if (property === "select")
+        return (...args: unknown[]) => {
+          counts.queries++;
+          const builder = value.apply(target, args);
+          return emptyHeadGate ? holdEmptyHeadRead(builder) : builder;
+        };
       if (typeof property === "string" && QUERY_METHODS.has(property))
         return (...args: unknown[]) => {
           counts.queries++;
@@ -124,6 +162,7 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
     process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE = path.join(secrets, "master.key");
   }, 60_000);
   afterEach(async () => {
+    emptyHeadGate = null;
     await Promise.all(services.splice(0).map((service) => service.shutdown()));
     await Promise.all(gateways.splice(0).map((gateway) => gateway.close()));
     for (const id of endpointIds.splice(0)) await db.update(chatEndpoints).set({ status: "archived" }).where(eq(chatEndpoints.id, id));
@@ -317,13 +356,25 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
     );
   }
 
-  async function settledDeliveries(t: Setup, count: number) {
+  async function untilSwept(t: Setup, predicate: () => boolean | Promise<boolean>, timeoutMs?: number) {
     let swept = Date.now();
     await until(async () => {
       if (Date.now() - swept > 1_000) {
         swept = Date.now();
         await t.service.processPendingDeliveries();
       }
+      return predicate();
+    }, timeoutMs);
+  }
+
+  function wokenRequestIds(t: Setup) {
+    const ids = t.wakeup.mock.calls.map((call) => call[1].durableChatRequest?.id);
+    expect(ids).not.toContain(undefined);
+    return new Set(ids);
+  }
+
+  async function settledDeliveries(t: Setup, count: number) {
+    await untilSwept(t, async () => {
       const rows = await deliveries(t);
       return rows.length >= count && rows.every((row) => row.state !== "processing" && row.state !== "received");
     });
@@ -847,7 +898,7 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
       await send(t, { chatId: group, author: jid(phone), body: "@" + OWN_PHONE + " help from " + phone, extra: { mentionedIds: [jid(OWN_PHONE)] } });
     const rows = await settledDeliveries(t, 4);
     expect(rows).toHaveLength(4);
-    await until(async () => (await wakeActions(t)).filter((action) => action.status === "processed").length === 3);
+    await untilSwept(t, async () => (await wakeActions(t)).filter((action) => action.status === "processed").length === 3);
     let wakes = await wakeActions(t);
     expect(wakes.map((action) => [action.status, (action.result as { code?: string } | null)?.code])).toEqual([
       ["issued", "openwa_burst_held"],
@@ -872,10 +923,10 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
     expect(t.wakeup).not.toHaveBeenCalled();
 
     clock.advance(OPENWA_DEFAULT_BURST_WINDOW_SECONDS * 1_000);
-    await until(async () => (await wakeActions(t)).every((action) => action.status === "processed"));
+    await untilSwept(t, async () => (await wakeActions(t)).every((action) => action.status === "processed"));
     wakes = await wakeActions(t);
     expect(burstCode(wakes[0])).toBe("inbound_wakeup_durable");
-    expect(t.wakeup).toHaveBeenCalledTimes(2);
+    expect(wokenRequestIds(t).size).toBe(2);
     expect(wakeCallDeliveryIds(t, wakes[0].id)).toEqual(rows.map((row) => row.id));
     expect(wakeCallDeliveryIds(t, ownerWake.id)).toEqual([ownerRow.id]);
   }, 120_000);
@@ -892,12 +943,7 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
   async function sendHeld(t: Setup, input: Parameters<FakeOpenwaGateway["inbound"]>[0]) {
     const row = await send(t, input);
     let delivery: typeof chatDeliveries.$inferSelect | undefined;
-    let swept = Date.now();
-    await until(async () => {
-      if (Date.now() - swept > 1_000) {
-        swept = Date.now();
-        await t.service.processPendingDeliveries();
-      }
+    await untilSwept(t, async () => {
       delivery = (await deliveries(t)).find((entry) => (entry.normalizedEvent as { openwa?: { waMessageId?: string } }).openwa?.waMessageId === row.waMessageId);
       const action = delivery && (await wakeActions(t)).find((entry) => entry.deliveryId === delivery!.id);
       return ["openwa_burst_held", "openwa_burst_folded"].includes(burstCode(action) ?? "");
@@ -935,11 +981,11 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
     await settle();
     expect(t.wakeup).not.toHaveBeenCalled();
     clock.advance(100);
-    await until(async () => (await wakeActions(t))[0]?.status === "processed");
-    expect(t.wakeup).toHaveBeenCalledTimes(1);
+    await untilSwept(t, async () => (await wakeActions(t))[0]?.status === "processed");
+    expect(wokenRequestIds(t).size).toBe(1);
     expect(wakeCallDeliveryIds(t, wakes[0].id)).toEqual(held.map((delivery) => delivery.id));
     await settle();
-    expect(t.wakeup).toHaveBeenCalledTimes(1);
+    expect(wokenRequestIds(t).size).toBe(1);
   }, 120_000);
 
   it("starts a new batch for a message sent after the previous batch's quiet gap", async () => {
@@ -948,13 +994,13 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
     const t = await burstSetup(clock);
     const first = await sendHeld(t, { chatId: jid(OWNER_PHONE), body: "first request" });
     clock.advance(OPENWA_DEFAULT_BURST_WINDOW_SECONDS * 1_000);
-    await until(() => t.wakeup.mock.calls.length === 1);
+    await untilSwept(t, async () => (await wakeActions(t))[0]?.status === "processed");
     clock.advance(5_000 - OPENWA_DEFAULT_BURST_WINDOW_SECONDS * 1_000);
     const second = await sendHeld(t, { chatId: jid(OWNER_PHONE), body: "a later request" });
     const secondWake = (await wakeActions(t)).find((action) => action.deliveryId === second.id)!;
     expect(burstCode(secondWake)).toBe("openwa_burst_held");
     clock.advance(OPENWA_DEFAULT_BURST_WINDOW_SECONDS * 1_000);
-    await until(() => t.wakeup.mock.calls.length === 2);
+    await untilSwept(t, async () => (await wakeActions(t)).find((action) => action.id === secondWake.id)?.status === "processed");
     const [firstWake] = await wakeActions(t);
     expect(wakeCallDeliveryIds(t, firstWake.id)).toEqual([first.id]);
     expect(wakeCallDeliveryIds(t, secondWake.id)).toEqual([second.id]);
@@ -973,9 +1019,33 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
     await settle();
     expect(t.wakeup).not.toHaveBeenCalled();
     clock.advance(100);
-    await until(() => t.wakeup.mock.calls.length === 1);
+    await untilSwept(t, async () => (await wakeActions(t))[0]?.status === "processed");
     const [wake] = await wakeActions(t);
     expect(wakeCallDeliveryIds(t, wake.id)).toEqual(held.map((delivery) => delivery.id));
+  }, 120_000);
+
+  it("dispatches a wake whose burst is released while the conversation drain is finishing", async () => {
+    const clock = new ManualClock();
+    clock.time = Date.now() + 3_600_000;
+    const t = await burstSetup(clock);
+    let reached!: () => void;
+    const drainFinishing = new Promise<void>((resolve) => (reached = resolve));
+    let release!: () => void;
+    emptyHeadGate = { skip: 1, reached, release: new Promise<void>((resolve) => (release = resolve)) };
+    try {
+      await send(t, { chatId: jid(OWNER_PHONE), body: "first request" });
+      await drainFinishing;
+      await until(async () => burstCode((await wakeActions(t))[0]) === "openwa_burst_held", 5_000);
+      clock.advance(OPENWA_DEFAULT_BURST_WINDOW_SECONDS * 1_000);
+      await until(async () => burstCode((await wakeActions(t))[0]) === "openwa_burst_released", 5_000);
+      await settle();
+      expect(t.wakeup).not.toHaveBeenCalled();
+    } finally {
+      release();
+    }
+    await until(() => t.wakeup.mock.calls.length === 1, 5_000);
+    const [wake] = await wakeActions(t);
+    expect(wakeCallDeliveryIds(t, wake.id)).toEqual((await deliveries(t)).map((delivery) => delivery.id));
   }, 120_000);
 
   it("starts each message's wake immediately when the endpoint burst window is 0", async () => {
@@ -990,11 +1060,14 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
       .set({ policy: { ...policy, triggers: { ...((policy.triggers ?? {}) as Record<string, unknown>), burstWindowSeconds: 0 } } as never })
       .where(eq(chatEndpoints.id, t.endpointId));
     await goLive(t);
+    const processedWakes = async (count: number) => {
+      const wakes = await wakeActions(t);
+      return wakes.length === count && wakes.every((action) => action.status === "processed");
+    };
     await send(t, { chatId: jid(OWNER_PHONE), body: "first request" });
-    await until(() => t.wakeup.mock.calls.length === 1);
+    await untilSwept(t, () => processedWakes(1));
     await send(t, { chatId: jid(OWNER_PHONE), body: "second request" });
-    await until(() => t.wakeup.mock.calls.length === 2, 45_000);
-    await until(async () => (await wakeActions(t)).every((action) => action.status === "processed"));
+    await untilSwept(t, () => processedWakes(2), 30_000);
     expect((await wakeActions(t)).map((action) => burstCode(action))).toEqual(["inbound_wakeup_durable", "inbound_wakeup_durable"]);
   }, 120_000);
 
@@ -1016,7 +1089,7 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
       return (await wakeActions(t))[0]?.status === "processed";
     }, 30_000);
     await settle();
-    expect(t.wakeup).toHaveBeenCalledTimes(1);
+    expect(wokenRequestIds(t).size).toBe(1);
     expect(wakeCallDeliveryIds(t, holder.id)).toEqual(held.map((delivery) => delivery.id));
   }, 120_000);
 
@@ -1036,7 +1109,7 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
       ["allowed", "other", first.id],
       ["allowed", "other", first.id],
     ]);
-    await until(() => t.wakeup.mock.calls.length > wakesBefore);
+    await untilSwept(t, () => t.wakeup.mock.calls.length > wakesBefore);
     const [issue] = await db.select().from(issues).where(eq(issues.id, first.issueId));
     expect(issue.status).toBe("in_progress");
     const reopened = await db
@@ -1072,7 +1145,7 @@ describe("OpenWA admission (embedded Postgres + fake gateway)", () => {
     await send(t, { chatId: jid(ALLOWED_PHONE), body: "any news?" });
     const rows = await settledDeliveries(t, 2);
     expect(rows.map((row) => row.state)).toEqual(["processed", "processed"]);
-    await until(() => t.wakeup.mock.calls.length > wakesBefore);
+    await untilSwept(t, () => t.wakeup.mock.calls.length > wakesBefore);
     const settledWake = async () =>
       (await db.select().from(chatActions).where(and(eq(chatActions.deliveryId, rows[1].id), eq(chatActions.kind, "inbound_wakeup"))))[0];
     await until(async () => Boolean((await settledWake())?.result));

@@ -1,4 +1,4 @@
-import type { OpenwaOperation } from "@tickernelz/paperclip-pro-shared/openwa-operations";
+import type { OpenwaOperation } from "@tickernelz/wardmote-shared/openwa-operations";
 import { SECRET_FIELD_NAME_PATTERN } from "../../redaction.js";
 
 export const OPENWA_REDACTED = "[REDACTED]";

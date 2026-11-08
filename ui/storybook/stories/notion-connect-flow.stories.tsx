@@ -7,7 +7,7 @@ import {
   type ConnectionGrant,
   type ConnectionGrantsResponse,
   type ToolConnection,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { queryKeys } from "@/lib/queryKeys";
 import { Browse } from "@/pages/apps/Browse";
 import { AppLogo } from "@/pages/apps/AppLogo";

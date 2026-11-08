@@ -1,4 +1,4 @@
-import type { DecisionInput, DecisionOption } from "@tickernelz/paperclip-pro-shared";
+import type { DecisionInput, DecisionOption } from "@tickernelz/wardmote-shared";
 import { sql } from "drizzle-orm";
 import {
   index,
@@ -71,6 +71,9 @@ export const decisions = pgTable(
     ),
     bundleIdx: index("decisions_bundle_idx").on(table.bundleId),
     originIssueIdx: index("decisions_origin_issue_idx").on(table.originIssueId),
+    companyResolvedHistoryIdx: index("decisions_company_resolved_history_idx")
+      .on(table.companyId, sql`coalesce(${table.decidedAt}, ${table.updatedAt})`, table.id)
+      .where(sql`${table.status} IN ('decided', 'expired', 'cancelled')`),
     companyIdempotencyUq: uniqueIndex("decisions_company_idempotency_uq")
       .on(table.companyId, table.idempotencyKey)
       .where(sql`${table.idempotencyKey} IS NOT NULL`),

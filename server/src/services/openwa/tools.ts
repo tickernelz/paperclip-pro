@@ -14,7 +14,7 @@ import {
   heartbeatRuns,
   issueAttachments,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   OPENWA_TOOL_RESULT_LIMIT_BYTES,
   maskOpenwaPhoneNumber,
@@ -25,7 +25,7 @@ import {
   type OpenwaGrantCategory,
   type OpenwaSendKind,
   type OpenwaTriggerClass,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { DEFAULT_ATTACHMENT_CONTENT_TYPE, attachmentExtensionForContentType, getMaxAttachmentBytes, resolveAttachmentIdentity, SVG_CONTENT_TYPE, normalizeContentType } from "../../attachment-types.js";
 import { HttpError, forbidden } from "../../errors.js";
 import { logger } from "../../middleware/logger.js";

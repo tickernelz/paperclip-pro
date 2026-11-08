@@ -15,7 +15,7 @@ import {
   resolveAgentAppearance,
   type Agent,
   type AgentAdapterConfigBatchPreview,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { storybookAgents, storybookDashboardSummary } from "../fixtures/paperclipData";
 
 const companyId = "company-storybook";

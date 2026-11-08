@@ -9,7 +9,7 @@ import {
   externalObjects,
   toolApplications,
   toolConnections,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { eq } from "drizzle-orm";
 import { githubConnectionEventService } from "../services/github-connection-events.js";
 import { subscribeCompanyLiveEvents } from "../services/live-events.js";

@@ -1,4 +1,4 @@
-import { AGENT_MEMBER_AUTHORITY_PERMISSION_KEYS } from "@tickernelz/paperclip-pro-shared";
+import { AGENT_MEMBER_AUTHORITY_PERMISSION_KEYS } from "@tickernelz/wardmote-shared";
 import type { GeneratedToolSpec } from "./generated-tools.js";
 
 export const AGENT_ADMITTING_GUARDS: Readonly<Record<string, true>> = {
@@ -11,6 +11,7 @@ export const AGENT_ADMITTING_GUARDS: Readonly<Record<string, true>> = {
   assertCanUpdateAgent: true,
   assertCompanyAccess: true,
   assertCompanyPermission: true,
+  assertDecisionAccess: true,
   assertIssueReadAllowed: true,
   assertIssueThreadInteractionWithdrawalAllowed: true,
   assertIssueWriteInfluenceAllowed: true,

@@ -21,7 +21,7 @@ import {
   principalPermissionGrants,
   toolConnections,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { startEmbeddedPostgresTestDatabase } from "../helpers/embedded-postgres.js";
 import { createLocalDiskStorageProvider } from "../../storage/local-disk-provider.js";
 import { createStorageService } from "../../storage/service.js";
@@ -230,7 +230,7 @@ describe("OpenWA activation through the owner test DM (embedded Postgres + fake 
     await t.service.openwa.addSenderRule(t.endpointId, { list: "allow", e164: "+" + MEMBER_PHONE }, t.userId);
 
     await t.service.reconcileProviderRuntimes();
-    await t.gateway.waitForSubscription();
+    await t.gateway.waitForFirstCatchUp();
 
     const early = await request(t.app).post("/api/chat-endpoints/" + t.endpointId + "/test").send({});
     expect(early.status).toBe(409);
@@ -308,7 +308,7 @@ describe("OpenWA activation through the owner test DM (embedded Postgres + fake 
     const added = await t.service.openwa.addOwner(t.endpointId, { e164: "+" + OWNER_PHONE, expiresInSeconds: 1_800 }, t.userId);
     await t.service.confirmIdentityLink(new URL(added.confirmationUrl!, "https://paperclip.example").searchParams.get("token")!, t.userId);
     await t.service.reconcileProviderRuntimes();
-    await t.gateway.waitForSubscription();
+    await t.gateway.waitForFirstCatchUp();
 
     const owner = await settled(t, { chatId: jid(OWNER_PHONE), body: "halo, tes koneksi" });
     const [action] = await db
@@ -391,7 +391,7 @@ describe("OpenWA activation through the owner test DM (embedded Postgres + fake 
     expect(JSON.stringify(activity)).not.toContain(FAKE_OPENWA_ADMIN_KEY);
 
     await t.service.reconcileProviderRuntimes();
-    await t.gateway.waitForSubscription();
+    await t.gateway.waitForFirstCatchUp();
     const member = await settled(t, { chatId: jid(MEMBER_PHONE), body: "halo, masih aktif?" });
     expect(member.delivery).toMatchObject({ state: "processed", principalRole: "allowed" });
     const memberWake = await db
@@ -439,7 +439,7 @@ describe("OpenWA activation through the owner test DM (embedded Postgres + fake 
       .send({ chatId: group, label: "Wira desk", settings: { activation: "on", triggers: { allMessages: true } } });
     expect(configured.status).toBe(200);
     await t.service.reconcileProviderRuntimes();
-    await t.gateway.waitForSubscription();
+    await t.gateway.waitForFirstCatchUp();
 
     const owner = await settled(t, { chatId: group, author: jid(OWNER_PHONE), body: "tolong cek stok gudang hari ini" });
     expect(owner.delivery).toMatchObject({ state: "processed", triggerClass: "owner", principalRole: "owner" });

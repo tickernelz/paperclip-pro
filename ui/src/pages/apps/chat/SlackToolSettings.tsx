@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import type {
   SlackSearchStatus,
   SlackToolCapabilities,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { slackToolsApi } from "@/api/slackTools";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

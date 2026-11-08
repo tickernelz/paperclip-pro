@@ -1,6 +1,6 @@
 import { and, asc, desc, eq, inArray, isNotNull, isNull, ne, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   agents,
   issues,
@@ -10,7 +10,7 @@ import {
   pipelineStages,
   pipelines,
   routines,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { notFound } from "../errors.js";
 import { visibleIssueCondition } from "./issue-visibility.js";
 

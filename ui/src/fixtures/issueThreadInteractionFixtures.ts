@@ -1,4 +1,4 @@
-import { legacyIssueThreadInteractionResolverPolicyAlias } from "@tickernelz/paperclip-pro-shared";
+import { legacyIssueThreadInteractionResolverPolicyAlias } from "@tickernelz/wardmote-shared";
 import type { LiveRunForIssue } from "../api/heartbeats";
 import type {
   IssueChatComment,

@@ -5,7 +5,7 @@ import { flushSync } from "react-dom";
 import type { LiveRunForIssue } from "../api/heartbeats";
 import type { AnchorHTMLAttributes, ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { Issue, Project } from "@tickernelz/paperclip-pro-shared";
+import type { Issue, Project } from "@tickernelz/wardmote-shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   IssuesList,

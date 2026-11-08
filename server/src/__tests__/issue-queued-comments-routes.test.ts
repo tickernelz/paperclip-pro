@@ -24,7 +24,7 @@ import {
   issueRelations,
   issues,
   runIdentityContexts,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { errorHandler } from "../middleware/index.js";
 import { issueRoutes } from "../routes/issues.js";
 import { heartbeatService } from "../services/heartbeat.js";
@@ -33,12 +33,13 @@ import { issueThreadInteractionService } from "../services/issue-thread-interact
 import { questionResponseDeliveryService } from "../services/question-response-delivery.js";
 import { remoteTerminationReceipt } from "../services/remote-execution-termination.js";
 import { initializeRunIdentity, reconcileSteeredIdentity } from "../services/run-identity.js";
-import { registerAdapterSteerTarget } from "@tickernelz/paperclip-pro-adapter-utils/adapter-steer-registry";
+import { registerAdapterSteerTarget } from "@tickernelz/wardmote-adapter-utils/adapter-steer-registry";
 import { appendHeartbeatRunEvent } from "../services/heartbeat-run-events.js";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
 } from "./helpers/embedded-postgres.js";
+import { truncateTablesWithDeadlockRetry } from "./helpers/truncate-with-deadlock-retry.js";
 
 const steerNativeSessionMock = vi.hoisted(() => vi.fn());
 vi.mock("../services/native-runtime/native-session-executor.js", async (importOriginal) => {
@@ -76,7 +77,7 @@ describeEmbeddedPostgres("issue queued-comment routes", () => {
     testProcesses.clear();
     // Each case owns the entire disposable database. Clear the full company
     // graph, including attribution rows and constraints added by migrations.
-    await db.execute(sql`TRUNCATE TABLE companies CASCADE`);
+    await truncateTablesWithDeadlockRetry(db, "TRUNCATE TABLE companies CASCADE");
   });
 
   afterAll(async () => {

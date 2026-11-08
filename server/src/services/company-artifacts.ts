@@ -1,7 +1,7 @@
 import { buffer } from "node:stream/consumers";
 import { and, desc, eq, inArray, isNotNull, isNull, notInArray, or, sql, type SQL } from "drizzle-orm";
 import { alias } from "drizzle-orm/pg-core";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   agents,
   assets,
@@ -14,7 +14,7 @@ import {
   issues,
   issueWorkProducts,
   projects,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   attachmentArtifactWorkProductMetadataSchema,
   COMPANY_ARTIFACTS_MAX_LIMIT,
@@ -26,7 +26,7 @@ import {
   type CompanyArtifactMediaKind,
   type CompanyArtifactsQuery,
   type CompanyArtifactsResponse,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { badRequest, notFound } from "../errors.js";
 import type { StorageService } from "../storage/types.js";
 

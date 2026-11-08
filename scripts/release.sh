@@ -4,7 +4,7 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${0}")/.." && pwd)"
 . "${REPO_ROOT}/scripts/release-lib.sh"
 CLI_DIR="${REPO_ROOT}/cli"
-CLI_PACKAGE="@tickernelz/paperclip-pro"
+CLI_PACKAGE="@tickernelz/wardmote"
 PUBLISH_TAG="next"
 PROMOTE_TAG="latest"
 PACK_CONCURRENCY="${PACK_CONCURRENCY:-4}"
@@ -28,7 +28,7 @@ usage() {
 Usage:
   ./scripts/release.sh [--version YYYY.MDD.P] [--dry-run] [--skip-build] [--print-version]
 
-Publishes every @tickernelz/paperclip-pro package at one calendar version, in
+Publishes every @tickernelz/wardmote package at one calendar version, in
 dependency order, under the "next" dist-tag, then moves "latest" onto that
 version once npm exposes the whole set, tags the release commit and opens a
 GitHub release with notes generated since the previous v* tag.
@@ -50,8 +50,9 @@ Options:
 
 Auth:
   NODE_AUTH_TOKEN, when set, authenticates npm through a temporary userconfig.
-  Left empty, npm publish falls back to GitHub Actions OIDC trusted publishing;
-  npm dist-tag add is not covered by OIDC and needs the token.
+  Left empty, npm publish and npm dist-tag add use GitHub Actions OIDC trusted
+  publishing, which needs npm 11.21.0+ (or 12.2.0+) and "Allow npm dist-tag"
+  on each package's trusted publisher.
 EOF
 }
 
@@ -114,8 +115,21 @@ cleanup_release_state() {
   fi
 }
 
+npm_supports_oidc_dist_tag() {
+  local major minor
+  IFS=. read -r major minor _ <<< "$(npm --version)"
+  if [ "$major" -eq 11 ]; then
+    [ "$minor" -ge 21 ]
+  else
+    [ "$major" -gt 12 ] || { [ "$major" -eq 12 ] && [ "$minor" -ge 2 ]; }
+  fi
+}
+
 configure_npm_auth() {
   if [ -z "${NODE_AUTH_TOKEN:-}" ]; then
+    if [ "$dry_run" != true ] && [ -n "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ] && ! npm_supports_oidc_dist_tag; then
+      release_fail "npm $(npm --version) cannot move dist-tags over OIDC; install npm 11.21.0+ or 12.2.0+ before publishing."
+    fi
     release_info "  Auth: npm OIDC trusted publishing (no token in the environment)"
     return
   fi
@@ -271,13 +285,21 @@ promote_to_latest() {
       continue
     fi
 
-    if ! npm dist-tag add "${pkg_name}@${pkg_version}" "$PROMOTE_TAG"; then
-      if [ -z "${NODE_AUTH_TOKEN:-}" ]; then
-        release_fail "npm dist-tag add failed for ${pkg_name}; OIDC trusted publishing does not authenticate dist-tag changes, so this step needs NODE_AUTH_TOKEN."
+    if [ -n "${NODE_AUTH_TOKEN:-}" ]; then
+      if ! env -u ACTIONS_ID_TOKEN_REQUEST_URL -u ACTIONS_ID_TOKEN_REQUEST_TOKEN \
+        npm dist-tag add "${pkg_name}@${pkg_version}" "$PROMOTE_TAG"; then
+        release_fail "npm dist-tag add failed for ${pkg_name}@${pkg_version}."
       fi
-      release_fail "npm dist-tag add failed for ${pkg_name}@${pkg_version}."
+      release_info "  ${pkg_name}: ${PROMOTE_TAG} -> ${pkg_version}"
+      continue
     fi
-    release_info "  ${pkg_name}: ${PROMOTE_TAG} -> ${pkg_version}"
+
+    if npm dist-tag add "${pkg_name}@${pkg_version}" "$PROMOTE_TAG"; then
+      release_info "  ${pkg_name}: ${PROMOTE_TAG} -> ${pkg_version}"
+      continue
+    fi
+
+    release_fail "npm dist-tag add over OIDC failed for ${pkg_name}; enable \"Allow npm dist-tag\" on its trusted publisher, or rerun this version with auth=token."
   done <<< "$package_info"
 }
 

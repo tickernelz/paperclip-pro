@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { promisify } from "node:util";
 import { describe, expect, it, vi } from "vitest";
-import type { agents } from "@tickernelz/paperclip-pro-db";
+import type { agents } from "@tickernelz/wardmote-db";
 import { sessionCodec as codexSessionCodec } from "../services/ai-providers/codex/session-codec.js";
 import { resolveDefaultAgentWorkspaceDir } from "../home-paths.js";
 import {

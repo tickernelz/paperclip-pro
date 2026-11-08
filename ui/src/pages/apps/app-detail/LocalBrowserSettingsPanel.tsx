@@ -9,7 +9,7 @@ import {
   type LocalBrowserSettingsUpdate,
   type LocalBrowserTier,
   type ToolConnection,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { localBrowserApi } from "@/api/local-browser";
 import { copyTextToClipboard } from "@/lib/clipboard";
 import { Copy, Download, Monitor } from "lucide-react";
@@ -292,7 +292,7 @@ export function LocalBrowserSettingsPanel({ connection }: { connection: ToolConn
         {pairing && (
           <div
             className="space-y-3 rounded-lg border border-line bg-bg-3/40 p-4"
-            data-paperclip-local-browser-pairing=""
+            data-wardmote-local-browser-pairing=""
             data-origin={pairingOrigin(pairing.connectUrls)}
             data-code={pairing.code}
           >

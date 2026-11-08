@@ -34,9 +34,9 @@ import {
   toolProfileEntries,
   toolProfiles,
   toolRuntimeSlots,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { and, eq, sql } from "drizzle-orm";
-import { APP_DEFINITIONS, MCP_CONFIG_HELP_PROMPT } from "@tickernelz/paperclip-pro-shared";
+import { APP_DEFINITIONS, MCP_CONFIG_HELP_PROMPT } from "@tickernelz/wardmote-shared";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

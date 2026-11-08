@@ -3,7 +3,7 @@ import type {
   LiveEvent,
   PixelsOfficeAgent,
   PixelsOfficeSnapshot,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   agentVisualsKey,
   applyLiveEvent,

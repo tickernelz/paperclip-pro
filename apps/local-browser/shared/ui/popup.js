@@ -130,7 +130,7 @@
     var input = byId("pair-input").value.trim();
     var parsed = LB.pairing.parsePairingInput(input);
     if (!input || parsed.reason) {
-      showPairError(parsed.reason || "Paste the pairing link from Paperclip.");
+      showPairError(parsed.reason || "Paste the pairing link from Wardmote.");
       return;
     }
     showPairError("");

@@ -6,7 +6,7 @@ import {
   isNativeWorkspaceExportRepairCause,
   type IssueRecoveryAction,
   type IssueUnblockDescriptor,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { settleSlackConversation } from "../slack-conversation-lifecycle.js";
 import { externalConversationStateSql } from "../slack-conversation-state.js";
 import { isIssueReviewPathRecoveryRun } from "./review-path-recovery.js";
@@ -39,7 +39,7 @@ import {
 } from "drizzle-orm";
 import { executionBlockerPredicate } from "../execution-blocker.js";
 import { releaseDependencyGateRecoveryHold } from "../dependency-gate-recovery-hold.js";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import { isOpenwaConversationIssue } from "../openwa/authority.js";
 import {
   hasCommittedNativeBoardResponseWait,
@@ -53,7 +53,7 @@ import {
   requiresExecutionReconciliation,
   type IssueCommentMetadata,
   type IssueCommentPresentation,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   agents,
   agentTaskSessions,
@@ -76,7 +76,7 @@ import {
   statusDecisions,
   routines,
   workAssessments,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { parseObject, asBoolean, asNumber } from "../../adapters/utils.js";
 import { runningProcesses } from "../../adapters/index.js";
 import {

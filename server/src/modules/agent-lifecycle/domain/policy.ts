@@ -1,4 +1,4 @@
-import type { AgentLifecycleState } from "@tickernelz/paperclip-pro-shared";
+import type { AgentLifecycleState } from "@tickernelz/wardmote-shared";
 
 export type LifecycleCommand = "reconcile" | "approve" | "reject" | "pause" | "resume" | "terminate" | "complete" | "retry";
 export class AgentLifecycleConflict extends Error {

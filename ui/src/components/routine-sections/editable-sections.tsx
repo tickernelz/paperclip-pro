@@ -31,7 +31,7 @@ import { MarkdownEditor } from "../MarkdownEditor";
 import { RoutineVariablesEditor, RoutineVariablesHint } from "../RoutineVariablesEditor";
 import { EnvironmentVariablesEditor } from "../environment-variables-editor";
 import { useRoutineDetail } from "./context";
-import type { EnvBinding, RoutineDetail as RoutineDetailType } from "@tickernelz/paperclip-pro-shared";
+import type { EnvBinding, RoutineDetail as RoutineDetailType } from "@tickernelz/wardmote-shared";
 
 const concurrencyPolicyOptions = [
   {

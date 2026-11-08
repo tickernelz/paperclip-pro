@@ -1,5 +1,5 @@
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { onAdapterSteerTargetRegistered } from "@tickernelz/paperclip-pro-adapter-utils/adapter-steer-registry";
+import type { Db } from "@tickernelz/wardmote-db";
+import { onAdapterSteerTargetRegistered } from "@tickernelz/wardmote-adapter-utils/adapter-steer-registry";
 
 export interface InteractionResponseSteeringScope {
   companyId: string;

@@ -1,4 +1,4 @@
-import type { CompanySkill, CompanySkillDetail, CompanySkillListItem } from "@tickernelz/paperclip-pro-shared";
+import type { CompanySkill, CompanySkillDetail, CompanySkillListItem } from "@tickernelz/wardmote-shared";
 
 export type CompanySkillRouteSubject = Pick<CompanySkill | CompanySkillDetail | CompanySkillListItem, "id" | "key" | "slug">;
 

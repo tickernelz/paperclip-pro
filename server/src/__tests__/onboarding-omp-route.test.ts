@@ -6,7 +6,7 @@ import { PassThrough } from "node:stream";
 import express from "express";
 import request from "supertest";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { OmpInstallProbe } from "@tickernelz/paperclip-pro-adapter-omp-local/readiness";
+import type { OmpInstallProbe } from "@tickernelz/wardmote-adapter-omp-local/readiness";
 import { errorHandler } from "../middleware/index.js";
 import { onboardingOmpRoutes, type OnboardingOmpDeps } from "../routes/onboarding-omp.js";
 

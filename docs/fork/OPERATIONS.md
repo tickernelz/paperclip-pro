@@ -1,11 +1,12 @@
-# Wardmote Pro — Operations Runbook
+# Wardmote — Operations Runbook
 
-Day-two operation of an installed Wardmote Pro instance. Every command and path
+Day-two operation of an installed Wardmote instance. Every command and path
 below is taken from this repository's source; the citations say where.
 
-This fork is not on npm. Commands assume the managed shim installed by
-`wardmote install` is on `PATH` (`~/.local/bin/paperclip-pro`,
-`cli/src/install-store.ts:85`).
+Wardmote is published on npm as `@tickernelz/wardmote`. Commands assume the
+managed shim installed by `wardmote install` is on `PATH`
+(`~/.local/bin/wardmote`, with the `~/.local/bin/paperclip-pro` alias,
+`cli/src/install-store.ts:78-88`).
 
 ## 1. Where state lives
 
@@ -133,7 +134,7 @@ process died, remove the stale lock and retry
 
 ## 4. Updating from npm, or from an unreleased commit
 
-The fork publishes `@tickernelz/paperclip-pro*` to npm (section 9), so the
+The fork publishes `@tickernelz/wardmote*` to npm (section 9), so the
 normal update is:
 
 ```bash
@@ -154,9 +155,9 @@ The npm install resolves one exact version with `npm view`, then verifies that
 every package in `cli/src/release-packages.ts` (31 packages, kept in step with
 `scripts/release-package-manifest.json` by a test) exists at that exact version
 before it downloads anything. A partially published release — 2026.926.0 left
-`@tickernelz/paperclip-pro-server` in npm's staging queue — is refused with the
+`@tickernelz/wardmote-server` in npm's staging queue — is refused with the
 missing names rather than installed with mixed versions. It then installs
-`@tickernelz/paperclip-pro@<version>` into
+`@tickernelz/wardmote@<version>` into
 `~/.wardmote/cli/installs/npm/<version>` under a private npm user config
 that allowlists the `@embedded-postgres/*` install scripts, smoke-tests
 `--version` and the payload's PostgreSQL shared-library links, and only then
@@ -166,7 +167,7 @@ host, that is ~45 s end to end, against 11 m 38 s for the git path.
 Switching an existing instance between a git payload and an npm payload is
 non-destructive. An install writes only `~/.wardmote/cli/installs/<source>/<id>`,
 the `~/.wardmote/cli/current` symlink, `~/.wardmote/cli/install.json`
-and `~/.local/bin/paperclip-pro`. Everything under
+and the `~/.local/bin/wardmote` and `~/.local/bin/paperclip-pro` shims. Everything under
 `~/.wardmote/instances/<id>` — database, `config.json`, `service.env`,
 secrets, logs, storage, backups, workspaces — is untouched, and the two previous
 payloads stay available for `wardmote update --rollback`.
@@ -354,7 +355,7 @@ creates the annotated tag on that commit and pushes it.
 On a tag push the workflow:
 
 - takes the version from the tag name, which must be `v<YYYY.MDD.P>`;
-- runs with `dry_run=false` and `auth=token`;
+- runs with `dry_run=false` and `auth=oidc`;
 - fails unless the tagged commit is reachable from `origin/main`;
 - fails unless `ci.yml` completed successfully for that exact commit. A queued
   or running CI run is polled for about 30 minutes, a completed non-success
@@ -370,23 +371,34 @@ Preview or resume through a dispatch:
 
 ```bash
 gh workflow run release.yml --repo tickernelz/wardmote --ref main \
-  -f dry_run=true -f auth=token -f version=
+  -f dry_run=true -f auth=oidc -f version=
 
 gh workflow run release.yml --repo tickernelz/wardmote --ref main \
-  -f dry_run=false -f auth=token -f version=2026.925.3
+  -f dry_run=false -f auth=oidc -f version=2026.925.3
 ```
 
 Dispatch inputs:
 
 - `version` — empty resolves the UTC date slot `YYYY.MDD` plus the next patch
-  not already published for `@tickernelz/paperclip-pro`, so a same-day rerun
+  not already published for `@tickernelz/wardmote`, so a same-day rerun
   never collides. Pass an explicit `YYYY.MDD.P` to pin it.
 - `dry_run` — `true` previews every step and contacts npm only for read-only
   checks.
-- `auth` — `token` uses the `NPM_TOKEN` repository secret; `oidc` uses npm
-  trusted publishing. Keep `token` until every package has a trusted publisher
-  configured, and note that npm OIDC does not authenticate
-  `npm dist-tag add`, so the `latest` promotion always needs the token.
+- `auth` — `oidc` (the default, and what a tag push uses) authenticates both
+  `npm publish` and the `latest` promotion (`npm dist-tag add`) through npm
+  trusted publishing. Every package needs one trusted publisher: GitHub
+  Actions, `tickernelz/wardmote`, workflow `release.yml`, no environment, with
+  `npm publish` and `Allow npm dist-tag` enabled. OIDC dist-tags need npm
+  11.21.0+ (or 12.2.0+), so the workflow installs `npm@11.21.2`, and
+  `release.sh` refuses to publish over OIDC with an older npm. `token` uses the
+  `NPM_TOKEN` repository secret and is only for:
+  - a new package, before its trusted publisher can exist (npm needs the
+    package page first);
+  - finishing a version whose `oidc` run failed at the `latest` promotion,
+    for example a package without `Allow npm dist-tag`: rerun that version
+    with `auth=token`; published packages are skipped and only the promotion
+    runs, with the OIDC identity stripped so npm uses the token;
+  - `npm deprecate` and other owner commands, which OIDC does not cover.
 
 The run is idempotent and resumable: a package version already on npm is
 skipped, a dist-tag already pointing at the version is left alone, and an
@@ -409,9 +421,12 @@ One-time owner setup before the first publish:
 2. Store it as the `NPM_TOKEN` repository secret.
 3. After the first successful publish, configure a trusted publisher on each
    package (GitHub Actions, `tickernelz/wardmote`, workflow
-   `release.yml`, no environment). That step needs interactive 2FA.
-4. Afterwards `auth=oidc` covers the publishes; keep the token for the
-   `latest` promotion.
+   `release.yml`, no environment, `npm publish` and `Allow npm dist-tag`).
+   That step needs interactive 2FA. npm keeps a new trusted publisher
+   `Pending validation` until one OIDC publish runs through it; the package
+   page names the deadline, and an unvalidated configuration expires.
+4. Afterwards `auth=oidc` covers publishing and the `latest` promotion; keep
+   the token for the cases listed under `auth` above.
 
 ## 10. Local CLI run concurrency
 

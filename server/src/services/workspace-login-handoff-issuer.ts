@@ -14,9 +14,9 @@
  */
 
 import { and, desc, eq } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { authUsers, instanceUserRoles, workspaceRuntimeServices } from "@tickernelz/paperclip-pro-db";
-import type { WorkspaceReadiness } from "@tickernelz/paperclip-pro-shared";
+import type { Db } from "@tickernelz/wardmote-db";
+import { authUsers, instanceUserRoles, workspaceRuntimeServices } from "@tickernelz/wardmote-db";
+import type { WorkspaceReadiness } from "@tickernelz/wardmote-shared";
 import {
   buildWorkspaceHandoffExchangeUrl,
   issueWorkspaceHandoffTicket,

@@ -1,5 +1,5 @@
 import { and, eq, inArray, max, sql } from "drizzle-orm";
-import { chatDeliveries, chatOutboundMessages, heartbeatRuns, type Db } from "@tickernelz/paperclip-pro-db";
+import { chatDeliveries, chatOutboundMessages, heartbeatRuns, type Db } from "@tickernelz/wardmote-db";
 import { readOpenwaRunContext } from "./authority.js";
 import type { OpenwaScheduledWakeClock } from "./scheduled-wakes.js";
 

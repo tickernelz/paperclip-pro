@@ -5,7 +5,7 @@ import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 
 import {
   activityLog,
@@ -21,9 +21,9 @@ import {
   issueThreadInteractions,
   issues,
   nativeRunFinalizations,
-} from "@tickernelz/paperclip-pro-db";
-import type { PrpEvent } from "@tickernelz/paperclip-pro-paperclip-runner";
-import { respondIssueThreadInteractionSchema } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import type { PrpEvent } from "@tickernelz/wardmote-paperclip-runner";
+import { respondIssueThreadInteractionSchema } from "@tickernelz/wardmote-shared";
 
 import {
   getEmbeddedPostgresTestSupport,
@@ -57,6 +57,7 @@ import {
   registerRunnerPrpAuthority,
   setupRunnerPrpWebSocketServer,
 } from "../../realtime/runner-prp-ws.js";
+import { truncateTablesWithDeadlockRetry } from "../../__tests__/helpers/truncate-with-deadlock-retry.js";
 
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
 const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;
@@ -93,7 +94,7 @@ describeEmbeddedPostgres("native question bridge", () => {
     // TRUNCATE below and can deadlock.
     await drainHeartbeatRunsToQuiescence(db, heartbeat);
     nativeQuestionBridgeInternals.resetForTests();
-    await db.execute(sql.raw(`
+    await truncateTablesWithDeadlockRetry(db, `
       TRUNCATE TABLE
         "activity_log",
         "issue_thread_interactions",
@@ -103,7 +104,7 @@ describeEmbeddedPostgres("native question bridge", () => {
         "agents",
         "companies"
       RESTART IDENTITY CASCADE
-    `));
+    `);
   });
 
   afterAll(async () => {

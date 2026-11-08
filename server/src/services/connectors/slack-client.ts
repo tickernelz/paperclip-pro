@@ -1,4 +1,4 @@
-import { SLACK_TOOLS } from "@tickernelz/paperclip-pro-shared";
+import { SLACK_TOOLS } from "@tickernelz/wardmote-shared";
 import { forbidden, tooManyRequests, unprocessable } from "../../errors.js";
 
 const METHODS = new Set([

@@ -1,4 +1,4 @@
-import type { PaperclipPluginManifestV1 } from "@tickernelz/paperclip-pro-plugin-sdk";
+import type { PaperclipPluginManifestV1 } from "@tickernelz/wardmote-plugin-sdk";
 
 const manifest: PaperclipPluginManifestV1 = {
   id: "paperclipai.plugin-authoring-smoke-example",

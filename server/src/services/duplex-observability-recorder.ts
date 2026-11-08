@@ -6,8 +6,8 @@ import {
   type DuplexObservabilityEventRecord,
   type DuplexObservabilityRecorder,
   type DuplexObservabilitySpanRecord,
-} from "@tickernelz/paperclip-pro-adapter-utils/duplex-observability";
-import { getActiveStepContext } from "@tickernelz/paperclip-pro-adapter-utils/acpx-engine/startup-timing";
+} from "@tickernelz/wardmote-adapter-utils/duplex-observability";
+import { getActiveStepContext } from "@tickernelz/wardmote-adapter-utils/acpx-engine/startup-timing";
 
 /**
  * The host binding for the fixed duplex telemetry surface. This module maps each

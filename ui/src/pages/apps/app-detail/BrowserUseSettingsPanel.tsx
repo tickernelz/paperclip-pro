@@ -3,7 +3,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import type {
   ConnectionGrantsResponse,
   ToolConnection,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { browserUseApi } from "@/api/browser-use";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

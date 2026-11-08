@@ -58,7 +58,7 @@ http://my-macbook.tailnet.ts.net:3100
 If you access Wardmote with a custom private hostname, add it to the allowlist:
 
 ```sh
-npx @tickernelz/paperclip-pro allowed-hostname my-macbook.tailnet.ts.net
+npx @tickernelz/wardmote allowed-hostname my-macbook.tailnet.ts.net
 ```
 
 ## 5. Verify the server is reachable

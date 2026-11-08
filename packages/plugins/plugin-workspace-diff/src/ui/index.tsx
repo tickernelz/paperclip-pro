@@ -1,5 +1,5 @@
-import type { PluginDetailTabProps } from "@tickernelz/paperclip-pro-plugin-sdk/ui";
-import { copyTextToClipboard, usePluginData, usePluginToast } from "@tickernelz/paperclip-pro-plugin-sdk/ui";
+import type { PluginDetailTabProps } from "@tickernelz/wardmote-plugin-sdk/ui";
+import { copyTextToClipboard, usePluginData, usePluginToast } from "@tickernelz/wardmote-plugin-sdk/ui";
 import { DIFFS_TAG_NAME, getSingularPatch } from "@pierre/diffs";
 import type { PatchDiffProps } from "@pierre/diffs/react";
 import { useFileDiffInstance } from "@pierre/diffs/react";

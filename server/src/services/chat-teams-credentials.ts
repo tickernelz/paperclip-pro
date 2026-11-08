@@ -1,4 +1,4 @@
-import { microsoftTeamsCredentialIdSchema } from "@tickernelz/paperclip-pro-shared";
+import { microsoftTeamsCredentialIdSchema } from "@tickernelz/wardmote-shared";
 import { unprocessable } from "../errors.js";
 
 const MICROSOFT_TEAMS_ID_FIELDS = ["clientId", "tenantId"] as const;

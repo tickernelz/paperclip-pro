@@ -19,7 +19,7 @@ import {
   type LocalRunLimitKey,
   type LocalRunLimitSource,
   type LocalRunLimitsSettings,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { instanceSettingsApi } from "@/api/instanceSettings";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";

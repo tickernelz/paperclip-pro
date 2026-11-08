@@ -1,4 +1,4 @@
-import type { PaperclipPluginManifestV1 } from "@tickernelz/paperclip-pro-plugin-sdk";
+import type { PaperclipPluginManifestV1 } from "@tickernelz/wardmote-plugin-sdk";
 
 /**
  * Stable plugin ID used by host registration and namespacing.

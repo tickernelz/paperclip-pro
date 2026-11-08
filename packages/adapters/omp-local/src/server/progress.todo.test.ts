@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import type { AdapterRuntimeEvent } from "@tickernelz/paperclip-pro-adapter-utils";
+import type { AdapterRuntimeEvent } from "@tickernelz/wardmote-adapter-utils";
 import { createOmpProgressReporter } from "./progress.js";
 
 const recorded = readFileSync(new URL("./test-fixtures/omp-todo-events.jsonl", import.meta.url), "utf8")

@@ -23,7 +23,7 @@ import { randomUUID } from "node:crypto";
 import { beginIdleTrackedWork, readTaskDrain, trackIdleWork } from "./task-admission.js";
 import { EventEmitter } from "node:events";
 import { createInterface, type Interface as ReadlineInterface } from "node:readline";
-import type { PaperclipPluginManifestV1 } from "@tickernelz/paperclip-pro-shared";
+import type { PaperclipPluginManifestV1 } from "@tickernelz/wardmote-shared";
 import {
   JSONRPC_VERSION,
   JSONRPC_ERROR_CODES,
@@ -44,7 +44,7 @@ import {
   DUPLEX_CHANNEL_EXIT_NOTIFICATION,
   encodeChannelBytes,
   decodeChannelBytes,
-} from "@tickernelz/paperclip-pro-plugin-sdk";
+} from "@tickernelz/wardmote-plugin-sdk";
 import type {
   JsonRpcId,
   PluginInvocationContext,
@@ -58,8 +58,8 @@ import type {
   WorkerToHostMethodName,
   WorkerToHostMethods,
   InitializeParams,
-} from "@tickernelz/paperclip-pro-plugin-sdk";
-import { getActiveStepContext } from "@tickernelz/paperclip-pro-adapter-utils/acpx-engine/startup-timing";
+} from "@tickernelz/wardmote-plugin-sdk";
+import { getActiveStepContext } from "@tickernelz/wardmote-adapter-utils/acpx-engine/startup-timing";
 import {
   isLoginCommandKey,
   validateLoginSessionHome,

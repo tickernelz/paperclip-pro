@@ -6,7 +6,7 @@ import type {
   DocumentAnnotationThreadStatus,
   DocumentAnnotationThreadWithComments,
   UpdateDocumentAnnotationThreadRequest,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { api } from "./client";
 
 export type DocumentAnnotationListFilter = "open" | "resolved" | "all";

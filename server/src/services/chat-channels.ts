@@ -16,12 +16,12 @@ import {
   type ReceiptReactionPayload,
 } from "./chat-receipt-reactions.js";
 import { fastResponseService, enqueueFastResponse, fastResponseSourceCurrent, fastResponseTurnQueued } from "./fast-responses.js";
-import { fastResponseRequests } from "@tickernelz/paperclip-pro-db";
+import { fastResponseRequests } from "@tickernelz/wardmote-db";
 import { chatCredentialMutationLease, CREDENTIAL_MUTATION_LEASE_TTL_MS, type CredentialMutationLeaseGuard } from "./chat-credential-mutation-lease.js";
 import type { AgentAvatarRequest } from "./agent-avatars.js";
 import { slackChatRegistrationService, slackRegistrationProjection } from "./chat-slack-registration.js";
-import { chatSlackRegistrations } from "@tickernelz/paperclip-pro-db";
-import { SLACK_CHAT_BOT_SCOPES } from "@tickernelz/paperclip-pro-shared";
+import { chatSlackRegistrations } from "@tickernelz/wardmote-db";
+import { SLACK_CHAT_BOT_SCOPES } from "@tickernelz/wardmote-shared";
 import { authorizationService, canActorReadIssuePrivacy, canPublishIssueToChatAudience } from "./authorization.js";
 import { withSlackBoardLease } from "./slack-board-lease.js";
 import { mirrorSlackBoardComment, slackBoardReplyBindings } from "./slack-board-messages.js";
@@ -48,8 +48,8 @@ import {
   githubMessageAddressesAnotherBot,
 } from "./chat-github-events.js";
 import { githubReviewPrompt, githubManualMessagePrompt, GITHUB_CONFIGURED_SKILL_GUIDANCE } from "./chat-github-review-policy.js";
-import { chatGitHubConfigurations, chatGitHubRegistrations, chatGitHubReviews } from "@tickernelz/paperclip-pro-db";
-import type { GitHubReviewEventContext, GitHubIssueEventContext, GitHubAutomaticEventContext, GitHubReviewPolicy } from "@tickernelz/paperclip-pro-shared";
+import { chatGitHubConfigurations, chatGitHubRegistrations, chatGitHubReviews } from "@tickernelz/wardmote-db";
+import type { GitHubReviewEventContext, GitHubIssueEventContext, GitHubAutomaticEventContext, GitHubReviewPolicy } from "@tickernelz/wardmote-shared";
 import { githubChatReviewService } from "./chat-github-reviews.js";
 import { githubResponseCommentService } from "./chat-github-response-comments.js";
 import { githubChatWizardService } from "./chat-github-wizard.js";
@@ -127,14 +127,14 @@ import { HEIF_CONTENT_TYPES, photonHeifPreview, validatePhotonImage } from "./ph
 import { projectSafeChatPublicationText } from "./chat-publication-projection.js";
 import { PhotonAnswerValidationError, nativePhotonInteraction, publishPhotonPrompt, photonResponseCommand, parsePhotonQuestionAnswer, type PhotonPromptReceipt, type PhotonInteractionBinding, type PhotonDraft } from "./photon/interactions.js";
 import { validateNativeQuestionResponseInput } from "./native-runtime/native-question-bridge.js";
-import type { AskUserQuestionsAnswer, AskUserQuestionsInteraction, IssueThreadInteraction } from "@tickernelz/paperclip-pro-shared";
+import type { AskUserQuestionsAnswer, AskUserQuestionsInteraction, IssueThreadInteraction } from "@tickernelz/wardmote-shared";
 import { PhotonCloudClient, PhotonError, photonFailure, photonSharedIdentity, photonSharedScope } from "./photon/cloud.js";
 import { PhotonChatAdapter, photonThreadId, photonReplyReference } from "./photon/adapter.js";
-import { maskOpenwaPhoneNumber, openwaChannelConfigurationSchema, openwaEndpointPolicySchema, photonChannelConfigurationSchema, type OpenwaEndpointPolicy, type PhotonChannelConfiguration } from "@tickernelz/paperclip-pro-shared";
+import { maskOpenwaPhoneNumber, openwaChannelConfigurationSchema, openwaEndpointPolicySchema, photonChannelConfigurationSchema, type OpenwaEndpointPolicy, type PhotonChannelConfiguration } from "@tickernelz/wardmote-shared";
 import { inspectOpenwaGateway, openwaProviderAccountId, openwaSetupReplyDelivered, verifyOpenwaSession } from "./openwa/setup.js";
 import { assertOpenwaAgentAdapterSupported } from "./openwa/agent-adapter.js";
 import type { LiveEvent as PhotonEvent } from "@photon-ai/advanced-imessage";
-import { defaultSlackAppConfiguration } from "@tickernelz/paperclip-pro-shared";
+import { defaultSlackAppConfiguration } from "@tickernelz/wardmote-shared";
 import {
   createHash,
   createHmac,
@@ -174,7 +174,7 @@ import {
   teamsConversationId,
 } from "./chat-control-chronology.js";
 import { retryChatControlAdmission } from "./chat-control-admission-retry.js";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   createDurableChatWakeupRequest,
   assertDurableChatWakeupReceipt,
@@ -216,7 +216,7 @@ import {
   joinRequests,
   toolApplications,
   toolConnections,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import type {
   ChatAdapterCapabilities,
   ChatEndpointCallbackSurfaces,
@@ -232,7 +232,7 @@ import type {
   SafeChatPublicationPayload,
   ToolCredentialSecretRef,
   UpdateChatEndpointInput,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   isAgentStatusInvokable,
   CHAT_PROVIDERS,
@@ -240,7 +240,7 @@ import {
   LOW_TRUST_REVIEW_PRESET,
   LOW_TRUST_REVIEW_PRESET_VERSION,
   LOW_TRUST_REVIEW_RAW_OUTPUT_DISPOSITION,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   formatAttachmentSize,
   isAllowedContentType,
@@ -3180,6 +3180,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
   const backgroundMessageTasks = new Set<Promise<void>>();
   const openwaSteerWaits = new Map<string, Promise<void>>();
   const scheduledConversationDrains = new Map<string, number>();
+  const conversationDrainRequests = new Set<string>();
   const openwaBurstClock = options.openwaBurstClock ?? openwaSystemClock;
   const openwaBurstTimers = new Set<unknown>();
   const liveInboundMessages = new Map<string, LiveInboundMessage>();
@@ -3677,7 +3678,10 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     if (shuttingDown) return;
     const key = conversationDrainKey(endpointId, threadId);
     const scheduledAt = scheduledConversationDrains.get(key);
-    if (scheduledAt !== undefined) return;
+    if (scheduledAt !== undefined) {
+      conversationDrainRequests.add(key);
+      return;
+    }
     scheduledConversationDrains.set(key, drainAt);
     scheduleMessageProcessing(async () => {
       try {
@@ -3689,11 +3693,12 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
             await new Promise((resolve) => setTimeout(resolve, remaining));
             continue;
           }
+          conversationDrainRequests.delete(key);
           const shouldContinue = await drainConversationDeliveries(
             endpointId,
             threadId,
           );
-          if (shouldContinue) {
+          if (conversationDrainRequests.delete(key) || shouldContinue) {
             scheduledConversationDrains.set(key, Date.now());
             continue;
           }
@@ -3701,6 +3706,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         }
       } finally {
         scheduledConversationDrains.delete(key);
+        conversationDrainRequests.delete(key);
       }
     });
   }
@@ -30693,7 +30699,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     action: "mark_delivered" | "retry_anyway" | "cancel",
     userId: string,
     fileTransfer?: {
-      phase: import("@tickernelz/paperclip-pro-shared").ChatFileTransferPhase;
+      phase: import("@tickernelz/wardmote-shared").ChatFileTransferPhase;
       version: number;
     },
   ) {
@@ -40303,6 +40309,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       await Promise.allSettled([...publicationEndpointTasks.values()]);
       await Promise.allSettled([...backgroundMessageTasks]);
       scheduledConversationDrains.clear();
+      conversationDrainRequests.clear();
       liveInboundMessages.clear();
       const ownedDiscordGateways = [...discordGatewayOwnerships.values()];
       for (const ownership of ownedDiscordGateways) {

@@ -151,25 +151,25 @@ owns it.
 
 ```sh
 # Deterministic fake-mode app (no provider process)
-pnpm --filter @tickernelz/paperclip-pro-paperclip-runner console:issue-thread
+pnpm --filter @tickernelz/wardmote-paperclip-runner console:issue-thread
 
 # Focused browser suite, including the axe gate on all 12 slugs × 2 viewports
-pnpm --filter @tickernelz/paperclip-pro-paperclip-runner test:browser:scenarios
+pnpm --filter @tickernelz/wardmote-paperclip-runner test:browser:scenarios
 
 # View-model and live-projection unit tests
-pnpm --filter @tickernelz/paperclip-pro-paperclip-runner exec vitest run src/issue-thread
+pnpm --filter @tickernelz/wardmote-paperclip-runner exec vitest run src/issue-thread
 
 # Screenshot matrix (12 slugs × 2 viewports) and its byte-stability check
 # Recorded evidence generation is deferred from this release.
-pnpm --filter @tickernelz/paperclip-pro-paperclip-runner check:capability:ui
+pnpm --filter @tickernelz/wardmote-paperclip-runner check:capability:ui
 
 # Real runnerd + real Codex through the same HTTP routes the browser uses
-pnpm --filter @tickernelz/paperclip-pro-paperclip-runner smoke:capability:ui
+pnpm --filter @tickernelz/wardmote-paperclip-runner smoke:capability:ui
 # Recorded evidence generation is deferred from this release.
 ```
 
 Hosts without the Playwright chromium system libraries can either run
-`pnpm --filter @tickernelz/paperclip-pro-paperclip-runner verify:rootless` or set
+`pnpm --filter @tickernelz/wardmote-paperclip-runner verify:rootless` or set
 `PAPERCLIP_RUNNER_CHROMIUM_PATH` to a preinstalled Chromium.
 
 The committed PNGs are pinned to the Chromium build listed in

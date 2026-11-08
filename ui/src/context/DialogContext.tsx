@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
-import type { IssueWorkMode } from "@tickernelz/paperclip-pro-shared";
+import type { IssueWorkMode } from "@tickernelz/wardmote-shared";
 
 interface NewIssueDefaults {
   status?: string;

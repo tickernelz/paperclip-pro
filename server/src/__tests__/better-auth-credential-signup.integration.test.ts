@@ -16,7 +16,7 @@
 import express from "express";
 import request from "supertest";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { authAccounts, createDb } from "@tickernelz/paperclip-pro-db";
+import { authAccounts, createDb } from "@tickernelz/wardmote-db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

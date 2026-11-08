@@ -8,10 +8,10 @@ import { isCloudManagedInstance } from "../services/cloud-instance.js";
 import { dotRunnerBroker } from "../services/dot-runner-broker.js";
 import { publicMcpConfig } from "../services/public-mcp/oauth.js";
 import { connectionIntentDeliveryService } from "../services/connection-intent-delivery.js";
-import { completeConnectionIntentSchema } from "@tickernelz/paperclip-pro-shared";
+import { completeConnectionIntentSchema } from "@tickernelz/wardmote-shared";
 import { agentFileStore, agentFileTokenFromHash } from "../services/agent-file-store.js";
 import { pipeline } from "node:stream/promises";
-import { resolveAgentAppearance, agentAvatarUrl, agentAuthorityCapabilities } from "@tickernelz/paperclip-pro-shared";
+import { resolveAgentAppearance, agentAvatarUrl, agentAuthorityCapabilities } from "@tickernelz/wardmote-shared";
 import { withManagedAiProbe, stripAiAuthBindings } from "../services/ai-connection-runtime.js";
 import {
   ADAPTER_AUTH_MISSING_CHECK_CODE,
@@ -19,17 +19,17 @@ import {
   aiConnectionBindingSchema,
   aiRuntimeConnectionBindingSchema,
   type AiRuntimeConnectionBinding,
-} from "@tickernelz/paperclip-pro-shared";
-import { toolConnections } from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-shared";
+import { toolConnections } from "@tickernelz/wardmote-db";
 import { aiConnectionService } from "../services/ai-connections.js";
 import { defaultAiConnectionForHire } from "../services/agent-ai-connection-default.js";
 import { assertAiConnectionCreateAccess, canInstallSharedAiConnectionForNewAgent, responsibleUserForAiRequest, validateAiApiKey } from "./ai-connections.js";
-import { isAiConnectionCompatible, type RunModelFallbackState } from "@tickernelz/paperclip-pro-shared";
+import { isAiConnectionCompatible, type RunModelFallbackState } from "@tickernelz/wardmote-shared";
 import { applyConnectorSkills, resolveConnectorAssignments, annotateConnectorSkills, isConnectorSkill } from "../services/connector-runtime.js";
 import { getExecutionBlocker } from "../services/execution-blocker.js";
 import { canRetryStoppedRun } from "../services/cancelled-native-startup.js";
 import { getNativeReviewAssignment, readNativeReviewAssignmentContext, type NativeReviewAssignmentContext } from "../services/native-runtime/native-review-participant.js";
-import { paperclipRunnerTransitionConfig, normalizeLegacyRunnerProvider, isPaperclipRunnerProvider } from "@tickernelz/paperclip-pro-adapter-utils";
+import { paperclipRunnerTransitionConfig, normalizeLegacyRunnerProvider, isPaperclipRunnerProvider } from "@tickernelz/wardmote-adapter-utils";
 import { executionProjectionForRun, executionProjectionsForRunRows, executionProjectionsForRuns, executionRunColumns } from "../services/execution-projection.js";
 import { applyMcpReasoningEffort } from "../services/public-mcp/agent-config.js";
 import { selectDashboardRunIds } from "../services/dashboard-run-selection.js";
@@ -37,9 +37,9 @@ import { Router, type NextFunction, type Request, type Response } from "express"
 import { randomUUID } from "node:crypto";
 import { readFile, rm } from "node:fs/promises";
 import path from "node:path";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import type { ChatChannelService } from "../services/chat-channels.js";
-import { activityLog, agents as agentsTable, chatConversations, companies, heartbeatRuns, issues as issuesTable, projects as projectsTable } from "@tickernelz/paperclip-pro-db";
+import { activityLog, agents as agentsTable, chatConversations, companies, heartbeatRuns, issues as issuesTable, projects as projectsTable } from "@tickernelz/wardmote-db";
 import { and, desc, eq, inArray, not, sql } from "drizzle-orm";
 import { sha256Digest } from "../services/feedback-redaction.js";
 import {
@@ -78,7 +78,7 @@ import {
   submitBrowserCodeRequestSchema,
   toAccountHandle,
   type AgentAdapterType,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   isForbiddenConfigEnvKey,
   normalizePaperclipRunnerAdapterConfig,
@@ -86,8 +86,8 @@ import {
   parseObject,
   readPaperclipSkillSyncPreference,
   writePaperclipSkillSyncPreference,
-} from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
-import { trackAgentCreated } from "@tickernelz/paperclip-pro-shared/telemetry";
+} from "@tickernelz/wardmote-adapter-utils/server-utils";
+import { trackAgentCreated } from "@tickernelz/wardmote-shared/telemetry";
 import { validate } from "../middleware/validate.js";
 import { inheritNativeRunnerAdapterConfig } from "../services/native-runtime/native-agent-runtime-inheritance.js";
 import { agentInstructionRevisionService } from "../services/agent-instruction-revisions.js";
@@ -100,8 +100,8 @@ import {
   planAgentAdapterConfigBatch,
   type AgentAdapterConfigBatchValue,
 } from "../services/agent-adapter-config-batch.js";
-import { listOmpSettingsCatalog, OmpSettingsUnavailableError } from "@tickernelz/paperclip-pro-adapter-omp-local/server";
-import { planAgentDefaultsApply, validateOmpSettingsMap, OMP_SETTINGS_KEY, OMP_SETTINGS_PATH_PREFIX } from "@tickernelz/paperclip-pro-shared";
+import { listOmpSettingsCatalog, OmpSettingsUnavailableError } from "@tickernelz/wardmote-adapter-omp-local/server";
+import { planAgentDefaultsApply, validateOmpSettingsMap, OMP_SETTINGS_KEY, OMP_SETTINGS_PATH_PREFIX } from "@tickernelz/wardmote-shared";
 import { agentDefaultsService, validateAgentDefaults, withAgentDefaults } from "../services/agent-defaults.js";
 import {
   agentService,
@@ -138,12 +138,12 @@ import { environmentService } from "../services/environments.js";
 
 import { environmentRuntimeService } from "../services/environment-runtime.js";
 import { resolvePluginSandboxProviderDriverByKey } from "../services/plugin-environment-driver.js";
-import type { AdapterExecutionTarget } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
+import type { AdapterExecutionTarget } from "@tickernelz/wardmote-adapter-utils/execution-target";
 import type {
   AdapterEnvironmentCheck,
   AdapterEnvironmentTestResult,
-} from "@tickernelz/paperclip-pro-adapter-utils";
-import type { AdapterAuthSignal, AdapterAuthSignalResponse, CodexAccountBindingClaim } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-adapter-utils";
+import type { AdapterAuthSignal, AdapterAuthSignalResponse, CodexAccountBindingClaim } from "@tickernelz/wardmote-shared";
 import { getDisabledAdapterTypes } from "../services/adapter-plugin-store.js";
 import { skillVersionSelectionMap } from "../services/runtime-skill-selections.js";
 import { secretService } from "../services/secrets.js";
@@ -234,8 +234,8 @@ import type {
   ClaudeOAuthTokenStatusResponse,
   ClaudeSetupTokenOverwrite,
   SetupTokenTransportAdvisory,
-} from "@tickernelz/paperclip-pro-shared";
-import { retiredAdapterMessage, SETUP_TOKEN_TRANSPORT_ADVISORY_CODE } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
+import { retiredAdapterMessage, SETUP_TOKEN_TRANSPORT_ADVISORY_CODE } from "@tickernelz/wardmote-shared";
 import { checkStagedCredentialReadiness, promoteDeviceLoginCredential } from "../services/ai-providers/codex/adapter-auth-promotion.js";
 import { readSubscriptionAccountId, withAccountHomeSecretMutationLock, withCodexAccountHomePromotionLock } from "../services/ai-providers/codex/codex-auth-cache.js";
 import { evaluateCodexCredentialReadiness, resolveManagedCodexHomeDir } from "../services/ai-providers/codex/codex-home.js";
@@ -250,7 +250,7 @@ import {
   DEVICE_LOGIN_PROVIDER_UNSUPPORTED_CODE,
   type CredentialPromotion,
 } from "../services/device-login-service.js";
-import type { AdapterAuthSessionOwnerResponse } from "@tickernelz/paperclip-pro-shared";
+import type { AdapterAuthSessionOwnerResponse } from "@tickernelz/wardmote-shared";
 import {
   loadDefaultAgentInstructionsBundle,
   resolveDefaultAgentInstructionsBundleRole,
@@ -764,8 +764,8 @@ export function agentRoutes(
   const agentFiles = agentFileStore(db);
   const instructionRevisions = agentInstructionRevisionService(db);
   const instructionWorkingCopies = agentInstructionWorkingCopyService(db);
-  function instructionFileDetail(snapshot: import("@tickernelz/paperclip-pro-shared").AgentInstructionSnapshot,
-    receipt?: import("@tickernelz/paperclip-pro-shared").AgentInstructionCommitReceipt) {
+  function instructionFileDetail(snapshot: import("@tickernelz/wardmote-shared").AgentInstructionSnapshot,
+    receipt?: import("@tickernelz/wardmote-shared").AgentInstructionCommitReceipt) {
     const path = snapshot.revision.entryFile;
     return { path, content: snapshot.content, contentHash: snapshot.revision.contentHash, size: snapshot.revision.byteLength, revision: snapshot.revision, receipt,
       language: path.toLowerCase().endsWith(".md") ? "markdown" : "text", markdown: path.toLowerCase().endsWith(".md"),

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { Agent, Project } from "@tickernelz/paperclip-pro-shared";
+import type { Agent, Project } from "@tickernelz/wardmote-shared";
 import {
   buildPortableAgentSlugMap,
   buildPortableProjectSlugMap,

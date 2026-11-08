@@ -22,17 +22,17 @@ const serverRoot = path.join(repoRoot, "server");
 const serverSrcDir = path.join(repoRoot, "server", "src");
 const serverTestsDir = path.join(repoRoot, "server", "src", "__tests__");
 const nonServerProjects = [
-  "@tickernelz/paperclip-pro-shared",
-  "@tickernelz/paperclip-pro-skills-catalog",
-  "@tickernelz/paperclip-pro-db",
-  "@tickernelz/paperclip-pro-adapter-utils",
-  "@tickernelz/paperclip-pro-adapter-omp-local",
-  "@tickernelz/paperclip-pro-mcp-server",
-  "@tickernelz/paperclip-pro-plugin-daytona",
-  "@tickernelz/paperclip-pro-plugin-sdk",
-  "@tickernelz/paperclip-pro-create-paperclip-plugin",
-  "@tickernelz/paperclip-pro-ui",
-  "@tickernelz/paperclip-pro",
+  "@tickernelz/wardmote-shared",
+  "@tickernelz/wardmote-skills-catalog",
+  "@tickernelz/wardmote-db",
+  "@tickernelz/wardmote-adapter-utils",
+  "@tickernelz/wardmote-adapter-omp-local",
+  "@tickernelz/wardmote-mcp-server",
+  "@tickernelz/wardmote-plugin-daytona",
+  "@tickernelz/wardmote-plugin-sdk",
+  "@tickernelz/wardmote-create-paperclip-plugin",
+  "@tickernelz/wardmote-ui",
+  "@tickernelz/wardmote",
 ];
 const routeTestPattern = /[^/]*(?:route|routes|authz)[^/]*\.test\.ts$/;
 const additionalSerializedServerTests = new Set([
@@ -72,20 +72,18 @@ const generalServerWithoutChatGroupName = "general-server-without-chat";
 const generalChatGroupName = "general-chat";
 const generalServerNativeRunnerGroupName = "general-server-native-runner";
 const chatSuite = "server/src/__tests__/chat-channels.integration.test.ts";
-// This suite rebuilds the Runner release binaries with cargo in beforeAll.
-// Inside the plain server shards, which carry no Rust cache,
-// that build was a ~4m30s cold compile of every third-party crate on each run
-// (277s of a 291s shard vitest step, actions run 35246999382, 2026-09-17).
-const nativeRunnerSuite =
-  "server/src/services/native-runtime/native-codex-runner.integration.test.ts";
+const nativeRunnerSuites = [
+  "server/src/services/native-runtime/native-codex-runner.integration.test.ts",
+  "server/src/__tests__/dot-runner.test.ts",
+];
 const ciWorkflowName = "CI";
-const nativeRunnerSuiteRunsInRustCachedLane = process.env.GITHUB_WORKFLOW === ciWorkflowName;
-const withoutChatExcludedSuites = nativeRunnerSuiteRunsInRustCachedLane
-  ? [chatSuite, nativeRunnerSuite]
+const nativeRunnerSuitesRunInRustCachedLane = process.env.GITHUB_WORKFLOW === ciWorkflowName;
+const withoutChatExcludedSuites = nativeRunnerSuitesRunInRustCachedLane
+  ? [chatSuite, ...nativeRunnerSuites]
   : [chatSuite];
 const generalWorkspacesAGroupName = "general-workspaces-a";
 const generalWorkspacesBGroupName = "general-workspaces-b";
-const generalWorkspacesAProjects = ["@tickernelz/paperclip-pro-ui", "@tickernelz/paperclip-pro"];
+const generalWorkspacesAProjects = ["@tickernelz/wardmote-ui", "@tickernelz/wardmote"];
 const generalWorkspacesBProjects = nonServerProjects.filter((project) => !generalWorkspacesAProjects.includes(project));
 const generalGroupNames = [generalServerGroupName, generalWorkspacesAGroupName, generalWorkspacesBGroupName];
 const allowedGeneralGroupNames = [
@@ -98,6 +96,9 @@ const serializedServerVitestArgs = [
   "--no-file-parallelism",
   "--maxWorkers=1",
 ];
+const serverTestWorkers = parsePositiveInteger(process.env.WARDMOTE_SERVER_TEST_WORKERS ?? "1", "WARDMOTE_SERVER_TEST_WORKERS");
+const parallelServerVitestArgs =
+  serverTestWorkers > 1 ? [`--maxWorkers=${serverTestWorkers}`] : serializedServerVitestArgs;
 const sourceOnlyVitestArgs = ["--exclude", "**/dist/**"];
 
 function walk(dir) {
@@ -425,14 +426,14 @@ function runProjectGroup(projects, groupName, shardIndex = null, shardCount = nu
 
 function runGeneralGroup(routeTests, groupName, shardIndex = null, shardCount = null) {
   if (groupName === generalChatGroupName) {
-    runVitest(["--project", "@tickernelz/paperclip-pro-server", ...serializedServerVitestArgs, chatSuite],
+    runVitest(["--project", "@tickernelz/wardmote-server", ...serializedServerVitestArgs, chatSuite],
       "chat integration test shard", { index: shardIndex ?? 0, count: shardCount ?? 1 });
     return;
   }
   if (groupName === generalServerNativeRunnerGroupName) {
     runVitest(
-      ["--project", "@tickernelz/paperclip-pro-server", ...serializedServerVitestArgs, nativeRunnerSuite],
-      "native runner vertical-slice suite",
+      ["--project", "@tickernelz/wardmote-server", ...serializedServerVitestArgs, ...nativeRunnerSuites],
+      "cargo-building native runner suites",
     );
     return;
   }
@@ -461,8 +462,8 @@ function runGeneralGroup(routeTests, groupName, shardIndex = null, shardCount = 
       runVitest(
         [
           "--project",
-          "@tickernelz/paperclip-pro-server",
-          ...serializedServerVitestArgs,
+          "@tickernelz/wardmote-server",
+          ...parallelServerVitestArgs,
           ...shardFiles,
         ],
         `${groupName} shard ${shardIndex + 1}/${shardCount}`,
@@ -479,7 +480,7 @@ function runGeneralGroup(routeTests, groupName, shardIndex = null, shardCount = 
     runVitest(
       [
         "--project",
-        "@tickernelz/paperclip-pro-server",
+        "@tickernelz/wardmote-server",
         ...serializedServerVitestArgs,
         ...excludeRouteArgs,
       ],
@@ -531,18 +532,18 @@ function runSerializedSuites(routeTests, shardIndex, shardCount) {
     `\n[test:run] serialized shard ${shardIndex + 1}/${shardCount} running ${shardTests.length} of ${routeTests.length} suites`,
   );
 
-  for (const routeTest of shardTests) {
-    runVitest(
-      [
-        "--project",
-        "@tickernelz/paperclip-pro-server",
-        routeTest.repoPath,
-        "--pool=forks",
-        "--isolate",
-      ],
-      routeTest.repoPath,
-    );
-  }
+  if (shardTests.length === 0) return;
+  runVitest(
+    [
+      "--project",
+      "@tickernelz/wardmote-server",
+      ...shardTests.map((routeTest) => routeTest.repoPath),
+      "--pool=forks",
+      "--isolate",
+      ...parallelServerVitestArgs,
+    ],
+    `serialized shard ${shardIndex + 1}/${shardCount} with ${serverTestWorkers} worker(s)`,
+  );
 }
 
 const routeTests = walk(serverTestsDir)
@@ -585,7 +586,7 @@ if (options.dryRun) {
         generalServerSuiteCount: generalServerTestFiles.length,
         selectedGeneralServerSuites:
           options.mode === generalModeName && options.group === generalServerNativeRunnerGroupName
-            ? [nativeRunnerSuite]
+            ? nativeRunnerSuites
             : options.mode === generalModeName &&
                 [generalServerGroupName, generalServerWithoutChatGroupName].includes(options.group) &&
                 options.shardCount !== null

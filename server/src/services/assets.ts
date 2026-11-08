@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { assets } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
+import { assets } from "@tickernelz/wardmote-db";
 
 export function assetService(db: Db) {
   return {

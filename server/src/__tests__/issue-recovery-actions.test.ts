@@ -6,7 +6,7 @@ import express from "express";
 import request from "supertest";
 import { and, eq, sql } from "drizzle-orm";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { renderPaperclipWakePrompt } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+import { renderPaperclipWakePrompt } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import {
   costEvents,
   agents,
@@ -26,7 +26,7 @@ import {
   issueThreadInteractions,
   workspaceOperations,
   issues,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

@@ -1,9 +1,9 @@
 import { and, eq, inArray } from "drizzle-orm";
-import { heartbeatRuns, type Db } from "@tickernelz/paperclip-pro-db";
+import { heartbeatRuns, type Db } from "@tickernelz/wardmote-db";
 import {
   isResponsibleUserDenialCode,
   type ResponsibleUserDenialCode,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { logger } from "../middleware/logger.js";
 import { publishLiveEvent } from "./live-events.js";
 

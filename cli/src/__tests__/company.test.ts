@@ -1,6 +1,6 @@
 import { Command } from "commander";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { CompanyPortabilityPreviewResult } from "@tickernelz/paperclip-pro-shared";
+import type { CompanyPortabilityPreviewResult } from "@tickernelz/wardmote-shared";
 import {
   buildCompanyDashboardUrl,
   buildDefaultImportAdapterOverrides,

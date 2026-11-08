@@ -1,7 +1,7 @@
 import { useLayoutEffect, useState, type ReactNode } from "react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { queryKeys } from "@/lib/queryKeys";
-import { buildSkillMentionHref } from "@tickernelz/paperclip-pro-shared";
+import { buildSkillMentionHref } from "@tickernelz/wardmote-shared";
 import { EditorAutocompleteProvider } from "@/context/EditorAutocompleteContext";
 import {
   endpoint,

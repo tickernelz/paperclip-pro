@@ -5,8 +5,8 @@ import { createRoot, type Root } from "react-dom/client";
 import { flushSync } from "react-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Agent, Environment, UserSecretDefinition } from "@tickernelz/paperclip-pro-shared";
-import { getEnvironmentCapabilities } from "@tickernelz/paperclip-pro-shared";
+import type { Agent, Environment, UserSecretDefinition } from "@tickernelz/wardmote-shared";
+import { getEnvironmentCapabilities } from "@tickernelz/wardmote-shared";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ToastProvider } from "../context/ToastContext";
 import { AgentConfigForm, AdapterLoginPanel, subtractPersistedOverlay, type AdapterLoginDescriptor } from "./AgentConfigForm";
@@ -18,7 +18,7 @@ import { ApiError } from "../api/client";
 import { aiConnectionsApi } from "../api/ai-connections";
 import { CodexLocalConfigFields } from "../adapters/paperclip-runner/config-fields";
 import type { AdapterConfigFieldsProps } from "../adapters/types";
-import { DEFAULT_CODEX_LOCAL_MODEL } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/codex";
+import { DEFAULT_CODEX_LOCAL_MODEL } from "@tickernelz/wardmote-adapter-utils/provider-models/codex";
 
 const mockAgentsApi = vi.hoisted(() => ({
   get: vi.fn(),

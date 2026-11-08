@@ -1,9 +1,9 @@
 import { PrimaryAgentIndicator, SetPrimaryAgentButton } from "@/components/primary-agent/PrimaryAgentPresentation";
 import { AgentConnectionInstructions } from "@/features/connections/ConnectionInstructions";
-import type { AgentInstructionCandidate, AgentInstructionsBundle } from "@tickernelz/paperclip-pro-shared";
+import type { AgentInstructionCandidate, AgentInstructionsBundle } from "@tickernelz/wardmote-shared";
 import { InstructionHistory } from "../components/InstructionHistory";
 import { AgentCharacter } from "../components/AgentCharacter";
-import { characterStateForAgent, isRetiredAdapterType, retiredAdapterMessage } from "@tickernelz/paperclip-pro-shared";
+import { characterStateForAgent, isRetiredAdapterType, retiredAdapterMessage } from "@tickernelz/wardmote-shared";
 import { mergeRunLogChunks, readChunkSeq } from "../lib/run-log-chunks";
 import { getPageVisibility, usePageVisibility } from "../lib/page-visibility";
 import { useCallback, useEffect, useMemo, useState, useRef } from "react";
@@ -37,7 +37,7 @@ import { adapterLabels, roleLabels, help } from "../components/agent-config-prim
 import { AgentRoleEditor } from "../components/agent-role/AgentRoleEditor";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { useAdapterCapabilities } from "@/adapters/use-adapter-capabilities";
-import { redactCommandText as redactCommandSecretText } from "@tickernelz/paperclip-pro-adapter-utils";
+import { redactCommandText as redactCommandSecretText } from "@tickernelz/wardmote-adapter-utils";
 import { MarkdownEditor } from "../components/MarkdownEditor";
 import { assetsApi } from "../api/assets";
 import { toolsApi } from "../api/tools";
@@ -118,7 +118,7 @@ import {
   type WorkspaceOperation,
   isResponsibleUserDenialCode,
   responsibleUserLabel,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { ResponsibleUserDenialNotice } from "../components/ResponsibleUserDenialNotice";
 import { RunWorkspaceRecoverySurface } from "../components/RunWorkspaceRecoverySurface";
 import { RunnerInspector } from "../components/RunnerInspector";
@@ -128,7 +128,7 @@ import {
   runRequestedProviderTrace,
 } from "../components/ProviderTraceStatusBadge";
 import { buildPermissionsForTrustPreset, getTrustPreset } from "../lib/trust-policy-ui";
-import { redactHomePathUserSegments, redactHomePathUserSegmentsInValue } from "@tickernelz/paperclip-pro-adapter-utils";
+import { redactHomePathUserSegments, redactHomePathUserSegmentsInValue } from "@tickernelz/wardmote-adapter-utils";
 import { agentRouteRef } from "../lib/utils";
 import { describeModelFallbackEvent } from "../lib/model-fallback";
 import {

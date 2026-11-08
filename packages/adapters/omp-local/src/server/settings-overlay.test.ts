@@ -4,7 +4,7 @@ import os from "node:os";
 import path from "node:path";
 import { parse as parseYaml } from "yaml";
 
-vi.mock("@tickernelz/paperclip-pro-adapter-utils/execution-target", async (importOriginal) => {
+vi.mock("@tickernelz/wardmote-adapter-utils/execution-target", async (importOriginal) => {
   const actual = (await importOriginal()) as Record<string, unknown>;
   return { ...actual, runAdapterExecutionTargetShellCommand: vi.fn() };
 });
@@ -16,7 +16,7 @@ import {
   renderOmpSettingsOverlay,
   writeOmpSettingsOverlay,
 } from "./settings-overlay.js";
-import { runAdapterExecutionTargetShellCommand } from "@tickernelz/paperclip-pro-adapter-utils/execution-target";
+import { runAdapterExecutionTargetShellCommand } from "@tickernelz/wardmote-adapter-utils/execution-target";
 
 const runShellMock = vi.mocked(runAdapterExecutionTargetShellCommand);
 

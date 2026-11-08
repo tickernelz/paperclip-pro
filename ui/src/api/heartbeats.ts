@@ -1,5 +1,5 @@
-import type { AgentAppearance } from "@tickernelz/paperclip-pro-shared";
-import type { IssueRecoveryAction } from "@tickernelz/paperclip-pro-shared";
+import type { AgentAppearance } from "@tickernelz/wardmote-shared";
+import type { IssueRecoveryAction } from "@tickernelz/wardmote-shared";
 import type {
   HeartbeatRun,
   HeartbeatRunEvent,
@@ -7,7 +7,7 @@ import type {
   ProviderTraceFrame,
   ProviderTraceMetadata,
   RunModelFallbackState,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { tenantSessionRecovery } from "@/lib/tenant-session-recovery";
 import { api, type RequestOptions } from "./client";
 
@@ -106,7 +106,7 @@ export type RuntimeRequestResolution =
   | { action: "accept" | "accept_for_session" | "decline" | "cancel" }
   | { action: "submit"; answers: Record<string, { answers: string[] }> }
   | { action: "submit"; content: Record<string, unknown> }
-  | { action: "submit"; response: import("@tickernelz/paperclip-pro-adapter-utils").PaperclipQuestionResponse };
+  | { action: "submit"; response: import("@tickernelz/wardmote-adapter-utils").PaperclipQuestionResponse };
 
 export interface HeartbeatRunListOptions {
   summary?: boolean;

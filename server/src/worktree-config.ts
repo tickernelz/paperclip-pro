@@ -7,13 +7,13 @@ import {
   mergePaperclipConfig,
   paperclipConfigSchema,
   type PaperclipConfig,
-} from "@tickernelz/paperclip-pro-shared";
-import { updateEnvFileContents, writeEnvFileAtomicallyIfChanged } from "@tickernelz/paperclip-pro-shared/env-file";
+} from "@tickernelz/wardmote-shared";
+import { updateEnvFileContents, writeEnvFileAtomicallyIfChanged } from "@tickernelz/wardmote-shared/env-file";
 import {
   readWorktreePortRegistry,
   withWorktreePortRegistryLockSync,
   writeWorktreePortRegistry,
-} from "@tickernelz/paperclip-pro-shared/worktree-port-registry";
+} from "@tickernelz/wardmote-shared/worktree-port-registry";
 import { resolvePaperclipConfigPath, resolvePaperclipEnvPath } from "./paths.js";
 import { rewriteUrlPort } from "./url-utils.js";
 import { applyEmptyWorktreeSigningSecrets } from "./dev-runner-worktree.js";

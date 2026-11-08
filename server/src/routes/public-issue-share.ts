@@ -1,5 +1,5 @@
 import { Router, type Response } from "express";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import type { StorageService } from "../storage/types.js";
 import { tooManyRequests } from "../errors.js";
 import {

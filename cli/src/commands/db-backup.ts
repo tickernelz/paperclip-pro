@@ -1,14 +1,14 @@
 import path from "node:path";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
-import { formatDatabaseBackupResult, runDatabaseBackup } from "@tickernelz/paperclip-pro-db";
+import { formatDatabaseBackupResult, runDatabaseBackup } from "@tickernelz/wardmote-db";
 import {
   expandHomePrefix,
   resolveDefaultBackupDir,
   resolvePaperclipInstanceId,
 } from "../config/home.js";
 import { readConfig, resolveConfigPath } from "../config/store.js";
-import { printPaperclipCliBanner } from "../utils/banner.js";
+import { printWardmoteCliBanner } from "../utils/banner.js";
 
 type DbBackupOptions = {
   config?: string;
@@ -47,7 +47,7 @@ function resolveBackupDir(raw: string): string {
 }
 
 export async function dbBackupCommand(opts: DbBackupOptions): Promise<void> {
-  printPaperclipCliBanner();
+  printWardmoteCliBanner();
   p.intro(pc.bgCyan(pc.black(" paperclip db:backup ")));
 
   const configPath = resolveConfigPath(opts.config);

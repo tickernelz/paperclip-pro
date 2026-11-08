@@ -1,11 +1,11 @@
-import { createDb } from "@tickernelz/paperclip-pro-db";
+import { createDb } from "@tickernelz/wardmote-db";
 import { createAgentLifecycle } from "../src/services/agent-lifecycle.js";
 import {
   companies,
   goals,
   projects,
   issues,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 
 const url = process.env.DATABASE_URL;
 if (!url) throw new Error("DATABASE_URL is required");

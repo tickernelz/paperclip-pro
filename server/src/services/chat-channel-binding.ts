@@ -1,11 +1,11 @@
 import { and, desc, eq } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   chatConversations,
   chatEndpoints,
   chatPublications,
-} from "@tickernelz/paperclip-pro-db";
-import type { ExternalChannelBindingSummary } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import type { ExternalChannelBindingSummary } from "@tickernelz/wardmote-shared";
 import { chatProviderConversationUrl } from "./chat-provider-links.js";
 
 /**

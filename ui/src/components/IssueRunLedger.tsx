@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import type { ActivityEvent, Issue, Agent, ProviderTraceMetadata } from "@tickernelz/paperclip-pro-shared";
+import type { ActivityEvent, Issue, Agent, ProviderTraceMetadata } from "@tickernelz/wardmote-shared";
 import {
   isResponsibleUserDenialCode,
   responsibleUserLabel,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@/lib/router";
 import { accessApi, type CurrentBoardAccess } from "../api/access";

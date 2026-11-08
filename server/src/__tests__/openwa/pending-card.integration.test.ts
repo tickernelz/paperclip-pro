@@ -22,7 +22,7 @@ import {
   issues,
   toolConnections,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import { startEmbeddedPostgresTestDatabase } from "../helpers/embedded-postgres.js";
 import { chatChannelService, type ChatChannelService, type ChatChannelServiceOptions } from "../../services/chat-channels.js";
 import { ChatSdkRuntime } from "../../services/chat-sdk-runtime.js";
@@ -191,7 +191,7 @@ describe("OpenWA pending_card wakes (embedded Postgres + fake gateway)", () => {
     const token = new URL(added.confirmationUrl!, "https://paperclip.example").searchParams.get("token")!;
     await service.confirmIdentityLink(token, userId);
     expect((await service.reconcileProviderRuntimes()).local).toBe(1);
-    await gateway.waitForSubscription();
+    await gateway.waitForFirstCatchUp();
     return { gateway, companyId, agentId, userId, endpointId: endpoint.id, service, wakes, wakeup };
   }
 

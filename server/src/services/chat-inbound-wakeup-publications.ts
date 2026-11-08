@@ -1,4 +1,4 @@
-import type { agentWakeupRequests, chatActions } from "@tickernelz/paperclip-pro-db";
+import type { agentWakeupRequests, chatActions } from "@tickernelz/wardmote-db";
 import {
   assertDurableChatWakeupReceipt,
   createDurableChatWakeupRequest,

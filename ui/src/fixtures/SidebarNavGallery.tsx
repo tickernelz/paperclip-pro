@@ -10,7 +10,7 @@ import { SidebarNavItem } from "@/components/SidebarNavItem";
 import { SidebarStarredProjectLink } from "@/components/SidebarStarredProjects";
 import { primarySidebarStyles } from "@/components/primary-sidebar-styles";
 import { cn } from "@/lib/utils";
-import type { Project } from "@tickernelz/paperclip-pro-shared";
+import type { Project } from "@tickernelz/wardmote-shared";
 import "@/index.css";
 
 const GALLERY_THEMES = ["light", "dark"] as const;

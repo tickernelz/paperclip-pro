@@ -1,4 +1,4 @@
-import type { CompanySearchHighlight } from "@tickernelz/paperclip-pro-shared";
+import type { CompanySearchHighlight } from "@tickernelz/wardmote-shared";
 import { cn } from "@/lib/utils";
 
 export interface HighlightedTextProps {

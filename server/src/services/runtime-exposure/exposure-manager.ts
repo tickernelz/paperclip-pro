@@ -19,13 +19,13 @@
  *    never mutate an unknown/manual mapping or the primary `:443` route (the
  *    broker's `list` never returns those, and remove requires an owned handle).
  */
-import type { RuntimeExposureConfigInput, RuntimeExposureStatus } from "@tickernelz/paperclip-pro-shared";
+import type { RuntimeExposureConfigInput, RuntimeExposureStatus } from "@tickernelz/wardmote-shared";
 import {
   buildRuntimeExposureHealthUrl,
   buildRuntimeExposureUrl,
   deriveViteHmrPort,
   isRuntimeExposureAppPort,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 import {
   BrokerClientError,

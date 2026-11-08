@@ -5,7 +5,7 @@ import type {
   ToolCatalogEntry,
   ToolProfileEntry,
   ToolProfileWithDetails,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { resolveAllowList } from "./ProfilesTab";
 
 function tool(partial: Partial<ToolCatalogEntry> & { id: string; toolName: string }): ToolCatalogEntry {

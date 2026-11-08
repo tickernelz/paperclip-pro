@@ -9,7 +9,7 @@ import {
   readSshEnvLabFixtureStatus,
   startSshEnvLabFixture,
   stopSshEnvLabFixture,
-} from "@tickernelz/paperclip-pro-adapter-utils/ssh";
+} from "@tickernelz/wardmote-adapter-utils/ssh";
 import { resolvePaperclipInstanceId, resolvePaperclipInstanceRoot } from "../config/home.js";
 
 export function resolveEnvLabSshStatePath(instanceId?: string): string {

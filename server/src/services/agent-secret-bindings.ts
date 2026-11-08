@@ -1,4 +1,4 @@
-import { envBindingSchema, type SecretProjectionClass, type SecretVersionSelector } from "@tickernelz/paperclip-pro-shared";
+import { envBindingSchema, type SecretProjectionClass, type SecretVersionSelector } from "@tickernelz/wardmote-shared";
 
 interface AgentSecretBindingSyncService {
   syncSecretRefsForTarget?: (

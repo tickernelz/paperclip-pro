@@ -1,5 +1,5 @@
 import type { ITheme } from "@xterm/xterm";
-import type { TerminalErrorCode, TerminalServerFrame } from "@tickernelz/paperclip-pro-shared";
+import type { TerminalErrorCode, TerminalServerFrame } from "@tickernelz/wardmote-shared";
 import { terminalFontFamily } from "@/lib/terminal-font";
 
 export const TERMINAL_RECONNECT_BASE_DELAY_MS = 500;

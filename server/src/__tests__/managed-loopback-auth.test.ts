@@ -1,4 +1,4 @@
-import { createDb } from "@tickernelz/paperclip-pro-db";
+import { createDb } from "@tickernelz/wardmote-db";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import type { Config } from "../config.js";
 import { createBetterAuthInstance } from "../auth/better-auth.js";

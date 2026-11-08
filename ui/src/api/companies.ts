@@ -8,8 +8,8 @@ import type {
   CompanyPortabilityPreviewRequest,
   CompanyPortabilityPreviewResult,
   UpdateCompanyBranding,
-} from "@tickernelz/paperclip-pro-shared";
-import type { ExportFidelityReport } from "@tickernelz/paperclip-pro-shared/portability-fidelity";
+} from "@tickernelz/wardmote-shared";
+import type { ExportFidelityReport } from "@tickernelz/wardmote-shared/portability-fidelity";
 import {
   companyImportTransferApplyPath,
   companyImportTransferPartPath,
@@ -20,7 +20,7 @@ import {
   type CompanyImportTransferDeclaration,
   type CompanyImportTransferPartUploadResult,
   type CompanyImportTransferStatus,
-} from "@tickernelz/paperclip-pro-shared/company-import-transfer";
+} from "@tickernelz/wardmote-shared/company-import-transfer";
 import { api, detachInflightGet, type RequestOptions } from "./client";
 
 // The board navigates only into companies the user can enter. The unscoped

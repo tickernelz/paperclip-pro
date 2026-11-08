@@ -10,7 +10,7 @@ import type {
   Issue,
   JoinRequest,
   ProjectWorkspace,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   DEFAULT_INBOX_ISSUE_COLUMNS,
   buildGroupedInboxSections,

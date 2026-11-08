@@ -1,18 +1,18 @@
 # Firefox client
 
-WebExtension (Manifest V2) that pairs a Firefox profile with Paperclip and answers
+WebExtension (Manifest V2) that pairs a Firefox profile with Wardmote and answers
 `local_browser_*` calls from the bridge. No build step: the folder is the add-on.
 
 ## Temporary load (development)
 
 1. Open `about:debugging#/runtime/this-firefox`.
 2. **Load Temporary Add-on…** and pick `firefox/manifest.json`.
-3. The add-on appears as *Paperclip Local Browser Bridge* with the internal UUID
+3. The add-on appears as *Wardmote Local Browser* with the internal UUID
    `moz-extension://<uuid>`. A temporary add-on disappears when Firefox restarts, and its
    `browser.storage.local` data survives, so pairing is not lost.
 4. The control center (`ui/control.html`) opens on first install. Grant the permissions you
    want agents to have (**Allow all** asks for every optional permission and every website in
-   one prompt), then paste the pairing link from Paperclip's Local Browser page. The toolbar
+   one prompt), then paste the pairing link from Wardmote's Local Browser page. The toolbar
    popup offers the same pairing form and the pending permission requests.
 
 ## Permanent install
@@ -30,7 +30,7 @@ npx web-ext sign --source-dir apps/local-browser/firefox --channel unlisted \
 
 The signing keys come from https://addons.mozilla.org/developers/addon/api/key/. The signed
 `.xpi` installs with a normal click in any Firefox. The manifest pins the id
-`local-browser@paperclip.app`, so a re-signed build replaces the previous one and keeps its
+`local-browser@wardmote`, so a re-signed build replaces the previous one and keeps its
 storage.
 
 The repository ships the signed artifact at `ui/public/downloads/local-browser-firefox.xpi`,
@@ -191,7 +191,7 @@ Linux path under `/app/` is a Flatpak and one under `/snap/` a Snap).
 3. Press *Check again* (control op `bidi.check`).
 
 The section also shows how to start the browser this way every time: the shortcut *Target* on
-Windows, a double-clickable `~/Desktop/<Browser>-Paperclip.command` script on macOS, and a copy of
+Windows, a double-clickable `~/Desktop/<Browser>-Wardmote.command` script on macOS, and a copy of
 the launcher in `~/.local/share/applications` with the flags added to every `Exec` line on Linux.
 While remote control is on the address bar is striped with a robot icon; the port listens on
 127.0.0.1 only.
@@ -265,7 +265,7 @@ allowlist before a call is dispatched.
 ## Agent guards
 
 User switches stored under `lb.guards` and edited in the control center:
-`protectPaperclipTab` (never navigate the Paperclip tab), `protectFocusedTab` (never navigate
+`protectWardmoteTab` (never navigate the Wardmote tab), `protectFocusedTab` (never navigate
 the tab the user is looking at unless the agent opened it) and `networkBufferSize` (requests
 kept per tab, 50 to 20000, default 1000). The server receives them in `hello` and as `guards`
 events.

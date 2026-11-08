@@ -3,7 +3,7 @@ import {
   LOW_TRUST_REVIEW_PRESET,
   agentPermissionsSchema,
   updateAgentPermissionsSchema,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   defaultAgentPermissions,
   normalizeAgentPermissions,

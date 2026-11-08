@@ -1,6 +1,6 @@
 import { githubBotCredentials } from "./chat-github-client.js";
 import { toolAccessPolicyService } from "./tool-access-policy.js";
-import { agents, toolCatalogEntries } from "@tickernelz/paperclip-pro-db";
+import { agents, toolCatalogEntries } from "@tickernelz/wardmote-db";
 import { GITHUB_BOT_TOOLS, syncGitHubBotTools } from "./chat-github-tools.js";
 import { and, desc, eq, sql } from "drizzle-orm";
 import {
@@ -14,12 +14,12 @@ import {
   connectionGrants,
   toolConnections,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   defaultGitHubReviewPolicy,
   updateGitHubChatConfigurationSchema,
   type GitHubChatConfiguration,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { badRequest, conflict, forbidden, notFound } from "../errors.js";
 import { toolAccessService } from "./tool-access.js";
 import { logActivity } from "./activity-log.js";

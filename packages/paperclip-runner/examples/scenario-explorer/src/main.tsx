@@ -5,7 +5,7 @@ import {
   capabilityEvalSuiteLookup,
 } from "@paperclip-runner-local/capability";
 
-import "@tickernelz/paperclip-pro-paperclip-runner/styles.css";
+import "@tickernelz/wardmote-paperclip-runner/styles.css";
 import "./explorer.css";
 
 import evalReport from "virtual:capability-eval-report";

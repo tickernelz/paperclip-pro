@@ -15,7 +15,7 @@ import { fileURLToPath } from "node:url";
 import { Router } from "express";
 import type { Request } from "express";
 import { and, desc, eq, gt, inArray, isNotNull, isNull, lte, ne } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   assets,
   agentApiKeys,
@@ -27,7 +27,7 @@ import {
   invites,
   joinRequests,
   principalPermissionGrants,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import {
   EXTERNAL_AGENT_TOOL_GUIDANCE,
   acceptInviteSchema,
@@ -46,9 +46,9 @@ import {
   updateUserCompanyAccessSchema,
   PERMISSION_KEYS,
   isUuidLike,
-} from "@tickernelz/paperclip-pro-shared";
-import type { DeploymentExposure, DeploymentMode, HumanCompanyMembershipRole } from "@tickernelz/paperclip-pro-shared";
-import { isRetiredAdapterType, retiredAdapterMessage } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
+import type { DeploymentExposure, DeploymentMode, HumanCompanyMembershipRole } from "@tickernelz/wardmote-shared";
+import { isRetiredAdapterType, retiredAdapterMessage } from "@tickernelz/wardmote-shared";
 import {
   forbidden,
   conflict,
@@ -103,7 +103,7 @@ import { assertAuthenticated, assertCompanyAccess, getActorInfo, isCompanyOwnerA
 import {
   AGENT_MEMBER_AUTHORITY_PERMISSION_KEYS,
   agentRoleHasAuthority,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   claimBoardOwnership,
   inspectBoardClaimChallenge
@@ -942,7 +942,7 @@ function buildOnboardingDiscoveryDiagnostics(input: {
       // metacharacter span in the host before any CLI receives argv. A
       // direct-exec form such as `npx` does not stop the outer shell. Emit
       // a static `<host>` placeholder and keep the raw host in the message only.
-      hint: `Run npx @tickernelz/paperclip-pro allowed-hostname <host>`
+      hint: `Run npx @tickernelz/wardmote allowed-hostname <host>`
     });
   }
 
@@ -1075,7 +1075,7 @@ function buildInviteOnboardingManifest(
         guidance:
           opts.deploymentMode === "authenticated" &&
           opts.deploymentExposure === "private"
-            ? "If the agent runs on another machine, ensure the Paperclip hostname is reachable and allowed via `npx @tickernelz/paperclip-pro allowed-hostname <host>`."
+            ? "If the agent runs on another machine, ensure the Paperclip hostname is reachable and allowed via `npx @tickernelz/wardmote allowed-hostname <host>`."
             : "Ensure the agent can reach this Paperclip API base URL for invite, claim, and skill bootstrap calls."
       },
       textInstructions: {
@@ -1248,7 +1248,7 @@ export function buildInviteOnboardingTextDocument(
 
       If none are reachable: ask your human operator for a reachable hostname/address and help them update network configuration.
       For authenticated/private mode, they may need:
-      - npx @tickernelz/paperclip-pro allowed-hostname <host>
+      - npx @tickernelz/wardmote allowed-hostname <host>
       - then restart Paperclip and retry onboarding.
     `);
   }

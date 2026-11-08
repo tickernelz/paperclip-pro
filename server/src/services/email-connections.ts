@@ -7,8 +7,8 @@ import {
   connectionGrants,
   companySecrets,
   toolConnectionInstalls,
-} from "@tickernelz/paperclip-pro-db";
-import type { EmailConnectionInput, EmailCredentialOption } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import type { EmailConnectionInput, EmailCredentialOption } from "@tickernelz/wardmote-shared";
 import { badRequest, forbidden, HttpError, notFound } from "../errors.js";
 import { secretService } from "./secrets.js";
 import { toolAccessService } from "./tool-access.js";

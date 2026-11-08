@@ -24,8 +24,8 @@ import {
   issues,
   toolConnections,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
-import type { OpenwaTriggerClass } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-db";
+import type { OpenwaTriggerClass } from "@tickernelz/wardmote-shared";
 import { startEmbeddedPostgresTestDatabase } from "../helpers/embedded-postgres.js";
 import { createLocalDiskStorageProvider } from "../../storage/local-disk-provider.js";
 import { createStorageService } from "../../storage/service.js";
@@ -197,7 +197,7 @@ describe("OpenWA company isolation and invite-link joins (embedded Postgres + fa
   async function live(service: ChatChannelService, tenants: Tenant[]) {
     expect((await service.reconcileProviderRuntimes()).local).toBe(tenants.length);
     for (const t of tenants) {
-      await t.gateway.waitForSubscription();
+      await t.gateway.waitForFirstCatchUp();
       await until(async () => (await db.select().from(chatEndpoints).where(eq(chatEndpoints.id, t.endpointId)))[0]!.status === "active");
     }
   }

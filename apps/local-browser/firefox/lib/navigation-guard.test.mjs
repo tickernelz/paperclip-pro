@@ -3,23 +3,23 @@ import assert from "node:assert/strict";
 
 import { bootBackground } from "./harness.test.mjs";
 
-const PAPERCLIP_ORIGIN = "https://p.test";
+const WARDMOTE_ORIGIN = "https://p.test";
 
-function boot(extraTabs = [], paperclipActive = true) {
+function boot(extraTabs = [], wardmoteActive = true) {
   return bootBackground({
-    storage: { "lb.pairing": { origin: PAPERCLIP_ORIGIN, label: "FF", sessionToken: "tok" } },
-    tabs: [{ id: 7, url: PAPERCLIP_ORIGIN + "/", active: paperclipActive }, ...extraTabs],
+    storage: { "lb.pairing": { origin: WARDMOTE_ORIGIN, label: "FF", sessionToken: "tok" } },
+    tabs: [{ id: 7, url: WARDMOTE_ORIGIN + "/", active: wardmoteActive }, ...extraTabs],
   });
 }
 
 const created = (harness) => harness.callsOf("tabs.create").map((entry) => entry[1]);
 
-test("open with a url uses a fresh tab and leaves the Paperclip tab alone", async () => {
+test("open with a url uses a fresh tab and leaves the Wardmote tab alone", async () => {
   const harness = boot();
   const { result } = await harness.call("local_browser_open", { url: "https://example.test/page" });
   assert.equal(created(harness).length, 1);
   assert.equal(created(harness)[0].url, "https://example.test/page");
-  assert.equal(harness.tabs.get(7).url, PAPERCLIP_ORIGIN + "/", "the Paperclip tab keeps its url");
+  assert.equal(harness.tabs.get(7).url, WARDMOTE_ORIGIN + "/", "the Wardmote tab keeps its url");
   assert.equal(result.tab.tabId, 100);
   assert.equal(result.tab.cookieStoreId, "firefox-default");
 });
@@ -34,12 +34,12 @@ test("navigate refuses the tab the user is looking at", async () => {
   assert.equal(harness.tabs.get(8).url, "https://app.test/x");
 });
 
-test("navigate refuses the Paperclip tab even when another tab is focused", async () => {
+test("navigate refuses the Wardmote tab even when another tab is focused", async () => {
   const harness = boot([{ id: 9, url: "https://other.test/", active: true }], false);
   const { error } = await harness.call("local_browser_navigate", { tabId: 7, url: "https://elsewhere.test" });
   assert.equal(error.code, "local_browser_navigation_blocked");
-  assert.match(error.message, /belongs to Paperclip/);
-  assert.equal(harness.tabs.get(7).url, PAPERCLIP_ORIGIN + "/");
+  assert.match(error.message, /belongs to Wardmote/);
+  assert.equal(harness.tabs.get(7).url, WARDMOTE_ORIGIN + "/");
 });
 
 test("turning off the focused-tab guard lets the agent drive the tab the user is looking at", async () => {
@@ -50,9 +50,9 @@ test("turning off the focused-tab guard lets the agent drive the tab the user is
   assert.equal(result.tab.url, "https://elsewhere.test/");
 });
 
-test("turning off the Paperclip guard lets the agent navigate the Paperclip tab", async () => {
+test("turning off the Wardmote guard lets the agent navigate the Wardmote tab", async () => {
   const harness = boot([{ id: 9, url: "https://other.test/", active: true }], false);
-  await harness.LB.guards.set({ protectPaperclipTab: false });
+  await harness.LB.guards.set({ protectWardmoteTab: false });
   const { ok } = await harness.call("local_browser_navigate", { tabId: 7, url: "https://elsewhere.test/" });
   assert.equal(ok, true);
   assert.equal(harness.tabs.get(7).url, "https://elsewhere.test/");
@@ -60,7 +60,7 @@ test("turning off the Paperclip guard lets the agent navigate the Paperclip tab"
 
 test("the guard change made in another context reaches the background", async () => {
   const harness = boot([{ id: 8, url: "https://app.test/x", active: true }], false);
-  await harness.browser.storage.local.set({ "lb.guards": { protectPaperclipTab: true, protectFocusedTab: false, networkBufferSize: 1000 } });
+  await harness.browser.storage.local.set({ "lb.guards": { protectWardmoteTab: true, protectFocusedTab: false, networkBufferSize: 1000 } });
   const { ok } = await harness.call("local_browser_navigate", { tabId: 8, url: "https://elsewhere.test/" });
   assert.equal(ok, true);
 });

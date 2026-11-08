@@ -60,7 +60,7 @@
       return toolError(
         ERROR.originDenied,
         "This browser blocks the extension from that page, so nothing was read or changed",
-        "Grant site access in the Paperclip Local Browser extension (Allow all), or open a regular website, then retry",
+        "Grant site access in the Wardmote Local Browser extension (Allow all), or open a regular website, then retry",
         true
       );
     }

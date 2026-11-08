@@ -4,7 +4,7 @@ import {
   type AiConnectionUsage,
   type AiConnectionUsageLimit,
   type AiConnectionUsageOverage,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { parseGrokAuthPayload } from "./ai-providers/grok/grok-home.js";
 
 type Observation = Pick<AiConnectionUsage, "source" | "planType" | "limits" | "overage">;

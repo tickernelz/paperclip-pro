@@ -3,7 +3,7 @@ import { act, type ComponentProps } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
-import type { IssueRef } from "@tickernelz/paperclip-pro-shared";
+import type { IssueRef } from "@tickernelz/wardmote-shared";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { __liveUpdatesTestUtils } from "@/context/LiveUpdatesProvider";
 import { queryKeys } from "@/lib/queryKeys";

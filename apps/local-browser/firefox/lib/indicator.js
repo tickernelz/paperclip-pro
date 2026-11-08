@@ -1,26 +1,33 @@
 (function (root) {
   "use strict";
 
-  var HOST_ATTRIBUTE = "data-paperclip-agent-indicator";
+  var HOST_ATTRIBUTE = "data-wardmote-agent-indicator";
   var CORNERS = ["bottom-right", "bottom-left", "top-right", "top-left"];
   var OFFSET = "16px";
   var PAINT_TIMEOUT_MS = 120;
 
   var STYLE = [
-    ":host { all: initial; }",
+    ":host { all: initial; --bg-2: oklch(1 0 0); --line: oklch(0.885 0.007 265); --ink: oklch(0.225 0.014 268);",
+    "  --accent: oklch(0.505 0.2 277); --accent-ink: oklch(0.99 0.004 277); --accent-hover: oklch(0.455 0.2 277);",
+    "  --bg-3: oklch(0.948 0.005 265); --line-strong: oklch(0.58 0.012 265); --ok: oklch(0.47 0.12 152); --focus: oklch(0.55 0.2 277);",
+    "  --shadow-2: 0 12px 32px -12px oklch(0.225 0.02 268 / 0.28), 0 2px 6px -2px oklch(0.225 0.02 268 / 0.12); }",
+    "@media (prefers-color-scheme: dark) { :host { --bg-2: oklch(0.2 0.007 268); --line: oklch(0.31 0.009 268); --ink: oklch(0.962 0.004 268);",
+    "  --accent: oklch(0.73 0.145 277); --accent-ink: oklch(0.17 0.02 277); --accent-hover: oklch(0.78 0.13 277);",
+    "  --bg-3: oklch(0.24 0.008 268); --line-strong: oklch(0.6 0.012 268); --ok: oklch(0.79 0.14 152); --focus: oklch(0.79 0.13 277);",
+    "  --shadow-2: 0 16px 36px -14px oklch(0 0 0 / 0.75), 0 2px 8px -2px oklch(0 0 0 / 0.5); } }",
     ".bar { display: flex; align-items: center; gap: 10px; max-width: min(420px, calc(100vw - 32px)); box-sizing: border-box;",
-    "  padding: 8px 8px 8px 12px; border-radius: 10px; border: 1px solid #383838; background: #171717; color: #ececec;",
-    "  font: 600 12px/1.4 Inter, system-ui, -apple-system, 'Segoe UI', sans-serif; box-shadow: 0 4px 16px rgba(0, 0, 0, 0.24);",
+    "  padding: 8px 8px 8px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg-2); color: var(--ink);",
+    "  font: 600 12px/1.4 InterVariable, Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif; box-shadow: var(--shadow-2);",
     "  pointer-events: none; }",
-    ".dot { flex: none; width: 8px; height: 8px; border-radius: 999px; background: #f97316; }",
-    ".held .dot { background: #22c55e; }",
+    ".dot { flex: none; width: 8px; height: 8px; border-radius: 999px; background: var(--accent); }",
+    ".held .dot { background: var(--ok); }",
     ".text { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }",
-    "button { flex: none; pointer-events: auto; font: inherit; color: #1e1e1e; background: #f97316; border: 0; border-radius: 6px;",
+    "button { flex: none; pointer-events: auto; font: inherit; color: var(--accent-ink); background: var(--accent); border: 0; border-radius: 6px;",
     "  padding: 4px 10px; cursor: pointer; }",
-    "button:hover { background: #ea580c; }",
-    ".held button { background: #ececec; }",
-    ".held button:hover { background: #d4d4d4; }",
-    "button:focus-visible { outline: 2px solid #ececec; outline-offset: 2px; }",
+    "button:hover { background: var(--accent-hover); }",
+    ".held button { color: var(--ink); background: var(--bg-3); box-shadow: inset 0 0 0 1px var(--line-strong); }",
+    ".held button:hover { background: var(--line); }",
+    "button:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }",
     "@media (prefers-reduced-motion: no-preference) { .dot { animation: pulse 1.6s ease-in-out infinite; } }",
     "@keyframes pulse { 50% { opacity: 0.35; } }"
   ].join("\n");
@@ -38,9 +45,9 @@
   function label(state) {
     if (state.held) return "You have control of this tab";
     var agents = cleanAgents(state.agents);
-    if (!agents.length) return "A Paperclip agent is using this tab";
-    if (agents.length === 1) return "Paperclip agent " + agents[0] + " is using this tab";
-    return "Paperclip agents " + agents.join(", ") + " are using this tab";
+    if (!agents.length) return "A Wardmote agent is using this tab";
+    if (agents.length === 1) return "Wardmote agent " + agents[0] + " is using this tab";
+    return "Wardmote agents " + agents.join(", ") + " are using this tab";
   }
 
   function actionLabel(state) {

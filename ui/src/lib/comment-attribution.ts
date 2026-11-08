@@ -1,4 +1,4 @@
-import { responsibleUserLabel } from "@tickernelz/paperclip-pro-shared";
+import { responsibleUserLabel } from "@tickernelz/wardmote-shared";
 
 /**
  * Decide whether an agent comment needs a "for {user}" attribution chip, and

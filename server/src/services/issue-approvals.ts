@@ -1,6 +1,6 @@
 import { and, desc, eq, inArray } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
-import { approvals, issueApprovals, issues } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
+import { approvals, issueApprovals, issues } from "@tickernelz/wardmote-db";
 import { notFound, unprocessable } from "../errors.js";
 import { redactEventPayload } from "../redaction.js";
 

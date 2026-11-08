@@ -1,6 +1,6 @@
 import { and, asc, desc, eq, inArray, isNotNull } from "drizzle-orm";
-import { agents, chatActions, chatEndpoints, issueThreadInteractions, issues, type Db } from "@tickernelz/paperclip-pro-db";
-import { openwaEndpointPolicySchema } from "@tickernelz/paperclip-pro-shared";
+import { agents, chatActions, chatEndpoints, issueThreadInteractions, issues, type Db } from "@tickernelz/wardmote-db";
+import { openwaEndpointPolicySchema } from "@tickernelz/wardmote-shared";
 import { canActorReadIssuePrivacy, issuePrivacyMode } from "../authorization.js";
 import { forbidden } from "../../errors.js";
 import { logger } from "../../middleware/logger.js";

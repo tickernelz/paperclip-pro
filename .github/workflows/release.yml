@@ -16,13 +16,13 @@ on:
         type: boolean
         default: false
       auth:
-        description: npm authentication (token until every package has a trusted publisher)
+        description: npm authentication (oidc trusted publisher; token only for a package or step OIDC refuses)
         required: true
         type: choice
         options:
-          - token
           - oidc
-        default: token
+          - token
+        default: oidc
 
 concurrency:
   group: release
@@ -94,6 +94,9 @@ jobs:
           key: release-cargo-${{ runner.os }}-${{ hashFiles('packages/paperclip-runner/runner/Cargo.lock') }}
           restore-keys: |
             release-cargo-${{ runner.os }}-
+
+      - name: Install npm with OIDC dist-tag support
+        run: npm install -g npm@11.21.2
 
       - name: Release
         env:

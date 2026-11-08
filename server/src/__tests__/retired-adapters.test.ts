@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { RETIRED_ADAPTER_TYPES } from "@tickernelz/paperclip-pro-shared";
+import { RETIRED_ADAPTER_TYPES } from "@tickernelz/wardmote-shared";
 import { findServerAdapter, getServerAdapter } from "../adapters/index.js";
 import { isRetiredAdapterModule } from "../adapters/retired.js";
 import { evaluateAgentInvokability, type AgentOrgRow } from "../services/agent-invokability.js";

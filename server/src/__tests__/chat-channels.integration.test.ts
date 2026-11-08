@@ -6,11 +6,11 @@ import { DELIVERY_QUEUES, subscribeDeliveryWork } from "../services/delivery-wor
 import { aiConnectionService } from "../services/ai-connections.js";
 import { fastResponseService } from "../services/fast-responses.js";
 import { fastResponseReceipt } from "../services/fast-response-provider.js";
-import { fastResponseRequests } from "@tickernelz/paperclip-pro-db";
-import { chatSlackRegistrations, toolOauthStates } from "@tickernelz/paperclip-pro-db";
-import { buildSlackAppManifest } from "@tickernelz/paperclip-pro-shared";
+import { fastResponseRequests } from "@tickernelz/wardmote-db";
+import { chatSlackRegistrations, toolOauthStates } from "@tickernelz/wardmote-db";
+import { buildSlackAppManifest } from "@tickernelz/wardmote-shared";
 import { toolAccessService } from "../services/tool-access.js";
-import { toolActionRequests, toolInvocations } from "@tickernelz/paperclip-pro-db";
+import { toolActionRequests, toolInvocations } from "@tickernelz/wardmote-db";
 import { GitHubPublicationLeaseLost, withGitHubPublicationLease } from "../services/chat-github-publication-lease.js";
 import { secretService } from "../services/secrets.js";
 import { githubChatWizardService } from "../services/chat-github-wizard.js";
@@ -24,7 +24,7 @@ import { githubAutomaticReviewEvent } from "../services/chat-github-events.js";
 import { githubBotToolsForSession, syncGitHubBotTools } from "../services/chat-github-tools.js";
 import { resolveGitHubOperationCredentials } from "../services/github-operation-credentials.js";
 import { initializeRunIdentity } from "../services/run-identity.js";
-import { chatGitHubRegistrations, chatGitHubReviews, chatGitHubConfigurations, toolCatalogEntries } from "@tickernelz/paperclip-pro-db";
+import { chatGitHubRegistrations, chatGitHubReviews, chatGitHubConfigurations, toolCatalogEntries } from "@tickernelz/wardmote-db";
 import { AsyncLocalStorage } from "node:async_hooks";
 import * as cloudRuntimeIdentity from "../services/cloud-runtime-identity.js";
 import {
@@ -103,9 +103,9 @@ import {
   environmentLeases,
   principalPermissionGrants,
   toolConnections,
-} from "@tickernelz/paperclip-pro-db";
-import { defaultGitHubReviewPolicy, type ChatProvider } from "@tickernelz/paperclip-pro-shared";
-import { isPaperclipExternalChatTurn } from "@tickernelz/paperclip-pro-adapter-utils/server-utils";
+} from "@tickernelz/wardmote-db";
+import { defaultGitHubReviewPolicy, type ChatProvider } from "@tickernelz/wardmote-shared";
+import { isPaperclipExternalChatTurn } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import type { Attachment, Author, Message, Thread } from "chat";
 import { errorHandler } from "../middleware/index.js";
 import { issueRoutes } from "../routes/issues.js";
@@ -2363,7 +2363,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
       const injected = await skill("injected");
       const foreign = await skill("foreign", other.companyId);
       // Use the production link format, including the slash picker identity.
-      const { buildSkillMentionHref } = await import("@tickernelz/paperclip-pro-shared");
+      const { buildSkillMentionHref } = await import("@tickernelz/wardmote-shared");
       const ref = (s: typeof common) => `[/skill](${buildSkillMentionHref(s.id, s.slug)})`;
       const saved = await f.management.configuration(f.endpoint.id, "owner-user");
       await f.management.saveConfiguration(f.endpoint.id, { expectedRevision: saved.revision, configuration: {
@@ -4653,7 +4653,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     });
     it("admits opt-in signed issue events without PR checks, deduplicates them and rechecks revoked policy", async () => {
       const f = await reviewBotFixture();
-      const { buildSkillMentionHref } = await import("@tickernelz/paperclip-pro-shared");
+      const { buildSkillMentionHref } = await import("@tickernelz/wardmote-shared");
       const [skill] = await db.insert(companySkills).values({
         companyId: f.companyId, key: `company/${f.companyId}/automatic-playbook`,
         slug: "automatic-playbook", name: "Automatic playbook", markdown: "# Automatic playbook",
@@ -4726,7 +4726,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     });
     it("admits signed PR events into an ordinary assigned task and deduplicates delivery", async () => {
       const f = await reviewBotFixture();
-      const { buildSkillMentionHref } = await import("@tickernelz/paperclip-pro-shared");
+      const { buildSkillMentionHref } = await import("@tickernelz/wardmote-shared");
       const [skill] = await db.insert(companySkills).values({
         companyId: f.companyId, key: `company/${f.companyId}/automatic-playbook`,
         slug: "automatic-playbook", name: "Automatic playbook", markdown: "# Automatic playbook",
@@ -7157,7 +7157,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
   });
 
   it.each(["cancelled", "paused", "blocked", "closed-workspace"] as const)("does not bypass %s task guards from the Slack Board composer or its outbox", async (guard) => {
-    const { issueTreeHolds, issueRelations, executionWorkspaces, projects } = await import("@tickernelz/paperclip-pro-db");
+    const { issueTreeHolds, issueRelations, executionWorkspaces, projects } = await import("@tickernelz/wardmote-db");
     const fixture = await seedCompany();
     const { callbacks, endpoint, service, wakeup, runtime } = await configuredSlackEndpoint(fixture);
     const channel = makeThread({ channelId: "CGUARD", id: "slack:CGUARD:8100.1", name: "guard" });
@@ -7264,7 +7264,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
   }, 15_000);
 
   it("refreshes Slack tool guidance without restoring disabled catalog policies", async () => {
-    const { SLACK_TOOLS } = await import("@tickernelz/paperclip-pro-shared");
+    const { SLACK_TOOLS } = await import("@tickernelz/wardmote-shared");
     const { syncSlackBotTools } = await import("../services/connectors/slack-catalog.js");
     const fixture = await seedCompany();
     const { endpoint } = await configuredSlackEndpoint(fixture);
@@ -7596,7 +7596,7 @@ describeEmbeddedPostgres("chat channel control-plane integration", () => {
     await rejected;
     await expect(oauth.status(fixture.companyId, endpoint.id, "owner-user")).resolves.toMatchObject({ connected: false });
     await expect(oauth.status(randomUUID(), endpoint.id, "owner-user")).rejects.toThrow("not found");
-    const { toolProfiles, toolProfileBindings } = await import("@tickernelz/paperclip-pro-db");
+    const { toolProfiles, toolProfileBindings } = await import("@tickernelz/wardmote-db");
     const [slackProfile] = await db.select().from(toolProfiles).where(and(eq(toolProfiles.companyId, fixture.companyId), eq(toolProfiles.profileKey, `slack-bot:${endpoint.id}`)));
     const [removedBinding] = await db.delete(toolProfileBindings).where(and(eq(toolProfileBindings.profileId, slackProfile.id), eq(toolProfileBindings.targetId, binding.agentId))).returning();
     await expect(resolveConnectorAssignments(db, recovered)).resolves.toEqual([]);

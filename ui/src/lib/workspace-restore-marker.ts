@@ -1,4 +1,4 @@
-import { safeWorkspaceRestorePath } from "@tickernelz/paperclip-pro-shared";
+import { safeWorkspaceRestorePath } from "@tickernelz/wardmote-shared";
 
 export function workspaceRestoreMarkerDetail(input: {
   result: Record<string, unknown> | null | undefined;

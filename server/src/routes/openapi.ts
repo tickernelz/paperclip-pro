@@ -1,7 +1,7 @@
-import { updateFastResponseSchema } from "@tickernelz/paperclip-pro-shared";
-import { onboardingOmpLoginRequestSchema, onboardingRemoteOmpRequestSchema } from "@tickernelz/paperclip-pro-shared";
-import { agentTodoSnapshotSchema } from "@tickernelz/paperclip-pro-shared";
-import { slackRegistrationSchema, slackSetupActionSchema, slackInstallAuthorizationSchema, slackRegistrationStateSchema, slackAppConfigurationSchema, slackAvatarStateSchema, slackAccountStateSchema } from "@tickernelz/paperclip-pro-shared";
+import { updateFastResponseSchema } from "@tickernelz/wardmote-shared";
+import { onboardingOmpLoginRequestSchema, onboardingRemoteOmpRequestSchema } from "@tickernelz/wardmote-shared";
+import { agentTodoSnapshotSchema } from "@tickernelz/wardmote-shared";
+import { slackRegistrationSchema, slackSetupActionSchema, slackInstallAuthorizationSchema, slackRegistrationStateSchema, slackAppConfigurationSchema, slackAvatarStateSchema, slackAccountStateSchema } from "@tickernelz/wardmote-shared";
 import { experimentalApiMetadata } from "./experimental-api-metadata.js";
 import { attachmentRetentionPreviewSchema } from "./instance-attachment-retention.js";
 import {
@@ -19,7 +19,7 @@ import {
   experimentalApiQueries,
 } from "./experimental-api-paths.js";
 import { Router } from "express";
-import { subscriptionPriceSchema, mergeSubscriptionsSchema } from "@tickernelz/paperclip-pro-shared";
+import { subscriptionPriceSchema, mergeSubscriptionsSchema } from "@tickernelz/wardmote-shared";
 import { z } from "zod";
 import {
   gitHubRepositoryPageQuerySchema,
@@ -128,6 +128,9 @@ import {
   createDecisionQueueSchema,
   createDecisionArchiveProposalSchema,
   decisionAttentionSourceKindSchema,
+  DECISION_HISTORY_PAGE_MAX_LIMIT,
+  DECISION_HISTORY_SOURCE_KINDS,
+  DECISION_HISTORY_STATUSES,
   decisionInputsSchema,
   decisionOptionsSchema,
   removeDecisionQueueItemSchema,
@@ -379,13 +382,13 @@ import {
   replaceChatEndpointResourcesSchema,
   updateChatEndpointSchema,
   pixelsOfficeSeatAssignmentsSchema,
-} from "@tickernelz/paperclip-pro-shared";
-import { aggregatorAppsSyncSchema, aggregatorAppsRefreshSchema, arcadeDiscoverySetupSchema } from "@tickernelz/paperclip-pro-shared/aggregator-apps";
-import { composioAppsSyncSchema, composioAppsRefreshSchema, composioAppSetupSchema, composioAppAccountSchema } from "@tickernelz/paperclip-pro-shared/composio-app-setup";
+} from "@tickernelz/wardmote-shared";
+import { aggregatorAppsSyncSchema, aggregatorAppsRefreshSchema, arcadeDiscoverySetupSchema } from "@tickernelz/wardmote-shared/aggregator-apps";
+import { composioAppsSyncSchema, composioAppsRefreshSchema, composioAppSetupSchema, composioAppAccountSchema } from "@tickernelz/wardmote-shared/composio-app-setup";
 import {
   COMPANY_IMPORT_TRANSFERS_API_PATH,
   companyImportTransferDeclarationSchema,
-} from "@tickernelz/paperclip-pro-shared/company-import-transfer";
+} from "@tickernelz/wardmote-shared/company-import-transfer";
 
 type JsonSchema = Record<string, unknown>;
 type OpenApiResponse = Record<string, unknown>;
@@ -7141,6 +7144,7 @@ const decisionQueueSchema = z
     seedRules: z.array(decisionQueueSeedRuleSchema),
     seedRulesEnabled: z.boolean(),
     itemCount: z.number().int().nonnegative(),
+    resolvedCount: z.number().int().nonnegative().nullable(),
     createdAt: z.string().datetime(),
     updatedAt: z.string().datetime(),
   })
@@ -7201,6 +7205,65 @@ const decisionRetentionSchema = z
     updatedAt: z.string().datetime(),
   })
   .strict();
+
+const decisionHistoryEntrySchema = z
+  .object({
+    id: z.string(),
+    sourceKind: z.enum(DECISION_HISTORY_SOURCE_KINDS),
+    sourceId: z.string(),
+    kind: z.string(),
+    kindLabel: z.string(),
+    status: z.string(),
+    outcome: z.enum(DECISION_HISTORY_STATUSES),
+    title: z.string(),
+    result: z.string().nullable(),
+    decidedBy: z
+      .object({
+        type: z.enum(["user", "agent", "system"]),
+        userId: z.string().nullable(),
+        agentId: z.string().nullable(),
+        name: z.string().nullable(),
+      })
+      .strict(),
+    decidedAt: z.string().datetime(),
+    issue: z
+      .object({ id: z.string(), identifier: z.string().nullable(), title: z.string(), href: z.string() })
+      .strict()
+      .nullable(),
+    href: z.string().nullable(),
+  })
+  .strict();
+
+registerCurrentRoute({
+  method: "get",
+  path: "/api/companies/{companyId}/decision-history",
+  tags: ["decision-queues"],
+  summary: "List decided or expired decisions, newest first, one cursor page at a time",
+  query: z.object({
+    status: z.enum(DECISION_HISTORY_STATUSES),
+    queue: z.string().optional(),
+    sourceKinds: z.string().optional(),
+    activitySince: z.string().datetime({ offset: true }).optional(),
+    activityUntil: z.string().datetime({ offset: true }).optional(),
+    cursor: z.string().optional(),
+    limit: z.coerce.number().int().min(1).max(DECISION_HISTORY_PAGE_MAX_LIMIT).optional(),
+  }),
+  responses: {
+    200: r.ok(
+      z
+        .object({
+          items: z.array(decisionHistoryEntrySchema),
+          nextCursor: z.string().nullable(),
+          totalCount: z.number().int().nonnegative().nullable(),
+        })
+        .strict(),
+    ),
+    400: r.badRequest,
+    401: r.unauthorized,
+    403: r.forbidden,
+    404: r.notFound,
+  },
+});
 
 registerCurrentRoute({
   method: "get",

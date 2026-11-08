@@ -1,10 +1,13 @@
 import type {
   AttentionSourceKind,
+  ResolvedDecisionPage,
+  ResolvedDecisionSourceKind,
+  ResolvedDecisionStatus,
   DecisionQueue,
   DecisionQueueItem,
   DecisionQueueSeedRule,
   DecisionTriage,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { api } from "./client";
 
 // The shared types model timestamps as `Date` (the server row shape); over the
@@ -64,6 +67,15 @@ export interface DecisionRetentionDto {
   updatedAt: string;
 }
 
+export interface DecisionHistoryParams {
+  status: ResolvedDecisionStatus;
+  queue?: string | null;
+  sourceKinds?: ResolvedDecisionSourceKind[];
+  activitySince?: string;
+  activityUntil?: string;
+  cursor?: string | null;
+}
+
 export interface CreateDecisionArchiveProposalBody {
   items: Array<{ sourceKind: AttentionSourceKind; sourceId: string; reason: string }>;
   idempotencyKey?: string;
@@ -81,6 +93,16 @@ export const decisionQueuesApi = {
     api.get<DecisionQueueSeedDefinition[]>(`/companies/${companyId}/decision-queue-seed-rules`),
 
   list: (companyId: string) => api.get<DecisionQueueDto[]>(`/companies/${companyId}/decision-queues`),
+
+  history: (companyId: string, params: DecisionHistoryParams) => {
+    const query = new URLSearchParams({ status: params.status });
+    if (params.queue) query.set("queue", params.queue);
+    if (params.sourceKinds?.length) query.set("sourceKinds", params.sourceKinds.join(","));
+    if (params.activitySince) query.set("activitySince", params.activitySince);
+    if (params.activityUntil) query.set("activityUntil", params.activityUntil);
+    if (params.cursor) query.set("cursor", params.cursor);
+    return api.get<ResolvedDecisionPage>(`/companies/${companyId}/decision-history?${query.toString()}`);
+  },
 
   create: (companyId: string, body: CreateDecisionQueueBody) =>
     api.post<DecisionQueueDto>(`/companies/${companyId}/decision-queues`, body),

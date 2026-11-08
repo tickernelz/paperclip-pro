@@ -5,7 +5,7 @@ import type {
   ConnectionGrantsResponse,
   ToolConnectionCapabilities,
   ToolConnectionCredentialPolicy,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import { IdentitiesSection } from "@/pages/apps/app-detail/IdentitiesSection";
 
 // ---------------------------------------------------------------------------

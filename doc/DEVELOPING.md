@@ -39,8 +39,18 @@ did not succeed, and it rejects a run where the heavy lanes and the `Docs` lane
 are inconsistent. The workflow never uses `paths`/`paths-ignore`, because the
 release gate requires a completed `ci.yml` run on the exact tagged commit.
 Shared setup lives in `.github/actions/setup-workspace` and the static gates in
-`.github/actions/policy-checks`; the pnpm store and the Runner Rust cache are
+`.github/actions/policy-checks`; the pnpm store and the Runner Rust caches are
 written only by pushes to `main` and restored everywhere else.
+
+Server test shards run vitest with `WARDMOTE_SERVER_TEST_WORKERS=3`: one fresh
+process per file, longest files first by the manifests in
+`scripts/*-shard-durations.json`. Local runs keep one worker. Each server vitest
+run migrates one embedded Postgres data directory in a global setup, and every
+test file starts its own cluster from a copy of it. `verify` writes each job's
+time against `.github/ci-budgets.json` into the run summary and warns on an
+overrun. `node scripts/ci-timing-report.mjs` reproduces the per-job report for
+recent runs, and `--logs <n> --write-durations scripts` regenerates the shard
+manifests from real runs.
 `.github/workflows/sentry-contract.yml` runs separately and only when the Sentry
 integration files change.
 
@@ -112,7 +122,7 @@ pnpm storybook
 pnpm build-storybook
 ```
 
-These run the `@tickernelz/paperclip-pro-ui` Storybook on port `6006` and build the static output to `ui/storybook-static/`.
+These run the `@tickernelz/wardmote-ui` Storybook on port `6006` and build the static output to `ui/storybook-static/`.
 
 **HTML artifacts** covers secure rendered/raw attachment previews, interactive
 reports, security probes, workspace previews, and opening a report from a task.
@@ -268,7 +278,7 @@ the Tailwind `font-sans` token to those bundled files before system fallbacks.
 Linux screenshot or Storybook capture jobs should not install host Inter packages
 or inject external font CSS to make Paperclip text render correctly.
 
-Font assets live in Vite's public directory so `pnpm --filter @tickernelz/paperclip-pro-ui build`
+Font assets live in Vite's public directory so `pnpm --filter @tickernelz/wardmote-ui build`
 emits them under `ui/dist/fonts/`. The server package copies the same output into
 `server/ui-dist/fonts/` through `scripts/prepare-server-ui-dist.sh`.
 
@@ -305,7 +315,7 @@ Primary-instance rebuilds that restart `paperclip.service` can request one-shot 
 
 ```sh
 old_main_pid="$(systemctl show paperclip.service -p MainPID --value)"
-pnpm --filter @tickernelz/paperclip-pro-server exec tsx ../scripts/request-hot-restart.ts --server-pid "$old_main_pid"
+pnpm --filter @tickernelz/wardmote-server exec tsx ../scripts/request-hot-restart.ts --server-pid "$old_main_pid"
 systemctl restart paperclip.service
 ```
 
@@ -347,7 +357,7 @@ drain-and-retry path:
 
 ```sh
 old_main_pid="$(systemctl show paperclip.service -p MainPID --value)"
-pnpm --filter @tickernelz/paperclip-pro-server exec tsx ../scripts/request-hot-restart.ts \
+pnpm --filter @tickernelz/wardmote-server exec tsx ../scripts/request-hot-restart.ts \
   --server-pid "$old_main_pid" --drain-required
 systemctl restart paperclip.service
 ```
@@ -415,7 +425,7 @@ pnpm dev --authenticated-private
 Allow additional private hostnames (for example custom Tailscale hostnames):
 
 ```sh
-npx @tickernelz/paperclip-pro allowed-hostname dotta-macbook-pro
+npx @tickernelz/wardmote allowed-hostname dotta-macbook-pro
 ```
 
 ## Test Commands
@@ -521,7 +531,7 @@ pnpm wardmote run
 
 > **Note: private npm registry `.npmrc` + first-run onboarding**
 >
-> The first-run experience often starts with `npx @tickernelz/paperclip-pro onboard --yes` (before you have a repo checkout). If your global `~/.npmrc` sets `registry` to a private registry (for example GitHub Packages), `npx` may try to resolve `paperclip-pro` from that private registry and fail with `E404`.
+> The first-run experience often starts with `npx @tickernelz/wardmote onboard --yes` (before you have a repo checkout). If your global `~/.npmrc` sets `registry` to a private registry (for example GitHub Packages), `npx` may try to resolve `paperclip-pro` from that private registry and fail with `E404`.
 >
 > Diagnostic:
 >
@@ -896,7 +906,7 @@ Instead, create a repo-local Paperclip config plus an isolated instance for the 
 ```sh
 wardmote worktree init
 # or create the git worktree and initialize it in one step:
-npx @tickernelz/paperclip-pro worktree:make paperclip-pr-432
+npx @tickernelz/wardmote worktree:make paperclip-pr-432
 ```
 
 This command:
@@ -1007,7 +1017,7 @@ The workspace UI surfaces `Provisioning database`, `Validating clone`, `Ready`, 
 
 ### Worktree CLI Reference
 
-**`npx @tickernelz/paperclip-pro worktree init [options]`** — Create repo-local config/env and an isolated instance for the current worktree.
+**`npx @tickernelz/wardmote worktree init [options]`** — Create repo-local config/env and an isolated instance for the current worktree.
 
 | Option | Description |
 |---|---|
@@ -1038,7 +1048,7 @@ Repair an already-created repo-managed worktree and reseed its isolated instance
 
 ```sh
 cd /path/to/paperclip/.paperclip/worktrees/PAP-884-ai-commits-component
-npx @tickernelz/paperclip-pro worktree init --force --seed-mode minimal \
+npx @tickernelz/wardmote worktree init --force --seed-mode minimal \
   --name PAP-884-ai-commits-component \
   --from-config ~/.wardmote/instances/default/config.json
 ```
@@ -1047,7 +1057,7 @@ That rewrites the worktree-local `.paperclip/config.json` + `.paperclip/.env`, r
 
 For an already-created worktree where you want the CLI to decide whether to rebuild missing worktree metadata or just reseed the isolated DB, use `worktree repair`.
 
-**`npx @tickernelz/paperclip-pro worktree repair [options]`** — Repair the current linked worktree by default, or create/repair a named linked worktree under `.paperclip/worktrees/` when `--branch` is provided. The command never targets the primary checkout unless you explicitly pass `--branch`.
+**`npx @tickernelz/wardmote worktree repair [options]`** — Repair the current linked worktree by default, or create/repair a named linked worktree under `.paperclip/worktrees/` when `--branch` is provided. The command never targets the primary checkout unless you explicitly pass `--branch`.
 
 | Option | Description |
 |---|---|
@@ -1075,7 +1085,7 @@ node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts worktree repair --branch
 
 For an already-created worktree where you want to keep the existing repo-local config/env and only overwrite the isolated database, use `worktree reseed` instead. Stop the target worktree's Paperclip server first so the command can replace the DB safely.
 
-**`npx @tickernelz/paperclip-pro worktree reseed [options]`** — Re-seed an existing worktree-local instance from another Paperclip instance or worktree while preserving the target worktree's current config, ports, and instance identity.
+**`npx @tickernelz/wardmote worktree reseed [options]`** — Re-seed an existing worktree-local instance from another Paperclip instance or worktree while preserving the target worktree's current config, ports, and instance identity.
 
 | Option | Description |
 |---|---|
@@ -1094,7 +1104,7 @@ Examples:
 ```sh
 # From the main repo, reseed a worktree from the current default/master instance.
 cd /path/to/paperclip
-npx @tickernelz/paperclip-pro worktree reseed \
+npx @tickernelz/wardmote worktree reseed \
   --from current \
   --to PAP-1132-assistant-ui-pap-1131-make-issues-comments-be-like-a-chat \
   --seed-mode full \
@@ -1102,14 +1112,14 @@ npx @tickernelz/paperclip-pro worktree reseed \
 
 # From inside a worktree, reseed it from the default instance config.
 cd /path/to/paperclip/.paperclip/worktrees/PAP-1132-assistant-ui-pap-1131-make-issues-comments-be-like-a-chat
-npx @tickernelz/paperclip-pro worktree reseed \
+npx @tickernelz/wardmote worktree reseed \
   --from-instance default \
   --seed-mode full
 ```
 
 Managed workspace repair uses this same verified full-reseed contract through `POST /api/execution-workspaces/:id/runtime-commands/repair`. The exclusive, audited operation stops managed services, writes a recoverable pre-repair database backup under the isolated instance's backup directory, performs the full seed/migration/quarantine/rebinding sequence, and restarts only after terminal manifest and service-health validation. It preserves the worktree filesystem. On failure, services remain stopped while the database backup, seed manifest, bounded phase diagnostics, and operation log are retained for inspection; repair never retries itself in a loop.
 
-**`npx @tickernelz/paperclip-pro worktree:make <name> [options]`** — Create `~/NAME` as a git worktree, then initialize an isolated Paperclip instance inside it. This combines `git worktree add` with `worktree init` in a single step.
+**`npx @tickernelz/wardmote worktree:make <name> [options]`** — Create `~/NAME` as a git worktree, then initialize an isolated Paperclip instance inside it. This combines `git worktree add` with `worktree init` in a single step.
 
 | Option | Description |
 |---|---|
@@ -1129,12 +1139,12 @@ Managed workspace repair uses this same verified full-reseed contract through `P
 Examples:
 
 ```sh
-npx @tickernelz/paperclip-pro worktree:make paperclip-pr-432
-npx @tickernelz/paperclip-pro worktree:make my-feature --start-point origin/main
-npx @tickernelz/paperclip-pro worktree:make experiment --no-seed
+npx @tickernelz/wardmote worktree:make paperclip-pr-432
+npx @tickernelz/wardmote worktree:make my-feature --start-point origin/main
+npx @tickernelz/wardmote worktree:make experiment --no-seed
 ```
 
-**`npx @tickernelz/paperclip-pro worktree env [options]`** — Print shell exports for the current worktree-local Paperclip instance.
+**`npx @tickernelz/wardmote worktree env [options]`** — Print shell exports for the current worktree-local Paperclip instance.
 
 | Option | Description |
 |---|---|
@@ -1146,7 +1156,7 @@ Examples:
 ```sh
 pnpm wardmote worktree env
 pnpm wardmote worktree env --json
-eval "$(npx @tickernelz/paperclip-pro worktree env)"
+eval "$(npx @tickernelz/wardmote worktree env)"
 ```
 
 For project execution worktrees, Paperclip can also run a project-defined provision command after it creates or reuses an isolated git worktree. Configure this on the project's execution workspace policy (`workspaceStrategy.provisionCommand`). The command runs inside the derived worktree and receives `PAPERCLIP_WORKSPACE_*`, `PAPERCLIP_PROJECT_ID`, `PAPERCLIP_AGENT_ID`, and `PAPERCLIP_ISSUE_*` environment variables so each repo can bootstrap itself however it wants.
@@ -1566,9 +1576,9 @@ failed turn's sandbox running.
 Run the credential-free real-process restart suite with:
 
 ```sh
-pnpm --filter @tickernelz/paperclip-pro-paperclip-runner build:runner-binaries
+pnpm --filter @tickernelz/wardmote-paperclip-runner build:runner-binaries
 pnpm exec vitest run server/src/services/native-runtime/native-runner-restart-recovery.integration.test.ts
-pnpm --filter @tickernelz/paperclip-pro-paperclip-runner exec vitest run src/live/runnerd-codex-transport.test.ts -t 'adopts a live runner'
+pnpm --filter @tickernelz/wardmote-paperclip-runner exec vitest run src/live/runnerd-codex-transport.test.ts -t 'adopts a live runner'
 ```
 
 The suite uses isolated PostgreSQL state, isolated `PAPERCLIP_HOME` roots, real
@@ -1612,18 +1622,18 @@ this legacy default because its protocol supplies the control-plane contract.
 Validate the catalog without writing the manifest:
 
 ```sh
-pnpm --filter @tickernelz/paperclip-pro-skills-catalog validate
+pnpm --filter @tickernelz/wardmote-skills-catalog validate
 ```
 
 Regenerate `generated/catalog.json` after editing any catalog `SKILL.md`,
 frontmatter, file inventory, category, or slug:
 
 ```sh
-pnpm --filter @tickernelz/paperclip-pro-skills-catalog build:manifest
+pnpm --filter @tickernelz/wardmote-skills-catalog build:manifest
 ```
 
 The package's `build` script runs `build:manifest` and then `tsc`; tests live
-under `pnpm --filter @tickernelz/paperclip-pro-skills-catalog test`. Validation fails when:
+under `pnpm --filter @tickernelz/wardmote-skills-catalog test`. Validation fails when:
 
 - a catalog entry is not under `catalog/bundled/<category>/<slug>` or
   `catalog/optional/<category>/<slug>`
@@ -1640,7 +1650,7 @@ only), `assets` (other non-script files), or `scripts_executables` (any
 executable script). The build contract is documented in
 `doc/plans/2026-05-26-skills-cli-catalog-contract.md`.
 
-CI runs `pnpm --filter @tickernelz/paperclip-pro-skills-catalog validate` and the package's
+CI runs `pnpm --filter @tickernelz/wardmote-skills-catalog validate` and the package's
 vitest suite, so always regenerate the manifest in the same commit as the
 catalog change.
 
@@ -1663,13 +1673,13 @@ packages/teams-catalog/
 Validate without writing the manifest:
 
 ```sh
-pnpm --filter @tickernelz/paperclip-pro-teams-catalog validate
+pnpm --filter @tickernelz/wardmote-teams-catalog validate
 ```
 
 Regenerate `generated/catalog.json` after editing catalog team files:
 
 ```sh
-pnpm --filter @tickernelz/paperclip-pro-teams-catalog build:manifest
+pnpm --filter @tickernelz/wardmote-teams-catalog build:manifest
 ```
 
 Team install/preview APIs enforce source policy. External skill sources require
@@ -1859,15 +1869,15 @@ Paperclip CLI now includes client-side control-plane commands in addition to set
 Quick examples:
 
 ```sh
-npx @tickernelz/paperclip-pro issue list --company-id <company-id>
-npx @tickernelz/paperclip-pro issue create --company-id <company-id> --title "Investigate checkout conflict"
-npx @tickernelz/paperclip-pro issue update <issue-id> --status in_progress --comment "Started triage"
+npx @tickernelz/wardmote issue list --company-id <company-id>
+npx @tickernelz/wardmote issue create --company-id <company-id> --title "Investigate checkout conflict"
+npx @tickernelz/wardmote issue update <issue-id> --status in_progress --comment "Started triage"
 ```
 
 Set defaults once with context profiles:
 
 ```sh
-npx @tickernelz/paperclip-pro context set --api-base http://localhost:3100 --company-id <company-id>
+npx @tickernelz/wardmote context set --api-base http://localhost:3100 --company-id <company-id>
 ```
 
 Then run commands without repeating flags:

@@ -26,9 +26,9 @@ import {
   issues,
   toolConnections,
   type Db,
-} from "@tickernelz/paperclip-pro-db";
-import { openwaTool, type OpenwaTriggerClass } from "@tickernelz/paperclip-pro-shared";
-import { OPENWA_OPERATIONS, type OpenwaJsonSchema, type OpenwaOperation } from "@tickernelz/paperclip-pro-shared/openwa-operations";
+} from "@tickernelz/wardmote-db";
+import { openwaTool, type OpenwaTriggerClass } from "@tickernelz/wardmote-shared";
+import { OPENWA_OPERATIONS, type OpenwaJsonSchema, type OpenwaOperation } from "@tickernelz/wardmote-shared/openwa-operations";
 import { startEmbeddedPostgresTestDatabase } from "../helpers/embedded-postgres.js";
 import { createLocalDiskStorageProvider } from "../../storage/local-disk-provider.js";
 import { createStorageService } from "../../storage/service.js";
@@ -215,7 +215,7 @@ describe("OpenWA catalog, describe and call (embedded Postgres + fake gateway)",
       })
       .where(eq(chatEndpoints.id, endpoint.id));
     expect((await service.reconcileProviderRuntimes()).local).toBe(1);
-    await gateway.waitForSubscription();
+    await gateway.waitForFirstCatchUp();
     return { gateway, companyId, agentId, userId, endpointId: endpoint.id, service };
   }
 

@@ -1,8 +1,8 @@
-import { models as anthropic } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/claude";
-import { models as openai } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/codex";
-import { models as google } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/gemini";
-import { models as xai } from "@tickernelz/paperclip-pro-adapter-utils/provider-models/grok";
-import type { AiConnectionMetadata } from "@tickernelz/paperclip-pro-shared";
+import { models as anthropic } from "@tickernelz/wardmote-adapter-utils/provider-models/claude";
+import { models as openai } from "@tickernelz/wardmote-adapter-utils/provider-models/codex";
+import { models as google } from "@tickernelz/wardmote-adapter-utils/provider-models/gemini";
+import { models as xai } from "@tickernelz/wardmote-adapter-utils/provider-models/grok";
+import type { AiConnectionMetadata } from "@tickernelz/wardmote-shared";
 
 /** Catalogs follow the saved API connection, never the host CLI's credentials or environment. */
 export function fastResponseCatalogModels(connection: Pick<AiConnectionMetadata, "provider" | "routing">) {

@@ -1,5 +1,5 @@
 import { randomBytes } from "node:crypto";
-import { definePlugin } from "@tickernelz/paperclip-pro-plugin-sdk";
+import { definePlugin } from "@tickernelz/wardmote-plugin-sdk";
 import type {
   PluginEnvironmentAcquireLeaseParams,
   PluginEnvironmentDestroyLeaseParams,
@@ -17,7 +17,7 @@ import type {
   PluginEnvironmentSyncResult,
   PluginEnvironmentValidateConfigParams,
   PluginEnvironmentValidationResult,
-} from "@tickernelz/paperclip-pro-plugin-sdk";
+} from "@tickernelz/wardmote-plugin-sdk";
 import {
   kubernetesProviderConfigSchema,
   type KubernetesProviderConfig,

@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { and, asc, desc, eq, gt, inArray, isNull, ne, sql } from "drizzle-orm";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   agents,
   heartbeatRuns,
@@ -21,7 +21,7 @@ import {
   toolProfileEntries,
   toolProfiles,
   toolRateLimitCounters,
-} from "@tickernelz/paperclip-pro-db";
+} from "@tickernelz/wardmote-db";
 import type {
   ToolAccessDecision,
   ToolAccessDecisionInput,
@@ -40,8 +40,8 @@ import type {
   ToolRedactedValueSummary,
   ToolTrustRuleArgumentFilters,
   ToolRiskLevel,
-} from "@tickernelz/paperclip-pro-shared";
-import { toolPolicyConditionsSchema } from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
+import { toolPolicyConditionsSchema } from "@tickernelz/wardmote-shared";
 import { badRequest, conflict, notFound, unprocessable } from "../errors.js";
 import {
   effectiveToolProfileBindings,

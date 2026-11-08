@@ -1,15 +1,16 @@
 import { Router } from "express";
-import type { Db } from "@tickernelz/paperclip-pro-db";
+import type { Db } from "@tickernelz/wardmote-db";
 import {
   addDecisionQueueItemSchema,
   createDecisionQueueSchema,
   decisionAttentionSourceKindSchema,
+  decisionHistoryQuerySchema,
   removeDecisionQueueItemSchema,
   updateDecisionQueueSchema,
   updateDecisionRetentionSchema,
   updateDecisionTriageSchema,
-} from "@tickernelz/paperclip-pro-shared";
-import { forbidden } from "../errors.js";
+} from "@tickernelz/wardmote-shared";
+import { badRequest, forbidden } from "../errors.js";
 import { validate } from "../middleware/validate.js";
 import {
   authorizationDeniedDetails,
@@ -21,8 +22,9 @@ import {
   decisionQueueService,
   type DecisionMutationActor,
 } from "../services/decision-queues.js";
-import { assertBoardOrAgent, assertCompanyAccess, getActorInfo } from "./authz.js";
+import { assertBoard, assertBoardOrAgent, assertCompanyAccess, getActorInfo } from "./authz.js";
 import { decisionRetentionService } from "../services/decision-retention.js";
+import { decisionHistoryService, decisionQueueCounts } from "../services/decision-history.js";
 
 function mutationActor(req: Parameters<typeof getActorInfo>[0]): DecisionMutationActor {
   const actor = getActorInfo(req);
@@ -67,6 +69,7 @@ export function decisionQueueRoutes(db: Db) {
   const router = Router();
   const svc = decisionQueueService(db);
   const retention = decisionRetentionService(db);
+  const history = decisionHistoryService(db);
 
   router.get("/companies/:companyId/decision-queue-seed-rules", async (req, res) => {
     const companyId = req.params.companyId as string;
@@ -77,7 +80,16 @@ export function decisionQueueRoutes(db: Db) {
   router.get("/companies/:companyId/decision-queues", async (req, res) => {
     const companyId = req.params.companyId as string;
     await assertDecisionAccess(db, req, companyId, "decision_queue:read");
-    res.json(await svc.list(companyId, req.actor));
+    res.json(await svc.list(companyId, await decisionQueueCounts(db, companyId, req.actor)));
+  });
+
+  router.get("/companies/:companyId/decision-history", async (req, res) => {
+    const companyId = req.params.companyId as string;
+    assertBoard(req);
+    await assertDecisionAccess(db, req, companyId, "decision_queue:read");
+    const query = decisionHistoryQuerySchema.safeParse(req.query);
+    if (!query.success) throw badRequest("Invalid decision history query", query.error.flatten());
+    res.json(await history.list(companyId, req.actor, query.data));
   });
 
   router.post("/companies/:companyId/decision-queues", validate(createDecisionQueueSchema), async (req, res) => {
@@ -85,7 +97,7 @@ export function decisionQueueRoutes(db: Db) {
     await assertDecisionAccess(db, req, companyId, "decision_queue:manage");
     const result = await svc.create({
       companyId,
-      authActor: req.actor,
+      loadCounts: () => decisionQueueCounts(db, companyId, req.actor),
       actor: mutationActor(req),
       ...req.body,
     });
@@ -99,7 +111,7 @@ export function decisionQueueRoutes(db: Db) {
       companyId,
       key: req.params.key as string,
       patch: req.body,
-      authActor: req.actor,
+      loadCounts: () => decisionQueueCounts(db, companyId, req.actor),
       actor: mutationActor(req),
     }));
   });

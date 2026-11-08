@@ -4,7 +4,7 @@ import type {
   Agent,
   CatalogTeamImportPreviewResult,
   CompanyPortabilityCollisionStrategy,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   ApplyProgress,
   ApplySuccess,

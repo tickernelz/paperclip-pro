@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import type { ServerGitInfo, ServerGitLocalChanges, ServerInfoSnapshot } from "@tickernelz/paperclip-pro-shared";
+import type { ServerGitInfo, ServerGitLocalChanges, ServerInfoSnapshot } from "@tickernelz/wardmote-shared";
 import { parseBuildCommit, readBuildCommit } from "./build-commit.js";
 
 export type { ServerGitInfo, ServerInfoSnapshot };

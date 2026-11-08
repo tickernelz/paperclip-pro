@@ -2,7 +2,7 @@ import {
   LOCAL_BROWSER_CURSOR_PATTERN,
   LOCAL_BROWSER_LIMITS,
   LOCAL_BROWSER_SNAPSHOT_DEFAULT_NODES,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 
 export interface SnapshotNode {
   ref?: string;

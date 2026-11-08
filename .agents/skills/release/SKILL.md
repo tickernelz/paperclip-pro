@@ -57,7 +57,7 @@ One workflow releases everything: **Release**
 `docs/fork/OPERATIONS.md` section 9 is the operator reference.
 
 1. versions are `YYYY.MDD.P` from the UTC date, with `P` resolved to the next
-   patch not already on npm for `@tickernelz/paperclip-pro`
+   patch not already on npm for `@tickernelz/wardmote`
 2. every package publishes under the `next` dist-tag first
 3. `latest` moves onto the version only after npm exposes the whole set
 4. the release commit is tagged `vYYYY.MDD.P` and gets a GitHub release whose
@@ -73,7 +73,7 @@ Resolve the version the run would pick:
 
 ```bash
 ./scripts/release.sh --print-version
-npm view @tickernelz/paperclip-pro version
+npm view @tickernelz/wardmote version
 ```
 
 ## Step 2 — Draft the Changelog
@@ -86,7 +86,7 @@ the mechanical list.
 
 ```bash
 gh workflow run release.yml --repo tickernelz/wardmote --ref main \
-  -f dry_run=true -f auth=token -f version=
+  -f dry_run=true -f auth=oidc -f version=
 ```
 
 Read the run log: every package must reach a publish preview, and no package
@@ -96,17 +96,19 @@ may report unresolved `workspace:` specs.
 
 ```bash
 gh workflow run release.yml --repo tickernelz/wardmote --ref main \
-  -f dry_run=false -f auth=token -f version=
+  -f dry_run=false -f auth=oidc -f version=
 ```
 
-Use `auth=oidc` only once every package has a trusted publisher; the `latest`
-promotion still needs `NPM_TOKEN` because npm OIDC does not authenticate
-`npm dist-tag add`.
+`auth=oidc` covers publishing and the `latest` promotion. Use `auth=token`
+(`NPM_TOKEN`) only for a package without a trusted publisher yet or for
+`npm deprecate`, or to rerun a version whose `oidc` run failed at the `latest`
+promotion (a package without `Allow npm dist-tag`). `docs/fork/OPERATIONS.md`
+section 9 lists the trusted publisher settings.
 
 ## Step 5 — Confirm
 
 ```bash
-npm view @tickernelz/paperclip-pro version
+npm view @tickernelz/wardmote version
 gh release view "v$(./scripts/release.sh --print-version)" --repo tickernelz/wardmote
 ```
 

@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { agents, companies, type Db } from "@tickernelz/paperclip-pro-db";
+import { agents, companies, type Db } from "@tickernelz/wardmote-db";
 import { and, eq } from "drizzle-orm";
-import { updatePrimaryAgentSchema } from "@tickernelz/paperclip-pro-shared";
+import { updatePrimaryAgentSchema } from "@tickernelz/wardmote-shared";
 import { forbidden, notFound } from "../errors.js";
 import { validate } from "../middleware/validate.js";
 import { accessService } from "../services/access.js";

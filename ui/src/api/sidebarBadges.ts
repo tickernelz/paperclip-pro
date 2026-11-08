@@ -1,4 +1,4 @@
-import type { SidebarBadges } from "@tickernelz/paperclip-pro-shared";
+import type { SidebarBadges } from "@tickernelz/wardmote-shared";
 import { api } from "./client";
 
 export const sidebarBadgesApi = {

@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import { Badge, Button } from "@tickernelz/paperclip-pro-paperclip-runner/react";
+import { Badge, Button } from "@tickernelz/wardmote-paperclip-runner/react";
 import type {
   CapabilityChatSessionArtifact,
   CapabilityScenarioIndexEntry,

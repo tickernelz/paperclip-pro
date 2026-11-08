@@ -1,4 +1,4 @@
-import type { EffectiveAttachmentLimit } from "@tickernelz/paperclip-pro-shared";
+import type { EffectiveAttachmentLimit } from "@tickernelz/wardmote-shared";
 
 const SIZE_UNITS = ["KB", "MB", "GB"] as const;
 

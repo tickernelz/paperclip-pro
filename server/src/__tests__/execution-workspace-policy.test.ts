@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   issueExecutionWorkspaceSettingsSchema,
   projectExecutionWorkspacePolicySchema,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   applyDefaultIsolatedExecutionWorkspacePolicy,
   buildExecutionWorkspaceAdapterConfig,

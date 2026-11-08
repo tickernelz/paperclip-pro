@@ -82,7 +82,7 @@ import {
   type TerminalResultCleanupOptions,
 } from "./server-utils.js";
 import { sanitizeRemoteExecutionEnv } from "./remote-execution-env.js";
-import { withWardmoteEnvAliases } from "@tickernelz/paperclip-pro-shared/env-aliases";
+import { withWardmoteEnvAliases } from "@tickernelz/wardmote-shared/env-aliases";
 import { preferredShellForSandbox, shellCommandArgs } from "./sandbox-shell.js";
 import {
   runWithRuntimeParent,

@@ -13,8 +13,8 @@ import type {
   PluginSpan,
   PluginSyncFileMapping,
   PluginSyncOperation,
-} from "@tickernelz/paperclip-pro-plugin-sdk";
-import { recordEnvironmentSyncError, withEnvironmentSyncTransferStep } from "@tickernelz/paperclip-pro-plugin-sdk";
+} from "@tickernelz/wardmote-plugin-sdk";
+import { recordEnvironmentSyncError, withEnvironmentSyncTransferStep } from "@tickernelz/wardmote-plugin-sdk";
 import { getPluginTracer } from "./plugin.js";
 
 const execFileAsync = promisify(execFile);

@@ -13,7 +13,7 @@ import {
   INSTANCE_FEATURE_KEYS,
   INSTANCE_FEATURE_PLACEMENT,
   type InstanceExperimentalSettings,
-} from "@tickernelz/paperclip-pro-shared";
+} from "@tickernelz/wardmote-shared";
 import {
   applyExperimentalSettingsPatch,
   normalizeExperimentalSettings,
