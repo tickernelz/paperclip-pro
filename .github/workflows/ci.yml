@@ -421,7 +421,10 @@ jobs:
           UPGRADE_REPO: ${{ github.event.pull_request.head.repo.full_name }}
           UPGRADE_SHA: ${{ github.event.pull_request.head.sha }}
         run: |
-          UPGRADE_PNPM_STORE="$(pnpm store path --silent)" bash scripts/test-upgrade-path.sh
+          shim="$RUNNER_TEMP/timing-bin"; mkdir -p "$shim"; log="$RUNNER_TEMP/timing.log"
+          for c in corepack npm cargo tar; do real="$(command -v $c)"; printf '#!/bin/bash\ns=$(date +%%s.%%N); "%s" "$@"; rc=$?; printf "%%s %%6.1fs %%s %%s\\n" "$(date -u +%%T)" "$(echo "$(date +%%s.%%N) - $s" | bc)" "%s" "$*" | cut -c1-220 >> "%s"; exit $rc\n' "$real" "$c" "$log" > "$shim/$c"; chmod +x "$shim/$c"; done
+          PATH="$shim:$PATH" UPGRADE_PNPM_STORE="$(pnpm store path --silent)" bash scripts/test-upgrade-path.sh
+          cat "$log"
 
   docker-omp-pin:
     name: Docker OMP pin
