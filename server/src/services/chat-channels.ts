@@ -3180,6 +3180,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
   const backgroundMessageTasks = new Set<Promise<void>>();
   const openwaSteerWaits = new Map<string, Promise<void>>();
   const scheduledConversationDrains = new Map<string, number>();
+  const conversationDrainRequests = new Set<string>();
   const openwaBurstClock = options.openwaBurstClock ?? openwaSystemClock;
   const openwaBurstTimers = new Set<unknown>();
   const liveInboundMessages = new Map<string, LiveInboundMessage>();
@@ -3677,7 +3678,10 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     if (shuttingDown) return;
     const key = conversationDrainKey(endpointId, threadId);
     const scheduledAt = scheduledConversationDrains.get(key);
-    if (scheduledAt !== undefined) return;
+    if (scheduledAt !== undefined) {
+      conversationDrainRequests.add(key);
+      return;
+    }
     scheduledConversationDrains.set(key, drainAt);
     scheduleMessageProcessing(async () => {
       try {
@@ -3689,11 +3693,12 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
             await new Promise((resolve) => setTimeout(resolve, remaining));
             continue;
           }
+          conversationDrainRequests.delete(key);
           const shouldContinue = await drainConversationDeliveries(
             endpointId,
             threadId,
           );
-          if (shouldContinue) {
+          if (conversationDrainRequests.delete(key) || shouldContinue) {
             scheduledConversationDrains.set(key, Date.now());
             continue;
           }
@@ -3701,6 +3706,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         }
       } finally {
         scheduledConversationDrains.delete(key);
+        conversationDrainRequests.delete(key);
       }
     });
   }
@@ -40303,6 +40309,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       await Promise.allSettled([...publicationEndpointTasks.values()]);
       await Promise.allSettled([...backgroundMessageTasks]);
       scheduledConversationDrains.clear();
+      conversationDrainRequests.clear();
       liveInboundMessages.clear();
       const ownedDiscordGateways = [...discordGatewayOwnerships.values()];
       for (const ownership of ownedDiscordGateways) {
