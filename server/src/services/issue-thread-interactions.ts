@@ -3773,7 +3773,7 @@ export function issueThreadInteractionService(
             const localImplicit = data.addresseeUserId === "local-board"
               && resolveDeploymentMode() === "local_trusted";
             // Use the normal board mutation policy, including viewer restrictions,
-            // and local/instance-admin eligibility.
+            // local/instance-admin eligibility.
             const decision = user || localImplicit ? await authorizationService(tx).decide({
               actor: {
                 type: "board",

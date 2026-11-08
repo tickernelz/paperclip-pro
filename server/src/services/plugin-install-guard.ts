@@ -1,10 +1,3 @@
-/**
- * @fileoverview Canonicalizes `localPath` install sources for
- * `POST /api/plugins/install`: absolute resolution plus symlink and `..`
- * normalization via `realpath`, validated to be a readable directory before
- * the loader sees it.
- */
-
 import { realpath, stat } from "node:fs/promises";
 import path from "node:path";
 
@@ -18,9 +11,7 @@ export type LocalPluginPathValidation =
  *
  * Resolves the request string to an absolute path, then to its real path —
  * collapsing `..` traversal segments and resolving every symlink — and
- * requires the result to be an existing directory. The loader must only ever see the
- * canonical form so that no alias of a path can reach a different decision
- * than the path itself.
+ * requires the result to be an existing directory.
  *
  * @param rawPath - The unsanitized `packageName` value from the request body
  */
