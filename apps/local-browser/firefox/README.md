@@ -30,7 +30,7 @@ npx web-ext sign --source-dir apps/local-browser/firefox --channel unlisted \
 
 The signing keys come from https://addons.mozilla.org/developers/addon/api/key/. The signed
 `.xpi` installs with a normal click in any Firefox. The manifest pins the id
-`local-browser@paperclip.app`, so a re-signed build replaces the previous one and keeps its
+`local-browser@wardmote`, so a re-signed build replaces the previous one and keeps its
 storage.
 
 The repository ships the signed artifact at `ui/public/downloads/local-browser-firefox.xpi`,
@@ -265,7 +265,7 @@ allowlist before a call is dispatched.
 ## Agent guards
 
 User switches stored under `lb.guards` and edited in the control center:
-`protectPaperclipTab` (never navigate the Wardmote tab), `protectFocusedTab` (never navigate
+`protectWardmoteTab` (never navigate the Wardmote tab), `protectFocusedTab` (never navigate
 the tab the user is looking at unless the agent opened it) and `networkBufferSize` (requests
 kept per tab, 50 to 20000, default 1000). The server receives them in `hello` and as `guards`
 events.

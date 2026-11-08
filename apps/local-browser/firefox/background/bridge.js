@@ -574,7 +574,7 @@
       .executeScript(tab.id, {
         code: [
           "(function(){",
-          "var el=document.querySelector('[data-paperclip-local-browser-pairing]');",
+          "var el=document.querySelector('[data-wardmote-local-browser-pairing]');",
           "if(!el)return null;",
           "return {origin:el.getAttribute('data-origin')||'',code:el.getAttribute('data-code')||''};",
           "})()"

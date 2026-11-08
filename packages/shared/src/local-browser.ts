@@ -90,7 +90,7 @@ export const localBrowserAccessSchema = z.object({
 export type LocalBrowserAccess = z.infer<typeof localBrowserAccessSchema>;
 
 export const localBrowserGuardsSchema = z.object({
-  protectPaperclipTab: z.boolean().default(LOCAL_BROWSER_GUARD_DEFAULTS.protectPaperclipTab),
+  protectWardmoteTab: z.boolean().default(LOCAL_BROWSER_GUARD_DEFAULTS.protectWardmoteTab),
   protectFocusedTab: z.boolean().default(LOCAL_BROWSER_GUARD_DEFAULTS.protectFocusedTab),
   networkBufferSize: z
     .number()

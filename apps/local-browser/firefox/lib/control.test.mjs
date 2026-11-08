@@ -43,7 +43,7 @@ test("status answers with the documented envelope and status object", async () =
   assert.equal(status.tabs[0].tabId, 12);
   assert.equal(status.access.siteAccess, "all");
   assert.deepEqual(status.access.missing, []);
-  assert.deepEqual(status.guards, { protectPaperclipTab: true, protectFocusedTab: true, networkBufferSize: 1000 });
+  assert.deepEqual(status.guards, { protectWardmoteTab: true, protectFocusedTab: true, networkBufferSize: 1000 });
   assert.equal(status.trustedInput.mode, "synthetic");
   assert.equal(status.trustedInput.port, 9222);
   assert.equal(status.trustedInput.reason, "not_running");

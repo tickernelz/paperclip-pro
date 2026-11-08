@@ -162,10 +162,10 @@
       max: range.max,
       toggles: [
         {
-          key: "protectPaperclipTab",
+          key: "protectWardmoteTab",
           label: "Keep agents away from the Wardmote tab",
           description: "Agents cannot navigate the tab where Wardmote itself is open.",
-          checked: source.protectPaperclipTab !== false
+          checked: source.protectWardmoteTab !== false
         },
         {
           key: "protectFocusedTab",

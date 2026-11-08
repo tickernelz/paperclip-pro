@@ -119,7 +119,7 @@
 
   async function assertNavigationAllowed(tab) {
     var guards = LB.guards.current();
-    if (guards.protectPaperclipTab !== false) {
+    if (guards.protectWardmoteTab !== false) {
       var own = await wardmoteOrigin();
       var current = tab && tab.url ? protocol.originOf(tab.url) : null;
       if (own && current && own === current) {

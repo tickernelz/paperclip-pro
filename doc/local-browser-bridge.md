@@ -207,7 +207,7 @@ The extension reports its permission state as `access` (`siteAccess`, `granted`,
 
 The control center also holds guards the user switches on the extension side, reported to Wardmote as `guards`:
 
-- `protectPaperclipTab` (default on): never navigate or reuse the Paperclip tab.
+- `protectWardmoteTab` (default on): never navigate or reuse the Wardmote tab.
 - `protectFocusedTab` (default on): never navigate the tab the user is looking at.
 - `networkBufferSize` (50 to 20000, default 1000): how many requests the continuous network capture keeps.
 

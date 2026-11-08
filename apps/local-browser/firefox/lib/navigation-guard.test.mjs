@@ -52,7 +52,7 @@ test("turning off the focused-tab guard lets the agent drive the tab the user is
 
 test("turning off the Wardmote guard lets the agent navigate the Wardmote tab", async () => {
   const harness = boot([{ id: 9, url: "https://other.test/", active: true }], false);
-  await harness.LB.guards.set({ protectPaperclipTab: false });
+  await harness.LB.guards.set({ protectWardmoteTab: false });
   const { ok } = await harness.call("local_browser_navigate", { tabId: 7, url: "https://elsewhere.test/" });
   assert.equal(ok, true);
   assert.equal(harness.tabs.get(7).url, "https://elsewhere.test/");
@@ -60,7 +60,7 @@ test("turning off the Wardmote guard lets the agent navigate the Wardmote tab", 
 
 test("the guard change made in another context reaches the background", async () => {
   const harness = boot([{ id: 8, url: "https://app.test/x", active: true }], false);
-  await harness.browser.storage.local.set({ "lb.guards": { protectPaperclipTab: true, protectFocusedTab: false, networkBufferSize: 1000 } });
+  await harness.browser.storage.local.set({ "lb.guards": { protectWardmoteTab: true, protectFocusedTab: false, networkBufferSize: 1000 } });
   const { ok } = await harness.call("local_browser_navigate", { tabId: 8, url: "https://elsewhere.test/" });
   assert.equal(ok, true);
 });

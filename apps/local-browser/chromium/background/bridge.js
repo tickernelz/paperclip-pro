@@ -483,7 +483,7 @@
       results = await chrome.scripting.executeScript({
         target: { tabId: tab.id },
         func: function () {
-          var element = document.querySelector("[data-paperclip-local-browser-pairing]");
+          var element = document.querySelector("[data-wardmote-local-browser-pairing]");
           if (!element) return null;
           return { origin: element.getAttribute("data-origin") || "", code: element.getAttribute("data-code") || "" };
         }

@@ -10,7 +10,7 @@ function setup(options = {}) {
 
 test("defaults come from the contract", async () => {
   const { LB } = setup();
-  assert.deepEqual({ ...(await LB.guards.get()) }, { protectPaperclipTab: true, protectFocusedTab: true, networkBufferSize: 1000 });
+  assert.deepEqual({ ...(await LB.guards.get()) }, { protectWardmoteTab: true, protectFocusedTab: true, networkBufferSize: 1000 });
   assert.deepEqual({ ...LB.guards.bounds() }, { min: 50, max: 20000 });
 });
 
@@ -18,15 +18,22 @@ test("set merges a patch, clamps the buffer to its bounds and persists under lb.
   const { LB, fake } = setup();
   const next = await LB.guards.set({ protectFocusedTab: false, networkBufferSize: 999999 });
   assert.equal(next.protectFocusedTab, false);
-  assert.equal(next.protectPaperclipTab, true);
+  assert.equal(next.protectWardmoteTab, true);
   assert.equal(next.networkBufferSize, 20000);
-  assert.deepEqual(fake.store["lb.guards"], { protectPaperclipTab: true, protectFocusedTab: false, networkBufferSize: 20000 });
+  assert.deepEqual(fake.store["lb.guards"], { protectWardmoteTab: true, protectFocusedTab: false, networkBufferSize: 20000 });
   assert.equal((await LB.guards.set({ networkBufferSize: 3 })).networkBufferSize, 50);
+});
+
+test("a guard switched off under the old key stays off and is stored under the new key", async () => {
+  const { LB, fake } = setup({ storage: { "lb.guards": { protectPaperclipTab: false, protectFocusedTab: true, networkBufferSize: 1000 } } });
+  assert.equal((await LB.guards.get()).protectWardmoteTab, false);
+  await LB.guards.set({ networkBufferSize: 400 });
+  assert.deepEqual(fake.store["lb.guards"], { protectWardmoteTab: false, protectFocusedTab: true, networkBufferSize: 400 });
 });
 
 test("junk values fall back to defaults", () => {
   const { LB } = setup();
-  assert.deepEqual({ ...LB.guards.normalize({ protectPaperclipTab: "no", networkBufferSize: "big" }) }, { protectPaperclipTab: true, protectFocusedTab: true, networkBufferSize: 1000 });
+  assert.deepEqual({ ...LB.guards.normalize({ protectWardmoteTab: "no", networkBufferSize: "big" }) }, { protectWardmoteTab: true, protectFocusedTab: true, networkBufferSize: 1000 });
 });
 
 test("onChange fires for local sets and for writes from another context", async () => {

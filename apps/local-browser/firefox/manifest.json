@@ -6,7 +6,7 @@
   "description": "Lets Wardmote drive your own Firefox tabs: snapshot, act, read, screenshot, network and trusted input. You choose every permission.",
   "browser_specific_settings": {
     "gecko": {
-      "id": "local-browser@paperclip.app",
+      "id": "local-browser@wardmote",
       "strict_min_version": "128.0"
     }
   },

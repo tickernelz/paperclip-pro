@@ -20,7 +20,7 @@ const connected = {
   allowedOrigins: ["https://a.test"],
   tabs: [{ tabId: 1 }, { tabId: 2 }],
   access: { siteAccess: "limited", granted: ["debugger", "storage", "alarms", "activeTab", "tabs"], missing: [], pending: [] },
-  guards: { protectPaperclipTab: true, protectFocusedTab: false, networkBufferSize: 2000 },
+  guards: { protectWardmoteTab: true, protectFocusedTab: false, networkBufferSize: 2000 },
   trustedInput: { mode: "cdp" },
 };
 
@@ -100,7 +100,7 @@ test("everything granted disables Allow all", () => {
 test("guards, trusted input and sections", () => {
   const guards = uiState.guards(connected.guards, { min: 50, max: 20000 });
   assert.equal(guards.networkBufferSize, 2000);
-  assert.deepEqual(plain(guards.toggles).map((toggle) => [toggle.key, toggle.checked]), [["protectPaperclipTab", true], ["protectFocusedTab", false]]);
+  assert.deepEqual(plain(guards.toggles).map((toggle) => [toggle.key, toggle.checked]), [["protectWardmoteTab", true], ["protectFocusedTab", false]]);
 
   assert.equal(uiState.section("#permissions"), "permissions");
   assert.equal(uiState.section("#welcome"), "welcome");

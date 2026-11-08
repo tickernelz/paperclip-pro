@@ -119,7 +119,7 @@ const connectedStatus = {
   tier: "full",
   allowedOrigins: [],
   tabs: [],
-  guards: { protectPaperclipTab: true, protectFocusedTab: true, networkBufferSize: 1000 },
+  guards: { protectWardmoteTab: true, protectFocusedTab: true, networkBufferSize: 1000 },
   trustedInput: { mode: "cdp" },
 };
 
@@ -259,7 +259,7 @@ test("control center saves guards with a patch", async () => {
   byId("guards-form").dispatch("submit");
   await flush();
   const set = sent.find((message) => message.op === "guards.set");
-  assert.deepEqual(JSON.parse(JSON.stringify(set.patch)), { protectPaperclipTab: true, protectFocusedTab: false, networkBufferSize: 5000 });
+  assert.deepEqual(JSON.parse(JSON.stringify(set.patch)), { protectWardmoteTab: true, protectFocusedTab: false, networkBufferSize: 5000 });
 });
 
 const firefoxInput = {

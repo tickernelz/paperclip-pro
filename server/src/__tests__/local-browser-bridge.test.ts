@@ -1623,7 +1623,7 @@ describe("local browser capability negotiation", () => {
 describe("local browser session state", () => {
   it("surfaces capabilities, access, guards and container tabs from hello and later events", async () => {
     const active = currentHarness();
-    const guards = { protectPaperclipTab: true, protectFocusedTab: false, networkBufferSize: 500 };
+    const guards = { protectWardmoteTab: true, protectFocusedTab: false, networkBufferSize: 500 };
     const paired = await pairExtension({
       capabilities: ["permissions.v1"],
       hello: {

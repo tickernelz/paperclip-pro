@@ -223,7 +223,7 @@
 
   async function assertNavigationAllowed(tab) {
     var guards = LB.guards.current();
-    if (guards.protectPaperclipTab !== false && (await isWardmoteTab(tab))) {
+    if (guards.protectWardmoteTab !== false && (await isWardmoteTab(tab))) {
       throw new ToolFailure(ERROR.navigationBlocked, "This tab belongs to Wardmote itself, so it is never navigated", GUARD_HINT);
     }
     if (agentTabs.has(tab.id)) return;

@@ -187,7 +187,7 @@ describe("local browser limits and frames", () => {
       access,
       guards: {},
     });
-    expect(hello).toMatchObject({ access, guards: { protectPaperclipTab: true, protectFocusedTab: true, networkBufferSize: 1000 } });
+    expect(hello).toMatchObject({ access, guards: { protectWardmoteTab: true, protectFocusedTab: true, networkBufferSize: 1000 } });
     const broken = localBrowserBridgeFrameSchema.parse({ type: "hello", protocol: 1, client: "chromium", clientVersion: "1", label: "x", profileName: null, tabs: [], access: { siteAccess: "nope" } });
     expect(broken).toMatchObject({ type: "hello" });
     expect((broken as { access?: unknown }).access).toBeUndefined();

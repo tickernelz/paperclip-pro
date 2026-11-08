@@ -75,7 +75,7 @@ shows a notification that opens the control center. Agents can also queue reques
 with `local_browser_permissions op:"request"`.
 
 Agent guards are the user's own switches, kept in `lb.guards` and edited in the control center:
-`protectPaperclipTab` (never navigate the Wardmote tab), `protectFocusedTab` (never navigate the
+`protectWardmoteTab` (never navigate the Wardmote tab), `protectFocusedTab` (never navigate the
 tab the user is looking at unless the agent opened it) and `networkBufferSize` (the continuous
 network ring, 50 to 20000 requests). Changes are sent to the server as `guards` events.
 
