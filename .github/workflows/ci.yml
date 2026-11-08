@@ -101,11 +101,15 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-workspace
-      - uses: mozilla-actions/sccache-action@fc920bf0ec8de6ee65d409111f7ec508035751ba # v0.0.11
+      - name: Runner Rust release cache
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6
+        with:
+          workspaces: packages/paperclip-runner/runner -> target
+          shared-key: runner-typecheck-v1
+          cache-workspace-crates: false
+          cache-bin: false
+          save-if: true
       - name: Typecheck workspaces whose build scripts skip TypeScript
-        env:
-          SCCACHE_GHA_ENABLED: "true"
-          RUSTC_WRAPPER: sccache
         run: pnpm run typecheck:build-gaps
 
   build:
@@ -123,11 +127,15 @@ jobs:
           save-store: "true"
       - name: Build Runner Evalbook viewer
         run: pnpm --filter @tickernelz/paperclip-pro-paperclip-runner build:issue-thread
-      - uses: mozilla-actions/sccache-action@fc920bf0ec8de6ee65d409111f7ec508035751ba # v0.0.11
+      - name: Runner Rust release cache
+        uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6
+        with:
+          workspaces: packages/paperclip-runner/runner -> target
+          shared-key: runner-build-v1
+          cache-workspace-crates: false
+          cache-bin: false
+          save-if: true
       - name: Build
-        env:
-          SCCACHE_GHA_ENABLED: "true"
-          RUSTC_WRAPPER: sccache
         run: pnpm build
 
   extensions:
