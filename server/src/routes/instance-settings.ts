@@ -12,7 +12,6 @@ import { conflict, forbidden } from "../errors.js";
 import {
   cloudTenantPrimaryCompanyId,
   getCloudStackContext,
-  isCloudManagedInstance,
 } from "../services/cloud-instance.js";
 import { getHiddenSettings } from "../services/settings-visibility.js";
 import { readIdleSleepSafety } from "../services/idle-sleep-safety.js";
