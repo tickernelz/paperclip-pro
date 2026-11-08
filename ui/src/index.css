@@ -1,9 +1,18 @@
-@layer vendor, theme, base, utilities, components, layout, state;
+@layer preflight, vendor, theme, base, utilities, components, layout, state;
 
 @import "@mdxeditor/editor/style.css" layer(vendor);
+@import "@xterm/xterm/css/xterm.css" layer(vendor);
 @import "./motion-tokens.css";
-@import "tailwindcss";
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(preflight);
+@import "tailwindcss/utilities.css" layer(utilities);
 @plugin "@tailwindcss/typography";
+
+@layer preflight {
+  * {
+    @apply border-line outline-focus;
+  }
+}
 
 @font-face {
   font-family: "InterVariable";
@@ -646,9 +655,6 @@ html[data-keyboard-open="true"] #main-content:has([data-testid="task-chat-compos
     transition: background-color 100000s ease-in-out 0s;
   }
 
-  * {
-    @apply border-line outline-focus;
-  }
   html {
     height: 100%;
     -webkit-tap-highlight-color: color-mix(in oklab, var(--ink) 20%, transparent);
@@ -2215,6 +2221,11 @@ a.paperclip-mention-chip[data-mention-kind="agent"]::before {
   display: list-item;
   margin: 0.3em 0;
   line-height: inherit;
+}
+
+.paperclip-mdxeditor-content li[class*="_listItemChecked_"],
+.paperclip-mdxeditor-content li[class*="_listItemUnchecked_"] {
+  margin-inline-start: -1rem;
 }
 
 .paperclip-mdxeditor-content li::marker {
