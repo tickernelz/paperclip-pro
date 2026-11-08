@@ -254,7 +254,10 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/setup-workspace
       - name: Run grouped test suites
+        env:
+          PAPERCLIP_SERVER_TEST_WORKERS: "4"
         run: |
+          echo "runner: $(nproc) CPU, $(free -g | awk '/^Mem:/ {print $2}') GiB RAM"
           if [ -n "${{ matrix.shard_count }}" ]; then
             pnpm test:run:general -- --group '${{ matrix.group }}' \
               --shard-index ${{ matrix.shard_index }} --shard-count ${{ matrix.shard_count }}
@@ -278,6 +281,8 @@ jobs:
           persist-credentials: false
       - uses: ./.github/actions/setup-workspace
       - name: Run serialized server test shard
+        env:
+          PAPERCLIP_SERVER_TEST_WORKERS: "4"
         run: pnpm test:run:serialized -- --shard-index ${{ matrix.shard_index }} --shard-count 4
 
   e2e:
