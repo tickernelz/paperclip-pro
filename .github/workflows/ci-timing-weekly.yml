@@ -1,0 +1,25 @@
+name: CI timing weekly
+
+on:
+  schedule:
+    - cron: "0 1 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+          sparse-checkout: scripts/ci-timing-report.mjs
+          sparse-checkout-cone-mode: false
+      - name: Summarise the last 50 CI runs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/ci-timing-report.mjs --limit 50 --logs 2 --top 25 >> "$GITHUB_STEP_SUMMARY"

@@ -102,7 +102,6 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           NODE_AUTH_TOKEN: ${{ steps.params.outputs.auth == 'token' && secrets.NPM_TOKEN || '' }}
-          NPM_PROMOTE_TOKEN: ${{ steps.params.outputs.auth == 'oidc' && secrets.NPM_TOKEN || '' }}
           RELEASE_VERSION: ${{ steps.params.outputs.version }}
           RELEASE_DRY_RUN: ${{ steps.params.outputs.dry_run }}
         run: |
