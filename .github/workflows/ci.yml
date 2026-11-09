@@ -321,7 +321,7 @@ jobs:
         run: pnpm test:run:serialized -- --shard-index ${{ matrix.shard_index }} --shard-count 3
 
   e2e:
-    name: E2E (${{ matrix.shard_index }}/4)
+    name: E2E (${{ matrix.shard_index }}/5)
     needs: scope
     if: needs.scope.outputs.docs_only != 'true'
     runs-on: ubuntu-latest
@@ -329,7 +329,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        shard_index: [0, 1, 2, 3]
+        shard_index: [0, 1, 2, 3, 4]
     steps:
       - uses: actions/checkout@v7
         with:
@@ -359,7 +359,7 @@ jobs:
           PAPERCLIP_E2E_SKIP_LLM: "true"
           PAPERCLIP_PLAYWRIGHT_CHANNEL: "chrome"
         run: |
-          specs="$(node ./scripts/e2e-shard.mjs --shard-index ${{ matrix.shard_index }} --shard-count 4)"
+          specs="$(node ./scripts/e2e-shard.mjs --shard-index ${{ matrix.shard_index }} --shard-count 5)"
           echo "shard ${{ matrix.shard_index }} specs: $specs"
           # shellcheck disable=SC2086
           pnpm run test:e2e $specs
