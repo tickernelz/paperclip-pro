@@ -35,7 +35,6 @@ describe("resolveBundledPluginInstalls", () => {
     expect(resolveBundledPluginInstalls(["createos"], {
       catalogRoot: CATALOG_ROOT,
       env: {},
-      enforceCatalogRoot: true,
     })).toEqual([{
       key: "createos",
       pluginKey: "paperclip.createos-sandbox-provider",
@@ -47,7 +46,6 @@ describe("resolveBundledPluginInstalls", () => {
     const resolved = resolveBundledPluginInstalls(["kubernetes", "daytona"], {
       catalogRoot: CATALOG_ROOT,
       env: {},
-      enforceCatalogRoot: true,
     });
     expect(resolved).toEqual([
       {
@@ -68,7 +66,6 @@ describe("resolveBundledPluginInstalls", () => {
       resolveBundledPluginInstalls(["kubernetes", "not-a-bundled-plugin"], {
         catalogRoot: CATALOG_ROOT,
         env: {},
-        enforceCatalogRoot: true,
       }),
     ).toThrow(/"not-a-bundled-plugin" is not in the bundled catalog.*refusing to start/);
   });
@@ -78,7 +75,6 @@ describe("resolveBundledPluginInstalls", () => {
       resolveBundledPluginInstalls(["nope"], {
         catalogRoot: CATALOG_ROOT,
         env: {},
-        enforceCatalogRoot: true,
       }),
     ).toThrow(new RegExp(BUNDLED_PLUGIN_CATALOG.map((entry) => entry.key).join(", ")));
   });
@@ -88,80 +84,14 @@ describe("resolveBundledPluginInstalls", () => {
       resolveBundledPluginInstalls([], {
         catalogRoot: CATALOG_ROOT,
         env: {},
-        enforceCatalogRoot: true,
       }),
     ).toEqual([]);
-  });
-
-  it("throws when an env override escapes the catalog root under enforcement", () => {
-    expect(() =>
-      resolveBundledPluginInstalls(["kubernetes"], {
-        catalogRoot: CATALOG_ROOT,
-        env: { PAPERCLIP_KUBERNETES_PLUGIN_PATH: "/srv/evil/plugin" },
-        enforceCatalogRoot: true,
-      }),
-    ).toThrow(/outside the bundled catalog root.*refusing to start/);
-  });
-
-  it("collapses `..` segments in an override before the containment check", () => {
-    expect(() =>
-      resolveBundledPluginInstalls(["kubernetes"], {
-        catalogRoot: CATALOG_ROOT,
-        env: {
-          PAPERCLIP_KUBERNETES_PLUGIN_PATH: path.join(
-            CATALOG_ROOT,
-            "sandbox-providers/../../../../etc/kubernetes",
-          ),
-        },
-        enforceCatalogRoot: true,
-      }),
-    ).toThrow(/outside the bundled catalog root/);
-  });
-
-  it("throws when a symlink inside the root points outside it under enforcement", () => {
-    const outside = makeTempDir("bundled-outside-");
-    const root = makeTempDir("bundled-root-");
-    mkdirSync(path.join(root, "sandbox-providers"), { recursive: true });
-    symlinkSync(outside, path.join(root, "sandbox-providers", "kubernetes"));
-    expect(() =>
-      resolveBundledPluginInstalls(["kubernetes"], {
-        catalogRoot: root,
-        env: {},
-        enforceCatalogRoot: true,
-      }),
-    ).toThrow(/outside the bundled catalog root/);
-  });
-
-  it("honors the legacy kubernetes path override without enforcement (self-hosted)", () => {
-    const resolved = resolveBundledPluginInstalls(["kubernetes"], {
-      catalogRoot: CATALOG_ROOT,
-      env: { PAPERCLIP_KUBERNETES_PLUGIN_PATH: "/somewhere/else/kubernetes" },
-      enforceCatalogRoot: false,
-    });
-    expect(resolved).toEqual([
-      {
-        key: "kubernetes",
-        pluginKey: "paperclip.kubernetes-sandbox-provider",
-        localPath: "/somewhere/else/kubernetes",
-      },
-    ]);
-  });
-
-  it("honors an env override that stays inside the catalog root under enforcement", () => {
-    const inside = path.join(CATALOG_ROOT, "sandbox-providers", "kubernetes");
-    const resolved = resolveBundledPluginInstalls(["kubernetes"], {
-      catalogRoot: CATALOG_ROOT,
-      env: { PAPERCLIP_KUBERNETES_PLUGIN_PATH: inside },
-      enforceCatalogRoot: true,
-    });
-    expect(resolved[0]!.localPath).toBe(inside);
   });
 
   it("dedupes repeated keys", () => {
     const resolved = resolveBundledPluginInstalls(["kubernetes", "kubernetes"], {
       catalogRoot: CATALOG_ROOT,
       env: {},
-      enforceCatalogRoot: true,
     });
     expect(resolved).toHaveLength(1);
   });
@@ -171,7 +101,6 @@ describe("resolveBundledPluginInstalls", () => {
     const [entry] = resolveBundledPluginInstalls(SELF_HOSTED_AUTO_INSTALL_KEYS, {
       catalogRoot: resolveBundledCatalogRoot({}),
       env: {},
-      enforceCatalogRoot: false,
     });
     // Exactly the pre-refactor default path.
     expect(entry).toEqual({
@@ -186,7 +115,6 @@ describe("resolveBundledPluginInstalls", () => {
     const resolved = resolveBundledPluginInstalls(keys, {
       catalogRoot: DEFAULT_BUNDLED_CATALOG_ROOT,
       env: {},
-      enforceCatalogRoot: true,
     });
     expect(resolved).toHaveLength(BUNDLED_PLUGIN_CATALOG.length);
   });
@@ -294,7 +222,7 @@ const DAYTONA: ResolvedBundledPlugin = {
 describe("ensureBundledPlugins", () => {
   it("installs and loads a missing bundled plugin", async () => {
     const { deps, installPlugin } = makeDeps();
-    await ensureBundledPlugins([K8S], deps, { reinstallUninstalled: true });
+    await ensureBundledPlugins([K8S], deps);
     expect(installPlugin).toHaveBeenCalledWith({ localPath: K8S.localPath });
     expect(deps.lifecycle.load).toHaveBeenCalledWith(
       "id-paperclip.kubernetes-sandbox-provider",
@@ -308,7 +236,7 @@ describe("ensureBundledPlugins", () => {
           [K8S.pluginKey]: { id: "row-1", pluginKey: K8S.pluginKey, status },
         },
       });
-      await ensureBundledPlugins([K8S], deps, { reinstallUninstalled: true });
+      await ensureBundledPlugins([K8S], deps);
       expect(installPlugin).not.toHaveBeenCalled();
       expect(deps.lifecycle.load).not.toHaveBeenCalled();
       expect(deps.registry.updateStatus).not.toHaveBeenCalled();
@@ -326,7 +254,7 @@ describe("ensureBundledPlugins", () => {
         },
       },
     });
-    await ensureBundledPlugins([K8S], deps, { reinstallUninstalled: false });
+    await ensureBundledPlugins([K8S], deps);
     expect(installPlugin).not.toHaveBeenCalled();
     // No lifecycle call: the row goes straight back to `ready` with its error
     // cleared, and the startup loadAll() does the activation (and emits the
@@ -354,7 +282,7 @@ describe("ensureBundledPlugins", () => {
     });
     updateStatus.mockRejectedValueOnce(new Error("db down"));
     await expect(
-      ensureBundledPlugins([K8S, DAYTONA], deps, { reinstallUninstalled: true }),
+      ensureBundledPlugins([K8S, DAYTONA], deps),
     ).resolves.toBeUndefined();
     expect(deps.logger.error).toHaveBeenCalledWith(
       expect.objectContaining({ pluginKey: K8S.pluginKey }),
@@ -376,7 +304,7 @@ describe("ensureBundledPlugins", () => {
       },
       bundleVersionByKey: { [DAYTONA.pluginKey]: "0.1.2" },
     });
-    await ensureBundledPlugins([DAYTONA], deps, { reinstallUninstalled: false });
+    await ensureBundledPlugins([DAYTONA], deps);
     // The plugin stays present, so it is never re-installed.
     expect(installPlugin).not.toHaveBeenCalled();
     // The persisted manifest is refreshed to the shipped bundle version, so a
@@ -399,7 +327,7 @@ describe("ensureBundledPlugins", () => {
       },
       bundleVersionByKey: { [DAYTONA.pluginKey]: "0.1.2" },
     });
-    await ensureBundledPlugins([DAYTONA], deps, { reinstallUninstalled: false });
+    await ensureBundledPlugins([DAYTONA], deps);
     expect(update).not.toHaveBeenCalled();
   });
 
@@ -414,7 +342,7 @@ describe("ensureBundledPlugins", () => {
       });
       const manifest = makeManifest("acme.widget", "0.1.0");
       loadManifest.mockResolvedValue(manifest);
-      await ensureBundledPlugins([{ ...distribution, distribution }], deps, { reinstallUninstalled: true });
+      await ensureBundledPlugins([{ ...distribution, distribution }], deps);
       // Same row: retain config/state and operator-disabled status; only error
       // gets the existing one-shot boot retry. No reinstall/capability reset.
       expect(update).toHaveBeenCalledExactlyOnceWith("row-widget", { packagePath: localPath, version: "0.1.0", manifest });
@@ -432,7 +360,7 @@ describe("ensureBundledPlugins", () => {
       rows: { "acme.widget": { id: "row-widget", pluginKey: "acme.widget", status: "error", packagePath: "/old/widget" } },
     });
     loadManifest.mockRejectedValue(new Error("Distribution manifest entrypoints do not match the verified package"));
-    await ensureBundledPlugins([{ ...distribution, distribution }], deps, { reinstallUninstalled: true });
+    await ensureBundledPlugins([{ ...distribution, distribution }], deps);
     expect(update).not.toHaveBeenCalled();
     expect(updateStatus).not.toHaveBeenCalled();
     expect(deps.logger.error).toHaveBeenCalled();
@@ -447,7 +375,7 @@ describe("ensureBundledPlugins", () => {
     });
     const replacement = { ...oldManifest, capabilities: ["issues.read" as const] };
     loadManifest.mockResolvedValue(replacement);
-    await ensureBundledPlugins([{ ...distribution, distribution }], deps, { reinstallUninstalled: true });
+    await ensureBundledPlugins([{ ...distribution, distribution }], deps);
     expect(update).toHaveBeenCalledExactlyOnceWith("row-widget", { version: "0.1.0", manifest: replacement, status: "upgrade_pending" });
     expect(updateStatus).not.toHaveBeenCalled();
     expect(installPlugin).not.toHaveBeenCalled();
@@ -455,7 +383,7 @@ describe("ensureBundledPlugins", () => {
 
     // A later boot must leave the approval gate in place.
     vi.mocked(deps.registry.getByKey).mockResolvedValue({ id: "row-widget", pluginKey: "acme.widget", status: "upgrade_pending", version: "0.1.0", packagePath: localPath, manifestJson: replacement });
-    await ensureBundledPlugins([{ ...distribution, distribution }], deps, { reinstallUninstalled: true });
+    await ensureBundledPlugins([{ ...distribution, distribution }], deps);
     expect(update).toHaveBeenCalledTimes(1);
     expect(updateStatus).not.toHaveBeenCalled();
   });
@@ -467,7 +395,7 @@ describe("ensureBundledPlugins", () => {
     const manifest = makeManifest("acme.widget", "0.1.0");
     manifest.ui = { slots: [{ type: "appShellOverlay", id: "overlay", displayName: "Overlay", exportName: "Overlay" }] };
     loadManifest.mockResolvedValue(manifest);
-    await ensureBundledPlugins([{ ...distribution, distribution }], deps, { reinstallUninstalled: true });
+    await ensureBundledPlugins([{ ...distribution, distribution }], deps);
     expect(update).not.toHaveBeenCalled();
     expect(deps.logger.error).toHaveBeenCalled();
   });
@@ -477,7 +405,7 @@ describe("ensureBundledPlugins", () => {
     const distribution = { key: "widget", pluginKey: "acme.widget", version: "0.1.0", directory: "widget", digest: `sha256:${"a".repeat(64)}`, localPath, entrypoints: { worker: "dist/worker.js" } };
     const { deps, loadManifest, update, updateStatus, installPlugin } = makeDeps({ rows: { "acme.widget": { id: "row-widget", pluginKey: "acme.widget", status: "uninstalled" } } });
     loadManifest.mockResolvedValue({ ...makeManifest("acme.widget", "0.1.0"), capabilities: ["issues.read"] });
-    await ensureBundledPlugins([{ ...distribution, distribution }], deps, { reinstallUninstalled: false });
+    await ensureBundledPlugins([{ ...distribution, distribution }], deps);
     expect(update).not.toHaveBeenCalled();
     expect(updateStatus).not.toHaveBeenCalled();
     expect(installPlugin).not.toHaveBeenCalled();
@@ -492,7 +420,7 @@ describe("ensureBundledPlugins", () => {
     // was approved, or that the plugin was enabled before the pending upgrade.
     const rollback = { ...makeManifest("acme.widget", "0.1.0"), capabilities: ["issues.read" as const] };
     loadManifest.mockResolvedValue(rollback);
-    await ensureBundledPlugins([{ ...distribution, distribution }], deps, { reinstallUninstalled: true });
+    await ensureBundledPlugins([{ ...distribution, distribution }], deps);
     expect(update).toHaveBeenCalledExactlyOnceWith("row-widget", { version: "0.1.0", manifest: rollback });
     expect(updateStatus).not.toHaveBeenCalled();
     expect(deps.lifecycle.load).not.toHaveBeenCalled();
@@ -505,7 +433,7 @@ describe("ensureBundledPlugins", () => {
     const reordered = { entrypoints: { ui: "dist/ui", worker: "dist/worker.js" }, capabilities: [], version: "0.1.0", apiVersion: 1, id: "acme.widget" };
     const { deps, loadManifest, update } = makeDeps({ rows: { "acme.widget": { id: "row-widget", pluginKey: "acme.widget", status: "ready", packagePath: localPath, manifestJson: reordered } } });
     loadManifest.mockResolvedValue(manifest);
-    await ensureBundledPlugins([{ ...distribution, distribution }], deps, { reinstallUninstalled: true });
+    await ensureBundledPlugins([{ ...distribution, distribution }], deps);
     expect(update).not.toHaveBeenCalled();
   });
 
@@ -523,34 +451,24 @@ describe("ensureBundledPlugins", () => {
     });
     (update as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("db down"));
     await expect(
-      ensureBundledPlugins([DAYTONA], deps, { reinstallUninstalled: false }),
+      ensureBundledPlugins([DAYTONA], deps),
     ).resolves.toBeUndefined();
     expect(deps.logger.error).toHaveBeenCalled();
   });
 
-  it("reinstalls a soft-uninstalled plugin in managed mode", async () => {
+  it("leaves a soft-uninstalled plugin alone", async () => {
     const { deps, installPlugin } = makeDeps({
       rows: {
         [K8S.pluginKey]: { id: "row-1", pluginKey: K8S.pluginKey, status: "uninstalled" },
       },
     });
-    await ensureBundledPlugins([K8S], deps, { reinstallUninstalled: true });
-    expect(installPlugin).toHaveBeenCalledOnce();
-  });
-
-  it("leaves a soft-uninstalled plugin alone in self-hosted mode (pre-refactor behavior)", async () => {
-    const { deps, installPlugin } = makeDeps({
-      rows: {
-        [K8S.pluginKey]: { id: "row-1", pluginKey: K8S.pluginKey, status: "uninstalled" },
-      },
-    });
-    await ensureBundledPlugins([K8S], deps, { reinstallUninstalled: false });
+    await ensureBundledPlugins([K8S], deps);
     expect(installPlugin).not.toHaveBeenCalled();
   });
 
   it("skips silently when the bundle is absent on disk", async () => {
     const { deps, installPlugin } = makeDeps({ bundleManifestExists: () => false });
-    await ensureBundledPlugins([K8S], deps, { reinstallUninstalled: true });
+    await ensureBundledPlugins([K8S], deps);
     expect(installPlugin).not.toHaveBeenCalled();
     expect(deps.logger.error).not.toHaveBeenCalled();
   });
@@ -559,7 +477,7 @@ describe("ensureBundledPlugins", () => {
     const { deps, installPlugin } = makeDeps();
     installPlugin.mockRejectedValueOnce(new Error("disk exploded"));
     await expect(
-      ensureBundledPlugins([K8S, DAYTONA], deps, { reinstallUninstalled: true }),
+      ensureBundledPlugins([K8S, DAYTONA], deps),
     ).resolves.toBeUndefined();
     expect(deps.logger.error).toHaveBeenCalledWith(
       expect.objectContaining({ pluginKey: K8S.pluginKey }),
@@ -577,7 +495,7 @@ describe("ensureBundledPlugins", () => {
       },
     });
     // Daytona was removed from the autoInstall list; only kubernetes remains.
-    await ensureBundledPlugins([K8S], deps, { reinstallUninstalled: true });
+    await ensureBundledPlugins([K8S], deps);
     expect(installPlugin).toHaveBeenCalledOnce();
     expect(installPlugin).toHaveBeenCalledWith({ localPath: K8S.localPath });
     // No uninstall/unload calls exist on the provisioner deps at all; daytona
@@ -588,7 +506,7 @@ describe("ensureBundledPlugins", () => {
   it("logs an error and does not load when install returns no manifest", async () => {
     const { deps, installPlugin } = makeDeps();
     installPlugin.mockResolvedValueOnce({ manifest: null });
-    await ensureBundledPlugins([K8S], deps, { reinstallUninstalled: true });
+    await ensureBundledPlugins([K8S], deps);
     expect(deps.logger.error).toHaveBeenCalledWith(
       expect.objectContaining({ pluginKey: K8S.pluginKey }),
       expect.stringContaining("manifest is missing"),
@@ -599,7 +517,7 @@ describe("ensureBundledPlugins", () => {
   it("logs an error when the installed plugin never appears in the registry", async () => {
     const { deps, installPlugin } = makeDeps();
     (deps.registry.getByKey as ReturnType<typeof vi.fn>).mockResolvedValue(null);
-    await ensureBundledPlugins([K8S], deps, { reinstallUninstalled: true });
+    await ensureBundledPlugins([K8S], deps);
     expect(installPlugin).toHaveBeenCalledOnce();
     expect(deps.logger.error).toHaveBeenCalledWith(
       expect.objectContaining({ pluginKey: K8S.pluginKey }),
@@ -613,11 +531,11 @@ describe("ensureBundledPlugins", () => {
     const { deps, installPlugin } = makeDeps();
     delete deps.bundleManifestExists;
     const install = { ...K8S, localPath: bundleDir };
-    await ensureBundledPlugins([install], deps, { reinstallUninstalled: true });
+    await ensureBundledPlugins([install], deps);
     expect(installPlugin).not.toHaveBeenCalled();
     mkdirSync(path.join(bundleDir, "dist"), { recursive: true });
     writeFileSync(path.join(bundleDir, "dist", "manifest.js"), "module.exports = {}\n");
-    await ensureBundledPlugins([install], deps, { reinstallUninstalled: true });
+    await ensureBundledPlugins([install], deps);
     expect(installPlugin).toHaveBeenCalledOnce();
   });
 });

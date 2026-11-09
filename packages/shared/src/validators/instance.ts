@@ -250,18 +250,6 @@ export const patchInstanceExperimentalSettingsSchema = z
   .partial()
   .strip();
 
-export const managedSettingMetadataSchema = z.object({
-  managed: z.literal(true),
-  managedBy: z.literal("paperclip-cloud"),
-}).strict();
-
-// Response shape of the experimental settings endpoints: on cloud-managed
-// instances every overlaid key is listed in `managedKeys`; self-hosted
-// responses omit the field entirely.
-export const instanceExperimentalSettingsWithManagedSchema = instanceExperimentalSettingsSchema.extend({
-  managedKeys: z.record(z.string(), managedSettingMetadataSchema).optional(),
-}).strict();
-
 export const patchInstanceSettingsSchema = z.object({
   defaultEnvironmentId: z.string().guid().nullable().optional(),
 }).strict();
@@ -296,7 +284,7 @@ export const instanceSettingsSchema = z.object({
   id: z.string().guid(),
   defaultEnvironmentId: z.string().guid().nullable(),
   general: instanceGeneralSettingsSchema,
-  experimental: instanceExperimentalSettingsWithManagedSchema,
+  experimental: instanceExperimentalSettingsSchema,
   createdAt: z.union([z.date(), z.string().datetime()]),
   updatedAt: z.union([z.date(), z.string().datetime()]),
 }).strict();

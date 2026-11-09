@@ -47,12 +47,4 @@ describe("instanceSettingsService.seedNewInstallFeatureDefaults", () => {
     expect(featuresOn(await service.getExperimental())).toEqual([]);
   });
 
-  it("keeps a cloud-managed install on its catalog defaults", async () => {
-    const service = instanceSettingsService(db, {
-      runtimeEnv: {
-        PAPERCLIP_MANAGED_CONFIG: JSON.stringify({ v: 1, mode: "cloud", catalogVersion: "test", features: {}, plugins: { autoInstall: [] } }),
-      },
-    });
-    expect(await service.seedNewInstallFeatureDefaults()).toBe(false);
-  });
 });

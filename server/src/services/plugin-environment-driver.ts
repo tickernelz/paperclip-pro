@@ -74,12 +74,6 @@ export const TEMPLATE_DELETE_WORKER_METHODS = [
   "environmentDeleteTemplate",
 ] as const;
 
-export interface ReadyPluginWorkerRecovery {
-  pluginKeys: readonly string[];
-  startWorker(plugin: { id: string; pluginKey: string }): Promise<boolean>;
-  timeoutMs?: number;
-}
-
 export interface ReadyPluginEnvironmentDriver {
   pluginId: string;
   pluginKey: string;
@@ -216,41 +210,11 @@ export async function resolvePluginSandboxProviderDriverById(input: {
 export async function listReadyPluginEnvironmentDrivers(input: {
   db: Db;
   workerManager?: PluginWorkerManager;
-  recoverMissingWorker?: ReadyPluginWorkerRecovery;
 }) {
   if (!input.workerManager) return [];
   const pluginRegistry = pluginRegistryService(input.db);
   const plugins = await pluginRegistry.list();
-  const recoverablePluginKeys = new Set(input.recoverMissingWorker?.pluginKeys ?? []);
   const readyPlugins = plugins.filter((plugin) => plugin.status === "ready");
-  const recoveryAttempts: Promise<boolean>[] = [];
-
-  for (const plugin of readyPlugins) {
-    const hasSandboxProviderDriver = plugin.manifestJson.environmentDrivers?.some(
-      (driver) => driver.kind === "sandbox_provider",
-    ) ?? false;
-    const canRecover =
-      hasSandboxProviderDriver
-      && !input.workerManager.isRunning(plugin.id)
-      && recoverablePluginKeys.has(plugin.pluginKey)
-      && !input.workerManager.getWorker(plugin.id);
-    if (!canRecover || !input.recoverMissingWorker) continue;
-    const timeoutMs =
-      input.recoverMissingWorker.timeoutMs ?? DEFAULT_READY_PLUGIN_WORKER_RECOVERY_TIMEOUT_MS;
-    recoveryAttempts.push(resolveWithTimeout(
-      input.recoverMissingWorker.startWorker({
-        id: plugin.id,
-        pluginKey: plugin.pluginKey,
-      }).catch(() => false),
-      timeoutMs,
-      false,
-    ));
-  }
-
-  if (recoveryAttempts.length > 0) {
-    await Promise.all(recoveryAttempts);
-  }
-
   const rows: ReadyPluginEnvironmentDriver[] = [];
   for (const plugin of readyPlugins) {
     if (!input.workerManager.isRunning(plugin.id)) {

@@ -161,14 +161,6 @@ describe("InstanceFeatures", () => {
     expect(container.querySelectorAll('button[role="switch"]')).toHaveLength(1);
   });
 
-  it("locks a key managed by the cloud harness", async () => {
-    api.getExperimental.mockResolvedValue(
-      settings(PRODUCTION_ON, { managedKeys: { enableCases: { managed: true, managedBy: "paperclip-cloud" } } }),
-    );
-    await render(<InstanceFeatures />);
-    expect(toggle("Cases").disabled).toBe(true);
-    expect(container.textContent).toContain("Managed by Paperclip Cloud");
-  });
 });
 
 describe("InstanceAdvanced", () => {

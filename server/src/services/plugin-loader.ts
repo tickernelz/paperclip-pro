@@ -117,12 +117,6 @@ const K8S_IN_CLUSTER_ENV_PASSTHROUGH = [
 ];
 
 /**
- * Each first-party sandbox provider's documented credential fallback env
- * var. Environment rows may omit `config.apiKey` (managed/platform-
- * provisioned rows always do — see `managed-environments.ts`), in which
- * case the provider reads its documented process env var. That fallback
- * executes inside the plugin worker, whose environment is scrubbed, so
- * the deployment-level var must be forwarded explicitly.
  *
  * Keyed by the installed npm package name and cross-checked against the
  * manifest's declared driver key — but name and manifest are both

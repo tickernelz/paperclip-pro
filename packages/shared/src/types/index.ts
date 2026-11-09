@@ -115,12 +115,9 @@ export type {
 export type {
   InstanceExecutionMode,
   InstanceExperimentalSettings,
-  InstanceExperimentalSettingsWithManaged,
   InstanceGeneralSettings,
   InstanceMessageDelivery,
   InstanceSettings,
-  ManagedExperimentalFeatureKey,
-  ManagedSettingMetadata,
   BackupRetentionPolicy,
   SpeechToTextSettings,
   AttachmentRetentionSettings,
@@ -167,7 +164,6 @@ export {
   ATTACHMENT_CLOSED_TASK_AFTER_DAYS_MAX,
   DEFAULT_ATTACHMENT_RETENTION,
   DEFAULT_LOCAL_RUN_LIMITS_SETTINGS,
-  PAPERCLIP_CLOUD_MANAGED_BY,
 } from "./instance.js";
 export {
   TRUST_PRESETS,

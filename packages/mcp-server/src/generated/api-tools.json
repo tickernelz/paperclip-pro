@@ -7388,7 +7388,6 @@
     },
     "guards": [
       "assertCanAccessInstanceEnvironments",
-      "assertNoClientPlatformProvisionedMarkers",
       "getActorInfo"
     ],
     "permissions": [],
@@ -14242,7 +14241,6 @@
     },
     "guards": [
       "assertCanAccessInstanceEnvironments",
-      "assertPlatformProvisionedEnvironmentWritable",
       "getActorInfo"
     ],
     "permissions": [],
@@ -47754,8 +47752,6 @@
     },
     "guards": [
       "assertCanAccessInstanceEnvironments",
-      "assertNoClientPlatformProvisionedMarkers",
-      "assertPlatformProvisionedEnvironmentWritable",
       "getActorInfo"
     ],
     "permissions": [],

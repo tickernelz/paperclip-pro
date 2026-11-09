@@ -404,97 +404,6 @@ export function createChatReconciliationCoordinator(input: {
   };
 }
 
-export function createManagedBundledPluginWorkerRecovery(input: {
-  managedBundledPluginKeys: readonly string[];
-  workerManager: Pick<
-    PluginWorkerManager,
-    "getWorker" | "isRunning" | "stopWorker"
-  >;
-  getLoader: () => Pick<PluginLoader, "loadSingle"> | null;
-}): (plugin: { id: string; pluginKey: string }) => Promise<boolean> {
-  const recoverablePluginKeys = new Set(input.managedBundledPluginKeys);
-  const inFlightStarts = new Map<string, Promise<boolean>>();
-
-  // A failed attempt can leave behind the dead handle it registered (e.g. the
-  // worker process died during initialize, which kills the process without
-  // scheduling a restart). No pre-existing handle survives to a recovery
-  // attempt — recovery only starts when getWorker() was empty — so discarding
-  // the dead handle lets a later capability request retry instead of being
-  // blocked by the handle-presence gate until the process restarts. Handles
-  // in starting/running/backoff states belong to the worker manager's own
-  // lifecycle and are left alone.
-  const discardDeadRecoveryHandle = async (plugin: {
-    id: string;
-    pluginKey: string;
-  }) => {
-    const handle = input.workerManager.getWorker(plugin.id);
-    if (!handle || (handle.status !== "crashed" && handle.status !== "stopped"))
-      return;
-    try {
-      await input.workerManager.stopWorker(plugin.id);
-    } catch (err) {
-      logger.warn(
-        {
-          pluginId: plugin.id,
-          pluginKey: plugin.pluginKey,
-          err: err instanceof Error ? err.message : String(err),
-        },
-        "failed to discard dead plugin worker handle after recovery failure",
-      );
-    }
-  };
-
-  return async (plugin) => {
-    if (!recoverablePluginKeys.has(plugin.pluginKey)) return false;
-
-    const inFlight = inFlightStarts.get(plugin.id);
-    if (inFlight) return inFlight;
-
-    const startPromise = (async () => {
-      if (input.workerManager.getWorker(plugin.id)) {
-        return input.workerManager.isRunning(plugin.id);
-      }
-
-      const loader = input.getLoader();
-      if (!loader) return false;
-
-      try {
-        const result = await loader.loadSingle(plugin.id, {
-          markErrorOnFailure: false,
-        });
-        if (
-          result.success === true ||
-          input.workerManager.isRunning(plugin.id)
-        ) {
-          return true;
-        }
-        await discardDeadRecoveryHandle(plugin);
-        return false;
-      } catch (err) {
-        logger.warn(
-          {
-            pluginId: plugin.id,
-            pluginKey: plugin.pluginKey,
-            err: err instanceof Error ? err.message : String(err),
-          },
-          "managed bundled plugin lazy worker recovery failed",
-        );
-        await discardDeadRecoveryHandle(plugin);
-        throw err;
-      }
-    })();
-
-    inFlightStarts.set(plugin.id, startPromise);
-    try {
-      return await startPromise;
-    } finally {
-      if (inFlightStarts.get(plugin.id) === startPromise) {
-        inFlightStarts.delete(plugin.id);
-      }
-    }
-  };
-}
-
 export async function createApp(
   db: Db,
   opts: {
@@ -533,13 +442,6 @@ export async function createApp(
     resolveSession?: (
       req: ExpressRequest,
     ) => Promise<BetterAuthSessionResult | null>;
-    /**
-     * `plugins.autoInstall` from the managed config (PAPERCLIP_MANAGED_CONFIG).
-     * `null`/absent ⇒ self-hosted: only the built-in kubernetes bundle is
-     * ensured, exactly as before. A managed list is resolved against the
-     * bundled catalog fail-to-start (see services/bundled-plugins.ts).
-     */
-    managedPluginAutoInstall?: readonly string[] | null;
     /** Test override for the bundled plugin catalog root. */
     bundledPluginCatalogRoot?: string;
   },
@@ -699,36 +601,17 @@ export async function createApp(
     res.set("Cache-Control", "no-store"); res.set("Referrer-Policy", "no-referrer");
     res.redirect(303, await chatChannels.githubWizard.identityCallback(String(req.query.state ?? ""), String(req.query.code ?? "")));
   });
-  const managedAutoInstallKeys = opts.managedPluginAutoInstall ?? null;
   const bundledCatalogRoot =
     opts.bundledPluginCatalogRoot ?? resolveBundledCatalogRoot(process.env);
   const distributionPlugins = readDistributionPluginCatalog(bundledCatalogRoot, BUNDLED_PLUGIN_CATALOG);
   const bundledPluginInstalls = resolveBundledPluginInstalls(
-    managedAutoInstallKeys ?? SELF_HOSTED_AUTO_INSTALL_KEYS,
+    SELF_HOSTED_AUTO_INSTALL_KEYS,
     {
       catalogRoot: bundledCatalogRoot,
       env: process.env,
-      enforceCatalogRoot: managedAutoInstallKeys !== null,
       distributionPlugins,
     },
   );
-  const managedBundledPluginKeys =
-    managedAutoInstallKeys !== null
-      ? bundledPluginInstalls.map((install) => install.pluginKey)
-      : [];
-  let runtimePluginLoader: Pick<PluginLoader, "loadSingle"> | null = null;
-  // A sibling process can install a managed bundled plugin while this process
-  // skips the mid-install row, then finish the row after this process's
-  // loadAll() pass. The capabilities route may recover only those managed
-  // bundles by starting their ready-but-unstarted worker lazily.
-  const recoverManagedBundledPluginWorker =
-    managedAutoInstallKeys !== null
-      ? createManagedBundledPluginWorkerRecovery({
-          managedBundledPluginKeys,
-          workerManager,
-          getLoader: () => runtimePluginLoader,
-        })
-      : undefined;
 
   // Mount API routes
   const api = Router();
@@ -845,12 +728,6 @@ export async function createApp(
   api.use(
     environmentRoutes(db, {
       pluginWorkerManager: workerManager,
-      recoverMissingPluginWorker: recoverManagedBundledPluginWorker
-        ? {
-            pluginKeys: managedBundledPluginKeys,
-            startWorker: recoverManagedBundledPluginWorker,
-          }
-        : undefined,
     }),
   );
   api.use(executionWorkspaceRoutes(db, { pluginWorkerManager: workerManager }));
@@ -994,7 +871,7 @@ export async function createApp(
     {
       localPluginDir: opts.localPluginDir ?? DEFAULT_LOCAL_PLUGIN_DIR,
       migrationDb: opts.pluginMigrationDb,
-      assertPackageActivation: distributionPluginActivationGuard(bundledCatalogRoot, distributionPlugins, managedAutoInstallKeys),
+      assertPackageActivation: distributionPluginActivationGuard(bundledCatalogRoot, distributionPlugins, null),
     },
     {
       workerManager,
@@ -1034,7 +911,6 @@ export async function createApp(
       },
     },
   );
-  runtimePluginLoader = loader;
   const browserUse = browserUseService(db, undefined,
     { cancelWorkForScope: heartbeatService(db, { pluginWorkerManager: workerManager }).cancelBudgetScopeWork },
     (session, run) => toolGateway.browserUseSessionAuthorized({ ...session, runId: run.heartbeatRunId, invocationId: run.invocationId }));
@@ -1382,34 +1258,14 @@ export async function createApp(
   // the lifecycle.load() that ensureBundledPlugins performs per newly
   // installed bundle only records the `ready` status and does not spawn a
   // worker (see activateReadyPlugin in services/plugin-lifecycle.ts).
-  //
-  // Managed instances (`plugins.autoInstall` from PAPERCLIP_MANAGED_CONFIG)
-  // drive the key list from the control plane; self-hosted instances keep
-  // the pre-existing behavior of ensuring only the kubernetes bundle.
-  //
-  // Resolution is deliberately synchronous and NOT fail-safe: an
-  // unknown key or a path escaping the bundled catalog root throws out of
-  // createApp so a managed instance refuses to start (positive allowlist,
-  // fail closed).
   // SAFETY: installation is fully fail-safe. Any failure
   // (missing bundle, install error, load error) is caught, logged, and
   // swallowed per plugin so the server ALWAYS finishes booting. A degraded
   // boot (a provider unavailable, some agents cannot run) is strictly
   // preferable to a crash loop.
-  //
-  // The chain is not awaited here (createApp stays fast), but the settled
-  // promise is exposed via `app.locals.bundledPluginsStartup` so boot steps
-  // that must not outrun plugin availability — managed sandbox environments
-  // (`applyManagedEnvironments`) run before the heartbeat resumes queued
-  // runs — can sequence on it. It never rejects.
   const bundledPluginsStartup = ensureBundledPlugins(
     bundledPluginInstalls,
     { registry: pluginRegistry, loader, lifecycle, logger },
-    // Managed mode reinstalls soft-uninstalled bundles (the control plane
-    // owns provisioning); self-hosted leaves an operator's uninstall alone.
-    // Disabled plugins never start automatically. Added distribution permissions
-    // still enter upgrade_pending so enabling them requires an operator decision.
-    { reinstallUninstalled: managedAutoInstallKeys !== null },
   )
     .then(() => loader.loadAll())
     .then((result) => {
