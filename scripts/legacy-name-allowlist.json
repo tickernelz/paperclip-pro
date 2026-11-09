@@ -4767,7 +4767,6 @@
     ["tests/e2e/chat-adapters-ui-messaging.spec.ts",4,"belum-diganti"],
     ["tests/e2e/chat-adapters-ui-providers.spec.ts",7,"belum-diganti"],
     ["tests/e2e/chat-adapters-ui.shared.ts",45,"belum-diganti"],
-    ["tests/e2e/cloud-auth.spec.ts",3,"belum-diganti"],
     ["tests/e2e/composer-stop.spec.ts",12,"belum-diganti"],
     ["tests/e2e/connection-intents.spec.ts",25,"belum-diganti"],
     ["tests/e2e/connection-reviews-server.ts",2,"belum-diganti"],

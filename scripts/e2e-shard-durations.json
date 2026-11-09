@@ -15,7 +15,7 @@
     "tests/e2e/board-attachment-receipts.spec.ts": 38200,
     "tests/e2e/chat-adapters-ui-messaging.spec.ts": 139400,
     "tests/e2e/chat-adapters-ui-providers.spec.ts": 137040,
-    "tests/e2e/cloud-auth.spec.ts": 27600,
+    "tests/e2e/auth-sign-in.spec.ts": 27600,
     "tests/e2e/company-context-refresh.spec.ts": 3800,
     "tests/e2e/composer-stop.spec.ts": 72000,
     "tests/e2e/conference-room-typing-intro.spec.ts": 12400,
