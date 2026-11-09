@@ -177,7 +177,7 @@ jobs:
         run: pnpm build
 
   runner:
-    name: Verify Paperclip Runner (${{ matrix.part }})
+    name: Verify Wardmote Runner (${{ matrix.part }})
     needs: scope
     if: needs.scope.outputs.docs_only != 'true'
     runs-on: ubuntu-latest
@@ -339,7 +339,7 @@ jobs:
       - name: Verify runner Chrome
         run: google-chrome --version
 
-      - name: Generate Paperclip config
+      - name: Generate Wardmote config
         run: |
           mkdir -p ~/.paperclip-pro/instances/default
           cat > ~/.paperclip-pro/instances/default/config.json << 'CONF'
