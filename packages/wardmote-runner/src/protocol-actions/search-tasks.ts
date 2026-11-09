@@ -26,7 +26,7 @@ export const searchTasksAction = {
     "prpEvidence": "read projection surfaced via a tool-result item event; no control-plane state diff",
     "prpBindingStatus": "audit_pending",
     "legacyAliases": [
-      "mcp:paperclipListIssues"
+      "mcp:wardmoteListIssues"
     ]
   },
   "documentation": {

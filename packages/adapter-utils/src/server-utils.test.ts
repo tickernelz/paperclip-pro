@@ -1585,7 +1585,7 @@ describe("renderPaperclipWakePrompt", () => {
       "/api/issues/{id}",
     );
     expect(template).toContain(
-      "`paperclipSuggestTasks`, `paperclipAskUserQuestions`, or `paperclipRequestConfirmation`",
+      "`wardmoteSuggestTasks`, `wardmoteAskUserQuestions`, or `wardmoteRequestConfirmation`",
     );
     expect(template).toContain(
       "Use continuationPolicy wake_assignee when you need to resume after a response (it wakes on acceptance and rejection alike; only expiry does not wake); use wake_assignee_on_accept when you want to resume only after acceptance",

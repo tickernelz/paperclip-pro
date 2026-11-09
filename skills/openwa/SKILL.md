@@ -388,7 +388,7 @@ live windows. Other runs get `owner_only`.
 A Paperclip card that waits for a person (confirmation, plan approval, question,
 checkbox or verdict card, human-only included) is never "only answerable in
 Paperclip" when the owner is talking to you here. When an owner asks what is
-waiting on them, call `paperclipListPendingDecisions` with `scope: "desk"` (the
+waiting on them, call `wardmoteListPendingDecisions` with `scope: "desk"` (the
 same list as the Decisions page; page with `cursor` while `nextCursor` is set)
 and summarize each item: kind, issue, what it asks, age. The default scope is
 partial (answerable cards and approvals only), so never answer "nothing is
@@ -397,7 +397,7 @@ dependency, governed approvals) stay in Paperclip; give `relayBlockedReason` and
 `href`. For cards, `scope: "relay"` also carries each card's prompt and options.
 When the owner's own message explicitly
 approves, rejects or answers one specific card, call
-`paperclipAnswerDecisionForOwner` with `issueId`, `interactionId`, the answer
+`wardmoteAnswerDecisionForOwner` with `issueId`, `interactionId`, the answer
 (`decision` approve or reject with `optionIds` or `reason`, `answers` for
 questions, `verdicts` for verdict cards) and `ownerMessageRef` set to that
 message's `id` from this run's `messages`. The server checks that this run was
@@ -420,7 +420,7 @@ Then confirm in the chat exactly what you submitted.
 An issue that shows "Recovery needed" (execution stopped; comments wait behind
 "Waiting for execution recovery") resumes only on a person's explicit request.
 Your own comment there only queues. When the owner's own message explicitly asks
-to continue such an issue, call `paperclipContinueIssueForOwner` with `issueId`
+to continue such an issue, call `wardmoteContinueIssueForOwner` with `issueId`
 and `ownerMessageRef` set to that message's `id`. The server posts the owner's
 message as their comment, relayed by you; that resolves the hold and starts a new
 run, and actions with unverified outcomes are not repeated. The message must be

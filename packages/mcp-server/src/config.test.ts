@@ -106,9 +106,9 @@ describe("Paperclip MCP toolsets", () => {
     expect(core.length).toBeGreaterThan(0);
     expect(extended.length).toBeGreaterThan(core.length);
     expect(core.filter((name) => !extended.includes(name))).toEqual([]);
-    expect(extended).toContain("paperclipCreateChildIssue");
-    expect(extended).toContain("paperclipSetIssueWatchdog");
-    expect(extended).toContain("paperclipGetIssueWatchdog");
+    expect(extended).toContain("wardmoteCreateChildIssue");
+    expect(extended).toContain("wardmoteSetIssueWatchdog");
+    expect(extended).toContain("wardmoteGetIssueWatchdog");
   });
 
   it("exposes every core tool name in the all listing", () => {

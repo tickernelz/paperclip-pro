@@ -132,7 +132,7 @@ function inputSchema(spec: GeneratedToolSpec): z.ZodObject {
       .record(z.string(), z.unknown())
       .optional()
       .describe(
-        `any other field accepted by ${spec.method} ${spec.path}; see paperclipApiRequest for the full schema`,
+        `any other field accepted by ${spec.method} ${spec.path}; see wardmoteApiRequest for the full schema`,
       ),
   });
 }

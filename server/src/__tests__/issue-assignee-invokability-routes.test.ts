@@ -306,7 +306,7 @@ describe("agent delegation cycle guard", () => {
     expect(res.status).toBe(409);
     expect(res.body.error).toContain("Delegation cycle");
     expect(res.body.details).toMatchObject({ code: "delegation_cycle" });
-    expect(res.body.error).toContain("paperclipCreateChildIssue");
+    expect(res.body.error).toContain("wardmoteCreateChildIssue");
     expect(res.body.error).toContain("reviewOfParent: true");
     expect(mockIssueService.createChild).not.toHaveBeenCalled();
     expect(mockIssueService.findOpenAncestorCreatedByAgent).toHaveBeenCalledWith(parent.id, IDLE_AGENT_ID);

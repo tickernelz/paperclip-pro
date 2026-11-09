@@ -15,8 +15,8 @@ import {
 
 type Actor = Express.Request["actor"];
 
-describeEmbeddedPostgres("server-hosted Paperclip MCP endpoint", () => {
-  const ctx = useEmbeddedPostgres("paperclip-hosted-mcp-");
+describeEmbeddedPostgres("server-hosted Wardmote MCP endpoint", () => {
+  const ctx = useEmbeddedPostgres("wardmote-hosted-mcp-");
   let server: Server;
   let origin = "";
   let actor: Actor = { type: "none", source: "none" };
@@ -164,20 +164,20 @@ describeEmbeddedPostgres("server-hosted Paperclip MCP endpoint", () => {
     actor = agentActor(seeded.agentId);
     const { body } = await rpc({ method: "tools/list" }, { toolsets: "core,extended" });
     const names = body.result!.tools!.map((tool) => tool.name);
-    expect(names).toContain("paperclipGetIssue");
-    expect(names).not.toContain("paperclipGetIssueChatBinding");
+    expect(names).toContain("wardmoteGetIssue");
+    expect(names).not.toContain("wardmoteGetIssueChatBinding");
   });
 
   it("exposes owner-reachable board tools to an active ceo agent", async () => {
     actor = agentActor(seeded.ceoAgentId);
     const { body } = await rpc({ method: "tools/list" }, { toolsets: "core,extended" });
     const names = body.result!.tools!.map((tool) => tool.name);
-    expect(names).toContain("paperclipGetIssueChatBinding");
-    expect(names).toContain("paperclipListMembers");
+    expect(names).toContain("wardmoteGetIssueChatBinding");
+    expect(names).toContain("wardmoteListMembers");
     const call = await rpc(
       {
         method: "tools/call",
-        params: { name: "paperclipListMembers", arguments: { companyId: seeded.companyId } },
+        params: { name: "wardmoteListMembers", arguments: { companyId: seeded.companyId } },
       },
       { toolsets: "core,extended" },
     );
@@ -188,23 +188,23 @@ describeEmbeddedPostgres("server-hosted Paperclip MCP endpoint", () => {
     actor = agentActor(seeded.pausedCeoAgentId);
     const { body } = await rpc({ method: "tools/list" }, { toolsets: "core,extended" });
     const names = body.result!.tools!.map((tool) => tool.name);
-    expect(names).toContain("paperclipListManagedAgentProfiles");
-    expect(names).not.toContain("paperclipGetIssueChatBinding");
+    expect(names).toContain("wardmoteListManagedAgentProfiles");
+    expect(names).not.toContain("wardmoteGetIssueChatBinding");
   });
 
   it("defaults to the core toolset when none is requested", async () => {
     actor = agentActor(seeded.agentId);
     const { body } = await rpc({ method: "tools/list" });
     const names = body.result!.tools!.map((tool) => tool.name);
-    expect(names).toContain("paperclipGetIssue");
-    expect(names).not.toContain("paperclipGetIssueActivity");
+    expect(names).toContain("wardmoteGetIssue");
+    expect(names).not.toContain("wardmoteGetIssueActivity");
   });
 
   it("calls a tool through the REST API with the caller's credentials", async () => {
     actor = agentActor(seeded.agentId);
     const { body } = await rpc({
       method: "tools/call",
-      params: { name: "paperclipGetIssue", arguments: { issueId: seeded.issueId } },
+      params: { name: "wardmoteGetIssue", arguments: { issueId: seeded.issueId } },
     });
     expect(body.result!.isError).toBeFalsy();
     const payload = JSON.parse(body.result!.content![0]!.text) as { id: string; title: string };
@@ -212,15 +212,17 @@ describeEmbeddedPostgres("server-hosted Paperclip MCP endpoint", () => {
     expect(payload.title).toBe("Hosted MCP round trip");
   });
 
-  it("answers the wardmote* name like the advertised paperclip* name without listing it", async () => {
+  it("answers wardmote* names, lists only them, and rejects the retired names", async () => {
     actor = agentActor(seeded.agentId);
     const call = (name: string) => rpc({ method: "tools/call", params: { name, arguments: { issueId: seeded.issueId } } });
-    const legacy = await call("paperclipGetIssue");
-    const renamed = await call("wardmoteGetIssue");
-    expect(renamed.body).toEqual(legacy.body);
-    expect(legacy.body.result!.isError).toBeFalsy();
+    const current = await call("wardmoteGetIssue");
+    expect(current.body.result!.isError).toBeFalsy();
+    const retired = await call("paperclipGetIssue");
+    expect(retired.body.error ?? retired.body.result?.isError).toBeTruthy();
     const { body } = await rpc({ method: "tools/list" });
-    expect(body.result!.tools!.some((tool) => tool.name.startsWith("wardmote"))).toBe(false);
+    const names = body.result!.tools!.map((tool) => tool.name);
+    expect(names).toContain("wardmoteGetIssue");
+    expect(names.some((name) => name.startsWith("paperclip"))).toBe(false);
   });
 
   it("denies a tool call that reaches across companies", async () => {
@@ -229,7 +231,7 @@ describeEmbeddedPostgres("server-hosted Paperclip MCP endpoint", () => {
       {
         method: "tools/call",
         params: {
-          name: "paperclipGetIssueCount",
+          name: "wardmoteGetIssueCount",
           arguments: { companyId: seeded.otherCompanyId, attention: "blocked" },
         },
       },
@@ -243,7 +245,7 @@ describeEmbeddedPostgres("server-hosted Paperclip MCP endpoint", () => {
     actor = agentActor(seeded.agentId);
     const { body } = await rpc({
       method: "tools/call",
-      params: { name: "paperclipGetIssueChatBinding", arguments: { issueId: seeded.issueId } },
+      params: { name: "wardmoteGetIssueChatBinding", arguments: { issueId: seeded.issueId } },
     });
     expect(body.result!.isError).toBe(true);
     expect(body.result!.content![0]!.text).toContain("unavailable");
@@ -259,11 +261,11 @@ describeEmbeddedPostgres("server-hosted Paperclip MCP endpoint", () => {
     actor = agentActor(seeded.pausedCeoAgentId);
     const { body } = await rpc({ method: "tools/list" }, { toolsets: "core,extended" });
     const names = body.result!.tools!.map((tool) => tool.name);
-    expect(names).not.toContain("paperclipListMembers");
+    expect(names).not.toContain("wardmoteListMembers");
     const call = await rpc(
       {
         method: "tools/call",
-        params: { name: "paperclipListMembers", arguments: { companyId: seeded.companyId } },
+        params: { name: "wardmoteListMembers", arguments: { companyId: seeded.companyId } },
       },
       { toolsets: "core,extended" },
     );
@@ -271,17 +273,17 @@ describeEmbeddedPostgres("server-hosted Paperclip MCP endpoint", () => {
     expect(payload.status).toBe(403);
   });
 
-  it("still refuses a pruned board tool reached through paperclipApiRequest", async () => {
+  it("still refuses a pruned board tool reached through wardmoteApiRequest", async () => {
     actor = agentActor(seeded.pausedCeoAgentId);
     const listed = await rpc({ method: "tools/list" }, { toolsets: "core,extended" });
     const names = listed.body.result!.tools!.map((tool) => tool.name);
-    expect(names).not.toContain("paperclipListIssueFeedbackTraces");
+    expect(names).not.toContain("wardmoteListIssueFeedbackTraces");
 
     const hidden = await rpc(
       {
         method: "tools/call",
         params: {
-          name: "paperclipApiRequest",
+          name: "wardmoteApiRequest",
           arguments: {
             method: "GET",
             path: `/companies/${seeded.companyId}/members`,
@@ -293,12 +295,12 @@ describeEmbeddedPostgres("server-hosted Paperclip MCP endpoint", () => {
     const hiddenPayload = JSON.parse(hidden.body.result!.content![0]!.text) as { status: number };
     expect(hiddenPayload.status).toBe(403);
 
-    expect(names).toContain("paperclipGetUserDirectory");
+    expect(names).toContain("wardmoteGetUserDirectory");
     const advertised = await rpc(
       {
         method: "tools/call",
         params: {
-          name: "paperclipGetUserDirectory",
+          name: "wardmoteGetUserDirectory",
           arguments: { companyId: seeded.companyId },
         },
       },
@@ -322,7 +324,7 @@ describeEmbeddedPostgres("server-hosted Paperclip MCP endpoint", () => {
     actor = agentActor(seeded.ceoAgentId);
     const { body } = await rpc({ method: "tools/list" }, { toolsets: "core,extended" });
     const names = body.result!.tools!.map((tool) => tool.name);
-    expect(names).toContain("paperclipListMembers");
+    expect(names).toContain("wardmoteListMembers");
   });
 
   it("returns the whole tool surface in one response and never a nextCursor", async () => {
@@ -391,7 +393,7 @@ describeEmbeddedPostgres("server-hosted Paperclip MCP endpoint", () => {
       {
         method: "tools/call",
         params: {
-          name: "paperclipListIssues",
+          name: "wardmoteListIssues",
           arguments: { companyId: seeded.companyId, includeConversations: true },
         },
       },

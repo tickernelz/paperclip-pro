@@ -413,7 +413,7 @@
         "live"
       ],
       "legacyAliases": [
-        "mcp:paperclipCreateIssue"
+        "mcp:wardmoteCreateIssue"
       ],
       "contractCase": "protocol-action:create_task",
       "contractOwner": "src/catalog/protocol-action-contracts.test.ts::create_task has a schema-valid canonical example and every declared projection",
@@ -566,7 +566,7 @@
         "live"
       ],
       "legacyAliases": [
-        "mcp:paperclipGetAgent"
+        "mcp:wardmoteGetAgent"
       ],
       "contractCase": "protocol-action:get_agent",
       "contractOwner": "src/catalog/protocol-action-contracts.test.ts::get_agent has a schema-valid canonical example and every declared projection",
@@ -628,7 +628,7 @@
         "live"
       ],
       "legacyAliases": [
-        "mcp:paperclipMe"
+        "mcp:wardmoteMe"
       ],
       "contractCase": "protocol-action:get_task_context",
       "contractOwner": "src/catalog/protocol-action-contracts.test.ts::get_task_context has a schema-valid canonical example and every declared projection",
@@ -939,7 +939,7 @@
         "live"
       ],
       "legacyAliases": [
-        "mcp:paperclipListAgents"
+        "mcp:wardmoteListAgents"
       ],
       "contractCase": "protocol-action:list_agents",
       "contractOwner": "src/catalog/protocol-action-contracts.test.ts::list_agents has a schema-valid canonical example and every declared projection",
@@ -1330,7 +1330,7 @@
         "live"
       ],
       "legacyAliases": [
-        "mcp:paperclipAddComment"
+        "mcp:wardmoteAddComment"
       ],
       "contractCase": "protocol-action:report_progress",
       "contractOwner": "src/catalog/protocol-action-contracts.test.ts::report_progress has a schema-valid canonical example and every declared projection",
@@ -1567,7 +1567,7 @@
         "live"
       ],
       "legacyAliases": [
-        "mcp:paperclipListIssues"
+        "mcp:wardmoteListIssues"
       ],
       "contractCase": "protocol-action:search_tasks",
       "contractOwner": "src/catalog/protocol-action-contracts.test.ts::search_tasks has a schema-valid canonical example and every declared projection",

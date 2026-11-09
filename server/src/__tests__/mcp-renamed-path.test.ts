@@ -31,7 +31,7 @@ describe("renamed path placeholders keep the wire path", () => {
       }),
     );
     vi.stubGlobal("fetch", fetchMock);
-    await tool("paperclipListIssueWorkProducts").execute({ issueId: "PAP-1135" });
+    await tool("wardmoteListIssueWorkProducts").execute({ issueId: "PAP-1135" });
     expect(String((fetchMock.mock.calls[0] as [URL])[0])).toBe(
       "http://localhost:3100/api/issues/PAP-1135/work-products",
     );
@@ -46,7 +46,7 @@ describe("renamed path placeholders keep the wire path", () => {
       }),
     );
     vi.stubGlobal("fetch", fetchMock);
-    await tool("paperclipAcceptIssueInteraction").execute({
+    await tool("wardmoteAcceptIssueInteraction").execute({
       issueId: "PAP-1",
       interactionId: "interaction-9",
     });
@@ -64,7 +64,7 @@ describe("renamed path placeholders keep the wire path", () => {
       }),
     );
     vi.stubGlobal("fetch", fetchMock);
-    await tool("paperclipListCaseDocumentRevisions").execute({ caseId: "case-1", documentKey: "plan" });
+    await tool("wardmoteListCaseDocumentRevisions").execute({ caseId: "case-1", documentKey: "plan" });
     expect(String((fetchMock.mock.calls[0] as [URL])[0])).toBe(
       "http://localhost:3100/api/cases/case-1/documents/plan/revisions",
     );

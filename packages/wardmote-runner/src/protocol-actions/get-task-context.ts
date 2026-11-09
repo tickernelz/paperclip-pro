@@ -24,7 +24,7 @@ export const getTaskContextAction = {
     "prpEvidence": "bound company/assignment query plus exact accepted document revision projection",
     "prpBindingStatus": "bound",
     "legacyAliases": [
-      "mcp:paperclipMe"
+      "mcp:wardmoteMe"
     ]
   },
   "documentation": {

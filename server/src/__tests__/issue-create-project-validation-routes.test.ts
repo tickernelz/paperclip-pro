@@ -78,7 +78,7 @@ describeEmbeddedPostgres("issue create project validation routes", () => {
     expect(res.status).toBe(422);
     expect(res.body.code).toBe("project_not_found");
     expect(res.body.error).toBe(
-      `Project ${missing} was not found in this company. Use paperclipListProjects to get the exact id.`,
+      `Project ${missing} was not found in this company. Use wardmoteListProjects to get the exact id.`,
     );
   });
 

@@ -310,7 +310,7 @@ describe("Capability semantic catalog and authorization", () => {
     await expect(dispatcher.dispatch({
       runId: OPEN.identity.runId,
       callId: "unknown",
-      operationId: "paperclipApiRequest",
+      operationId: "wardmoteApiRequest",
       input: {},
     })).resolves.toMatchObject({ ok: false, denial: { code: "tool_not_exposed" } });
     await expect(dispatcher.dispatch({

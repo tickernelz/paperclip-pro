@@ -230,7 +230,7 @@ function derivedName(method: string, path: string): string {
 
 export const NAME_LENGTH_LIMIT = 40;
 
-const NAME_PREFIX = "paperclip";
+const NAME_PREFIX = "wardmote";
 
 function disambiguatedName(base: string, path: string, method: string, taken: Set<string>): string {
   if (!taken.has(base)) return base;
@@ -732,7 +732,7 @@ export async function generate(): Promise<GeneratorResult> {
       override.name ??
       cappedName(
         disambiguatedName(
-          `paperclip${derivedName(candidate.method, candidate.path)}`,
+          `${NAME_PREFIX}${derivedName(candidate.method, candidate.path)}`,
           candidate.path,
           candidate.method,
           taken,

@@ -17,47 +17,47 @@ export interface ToolOverride {
 }
 
 export const CURATED_OPERATIONS: Record<string, string> = {
-  "GET /api/agents/me": "paperclipMe",
-  "GET /api/agents/me/inbox-lite": "paperclipInboxLite",
-  "GET /api/agents/{id}": "paperclipGetAgent",
-  "GET /api/companies/{companyId}/agents": "paperclipListAgents",
-  "GET /api/companies/{companyId}/skills": "paperclipListSkills",
-  "GET /api/companies/{companyId}/issues": "paperclipListIssues",
-  "POST /api/companies/{companyId}/issues": "paperclipCreateIssue",
-  "GET /api/issues/{id}": "paperclipGetIssue",
-  "PATCH /api/issues/{id}": "paperclipUpdateIssue",
-  "GET /api/issues/{id}/heartbeat-context": "paperclipGetHeartbeatContext",
-  "GET /api/issues/{id}/comments": "paperclipListComments",
-  "POST /api/issues/{id}/comments": "paperclipAddComment",
-  "GET /api/issues/{id}/comments/{commentId}": "paperclipGetComment",
-  "POST /api/issues/{id}/checkout": "paperclipCheckoutIssue",
-  "POST /api/issues/{id}/release": "paperclipReleaseIssue",
-  "GET /api/issues/{id}/approvals": "paperclipListIssueApprovals",
-  "POST /api/issues/{id}/approvals": "paperclipLinkIssueApproval",
-  "DELETE /api/issues/{id}/approvals/{approvalId}": "paperclipUnlinkIssueApproval",
-  "GET /api/issues/{id}/documents": "paperclipListDocuments",
-  "GET /api/issues/{id}/documents/{key}": "paperclipGetDocument",
-  "PUT /api/issues/{id}/documents/{key}": "paperclipUpsertIssueDocument",
-  "GET /api/issues/{id}/documents/{key}/revisions": "paperclipListDocumentRevisions",
+  "GET /api/agents/me": "wardmoteMe",
+  "GET /api/agents/me/inbox-lite": "wardmoteInboxLite",
+  "GET /api/agents/{id}": "wardmoteGetAgent",
+  "GET /api/companies/{companyId}/agents": "wardmoteListAgents",
+  "GET /api/companies/{companyId}/skills": "wardmoteListSkills",
+  "GET /api/companies/{companyId}/issues": "wardmoteListIssues",
+  "POST /api/companies/{companyId}/issues": "wardmoteCreateIssue",
+  "GET /api/issues/{id}": "wardmoteGetIssue",
+  "PATCH /api/issues/{id}": "wardmoteUpdateIssue",
+  "GET /api/issues/{id}/heartbeat-context": "wardmoteGetHeartbeatContext",
+  "GET /api/issues/{id}/comments": "wardmoteListComments",
+  "POST /api/issues/{id}/comments": "wardmoteAddComment",
+  "GET /api/issues/{id}/comments/{commentId}": "wardmoteGetComment",
+  "POST /api/issues/{id}/checkout": "wardmoteCheckoutIssue",
+  "POST /api/issues/{id}/release": "wardmoteReleaseIssue",
+  "GET /api/issues/{id}/approvals": "wardmoteListIssueApprovals",
+  "POST /api/issues/{id}/approvals": "wardmoteLinkIssueApproval",
+  "DELETE /api/issues/{id}/approvals/{approvalId}": "wardmoteUnlinkIssueApproval",
+  "GET /api/issues/{id}/documents": "wardmoteListDocuments",
+  "GET /api/issues/{id}/documents/{key}": "wardmoteGetDocument",
+  "PUT /api/issues/{id}/documents/{key}": "wardmoteUpsertIssueDocument",
+  "GET /api/issues/{id}/documents/{key}/revisions": "wardmoteListDocumentRevisions",
   "POST /api/issues/{id}/documents/{key}/revisions/{revisionId}/restore":
-    "paperclipRestoreIssueDocumentRevision",
-  "POST /api/issues/{id}/interactions": "paperclipSuggestTasks",
-  "GET /api/companies/{companyId}/projects": "paperclipListProjects",
-  "GET /api/projects/{id}": "paperclipGetProject",
-  "GET /api/companies/{companyId}/goals": "paperclipListGoals",
-  "GET /api/goals/{id}": "paperclipGetGoal",
-  "GET /api/companies/{companyId}/approvals": "paperclipListApprovals",
-  "POST /api/companies/{companyId}/approvals": "paperclipCreateApproval",
-  "GET /api/approvals/{id}": "paperclipGetApproval",
-  "GET /api/approvals/{id}/issues": "paperclipGetApprovalIssues",
-  "GET /api/approvals/{id}/comments": "paperclipListApprovalComments",
-  "POST /api/approvals/{id}/comments": "paperclipAddApprovalComment",
-  "POST /api/approvals/{id}/approve": "paperclipApprovalDecision",
-  "POST /api/approvals/{id}/reject": "paperclipApprovalDecision",
-  "POST /api/approvals/{id}/request-revision": "paperclipApprovalDecision",
-  "POST /api/approvals/{id}/resubmit": "paperclipApprovalDecision",
+    "wardmoteRestoreIssueDocumentRevision",
+  "POST /api/issues/{id}/interactions": "wardmoteSuggestTasks",
+  "GET /api/companies/{companyId}/projects": "wardmoteListProjects",
+  "GET /api/projects/{id}": "wardmoteGetProject",
+  "GET /api/companies/{companyId}/goals": "wardmoteListGoals",
+  "GET /api/goals/{id}": "wardmoteGetGoal",
+  "GET /api/companies/{companyId}/approvals": "wardmoteListApprovals",
+  "POST /api/companies/{companyId}/approvals": "wardmoteCreateApproval",
+  "GET /api/approvals/{id}": "wardmoteGetApproval",
+  "GET /api/approvals/{id}/issues": "wardmoteGetApprovalIssues",
+  "GET /api/approvals/{id}/comments": "wardmoteListApprovalComments",
+  "POST /api/approvals/{id}/comments": "wardmoteAddApprovalComment",
+  "POST /api/approvals/{id}/approve": "wardmoteApprovalDecision",
+  "POST /api/approvals/{id}/reject": "wardmoteApprovalDecision",
+  "POST /api/approvals/{id}/request-revision": "wardmoteApprovalDecision",
+  "POST /api/approvals/{id}/resubmit": "wardmoteApprovalDecision",
   "POST /api/execution-workspaces/{id}/runtime-services/{action}":
-    "paperclipControlIssueWorkspaceServices",
+    "wardmoteControlIssueWorkspaceServices",
 };
 
 export const EXCLUDED_OPERATIONS: Record<string, string> = {
@@ -114,87 +114,87 @@ export const TOOL_OVERRIDES: Record<string, ToolOverride> = {
   "GET /api/companies/{companyId}/live-runs": { queryDefaults: { limit: 50 } },
   "GET /api/routines/{id}/runs": { queryDefaults: { limit: 50 } },
   "GET /api/agents/me/inbox/mine": {
-    name: "paperclipInbox",
+    name: "wardmoteInbox",
     description:
-      "List the full Mine inbox for one board user, selected by userId. Use paperclipInboxLite first for the authenticated agent's own compact list; reach for this only when you need the complete issue objects.",
+      "List the full Mine inbox for one board user, selected by userId. Use wardmoteInboxLite first for the authenticated agent's own compact list; reach for this only when you need the complete issue objects.",
     toolset: "core",
   },
   "GET /api/companies/{companyId}/dashboard": {
-    name: "paperclipDashboard",
+    name: "wardmoteDashboard",
     description:
       "Read the company dashboard summary. Use for a company-wide status overview before planning or reporting.",
     toolset: "core",
   },
   "GET /api/issues/{id}/interactions": {
-    name: "paperclipListIssueInteractions",
+    name: "wardmoteListIssueInteractions",
     description:
       "List issue-thread interactions with their status. Use to check whether a question, confirmation, or plan approval you raised is still pending.",
     toolset: "core",
   },
   "GET /api/companies/{companyId}/pending-decisions": {
-    name: "paperclipListPendingDecisions",
+    name: "wardmoteListPendingDecisions",
     description:
       "List Decisions-desk items waiting on a human. Default scope=relay is PARTIAL (relayable cards and approvals; empty never means an empty desk). scope=desk is the whole Decisions page, every sourceKind, for a run the owner started.",
     toolset: "core",
   },
   "POST /api/issues/{id}/interactions/{interactionId}/answer-for-owner": {
-    name: "paperclipAnswerDecisionForOwner",
+    name: "wardmoteAnswerDecisionForOwner",
     description:
       "Submit the owner's explicit answer to one card from the run their own message (ownerMessageRef) started. advanced: answers, verdicts, note.",
     toolset: "core",
     bodyFields: ["ownerMessageRef", "decision", "optionIds", "reason"],
   },
   "POST /api/issues/{id}/continue-for-owner": {
-    name: "paperclipContinueIssueForOwner",
+    name: "wardmoteContinueIssueForOwner",
     description:
       "Continue a 'Recovery needed' issue on the owner's explicit request, from the run their own message (ownerMessageRef) started.",
     toolset: "core",
   },
   "POST /api/issues/{id}/interactions/{interactionId}/withdraw": {
-    name: "paperclipWithdrawIssueInteraction",
+    name: "wardmoteWithdrawIssueInteraction",
     description:
       "Withdraw a pending issue-thread interaction you raised and no longer need answered.",
     toolset: "core",
     annotations: { destructiveHint: true },
   },
   "GET /api/issues/{id}/watchdog": {
-    name: "paperclipGetIssueWatchdog",
+    name: "wardmoteGetIssueWatchdog",
     description:
       "Read the task watchdog for an issue: the agent that reviews the issue subtree after it stops. This is not the issue monitor; read monitorNextCheckAt from the issue.",
     toolset: "core",
   },
   "PUT /api/issues/{id}/watchdog": {
-    name: "paperclipSetIssueWatchdog",
+    name: "wardmoteSetIssueWatchdog",
     description:
-      "Assign or replace the task watchdog agent that reviews the issue subtree after it stops. It does not schedule the issue monitor: schedule a timed re-check with paperclipUpdateIssue advanced.executionPolicy.monitor.nextCheckAt.",
+      "Assign or replace the task watchdog agent that reviews the issue subtree after it stops. It does not schedule the issue monitor: schedule a timed re-check with wardmoteUpdateIssue advanced.executionPolicy.monitor.nextCheckAt.",
     toolset: "core",
   },
   "GET /api/issues/{id}/attachments": {
-    name: "paperclipListIssueAttachments",
+    name: "wardmoteListIssueAttachments",
     description: "List files attached to an issue.",
     toolset: "core",
   },
   "DELETE /api/attachments/{attachmentId}": {
-    name: "paperclipDeleteAttachment",
+    name: "wardmoteDeleteAttachment",
     description: "Delete an issue attachment. Irreversible.",
     toolset: "core",
     annotations: { destructiveHint: true },
   },
   "GET /api/companies/{companyId}/routines": {
-    name: "paperclipListRoutines",
+    name: "wardmoteListRoutines",
     description:
       "List company routines. Agents may only manage routines assigned to themselves.",
     toolset: "extended",
   },
   "DELETE /api/issues/{id}": {
-    name: "paperclipDeleteIssue",
+    name: "wardmoteDeleteIssue",
     description:
-      "Delete an issue permanently. Prefer cancelling via paperclipUpdateIssue; deletion loses the thread.",
+      "Delete an issue permanently. Prefer cancelling via wardmoteUpdateIssue; deletion loses the thread.",
     toolset: "extended",
     annotations: { destructiveHint: true },
   },
   "POST /api/companies/{companyId}/projects": {
-    name: "paperclipCreateProject",
+    name: "wardmoteCreateProject",
     description: "Create a project in the company.",
     toolset: "core",
     bodyFields: [
@@ -211,58 +211,58 @@ export const TOOL_OVERRIDES: Record<string, ToolOverride> = {
     ],
   },
   "POST /api/companies/{companyId}/goals": {
-    name: "paperclipCreateGoal",
+    name: "wardmoteCreateGoal",
     description: "Create a company goal that issues can be linked to.",
     toolset: "core",
   },
   "POST /api/issues/{id}/children": {
-    name: "paperclipCreateChildIssue",
+    name: "wardmoteCreateChildIssue",
     description:
       "Create a child issue under an existing issue. This is the default for work arising from the issue you hold (follow-up, deploy, fix, review, delegated or parallel work): pass that issue as issueId. The child inherits the parent execution workspace. To ask another agent to review work on the issue you are assigned, set reviewOfParent: true: the child then blocks your issue, you keep it, and the request is allowed even when that agent created an open ancestor (otherwise 409 delegation_cycle).",
     toolset: "core",
   },
   "GET /api/issues/{id}/work-products": {
-    name: "paperclipListIssueWorkProducts",
+    name: "wardmoteListIssueWorkProducts",
     description:
       "List the work products recorded on an issue: pull requests, preview URLs, runtime services, commits, branches, artifacts.",
     toolset: "core",
   },
   "POST /api/issues/{id}/work-products": {
-    name: "paperclipCreateIssueWorkProduct",
+    name: "wardmoteCreateIssueWorkProduct",
     description:
       "Record an operator-facing work product on an issue. Use for every opened PR, published preview, managed service, notable commit, handoff branch, or uploaded artifact.",
     toolset: "core",
   },
   "GET /api/issues/{id}/share-link": {
-    name: "paperclipGetIssueShareLink",
+    name: "wardmoteGetIssueShareLink",
     description: "Get the active public read-only share link of an issue, or null when it is not shared.",
     toolset: "core",
   },
   "POST /api/issues/{id}/share-link": {
-    name: "paperclipCreateIssueShareLink",
+    name: "wardmoteCreateIssueShareLink",
     description:
       "Create (or return the existing) public read-only link to an issue for an external requester. Any agent that can read the issue may call this, even while another agent's run holds its checkout. Anyone with the URL sees the issue, agent comments, documents, attachments and one-hop related issues without logging in, until the link is revoked.",
     toolset: "core",
   },
   "DELETE /api/issues/{id}/share-link": {
-    name: "paperclipRevokeIssueShareLink",
+    name: "wardmoteRevokeIssueShareLink",
     description:
       "Revoke the public share link of an issue; the URL and every download under it stop working. Any agent that can read the issue may revoke it, even while another agent's run holds its checkout.",
     toolset: "core",
   },
   "PATCH /api/work-products/{id}": {
-    name: "paperclipUpdateWorkProduct",
+    name: "wardmoteUpdateWorkProduct",
     description: "Update a recorded work product, for example when a pull request merges.",
     toolset: "core",
   },
   "GET /api/execution-workspaces/{id}": {
-    name: "paperclipGetExecutionWorkspace",
+    name: "wardmoteGetExecutionWorkspace",
     description:
-      "Read one execution workspace with its runtime services. Prefer paperclipGetIssueWorkspaceRuntime when you start from an issue.",
+      "Read one execution workspace with its runtime services. Prefer wardmoteGetIssueWorkspaceRuntime when you start from an issue.",
     toolset: "core",
   },
   "PATCH /api/projects/{id}": {
-    name: "paperclipUpdateProject",
+    name: "wardmoteUpdateProject",
     description: "Update a project's name, description, or settings.",
     toolset: "core",
     bodyFields: [
@@ -278,23 +278,23 @@ export const TOOL_OVERRIDES: Record<string, ToolOverride> = {
     ],
   },
   "PATCH /api/goals/{id}": {
-    name: "paperclipUpdateGoal",
+    name: "wardmoteUpdateGoal",
     description: "Update a goal's title, description, status, or target date.",
     toolset: "core",
   },
   "GET /api/companies/{companyId}/labels": {
-    name: "paperclipListLabels",
+    name: "wardmoteListLabels",
     description:
       "List company issue labels. Use to resolve a label id before filtering issues by labelId.",
     toolset: "core",
   },
   "GET /api/sidebar-preferences/me": {
-    name: "paperclipGetSidebarPreferences",
+    name: "wardmoteGetSidebarPreferences",
     description: "Read the caller's sidebar ordering preferences.",
     toolset: "extended",
   },
   "PUT /api/sidebar-preferences/me": {
-    name: "paperclipSetSidebarPreferences",
+    name: "wardmoteSetSidebarPreferences",
     description: "Replace the caller's sidebar ordering preferences.",
     toolset: "extended",
   },

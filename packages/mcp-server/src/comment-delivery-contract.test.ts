@@ -7,7 +7,7 @@ import { CURATED_OPERATIONS } from "./tool-overrides.js";
 import { createToolDefinitions, type ToolDefinition } from "./tools.js";
 
 const COMMENT_OPERATION = "POST /api/issues/{id}/comments";
-const ADD_COMMENT_TOOL = "paperclipAddComment";
+const ADD_COMMENT_TOOL = "wardmoteAddComment";
 const DELIVERY_FIELDS = ["deliver", "commentDeliver"];
 
 function isDeliveryField(name: string): boolean {
@@ -118,7 +118,7 @@ describe("the comment tool and the comment route agree on delivery", () => {
     expect(requests.every((entry) => entry.path.endsWith("/issues/issue-1/comments"))).toBe(true);
   });
 
-  it("passes commentDeliver through paperclipUpdateIssue and leaves it unset by default", async () => {
+  it("passes commentDeliver through wardmoteUpdateIssue and leaves it unset by default", async () => {
     const bodies: Array<Record<string, unknown>> = [];
     const client = curatedClient();
     client.requestJson = (async (
@@ -129,7 +129,7 @@ describe("the comment tool and the comment route agree on delivery", () => {
       bodies.push(options?.body ?? {});
       return { id: "issue-1" };
     }) as typeof client.requestJson;
-    const tool = createToolDefinitions(client).find((candidate) => candidate.name === "paperclipUpdateIssue")!;
+    const tool = createToolDefinitions(client).find((candidate) => candidate.name === "wardmoteUpdateIssue")!;
     expect(publishedProperties(tool).commentDeliver).toMatchObject({ type: "string", enum: ["steer", "queue"] });
 
     for (const commentDeliver of ["steer", "queue"] as const) {

@@ -275,9 +275,9 @@ describe("paperclip skill utils", () => {
     expect(skillBody).not.toContain("/api/companies/$WARDMOTE_COMPANY_ID/issues/$WARDMOTE_TASK_ID/attachments");
     expect(referenceBody).toContain("Generated Artifacts and Work Products");
     expect(referenceBody).toContain("scripts/paperclip-upload-artifact.sh");
-    expect(referenceBody).toContain("paperclipCreateIssueWorkProduct");
+    expect(referenceBody).toContain("wardmoteCreateIssueWorkProduct");
     expect(referenceBody).toContain("Attachment upload is a multipart upload and has no MCP tool");
-    expect(referenceBody).toContain("paperclipDeleteAttachment");
+    expect(referenceBody).toContain("wardmoteDeleteAttachment");
     expect(referenceBody).toContain('--chat-comment "Here is the requested image."');
     expect(referenceBody).toContain("not proof of external");
     expect(referenceBody).toContain("--retry-unknown-upload");

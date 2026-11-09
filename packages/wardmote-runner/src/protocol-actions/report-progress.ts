@@ -24,7 +24,7 @@ export const reportProgressAction = {
     "prpEvidence": "semantic-operation item event plus active-task state diff, work-assessment, and issue-status-decision events",
     "prpBindingStatus": "audit_pending",
     "legacyAliases": [
-      "mcp:paperclipAddComment"
+      "mcp:wardmoteAddComment"
     ]
   },
   "documentation": {

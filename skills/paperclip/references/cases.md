@@ -11,7 +11,7 @@ must enable cases before the skill can use this surface.
 
 The case tools are in the `extended` toolset: they are available when the
 operator enables `WARDMOTE_MCP_TOOLSETS=full`. When they are not
-loaded, use `paperclipApiRequest` for the same operations. Every tool below
+loaded, use `wardmoteApiRequest` for the same operations. Every tool below
 takes `companyId` only where noted; it defaults to the agent's company.
 
 ## Core Model
@@ -28,12 +28,12 @@ A case has:
 - documents, attachments, issue links, labels, and events
 
 Use deterministic `caseType` + `key` when a skill may be retried. Repeating
-`paperclipCreateCase` with the same `caseType` and `key` upserts the same case
+`wardmoteCreateCase` with the same `caseType` and `key` upserts the same case
 instead of creating a duplicate.
 
 ## Upsert Semantics
 
-`paperclipCreateCase` creates or upserts a case:
+`wardmoteCreateCase` creates or upserts a case:
 
 ```json
 {
@@ -68,13 +68,13 @@ external id, source URL hash, or parent-derived request key.
 
 ## Read And Search
 
-Get a case by UUID or identifier with `paperclipGetCase`:
+Get a case by UUID or identifier with `wardmoteGetCase`:
 
 ```json
 { "caseId": "PAP-C42" }
 ```
 
-List cases for a company with `paperclipListCases`:
+List cases for a company with `wardmoteListCases`:
 
 ```json
 { "type": "blog_post", "status": "active", "q": "launch" }
@@ -104,7 +104,7 @@ Useful arguments:
 ## Documents
 
 Use case documents for rich bodies such as drafts, briefs, reports, or plans.
-`paperclipSetCaseDocument` takes the case, the document `documentKey`, and the body:
+`wardmoteSetCaseDocument` takes the case, the document `documentKey`, and the body:
 
 ```json
 {
@@ -165,7 +165,7 @@ Examples:
 }
 ```
 
-Patch fields or status with `paperclipUpdateCaseById`:
+Patch fields or status with `wardmoteUpdateCaseById`:
 
 ```json
 {
@@ -183,7 +183,7 @@ Remember: `fields` replaces the whole object when present.
 
 ## Issue Links
 
-Link cases to issues explicitly when needed with `paperclipCreateCaseLink`:
+Link cases to issues explicitly when needed with `wardmoteCreateCaseLink`:
 
 ```json
 {
@@ -206,7 +206,7 @@ You do not need to manually link the current issue before writing the case.
 
 ## Child Cases
 
-Create child cases with `paperclipCreateCase` by setting `parentCaseId` to the
+Create child cases with `wardmoteCreateCase` by setting `parentCaseId` to the
 parent case UUID.
 
 ```json
@@ -228,7 +228,7 @@ another agent can work on a bounded part without editing the parent case body.
 
 Case attachments are a multipart file upload, and multipart has no MCP tool.
 Upload generated files as issue attachments with the upload helper described in
-`artifacts.md`, then connect them to the case with `paperclipCreateCaseLink`
+`artifacts.md`, then connect them to the case with `wardmoteCreateCaseLink`
 using the issue that holds the files. The case then carries the link, and the
 issue carries the inspectable file.
 
@@ -248,7 +248,7 @@ Terminal statuses are `done` and `cancelled`; setting either records
 
 ## Worked Blog Post Example
 
-Create or upsert the parent blog post with `paperclipCreateCase`:
+Create or upsert the parent blog post with `wardmoteCreateCase`:
 
 ```json
 {
@@ -265,7 +265,7 @@ Create or upsert the parent blog post with `paperclipCreateCase`:
 }
 ```
 
-Write the body with `paperclipSetCaseDocument`:
+Write the body with `wardmoteSetCaseDocument`:
 
 ```json
 {
@@ -277,7 +277,7 @@ Write the body with `paperclipSetCaseDocument`:
 }
 ```
 
-Create the child image-assets case with `paperclipCreateCase`:
+Create the child image-assets case with `wardmoteCreateCase`:
 
 ```json
 {
@@ -295,7 +295,7 @@ Create the child image-assets case with `paperclipCreateCase`:
 ```
 
 Attach the generated assets to the child's linked issue, then patch both cases
-as they move through review with `paperclipUpdateCaseById`:
+as they move through review with `wardmoteUpdateCaseById`:
 
 ```json
 {

@@ -458,7 +458,7 @@ function rejectMisplacedIssueMonitorFields(req: Request, _res: Response, next: N
       : [];
   if (fields.length > 0) {
     throw badRequest(
-      `${fields.join(", ")} is not an issue field; schedule the issue monitor with ${ISSUE_MONITOR_SCHEDULE_PATH} (paperclipUpdateIssue: advanced.executionPolicy.monitor.nextCheckAt)`,
+      `${fields.join(", ")} is not an issue field; schedule the issue monitor with ${ISSUE_MONITOR_SCHEDULE_PATH} (wardmoteUpdateIssue: advanced.executionPolicy.monitor.nextCheckAt)`,
       { code: "misplaced_issue_monitor_field", fields, expected: ISSUE_MONITOR_SCHEDULE_PATH },
     );
   }
@@ -2125,11 +2125,11 @@ const INVALID_AGENT_IN_REVIEW_DISPOSITION_MESSAGE =
   "This request would leave the issue in_review without anyone or anything owning the next action. " +
   "Keep working instead of moving to review, create a request_confirmation or ask_user_questions interaction, " +
   "link or request a pending approval, assign a human reviewer with assigneeUserId, set a typed executionState.currentParticipant through an execution policy, " +
-  "create a review subtask with paperclipCreateChildIssue assigned to the reviewer and list it in blockedByIssueIds, " +
+  "create a review subtask with wardmoteCreateChildIssue assigned to the reviewer and list it in blockedByIssueIds, " +
   "or schedule an issue monitor for an external review/check. After creating one of those review paths, retry the status update.";
 
 const AGENT_REVIEW_SUBTASK_INSTRUCTION =
-  "Create a review subtask with paperclipCreateChildIssue on this issue with reviewOfParent: true, assigned to the reviewer, with a self-contained description " +
+  "Create a review subtask with wardmoteCreateChildIssue on this issue with reviewOfParent: true, assigned to the reviewer, with a self-contained description " +
   "(full instructions, acceptance criteria, and the material to review); reviewOfParent adds the subtask to blockedByIssueIds on this issue. " +
   "Then set status to in_review. You stay the assignee and are woken when the review subtask is done.";
 
@@ -2545,7 +2545,7 @@ function readSecretProposalContinuationContext(interaction: {
       decision: "accepted",
       executionStatus,
       ...(sourceSecretLabel ? { sourceSecretLabel } : {}),
-      instructions: `the binding was created at ${configPath}; verify it with paperclipApiRequest with method: "GET" and path: "/agents/me/secrets" before using it.`,
+      instructions: `the binding was created at ${configPath}; verify it with wardmoteApiRequest with method: "GET" and path: "/agents/me/secrets" before using it.`,
     };
   }
   return {
@@ -3970,8 +3970,8 @@ export function issueRoutes(
         message:
           `Created without parentId while your run is working on ${workingLabel}. ` +
           `If this issue came out of ${workingLabel} (follow-up, deploy, fix, review), ` +
-          `set parentId to ${workingIssue.id} with paperclipUpdateIssue, and create such work ` +
-          `with paperclipCreateChildIssue next time. Ignore this only for independent work.`,
+          `set parentId to ${workingIssue.id} with wardmoteUpdateIssue, and create such work ` +
+          `with wardmoteCreateChildIssue next time. Ignore this only for independent work.`,
         suggestedParentIssueId: workingIssue.id,
         suggestedParentIdentifier: workingIssue.identifier,
       },
@@ -8060,7 +8060,7 @@ export function issueRoutes(
     throw conflict(
       `Delegation cycle: ${ancestor.identifier ?? "an ancestor issue"} in this chain was created by the agent this child would be assigned to. ` +
         "Complete the remaining work in your own issue, leave the child unassigned, or escalate to a board operator — do not delegate the work back to the agent that delegated it to you. " +
-        "To ask that agent to review work on an issue you are assigned, call paperclipCreateChildIssue on that issue with reviewOfParent: true and a self-contained review description; the child then blocks your issue and you keep it.",
+        "To ask that agent to review work on an issue you are assigned, call wardmoteCreateChildIssue on that issue with reviewOfParent: true and a self-contained review description; the child then blocks your issue and you keep it.",
       {
         code: "delegation_cycle",
         ancestorIssueId: ancestor.id,
@@ -13215,7 +13215,7 @@ export function issueRoutes(
         : null;
       if (!projectDecision?.allowed) {
         res.status(422).json({
-          error: `Project ${createBody.projectId} was not found in this company. Use paperclipListProjects to get the exact id.`,
+          error: `Project ${createBody.projectId} was not found in this company. Use wardmoteListProjects to get the exact id.`,
           code: "project_not_found",
         });
         return;

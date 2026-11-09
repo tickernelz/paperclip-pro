@@ -169,7 +169,7 @@ describeEmbeddedPostgres("hosted Paperclip MCP required-body tools", () => {
       companyId: seeded.companyId,
     };
 
-    const result = await callTool("paperclipUpdateSkillComment", {
+    const result = await callTool("wardmoteUpdateSkillComment", {
       companyId: seeded.companyId,
       skillId: seeded.skillId,
       commentId: seeded.commentId,
@@ -189,7 +189,7 @@ describeEmbeddedPostgres("hosted Paperclip MCP required-body tools", () => {
       companyId: seeded.companyId,
     };
 
-    const result = await callTool("paperclipSetToolConnectionGrantMember", {
+    const result = await callTool("wardmoteSetToolConnectionGrantMember", {
       connectionId: seeded.connectionId,
       grantId: seeded.grantId,
       memberUserIds: [seeded.userId],

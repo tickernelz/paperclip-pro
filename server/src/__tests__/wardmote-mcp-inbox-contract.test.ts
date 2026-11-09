@@ -81,7 +81,7 @@ describeEmbeddedPostgres("hosted Paperclip MCP inbox tool", () => {
 
     const { body } = await rpc({
       method: "tools/call",
-      params: { name: "paperclipInbox", arguments: { userId: "board-user" } },
+      params: { name: "wardmoteInbox", arguments: { userId: "board-user" } },
     });
 
     expect(body.result!.isError).toBeFalsy();
@@ -100,7 +100,7 @@ describeEmbeddedPostgres("hosted Paperclip MCP inbox tool", () => {
 
     const { body } = await rpc({
       method: "tools/call",
-      params: { name: "paperclipInbox", arguments: {} },
+      params: { name: "wardmoteInbox", arguments: {} },
     });
 
     expect(body.result!.content![0]!.text).toContain("userId");

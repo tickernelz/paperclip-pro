@@ -35,12 +35,12 @@
       ],
       "evidenceIds": [
         "eval:ap-approval-deny-01",
-        "mcp:paperclipListApprovalComments",
-        "mcp:paperclipAddApprovalComment"
+        "mcp:wardmoteListApprovalComments",
+        "mcp:wardmoteAddApprovalComment"
       ],
       "legacyMcpAliases": [
-        "mcp:paperclipListApprovalComments",
-        "mcp:paperclipAddApprovalComment"
+        "mcp:wardmoteListApprovalComments",
+        "mcp:wardmoteAddApprovalComment"
       ]
     },
     {
@@ -75,16 +75,16 @@
       ],
       "evidenceIds": [
         "eval:ap-approval-wake-01",
-        "mcp:paperclipListApprovals",
-        "mcp:paperclipGetApproval",
-        "mcp:paperclipGetApprovalIssues",
-        "mcp:paperclipApprovalDecision"
+        "mcp:wardmoteListApprovals",
+        "mcp:wardmoteGetApproval",
+        "mcp:wardmoteGetApprovalIssues",
+        "mcp:wardmoteApprovalDecision"
       ],
       "legacyMcpAliases": [
-        "mcp:paperclipListApprovals",
-        "mcp:paperclipGetApproval",
-        "mcp:paperclipGetApprovalIssues",
-        "mcp:paperclipApprovalDecision"
+        "mcp:wardmoteListApprovals",
+        "mcp:wardmoteGetApproval",
+        "mcp:wardmoteGetApprovalIssues",
+        "mcp:wardmoteApprovalDecision"
       ]
     },
     {
@@ -117,16 +117,16 @@
       ],
       "evidenceIds": [
         "eval:ap-board-approval-01",
-        "mcp:paperclipListIssueApprovals",
-        "mcp:paperclipCreateApproval",
-        "mcp:paperclipLinkIssueApproval",
-        "mcp:paperclipUnlinkIssueApproval"
+        "mcp:wardmoteListIssueApprovals",
+        "mcp:wardmoteCreateApproval",
+        "mcp:wardmoteLinkIssueApproval",
+        "mcp:wardmoteUnlinkIssueApproval"
       ],
       "legacyMcpAliases": [
-        "mcp:paperclipListIssueApprovals",
-        "mcp:paperclipCreateApproval",
-        "mcp:paperclipLinkIssueApproval",
-        "mcp:paperclipUnlinkIssueApproval"
+        "mcp:wardmoteListIssueApprovals",
+        "mcp:wardmoteCreateApproval",
+        "mcp:wardmoteLinkIssueApproval",
+        "mcp:wardmoteUnlinkIssueApproval"
       ]
     },
     {
@@ -597,10 +597,10 @@
       ],
       "evidenceIds": [
         "eval:cm-multiline-01",
-        "mcp:paperclipAddComment"
+        "mcp:wardmoteAddComment"
       ],
       "legacyMcpAliases": [
-        "mcp:paperclipAddComment"
+        "mcp:wardmoteAddComment"
       ]
     },
     {
@@ -869,10 +869,10 @@
       ],
       "evidenceIds": [
         "eval:co-body-contract-01",
-        "mcp:paperclipCheckoutIssue"
+        "mcp:wardmoteCheckoutIssue"
       ],
       "legacyMcpAliases": [
-        "mcp:paperclipCheckoutIssue"
+        "mcp:wardmoteCheckoutIssue"
       ]
     },
     {
@@ -977,16 +977,16 @@
       ],
       "evidenceIds": [
         "eval:dp-base-revision-01",
-        "mcp:paperclipListDocuments",
-        "mcp:paperclipGetDocument",
-        "mcp:paperclipListDocumentRevisions",
-        "mcp:paperclipRestoreIssueDocumentRevision"
+        "mcp:wardmoteListDocuments",
+        "mcp:wardmoteGetDocument",
+        "mcp:wardmoteListDocumentRevisions",
+        "mcp:wardmoteRestoreIssueDocumentRevision"
       ],
       "legacyMcpAliases": [
-        "mcp:paperclipListDocuments",
-        "mcp:paperclipGetDocument",
-        "mcp:paperclipListDocumentRevisions",
-        "mcp:paperclipRestoreIssueDocumentRevision"
+        "mcp:wardmoteListDocuments",
+        "mcp:wardmoteGetDocument",
+        "mcp:wardmoteListDocumentRevisions",
+        "mcp:wardmoteRestoreIssueDocumentRevision"
       ]
     },
     {
@@ -1024,10 +1024,10 @@
       ],
       "evidenceIds": [
         "eval:dp-plan-doc-01",
-        "mcp:paperclipUpsertIssueDocument"
+        "mcp:wardmoteUpsertIssueDocument"
       ],
       "legacyMcpAliases": [
-        "mcp:paperclipUpsertIssueDocument"
+        "mcp:wardmoteUpsertIssueDocument"
       ]
     },
     {
@@ -1373,10 +1373,10 @@
       ],
       "evidenceIds": [
         "eval:er-release-01",
-        "mcp:paperclipReleaseIssue"
+        "mcp:wardmoteReleaseIssue"
       ],
       "legacyMcpAliases": [
-        "mcp:paperclipReleaseIssue"
+        "mcp:wardmoteReleaseIssue"
       ]
     },
     {
@@ -1410,10 +1410,10 @@
       ],
       "evidenceIds": [
         "eval:hb-context-01",
-        "mcp:paperclipGetHeartbeatContext"
+        "mcp:wardmoteGetHeartbeatContext"
       ],
       "legacyMcpAliases": [
-        "mcp:paperclipGetHeartbeatContext"
+        "mcp:wardmoteGetHeartbeatContext"
       ]
     },
     {
@@ -1451,12 +1451,12 @@
       ],
       "evidenceIds": [
         "eval:hb-inbox-lite-01",
-        "mcp:paperclipMe",
-        "mcp:paperclipInboxLite"
+        "mcp:wardmoteMe",
+        "mcp:wardmoteInboxLite"
       ],
       "legacyMcpAliases": [
-        "mcp:paperclipMe",
-        "mcp:paperclipInboxLite"
+        "mcp:wardmoteMe",
+        "mcp:wardmoteInboxLite"
       ]
     },
     {
@@ -1555,10 +1555,10 @@
       ],
       "evidenceIds": [
         "eval:hb-wake-comment-01",
-        "mcp:paperclipGetComment"
+        "mcp:wardmoteGetComment"
       ],
       "legacyMcpAliases": [
-        "mcp:paperclipGetComment"
+        "mcp:wardmoteGetComment"
       ]
     },
     {
@@ -1596,10 +1596,10 @@
       ],
       "evidenceIds": [
         "eval:ix-checkbox-01",
-        "mcp:paperclipRequestCheckboxConfirmation"
+        "mcp:wardmoteRequestCheckboxConfirmation"
       ],
       "legacyMcpAliases": [
-        "mcp:paperclipRequestCheckboxConfirmation"
+        "mcp:wardmoteRequestCheckboxConfirmation"
       ]
     },
     {
@@ -1673,10 +1673,10 @@
       ],
       "evidenceIds": [
         "eval:ix-confirmation-plan-01",
-        "mcp:paperclipRequestConfirmation"
+        "mcp:wardmoteRequestConfirmation"
       ],
       "legacyMcpAliases": [
-        "mcp:paperclipRequestConfirmation"
+        "mcp:wardmoteRequestConfirmation"
       ]
     },
     {
@@ -1740,10 +1740,10 @@
       ],
       "evidenceIds": [
         "eval:ix-questions-01",
-        "mcp:paperclipAskUserQuestions"
+        "mcp:wardmoteAskUserQuestions"
       ],
       "legacyMcpAliases": [
-        "mcp:paperclipAskUserQuestions"
+        "mcp:wardmoteAskUserQuestions"
       ]
     },
     {
@@ -1809,10 +1809,10 @@
       ],
       "evidenceIds": [
         "eval:ix-suggest-tasks-01",
-        "mcp:paperclipSuggestTasks"
+        "mcp:wardmoteSuggestTasks"
       ],
       "legacyMcpAliases": [
-        "mcp:paperclipSuggestTasks"
+        "mcp:wardmoteSuggestTasks"
       ]
     },
     {
@@ -2065,10 +2065,10 @@
       ],
       "evidenceIds": [
         "eval:rf-api-404-report-01",
-        "mcp:paperclipApiRequest"
+        "mcp:wardmoteApiRequest"
       ],
       "legacyMcpAliases": [
-        "mcp:paperclipApiRequest"
+        "mcp:wardmoteApiRequest"
       ]
     },
     {
@@ -2172,12 +2172,12 @@
       ],
       "evidenceIds": [
         "eval:rf-api-mgr-heartbeat-01",
-        "mcp:paperclipListAgents",
-        "mcp:paperclipGetAgent"
+        "mcp:wardmoteListAgents",
+        "mcp:wardmoteGetAgent"
       ],
       "legacyMcpAliases": [
-        "mcp:paperclipListAgents",
-        "mcp:paperclipGetAgent"
+        "mcp:wardmoteListAgents",
+        "mcp:wardmoteGetAgent"
       ]
     },
     {
@@ -2396,10 +2396,10 @@
       ],
       "evidenceIds": [
         "eval:rf-cskill-audit-01",
-        "mcp:paperclipListSkills"
+        "mcp:wardmoteListSkills"
       ],
       "legacyMcpAliases": [
-        "mcp:paperclipListSkills"
+        "mcp:wardmoteListSkills"
       ]
     },
     {
@@ -2517,12 +2517,12 @@
       ],
       "evidenceIds": [
         "eval:rf-iws-start-url-01",
-        "mcp:paperclipGetIssueWorkspaceRuntime",
-        "mcp:paperclipControlIssueWorkspaceServices"
+        "mcp:wardmoteGetIssueWorkspaceRuntime",
+        "mcp:wardmoteControlIssueWorkspaceServices"
       ],
       "legacyMcpAliases": [
-        "mcp:paperclipGetIssueWorkspaceRuntime",
-        "mcp:paperclipControlIssueWorkspaceServices"
+        "mcp:wardmoteGetIssueWorkspaceRuntime",
+        "mcp:wardmoteControlIssueWorkspaceServices"
       ]
     },
     {
@@ -2559,10 +2559,10 @@
       ],
       "evidenceIds": [
         "eval:rf-iws-target-restart-01",
-        "mcp:paperclipWaitForIssueWorkspaceService"
+        "mcp:wardmoteWaitForIssueWorkspaceService"
       ],
       "legacyMcpAliases": [
-        "mcp:paperclipWaitForIssueWorkspaceService"
+        "mcp:wardmoteWaitForIssueWorkspaceService"
       ]
     },
     {
@@ -2864,12 +2864,12 @@
       ],
       "evidenceIds": [
         "eval:rf-wf-project-setup-01",
-        "mcp:paperclipListProjects",
-        "mcp:paperclipGetProject"
+        "mcp:wardmoteListProjects",
+        "mcp:wardmoteGetProject"
       ],
       "legacyMcpAliases": [
-        "mcp:paperclipListProjects",
-        "mcp:paperclipGetProject"
+        "mcp:wardmoteListProjects",
+        "mcp:wardmoteGetProject"
       ]
     },
     {
@@ -3003,12 +3003,12 @@
       ],
       "evidenceIds": [
         "eval:se-get-issue-01",
-        "mcp:paperclipGetIssue",
-        "mcp:paperclipListComments"
+        "mcp:wardmoteGetIssue",
+        "mcp:wardmoteListComments"
       ],
       "legacyMcpAliases": [
-        "mcp:paperclipGetIssue",
-        "mcp:paperclipListComments"
+        "mcp:wardmoteGetIssue",
+        "mcp:wardmoteListComments"
       ]
     },
     {
@@ -3076,10 +3076,10 @@
       ],
       "evidenceIds": [
         "eval:se-q-filters-01",
-        "mcp:paperclipListIssues"
+        "mcp:wardmoteListIssues"
       ],
       "legacyMcpAliases": [
-        "mcp:paperclipListIssues"
+        "mcp:wardmoteListIssues"
       ]
     },
     {
@@ -3251,10 +3251,10 @@
       ],
       "evidenceIds": [
         "eval:st-done-comment-01",
-        "mcp:paperclipUpdateIssue"
+        "mcp:wardmoteUpdateIssue"
       ],
       "legacyMcpAliases": [
-        "mcp:paperclipUpdateIssue"
+        "mcp:wardmoteUpdateIssue"
       ]
     },
     {
@@ -3537,14 +3537,14 @@
       ],
       "evidenceIds": [
         "eval:su-parent-goal-01",
-        "mcp:paperclipListGoals",
-        "mcp:paperclipGetGoal",
-        "mcp:paperclipCreateIssue"
+        "mcp:wardmoteListGoals",
+        "mcp:wardmoteGetGoal",
+        "mcp:wardmoteCreateIssue"
       ],
       "legacyMcpAliases": [
-        "mcp:paperclipListGoals",
-        "mcp:paperclipGetGoal",
-        "mcp:paperclipCreateIssue"
+        "mcp:wardmoteListGoals",
+        "mcp:wardmoteGetGoal",
+        "mcp:wardmoteCreateIssue"
       ]
     },
     {

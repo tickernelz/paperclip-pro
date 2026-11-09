@@ -1037,7 +1037,7 @@ describe("chat prompt policy", () => {
     expect(prompt).toContain("Rejected plan review directive:");
     expect(prompt).toContain("Add CHAT_REVIEW_MARKER and a validation step.");
     expect(prompt).toContain("not approval to implement or hand off execution tasks");
-    expect(prompt).toContain("first call `paperclipGetDocument` with the issue id");
+    expect(prompt).toContain("first call `wardmoteGetDocument` with the issue id");
     expect(prompt).toContain("`baseRevisionId` set to that latestRevisionId");
     expect(prompt).toContain("Bind the new approval request to the revision returned by the successful update");
     expect(prompt).not.toContain("Accepted chat plan directive:");

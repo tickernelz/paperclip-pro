@@ -39,8 +39,8 @@ describe("paperclipAccessMode", () => {
 describe("paperclipAgentPromptTemplate", () => {
   it("names the MCP tools only on the mcp surface and the REST routes otherwise", () => {
     const mcp = paperclipAgentPromptTemplate("mcp");
-    expect(mcp).toContain("paperclipAddComment");
-    expect(mcp).toContain("paperclipSuggestTasks");
+    expect(mcp).toContain("wardmoteAddComment");
+    expect(mcp).toContain("wardmoteSuggestTasks");
 
     const rest = paperclipAgentPromptTemplate("rest");
     expect(rest).not.toMatch(TOOL_NAME_RE);
@@ -65,7 +65,7 @@ describe("renderPaperclipWakePrompt", () => {
   };
 
   it("points the already-checked-out note at the surface the run actually has", () => {
-    expect(renderPaperclipWakePrompt(wake)).toContain("`paperclipCheckoutIssue`");
+    expect(renderPaperclipWakePrompt(wake)).toContain("`wardmoteCheckoutIssue`");
     const rest = renderPaperclipWakePrompt(wake, { paperclipAccess: "rest" });
     expect(rest).not.toMatch(TOOL_NAME_RE);
     expect(rest).toContain("POST /api/issues/$WARDMOTE_TASK_ID/checkout");
@@ -76,7 +76,7 @@ describe("paperclipAccessGuidance", () => {
   it("teaches tools on mcp and curl with the run headers on rest", () => {
     const mcp = paperclipAccessGuidance("mcp", { toolsets: "core,extended" });
     expect(mcp).toContain("toolsets: core,extended");
-    expect(mcp).toContain("paperclipListIssues");
+    expect(mcp).toContain("wardmoteListIssues");
 
     const rest = paperclipAccessGuidance("rest", { shellHint: "run_shell_command" });
     expect(rest).not.toMatch(TOOL_NAME_RE);
@@ -93,7 +93,7 @@ describe("paperclipAccessGuidance", () => {
     expect(paperclipAccessGuidance("mcp", { toolsets: "all" })).toMatch(escapeHatch);
     expect(paperclipAccessGuidance("mcp", { toolsets: "extended,core" })).toMatch(escapeHatch);
     expect(paperclipAccessGuidance("mcp", { toolsets: "extended" })).toContain(
-      "paperclipApiRequest is always available",
+      "wardmoteApiRequest is always available",
     );
   });
 

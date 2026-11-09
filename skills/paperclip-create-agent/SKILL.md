@@ -45,28 +45,28 @@ operator to enable runner API tools for this company. Preserve the proposed hire
 in the conversation; do not claim an agent was created or substitute a temporary
 subagent for the requested permanent hire.
 
-The hiring tools — `paperclipListAgentConfigurations`, `paperclipCreateAgentHire`
+The hiring tools — `wardmoteListAgentConfigurations`, `wardmoteCreateAgentHire`
 — live in the `extended` toolset: they are available when the operator enables
 `WARDMOTE_MCP_TOOLSETS=full`; otherwise call the same operation through
-`paperclipApiRequest` (`method`, `path` relative to `/api`, `jsonBody` as a JSON
+`wardmoteApiRequest` (`method`, `path` relative to `/api`, `jsonBody` as a JSON
 string). `companyId` arguments default to the session's company, so pass one only
 when hiring into a different company.
 
 ### 1. Confirm identity and company context
 
-Call `paperclipMe` with no arguments.
+Call `wardmoteMe` with no arguments.
 
 ### 2. Discover adapter configuration for this Paperclip instance
 
 The adapter documents are plain text, not JSON tools, so read them with
-`paperclipApiRequest`:
+`wardmoteApiRequest`:
 
 - all adapters: `method: "GET"`, `path: "/llms/agent-configuration.txt"`
 - the specific adapter you plan to use: `method: "GET"`, `path: "/llms/agent-configuration/omp_local.txt"`
 
 ### 3. Compare existing agent configurations
 
-Call `paperclipListAgentConfigurations` (`extended`).
+Call `wardmoteListAgentConfigurations` (`extended`).
 
 Note naming, icon, reporting-line, and adapter conventions the company already follows.
 
@@ -91,7 +91,7 @@ skills do not already express.
 
 ### 5. Discover allowed agent icons
 
-Read the icon list with `paperclipApiRequest` (`method: "GET"`,
+Read the icon list with `wardmoteApiRequest` (`method: "GET"`,
 `path: "/llms/agent-icons.txt"`); it is a plain-text document.
 
 ### 6. Draft the new hire config
@@ -116,7 +116,7 @@ Before submitting, walk the draft-review checklist end-to-end and fix any item t
 
 ### 8. Submit hire request
 
-Call `paperclipCreateAgentHire` (`extended`) with the drafted fields as arguments:
+Call `wardmoteCreateAgentHire` (`extended`) with the drafted fields as arguments:
 
 ```
 name: "CTO"
@@ -142,8 +142,8 @@ call it again rather than reporting a pending hire.
 - monitor and discuss on the approval thread
 - when the board approves, you will be woken with `WARDMOTE_APPROVAL_ID`; read linked issues and close/comment follow-up
 
-Read the approval with `paperclipGetApproval` (`approvalId`), and comment on the
-thread with `paperclipAddApprovalComment`:
+Read the approval with `wardmoteGetApproval` (`approvalId`), and comment on the
+thread with `wardmoteAddApprovalComment`:
 
 ```
 approvalId: "<approval-id>"
@@ -151,11 +151,11 @@ body: "## CTO hire request submitted\n\n- Approval: [<approval-id>](/approvals/<
 ```
 
 If the approval already exists and needs manual linking to the issue, call
-`paperclipLinkIssueApproval` (`issueId`, `approvalId`).
+`wardmoteLinkIssueApproval` (`issueId`, `approvalId`).
 
-After approval is granted, run this follow-up loop: `paperclipGetApproval`
+After approval is granted, run this follow-up loop: `wardmoteGetApproval`
 (`approvalId: WARDMOTE_APPROVAL_ID`) for the decision, then
-`paperclipGetApprovalIssues` (`approvalId: WARDMOTE_APPROVAL_ID`) for the linked
+`wardmoteGetApprovalIssues` (`approvalId: WARDMOTE_APPROVAL_ID`) for the linked
 issues.
 
 For each linked issue, either:

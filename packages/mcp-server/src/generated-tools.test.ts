@@ -43,7 +43,7 @@ describe("generated Paperclip API tools", () => {
     const fetchMock = vi.fn().mockResolvedValue(mockJsonResponse([{ id: "label-1" }]));
     vi.stubGlobal("fetch", fetchMock);
 
-    await getTool("paperclipListLabels").execute({});
+    await getTool("wardmoteListLabels").execute({});
 
     const [url, init] = fetchMock.mock.calls[0] as [URL, RequestInit];
     expect(String(url)).toBe(
@@ -57,7 +57,7 @@ describe("generated Paperclip API tools", () => {
     const fetchMock = vi.fn().mockResolvedValue(mockJsonResponse([]));
     vi.stubGlobal("fetch", fetchMock);
 
-    await getTool("paperclipListLabels").execute({
+    await getTool("wardmoteListLabels").execute({
       companyId: "44444444-4444-4444-4444-444444444444",
     });
 
@@ -71,7 +71,7 @@ describe("generated Paperclip API tools", () => {
     const fetchMock = vi.fn().mockResolvedValue(mockJsonResponse([]));
     vi.stubGlobal("fetch", fetchMock);
 
-    await getTool("paperclipListIssueWorkProducts").execute({
+    await getTool("wardmoteListIssueWorkProducts").execute({
       issueId: "PAP-1135",
       refreshPullRequests: "true",
     });
@@ -85,7 +85,7 @@ describe("generated Paperclip API tools", () => {
   it("bounds an unfiltered run list and forwards the caller's own filters", async () => {
     const fetchMock = vi.fn().mockResolvedValue(mockJsonResponse([]));
     vi.stubGlobal("fetch", fetchMock);
-    const tool = getTool("paperclipListHeartbeatRuns");
+    const tool = getTool("wardmoteListHeartbeatRuns");
     await tool.execute({});
     const bounded = new URL(String(fetchMock.mock.calls[0]![0]));
     expect(bounded.searchParams.get("limit")).toBe("50");
@@ -101,7 +101,7 @@ describe("generated Paperclip API tools", () => {
   it("sends the instructions file path the route requires", async () => {
     const fetchMock = vi.fn().mockResolvedValue(mockJsonResponse({ content: "x" }));
     vi.stubGlobal("fetch", fetchMock);
-    const tool = getTool("paperclipGetAgentInstructionsBundleFile");
+    const tool = getTool("wardmoteGetAgentInstructionsBundleFile");
     await tool.execute({ agentId: "agent-1", path: "AGENTS.md" });
     const url = new URL(String(fetchMock.mock.calls[0]![0]));
     expect(url.pathname.endsWith("/agents/agent-1/instructions-bundle/file")).toBe(true);
@@ -112,7 +112,7 @@ describe("generated Paperclip API tools", () => {
     const fetchMock = vi.fn().mockResolvedValue(mockJsonResponse({ id: "goal-1" }));
     vi.stubGlobal("fetch", fetchMock);
 
-    await getTool("paperclipUpdateGoal").execute({ goalId: "55555555-5555-5555-5555-555555555555", title: "Ship it" });
+    await getTool("wardmoteUpdateGoal").execute({ goalId: "55555555-5555-5555-5555-555555555555", title: "Ship it" });
 
     const [url, init] = fetchMock.mock.calls[0] as [URL, RequestInit];
     expect(String(url)).toBe(
@@ -129,7 +129,7 @@ describe("generated Paperclip API tools", () => {
     const fetchMock = vi.fn().mockResolvedValue(mockJsonResponse({ id: "child-1" }));
     vi.stubGlobal("fetch", fetchMock);
 
-    await getTool("paperclipCreateChildIssue").execute({
+    await getTool("wardmoteCreateChildIssue").execute({
       issueId: "PAP-1135",
       title: "Child",
       status: "todo",
@@ -143,18 +143,18 @@ describe("generated Paperclip API tools", () => {
   it("reports a failed request instead of throwing", async () => {
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(mockJsonResponse({ error: "nope" }, 403)));
 
-    const response = await getTool("paperclipListLabels").execute({});
+    const response = await getTool("wardmoteListLabels").execute({});
 
     expect(response.content[0]?.text).toContain("403");
   });
 
   it("marks deletions destructive and reads read-only", () => {
-    expect(getTool("paperclipDeleteIssue").annotations).toEqual({
+    expect(getTool("wardmoteDeleteIssue").annotations).toEqual({
       readOnlyHint: false,
       destructiveHint: true,
       idempotentHint: true,
     });
-    expect(getTool("paperclipListLabels").annotations).toEqual({
+    expect(getTool("wardmoteListLabels").annotations).toEqual({
       readOnlyHint: true,
       destructiveHint: false,
       idempotentHint: true,
@@ -163,8 +163,8 @@ describe("generated Paperclip API tools", () => {
 
   it("registers only the selected toolsets", () => {
     const core = createGeneratedToolDefinitions(makeClient(), ["core"]).map((tool) => tool.name);
-    expect(core).toContain("paperclipListLabels");
-    expect(core).not.toContain("paperclipDeleteIssue");
+    expect(core).toContain("wardmoteListLabels");
+    expect(core).not.toContain("wardmoteDeleteIssue");
     expect(core.length).toBeLessThan(
       createGeneratedToolDefinitions(makeClient(), ["core", "extended"], true).length,
     );
@@ -257,7 +257,7 @@ describe("generated Paperclip API tools", () => {
     const fetchMock = vi.fn().mockResolvedValue(mockJsonResponse({ id: "project-1" }));
     vi.stubGlobal("fetch", fetchMock);
 
-    const tool = getTool("paperclipUpdateProject");
+    const tool = getTool("wardmoteUpdateProject");
     expect(Object.keys(tool.schema.shape)).toContain("advanced");
     expect(Object.keys(tool.schema.shape)).not.toContain("executionWorkspacePolicy");
 
@@ -277,7 +277,7 @@ describe("generated Paperclip API tools", () => {
   it("rejects an unknown top-level field on a generated tool but keeps advanced open", async () => {
     const fetchMock = vi.fn().mockResolvedValue(mockJsonResponse({ id: "project-1" }));
     vi.stubGlobal("fetch", fetchMock);
-    const tool = getTool("paperclipUpdateProject");
+    const tool = getTool("wardmoteUpdateProject");
 
     const rejected = await tool.execute({
       projectId: "66666666-6666-6666-6666-666666666666",
@@ -299,7 +299,7 @@ describe("generated Paperclip API tools", () => {
     const serialized = JSON.stringify(listing.tools);
     expect(serialized).not.toContain('"$schema":');
     expect(Buffer.byteLength(serialized)).toBeLessThan(49_000);
-    const updateIssue = listing.tools.find((tool) => tool.name === "paperclipUpdateIssue");
+    const updateIssue = listing.tools.find((tool) => tool.name === "wardmoteUpdateIssue");
     expect(updateIssue?.inputSchema.required).toEqual(["issueId"]);
     const properties = updateIssue?.inputSchema.properties as Record<string, unknown>;
     expect(properties.issueId).toEqual({ type: "string" });

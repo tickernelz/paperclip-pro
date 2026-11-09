@@ -34,7 +34,7 @@ describe("canonical operation-groups specification", () => {
           ...input,
           sourceContractToolMappings: {
             ...input.sourceContractToolMappings,
-            paperclipMe: ["control_plane_owned", "unreviewed_target"] as const,
+            wardmoteMe: ["control_plane_owned", "unreviewed_target"] as const,
           },
         },
       },

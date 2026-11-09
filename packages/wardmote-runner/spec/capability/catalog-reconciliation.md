@@ -108,9 +108,9 @@ Legacy MCP aliases are indexed in `spec/capability/mcp-tool-map.yaml`
 alias row carries a `foldedInto` disposition linking it to the native eval/
 operation that now covers its behavior; the reconciliation drift test asserts
 every row has one. The authority additionally records the direct native
-operation for the well-known aliases (for example `paperclipListAgents` →
-`list_agents`, `paperclipGetAgent` → `get_agent`, `paperclipListIssues` →
-`search_tasks`, `paperclipCreateIssue` → `create_task`).
+operation for the well-known aliases (for example `wardmoteListAgents` →
+`list_agents`, `wardmoteGetAgent` → `get_agent`, `wardmoteListIssues` →
+`search_tasks`, `wardmoteCreateIssue` → `create_task`).
 
 ## Collapse decisions executed by TASK-17039
 

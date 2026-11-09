@@ -90,7 +90,7 @@ describe("heartbeat task markdown rendering", () => {
       expect(markdown).toContain("read_task_attachment");
     } else {
       expect(markdown).toContain(contentPath);
-      expect(markdown).toContain("paperclipListIssueAttachments");
+      expect(markdown).toContain("wardmoteListIssueAttachments");
     }
   });
 

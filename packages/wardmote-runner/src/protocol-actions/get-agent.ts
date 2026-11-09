@@ -25,7 +25,7 @@ export const getAgentAction = {
     "prpEvidence": "read projection surfaced via a tool-result item event; no control-plane state diff",
     "prpBindingStatus": "audit_pending",
     "legacyAliases": [
-      "mcp:paperclipGetAgent"
+      "mcp:wardmoteGetAgent"
     ],
     "note": "Live-only single-actor read; the scenario suite covers actor discovery through list_agents."
   },

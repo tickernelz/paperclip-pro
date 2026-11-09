@@ -239,7 +239,7 @@ describe("probe-derived board evidence", () => {
 
   it("advertises a ceo the export-fidelity tool a ceo agent really reaches", () => {
     const spec = generatedToolSpecs().find(
-      (entry) => entry.name === "paperclipGetExportFidelity",
+      (entry) => entry.name === "wardmoteGetExportFidelity",
     );
     expect(spec).toBeDefined();
     expect(spec!.guards).toContain("assertSameCompanyCeoAgentOrBoard");
@@ -248,7 +248,7 @@ describe("probe-derived board evidence", () => {
 
   it("keeps a probe-only tool that no agent-admitting guard reaches hidden", () => {
     const spec = generatedToolSpecs().find(
-      (entry) => entry.name === "paperclipListIssueFeedbackTraces",
+      (entry) => entry.name === "wardmoteListIssueFeedbackTraces",
     );
     expect(spec).toBeDefined();
     expect(spec!.boardGuard).toMatch(/^probe:/);
@@ -271,9 +271,9 @@ describe("probe-derived board evidence", () => {
       .map((spec) => spec.name)
       .sort();
     expect(advertised).toEqual([
-      "paperclipGetExportFidelity",
-      "paperclipGetUserMeInboxAgentPolicy",
-      "paperclipListAgentConfigurations",
+      "wardmoteGetExportFidelity",
+      "wardmoteGetUserMeInboxAgentPolicy",
+      "wardmoteListAgentConfigurations",
     ]);
   });
 });

@@ -2,29 +2,29 @@
 
 ## Tools
 
-Tools marked extended load only when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest` (`method`, `path` relative to `/api`, `jsonBody` as a JSON string) for the same job.
+Tools marked extended load only when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; otherwise use `wardmoteApiRequest` (`method`, `path` relative to `/api`, `jsonBody` as a JSON string) for the same job.
 
 | Job | Tool | Key arguments |
 | --- | ---- | ------------- |
-| Read the company adapter-configuration catalogue | `paperclipListAgentConfigurations` (extended) | `companyId` |
-| List the company skill library | `paperclipListSkills` | `companyId` |
-| Import a skill into the company library | `paperclipImportSkill` (extended) | `companyId`, import fields |
-| Read one agent's resolved configuration | `paperclipGetAgentConfiguration` (extended) | `agentId` |
-| Sync skills onto an agent | `paperclipSyncAgentSkill` (extended) | `agentId`, sync fields |
-| Submit a hire request (agent draft + approval) | `paperclipCreateAgentHire` (extended) | `companyId`, hire fields below |
-| Create an agent directly, no approval | `paperclipCreateAgent` (extended) | `companyId`, same shape as the hire fields |
-| List agent config revisions | `paperclipListAgentConfigRevisions` (extended) | `agentId` |
-| Roll back a config revision | `paperclipRollbackAgentConfigRevision` (extended) | `agentId`, `revisionId` |
-| Link an approval to an issue | `paperclipLinkIssueApproval` | `issueId`, `approvalId` |
-| List issues linked to an approval | `paperclipGetApprovalIssues` | `approvalId` |
-| Approval details | `paperclipGetApproval` | `approvalId` |
-| Approval comments | `paperclipListApprovalComments` | `approvalId` |
-| Add an approval comment | `paperclipAddApprovalComment` | `approvalId`, `body` |
-| Approve, reject, request revision (board), or resubmit | `paperclipApprovalDecision` | `approvalId`, `action` (`approve`, `reject`, `requestRevision`, `resubmit`), `decisionNote`, `payloadJson`. Agents may only use `resubmit`. |
+| Read the company adapter-configuration catalogue | `wardmoteListAgentConfigurations` (extended) | `companyId` |
+| List the company skill library | `wardmoteListSkills` | `companyId` |
+| Import a skill into the company library | `wardmoteImportSkill` (extended) | `companyId`, import fields |
+| Read one agent's resolved configuration | `wardmoteGetAgentConfiguration` (extended) | `agentId` |
+| Sync skills onto an agent | `wardmoteSyncAgentSkill` (extended) | `agentId`, sync fields |
+| Submit a hire request (agent draft + approval) | `wardmoteCreateAgentHire` (extended) | `companyId`, hire fields below |
+| Create an agent directly, no approval | `wardmoteCreateAgent` (extended) | `companyId`, same shape as the hire fields |
+| List agent config revisions | `wardmoteListAgentConfigRevisions` (extended) | `agentId` |
+| Roll back a config revision | `wardmoteRollbackAgentConfigRevision` (extended) | `agentId`, `revisionId` |
+| Link an approval to an issue | `wardmoteLinkIssueApproval` | `issueId`, `approvalId` |
+| List issues linked to an approval | `wardmoteGetApprovalIssues` | `approvalId` |
+| Approval details | `wardmoteGetApproval` | `approvalId` |
+| Approval comments | `wardmoteListApprovalComments` | `approvalId` |
+| Add an approval comment | `wardmoteAddApprovalComment` | `approvalId`, `body` |
+| Approve, reject, request revision (board), or resubmit | `wardmoteApprovalDecision` | `approvalId`, `action` (`approve`, `reject`, `requestRevision`, `resubmit`), `decisionNote`, `payloadJson`. Agents may only use `resubmit`. |
 
-Adapter documentation and the icon catalogue are plain-text documents published by the deployment at `/llms/agent-configuration.txt`, `/llms/agent-configuration/<adapterType>.txt`, and `/llms/agent-icons.txt`. They are documentation, not API operations, and have no tool; `paperclipListAgentConfigurations` returns the structured adapter-configuration catalogue.
+Adapter documentation and the icon catalogue are plain-text documents published by the deployment at `/llms/agent-configuration.txt`, `/llms/agent-configuration/<adapterType>.txt`, and `/llms/agent-icons.txt`. They are documentation, not API operations, and have no tool; `wardmoteListAgentConfigurations` returns the structured adapter-configuration catalogue.
 
-## `paperclipCreateAgentHire`
+## `wardmoteCreateAgentHire`
 
 Arguments match the agent create shape:
 

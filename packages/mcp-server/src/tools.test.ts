@@ -57,7 +57,7 @@ describe("paperclip MCP tools", () => {
     );
     vi.stubGlobal("fetch", fetchMock);
 
-    const tool = getTool("paperclipUpdateIssue");
+    const tool = getTool("wardmoteUpdateIssue");
     await tool.execute({
       issueId: "PAP-1135",
       status: "done",
@@ -79,7 +79,7 @@ describe("paperclip MCP tools", () => {
     );
     vi.stubGlobal("fetch", fetchMock);
 
-    const tool = getTool("paperclipListSkills");
+    const tool = getTool("wardmoteListSkills");
     const response = await tool.execute({});
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -96,7 +96,7 @@ describe("paperclip MCP tools", () => {
     );
     vi.stubGlobal("fetch", fetchMock);
 
-    const tool = getTool("paperclipListIssues");
+    const tool = getTool("wardmoteListIssues");
     const response = await tool.execute({});
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
@@ -111,7 +111,7 @@ describe("paperclip MCP tools", () => {
     const fetchMock = vi.fn().mockResolvedValue(mockJsonResponse([{ id: "agent-1" }]));
     vi.stubGlobal("fetch", fetchMock);
 
-    const tool = getTool("paperclipListAgents");
+    const tool = getTool("wardmoteListAgents");
     await tool.execute({});
     expect(String((fetchMock.mock.calls[0] as [string])[0])).toBe(
       "http://localhost:3100/api/companies/11111111-1111-1111-1111-111111111111/agents?view=compact",
@@ -137,20 +137,20 @@ describe("paperclip MCP tools", () => {
     const rows = async (name: string, input: Record<string, unknown>) =>
       JSON.parse((await getTool(name).execute(input)).content[0]!.text) as Array<Record<string, unknown>>;
 
-    expect((await rows("paperclipListAgents", {}))[0]).not.toHaveProperty("adapterConfig");
-    expect((await rows("paperclipListAgents", { view: "full" }))[0]).toHaveProperty("adapterConfig");
-    expect((await rows("paperclipListProjects", {}))[0]).not.toHaveProperty("primaryWorkspace");
-    expect((await rows("paperclipListProjects", {}))[0]!.workspaces).toEqual([{ id: "ws-1", isPrimary: true }]);
-    expect((await rows("paperclipListProjects", { view: "full" }))[0]).toHaveProperty("primaryWorkspace");
-    expect((await rows("paperclipListIssues", { view: "compact" }))[0]).not.toHaveProperty("description");
-    expect((await rows("paperclipListIssues", {}))[0]).toHaveProperty("description", "long body");
+    expect((await rows("wardmoteListAgents", {}))[0]).not.toHaveProperty("adapterConfig");
+    expect((await rows("wardmoteListAgents", { view: "full" }))[0]).toHaveProperty("adapterConfig");
+    expect((await rows("wardmoteListProjects", {}))[0]).not.toHaveProperty("primaryWorkspace");
+    expect((await rows("wardmoteListProjects", {}))[0]!.workspaces).toEqual([{ id: "ws-1", isPrimary: true }]);
+    expect((await rows("wardmoteListProjects", { view: "full" }))[0]).toHaveProperty("primaryWorkspace");
+    expect((await rows("wardmoteListIssues", { view: "compact" }))[0]).not.toHaveProperty("description");
+    expect((await rows("wardmoteListIssues", {}))[0]).toHaveProperty("description", "long body");
   });
 
   it("forwards the list filters the route supports", async () => {
     const fetchMock = vi.fn().mockResolvedValue(mockJsonResponse([{ id: "issue-1" }]));
     vi.stubGlobal("fetch", fetchMock);
 
-    await getTool("paperclipListIssues").execute({
+    await getTool("wardmoteListIssues").execute({
       limit: 1,
       offset: 20,
       view: "compact",
@@ -177,7 +177,7 @@ describe("paperclip MCP tools", () => {
     const fetchMock = vi.fn().mockResolvedValue(mockJsonResponse([]));
     vi.stubGlobal("fetch", fetchMock);
 
-    const result = await getTool("paperclipListIssues").execute({ stauts: "done", limit: 3 });
+    const result = await getTool("wardmoteListIssues").execute({ stauts: "done", limit: 3 });
 
     expect(result.isError).toBe(true);
     expect(result.content[0]!.text).toContain('unknown argument "stauts"; did you mean "status"?');
@@ -187,7 +187,7 @@ describe("paperclip MCP tools", () => {
   it("rejects an issue status the route does not know and accepts a valid list", async () => {
     const fetchMock = vi.fn().mockResolvedValue(mockJsonResponse([]));
     vi.stubGlobal("fetch", fetchMock);
-    const tool = getTool("paperclipListIssues");
+    const tool = getTool("wardmoteListIssues");
 
     const rejected = await tool.execute({ status: "finished" });
     expect(rejected.isError).toBe(true);
@@ -202,7 +202,7 @@ describe("paperclip MCP tools", () => {
     const fetchMock = vi.fn().mockResolvedValue(mockJsonResponse({ id: "comment-1", deliveredAs: "steered" }));
     vi.stubGlobal("fetch", fetchMock);
 
-    const result = await getTool("paperclipAddComment").execute({ issueId: "PAP-1", body: "go", deliver: "steer" });
+    const result = await getTool("wardmoteAddComment").execute({ issueId: "PAP-1", body: "go", deliver: "steer" });
 
     expect(result.isError).toBeFalsy();
     expect(JSON.parse(String(fetchMock.mock.calls[0]![1]!.body))).toMatchObject({ deliver: "steer" });
@@ -214,7 +214,7 @@ describe("paperclip MCP tools", () => {
     );
     vi.stubGlobal("fetch", fetchMock);
 
-    const tool = getTool("paperclipCheckoutIssue");
+    const tool = getTool("wardmoteCheckoutIssue");
     await tool.execute({
       issueId: "PAP-1135",
     });
@@ -232,7 +232,7 @@ describe("paperclip MCP tools", () => {
     );
     vi.stubGlobal("fetch", fetchMock);
 
-    const tool = getTool("paperclipCreateIssue");
+    const tool = getTool("wardmoteCreateIssue");
     await tool.execute({
       title: "Assigned follow-up",
       assigneeAgentId: "22222222-2222-2222-2222-222222222222",
@@ -259,7 +259,7 @@ describe("paperclip MCP tools", () => {
     );
     vi.stubGlobal("fetch", fetchMock);
 
-    const tool = getTool("paperclipUpsertIssueDocument");
+    const tool = getTool("wardmoteUpsertIssueDocument");
     await tool.execute({
       issueId: "PAP-1135",
       key: "plan",
@@ -297,7 +297,7 @@ describe("paperclip MCP tools", () => {
       }));
     vi.stubGlobal("fetch", fetchMock);
 
-    const tool = getTool("paperclipControlIssueWorkspaceServices");
+    const tool = getTool("wardmoteControlIssueWorkspaceServices");
     await tool.execute({
       issueId: "PAP-1135",
       action: "restart",
@@ -337,7 +337,7 @@ describe("paperclip MCP tools", () => {
       }));
     vi.stubGlobal("fetch", fetchMock);
 
-    const tool = getTool("paperclipWaitForIssueWorkspaceService");
+    const tool = getTool("wardmoteWaitForIssueWorkspaceService");
     const response = await tool.execute({
       issueId: "PAP-1135",
       serviceName: "web",
@@ -354,7 +354,7 @@ describe("paperclip MCP tools", () => {
     );
     vi.stubGlobal("fetch", fetchMock);
 
-    const tool = getTool("paperclipSuggestTasks");
+    const tool = getTool("wardmoteSuggestTasks");
     await tool.execute({
       issueId: "PAP-1135",
       idempotencyKey: "run-1:suggest",
@@ -384,7 +384,7 @@ describe("paperclip MCP tools", () => {
     );
     vi.stubGlobal("fetch", fetchMock);
 
-    const tool = getTool("paperclipRequestConfirmation");
+    const tool = getTool("wardmoteRequestConfirmation");
     await tool.execute({
       issueId: "PAP-1135",
       idempotencyKey: "confirmation:PAP-1135:plan:33333333-3333-4333-8333-333333333333",
@@ -438,7 +438,7 @@ describe("paperclip MCP tools", () => {
     );
     vi.stubGlobal("fetch", fetchMock);
 
-    const tool = getTool("paperclipRequestCheckboxConfirmation");
+    const tool = getTool("wardmoteRequestCheckboxConfirmation");
     await tool.execute({
       issueId: "PAP-1135",
       idempotencyKey: "confirmation:PAP-1135:files",
@@ -494,7 +494,7 @@ describe("paperclip MCP tools", () => {
     );
     vi.stubGlobal("fetch", fetchMock);
 
-    const tool = getTool("paperclipCreateApproval");
+    const tool = getTool("wardmoteCreateApproval");
     await tool.execute({
       type: "hire_agent",
       payload: { branch: "pap-1167" },
@@ -517,7 +517,7 @@ describe("paperclip MCP tools", () => {
   it("rejects invalid generic request paths", async () => {
     vi.stubGlobal("fetch", vi.fn());
 
-    const tool = getTool("paperclipApiRequest");
+    const tool = getTool("wardmoteApiRequest");
     const response = await tool.execute({
       method: "GET",
       path: "issues",
@@ -529,7 +529,7 @@ describe("paperclip MCP tools", () => {
   it("rejects generic request paths that escape /api", async () => {
     vi.stubGlobal("fetch", vi.fn());
 
-    const tool = getTool("paperclipApiRequest");
+    const tool = getTool("wardmoteApiRequest");
     const response = await tool.execute({
       method: "GET",
       path: "/../../secret",
@@ -541,7 +541,7 @@ describe("paperclip MCP tools", () => {
   it("sends a generic request body given as jsonBody string, jsonBody object, or body alias", async () => {
     const fetchMock = vi.fn().mockImplementation(async () => mockJsonResponse({ ok: true }));
     vi.stubGlobal("fetch", fetchMock);
-    const tool = getTool("paperclipApiRequest");
+    const tool = getTool("wardmoteApiRequest");
 
     const responses = [
       await tool.execute({ method: "POST", path: "/issues/PAP-1/comments", jsonBody: '{"body":"a"}' }),
@@ -563,7 +563,7 @@ describe("paperclip MCP tools", () => {
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
 
-    const response = await getTool("paperclipApiRequest").execute({
+    const response = await getTool("wardmoteApiRequest").execute({
       method: "POST",
       path: "/issues/PAP-1/comments",
       jsonBody: { body: "a" },
@@ -581,7 +581,7 @@ describe("paperclip MCP tools", () => {
     const client = await connectedClient();
 
     const result = await client.callTool({
-      name: "paperclipApiRequest",
+      name: "wardmoteApiRequest",
       arguments: { method: "POST", path: "/issues/PAP-1/comments", jsonBody: { body: "x" } },
     });
 
@@ -593,7 +593,7 @@ describe("paperclip MCP tools", () => {
   it("accepts a generic request path written with the /api prefix", async () => {
     const fetchMock = vi.fn().mockResolvedValue(mockJsonResponse({ id: "agent-1" }));
     vi.stubGlobal("fetch", fetchMock);
-    const tool = getTool("paperclipApiRequest");
+    const tool = getTool("wardmoteApiRequest");
 
     await tool.execute({ method: "GET", path: "/api/agents/me" });
     await tool.execute({ method: "GET", path: "/agents/me" });
@@ -611,12 +611,12 @@ describe("paperclip MCP tools", () => {
     vi.stubGlobal("fetch", fetchMock);
     const client = await connectedClient();
 
-    const typo = await client.callTool({ name: "paperclipListIssues", arguments: { stauts: "done", limit: 3 } });
+    const typo = await client.callTool({ name: "wardmoteListIssues", arguments: { stauts: "done", limit: 3 } });
     expect(typo.isError).toBe(true);
     expect(JSON.stringify(typo.content)).toContain("stauts");
     expect(fetchMock).not.toHaveBeenCalled();
 
-    const valid = await client.callTool({ name: "paperclipListIssues", arguments: { status: "done", limit: 3 } });
+    const valid = await client.callTool({ name: "wardmoteListIssues", arguments: { status: "done", limit: 3 } });
     expect(valid.isError).toBeFalsy();
     expect(String(fetchMock.mock.calls[0]![0])).toContain("status=done");
     await client.close();
@@ -626,7 +626,7 @@ describe("paperclip MCP tools", () => {
     const fetchMock = vi.fn().mockResolvedValue(mockJsonResponse({ ok: true }));
     vi.stubGlobal("fetch", fetchMock);
 
-    const tool = getTool("paperclipUpdateIssue");
+    const tool = getTool("wardmoteUpdateIssue");
     await tool.execute({
       issueId: "PAP-1135",
       status: "done",
@@ -644,7 +644,7 @@ describe("paperclip MCP tools", () => {
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
 
-    const response = await getTool("paperclipUpdateIssue").execute({
+    const response = await getTool("wardmoteUpdateIssue").execute({
       issueId: "PAP-1135",
       monitorNextCheckAt: "2026-01-01T00:00:00.000Z",
     });
@@ -658,7 +658,7 @@ describe("paperclip MCP tools", () => {
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
 
-    const tool = getTool("paperclipUpdateIssue");
+    const tool = getTool("wardmoteUpdateIssue");
     const response = await tool.execute({ status: "done" });
 
     expect(fetchMock).not.toHaveBeenCalled();
@@ -669,7 +669,7 @@ describe("paperclip MCP tools", () => {
     const fetchMock = vi.fn().mockResolvedValue(mockJsonResponse({ id: "interaction-1" }));
     vi.stubGlobal("fetch", fetchMock);
 
-    await getTool("paperclipRequestConfirmation").execute({
+    await getTool("wardmoteRequestConfirmation").execute({
       issueId: "PAP-1135",
       resolverPolicy: "human_only",
       addresseeAgentId: "44444444-4444-4444-4444-444444444444",

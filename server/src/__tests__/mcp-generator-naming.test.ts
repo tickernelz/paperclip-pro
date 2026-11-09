@@ -3,56 +3,56 @@ import { cappedName, NAME_LENGTH_LIMIT } from "../../../scripts/generate-mcp-too
 
 describe("generated tool name capping", () => {
   it("keeps a name that already fits", () => {
-    expect(cappedName("paperclipGetIssue", "GET", "/api/issues/{id}", new Set())).toBe(
-      "paperclipGetIssue",
+    expect(cappedName("wardmoteGetIssue", "GET", "/api/issues/{id}", new Set())).toBe(
+      "wardmoteGetIssue",
     );
   });
 
   it("drops the trailing interior path words before falling back to a digest", () => {
     const name = cappedName(
-      "paperclipListExecutionWorkspaceWorkspaceOperations",
+      "wardmoteListExecutionWorkspaceWorkspaceOperations",
       "GET",
       "/api/execution-workspaces/{id}/workspace-operations",
       new Set(),
     );
-    expect(name).toBe("paperclipListExecutionOperations");
+    expect(name).toBe("wardmoteListExecutionWorkspaceOperations");
     expect(name).not.toContain("_");
   });
 
   it("keeps the parent resource and drops interior words from the right", () => {
     const name = cappedName(
-      "paperclipCreateRoutineDescriptionAnnotationComment",
+      "wardmoteCreateRoutineDescriptionAnnotationComment",
       "POST",
       "/api/routines/{id}/description/annotations/{threadId}/comments",
       new Set(),
     );
-    expect(name).toBe("paperclipCreateRoutineDescriptionComment");
+    expect(name).toBe("wardmoteCreateRoutineDescriptionComment");
     expect(name.length).toBeLessThanOrEqual(NAME_LENGTH_LIMIT);
   });
 
   it("keeps the object's own modifiers while dropping the oldest interior word", () => {
     const name = cappedName(
-      "paperclipGetEnvironmentCustomImageTemplate",
+      "wardmoteGetEnvironmentCustomImageTemplate",
       "GET",
       "/api/environments/{environmentId}/custom-image-templates/{templateId}",
       new Set(),
     );
-    expect(name).toBe("paperclipGetEnvironmentCustomTemplate");
+    expect(name).toBe("wardmoteGetEnvironmentCustomTemplate");
   });
 
   it("appends a deterministic path digest when shortening cannot reach the limit", () => {
-    const long = "paperclipSupercalifragilisticexpialidociousResourceName";
+    const long = "wardmoteSupercalifragilisticexpialidociousResourceName";
     const path = "/api/supercalifragilisticexpialidocious-resources/{id}";
     const name = cappedName(long, "POST", path, new Set());
     expect(name.length).toBeLessThanOrEqual(NAME_LENGTH_LIMIT);
-    expect(name).toMatch(/^paperclip[A-Za-z]+_[0-9a-f]{6}$/);
+    expect(name).toMatch(/^wardmote[A-Za-z]+_[0-9a-f]{6}$/);
     expect(cappedName(long, "POST", path, new Set())).toBe(name);
   });
 
   it("appends a deterministic path digest when every shortened form is taken", () => {
-    const taken = new Set(["paperclipSupercalifragilisticexpialidociousName"]);
+    const taken = new Set(["wardmoteSupercalifragilisticexpialidociousName"]);
     const name = cappedName(
-      "paperclipSupercalifragilisticexpialidociousResourceName",
+      "wardmoteSupercalifragilisticexpialidociousResourceName",
       "POST",
       "/api/supercalifragilisticexpialidocious-resources/{id}",
       taken,
@@ -64,7 +64,7 @@ describe("generated tool name capping", () => {
 
   it("gives two different routes different digests", () => {
     const taken = new Set<string>();
-    const long = "paperclipSupercalifragilisticexpialidociousResourceName";
+    const long = "wardmoteSupercalifragilisticexpialidociousResourceName";
     const first = cappedName(long, "POST", "/api/one/deep/path", taken);
     taken.add(first);
     const second = cappedName(long, "POST", "/api/two/deep/path", taken);
@@ -73,9 +73,9 @@ describe("generated tool name capping", () => {
   });
 
   it("still resolves a collision when the base name fits", () => {
-    const taken = new Set(["paperclipGetIssue"]);
-    expect(cappedName("paperclipGetIssue", "GET", "/api/issues/{id}", taken)).not.toBe(
-      "paperclipGetIssue",
+    const taken = new Set(["wardmoteGetIssue"]);
+    expect(cappedName("wardmoteGetIssue", "GET", "/api/issues/{id}", taken)).not.toBe(
+      "wardmoteGetIssue",
     );
   });
 });

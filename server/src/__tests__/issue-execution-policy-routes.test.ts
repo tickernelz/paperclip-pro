@@ -679,7 +679,7 @@ describe("issue execution policy routes", () => {
     expect(res.body.details).toMatchObject({
       code: "agent_review_handoff_requires_subtask",
     });
-    expect(res.body.error).toContain("paperclipCreateChildIssue");
+    expect(res.body.error).toContain("wardmoteCreateChildIssue");
     expect(res.body.error).toContain("blockedByIssueIds");
     expect(mockIssueService.update).not.toHaveBeenCalled();
   });
@@ -941,7 +941,7 @@ describe("issue execution policy routes", () => {
     expect(res.body.details).toMatchObject({
       code: "agent_reassign_requires_subtask",
     });
-    expect(res.body.error).toContain("paperclipCreateChildIssue");
+    expect(res.body.error).toContain("wardmoteCreateChildIssue");
     expect(mockIssueService.update).not.toHaveBeenCalled();
   });
 

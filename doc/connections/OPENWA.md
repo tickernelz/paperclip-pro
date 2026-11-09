@@ -1014,7 +1014,7 @@ once is not staged.
   one message giving each card's question, its options with the recommended one
   first and the task link, and to never answer a card itself.
 - The owner answers in that chat. The reply starts an ordinary owner run, and
-  the agent submits it with `paperclipAnswerDecisionForOwner` as usual.
+  the agent submits it with `wardmoteAnswerDecisionForOwner` as usual.
 - A card already resolved before the wake is settled as
   `openwa_pending_card_resolved` without a wake. A wake that fails to dispatch
   is retried with a growing delay, up to 5 attempts.
