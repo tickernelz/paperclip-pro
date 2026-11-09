@@ -1090,9 +1090,6 @@ describe("agent issue mutation checkout ownership", () => {
   });
 
   it("rejects the checked-out owner without a run id on attachment upload (401)", async () => {
-    // Regression: an agent-authenticated client (e.g. the CLI's attachment:upload)
-    // that fails to send X-Paperclip-Run-Id must be rejected — mutating your own
-    // in-progress checkout requires proving run ownership.
     const app = await createApp({
       type: "agent",
       agentId: ownerAgentId,

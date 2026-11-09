@@ -3,7 +3,7 @@ import type { IssueAttachment } from "@tickernelz/wardmote-shared";
 const PURGEABLE_CONTENT_PATH_RE =
   /^\/api\/(?:attachments\/[^/?#]+|assets\/[^/?#]+|public\/share\/[^/?#]+\/assets\/[^/?#]+)\/content\/?$/;
 
-export const PURGED_AT_HEADER = "X-Paperclip-Purged-At";
+export const PURGED_AT_HEADER = "X-Wardmote-Purged-At";
 
 export interface PurgedContent {
   purgedAt: string | null;

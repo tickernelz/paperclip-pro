@@ -287,7 +287,7 @@ async function retryAgentPatchWithCurrentLockOnConflict(
 
     const lockedRunId = issueRunLock.checkoutRunId ?? issueRunLock.executionRunId ?? fallbackRunId;
     res = await agent.request.patch(`${BASE_URL}/api/issues/${issueId}`, {
-      headers: { "X-Paperclip-Run-Id": lockedRunId },
+      headers: { "X-Wardmote-Run-Id": lockedRunId },
       data: patchData,
     });
   }
@@ -327,7 +327,7 @@ async function agentPatch(
   const runId = await invokeHeartbeat(board, agent.agentId, issueId);
   const patchWith = (patchRunId: string) =>
     agent.request.patch(`${BASE_URL}/api/issues/${issueId}`, {
-      headers: { "X-Paperclip-Run-Id": patchRunId },
+      headers: { "X-Wardmote-Run-Id": patchRunId },
       data,
     });
 
@@ -354,14 +354,14 @@ async function agentCheckoutAndPatch(
 ) {
   const runId = await invokeHeartbeat(board, agent.agentId, issueId);
   const directPatchRes = await agent.request.patch(`${BASE_URL}/api/issues/${issueId}`, {
-    headers: { "X-Paperclip-Run-Id": runId },
+    headers: { "X-Wardmote-Run-Id": runId },
     data: patchData,
   });
   if (directPatchRes.ok()) return directPatchRes;
 
   // Checkout (sets executionRunId so PATCH is allowed)
   const checkoutRes = await agent.request.post(`${BASE_URL}/api/issues/${issueId}/checkout`, {
-    headers: { "X-Paperclip-Run-Id": runId },
+    headers: { "X-Wardmote-Run-Id": runId },
     data: { agentId: agent.agentId, expectedStatuses },
   });
   if (!checkoutRes.ok()) {
@@ -394,7 +394,7 @@ async function agentCheckoutAndPatch(
   }
   // PATCH with agent identity
   const res = await agent.request.patch(`${BASE_URL}/api/issues/${issueId}`, {
-    headers: { "X-Paperclip-Run-Id": runId },
+    headers: { "X-Wardmote-Run-Id": runId },
     data: patchData,
   });
   const retried = await retryAgentPatchWithCurrentLockOnConflict(

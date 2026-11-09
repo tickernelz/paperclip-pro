@@ -27,7 +27,7 @@ vi.mock("../context/CompanyContext", () => ({ useOptionalCompany: () => null }))
 const fetchMock = vi.fn();
 
 function goneResponse(purgedAt: string) {
-  return new Response(null, { status: 410, headers: { "X-Paperclip-Purged-At": purgedAt } });
+  return new Response(null, { status: 410, headers: { "X-Wardmote-Purged-At": purgedAt } });
 }
 
 describe("retention tombstones in markdown", () => {

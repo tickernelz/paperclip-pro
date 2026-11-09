@@ -96,7 +96,7 @@ async function cp(method: string, apiPath: string, body?: Json): Promise<any> {
     headers: {
       "content-type": "application/json",
       authorization: `Bearer ${CP_KEY}`,
-      "x-paperclip-run-id": CP_RUN,
+      "x-wardmote-run-id": CP_RUN,
     },
     body: body === undefined ? undefined : JSON.stringify(body),
   });
@@ -148,7 +148,7 @@ async function cpUploadAsset(file: string): Promise<string | null> {
     form.append("namespace", "smoke-lab");
     const res = await fetch(`${CP_BASE}/api/companies/${CP_COMPANY}/assets/images`, {
       method: "POST",
-      headers: { authorization: `Bearer ${CP_KEY}`, "x-paperclip-run-id": CP_RUN },
+      headers: { authorization: `Bearer ${CP_KEY}`, "x-wardmote-run-id": CP_RUN },
       body: form as any,
     });
     if (!res.ok) {
@@ -174,7 +174,7 @@ async function cpAttach(issueId: string, file: string): Promise<boolean> {
     form.append("file", new Blob([buf], { type: "image/png" }), path.basename(file));
     const res = await fetch(`${CP_BASE}/api/companies/${CP_COMPANY}/issues/${issueId}/attachments`, {
       method: "POST",
-      headers: { authorization: `Bearer ${CP_KEY}`, "x-paperclip-run-id": CP_RUN },
+      headers: { authorization: `Bearer ${CP_KEY}`, "x-wardmote-run-id": CP_RUN },
       body: form as any,
     });
     if (!res.ok) {

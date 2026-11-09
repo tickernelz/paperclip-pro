@@ -661,10 +661,10 @@ export function routineRoutes(
     }
     const result = await svc.firePublicTrigger(req.params.publicId as string, {
       authorizationHeader: req.header("authorization"),
-      signatureHeader: req.header("x-paperclip-signature"),
+      signatureHeader: req.header("x-wardmote-signature"),
       hubSignatureHeader: req.header("x-hub-signature-256"),
       firefliesSignatureHeader: req.header("x-hub-signature"),
-      timestampHeader: req.header("x-paperclip-timestamp"),
+      timestampHeader: req.header("x-wardmote-timestamp"),
       idempotencyKey: req.header("idempotency-key") ?? req.header("x-github-delivery"),
       rawBody: (req as { rawBody?: Buffer }).rawBody ?? null,
       payload: typeof req.body === "object" && req.body !== null ? req.body as Record<string, unknown> : null,

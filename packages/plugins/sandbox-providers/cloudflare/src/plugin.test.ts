@@ -134,9 +134,9 @@ describe("Cloudflare sandbox provider plugin", () => {
         headers: expect.any(Headers),
       }),
     );
-    expect(requestHeadersAt().get("X-Paperclip-Run-Id")).toBe("run-1");
-    expect(requestHeadersAt().get("X-Paperclip-Environment-Id")).toBe("env-1");
-    expect(requestHeadersAt().get("X-Paperclip-Issue-Id")).toBe("issue-1");
+    expect(requestHeadersAt().get("X-Wardmote-Run-Id")).toBe("run-1");
+    expect(requestHeadersAt().get("X-Wardmote-Environment-Id")).toBe("env-1");
+    expect(requestHeadersAt().get("X-Wardmote-Issue-Id")).toBe("issue-1");
     expect(requestBodyAt()).toMatchObject({
       environmentId: "env-1",
       runId: "run-1",
@@ -392,6 +392,6 @@ describe("Cloudflare sandbox provider plugin", () => {
       },
     })).rejects.toThrow("Failed to prepare Cloudflare sandbox workspace at /workspace/paperclip: mkdir: permission denied");
 
-    expect(requestHeadersAt().get("X-Paperclip-Issue-Id")).toBe("issue-1");
+    expect(requestHeadersAt().get("X-Wardmote-Issue-Id")).toBe("issue-1");
   });
 });

@@ -39,7 +39,7 @@ describe("standalone Node commentary helper", () => {
     const server = createServer(async (request, response) => {
       const chunks: Buffer[] = [];
       for await (const chunk of request) chunks.push(chunk);
-      requests.push({ url: request.url, method: request.method, authorization: request.headers.authorization, runId: request.headers["x-paperclip-run-id"], payload: JSON.parse(Buffer.concat(chunks).toString("utf8")) });
+      requests.push({ url: request.url, method: request.method, authorization: request.headers.authorization, runId: request.headers["x-wardmote-run-id"], payload: JSON.parse(Buffer.concat(chunks).toString("utf8")) });
       reply(response);
     });
     servers.push(server);

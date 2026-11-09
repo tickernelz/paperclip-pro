@@ -82,13 +82,8 @@ export interface JsonSchemaNode {
    * When true, the field is hidden behind an "Advanced options" disclosure
    * in the top-level `JsonSchemaForm`. Defaults to false (essential).
    */
-  "x-paperclip-advanced"?: boolean;
-  /**
-   * Optional sub-section name used to group advanced fields under headings
-   * inside the disclosure (e.g. "SSH access", "VM resources"). Ignored when
-   * `x-paperclip-advanced` is not true.
-   */
-  "x-paperclip-group"?: string;
+  "x-wardmote-advanced"?: boolean;
+  "x-wardmote-group"?: string;
 
   // Allow extra keys
   [key: string]: unknown;
@@ -1333,9 +1328,9 @@ export function JsonSchemaForm({
 
     for (const entry of Object.entries(properties)) {
       const [key, propSchema] = entry;
-      if (propSchema["x-paperclip-advanced"] === true) {
+      if (propSchema["x-wardmote-advanced"] === true) {
         advancedKeys.add(key);
-        const rawGroup = propSchema["x-paperclip-group"];
+        const rawGroup = propSchema["x-wardmote-group"];
         const group = typeof rawGroup === "string" && rawGroup.length > 0
           ? rawGroup
           : DEFAULT_GROUP;

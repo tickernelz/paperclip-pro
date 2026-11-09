@@ -118,7 +118,7 @@ export function paperclipMcpRoutes(db: Db) {
       apiKey: token,
       companyId,
       agentId,
-      runId: req.actor.runId ?? req.header("x-paperclip-run-id")?.trim() ?? null,
+      runId: req.actor.runId ?? req.header("x-wardmote-run-id")?.trim() ?? null,
       toolsets,
       agentRole: agent?.role ?? null,
     });

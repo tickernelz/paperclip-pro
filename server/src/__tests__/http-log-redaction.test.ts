@@ -486,14 +486,14 @@ describe("HTTP logger redaction", () => {
 
     await request(app)
       .post("/runtime-tools/github/credentials")
-      .set("X-Paperclip-Github-Capability", capability)
+      .set("X-Wardmote-Github-Capability", capability)
       .send({})
       .expect(status);
 
     const output = chunks.join("");
     expect(output).not.toContain(capability);
     const log = JSON.parse(output.trim());
-    expect(log.req.headers["x-paperclip-github-capability"]).toBe("[Redacted]");
+    expect(log.req.headers["x-wardmote-github-capability"]).toBe("[Redacted]");
     expect(log.req.url).toBe("/runtime-tools/github/credentials");
     expect(log.res.statusCode).toBe(status);
   });

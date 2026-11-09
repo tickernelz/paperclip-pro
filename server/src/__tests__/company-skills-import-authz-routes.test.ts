@@ -186,7 +186,7 @@ describeEmbeddedPostgres("company skill import authorization routes", () => {
     const res = await request(authenticatedApp())
       .post(`/api/companies/${companyId}/skills/import`)
       .set("Authorization", `Bearer ${token}`)
-      .set("X-Paperclip-Run-Id", runId)
+      .set("X-Wardmote-Run-Id", runId)
       .send({ source: skillDir });
 
     expect(res.status, JSON.stringify(res.body)).toBe(201);

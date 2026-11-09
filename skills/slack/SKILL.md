@@ -15,7 +15,7 @@ If several are available, pass the chosen resource ID as `endpointId`.
 
 For CLI/sandbox runtimes, POST the same strict arguments to
 `$WARDMOTE_API_URL/api/companies/$WARDMOTE_COMPANY_ID/slack/tasks/$WARDMOTE_TASK_ID/tools`
-with `Authorization: Bearer $WARDMOTE_API_KEY`, `X-Paperclip-Run-Id: $WARDMOTE_RUN_ID`
+with `Authorization: Bearer $WARDMOTE_API_KEY`, `X-Wardmote-Run-Id: $WARDMOTE_RUN_ID`
 and JSON `{ "endpointId": "<assigned resource id>", "tool": "slack_history", "arguments": { "channel": "C..." } }`.
 Read the adjacent `TOOLS.json` file for every operation’s exact argument schema.
 Never print credentials. Native and HTTP calls share validation and authorization.

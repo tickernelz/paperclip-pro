@@ -7325,7 +7325,7 @@ describeEmbeddedPostgres("issueService.addComment createdByRunId", () => {
     expect(comment.body).toBe("transaction-safe comment");
   });
 
-  it("nulls out a non-UUID x-paperclip-run-id instead of 500-ing", async () => {
+  it("nulls out a non-UUID x-wardmote-run-id instead of 500-ing", async () => {
     const comment = await svc.addComment(issueId, "hello from a synthetic run id", {
       runId: "client-request-abc123",
     });

@@ -524,12 +524,12 @@ const sensitivePassthroughHeaderNames = new Set([
   "proxy-authorization",
   "cookie",
   "set-cookie",
-  "x-paperclip-tool-gateway-token",
+  "x-wardmote-tool-gateway-token",
 ]);
 
 function isSensitivePassthroughHeader(name: string) {
   return (
-    name.startsWith("x-paperclip-") ||
+    name.startsWith("x-wardmote-") ||
     sensitivePassthroughHeaderNames.has(name) ||
     sensitivePassthroughHeaderPattern.test(name)
   );
@@ -692,7 +692,7 @@ function safeClientMetadata(
   headers: Record<string, string | string[] | undefined> | undefined,
 ) {
   const clientName =
-    safeHeaderValue(headers, "x-paperclip-client-name", 120) ??
+    safeHeaderValue(headers, "x-wardmote-client-name", 120) ??
     safeHeaderValue(headers, "mcp-client-name", 120) ??
     null;
   const correlationId =
@@ -3523,7 +3523,7 @@ export function createToolGatewayService(
     };
     for (const key of policy.metadataHeaders) {
       const value = values[key];
-      if (value) headers[`x-paperclip-${key.replace(/_/g, "-")}`] = value;
+      if (value) headers[`x-wardmote-${key.replace(/_/g, "-")}`] = value;
     }
     return headers;
   }

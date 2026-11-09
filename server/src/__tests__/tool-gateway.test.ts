@@ -1053,7 +1053,7 @@ describeEmbeddedPostgres("tool gateway acceptance", () => {
     const first = await request(app)
       .post(`/mcp/gateways/${created.gatewayPublicId}`)
       .set("authorization", `Bearer ${badToken}`)
-      .set("x-paperclip-client-name", "Noisy client")
+      .set("x-wardmote-client-name", "Noisy client")
       .set("x-request-id", "auth-throttle-test")
       .send({ jsonrpc: "2.0", id: 1, method: "tools/list" })
       .expect(401);
@@ -1062,7 +1062,7 @@ describeEmbeddedPostgres("tool gateway acceptance", () => {
     const throttled = await request(app)
       .post(`/mcp/gateways/${created.gatewayPublicId}`)
       .set("authorization", `Bearer ${badToken}`)
-      .set("x-paperclip-client-name", "Noisy client")
+      .set("x-wardmote-client-name", "Noisy client")
       .set("x-request-id", "auth-throttle-test")
       .send({ jsonrpc: "2.0", id: 2, method: "tools/list" })
       .expect(429);
@@ -1165,7 +1165,7 @@ describeEmbeddedPostgres("tool gateway acceptance", () => {
     const throttled = await request(createGatewayRouteApp(db, serviceB))
       .post(`/mcp/gateways/${created.gatewayPublicId}`)
       .set("authorization", `Bearer ${badToken}`)
-      .set("x-paperclip-client-name", "Shared counter client")
+      .set("x-wardmote-client-name", "Shared counter client")
       .set("x-request-id", "auth-limiter-shared-test")
       .send({ jsonrpc: "2.0", id: 2, method: "tools/list" })
       .expect(429);
@@ -2760,9 +2760,9 @@ rl.on("line", (line) => {
       expect(fakeRequest.headers.authorization).toBe(`Bearer ${credentialValue}`);
       expect(fakeRequest.headers["x-client-request-id"]).toBe("caller-123");
       expect(fakeRequest.headers["x-static-mode"]).toBe("canary");
-      expect(fakeRequest.headers["x-paperclip-agent-id"]).toBe(agent.id);
-      expect(fakeRequest.headers["x-paperclip-issue-id"]).toBe(issue.id);
-      expect(fakeRequest.headers["x-paperclip-tool-gateway-token"]).toBeUndefined();
+      expect(fakeRequest.headers["x-wardmote-agent-id"]).toBe(agent.id);
+      expect(fakeRequest.headers["x-wardmote-issue-id"]).toBe(issue.id);
+      expect(fakeRequest.headers["x-wardmote-tool-gateway-token"]).toBeUndefined();
       expect(fakeRequest.headers["x-unlisted-header"]).toBeUndefined();
       return {
         body: {
@@ -2800,7 +2800,7 @@ rl.on("line", (line) => {
             headerPolicy: {
               allowManagedCredentialOverride: true,
               passthrough: {
-                allowedHeaders: ["x-client-request-id", "authorization", "x-paperclip-tool-gateway-token"],
+                allowedHeaders: ["x-client-request-id", "authorization", "x-wardmote-tool-gateway-token"],
                 allowManagedCredentialOverride: true,
               },
               staticHeaders: [{ name: "x-static-mode", value: "canary" }],
@@ -2823,7 +2823,7 @@ rl.on("line", (line) => {
         callerHeaders: {
           authorization: "Bearer caller-must-not-win",
           "x-client-request-id": "caller-123",
-          "x-paperclip-tool-gateway-token": "caller-session-token",
+          "x-wardmote-tool-gateway-token": "caller-session-token",
           "x-unlisted-header": "drop-me",
         },
       });
@@ -2838,14 +2838,14 @@ rl.on("line", (line) => {
           passthroughHeaderNames: ["x-client-request-id"],
           droppedPassthroughHeaderNames: expect.arrayContaining([
             "authorization",
-            "x-paperclip-tool-gateway-token",
+            "x-wardmote-tool-gateway-token",
             "x-unlisted-header",
           ]),
           staticHeaderNames: ["x-static-mode"],
-          metadataHeaderNames: ["x-paperclip-agent-id", "x-paperclip-issue-id"],
+          metadataHeaderNames: ["x-wardmote-agent-id", "x-wardmote-issue-id"],
           collisionRules: expect.arrayContaining([
             { header: "authorization", source: "caller", action: "kept_managed_credential" },
-            { header: "x-paperclip-tool-gateway-token", source: "caller", action: "dropped_sensitive_header" },
+            { header: "x-wardmote-tool-gateway-token", source: "caller", action: "dropped_sensitive_header" },
           ]),
         },
       });
@@ -2870,7 +2870,7 @@ rl.on("line", (line) => {
     const fake = await startFakeRemoteMcpServer((fakeRequest) => {
       expect(fakeRequest.headers.authorization).toBeUndefined();
       expect(fakeRequest.headers["x-auth-token"]).toBeUndefined();
-      expect(fakeRequest.headers["x-paperclip-tool-gateway-token"]).toBeUndefined();
+      expect(fakeRequest.headers["x-wardmote-tool-gateway-token"]).toBeUndefined();
       expect(fakeRequest.headers["x-client-request-id"]).toBe("caller-456");
       return {
         body: {
@@ -2896,7 +2896,7 @@ rl.on("line", (line) => {
                   "authorization",
                   "x-auth-token",
                   "x-client-request-id",
-                  "x-paperclip-tool-gateway-token",
+                  "x-wardmote-tool-gateway-token",
                 ],
               },
             },
@@ -2918,7 +2918,7 @@ rl.on("line", (line) => {
           authorization: "Bearer caller-should-drop",
           "x-auth-token": "drop-auth-token",
           "x-client-request-id": "caller-456",
-          "x-paperclip-tool-gateway-token": "drop-gateway-token",
+          "x-wardmote-tool-gateway-token": "drop-gateway-token",
         },
       });
 
@@ -2933,12 +2933,12 @@ rl.on("line", (line) => {
           droppedPassthroughHeaderNames: expect.arrayContaining([
             "authorization",
             "x-auth-token",
-            "x-paperclip-tool-gateway-token",
+            "x-wardmote-tool-gateway-token",
           ]),
           collisionRules: expect.arrayContaining([
             { header: "authorization", source: "caller", action: "dropped_sensitive_header" },
             { header: "x-auth-token", source: "caller", action: "dropped_sensitive_header" },
-            { header: "x-paperclip-tool-gateway-token", source: "caller", action: "dropped_sensitive_header" },
+            { header: "x-wardmote-tool-gateway-token", source: "caller", action: "dropped_sensitive_header" },
           ]),
         },
       });
@@ -4672,7 +4672,7 @@ rl.on("line", (line) => {
 
     const listWithHeaderToken = await request(app)
       .get("/api/tool-gateway/tools")
-      .set("x-paperclip-tool-gateway-token", session.token);
+      .set("x-wardmote-tool-gateway-token", session.token);
     expect(listWithHeaderToken.status).toBe(200);
   });
 
@@ -4697,7 +4697,7 @@ rl.on("line", (line) => {
 
     const beforeRevoke = await request(app)
       .get("/api/tool-gateway/tools")
-      .set("x-paperclip-tool-gateway-token", session.token);
+      .set("x-wardmote-tool-gateway-token", session.token);
     expect(beforeRevoke.status).toBe(200);
 
     const revoked = await request(app)
@@ -4712,7 +4712,7 @@ rl.on("line", (line) => {
 
     const afterRevoke = await request(app)
       .get("/api/tool-gateway/tools")
-      .set("x-paperclip-tool-gateway-token", session.token);
+      .set("x-wardmote-tool-gateway-token", session.token);
     expect(afterRevoke.status).toBe(401);
     expect(afterRevoke.body.reasonCode).toBe("session_revoked");
 
@@ -4777,7 +4777,7 @@ rl.on("line", (line) => {
 
     const stillActive = await request(app)
       .get("/api/tool-gateway/tools")
-      .set("x-paperclip-tool-gateway-token", session.token);
+      .set("x-wardmote-tool-gateway-token", session.token);
     expect(stillActive.status).toBe(200);
 
     const revokedRows = await db
@@ -4819,7 +4819,7 @@ rl.on("line", (line) => {
 
     const otherRunStillActive = await request(app)
       .get("/api/tool-gateway/tools")
-      .set("x-paperclip-tool-gateway-token", otherRunSession.token);
+      .set("x-wardmote-tool-gateway-token", otherRunSession.token);
     expect(otherRunStillActive.status).toBe(200);
 
     const ownRun = await request(app)
@@ -4829,7 +4829,7 @@ rl.on("line", (line) => {
 
     const ownRunDenied = await request(app)
       .get("/api/tool-gateway/tools")
-      .set("x-paperclip-tool-gateway-token", session.token);
+      .set("x-wardmote-tool-gateway-token", session.token);
     expect(ownRunDenied.status).toBe(401);
     expect(ownRunDenied.body.reasonCode).toBe("session_revoked");
   });

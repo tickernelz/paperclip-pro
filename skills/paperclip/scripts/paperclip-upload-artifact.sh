@@ -137,7 +137,7 @@ request_json() {
       curl -sS -X "$method" -w '%{http_code}' -o "$response_file" \
         "$url" \
         -H "Authorization: Bearer $WARDMOTE_API_KEY" \
-        -H "X-Paperclip-Run-Id: $WARDMOTE_RUN_ID" \
+        -H "X-Wardmote-Run-Id: $WARDMOTE_RUN_ID" \
         -H 'Content-Type: application/json' \
         --data-binary "$body"
     )"
@@ -146,7 +146,7 @@ request_json() {
       curl -sS -X "$method" -w '%{http_code}' -o "$response_file" \
         "$url" \
         -H "Authorization: Bearer $WARDMOTE_API_KEY" \
-        -H "X-Paperclip-Run-Id: $WARDMOTE_RUN_ID"
+        -H "X-Wardmote-Run-Id: $WARDMOTE_RUN_ID"
     )"
   fi
 
@@ -179,7 +179,7 @@ upload_file() {
     curl -sS -X POST -w '%{http_code}' -o "$response_file" \
       "$url" \
       -H "Authorization: Bearer $WARDMOTE_API_KEY" \
-      -H "X-Paperclip-Run-Id: $WARDMOTE_RUN_ID" \
+      -H "X-Wardmote-Run-Id: $WARDMOTE_RUN_ID" \
       -F "file=@\"${escaped_path}\";type=${content_type}"
   )" || curl_status=$?
 

@@ -287,7 +287,7 @@ test.describe("Pipelines tutorial UI flow", () => {
       baseURL: BASE_URL,
       extraHTTPHeaders: {
         Authorization: `Bearer ${key.token}`,
-        "X-Paperclip-Run-Id": key.runId,
+        "X-Wardmote-Run-Id": key.runId,
       },
     });
 

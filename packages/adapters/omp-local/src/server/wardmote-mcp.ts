@@ -94,7 +94,7 @@ export async function probePaperclipMcpEndpoint(input: {
       signal: controller.signal,
       headers: {
         Authorization: `Bearer ${input.apiKey}`,
-        "X-Paperclip-Run-Id": input.runId,
+        "X-Wardmote-Run-Id": input.runId,
         "Content-Type": "application/json",
         Accept: "application/json, text/event-stream",
       },

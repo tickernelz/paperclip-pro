@@ -316,7 +316,7 @@
   "rules": {
     "companyAuthorization": [
       "Every entity read and write is resolved inside the authenticated actor's company; cross-company identifiers fail without disclosing protected facts.",
-      "Board actors use active membership and role permissions. Agent writes require a company-scoped run JWT and X-Paperclip-Run-Id; active-task tools cannot accept a caller-selected company or arbitrary task.",
+      "Board actors use active membership and role permissions. Agent writes require a company-scoped run JWT and X-Wardmote-Run-Id; active-task tools cannot accept a caller-selected company or arbitrary task.",
       "Optional tools are omitted unless every required claim, role, and task-mode condition is satisfied. A grant never bypasses approval, budget, pause, execution-lock, interaction-owner, or other governed-action checks."
     ],
     "taskModes": [

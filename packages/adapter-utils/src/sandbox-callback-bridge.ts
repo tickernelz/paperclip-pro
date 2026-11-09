@@ -232,7 +232,7 @@ export const DEFAULT_SANDBOX_CALLBACK_BRIDGE_HEADER_ALLOWLIST = [
   "content-type",
   "if-match",
   "if-none-match",
-  "x-paperclip-github-capability",
+  "x-wardmote-github-capability",
 ] as const;
 
 export interface SandboxCallbackBridgeRequest extends SandboxCallbackBridgeBody {
@@ -1193,7 +1193,7 @@ export async function startSandboxCallbackBridgeWorker(input: {
             status: 504,
             headers: {
               "content-type": "application/json",
-              "x-paperclip-bridge-outcome": "indeterminate",
+              "x-wardmote-bridge-outcome": "indeterminate",
             },
             body: JSON.stringify({
               error: error instanceof Error ? error.message : String(error),
@@ -1257,7 +1257,7 @@ export async function startSandboxCallbackBridgeWorker(input: {
             status: 504,
             headers: {
               "content-type": "application/json",
-              "x-paperclip-bridge-outcome": "indeterminate",
+              "x-wardmote-bridge-outcome": "indeterminate",
             },
             body: JSON.stringify({ error: message, outcome: "indeterminate", retryable: false }),
             completedAt: new Date().toISOString(),
@@ -2555,7 +2555,7 @@ async function runFileGateway() {
       // mutation twice. Map the indeterminate outcome to a non-retryable 409, so a
       // standard retry policy does not repeat the request. The outcome header and
       // body stay, so a caller that reads them still sees the indeterminate result.
-      const bridgeOutcome = responseHeaders["x-paperclip-bridge-outcome"];
+      const bridgeOutcome = responseHeaders["x-wardmote-bridge-outcome"];
       if (bridgeOutcome === "indeterminate") {
         res.statusCode = 409;
       } else {
@@ -2571,7 +2571,7 @@ async function runFileGateway() {
       // dispatched, a missing or corrupt receipt cannot prove that it failed.
       const uncertainWrite = dispatched && !["GET", "HEAD", "OPTIONS", "TRACE"].includes(req.method || "GET");
       const status = uncertainWrite ? 409 : error instanceof BridgeProcessCapacityError ? 503 : 502;
-      if (uncertainWrite) res.setHeader("x-paperclip-bridge-outcome", "indeterminate");
+      if (uncertainWrite) res.setHeader("x-wardmote-bridge-outcome", "indeterminate");
       writeJsonResponse(res, status, {
         error: error instanceof Error ? error.message : String(error),
         ...(uncertainWrite ? { outcome: "indeterminate", retryable: false } : {}),
@@ -2799,7 +2799,7 @@ function runHttp2Gateway() {
       // mutation twice. Map the indeterminate outcome to a non-retryable 409, so a
       // standard retry policy does not repeat the request. The outcome header and
       // body stay, so a caller that reads them still sees the indeterminate result.
-      const bridgeOutcome = (response.headers || {})["x-paperclip-bridge-outcome"];
+      const bridgeOutcome = (response.headers || {})["x-wardmote-bridge-outcome"];
       if (bridgeOutcome === "indeterminate") {
         res.statusCode = 409;
       } else {

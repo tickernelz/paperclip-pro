@@ -281,12 +281,12 @@ describe("JsonSchemaForm secret-ref rendering", () => {
               apiKey: { type: "string", format: "secret-ref" },
               sshPort: {
                 type: "number",
-                "x-paperclip-advanced": true,
-                "x-paperclip-group": "SSH access",
+                "x-wardmote-advanced": true,
+                "x-wardmote-group": "SSH access",
               },
               namePrefix: {
                 type: "string",
-                "x-paperclip-advanced": true,
+                "x-wardmote-advanced": true,
               },
             },
           }}
@@ -333,7 +333,7 @@ describe("JsonSchemaForm secret-ref rendering", () => {
         apiKey: { type: "string" as const, format: "secret-ref" as const },
         sshPort: {
           type: "number" as const,
-          "x-paperclip-advanced": true,
+          "x-wardmote-advanced": true,
         },
       },
     };

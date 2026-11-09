@@ -133,7 +133,7 @@ optional artifact. If the API returns `403 Cases are disabled`, stop and report
 that the operator must enable `experimental.enableCases`.
 
 Use the current release issue's `WARDMOTE_COMPANY_ID`, `WARDMOTE_API_URL`,
-`WARDMOTE_API_KEY`, and `WARDMOTE_RUN_ID`. Include `X-Paperclip-Run-Id` on
+`WARDMOTE_API_KEY`, and `WARDMOTE_RUN_ID`. Include `X-Wardmote-Run-Id` on
 all writes so the case activity feed can attribute the run back to the issue.
 
 Create or upsert the parent `release` case first:

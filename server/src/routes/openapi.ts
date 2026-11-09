@@ -2042,7 +2042,7 @@ function applyDocumentFixups(document: any): any {
         operation.security = BOARD_SECURITY;
       }
 
-      operation["x-paperclip-authorization"] =
+      operation["x-wardmote-authorization"] =
         authLevel === "instance_admin"
           ? { actor: "board", instanceAdmin: true }
           : authLevel === "board"
@@ -2059,7 +2059,7 @@ function applyDocumentFixups(document: any): any {
 
       if (isVoiceSessionOperation(path)) {
         operation.security = [{[BOARD_SESSION_AUTH_SCHEME]: []}];
-        operation["x-paperclip-authorization"] = {actor: "board", sessionBound: true};
+        operation["x-wardmote-authorization"] = {actor: "board", sessionBound: true};
       }
 
       const key = operationKey(method, path);
@@ -6653,7 +6653,7 @@ registry.registerPath({
   path: "/api/companies/{companyId}/agent-commentary",
   tags: ["agents"],
   summary: "Submit internally attributed agent feedback",
-  description: "Requires an active legacy agent run: a run-bound agent JWT, or an agent API key with X-Paperclip-Run-Id. Attribution is derived from authority; ownership fields are rejected. Equivalent replay returns the existing acknowledgement. Native runs use their bound feedback tools. Failure must not interrupt the primary task or trigger retries.",
+  description: "Requires an active legacy agent run: a run-bound agent JWT, or an agent API key with X-Wardmote-Run-Id. Attribution is derived from authority; ownership fields are rejected. Equivalent replay returns the existing acknowledgement. Native runs use their bound feedback tools. Failure must not interrupt the primary task or trigger retries.",
   request: {
     params: z.object({ companyId: z.string() }),
     body: jsonBody(submitAgentCommentarySchema),

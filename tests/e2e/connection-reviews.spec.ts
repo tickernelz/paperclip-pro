@@ -51,7 +51,7 @@ function reviewAgentScript(connectionId: string, query: string) {
   return `
 const base = process.env.WARDMOTE_API_URL + "/api";
 
-const headers = { authorization: "Bearer " + process.env.WARDMOTE_API_KEY, "content-type": "application/json", "x-paperclip-run-id": process.env.WARDMOTE_RUN_ID };
+const headers = { authorization: "Bearer " + process.env.WARDMOTE_API_KEY, "content-type": "application/json", "x-wardmote-run-id": process.env.WARDMOTE_RUN_ID };
 const api = async (path, method = "GET", body) => {
   const response = await fetch(base + path, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
   if (!response.ok) throw new Error(await response.text());
@@ -76,7 +76,7 @@ if (review && review.status !== "pending") {
   process.exit(0);
 }
 const session = await api("/tool-gateway/sessions", "POST", { runId: process.env.WARDMOTE_RUN_ID, ttlMs: 60000 });
-const gatewayHeaders = { "x-paperclip-tool-gateway-token": session.token, "content-type": "application/json" };
+const gatewayHeaders = { "x-wardmote-tool-gateway-token": session.token, "content-type": "application/json" };
 const tools = await (await fetch(base + "/tool-gateway/tools", { headers: gatewayHeaders })).json();
 const tool = tools.find(t => t.connectionId === ${JSON.stringify(connectionId)} && t.upstreamToolName === "notion:list_pages");
 if (!tool) throw new Error("Missing fixture connection");

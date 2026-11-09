@@ -532,7 +532,7 @@ actually mounted.
 Adapters that cannot mount, and every run with `paperclipMcp` off, get
 `paperclipRestGuidance()` instead: `curl` with `$WARDMOTE_API_URL`,
 `Authorization: Bearer $WARDMOTE_API_KEY` and
-`X-Paperclip-Run-Id: $WARDMOTE_RUN_ID`. No `paperclip*` tool name reaches those
+`X-Wardmote-Run-Id: $WARDMOTE_RUN_ID`. No `paperclip*` tool name reaches those
 prompts. The `paperclip` skill carries the same fallback under
 **No `paperclip*` tools in this runtime**.
 
@@ -546,7 +546,7 @@ appended, so the operator's own `~/.omp/agent/mcp.json` servers keep loading.
 By default the entry is `type: http` and points at the server-hosted endpoint
 `$WARDMOTE_API_URL/mcp/paperclip?toolsets=core`, with
 `Authorization: Bearer ${WARDMOTE_API_KEY}` (an env reference, never a literal)
-and `X-Paperclip-Run-Id`. That costs no process and no extra memory per run.
+and `X-Wardmote-Run-Id`. That costs no process and no extra memory per run.
 `paperclipMcpTransport: stdio` is the fallback: it spawns the bundled
 `paperclip-mcp-server` with the run's identity in its env. The adapter config
 also exposes `paperclipMcp` (default on) and `paperclipMcpToolsets`

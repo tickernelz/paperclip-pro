@@ -401,7 +401,7 @@ function splitRequiredOptional(schema: JsonSchemaNode): JsonSchemaNode {
   const next: Record<string, JsonSchemaNode> = {};
   for (const [key, prop] of Object.entries(props)) {
     const presented = key === "code" && prop.type === "string" && !prop.format ? { ...prop, format: "textarea" } : prop;
-    next[key] = required.has(key) ? presented : { ...presented, "x-paperclip-advanced": true };
+    next[key] = required.has(key) ? presented : { ...presented, "x-wardmote-advanced": true };
   }
   return { ...schema, properties: next };
 }

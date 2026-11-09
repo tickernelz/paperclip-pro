@@ -224,7 +224,7 @@ describe("sandbox callback bridge", () => {
         authorization: `Bearer ${bridgeToken}`,
         accept: "application/json",
         "if-none-match": '"client-cache-key"',
-        "x-paperclip-run-id": "run-bridge-1",
+        "x-wardmote-run-id": "run-bridge-1",
         "x-bridge-debug": "drop-me",
       },
     });
@@ -273,14 +273,14 @@ describe("sandbox callback bridge", () => {
       },
     });
     expect(seenRequests[0]?.headers.authorization).toBeUndefined();
-    expect(seenRequests[0]?.headers["x-paperclip-run-id"]).toBeUndefined();
+    expect(seenRequests[0]?.headers["x-wardmote-run-id"]).toBeUndefined();
 
     const githubResponse = await fetch(`${bridge.baseUrl}/runtime-tools/github/credentials`, {
       method: "POST",
       headers: {
         authorization: `Bearer ${bridgeToken}`,
         "content-type": "application/json",
-        "x-paperclip-github-capability": "test-run-scoped-capability",
+        "x-wardmote-github-capability": "test-run-scoped-capability",
       },
       body: "{}",
     });
@@ -288,7 +288,7 @@ describe("sandbox callback bridge", () => {
     await githubResponse.arrayBuffer();
     expect(seenRequests[1]).toMatchObject({
       method: "POST", path: "/runtime-tools/github/credentials", body: "{}",
-      headers: { "x-paperclip-github-capability": "test-run-scoped-capability" },
+      headers: { "x-wardmote-github-capability": "test-run-scoped-capability" },
     });
     expect(seenRequests[1]?.headers.authorization).toBeUndefined();
 
@@ -2241,7 +2241,7 @@ describe("sandbox callback bridge", () => {
     const responseBody = JSON.parse(parsed.body);
     expect(responseBody.outcome).toBe("indeterminate");
     expect(responseBody.retryable).toBe(false);
-    expect(parsed.headers?.["x-paperclip-bridge-outcome"]).toBe("indeterminate");
+    expect(parsed.headers?.["x-wardmote-bridge-outcome"]).toBe("indeterminate");
     expect(responseWrites.some((write) => write.status === 503)).toBe(false);
     expect(responseWrites.some((write) => write.status === 502)).toBe(false);
     // The backstop removed the request file, so it does not strand in the queue.
@@ -2348,7 +2348,7 @@ describe("sandbox callback bridge", () => {
     const responseBody = JSON.parse(parsed.body);
     expect(responseBody.outcome).toBe("indeterminate");
     expect(responseBody.retryable).toBe(false);
-    expect(parsed.headers?.["x-paperclip-bridge-outcome"]).toBe("indeterminate");
+    expect(parsed.headers?.["x-wardmote-bridge-outcome"]).toBe("indeterminate");
 
     expect(requestRemovals).toContain(requestPath);
 
@@ -2632,7 +2632,7 @@ describe("sandbox callback bridge", () => {
     const responseBody = JSON.parse(parsed.body);
     expect(responseBody.outcome).toBe("indeterminate");
     expect(responseBody.retryable).toBe(false);
-    expect(parsed.headers?.["x-paperclip-bridge-outcome"]).toBe("indeterminate");
+    expect(parsed.headers?.["x-wardmote-bridge-outcome"]).toBe("indeterminate");
     // The finalize writes failed before the backstop wrote, so it took a later
     // attempt.
     expect(writeAttempts).toBeGreaterThanOrEqual(4);
@@ -2842,7 +2842,7 @@ describe("sandbox callback bridge", () => {
     // possibly-committed mutation. The outcome header and body still forward, so a
     // caller that reads them still sees the indeterminate result.
     const source = getSandboxCallbackBridgeServerSource();
-    expect(source).toContain("x-paperclip-bridge-outcome");
+    expect(source).toContain("x-wardmote-bridge-outcome");
     expect(source).toContain('=== "indeterminate"');
     expect(source).toContain("res.statusCode = 409");
   });
@@ -3727,7 +3727,7 @@ describe("sandbox callback bridge", () => {
       bridgeToken,
       forwardRequest: async () => ({
         status: 504,
-        headers: { "content-type": "application/json", "x-paperclip-bridge-outcome": "indeterminate" },
+        headers: { "content-type": "application/json", "x-wardmote-bridge-outcome": "indeterminate" },
         body: Buffer.from(indeterminateBody, "utf8"),
       }),
     });
@@ -3740,7 +3740,7 @@ describe("sandbox callback bridge", () => {
 
     expect(response.status).toBe(409);
     expect(response.status).toBeLessThan(500);
-    expect(response.headers.get("x-paperclip-bridge-outcome")).toBe("indeterminate");
+    expect(response.headers.get("x-wardmote-bridge-outcome")).toBe("indeterminate");
     const responseBytes = Buffer.from(await response.arrayBuffer());
     expect(responseBytes.toString("utf8")).toBe(indeterminateBody);
   }, 15_000);
@@ -3765,7 +3765,7 @@ describe("sandbox callback bridge", () => {
     });
 
     expect(response.status).toBe(503);
-    expect(response.headers.get("x-paperclip-bridge-outcome")).toBeNull();
+    expect(response.headers.get("x-wardmote-bridge-outcome")).toBeNull();
   }, 15_000);
 
   async function startQueueGatewayForFileTest(options: {
@@ -3840,7 +3840,7 @@ describe("sandbox callback bridge", () => {
       method: "POST", headers: { authorization: `Bearer ${gateway.bridgeToken}`, "content-type": "multipart/form-data; boundary=boundary" }, body: Buffer.from([0xff]),
     });
     expect(response.status).toBe(409);
-    expect(response.headers.get("x-paperclip-bridge-outcome")).toBe("indeterminate");
+    expect(response.headers.get("x-wardmote-bridge-outcome")).toBe("indeterminate");
     await expect(response.json()).resolves.toMatchObject({ retryable: false, outcome: "indeterminate" });
     expect(handled).toHaveBeenCalledTimes(1);
   });

@@ -70,10 +70,6 @@ export function resolveCommandContext(
     );
   }
 
-  // Agent-authenticated mutations (checkout, release, interactions, PATCH of an
-  // in-progress issue) require the X-Paperclip-Run-Id header (the server returns
-  // "401 Agent run id required" without it). Source it from --run-id, else the
-  // WARDMOTE_RUN_ID env the adapter/embodiment context already exports.
   const runId = options.runId?.trim() || process.env.WARDMOTE_RUN_ID?.trim() || undefined;
 
   const api = new PaperclipApiClient({

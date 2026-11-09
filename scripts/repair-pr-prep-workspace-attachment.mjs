@@ -41,7 +41,7 @@ const apiBase = apiUrl.replace(/\/$/, "").replace(/\/api$/, "");
 const headers = {
   Authorization: `Bearer ${apiKey}`,
   "Content-Type": "application/json",
-  ...(process.env.WARDMOTE_RUN_ID ? { "X-Paperclip-Run-Id": process.env.WARDMOTE_RUN_ID } : {}),
+  ...(process.env.WARDMOTE_RUN_ID ? { "X-Wardmote-Run-Id": process.env.WARDMOTE_RUN_ID } : {}),
 };
 
 let failed = false;

@@ -7,7 +7,7 @@ export const WARDMOTE_MCP_BIN = "paperclip-mcp-server";
 export const WARDMOTE_MCP_DEFAULT_TOOLSETS = "core";
 export const WARDMOTE_MCP_TOOLSETS_ENV = "WARDMOTE_MCP_TOOLSETS";
 export const WARDMOTE_MCP_HTTP_PATH = "/mcp/paperclip";
-export const WARDMOTE_MCP_RUN_ID_HEADER = "X-Paperclip-Run-Id";
+export const WARDMOTE_MCP_RUN_ID_HEADER = "X-Wardmote-Run-Id";
 
 const RUN_ENV_KEYS = [
   "WARDMOTE_API_URL",
@@ -169,11 +169,11 @@ export function paperclipRestGuidance(options: { shellHint?: string } = {}): str
     shell
       ? `Use ${shell} with curl; normalize the base URL first: WARDMOTE_API_BASE="\${WARDMOTE_API_URL%/}"; WARDMOTE_API_BASE="\${WARDMOTE_API_BASE%/api}".`
       : 'Use a terminal with curl; normalize the base URL first: WARDMOTE_API_BASE="${WARDMOTE_API_URL%/}"; WARDMOTE_API_BASE="${WARDMOTE_API_BASE%/api}".',
-    'Send `Authorization: Bearer $WARDMOTE_API_KEY` on every request and `X-Paperclip-Run-Id: $WARDMOTE_RUN_ID` on every mutation.',
+    'Send `Authorization: Bearer $WARDMOTE_API_KEY` on every request and `X-Wardmote-Run-Id: $WARDMOTE_RUN_ID` on every mutation.',
     "GET example:",
     '  curl -s -H "Authorization: Bearer $WARDMOTE_API_KEY" "$WARDMOTE_API_BASE/api/agents/me"',
     "Write example:",
-    '  curl -s -X POST -H "Authorization: Bearer $WARDMOTE_API_KEY" -H "Content-Type: application/json" -H "X-Paperclip-Run-Id: $WARDMOTE_RUN_ID" -d \'{"body":"Status update from agent."}\' "$WARDMOTE_API_BASE/api/issues/$WARDMOTE_TASK_ID/comments"',
+    '  curl -s -X POST -H "Authorization: Bearer $WARDMOTE_API_KEY" -H "Content-Type: application/json" -H "X-Wardmote-Run-Id: $WARDMOTE_RUN_ID" -d \'{"body":"Status update from agent."}\' "$WARDMOTE_API_BASE/api/issues/$WARDMOTE_TASK_ID/comments"',
     "Never send a placeholder like {id} in a URL; substitute a real issue id from the current context.",
     "Do not copy printed tokens into comments or config; reference the environment variables.",
   ].join("\n");

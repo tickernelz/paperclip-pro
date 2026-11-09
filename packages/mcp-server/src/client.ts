@@ -89,7 +89,7 @@ export class PaperclipApiClient {
       headers["Content-Type"] = "application/json";
     }
     if ((options.includeRunId ?? isWriteMethod(method)) && this.config.runId) {
-      headers["X-Paperclip-Run-Id"] = this.config.runId;
+      headers["X-Wardmote-Run-Id"] = this.config.runId;
     }
 
     const response = await fetch(url, {

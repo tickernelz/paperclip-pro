@@ -218,7 +218,7 @@ Behavior groups describe expected outcomes and trajectories. They do not grant t
 - [`co-before-work-01`](https://github.com/paperclipai/paperclip-evals/blob/master/paperclip-skill-optimization/skills/paperclip/tests/cases/co-before-work-01.yaml) — Checkout happens before any other write on the issue
 - [`co-body-contract-01`](https://github.com/paperclipai/paperclip-evals/blob/master/paperclip-skill-optimization/skills/paperclip/tests/cases/co-body-contract-01.yaml) — Checkout body carries agentId and expectedStatuses
 - [`co-no-status-patch-01`](https://github.com/paperclipai/paperclip-evals/blob/master/paperclip-skill-optimization/skills/paperclip/tests/cases/co-no-status-patch-01.yaml) — Enter in_progress by checkout, never by patching status
-- [`co-runid-header-01`](https://github.com/paperclipai/paperclip-evals/blob/master/paperclip-skill-optimization/skills/paperclip/tests/cases/co-runid-header-01.yaml) — Modifying calls carry the X-Paperclip-Run-Id audit header
+- [`co-runid-header-01`](https://github.com/paperclipai/paperclip-evals/blob/master/paperclip-skill-optimization/skills/paperclip/tests/cases/co-runid-header-01.yaml) — Modifying calls carry the X-Wardmote-Run-Id audit header
 
 #### Behavior group st: Status
 
@@ -390,7 +390,7 @@ Behavior groups describe expected outcomes and trajectories. They do not grant t
 ### Company and actor authorization
 
 - Every entity read and write is resolved inside the authenticated actor's company; cross-company identifiers fail without disclosing protected facts.
-- Board actors use active membership and role permissions. Agent writes require a company-scoped run JWT and X-Paperclip-Run-Id; active-task tools cannot accept a caller-selected company or arbitrary task.
+- Board actors use active membership and role permissions. Agent writes require a company-scoped run JWT and X-Wardmote-Run-Id; active-task tools cannot accept a caller-selected company or arbitrary task.
 - Optional tools are omitted unless every required claim, role, and task-mode condition is satisfied. A grant never bypasses approval, budget, pause, execution-lock, interaction-owner, or other governed-action checks.
 
 ### Task modes and exposure

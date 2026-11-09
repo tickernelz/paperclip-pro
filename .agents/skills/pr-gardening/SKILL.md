@@ -103,7 +103,7 @@ Every `needs_gardening` PR here was opened by this instance (Stage A guarantees 
 
 3. **Run the prepare skill.** Create one focused child task per PR assigned to a coder agent (prefer CodexCoder) instructing it to run `/prepare-paperclip-pr` for that PR — include the PR URL, branch, current head SHA, and the exact machine-detected `reasons[]` from `readiness.json`. If you are the gardener and already have the PR's branch checked out in a worktree, you may run `/prepare-paperclip-pr` directly instead of delegating. Either way, the prepare work must never merge, approve, or close the PR.
 
-4. **Leave the marker comment.** Comment on the originating issue with the marker above, the current head SHA, the copied `reasons[]`, the round counter, and a link to the prepare task. Use `POST /api/issues/:issueId/comments` with `X-Paperclip-Run-Id`. Include `resume: true` when the issue is terminal so the comment creates a live continuation.
+4. **Leave the marker comment.** Comment on the originating issue with the marker above, the current head SHA, the copied `reasons[]`, the round counter, and a link to the prepare task. Use `POST /api/issues/:issueId/comments` with `X-Wardmote-Run-Id`. Include `resume: true` when the issue is terminal so the comment creates a live continuation.
 
 Suggested body:
 
@@ -137,7 +137,7 @@ Inbox tidy-up: archived [PAP-310](/PAP/issues/PAP-310) from the responsible user
 This archive is audited and reversible; later issue activity may resurface the item.
 ```
 
-Use `POST /api/issues/:issueId/comments` and include `X-Paperclip-Run-Id` on both the archive and comment requests. In `--dry-run`, report the archive and marker comment that would have been written, but perform neither mutation.
+Use `POST /api/issues/:issueId/comments` and include `X-Wardmote-Run-Id` on both the archive and comment requests. In `--dry-run`, report the archive and marker comment that would have been written, but perform neither mutation.
 
 ## Stage E — Monitor to Termination
 

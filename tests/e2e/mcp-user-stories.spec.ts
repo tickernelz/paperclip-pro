@@ -61,7 +61,7 @@ const sessionRes = await fetch(\`\${process.env.WARDMOTE_API_URL}/api/tool-gatew
 if (!sessionRes.ok) throw new Error(\`session \${sessionRes.status}: \${await sessionRes.text()}\`);
 const session = await sessionRes.json();
 const toolsRes = await fetch(\`\${process.env.WARDMOTE_API_URL}/api/tool-gateway/tools\`, {
-  headers: { "x-paperclip-tool-gateway-token": session.token }
+  headers: { "x-wardmote-tool-gateway-token": session.token }
 });
 if (!toolsRes.ok) throw new Error(\`tools \${toolsRes.status}: \${await toolsRes.text()}\`);
 const tools = await toolsRes.json();
@@ -74,7 +74,7 @@ const callRes = await fetch(\`\${process.env.WARDMOTE_API_URL}/api/tool-gateway/
   method: "POST",
   headers: {
     "content-type": "application/json",
-    "x-paperclip-tool-gateway-token": session.token
+    "x-wardmote-tool-gateway-token": session.token
   },
   body: JSON.stringify({
     tool: tool.name,

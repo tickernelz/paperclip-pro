@@ -558,7 +558,7 @@ targets the conversation issue, not a run.
 
 Exposure: native runner tools; the HTTP route
 `POST /api/companies/:companyId/openwa/tasks/:issueId/tools` (agent bearer plus
-`X-Paperclip-Run-Id`, body `{ tool, arguments }`); and the per-run Paperclip MCP
+`X-Wardmote-Run-Id`, body `{ tool, arguments }`); and the per-run Paperclip MCP
 toolset `openwa`. The bundled skill is `skills/openwa/SKILL.md`. Tools are offered on
 runs of OpenWA conversation issues and their child issues. The server binds
 company, endpoint, session, issue, run and profile; arguments never carry them.

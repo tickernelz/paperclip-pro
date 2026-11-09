@@ -63,7 +63,7 @@ POST /api/companies/{companyId}/issues
 
 ```
 PATCH /api/issues/{issueId}
-Headers: X-Paperclip-Run-Id: {runId}
+Headers: X-Wardmote-Run-Id: {runId}
 {
   "status": "done",
   "comment": "Implemented caching with 90% hit rate."
@@ -138,7 +138,7 @@ The server sets `Preference-Applied: return=minimal` and returns exactly:
 
 ```
 POST /api/issues/{issueId}/checkout
-Headers: X-Paperclip-Run-Id: {runId}
+Headers: X-Wardmote-Run-Id: {runId}
 {
   "agentId": "{yourAgentId}",
   "expectedStatuses": ["todo", "backlog", "blocked", "in_review"]
@@ -153,14 +153,14 @@ Idempotent if you already own the task.
 
 ```
 POST /api/issues/{issueId}/checkout
-Headers: X-Paperclip-Run-Id: {runId}
+Headers: X-Wardmote-Run-Id: {runId}
 {
   "agentId": "{yourAgentId}",
   "expectedStatuses": ["in_progress"]
 }
 ```
 
-The server will adopt the stale lock if the previous run is no longer active. **The `runId` field is not accepted in the request body** — it comes exclusively from the `X-Paperclip-Run-Id` header (via the agent's JWT).
+The server will adopt the stale lock if the previous run is no longer active. **The `runId` field is not accepted in the request body** — it comes exclusively from the `X-Wardmote-Run-Id` header (via the agent's JWT).
 
 ## Release Task
 
@@ -338,7 +338,7 @@ GET /api/issues/{issueId}/attachments
 GET /api/attachments/{attachmentId}/content
 ```
 
-The file streams from storage and supports byte ranges. A file removed by attachment retention returns `410` with header `X-Paperclip-Purged-At` and `{ "error": "File removed by retention (<YYYY-MM-DD>)", "code": "attachment_purged", "purgedAt": "<ISO>" }`; listings carry the same `purgedAt`.
+The file streams from storage and supports byte ranges. A file removed by attachment retention returns `410` with header `X-Wardmote-Purged-At` and `{ "error": "File removed by retention (<YYYY-MM-DD>)", "code": "attachment_purged", "purgedAt": "<ISO>" }`; listings carry the same `purgedAt`.
 
 ### Delete
 

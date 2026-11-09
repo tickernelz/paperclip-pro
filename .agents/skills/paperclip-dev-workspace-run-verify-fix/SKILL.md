@@ -111,13 +111,13 @@ workspace that should be freshly ready.
 ## Managed start / stop
 
 Use the runtime-service endpoints on the main control plane. Include
-`X-Paperclip-Run-Id` so the mutation is associated with the current heartbeat.
+`X-Wardmote-Run-Id` so the mutation is associated with the current heartbeat.
 
 ```sh
 curl -sS -X POST \
   "$WARDMOTE_API_URL/api/execution-workspaces/$EXECUTION_WORKSPACE_ID/runtime-services/stop" \
   -H "Authorization: Bearer $WARDMOTE_API_KEY" \
-  -H "X-Paperclip-Run-Id: $WARDMOTE_RUN_ID" \
+  -H "X-Wardmote-Run-Id: $WARDMOTE_RUN_ID" \
   -H "Content-Type: application/json" \
   --data-binary '{"workspaceCommandId":"service:paperclip-dev"}'
 ```
@@ -126,7 +126,7 @@ curl -sS -X POST \
 curl -sS -X POST \
   "$WARDMOTE_API_URL/api/execution-workspaces/$EXECUTION_WORKSPACE_ID/runtime-services/start" \
   -H "Authorization: Bearer $WARDMOTE_API_KEY" \
-  -H "X-Paperclip-Run-Id: $WARDMOTE_RUN_ID" \
+  -H "X-Wardmote-Run-Id: $WARDMOTE_RUN_ID" \
   -H "Content-Type: application/json" \
   --data-binary '{"workspaceCommandId":"service:paperclip-dev"}'
 ```
@@ -182,7 +182,7 @@ If the port owner is a sibling workspace's process (port squat):
 curl -sS -X POST \
   "$WARDMOTE_API_URL/api/execution-workspaces/$EXECUTION_WORKSPACE_ID/runtime-services/restart" \
   -H "Authorization: Bearer $WARDMOTE_API_KEY" \
-  -H "X-Paperclip-Run-Id: $WARDMOTE_RUN_ID" \
+  -H "X-Wardmote-Run-Id: $WARDMOTE_RUN_ID" \
   -H "Content-Type: application/json" \
   --data-binary '{"workspaceCommandId":"service:paperclip-dev"}'
 ```

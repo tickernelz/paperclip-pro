@@ -117,7 +117,7 @@ while :; do
     curl -sS -m 30 -X PATCH \
       "$WARDMOTE_API_URL/api/issues/$issue_id" \
       -H "Authorization: Bearer $WARDMOTE_API_KEY" \
-      -H "X-Paperclip-Run-Id: $WARDMOTE_RUN_ID" \
+      -H "X-Wardmote-Run-Id: $WARDMOTE_RUN_ID" \
       -H 'Content-Type: application/json' \
       --data-binary "$payload" \
       -w '\n%{http_code}'

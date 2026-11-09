@@ -52,9 +52,9 @@ export const WORKSPACE_HANDOFF_KEY_ENV_KEY = HANDOFF_KEY_ENV;
 export const WORKSPACE_READINESS_TOKEN_ENV_KEY = READINESS_TOKEN_ENV;
 export const WORKSPACE_EXECUTION_WORKSPACE_ID_ENV_KEY = EXECUTION_WORKSPACE_ID_ENV;
 export const WORKSPACE_EXECUTION_WORKSPACE_COMPANY_ID_ENV_KEY = EXECUTION_WORKSPACE_COMPANY_ID_ENV;
-export const WORKSPACE_READINESS_TOKEN_HEADER = "x-paperclip-workspace-readiness-token";
-export const WORKSPACE_READINESS_USER_ID_HEADER = "x-paperclip-workspace-readiness-user-id";
-export const WORKSPACE_READINESS_USER_EMAIL_HEADER = "x-paperclip-workspace-readiness-user-email";
+export const WORKSPACE_READINESS_TOKEN_HEADER = "x-wardmote-workspace-readiness-token";
+export const WORKSPACE_READINESS_USER_ID_HEADER = "x-wardmote-workspace-readiness-user-id";
+export const WORKSPACE_READINESS_USER_EMAIL_HEADER = "x-wardmote-workspace-readiness-user-email";
 
 export type WorkspaceHandoffTicketPayload = {
   /** Envelope version. */

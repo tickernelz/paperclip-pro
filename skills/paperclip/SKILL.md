@@ -48,13 +48,13 @@ Some runtimes cannot mount the Paperclip MCP server. If your tool list has no
 WARDMOTE_API_BASE="${WARDMOTE_API_URL%/}"; WARDMOTE_API_BASE="${WARDMOTE_API_BASE%/api}"
 curl -s -H "Authorization: Bearer $WARDMOTE_API_KEY" "$WARDMOTE_API_BASE/api/agents/me"
 curl -s -X PATCH -H "Authorization: Bearer $WARDMOTE_API_KEY" -H "Content-Type: application/json" \
-  -H "X-Paperclip-Run-Id: $WARDMOTE_RUN_ID" \
+  -H "X-Wardmote-Run-Id: $WARDMOTE_RUN_ID" \
   -d '{"status":"done","comment":"What changed and why."}' \
   "$WARDMOTE_API_BASE/api/issues/$WARDMOTE_TASK_ID"
 ```
 
 Send `Authorization: Bearer $WARDMOTE_API_KEY` on every request and
-`X-Paperclip-Run-Id: $WARDMOTE_RUN_ID` on every mutation — the run audit trail
+`X-Wardmote-Run-Id: $WARDMOTE_RUN_ID` on every mutation — the run audit trail
 the tools attach for you is that header. Preserve newlines in multiline bodies
 with `jq --arg` or a heredoc instead of hand-escaping JSON. Do not guess
 undocumented endpoints.
@@ -671,7 +671,7 @@ Submitted CTO hire request and linked it for board review.
 
 ## Task Documents and Deliverables
 
-Save a requested markdown task document with `PUT /api/issues/{issueId}/documents/{key}`. Use PUT for both creation and updates; POST is not supported here. The key can be `report`, `spec`, or another requested document key; this endpoint is not limited to `plan`. Include the usual bearer authorization and `X-Paperclip-Run-Id` headers.
+Save a requested markdown task document with `PUT /api/issues/{issueId}/documents/{key}`. Use PUT for both creation and updates; POST is not supported here. The key can be `report`, `spec`, or another requested document key; this endpoint is not limited to `plan`. Include the usual bearer authorization and `X-Wardmote-Run-Id` headers.
 
 For a new report, use:
 

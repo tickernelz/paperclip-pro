@@ -37,7 +37,7 @@ async function request(message) {
             const base = process.env.WARDMOTE_API_URL.replace(/\/api\/?$/, '').replace(/\/$/, '');
             const response = await fetch(`${base}/api/issues/${process.env.WARDMOTE_TASK_ID}`, {
               method: 'PATCH',
-              headers: { 'content-type': 'application/json', authorization: `Bearer ${process.env.WARDMOTE_API_KEY}`, 'X-Paperclip-Run-Id': process.env.WARDMOTE_RUN_ID },
+              headers: { 'content-type': 'application/json', authorization: `Bearer ${process.env.WARDMOTE_API_KEY}`, 'X-Wardmote-Run-Id': process.env.WARDMOTE_RUN_ID },
               body: JSON.stringify({ status: 'done' }),
             });
             if (!response.ok) throw new Error(`Task completion failed: ${response.status} ${await response.text()}`);

@@ -933,14 +933,14 @@ describeEmbeddedPostgres("OpenWA run authority", () => {
       const seed = await seedCompany(db);
       const readOnly = await seedRun(db, seed, { profile: "read_only", openwa: openwaContext(seed, {}) });
       const denied = await request(app()).post("/runtime-tools/github/credentials").set(
-        "x-paperclip-github-capability",
+        "x-wardmote-github-capability",
         createRuntimeToolsToken({ agentId: seed.agentId, companyId: seed.companyId, runId: readOnly.runId, responsibleUserId: BOARD_USER, scope: "github_credentials" })!.token,
       ).send({});
       expect(denied.status).toBe(403);
       expect(denied.body).toMatchObject({ code: "openwa_approval_required", details: { category: "external_tools" } });
       const full = await seedRun(db, seed, { profile: "full", openwa: openwaContext(seed, { triggerClass: "owner", profile: "full" }) });
       const reached = await request(app()).post("/runtime-tools/github/credentials").set(
-        "x-paperclip-github-capability",
+        "x-wardmote-github-capability",
         createRuntimeToolsToken({ agentId: seed.agentId, companyId: seed.companyId, runId: full.runId, responsibleUserId: BOARD_USER, scope: "github_credentials" })!.token,
       ).send({});
       expect(reached.body.code).not.toBe("openwa_approval_required");
@@ -957,7 +957,7 @@ describeEmbeddedPostgres("OpenWA run authority", () => {
       server.use(errorHandler);
       const before = counted.queries.length;
       await request(server).post("/runtime-tools/github/credentials").set(
-        "x-paperclip-github-capability",
+        "x-wardmote-github-capability",
         createRuntimeToolsToken({ agentId: seed.agentId, companyId: seed.companyId, runId: full.runId, responsibleUserId: BOARD_USER, scope: "github_credentials" })!.token,
       ).send({});
       expect(counted.queries.slice(before).filter((query) => query.includes('from "heartbeat_runs"')).length).toBe(2);

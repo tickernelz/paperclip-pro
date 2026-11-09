@@ -120,7 +120,7 @@ describe("generated Paperclip API tools", () => {
     );
     expect(init.method).toBe("PATCH");
     expect(JSON.parse(String(init.body))).toEqual({ title: "Ship it" });
-    expect((init.headers as Record<string, string>)["X-Paperclip-Run-Id"]).toBe(
+    expect((init.headers as Record<string, string>)["X-Wardmote-Run-Id"]).toBe(
       "33333333-3333-3333-3333-333333333333",
     );
   });

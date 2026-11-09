@@ -153,7 +153,7 @@ export async function executeRunnerApi(input: RunnerApiCall, context: RunnerApiC
   input = validated;
   const url = runnerApiUrl(operation, input, context, io.apiUrl);
   if (!io.token) throw new Error("Paperclip run authentication is unavailable");
-  const headers = new Headers({ Authorization: `Bearer ${io.token}`, "X-Paperclip-Run-Id": context.runId });
+  const headers = new Headers({ Authorization: `Bearer ${io.token}`, "X-Wardmote-Run-Id": context.runId });
   const textOffset = input.responseText?.offsetBytes ?? 0;
   const textLimit = input.responseText?.limitBytes ?? RUNNER_API_INLINE_BYTES;
   const assetTextRange = operation.operationId === "GET /api/assets/{assetId}/content"

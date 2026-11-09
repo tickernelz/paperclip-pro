@@ -169,7 +169,7 @@ A routine can have multiple triggers of different kinds.
 - The result includes the webhook URL (`publicId`-based) and the signing secret
 - External systems fire that returned URL directly:
   - Bearer: `Authorization` header carrying the returned secret
-  - HMAC: `X-Paperclip-Signature` + `X-Paperclip-Timestamp` headers
+  - HMAC: `X-Wardmote-Signature` + `X-Wardmote-Timestamp` headers
 
 ### API (manual only)
 

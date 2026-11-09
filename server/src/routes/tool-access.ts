@@ -702,7 +702,7 @@ function connectorEnrollmentPrincipal(req: Request): string {
       res.status(401).json({ error: "Agent run id required", code: "run_id_required" });
       return;
     }
-    const headerRunId = req.get("X-Paperclip-Run-Id")?.trim();
+    const headerRunId = req.get("X-Wardmote-Run-Id")?.trim();
     if (headerRunId && headerRunId !== req.actor.runId) {
       res.status(403).json({ error: "Run id header does not match agent token", code: "run_id_mismatch" });
       return;
