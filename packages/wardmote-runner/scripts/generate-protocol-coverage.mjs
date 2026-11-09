@@ -50,7 +50,7 @@ const lifecycleRequirements = [
   ["real-control-plane-binding", "advertised runner tools re-authorize the live company, issue, agent, and run before using real Paperclip services", "server/src/services/native-runtime/paperclip-runner-tool-authority.test.ts; server/src/services/native-runtime/paperclip-runner-real-server.integration.test.ts"],
   ["shared-paperclip-prp-route", "Rust runnerd authenticates to the shared Paperclip server route and completes a real bound semantic tool call", "server/src/realtime/runner-prp-ws.test.ts; server/src/services/native-runtime/paperclip-runner-real-server.integration.test.ts"],
   ["real-control-plane-idempotency", "real service mutations are replay-safe and reject conflicting idempotency-key reuse", "server/src/services/native-runtime/paperclip-runner-tool-authority.test.ts"],
-  ["paperclip-thread-projection", "committed PRP reasoning and semantic tool items render in the existing Paperclip task chat", "ui/src/adapters/paperclip-runner/index.test.ts; server/src/services/native-runtime/paperclip-control-plane-port.test.ts"],
+  ["paperclip-thread-projection", "committed PRP reasoning and semantic tool items render in the existing Paperclip task chat", "ui/src/adapters/wardmote-runner/index.test.ts; server/src/services/native-runtime/paperclip-control-plane-port.test.ts"],
 ];
 
 const actions = catalog.map((action) => ({

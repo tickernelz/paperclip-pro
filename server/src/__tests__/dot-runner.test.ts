@@ -17,7 +17,7 @@ import { createPublicMcpExecutor } from "../services/public-mcp/capabilities.js"
 import { publicMcpIngressRoutes, publicMcpManagementRoutes } from "../routes/public-mcp.js";
 import { createPublicMcpEvents, type EventFetch } from "../services/public-mcp/events.js";
 import { instanceSettingsService } from "../services/instance-settings.js";
-import { canonicalNativeRuntimeContextDigest, type StrictCompletionContractInput } from "../vendor/paperclip-runner/index.js";
+import { canonicalNativeRuntimeContextDigest, type StrictCompletionContractInput } from "../vendor/wardmote-runner/index.js";
 import { createDotRunnerMcpTools, dotRunnerBroker } from "../services/dot-runner-broker.js";
 import { prepareNativeHeartbeatRun } from "../services/native-runtime/prepare-native-run.js";
 import { buildNativeExecutionInput } from "../services/native-runtime/native-execution-input.js";

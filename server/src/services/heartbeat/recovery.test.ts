@@ -36,8 +36,8 @@ vi.mock("../native-runtime/index.js", async (importOriginal) => ({
   reconcileRetainedNativeSessionCleanups: native.cleanups,
   claimNativeRestartRecoveries: native.claims,
 }));
-vi.mock("../../vendor/paperclip-runner/index.js", async (importOriginal) => ({
-  ...await importOriginal<typeof import("../../vendor/paperclip-runner/index.js")>(),
+vi.mock("../../vendor/wardmote-runner/index.js", async (importOriginal) => ({
+  ...await importOriginal<typeof import("../../vendor/wardmote-runner/index.js")>(),
   drainRetainedRunnerdMaintenanceOperations: native.drainMaintenance,
 }));
 

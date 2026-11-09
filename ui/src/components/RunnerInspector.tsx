@@ -31,7 +31,7 @@ import {
 } from "lucide-react";
 import { heartbeatsApi, type ProviderTraceInspection } from "@/api/heartbeats";
 import { accessApi } from "@/api/access";
-import { parsePaperclipRunnerStdoutLine } from "@/adapters/paperclip-runner";
+import { parsePaperclipRunnerStdoutLine } from "@/adapters/wardmote-runner";
 import { TaskChatProtocolCard } from "@/components/task-chat/TaskChatProtocolCard";
 import type { TaskChatProtocolItem } from "@/components/task-chat/task-chat-model";
 import { transcriptToTaskChatItems } from "@/components/task-chat/transcript-adapter";

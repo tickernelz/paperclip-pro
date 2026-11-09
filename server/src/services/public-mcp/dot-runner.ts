@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { DotHarnessDriver } from "../../vendor/paperclip-runner/index.js";
+import type { DotHarnessDriver } from "../../vendor/wardmote-runner/index.js";
 import type { McpPrincipal } from "./oauth.js";
 
 // Structural boundary works for a source-loaded lab and the built runner alike;

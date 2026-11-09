@@ -20,9 +20,9 @@ import type {
 import { startEmbeddedPostgresTestDatabase } from "../../__tests__/helpers/embedded-postgres.js";
 
 const provider = vi.hoisted(() => ({ execute: vi.fn() }));
-vi.mock("../../vendor/paperclip-runner/index.js", async (importOriginal) => ({
+vi.mock("../../vendor/wardmote-runner/index.js", async (importOriginal) => ({
   ...(await importOriginal<
-    typeof import("../../vendor/paperclip-runner/index.js")
+    typeof import("../../vendor/wardmote-runner/index.js")
   >()),
   executeNativeSession: provider.execute,
 }));

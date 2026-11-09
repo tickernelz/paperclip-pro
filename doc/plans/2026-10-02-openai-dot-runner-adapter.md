@@ -782,7 +782,7 @@ connection health, run phase/stop semantics, and CLI watch output.
 
 **Files:**
 
-- `ui/src/adapters/paperclip-runner/index.ts` and its configuration components
+- `ui/src/adapters/wardmote-runner/index.ts` and its configuration components
 - Agent creation/configuration and assistant-connection views/API clients
 - Shared provider/connection status types and experimental-setting contracts
 - CLI Runner event formatting/config diagnostics

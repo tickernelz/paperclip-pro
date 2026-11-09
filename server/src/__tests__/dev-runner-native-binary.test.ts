@@ -21,12 +21,12 @@ function createRunnerCheckout(): { root: string; source: string; binary: string 
   const root = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-dev-runner-binary-"));
   tempRoots.add(root);
 
-  const runnerRoot = path.join(root, "packages", "paperclip-runner", "runner");
+  const runnerRoot = path.join(root, "packages", "wardmote-runner", "runner");
   const source = path.join(runnerRoot, "crates", "runner-core", "src", "main.rs");
   const binary = path.join(
     root,
     "packages",
-    "paperclip-runner",
+    "wardmote-runner",
     "dist",
     "bin",
     process.platform === "win32" ? "paperclip-runnerd.exe" : "paperclip-runnerd",
