@@ -1,9 +1,13 @@
 name: Setup workspace
-description: Install Node, pnpm and the workspace dependencies against a shared pnpm store cache.
+description: Install Node, pnpm and the workspace dependencies from the main-branch node_modules cache, falling back to the shared pnpm store.
 
 inputs:
   save-store:
-    description: Persist the pnpm store cache when running on the default branch.
+    description: Persist the dependency caches when running on the default branch.
+    required: false
+    default: "false"
+  store:
+    description: Restore the pnpm store even when node_modules comes from the cache.
     required: false
     default: "false"
 
@@ -33,7 +37,21 @@ runs:
         echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
         echo "arch=$(node -p 'process.arch')" >> "$GITHUB_OUTPUT"
 
+    - name: Restore node_modules
+      id: modules
+      uses: actions/cache/restore@v5
+      with:
+        path: |
+          node_modules
+          */node_modules
+          packages/*/node_modules
+          packages/*/*/node_modules
+          packages/plugins/*/*/node_modules
+        key: modules-${{ runner.os }}-${{ steps.store.outputs.arch }}-node24-${{ hashFiles('pnpm-lock.yaml', 'pnpm-workspace.yaml', '.npmrc', 'patches/**', '**/package.json') }}
+
     - name: Restore pnpm store
+      id: pnpm-store
+      if: steps.modules.outputs.cache-hit != 'true' || inputs.store == 'true'
       uses: actions/cache/restore@v5
       with:
         path: ${{ steps.store.outputs.path }}
@@ -41,6 +59,7 @@ runs:
         restore-keys: pnpm-${{ runner.os }}-${{ steps.store.outputs.arch }}-
 
     - name: Install dependencies
+      if: steps.modules.outputs.cache-hit != 'true'
       shell: bash
       run: |
         if ! pnpm install --frozen-lockfile; then
@@ -49,8 +68,30 @@ runs:
           pnpm install --frozen-lockfile
         fi
 
+    - name: Run the root postinstall over the restored node_modules
+      if: steps.modules.outputs.cache-hit == 'true'
+      shell: bash
+      run: pnpm run --if-present postinstall
+
+    - name: Save node_modules
+      if: ${{ inputs.save-store == 'true' && github.ref == 'refs/heads/main' && github.event_name == 'push' && steps.modules.outputs.cache-hit != 'true' }}
+      uses: actions/cache/save@v5
+      with:
+        path: |
+          node_modules
+          */node_modules
+          packages/*/node_modules
+          packages/*/*/node_modules
+          packages/plugins/*/*/node_modules
+        key: ${{ steps.modules.outputs.cache-primary-key }}
+
+    - name: Prune the pnpm store to this lockfile
+      if: ${{ inputs.save-store == 'true' && github.ref == 'refs/heads/main' && github.event_name == 'push' && steps.modules.outputs.cache-hit != 'true' && steps.pnpm-store.outputs.cache-hit != 'true' }}
+      shell: bash
+      run: pnpm store prune
+
     - name: Save pnpm store
-      if: ${{ inputs.save-store == 'true' && github.ref == 'refs/heads/main' && github.event_name == 'push' }}
+      if: ${{ inputs.save-store == 'true' && github.ref == 'refs/heads/main' && github.event_name == 'push' && steps.modules.outputs.cache-hit != 'true' && steps.pnpm-store.outputs.cache-hit != 'true' }}
       uses: actions/cache/save@v5
       with:
         path: ${{ steps.store.outputs.path }}

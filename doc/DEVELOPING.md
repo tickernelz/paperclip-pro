@@ -39,8 +39,11 @@ did not succeed, and it rejects a run where the heavy lanes and the `Docs` lane
 are inconsistent. The workflow never uses `paths`/`paths-ignore`, because the
 release gate requires a completed `ci.yml` run on the exact tagged commit.
 Shared setup lives in `.github/actions/setup-workspace` and the static gates in
-`.github/actions/policy-checks`; the pnpm store and the Runner Rust caches are
-written only by pushes to `main` and restored everywhere else.
+`.github/actions/policy-checks`; the workspace `node_modules` trees, the pnpm
+store (pruned to the lockfile) and the Runner Rust caches are written only by
+pushes to `main` and restored everywhere else. A job whose lockfile, workspace
+manifests and patches match a cached `node_modules` restores it and skips the
+store and `pnpm install`; any other job restores the store and installs.
 
 Server test shards run vitest with `WARDMOTE_SERVER_TEST_WORKERS=3`: one fresh
 process per file, longest files first by the manifests in
