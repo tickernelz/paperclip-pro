@@ -20,7 +20,7 @@ const serializedShardDurations = loadShardDurations(
 );
 const serverRoot = path.join(repoRoot, "server");
 const serverSrcDir = path.join(repoRoot, "server", "src");
-const serverTestsDir = path.join(repoRoot, "server", "src", "__tests__");
+const serverScriptsDir = path.join(repoRoot, "server", "scripts");
 const nonServerProjects = [
   "@tickernelz/wardmote-shared",
   "@tickernelz/wardmote-skills-catalog",
@@ -546,7 +546,12 @@ function runSerializedSuites(routeTests, shardIndex, shardCount) {
   );
 }
 
-const routeTests = walk(serverTestsDir)
+const serverTestFiles = [
+  ...walk(serverSrcDir).filter((file) => file.endsWith(".test.ts")),
+  ...walk(serverScriptsDir).filter((file) => file.endsWith(".test.mjs")),
+];
+
+const routeTests = serverTestFiles
   .filter((file) => isRouteOrAuthzTest(toRepoPath(file)))
   .map((file) => ({
     repoPath: toRepoPath(file),
@@ -561,9 +566,8 @@ const routeTests = walk(serverTestsDir)
 // config pins maxWorkers to 1, so the only way to parallelize is across jobs.
 // Suites are partitioned by recorded duration (scripts/general-server-shard.mjs)
 // rather than round-robin, so one slow suite cluster can't stretch a single shard.
-const generalServerTestFiles = walk(serverSrcDir)
+const generalServerTestFiles = serverTestFiles
   .map((file) => toRepoPath(file))
-  .filter((repoPath) => repoPath.endsWith(".test.ts"))
   .filter((repoPath) => !isRouteOrAuthzTest(repoPath))
   .sort((a, b) => a.localeCompare(b));
 
