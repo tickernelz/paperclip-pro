@@ -5,7 +5,7 @@ import {
   canonicalNativeRuntimeContextDigest,
   nativeRuntimePromptDigest,
   type NativeRuntimeContextSnapshot,
-} from "../../vendor/paperclip-runner/index.js";
+} from "../../vendor/wardmote-runner/index.js";
 
 export function nativeRuntimeContextFixture(): NativeRuntimeContextSnapshot {
   const digest = "0".repeat(64);

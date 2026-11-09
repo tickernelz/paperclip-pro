@@ -202,7 +202,7 @@ import { logger as chatAttachmentLogger } from "../middleware/logger.js";
 import type {
   PrpStructuredRunResult,
   PrpTerminalState,
-} from "../vendor/paperclip-runner/index.js";
+} from "../vendor/wardmote-runner/index.js";
 import {
   finalizeNativeRun,
   repairCommittedNativeChatResponse,

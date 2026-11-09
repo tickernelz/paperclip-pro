@@ -16,7 +16,7 @@ import { redactSensitiveText } from "../../redaction.js";
 import { issueRecoveryActionService } from "../issue-recovery-actions.js";
 import { reportRunFailure } from "../run-failure-report.js";
 import { isNativeRunnerOwnershipHeld } from "./native-runner-ownership.js";
-import { nativeRestartInterruptedTurnId, type PersistedNativeSession } from "../../vendor/paperclip-runner/index.js";
+import { nativeRestartInterruptedTurnId, type PersistedNativeSession } from "../../vendor/wardmote-runner/index.js";
 
 export type NativeControllerIdentity = {
   bootId: string;

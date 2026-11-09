@@ -23,7 +23,7 @@ import type {
   PrpStructuredRunResult,
   PrpTerminalState,
 } from "@tickernelz/wardmote-runner";
-import { NativeSessionProtocolIntegrityError } from "../../vendor/paperclip-runner/index.js";
+import { NativeSessionProtocolIntegrityError } from "../../vendor/wardmote-runner/index.js";
 
 import {
   getEmbeddedPostgresTestSupport,

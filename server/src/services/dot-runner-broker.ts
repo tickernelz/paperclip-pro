@@ -10,7 +10,7 @@ import { getStorageService } from "../storage/index.js";
 import { agents, companies, heartbeatRuns, issues, agentWakeupRequests, nativeRunFinalizations, mcpOauthGrants,
   mcpEventSubscriptions, dotAgentBindings as bindings, dotRunnerAssignments as assignments,
   dotRunnerOperations as operations, dotMailboxItems as mailbox, type Db } from "@tickernelz/wardmote-db";
-import { externalOperationDigest, type DotBindingSnapshot, type ExternalProviderPort, type ExternalProviderOperation } from "../vendor/paperclip-runner/index.js";
+import { externalOperationDigest, type DotBindingSnapshot, type ExternalProviderPort, type ExternalProviderOperation } from "../vendor/wardmote-runner/index.js";
 import { McpOAuthError, type McpPrincipal } from "./public-mcp/oauth.js";
 import type { PublicMcpToolExtension } from "./public-mcp/dot-runner.js";
 import { boardAuthService } from "./board-auth.js";

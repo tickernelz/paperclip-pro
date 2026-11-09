@@ -4,11 +4,11 @@ import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { agents, agentWakeupRequests, companies, completionContracts, createDb, heartbeatRunEvents, heartbeatRuns, issueRecoveryActions, issueThreadInteractions, issues, nativeRunFinalizations, nativeRunResults, statusDecisions, workAssessments } from "@tickernelz/wardmote-db";
 import type { ControlPlanePort, NativeExecutionInputV1, PrpEvent, PrpTerminalState } from "@tickernelz/wardmote-runner";
 import { startEmbeddedPostgresTestDatabase } from "../../__tests__/helpers/embedded-postgres.js";
-import { CONTROL_PLANE_CONFORMANCE_RESULT } from "../../vendor/paperclip-runner/testing.js";
+import { CONTROL_PLANE_CONFORMANCE_RESULT } from "../../vendor/wardmote-runner/testing.js";
 
 const provider = vi.hoisted(() => ({ execute: vi.fn() }));
-vi.mock("../../vendor/paperclip-runner/index.js", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("../../vendor/paperclip-runner/index.js")>()),
+vi.mock("../../vendor/wardmote-runner/index.js", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../vendor/wardmote-runner/index.js")>()),
   executeNativeSession: provider.execute,
 }));
 

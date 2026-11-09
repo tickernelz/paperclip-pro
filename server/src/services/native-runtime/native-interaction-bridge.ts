@@ -1,5 +1,5 @@
 import type { Db } from "@tickernelz/wardmote-db";
-import type { NativeInteractionResponseEnvelope } from "../../vendor/paperclip-runner/index.js";
+import type { NativeInteractionResponseEnvelope } from "../../vendor/wardmote-runner/index.js";
 import { and, asc, eq, inArray } from "drizzle-orm";
 import {
   agents,

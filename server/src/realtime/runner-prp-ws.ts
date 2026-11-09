@@ -4,7 +4,7 @@ import type { Duplex } from "node:stream";
 import type {
   DurablePrpControlPlane,
   HarnessRuntimeRequestResolution,
-} from "../vendor/paperclip-runner/index.js";
+} from "../vendor/wardmote-runner/index.js";
 import {
   assertNativeRuntimeRequestResolverAuthorized,
   type NativeRuntimeRequestResolver,

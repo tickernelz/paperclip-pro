@@ -7017,7 +7017,7 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
 
 export function defaultCapabilityRunnerdBinary(): string {
   // Standalone builds use dist/live; the server vendors that compiled tree
-  // directly under vendor/paperclip-runner. Resolve beside our own live module.
+  // directly under vendor/wardmote-runner. Resolve beside our own live module.
   const outputRoot = resolve(fileURLToPath(new URL("../", import.meta.url)));
   const staged = resolvePackagedRunnerBinary(outputRoot)
     ?? resolvePackagedRunnerBinary(resolve(packageRoot, "dist"));

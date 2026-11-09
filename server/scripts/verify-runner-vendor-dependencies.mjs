@@ -3,7 +3,7 @@
 //
 // packages/wardmote-runner is private and never published, so the server
 // build vendors its compiled dist/ tree wholesale with `cp -R` (see the
-// `build` script's `... dist/vendor/paperclip-runner/` step) -- code only,
+// `build` script's `... dist/vendor/wardmote-runner/` step) -- code only,
 // no node_modules alongside it. Every npm package the vendored code
 // actually imports is therefore also a runtime dependency of server once
 // vendored, and has to be declared there too (see acpx, ajv). That mirror

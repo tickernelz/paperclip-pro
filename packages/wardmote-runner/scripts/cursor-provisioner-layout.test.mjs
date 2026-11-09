@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { cursorProvisionerDestination, cursorProvisionerPackageRoot } from "./cursor-provisioner-layout.mjs";
 
 test("recognizes the public server's vendored setup entrypoint", () => {
-  assert.equal(cursorProvisionerPackageRoot("file:///consumer/node_modules/@tickernelz/wardmote-server/dist/vendor/paperclip-runner/cli/provision-cursor.cjs"), "/consumer/node_modules/@tickernelz/wardmote-server/dist/vendor/paperclip-runner");
+  assert.equal(cursorProvisionerPackageRoot("file:///consumer/node_modules/@tickernelz/wardmote-server/dist/vendor/wardmote-runner/cli/provision-cursor.cjs"), "/consumer/node_modules/@tickernelz/wardmote-server/dist/vendor/wardmote-runner");
 });
 test("recognizes the standalone runner's setup entrypoint", () => {
   assert.equal(cursorProvisionerPackageRoot("file:///consumer/node_modules/@tickernelz/wardmote-runner/dist/cli/provision-cursor.cjs"), "/consumer/node_modules/@tickernelz/wardmote-runner");
@@ -15,7 +15,7 @@ test("unbundled and foreign layouts cannot provision outside an owned package", 
 test("global and local npm installations provision the same account-owned pinned cache", () => {
   const distribution = { platform: "linux", architecture: "x64", closureSha256: "a".repeat(64) };
   for (const prefix of ["/usr/local/lib/node_modules", "/home/operator/project/node_modules"]) {
-    assert.equal(cursorProvisionerDestination(`file://${prefix}/@tickernelz/wardmote-server/dist/vendor/paperclip-runner/cli/provision-cursor.cjs`, distribution, "/home/operator"),
+    assert.equal(cursorProvisionerDestination(`file://${prefix}/@tickernelz/wardmote-server/dist/vendor/wardmote-runner/cli/provision-cursor.cjs`, distribution, "/home/operator"),
       `/home/operator/.paperclip/runtimes/cursor/linux-x64/${distribution.closureSha256}`);
   }
 });

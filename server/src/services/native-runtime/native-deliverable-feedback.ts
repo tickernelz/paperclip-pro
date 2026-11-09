@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import { assets, documents, documentRevisions, heartbeatRuns, issueDocuments, issueAttachments, issueWorkProducts, type Db } from "@tickernelz/wardmote-db";
-import type { PrpStructuredRunResult } from "../../vendor/paperclip-runner/index.js";
+import type { PrpStructuredRunResult } from "../../vendor/wardmote-runner/index.js";
 
 function evidenceRefs(value: unknown): string[] {
   if (!Array.isArray(value)) return [];

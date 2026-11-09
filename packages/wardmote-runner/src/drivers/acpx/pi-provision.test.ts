@@ -21,11 +21,11 @@ beforeEach(() => {
 });
 async function fixture(vendored = true) {
   const root = await realpath(await mkdtemp(join(tmpdir(), "pi-provision-"))); roots.push(root);
-  const cli = join(root, vendored ? "dist/vendor/paperclip-runner/cli" : "dist/cli");
+  const cli = join(root, vendored ? "dist/vendor/wardmote-runner/cli" : "dist/cli");
   await mkdir(cli, { recursive: true });
   await writeFile(join(root, "package.json"), JSON.stringify({ name: vendored ? "@tickernelz/wardmote-server" : "@tickernelz/wardmote-runner" }));
   const entry = join(cli, "provision-pi.cjs"); await writeFile(entry, "fixture");
-  const assetRoot = vendored ? join(root, "dist/vendor/paperclip-runner") : root;
+  const assetRoot = vendored ? join(root, "dist/vendor/wardmote-runner") : root;
   return { root, cli, entry, assetRoot, parent: join(assetRoot, "provider-assets/pi"), output: join(assetRoot, "provider-assets/pi", `${process.platform}-${process.arch}`) };
 }
 it("recognizes both published layouts without resolving a private npm package", async () => {

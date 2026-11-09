@@ -3,7 +3,7 @@ import { and, desc, eq, sql } from "drizzle-orm";
 
 import type { Db } from "@tickernelz/wardmote-db";
 import { completionContracts } from "@tickernelz/wardmote-db";
-import type { NativeCompletionSource, StrictCompletionContractInput } from "../../vendor/paperclip-runner/index.js";
+import type { NativeCompletionSource, StrictCompletionContractInput } from "../../vendor/wardmote-runner/index.js";
 
 import { nativeSha256 } from "./canonical.js";
 

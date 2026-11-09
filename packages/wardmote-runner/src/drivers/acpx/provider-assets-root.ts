@@ -6,8 +6,8 @@ type NativeProvider = "cursor" | "copilot" | "pi";
 const RUNNER_PACKAGE_NAME = "@tickernelz/wardmote-runner";
 const SERVER_PACKAGE_NAME = "@tickernelz/wardmote-server";
 function assertServerVendorLayout(root: string): void {
-  const sidecar = join(root, "dist/vendor/paperclip-runner/cli/acpx-runtime-sidecar.cjs");
-  for (const part of ["dist", "dist/vendor", "dist/vendor/paperclip-runner", "dist/vendor/paperclip-runner/cli"]) {
+  const sidecar = join(root, "dist/vendor/wardmote-runner/cli/acpx-runtime-sidecar.cjs");
+  for (const part of ["dist", "dist/vendor", "dist/vendor/wardmote-runner", "dist/vendor/wardmote-runner/cli"]) {
     const path = join(root, part); const info = lstatSync(path);
     if (!info.isDirectory() || info.isSymbolicLink() || realpathSync(path) !== path) throw new Error("Runner server vendor layout escaped its package");
   }
@@ -44,7 +44,7 @@ export function resolveRunnerProviderAssetsRoot(moduleUrl: string, provider: Nat
         // runnerd derives this binding from the verified sidecar in the public
         // server package. Images may carry assets alongside that bundle; local
         // explicit setup uses the OS-account cache when package assets are absent.
-        packageRoot = join(dirname(canonicalManifest), "dist/vendor/paperclip-runner");
+        packageRoot = join(dirname(canonicalManifest), "dist/vendor/wardmote-runner");
         if (realpathSync(packageRoot) !== packageRoot) throw new Error("Vendored runner directory is not contained by its server package");
       } else if (value?.name === RUNNER_PACKAGE_NAME) {
         packageRoot = dirname(canonicalManifest);
@@ -54,16 +54,16 @@ export function resolveRunnerProviderAssetsRoot(moduleUrl: string, provider: Nat
     if (boundManifest !== undefined) throw new Error("Runner provider manifest has no bound package root");
     const url = new URL(moduleUrl);
     if (url.protocol !== "file:" || url.search || url.hash) throw new Error("Provider factory is outside a verified package layout");
-    if (new RegExp(`/dist/vendor/paperclip-runner/drivers/acpx/${provider}-installation\\.js$`).test(url.pathname)) {
+    if (new RegExp(`/dist/vendor/wardmote-runner/drivers/acpx/${provider}-installation\\.js$`).test(url.pathname)) {
       packageRoot = realpathSync(fileURLToPath(new URL("../../../../../", url)));
       const manifest = join(packageRoot, "package.json");
       const metadata = readPackageManifest(manifest, manifest);
       if (metadata.name !== SERVER_PACKAGE_NAME) throw new Error("Runner server vendor package identity is invalid");
       assertServerVendorLayout(packageRoot);
-      packageRoot = join(packageRoot, "dist/vendor/paperclip-runner");
+      packageRoot = join(packageRoot, "dist/vendor/wardmote-runner");
     } else if (new RegExp(`/(?:src|dist)/drivers/acpx/${provider}-installation\\.(?:ts|js)$`).test(url.pathname)) packageRoot = fileURLToPath(new URL("../../../", url));
     else if (/\/dist\/cli\/acpx-runtime-sidecar\.(?:cjs|js)$/.test(url.pathname)) packageRoot = fileURLToPath(new URL("../../", url));
-    else if (new RegExp(`/dist/vendor/paperclip-runner/drivers/acpx/${provider}-installation\\.(?:js)$`).test(url.pathname)) packageRoot = fileURLToPath(new URL("../../", url));
+    else if (new RegExp(`/dist/vendor/wardmote-runner/drivers/acpx/${provider}-installation\\.(?:js)$`).test(url.pathname)) packageRoot = fileURLToPath(new URL("../../", url));
     else if (/\/dist\/vendor\/paperclip-runner\/cli\/acpx-runtime-sidecar\.(?:cjs|js)$/.test(url.pathname)) packageRoot = fileURLToPath(new URL("../", url));
     else throw new Error("Provider factory is outside a verified package layout");
     packageRoot = realpathSync(packageRoot);

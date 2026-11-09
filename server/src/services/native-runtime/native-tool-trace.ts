@@ -1,4 +1,4 @@
-import { CAPABILITY_SEMANTIC_TOOL_CATALOG } from "../../vendor/paperclip-runner/index.js";
+import { CAPABILITY_SEMANTIC_TOOL_CATALOG } from "../../vendor/wardmote-runner/index.js";
 import type { NativeRunTrace } from "./native-run-trace.js";
 
 const SAFE_OPERATIONS = new Set<string>(CAPABILITY_SEMANTIC_TOOL_CATALOG.map((tool) => tool.operationId));

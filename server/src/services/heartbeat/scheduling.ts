@@ -57,7 +57,7 @@ import type { issueService } from "../issues.js";
 import type { createHeartbeatQueue } from "./queue.js";
 import type { createHeartbeatRetries, HeartbeatRetryDependencies } from "./retries.js";
 import type { createHeartbeatRunPreparation } from "./run-preparation.js";
-import type { NativeSessionGoalControl } from "../../vendor/paperclip-runner/index.js";
+import type { NativeSessionGoalControl } from "../../vendor/wardmote-runner/index.js";
 
 type HeartbeatQueue = ReturnType<typeof createHeartbeatQueue>;
 type RunPreparation = ReturnType<typeof createHeartbeatRunPreparation>;

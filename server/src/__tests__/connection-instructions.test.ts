@@ -1,7 +1,7 @@
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { nativeSystemInstructions } from "../../../packages/wardmote-runner/src/backends/runtime-context.js";
-import type { NativeExecutionInput } from "../vendor/paperclip-runner/index.js";
+import type { NativeExecutionInput } from "../vendor/wardmote-runner/index.js";
 import { randomUUID } from "node:crypto";
 import { access, mkdtemp, writeFile, rm, readFile } from "node:fs/promises";
 import { eq } from "drizzle-orm";
@@ -12,7 +12,7 @@ import { toolDiscoveryScheduler } from "../services/tool-discovery-scheduler.js"
 import { toolAccessService, projectedConnectionToolArguments, projectedConnectionToolInputSchema } from "../services/tool-access.js";
 import { composeConnectionInstructions, prepareConnectionInstructionDelivery } from "../services/connection-instructions.js";
 import { renderPaperclipWakePrompt } from "@tickernelz/wardmote-adapter-utils/server-utils";
-import { canonicalNativeRuntimeContextDigest, parseNativeRuntimeContext } from "../vendor/paperclip-runner/index.js";
+import { canonicalNativeRuntimeContextDigest, parseNativeRuntimeContext } from "../vendor/wardmote-runner/index.js";
 import { nativeRuntimeContextFixture } from "../services/native-runtime/runtime-context.test-fixture.js";
 import { execute as executeProcess } from "../adapters/process/execute.js";
 import { getEmbeddedPostgresTestSupport, startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";

@@ -21,7 +21,7 @@ import {
   isAcknowledgedNativeStop,
   acknowledgedNativeStopExecutionHasStopped,
 } from "../acknowledged-native-stop.js";
-import { completeTerminatedRemoteNativeSessionCleanup } from "../../vendor/paperclip-runner/index.js";
+import { completeTerminatedRemoteNativeSessionCleanup } from "../../vendor/wardmote-runner/index.js";
 import {
   hasRemoteTerminationReceipt,
   remoteExecutionHasStopped,

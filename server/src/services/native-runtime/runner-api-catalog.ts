@@ -4,7 +4,7 @@ import { buildOpenApiDocument } from "../../routes/openapi.js";
 import { badRequest, notFound } from "../../errors.js";
 import { runnerApiReference } from "./runner-api-reference.js";
 import { runnerApiRestriction } from "./runner-api-policy.js";
-import { CAPABILITY_SEMANTIC_TOOL_CATALOG } from "../../vendor/paperclip-runner/index.js";
+import { CAPABILITY_SEMANTIC_TOOL_CATALOG } from "../../vendor/wardmote-runner/index.js";
 
 type Json = Record<string, any>;
 export interface RunnerApiOperation {

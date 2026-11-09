@@ -15,7 +15,7 @@ import type {
   AskUserQuestionsInteraction,
   PaperclipQuestionSetPayload,
 } from "@tickernelz/wardmote-shared";
-import type { PaperclipQuestionResponse } from "../vendor/paperclip-runner/index.js";
+import type { PaperclipQuestionResponse } from "../vendor/wardmote-runner/index.js";
 import { isUniqueViolation } from "../db-errors.js";
 import { getTelemetryClient } from "../telemetry.js";
 import { logger } from "../middleware/logger.js";

@@ -13,7 +13,7 @@
   "paidProviderCalls": 0,
   "spendUsd": 0,
   "observedDefect": {
-    "path": "ui/src/adapters/paperclip-runner/index.ts",
+    "path": "ui/src/adapters/wardmote-runner/index.ts",
     "beforeDescriptionCharacters": 4000,
     "canonicalDescriptionCharacters": 100000,
     "fix": "Preserve valid complete input context; reject oversized context with an explicit notice. Render complete Markdown context in a keyboard-focusable scroll region."

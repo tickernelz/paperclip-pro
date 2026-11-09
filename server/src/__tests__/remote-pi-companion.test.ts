@@ -12,7 +12,7 @@ vi.mock("node:fs/promises", async (original) => {
     open: async (...args: Parameters<typeof fs.open>) => { hooks.open?.(String(args[0])); const file = await fs.open(...args); const read = file.read.bind(file); file.read = (async (...readArgs: any[]) => { const result = await (read as any)(...readArgs); hooks.read?.(String(args[0]), result.bytesRead); return result; }) as typeof file.read; return file; },
   };
 });
-vi.mock("../vendor/paperclip-runner/index.js", async () => await import("../../../packages/wardmote-runner/src/drivers/acpx/qualified-profiles.js"));
+vi.mock("../vendor/wardmote-runner/index.js", async () => await import("../../../packages/wardmote-runner/src/drivers/acpx/qualified-profiles.js"));
 import { QUALIFIED_ACPX_PROFILES } from "../../../packages/wardmote-runner/src/drivers/acpx/qualified-profiles.js";
 import { createRemotePiCompanionManifest, importRemotePiCompanion, inventoryRemoteCompanion, resolveRemotePiCompanion, selectRemotePiCompanion } from "../services/native-runtime/remote-pi-companion.js";
 const roots: string[] = [];
