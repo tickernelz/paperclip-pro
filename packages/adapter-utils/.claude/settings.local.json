@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(/home/zhafron/Projects/pp-zha5279-names/packages/adapter-utils/scripts/paperclip:*)",
+      "Bash(/home/zhafron/Projects/pp-zha5279-names/packages/adapter-utils/scripts/wardmote-issue-update.sh:*)",
+      "Bash(curl:*)",
+      "Bash(env)",
+      "Bash(env:*)"
+    ],
+    "additionalDirectories": [
+      "/home/zhafron/.paperclip-pro/instances/default/companies/company-1",
+      "/home/zhafron/.paperclip-pro/instances/default/companies/company-1/acp-engine/agents/agent-1",
+      "/tmp/pctmp-e39770cb-XFOhVg/paperclip-acpx-skills-RASGnY/state",
+      "/tmp/pctmp-e39770cb-XFOhVg/paperclip-acpx-skills-ROgqeq/state",
+      "/tmp/pctmp-e39770cb-XFOhVg/paperclip-acpx-skills-YOqk7z/state",
+      "/tmp/pctmp-e39770cb-XFOhVg/paperclip-acpx-skills-qsa0Wg/state",
+      "/tmp/pctmp-e39770cb-XFOhVg/paperclip-acpx-skills-rw5UCV/state",
+      "/tmp/pctmp-e39770cb-XFOhVg/paperclip-acpx-skills-tstRqk/state"
+    ],
+    "defaultMode": "default"
+  }
+}

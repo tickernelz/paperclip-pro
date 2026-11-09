@@ -15,8 +15,8 @@ import {
   type AdapterExecutionTarget,
   type AdapterExecutionTargetShellOptions,
 } from "@tickernelz/wardmote-adapter-utils/execution-target";
-import { PAPERCLIP_MCP_SERVER_NAME } from "@tickernelz/wardmote-adapter-utils/paperclip-mcp";
-import type { PaperclipMcpHttpTarget } from "@tickernelz/wardmote-adapter-utils/paperclip-mcp-mount";
+import { PAPERCLIP_MCP_SERVER_NAME } from "@tickernelz/wardmote-adapter-utils/wardmote-mcp";
+import type { PaperclipMcpHttpTarget } from "@tickernelz/wardmote-adapter-utils/wardmote-mcp-mount";
 import { resolvePaperclipInstanceRootForAdapter } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import { shellQuote } from "@tickernelz/wardmote-adapter-utils/ssh";
 import { classifyThrownErrorClass, logSandboxProbeDiagnostic } from "./probe-diagnostics.js";

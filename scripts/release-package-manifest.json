@@ -65,8 +65,8 @@
     "publishFromCi": false
   },
   {
-    "dir": "packages/plugins/create-paperclip-plugin",
-    "name": "@tickernelz/wardmote-create-paperclip-plugin",
+    "dir": "packages/plugins/plugin-creator",
+    "name": "@tickernelz/wardmote-plugin-creator",
     "publishFromCi": true
   },
   {

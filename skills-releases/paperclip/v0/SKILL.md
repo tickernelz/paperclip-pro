@@ -128,7 +128,7 @@ Headers: X-Paperclip-Run-Id: $PAPERCLIP_RUN_ID
 For multiline markdown comments, do **not** hand-inline the markdown into a one-line JSON string — that is how comments get "smooshed" together. Use the helper below (or an equivalent `jq --arg` pattern reading from a heredoc/file) so literal newlines survive JSON encoding:
 
 ```bash
-scripts/paperclip-issue-update.sh --issue-id "$PAPERCLIP_TASK_ID" --status done <<'MD'
+scripts/wardmote-issue-update.sh --issue-id "$PAPERCLIP_TASK_ID" --status done <<'MD'
 Done
 
 - Fixed the newline-preserving issue update path

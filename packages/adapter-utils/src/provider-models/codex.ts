@@ -1,4 +1,4 @@
-import { PAPERCLIP_RUNNER_DEFAULT_MODELS } from "../paperclip-runner-permissions.js";
+import { PAPERCLIP_RUNNER_DEFAULT_MODELS } from "../wardmote-runner-permissions.js";
 
 export const SANDBOX_INSTALL_COMMAND = "npm install -g @openai/codex";
 

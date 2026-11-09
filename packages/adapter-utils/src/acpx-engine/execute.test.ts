@@ -2783,7 +2783,7 @@ describe("shared ACPX engine runtime behavior", () => {
     const allow = written.permissions?.allow;
     expect(Array.isArray(allow)).toBe(true);
     expect(allow).toContain("Bash(curl:*)");
-    expect(allow).toContain(`Bash(${cwd}/scripts/paperclip-issue-update.sh:*)`);
+    expect(allow).toContain(`Bash(${cwd}/scripts/wardmote-issue-update.sh:*)`);
     const additionalDirectories = written.permissions?.additionalDirectories as string[] | undefined;
     expect(Array.isArray(additionalDirectories)).toBe(true);
     expect(additionalDirectories).toContain(stateDir);

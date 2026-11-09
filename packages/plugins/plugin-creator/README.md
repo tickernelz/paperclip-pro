@@ -1,15 +1,15 @@
-# @tickernelz/wardmote-create-paperclip-plugin
+# @tickernelz/wardmote-plugin-creator
 
 Scaffolding tool for creating new Paperclip plugins.
 
 ```bash
-npx @tickernelz/wardmote-create-paperclip-plugin my-plugin
+npx @tickernelz/wardmote-plugin-creator my-plugin
 ```
 
 Or with options:
 
 ```bash
-npx @tickernelz/wardmote-create-paperclip-plugin @acme/my-plugin \
+npx @tickernelz/wardmote-plugin-creator @acme/my-plugin \
   --template connector \
   --category connector \
   --display-name "Acme Connector" \
@@ -34,7 +34,7 @@ Inside this repo, the generated package uses `@tickernelz/wardmote-plugin-sdk` v
 Outside this repo, the scaffold snapshots `@tickernelz/wardmote-plugin-sdk` from your local Paperclip checkout into a `.paperclip-sdk/` tarball and points the generated package at that local file by default. You can override the SDK source explicitly:
 
 ```bash
-node packages/plugins/create-paperclip-plugin/dist/bin.js @acme/my-plugin \
+node packages/plugins/plugin-creator/dist/bin.js @acme/my-plugin \
   --output /absolute/path/to/plugins \
   --sdk-path /absolute/path/to/paperclip/packages/plugins/sdk
 ```

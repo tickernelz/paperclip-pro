@@ -517,7 +517,7 @@ backstop.
 
 Each adapter arms exactly one Wardmote surface per run and the prompt it sends
 describes that surface. `paperclipAccessMode(config, env)`
-(`packages/adapter-utils/src/paperclip-mcp.ts`) returns `mcp` when the
+(`packages/adapter-utils/src/wardmote-mcp.ts`) returns `mcp` when the
 `paperclipMcp` toggle is on (default) and the run carries both
 `PAPERCLIP_API_URL` and a run credential, `rest` otherwise.
 `paperclipAgentPromptTemplate(access)` and
@@ -540,7 +540,7 @@ prompts. The `paperclip` skill carries the same fallback under
 
 Every `omp_local` run declares one extra MCP server, `paperclip`, through a
 per-run `--extension <tmpdir>` package holding a single `.mcp.json`
-(`packages/adapters/omp-local/src/server/paperclip-mcp.ts`). The extension is
+(`packages/adapters/omp-local/src/server/wardmote-mcp.ts`). The extension is
 appended, so the operator's own `~/.omp/agent/mcp.json` servers keep loading.
 
 By default the entry is `type: http` and points at the server-hosted endpoint

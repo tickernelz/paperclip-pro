@@ -6,7 +6,7 @@ import { agents, heartbeatRuns, issues, principalPermissionGrants } from "@ticke
 import { errorHandler } from "../middleware/index.js";
 import { accessRoutes } from "../routes/access.js";
 import { issueRoutes } from "../routes/issues.js";
-import { paperclipMcpRoutes } from "../routes/paperclip-mcp.js";
+import { paperclipMcpRoutes } from "../routes/wardmote-mcp.js";
 import {
   describeEmbeddedPostgres,
   seedCompanyWithBoardAccess,
