@@ -123,14 +123,18 @@ must fail the checker.
 ## Enforcement
 
 ```sh
-pnpm --filter @tickernelz/wardmote-runner check:forbidden-imports
+pnpm --filter @tickernelz/wardmote-runner check:static
 pnpm --filter @tickernelz/wardmote-runner test
 pnpm --filter @tickernelz/wardmote-runner check:replay-parity
 ```
 
-The first command scans the package source, scripts, and manifest. The test
-command additionally asserts that the negative fixture is rejected. The normal
-scan excludes that fixture so a deliberate proof does not make the package fail.
+`check:static` covers both `check:forbidden-imports`, which scans the package
+source, scripts, and manifest, and `check:tracked-imports`, which fails when an
+import resolves to a file a clean checkout does not have. The `Verify Wardmote
+Runner (checks)` CI job runs `check:static`, so a boundary regression turns the
+pipeline red instead of only `verify`. The test command additionally asserts that
+the negative fixture is rejected; the normal scan excludes that fixture so a
+deliberate proof does not make the package fail.
 
 ## Conformance process boundary
 
