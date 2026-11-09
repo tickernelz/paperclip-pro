@@ -189,7 +189,6 @@
     ["cli/src/commands/client/company.ts",18,"belum-diganti"],
     ["cli/src/commands/client/connect.ts",3,"belum-diganti"],
     ["cli/src/commands/client/context.ts",4,"belum-diganti"],
-    ["cli/src/commands/client/issue.ts",1,"belum-diganti"],
     ["cli/src/commands/client/plugin.ts",3,"belum-diganti"],
     ["cli/src/commands/client/teams.ts",2,"belum-diganti"],
     ["cli/src/commands/configure.ts",8,"belum-diganti"],
