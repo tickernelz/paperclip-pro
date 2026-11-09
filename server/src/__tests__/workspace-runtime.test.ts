@@ -79,6 +79,7 @@ import {
 } from "@tickernelz/wardmote-shared";
 import { resolvePaperclipConfigPath } from "../paths.ts";
 import type { WorkspaceOperation } from "@tickernelz/wardmote-shared";
+import { RETIRED_ENV_PREFIX } from "@tickernelz/wardmote-shared/retired-env-file";
 import type { WorkspaceOperationRecorder } from "../services/workspace-operations.ts";
 import { deriveWorktreeInstanceId } from "../services/workspace-instance-cleanup.ts";
 import {
@@ -469,6 +470,8 @@ describe("sanitizeRuntimeServiceBaseEnv", () => {
       DATABASE_URL: "postgres://example.test/paperclip",
       WARDMOTE_HOME: "/tmp/paperclip-home",
       WARDMOTE_INSTANCE_ID: "runtime-instance",
+      [`${RETIRED_ENV_PREFIX}HOME`]: "/tmp/parent-home",
+      [`${RETIRED_ENV_PREFIX}API_KEY`]: "parent-token",
       BETTER_AUTH_URL: "https://parent.example.test",
       BETTER_AUTH_BASE_URL: "https://legacy-parent.example.test",
       npm_config_tailscale_auth: "true",
@@ -478,6 +481,8 @@ describe("sanitizeRuntimeServiceBaseEnv", () => {
 
     expect(sanitized.WARDMOTE_HOME).toBeUndefined();
     expect(sanitized.WARDMOTE_INSTANCE_ID).toBeUndefined();
+    expect(sanitized[`${RETIRED_ENV_PREFIX}HOME`]).toBeUndefined();
+    expect(sanitized[`${RETIRED_ENV_PREFIX}API_KEY`]).toBeUndefined();
     expect(sanitized.BETTER_AUTH_URL).toBeUndefined();
     expect(sanitized.BETTER_AUTH_BASE_URL).toBeUndefined();
     expect(sanitized.DATABASE_URL).toBeUndefined();

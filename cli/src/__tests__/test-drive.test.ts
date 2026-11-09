@@ -16,6 +16,7 @@ import {
   type TestDriveApi,
 } from "../commands/test-drive.js";
 import type { RunOptions, StartedServer } from "../commands/run.js";
+import { RETIRED_ENV_PREFIX } from "@tickernelz/wardmote-shared/retired-env-file";
 import type { PaperclipConfig } from "../config/schema.js";
 
 const ORIGINAL_ENV = { ...process.env };
@@ -139,6 +140,8 @@ describe("test-drive data isolation", () => {
     process.env.WARDMOTE_HOME = "/normal/home";
     process.env.WARDMOTE_CONFIG = "/normal/config.json";
     process.env.WARDMOTE_IN_WORKTREE = "true";
+    process.env[`${RETIRED_ENV_PREFIX}HOME`] = "/normal/home";
+    process.env[`${RETIRED_ENV_PREFIX}API_KEY`] = "outer-run-token";
     process.env.DATABASE_URL = "postgres://normal-instance";
 
     const prepared = await prepareTestDriveEnvironment(
@@ -159,6 +162,8 @@ describe("test-drive data isolation", () => {
     expect(process.env.WARDMOTE_BIND).toBe("loopback");
     expect(process.env.HOST).toBe("127.0.0.1");
     expect(process.env.DATABASE_URL).toBeUndefined();
+    expect(process.env[`${RETIRED_ENV_PREFIX}HOME`]).toBeUndefined();
+    expect(process.env[`${RETIRED_ENV_PREFIX}API_KEY`]).toBeUndefined();
     expect(Number(process.env.PORT)).toBeGreaterThanOrEqual(3100);
   });
 

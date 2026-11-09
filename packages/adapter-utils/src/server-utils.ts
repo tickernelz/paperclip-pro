@@ -1,4 +1,5 @@
 import type { ExecutionContinuationEnvelope } from "@tickernelz/wardmote-shared";
+import { currentEnvKey } from "@tickernelz/wardmote-shared/retired-env-file";
 import { spawn, type ChildProcess } from "node:child_process";
 import { createHash, randomUUID } from "node:crypto";
 import { constants as fsConstants, promises as fs, type Dirent } from "node:fs";
@@ -173,9 +174,9 @@ export function isPaperclipRuntimeEnvKey(key: string): boolean {
 // Other WARDMOTE_*-named config keys are allowed as long as Paperclip has
 // not assigned the same key for the run (runtime vars always win).
 export function isForbiddenConfigEnvKey(key: string): boolean {
-  const legacyKey = key;
-  return legacyKey === "WARDMOTE_API_KEY" || legacyKey === "WARDMOTE_WAKE_PAYLOAD_JSON" ||
-    AGENT_IDENTITY_ENV_KEYS.includes(key.toUpperCase());
+  const current = currentEnvKey(key);
+  return current === "WARDMOTE_API_KEY" || current === "WARDMOTE_WAKE_PAYLOAD_JSON" ||
+    AGENT_IDENTITY_ENV_KEYS.includes(currentEnvKey(key.toUpperCase()));
 }
 const WARDMOTE_SKILL_ROOT_RELATIVE_CANDIDATES = [
   "../../skills",
@@ -3575,15 +3576,15 @@ export function sanitizeInheritedPaperclipEnv(
   delete env.WATCHDOG_USEC;
   delete env.WATCHDOG_PID;
   for (const key of Object.keys(env)) {
-    if (AGENT_IDENTITY_ENV_KEYS.includes(key.toUpperCase())) {
+    if (AGENT_IDENTITY_ENV_KEYS.includes(currentEnvKey(key.toUpperCase()))) {
       delete env[key];
       continue;
     }
-    const legacyKey = key;
-    if (!legacyKey.startsWith("WARDMOTE_")) continue;
-    if (legacyKey === "WARDMOTE_RUNTIME_API_URL") continue;
-    if (legacyKey === "WARDMOTE_LISTEN_HOST") continue;
-    if (legacyKey === "WARDMOTE_LISTEN_PORT") continue;
+    const current = currentEnvKey(key);
+    if (!current.startsWith("WARDMOTE_")) continue;
+    if (current === "WARDMOTE_RUNTIME_API_URL") continue;
+    if (current === "WARDMOTE_LISTEN_HOST") continue;
+    if (current === "WARDMOTE_LISTEN_PORT") continue;
     delete env[key];
   }
   return env;

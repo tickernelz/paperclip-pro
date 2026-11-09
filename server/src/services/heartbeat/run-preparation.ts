@@ -111,6 +111,7 @@ import {
   isUuidLike,
 } from "@tickernelz/wardmote-shared";
 import type { TrustPresetResolution } from "../trust-preset-resolver.js";
+import { currentEnvKey } from "@tickernelz/wardmote-shared/retired-env-file";
 
 const EXTERNAL_ATTACHMENT_OMISSIONS_KEY = "externalAttachmentOmissions";
 
@@ -247,8 +248,8 @@ function stripForbiddenEnvBindings(
   const filtered = Object.fromEntries(
     Object.entries(record).filter(
       ([key]) =>
-        !FORBIDDEN_ENV_BINDING_KEYS.has(key.toUpperCase()) &&
-        !(managedGitHubCredentials && MANAGED_GITHUB_TOKEN_KEYS.has(key)),
+        !FORBIDDEN_ENV_BINDING_KEYS.has(currentEnvKey(key.toUpperCase())) &&
+        !(managedGitHubCredentials && MANAGED_GITHUB_TOKEN_KEYS.has(currentEnvKey(key))),
     ),
   );
   return Object.keys(filtered).length > 0 ? filtered : null;

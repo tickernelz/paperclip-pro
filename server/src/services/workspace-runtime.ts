@@ -106,6 +106,7 @@ import {
   type PersistedExposureRowSnapshot,
 } from "./runtime-exposure/port-reservation.js";
 import { resolveTailscaleDnsName } from "./runtime-exposure/tailscale-hostname.js";
+import { currentEnvKey } from "@tickernelz/wardmote-shared/retired-env-file";
 
 export function resolveShell(): string {
   const fallback = process.platform === "win32" ? "sh" : "/bin/sh";
@@ -684,7 +685,7 @@ export async function ensureServerWorkspaceLinksCurrent(
 export function sanitizeRuntimeServiceBaseEnv(baseEnv: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
   const env: NodeJS.ProcessEnv = { ...baseEnv };
   for (const key of Object.keys(env)) {
-    if (key.startsWith("WARDMOTE_")) {
+    if (currentEnvKey(key).startsWith("WARDMOTE_")) {
       delete env[key];
     }
   }
