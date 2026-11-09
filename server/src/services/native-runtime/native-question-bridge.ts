@@ -9,11 +9,11 @@ import type {
 
 import { questionSetToAskUserQuestionsPayload } from "@tickernelz/wardmote-shared";
 
-import type { PrpEvent } from "../../vendor/paperclip-runner/index.js";
+import type { PrpEvent } from "../../vendor/wardmote-runner/index.js";
 import {
   parsePaperclipQuestionSet,
   type PaperclipQuestionSet,
-} from "../../vendor/paperclip-runner/index.js";
+} from "../../vendor/wardmote-runner/index.js";
 import { logger } from "../../middleware/logger.js";
 import { unprocessable } from "../../errors.js";
 import { logActivity } from "../activity-log.js";

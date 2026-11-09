@@ -11,7 +11,7 @@ import { bundlePiProvisioner } from "./build-verified-provider-entrypoints.mjs";
 test("public server tar layout carries a self-contained host provisioner and exact small inputs", async t => {
   const root = await realpath(await mkdtemp(join(tmpdir(), "paperclip-pi-public-layout-")));
   t.after(() => rm(root, { recursive: true, force: true }));
-  const pkg = join(root, "package"); const cli = join(pkg, "dist/vendor/paperclip-runner/cli");
+  const pkg = join(root, "package"); const cli = join(pkg, "dist/vendor/wardmote-runner/cli");
   await mkdir(cli, { recursive: true });
   await writeFile(join(pkg, "package.json"), '{"name":"@tickernelz/wardmote-server","type":"module"}');
   await writeFile(join(pkg, "dist/index.js"), 'throw new Error("do not start the server");');
@@ -31,11 +31,11 @@ test("public server tar layout carries a self-contained host provisioner and exa
   execFileSync("tar", ["-czf", archive, "-C", root, "package"], { env: { PATH: "/usr/bin:/bin" }, timeout: 10_000 });
   const installed = join(root, "installed"); await mkdir(installed);
   execFileSync("tar", ["-xzf", archive, "-C", installed], { env: { PATH: "/usr/bin:/bin" }, timeout: 10_000 });
-  const installedPackage = join(installed, "package"); const entry = join(installedPackage, "dist/vendor/paperclip-runner/cli/provision-pi.cjs");
+  const installedPackage = join(installed, "package"); const entry = join(installedPackage, "dist/vendor/wardmote-runner/cli/provision-pi.cjs");
   const api = createRequire(import.meta.url)(entry);
   const layout = await api.provisionPackageRoot(entry);
   assert.equal(layout.root, installedPackage);
-  const installedRunner = join(installedPackage, "dist/vendor/paperclip-runner");
+  const installedRunner = join(installedPackage, "dist/vendor/wardmote-runner");
   assert.equal(layout.assetRoot, installedRunner);
   const network = { PATH: "/usr/bin:/bin", HTTPS_PROXY: "http://proxy.example:8080", HTTP_PROXY: "http://proxy.example:8080", NO_PROXY: "localhost", http_proxy: "http://127.0.0.1:9", https_proxy: "http://127.0.0.1:9", no_proxy: "localhost", SSL_CERT_FILE: "/public/ca.pem", SSL_CERT_DIR: "/public/certs", NODE_EXTRA_CA_CERTS: "/public/extra-ca.pem" };
   assert.deepEqual(api.provisionEnvironment({ ...network, HOME: "/private/home", OPENROUTER_API_KEY: "sensitive-canary", NPM_TOKEN: "sensitive-canary", NODE_OPTIONS: "--require /foreign.js", NODE_PATH: "/foreign", NODE_TLS_REJECT_UNAUTHORIZED: "0" }), { ...network, LANG: "C.UTF-8" });
@@ -54,7 +54,7 @@ test("explicit CLI setup passes only network settings to its real child and enab
   const root = await mkdtemp(join(tmpdir(), "paperclip-pi-setup-environment-"));
   t.after(() => rm(root, { recursive: true, force: true }));
   const server = join(root, "node_modules/@tickernelz/wardmote-server");
-  const cli = join(server, "dist/vendor/paperclip-runner/cli");
+  const cli = join(server, "dist/vendor/wardmote-runner/cli");
   await mkdir(cli, { recursive: true });
   await writeFile(join(server, "package.json"), JSON.stringify({ name: "@tickernelz/wardmote-server", type: "module", exports: "./dist/index.js" }));
   await writeFile(join(server, "dist/index.js"), "throw Error('server must not start')");

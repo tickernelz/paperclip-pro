@@ -1,4 +1,4 @@
-import { configuredEnvironmentProjection } from "../../vendor/paperclip-runner/index.js";
+import { configuredEnvironmentProjection } from "../../vendor/wardmote-runner/index.js";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { PgDialect } from "drizzle-orm/pg-core";
@@ -61,7 +61,7 @@ import {
   NativeSessionCleanupQuarantinedError,
   NativeProviderTerminalFailure,
   NativeSessionProtocolIntegrityError,
-} from "../../vendor/paperclip-runner/index.js";
+} from "../../vendor/wardmote-runner/index.js";
 import * as issueServiceModule from "../issues.js";
 import { NativePermissionDeclinedError } from "./native-permission-decline.js";
 import { resolvePaperclipRunnerNativeProviderInput } from "./provider-profile.js";
@@ -228,9 +228,9 @@ vi.mock("../ai-providers/grok/grok-auth-copyback.js", async importOriginal => ({
   copyBackGrokAuth: grokCopyBack,
 }));
 
-vi.mock("../../vendor/paperclip-runner/index.js", async (importOriginal) => {
+vi.mock("../../vendor/wardmote-runner/index.js", async (importOriginal) => {
   const original = await importOriginal<
-    typeof import("../../vendor/paperclip-runner/index.js")
+    typeof import("../../vendor/wardmote-runner/index.js")
   >();
   return {
     ...original,

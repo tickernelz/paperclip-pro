@@ -18,12 +18,12 @@ import type {
   PrpEvent,
   PrpTerminalState,
   ReplayControlPlaneEventsInput,
-} from "../../vendor/paperclip-runner/index.js";
+} from "../../vendor/wardmote-runner/index.js";
 import {
   normalizePrpResultSignals,
   validatePrpEvent,
   validatePrpStructuredRunResult,
-} from "../../vendor/paperclip-runner/index.js";
+} from "../../vendor/wardmote-runner/index.js";
 import { appendHeartbeatRunEvent } from "../heartbeat-run-events.js";
 import { publishChatPublicationCommitSignal } from "../chat-publication-reconciliation.js";
 import { nativeSha256 } from "./canonical.js";

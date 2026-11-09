@@ -5,8 +5,8 @@ import { heartbeatRunEvents, heartbeatRuns, type Db } from "@tickernelz/wardmote
 import type {
   NativeExecutionInput,
   PersistedNativeSession,
-} from "../../vendor/paperclip-runner/index.js";
-import { canonicalNativeRuntimeContextDigest, parseNativeExecutionInput } from "../../vendor/paperclip-runner/index.js";
+} from "../../vendor/wardmote-runner/index.js";
+import { canonicalNativeRuntimeContextDigest, parseNativeExecutionInput } from "../../vendor/wardmote-runner/index.js";
 
 export type NativeToolExecutionTargetKind = "local" | "remote";
 

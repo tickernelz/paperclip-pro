@@ -1,5 +1,5 @@
 import type { UIAdapterModule } from "./types";
-import { paperclipRunnerUIAdapter } from "./paperclip-runner";
+import { paperclipRunnerUIAdapter } from "./wardmote-runner";
 import { ompLocalUIAdapter } from "./omp-local";
 import { processUIAdapter } from "./process";
 import { httpUIAdapter } from "./http";

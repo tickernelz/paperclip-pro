@@ -1,5 +1,5 @@
 import type { AskUserQuestionsAnswer, AskUserQuestionsPayload, PaperclipQuestionSetPayload } from "@tickernelz/wardmote-shared";
-import { parsePaperclipQuestionResponse, type PaperclipQuestionResponse } from "../vendor/paperclip-runner/index.js";
+import { parsePaperclipQuestionResponse, type PaperclipQuestionResponse } from "../vendor/wardmote-runner/index.js";
 import { validateQuestionPatterns } from "./question-pattern-validation.js";
 
 function prepareQuestionInteractionAnswers(

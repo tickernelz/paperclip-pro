@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { validatePrpEvent } from "../../vendor/paperclip-runner/index.js";
+import { validatePrpEvent } from "../../vendor/wardmote-runner/index.js";
 import { canonicalNativeJson, nativeSha256 } from "./canonical.js";
 
 export interface RetainedMaintenanceSnapshot {

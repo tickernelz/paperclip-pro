@@ -15,11 +15,11 @@ import type {
   NativePlanningContext,
   NativeRuntimeContextSnapshot,
   StrictCompletionContractInput,
-} from "../../vendor/paperclip-runner/index.js";
+} from "../../vendor/wardmote-runner/index.js";
 import {
   parseNativeExecutionInput,
   resolveQualifiedAcpxProfile,
-} from "../../vendor/paperclip-runner/index.js";
+} from "../../vendor/wardmote-runner/index.js";
 import {
   isPaperclipExternalChatContractTurn,
   isPaperclipExternalChatQuestionResponseTurn,

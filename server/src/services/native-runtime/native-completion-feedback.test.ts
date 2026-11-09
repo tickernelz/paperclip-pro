@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { agents, companies, createDb, documentRevisions, heartbeatRuns, issues, issueThreadInteractions, issueDocuments } from "@tickernelz/wardmote-db";
 import { startEmbeddedPostgresTestDatabase } from "../../__tests__/helpers/embedded-postgres.js";
-import type { PrpStructuredRunResult } from "../../vendor/paperclip-runner/index.js";
+import type { PrpStructuredRunResult } from "../../vendor/wardmote-runner/index.js";
 import { documentService } from "../documents.js";
 import { nativeCompletionFeedback } from "./native-completion-feedback.js";
 import { PaperclipRunnerToolAuthority } from "./paperclip-runner-tool-authority.js";

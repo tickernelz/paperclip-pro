@@ -22,7 +22,7 @@ import {
   type PaperclipSemanticToolCall,
   type PaperclipSemanticToolDefinition,
   type PaperclipSemanticToolResult,
-} from "../../vendor/paperclip-runner/index.js";
+} from "../../vendor/wardmote-runner/index.js";
 
 export interface PaperclipRunnerSemanticBinding {
   readonly companyId: string;

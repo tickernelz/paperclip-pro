@@ -14,7 +14,7 @@ import {
   type PaperclipSemanticToolDefinition,
   type PrpStructuredRunResult,
   type PrpTerminalState,
-} from "../../vendor/paperclip-runner/index.js";
+} from "../../vendor/wardmote-runner/index.js";
 
 import { registerRunnerPrpAuthority } from "../../realtime/runner-prp-ws.js";
 import { NativeRunCoordinatorStore } from "./native-run-coordinator-store.js";

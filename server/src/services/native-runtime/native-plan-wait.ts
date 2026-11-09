@@ -8,7 +8,7 @@ import type { AskUserQuestionsInteraction } from "@tickernelz/wardmote-shared";
 import {
   parsePaperclipQuestionResponse, parsePaperclipQuestionSet,
   type PrpStructuredRunResult,
-} from "../../vendor/paperclip-runner/index.js";
+} from "../../vendor/wardmote-runner/index.js";
 import { buildQuestionResponseDeliveryEnvelope } from "../question-response-delivery.js";
 import { nativeCompletionContractSha256 } from "./completion-contracts.js";
 import { nativeSha256 } from "./canonical.js";

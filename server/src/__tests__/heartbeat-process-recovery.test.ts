@@ -112,7 +112,7 @@ import { nativeRuntimeContextFixture } from "../services/native-runtime/runtime-
 import { NativeRunnerOwnershipUnverifiedError } from "../services/native-runtime/native-runner-ownership.js";
 import { nativeCompletionSource } from "../services/native-runtime/completion-contracts.js";
 import { nativeCompletionFeedback } from "../services/native-runtime/native-completion-feedback.js";
-import type { PrpStructuredRunResult } from "../vendor/paperclip-runner/index.js";
+import type { PrpStructuredRunResult } from "../vendor/wardmote-runner/index.js";
 import { buildNativeModelEnvelope } from "@tickernelz/wardmote-runner";
 import {
   CHAT_CONTROL_RECOVERY_ADMISSION_KEY,
@@ -249,12 +249,12 @@ import { PaperclipControlPlanePort } from "../services/native-runtime/paperclip-
 import { finalizeNativeRun } from "../services/native-runtime/native-run-finalizer.js";
 import { recordNativeAttentionAssessment } from "../services/native-runtime/work-assessments.js";
 import { routeNativeAttention } from "../services/native-runtime/native-interaction-bridge.js";
-import * as paperclipRunner from "../vendor/paperclip-runner/index.js";
+import * as paperclipRunner from "../vendor/wardmote-runner/index.js";
 import {
   CONTROL_PLANE_CONFORMANCE_OPEN,
   CONTROL_PLANE_CONFORMANCE_RESULT,
   CONTROL_PLANE_CONFORMANCE_TERMINAL,
-} from "../vendor/paperclip-runner/testing.js";
+} from "../vendor/wardmote-runner/testing.js";
 import { recoveryService } from "../services/recovery/service.ts";
 import {
   readHotRestartIntent,

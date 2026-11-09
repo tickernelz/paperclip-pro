@@ -49,7 +49,7 @@ import {
 import { questionResponseDeliveryService } from "../question-response-delivery.js";
 import * as questionPatternValidation from "../question-pattern-validation.js";
 import { heartbeatService } from "../heartbeat.js";
-import { DurablePrpControlPlane } from "../../vendor/paperclip-runner/index.js";
+import { DurablePrpControlPlane } from "../../vendor/wardmote-runner/index.js";
 import { PaperclipControlPlanePort } from "./paperclip-control-plane-port.js";
 import { readPendingNativeRuntimeRequest } from "./runtime-request-resolution-authority.js";
 import {

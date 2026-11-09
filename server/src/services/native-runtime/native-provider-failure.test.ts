@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { PrpEvent, PrpTerminalState } from "../../vendor/paperclip-runner/index.js";
+import type { PrpEvent, PrpTerminalState } from "../../vendor/wardmote-runner/index.js";
 import { createNativeProviderFailureObservation, NATIVE_MODEL_REJECTION_DIAGNOSTIC, NATIVE_MODEL_REJECTION_MESSAGE, NATIVE_PROVIDER_OVERLOADED_MESSAGE } from "./native-provider-failure.js";
 
 const model = "test-model";

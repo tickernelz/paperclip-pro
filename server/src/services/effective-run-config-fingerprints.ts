@@ -1,4 +1,4 @@
-import { GENERATED_RUNTIME_ENVIRONMENT_KEYS } from "../vendor/paperclip-runner/index.js";
+import { GENERATED_RUNTIME_ENVIRONMENT_KEYS } from "../vendor/wardmote-runner/index.js";
 import { createHash } from "node:crypto";
 import type { RuntimeSecretManifestEntry } from "./secrets.js";
 
