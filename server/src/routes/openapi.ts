@@ -1588,7 +1588,6 @@ const BOARD_ONLY_OPERATIONS = new Set([
   "PUT /api/projects/{id}/repositories",
   "DELETE /api/issues/{id}/documents/{key}",
   "GET /api/companies/{companyId}/decisions",
-  "GET /api/cloud/stacks",
   "GET /api/companies",
   "POST /api/companies",
   "GET /api/companies/stats",
@@ -2261,21 +2260,6 @@ registry.registerPath({
 });
 
 // ─── Companies ───────────────────────────────────────────────────────────────
-
-registry.registerPath({
-  method: "get",
-  path: "/api/cloud/stacks",
-  tags: ["cloud"],
-  summary: "List the current Cloud tenant user's stacks",
-  responses: {
-    200: r.ok(),
-    403: r.forbidden,
-    404: r.notFound,
-    502: r.serverError,
-    503: r.serverError,
-    500: r.serverError,
-  },
-});
 
 registry.registerPath({
   method: "get",
@@ -8062,24 +8046,6 @@ registry.registerPath({
   summary:
     "List the run executions this process is still running, with the current task-drain status, so a restart can wait for them to settle",
   responses: { 200: r.ok(), 401: r.unauthorized },
-});
-
-registry.registerPath({
-  method: "get",
-  path: "/api/instance/lifecycle",
-  tags: ["instance"],
-  summary:
-    "Read the Cloud-pinned primary company's lifecycle status and how many other companies are not archived; 404 when the instance is not Cloud-managed",
-  responses: { 200: r.ok(), 401: r.unauthorized, 403: r.forbidden, 404: r.notFound },
-});
-
-registry.registerPath({
-  method: "post",
-  path: "/api/instance/lifecycle/unarchive-primary",
-  tags: ["instance"],
-  summary:
-    "Unarchive the Cloud-pinned primary company (idempotent); used by the Cloud control plane while restoring an archived stack",
-  responses: { 200: r.ok(), 401: r.unauthorized, 403: r.forbidden, 404: r.notFound },
 });
 
 // ─── Board chat (Conference Room Chat, experimental) ──────────────────────────

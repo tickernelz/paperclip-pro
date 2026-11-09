@@ -16,7 +16,7 @@ import {
   type Db,
 } from "@tickernelz/wardmote-db";
 import type { GitHubReviewEventContext } from "@tickernelz/wardmote-shared";
-import { runtimePublicOrigin } from "./cloud-runtime-identity.js";
+import { runtimePublicOrigin } from "../lib/public-base-url.js";
 import {
   githubBotRepositoryToken,
   githubBotRequest,

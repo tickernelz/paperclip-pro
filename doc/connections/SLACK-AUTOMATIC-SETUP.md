@@ -134,8 +134,7 @@ the browser cannot supply a manifest, scopes, or callback destination.
   fetch an image from the tenant's authenticated board origin. The image is
   512 × 512 with the Paperclip dark background. The temporary configuration
   token stays in the Authorization header and is discarded after setup.
-- Cloud resolves its current canonical origin from its claimed runtime identity.
-  Self-hosted deployments use the configured authentication public base URL
+- The board origin is the configured authentication public base URL
   (`PAPERCLIP_AUTH_PUBLIC_BASE_URL` or `PAPERCLIP_PUBLIC_URL`).
   Both URLs must have valid certificates and be reachable by their intended
   callers. A private Tailscale Serve address is insufficient for Slack webhooks.

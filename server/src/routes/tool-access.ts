@@ -69,7 +69,6 @@ import {
   type PaperclipCloudConnector,
   paperclipCloudConnectorCapabilitiesFromEnv,
 } from "../services/paperclip-cloud-connector.js";
-import { runtimeCanonicalOrigin } from "../services/cloud-runtime-identity.js";
 import { instanceSettingsService } from "../services/instance-settings.js";
 import {
   completePaperclipCloudConnectorEnrollment,
@@ -307,8 +306,6 @@ export function toolAccessRoutes(
   }
 
   function configuredPublicBaseUrl() {
-    const runtimeOrigin = runtimeCanonicalOrigin();
-    if (runtimeOrigin) return runtimeOrigin;
     const raw = (
       process.env.PAPERCLIP_AUTH_PUBLIC_BASE_URL?.trim()
       || process.env.BETTER_AUTH_URL?.trim()

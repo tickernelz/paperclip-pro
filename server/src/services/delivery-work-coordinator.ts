@@ -7,7 +7,6 @@ export function createDeliveryWorkCoordinator(input: {
   owner: object;
   canRun: () => boolean;
   // Idle drain may reconcile admitted writes without dispatching new work.
-  // Warm standby can disable both operations.
   canReconcile?: () => boolean;
   onError: (error: unknown, queue: DeliveryQueue) => void;
 }) {

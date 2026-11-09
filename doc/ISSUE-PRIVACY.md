@@ -47,14 +47,6 @@ Every successful break-glass read writes both:
 The flag does not change the canonical read predicate, create a grant, or make
 future reads implicit. Non-admin members and agents cannot use it.
 
-Cloud customer-success inspection is a separate operator capability. When an
-operator enables it, the dedicated Cloud-signed permit can read private task
-content within its company scope. Ordinary users, agent API keys, and plugins
-cannot use that permit. Cloud enforces the inspection grant, expiration,
-revocation, replay protection, and audit trail; this path does not create a task
-grant or a task break-glass notice. Operators who require task ACLs on every
-content read must leave `PAPERCLIP_CUSTOMER_SUCCESS_INSPECTION_ENABLED` disabled.
-See [Cloud customer-success inspection support](CUSTOMER-SUCCESS-INSPECTION.md).
 
 ## Agent runs and shared-agent residual risk
 

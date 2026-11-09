@@ -80,9 +80,7 @@ export type EmailActor = {
 type Endpoint = typeof chatEndpoints.$inferSelect;
 type Tx = Parameters<Parameters<Db["transaction"]>[0]>[0];
 export interface EmailChannelOptions {
-  /** Suppress periodic database work while an unclaimed Cloud app stands by. */
   isBackgroundWorkEnabled?: () => boolean;
-  /** Allow transaction outcome checks during idle drain, but not warm standby. */
   isReconciliationEnabled?: () => boolean;
   heartbeat: Pick<ReturnType<typeof heartbeatService>, "wakeup">;
   storage?: StorageService;
