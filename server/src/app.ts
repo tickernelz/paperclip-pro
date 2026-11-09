@@ -108,7 +108,6 @@ import { environmentRoutes } from "./routes/environments.js";
 import { executionWorkspaceRoutes } from "./routes/execution-workspaces.js";
 import { terminalRoutes } from "./routes/terminal.js";
 import { goalRoutes } from "./routes/goals.js";
-import { onboardingSeedRoutes } from "./routes/onboarding-seed.js";
 import { onboardingOmpRoutes } from "./routes/onboarding-omp.js";
 import { boardChatRoutes } from "./routes/board-chat.js";
 import { approvalRoutes } from "./routes/approvals.js";
@@ -869,7 +868,6 @@ export async function createApp(
   );
   api.use(emailRoutes(db, emailChannels));
   api.use(goalRoutes(db));
-  api.use(onboardingSeedRoutes(db));
   api.use(onboardingOmpRoutes());
   api.use(boardChatRoutes(db, { deploymentMode: opts.deploymentMode }));
   api.use(voiceSessionRoutes(db, chatChannels.voice));

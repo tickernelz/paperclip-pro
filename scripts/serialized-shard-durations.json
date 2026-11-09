@@ -139,7 +139,6 @@
     "server/src/__tests__/managed-agent-profile-routes-authz.test.ts": 65,
     "server/src/__tests__/multilingual-issues-routes.test.ts": 1780,
     "server/src/__tests__/onboarding-omp-route.test.ts": 100,
-    "server/src/__tests__/onboarding-seed-route.test.ts": 3184,
     "server/src/__tests__/openapi-routes.test.ts": 944,
     "server/src/__tests__/paperclip-mcp-contract-routes.test.ts": 1333,
     "server/src/__tests__/paperclip-mcp-routes.test.ts": 2738,
