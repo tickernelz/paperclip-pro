@@ -24,6 +24,7 @@ import { drainHeartbeatRunsToQuiescence } from "./helpers/drain-heartbeat-runs.j
 import { heartbeatService } from "../services/heartbeat.ts";
 import { attentionService } from "../services/attention.ts";
 import { registerServerAdapter, unregisterServerAdapter } from "../adapters/index.ts";
+import { MODEL_FALLBACK_FORCED_MODEL_KEY } from "../services/model-fallback.ts";
 
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
 const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;
@@ -322,7 +323,7 @@ describeEmbeddedPostgres("per-agent fallback models", () => {
     expect(failed.run.status).toBe("failed");
     await expect.poll(() => retryOf(failed.run.id).then((row) => row?.status ?? null), { timeout: 5_000 }).toBe("scheduled_retry");
     const retry = await retryOf(failed.run.id);
-    expect((retry!.contextSnapshot as Record<string, unknown>).paperclipForcedModel).toBe(PRIMARY);
+    expect((retry!.contextSnapshot as Record<string, unknown>)[MODEL_FALLBACK_FORCED_MODEL_KEY]).toBe(PRIMARY);
     const cooldowns = await cooldownRows(target.companyId);
     const primaryCooldown = cooldowns.find((row) => row.selector === PRIMARY)!;
     expect(cooldowns.find((row) => row.selector === BACKUP)!.cooldownUntil.toISOString()).toBe(fallbackRetryNotBefore);
