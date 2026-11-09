@@ -5,8 +5,7 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 ROOT="$(mktemp -d "${TMPDIR:-/tmp}/wardmote-upgrade-path.XXXXXX")"
 export CARGO_HOME="${CARGO_HOME:-$HOME/.cargo}" RUSTUP_HOME="${RUSTUP_HOME:-$HOME/.rustup}"
 export HOME="$ROOT/home"
-export npm_config_cache="${UPGRADE_NPM_CACHE:-$ROOT/npm-cache}"
-mkdir -p "$npm_config_cache"
+export npm_config_cache="$ROOT/npm-cache"
 phase_started=$SECONDS
 phase() {
   echo "==> $1 (elapsed $((SECONDS - phase_started))s)"

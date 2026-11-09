@@ -441,21 +441,12 @@ jobs:
           cache-workspace-crates: false
           cache-bin: false
           save-if: false
-      - name: Restore the upgrade-path download caches
-        uses: actions/cache@v4
-        with:
-          path: .upgrade-cache/npm
-          key: upgrade-path-npm-${{ runner.os }}-${{ hashFiles('scripts/test-upgrade-path.sh') }}
-          restore-keys: |
-            upgrade-path-npm-${{ runner.os }}-
-
       - name: Upgrade an existing install to this commit and keep its home
         env:
           CARGO_TARGET_DIR: ${{ github.workspace }}/packages/paperclip-runner/runner/target
           GH_TOKEN: ${{ github.token }}
           UPGRADE_REPO: ${{ github.event.pull_request.head.repo.full_name }}
           UPGRADE_SHA: ${{ github.event.pull_request.head.sha }}
-          UPGRADE_NPM_CACHE: ${{ github.workspace }}/.upgrade-cache/npm
         run: UPGRADE_PNPM_STORE="$(pnpm store path --silent)" bash scripts/test-upgrade-path.sh
 
   docs:
