@@ -7,7 +7,6 @@ import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, ArrowRight, Check, ChevronRight } from "lucide-react";
 import { adaptersApi } from "@/api/adapters";
 import { instanceSettingsApi } from "@/api/instanceSettings";
-import { useCloudInstance } from "@/hooks/useCloudInstance";
 import { isNewAgentAdapterAllowed } from "@/lib/new-agent-adapters";
 import { queryKeys } from "@/lib/queryKeys";
 import { getAdapterDisplay } from "@/adapters/adapter-display-registry";
@@ -48,7 +47,6 @@ export function AgentBasicsDialog({
   onInvite?: () => void;
 }) {
   const id = useId();
-  const cloud = Boolean(useCloudInstance());
   const experimental = useQuery({
     queryKey: queryKeys.instance.experimentalSettings,
     queryFn: instanceSettingsApi.getExperimental,
@@ -73,7 +71,6 @@ export function AgentBasicsDialog({
       adapter.loaded &&
       !adapter.disabled &&
       isNewAgentAdapterAllowed(adapter.type, {
-        cloud,
         nativeRunnerEnabled: experimental.data?.enableNativeRunner === true,
       }) &&
       !["process", "http"].includes(adapter.type) &&

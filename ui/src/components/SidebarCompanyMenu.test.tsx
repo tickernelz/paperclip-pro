@@ -123,16 +123,6 @@ async function flushReact() {
   await new Promise((resolve) => window.setTimeout(resolve, 0));
 }
 
-const CLOUD_HEALTH = {
-  status: "ok" as const,
-  cloud: {
-    managed: true as const,
-    managedBy: "paperclip-cloud" as const,
-    stackSlug: "acme-labs",
-    cloudBaseUrl: "https://cloud.example.test",
-  },
-};
-
 describe("SidebarCompanyMenu", () => {
   let container: HTMLDivElement;
 
@@ -167,14 +157,12 @@ describe("SidebarCompanyMenu", () => {
     vi.clearAllMocks();
   });
 
-  function renderMenu(options: { cloud?: boolean; health?: unknown } = {}) {
+  function renderMenu(options: { health?: unknown } = {}) {
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false } },
     });
-    // CloudAccessGate owns the health fetch in the app; seeding the cache is how
-    // useCloudInstance sees a cloud-managed instance under test.
-    if (options.cloud || options.health) {
-      queryClient.setQueryData(queryKeys.health, options.health ?? CLOUD_HEALTH);
+    if (options.health) {
+      queryClient.setQueryData(queryKeys.health, options.health);
     }
     const root = createRoot(container);
     act(() => {
@@ -545,48 +533,4 @@ describe("SidebarCompanyMenu", () => {
     });
   });
 
-  describe("in Paperclip Cloud", () => {
-    it("closes the menu and enters the Cloud logout flow without local sign-out", async () => {
-      const { root } = renderMenu({ cloud: true });
-      await flushReact();
-      await flushReact();
-      await openMenu("Open Acme Labs organization switcher");
-
-      const signOutItem = Array.from(document.body.querySelectorAll('[data-slot="dropdown-menu-item"]'))
-        .find((element) => element.textContent?.includes("Sign out"));
-      expect(signOutItem).toBeTruthy();
-
-      act(() => {
-        signOutItem?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-      });
-      await flushReact();
-
-      expect(mockAuthApi.signOut).not.toHaveBeenCalled();
-      expect(mockNavigateTopLevel).toHaveBeenCalledOnce();
-      expect(mockNavigateTopLevel).toHaveBeenCalledWith("/cloud/logout");
-      expect(document.body.textContent).not.toContain("Organizations");
-
-      act(() => {
-        root.unmount();
-      });
-    });
-
-    it("keeps company navigation without local creation when a managed host has no switcher plugin", async () => {
-      const { root } = renderMenu({ cloud: true });
-      await flushReact();
-      await flushReact();
-      await openMenu("Open Acme Labs organization switcher");
-      expect(document.body.textContent).toContain("Anachronist Wiki");
-      expect(document.body.textContent).toContain("ANA");
-      expect(document.body.textContent).not.toContain("Create organization");
-      expect(mockOpenOnboarding).not.toHaveBeenCalled();
-      const row = [...document.querySelectorAll('[data-slot="dropdown-menu-item"]')]
-        .find(element => element.textContent?.includes("Anachronist Wiki"));
-      act(() => row?.dispatchEvent(new MouseEvent("click", { bubbles: true })));
-      expect(mockSetSelectedCompanyId).toHaveBeenCalledWith("company-3");
-      expect(mockNavigate).toHaveBeenCalledWith("/ANA/dashboard");
-      expect(mockNavigateTopLevel).not.toHaveBeenCalled();
-      act(() => root.unmount());
-    });
-  });
 });

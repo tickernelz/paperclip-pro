@@ -94,7 +94,6 @@ describe("CompanySettingsNav", () => {
   function renderNav(
     root: ReturnType<typeof createRoot>,
     hiddenSettings?: string[],
-    cloud?: { managed: boolean },
     fastResponsesEnabled = true,
   ) {
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -102,7 +101,6 @@ describe("CompanySettingsNav", () => {
     queryClient.setQueryData(queryKeys.health, {
       status: "ok",
       ...(hiddenSettings ? { hiddenSettings } : {}),
-      ...(cloud ? { cloud } : {}),
     });
     root.render(
       <QueryClientProvider client={queryClient}>
@@ -113,7 +111,7 @@ describe("CompanySettingsNav", () => {
 
   it("hides Connections while fast responses are disabled", async () => {
     const root = createRoot(container);
-    await act(async () => { renderNav(root, undefined, undefined, false); });
+    await act(async () => { renderNav(root, undefined, false); });
     expect(pageTabBarMock.mock.calls.at(-1)?.[0]?.items).not.toContainEqual({ value: "connections", label: "Connections" });
     await act(async () => { root.unmount(); });
   });
@@ -214,22 +212,4 @@ describe("CompanySettingsNav", () => {
     });
   });
 
-  it("suppresses the Import tab on a Cloud-managed instance", async () => {
-    currentPathname = "/PAP/company/settings/members";
-    const root = createRoot(container);
-
-    await act(async () => {
-      renderNav(root, undefined, { managed: true });
-    });
-
-    const renderedValues = pageTabBarMock.mock.calls.at(-1)?.[0]?.items?.map(
-      (item: { value: string }) => item.value,
-    );
-    expect(renderedValues).not.toContain("import");
-    expect(renderedValues).toContain("export");
-
-    await act(async () => {
-      root.unmount();
-    });
-  });
 });

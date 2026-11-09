@@ -68,20 +68,7 @@ vi.mock("./InstanceGeneralSettings", () => ({
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 (globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
 
-const CLOUD_HEALTH = {
-  status: "ok" as const,
-  cloud: {
-    managed: true as const,
-    managedBy: "paperclip-cloud" as const,
-    stackSlug: "acme-labs",
-    cloudBaseUrl: "https://cloud.example.test",
-  },
-};
-
-const SELF_HOSTED_HEALTH = { status: "ok" as const, cloud: null };
-
-const RENAME_HINT =
-  "Renaming can change this company's task ID prefix. Existing task IDs are renumbered and old task links stop resolving.";
+const SELF_HOSTED_HEALTH = { status: "ok" as const };
 
 describe("CompanySettings rename hint", () => {
   let container: HTMLDivElement;
@@ -101,8 +88,6 @@ describe("CompanySettings rename hint", () => {
     const queryClient = new QueryClient({
       defaultOptions: { queries: { retry: false } },
     });
-    // CloudAccessGate owns the health fetch in the app; seeding the cache is how
-    // useCloudInstance sees a managed instance under test.
     queryClient.setQueryData(queryKeys.health, health);
     queryClient.setQueryData(queryKeys.instance.experimentalSettings, { enableFastResponses });
     const root = createRoot(container);
@@ -120,11 +105,6 @@ describe("CompanySettings rename hint", () => {
     return root;
   }
 
-  function hintText() {
-    return Array.from(container.querySelectorAll("p")).find(
-      (element) => element.textContent?.trim() === RENAME_HINT,
-    );
-  }
 
   it.each([false, true])("keeps decision setup in General only while the experiment is off (%s)", (enabled) => {
     const root = render(SELF_HOSTED_HEALTH, enabled);
@@ -132,15 +112,4 @@ describe("CompanySettings rename hint", () => {
     flushSync(() => root.unmount());
   });
 
-  it("warns that a rename re-keys task IDs on a managed instance", () => {
-    const root = render(CLOUD_HEALTH);
-    expect(hintText()).toBeDefined();
-    flushSync(() => root.unmount());
-  });
-
-  it("stays silent on a self-hosted instance, where a rename keeps the prefix", () => {
-    const root = render(SELF_HOSTED_HEALTH);
-    expect(hintText()).toBeUndefined();
-    flushSync(() => root.unmount());
-  });
 });

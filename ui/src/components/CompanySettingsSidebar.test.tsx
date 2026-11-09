@@ -393,13 +393,12 @@ describe("CompanySettingsSidebar operator-hidden entries", () => {
     vi.clearAllMocks();
   });
 
-  async function renderSidebar(hiddenSettings?: string[], cloud?: { managed: boolean }) {
+  async function renderSidebar(hiddenSettings?: string[]) {
     const root = createRoot(container);
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     queryClient.setQueryData(queryKeys.health, {
       status: "ok",
       ...(hiddenSettings ? { hiddenSettings } : {}),
-      ...(cloud ? { cloud } : {}),
     });
     await act(async () => {
       root.render(
@@ -429,13 +428,6 @@ describe("CompanySettingsSidebar operator-hidden entries", () => {
     expect(container.textContent).toContain("Adapters");
     expect(container.textContent).toContain("Import");
     expect(mockPluginsApi.list).toHaveBeenCalled();
-  });
-
-  it("hides Import but keeps Export on a Cloud-managed instance", async () => {
-    await renderSidebar(undefined, { managed: true });
-
-    expect(container.textContent).not.toContain("Import");
-    expect(container.textContent).toContain("Export");
   });
 
   it("hides operator-hidden company pages", async () => {

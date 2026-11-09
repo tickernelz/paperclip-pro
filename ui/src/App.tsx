@@ -10,7 +10,6 @@ import { PipelinesExperimentalGate } from "./components/PipelinesExperimentalGat
 import { CasesExperimentalGate } from "./components/CasesExperimentalGate";
 import { StatusCardsExperimentalGate } from "./components/StatusCardsExperimentalGate";
 import { PixelsOfficeExperimentalGate } from "./components/PixelsOfficeExperimentalGate";
-import { CloudManagedPageGate } from "./components/CloudManagedPageGate";
 import { HiddenSettingsPageGate } from "./components/HiddenSettingsPageGate";
 import { IsolatedWorkspacesRouteGate } from "./components/IsolatedWorkspacesRouteGate";
 import {
@@ -122,9 +121,6 @@ import {
   shouldRedirectCompanylessRouteToOnboarding,
 } from "./lib/onboarding-route";
 import { filterHiddenInstanceSettingsPath, normalizeRememberedInstanceSettingsPath } from "./lib/instance-settings";
-import { useCloudInstance } from "./hooks/useCloudInstance";
-import { cloudStackCreateUrl } from "./lib/cloudLinks";
-import { navigateTopLevel } from "@/lib/browserNavigation";
 
 const CompanyExport = lazy(() =>
   import("./pages/CompanyExport").then((module) => ({ default: module.CompanyExport })),
@@ -180,10 +176,8 @@ function boardRoutes(combinedInboxTasksEnabled: boolean) {
           )}
         />
       </Route>
-      <Route element={<CloudManagedPageGate />}>
-        <Route element={<HiddenSettingsPageGate pageKey="company.import" />}>
-          <Route path="company/import" element={<CompanyImport />} />
-        </Route>
+      <Route element={<HiddenSettingsPageGate pageKey="company.import" />}>
+        <Route path="company/import" element={<CompanyImport />} />
       </Route>
       <Route element={<HiddenSettingsPageGate pageKey="company.secrets" />}>
         <Route path="company/settings/secrets" element={<Secrets />} />
@@ -596,8 +590,6 @@ export function OnboardingRoutePage() {
   const { companies } = useCompany();
   const { openOnboarding } = useDialogActions();
   const { t } = useTranslation();
-  const cloudInstance = useCloudInstance();
-  const createStackUrl = cloudStackCreateUrl(cloudInstance?.cloudBaseUrl ?? null);
   const { onboardingOpen, onboardingRouteDismissed } = useDialogState();
   const { companyPrefix } = useParams<{ companyPrefix?: string }>();
   const matchedCompany = companyPrefix
@@ -629,18 +621,6 @@ export function OnboardingRoutePage() {
         <h1 className="text-xl font-semibold">{title}</h1>
         <p className="mt-2 text-sm text-ink-3">{description}</p>
         <div className="mt-4">
-          {/* On a managed stack whose Cloud origin is unknown there is nowhere
-              to send this click: creation lives on Cloud, and in-app creation
-              is a 403 floor. A button that does nothing is worse than none, so
-              say why instead of rendering an inert control. */}
-          {!matchedCompany && cloudInstance && !createStackUrl ? (
-            <p className="text-sm text-ink-3">
-              {t("app.cloudCreateUnavailable", {
-                defaultValue:
-                  "Organizations are created in Paperclip Cloud. This instance can't reach it right now — try again from your Cloud portfolio.",
-              })}
-            </p>
-          ) : (
             <Button
               onClick={() =>
                 matchedCompany
@@ -654,14 +634,11 @@ export function OnboardingRoutePage() {
                       initialStep: onboardingStepForCompany(),
                       companyId: matchedCompany.id,
                     })
-                  : cloudInstance && createStackUrl
-                    ? navigateTopLevel(createStackUrl)
-                    : openOnboarding()
+                  : openOnboarding()
               }
             >
               {matchedCompany ? "Add Agent" : "Start Onboarding"}
             </Button>
-          )}
         </div>
       </div>
     </div>
@@ -745,10 +722,6 @@ function UnprefixedBoardRedirect() {
 function NoCompaniesStartPage() {
   const { openOnboarding } = useDialogActions();
   const { t } = useTranslation();
-  // A managed stack with no visible companies is a loading or error state, not
-  // an invitation to create one in-app — creation lives on Cloud (403 floor).
-  const cloudInstance = useCloudInstance();
-  const createStackUrl = cloudStackCreateUrl(cloudInstance?.cloudBaseUrl ?? null);
 
   return (
     <div className="mx-auto max-w-xl py-10">
@@ -760,26 +733,9 @@ function NoCompaniesStartPage() {
           {t("app.noCompanies.description", { defaultValue: "Get started by creating an organization." })}
         </p>
         <div className="mt-4">
-          {/* Same as the onboarding route: no Cloud origin means nowhere to
-              send the click, and in-app creation is a 403 floor here. */}
-          {cloudInstance && !createStackUrl ? (
-            <p className="text-sm text-ink-3">
-              {t("app.cloudCreateUnavailable", {
-                defaultValue:
-                  "Organizations are created in Paperclip Cloud. This instance can't reach it right now — try again from your Cloud portfolio.",
-              })}
-            </p>
-          ) : (
-            <Button
-              onClick={() =>
-                cloudInstance && createStackUrl
-                  ? navigateTopLevel(createStackUrl)
-                  : openOnboarding()
-              }
-            >
+            <Button onClick={() => openOnboarding()}>
               {t("app.noCompanies.newCompany", { defaultValue: "New Organization" })}
             </Button>
-          )}
         </div>
       </div>
     </div>

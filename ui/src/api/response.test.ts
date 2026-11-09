@@ -36,11 +36,10 @@ describe("API responses during a restart", () => {
     await expect(api.delete("/issues/example")).resolves.toBeUndefined();
   });
 
-  it("preserves valid startup health metadata for sign-in and invitations", async () => {
+  it("preserves valid startup health metadata", async () => {
     const payload = {
       status: "starting",
       deploymentMode: "authenticated",
-      cloud: { managed: true, managedBy: "paperclip-cloud", stackSlug: "example", cloudBaseUrl: "https://example.com" },
     };
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(Response.json(payload)));
     await expect(healthApi.get()).resolves.toEqual(payload);

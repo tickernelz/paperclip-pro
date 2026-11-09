@@ -8,10 +8,7 @@ import {
 import { useCompany } from "../context/CompanyContext";
 import { useBreadcrumbs } from "../context/BreadcrumbContext";
 import { useOptionalToastActions } from "../context/ToastContext";
-import { useCloudInstance } from "../hooks/useCloudInstance";
 import { resolveCompanyArchiveDeparture } from "../lib/company-selection";
-import { cloudPortfolioManageUrl } from "../lib/cloudLinks";
-import { navigateTopLevel } from "@/lib/browserNavigation";
 import { companiesApi } from "../api/companies";
 import { assetsApi } from "../api/assets";
 import { queryKeys } from "../lib/queryKeys";
@@ -43,11 +40,7 @@ export function CompanySettings() {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const toastActions = useOptionalToastActions();
-  const cloud = useCloudInstance();
   const fastResponses = useFastResponsesEnabled();
-  // Managed instances derive the task ID prefix from the company name, so a
-  // rename here also renumbers the existing task IDs.
-  const isCloudManaged = Boolean(cloud);
   // General settings local state
   const [companyName, setCompanyName] = useState("");
   const [description, setDescription] = useState("");
@@ -148,24 +141,12 @@ export function CompanySettings() {
     mutationFn: ({ companyId }: { companyId: string }) =>
       companiesApi.archive(companyId),
     onSuccess: async (_result, { companyId }) => {
-      // Never stay on the archived company's settings: the only visible
-      // change would be the archive button going inert. Leave for wherever
-      // still makes sense (another active company, the Cloud portfolio, or
-      // the companies list), with a toast naming what happened.
       const archived = companies.find((company) => company.id === companyId);
       const archivedName = archived?.name ?? "Organization";
       const departure = resolveCompanyArchiveDeparture({
         archivedCompanyId: companyId,
         companies,
-        cloudPortfolioUrl: cloudPortfolioManageUrl(cloud?.cloudBaseUrl),
       });
-      if (departure.kind === "cloud_portfolio") {
-        // The whole organization is on its way to being archived by the
-        // control plane; a full navigation to the Cloud portfolio replaces
-        // this document, so cache invalidation below would never run.
-        navigateTopLevel(departure.url);
-        return;
-      }
       if (departure.kind === "company") {
         toastActions?.pushToast({
           title: `${archivedName} is archived`,
@@ -235,12 +216,6 @@ export function CompanySettings() {
               value={companyName}
               onChange={(e) => setCompanyName(e.target.value)}
             />
-            {isCloudManaged && (
-              <p className="mt-1 text-xs text-ink-3">
-                Renaming can change this company's task ID prefix. Existing task IDs are
-                renumbered and old task links stop resolving.
-              </p>
-            )}
           </Field>
           <Field
             label="Description"

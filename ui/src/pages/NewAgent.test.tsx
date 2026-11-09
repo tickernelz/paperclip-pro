@@ -252,31 +252,17 @@ describe("New agent setup", () => {
     await click("Finish setup");
     expect(api.hire.mock.calls[0][1].defaultEnvironmentId).toBe("grok-sandbox");
   });
-  it.each([false, true])("blocks direct runner setup links when the experiment is disabled (cloud=%s)", async (cloud) => {
-    cache.setQueryData(queryKeys.health, { status: "ok", cloud: { managed: cloud } });
+  it("blocks direct runner setup links when the experiment is disabled", async () => {
     settings.getExperimental.mockResolvedValue({ enableNativeRunner: false });
     await render("paperclip_runner");
     expect(container.textContent).toContain("This adapter is unavailable");
     expect(api.hire).not.toHaveBeenCalled();
   });
-  it("blocks direct setup links for unsupported Cloud adapters", async () => {
-    cache.setQueryData(queryKeys.health, {
-      status: "ok",
-      cloud: { managed: true },
-    });
-    await render("pi_local");
-    expect(container.textContent).toContain("This adapter is unavailable");
-    expect(api.hire).not.toHaveBeenCalled();
-  });
   it.each([
     ["paperclip_runner", "subscription"], ["paperclip_runner", "api_key"],
-  ])("configures %s Grok on Cloud with an xAI %s connection", async (adapterType, method) => {
-    cache.setQueryData(queryKeys.health, {
-      status: "ok",
-      cloud: { managed: true },
-    });
+  ])("configures %s Grok in a managed sandbox with an xAI %s connection", async (adapterType, method) => {
     envApi.list.mockResolvedValue([
-      { id: "sandbox-1", name: "Paperclip Cloud", driver: "sandbox", config: { provider: "daytona" } },
+      { id: "sandbox-1", name: "Managed sandbox", driver: "sandbox", config: { provider: "daytona" } },
     ]);
     envApi.capabilities.mockResolvedValue({
       sandboxProviders: { daytona: { supportsLoginPty: true } },

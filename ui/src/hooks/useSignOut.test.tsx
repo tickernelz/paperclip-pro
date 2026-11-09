@@ -53,10 +53,8 @@ describe("useSignOut", () => {
     return root;
   }
 
-  it.each([
-    ["self-hosted", { status: "ok", deploymentMode: "authenticated" }],
-    ["Cloud", { status: "ok", cloud: { managed: true, managedBy: "paperclip-cloud", stackSlug: "acme", cloudBaseUrl: "https://cloud.example.test" } }],
-  ])("deletes this account's offline copies on %s sign-out and keeps the app shell", async (_mode, health) => {
+  it("deletes this account's offline copies on sign-out and keeps the app shell", async () => {
+    const health = { status: "ok", deploymentMode: "authenticated" };
     const names = new Set(["wardmote-data-0123abcd", "wardmote-shell-build-1"]);
     vi.stubGlobal("caches", {
       keys: async () => [...names],
@@ -70,29 +68,6 @@ describe("useSignOut", () => {
 
     await vi.waitFor(() => expect([...names]).toEqual(["wardmote-shell-build-1"]));
     vi.unstubAllGlobals();
-    flushSync(() => root.unmount());
-  });
-
-  it("closes caller chrome and navigates through Cloud without local sign-out", async () => {
-    const onSignedOut = vi.fn();
-    queryClient.setQueryData(queryKeys.health, {
-      status: "ok",
-      cloud: {
-        managed: true,
-        managedBy: "paperclip-cloud",
-        stackSlug: "acme",
-        cloudBaseUrl: "https://cloud.example.test",
-      },
-    });
-    const root = renderHarness(onSignedOut);
-
-    flushSync(() => captured?.mutate());
-
-    await vi.waitFor(() => expect(mockNavigateTopLevel).toHaveBeenCalledOnce());
-    expect(mockNavigateTopLevel).toHaveBeenCalledWith("/cloud/logout");
-    expect(onSignedOut).toHaveBeenCalledOnce();
-    expect(mockAuthApi.signOut).not.toHaveBeenCalled();
-
     flushSync(() => root.unmount());
   });
 
@@ -243,36 +218,6 @@ describe("useSignOut", () => {
     flushSync(() => root.unmount());
   });
 
-  it("leaves the Cloud cache to the document reload rather than clearing it locally", async () => {
-    // The Cloud path never reaches onSuccess's clearing branch: it hands off to
-    // a top-level navigation, and the resulting document load builds a new
-    // QueryClient from scratch. Clearing here would only blank the UI during
-    // the frames before that navigation commits.
-    queryClient.setQueryData(queryKeys.health, {
-      status: "ok",
-      cloud: {
-        managed: true,
-        managedBy: "paperclip-cloud",
-        stackSlug: "acme",
-        cloudBaseUrl: "https://cloud.example.test",
-      },
-    });
-    queryClient.setQueryData(queryKeys.companies.all, {
-      companies: [{ id: "company-a", name: "Account A Co" }],
-      unauthorized: false,
-    });
-    const root = renderHarness();
-
-    flushSync(() => captured?.mutate());
-
-    await vi.waitFor(() => expect(mockNavigateTopLevel).toHaveBeenCalledOnce());
-    expect(queryClient.getQueryData(queryKeys.companies.all)).toEqual({
-      companies: [{ id: "company-a", name: "Account A Co" }],
-      unauthorized: false,
-    });
-
-    flushSync(() => root.unmount());
-  });
 });
 
 describe("isAccountScopedQueryKey", () => {

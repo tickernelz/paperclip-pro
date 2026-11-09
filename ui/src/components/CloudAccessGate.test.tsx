@@ -14,7 +14,6 @@ vi.mock("@/lib/router", () => ({
   Outlet: () => <textarea aria-label="Instructions" defaultValue="Unsaved instructions" />,
 }));
 vi.mock("@/components/MootLoading", () => ({ MootLoading: () => <div>Loading…</div> }));
-vi.mock("@/components/CloudSignIn", () => ({ CloudSignIn: () => <div>Sign in to Cloud</div> }));
 vi.mock("@/components/BootstrapPendingPage", () => ({ BootstrapPendingPage: () => <div>Set up instance</div> }));
 
 const responses: Record<string, unknown> = {
