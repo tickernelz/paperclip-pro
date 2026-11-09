@@ -1,12 +1,5 @@
 import type { Environment } from "@tickernelz/wardmote-shared";
 
-/**
- * True iff the environment row was provisioned by the platform (the
- * managed-config environment provisioner stamps `metadata.managedByPaperclip`).
- * The server enforces the write floor on these rows — everything except env
- * vars is rejected — so the UI renders them locked instead of letting a
- * save fail at the API.
- */
 export function isPlatformManagedEnvironment(
   environment: Pick<Environment, "metadata"> | null | undefined,
 ): boolean {

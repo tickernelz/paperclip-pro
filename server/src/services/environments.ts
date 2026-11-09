@@ -347,17 +347,6 @@ export function environmentService(db: Db) {
           : await tx.select({ id: companies.id }).from(companies).then((rows) => rows.map((row) => row.id));
         activityCompanyIds = companyIds;
 
-        // Take the sandbox-row lock BEFORE reading the stock bindings. Two
-        // passes can reconcile the same slot concurrently (the boot ensure and
-        // the async provider-recovery reactivation, or two app builds during a
-        // rolling deploy). Concurrent passes serialize on this lock, and under
-        // READ COMMITTED each later statement sees a fresh snapshot — so a pass
-        // that blocks here then reads the bindings the winning pass committed,
-        // not a snapshot from before it waited. Reading bindings first left a
-        // window where a waiting pass compared the winner's fresh row against
-        // its own stale binding hash, misclassified the mismatch as
-        // `operator_modified`, and — once `platformFullyManaged` turns that
-        // into an update — rolled the row back to its own older stock.
         const sandboxRows = await tx
           .select()
           .from(environments)
