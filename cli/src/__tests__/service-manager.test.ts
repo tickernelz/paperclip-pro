@@ -3,6 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import {
+  appendServiceUserBinDirs,
   assertForegroundRunAllowed,
   detectServiceManager,
   LaunchdServiceManager,
@@ -100,6 +101,22 @@ describe("service definition generation", () => {
     expect(plist).toContain("<key>RunAtLoad</key><true/>");
     expect(plist).toContain("<key>KeepAlive</key><true/>");
     expect(plist).toContain("service.err.log");
+  });
+});
+
+describe("service process PATH", () => {
+  const delimiter = path.delimiter;
+
+  it("adds the user bin directories where the OMP installers put omp when the service manager PATH lacks them", () => {
+    const managerPath = ["/opt/node/bin", "/usr/local/bin", "/usr/bin", "/bin", "/snap/bin"].join(delimiter);
+    expect(appendServiceUserBinDirs(managerPath, "/home/integron").split(delimiter)).toEqual([
+      "/opt/node/bin", "/usr/local/bin", "/usr/bin", "/bin", "/snap/bin", "/home/integron/.local/bin", "/home/integron/.bun/bin",
+    ]);
+  });
+
+  it("keeps an operator PATH order and does not duplicate directories it already holds", () => {
+    const operatorPath = ["/home/alice/.bun/bin", "/usr/bin", "/home/alice/.local/bin"].join(delimiter);
+    expect(appendServiceUserBinDirs(operatorPath, "/home/alice")).toBe(operatorPath);
   });
 });
 
