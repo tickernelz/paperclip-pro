@@ -7,7 +7,6 @@ import {
 } from "@tickernelz/wardmote-shared";
 import { clearOfflineData } from "@/lib/offline-data";
 import { redactUrlSecrets } from "@/lib/redact-url-secrets";
-import { tenantSessionRecovery } from "@/lib/tenant-session-recovery";
 import { readApiJson } from "./response";
 
 type AuthErrorBody =
@@ -128,8 +127,6 @@ async function authPost(path: string, body: Record<string, unknown>): Promise<un
   }
   const payload = await res.json().catch(() => null);
   if (!res.ok) {
-    const recovery = tenantSessionRecovery.recoverIfNeeded(res.status, payload);
-    if (recovery) return recovery;
     logAuthHttpError("POST", path, res.status, res.statusText, payload);
     throw extractAuthError(payload as AuthErrorBody, res.status);
   }
@@ -145,8 +142,6 @@ async function authPatch<T>(path: string, body: Record<string, unknown>, parse: 
   });
   const payload = await res.json().catch(() => null);
   if (!res.ok) {
-    const recovery = tenantSessionRecovery.recoverIfNeeded(res.status, payload);
-    if (recovery) return recovery;
     throw extractAuthError(payload as AuthErrorBody, res.status);
   }
   return parse(payload);
@@ -161,8 +156,6 @@ export const authApi = {
     });
     const payload = await readApiJson(res);
     if (!res.ok) {
-      const recovery = tenantSessionRecovery.recoverIfNeeded(res.status, payload);
-      if (recovery) return recovery;
       if (res.status === 401) {
         await clearOfflineData();
         return null;
@@ -190,8 +183,6 @@ export const authApi = {
     });
     const payload = await res.json().catch(() => null);
     if (!res.ok) {
-      const recovery = tenantSessionRecovery.recoverIfNeeded(res.status, payload);
-      if (recovery) return recovery;
       throw new Error((payload as { error?: string } | null)?.error ?? `Failed to load profile (${res.status})`);
     }
     return currentUserProfileSchema.parse(payload);

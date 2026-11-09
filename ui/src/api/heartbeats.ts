@@ -8,7 +8,6 @@ import type {
   ProviderTraceMetadata,
   RunModelFallbackState,
 } from "@tickernelz/wardmote-shared";
-import { tenantSessionRecovery } from "@/lib/tenant-session-recovery";
 import { api, type RequestOptions } from "./client";
 
 export interface RunLivenessFields {
@@ -182,8 +181,6 @@ export const heartbeatsApi = {
       const body = (await response.json().catch(() => null)) as {
         error?: string;
       } | null;
-      const recovery = tenantSessionRecovery.recoverIfNeeded(response.status, body);
-      if (recovery) return recovery;
       throw new Error(
         body?.error ?? `Trace download failed: ${response.status}`,
       );

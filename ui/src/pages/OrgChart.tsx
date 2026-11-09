@@ -13,7 +13,6 @@ import { EmptyState } from "../components/EmptyState";
 import { PageSkeleton } from "../components/PageSkeleton";
 import { Download, Maximize2, Minus, Network, Plus, Upload } from "lucide-react";
 import { AGENT_ROLE_LABELS, type Agent } from "@tickernelz/wardmote-shared";
-import { useCloudInstance } from "@/hooks/useCloudInstance";
 import { useHiddenSettings } from "@/hooks/useHiddenSettings";
 
 // Layout constants
@@ -209,12 +208,8 @@ export function OrgChart({ orgTree: providedOrgTree, agents: providedAgents, emb
   const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const navigate = useNavigate();
-  // Import is floored server-side on cloud-managed instances (403 cloud_managed), so the
-  // button is hidden rather than dead-ending. Export stays available. Both
-  // buttons also respect the operator-hidden settings registry.
-  const isCloud = Boolean(useCloudInstance());
   const { hidden: hiddenSettings } = useHiddenSettings();
-  const showImport = !isCloud && !hiddenSettings.has("company.import");
+  const showImport = !hiddenSettings.has("company.import");
   const showExport = !hiddenSettings.has("company.export");
 
   const { data: queriedOrgTree, isLoading } = useQuery({

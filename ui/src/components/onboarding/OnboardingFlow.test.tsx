@@ -27,7 +27,6 @@ vi.mock("../../context/DialogContext", () => ({
 vi.mock("../../context/CompanyContext", () => ({
   useCompany: () => ({ companies: [], loading: false, setSelectedCompanyId: vi.fn() }),
 }));
-vi.mock("../../hooks/useCloudInstance", () => ({ useCloudInstance: () => null }));
 vi.mock("../../lib/router", () => ({
   useLocation: () => ({ pathname: "/onboarding" }),
   useNavigate: () => vi.fn(),

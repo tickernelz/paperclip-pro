@@ -1,5 +1,4 @@
 import { getPageVisibility, getVisibilityHeaderValue } from "@/lib/page-visibility";
-import { tenantSessionRecovery } from "@/lib/tenant-session-recovery";
 import { attachmentTooLargeMessage, exceedsAttachmentLimit } from "@/lib/attachment-limit";
 import { isDecisionRequest, noteDecisionMade } from "@/lib/decision-events";
 import { isOffline, OFFLINE_ACTION_REASON } from "@/lib/online-status";
@@ -77,8 +76,6 @@ export async function requestResponse(path: string, init?: RequestInit): Promise
   });
   if (!res.ok) {
     const errorBody = await readApiJson(res);
-    const recovery = tenantSessionRecovery.recoverIfNeeded(res.status, errorBody);
-    if (recovery) return recovery;
     throw new ApiError(errorMessage(res.status, errorBody), res.status, errorBody);
   }
   if (isDecisionRequest(method, path)) noteDecisionMade();

@@ -12,13 +12,8 @@ const getSessionMock = vi.hoisted(() => vi.fn());
 const signInEmailMock = vi.hoisted(() => vi.fn());
 const signUpEmailMock = vi.hoisted(() => vi.fn());
 const healthMock = vi.hoisted(() => vi.fn());
-const beginCloudSignInMock = vi.hoisted(() => vi.fn());
 
 vi.mock("../api/health", () => ({ healthApi: { get: () => healthMock() } }));
-vi.mock("@/lib/cloud-sign-in", () => ({
-  beginCloudSignIn: (url: string) => beginCloudSignInMock(url),
-  clearCloudSignInAttempt: vi.fn(),
-}));
 
 vi.mock("../api/auth", () => ({
   authApi: {
@@ -95,7 +90,6 @@ describe("AuthPage", () => {
     document.body.appendChild(container);
     getSessionMock.mockResolvedValue(null);
     healthMock.mockResolvedValue({ status: "ok", deploymentMode: "authenticated" });
-    beginCloudSignInMock.mockReturnValue(true);
     signInEmailMock.mockResolvedValue(undefined);
     signUpEmailMock.mockResolvedValue(undefined);
   });
@@ -124,18 +118,6 @@ describe("AuthPage", () => {
     return { root, queryClient };
   }
 
-  it.each(["https://my.paperclip.app", "https://my-staging.paperclip.app"])("recovers Cloud auth through %s without rendering an instance form", async (origin) => {
-    healthMock.mockResolvedValue({ cloud: { managed: true, managedBy: "paperclip-cloud", cloudBaseUrl: origin, stackSlug: "team" } });
-    const { root } = await mount("/auth?next=%2FTEST%2Fissues%2FTEST-1%3Ftab%3Dactivity%23comment");
-    await vi.waitFor(() => expect(beginCloudSignInMock).toHaveBeenCalledTimes(1));
-    const target = new URL(beginCloudSignInMock.mock.calls[0][0]);
-    expect(target.origin).toBe(origin);
-    expect(target.pathname).toBe("/v1/stacks/team/entry-redirect");
-    expect(target.searchParams.get("returnTo")).toBe("/TEST/issues/TEST-1?tab=activity#comment");
-    expect(container.querySelector("form")).toBeNull();
-    await act(() => root.unmount());
-  });
-
   it("never flashes a form while deployment metadata is loading", async () => {
     healthMock.mockReturnValue(new Promise(() => {}));
     const { root } = await mount();
@@ -149,24 +131,6 @@ describe("AuthPage", () => {
     const { root } = await mount();
     await vi.waitFor(() => expect(container.textContent).toContain("Unable to check sign-in"));
     expect(container.querySelector("form")).toBeNull();
-    await act(() => root.unmount());
-  });
-
-  it("offers a manual Cloud retry after the automatic recovery limit", async () => {
-    healthMock.mockResolvedValue({ cloud: { managed: true, managedBy: "paperclip-cloud", cloudBaseUrl: "https://my.paperclip.app", stackSlug: "team" } });
-    beginCloudSignInMock.mockReturnValue(false);
-    const { root } = await mount();
-    await vi.waitFor(() => expect(container.textContent).toContain("Continue to Paperclip Cloud"));
-    expect(container.querySelector("form")).toBeNull();
-    await act(() => root.unmount());
-  });
-
-  it("keeps incomplete Cloud configuration out of the instance form", async () => {
-    healthMock.mockResolvedValue({ cloud: { managed: true, managedBy: "paperclip-cloud", cloudBaseUrl: null, stackSlug: null } });
-    const { root } = await mount();
-    await vi.waitFor(() => expect(container.textContent).toContain("Cloud sign-in is unavailable"));
-    expect(container.querySelector("form")).toBeNull();
-    expect(beginCloudSignInMock).not.toHaveBeenCalled();
     await act(() => root.unmount());
   });
 

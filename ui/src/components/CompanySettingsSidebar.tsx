@@ -27,7 +27,6 @@ import { SIDEBAR_SCROLL_RESET_STATE } from "@/lib/navigation-scroll";
 import { queryKeys } from "@/lib/queryKeys";
 import { cn } from "@/lib/utils";
 import { useCompany } from "@/context/CompanyContext";
-import { useCloudInstance } from "@/hooks/useCloudInstance";
 import { useHiddenSettings } from "@/hooks/useHiddenSettings";
 import { useFastResponsesEnabled } from "@/hooks/useFastResponsesEnabled";
 import { usePluginSlots } from "@/plugins/slots";
@@ -53,9 +52,6 @@ export function CompanySettingsSidebar() {
   const { enabled: fastResponsesEnabled } = useFastResponsesEnabled();
   const showPage = (pageKey: string) => !hiddenSettings.has(pageKey);
   const showPlugins = showPage("instance.plugins");
-  // Import is floored server-side on cloud-managed instances (403 cloud_managed), so the
-  // nav entry is hidden rather than dead-ending. Export stays available.
-  const isCloud = Boolean(useCloudInstance());
   const { slots: companySettingsPluginSlots } = usePluginSlots({
     slotTypes: ["companySettingsPage"],
     companyId: selectedCompanyId,
@@ -165,7 +161,7 @@ export function CompanySettingsSidebar() {
           {showPage("company.export") && (
             <SidebarNavItem to="/company/export" label="Export" icon={Download} />
           )}
-          {!isCloud && showPage("company.import") && (
+          {showPage("company.import") && (
             <SidebarNavItem to="/company/import" label="Import" icon={Upload} end />
           )}
           {showPage("instance.experimental") && (

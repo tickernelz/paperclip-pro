@@ -1,22 +1,11 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { authApi } from "@/api/auth";
-import { navigateTopLevel } from "@/lib/browserNavigation";
 import { clearOfflineData } from "@/lib/offline-data";
 import { queryKeys } from "@/lib/queryKeys";
-import { useCloudInstance } from "./useCloudInstance";
-
-const CLOUD_SIGN_OUT_PATH = "/cloud/logout";
 
 /**
  * Query-key roots that describe the *instance* rather than the account that was
  * signed in, and so are allowed to outlive a sign-out.
- *
- * `health` is the only one. It carries deployment mode, bootstrap state and
- * Cloud metadata — nothing account-scoped — and `useCloudInstance` observes it
- * with `enabled: false`, deliberately leaving the fetch to CloudAccessGate.
- * Dropping the entry would strand every such observer on `null` until the gate
- * happened to refetch, flipping Cloud instances into their self-hosted
- * rendering mid-sign-out. It is refreshed in place instead.
  *
  * Everything *not* listed here is treated as account-scoped and cleared. That
  * direction is the point: a query key added later is account-scoped unless
@@ -32,34 +21,15 @@ interface UseSignOutOptions {
   onSignedOut?: () => void;
 }
 
-/**
- * Owns the app-wide sign-out decision.
- *
- * Cloud-managed tenants must enter the harness-owned logout sequence without
- * first clearing the tenant session; that path is a top-level navigation, so
- * the document reload it triggers builds a new QueryClient and there is nothing
- * left here to clear. Authenticated self-hosted instances keep the local API
- * flow and drop the account-scoped caches afterward.
- */
 export function useSignOut({ onSignedOut }: UseSignOutOptions = {}) {
-  const cloud = useCloudInstance();
   const queryClient = useQueryClient();
 
   return useMutation({
     mutationFn: async () => {
       await clearOfflineData();
-      if (cloud) {
-        onSignedOut?.();
-        navigateTopLevel(CLOUD_SIGN_OUT_PATH);
-        return "cloud" as const;
-      }
-
       await authApi.signOut();
-      return "self-hosted" as const;
     },
-    onSuccess: async (target) => {
-      if (target === "cloud") return;
-
+    onSuccess: async () => {
       onSignedOut?.();
 
       // Drop every account-scoped cache entry, rather than invalidating a

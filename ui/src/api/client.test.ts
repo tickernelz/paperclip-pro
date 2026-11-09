@@ -1,8 +1,4 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import {
-  createTenantSessionRecoveryCoordinator,
-  tenantSessionRecovery,
-} from "@/lib/tenant-session-recovery";
 import { onDecisionMade } from "@/lib/decision-events";
 import { OFFLINE_ACTION_REASON } from "@/lib/online-status";
 import { __inflightGetCount, api, detachInflightGet } from "./client";
@@ -44,49 +40,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe("tenant-session recovery", () => {
-  it("loads anonymous Dot consent despite concurrent protected background probes", async () => {
-    const reload = vi.fn();
-    const requestId = `pcmcp_request_${"a".repeat(43)}`;
-    const recovery = createTenantSessionRecoveryCoordinator(reload, () => `/dot-connect/${requestId}`);
-    vi.spyOn(tenantSessionRecovery, "recoverIfNeeded").mockImplementation(recovery.recoverIfNeeded);
-    fetchMock.mockImplementation((url: string) => Promise.resolve(
-      url.includes("/dot-mcp/requests/")
-        ? jsonResponse({ id: requestId, agentConnection: true })
-        : errorResponse({ error: "tenant_session_required" }),
-    ));
-
-    const background = api.get("/health");
-    const consent = api.get(`/dot-mcp/requests/${requestId}`);
-    await expect(background).rejects.toMatchObject({ status: 401 });
-    await expect(consent).resolves.toEqual({ id: requestId, agentConnection: true });
-    expect(reload).not.toHaveBeenCalled();
-  });
-
-  it("keeps concurrent failures pending and schedules one top-level reload", async () => {
-    const reload = vi.fn();
-    const recovery = createTenantSessionRecoveryCoordinator(reload);
-    vi.spyOn(tenantSessionRecovery, "recoverIfNeeded").mockImplementation(recovery.recoverIfNeeded);
-    fetchMock.mockResolvedValue(errorResponse({ error: "tenant_session_required" }));
-
-    const first = api.post("/tenant-session-a", { value: 1 });
-    const second = api.post("/tenant-session-b", { value: 2 });
-
-    await vi.waitFor(() => {
-      expect(tenantSessionRecovery.recoverIfNeeded).toHaveBeenCalledTimes(2);
-      expect(reload).toHaveBeenCalledTimes(1);
-    });
-    expect(fetchMock).toHaveBeenCalledTimes(2);
-
-    let settled = false;
-    void Promise.all([first, second]).then(
-      () => { settled = true; },
-      () => { settled = true; },
-    );
-    await Promise.resolve();
-    expect(settled).toBe(false);
-  });
-
+describe("401 handling", () => {
   it("preserves ApiError handling for an unrelated 401", async () => {
     fetchMock.mockResolvedValue(errorResponse({ error: "unauthorized" }));
 

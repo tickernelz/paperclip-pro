@@ -16,7 +16,6 @@ import { onboardingOmpApi } from "../../api/onboardingOmp";
 import { projectsApi } from "../../api/projects";
 import { useCompany } from "../../context/CompanyContext";
 import { useDialog } from "../../context/DialogContext";
-import { useCloudInstance } from "../../hooks/useCloudInstance";
 import { copyTextToClipboard } from "../../lib/clipboard";
 import { buildNewAgentRuntimeConfig } from "../../lib/new-agent-runtime-config";
 import { companyPrefixFromOnboardingPath, resolveRouteOnboardingOptions } from "../../lib/onboarding-route";
@@ -555,11 +554,10 @@ export function OnboardingFlow() {
   const { onboardingOpen, onboardingOptions, closeOnboarding, onboardingRouteDismissed, setOnboardingRouteDismissed } = useDialog();
   const { companies, loading: companiesLoading } = useCompany();
   const location = useLocation();
-  const cloudInstance = useCloudInstance();
   const companyPrefix = companyPrefixFromOnboardingPath(location.pathname);
   const routeOptions = companyPrefix && companiesLoading
     ? null
-    : resolveRouteOnboardingOptions({ pathname: location.pathname, companyPrefix, companies, cloudManaged: Boolean(cloudInstance) });
+    : resolveRouteOnboardingOptions({ pathname: location.pathname, companyPrefix, companies });
   const open = onboardingOpen || (routeOptions !== null && !onboardingRouteDismissed);
   if (!open) return null;
   const companyId = (onboardingOpen ? onboardingOptions.companyId : routeOptions?.companyId) ?? null;

@@ -5,7 +5,6 @@ import { AiConnectionField, aiProviderForAdapter } from "../ai-connections/AiCon
 import type { AiConnectionBinding } from "@tickernelz/wardmote-shared";
 import { DEFAULT_CODEX_LOCAL_MODEL } from "@tickernelz/wardmote-adapter-utils/provider-models/codex";
 import { testAgentSetup } from "@/lib/test-agent-setup";
-import { useCloudInstance } from "@/hooks/useCloudInstance";
 import { isNewAgentAdapterAllowed } from "@/lib/new-agent-adapters";
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -285,10 +284,8 @@ function Setup({
             version: "latest" as const,
           }
         : null);
-  const cloud = Boolean(useCloudInstance());
   const available =
     isNewAgentAdapterAllowed(adapterType, {
-      cloud,
       nativeRunnerEnabled: experimental.data?.enableNativeRunner === true,
       openAiDotEnabled: experimental.data?.enableOpenAiDot === true,
       runnerProvider,

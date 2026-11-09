@@ -31,20 +31,13 @@ export function canInviteCompanyMembers(
     membership?.membershipRole === "member";
 }
 
-/**
- * Whether the signed-in board may invite people to the selected company on a
- * self-hosted instance. Pass `enabled: false` on Cloud, where invitations live
- * in the stack's People settings and use a different rule
- * (see `useCloudInviteUrl`).
- */
-export function useCanInviteCompanyMembers(enabled = true): boolean {
+export function useCanInviteCompanyMembers(): boolean {
   const company = useOptionalCompany();
   const boardAccess = useQuery({
     queryKey: queryKeys.access.currentBoardAccess,
     queryFn: () => accessApi.getCurrentBoardAccess(),
-    enabled,
     retry: false,
     staleTime: 30_000,
   });
-  return enabled && canInviteCompanyMembers(company?.selectedCompanyId, boardAccess.data);
+  return canInviteCompanyMembers(company?.selectedCompanyId, boardAccess.data);
 }
