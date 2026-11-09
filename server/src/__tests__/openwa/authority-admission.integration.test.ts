@@ -58,7 +58,7 @@ describeEmbeddedPostgres("OpenWA run authority through the real admission path",
   let db: Db;
   let scratch: string;
   const previous = {
-    home: process.env.PAPERCLIP_HOME, api: process.env.PAPERCLIP_API_URL, key: process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE, gh: process.env.GH_TOKEN,
+    home: process.env.WARDMOTE_HOME, api: process.env.WARDMOTE_API_URL, key: process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE, gh: process.env.GH_TOKEN,
   };
   const captured = new Map<string, Record<string, unknown>>();
   const services: ChatChannelService[] = [];
@@ -69,9 +69,9 @@ describeEmbeddedPostgres("OpenWA run authority through the real admission path",
     database = await startEmbeddedPostgresTestDatabase("paperclip-openwa-authority-admission-");
     db = createDb(database.connectionString);
     scratch = await mkdtemp(path.join(os.tmpdir(), "openwa-authority-admission-"));
-    process.env.PAPERCLIP_HOME = scratch;
-    process.env.PAPERCLIP_API_URL = "http://127.0.0.1:3100/api";
-    process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE = path.join(scratch, "master.key");
+    process.env.WARDMOTE_HOME = scratch;
+    process.env.WARDMOTE_API_URL = "http://127.0.0.1:3100/api";
+    process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = path.join(scratch, "master.key");
     process.env.GH_TOKEN = "host-github-token";
     registerServerAdapter({
       type: ADAPTER_TYPE,
@@ -95,7 +95,7 @@ describeEmbeddedPostgres("OpenWA run authority through the real admission path",
     unregisterServerAdapter(ADAPTER_TYPE);
     await database?.cleanup();
     if (scratch) await rm(scratch, { recursive: true, force: true });
-    for (const [key, value] of [["PAPERCLIP_HOME", previous.home], ["PAPERCLIP_API_URL", previous.api], ["PAPERCLIP_SECRETS_MASTER_KEY_FILE", previous.key], ["GH_TOKEN", previous.gh]] as const) {
+    for (const [key, value] of [["WARDMOTE_HOME", previous.home], ["WARDMOTE_API_URL", previous.api], ["WARDMOTE_SECRETS_MASTER_KEY_FILE", previous.key], ["GH_TOKEN", previous.gh]] as const) {
       if (value === undefined) delete process.env[key];
       else process.env[key] = value;
     }
@@ -216,10 +216,10 @@ describeEmbeddedPostgres("OpenWA run authority through the real admission path",
     expect(await wakeCount(t)).toBe(2);
     const ownerEnv = owner.context.capturedEnv as Record<string, string>;
     const memberEnv = member.context.capturedEnv as Record<string, string>;
-    expect({ token: ownerEnv.GH_TOKEN, mode: ownerEnv.PAPERCLIP_GITHUB_AUTH_MODE }).toEqual({ token: "host-github-token", mode: "host" });
-    expect({ token: memberEnv.GH_TOKEN ?? "", mode: memberEnv.PAPERCLIP_GITHUB_AUTH_MODE }).toEqual({ token: "", mode: "managed" });
-    expect(memberEnv.PAPERCLIP_GITHUB_HOST_HOME).toBeUndefined();
-    expect(memberEnv.PAPERCLIP_RUNNER_NETWORK_ACCESS).toBe(ownerEnv.PAPERCLIP_RUNNER_NETWORK_ACCESS);
+    expect({ token: ownerEnv.GH_TOKEN, mode: ownerEnv.WARDMOTE_GITHUB_AUTH_MODE }).toEqual({ token: "host-github-token", mode: "host" });
+    expect({ token: memberEnv.GH_TOKEN ?? "", mode: memberEnv.WARDMOTE_GITHUB_AUTH_MODE }).toEqual({ token: "", mode: "managed" });
+    expect(memberEnv.WARDMOTE_GITHUB_HOST_HOME).toBeUndefined();
+    expect(memberEnv.WARDMOTE_RUNNER_NETWORK_ACCESS).toBe(ownerEnv.WARDMOTE_RUNNER_NETWORK_ACCESS);
   }, 120_000);
 
   it("keeps a member run read_only when its conversation binds an issue cached as non-OpenWA", async () => {

@@ -16,13 +16,13 @@ describe("terminalOriginAllowed", () => {
   let savedPublicUrl: string | undefined;
 
   beforeEach(() => {
-    savedPublicUrl = process.env.PAPERCLIP_PUBLIC_URL;
-    delete process.env.PAPERCLIP_PUBLIC_URL;
+    savedPublicUrl = process.env.WARDMOTE_PUBLIC_URL;
+    delete process.env.WARDMOTE_PUBLIC_URL;
   });
 
   afterEach(() => {
-    if (savedPublicUrl === undefined) delete process.env.PAPERCLIP_PUBLIC_URL;
-    else process.env.PAPERCLIP_PUBLIC_URL = savedPublicUrl;
+    if (savedPublicUrl === undefined) delete process.env.WARDMOTE_PUBLIC_URL;
+    else process.env.WARDMOTE_PUBLIC_URL = savedPublicUrl;
   });
 
   it("accepts the live tunnel origin and rejects other schemes, ports and hosts", () => {
@@ -64,8 +64,8 @@ describe("terminalOriginAllowed", () => {
     expect(terminalOriginAllowed({ host: "127.0.0.1:3100" }, { ...livePolicy, deploymentMode: "local_trusted" })).toBe(true);
   });
 
-  it("trusts PAPERCLIP_PUBLIC_URL exactly", () => {
-    process.env.PAPERCLIP_PUBLIC_URL = "https://board.example.com:8443/app";
+  it("trusts WARDMOTE_PUBLIC_URL exactly", () => {
+    process.env.WARDMOTE_PUBLIC_URL = "https://board.example.com:8443/app";
     const policy = { ...livePolicy, hostnameGuardEnabled: false, allowedHostnames: [], publicBaseUrls: [] };
     expect(terminalOriginAllowed({ origin: "https://board.example.com:8443", host: "x" }, policy)).toBe(true);
     expect(terminalOriginAllowed({ origin: "https://board.example.com", host: "x" }, policy)).toBe(false);

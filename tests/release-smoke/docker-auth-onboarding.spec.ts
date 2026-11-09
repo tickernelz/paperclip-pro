@@ -1,14 +1,14 @@
 import { expect, test, type Page } from "@playwright/test";
 
 const ADMIN_EMAIL =
-  process.env.PAPERCLIP_RELEASE_SMOKE_EMAIL ??
+  process.env.WARDMOTE_RELEASE_SMOKE_EMAIL ??
   process.env.SMOKE_ADMIN_EMAIL ??
   "smoke-admin@paperclip.local";
 const ADMIN_PASSWORD =
-  process.env.PAPERCLIP_RELEASE_SMOKE_PASSWORD ??
+  process.env.WARDMOTE_RELEASE_SMOKE_PASSWORD ??
   process.env.SMOKE_ADMIN_PASSWORD ??
   "paperclip-smoke-password";
-const EXPECTED_OMP_VERSION = process.env.PAPERCLIP_RELEASE_SMOKE_OMP_VERSION ?? null;
+const EXPECTED_OMP_VERSION = process.env.WARDMOTE_RELEASE_SMOKE_OMP_VERSION ?? null;
 
 async function signIn(page: Page) {
   await page.goto("/");

@@ -19,10 +19,10 @@ import {
   isCodexLocalManualModel,
 } from "@tickernelz/wardmote-adapter-utils/provider-models/codex";
 import {
-  PAPERCLIP_RUNNER_IDLE_TIMEOUT_DEFAULT_MS,
-  PAPERCLIP_RUNNER_IDLE_TIMEOUT_MAX_MS,
-  PAPERCLIP_RUNNER_PERMISSION_CAPABILITIES,
-  PAPERCLIP_RUNNER_ACPX_PROFILES,
+  WARDMOTE_RUNNER_IDLE_TIMEOUT_DEFAULT_MS,
+  WARDMOTE_RUNNER_IDLE_TIMEOUT_MAX_MS,
+  WARDMOTE_RUNNER_PERMISSION_CAPABILITIES,
+  WARDMOTE_RUNNER_ACPX_PROFILES,
   isPaperclipRunnerProvider,
   resolvePaperclipRunnerIdleTimeoutMs,
   resolvePaperclipRunnerPermissionMode,
@@ -80,7 +80,7 @@ export function CodexLocalConfigFields({
     ? configuredRunnerProvider
     : "codex";
   const runnerPermissionCapability =
-    PAPERCLIP_RUNNER_PERMISSION_CAPABILITIES[runnerProvider];
+    WARDMOTE_RUNNER_PERMISSION_CAPABILITIES[runnerProvider];
   const configuredRunnerPermissionMode =
     runnerManaged && runnerPermissionCapability.configurable
       ? isCreate
@@ -141,7 +141,7 @@ export function CodexLocalConfigFields({
           ? values!.paperclipRunnerIdleTimeoutMs
           : eff("adapterConfig", "idleTimeoutMs", config.idleTimeoutMs),
       )
-    : PAPERCLIP_RUNNER_IDLE_TIMEOUT_DEFAULT_MS;
+    : WARDMOTE_RUNNER_IDLE_TIMEOUT_DEFAULT_MS;
   const rawEngine = runnerManaged
     ? "cli"
     : isCreate
@@ -279,7 +279,7 @@ export function CodexLocalConfigFields({
           <Select
             value={String(isCreate ? values!.adapterSchemaValues?.acpxAgent ?? "claude" : eff("adapterConfig", "acpxAgent", config.acpxAgent ?? "claude"))}
             onValueChange={(value) => {
-              const profile = PAPERCLIP_RUNNER_ACPX_PROFILES.find(entry => entry.value === value);
+              const profile = WARDMOTE_RUNNER_ACPX_PROFILES.find(entry => entry.value === value);
               const acpxSessionMode = profile?.value === "cursor" ? "agent" : undefined;
               const piThinkingLevel = profile?.value === "pi" ? "low" : undefined;
               if (!profile?.qualified) return;
@@ -289,7 +289,7 @@ export function CodexLocalConfigFields({
             }}>
             <SelectTrigger className="w-full" aria-label="ACP agent"><SelectValue /></SelectTrigger>
             <SelectContent>
-              {PAPERCLIP_RUNNER_ACPX_PROFILES.map(profile => (
+              {WARDMOTE_RUNNER_ACPX_PROFILES.map(profile => (
                 <SelectItem key={profile.value} value={profile.value} disabled={!profile.qualified}>
                   <AdapterMark type={profile.value === "cursor" ? "cursor" : `${profile.value}_local`} className="size-4" />
                   {profile.label}{profile.qualified ? "" : " — qualification pending"}
@@ -545,7 +545,7 @@ export function CodexLocalConfigFields({
             <input
               type="number"
               min={1}
-              max={PAPERCLIP_RUNNER_IDLE_TIMEOUT_MAX_MS}
+              max={WARDMOTE_RUNNER_IDLE_TIMEOUT_MAX_MS}
               className={inputClass}
               value={runnerIdleTimeoutMs}
               onChange={(event) =>
@@ -561,7 +561,7 @@ export function CodexLocalConfigFields({
             <DraftNumberInput
               value={runnerIdleTimeoutMs}
               min={1}
-              max={PAPERCLIP_RUNNER_IDLE_TIMEOUT_MAX_MS}
+              max={WARDMOTE_RUNNER_IDLE_TIMEOUT_MAX_MS}
               onCommit={(value) =>
                 mark(
                   "adapterConfig",

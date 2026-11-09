@@ -1,6 +1,6 @@
 const REQUIRED_ENVIRONMENT = [
-  "INTEGRATIONS_POSTHOG_PAPERCLIP_E2E_EMAIL",
-  "INTEGRATIONS_POSTHOG_PAPERCLIP_DEV_LOGIN_PASSWORD",
+  "INTEGRATIONS_POSTHOG_WARDMOTE_E2E_EMAIL",
+  "INTEGRATIONS_POSTHOG_WARDMOTE_DEV_LOGIN_PASSWORD",
   "INTEGRATIONS_POSTHOG_POSTHOG_PROJECT_ID",
 ];
 const REQUIRED_PROJECT_ID = "483530";
@@ -36,7 +36,7 @@ export function preflightPosthogLive(environment = process.env, options = {}) {
 
   const baseUrlValue = typeof options.baseUrl === "string" && options.baseUrl.trim()
     ? options.baseUrl.trim()
-    : requiredValue(environment, "PAPERCLIP_API_URL");
+    : requiredValue(environment, "WARDMOTE_API_URL");
   if (!baseUrlValue) {
     throw new PosthogLivePreflightError("missing_base_url");
   }
@@ -64,7 +64,7 @@ export function preflightPosthogLive(environment = process.env, options = {}) {
   if (projectId !== REQUIRED_PROJECT_ID) {
     throw new PosthogLivePreflightError("unexpected_project_id");
   }
-  const email = requiredValue(environment, "INTEGRATIONS_POSTHOG_PAPERCLIP_E2E_EMAIL");
+  const email = requiredValue(environment, "INTEGRATIONS_POSTHOG_WARDMOTE_E2E_EMAIL");
   if (!email.includes("@")) {
     throw new PosthogLivePreflightError("invalid_email");
   }
@@ -72,7 +72,7 @@ export function preflightPosthogLive(environment = process.env, options = {}) {
   return {
     baseUrl: baseUrl.origin,
     email,
-    password: environment.INTEGRATIONS_POSTHOG_PAPERCLIP_DEV_LOGIN_PASSWORD,
+    password: environment.INTEGRATIONS_POSTHOG_WARDMOTE_DEV_LOGIN_PASSWORD,
     projectId,
   };
 }

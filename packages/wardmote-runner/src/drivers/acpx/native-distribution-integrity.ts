@@ -243,8 +243,8 @@ function nativeBootstrap(executable: string, executableDigest: string, args: str
     'const fs=require("node:fs");',
     // The commandLease's guarded bootstrap owns FDs 5 (guardian), 6 (exit),
     // 7/8 (credential fences). Keep them open in the native process too.
-    'const guarded=process.env.PAPERCLIP_ACPX_NATIVE_GUARDED==="1";',
-    'const env={...process.env}; delete env.PAPERCLIP_ACPX_NATIVE_GUARDED; delete env.PAPERCLIP_ACPX_PRIVATE_SNAPSHOT; delete env.PAPERCLIP_VERIFIED_RUNTIME_EXECUTABLE;',
+    'const guarded=process.env.WARDMOTE_ACPX_NATIVE_GUARDED==="1";',
+    'const env={...process.env}; delete env.WARDMOTE_ACPX_NATIVE_GUARDED; delete env.WARDMOTE_ACPX_PRIVATE_SNAPSHOT; delete env.WARDMOTE_VERIFIED_RUNTIME_EXECUTABLE;',
     'env.NODE_DISABLE_COMPILE_CACHE="1"; delete env.NODE_COMPILE_CACHE;',
     ...(cache ? [`env[${JSON.stringify(cache.name)}]=${JSON.stringify(cache.value)};`] : []),
     ...(copilotEntryDirectory ? [

@@ -38,11 +38,11 @@ export function installedReleaseDaytonaPlugin(cliPath: string, installedPluginPa
 
 /** Qualification assets must never make a public installed product smoke pass. */
 export function installedReleaseEnvironment(source: NodeJS.ProcessEnv, repositoryRoot: string, providerBin: string): NodeJS.ProcessEnv {
-  if (source.PAPERCLIP_RUNNER_ACPX_QUALIFICATION) throw new Error("Installed release smoke requires production admission without qualification overrides");
+  if (source.WARDMOTE_RUNNER_ACPX_QUALIFICATION) throw new Error("Installed release smoke requires production admission without qualification overrides");
   const result = { ...source };
   for (const key of Object.keys(result)) {
-    if ((key.startsWith("PAPERCLIP_RUNNER_") && !key.startsWith("PAPERCLIP_RUNNER_E2E_")) ||
-        key.startsWith("PAPERCLIP_ACPX_") || key.startsWith("PAPERCLIP_NATIVE_") ||
+    if ((key.startsWith("WARDMOTE_RUNNER_") && !key.startsWith("WARDMOTE_RUNNER_E2E_")) ||
+        key.startsWith("WARDMOTE_ACPX_") || key.startsWith("WARDMOTE_NATIVE_") ||
         key === "NODE_PATH" || key === "NODE_OPTIONS") delete result[key];
   }
   result.PATH = source.PATH?.split(path.delimiter).filter(entry =>

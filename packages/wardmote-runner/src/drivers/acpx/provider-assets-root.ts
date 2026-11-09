@@ -18,8 +18,8 @@ function assertServerVendorLayout(root: string): void {
 /** Resolve only runner-owned package assets, including descriptor-loaded sidecars. */
 export function resolveRunnerProviderAssetsRoot(moduleUrl: string, provider: NativeProvider): string {
   if (!["cursor", "copilot", "pi"].includes(provider)) throw new Error("Unknown native ACP provider assets");
-  const boundRoot = process.env.PAPERCLIP_ACPX_PROVIDER_PACKAGE_ROOT;
-  const boundManifest = process.env.PAPERCLIP_ACPX_PROVIDER_PACKAGE_MANIFEST;
+  const boundRoot = process.env.WARDMOTE_ACPX_PROVIDER_PACKAGE_ROOT;
+  const boundManifest = process.env.WARDMOTE_ACPX_PROVIDER_PACKAGE_MANIFEST;
   let packageRoot: string;
   if (boundRoot !== undefined) {
     const root = normalizedAbsolute(boundRoot);

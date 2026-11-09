@@ -63,7 +63,7 @@ describe("runner E2E Daytona image contract", () => {
       "/opt/paperclip-runner/provider-pack/provider-pack.json",
     );
     expect(dockerfile).toContain(
-      "${PAPERCLIP_RUNNER_PROVIDER_PACK_ROOT}/node_modules/.bin",
+      "${WARDMOTE_RUNNER_PROVIDER_PACK_ROOT}/node_modules/.bin",
     );
     for (const command of ["acpx", "claude-agent-acp", "codex-acp"]) {
       expect(dockerfile).toContain(command);
@@ -118,7 +118,7 @@ describe("runner E2E Daytona image contract", () => {
       "e2e-content-${{ needs.catalog.outputs.daytona_image_content_id }}",
     );
     expect(workflow).toContain(
-      '--build-arg "PAPERCLIP_RUNNER_CONTENT_ID=${IMAGE_CONTENT_ID}"',
+      '--build-arg "WARDMOTE_RUNNER_CONTENT_ID=${IMAGE_CONTENT_ID}"',
     );
     expect(daytonaImageJob).toContain(
       "TARGET_LOCK_SHA256: ${{ needs.target_lock.outputs.lock_sha256 }}",
@@ -127,13 +127,13 @@ describe("runner E2E Daytona image contract", () => {
       '[[ "$TARGET_LOCK_SHA256" =~ ^[0-9a-f]{64}$ ]]',
     );
     expect(daytonaImageJob).toContain(
-      '--build-arg "PAPERCLIP_RUNNER_LOCK_SHA256=${TARGET_LOCK_SHA256}"',
+      '--build-arg "WARDMOTE_RUNNER_LOCK_SHA256=${TARGET_LOCK_SHA256}"',
     );
     expect(
       daytonaImageJob!.indexOf('[[ "$TARGET_LOCK_SHA256" =~ ^[0-9a-f]{64}$ ]]'),
     ).toBeLessThan(
       daytonaImageJob!.indexOf(
-        '--build-arg "PAPERCLIP_RUNNER_LOCK_SHA256=${TARGET_LOCK_SHA256}"',
+        '--build-arg "WARDMOTE_RUNNER_LOCK_SHA256=${TARGET_LOCK_SHA256}"',
       ),
     );
     expect(workflow).toContain(
@@ -162,15 +162,15 @@ describe("runner E2E Daytona image contract", () => {
     expect(workflow).toContain('.architecture == "amd64"');
     expect(workflow).toContain('.os == "linux"');
     expect(workflow).toContain('.config.User == "daytona"');
-    expect(workflow).toContain("PAPERCLIP_RUNNER_PROVIDER_PACK_ROOT=");
+    expect(workflow).toContain("WARDMOTE_RUNNER_PROVIDER_PACK_ROOT=");
     expect(workflow).toContain(
       "node packages/wardmote-runner/scripts/build-provider-pack.mjs packages/wardmote-runner/provider-pack",
     );
     expect(workflow).toContain(
-      "PAPERCLIP_RUNNER_REMOTE_PROVIDER_PACK_PATH: ${{ github.workspace }}/packages/wardmote-runner/provider-pack",
+      "WARDMOTE_RUNNER_REMOTE_PROVIDER_PACK_PATH: ${{ github.workspace }}/packages/wardmote-runner/provider-pack",
     );
     expect(workflow).toContain(
-      "PAPERCLIP_RUNNER_SOURCE_REVISION: ${{ needs.daytona_image.outputs.source_revision }}",
+      "WARDMOTE_RUNNER_SOURCE_REVISION: ${{ needs.daytona_image.outputs.source_revision }}",
     );
     expect(workflow.indexOf("cosign verify")).toBeLessThan(
       workflow.indexOf("docker logout ghcr.io"),
@@ -185,11 +185,11 @@ describe("runner E2E Daytona image contract", () => {
       "COPY packages ./packages",
     );
     const providerRevisionArg = dockerfile.indexOf(
-      "ARG PAPERCLIP_RUNNER_SOURCE_REVISION",
+      "ARG WARDMOTE_RUNNER_SOURCE_REVISION",
     );
     const cliInstall = dockerfile.indexOf("npm install -g");
     const finalMetadataArgs = dockerfile.lastIndexOf(
-      "ARG PAPERCLIP_RUNNER_CONTENT_ID",
+      "ARG WARDMOTE_RUNNER_CONTENT_ID",
     );
     expect(providerInstall).toBeGreaterThan(0);
     expect(runnerSourceCopy).toBeGreaterThan(0);

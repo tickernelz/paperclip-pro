@@ -46,7 +46,7 @@ export function trustedTerminalOrigins(policy: TerminalOriginPolicy): Set<string
     const origin = parseOrigin(`https://${originHost(hostname)}`);
     if (origin) trusted.add(origin);
   }
-  for (const url of [...policy.publicBaseUrls, process.env.PAPERCLIP_PUBLIC_URL?.trim()]) {
+  for (const url of [...policy.publicBaseUrls, process.env.WARDMOTE_PUBLIC_URL?.trim()]) {
     const origin = parseOrigin(url);
     if (origin) trusted.add(origin);
   }

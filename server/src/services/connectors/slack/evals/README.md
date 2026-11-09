@@ -52,7 +52,7 @@ isolated migrated database. Never point that suite at a live test-drive database
 With a disposable database supplied, run the supplementary integration checks:
 
 ```sh
-PAPERCLIP_TEST_DATABASE_URL=<disposable-database-url> pnpm exec vitest run server/src/__tests__/chat-channels.integration.test.ts -t 'refreshes Slack tool guidance|provides assigned Slack tools|binds Slack tools to the admitted linked request'
+WARDMOTE_TEST_DATABASE_URL=<disposable-database-url> pnpm exec vitest run server/src/__tests__/chat-channels.integration.test.ts -t 'refreshes Slack tool guidance|provides assigned Slack tools|binds Slack tools to the admitted linked request'
 ```
 
 The catalog records additional large-suite fixture locations for write,

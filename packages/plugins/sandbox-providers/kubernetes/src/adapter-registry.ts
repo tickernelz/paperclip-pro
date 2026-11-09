@@ -7,7 +7,7 @@ import { z } from "zod";
  * NOTE: this shape is intentionally duplicated across the package boundary. It
  * MUST stay structurally in sync with:
  *   - server `@tickernelz/wardmote-shared` `adapterRegistryEntrySchema` (the parser side)
- *   - operator `AdapterRegistryEntry` Go struct (PAPERCLIP_ADAPTERS emitter)
+ *   - operator `AdapterRegistryEntry` Go struct (WARDMOTE_ADAPTERS emitter)
  * The duplication is deliberate: this plugin is standalone-installable and must
  * not pull in heavy workspace packages at runtime.
  */

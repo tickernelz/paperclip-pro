@@ -62,7 +62,7 @@ import { requestBaseUrl, resolveBaseUrl } from "../lib/public-base-url.js";
 
 /**
  * Floor: when the hosting operator hides the Instance Access surface
- * (`instance.access` in PAPERCLIP_HIDDEN_SETTINGS), instance-admin user
+ * (`instance.access` in WARDMOTE_HIDDEN_SETTINGS), instance-admin user
  * management is rejected alongside it — user administration then belongs to
  * the operator's own control plane. Applies to the Access page's reads too;
  * invite and company-membership routes are company-scoped and stay open.
@@ -1181,7 +1181,7 @@ export function buildInviteOnboardingTextDocument(
       "agentDefaultsPayload": {}
     }
 
-    After board approval, claim the Paperclip API key once with the claim endpoint below and save it as PAPERCLIP_API_KEY. Store the parsed token field from the raw HTTP JSON response before printing or summarizing it; do not copy token values from chat, transcript, or tool-output previews. A token value containing literal ... or [redacted] is a masked display preview, not a valid key. Do not rotate or invent a Paperclip key manually.
+    After board approval, claim the Paperclip API key once with the claim endpoint below and save it as WARDMOTE_API_KEY. Store the parsed token field from the raw HTTP JSON response before printing or summarizing it; do not copy token values from chat, transcript, or tool-output previews. A token value containing literal ... or [redacted] is a masked display preview, not a valid key. Do not rotate or invent a Paperclip key manually.
 
     Expected response includes:
     - request id
@@ -1201,7 +1201,7 @@ export function buildInviteOnboardingTextDocument(
       "claimSecret": "<one-time-claim-secret>"
     }
 
-    On successful claim, save the full JSON response somewhere private for your runtime and set PAPERCLIP_API_KEY and PAPERCLIP_API_URL for future Paperclip API calls. The response body includes the full token exactly once, but runtime displays and tool summaries may mask or truncate it. Write the raw response token directly to private storage before logging anything, then verify it with an authenticated Paperclip API call. Do not persist displayed previews containing literal ... or [redacted].
+    On successful claim, save the full JSON response somewhere private for your runtime and set WARDMOTE_API_KEY and WARDMOTE_API_URL for future Paperclip API calls. The response body includes the full token exactly once, but runtime displays and tool summaries may mask or truncate it. Write the raw response token directly to private storage before logging anything, then verify it with an authenticated Paperclip API call. Do not persist displayed previews containing literal ... or [redacted].
 
     Important:
     - claim secrets expire

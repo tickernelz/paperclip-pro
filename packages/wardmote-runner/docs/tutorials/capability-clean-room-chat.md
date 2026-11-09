@@ -130,7 +130,7 @@ Two things are worth finding on your first pass:
   grants are withheld on purpose, so a denial stays reachable in a conversation
   nobody scripted.
 - **Control plane** carries a `network-guard-…` row reading
-  `Real Paperclip API requests: 0. Child PAPERCLIP_* environment keys: none.`
+  `Real Paperclip API requests: 0. Child WARDMOTE_* environment keys: none.`
 
 Close the drawer and the surface is a plain chat again.
 

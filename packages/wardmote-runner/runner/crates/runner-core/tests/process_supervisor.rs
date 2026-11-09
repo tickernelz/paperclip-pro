@@ -65,7 +65,7 @@ fn verified_launch_uses_open_command_and_script_after_atomic_path_replacement() 
     fs::create_dir(&directory).unwrap();
     let command = directory.join("command");
     let script = directory.join("script");
-    let original_command = "#!/bin/sh\nprintf '%s\\n' old-command\nprintf '%s\\n' \"$PAPERCLIP_VERIFIED_RUNTIME_EXECUTABLE\"\nexec /bin/sh \"$1\"\n";
+    let original_command = "#!/bin/sh\nprintf '%s\\n' old-command\nprintf '%s\\n' \"$WARDMOTE_VERIFIED_RUNTIME_EXECUTABLE\"\nexec /bin/sh \"$1\"\n";
     let original_script = "#!/bin/sh\nprintf '%s\\n' old-script\n";
     write_executable(&command, original_command);
     write_executable(&script, original_script);
@@ -236,7 +236,7 @@ mod darwin_executable_role {
         let directory = OwnedDirectory::new();
         let command = directory.0.join("command");
         let script = directory.0.join("script");
-        let original_command = "#!/bin/sh\nprintf '%s\\n' old-command\nprintf '%s\\n' \"$PAPERCLIP_VERIFIED_RUNTIME_EXECUTABLE\"\nexec /bin/sh \"$1\"\n";
+        let original_command = "#!/bin/sh\nprintf '%s\\n' old-command\nprintf '%s\\n' \"$WARDMOTE_VERIFIED_RUNTIME_EXECUTABLE\"\nexec /bin/sh \"$1\"\n";
         let original_script = "#!/bin/sh\nprintf '%s\\n' old-script\n";
         write_executable(&command, original_command);
         write_executable(&script, original_script);

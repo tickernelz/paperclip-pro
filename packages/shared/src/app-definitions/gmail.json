@@ -29,38 +29,6 @@
   "redirectConstraints": "https-or-loopback-http",
   "methods": [
     {
-      "key": "paperclip-read",
-      "label": "Connect with Paperclip Cloud",
-      "transport": "mcp_remote",
-      "auth": "oauth",
-      "oauthStrategy": "paperclip_cloud_connector",
-      "connectorProfile": "gmail.read",
-      "capabilityProfile": {
-        "key": "read",
-        "label": "Read only",
-        "description": "Search and read messages, threads, drafts, and labels."
-      },
-      "grantKinds": [
-        "user",
-        "organization"
-      ],
-      "ownershipModes": [
-        "platform_shared"
-      ],
-      "whenToUse": "Use Paperclip Cloud Google OAuth for read-only Gmail access.",
-      "defaults": {
-        "serverUrl": "https://gmailmcp.googleapis.com/mcp/v1",
-        "scopesHint": [
-          "https://www.googleapis.com/auth/gmail.readonly"
-        ]
-      },
-      "guidanceMd": "Connect Gmail with read-only access. Sending, deleting, moving, and relabeling mail are not enabled.",
-      "warnings": [
-        "Google Workspace MCP servers are in Developer Preview."
-      ],
-      "riskTier": "S3"
-    },
-    {
       "key": "customer-read-oauth",
       "label": "Use your own Google OAuth app",
       "transport": "mcp_remote",
@@ -100,40 +68,6 @@
         "Google Workspace MCP servers are in Developer Preview."
       ],
       "riskTier": "S3"
-    },
-    {
-      "key": "paperclip-draft",
-      "label": "Connect with Paperclip Cloud",
-      "transport": "mcp_remote",
-      "auth": "oauth",
-      "oauthStrategy": "paperclip_cloud_connector",
-      "connectorProfile": "gmail.draft",
-      "capabilityProfile": {
-        "key": "draft",
-        "label": "Read & create drafts",
-        "description": "Read Gmail and create drafts for review in Gmail."
-      },
-      "grantKinds": [
-        "user",
-        "organization"
-      ],
-      "ownershipModes": [
-        "platform_shared"
-      ],
-      "whenToUse": "Use Paperclip Cloud Google OAuth to read Gmail and create drafts.",
-      "defaults": {
-        "serverUrl": "https://gmailmcp.googleapis.com/mcp/v1",
-        "scopesHint": [
-          "https://www.googleapis.com/auth/gmail.readonly",
-          "https://www.googleapis.com/auth/gmail.compose"
-        ]
-      },
-      "guidanceMd": "Connect Gmail to search and read mail and create drafts. Sending mail is permanently disabled.",
-      "warnings": [
-        "Draft creation requires approval. Sending mail is not enabled.",
-        "Google Workspace MCP servers are in Developer Preview."
-      ],
-      "riskTier": "S4"
     },
     {
       "key": "customer-draft-oauth",

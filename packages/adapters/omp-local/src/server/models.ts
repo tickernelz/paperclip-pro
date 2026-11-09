@@ -76,25 +76,25 @@ function firstString(...values: unknown[]): string | null {
   return null;
 }
 
-function globalList(key: "PAPERCLIP_OMP_CONFIG_FILES" | "PAPERCLIP_OMP_EXTENSIONS"): string[] {
+function globalList(key: "WARDMOTE_OMP_CONFIG_FILES" | "WARDMOTE_OMP_EXTENSIONS"): string[] {
   return stringList(process.env[key]);
 }
 
 function resolveDiscovery(input: DiscoveryInput): ResolvedDiscovery {
   const inputEnv = stringEnv(input.env);
-  const command = firstString(input.command, process.env.PAPERCLIP_OMP_COMMAND) ?? "omp";
+  const command = firstString(input.command, process.env.WARDMOTE_OMP_COMMAND) ?? "omp";
   const cwd = firstString(input.cwd) ?? process.cwd();
   const profileSelection = resolveOmpProfile({ ...input, env: inputEnv });
   const profile = profileSelection.profile;
   const agentDir = firstString(
     input.agentDir,
     inputEnv.PI_CODING_AGENT_DIR,
-    process.env.PAPERCLIP_OMP_AGENT_DIR,
+    process.env.WARDMOTE_OMP_AGENT_DIR,
   );
   const configFiles = stringList(input.configFiles);
   const extensions = stringList(input.extensions);
-  const resolvedConfigFiles = configFiles.length ? configFiles : globalList("PAPERCLIP_OMP_CONFIG_FILES");
-  const resolvedExtensions = extensions.length ? extensions : globalList("PAPERCLIP_OMP_EXTENSIONS");
+  const resolvedConfigFiles = configFiles.length ? configFiles : globalList("WARDMOTE_OMP_CONFIG_FILES");
+  const resolvedExtensions = extensions.length ? extensions : globalList("WARDMOTE_OMP_EXTENSIONS");
   const env = stringEnv(ensurePathInEnv({ ...process.env, ...inputEnv }));
 
   if (profile) env.OMP_PROFILE = profile;

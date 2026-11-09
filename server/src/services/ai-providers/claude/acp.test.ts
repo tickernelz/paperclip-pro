@@ -81,8 +81,8 @@ type FakeRuntimeTurn = {
 const tempRoots: string[] = [];
 const originalNodeVersion = process.version;
 const originalEnv: Record<string, string | undefined> = {
-  PAPERCLIP_HOME: process.env.PAPERCLIP_HOME,
-  PAPERCLIP_INSTANCE_ID: process.env.PAPERCLIP_INSTANCE_ID,
+  WARDMOTE_HOME: process.env.WARDMOTE_HOME,
+  WARDMOTE_INSTANCE_ID: process.env.WARDMOTE_INSTANCE_ID,
   CLAUDE_CONFIG_DIR: process.env.CLAUDE_CONFIG_DIR,
 };
 
@@ -865,8 +865,8 @@ describe("claude_local ACP lane", () => {
       "utf8",
     );
     await fs.writeFile(path.join(sharedClaudeConfig, "CLAUDE.md"), "# shared guidance\n", "utf8");
-    process.env.PAPERCLIP_HOME = path.join(root, "paperclip-home");
-    process.env.PAPERCLIP_INSTANCE_ID = "test";
+    process.env.WARDMOTE_HOME = path.join(root, "paperclip-home");
+    process.env.WARDMOTE_INSTANCE_ID = "test";
     process.env.CLAUDE_CONFIG_DIR = sharedClaudeConfig;
 
     const meta: AdapterInvocationMeta[] = [];
@@ -931,8 +931,8 @@ describe("claude_local ACP lane", () => {
       "utf8",
     );
     await fs.writeFile(path.join(sharedClaudeConfig, "CLAUDE.md"), "# shared guidance\n", "utf8");
-    process.env.PAPERCLIP_HOME = path.join(root, "paperclip-home");
-    process.env.PAPERCLIP_INSTANCE_ID = "test";
+    process.env.WARDMOTE_HOME = path.join(root, "paperclip-home");
+    process.env.WARDMOTE_INSTANCE_ID = "test";
     process.env.CLAUDE_CONFIG_DIR = sharedClaudeConfig;
 
     // The runtime writes a NEW file into the in-sandbox workspace during the turn.
@@ -1001,8 +1001,8 @@ describe("claude_local ACP lane", () => {
     await fs.mkdir(localCwd, { recursive: true });
     await fs.mkdir(remoteCwd, { recursive: true });
     await fs.writeFile(path.join(localCwd, "hello.txt"), "hi", "utf8");
-    process.env.PAPERCLIP_HOME = path.join(root, "paperclip-home");
-    process.env.PAPERCLIP_INSTANCE_ID = "test";
+    process.env.WARDMOTE_HOME = path.join(root, "paperclip-home");
+    process.env.WARDMOTE_INSTANCE_ID = "test";
 
     // The runtime writes a new file into the in-sandbox workspace during the
     // turn, so the teardown's restore has something to copy back — and a new
@@ -1096,8 +1096,8 @@ describe("claude_local ACP lane", () => {
       JSON.stringify({ permissions: { defaultMode: "acceptEdits" } }),
       "utf8",
     );
-    process.env.PAPERCLIP_HOME = path.join(root, "paperclip-home");
-    process.env.PAPERCLIP_INSTANCE_ID = "test";
+    process.env.WARDMOTE_HOME = path.join(root, "paperclip-home");
+    process.env.WARDMOTE_INSTANCE_ID = "test";
 
     const meta: AdapterInvocationMeta[] = [];
     const logs: string[] = [];
@@ -1164,8 +1164,8 @@ describe("claude_local ACP lane", () => {
       "utf8",
     );
     await fs.writeFile(path.join(sharedClaudeConfig, "CLAUDE.md"), "# shared guidance\n", "utf8");
-    process.env.PAPERCLIP_HOME = path.join(root, "paperclip-home");
-    process.env.PAPERCLIP_INSTANCE_ID = "test";
+    process.env.WARDMOTE_HOME = path.join(root, "paperclip-home");
+    process.env.WARDMOTE_INSTANCE_ID = "test";
     process.env.CLAUDE_CONFIG_DIR = sharedClaudeConfig;
 
     const meta: AdapterInvocationMeta[] = [];

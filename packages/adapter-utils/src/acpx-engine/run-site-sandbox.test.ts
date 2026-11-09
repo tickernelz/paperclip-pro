@@ -90,7 +90,7 @@ function makeSite(overrides: Partial<SandboxRunSiteOptions> = {}) {
     onReuseLog: async () => {},
     startPaperclipBridge: async () => {
       bridgeCalls.push("paperclip:start");
-      return { env: { PAPERCLIP_API_KEY: "run-token" }, stop: async () => {} } as never;
+      return { env: { WARDMOTE_API_KEY: "run-token" }, stop: async () => {} } as never;
     },
     startProcessSessionBridge: async ({ launchEnv }) => {
       bridgeCalls.push("process-session:start");
@@ -173,7 +173,7 @@ describe("sandbox run site", () => {
         events.push("paperclip:start");
         await paperclipGate;
         events.push("paperclip:env-ready");
-        return { env: { PAPERCLIP_API_KEY: "run-token" }, stop: async () => {} } as never;
+        return { env: { WARDMOTE_API_KEY: "run-token" }, stop: async () => {} } as never;
       },
       startProcessSessionBridge: async ({ launchEnv }) => {
         events.push("process-session:start");
@@ -198,7 +198,7 @@ describe("sandbox run site", () => {
     releasePaperclip();
     const transport = await transportPromise;
     expect(events.indexOf("paperclip:env-ready")).toBeLessThan(events.indexOf("process-session:launch"));
-    expect(processLaunchEnv).toEqual({ BASE: "1", CODEX_HOME: "/remote/home", PAPERCLIP_API_KEY: "run-token" });
+    expect(processLaunchEnv).toEqual({ BASE: "1", CODEX_HOME: "/remote/home", WARDMOTE_API_KEY: "run-token" });
     expect(transport.launchEnv).toEqual(processLaunchEnv);
   });
 

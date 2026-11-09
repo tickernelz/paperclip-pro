@@ -10,14 +10,14 @@ import { createNativeSessionBackend } from "../../backends/native-backend-factor
 import * as controlPlane from "../../control-plane/durable-prp-control-plane.js";
 import { externalOperationDigest, type ExternalProviderOperation } from "../../contracts/external-provider.js";
 import { buildNativeModelEnvelope, parseNativeExecutionInput, type NativeExecutionInputV6 } from "../../contracts/native-execution.js";
-import { NATIVE_RUNTIME_ASSET_SCHEMA, PAPERCLIP_EXECUTION_PROMPT, PAPERCLIP_EXECUTION_PROMPT_REVISION,
+import { NATIVE_RUNTIME_ASSET_SCHEMA, WARDMOTE_EXECUTION_PROMPT, WARDMOTE_EXECUTION_PROMPT_REVISION,
   nativeRuntimePromptDigest, canonicalNativeRuntimeContextDigest } from "../../contracts/runtime-context.js";
 
 function execution(root: string): NativeExecutionInputV6 {
   const companyId = randomUUID(), agentId = randomUUID();
   const digest = "0".repeat(64);
   const context = {
-    prompt: { revision: PAPERCLIP_EXECUTION_PROMPT_REVISION, text: PAPERCLIP_EXECUTION_PROMPT, digest: nativeRuntimePromptDigest() },
+    prompt: { revision: WARDMOTE_EXECUTION_PROMPT_REVISION, text: WARDMOTE_EXECUTION_PROMPT, digest: nativeRuntimePromptDigest() },
     instructions: { entryPath: "AGENTS.md", bundle: { schema: NATIVE_RUNTIME_ASSET_SCHEMA, digest, manifestDigest: digest, rootPath: root, fileCount: 1, totalBytes: 4 } },
     skills: [], mcp: { assignmentSetId: "none", digest, bindingId: null },
   };

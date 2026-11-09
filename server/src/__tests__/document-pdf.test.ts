@@ -103,24 +103,24 @@ describe("document PDF markdown rendering", () => {
 
 describe("chromium discovery", () => {
   it("prefers the explicitly configured executable", () => {
-    const previous = process.env.PAPERCLIP_PDF_CHROMIUM_PATH;
-    process.env.PAPERCLIP_PDF_CHROMIUM_PATH = process.execPath;
+    const previous = process.env.WARDMOTE_PDF_CHROMIUM_PATH;
+    process.env.WARDMOTE_PDF_CHROMIUM_PATH = process.execPath;
     try {
       expect(resolveChromiumExecutable()).toBe(process.execPath);
     } finally {
-      if (previous === undefined) delete process.env.PAPERCLIP_PDF_CHROMIUM_PATH;
-      else process.env.PAPERCLIP_PDF_CHROMIUM_PATH = previous;
+      if (previous === undefined) delete process.env.WARDMOTE_PDF_CHROMIUM_PATH;
+      else process.env.WARDMOTE_PDF_CHROMIUM_PATH = previous;
     }
   });
 
   it("ignores a configured path that does not exist", () => {
-    const previous = process.env.PAPERCLIP_PDF_CHROMIUM_PATH;
-    process.env.PAPERCLIP_PDF_CHROMIUM_PATH = "/nonexistent/chromium-binary";
+    const previous = process.env.WARDMOTE_PDF_CHROMIUM_PATH;
+    process.env.WARDMOTE_PDF_CHROMIUM_PATH = "/nonexistent/chromium-binary";
     try {
       expect(resolveChromiumExecutable()).not.toBe("/nonexistent/chromium-binary");
     } finally {
-      if (previous === undefined) delete process.env.PAPERCLIP_PDF_CHROMIUM_PATH;
-      else process.env.PAPERCLIP_PDF_CHROMIUM_PATH = previous;
+      if (previous === undefined) delete process.env.WARDMOTE_PDF_CHROMIUM_PATH;
+      else process.env.WARDMOTE_PDF_CHROMIUM_PATH = previous;
     }
   });
 });

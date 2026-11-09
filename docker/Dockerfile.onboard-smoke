@@ -6,8 +6,8 @@ ARG HOST_UID=10001
 ARG OMP_VERSION
 
 ENV DEBIAN_FRONTEND=noninteractive \
-  PAPERCLIP_HOME=/paperclip \
-  PAPERCLIP_OPEN_ON_LISTEN=false \
+  WARDMOTE_HOME=/paperclip \
+  WARDMOTE_OPEN_ON_LISTEN=false \
   HOST=0.0.0.0 \
   PORT=3100 \
   HOME=/home/paperclip \
@@ -46,4 +46,4 @@ USER paperclip
 # and ignore the deployment env vars. A loopback listener inside the container
 # is unreachable through Docker's port mapping, so the smoke health check can
 # never pass without this flag.
-CMD ["bash", "-lc", "set -euo pipefail; mkdir -p \"$PAPERCLIP_HOME\"; npx --yes \"@tickernelz/wardmote@${PAPERCLIPAI_VERSION}\" onboard --yes --bind lan --data-dir \"$PAPERCLIP_HOME\""]
+CMD ["bash", "-lc", "set -euo pipefail; mkdir -p \"$WARDMOTE_HOME\"; npx --yes \"@tickernelz/wardmote@${PAPERCLIPAI_VERSION}\" onboard --yes --bind lan --data-dir \"$WARDMOTE_HOME\""]

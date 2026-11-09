@@ -98,7 +98,7 @@ function runtimeSelection(config: unknown): RuntimeSelection {
   const configuredAgentDir = firstString(
     record.agentDir,
     configuredEnv.PI_CODING_AGENT_DIR,
-    process.env.PAPERCLIP_OMP_AGENT_DIR,
+    process.env.WARDMOTE_OMP_AGENT_DIR,
     process.env.PI_CODING_AGENT_DIR,
   );
   const root = configRoot(configuredEnv);
@@ -113,7 +113,7 @@ function runtimeSelection(config: unknown): RuntimeSelection {
 }
 
 export function resolveOmpCommand(config: unknown): string {
-  return firstString(objectValue(config).command, process.env.PAPERCLIP_OMP_COMMAND) ?? "omp";
+  return firstString(objectValue(config).command, process.env.WARDMOTE_OMP_COMMAND) ?? "omp";
 }
 
 function envPathList(value: string | undefined): string[] {
@@ -134,8 +134,8 @@ function envPathList(value: string | undefined): string[] {
 
 export function detectionEnv(): Record<string, string> {
   const profileSelection = resolveOmpProfile({});
-  const agentDir = firstString(process.env.PAPERCLIP_OMP_AGENT_DIR);
-  const configFiles = envPathList(process.env.PAPERCLIP_OMP_CONFIG_FILES);
+  const agentDir = firstString(process.env.WARDMOTE_OMP_AGENT_DIR);
+  const configFiles = envPathList(process.env.WARDMOTE_OMP_CONFIG_FILES);
   const env = stringEnv(ensurePathInEnv({ ...process.env }));
   if (profileSelection.profile) env.OMP_PROFILE = profileSelection.profile;
   else if (profileSelection.specified) {
@@ -334,7 +334,7 @@ export async function getConfigSchema(): Promise<AdapterConfigSchema> {
         label: "OMP command",
         type: "text",
         default: resolveOmpCommand({}),
-        hint: "Executable name or absolute path. PAPERCLIP_OMP_COMMAND is the global fallback.",
+        hint: "Executable name or absolute path. WARDMOTE_OMP_COMMAND is the global fallback.",
         group: "Runtime",
       },
       {
@@ -357,7 +357,7 @@ export async function getConfigSchema(): Promise<AdapterConfigSchema> {
         key: "agentDir",
         label: "OMP agent directory",
         type: "text",
-        default: firstString(process.env.PAPERCLIP_OMP_AGENT_DIR) ?? undefined,
+        default: firstString(process.env.WARDMOTE_OMP_AGENT_DIR) ?? undefined,
         hint: "Optional PI_CODING_AGENT_DIR override for the default profile.",
         group: "Runtime",
       },

@@ -16,7 +16,7 @@ export interface NativeHarnessBackupStamp {
 
 function stateBase(): string {
   return resolve(
-    process.env.PAPERCLIP_RUNNER_STATE_DIR ??
+    process.env.WARDMOTE_RUNNER_STATE_DIR ??
       resolve(
         resolvePaperclipInstanceRoot(),
         "runtime",

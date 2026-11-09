@@ -87,7 +87,7 @@ Key responsibilities:
 | Helper | Source | Purpose |
 |--------|--------|---------|
 | `runChildProcess(cmd, opts)` | `@tickernelz/wardmote-adapter-utils/server-utils` | Spawn with timeout, grace, streaming |
-| `buildPaperclipEnv(agent)` | `@tickernelz/wardmote-adapter-utils/server-utils` | Inject `PAPERCLIP_*` env vars |
+| `buildPaperclipEnv(agent)` | `@tickernelz/wardmote-adapter-utils/server-utils` | Inject `WARDMOTE_*` env vars |
 | `renderTemplate(tpl, data)` | `@tickernelz/wardmote-adapter-utils/server-utils` | `{{variable}}` substitution |
 | `asString(v)` | `@tickernelz/wardmote-adapter-utils` | Safe config value extraction |
 | `asNumber(v)` | `@tickernelz/wardmote-adapter-utils` | Safe number extraction |

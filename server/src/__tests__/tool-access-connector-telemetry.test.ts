@@ -171,7 +171,7 @@ describeEmbeddedPostgres("connector lifecycle telemetry (tool-access)", () => {
 
   beforeAll(async () => {
     keyDir = await mkdtemp(join(tmpdir(), "lifecycle-telemetry-secrets-"));
-    vi.stubEnv("PAPERCLIP_SECRETS_MASTER_KEY_FILE", join(keyDir, "key"));
+    vi.stubEnv("WARDMOTE_SECRETS_MASTER_KEY_FILE", join(keyDir, "key"));
     tempDb = await startEmbeddedPostgresTestDatabase(
       "paperclip-lifecycle-telemetry-",
     );

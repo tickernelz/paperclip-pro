@@ -6,7 +6,7 @@ import type { Db } from "@tickernelz/wardmote-db";
 import { PaperclipRunnerToolAuthority } from "../services/native-runtime/paperclip-runner-tool-authority.js";
 import { buildNativeModelEnvelope, parseNativeExecutionInput, type NativeExecutionInput } from "../../../packages/wardmote-runner/src/contracts/native-execution.js";
 import type { PersistedNativeSession } from "../../../packages/wardmote-runner/src/contracts/native-session-backend.js";
-import { NATIVE_RUNTIME_ASSET_SCHEMA, PAPERCLIP_EXECUTION_PROMPT, PAPERCLIP_EXECUTION_PROMPT_REVISION, canonicalNativeRuntimeContextDigest, nativeRuntimePromptDigest } from "../../../packages/wardmote-runner/src/contracts/runtime-context.js";
+import { NATIVE_RUNTIME_ASSET_SCHEMA, WARDMOTE_EXECUTION_PROMPT, WARDMOTE_EXECUTION_PROMPT_REVISION, canonicalNativeRuntimeContextDigest, nativeRuntimePromptDigest } from "../../../packages/wardmote-runner/src/contracts/runtime-context.js";
 import { createRunnerdNativeSessionBackend } from "../../../packages/wardmote-runner/src/backends/codex-native-backend.js";
 import { resolveQualifiedAcpxProfile } from "../../../packages/wardmote-runner/src/drivers/acpx/qualified-profiles.js";
 import { FakeCodexTransport, WORKSPACE } from "../../../packages/wardmote-runner/src/drivers/codex/codex-app-server-driver.test-support.js";
@@ -40,7 +40,7 @@ function execution(provider: NativeExecutionInput["provider"]): NativeExecutionI
   const entry = readFileSync(new URL("server/src/onboarding-assets/default/AGENTS.md", root), "utf8");
   writeFileSync(`${WORKSPACE}/AGENTS.md`, entry);
   const context = {
-    prompt: { revision: PAPERCLIP_EXECUTION_PROMPT_REVISION, text: PAPERCLIP_EXECUTION_PROMPT, digest: nativeRuntimePromptDigest() },
+    prompt: { revision: WARDMOTE_EXECUTION_PROMPT_REVISION, text: WARDMOTE_EXECUTION_PROMPT, digest: nativeRuntimePromptDigest() },
     instructions: { entryPath: "AGENTS.md", bundle: { schema: NATIVE_RUNTIME_ASSET_SCHEMA, rootPath: WORKSPACE, digest: sha(entry), manifestDigest: sha(entry), fileCount: 1, totalBytes: Buffer.byteLength(entry) } },
     skills: [], mcp: { assignmentSetId: "none", digest: "0".repeat(64), bindingId: null },
   };
@@ -88,7 +88,7 @@ describe("production native procedure instruction measurement", () => {
       const captured = transport(provider);
       captured.readResponse = { thread: { id: "thread-1", sessionId: "provider-session-1", cwd: WORKSPACE, turns: [] } };
       const current = phase === "continuation" ? parseNativeExecutionInput({ ...input, continuationPrompt: "Review the teammate's saved result." }) : input;
-      const backend = createRunnerdNativeSessionBackend(current, { transportFactory: () => captured, dynamicTools: tools, environment: { PAPERCLIP_WORKSPACE_CWD: WORKSPACE } });
+      const backend = createRunnerdNativeSessionBackend(current, { transportFactory: () => captured, dynamicTools: tools, environment: { WARDMOTE_WORKSPACE_CWD: WORKSPACE } });
       const recovery = checkpoint ? await backend.recoverSession!(checkpoint, { signal: new AbortController().signal }) : null;
       if (recovery) expect(recovery.recovered).toBe(true);
       const session = recovery?.session ?? await backend.openSession({ identity, workingDirectory: WORKSPACE });
@@ -103,7 +103,7 @@ describe("production native procedure instruction measurement", () => {
         const delivered = setup.dynamicTools as Record<string, unknown>[];
         expect(delivered.filter(tool => !["paperclip_finish", "paperclip_block"].includes(String(tool.name)))).toEqual(tools);
         expect(delivered).toHaveLength(tools.length + 2);
-        expect(instructions).toContain(PAPERCLIP_EXECUTION_PROMPT);
+        expect(instructions).toContain(WARDMOTE_EXECUTION_PROMPT);
         expect(JSON.parse((turn.input as {text: string}[])[0]!.text)).toEqual(envelope);
         receipts.push({ provider: provider.kind, phase, instructions: measure(instructions), tools: measure(delivered), input: measure(turn.input),
           fullProjection: measure({ instructions, tools: delivered, input: turn.input }), deliveredToolCount: delivered.length });
@@ -127,7 +127,7 @@ describe("production native procedure instruction measurement", () => {
 });
 
 afterAll(() => {
-  const output = process.env.PAPERCLIP_NATIVE_PROCEDURE_MEASUREMENT;
+  const output = process.env.WARDMOTE_NATIVE_PROCEDURE_MEASUREMENT;
   if (!output) return;
   if (receipts.length !== 9 || !mcpReceipt) throw new Error("Refusing incomplete instruction measurement");
   const paths = [

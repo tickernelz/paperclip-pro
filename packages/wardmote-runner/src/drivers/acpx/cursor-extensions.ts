@@ -3,7 +3,7 @@ import { lstat, realpath } from "node:fs/promises";
 import { isAbsolute, relative, resolve, sep } from "node:path";
 
 import {
-  PAPERCLIP_QUESTION_SET_SCHEMA,
+  WARDMOTE_QUESTION_SET_SCHEMA,
   parsePaperclipQuestionResponse,
   parsePaperclipQuestionSet,
   type PaperclipQuestionSet,
@@ -170,7 +170,7 @@ export function normalizeCursorQuestionRequest(value: unknown): {
     };
   });
   const questionSet = boundedQuestionSet({
-    schema: PAPERCLIP_QUESTION_SET_SCHEMA,
+    schema: WARDMOTE_QUESTION_SET_SCHEMA,
     title: optionalText(request.title, "title", 1_000) ?? "Cursor needs input",
     questions: bindings.map(({ question }) => question),
   });
@@ -220,7 +220,7 @@ export function normalizeCursorPlanRequest(value: unknown): {
   const revision = createHash("sha256").update(JSON.stringify({ toolCallId, name, overview, plan, todos, phases, isProject: request.isProject ?? false })).digest("hex");
   const questionId = `plan-${revision}`;
   const questionSet = boundedQuestionSet({
-    schema: PAPERCLIP_QUESTION_SET_SCHEMA,
+    schema: WARDMOTE_QUESTION_SET_SCHEMA,
     title: name ?? "Review Cursor's plan", description, submitLabel: "Send decision",
     questions: [{ id: questionId, prompt: "How should Cursor proceed with this plan?", required: true,
       answerMode: "single_select", options: [

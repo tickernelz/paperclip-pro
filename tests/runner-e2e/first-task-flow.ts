@@ -326,7 +326,7 @@ export async function runFirstTaskFlow(input: {
       desired.map((s: string | { key: string }) =>
         typeof s === "string" ? s : s.key,
       ),
-    ).toContain("paperclipai/paperclip/first-task");
+    ).toContain("tickernelz/wardmote/first-task");
     const bundle = await api.get<{ files: Array<{ path: string }> }>(
       `/api/agents/${fixtures.agent.id}/instructions-bundle`,
     );

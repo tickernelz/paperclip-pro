@@ -10,9 +10,9 @@ const root = fileURLToPath(new URL("../../", import.meta.url));
 const scratch = path.join(os.homedir(), ".cache", "paperclip-openwa-bench");
 mkdirSync(path.join(scratch, "tmp"), { recursive: true });
 process.env.TMPDIR = path.join(scratch, "tmp");
-process.env.PAPERCLIP_HOME = path.join(scratch, "home");
-process.env.PAPERCLIP_INSTANCE_ID = "openwa-bench";
-process.env.PAPERCLIP_LOG_LEVEL ??= "fatal";
+process.env.WARDMOTE_HOME = path.join(scratch, "home");
+process.env.WARDMOTE_INSTANCE_ID = "openwa-bench";
+process.env.WARDMOTE_LOG_LEVEL ??= "fatal";
 v8.setFlagsFromString("--expose-gc");
 
 const runnerSource = pathToFileURL(path.join(root, "packages/wardmote-runner/src/index.ts")).href;

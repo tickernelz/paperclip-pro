@@ -174,7 +174,7 @@ export const Validation: Story = {
       <Editor
         initial={{
           "API-URL": { type: "plain", value: "https://api.example.com" },
-          PAPERCLIP_TOKEN: { type: "plain", value: "override" },
+          WARDMOTE_TOKEN: { type: "plain", value: "override" },
           ABANDONED: { type: "secret_ref", secretId: "gone-1234", version: "latest" },
           LEGACY: { type: "secret_ref", secretId: "s-legacy", version: "latest" },
         }}

@@ -8,7 +8,7 @@ import { pathToFileURL } from "node:url";
 import test from "node:test";
 
 const require = createRequire(import.meta.url);
-const root = process.env.PAPERCLIP_TEST_ACPX_PACKAGE_ROOT ?? dirname(require.resolve("acpx/package.json"));
+const root = process.env.WARDMOTE_TEST_ACPX_PACKAGE_ROOT ?? dirname(require.resolve("acpx/package.json"));
 const { createAcpRuntime } = await import(pathToFileURL(join(root, "dist/runtime.js")));
 const { dt: serialize, ut: parse } = await import(pathToFileURL(join(root, "dist/live-checkpoint-BSIrfgVo.js")));
 const selectedModel = "custom/model";

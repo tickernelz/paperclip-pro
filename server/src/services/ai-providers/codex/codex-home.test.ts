@@ -69,8 +69,8 @@ describe("codex managed home", () => {
         prepareManagedCodexHome(
           {
             CODEX_HOME: sharedCodexHome,
-            PAPERCLIP_HOME: paperclipHome,
-            PAPERCLIP_INSTANCE_ID: "default",
+            WARDMOTE_HOME: paperclipHome,
+            WARDMOTE_INSTANCE_ID: "default",
           },
           async () => {},
           "company-1",
@@ -117,8 +117,8 @@ describe("codex managed home", () => {
         prepareManagedCodexHome(
           {
             CODEX_HOME: sharedCodexHome,
-            PAPERCLIP_HOME: paperclipHome,
-            PAPERCLIP_INSTANCE_ID: "default",
+            WARDMOTE_HOME: paperclipHome,
+            WARDMOTE_INSTANCE_ID: "default",
           },
           async () => {},
           "company-1",
@@ -165,8 +165,8 @@ describe("codex managed home", () => {
       await prepareManagedCodexHome(
         {
           CODEX_HOME: sharedCodexHome,
-          PAPERCLIP_HOME: paperclipHome,
-          PAPERCLIP_INSTANCE_ID: "default",
+          WARDMOTE_HOME: paperclipHome,
+          WARDMOTE_INSTANCE_ID: "default",
         },
         async () => {},
         "company-1",
@@ -226,8 +226,8 @@ describe("codex managed home", () => {
 
 describe("isManagedCodexHomePath", () => {
   const env = {
-    PAPERCLIP_HOME: "/srv/paperclip",
-    PAPERCLIP_INSTANCE_ID: "default",
+    WARDMOTE_HOME: "/srv/paperclip",
+    WARDMOTE_INSTANCE_ID: "default",
   } satisfies NodeJS.ProcessEnv;
   const companyRoot = path.resolve(
     "/srv/paperclip/instances/default/companies/company-1",
@@ -602,8 +602,8 @@ describe("seedManagedCodexHome", () => {
       );
       const env = {
         CODEX_HOME: sharedCodexHome,
-        PAPERCLIP_HOME: path.join(root, "paperclip-home"),
-        PAPERCLIP_INSTANCE_ID: "default",
+        WARDMOTE_HOME: path.join(root, "paperclip-home"),
+        WARDMOTE_INSTANCE_ID: "default",
       };
       const stored = subscriptionAuth("acct-same", "stored", "2026-07-09T01:00:00Z");
       await fs.mkdir(sharedCodexHome, { recursive: true });
@@ -638,8 +638,8 @@ describe("seedManagedCodexHome", () => {
       );
       const env = {
         CODEX_HOME: sharedCodexHome,
-        PAPERCLIP_HOME: path.join(root, "paperclip-home"),
-        PAPERCLIP_INSTANCE_ID: "default",
+        WARDMOTE_HOME: path.join(root, "paperclip-home"),
+        WARDMOTE_INSTANCE_ID: "default",
       };
       const stored = subscriptionAuth("acct-bound-id", "stored", "2026-07-09T01:00:00Z");
       await fs.mkdir(sharedCodexHome, { recursive: true });
@@ -706,8 +706,8 @@ describe("reconcileManagedCodexHome", () => {
     await fs.writeFile(sharedAuth, '{"OPENAI_API_KEY":"shared"}', "utf8");
     const env = {
       CODEX_HOME: sharedCodexHome,
-      PAPERCLIP_HOME: paperclipHome,
-      PAPERCLIP_INSTANCE_ID: "default",
+      WARDMOTE_HOME: paperclipHome,
+      WARDMOTE_INSTANCE_ID: "default",
     } satisfies NodeJS.ProcessEnv;
     return { root, sharedCodexHome, sharedAuth, agentHome, agentAuth, env };
   }
@@ -883,8 +883,8 @@ describe("evaluateCodexCredentialReadiness", () => {
     const managedAgentHome = path.join(companyRoot, "agents", "agent-1", "codex-home");
     const env: NodeJS.ProcessEnv = {
       CODEX_HOME: sharedCodexHome,
-      PAPERCLIP_HOME: paperclipHome,
-      PAPERCLIP_INSTANCE_ID: "default",
+      WARDMOTE_HOME: paperclipHome,
+      WARDMOTE_INSTANCE_ID: "default",
     };
     await fs.mkdir(sharedCodexHome, { recursive: true });
     return { root, sharedCodexHome, managedCompanyHome, managedAgentHome, env };

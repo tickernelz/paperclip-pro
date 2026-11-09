@@ -32,10 +32,10 @@ const HANDLE = "handle-abcdef1234567890";
 // not probe for a real host broker. This suite is about the default, so it opts
 // back in and restores the harness value afterwards.
 beforeEach(async () => {
-  vi.stubEnv("PAPERCLIP_MANAGED_RUNTIME_HTTPS", "auto");
+  vi.stubEnv("WARDMOTE_MANAGED_RUNTIME_HTTPS", "auto");
   // Registry records and append-only logs must not share a developer's instance
   // or a previous test's service identity.
-  vi.stubEnv("PAPERCLIP_HOME", await fs.mkdtemp(path.join(guestDir, "home-")));
+  vi.stubEnv("WARDMOTE_HOME", await fs.mkdtemp(path.join(guestDir, "home-")));
 });
 
 afterEach(async () => {
@@ -69,7 +69,7 @@ let guestDir: string;
  *
  * Reproduces the behaviour that actually broke the lanes: `scripts/dev-runner.ts`
  * on plain master derives its bind mode from its own `--bind` / `--bind-host`
- * argv and **ignores `PAPERCLIP_BIND` / `PAPERCLIP_MANAGED_RUNTIME_EXPOSURE`
+ * argv and **ignores `WARDMOTE_BIND` / `WARDMOTE_MANAGED_RUNTIME_EXPOSURE`
  * entirely** — so env-only hardening cannot reach it. `--bind lan` therefore
  * means `0.0.0.0`, which the broker must refuse.
  */
@@ -349,7 +349,7 @@ function startInput(options?: {
         services: [{
           name: options?.serviceName ?? "preview",
           command: options?.command ?? serviceCommand(),
-          env: { PAPERCLIP_PUBLIC_URL: "http://127.0.0.1:3100" },
+          env: { WARDMOTE_PUBLIC_URL: "http://127.0.0.1:3100" },
           port: options?.port ?? { type: "auto", envKey: "PORT" },
           // These lifecycle tests spawn real servers; cold CI startup can take
           // five seconds before the first listener is ready.

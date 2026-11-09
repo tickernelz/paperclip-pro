@@ -352,8 +352,8 @@ async function seedDelivery(
 describeEmbeddedPostgres("OpenWA run authority", () => {
   let db!: ReturnType<typeof createDb>;
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
-  const previousSecret = process.env.PAPERCLIP_AGENT_JWT_SECRET;
-  const previousInstance = process.env.PAPERCLIP_INSTANCE_ID;
+  const previousSecret = process.env.WARDMOTE_AGENT_JWT_SECRET;
+  const previousInstance = process.env.WARDMOTE_INSTANCE_ID;
 
   beforeAll(async () => {
     tempDb = await startEmbeddedPostgresTestDatabase("paperclip-openwa-authority-");
@@ -365,15 +365,15 @@ describeEmbeddedPostgres("OpenWA run authority", () => {
   }, 60_000);
 
   beforeEach(() => {
-    process.env.PAPERCLIP_AGENT_JWT_SECRET = "openwa-authority-secret";
-    delete process.env.PAPERCLIP_INSTANCE_ID;
+    process.env.WARDMOTE_AGENT_JWT_SECRET = "openwa-authority-secret";
+    delete process.env.WARDMOTE_INSTANCE_ID;
   });
 
   afterEach(() => {
-    if (previousSecret === undefined) delete process.env.PAPERCLIP_AGENT_JWT_SECRET;
-    else process.env.PAPERCLIP_AGENT_JWT_SECRET = previousSecret;
-    if (previousInstance === undefined) delete process.env.PAPERCLIP_INSTANCE_ID;
-    else process.env.PAPERCLIP_INSTANCE_ID = previousInstance;
+    if (previousSecret === undefined) delete process.env.WARDMOTE_AGENT_JWT_SECRET;
+    else process.env.WARDMOTE_AGENT_JWT_SECRET = previousSecret;
+    if (previousInstance === undefined) delete process.env.WARDMOTE_INSTANCE_ID;
+    else process.env.WARDMOTE_INSTANCE_ID = previousInstance;
   });
 
   afterAll(async () => {

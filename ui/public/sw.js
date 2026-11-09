@@ -1,4 +1,4 @@
-const BUILD_ID = "__PAPERCLIP_BUILD_ID__";
+const BUILD_ID = "__WARDMOTE_BUILD_ID__";
 const SHELL_CACHE = `wardmote-shell-${BUILD_ID}`;
 const DATA_CACHE_PREFIX = "wardmote-data-";
 const LEGACY_CACHE_PREFIX = "paperclip-public-assets-";

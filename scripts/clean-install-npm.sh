@@ -11,7 +11,7 @@ mkdir -p "$PC_HOME" "$PC_CACHE"
 trap 'rm -rf "$PC_TEST_ROOT"' EXIT
 
 export HOME="$PC_HOME"
-export PAPERCLIP_HOME="$PC_HOME/.paperclip-pro"
+export WARDMOTE_HOME="$PC_HOME/.paperclip-pro"
 export npm_config_cache="$PC_CACHE"
 export npm_config_userconfig="$PC_HOME/.npmrc"
 export PATH="$PC_HOME/.local/bin:$PATH"
@@ -23,14 +23,14 @@ else
 fi
 
 test -x "$PC_HOME/.local/bin/paperclip-pro"
-test -L "$PAPERCLIP_HOME/cli/current"
-test -f "$PAPERCLIP_HOME/cli/install.json"
+test -L "$WARDMOTE_HOME/cli/current"
+test -f "$WARDMOTE_HOME/cli/install.json"
 paperclip-pro --version
 
-mkdir -p "$PAPERCLIP_HOME/instances/default"
-touch "$PAPERCLIP_HOME/instances/default/user-data-marker"
+mkdir -p "$WARDMOTE_HOME/instances/default"
+touch "$WARDMOTE_HOME/instances/default/user-data-marker"
 (cd "$REPO_ROOT" && pnpm paperclip-pro uninstall)
 
-test ! -e "$PAPERCLIP_HOME/cli"
+test ! -e "$WARDMOTE_HOME/cli"
 test ! -e "$PC_HOME/.local/bin/paperclip-pro"
-test -f "$PAPERCLIP_HOME/instances/default/user-data-marker"
+test -f "$WARDMOTE_HOME/instances/default/user-data-marker"

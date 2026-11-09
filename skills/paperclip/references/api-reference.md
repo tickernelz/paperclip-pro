@@ -2,7 +2,7 @@
 
 Detailed reference for the Paperclip control plane as agents reach it: the `paperclip*` MCP tools. For the core heartbeat procedure and critical rules, see the main `SKILL.md`.
 
-The tool list your client advertises is the contract. Tools marked extended load only when the operator enables `PAPERCLIP_MCP_TOOLSETS=full`; everything else is in the default `core` toolset. Any operation without a dedicated tool goes through `paperclipApiRequest` (`method`, `path` relative to `/api`, `jsonBody` as a JSON string). Operations that require a board actor, manage credentials, or are runner-owned have no dedicated tool on purpose.
+The tool list your client advertises is the contract. Tools marked extended load only when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; everything else is in the default `core` toolset. Any operation without a dedicated tool goes through `paperclipApiRequest` (`method`, `path` relative to `/api`, `jsonBody` as a JSON string). Operations that require a board actor, manage credentials, or are runner-owned have no dedicated tool on purpose.
 
 ---
 
@@ -510,7 +510,7 @@ paperclipUpdateIssue { issueId: "issue-200", comment: "Your Mine inbox has 1 unr
 
 Archive only after the issue is genuinely finished from the responsible user's perspective. Do not archive issues awaiting review, approval, confirmation, answers, or another user decision.
 
-`paperclipInboxArchiveIssue` and `paperclipDeleteIssueInboxArchive` are extended: available when the operator enables `PAPERCLIP_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest`.
+`paperclipInboxArchiveIssue` and `paperclipDeleteIssueInboxArchive` are extended: available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest`.
 
 ```
 # The responsible user's id is resolved from the authenticated agent run.
@@ -719,7 +719,7 @@ Access is intentionally constrained:
 
 ## Setting Agent Instructions Path
 
-Use `paperclipUpdateAgentInstructionsPath` when setting an adapter instructions markdown path (`AGENTS.md`-style files). It is extended: available when the operator enables `PAPERCLIP_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest`.
+Use `paperclipUpdateAgentInstructionsPath` when setting an adapter instructions markdown path (`AGENTS.md`-style files). It is extended: available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest`.
 
 ```json
 {
@@ -807,7 +807,7 @@ below remain available when local workspace configuration is needed.
 }
 ```
 
-Then `paperclipCreateProjectWorkspace`, extended: available when the operator enables `PAPERCLIP_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest`.
+Then `paperclipCreateProjectWorkspace`, extended: available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest`.
 
 ```json
 {
@@ -842,7 +842,7 @@ environment, and managed AI connection. The new agent receives its own
 instructions; caller secrets, workspace paths, sessions, and instructions are
 not copied. Existing hiring permissions and company approval policy still apply.
 
-The equivalent native tool is `paperclipCreateAgentHire`, extended: available when the operator enables `PAPERCLIP_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest`.
+The equivalent native tool is `paperclipCreateAgentHire`, extended: available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest`.
 
 ```json
 {
@@ -1246,7 +1246,7 @@ Payload field reference (`RequestItemVerdictsPayload`):
 | `supersedeOnUserComment` | boolean                                                  | `false` (set server-side)  | When `true`, a later board/user comment expires the still-pending remainder with `outcome: "superseded_by_comment"`. Left at `false`, the remainder stays pending. |
 | `target`                 | `RequestConfirmationTarget` \| `null`                    | `null`                     | Same target schema as confirmations. Stale issue-document targets expire the still-pending remainder with `stale_target`.     |
 
-Submit item verdicts with `paperclipCreateIssueInteractionVerdict`, extended: available when the operator enables `PAPERCLIP_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest`. This is a board action; it requires a board/user role and agents creating the interaction cannot submit verdicts.
+Submit item verdicts with `paperclipCreateIssueInteractionVerdict`, extended: available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest`. This is a board action; it requires a board/user role and agents creating the interaction cannot submit verdicts.
 
 ```json
 {
@@ -1313,9 +1313,9 @@ Expiration results preserve already resolved items and omit undecided items:
 ### Approval follow-up (requesting agent)
 
 When board resolves your approval, you may be woken with:
-- `PAPERCLIP_APPROVAL_ID`
-- `PAPERCLIP_APPROVAL_STATUS`
-- `PAPERCLIP_LINKED_ISSUE_IDS`
+- `WARDMOTE_APPROVAL_ID`
+- `WARDMOTE_APPROVAL_STATUS`
+- `WARDMOTE_LINKED_ISSUE_IDS`
 
 Use `paperclipGetApproval` and `paperclipGetApprovalIssues`, both keyed by `approvalId`.
 
@@ -1370,7 +1370,7 @@ The tool result reports the underlying failure.
 
 ## Full Tool Reference
 
-Tools marked extended load only when the operator enables `PAPERCLIP_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest` for the same job.
+Tools marked extended load only when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest` for the same job.
 
 ### Agents
 

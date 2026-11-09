@@ -42,12 +42,12 @@ function isAuditCountField(key: string, value: unknown): boolean {
   );
 }
 const COMMAND_PAYLOAD_KEY_RE =
-  /(^command$|^cmd$|command[-_]?line|resolved[-_]?command|PAPERCLIP_RESOLVED_COMMAND)/i;
+  /(^command$|^cmd$|command[-_]?line|resolved[-_]?command|WARDMOTE_RESOLVED_COMMAND)/i;
 const COMMAND_ARGS_PAYLOAD_KEY_RE = /^(commandArgs|command_?args|argv)$/i;
 // Public protocol discriminators are retained verbatim. A dotted identifier
 // alone is not a credential; JWT detection requires an encoded JSON header.
-const PAPERCLIP_SCHEMA_FIELDS = new Set(["schema", "runtimeSchema"]);
-export const PAPERCLIP_PUBLIC_SCHEMA_IDS = new Set([
+const WARDMOTE_SCHEMA_FIELDS = new Set(["schema", "runtimeSchema"]);
+export const WARDMOTE_PUBLIC_SCHEMA_IDS = new Set([
   "paperclip.artifact.generated.v1",
   "paperclip.artifact.viewed.v1",
   "paperclip.capability-discovery.v1",
@@ -920,9 +920,9 @@ function isPaperclipSchemaDiscriminator(
   value: unknown,
 ): value is string {
   return (
-    PAPERCLIP_SCHEMA_FIELDS.has(key) &&
+    WARDMOTE_SCHEMA_FIELDS.has(key) &&
     typeof value === "string" &&
-    PAPERCLIP_PUBLIC_SCHEMA_IDS.has(value)
+    WARDMOTE_PUBLIC_SCHEMA_IDS.has(value)
   );
 }
 

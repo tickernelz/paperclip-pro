@@ -31,12 +31,12 @@ describe("dev-runner worktree env bootstrap", () => {
     fs.mkdirSync(path.join(root, ".paperclip"));
     fs.writeFileSync(path.join(root, ".git"), "gitdir: /tmp/paperclip/.git/worktrees/empty\n");
     fs.writeFileSync(path.join(root, ".paperclip", "seed-empty"), "explicitly empty\n");
-    fs.writeFileSync(resolveWorktreeEnvFilePath(root), 'PAPERCLIP_AGENT_JWT_SECRET="fresh-jwt"\nPAPERCLIP_TOOL_ACTION_SIGNING_SECRET="fresh-actions"\n');
-    const env = { PAPERCLIP_AGENT_JWT_SECRET: "source-jwt", PAPERCLIP_TOOL_ACTION_SIGNING_SECRET: "source-actions", BETTER_AUTH_SECRET: "source-auth" };
+    fs.writeFileSync(resolveWorktreeEnvFilePath(root), 'WARDMOTE_AGENT_JWT_SECRET="fresh-jwt"\nWARDMOTE_TOOL_ACTION_SIGNING_SECRET="fresh-actions"\n');
+    const env = { WARDMOTE_AGENT_JWT_SECRET: "source-jwt", WARDMOTE_TOOL_ACTION_SIGNING_SECRET: "source-actions", BETTER_AUTH_SECRET: "source-auth" };
     bootstrapDevRunnerWorktreeEnv(root, env);
-    expect(env).toMatchObject({ PAPERCLIP_AGENT_JWT_SECRET: "fresh-jwt", PAPERCLIP_TOOL_ACTION_SIGNING_SECRET: "fresh-actions", BETTER_AUTH_SECRET: "fresh-jwt" });
-    fs.writeFileSync(resolveWorktreeEnvFilePath(root), 'PAPERCLIP_AGENT_JWT_SECRET="fresh-jwt"\n');
-    expect(() => applyEmptyWorktreeSigningSecrets(root, env)).toThrow("missing its saved PAPERCLIP_TOOL_ACTION_SIGNING_SECRET");
+    expect(env).toMatchObject({ WARDMOTE_AGENT_JWT_SECRET: "fresh-jwt", WARDMOTE_TOOL_ACTION_SIGNING_SECRET: "fresh-actions", BETTER_AUTH_SECRET: "fresh-jwt" });
+    fs.writeFileSync(resolveWorktreeEnvFilePath(root), 'WARDMOTE_AGENT_JWT_SECRET="fresh-jwt"\n');
+    expect(() => applyEmptyWorktreeSigningSecrets(root, env)).toThrow("missing its saved WARDMOTE_TOOL_ACTION_SIGNING_SECRET");
   });
   it("guards seed-pending worktrees until a seed-complete marker exists", () => {
     const root = createTempRoot("paperclip-dev-runner-seed-pending-");
@@ -93,18 +93,18 @@ describe("dev-runner worktree env bootstrap", () => {
     fs.writeFileSync(
       resolveWorktreeEnvFilePath(root),
       [
-        "PAPERCLIP_HOME=/tmp/paperclip-worktrees",
-        "PAPERCLIP_INSTANCE_ID=feature-worktree",
-        "PAPERCLIP_IN_WORKTREE=true",
-        "PAPERCLIP_WORKTREE_NAME=feature-worktree",
-        "PAPERCLIP_OPTIONAL= # comment-only value",
+        "WARDMOTE_HOME=/tmp/paperclip-worktrees",
+        "WARDMOTE_INSTANCE_ID=feature-worktree",
+        "WARDMOTE_IN_WORKTREE=true",
+        "WARDMOTE_WORKTREE_NAME=feature-worktree",
+        "WARDMOTE_OPTIONAL= # comment-only value",
         "",
       ].join("\n"),
       "utf8",
     );
 
     const env: NodeJS.ProcessEnv = {
-      PAPERCLIP_INSTANCE_ID: "already-set",
+      WARDMOTE_INSTANCE_ID: "already-set",
     };
     const result = bootstrapDevRunnerWorktreeEnv(root, env);
 
@@ -112,10 +112,10 @@ describe("dev-runner worktree env bootstrap", () => {
       envPath: resolveWorktreeEnvFilePath(root),
       missingEnv: false,
     });
-    expect(env.PAPERCLIP_HOME).toBe("/tmp/paperclip-worktrees");
-    expect(env.PAPERCLIP_INSTANCE_ID).toBe("already-set");
-    expect(env.PAPERCLIP_IN_WORKTREE).toBe("true");
-    expect(env.PAPERCLIP_OPTIONAL).toBe("");
+    expect(env.WARDMOTE_HOME).toBe("/tmp/paperclip-worktrees");
+    expect(env.WARDMOTE_INSTANCE_ID).toBe("already-set");
+    expect(env.WARDMOTE_IN_WORKTREE).toBe("true");
+    expect(env.WARDMOTE_OPTIONAL).toBe("");
   });
 
   it("repairs stale migrated config paths before loading worktree env", () => {
@@ -128,19 +128,19 @@ describe("dev-runner worktree env bootstrap", () => {
     fs.writeFileSync(
       resolveWorktreeEnvFilePath(root),
       [
-        "PAPERCLIP_HOME=/old/home/.paperclip-worktrees",
-        "PAPERCLIP_INSTANCE_ID=feature-worktree",
-        "PAPERCLIP_CONFIG=/old/home/paperclip/.paperclip/worktrees/feature/.paperclip/config.json",
-        "PAPERCLIP_CONTEXT=/old/home/.paperclip-worktrees/context.json",
-        "PAPERCLIP_IN_WORKTREE=true",
-        "PAPERCLIP_WORKTREE_NAME=feature-worktree",
+        "WARDMOTE_HOME=/old/home/.paperclip-worktrees",
+        "WARDMOTE_INSTANCE_ID=feature-worktree",
+        "WARDMOTE_CONFIG=/old/home/paperclip/.paperclip/worktrees/feature/.paperclip/config.json",
+        "WARDMOTE_CONTEXT=/old/home/.paperclip-worktrees/context.json",
+        "WARDMOTE_IN_WORKTREE=true",
+        "WARDMOTE_WORKTREE_NAME=feature-worktree",
         "",
       ].join("\n"),
       "utf8",
     );
 
     const env: NodeJS.ProcessEnv = {
-      PAPERCLIP_WORKTREES_DIR: worktreesDir,
+      WARDMOTE_WORKTREES_DIR: worktreesDir,
     };
     const result = bootstrapDevRunnerWorktreeEnv(root, env);
 
@@ -148,10 +148,10 @@ describe("dev-runner worktree env bootstrap", () => {
       envPath: resolveWorktreeEnvFilePath(root),
       missingEnv: false,
     });
-    expect(env.PAPERCLIP_HOME).toBe(worktreesDir);
-    expect(env.PAPERCLIP_CONFIG).toBe(localConfigPath);
-    expect(env.PAPERCLIP_CONTEXT).toBe(path.join(worktreesDir, "context.json"));
-    expect(env.PAPERCLIP_INSTANCE_ID).toBe("feature-worktree");
+    expect(env.WARDMOTE_HOME).toBe(worktreesDir);
+    expect(env.WARDMOTE_CONFIG).toBe(localConfigPath);
+    expect(env.WARDMOTE_CONTEXT).toBe(path.join(worktreesDir, "context.json"));
+    expect(env.WARDMOTE_INSTANCE_ID).toBe("feature-worktree");
   });
 
   it("reports uninitialized linked worktrees so dev runner can fail fast", () => {

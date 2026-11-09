@@ -2,8 +2,8 @@ import type { HarnessDriverDescriptor } from "../contracts/harness-driver.js";
 import type { NativeSessionCapabilities } from "../contracts/types.js";
 import { negotiateProtocolVersion } from "../protocol/replay-contract.js";
 import {
-  PAPERCLIP_RUNNER_BUILD_METADATA,
-  PAPERCLIP_RUNNER_EVAL_INTEGRATION_SCHEMA,
+  WARDMOTE_RUNNER_BUILD_METADATA,
+  WARDMOTE_RUNNER_EVAL_INTEGRATION_SCHEMA,
 } from "./build-metadata.js";
 import type { PaperclipRunnerdBuildMetadata } from "./runnerd-artifact.js";
 
@@ -48,7 +48,7 @@ export interface PaperclipRunnerEvalCompatibilityRequirement {
 }
 
 export interface PaperclipRunnerEvalCompatibilityReceipt {
-  schema: typeof PAPERCLIP_RUNNER_EVAL_INTEGRATION_SCHEMA;
+  schema: typeof WARDMOTE_RUNNER_EVAL_INTEGRATION_SCHEMA;
   consumer: string;
   packageVersion: string;
   runnerdPackageVersion: string;
@@ -83,7 +83,7 @@ export class PaperclipRunnerEvalCompatibilityError extends Error {
 export function assertPaperclipRunnerEvalCompatibility(
   requirement: PaperclipRunnerEvalCompatibilityRequirement,
 ): PaperclipRunnerEvalCompatibilityReceipt {
-  const expected = PAPERCLIP_RUNNER_BUILD_METADATA;
+  const expected = WARDMOTE_RUNNER_BUILD_METADATA;
   const issues: PaperclipRunnerEvalCompatibilityIssue[] = [];
   const issue = (
     code: PaperclipRunnerEvalCompatibilityIssueCode,
@@ -232,7 +232,7 @@ export function assertPaperclipRunnerEvalCompatibility(
   }
 
   return {
-    schema: PAPERCLIP_RUNNER_EVAL_INTEGRATION_SCHEMA,
+    schema: WARDMOTE_RUNNER_EVAL_INTEGRATION_SCHEMA,
     consumer: requirement.consumer,
     packageVersion: expected.package.version,
     runnerdPackageVersion: requirement.runnerd.packageVersion,

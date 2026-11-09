@@ -11,7 +11,7 @@ import { fileURLToPath } from "node:url";
 
 // Optional test-only package location permits the isolated Pi branch to test
 // before the integration owner updates package.json and the shared lockfile.
-const packageJson = process.env.PAPERCLIP_TEST_PI_ACP_PACKAGE
+const packageJson = process.env.WARDMOTE_TEST_PI_ACP_PACKAGE
   ?? createRequire(import.meta.url).resolve("pi-acp/package.json");
 const packageRoot = dirname(packageJson);
 const packageMetadata = JSON.parse(await readFile(packageJson, "utf8"));

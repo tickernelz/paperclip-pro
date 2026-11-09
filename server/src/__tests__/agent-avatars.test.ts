@@ -8,7 +8,7 @@ import path from "node:path";
 import express from "express";
 import type { Server } from "node:http";
 import sharp from "sharp";
-import { AGENT_PALETTE_IDS, appearanceForPalette, PAPERCLIP_DARK_AVATAR_BACKGROUND } from "@tickernelz/wardmote-shared";
+import { AGENT_PALETTE_IDS, appearanceForPalette, WARDMOTE_DARK_AVATAR_BACKGROUND } from "@tickernelz/wardmote-shared";
 import { createLocalDiskStorageProvider } from "../storage/local-disk-provider.js";
 import { createAgentAvatarService, avatarCacheKey, type AgentAvatarRequest } from "../services/agent-avatars.js";
 import { createAgentAvatarPool } from "../services/agent-avatar-pool.js";
@@ -139,7 +139,7 @@ describe("on-demand agent avatars", () => {
     ];
     const channels = linear.map((x) => Math.round((x <= 0.0031308 ? 12.92 * x : 1.055 * x ** (1 / 2.4) - 0.055) * 255));
     const hex = channels.map((channel) => channel.toString(16).padStart(2, "0")).join("");
-    expect(PAPERCLIP_DARK_AVATAR_BACKGROUND).toBe(`#${hex}`);
+    expect(WARDMOTE_DARK_AVATAR_BACKGROUND).toBe(`#${hex}`);
     const service = createAgentAvatarService(await storage()); cleanups.push(() => service.close());
     const url = await serve(service);
     const clear = await fetch(url + "?size=512&scale=1");

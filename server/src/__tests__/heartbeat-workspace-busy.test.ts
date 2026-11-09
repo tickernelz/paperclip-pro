@@ -63,7 +63,7 @@ vi.mock("@tickernelz/wardmote-adapter-utils/ssh", async (importOriginal) => ({
   }),
 }));
 
-const externalTestDatabaseUrl = process.env.PAPERCLIP_TEST_DATABASE_URL?.trim();
+const externalTestDatabaseUrl = process.env.WARDMOTE_TEST_DATABASE_URL?.trim();
 const embeddedPostgresSupport = externalTestDatabaseUrl ? { supported: true } : await getEmbeddedPostgresTestSupport();
 const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;
 const WORKSPACE_BUSY_TEST_ADAPTER = "workspace_busy_test";
@@ -493,7 +493,7 @@ describeEmbeddedPostgres("shared-workspace run serialization", () => {
 
   it.each(["any", "invalid"])("refuses local fallback when Kubernetes is required but bootstrap mode is %s", async (mode) => {
     const fixture = await seedWorkspaceFixture({ agentEnvironmentDriver: "local" });
-    vi.stubEnv("PAPERCLIP_EXECUTION_MODE", mode);
+    vi.stubEnv("WARDMOTE_EXECUTION_MODE", mode);
     await instanceSettingsService(db).updateGeneral({ executionMode: "kubernetes" });
 
     const run = await heartbeat.invoke(fixture.agentId, "assignment", { issueId: fixture.issueId }, "system");
@@ -510,12 +510,12 @@ describeEmbeddedPostgres("shared-workspace run serialization", () => {
 
   it("lazily provisions the required Kubernetes environment before applying workspace contention", async () => {
     const fixture = await seedWorkspaceFixture({ agentEnvironmentDriver: "local" });
-    for (const key of Object.keys(process.env).filter(key => key.startsWith("PAPERCLIP_K8S_"))) {
+    for (const key of Object.keys(process.env).filter(key => key.startsWith("WARDMOTE_K8S_"))) {
       vi.stubEnv(key, undefined);
     }
-    vi.stubEnv("PAPERCLIP_EXECUTION_MODE", "kubernetes");
-    vi.stubEnv("PAPERCLIP_K8S_IN_CLUSTER", "true");
-    vi.stubEnv("PAPERCLIP_K8S_BACKEND", "job");
+    vi.stubEnv("WARDMOTE_EXECUTION_MODE", "kubernetes");
+    vi.stubEnv("WARDMOTE_K8S_IN_CLUSTER", "true");
+    vi.stubEnv("WARDMOTE_K8S_BACKEND", "job");
     await instanceSettingsService(db).updateGeneral({ executionMode: "kubernetes" });
 
     const run = await heartbeat.invoke(fixture.agentId, "assignment", { issueId: fixture.issueId }, "system");

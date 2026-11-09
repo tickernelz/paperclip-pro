@@ -10,25 +10,25 @@ All environment variables that Wardmote uses for server configuration.
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `PORT` | `3100` | Server port |
-| `PAPERCLIP_BIND` | `loopback` | Reachability preset: `loopback`, `lan`, `tailnet`, or `custom` |
-| `PAPERCLIP_BIND_HOST` | (unset) | Required when `PAPERCLIP_BIND=custom` |
-| `HOST` | `127.0.0.1` | Legacy host override; prefer `PAPERCLIP_BIND` for new setups |
+| `WARDMOTE_BIND` | `loopback` | Reachability preset: `loopback`, `lan`, `tailnet`, or `custom` |
+| `WARDMOTE_BIND_HOST` | (unset) | Required when `WARDMOTE_BIND=custom` |
+| `HOST` | `127.0.0.1` | Legacy host override; prefer `WARDMOTE_BIND` for new setups |
 | `DATABASE_URL` | (embedded) | PostgreSQL connection string |
-| `PAPERCLIP_HOME` | `~/.wardmote` | Base directory for all Wardmote data |
-| `PAPERCLIP_INSTANCE_ID` | `default` | Instance identifier (for multiple local instances) |
-| `PAPERCLIP_DEPLOYMENT_MODE` | `local_trusted` | Runtime mode override |
-| `PAPERCLIP_DEPLOYMENT_EXPOSURE` | `private` | Exposure policy when deployment mode is `authenticated` |
-| `PAPERCLIP_API_URL` | (auto-derived) | Wardmote API base URL. When set externally (e.g., via Kubernetes ConfigMap, load balancer, or reverse proxy), the server preserves the value instead of deriving it from the listen host and port. Useful for deployments where the public-facing URL differs from the local bind address. |
-| `PAPERCLIP_CHAT_WEBHOOK_PUBLIC_URL` | (board public origin) | Optional HTTPS origin for native chat provider webhooks when ingress and the board use different hosts. Must have no credentials, path, query, or fragment; invalid configuration refuses startup. Used only for provider callback URLs, not board links, authentication, trusted hosts, or identity confirmation. |
-| `PAPERCLIP_RUNNER_PUBLIC_URL` | (unset) | Explicit `wss://` base URL used only when a remote `paperclip_runner` target dials Wardmote directly. Wardmote appends `/api/runner/v1/connect/<runId>`; the reverse proxy must forward WebSocket upgrades for that route. This value is never inferred from request headers. Daytona ignores it and uses provider ingress. |
-| `PAPERCLIP_RUNNER_CA_BUNDLE_PATH` | (unset) | Optional PEM CA bundle for direct runner WSS. Platform roots remain enabled. There is no insecure TLS bypass. |
-| `PAPERCLIP_RUNNER_REMOTE_BINARY_PATH` | (host build) | Host-local path to a `paperclip-runnerd` artifact built for the remote target OS and architecture. Required when Wardmote and the remote sandbox do not share a compatible platform; build metadata and the required transport mode are verified before launch. |
-| `PAPERCLIP_RUNNER_REMOTE_CODEX_PATH` | (unset) | Optional host-local path to a Codex executable built for the remote target OS and architecture. For remote Codex-backed runners, Wardmote stages and verifies this executable beside `paperclip-runnerd`. |
-| `PAPERCLIP_RUNNER_REMOTE_CODEX_NPM_SPEC` | (unset) | Optional pinned npm package spec (for example, `@openai/codex@0.160.0`) installed inside each fresh remote lease when its Codex harness is not baked into the sandbox image. Mutually exclusive with `PAPERCLIP_RUNNER_REMOTE_CODEX_PATH`; Wardmote verifies the installed executable before starting `runnerd`. |
-| `PAPERCLIP_RUNNER_REMOTE_PROVIDER_PACK_PATH` | `/opt/paperclip-runner/provider-pack` in Docker; otherwise unset | Host-local path to the immutable provider pack built by `pnpm --filter @tickernelz/wardmote-runner build:provider-pack`. Stamped standard Docker images include the pack; downstream compositions and the `cloud` target inherit it. Unstamped local Docker builds skip pack generation. The pack includes its target-built Node 24.11+ runtime, locked production dependencies, OpenCode proxy/executable, and ACPX sidecar. Remote OpenCode and ACPX fail closed without it. A preinstalled pack is accepted only when its complete digested manifest matches this build-owned pack; otherwise Wardmote stages this pack into the sandbox. |
-| `PAPERCLIP_ATTACHMENT_MAX_BYTES` | (unset; 100 MB) | Attachment size ceiling in bytes for uploads, downloads of channel media, and file handoffs. The **Instance Settings > General > Files and storage** upload limit wins when it is set; this variable applies only while that setting is blank, and the built-in default is 100 MB. Changes in Settings take effect without a restart. A reverse proxy in front of Wardmote may cap request bodies lower (Cloudflare Free and Pro stop at 100 MB). |
-| `PAPERCLIP_HIDDEN_SETTINGS` | (unset) | Comma-separated settings surfaces to hide from the UI and floor at the API, for operators hosting Wardmote for others (managed cloud, internal shared server). See [Hiding settings surfaces](#hiding-settings-surfaces). |
-| `PAPERCLIP_SETTING_DEFAULTS` | (unset) | JSON object replacing the schema default of selected instance settings, for hosting operators. See [Operator setting defaults](#operator-setting-defaults). |
+| `WARDMOTE_HOME` | `~/.wardmote` | Base directory for all Wardmote data |
+| `WARDMOTE_INSTANCE_ID` | `default` | Instance identifier (for multiple local instances) |
+| `WARDMOTE_DEPLOYMENT_MODE` | `local_trusted` | Runtime mode override |
+| `WARDMOTE_DEPLOYMENT_EXPOSURE` | `private` | Exposure policy when deployment mode is `authenticated` |
+| `WARDMOTE_API_URL` | (auto-derived) | Wardmote API base URL. When set externally (e.g., via Kubernetes ConfigMap, load balancer, or reverse proxy), the server preserves the value instead of deriving it from the listen host and port. Useful for deployments where the public-facing URL differs from the local bind address. |
+| `WARDMOTE_CHAT_WEBHOOK_PUBLIC_URL` | (board public origin) | Optional HTTPS origin for native chat provider webhooks when ingress and the board use different hosts. Must have no credentials, path, query, or fragment; invalid configuration refuses startup. Used only for provider callback URLs, not board links, authentication, trusted hosts, or identity confirmation. |
+| `WARDMOTE_RUNNER_PUBLIC_URL` | (unset) | Explicit `wss://` base URL used only when a remote `paperclip_runner` target dials Wardmote directly. Wardmote appends `/api/runner/v1/connect/<runId>`; the reverse proxy must forward WebSocket upgrades for that route. This value is never inferred from request headers. Daytona ignores it and uses provider ingress. |
+| `WARDMOTE_RUNNER_CA_BUNDLE_PATH` | (unset) | Optional PEM CA bundle for direct runner WSS. Platform roots remain enabled. There is no insecure TLS bypass. |
+| `WARDMOTE_RUNNER_REMOTE_BINARY_PATH` | (host build) | Host-local path to a `paperclip-runnerd` artifact built for the remote target OS and architecture. Required when Wardmote and the remote sandbox do not share a compatible platform; build metadata and the required transport mode are verified before launch. |
+| `WARDMOTE_RUNNER_REMOTE_CODEX_PATH` | (unset) | Optional host-local path to a Codex executable built for the remote target OS and architecture. For remote Codex-backed runners, Wardmote stages and verifies this executable beside `paperclip-runnerd`. |
+| `WARDMOTE_RUNNER_REMOTE_CODEX_NPM_SPEC` | (unset) | Optional pinned npm package spec (for example, `@openai/codex@0.160.0`) installed inside each fresh remote lease when its Codex harness is not baked into the sandbox image. Mutually exclusive with `WARDMOTE_RUNNER_REMOTE_CODEX_PATH`; Wardmote verifies the installed executable before starting `runnerd`. |
+| `WARDMOTE_RUNNER_REMOTE_PROVIDER_PACK_PATH` | `/opt/paperclip-runner/provider-pack` in Docker; otherwise unset | Host-local path to the immutable provider pack built by `pnpm --filter @tickernelz/wardmote-runner build:provider-pack`. Stamped standard Docker images include the pack; downstream compositions and the `cloud` target inherit it. Unstamped local Docker builds skip pack generation. The pack includes its target-built Node 24.11+ runtime, locked production dependencies, OpenCode proxy/executable, and ACPX sidecar. Remote OpenCode and ACPX fail closed without it. A preinstalled pack is accepted only when its complete digested manifest matches this build-owned pack; otherwise Wardmote stages this pack into the sandbox. |
+| `WARDMOTE_ATTACHMENT_MAX_BYTES` | (unset; 100 MB) | Attachment size ceiling in bytes for uploads, downloads of channel media, and file handoffs. The **Instance Settings > General > Files and storage** upload limit wins when it is set; this variable applies only while that setting is blank, and the built-in default is 100 MB. Changes in Settings take effect without a restart. A reverse proxy in front of Wardmote may cap request bodies lower (Cloudflare Free and Pro stop at 100 MB). |
+| `WARDMOTE_HIDDEN_SETTINGS` | (unset) | Comma-separated settings surfaces to hide from the UI and floor at the API, for operators hosting Wardmote for others (managed cloud, internal shared server). See [Hiding settings surfaces](#hiding-settings-surfaces). |
+| `WARDMOTE_SETTING_DEFAULTS` | (unset) | JSON object replacing the schema default of selected instance settings, for hosting operators. See [Operator setting defaults](#operator-setting-defaults). |
 
 Daytona connectivity for `paperclip_runner` uses authenticated provider
 WebSocket ingress and follows the instance experimental setting
@@ -41,16 +41,16 @@ legacy adapters or callback bridges.
 
 ### Webhook-only chat ingress
 
-Keep `PAPERCLIP_PUBLIC_URL` (or the explicit authentication public URL) pointed
+Keep `WARDMOTE_PUBLIC_URL` (or the explicit authentication public URL) pointed
 at the actual board. If the board is private, set
-`PAPERCLIP_CHAT_WEBHOOK_PUBLIC_URL=https://chat-ingress.example.com` and forward
+`WARDMOTE_CHAT_WEBHOOK_PUBLIC_URL=https://chat-ingress.example.com` and forward
 only `POST /api/chat-webhooks/*` from that host. Provider signatures still gate
 ingress; this variable does not expose routes or grant provider access.
 Never forward the private `local_trusted` board through a public tunnel.
 
 In Paperclip Cloud, chat callback URLs and account-linking URLs follow the
 instance's signed canonical origin after a warm instance is claimed, without
-requiring a restart. An explicit `PAPERCLIP_CHAT_WEBHOOK_PUBLIC_URL` still takes
+requiring a restart. An explicit `WARDMOTE_CHAT_WEBHOOK_PUBLIC_URL` still takes
 precedence for provider callbacks only; board links follow the claimed origin.
 Existing provider-side callback settings must be updated if they were created
 with an old URL.
@@ -70,11 +70,11 @@ before `PATH`. Wardmote verifies runner build metadata, the selected PRP
 transport capability, Codex startup, the provider-pack digest, exact harness
 pins, Node compatibility, and packaged bridge digests before linking artifacts
 into the run-specific runtime directory. A missing or incompatible executable falls back
-to `PAPERCLIP_RUNNER_REMOTE_BINARY_PATH` and
-`PAPERCLIP_RUNNER_REMOTE_CODEX_NPM_SPEC` (or
-`PAPERCLIP_RUNNER_REMOTE_CODEX_PATH`) without changing the selected transport.
+to `WARDMOTE_RUNNER_REMOTE_BINARY_PATH` and
+`WARDMOTE_RUNNER_REMOTE_CODEX_NPM_SPEC` (or
+`WARDMOTE_RUNNER_REMOTE_CODEX_PATH`) without changing the selected transport.
 OpenCode and ACPX instead fall back only to
-`PAPERCLIP_RUNNER_REMOTE_PROVIDER_PACK_PATH`; they never start a provider
+`WARDMOTE_RUNNER_REMOTE_PROVIDER_PACK_PATH`; they never start a provider
 process on the Wardmote host for a remote target.
 The Daytona environment editor's **Configure image** action can create this
 image without a separate container registry: install the executables in its
@@ -83,7 +83,7 @@ Daytona snapshot for future leases.
 
 ### Hiding settings surfaces
 
-`PAPERCLIP_HIDDEN_SETTINGS` takes keys from the registry in
+`WARDMOTE_HIDDEN_SETTINGS` takes keys from the registry in
 `packages/shared/src/settings-visibility.ts`:
 
 - Any instance settings page: `instance.profile`, `instance.environments`,
@@ -144,7 +144,7 @@ For example, this allows only the Environments control and keeps the Plugins
 settings page hidden:
 
 ```sh
-PAPERCLIP_HIDDEN_SETTINGS='instance.plugins,instance.experimental.*,!instance.experimental.enableEnvironments'
+WARDMOTE_HIDDEN_SETTINGS='instance.plugins,instance.experimental.*,!instance.experimental.enableEnvironments'
 ```
 
 `GET /api/health` returns the expanded concrete keys in `hiddenSettings`.
@@ -160,7 +160,7 @@ without a wildcard has no effect.
 
 ### Operator setting defaults
 
-`PAPERCLIP_SETTING_DEFAULTS` takes a JSON object whose fields come from the
+`WARDMOTE_SETTING_DEFAULTS` takes a JSON object whose fields come from the
 registry in `packages/shared/src/setting-defaults.ts` (currently
 `feedbackDataSharingPreference`). The operator value substitutes for the
 schema default at read time: any field whose effective value is still the
@@ -171,9 +171,9 @@ A client that writes back the full settings object it read does not persist
 the operator value either: writing the operator value over a still-unchosen
 field is treated as an echo of the overlay and the field stays unchosen.
 
-Example: `PAPERCLIP_SETTING_DEFAULTS='{"feedbackDataSharingPreference":"allowed"}'`
+Example: `WARDMOTE_SETTING_DEFAULTS='{"feedbackDataSharingPreference":"allowed"}'`
 defaults AI feedback sharing to allowed; pairing it with
-`instance.general.feedbackDataSharingPreference` in `PAPERCLIP_HIDDEN_SETTINGS`
+`instance.general.feedbackDataSharingPreference` in `WARDMOTE_HIDDEN_SETTINGS`
 also hides the control and floors value-changing writes.
 
 Unknown field names are logged and ignored (mixed-version fleet safe).
@@ -184,9 +184,9 @@ configuration fails closed.
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `PAPERCLIP_SECRETS_MASTER_KEY` | (from file) | 32-byte encryption key (base64/hex/raw) |
-| `PAPERCLIP_SECRETS_MASTER_KEY_FILE` | `~/.wardmote/.../secrets/master.key` | Path to key file |
-| `PAPERCLIP_SECRETS_STRICT_MODE` | `false` | Require secret refs for sensitive env vars |
+| `WARDMOTE_SECRETS_MASTER_KEY` | (from file) | 32-byte encryption key (base64/hex/raw) |
+| `WARDMOTE_SECRETS_MASTER_KEY_FILE` | `~/.wardmote/.../secrets/master.key` | Path to key file |
+| `WARDMOTE_SECRETS_STRICT_MODE` | `false` | Require secret refs for sensitive env vars |
 
 ## Agent Runtime (Injected into agent processes)
 
@@ -194,17 +194,17 @@ These are set automatically by the server when invoking agents:
 
 | Variable | Description |
 |----------|-------------|
-| `PAPERCLIP_AGENT_ID` | Agent's unique ID |
-| `PAPERCLIP_COMPANY_ID` | Company ID |
-| `PAPERCLIP_API_URL` | Wardmote API base URL (inherits the server-level value; see Server Configuration above) |
-| `PAPERCLIP_API_KEY` | Short-lived JWT for API auth |
-| `PAPERCLIP_RUN_ID` | Current heartbeat run ID |
-| `PAPERCLIP_TASK_ID` | Issue that triggered this wake |
-| `PAPERCLIP_WAKE_REASON` | Wake trigger reason |
-| `PAPERCLIP_WAKE_COMMENT_ID` | Comment that triggered this wake |
-| `PAPERCLIP_APPROVAL_ID` | Resolved approval ID |
-| `PAPERCLIP_APPROVAL_STATUS` | Approval decision |
-| `PAPERCLIP_LINKED_ISSUE_IDS` | Comma-separated linked issue IDs |
+| `WARDMOTE_AGENT_ID` | Agent's unique ID |
+| `WARDMOTE_COMPANY_ID` | Company ID |
+| `WARDMOTE_API_URL` | Wardmote API base URL (inherits the server-level value; see Server Configuration above) |
+| `WARDMOTE_API_KEY` | Short-lived JWT for API auth |
+| `WARDMOTE_RUN_ID` | Current heartbeat run ID |
+| `WARDMOTE_TASK_ID` | Issue that triggered this wake |
+| `WARDMOTE_WAKE_REASON` | Wake trigger reason |
+| `WARDMOTE_WAKE_COMMENT_ID` | Comment that triggered this wake |
+| `WARDMOTE_APPROVAL_ID` | Resolved approval ID |
+| `WARDMOTE_APPROVAL_STATUS` | Approval decision |
+| `WARDMOTE_LINKED_ISSUE_IDS` | Comma-separated linked issue IDs |
 
 ## LLM Provider Keys (for adapters)
 

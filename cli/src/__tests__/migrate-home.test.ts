@@ -30,7 +30,7 @@ describe("migrate-home", () => {
     fs.writeFileSync(path.join(legacy, "instances", "default", "config.json"), "{}");
     unitPath = path.join(userHome, ".config", "systemd", "user", "paperclip-pro.service");
     fs.mkdirSync(path.dirname(unitPath), { recursive: true });
-    fs.writeFileSync(unitPath, `Environment="PAPERCLIP_HOME=${legacy}"\nEnvironmentFile=-${legacy}/instances/default/service.env\n`);
+    fs.writeFileSync(unitPath, `Environment="WARDMOTE_HOME=${legacy}"\nEnvironmentFile=-${legacy}/instances/default/service.env\n`);
   });
 
   afterEach(() => {
@@ -43,7 +43,7 @@ describe("migrate-home", () => {
     expect(fs.readFileSync(path.join(target, "instances", "default", "config.json"), "utf8")).toBe("{}");
     expect(fs.lstatSync(legacy).isSymbolicLink()).toBe(true);
     expect(fs.realpathSync(legacy)).toBe(fs.realpathSync(target));
-    expect(fs.readFileSync(unitPath, "utf8")).toBe(`Environment="PAPERCLIP_HOME=${target}"\nEnvironmentFile=-${target}/instances/default/service.env\n`);
+    expect(fs.readFileSync(unitPath, "utf8")).toBe(`Environment="WARDMOTE_HOME=${target}"\nEnvironmentFile=-${target}/instances/default/service.env\n`);
     expect(reloadUnits).toHaveBeenCalledTimes(1);
   });
 
@@ -83,7 +83,7 @@ describe("migrate-home", () => {
   });
 
   it("refuses when the new home already exists or a home is pinned", async () => {
-    await expect(migrateHomeCommand({}, deps({ env: { PAPERCLIP_HOME: legacy } }))).rejects.toThrow("Unset it");
+    await expect(migrateHomeCommand({}, deps({ env: { WARDMOTE_HOME: legacy } }))).rejects.toThrow("Unset it");
     fs.mkdirSync(target);
     await expect(migrateHomeCommand({}, deps())).rejects.toThrow("already exists");
     expect(fs.lstatSync(legacy).isDirectory()).toBe(true);

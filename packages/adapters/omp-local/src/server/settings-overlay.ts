@@ -142,9 +142,9 @@ export async function writeOmpSettingsOverlay(input: {
   };
   const heredoc = [
     `mkdir -p ${posixQuote(dir)}`,
-    `cat > ${posixQuote(file)} <<'PAPERCLIP_OMP_OVERLAY'`,
+    `cat > ${posixQuote(file)} <<'WARDMOTE_OMP_OVERLAY'`,
     content.replace(/\n$/, ""),
-    "PAPERCLIP_OMP_OVERLAY",
+    "WARDMOTE_OMP_OVERLAY",
     `chmod 600 ${posixQuote(file)}`,
   ].join("\n");
   await runAdapterExecutionTargetShellCommand(input.runId, input.target, heredoc, shellOptions);

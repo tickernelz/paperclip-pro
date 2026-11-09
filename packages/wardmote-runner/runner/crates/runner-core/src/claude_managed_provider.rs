@@ -3947,7 +3947,7 @@ mod tests {
         )
         .unwrap();
         assert!(!serialized.contains("anthropic-test-secret"));
-        assert!(!serialized.contains("PAPERCLIP_API_KEY"));
+        assert!(!serialized.contains("WARDMOTE_API_KEY"));
         let result_post = requests
             .iter()
             .filter(|request| request.body.contains("user.custom_tool_result"))

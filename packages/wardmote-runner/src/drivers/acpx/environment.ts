@@ -2,14 +2,14 @@ import { CONFIGURED_ENVIRONMENT_KEYS, configuredEnvironment, configuredEnvironme
 import { PI_CREDENTIAL_NAMES, PI_GENERAL_IAM_CREDENTIAL_NAMES, piCredentialNames } from "./pi-provider-config.js";
 import type { QualifiedAcpxAgent } from "./qualified-profiles.js";
 
-export const ACPX_CREDENTIAL_BINDING_ENV = "PAPERCLIP_ACPX_CREDENTIAL_BINDING";
+export const ACPX_CREDENTIAL_BINDING_ENV = "WARDMOTE_ACPX_CREDENTIAL_BINDING";
 export const ACPX_CREDENTIAL_NAMES: Readonly<Record<QualifiedAcpxAgent, readonly string[]>> = {
   grok: ["XAI_API_KEY"],
   pi: PI_CREDENTIAL_NAMES,
   cursor: ["CURSOR_API_KEY", "CURSOR_AUTH_TOKEN"],
   copilot: ["COPILOT_GITHUB_TOKEN"],
   claude: ["ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN", "CLAUDE_CODE_OAUTH_TOKEN", "AWS_BEARER_TOKEN_BEDROCK"],
-  codex: ["OPENAI_API_KEY", "CODEX_API_KEY", "PAPERCLIP_AI_PROVIDER_KEY"],
+  codex: ["OPENAI_API_KEY", "CODEX_API_KEY", "WARDMOTE_AI_PROVIDER_KEY"],
 };
 export const CLAUDE_ROUTING_ENV_KEYS = ["ANTHROPIC_BASE_URL", "CLAUDE_CODE_USE_BEDROCK", "AWS_REGION", "AWS_DEFAULT_REGION", "AWS_EC2_METADATA_DISABLED", "CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC", "ANTHROPIC_MODEL", "ANTHROPIC_DEFAULT_OPUS_MODEL", "ANTHROPIC_DEFAULT_SONNET_MODEL", "ANTHROPIC_DEFAULT_HAIKU_MODEL", "CLAUDE_CODE_SUBAGENT_MODEL"] as const;
 
@@ -123,9 +123,9 @@ export function createSanitizedAcpxSpawnInput(
     "no_proxy",
     "all_proxy",
     "RUST_BACKTRACE",
-    "PAPERCLIP_NATIVE_MCP_NAME",
-    "PAPERCLIP_NATIVE_MCP_URL",
-    ...(environment === undefined ? [] : ["PAPERCLIP_AGENT_KEY_ID", "PAPERCLIP_AGENT_PUBLIC_KEY", "PAPERCLIP_AGENT_PRIVATE_KEY"]),
+    "WARDMOTE_NATIVE_MCP_NAME",
+    "WARDMOTE_NATIVE_MCP_URL",
+    ...(environment === undefined ? [] : ["WARDMOTE_AGENT_KEY_ID", "WARDMOTE_AGENT_PUBLIC_KEY", "WARDMOTE_AGENT_PRIVATE_KEY"]),
     ...credentialNames,
     ...(agent === "claude" ? CLAUDE_ROUTING_ENV_KEYS : []),
   ]);

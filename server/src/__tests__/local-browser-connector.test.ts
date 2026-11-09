@@ -113,7 +113,7 @@ describe("Local Browser connector", () => {
     const assignments = await resolveConnectorAssignments(db, binding);
     const assignment = assignments.find((entry) => entry.key === "local-browser");
     expect(assignment).toBeDefined();
-    expect(assignment!.skillKey).toBe("paperclipai/paperclip/local-browser");
+    expect(assignment!.skillKey).toBe("tickernelz/wardmote/local-browser");
     expect(assignment!.resources).toEqual([
       {
         id: "33333333-3333-4333-8333-333333333333",
@@ -137,7 +137,7 @@ describe("Local Browser connector", () => {
     expect(isConnectorTool("local_browser_viewer")).toBe(false);
     expect(isConnectorTool("local_browser_input")).toBe(false);
     expect(isConnectorTool("local_browser_snapshot")).toBe(true);
-    expect(isConnectorSkill("paperclipai/paperclip/local-browser")).toBe(true);
+    expect(isConnectorSkill("tickernelz/wardmote/local-browser")).toBe(true);
   });
 
   it("delegates a call to the local browser service", async () => {

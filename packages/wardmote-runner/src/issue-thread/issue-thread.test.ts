@@ -56,7 +56,7 @@ function credentialLike(value: unknown): string[] {
     // would otherwise read as an `sk-` provider key.
     /(?<![A-Za-z0-9])sk-[a-z0-9]{8,}/i,
     /"api[_-]?key"\s*:/i,
-    /PAPERCLIP_API_KEY/,
+    /WARDMOTE_API_KEY/,
   ];
   return patterns.filter((pattern) => pattern.test(serialized)).map(String);
 }

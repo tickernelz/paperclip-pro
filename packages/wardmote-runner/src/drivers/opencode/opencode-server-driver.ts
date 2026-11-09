@@ -47,8 +47,8 @@ import type {
   PaperclipQuestionSet,
 } from "../../contracts/harness-driver.js";
 import {
-  PAPERCLIP_QUESTION_SET_SCHEMA,
-  PAPERCLIP_RUNTIME_REQUEST_SCHEMA_V2,
+  WARDMOTE_QUESTION_SET_SCHEMA,
+  WARDMOTE_RUNTIME_REQUEST_SCHEMA_V2,
   harnessRuntimeInputExpiredOutcome,
   harnessRuntimeRequestOutcome,
   parseHarnessRuntimeRequestResolution,
@@ -336,7 +336,7 @@ export class OpenCodeServerDriver implements HarnessDriver {
         recovered: false,
         reason: redact(String(error), [
           this.#options.environment?.OPENROUTER_API_KEY,
-          this.#options.environment?.PAPERCLIP_AI_PROVIDER_KEY,
+          this.#options.environment?.WARDMOTE_AI_PROVIDER_KEY,
         ]),
       };
     }
@@ -365,10 +365,10 @@ export class OpenCodeServerDriver implements HarnessDriver {
     await mkdir(root, { recursive: true, mode: 0o700 });
     await writeFile(join(root, "workspace"), `${cwd}\n`, { mode: 0o600 });
     const trace = await createProviderTraceFileSink({
-      path: this.#options.environment?.PAPERCLIP_PROVIDER_TRACE_PATH,
+      path: this.#options.environment?.WARDMOTE_PROVIDER_TRACE_PATH,
       provider: "opencode",
       channel: "typescript_opencode_native",
-      maxBytes: this.#options.environment?.PAPERCLIP_PROVIDER_TRACE_MAX_BYTES,
+      maxBytes: this.#options.environment?.WARDMOTE_PROVIDER_TRACE_MAX_BYTES,
     });
     let lastError: unknown = null;
     for (let attempt = 1; attempt <= 3; attempt += 1) {
@@ -1257,7 +1257,7 @@ class OpenCodeHarnessSession implements HarnessSession {
       "runtime_request.created",
       {
         request: {
-          schema: PAPERCLIP_RUNTIME_REQUEST_SCHEMA_V2,
+          schema: WARDMOTE_RUNTIME_REQUEST_SCHEMA_V2,
           requestKind: "runtime",
           requestId,
           type: "input",
@@ -1312,7 +1312,7 @@ class OpenCodeHarnessSession implements HarnessSession {
       "runtime_request.created",
       {
         request: {
-          schema: PAPERCLIP_RUNTIME_REQUEST_SCHEMA_V2,
+          schema: WARDMOTE_RUNTIME_REQUEST_SCHEMA_V2,
           requestKind: "runtime",
           requestId,
           type: "permission",
@@ -2228,7 +2228,7 @@ async function startRuntime(input: {
   const assignedMcp = nativeMcpLaunchBinding(
     input.options.environment ?? process.env,
   );
-  const identityKey = input.options.environment?.PAPERCLIP_AGENT_PRIVATE_KEY;
+  const identityKey = input.options.environment?.WARDMOTE_AGENT_PRIVATE_KEY;
   const identityValues = identityKey ? [identityKey, JSON.stringify(identityKey).slice(1, -1),
     ...identityKey.split(/\r?\n/).filter(line => line && !line.startsWith("-----"))] : [];
   const sensitiveValues = [
@@ -2238,7 +2238,7 @@ async function startRuntime(input: {
     bridge.secret,
     assignedMcp?.token,
     input.options.environment?.OPENROUTER_API_KEY,
-    input.options.environment?.PAPERCLIP_AI_PROVIDER_KEY,
+    input.options.environment?.WARDMOTE_AI_PROVIDER_KEY,
   ].filter((value): value is string => Boolean(value));
   input.trace?.addSensitiveValues(sensitiveValues);
   const instructionRoot =
@@ -2254,8 +2254,8 @@ async function startRuntime(input: {
   if (instructionRoot) externalDirectories[`${instructionRoot}/**`] = "allow";
   const [modelProvider, ...modelIdParts] = input.options.model.split("/");
   const providerModelId = modelIdParts.join("/");
-  const providerProxy = modelProvider === "paperclip" && input.options.environment?.PAPERCLIP_AI_PROVIDER_URL
-    ? await startOpenCodeProviderProxy(input.options.environment.PAPERCLIP_AI_PROVIDER_URL, input.options.environment.PAPERCLIP_AI_PROVIDER_KEY ?? "", providerModelId, input.options.environment).catch(async error => {
+  const providerProxy = modelProvider === "paperclip" && input.options.environment?.WARDMOTE_AI_PROVIDER_URL
+    ? await startOpenCodeProviderProxy(input.options.environment.WARDMOTE_AI_PROVIDER_URL, input.options.environment.WARDMOTE_AI_PROVIDER_KEY ?? "", providerModelId, input.options.environment).catch(async error => {
         await bridge.close().catch(() => {});
         await rm(isolatedHome, { recursive: true, force: true }).catch(() => {});
         throw error;
@@ -2565,7 +2565,7 @@ export function normalizeOpenCodeQuestionSet(
     },
   );
   return parsePaperclipQuestionSet({
-    schema: PAPERCLIP_QUESTION_SET_SCHEMA,
+    schema: WARDMOTE_QUESTION_SET_SCHEMA,
     title: text(metadata.title, "OpenCode needs your input").slice(0, 1_000),
     ...(text(metadata.description)
       ? { description: text(metadata.description).slice(0, 4_000) }
@@ -2867,7 +2867,7 @@ function sanitizedEnvironment(
   overrides: Record<string, string>,
 ): NodeJS.ProcessEnv {
   const allowed = [
-    "PAPERCLIP_AGENT_KEY_ID", "PAPERCLIP_AGENT_PUBLIC_KEY", "PAPERCLIP_AGENT_PRIVATE_KEY",
+    "WARDMOTE_AGENT_KEY_ID", "WARDMOTE_AGENT_PUBLIC_KEY", "WARDMOTE_AGENT_PRIVATE_KEY",
     "PATH",
     "LANG",
     "LC_ALL",

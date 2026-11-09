@@ -30,7 +30,7 @@ vi.mock("../../log-redaction.js", async (importOriginal) => {
 import { reportRunFailure, waitForPendingRunFailureReports } from "../run-failure-report.js";
 import { REDACTED_EVENT_VALUE } from "../../redaction.js";
 
-const testDatabaseUrl = process.env.PAPERCLIP_TEST_DATABASE_URL;
+const testDatabaseUrl = process.env.WARDMOTE_TEST_DATABASE_URL;
 const embeddedPostgresSupport = testDatabaseUrl ? { supported: true } : await getEmbeddedPostgresTestSupport();
 const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;
 
@@ -769,8 +769,8 @@ describeEmbeddedPostgres("reportRunFailure", () => {
   });
 
   it("preserves a short error message with known public host settings", async () => {
-    vi.stubEnv("PAPERCLIP_DB_BACKUP_ENABLED", "false");
-    vi.stubEnv("PAPERCLIP_DB_BACKUP_RETENTION_DAYS", "1");
+    vi.stubEnv("WARDMOTE_DB_BACKUP_ENABLED", "false");
+    vi.stubEnv("WARDMOTE_DB_BACKUP_RETENTION_DAYS", "1");
     vi.stubEnv("GITHUB_RUN_ATTEMPT", "1");
     await seedCompanyAndAgent();
     const shortError = "the provider process exited with code 1";

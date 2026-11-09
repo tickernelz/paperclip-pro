@@ -7,12 +7,9 @@ import { agents, companies, connectionGrants, issueThreadInteractions, toolConne
 import { and, eq, or } from "drizzle-orm";
 import {
   APP_STORE_DEFINITIONS,
+  DEFAULT_OWNERSHIP_AVAILABILITY,
   isMemoryConnectorId,
-  GITHUB_CONNECTOR_PROFILES,
-  GOOGLE_WORKSPACE_CONNECTOR_PROFILES,
   isAgentStatusAssignableToWork,
-  isGitHubConnectorProfileId,
-  isGoogleWorkspaceConnectorProfileId,
   TOOL_ACTION_REQUEST_STATUSES,
   type DeploymentExposure,
   type DeploymentMode,
@@ -62,20 +59,7 @@ import { accessService, logActivity, toolAccessPolicyService, toolAccessService,
 import { ToolGatewayHttpError, type ToolGatewayService } from "../services/tool-gateway.js";
 import { RailwayError } from "../services/railway.js";
 import type { VercelConnectClient } from "../services/vercel-connect.js";
-import {
-  appWithPaperclipCloudConnectorAvailability,
-  isPaperclipCloudConnectorStrategy,
-  invalidatePaperclipCloudConnectorCapabilities,
-  type PaperclipCloudConnector,
-  paperclipCloudConnectorCapabilitiesFromEnv,
-} from "../services/paperclip-cloud-connector.js";
 import { instanceSettingsService } from "../services/instance-settings.js";
-import {
-  completePaperclipCloudConnectorEnrollment,
-  loadPaperclipCloudConnectorIdentity,
-  startPaperclipCloudConnectorEnrollment,
-} from "../services/paperclip-cloud-connector-enrollment.js";
-import { reconcilePaperclipCloudConnectorEnrollmentStatus } from "../services/paperclip-cloud-connector-status.js";
 import {
   OAUTH_CLIENT_ID_METADATA_DOCUMENT_PATH,
   oauthClientIdMetadataDocument,
@@ -193,43 +177,6 @@ export function connectionIntentOAuthOutcomeHtml(input: {
   return `<!doctype html><html><head><meta charset="utf-8"><title>Connection authorization</title></head><body><p>Returning to Paperclip…</p><script>const message=${message};const targetOrigin=${targetOrigin}||window.location.origin;if(window.opener&&window.opener!==window){window.opener.postMessage(message,targetOrigin);window.close();}else{window.location.replace(${fallback});}</script></body></html>`;
 }
 
-function normalizeCloudConnectorEnrollmentReturnTo(returnTo?: string | null): string | null {
-  if (!returnTo || returnTo.length > 2_048) return null;
-  try {
-    const parsed = new URL(returnTo, "http://paperclip.local");
-    if (
-      parsed.origin !== "http://paperclip.local"
-      || !["/apps/connect", "/apps/chat/connect"].includes(parsed.pathname)
-      || parsed.username
-      || parsed.password
-    ) return null;
-    return `${parsed.pathname}${parsed.search}`;
-  } catch {
-    return null;
-  }
-}
-
-export function cloudConnectorEnrollmentOutcomeHtml(issuePrefix: string, returnTo: string, issueId?: string): string {
-  const fallbackPath = issueId
-    ? `/${encodeURIComponent(issuePrefix)}/issues/${encodeURIComponent(issueId)}`
-    : cloudConnectorEnrollmentReturnPath(issuePrefix, returnTo);
-  const fallback = JSON.stringify(fallbackPath).replaceAll("<", "\\u003c");
-  // This document is served only after server-verified enrollment. The parent
-  // independently re-reads enrollment status; browser messages grant no access.
-  return `<!doctype html><html><head><meta charset="utf-8"><title>Paperclip connected</title></head><body><p>Paperclip is connected. Return to your task to finish connecting the app.</p><script>if(window.opener&&window.opener!==window){window.close();}else{const link=document.createElement("a");link.href=${fallback};link.textContent=${JSON.stringify(issueId ? "Return to task" : "Continue setup")};document.body.append(link);}</script></body></html>`;
-}
-
-export function cloudConnectorEnrollmentReturnPath(issuePrefix: string, returnTo?: string | null): string {
-  const companyRoot = `/${encodeURIComponent(issuePrefix)}`;
-  const normalizedReturnTo = normalizeCloudConnectorEnrollmentReturnTo(returnTo);
-  if (normalizedReturnTo) {
-    const parsed = new URL(normalizedReturnTo, "http://paperclip.local");
-    parsed.searchParams.set("cloud_connector", "enrolled");
-    return `${companyRoot}${parsed.pathname}${parsed.search}`;
-  }
-  return `${companyRoot}/apps/connections?cloud_connector=enrolled`;
-}
-
 export function toolAccessRoutes(
   db: Db,
   options: {
@@ -242,7 +189,6 @@ export function toolAccessRoutes(
     remoteHttpEndpointLookup?: NonNullable<Parameters<typeof toolAccessService>[1]>["remoteHttpEndpointLookup"];
     remoteHttpRequest?: NonNullable<Parameters<typeof toolAccessService>[1]>["remoteHttpRequest"];
     vercelConnectClient?: VercelConnectClient | null;
-    paperclipCloudConnector?: PaperclipCloudConnector | null;
     connectionIntentHeartbeat?: Pick<Heartbeat, "wakeup">;
   } = {},
 ) {
@@ -307,12 +253,12 @@ export function toolAccessRoutes(
 
   function configuredPublicBaseUrl() {
     const raw = (
-      process.env.PAPERCLIP_AUTH_PUBLIC_BASE_URL?.trim()
+      process.env.WARDMOTE_AUTH_PUBLIC_BASE_URL?.trim()
       || process.env.BETTER_AUTH_URL?.trim()
       || process.env.BETTER_AUTH_BASE_URL?.trim()
       || options.authPublicBaseUrl?.trim()
-      || process.env.PAPERCLIP_PUBLIC_URL?.trim()
-      || process.env.PAPERCLIP_MANAGED_RUNTIME_PUBLIC_URL?.trim()
+      || process.env.WARDMOTE_PUBLIC_URL?.trim()
+      || process.env.WARDMOTE_MANAGED_RUNTIME_PUBLIC_URL?.trim()
     );
     if (!raw) return null;
     try {
@@ -380,38 +326,9 @@ export function toolAccessRoutes(
     return null;
   }
 
-  function enrolledConnectorBaseUrl(req: Request) {
-    // Browser-initiated mutations must prove their own same-origin HTTPS
-    // request. The durable binding is only a callback/metadata fallback for
-    // provider GETs, which do not carry the initiating browser's Origin.
-    if (req.method !== "GET" && req.method !== "HEAD") return null;
-    const identity = loadPaperclipCloudConnectorIdentity();
-    if (identity?.status !== "active") return null;
-    const forwardedHost = req.header("x-forwarded-host")?.split(",")[0]?.trim();
-    const requestHost = (forwardedHost || req.header("host")?.trim())?.toLowerCase();
-    if (!requestHost) return null;
-    for (const origin of identity.origins) {
-      try {
-        const parsed = new URL(origin);
-        if (
-          parsed.protocol === "https:"
-          && !parsed.username
-          && !parsed.password
-          && parsed.host.toLowerCase() === requestHost
-        ) {
-          return parsed.origin;
-        }
-      } catch {
-        // Ignore malformed legacy identity origins.
-      }
-    }
-    return null;
-  }
-
   function oauthRedirectUri(req: Request, forInitiation = false) {
     const baseUrl = configuredPublicBaseUrl()
       ?? trustedBrowserBaseUrl(req)
-      ?? enrolledConnectorBaseUrl(req)
       ?? requestLoopbackBaseUrl(req, forInitiation);
     if (!baseUrl) {
       throw unprocessable(
@@ -808,11 +725,6 @@ function connectorEnrollmentPrincipal(req: Request): string {
     assertBoard(req);
     const companyId = req.params.companyId as string;
     assertCompanyAccess(req, companyId);
-    const advertisedProfiles = options.paperclipCloudConnector === undefined
-      ? await paperclipCloudConnectorCapabilitiesFromEnv()
-      : options.paperclipCloudConnector
-        ? await options.paperclipCloudConnector.getCapabilities()
-        : [];
     const vercelConnect = vercelConnectIntegrationStatus();
     const { enableMemoryConnectors } = await instanceSettingsService(db).getExperimental();
     let oauthCallbackUrl: string | undefined;
@@ -841,13 +753,14 @@ function connectorEnrollmentPrincipal(req: Request): string {
           reason: vercelConnect.enabled
             ? vercelConnect.configured
               ? null
-              : "Vercel Connect needs workload OIDC or PAPERCLIP_VERCEL_CONNECT_ACCESS_TOKEN."
+              : "Vercel Connect needs workload OIDC or WARDMOTE_VERCEL_CONNECT_ACCESS_TOKEN."
             : "Vercel Connect setup is disabled on this Paperclip instance.",
         },
       },
-      apps: [...APP_STORE_DEFINITIONS.filter((app) => (enableMemoryConnectors || !isMemoryConnectorId(app.slug))).map((app) =>
-        appWithPaperclipCloudConnectorAvailability(app, advertisedProfiles)
-      )],
+      apps: APP_STORE_DEFINITIONS.filter((app) => enableMemoryConnectors || !isMemoryConnectorId(app.slug)).map((app) => ({
+        ...app,
+        ownershipAvailability: { ...DEFAULT_OWNERSHIP_AVAILABILITY, ...app.ownershipAvailability, platform_shared: false },
+      })),
     });
   });
 
@@ -1012,220 +925,6 @@ function connectorEnrollmentPrincipal(req: Request): string {
     });
     res.json(result);
   });
-
-  router.get("/tools/oauth/cloud-connector/enrollment", async (req, res) => {
-    assertBoard(req);
-    res.json(await reconcilePaperclipCloudConnectorEnrollmentStatus());
-  });
-
-  router.post("/tools/oauth/cloud-connector/enrollment", async (req, res) => {
-    assertInstanceAdmin(req);
-    const companyId = typeof req.body?.companyId === "string" ? req.body.companyId : "";
-    if (!companyId) throw badRequest("Paperclip Cloud enrollment requires a company");
-    assertCompanyAccess(req, companyId);
-    const origin = new URL(oauthRedirectUri(req)).origin;
-    const returnTo = normalizeCloudConnectorEnrollmentReturnTo(
-      typeof req.body?.returnTo === "string" ? req.body.returnTo : undefined,
-    ) ?? undefined;
-    let status;
-    try {
-      status = await startPaperclipCloudConnectorEnrollment({
-        origin,
-        companyId,
-        initiatedBy: connectorEnrollmentPrincipal(req),
-        label: typeof req.body?.label === "string" ? req.body.label : undefined,
-        returnTo,
-      });
-    } catch {
-      throw unprocessable("Paperclip Cloud enrollment could not be started", {
-        code: "paperclip_cloud_connector_enrollment_failed",
-      });
-    }
-    await logActivity(db, {
-      companyId,
-      actorType: "user",
-      actorId: req.actor.userId ?? "board",
-      action: "paperclip_cloud_connector.enrollment_started",
-      entityType: "connector_instance",
-      entityId: status.instanceId ?? "pending",
-      details: { environment: status.environment, status: status.status },
-    });
-    res.status(201).json(status);
-  });
-
-  router.get("/tools/oauth/cloud-connector/enrollment-callback", async (req, res) => {
-    assertInstanceAdmin(req);
-    const enrollmentId = typeof req.query.enrollment_id === "string" ? req.query.enrollment_id : "";
-    const approvalCode = typeof req.query.approval_code === "string" ? req.query.approval_code : "";
-    const state = typeof req.query.state === "string" ? req.query.state : "";
-    if (!enrollmentId || !approvalCode || !state) throw badRequest("Invalid Paperclip Cloud enrollment callback");
-    const pending = loadPaperclipCloudConnectorIdentity()?.pending;
-    if (pending?.companyId && !hasCompanyAccess(req, pending.companyId)) {
-      throw notFound("Paperclip Cloud enrollment not found");
-    }
-    if (pending?.initiatedBy && pending.initiatedBy !== connectorEnrollmentPrincipal(req)) {
-      throw notFound("Paperclip Cloud enrollment not found");
-    }
-    const [company] = pending?.companyId
-      ? await db
-        .select({ id: companies.id, issuePrefix: companies.issuePrefix })
-        .from(companies)
-        .where(eq(companies.id, pending.companyId))
-        .limit(1)
-      : [];
-    if (!company) throw notFound("Paperclip Cloud enrollment not found");
-    let status;
-    try {
-      status = await completePaperclipCloudConnectorEnrollment({ enrollmentId, approvalCode, state });
-      invalidatePaperclipCloudConnectorCapabilities();
-    } catch {
-      throw badRequest("Invalid or expired Paperclip Cloud enrollment callback");
-    }
-    if (pending?.companyId) {
-      await logActivity(db, {
-        companyId: pending.companyId,
-        actorType: "user",
-        actorId: req.actor.userId ?? "board",
-        action: "paperclip_cloud_connector.enrollment_completed",
-        entityType: "connector_instance",
-        entityId: status.instanceId ?? enrollmentId,
-        details: { environment: status.environment, status: status.status },
-      });
-    }
-    const returnTo = normalizeCloudConnectorEnrollmentReturnTo(pending?.returnTo);
-    if (returnTo && new URL(returnTo, "http://paperclip.local").searchParams.get("enrollment_host") === "dialog") {
-      res.set("Cache-Control", "no-store");
-      const intent = new URL(returnTo, "http://paperclip.local").searchParams.get("intent");
-      const parsedIntent = startToolOAuthSchema.safeParse({ interactionId: intent });
-      const interactionId = parsedIntent.success ? parsedIntent.data.interactionId : undefined;
-      const [interaction] = interactionId ? await db.select({ issueId: issueThreadInteractions.issueId })
-        .from(issueThreadInteractions)
-        .where(and(
-          eq(issueThreadInteractions.id, interactionId),
-          eq(issueThreadInteractions.companyId, company.id),
-          eq(issueThreadInteractions.addresseeUserId, req.actor.userId ?? ""),
-          eq(issueThreadInteractions.kind, "connection_intent"),
-        )).limit(1) : [];
-      res.type("html").send(cloudConnectorEnrollmentOutcomeHtml(company.issuePrefix, returnTo, interaction?.issueId));
-      return;
-    }
-    res.redirect(303, cloudConnectorEnrollmentReturnPath(company.issuePrefix, returnTo));
-  });
-
-  const handlePaperclipCloudConnectorCallback = async (req: Request, res: Response) => {
-    assertBoard(req);
-    const state = typeof req.query.state === "string" ? req.query.state : "";
-    const claimId = typeof req.query.claim_id === "string" ? req.query.claim_id : null;
-    const error = typeof req.query.error === "string" ? req.query.error : null;
-    const pendingState = state ? await svc.peekOAuthState(state) : null;
-    if (!pendingState || !hasCompanyAccess(req, pendingState.companyId)) {
-      throw badRequest("Invalid or expired OAuth state");
-    }
-    const pendingConnection = await svc.getConnection(pendingState.connectionId, pendingState.companyId);
-    const pendingConnectionIntent = await isConnectionIntent(pendingState.interactionId);
-    if (pendingState.subjectUserId && pendingState.subjectUserId === req.actor.userId) {
-      await assertToolConnectionAccess(req, pendingConnection);
-    } else {
-      await assertToolConnectionConfigureAccess(req, pendingConnection);
-    }
-    const acceptsHtml = req.get("accept")?.includes("text/html") === true;
-    try {
-      const result = await svc.completePaperclipCloudConnectorCallback({
-        state,
-        claimId,
-        error,
-        actor: getActorInfo(req),
-      });
-      const pendingConfig = pendingConnection.config ?? {};
-      const oauthConfig = pendingConfig.oauth && typeof pendingConfig.oauth === "object"
-        ? pendingConfig.oauth as Record<string, unknown>
-        : null;
-      const connectorProfileValue = typeof oauthConfig?.connectorProfile === "string"
-        ? oauthConfig.connectorProfile
-        : null;
-      const connectorProfile = connectorProfileValue && (
-        isGoogleWorkspaceConnectorProfileId(connectorProfileValue) || isGitHubConnectorProfileId(connectorProfileValue)
-      )
-        ? connectorProfileValue
-        : null;
-      const connectorDefinition = connectorProfile
-        ? isGitHubConnectorProfileId(connectorProfile)
-          ? GITHUB_CONNECTOR_PROFILES[connectorProfile]
-          : GOOGLE_WORKSPACE_CONNECTOR_PROFILES[connectorProfile]
-        : null;
-      await logActivity(db, {
-        companyId: result.connection.companyId,
-        actorType: "user",
-        actorId: req.actor.userId ?? "board",
-        action: "tool_app.oauth_connected",
-        entityType: "tool_connection",
-        entityId: result.connection.id,
-        details: {
-          applicationId: result.application.id,
-          catalogEntryCount: result.catalog.length,
-          provider: connectorDefinition?.appSlug ?? "managed",
-          ...(connectorDefinition ? { profile: connectorProfile } : {}),
-        },
-      });
-      if (acceptsHtml && pendingConnectionIntent && pendingState.interactionId && req.actor.userId) {
-        await finishConnectionIntentOAuth({
-          interactionId: pendingState.interactionId,
-          connectionId: result.connection.id,
-          userId: req.actor.userId,
-          outcome: "connected",
-          canManageOrganizationGrant: await isToolConnectionManager(req, pendingConnection.companyId),
-          bypassCurrentMembershipCheck: bypassCurrentMembershipCheck(req),
-        });
-        sendConnectionIntentOAuthOutcome(res, {
-          interactionId: pendingState.interactionId,
-          issueId: pendingState.issueId,
-          outcome: "connected",
-          openerOrigin: pendingState.returnTo,
-        });
-        return;
-      }
-      if (acceptsHtml) {
-        const permissionsPath = await oauthAppPath(result.connection.companyId, result.connection.id);
-        res.redirect(303, `${permissionsPath}?success=1`);
-        return;
-      }
-      res.json(result);
-    } catch (callbackError) {
-      if (!acceptsHtml) throw callbackError;
-      const details = callbackError instanceof HttpError && callbackError.details && typeof callbackError.details === "object"
-        ? callbackError.details as Record<string, unknown>
-        : null;
-      if (pendingConnectionIntent && pendingState.interactionId && req.actor.userId) {
-        const outcome = details?.code === "oauth_authorization_denied" ? "declined" : "failed";
-        await finishConnectionIntentOAuth({
-          interactionId: pendingState.interactionId,
-          userId: req.actor.userId,
-          outcome,
-          canManageOrganizationGrant: await isToolConnectionManager(req, pendingConnection.companyId),
-          bypassCurrentMembershipCheck: bypassCurrentMembershipCheck(req),
-        });
-        sendConnectionIntentOAuthOutcome(res, {
-          interactionId: pendingState.interactionId,
-          issueId: pendingState.issueId,
-          outcome,
-          openerOrigin: pendingState.returnTo,
-        });
-        return;
-      }
-      const outcome = details?.code === "oauth_authorization_denied" ? "denied" : "failed";
-      res.redirect(303, await oauthRecoveryPath(
-        pendingConnection,
-        outcome,
-        typeof details?.code === "string" ? details.code : null,
-        {
-          installationUrl: details?.installationUrl,
-          managementUrl: details?.managementUrl,
-        },
-      ));
-    }
-  };
-  router.get("/tools/oauth/cloud-connector/callback", handlePaperclipCloudConnectorCallback);
-  router.get("/tools/oauth/paperclip-id/callback", handlePaperclipCloudConnectorCallback);
 
   router.get("/tools/vercel-connect/callback", async (req, res) => {
     assertBoard(req);

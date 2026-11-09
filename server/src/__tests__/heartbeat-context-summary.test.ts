@@ -314,9 +314,9 @@ describe("buildPaperclipTaskMarkdown", () => {
       expect(markdown).toContain("honor their action policies");
       if (nativeRunner) {
         expect(markdown).toContain('interactionKind: "questions"');
-        expect(markdown).not.toContain("POST /api/issues/$PAPERCLIP_TASK_ID/interactions");
+        expect(markdown).not.toContain("POST /api/issues/$WARDMOTE_TASK_ID/interactions");
       } else {
-        expect(markdown).toContain("POST /api/issues/$PAPERCLIP_TASK_ID/interactions");
+        expect(markdown).toContain("POST /api/issues/$WARDMOTE_TASK_ID/interactions");
         expect(markdown).toContain('resolverPolicy: "human_only"');
         expect(markdown).toContain("PATCH this task to in_review");
       }
@@ -421,7 +421,7 @@ describe("buildPaperclipTaskMarkdown", () => {
       expect(markdown).toContain("do not suppress transport-managed progress");
       expect(markdown).toContain('"id":"native-attachment"');
       expect(markdown).not.toContain("paperclip-upload-artifact.sh");
-      expect(markdown).not.toContain("PAPERCLIP_API_KEY");
+      expect(markdown).not.toContain("WARDMOTE_API_KEY");
       expect(markdown).not.toContain("/api/attachments/");
     },
   );

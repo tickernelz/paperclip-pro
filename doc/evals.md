@@ -381,8 +381,8 @@ system Bash 3 cannot run this helper. On macOS with Homebrew Bash installed,
 put `$(brew --prefix bash)/bin` first in `PATH` before these commands:
 
 ```sh
-export PAPERCLIP_PAGE_BUCKET=pages.paperclip.ing
-export PAPERCLIP_PAGE_BASE_URL=https://pages.paperclip.ing
+export WARDMOTE_PAGE_BUCKET=pages.paperclip.ing
+export WARDMOTE_PAGE_BASE_URL=https://pages.paperclip.ing
 export AWS_REGION=us-east-1
 bash .agents/skills/paperclip-page/scripts/publish.sh .paperclip/evals-hub --slug evals --dry-run
 bash .agents/skills/paperclip-page/scripts/publish.sh .paperclip/evals-hub --slug evals

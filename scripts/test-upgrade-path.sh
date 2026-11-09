@@ -6,12 +6,17 @@ ROOT="$(mktemp -d "${TMPDIR:-/tmp}/wardmote-upgrade-path.XXXXXX")"
 export CARGO_HOME="${CARGO_HOME:-$HOME/.cargo}" RUSTUP_HOME="${RUSTUP_HOME:-$HOME/.rustup}"
 export HOME="$ROOT/home"
 export npm_config_cache="$ROOT/npm-cache"
+phase_started=$SECONDS
+phase() {
+  echo "==> $1 (elapsed $((SECONDS - phase_started))s)"
+  phase_started=$SECONDS
+}
 if [ -n "${UPGRADE_PNPM_STORE:-}" ]; then
   export npm_config_store_dir="$UPGRADE_PNPM_STORE"
 fi
 export npm_config_userconfig="$HOME/.npmrc"
 export PATH="$HOME/.local/bin:$PATH"
-unset PAPERCLIP_HOME WARDMOTE_HOME
+unset WARDMOTE_HOME
 REPO="${UPGRADE_REPO:?UPGRADE_REPO is required}"
 SHA="${UPGRADE_SHA:?UPGRADE_SHA is required}"
 PORT="${UPGRADE_PORT:-3197}"
@@ -51,6 +56,7 @@ start_server() {
 
 LEGACY_PACKAGE="@tickernelz/paperclip-pro"
 OLD_VERSION="$(npm view "$LEGACY_PACKAGE" version)"
+phase "start"
 echo "==> Installing the published release $LEGACY_PACKAGE@$OLD_VERSION the way an existing user has it"
 npm install --prefix "$ROOT/bootstrap" "$LEGACY_PACKAGE@$OLD_VERSION" --no-audit --no-fund >/dev/null
 "$ROOT/bootstrap/node_modules/.bin/paperclip-pro" install --version "$OLD_VERSION" --yes
@@ -60,6 +66,7 @@ test -d "$HOME/.paperclip-pro/instances/default"
 curl -fsS -X POST -H 'Content-Type: application/json' -d '{"name":"Upgrade path marker"}' "http://127.0.0.1:$PORT/api/companies" >/dev/null
 stop_server
 
+phase "published release installed and health-checked"
 echo "==> Upgrading to $REPO@$SHA with this commit's @tickernelz/wardmote CLI, as npx @tickernelz/wardmote install does"
 (cd "$REPO_ROOT" && node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts install --repo "$REPO" --ref "$SHA" --yes)
 paperclip-pro --version
@@ -71,6 +78,7 @@ curl -fsS "http://127.0.0.1:$PORT/api/companies" | grep -q '"Upgrade path marker
 echo "after upgrade: legacy home kept, marker company still listed"
 stop_server
 
+phase "source install to this commit done and served"
 echo "==> Re-running install with the new CLI writes the wardmote shim"
 paperclip-pro install --repo "$REPO" --ref "$SHA" --yes
 wardmote --version

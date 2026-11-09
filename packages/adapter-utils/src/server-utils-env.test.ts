@@ -5,10 +5,10 @@ describe("sanitizeInheritedPaperclipEnv", () => {
   it("drops the host-only Paperclip CLI command pointer", () => {
     expect(sanitizeInheritedPaperclipEnv({
       PAPERCLIPAI_CMD: "node /missing/@tickernelz/wardmote/dist/index.js",
-      PAPERCLIP_RUNTIME_API_URL: "http://127.0.0.1:3100",
+      WARDMOTE_RUNTIME_API_URL: "http://127.0.0.1:3100",
       PATH: "/usr/bin",
     })).toEqual({
-      PAPERCLIP_RUNTIME_API_URL: "http://127.0.0.1:3100",
+      WARDMOTE_RUNTIME_API_URL: "http://127.0.0.1:3100",
       PATH: "/usr/bin",
     });
   });

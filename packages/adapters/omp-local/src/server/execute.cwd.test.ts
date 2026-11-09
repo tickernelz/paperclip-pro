@@ -82,24 +82,24 @@ describe("OMP local workspace cwd precedence", () => {
   it("prefers a configured cwd over the agent_home fallback workspace", async () => {
     const options = await run({ cwd: workspaceCwd, source: "agent_home" }, configuredCwd);
     expect(options.cwd).toBe(configuredCwd);
-    expect(options.env.PAPERCLIP_WORKSPACE_CWD).toBeUndefined();
+    expect(options.env.WARDMOTE_WORKSPACE_CWD).toBeUndefined();
   });
 
   it("keeps a project workspace cwd ahead of a configured cwd", async () => {
     const options = await run({ cwd: workspaceCwd, source: "project_primary" }, configuredCwd);
     expect(options.cwd).toBe(workspaceCwd);
-    expect(options.env.PAPERCLIP_WORKSPACE_CWD).toBe(workspaceCwd);
+    expect(options.env.WARDMOTE_WORKSPACE_CWD).toBe(workspaceCwd);
   });
 
   it("keeps a task workspace cwd ahead of a configured cwd", async () => {
     const options = await run({ cwd: workspaceCwd, source: "task_session" }, configuredCwd);
     expect(options.cwd).toBe(workspaceCwd);
-    expect(options.env.PAPERCLIP_WORKSPACE_CWD).toBe(workspaceCwd);
+    expect(options.env.WARDMOTE_WORKSPACE_CWD).toBe(workspaceCwd);
   });
 
   it("falls back to the agent_home workspace cwd when no cwd is configured", async () => {
     const options = await run({ cwd: workspaceCwd, source: "agent_home" }, undefined);
     expect(options.cwd).toBe(workspaceCwd);
-    expect(options.env.PAPERCLIP_WORKSPACE_CWD).toBe(workspaceCwd);
+    expect(options.env.WARDMOTE_WORKSPACE_CWD).toBe(workspaceCwd);
   });
 });

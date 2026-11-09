@@ -81,7 +81,6 @@ vi.mock("@/api/githubChat", () => ({
     advance: vi.fn(),
     repositories: vi.fn(),
     registration: vi.fn(),
-    restartRegistration: vi.fn(),
     saveDraft: vi.fn(),
     startIdentity: vi.fn(),
     confirmIdentity: vi.fn(),
@@ -89,9 +88,6 @@ vi.mock("@/api/githubChat", () => ({
     connectApp: vi.fn(),
     personalConnections: vi.fn(),
   },
-}));
-vi.mock("@/api/tools", () => ({
-  toolsApi: { startCloudConnectorEnrollment: vi.fn() },
 }));
 vi.mock("@/lib/clipboard", () => ({ copyTextToClipboard: vi.fn() }));
 
@@ -309,19 +305,6 @@ describe("GitHub App wizard", () => {
     await act(async () => button!.click());
     await settle();
   }
-  it("binds Cloud enrollment return to the same draft without a duplicated company prefix", async () => {
-    vi.mocked(githubChatApi.advance).mockResolvedValue({ endpointId: "draft-1", state: "enrollment" });
-    vi.mocked(toolsApi.startCloudConnectorEnrollment).mockResolvedValue({ configured: false, status: "pending", brokerBaseUrl: "https://gateway.example", instanceId: "instance-1", environment: "staging", origins: [] });
-    const prior = `${window.location.pathname}${window.location.search}`;
-    window.history.replaceState(null, "", "/BOT/apps/chat/connect?provider=github&purpose=chat&resume=draft-1");
-    try {
-      await render("purpose=chat&resume=draft-1");
-      await click("Connect Paperclip Cloud");
-      expect(toolsApi.startCloudConnectorEnrollment).toHaveBeenCalledWith("company-1", undefined, "/apps/chat/connect?provider=github&purpose=chat&resume=draft-1");
-    } finally {
-      window.history.replaceState(null, "", prior);
-    }
-  });
   it("starts with agent selection and saves the low-trust repair before removing its warning", async () => {
     await render();
     expect(container.querySelector("h1")?.textContent).toBe("Choose agent");
@@ -449,27 +432,6 @@ describe("GitHub App wizard", () => {
     expect(githubChatApi.saveDraft).toHaveBeenCalledWith("draft-1", {
       name: "Saved App", ownerType: "organization", ownerLogin: "saved-org",
     });
-  });
-  it("requires no-App-created confirmation before restarting an expired handoff", async () => {
-    vi.mocked(githubChatApi.advance).mockResolvedValue({ endpointId: "draft-1", state: "recovery", restartableRegistrationId: "expired-1", message: "Handoff expired" });
-    vi.mocked(githubChatApi.restartRegistration).mockResolvedValue({ endpointId: "draft-1", state: "create" });
-    await render("resume=draft-1");
-    const button = [...container.querySelectorAll("button")].find(b => b.textContent === "Continue to GitHub")!;
-    expect(button.disabled).toBe(true);
-    expect(githubChatApi.restartRegistration).not.toHaveBeenCalled();
-    await act(async () => (container.querySelector("#github-app-not-created") as HTMLElement).click());
-    expect(button.disabled).toBe(false);
-    await click("Continue to GitHub");
-    expect(githubChatApi.restartRegistration).toHaveBeenCalledWith("draft-1", "expired-1");
-    expect(chatEndpointsApi.create).not.toHaveBeenCalled();
-    expect(githubChatApi.registration).not.toHaveBeenCalled();
-  });
-  it("does not offer registration restart for an uncertain exchange", async () => {
-    vi.mocked(githubChatApi.advance).mockResolvedValue({ endpointId: "draft-1", state: "recovery", message: "Recover existing App" });
-    await render("resume=draft-1");
-    expect(container.querySelector("#github-app-not-created")).toBeNull();
-    expect(container.textContent).not.toContain("Continue to GitHub");
-    expect(container.textContent).toContain("Use existing App credentials");
   });
   it("saves ownership and the suggested name when exiting", async () => {
     await render("resume=draft-1");

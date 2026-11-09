@@ -17,7 +17,7 @@ import { readConfig } from "../config/store.js";
 import type { PaperclipConfig } from "../config/schema.js";
 import { runCommand, type StartedServer } from "./run.js";
 import { isLinkedGitWorktree } from "./git-workspace.js";
-import { legacyEnvKey } from "@tickernelz/wardmote-shared/env-aliases";
+import { currentEnvKey } from "@tickernelz/wardmote-shared/retired-env-file";
 
 export interface TestDriveOptions {
   dataDir?: string;
@@ -47,7 +47,7 @@ export interface TestDriveDependencies {
   openBrowser: (url: string) => Promise<boolean>;
 }
 
-const NON_PAPERCLIP_ISOLATED_ENV_KEYS = [
+const NON_WARDMOTE_ISOLATED_ENV_KEYS = [
   "DATABASE_URL",
   "DATABASE_MIGRATION_URL",
   "HOST",
@@ -111,30 +111,30 @@ export async function prepareTestDriveEnvironment(
   cwd = process.cwd(),
 ): Promise<{ dataDir: string; linkedWorktree: boolean }> {
   for (const key of Object.keys(process.env)) {
-    if (legacyEnvKey(key).startsWith("PAPERCLIP_")) {
+    if (currentEnvKey(key).startsWith("WARDMOTE_")) {
       delete process.env[key];
     }
   }
-  for (const key of NON_PAPERCLIP_ISOLATED_ENV_KEYS) {
+  for (const key of NON_WARDMOTE_ISOLATED_ENV_KEYS) {
     delete process.env[key];
   }
 
   const dataDir = resolveTestDriveDataDir(options.dataDir);
   const linkedWorktree = isLinkedGitWorktree(cwd);
-  process.env.PAPERCLIP_HOME = dataDir;
-  process.env.PAPERCLIP_INSTANCE_ID = "default";
-  process.env.PAPERCLIP_CONFIG = resolveDefaultConfigPath("default");
-  process.env.PAPERCLIP_CONTEXT = resolveDefaultContextPath();
-  process.env.PAPERCLIP_IN_WORKTREE = linkedWorktree ? "true" : "false";
-  process.env.PAPERCLIP_OPEN_ON_LISTEN = "false";
-  process.env.PAPERCLIP_DISABLE_CWD_ENV_FILE = "true";
-  process.env.PAPERCLIP_DEPLOYMENT_MODE = "local_trusted";
-  process.env.PAPERCLIP_DEPLOYMENT_EXPOSURE = "private";
-  process.env.PAPERCLIP_BIND = "loopback";
+  process.env.WARDMOTE_HOME = dataDir;
+  process.env.WARDMOTE_INSTANCE_ID = "default";
+  process.env.WARDMOTE_CONFIG = resolveDefaultConfigPath("default");
+  process.env.WARDMOTE_CONTEXT = resolveDefaultContextPath();
+  process.env.WARDMOTE_IN_WORKTREE = linkedWorktree ? "true" : "false";
+  process.env.WARDMOTE_OPEN_ON_LISTEN = "false";
+  process.env.WARDMOTE_DISABLE_CWD_ENV_FILE = "true";
+  process.env.WARDMOTE_DEPLOYMENT_MODE = "local_trusted";
+  process.env.WARDMOTE_DEPLOYMENT_EXPOSURE = "private";
+  process.env.WARDMOTE_BIND = "loopback";
   process.env.HOST = "127.0.0.1";
   let preferredPort = 3100;
   try {
-    preferredPort = readConfig(process.env.PAPERCLIP_CONFIG)?.server.port ?? preferredPort;
+    preferredPort = readConfig(process.env.WARDMOTE_CONFIG)?.server.port ?? preferredPort;
   } catch {
     // The normal startup doctor owns invalid-config diagnostics and repair.
   }
@@ -218,7 +218,7 @@ export async function reconcileTestDriveWorktreeExecution(
   if (!worktreeExecutionArmed(verified, instanceId)) {
     throw new Error(
       `Could not arm “Run tasks in this worktree” for Wardmote instance ${instanceId}. ` +
-        "Check that PAPERCLIP_IN_WORKTREE=true and retry the command.",
+        "Check that WARDMOTE_IN_WORKTREE=true and retry the command.",
     );
   }
 }
@@ -291,9 +291,9 @@ export async function testDriveCommand(
     openBrowser: openUrl,
   },
 ): Promise<void> {
-  const dataDir = path.resolve(process.env.PAPERCLIP_HOME ?? resolveTestDriveDataDir(options.dataDir));
-  const linkedWorktree = process.env.PAPERCLIP_IN_WORKTREE === "true";
-  const instanceId = process.env.PAPERCLIP_INSTANCE_ID ?? "default";
+  const dataDir = path.resolve(process.env.WARDMOTE_HOME ?? resolveTestDriveDataDir(options.dataDir));
+  const linkedWorktree = process.env.WARDMOTE_IN_WORKTREE === "true";
+  const instanceId = process.env.WARDMOTE_INSTANCE_ID ?? "default";
 
   p.log.message(pc.dim(`Data directory: ${dataDir}`));
   p.log.message(pc.dim("The data directory is retained when Wardmote exits."));

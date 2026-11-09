@@ -30,7 +30,7 @@ const CREDENTIAL_PATTERNS = [
   // as an `sk-` provider key. A real key is preceded by a delimiter.
   /(?<![A-Za-z0-9])sk-[a-z0-9]{8,}/i,
   /"api[_-]?key"\s*:/i,
-  /PAPERCLIP_API_KEY/,
+  /WARDMOTE_API_KEY/,
   /OPENAI_API_KEY/,
 ];
 

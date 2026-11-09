@@ -122,12 +122,12 @@ RUN find packages/wardmote-runner/runner packages/wardmote-runner/protocol -type
   && touch -d @0 packages/wardmote-runner/rust-toolchain.toml
 # Both the browser bundle and server stamp need the source commit. Declare it
 # after the stable dependency layers, before either application build.
-ARG PAPERCLIP_BUILD_COMMIT=""
+ARG WARDMOTE_BUILD_COMMIT=""
 RUN pnpm --filter @tickernelz/wardmote-ui build
 RUN pnpm --filter @tickernelz/wardmote-plugin-sdk build
 # The server build runs scripts/write-build-stamp.mjs, which stamps the built
 # commit into dist/build-info.json. The build context has no .git, so the
-# script reads PAPERCLIP_BUILD_COMMIT instead. Docker exposes an ARG to the
+# script reads WARDMOTE_BUILD_COMMIT instead. Docker exposes an ARG to the
 # next RUN as an environment variable. The production stage below declares the
 # same ARG again for the runtime fallback; an ARG goes out of scope at the
 # end of its stage. Empty for local `docker build`, which then writes no stamp.
@@ -145,10 +145,10 @@ FROM build AS runner-provider-pack
 # Unstamped local builds remain usable, but cannot qualify a remote pack.
 # Never invent a source revision to make an unqualified pack look verified.
 RUN mkdir -p /provider-pack \
-  && if [ -n "${PAPERCLIP_BUILD_COMMIT}" ]; then \
-    PAPERCLIP_RUNNER_SOURCE_REVISION="${PAPERCLIP_BUILD_COMMIT}" node packages/wardmote-runner/scripts/build-provider-pack.mjs /provider-pack; \
+  && if [ -n "${WARDMOTE_BUILD_COMMIT}" ]; then \
+    WARDMOTE_RUNNER_SOURCE_REVISION="${WARDMOTE_BUILD_COMMIT}" node packages/wardmote-runner/scripts/build-provider-pack.mjs /provider-pack; \
   else \
-    echo "Skipping remote provider pack: supply a full PAPERCLIP_BUILD_COMMIT to enable remote OpenCode/ACPX execution"; \
+    echo "Skipping remote provider pack: supply a full WARDMOTE_BUILD_COMMIT to enable remote OpenCode/ACPX execution"; \
   fi
 
 FROM base AS omp
@@ -192,32 +192,32 @@ RUN chmod -R a+rX /opt/paperclip-runner/provider-pack \
   && if [ -f /opt/paperclip-runner/provider-pack/provider-pack.json ]; then \
     gosu 65534:65534 node -e 'const fs = require("node:fs"); const path = require("node:path"); const root = "/opt/paperclip-runner/provider-pack"; const manifest = JSON.parse(fs.readFileSync(path.join(root, "provider-pack.json"), "utf8")); for (const artifact of Object.values(manifest.payload.artifacts)) fs.readFileSync(path.join(root, artifact.path)); fs.accessSync(path.join(root, manifest.payload.artifacts.nodeCommand.path), fs.constants.X_OK);'; \
   fi
-ENV PAPERCLIP_RUNNER_REMOTE_PROVIDER_PACK_PATH=/opt/paperclip-runner/provider-pack
+ENV WARDMOTE_RUNNER_REMOTE_PROVIDER_PACK_PATH=/opt/paperclip-runner/provider-pack
 
 # Declare per-build metadata after the stable RUN layers. Docker includes
 # in-scope ARG values in a RUN's environment even when its command does not
 # mention them; declaring these earlier invalidates the weekly tool cache.
 # The build stage still receives the commit before writing dist/build-info.json.
 # Empty for local builds, preserving the server's normal version fallbacks.
-ARG PAPERCLIP_BUILD_VERSION=""
-ARG PAPERCLIP_BUILD_COMMIT=""
+ARG WARDMOTE_BUILD_VERSION=""
+ARG WARDMOTE_BUILD_COMMIT=""
 ARG OMP_VERSION
 ENV NODE_ENV=production \
   HOME=/paperclip \
   HOST=0.0.0.0 \
   PORT=3100 \
   SERVE_UI=true \
-  PAPERCLIP_HOME=/paperclip \
-  PAPERCLIP_INSTANCE_ID=default \
-  PAPERCLIP_BUILD_VERSION=${PAPERCLIP_BUILD_VERSION} \
-  PAPERCLIP_BUILD_COMMIT=${PAPERCLIP_BUILD_COMMIT} \
+  WARDMOTE_HOME=/paperclip \
+  WARDMOTE_INSTANCE_ID=default \
+  WARDMOTE_BUILD_VERSION=${WARDMOTE_BUILD_VERSION} \
+  WARDMOTE_BUILD_COMMIT=${WARDMOTE_BUILD_COMMIT} \
   USER_UID=${USER_UID} \
   USER_GID=${USER_GID} \
-  PAPERCLIP_CONFIG=/paperclip/instances/default/config.json \
-  PAPERCLIP_DEPLOYMENT_MODE=authenticated \
-  PAPERCLIP_DEPLOYMENT_EXPOSURE=private \
+  WARDMOTE_CONFIG=/paperclip/instances/default/config.json \
+  WARDMOTE_DEPLOYMENT_MODE=authenticated \
+  WARDMOTE_DEPLOYMENT_EXPOSURE=private \
   OPENCODE_ALLOW_ALL_MODELS=true \
-  PAPERCLIP_OMP_BUNDLED_VERSION=${OMP_VERSION}
+  WARDMOTE_OMP_BUNDLED_VERSION=${OMP_VERSION}
 
 EXPOSE 3100
 
@@ -233,7 +233,7 @@ CMD ["node", "--import", "./server/node_modules/tsx/dist/loader.mjs", "server/di
 
 # Cloud image variant (build with `--target cloud`): the production image
 # plus built bundled sandbox-provider plugins. Managed instances receive a
-# `plugins.autoInstall` key list through PAPERCLIP_MANAGED_CONFIG and
+# `plugins.autoInstall` key list through WARDMOTE_MANAGED_CONFIG and
 # install those plugins from the bundled catalog at boot
 # (server/src/services/bundled-plugins.ts), which requires each plugin's
 # dist/ to exist in the image — the default image ships only their source,

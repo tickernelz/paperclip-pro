@@ -65,7 +65,7 @@ release follows a backward-compatible protocol.
 - The same check applies to discovered, explicitly staged, and npm-installed
   remote Codex executables, including the final executable after linking.
 - For an incompatible image, the existing
-  `PAPERCLIP_RUNNER_REMOTE_CODEX_NPM_SPEC=@openai/codex@0.160.0` configuration
+  `WARDMOTE_RUNNER_REMOTE_CODEX_NPM_SPEC=@openai/codex@0.160.0` configuration
   allows installation of the pinned runtime. Without that configuration,
   startup reports the supported range and the remediation.
 - Runner binary contracts, required runner capabilities, artifact digests,

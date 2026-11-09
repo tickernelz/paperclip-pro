@@ -466,7 +466,7 @@ const ZSTD_COMPRESSION_LEVEL = 3;
 /** Marker the mkdir+probe command echoes to sandbox stdout when the sandbox
  * has a `zstd` binary on `PATH`. An absent or unexpected answer fails closed
  * (no compression), per the design's fallback rules. */
-const ZSTD_PROBE_MARKER = "PAPERCLIP_ZSTD_AVAILABLE";
+const ZSTD_PROBE_MARKER = "WARDMOTE_ZSTD_AVAILABLE";
 
 /**
  * Feature-detect zstd support on the running Node runtime. `node:zlib` shipped

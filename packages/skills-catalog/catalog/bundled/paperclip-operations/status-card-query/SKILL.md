@@ -27,30 +27,30 @@ Agent-authored cards require `tasks:assign`, remain company-scoped, and are avai
 Normalize the run-provided API base and create a manual card:
 
 ```bash
-PAPERCLIP_API_BASE="${PAPERCLIP_API_URL%/}"
-PAPERCLIP_API_BASE="${PAPERCLIP_API_BASE%/api}"
+WARDMOTE_API_BASE="${WARDMOTE_API_URL%/}"
+WARDMOTE_API_BASE="${WARDMOTE_API_BASE%/api}"
 
 curl -sS -X POST \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
+  -H "Authorization: Bearer $WARDMOTE_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"interestPrompt":"Blocked or in-review launch work updated this week"}' \
-  "$PAPERCLIP_API_BASE/api/companies/$PAPERCLIP_COMPANY_ID/status-cards"
+  "$WARDMOTE_API_BASE/api/companies/$WARDMOTE_COMPANY_ID/status-cards"
 ```
 
 Creation returns `201` and queues compilation automatically. Save the returned card id. To refine an owned card or request a refresh:
 
 ```bash
 curl -sS -X PATCH \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
+  -H "Authorization: Bearer $WARDMOTE_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"interestPrompt":"Blocked or in-review launch work updated this week. Call out the single next decision."}' \
-  "$PAPERCLIP_API_BASE/api/status-cards/$STATUS_CARD_ID"
+  "$WARDMOTE_API_BASE/api/status-cards/$STATUS_CARD_ID"
 
 curl -sS -X POST \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
+  -H "Authorization: Bearer $WARDMOTE_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{"full":false}' \
-  "$PAPERCLIP_API_BASE/api/status-cards/$STATUS_CARD_ID/refresh"
+  "$WARDMOTE_API_BASE/api/status-cards/$STATUS_CARD_ID/refresh"
 ```
 
 Do not call `/query` or `/summary` while authoring. Those write-back routes are reserved for the assigned Summarizer generation issue and run.

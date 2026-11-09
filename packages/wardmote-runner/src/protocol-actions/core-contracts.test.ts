@@ -1,13 +1,13 @@
 import Ajv2020 from "ajv/dist/2020.js";
 import { describe, expect, it } from "vitest";
 
-import { PAPERCLIP_CORE_PROTOCOL_ACTIONS } from "./core.js";
+import { WARDMOTE_CORE_PROTOCOL_ACTIONS } from "./core.js";
 
 describe("core Paperclip protocol action contracts", () => {
   const ajv = new Ajv2020({ allErrors: true, allowUnionTypes: true, strict: false });
 
   it("advertises a complete typed form for mixed text and choice questions", () => {
-    const action = PAPERCLIP_CORE_PROTOCOL_ACTIONS.find(action => action.id === "request_human_input")!;
+    const action = WARDMOTE_CORE_PROTOCOL_ACTIONS.find(action => action.id === "request_human_input")!;
     const payload = { version: 1, questionSet: { schema: "paperclip.question_set.v1", questions: [
       { id: "repo", prompt: "Repository URL?", required: true, answerMode: "text" },
       { id: "scope", prompt: "Review scope?", required: true, answerMode: "single_select", options: [{ id: "all", label: "All changes" }, { id: "selected", label: "Selected changes" }] },
@@ -23,14 +23,14 @@ describe("core Paperclip protocol action contracts", () => {
   });
 
   it("keeps the live input tool's guidance consistent with conversational confirmation recording", () => {
-    const action = PAPERCLIP_CORE_PROTOCOL_ACTIONS.find(action => action.id === "request_human_input")!;
+    const action = WARDMOTE_CORE_PROTOCOL_ACTIONS.find(action => action.id === "request_human_input")!;
     expect(action.live!.descriptor.description).toBe(action.documentation.description);
     expect(action.live!.descriptor.description).toContain("resolve-from-comment");
     expect(action.live!.descriptor.description).toContain("resolver permissions");
     expect(action.live!.descriptor.description).not.toContain("Never infer answers, answer your own card");
   });
 
-  it.each(PAPERCLIP_CORE_PROTOCOL_ACTIONS.map((action) => [action.id, action] as const))(
+  it.each(WARDMOTE_CORE_PROTOCOL_ACTIONS.map((action) => [action.id, action] as const))(
     "%s has immutable metadata and schema-valid examples",
     (operationId, action) => {
       expect(action.canonical.operationId).toBe(operationId);

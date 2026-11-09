@@ -16,7 +16,7 @@ repo explicitly with `git rev-parse --show-toplevel` from the current directory,
 or inspect likely workspace roots and select the checkout containing
 `package.json`, `tests/runner-e2e`, and `packages/wardmote-runner`. Locate the
 private sibling `paperclip-evals` only when a Runner Eval needs its definitions;
-use an explicit `PAPERCLIP_EVALS_ROOT` or a discovered sibling checkout. Never
+use an explicit `WARDMOTE_EVALS_ROOT` or a discovered sibling checkout. Never
 invent a relative path from this copied skill into the repository.
 
 ## Route the request

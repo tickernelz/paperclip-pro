@@ -537,7 +537,7 @@ export function companyRoutes(db: Db, storage?: StorageService, options?: Compan
    * auth or body work, the same way the company-creation floor does:
    *
    * - the operator hiding the Import page (`company.import` in
-   *   `PAPERCLIP_HIDDEN_SETTINGS` → `settings_operator_managed`): hiding the
+   *   `WARDMOTE_HIDDEN_SETTINGS` → `settings_operator_managed`): hiding the
    *   page also disables its API, so the hide is real rather than cosmetic.
    *
    * Export routes stay open either way — they are the tenant's

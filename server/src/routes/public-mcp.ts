@@ -227,8 +227,8 @@ export function publicMcpManagementRoutes(oauth: PublicMcpOAuth, agentOAuth?: Pu
   });
   router.get(["/mcp/requests/:id", "/dot-mcp/requests/:id"], async (req, res) => {
     let setupUrl: string | null = null;
-    if (process.env.PAPERCLIP_CLOUD_API_ORIGIN) {
-      const base = new URL(process.env.PAPERCLIP_CLOUD_API_ORIGIN);
+    if (process.env.WARDMOTE_CLOUD_API_ORIGIN) {
+      const base = new URL(process.env.WARDMOTE_CLOUD_API_ORIGIN);
       if (base.protocol === "https:") setupUrl = new URL("/orgs/new", base).toString();
     }
     res.json(await (await requestOAuth(String(req.params.id), req.path.startsWith("/dot-mcp/"))).describeRequest(String(req.params.id), req.actor, setupUrl));

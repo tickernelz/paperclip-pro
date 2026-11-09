@@ -354,8 +354,8 @@ describeEmbeddedPostgres("routine routes end-to-end", () => {
   it.each(["bearer", "hmac_sha256", "github_hmac", "none"] as const)(
     "authenticates %s HTTP deliveries, persists payloads, and enforces trigger lifecycle",
     async (signingMode) => {
-      vi.stubEnv("PAPERCLIP_API_URL", "http://localhost:3100");
-      vi.stubEnv("PAPERCLIP_IN_WORKTREE", "false");
+      vi.stubEnv("WARDMOTE_API_URL", "http://localhost:3100");
+      vi.stubEnv("WARDMOTE_IN_WORKTREE", "false");
       const { companyId, agentId, projectId, userId } = await seedFixture();
       const board = await createApp({ type: "board", source: "local_implicit", userId, isInstanceAdmin: true });
       const created = await request(board).post(`/api/companies/${companyId}/routines`).send({
@@ -442,8 +442,8 @@ describeEmbeddedPostgres("routine routes end-to-end", () => {
   );
 
   it("keeps setup deliveries out of runs, persists test receipts, and restores removed triggers", async () => {
-    vi.stubEnv("PAPERCLIP_API_URL", "http://localhost:3100");
-    vi.stubEnv("PAPERCLIP_IN_WORKTREE", "false");
+    vi.stubEnv("WARDMOTE_API_URL", "http://localhost:3100");
+    vi.stubEnv("WARDMOTE_IN_WORKTREE", "false");
     const { companyId, agentId, projectId, userId } = await seedFixture();
     const board = await createApp({ type: "board", source: "local_implicit", userId, isInstanceAdmin: true });
     const created = await request(board).post(`/api/companies/${companyId}/routines`).send({

@@ -76,12 +76,12 @@ describe("createPluginSecretsHandler fail-closed guards", () => {
 describeEmbeddedPostgres("createPluginSecretsHandler shared vault integration", () => {
   let stopDb: (() => Promise<void>) | null = null;
   let db!: ReturnType<typeof createDb>;
-  const previousKeyFile = process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE;
+  const previousKeyFile = process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE;
   const secretsTmpDir = path.join(os.tmpdir(), `paperclip-plugin-secrets-${randomUUID()}`);
 
   beforeAll(async () => {
     mkdirSync(secretsTmpDir, { recursive: true });
-    process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE = path.join(secretsTmpDir, "master.key");
+    process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = path.join(secretsTmpDir, "master.key");
     const started = await startEmbeddedPostgresTestDatabase("plugin-secrets-handler");
     stopDb = started.cleanup;
     db = createDb(started.connectionString);
@@ -100,9 +100,9 @@ describeEmbeddedPostgres("createPluginSecretsHandler shared vault integration", 
   afterAll(async () => {
     await stopDb?.();
     if (previousKeyFile === undefined) {
-      delete process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE;
+      delete process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE;
     } else {
-      process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE = previousKeyFile;
+      process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = previousKeyFile;
     }
     rmSync(secretsTmpDir, { recursive: true, force: true });
   });

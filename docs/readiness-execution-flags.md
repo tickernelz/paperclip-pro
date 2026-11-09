@@ -76,7 +76,7 @@ stored row, so an isolated worktree is not reinterpreted as a shared one.
 `enableWorktreeRunExecution` is the one flag in this area with a real
 mid-flight guarantee. Activation records a server-managed cutoff and the
 activating instance id (`instance-settings.ts:104-131`), the flag is only read
-inside a worktree runtime (`heartbeat.ts:9662`, `PAPERCLIP_IN_WORKTREE`), and
+inside a worktree runtime (`heartbeat.ts:9662`, `WARDMOTE_IN_WORKTREE`), and
 a copied settings row fails closed on instance mismatch
 (`resolveWorktreeRunExecutionActivation`). Re-arming mints a fresh cutoff
 rather than reusing the old one

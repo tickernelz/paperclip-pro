@@ -114,12 +114,12 @@ const SYSTEM_CHROMIUM_CANDIDATES = [
 ];
 
 export const CHROMIUM_UNAVAILABLE_MESSAGE =
-  "PDF export needs a Chromium-family browser. Install Google Chrome or Chromium, or set PAPERCLIP_PDF_CHROMIUM_PATH to its executable.";
+  "PDF export needs a Chromium-family browser. Install Google Chrome or Chromium, or set WARDMOTE_PDF_CHROMIUM_PATH to its executable.";
 
 /** First Chromium-family executable this host exposes, or `null`. */
 export function resolveChromiumExecutable(): string | null {
   const configured = [
-    process.env.PAPERCLIP_PDF_CHROMIUM_PATH,
+    process.env.WARDMOTE_PDF_CHROMIUM_PATH,
     process.env.PUPPETEER_EXECUTABLE_PATH,
     process.env.CHROME_PATH,
   ];

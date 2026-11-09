@@ -111,62 +111,6 @@ import { autoExtendNotice, INSTALL_ALL_WARNING, installInfoNotice, installPayloa
 type Step = "gallery" | "key" | "success";
 export type OAuthConnectPhase = "entry" | "starting" | "redirecting" | "error";
 
-type EnrollmentAccessState = {
-  companyId: string;
-  grantKind: ConnectionGrantKind;
-  installChoice: "specific" | "all";
-  agentIds: string[];
-};
-
-function enrollmentAccessStorageKey(appKey: string): string {
-  return `paperclip.connector-enrollment-access:${appKey}`;
-}
-
-function validEnrollmentAccessState(value: unknown): value is EnrollmentAccessState {
-  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
-  const candidate = value as Record<string, unknown>;
-  if (typeof candidate.companyId !== "string" || !candidate.companyId.trim()) return false;
-  if (!(candidate.grantKind === "user" || candidate.grantKind === "agent" || candidate.grantKind === "organization")) {
-    return false;
-  }
-  if (candidate.installChoice !== "specific" && candidate.installChoice !== "all") return false;
-  if (!Array.isArray(candidate.agentIds) || candidate.agentIds.some((id) => typeof id !== "string" || !id.trim())) {
-    return false;
-  }
-  const agentIds = new Set(candidate.agentIds);
-  if (agentIds.size !== candidate.agentIds.length) return false;
-  if (candidate.grantKind === "agent") {
-    return candidate.installChoice === "specific" && agentIds.size === 1;
-  }
-  return candidate.installChoice === "all" ? agentIds.size === 0 : agentIds.size > 0;
-}
-
-function saveEnrollmentAccessState(
-  companyId: string,
-  appKey: string,
-  state: Omit<EnrollmentAccessState, "companyId">,
-): void {
-  try {
-    window.sessionStorage.setItem(enrollmentAccessStorageKey(appKey), JSON.stringify({ ...state, companyId }));
-  } catch {
-    // Browser storage can be unavailable under restrictive privacy settings.
-    // The callback will safely use the provider's defaults in that case.
-  }
-}
-
-function consumeEnrollmentAccessState(appKey: string): EnrollmentAccessState | null {
-  const key = enrollmentAccessStorageKey(appKey);
-  try {
-    const raw = window.sessionStorage.getItem(key);
-    window.sessionStorage.removeItem(key);
-    if (!raw) return null;
-    const parsed: unknown = JSON.parse(raw);
-    return validEnrollmentAccessState(parsed) ? parsed : null;
-  } catch {
-    return null;
-  }
-}
-
 function githubRecoveryUrl(value: string | null): string | null {
   if (!value) return null;
   try {
@@ -426,28 +370,7 @@ function availableToolConnectionMethod(
 function recommendedSetupConnectionMethod(
   methods: readonly ConnectionMethodDef[],
 ): ConnectionMethodDef | null {
-  // PAP-659 C1: every connector arrives with a method already chosen.
-  // `getRecommendedConnectionMethod` already ranks managed/one-click OAuth over
-  // customer-owned OAuth over API keys, and write/draft capability over read;
-  // this used to throw that ranking away for multi-method apps and ask the
-  // operator instead. The alternates are still reachable, in the Advanced
-  // disclosure, so nothing became unavailable — it just stopped blocking.
   return getRecommendedConnectionMethod(methods);
-}
-
-function recommendedManagedConnectorMethod(
-  entry: AppDefinition | null | undefined,
-): ConnectionMethodDef | null {
-  return recommendedSetupConnectionMethod(
-    entry
-      ? entry.methods.filter(
-          (candidate) =>
-            (candidate.purpose ?? "tool") === "tool" &&
-            (candidate.oauthStrategy === "paperclip_cloud_connector" ||
-              candidate.oauthStrategy === "paperclip_id_connector"),
-        )
-      : [],
-  );
 }
 
 function canUseAutomaticOAuthFastPath(entry: AppDefinition | null | undefined): boolean {
@@ -670,13 +593,6 @@ function StandardConnectionSetupFlow({
   const zapierSource = (serviceSlug ?? sourceSlug ?? appKey) === "zapier";
   const requestedAppKey = zapierSource ? undefined : routeAppKey;
   const byo = Boolean(configuredConnection) || (host === "page" && (byoOnly || searchParams.get("byo") === "1"));
-  const [restoredEnrollmentAccess] = useState<EnrollmentAccessState | null>(() =>
-    host === "page"
-      && searchParams.get("cloud_connector") === "enrolled"
-      && requestedAppKey
-      ? consumeEnrollmentAccessState(requestedAppKey)
-      : null,
-  );
 
   // Prefill arrives from the app page for reconnects; read once so later
   // wizard navigation doesn't fight the URL.
@@ -725,7 +641,7 @@ function StandardConnectionSetupFlow({
   const [access, setAccess] = useState<"all" | "specific">("all");
   const [agentIds, setAgentIds] = useState<Set<string>>(new Set());
   const [installAgentIds, setInstallAgentIds] = useState<Set<string>>(
-    () => new Set(restoredEnrollmentAccess?.agentIds ?? (requestedAgentId ? [requestedAgentId] : [])),
+    () => new Set(requestedAgentId ? [requestedAgentId] : []),
   );
   /**
    * Access-step selections (PAP-17835). These are chosen before the credential
@@ -733,10 +649,10 @@ function StandardConnectionSetupFlow({
    * backwards through the wizard.
    */
   const [grantKind, setGrantKind] = useState<ConnectionGrantKind>(
-    restoredEnrollmentAccess?.grantKind ?? reconnectGrantKindHint ?? (requestedAgentId ? "user" : "organization"),
+    reconnectGrantKindHint ?? (requestedAgentId ? "user" : "organization"),
   );
   const [installChoice, setInstallChoice] = useState<"specific" | "all">(
-    restoredEnrollmentAccess?.installChoice ?? (requestedAgentId ? "specific" : "all"),
+    requestedAgentId ? "specific" : "all",
   );
   const resumingAfterOAuthFailure = Boolean(
     resumeConnectionId
@@ -1035,113 +951,6 @@ function StandardConnectionSetupFlow({
   const fullRequestedDefinition = requestedAppKey
     ? getConnectableAppDefinition(requestedAppKey)
     : null;
-  const customOAuthMethod = fullRequestedDefinition?.methods.find((candidate) =>
-    connectionMethodAcceptsCustomerOAuthClient(candidate)
-    && !connectionMethodSupportsAutomaticOAuth(candidate),
-  );
-  const selectedCustomOAuth = Boolean(customOAuthMethod && connectionMethodKey === customOAuthMethod.key);
-  const requestedDefinitionUsesManagedConnector = !selectedCustomOAuth && Boolean(
-    fullRequestedDefinition?.methods.some((candidate) =>
-      candidate.oauthStrategy === "paperclip_cloud_connector"
-      || candidate.oauthStrategy === "paperclip_id_connector"
-    ),
-  );
-  const entryAdvertisesManagedConnector = Boolean(
-    entry?.methods.some((candidate) =>
-      candidate.oauthStrategy === "paperclip_cloud_connector"
-      || candidate.oauthStrategy === "paperclip_id_connector"
-    ),
-  );
-  // Before a self-hosted instance enrolls, the server intentionally withholds
-  // platform-managed methods from the advertised gallery. The setup route still
-  // needs the managed method's identity model, labels, and defaults because the
-  // next step is enrollment for that exact method—not the visible PAT/BYO
-  // compatibility fallback.
-  const preEnrollmentManagedMethod = entry
-    && requestedDefinitionUsesManagedConnector
-    && !entryAdvertisesManagedConnector
-    ? recommendedManagedConnectorMethod(fullRequestedDefinition)
-    : null;
-  const [enrollmentAuthorizationUrl, setEnrollmentAuthorizationUrl] = useState<string | null>(null);
-  const connectorEnrollmentQuery = useQuery({
-    queryKey: ["cloud-connector", "enrollment"],
-    queryFn: () => toolsApi.getCloudConnectorEnrollment(),
-    refetchInterval: enrollmentAuthorizationUrl ? 2_000 : false,
-    enabled: Boolean(
-      selectedCompanyId
-      && requestedDefinitionUsesManagedConnector
-      && !entryAdvertisesManagedConnector
-    ),
-  });
-  const [connectorEnrollmentError, setConnectorEnrollmentError] = useState<string | null>(null);
-  const closeEnrollmentPopup = useCallback(() => {
-    oauthPopupRef.current?.close();
-    oauthPopupRef.current = null;
-    setEnrollmentAuthorizationUrl(null);
-  }, []);
-  const preserveEnrollmentAccess = useCallback(() => {
-    if (!selectedCompanyId || !requestedAppKey) return;
-    saveEnrollmentAccessState(selectedCompanyId, requestedAppKey, {
-      grantKind,
-      installChoice,
-      agentIds: installChoice === "specific" ? [...installAgentIds] : [],
-    });
-  }, [grantKind, installAgentIds, installChoice, requestedAppKey, selectedCompanyId]);
-  const openConnectorEnrollment = useCallback((verificationUrl: string) => {
-    const target = resolveAuthorizationTarget(verificationUrl);
-    if (!target.ok) {
-      closeEnrollmentPopup();
-      setConnectorEnrollmentError(target.message);
-      return;
-    }
-    if (host === "dialog") {
-      setEnrollmentAuthorizationUrl(target.url);
-      const popup = oauthPopupRef.current;
-      if (popup && !popup.closed) {
-        popup.location.assign(target.url);
-        popup.focus();
-      } else {
-        setConnectorEnrollmentError("Open authorization in a new tab to continue.");
-      }
-      return;
-    }
-    navigateTopLevel(target.url);
-  }, [host, closeEnrollmentPopup]);
-  useEffect(() => {
-    if (!enrollmentAuthorizationUrl || connectorEnrollmentQuery.data?.status !== "active") return;
-    // Enrollment is only a prerequisite. Re-read the server catalog and keep
-    // the task's access selection and interaction binding in this dialog.
-    closeEnrollmentPopup();
-    setConnectorEnrollmentError(null);
-    void galleryQuery.refetch();
-  }, [enrollmentAuthorizationUrl, connectorEnrollmentQuery.data?.status, galleryQuery.refetch, closeEnrollmentPopup]);
-  const startConnectorEnrollment = useMutation({
-    mutationFn: () => toolsApi.startCloudConnectorEnrollment(
-      selectedCompanyId!,
-      selectedCompany?.name,
-      requestedAppKey
-        ? appConnectHref(requestedAppKey, "key", credentialSource, {
-            resumeConnectionId,
-            reconnectConnectionId,
-            interactionId: connectionIntentId,
-          }) + (host === "dialog" ? "&enrollment_host=dialog" : "")
-        : undefined,
-    ),
-    onSuccess: (status) => {
-      if (!status.verificationUrl) {
-        closeEnrollmentPopup();
-        setConnectorEnrollmentError("Paperclip Cloud did not return an enrollment link. Try again.");
-        return;
-      }
-      openConnectorEnrollment(status.verificationUrl);
-    },
-    onError: (error) => {
-      closeEnrollmentPopup();
-      setConnectorEnrollmentError(
-        error instanceof Error ? error.message : "Wardmote couldn’t reach Paperclip Cloud. Try again.",
-      );
-    },
-  });
   const applicationsQuery = useQuery({
     queryKey: queryKeys.tools.applications(selectedCompanyId ?? "__none__"),
     queryFn: () => toolsApi.listApplications(selectedCompanyId!),
@@ -1260,8 +1069,6 @@ function StandardConnectionSetupFlow({
   const selectedSetupMethod = entry
     ? availableToolConnectionMethod(entry, connectionMethodKey || null)
     : null;
-  // Apps with an advanced PAT option still need OAuth progress and recovery
-  // screens when their selected method is managed sign-in.
   const entryAutomaticOAuthMethod = selectedSetupMethod && connectionMethodSupportsAutomaticOAuth(selectedSetupMethod)
     ? selectedSetupMethod
     : automaticOAuthMethod(entry);
@@ -1568,21 +1375,6 @@ function StandardConnectionSetupFlow({
       completedResumeConnectionId,
       applications: applicationsQuery.data?.applications ?? [],
     });
-    const requestedEntryAdvertisesManagedConnector = Boolean(
-      requestedEntry?.methods.some((candidate) =>
-        candidate.oauthStrategy === "paperclip_cloud_connector"
-        || candidate.oauthStrategy === "paperclip_id_connector"
-      ),
-    );
-    // The enrollment lookup decides whether a hidden managed method means
-    // "enroll this instance" or "that Cloud profile is unavailable here".
-    // Preserve managed sign-in intent in both cases; the setup screen explains
-    // unavailable profiles rather than downgrading to a credential form.
-    if (
-      requestedDefinitionUsesManagedConnector
-      && !requestedEntryAdvertisesManagedConnector
-      && connectorEnrollmentQuery.isLoading
-    ) return;
     const methods = connectionMethodsForCredentialSource(requestedEntry, credentialSource);
     const requestedAi = aiConnection ?? (reconnectConnection?.connectionPurpose === "ai"
       ? aiConnectionMetadataSchema.safeParse(reconnectConnection.config?.ai).data
@@ -1590,12 +1382,7 @@ function StandardConnectionSetupFlow({
     const explicitMethod = methods.find(candidate => requestedAi
       ? candidate.ai?.provider === requestedAi.provider && (!("mode" in requestedAi) || requestedAi.mode !== "responsible_user") && candidate.ai.method === requestedAi.method
       : candidate.key === requestedMethodKey);
-    const initialMethod = explicitMethod ?? (
-      requestedDefinitionUsesManagedConnector
-        && !requestedEntryAdvertisesManagedConnector
-        ? recommendedManagedConnectorMethod(fullRequestedDefinition)
-        : null
-    ) ?? recommendedSetupConnectionMethod(methods);
+    const initialMethod = explicitMethod ?? recommendedSetupConnectionMethod(methods);
     const method = methods.length === 1 ? methods[0]! : null;
     const automaticOAuth = credentialSource === "paperclip_vault" && Boolean(automaticOAuthMethod(requestedEntry));
     const vercelUnavailable = isVercelConnectUnavailable({
@@ -1652,14 +1439,9 @@ function StandardConnectionSetupFlow({
       setGoogleSheetsLinks("");
       setGoogleSheetsError(null);
       setConnectResult(null);
-      const matchingEnrollmentAccess = restoredEnrollmentAccess?.companyId === selectedCompanyId
-        ? restoredEnrollmentAccess
-        : null;
-      setGrantKind(reconnectGrantKind ?? matchingEnrollmentAccess?.grantKind ?? defaultGrantKindFor(initialMethod, Boolean(requestedAgentId)));
-      setInstallAgentIds(new Set(
-        matchingEnrollmentAccess?.agentIds ?? (requestedAgentId ? [requestedAgentId] : []),
-      ));
-      setInstallChoice(matchingEnrollmentAccess?.installChoice ?? (requestedAgentId ? "specific" : "all"));
+      setGrantKind(reconnectGrantKind ?? defaultGrantKindFor(initialMethod, Boolean(requestedAgentId)));
+      setInstallAgentIds(new Set(requestedAgentId ? [requestedAgentId] : []));
+      setInstallChoice(requestedAgentId ? "specific" : "all");
       // Route/service selection initializes the wizard once. Later renders must
       // preserve the user's current step in both hosts instead of snapping back
       // to Access after they continue.
@@ -1670,12 +1452,6 @@ function StandardConnectionSetupFlow({
         hasPrefilledLink: Boolean(prefill.link),
         zapierSource,
       }));
-    } else if (entryAdvertisesManagedConnector !== requestedEntryAdvertisesManagedConnector) {
-      // A capability refresh must replace the stale gallery entry as well as
-      // its method, while preserving the chosen audience and wizard step.
-      setEntry(requestedEntry);
-      setConnectionMethodKey(initialMethod?.key ?? "");
-      setConfigValues(defaultMethodConfig(initialMethod));
     }
 
     if (automaticOAuth && (
@@ -1697,12 +1473,9 @@ function StandardConnectionSetupFlow({
     applicationsQuery.data,
     connectionsQuery.isError,
     connectionsQuery.isFetchedAfterMount,
-    connectorEnrollmentQuery.data?.configured,
-    connectorEnrollmentQuery.isLoading,
     connectionMethodKey,
     credentialSource,
     entry?.slug,
-    entryAdvertisesManagedConnector,
     galleryQuery.data,
     galleryQuery.isLoading,
     navigate,
@@ -1720,7 +1493,6 @@ function StandardConnectionSetupFlow({
     fullRequestedDefinition,
     requestedAppKey,
     requestedAgentId,
-    restoredEnrollmentAccess,
     routeStage,
     zapierSource,
   ]);
@@ -2050,9 +1822,7 @@ function StandardConnectionSetupFlow({
   }
 
   const credentialSourceMethods = connectionMethodsForCredentialSource(entry, credentialSource);
-  const setupCredentialSourceMethods = preEnrollmentManagedMethod
-    ? [preEnrollmentManagedMethod]
-    : credentialSourceMethods;
+  const setupCredentialSourceMethods = credentialSourceMethods;
 
   // The stated default's identity line only makes sense when there *is* a
   // credential, so it reads the selected method's auth kind.
@@ -2150,26 +1920,6 @@ function StandardConnectionSetupFlow({
     automaticOAuthEntry
     && step === "key"
     && (directOAuthEntry || oauthPhase !== "entry"),
-  );
-
-  const managedConnectorUnavailable = Boolean(
-    step === "key"
-    && entry
-    && requestedDefinitionUsesManagedConnector
-    && !entryAdvertisesManagedConnector
-    && connectorEnrollmentQuery.data?.configured === true
-  );
-
-  const showConnectorEnrollmentStep = Boolean(
-    step === "key"
-    && entry
-    && requestedDefinitionUsesManagedConnector
-    && !entryAdvertisesManagedConnector
-    && (
-      connectorEnrollmentQuery.isLoading
-      || connectorEnrollmentQuery.isError
-      || connectorEnrollmentQuery.data?.configured !== true
-    )
   );
 
   if (showCuratedOAuthState && automaticOAuthEntry) {
@@ -2440,88 +2190,7 @@ function StandardConnectionSetupFlow({
         />
       )}
 
-      {managedConnectorUnavailable && entry ? (
-        <div className="mx-auto max-w-xl rounded-xl border border-line bg-bg-2 p-6">
-          <h2 className="text-lg font-semibold text-ink">{entry.name} sign-in is unavailable</h2>
-          <p className="mt-2 text-sm text-ink-3">
-            This instance is connected to Paperclip Cloud, but {entry.name} sign-in is not currently available. Try again shortly or contact your instance administrator.
-          </p>
-          {customOAuthMethod ? (
-            <Button type="button" variant="link" className="mt-4 h-auto p-0 text-xs" onClick={() => setConnectionMethodKey(customOAuthMethod.key)}>
-              Use your own {entry.name} OAuth app
-            </Button>
-          ) : null}
-          <div className="mt-6 flex items-center justify-between gap-3">
-            <Button type="button" variant="ghost" onClick={backToGallery}>Back</Button>
-            <Button type="button" disabled={galleryQuery.isFetching} onClick={() => void galleryQuery.refetch()}>
-              {galleryQuery.isFetching ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-              Try again
-            </Button>
-          </div>
-        </div>
-      ) : step === "key" && entry && showConnectorEnrollmentStep ? (
-        <div className="mx-auto max-w-xl">
-          <div className="rounded-xl border border-line bg-bg-2 p-6">
-            <div className="flex items-start gap-3">
-              <div className="rounded-lg bg-bg-3 p-2 text-ink-3">
-                <Cloud className="h-5 w-5" />
-              </div>
-              <div className="min-w-0">
-                <h2 className="text-lg font-semibold text-ink">
-                  Connect with Paperclip Cloud
-                </h2>
-                <p className="mt-2 text-sm text-ink-3">
-                  You must connect this instance to Paperclip Cloud to connect to {entry.name} (you only need to do this once).
-                </p>
-              </div>
-            </div>
-
-            {customOAuthMethod ? (
-              <Button type="button" variant="link" className="mt-4 h-auto p-0 text-xs" onClick={() => setConnectionMethodKey(customOAuthMethod.key)}>
-                Use your own {entry.name} OAuth app
-              </Button>
-            ) : null}
-
-            {connectorEnrollmentQuery.isError || connectorEnrollmentError ? (
-              <InlineBanner tone="danger" className="mt-4">
-                {connectorEnrollmentError ?? "Wardmote couldn’t check Cloud registration. Try again."}
-              </InlineBanner>
-            ) : null}
-
-            {enrollmentAuthorizationUrl ? (
-              <p className="mt-4 text-sm text-ink-3">
-                Finish authorization in the opened window.{' '}
-                <a className="underline" href={enrollmentAuthorizationUrl} target="_blank" rel="noopener noreferrer">
-                  Open authorization in a new tab
-                </a>
-              </p>
-            ) : null}
-            {connectionDefaults}
-            <div className="mt-6 flex items-center justify-between gap-3">
-              <Button type="button" variant="ghost" onClick={backToGallery}>
-                Back
-              </Button>
-              <Button
-                type="button"
-                disabled={connectorEnrollmentQuery.isLoading || startConnectorEnrollment.isPending}
-                onClick={() => {
-                  setConnectorEnrollmentError(null);
-                  reserveOAuthPopup();
-                  preserveEnrollmentAccess();
-                  // Let the server reuse a live enrollment or replace an expired
-                  // one. A cached verification URL may expire while this page is open.
-                  startConnectorEnrollment.mutate();
-                }}
-              >
-                {startConnectorEnrollment.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                {connectorEnrollmentQuery.data?.status === "pending"
-                  ? "Continue"
-                  : "Connect with Paperclip Cloud"}
-              </Button>
-            </div>
-          </div>
-        </div>
-      ) : step === "key" && entry && credentialStep !== undefined ? credentialStep : step === "key" && entry ? (
+      {step === "key" && entry && credentialStep !== undefined ? credentialStep : step === "key" && entry ? (
         <KeyStep
           settingsValid={additionalSettingsValid && instructionsValid}
           entry={entry}
@@ -2545,8 +2214,6 @@ function StandardConnectionSetupFlow({
           methodKey={connectionMethodKey}
           onMethodChange={(nextMethod) => {
             setConnectionMethodKey(nextMethod?.key ?? "");
-            // Capability/auth changes must not broaden the audience selected
-            // on Access (including choices restored after Cloud enrollment).
             if (
               !reconnectGrantKind
               && nextMethod?.grantKinds
@@ -2825,7 +2492,7 @@ export function OAuthConnectStateScreen({
             {recoveryActions.installationUrl ? (
               <Button type="button" variant="secondary" asChild>
                 <a href={recoveryActions.installationUrl} target="_blank" rel="noreferrer">
-                  Install the Paperclip Cloud app on GitHub
+                  Install the GitHub App
                   <ArrowUpRight className="ml-1.5 h-3.5 w-3.5" />
                 </a>
               </Button>
@@ -3679,28 +3346,8 @@ function KeyStep({
       {!capabilityKey && <p className="mt-2 text-xs text-ink-3">Choose an access level to continue.</p>}
     </div>
   ) : null;
-  const managedOAuthMethod = capabilityMethods.find((candidate) =>
-    candidate.oauthStrategy === "paperclip_cloud_connector",
-  );
-  const customerOAuthMethod = managedOAuthMethod && capabilityMethods.find((candidate) =>
-    connectionMethodAcceptsCustomerOAuthClient(candidate)
-    && !connectionMethodSupportsAutomaticOAuth(candidate),
-  );
-  const usingCustomOAuth = method?.key === customerOAuthMethod?.key;
   const customOAuthFieldsId = useId();
-  const authenticationSelection = managedOAuthMethod && customerOAuthMethod && capabilityMethods.length === 2 ? (
-    <Button
-      type="button"
-      variant="link"
-      className="h-auto p-0 text-xs underline underline-offset-2"
-      aria-expanded={usingCustomOAuth}
-      aria-controls={customOAuthFieldsId}
-      disabled={submitting}
-      onClick={() => onMethodChange(usingCustomOAuth ? managedOAuthMethod : customerOAuthMethod)}
-    >
-      {usingCustomOAuth ? "Use Wardmote instead" : `Use your own ${isGoogleWorkspaceConnectorProfileId(managedOAuthMethod.connectorProfile ?? "") ? "Google" : entry.name} OAuth app`}
-    </Button>
-  ) : capabilityMethods.length > 1 ? (
+  const authenticationSelection = capabilityMethods.length > 1 ? (
     // PAP-659 C1: the ranked default is already selected. This stays as the
     // way to pick something else, one disclosure away, rather than a question
     // the screen opens with.
@@ -3727,7 +3374,7 @@ function KeyStep({
     || hasAlternateMethods;
   // Keep the disclosure open when what is inside it is load-bearing right now:
   // a non-default method in use, or a selection the connector still needs.
-  const forceAdvancedOpen = usingCustomOAuth || !hasMethodSelection;
+  const forceAdvancedOpen = !hasMethodSelection;
   const advancedSettings = hasAdvancedSettings ? (
     <div className="space-y-6">
       {capabilitySelection}
@@ -3818,8 +3465,7 @@ function KeyStep({
     );
   }
 
-  const managedAsana = method?.connectorProfile === "asana.mcp";
-  const requirementsUrl = managedAsana ? null : method?.consoleLinks?.docs ?? entry.docsUrl;
+  const requirementsUrl = method?.consoleLinks?.docs ?? entry.docsUrl;
 
   return (
     <div className="mx-auto max-w-xl">
@@ -3838,9 +3484,6 @@ function KeyStep({
       ) : null}
 
       <div className="space-y-6">
-        {managedAsana ? (
-          <p className="text-sm text-ink-3">Sign in with Asana to choose your workspace and connect it to Wardmote.</p>
-        ) : null}
         {method?.capabilityProfile && (
           <p className="text-sm text-ink-3">
             {method.capabilityProfile.label}: {method.capabilityProfile.description}

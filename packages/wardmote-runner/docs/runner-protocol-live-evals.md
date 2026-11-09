@@ -18,7 +18,7 @@ colors and typography come from the Runner Lab token layer.
 Missing recordings show a notice in the same viewer; missing viewer builds
 fail generation. Build with
 `pnpm --filter @tickernelz/wardmote-runner build:issue-thread` and provide
-`--viewer-root` or `PAPERCLIP_EVAL_VIEWER_ROOT` to the canonical Python renderer.
+`--viewer-root` or `WARDMOTE_EVAL_VIEWER_ROOT` to the canonical Python renderer.
 
 The Actions artifact contains full evidence. S3 uses the same viewer with a
 closed public DTO: only isolated mock-run conversation text, scrubbed private
@@ -31,7 +31,7 @@ Public attempts use inert JSON and one shared viewer asset directory. The
 publisher verifies each shell and asset against the exact same-run viewer build,
 checks the public payload contract and local links, and rejects other scripts.
 The CSP prohibits network calls, forms and external resources. Supply
-`PAPERCLIP_RUNNER_PROTOCOL_EVAL_VIEWER_DIR` to the publisher. The workflow sends
+`WARDMOTE_RUNNER_PROTOCOL_EVAL_VIEWER_DIR` to the publisher. The workflow sends
 a viewer-only artifact to that job; raw attempts and provider secrets stay out.
 After publication succeeds, the publishing job writes **Open this run's
 Evalbook** and **All eval runs** links to the Actions summary. Its deployment
@@ -250,10 +250,10 @@ The paid jobs read only the credential selected for each roster:
 - short-lived GitHub OIDC workload identity for AWS AgentCore.
 
 Claude Managed also requires the four nonsecret
-`PAPERCLIP_CLAUDE_MANAGED_*` profile variables. AgentCore requires the
-nonsecret `PAPERCLIP_AWS_AGENTCORE_*` profile variables, including
-`PAPERCLIP_AWS_AGENTCORE_EXECUTION_ROLE_ARN` and the immutable
-`PAPERCLIP_AWS_AGENTCORE_QUALIFICATION_REVISION`; the eval fails closed when
+`WARDMOTE_CLAUDE_MANAGED_*` profile variables. AgentCore requires the
+nonsecret `WARDMOTE_AWS_AGENTCORE_*` profile variables, including
+`WARDMOTE_AWS_AGENTCORE_EXECUTION_ROLE_ARN` and the immutable
+`WARDMOTE_AWS_AGENTCORE_QUALIFICATION_REVISION`; the eval fails closed when
 that deployed revision differs from the pinned roster config. The currently
 qualified context-aware harness revision is
 `aws-agentcore-harness-context-v2`. The workflow

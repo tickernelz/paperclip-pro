@@ -281,8 +281,8 @@ jobs:
 
       - name: Run e2e tests
         env:
-          PAPERCLIP_E2E_SKIP_LLM: "true"
-          PAPERCLIP_PLAYWRIGHT_CHANNEL: "chrome"
+          WARDMOTE_E2E_SKIP_LLM: "true"
+          WARDMOTE_PLAYWRIGHT_CHANNEL: "chrome"
         run: |
           specs="$(node ./scripts/e2e-shard.mjs --shard-index ${{ matrix.shard_index }} --shard-count 5)"
           echo "shard ${{ matrix.shard_index }} specs: $specs"

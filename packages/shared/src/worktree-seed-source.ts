@@ -36,12 +36,12 @@ function readInstanceId(configPath: string, label: "source" | "target"): string 
   const contents = readFileSync(envPath, "utf8");
   for (const rawLine of contents.split(/\r?\n/)) {
     const match = rawLine.match(
-      /^\s*(?:export\s+)?PAPERCLIP_INSTANCE_ID\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s#]+))/,
+      /^\s*(?:export\s+)?WARDMOTE_INSTANCE_ID\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s#]+))/,
     );
     const value = (match?.[1] ?? match?.[2] ?? match?.[3] ?? "").trim();
     if (value) return value;
   }
-  throw new Error(`Registered ${label} Wardmote config has no PAPERCLIP_INSTANCE_ID binding.`);
+  throw new Error(`Registered ${label} Wardmote config has no WARDMOTE_INSTANCE_ID binding.`);
 }
 
 function errorCode(error: unknown): string {

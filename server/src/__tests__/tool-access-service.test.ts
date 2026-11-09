@@ -54,12 +54,8 @@ import { and, eq, inArray, sql } from "drizzle-orm";
 import {
   APP_DEFINITIONS,
   APP_STORE_HIDDEN_SLUGS,
-  GITHUB_CONNECTOR_PROFILES,
-  GOOGLE_WORKSPACE_CONNECTOR_PROFILE_IDS,
-  GOOGLE_WORKSPACE_CONNECTOR_PROFILES,
   getAvailableConnectionMethod,
   getConnectableAppDefinition,
-  type GoogleWorkspaceConnectorProfileId,
 } from "@tickernelz/wardmote-shared";
 import {
   getEmbeddedPostgresTestSupport,
@@ -90,7 +86,6 @@ import { errorHandler } from "../middleware/index.js";
 import * as sentry from "../sentry.js";
 import { HttpError } from "../errors.js";
 import type { VercelConnectClient } from "../services/vercel-connect.js";
-import { invalidatePaperclipCloudConnectorCapabilities, type PaperclipCloudConnector } from "../services/paperclip-cloud-connector.js";
 
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
 const describeEmbeddedPostgres = embeddedPostgresSupport.supported
@@ -121,81 +116,6 @@ function optIntoAirtableDcrRegistration() {
   return () => {
     if (original === undefined) delete method.oauthClientRegistration;
     else method.oauthClientRegistration = original;
-  };
-}
-
-function fakeGoogleWorkspaceConnector(
-  companyId: string,
-  userId: string,
-  profile: GoogleWorkspaceConnectorProfileId = "gmail.draft",
-): PaperclipCloudConnector {
-  const profileDefinition = GOOGLE_WORKSPACE_CONNECTOR_PROFILES[profile];
-  const tokenPrefix = profile.split(".")[0]!;
-  const credentials = {
-    v: 1 as const,
-    accessToken: `${tokenPrefix}-access-token`,
-    refreshToken: `${tokenPrefix}-refresh-token`,
-    tokenType: "Bearer",
-    accessTokenExpiresAt: new Date(Date.now() + 3_600_000).toISOString(),
-    scopes: [...profileDefinition.scopes],
-    subject: userId,
-    companyId,
-    instanceId: "test-instance",
-    environment: "development" as const,
-    provider: "google" as const,
-    profile,
-  };
-  return {
-    getCapabilities: vi.fn(async () => [profile]),
-    startAuthorization: vi.fn(async ({ returnState }) => ({
-      authorizationUrl: `https://accounts.google.com/o/oauth2/v2/auth?state=${encodeURIComponent(returnState)}`,
-      expiresAt: new Date(Date.now() + 600_000).toISOString(),
-    })),
-    claim: vi.fn(async () => credentials),
-    refresh: vi.fn(async () => credentials),
-    revoke: vi.fn(async () => undefined),
-  };
-}
-
-function fakeGmailConnector(
-  companyId: string,
-  userId: string,
-): PaperclipCloudConnector {
-  return fakeGoogleWorkspaceConnector(companyId, userId);
-}
-
-function fakeGitHubConnector(
-  companyId: string,
-  subject: string,
-): PaperclipCloudConnector {
-  const credentials = {
-    v: 1 as const,
-    accessToken: "ghu_non_expiring_access_token",
-    refreshToken: null,
-    tokenType: "Bearer",
-    accessTokenExpiresAt: null,
-    refreshTokenExpiresAt: null,
-    scopes: [...GITHUB_CONNECTOR_PROFILES["github.code"].scopes],
-    subject,
-    companyId,
-    instanceId: "test-instance",
-    environment: "development" as const,
-    provider: "github" as const,
-    profile: "github.code" as const,
-    appSlug: "paperclip-development",
-  };
-  return {
-    getCapabilities: vi.fn(async () => ["github.code" as const]),
-    startAuthorization: vi.fn(async ({ returnState }) => ({
-      authorizationUrl: `https://github.com/login/oauth/authorize?state=${encodeURIComponent(returnState)}`,
-      expiresAt: new Date(Date.now() + 600_000).toISOString(),
-    })),
-    claim: vi.fn(async () => credentials),
-    refresh: vi.fn(async () => credentials),
-    revoke: vi.fn(async () => undefined),
-    setWebhookBinding: vi.fn(async () => undefined),
-    leaseEvents: vi.fn(async () => null),
-    acknowledgeEvents: vi.fn(async () => 0),
   };
 }
 
@@ -380,7 +300,6 @@ function createRouteApp(
   deployment?: {
     deploymentMode?: "local_trusted" | "authenticated";
     deploymentExposure?: "private" | "public";
-    paperclipCloudConnector?: PaperclipCloudConnector | null;
   },
   useProtocolFixtureTransport = true,
 ) {
@@ -824,7 +743,7 @@ describeEmbeddedPostgres("tool access service", () => {
 
   beforeAll(async () => {
     const externalDatabaseUrl =
-      process.env.PAPERCLIP_TOOL_ACCESS_TEST_DATABASE_URL?.trim();
+      process.env.WARDMOTE_TOOL_ACCESS_TEST_DATABASE_URL?.trim();
     if (externalDatabaseUrl) {
       db = createDb(externalDatabaseUrl);
       await instanceSettingsService(db).updateExperimental({ enableMemoryConnectors: true });
@@ -1228,7 +1147,7 @@ describeEmbeddedPostgres("tool access service", () => {
 
   it("allows an explicitly allowlisted internal token broker through the guarded fetch", async () => {
     vi.stubEnv(
-      "PAPERCLIP_TOKEN_BROKER_ALLOWED_HOSTS",
+      "WARDMOTE_TOKEN_BROKER_ALLOWED_HOSTS",
       "broker.example, 127.0.0.1",
     );
     const company = await createCompany(db);
@@ -3284,7 +3203,7 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("implicitly allowlists the configured Pages API host for internal token brokers", async () => {
-    vi.stubEnv("PAPERCLIP_PAGES_API_URL", "http://127.0.0.1:8787");
+    vi.stubEnv("WARDMOTE_PAGES_API_URL", "http://127.0.0.1:8787");
     const company = await createCompany(db);
     const service = createTestToolAccessService(db, {
       deploymentMode: "authenticated",
@@ -3622,7 +3541,7 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("cancels an ask-first test request when approval signing is unavailable", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_ACTION_SIGNING_SECRET", "");
+    vi.stubEnv("WARDMOTE_TOOL_ACTION_SIGNING_SECRET", "");
     const company = await createCompany(db);
     const userId = `tool-tester-${randomUUID()}`;
     await grantBoardUser(db, company.id, userId, ["tools:use"]);
@@ -3652,7 +3571,7 @@ describeEmbeddedPostgres("tool access service", () => {
 
     expect(res.body).toMatchObject({
       reasonCode: "signing_secret_unconfigured",
-      error: expect.stringContaining("PAPERCLIP_TOOL_ACTION_SIGNING_SECRET"),
+      error: expect.stringContaining("WARDMOTE_TOOL_ACTION_SIGNING_SECRET"),
     });
     const [actionRequest] = await db
       .select()
@@ -5176,9 +5095,7 @@ describeEmbeddedPostgres("tool access service", () => {
 
   it("serves the app gallery manifest through the board route", async () => {
     const company = await createCompany(db);
-    const app = createRouteApp(db, undefined, undefined, {
-      paperclipCloudConnector: null,
-    });
+    const app = createRouteApp(db);
 
     const res = await request(app).get(
       `/api/companies/${company.id}/tools/gallery`,
@@ -5401,64 +5318,6 @@ describeEmbeddedPostgres("tool access service", () => {
         }),
       ]),
     );
-  });
-
-  it("exposes managed Google methods only for profiles signed for this enrolled instance", async () => {
-    const company = await createCompany(db);
-    const userId = `gallery-pilot-${randomUUID()}`;
-    const pilotConnector = fakeGoogleWorkspaceConnector(
-      company.id,
-      userId,
-      "gmail.read",
-    );
-    const nonPilotConnector: PaperclipCloudConnector = {
-      ...pilotConnector,
-      getCapabilities: vi.fn(async () => []),
-    };
-
-    const nonPilot = await request(
-      createRouteApp(
-        db,
-        boardSessionActor(company.id, "owner", userId),
-        undefined,
-        { paperclipCloudConnector: nonPilotConnector },
-      ),
-    ).get(`/api/companies/${company.id}/tools/gallery`);
-    expect(nonPilot.status).toBe(200);
-    const nonPilotGmail = nonPilot.body.apps.find(
-      (app: { slug: string }) => app.slug === "gmail",
-    );
-    expect(nonPilotGmail.ownershipAvailability.platform_shared).toBe(false);
-    expect(
-      nonPilotGmail.methods.some(
-        (method: { oauthStrategy?: string }) =>
-          method.oauthStrategy === "paperclip_cloud_connector",
-      ),
-    ).toBe(false);
-    expect(
-      nonPilotGmail.methods.map((method: { key: string }) => method.key),
-    ).toEqual(["customer-read-oauth", "customer-draft-oauth"]);
-
-    const pilot = await request(
-      createRouteApp(
-        db,
-        boardSessionActor(company.id, "owner", userId),
-        undefined,
-        { paperclipCloudConnector: pilotConnector },
-      ),
-    ).get(`/api/companies/${company.id}/tools/gallery`);
-    expect(pilot.status).toBe(200);
-    const pilotGmail = pilot.body.apps.find(
-      (app: { slug: string }) => app.slug === "gmail",
-    );
-    expect(pilotGmail.ownershipAvailability.platform_shared).toBe(true);
-    expect(
-      pilotGmail.methods.map((method: { key: string }) => method.key),
-    ).toEqual([
-      "paperclip-read",
-      "customer-read-oauth",
-      "customer-draft-oauth",
-    ]);
   });
 
   it("preflights only public Jira metadata without credentials or OAuth registration", async () => {
@@ -5989,9 +5848,9 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("validates a reviewed Vercel connector and stores no provider bearer or vault secret", async () => {
-    vi.stubEnv("PAPERCLIP_VERCEL_CONNECT_ENABLED", "true");
+    vi.stubEnv("WARDMOTE_VERCEL_CONNECT_ENABLED", "true");
     vi.stubEnv(
-      "PAPERCLIP_VERCEL_CONNECT_ACCESS_TOKEN",
+      "WARDMOTE_VERCEL_CONNECT_ACCESS_TOKEN",
       "vercel-bootstrap-authority",
     );
     const company = await createCompany(db);
@@ -6132,9 +5991,9 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("rejects an attached Vercel connector for the wrong reviewed service", async () => {
-    vi.stubEnv("PAPERCLIP_VERCEL_CONNECT_ENABLED", "true");
+    vi.stubEnv("WARDMOTE_VERCEL_CONNECT_ENABLED", "true");
     vi.stubEnv(
-      "PAPERCLIP_VERCEL_CONNECT_ACCESS_TOKEN",
+      "WARDMOTE_VERCEL_CONNECT_ACCESS_TOKEN",
       "vercel-bootstrap-authority",
     );
     const company = await createCompany(db);
@@ -6176,9 +6035,9 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("binds the Vercel OAuth callback to one company, actor, session, and one-time state", async () => {
-    vi.stubEnv("PAPERCLIP_VERCEL_CONNECT_ENABLED", "true");
+    vi.stubEnv("WARDMOTE_VERCEL_CONNECT_ENABLED", "true");
     vi.stubEnv(
-      "PAPERCLIP_VERCEL_CONNECT_ACCESS_TOKEN",
+      "WARDMOTE_VERCEL_CONNECT_ACCESS_TOKEN",
       "vercel-bootstrap-authority",
     );
     const company = await createCompany(db);
@@ -7394,207 +7253,6 @@ describeEmbeddedPostgres("tool access service", () => {
     expect(updated.transportConfig).toEqual(updated.config);
   });
 
-  it.each(GOOGLE_WORKSPACE_CONNECTOR_PROFILE_IDS.flatMap((profile) => [
-    ["local_trusted", "private", "http://127.0.0.1:3102"] as const,
-    ["authenticated", "public", "https://tenant.paperclip.app"] as const,
-  ].map(([deploymentMode, deploymentExposure, origin]) => ({ profile, deploymentMode, deploymentExposure, origin }))))(
-    "connects advertised Workspace $profile without mutating definitions in $deploymentMode",
-    async ({ profile, deploymentMode, deploymentExposure, origin }) => {
-      const slug = GOOGLE_WORKSPACE_CONNECTOR_PROFILES[profile].appSlug;
-      const methodKey = getConnectableAppDefinition(slug)!.methods.find((method) => method.connectorProfile === profile)!.key;
-      const company = await createCompany(db);
-      const userId = "board-user";
-      await grantBoardUser(db, company.id, userId, [], "owner");
-      const connector = fakeGoogleWorkspaceConnector(company.id, userId, profile);
-      const definitionBefore = JSON.stringify(getConnectableAppDefinition(slug));
-      const app = createRouteApp(db,
-        deploymentMode === "authenticated" ? boardSessionActor(company.id, "owner", userId) : undefined,
-        undefined, { deploymentMode, deploymentExposure, paperclipCloudConnector: connector });
-      const gallery = await request(app).get(`/api/companies/${company.id}/tools/gallery`);
-      const workspaceApp = gallery.body.apps.find((entry: { slug: string }) => entry.slug === slug);
-      expect(workspaceApp.methods.map((method: { key: string }) => method.key)).toContain(methodKey);
-      const connected = await request(app).post(`/api/companies/${company.id}/tools/apps/connect`).send({
-        galleryKey: slug, connectionMethodKey: methodKey, grantKind: "user", name: `Personal ${slug}`,
-      });
-      expect(connected.status).toBe(201);
-      expect(connected.body.connection).toMatchObject({ credentialPolicy: "per_user", ownership: "platform_shared" });
-      const service = createTestToolAccessService(db, { paperclipCloudConnector: connector });
-      const actor = { actorType: "user" as const, actorId: userId };
-      const started = await service.startOAuth(company.id, connected.body.connectionId, {
-        redirectUri: `${origin}/api/tools/oauth/cloud-connector/callback`, actor,
-      });
-      expect(connector.startAuthorization).toHaveBeenCalledWith(expect.objectContaining({
-        profile, companyId: company.id, subject: userId,
-        returnUri: `${origin}/api/tools/oauth/cloud-connector/callback`,
-      }));
-      mockToolsList([]);
-      const completed = await service.completePaperclipCloudConnectorCallback({
-        state: new URL(started.authorizationUrl).searchParams.get("state")!, claimId: `${profile}-claim`, actor,
-      });
-      expect(completed.connection).toMatchObject({ status: "active", credentialPolicy: "per_user" });
-      expect(JSON.stringify(getConnectableAppDefinition(slug))).toBe(definitionBefore);
-  });
-
-  it.each(GOOGLE_WORKSPACE_CONNECTOR_PROFILE_IDS)("connects advertised Workspace %s with a Cloud-delivered environment identity", async (profile) => {
-    const slug = GOOGLE_WORKSPACE_CONNECTOR_PROFILES[profile].appSlug;
-    const methodKey = getConnectableAppDefinition(slug)!.methods.find((method) => method.connectorProfile === profile)!.key;
-    const company = await createCompany(db);
-    const userId = `cloud-workspace-${randomUUID()}`;
-    await grantBoardUser(db, company.id, userId, [], "owner");
-    const signing = generateKeyPairSync("ed25519");
-    const sealing = generateKeyPairSync("x25519");
-    vi.stubEnv("PAPERCLIP_AUTH_PUBLIC_BASE_URL", "https://tenant.paperclip.app");
-    vi.stubEnv("PAPERCLIP_CLOUD_CONNECTOR_BASE_URL", "https://my.paperclip.app");
-    vi.stubEnv("PAPERCLIP_CLOUD_CONNECTOR_ENVIRONMENT", "production");
-    vi.stubEnv("PAPERCLIP_CLOUD_CONNECTOR_INSTANCE_ID", "inst-cloud-workspace-regression");
-    vi.stubEnv("PAPERCLIP_CLOUD_CONNECTOR_SIGN_PRIVATE_KEY", signing.privateKey.export({ type: "pkcs8", format: "pem" }).toString());
-    vi.stubEnv("PAPERCLIP_CLOUD_CONNECTOR_SEAL_PRIVATE_KEY", sealing.privateKey.export({ type: "pkcs8", format: "pem" }).toString());
-    invalidatePaperclipCloudConnectorCapabilities();
-    const cloudRequest = vi.spyOn(globalThis, "fetch").mockImplementation(async (url, init) => {
-      const signed = JSON.parse(String(init?.body)).request as string;
-      const claims = JSON.parse(Buffer.from(signed.split(".")[1]!, "base64url").toString());
-      expect(claims).toMatchObject({ iss: "inst-cloud-workspace-regression", env: "production" });
-      if (String(url) === "https://my.paperclip.app/v1/connector/instance-status") {
-        expect(claims.op).toBe("status");
-        return Response.json({ active: true, status: "active", profiles: [profile] });
-      }
-      expect(String(url)).toBe("https://my.paperclip.app/v1/connector/sessions");
-      expect(claims).toMatchObject({
-        op: "session", prf: profile, cid: company.id, sub: userId,
-        ruri: "https://tenant.paperclip.app/api/tools/oauth/cloud-connector/callback",
-      });
-      return Response.json({
-        confirmationUrl: "https://my.paperclip.app/connections/confirm?id=test-workspace-session",
-        expiresAt: new Date(Date.now() + 600_000).toISOString(),
-      });
-    });
-    try {
-      const app = createRouteApp(db, boardSessionActor(company.id, "owner", userId), undefined, {
-        deploymentMode: "authenticated", deploymentExposure: "public",
-      });
-      const gallery = await request(app).get(`/api/companies/${company.id}/tools/gallery`);
-      expect(gallery.body.apps.find((entry: { slug: string }) => entry.slug === slug).methods
-        .map((method: { key: string }) => method.key)).toContain(methodKey);
-      const result = await request(app).post(`/api/companies/${company.id}/tools/apps/connect`).send({
-        galleryKey: slug, connectionMethodKey: methodKey, grantKind: "user", name: `Cloud ${slug}`,
-      });
-      expect(result.status, JSON.stringify(result.body)).toBe(201);
-      expect(result.body.auth.startUrl).toBe("https://my.paperclip.app/connections/confirm?id=test-workspace-session");
-      expect(result.body.connection).toMatchObject({ credentialPolicy: "per_user", ownership: "platform_shared" });
-      expect(cloudRequest).toHaveBeenCalled();
-    } finally {
-      invalidatePaperclipCloudConnectorCapabilities();
-    }
-  });
-
-  it.each(GOOGLE_WORKSPACE_CONNECTOR_PROFILE_IDS.flatMap((profile) =>
-    [false, true].map((advertiseOther) => ({ profile, advertiseOther })),
-  ))("rejects unavailable Workspace $profile (other profile advertised: $advertiseOther)", async ({ profile, advertiseOther }) => {
-    const slug = GOOGLE_WORKSPACE_CONNECTOR_PROFILES[profile].appSlug;
-    const methodKey = getConnectableAppDefinition(slug)!.methods.find((method) => method.connectorProfile === profile)!.key;
-    const company = await createCompany(db);
-    const connector = fakeGmailConnector(company.id, "board-user");
-    connector.getCapabilities = vi.fn(async (): Promise<GoogleWorkspaceConnectorProfileId[]> =>
-      advertiseOther ? [profile === "gmail.read" ? "drive.read" : "gmail.read"] : [],
-    );
-    const app = createRouteApp(db, undefined, undefined, { paperclipCloudConnector: connector });
-    const response = await request(app).post(`/api/companies/${company.id}/tools/apps/connect`).send({
-      galleryKey: slug, connectionMethodKey: methodKey, name: `Unavailable ${slug}`,
-    });
-    expect(response.status).toBe(422);
-    expect(connector.startAuthorization).not.toHaveBeenCalled();
-    expect(await db.select().from(toolConnections).where(eq(toolConnections.companyId, company.id))).toEqual([]);
-  });
-
-  it("completes brokered Gmail OAuth with a single database connection", async () => {
-    const company = await createCompany(db);
-    const userId = `gmail-member-${randomUUID()}`;
-    await grantBoardUser(db, company.id, userId, []);
-    const callbackDb = createDb(tempDb!.connectionString, {
-      maxConnections: 1,
-    });
-    const connector = fakeGmailConnector(company.id, userId);
-    const service = createTestToolAccessService(callbackDb, {
-      paperclipCloudConnector: connector,
-    });
-    const actor = { actorType: "user" as const, actorId: userId };
-    let deadline: ReturnType<typeof setTimeout> | null = null;
-    mockToolsList([]);
-
-    try {
-      await callbackDb.execute(sql`select pg_backend_pid()`);
-      const connected = await service.connectGalleryApp(
-        company.id,
-        {
-          galleryKey: "gmail",
-          connectionMethodKey: "paperclip-draft",
-          grantKind: "user",
-          name: "Gmail single-pool callback",
-        },
-        actor,
-      );
-      const started = await service.startOAuth(
-        company.id,
-        connected.connectionId,
-        {
-          redirectUri:
-            "https://paperclip.example/api/tools/oauth/cloud-connector/callback",
-          actor,
-        },
-      );
-      const state = new URL(started.authorizationUrl).searchParams.get(
-        "state",
-      )!;
-
-      const completed = await Promise.race([
-        service.completePaperclipCloudConnectorCallback({
-          state,
-          claimId: "gmail-claim",
-          actor,
-        }),
-        new Promise<never>((_resolve, reject) => {
-          deadline = setTimeout(() => {
-            void callbackDb.$client
-              .end({ timeout: 0 })
-              .finally(() =>
-                reject(
-                  new Error(
-                    "Gmail OAuth callback self-deadlocked with maxConnections=1",
-                  ),
-                ),
-              );
-          }, 5_000);
-        }),
-      ]);
-
-      expect(completed.connection).toMatchObject({
-        status: "active",
-        enabled: true,
-      });
-      const [grant] = await callbackDb
-        .select()
-        .from(connectionGrants)
-        .where(
-          and(
-            eq(connectionGrants.connectionId, connected.connectionId),
-            eq(connectionGrants.kind, "user"),
-            eq(connectionGrants.subjectUserId, userId),
-          ),
-        );
-      expect(grant).toMatchObject({ status: "active" });
-      expect(
-        grant!.credentialSecretRefs.map((ref) => ref.configPath).sort(),
-      ).toEqual(["oauth.access_token", "oauth.refresh_token"]);
-      await expect(
-        service.revokeConnectionGrant(connected.connectionId, grant!.id, actor),
-      ).resolves.toMatchObject({ status: "revoked" });
-      expect(connector.revoke).not.toHaveBeenCalled();
-    } finally {
-      if (deadline) clearTimeout(deadline);
-      await callbackDb.$client.end({ timeout: 0 }).catch(() => undefined);
-    }
-  }, 15_000);
-
   it("reports GitHub reauthorization for the viewer without borrowing another user's grant", async () => {
     const company = await createCompany(db);
     const [application] = await db
@@ -7652,1662 +7310,10 @@ describeEmbeddedPostgres("tool access service", () => {
     ).toBe(false);
   });
 
-  it.each(["none", "event", "same-time-refresh", "one-conflict"])(
-    "binds a managed GitHub identity and protects refresh from concurrent access changes (%s)",
-    async (concurrentChange) => {
-      const company = await createCompany(db);
-      const userId = `github-manager-${randomUUID()}`;
-      await grantBoardUser(db, company.id, userId, [], "owner");
-      const agent = await createAgent(db, company.id);
-      const connector = fakeGitHubConnector(company.id, `agent:${agent.id}`);
-      const service = createTestToolAccessService(db, {
-        paperclipCloudConnector: connector,
-      });
-      const actor = { actorType: "user" as const, actorId: userId };
-      const githubDefinition = getConnectableAppDefinition("github")!;
-      const previousOwnershipAvailability =
-        githubDefinition.ownershipAvailability;
-      githubDefinition.ownershipAvailability = {
-        ...previousOwnershipAvailability,
-        platform_shared: true,
-      };
-      let beforeRepositoryResponse = async () => {};
-      vi.spyOn(globalThis, "fetch").mockImplementation(async (url) => {
-        const href = String(url);
-        if (href === "https://api.github.com/user") {
-          return mcpHttpResponse({
-            id: 42,
-            login: "octocat",
-            avatar_url: "https://avatars.example/octocat",
-          });
-        }
-        if (href.includes("https://api.github.com/user/installations?")) {
-          return mcpHttpResponse({
-            installations: [
-              {
-                id: 101,
-                repository_selection: "selected",
-                html_url: "https://github.com/settings/installations/101",
-                account: { login: "paperclipai" },
-              },
-            ],
-          });
-        }
-        if (
-          href.includes(
-            "https://api.github.com/user/installations/101/repositories?",
-          )
-        ) {
-          await beforeRepositoryResponse();
-          return mcpHttpResponse({
-            total_count: 3,
-            repositories: [1, 2, 3].map((id) => ({
-              id,
-              full_name: `paperclipai/repo-${id}`,
-              description: "do-not-store",
-            })),
-          });
-        }
-        if (href === GITHUB_CONNECTOR_PROFILES["github.code"].serverUrl) {
-          return mcpHttpResponse({
-            jsonrpc: "2.0",
-            id: "paperclip-catalog-refresh",
-            result: {
-              tools: [
-                {
-                  name: "get_pull_request",
-                  annotations: { readOnlyHint: true },
-                },
-              ],
-            },
-          });
-        }
-        throw new Error(`unexpected fetch ${href}`);
-      });
-
-      try {
-        const connected = await service.connectGalleryApp(
-          company.id,
-          {
-            galleryKey: "github",
-            connectionMethodKey: "managed",
-            grantKind: "agent",
-            subjectAgentId: agent.id,
-            name: "Agent GitHub",
-          },
-          actor,
-        );
-        expect(connected.connection.credentialPolicy).toBe("per_agent");
-        const started = await service.startOAuth(
-          company.id,
-          connected.connectionId,
-          {
-            redirectUri:
-              "https://paperclip.example/api/tools/oauth/cloud-connector/callback",
-            actor,
-            subjectAgentId: agent.id,
-          },
-        );
-        const state = new URL(started.authorizationUrl).searchParams.get(
-          "state",
-        )!;
-        await db
-          .update(companyMemberships)
-          .set({ membershipRole: "operator" })
-          .where(
-            and(
-              eq(companyMemberships.companyId, company.id),
-              eq(companyMemberships.principalId, userId),
-            ),
-          );
-        await expect(
-          service.completePaperclipCloudConnectorCallback({
-            state,
-            claimId: "github-agent-claim",
-            actor,
-          }),
-        ).rejects.toMatchObject({ status: 403 });
-        await db.insert(principalPermissionGrants).values({
-          companyId: company.id,
-          principalType: "user",
-          principalId: userId,
-          permissionKey: "tools:manage_connections",
-          scope: null,
-          grantedByUserId: "owner",
-        });
-        const completed = await service.completePaperclipCloudConnectorCallback(
-          {
-            state,
-            claimId: "github-agent-claim",
-            actor,
-          },
-        );
-
-        expect(completed.connection).toMatchObject({
-          credentialPolicy: "per_agent",
-          status: "active",
-          enabled: true,
-        });
-        const [grant] = await db
-          .select()
-          .from(connectionGrants)
-          .where(
-            and(
-              eq(connectionGrants.connectionId, connected.connectionId),
-              eq(connectionGrants.kind, "agent"),
-              eq(connectionGrants.subjectAgentId, agent.id),
-            ),
-          );
-        expect(grant).toMatchObject({
-          status: "active",
-          subjectUserId: null,
-          isDefault: false,
-          providerTenant: {
-            name: "octocat",
-            oauth: {
-              strategy: "paperclip_cloud_connector",
-              accessTokenExpiresAt: null,
-            },
-            github: {
-              userId: "42",
-              login: "octocat",
-              installationCount: 1,
-              repositoryCount: 3,
-              repositorySelection: "selected",
-              installationIds: ["101"],
-              installationUrl:
-                "https://github.com/apps/paperclip-development/installations/new",
-              managementUrl: "https://github.com/settings/installations/101",
-              appSlug: "paperclip-development",
-            },
-          },
-        });
-        expect(
-          grant!.credentialSecretRefs.map((ref) => ref.configPath),
-        ).toEqual(["oauth.access_token"]);
-        expect(JSON.stringify(grant)).not.toContain("do-not-store");
-        expect(connector.setWebhookBinding).toHaveBeenCalledWith(
-          expect.objectContaining({
-            subject: `agent:${agent.id}`,
-            companyId: company.id,
-            connectionId: connected.connectionId,
-            grantId: grant!.id,
-            installationId: "101",
-            active: true,
-          }),
-        );
-        await expect(
-          db
-            .select()
-            .from(toolConnectionInstalls)
-            .where(
-              and(
-                eq(toolConnectionInstalls.connectionId, connected.connectionId),
-                eq(toolConnectionInstalls.targetType, "agent"),
-                eq(toolConnectionInstalls.targetId, agent.id),
-              ),
-            ),
-        ).resolves.toHaveLength(1);
-        vi.mocked(connector.setWebhookBinding).mockClear();
-        if (concurrentChange !== "none") {
-          beforeRepositoryResponse = async () => {
-            if (concurrentChange === "one-conflict")
-              beforeRepositoryResponse = async () => {};
-            const [latest] = await db
-              .select()
-              .from(connectionGrants)
-              .where(eq(connectionGrants.id, grant!.id));
-            await db
-              .update(connectionGrants)
-              .set({
-                providerTenant: {
-                  ...latest!.providerTenant,
-                  github: {
-                    ...latest!.providerTenant!.github!,
-                    accessRevision: randomUUID(),
-                    // Simulate a refresh with identical timestamps, so only the unique
-                    // access revision can distinguish its newer access snapshot.
-                    ...(concurrentChange === "event"
-                      ? { lastWebhookAt: new Date().toISOString() }
-                      : {}),
-                    installationIds: [],
-                    installationCount: 0,
-                    repositoryCount: 0,
-                    repositorySelection: "none",
-                    repositories: undefined,
-                    webhookHealth: "unhealthy",
-                  },
-                },
-              })
-              .where(eq(connectionGrants.id, grant!.id));
-          };
-          if (concurrentChange === "one-conflict") {
-            await expect(
-              service.checkHealth(connected.connectionId, actor),
-            ).resolves.toMatchObject({ connection: { healthStatus: "ok" } });
-            expect(connector.setWebhookBinding).toHaveBeenCalled();
-            const [latest] = await db
-              .select()
-              .from(connectionGrants)
-              .where(eq(connectionGrants.id, grant!.id));
-            expect(latest?.status).toBe("active");
-            expect(latest?.providerTenant?.github?.repositoryCount).toBe(3);
-            return;
-          }
-          await expect(
-            service.checkHealth(connected.connectionId, actor),
-          ).rejects.toThrow("GitHub access changed during refresh. Try again.");
-          const [latest] = await db
-            .select()
-            .from(connectionGrants)
-            .where(eq(connectionGrants.id, grant!.id));
-          expect(latest?.providerTenant?.github).toMatchObject({
-            installationIds: [],
-            repositoryCount: 0,
-            webhookHealth: "unhealthy",
-          });
-          expect(latest?.providerTenant?.github?.repositories).toBeUndefined();
-          expect(connector.setWebhookBinding).not.toHaveBeenCalled();
-        } else {
-          await expect(
-            service.checkHealth(connected.connectionId, actor),
-          ).resolves.toMatchObject({ connection: { healthStatus: "ok" } });
-          expect(connector.setWebhookBinding).toHaveBeenCalled();
-        }
-      } finally {
-        githubDefinition.ownershipAvailability = previousOwnershipAvailability;
-      }
-    },
-  );
-
-  it("replaces an archived dedicated GitHub identity with an explicitly selected personal identity", async () => {
-    const company = await createCompany(db);
-    const userId = `github-personal-revival-${randomUUID()}`;
-    await grantBoardUser(db, company.id, userId, [], "owner");
-    const agent = await createAgent(db, company.id);
-    const connector = fakeGitHubConnector(company.id, `agent:${agent.id}`);
-    const originalClaim = connector.claim;
-    connector.claim = vi.fn(async (input) => ({
-      ...(await originalClaim(input)),
-      subject: input.subject,
-    }));
-    const service = createTestToolAccessService(db, {
-      paperclipCloudConnector: connector,
-    });
-    const actor = { actorType: "user" as const, actorId: userId };
-    const githubDefinition = getConnectableAppDefinition("github")!;
-    const previousOwnershipAvailability =
-      githubDefinition.ownershipAvailability;
-    githubDefinition.ownershipAvailability = {
-      ...previousOwnershipAvailability,
-      platform_shared: true,
-    };
-    vi.spyOn(globalThis, "fetch").mockImplementation(async (url) => {
-      const href = String(url);
-      if (href === "https://api.github.com/user") {
-        return mcpHttpResponse({ id: 42, login: "octocat" });
-      }
-      if (href.includes("https://api.github.com/user/installations?")) {
-        return mcpHttpResponse({
-          installations: [
-            {
-              id: 101,
-              repository_selection: "selected",
-              html_url: "https://github.com/settings/installations/101",
-              account: { login: "paperclipai" },
-            },
-          ],
-        });
-      }
-      if (
-        href.includes(
-          "https://api.github.com/user/installations/101/repositories?",
-        )
-      ) {
-        return mcpHttpResponse({
-          total_count: 1,
-          repositories: [{ id: 1, full_name: "paperclipai/repo-1" }],
-        });
-      }
-      if (href === GITHUB_CONNECTOR_PROFILES["github.code"].serverUrl) {
-        return mcpHttpResponse({
-          jsonrpc: "2.0",
-          id: "paperclip-catalog-refresh",
-          result: {
-            tools: [
-              { name: "get_pull_request", annotations: { readOnlyHint: true } },
-            ],
-          },
-        });
-      }
-      throw new Error(`unexpected fetch ${href}`);
-    });
-
-    try {
-      const dedicated = await service.connectGalleryApp(
-        company.id,
-        {
-          galleryKey: "github",
-          connectionMethodKey: "managed",
-          grantKind: "agent",
-          subjectAgentId: agent.id,
-          name: "GitHub",
-        },
-        actor,
-      );
-      const dedicatedStart = await service.startOAuth(
-        company.id,
-        dedicated.connectionId,
-        {
-          redirectUri:
-            "https://paperclip.example/api/tools/oauth/cloud-connector/callback",
-          actor,
-          subjectAgentId: agent.id,
-        },
-      );
-      await service.completePaperclipCloudConnectorCallback({
-        state: new URL(dedicatedStart.authorizationUrl).searchParams.get(
-          "state",
-        )!,
-        claimId: "github-dedicated-before-removal",
-        actor,
-      });
-      await service.archiveConnection(
-        dedicated.connectionId,
-        company.id,
-        actor,
-      );
-
-      const personal = await service.connectGalleryApp(
-        company.id,
-        {
-          galleryKey: "github",
-          connectionMethodKey: "managed",
-          grantKind: "user",
-          name: "GitHub",
-        },
-        actor,
-      );
-      expect(personal.connectionId).toBe(dedicated.connectionId);
-      expect(personal.connection).toMatchObject({
-        status: "draft",
-        credentialPolicy: "per_user",
-      });
-
-      const personalStart = await service.startOAuth(
-        company.id,
-        personal.connectionId,
-        {
-          redirectUri:
-            "https://paperclip.example/api/tools/oauth/cloud-connector/callback",
-          actor,
-        },
-      );
-      const completed = await service.completePaperclipCloudConnectorCallback({
-        state: new URL(personalStart.authorizationUrl).searchParams.get(
-          "state",
-        )!,
-        claimId: "github-personal-after-removal",
-        actor,
-      });
-      expect(completed.connection).toMatchObject({
-        status: "active",
-        credentialPolicy: "per_user",
-      });
-
-      const grants = await service.listConnectionGrants(
-        personal.connectionId,
-        company.id,
-      );
-      expect(grants.grants).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            kind: "agent",
-            subjectAgentId: agent.id,
-            status: "revoked",
-          }),
-          expect.objectContaining({
-            kind: "user",
-            subjectUserId: userId,
-            status: "active",
-          }),
-        ]),
-      );
-      expect(grants.grants.some((grant) => grant.kind === "organization")).toBe(
-        false,
-      );
-    } finally {
-      githubDefinition.ownershipAvailability = previousOwnershipAvailability;
-    }
-  });
-
-  it("routes a managed Drive callback into the personal vault, filtered catalog, and provider-specific activity", async () => {
-    const company = await createCompany(db);
-    const userId = `drive-member-${randomUUID()}`;
-    await grantBoardUser(db, company.id, userId, [], "owner");
-    const profile = "drive.read" as const;
-    const connector = fakeGoogleWorkspaceConnector(company.id, userId, profile);
-    connector.startAuthorization = vi.fn(async ({ returnState }) => ({
-      authorizationUrl: `https://my.example.test/connections/confirm?session=legacy&state=${encodeURIComponent(returnState)}`,
-      expiresAt: new Date(Date.now() + 600_000).toISOString(),
-      handoff: {
-        kind: "paperclip_cloud" as const,
-        session: "cloud_session_abcdefghijklmnop",
-      },
-    }));
-    const service = createTestToolAccessService(db, {
-      paperclipCloudConnector: connector,
-    });
-    const actor = { actorType: "user" as const, actorId: userId };
-    const driveDefinition = getConnectableAppDefinition("google-drive")!;
-    const previousOwnershipAvailability = driveDefinition.ownershipAvailability;
-    driveDefinition.ownershipAvailability = {
-      ...previousOwnershipAvailability,
-      platform_shared: true,
-    };
-    mockToolsList([
-      { name: "search_files", annotations: { readOnlyHint: true } },
-      { name: "create_file", annotations: { readOnlyHint: false } },
-    ]);
-
-    try {
-      const connected = await service.connectGalleryApp(
-        company.id,
-        {
-          galleryKey: "google-drive",
-          connectionMethodKey: "paperclip-read",
-          grantKind: "user",
-          name: "Drive managed read",
-        },
-        actor,
-      );
-      const started = await service.startOAuth(
-        company.id,
-        connected.connectionId,
-        {
-          redirectUri:
-            "https://paperclip.example/api/tools/oauth/cloud-connector/callback",
-          actor,
-        },
-      );
-      const state = new URL(started.authorizationUrl).searchParams.get(
-        "state",
-      )!;
-      expect(started.handoff).toEqual({
-        kind: "paperclip_cloud",
-        session: "cloud_session_abcdefghijklmnop",
-      });
-      const app = createRouteApp(
-        db,
-        boardSessionActor(company.id, "owner", userId),
-        undefined,
-        { paperclipCloudConnector: connector },
-      );
-
-      const callback = await request(app)
-        .get("/api/tools/oauth/cloud-connector/callback")
-        .query({ state, claim_id: "drive-claim" })
-        .set("accept", "application/json");
-
-      expect(callback.status).toBe(200);
-      expect(connector.startAuthorization).toHaveBeenCalledWith(
-        expect.objectContaining({
-          companyId: company.id,
-          subject: userId,
-          profile,
-        }),
-      );
-      expect(connector.claim).toHaveBeenCalledWith(
-        expect.objectContaining({
-          companyId: company.id,
-          subject: userId,
-          profile,
-          claimId: "drive-claim",
-          redemptionId: state,
-        }),
-      );
-      expect(callback.body.connection).toMatchObject({
-        status: "active",
-        enabled: true,
-        healthStatus: "ok",
-        config: {
-          sourceTemplateKey: "google-drive",
-          quarantineNewEntries: true,
-          oauth: {
-            strategy: "paperclip_cloud_connector",
-            provider: "google-drive",
-            connectorProfile: profile,
-            resource: GOOGLE_WORKSPACE_CONNECTOR_PROFILES[profile].serverUrl,
-            scopes: [...GOOGLE_WORKSPACE_CONNECTOR_PROFILES[profile].scopes],
-          },
-        },
-      });
-      expect(callback.body.catalog).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            toolName: "search_files",
-            status: "active",
-            riskLevel: "read",
-          }),
-          expect.objectContaining({
-            toolName: "create_file",
-            status: "disabled",
-            riskLevel: "write",
-          }),
-        ]),
-      );
-      const [profileRow] = await db
-        .select()
-        .from(toolProfiles)
-        .where(eq(toolProfiles.profileKey, `app:${connected.connectionId}`));
-      const profileEntries = await db
-        .select()
-        .from(toolProfileEntries)
-        .where(eq(toolProfileEntries.profileId, profileRow!.id));
-      expect(profileEntries).toHaveLength(1);
-      expect(profileEntries[0]).toMatchObject({
-        catalogEntryId: callback.body.catalog.find(
-          (entry: { toolName: string }) => entry.toolName === "search_files",
-        ).id,
-        effect: "include",
-      });
-      await expect(
-        db
-          .select()
-          .from(toolConnectionInstalls)
-          .where(
-            and(
-              eq(toolConnectionInstalls.connectionId, connected.connectionId),
-              eq(toolConnectionInstalls.targetType, "company"),
-            ),
-          ),
-      ).resolves.toHaveLength(1);
-
-      const [grant] = await db
-        .select()
-        .from(connectionGrants)
-        .where(
-          and(
-            eq(connectionGrants.connectionId, connected.connectionId),
-            eq(connectionGrants.kind, "user"),
-            eq(connectionGrants.subjectUserId, userId),
-          ),
-        );
-      expect(grant).toMatchObject({
-        status: "active",
-        providerTenant: {
-          name: "Google Drive",
-          oauth: {
-            strategy: "paperclip_cloud_connector",
-            scopes: [...GOOGLE_WORKSPACE_CONNECTOR_PROFILES[profile].scopes],
-          },
-        },
-      });
-      expect(
-        grant!.credentialSecretRefs.map((ref) => ref.configPath).sort(),
-      ).toEqual(["oauth.access_token", "oauth.refresh_token"]);
-      const secrets = await db
-        .select()
-        .from(companySecrets)
-        .where(
-          inArray(
-            companySecrets.id,
-            grant!.credentialSecretRefs.map((ref) => ref.secretId),
-          ),
-        );
-      expect(secrets).toHaveLength(2);
-      expect(secrets).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            companyId: company.id,
-            scope: "user",
-            ownerUserId: userId,
-            provider: "local_encrypted",
-          }),
-        ]),
-      );
-      const versions = await db
-        .select()
-        .from(companySecretVersions)
-        .where(
-          inArray(
-            companySecretVersions.secretId,
-            grant!.credentialSecretRefs.map((ref) => ref.secretId),
-          ),
-        );
-      expect(versions).toHaveLength(2);
-      expect(JSON.stringify(versions)).not.toContain("drive-access-token");
-      expect(JSON.stringify(versions)).not.toContain("drive-refresh-token");
-
-      const [activity] = await db
-        .select()
-        .from(activityLog)
-        .where(
-          and(
-            eq(activityLog.entityId, connected.connectionId),
-            eq(activityLog.action, "tool_app.oauth_connected"),
-          ),
-        );
-      expect(activity?.details).toMatchObject({
-        applicationId: callback.body.application.id,
-        catalogEntryCount: 2,
-        provider: "google-drive",
-        profile,
-      });
-      expect(JSON.stringify(activity?.details)).not.toContain(userId);
-      expect(JSON.stringify(activity?.details)).not.toContain("token");
-    } finally {
-      driveDefinition.ownershipAvailability = previousOwnershipAvailability;
-    }
-  });
-
-  it("routes a managed Drive callback into the shared organization vault when selected", async () => {
-    const company = await createCompany(db);
-    const userId = `shared-drive-member-${randomUUID()}`;
-    await grantBoardUser(db, company.id, userId, [], "owner");
-    const profile = "drive.read" as const;
-    const connector = fakeGoogleWorkspaceConnector(company.id, userId, profile);
-    const service = createTestToolAccessService(db, {
-      paperclipCloudConnector: connector,
-    });
-    const actor = { actorType: "user" as const, actorId: userId };
-    const driveDefinition = getConnectableAppDefinition("google-drive")!;
-    const previousOwnershipAvailability = driveDefinition.ownershipAvailability;
-    driveDefinition.ownershipAvailability = {
-      ...previousOwnershipAvailability,
-      platform_shared: true,
-    };
-    mockToolsList([
-      { name: "search_files", annotations: { readOnlyHint: true } },
-    ]);
-
-    try {
-      const connected = await service.connectGalleryApp(
-        company.id,
-        {
-          galleryKey: "google-drive",
-          connectionMethodKey: "paperclip-read",
-          grantKind: "organization",
-          name: "Shared Drive managed read",
-        },
-        actor,
-      );
-      expect(connected.connection).toMatchObject({
-        credentialPolicy: "shared",
-      });
-
-      const started = await service.startOAuth(
-        company.id,
-        connected.connectionId,
-        {
-          redirectUri:
-            "https://paperclip.example/api/tools/oauth/cloud-connector/callback",
-          actor,
-        },
-      );
-      const completed = await service.completePaperclipCloudConnectorCallback({
-        state: new URL(started.authorizationUrl).searchParams.get("state")!,
-        claimId: "shared-drive-claim",
-        actor,
-      });
-
-      expect(completed.connection).toMatchObject({
-        status: "active",
-        enabled: true,
-        credentialPolicy: "shared",
-        config: {
-          oauth: {
-            strategy: "paperclip_cloud_connector",
-            connectorSubjectUserId: userId,
-          },
-        },
-      });
-      expect(completed.connection.credentialRefs).toEqual([
-        expect.objectContaining({
-          name: "oauth.access_token",
-          placement: "header",
-          key: "Authorization",
-          prefix: "Bearer ",
-        }),
-      ]);
-      expect(
-        completed.connection.credentialSecretRefs
-          .map((ref) => ref.configPath)
-          .sort(),
-      ).toEqual(["oauth.access_token", "oauth.refresh_token"]);
-
-      const grants = await db
-        .select()
-        .from(connectionGrants)
-        .where(eq(connectionGrants.connectionId, connected.connectionId));
-      expect(grants).toHaveLength(1);
-      expect(grants[0]).toMatchObject({
-        kind: "organization",
-        subjectUserId: null,
-        isDefault: true,
-        status: "active",
-        providerTenant: {
-          externalId: userId,
-          oauth: { strategy: "paperclip_cloud_connector" },
-        },
-      });
-      expect(
-        grants[0]!.credentialSecretRefs.map((ref) => ref.secretId).sort(),
-      ).toEqual(
-        completed.connection.credentialSecretRefs
-          .map((ref) => ref.secretId)
-          .sort(),
-      );
-
-      const secrets = await db
-        .select()
-        .from(companySecrets)
-        .where(
-          inArray(
-            companySecrets.id,
-            completed.connection.credentialSecretRefs.map(
-              (ref) => ref.secretId,
-            ),
-          ),
-        );
-      expect(secrets).toHaveLength(2);
-      expect(
-        secrets.every(
-          (secret) => secret.scope === "company" && secret.ownerUserId === null,
-        ),
-      ).toBe(true);
-      const bindings = await db
-        .select()
-        .from(companySecretBindings)
-        .where(
-          and(
-            eq(companySecretBindings.targetType, "tool_connection"),
-            eq(companySecretBindings.targetId, connected.connectionId),
-          ),
-        );
-      expect(bindings.map((binding) => binding.configPath).sort()).toEqual([
-        "oauth.access_token",
-        "oauth.refresh_token",
-      ]);
-    } finally {
-      driveDefinition.ownershipAvailability = previousOwnershipAvailability;
-    }
-  });
-
-  it("activates allowed Drive write actions without approval defaults after a managed callback", async () => {
-    const company = await createCompany(db);
-    const userId = `drive-write-member-${randomUUID()}`;
-    await grantBoardUser(db, company.id, userId, [], "owner");
-    const profile = "drive.write" as const;
-    const connector = fakeGoogleWorkspaceConnector(company.id, userId, profile);
-    const service = createTestToolAccessService(db, {
-      paperclipCloudConnector: connector,
-    });
-    const actor = { actorType: "user" as const, actorId: userId };
-    const driveDefinition = getConnectableAppDefinition("google-drive")!;
-    const previousOwnershipAvailability = driveDefinition.ownershipAvailability;
-    driveDefinition.ownershipAvailability = {
-      ...previousOwnershipAvailability,
-      platform_shared: true,
-    };
-    mockToolsList([
-      { name: "search_files", annotations: { readOnlyHint: true } },
-      { name: "create_file", annotations: { readOnlyHint: false } },
-      { name: "delete_file", annotations: { destructiveHint: true } },
-    ]);
-
-    try {
-      const connected = await service.connectGalleryApp(
-        company.id,
-        {
-          galleryKey: "google-drive",
-          connectionMethodKey: "paperclip-write",
-          grantKind: "user",
-          name: "Drive managed write",
-        },
-        actor,
-      );
-      const started = await service.startOAuth(
-        company.id,
-        connected.connectionId,
-        {
-          redirectUri:
-            "https://paperclip.example/api/tools/oauth/cloud-connector/callback",
-          actor,
-        },
-      );
-      const state = new URL(started.authorizationUrl).searchParams.get(
-        "state",
-      )!;
-      const app = createRouteApp(
-        db,
-        boardSessionActor(company.id, "owner", userId),
-        undefined,
-        { paperclipCloudConnector: connector },
-      );
-
-      const callback = await request(app)
-        .get("/api/tools/oauth/cloud-connector/callback")
-        .query({ state, claim_id: "drive-write-claim" })
-        .set("accept", "application/json");
-
-      expect(callback.status).toBe(200);
-      expect(callback.body.connection.config.quarantineNewEntries).toBe(true);
-      expect(callback.body.catalog).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            toolName: "search_files",
-            status: "active",
-            riskLevel: "read",
-          }),
-          expect.objectContaining({
-            toolName: "create_file",
-            status: "active",
-            riskLevel: "write",
-          }),
-          expect.objectContaining({
-            toolName: "delete_file",
-            status: "disabled",
-            riskLevel: "destructive",
-          }),
-        ]),
-      );
-      const [profileRow] = await db
-        .select()
-        .from(toolProfiles)
-        .where(eq(toolProfiles.profileKey, `app:${connected.connectionId}`));
-      const profileEntries = await db
-        .select()
-        .from(toolProfileEntries)
-        .where(eq(toolProfileEntries.profileId, profileRow!.id));
-      expect(
-        profileEntries.map((entry) => entry.catalogEntryId).sort(),
-      ).toEqual(
-        callback.body.catalog
-          .filter((entry: { status: string }) => entry.status === "active")
-          .map((entry: { id: string }) => entry.id)
-          .sort(),
-      );
-      const searchEntry = callback.body.catalog.find(
-        (entry: { toolName: string }) => entry.toolName === "search_files",
-      );
-      const createEntry = callback.body.catalog.find(
-        (entry: { toolName: string }) => entry.toolName === "create_file",
-      );
-      await expect(
-        db
-          .select()
-          .from(toolPolicies)
-          .where(
-            and(
-              eq(toolPolicies.companyId, company.id),
-              eq(toolPolicies.enabled, true),
-            ),
-          ),
-      ).resolves.toEqual([]);
-      await expect(
-        db
-          .select()
-          .from(toolConnectionInstalls)
-          .where(
-            and(
-              eq(toolConnectionInstalls.connectionId, connected.connectionId),
-              eq(toolConnectionInstalls.targetType, "company"),
-            ),
-          ),
-      ).resolves.toHaveLength(1);
-
-      const agent = await createAgent(db, company.id);
-      await db
-        .delete(toolProfileEntries)
-        .where(
-          and(
-            eq(toolProfileEntries.profileId, profileRow!.id),
-            eq(toolProfileEntries.catalogEntryId, searchEntry.id),
-          ),
-        );
-      await db
-        .delete(toolProfileBindings)
-        .where(eq(toolProfileBindings.profileId, profileRow!.id));
-      await db.insert(toolProfileBindings).values({
-        companyId: company.id,
-        profileId: profileRow!.id,
-        targetType: "agent",
-        targetId: agent.id,
-      });
-      await db
-        .update(toolProfiles)
-        .set({ status: "archived" })
-        .where(eq(toolProfiles.id, profileRow!.id));
-
-      mockToolsList([
-        {
-          name: "search_files",
-          description: "Search files with a changed contract.",
-          annotations: { readOnlyHint: true },
-        },
-        { name: "create_file", annotations: { readOnlyHint: false } },
-        { name: "copy_file", annotations: { readOnlyHint: false } },
-        { name: "delete_file", annotations: { destructiveHint: true } },
-      ]);
-      const reconnect = await service.startOAuth(
-        company.id,
-        connected.connectionId,
-        {
-          redirectUri:
-            "https://paperclip.example/api/tools/oauth/cloud-connector/callback",
-          actor,
-        },
-      );
-      const reconnectState = new URL(
-        reconnect.authorizationUrl,
-      ).searchParams.get("state")!;
-      const reconnected = await request(app)
-        .get("/api/tools/oauth/cloud-connector/callback")
-        .query({
-          state: reconnectState,
-          claim_id: "drive-write-reconnect-claim",
-        })
-        .set("accept", "application/json");
-
-      expect(reconnected.status).toBe(200);
-      expect(reconnected.body.connection.config.quarantineNewEntries).toBe(
-        true,
-      );
-      expect(reconnected.body.catalog).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            toolName: "search_files",
-            status: "quarantined",
-          }),
-          expect.objectContaining({
-            toolName: "create_file",
-            status: "active",
-          }),
-          expect.objectContaining({
-            toolName: "copy_file",
-            status: "quarantined",
-          }),
-          expect.objectContaining({
-            toolName: "delete_file",
-            status: "disabled",
-          }),
-        ]),
-      );
-      await expect(
-        db
-          .select()
-          .from(toolProfiles)
-          .where(eq(toolProfiles.id, profileRow!.id)),
-      ).resolves.toEqual([expect.objectContaining({ status: "archived" })]);
-      await expect(
-        db
-          .select()
-          .from(toolProfileEntries)
-          .where(eq(toolProfileEntries.profileId, profileRow!.id)),
-      ).resolves.toEqual([
-        expect.objectContaining({
-          catalogEntryId: createEntry.id,
-          effect: "include",
-        }),
-      ]);
-      await expect(
-        db
-          .select()
-          .from(toolProfileBindings)
-          .where(eq(toolProfileBindings.profileId, profileRow!.id)),
-      ).resolves.toEqual([
-        expect.objectContaining({ targetType: "agent", targetId: agent.id }),
-      ]);
-      await expect(
-        db
-          .select()
-          .from(toolPolicies)
-          .where(eq(toolPolicies.companyId, company.id)),
-      ).resolves.toEqual([]);
-    } finally {
-      driveDefinition.ownershipAvailability = previousOwnershipAvailability;
-    }
-  });
-
-  it("keeps a managed draft retryable when default finalization fails", async () => {
-    const company = await createCompany(db);
-    const userId = `drive-finalize-failure-${randomUUID()}`;
-    await grantBoardUser(db, company.id, userId, [], "owner");
-    const connector = fakeGoogleWorkspaceConnector(
-      company.id,
-      userId,
-      "drive.write",
-    );
-    const service = createTestToolAccessService(db, {
-      paperclipCloudConnector: connector,
-    });
-    const actor = { actorType: "user" as const, actorId: userId };
-    const driveDefinition = getConnectableAppDefinition("google-drive")!;
-    const previousOwnershipAvailability = driveDefinition.ownershipAvailability;
-    driveDefinition.ownershipAvailability = {
-      ...previousOwnershipAvailability,
-      platform_shared: true,
-    };
-    mockToolsList([
-      { name: "search_files", annotations: { readOnlyHint: true } },
-      { name: "create_file", annotations: { readOnlyHint: false } },
-      { name: "delete_file", annotations: { destructiveHint: true } },
-    ]);
-
-    try {
-      const connected = await service.connectGalleryApp(
-        company.id,
-        {
-          galleryKey: "google-drive",
-          connectionMethodKey: "paperclip-write",
-          grantKind: "user",
-          name: "Drive managed finalize failure",
-        },
-        actor,
-      );
-      const started = await service.startOAuth(
-        company.id,
-        connected.connectionId,
-        {
-          redirectUri:
-            "https://paperclip.example/api/tools/oauth/cloud-connector/callback",
-          actor,
-        },
-      );
-      const state = new URL(started.authorizationUrl).searchParams.get(
-        "state",
-      )!;
-      const originalTransaction = db.transaction.bind(db);
-      let transactionCount = 0;
-      const transactionSpy = vi
-        .spyOn(db, "transaction")
-        .mockImplementation((async (operation, config) => {
-          transactionCount += 1;
-          if (transactionCount === 2)
-            throw new Error("recommended defaults failed");
-          return originalTransaction(operation, config);
-        }) as typeof db.transaction);
-
-      await expect(
-        service.completePaperclipCloudConnectorCallback({
-          state,
-          claimId: "drive-finalize-failure-claim",
-          actor,
-        }),
-      ).rejects.toThrow("recommended defaults failed");
-
-      await expect(
-        db
-          .select()
-          .from(toolCatalogEntries)
-          .where(eq(toolCatalogEntries.connectionId, connected.connectionId)),
-      ).resolves.toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            toolName: "search_files",
-            status: "quarantined",
-          }),
-          expect.objectContaining({
-            toolName: "create_file",
-            status: "quarantined",
-          }),
-          expect.objectContaining({
-            toolName: "delete_file",
-            status: "disabled",
-          }),
-        ]),
-      );
-      await expect(
-        db
-          .select()
-          .from(toolProfiles)
-          .where(eq(toolProfiles.profileKey, `app:${connected.connectionId}`)),
-      ).resolves.toHaveLength(0);
-      await expect(
-        service.getConnection(connected.connectionId),
-      ).resolves.toMatchObject({
-        status: "draft",
-        enabled: false,
-        config: { quarantineNewEntries: true },
-      });
-      await expect(
-        db
-          .select()
-          .from(toolApplications)
-          .where(eq(toolApplications.id, connected.application.id)),
-      ).resolves.toEqual([expect.objectContaining({ status: "draft" })]);
-
-      transactionSpy.mockRestore();
-      const retry = await service.startOAuth(
-        company.id,
-        connected.connectionId,
-        {
-          redirectUri:
-            "https://paperclip.example/api/tools/oauth/cloud-connector/callback",
-          actor,
-        },
-      );
-      const completed = await service.completePaperclipCloudConnectorCallback({
-        state: new URL(retry.authorizationUrl).searchParams.get("state")!,
-        claimId: "drive-finalize-retry-claim",
-        actor,
-      });
-
-      expect(completed.connection).toMatchObject({
-        status: "active",
-        enabled: true,
-        config: { quarantineNewEntries: true },
-      });
-      expect(completed.catalog).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            toolName: "search_files",
-            status: "active",
-          }),
-          expect.objectContaining({
-            toolName: "create_file",
-            status: "active",
-          }),
-          expect.objectContaining({
-            toolName: "delete_file",
-            status: "disabled",
-          }),
-        ]),
-      );
-      const [profileRow] = await db
-        .select()
-        .from(toolProfiles)
-        .where(eq(toolProfiles.profileKey, `app:${connected.connectionId}`));
-      const activeEntryIds = completed.catalog
-        .filter((entry) => entry.status === "active")
-        .map((entry) => entry.id)
-        .sort();
-      await expect(
-        db
-          .select()
-          .from(toolProfileEntries)
-          .where(eq(toolProfileEntries.profileId, profileRow!.id))
-          .then((rows) => rows.map((entry) => entry.catalogEntryId).sort()),
-      ).resolves.toEqual(activeEntryIds);
-      await expect(
-        db
-          .select()
-          .from(toolProfileBindings)
-          .where(eq(toolProfileBindings.profileId, profileRow!.id)),
-      ).resolves.toEqual([
-        expect.objectContaining({
-          targetType: "company",
-          targetId: company.id,
-        }),
-      ]);
-      await expect(
-        db
-          .select()
-          .from(toolPolicies)
-          .where(
-            and(
-              eq(toolPolicies.companyId, company.id),
-              eq(toolPolicies.enabled, true),
-            ),
-          ),
-      ).resolves.toEqual([]);
-      await expect(
-        db
-          .select()
-          .from(toolConnectionInstalls)
-          .where(
-            and(
-              eq(toolConnectionInstalls.connectionId, connected.connectionId),
-              eq(toolConnectionInstalls.targetType, "company"),
-            ),
-          ),
-      ).resolves.toHaveLength(1);
-      await expect(
-        db
-          .select()
-          .from(toolApplications)
-          .where(eq(toolApplications.id, connected.application.id)),
-      ).resolves.toEqual([expect.objectContaining({ status: "active" })]);
-
-      mockToolsList([
-        {
-          name: "search_files",
-          description: "Changed after retry.",
-          annotations: { readOnlyHint: true },
-        },
-        { name: "create_file", annotations: { readOnlyHint: false } },
-        { name: "copy_file", annotations: { readOnlyHint: false } },
-        { name: "delete_file", annotations: { destructiveHint: true } },
-      ]);
-      const futureRefresh = await service.refreshCatalog(
-        connected.connectionId,
-        actor,
-      );
-      expect(futureRefresh.catalog).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            toolName: "search_files",
-            status: "quarantined",
-          }),
-          expect.objectContaining({
-            toolName: "create_file",
-            status: "active",
-          }),
-          expect.objectContaining({
-            toolName: "copy_file",
-            status: "quarantined",
-          }),
-          expect.objectContaining({
-            toolName: "delete_file",
-            status: "disabled",
-          }),
-        ]),
-      );
-      expect(futureRefresh.connection.config.quarantineNewEntries).toBe(true);
-    } finally {
-      driveDefinition.ownershipAvailability = previousOwnershipAvailability;
-    }
-  });
-
-  it("rebuilds managed defaults when a removed connection is revived with its archived profile retained", async () => {
-    const company = await createCompany(db);
-    const userId = `drive-revival-${randomUUID()}`;
-    await grantBoardUser(db, company.id, userId, [], "owner");
-    const connector = fakeGoogleWorkspaceConnector(
-      company.id,
-      userId,
-      "drive.write",
-    );
-    const service = createTestToolAccessService(db, {
-      paperclipCloudConnector: connector,
-    });
-    const actor = { actorType: "user" as const, actorId: userId };
-    const driveDefinition = getConnectableAppDefinition("google-drive")!;
-    const previousOwnershipAvailability = driveDefinition.ownershipAvailability;
-    driveDefinition.ownershipAvailability = {
-      ...previousOwnershipAvailability,
-      platform_shared: true,
-    };
-    mockToolsList([
-      { name: "search_files", annotations: { readOnlyHint: true } },
-      { name: "create_file", annotations: { readOnlyHint: false } },
-      { name: "delete_file", annotations: { destructiveHint: true } },
-    ]);
-
-    try {
-      const first = await service.connectGalleryApp(
-        company.id,
-        {
-          galleryKey: "google-drive",
-          connectionMethodKey: "paperclip-write",
-          grantKind: "user",
-          name: "Drive managed revival",
-        },
-        actor,
-      );
-      const firstStart = await service.startOAuth(
-        company.id,
-        first.connectionId,
-        {
-          redirectUri:
-            "https://paperclip.example/api/tools/oauth/cloud-connector/callback",
-          actor,
-        },
-      );
-      await service.completePaperclipCloudConnectorCallback({
-        state: new URL(firstStart.authorizationUrl).searchParams.get("state")!,
-        claimId: "drive-revival-first-claim",
-        actor,
-      });
-      const [retainedProfile] = await db
-        .select()
-        .from(toolProfiles)
-        .where(eq(toolProfiles.profileKey, `app:${first.connectionId}`));
-      await db.insert(toolMcpGateways).values({
-        companyId: company.id,
-        name: `Retained managed gateway ${randomUUID()}`,
-        slug: `retained-managed-${randomUUID()}`,
-        profileId: retainedProfile!.id,
-        status: "active",
-      });
-      await service.archiveConnection(first.connectionId, company.id, actor);
-      await expect(
-        db
-          .select()
-          .from(toolProfiles)
-          .where(eq(toolProfiles.id, retainedProfile!.id)),
-      ).resolves.toEqual([expect.objectContaining({ status: "archived" })]);
-
-      const revived = await service.connectGalleryApp(
-        company.id,
-        {
-          galleryKey: "google-drive",
-          connectionMethodKey: "paperclip-write",
-          grantKind: "user",
-          name: "Drive managed revival",
-        },
-        actor,
-      );
-      expect(revived.connectionId).toBe(first.connectionId);
-      expect(revived.connection).toMatchObject({
-        status: "draft",
-        enabled: false,
-      });
-      await expect(
-        db
-          .select()
-          .from(toolProfiles)
-          .where(eq(toolProfiles.id, retainedProfile!.id)),
-      ).resolves.toEqual([expect.objectContaining({ status: "archived" })]);
-
-      const revivedStart = await service.startOAuth(
-        company.id,
-        revived.connectionId,
-        {
-          redirectUri:
-            "https://paperclip.example/api/tools/oauth/cloud-connector/callback",
-          actor,
-        },
-      );
-      const completed = await service.completePaperclipCloudConnectorCallback({
-        state: new URL(revivedStart.authorizationUrl).searchParams.get(
-          "state",
-        )!,
-        claimId: "drive-revival-second-claim",
-        actor,
-      });
-
-      expect(completed.connection).toMatchObject({
-        status: "active",
-        enabled: true,
-        config: { quarantineNewEntries: true },
-      });
-      expect(completed.catalog).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            toolName: "search_files",
-            status: "active",
-          }),
-          expect.objectContaining({
-            toolName: "create_file",
-            status: "active",
-          }),
-          expect.objectContaining({
-            toolName: "delete_file",
-            status: "disabled",
-          }),
-        ]),
-      );
-      await expect(
-        db
-          .select()
-          .from(toolProfiles)
-          .where(eq(toolProfiles.id, retainedProfile!.id)),
-      ).resolves.toEqual([expect.objectContaining({ status: "active" })]);
-      const revivedEntries = await db
-        .select()
-        .from(toolProfileEntries)
-        .where(eq(toolProfileEntries.profileId, retainedProfile!.id));
-      expect(
-        revivedEntries.map((entry) => entry.catalogEntryId).sort(),
-      ).toEqual(
-        completed.catalog
-          .filter((entry) => entry.status === "active")
-          .map((entry) => entry.id)
-          .sort(),
-      );
-      await expect(
-        db
-          .select()
-          .from(toolProfileBindings)
-          .where(eq(toolProfileBindings.profileId, retainedProfile!.id)),
-      ).resolves.toEqual([
-        expect.objectContaining({
-          targetType: "company",
-          targetId: company.id,
-        }),
-      ]);
-      await expect(
-        db
-          .select()
-          .from(toolPolicies)
-          .where(
-            and(
-              eq(toolPolicies.companyId, company.id),
-              eq(toolPolicies.enabled, true),
-            ),
-          ),
-      ).resolves.toEqual([]);
-    } finally {
-      driveDefinition.ownershipAvailability = previousOwnershipAvailability;
-    }
-  });
-
-  it("keeps brokered OAuth state retryable until credentials are durably stored", async () => {
-    const company = await createCompany(db);
-    const userId = `gmail-retry-${randomUUID()}`;
-    await grantBoardUser(db, company.id, userId, []);
-    const connector = fakeGmailConnector(company.id, userId);
-    vi.mocked(connector.claim).mockRejectedValueOnce(
-      new Error("temporary claim failure"),
-    );
-    const service = createTestToolAccessService(db, {
-      paperclipCloudConnector: connector,
-    });
-    const actor = { actorType: "user" as const, actorId: userId };
-    const gmailDefinition = getConnectableAppDefinition("gmail")!;
-    const previousOwnershipAvailability = gmailDefinition.ownershipAvailability;
-    gmailDefinition.ownershipAvailability = {
-      ...previousOwnershipAvailability,
-      platform_shared: true,
-    };
-    mockToolsList([]);
-
-    try {
-      const connected = await service.connectGalleryApp(
-        company.id,
-        {
-          galleryKey: "gmail",
-          connectionMethodKey: "paperclip-draft",
-          grantKind: "user",
-          name: "Gmail retryable callback",
-        },
-        actor,
-      );
-      const started = await service.startOAuth(
-        company.id,
-        connected.connectionId,
-        {
-          redirectUri:
-            "https://paperclip.example/api/tools/oauth/cloud-connector/callback",
-          actor,
-        },
-      );
-      const state = new URL(started.authorizationUrl).searchParams.get(
-        "state",
-      )!;
-
-      await expect(
-        service.completePaperclipCloudConnectorCallback({
-          state,
-          claimId: "gmail-retry-claim",
-          actor,
-        }),
-      ).rejects.toThrow("temporary claim failure");
-      await expect(service.peekOAuthState(state)).resolves.toMatchObject({
-        companyId: company.id,
-        connectionId: connected.connectionId,
-        subjectUserId: userId,
-      });
-
-      await expect(
-        service.completePaperclipCloudConnectorCallback({
-          state,
-          claimId: "gmail-retry-claim",
-          actor,
-        }),
-      ).resolves.toMatchObject({
-        connection: { status: "active", enabled: true },
-      });
-      await expect(service.peekOAuthState(state)).resolves.toBeNull();
-      expect(connector.claim).toHaveBeenNthCalledWith(
-        1,
-        expect.objectContaining({ redemptionId: state }),
-      );
-      expect(connector.claim).toHaveBeenNthCalledWith(
-        2,
-        expect.objectContaining({ redemptionId: state }),
-      );
-    } finally {
-      gmailDefinition.ownershipAvailability = previousOwnershipAvailability;
-    }
-  });
-
-  it("serializes brokered Gmail OAuth completion behind membership revocation", async () => {
-    const company = await createCompany(db);
-    const userId = `gmail-member-${randomUUID()}`;
-    await grantBoardUser(db, company.id, userId, []);
-    const callbackDb = createDb(tempDb!.connectionString, {
-      maxConnections: 1,
-    });
-    const removalDb = createDb(tempDb!.connectionString, { maxConnections: 1 });
-    const service = createTestToolAccessService(callbackDb, {
-      paperclipCloudConnector: fakeGmailConnector(company.id, userId),
-    });
-    const actor = { actorType: "user" as const, actorId: userId };
-    const gmailDefinition = getConnectableAppDefinition("gmail")!;
-    const previousOwnershipAvailability = gmailDefinition.ownershipAvailability;
-    gmailDefinition.ownershipAvailability = {
-      ...previousOwnershipAvailability,
-      platform_shared: true,
-    };
-    let releaseRemoval!: () => void;
-    const removalMayCommit = new Promise<void>((resolve) => {
-      releaseRemoval = resolve;
-    });
-    let membershipLocked!: () => void;
-    const membershipIsLocked = new Promise<void>((resolve) => {
-      membershipLocked = resolve;
-    });
-    let removal: Promise<void> | null = null;
-    mockToolsList([]);
-
-    try {
-      const connected = await service.connectGalleryApp(
-        company.id,
-        {
-          galleryKey: "gmail",
-          connectionMethodKey: "paperclip-draft",
-          grantKind: "user",
-          name: "Gmail concurrent revocation callback",
-        },
-        actor,
-      );
-      const started = await service.startOAuth(
-        company.id,
-        connected.connectionId,
-        {
-          redirectUri:
-            "https://paperclip.example/api/tools/oauth/cloud-connector/callback",
-          actor,
-        },
-      );
-      const state = new URL(started.authorizationUrl).searchParams.get(
-        "state",
-      )!;
-      const beforeSecrets = await db
-        .select()
-        .from(companySecrets)
-        .where(eq(companySecrets.companyId, company.id));
-      const beforeGrants = await db
-        .select()
-        .from(connectionGrants)
-        .where(eq(connectionGrants.connectionId, connected.connectionId));
-
-      removal = removalDb.transaction(async (tx) => {
-        await tx
-          .select({ id: companyMemberships.id })
-          .from(companyMemberships)
-          .where(
-            and(
-              eq(companyMemberships.companyId, company.id),
-              eq(companyMemberships.principalType, "user"),
-              eq(companyMemberships.principalId, userId),
-            ),
-          )
-          .for("update");
-        membershipLocked();
-        await removalMayCommit;
-        await tx
-          .update(companyMemberships)
-          .set({
-            membershipRole: "viewer",
-            updatedAt: new Date(),
-          })
-          .where(
-            and(
-              eq(companyMemberships.companyId, company.id),
-              eq(companyMemberships.principalType, "user"),
-              eq(companyMemberships.principalId, userId),
-            ),
-          );
-      });
-
-      await membershipIsLocked;
-      const completion = service
-        .completePaperclipCloudConnectorCallback({
-          state,
-          claimId: "gmail-claim",
-          actor,
-        })
-        .then(
-          (value) => ({ value, error: null }),
-          (error: unknown) => ({ value: null, error }),
-        );
-
-      expect(await waitForBlockedMembershipUpdate()).toBe(true);
-      releaseRemoval();
-      await removal;
-      const outcome = await completion;
-      expect(outcome.value).toBeNull();
-      expect(outcome.error).toMatchObject({
-        status: 403,
-        message: expect.stringContaining(
-          "membership no longer permits connection changes",
-        ),
-      });
-
-      const [connection] = await db
-        .select()
-        .from(toolConnections)
-        .where(eq(toolConnections.id, connected.connectionId));
-      expect(connection).toMatchObject({ status: "draft", enabled: false });
-      await expect(
-        db
-          .select()
-          .from(companySecrets)
-          .where(eq(companySecrets.companyId, company.id)),
-      ).resolves.toHaveLength(beforeSecrets.length);
-      await expect(
-        db
-          .select()
-          .from(connectionGrants)
-          .where(eq(connectionGrants.connectionId, connected.connectionId)),
-      ).resolves.toEqual(beforeGrants);
-    } finally {
-      gmailDefinition.ownershipAvailability = previousOwnershipAvailability;
-      releaseRemoval();
-      await removal?.catch(() => undefined);
-      await callbackDb.$client.end({ timeout: 0 }).catch(() => undefined);
-      await removalDb.$client.end({ timeout: 0 }).catch(() => undefined);
-    }
-  }, 15_000);
-
   it("synchronizes shared OAuth credentials to the organization grant used by gateway calls", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
     vi.stubEnv(
-      "PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_SECRET",
+      "WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_SECRET",
       "slack-client-secret",
     );
     const company = await createCompany(db);
@@ -9461,9 +7467,9 @@ describeEmbeddedPostgres("tool access service", () => {
       tokenScope: string | null,
       requestedScopes?: string[],
     ) {
-      vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+      vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
       vi.stubEnv(
-        "PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_SECRET",
+        "WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_SECRET",
         "slack-client-secret",
       );
       const company = await createCompany(db);
@@ -9595,9 +7601,9 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("creates and resolves an agent-initiated user authorization grant card", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
     vi.stubEnv(
-      "PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_SECRET",
+      "WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_SECRET",
       "slack-client-secret",
     );
     const company = await createCompany(db);
@@ -9896,9 +7902,9 @@ describeEmbeddedPostgres("tool access service", () => {
   it.each(["page", "task"] as const)(
     "activates and discovers actions for a fresh personal OAuth callback from %s without widening task access",
     async (host) => {
-      vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+      vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
       vi.stubEnv(
-        "PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_SECRET",
+        "WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_SECRET",
         "slack-client-secret",
       );
       const company = await createCompany(db);
@@ -10279,9 +8285,9 @@ describeEmbeddedPostgres("tool access service", () => {
   );
 
   it("promotes a personal OAuth identity only after Everyone in the company is chosen", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
     vi.stubEnv(
-      "PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_SECRET",
+      "WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_SECRET",
       "slack-client-secret",
     );
     const company = await createCompany(db);
@@ -10428,9 +8434,9 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("refreshes an expired personal OAuth grant during health checks without moving its tokens onto the connection", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
     vi.stubEnv(
-      "PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_SECRET",
+      "WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_SECRET",
       "slack-client-secret",
     );
     const company = await createCompany(db);
@@ -10568,9 +8574,9 @@ describeEmbeddedPostgres("tool access service", () => {
   // provider's response is judged against. A provider that widens at refresh must not be able
   // to do it quietly.
   it("flags a scope the provider widens at refresh time", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
     vi.stubEnv(
-      "PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_SECRET",
+      "WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_SECRET",
       "slack-client-secret",
     );
     const company = await createCompany(db);
@@ -10682,11 +8688,11 @@ describeEmbeddedPostgres("tool access service", () => {
   // response against the wider list and an asserted extra scope stops looking unrequested.
   it("keeps the narrowed request as the refresh baseline for a generic MCP connection", async () => {
     vi.stubEnv(
-      "PAPERCLIP_TOOL_OAUTH_NARROW_EXAMPLE_TEST_CLIENT_ID",
+      "WARDMOTE_TOOL_OAUTH_NARROW_EXAMPLE_TEST_CLIENT_ID",
       "narrow-client-id",
     );
     vi.stubEnv(
-      "PAPERCLIP_TOOL_OAUTH_NARROW_EXAMPLE_TEST_CLIENT_SECRET",
+      "WARDMOTE_TOOL_OAUTH_NARROW_EXAMPLE_TEST_CLIENT_SECRET",
       "narrow-client-secret",
     );
     const company = await createCompany(db);
@@ -10810,9 +8816,9 @@ describeEmbeddedPostgres("tool access service", () => {
   // scope list is whichever callback ran last, so it is the wrong refresh baseline for at
   // least one of them — the baseline has to live on the grant.
   it("gives each personal grant its own refresh scope baseline", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
     vi.stubEnv(
-      "PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_SECRET",
+      "WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_SECRET",
       "slack-client-secret",
     );
     const company = await createCompany(db);
@@ -10935,9 +8941,9 @@ describeEmbeddedPostgres("tool access service", () => {
   // shape the grants API and the Permissions UI read from.
   describe("over-grant provenance on an organization grant", () => {
     async function connectSharedSlack(authorizationScope: string | null) {
-      vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+      vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
       vi.stubEnv(
-        "PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_SECRET",
+        "WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_SECRET",
         "slack-client-secret",
       );
       const company = await createCompany(db);
@@ -11098,11 +9104,11 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("uses Airtable DCR when both DCR and CIMD are advertised", async () => {
-    vi.stubEnv("PAPERCLIP_PUBLIC_URL", "https://paperclip.example");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_AIRTABLE_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_AIRTABLE_CLIENT_SECRET", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_SECRET", "");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "https://paperclip.example");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_AIRTABLE_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_AIRTABLE_CLIENT_SECRET", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_SECRET", "");
     const restoreMethod = optIntoAirtableDcrRegistration();
     try {
       const company = await createCompany(db);
@@ -11172,11 +9178,11 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("rebinds an Airtable CIMD client through DCR when the curated method opts in", async () => {
-    vi.stubEnv("PAPERCLIP_PUBLIC_URL", "https://paperclip.example");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_AIRTABLE_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_AIRTABLE_CLIENT_SECRET", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_SECRET", "");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "https://paperclip.example");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_AIRTABLE_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_AIRTABLE_CLIENT_SECRET", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_SECRET", "");
     const company = await createCompany(db);
     const service = createTestToolAccessService(db, {
       oauthClientMetadataLookup: async () => [{ address: "93.184.216.34", family: 4 }],
@@ -11244,11 +9250,11 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("does not fall back to Airtable CIMD when DCR is required but unavailable", async () => {
-    vi.stubEnv("PAPERCLIP_PUBLIC_URL", "https://paperclip.example");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_AIRTABLE_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_AIRTABLE_CLIENT_SECRET", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_SECRET", "");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "https://paperclip.example");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_AIRTABLE_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_AIRTABLE_CLIENT_SECRET", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_SECRET", "");
     const restoreMethod = optIntoAirtableDcrRegistration();
     try {
       const company = await createCompany(db);
@@ -11296,11 +9302,11 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("registers Linear against its MCP authorization server instead of the pinned console endpoints", async () => {
-    vi.stubEnv("PAPERCLIP_PUBLIC_URL", "https://paperclip.example");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_LINEAR_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_LINEAR_CLIENT_SECRET", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_SECRET", "");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "https://paperclip.example");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_LINEAR_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_LINEAR_CLIENT_SECRET", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_SECRET", "");
     const company = await createCompany(db);
     const userId = `linear-owner-${randomUUID()}`;
     await grantBoardUser(db, company.id, userId, [], "owner");
@@ -11400,11 +9406,11 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("returns a pre-scoped personal Notion callback directly to Permissions", async () => {
-    vi.stubEnv("PAPERCLIP_PUBLIC_URL", "https://paperclip.example");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_NOTION_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_NOTION_CLIENT_SECRET", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_SECRET", "");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "https://paperclip.example");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_NOTION_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_NOTION_CLIENT_SECRET", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_SECRET", "");
     const company = await createCompany(db);
     const userId = `notion-owner-${randomUUID()}`;
     await grantBoardUser(db, company.id, userId, [], "owner");
@@ -11538,7 +9544,7 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("returns a declined curated OAuth draft to its exact resumable setup route", async () => {
-    vi.stubEnv("PAPERCLIP_PUBLIC_URL", "https://paperclip.example");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "https://paperclip.example");
     const company = await createCompany(db);
     const userId = `notion-resume-${randomUUID()}`;
     await grantBoardUser(db, company.id, userId, [], "owner");
@@ -11622,13 +9628,13 @@ describeEmbeddedPostgres("tool access service", () => {
     "starts and completes OAuth with the same redirect URI at %s",
     async (origin) => {
       const callbackOrigin = origin.replace("http://127.0.0.1:", "http://localhost:");
-      vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+      vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
       vi.stubEnv(
-        "PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_SECRET",
+        "WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_SECRET",
         "slack-client-secret",
       );
       vi.stubEnv(
-        "PAPERCLIP_PUBLIC_URL",
+        "WARDMOTE_PUBLIC_URL",
         origin.startsWith("https:") ? origin : "",
       );
       const company = await createCompany(db);
@@ -11796,10 +9802,10 @@ describeEmbeddedPostgres("tool access service", () => {
   );
 
   it("normalizes a direct numeric loopback origin for OAuth when no public URL is configured", async () => {
-    vi.stubEnv("PAPERCLIP_PUBLIC_URL", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
     vi.stubEnv(
-      "PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_SECRET",
+      "WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_SECRET",
       "slack-client-secret",
     );
     const company = await createCompany(db);
@@ -11819,10 +9825,10 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("does not derive an OAuth callback origin from a non-loopback request host", async () => {
-    vi.stubEnv("PAPERCLIP_PUBLIC_URL", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
     vi.stubEnv(
-      "PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_SECRET",
+      "WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_SECRET",
       "slack-client-secret",
     );
     const company = await createCompany(db);
@@ -11846,10 +9852,10 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("uses an authenticated same-origin HTTPS browser request without public URL config", async () => {
-    vi.stubEnv("PAPERCLIP_PUBLIC_URL", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
     vi.stubEnv(
-      "PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_SECRET",
+      "WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_SECRET",
       "slack-client-secret",
     );
     const company = await createCompany(db);
@@ -11876,10 +9882,10 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("rejects a browser HTTPS origin that does not match the routed request host", async () => {
-    vi.stubEnv("PAPERCLIP_PUBLIC_URL", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
     vi.stubEnv(
-      "PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_SECRET",
+      "WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_SECRET",
       "slack-client-secret",
     );
     const company = await createCompany(db);
@@ -11906,8 +9912,8 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("requires non-viewer board access to start OAuth for active app connections", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
-    vi.stubEnv("PAPERCLIP_PUBLIC_URL", "http://paperclip.test");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "http://paperclip.test");
     const company = await createCompany(db);
     const service = createTestToolAccessService(db);
     const connect = await service.connectGalleryApp(
@@ -11961,8 +9967,8 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("lets the retained personal identity owner reconnect without manager configuration access", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
-    vi.stubEnv("PAPERCLIP_PUBLIC_URL", "http://paperclip.test");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "http://paperclip.test");
     const company = await createCompany(db);
     const userId = `personal-oauth-member-${randomUUID()}`;
     const service = createTestToolAccessService(db);
@@ -12080,12 +10086,12 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("binds OAuth callback completion to the initiating board session", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
     vi.stubEnv(
-      "PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_SECRET",
+      "WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_SECRET",
       "slack-client-secret",
     );
-    vi.stubEnv("PAPERCLIP_PUBLIC_URL", "http://paperclip.test");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "http://paperclip.test");
     const company = await createCompany(db);
     await grantBoardUser(db, company.id, "oauth-operator", [
       "tools:manage_connections",
@@ -12228,10 +10234,10 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("discovers Notion MCP OAuth metadata, registers one public client, and reuses it", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_NOTION_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_NOTION_CLIENT_SECRET", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_SECRET", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_NOTION_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_NOTION_CLIENT_SECRET", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_SECRET", "");
     const company = await createCompany(db);
     const service = createTestToolAccessService(db);
     const connected = await service.connectGalleryApp(company.id, {
@@ -12408,10 +10414,10 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("supports confidential DCR clients without exposing their registration secret", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SUPABASE_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SUPABASE_CLIENT_SECRET", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_SECRET", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_SUPABASE_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_SUPABASE_CLIENT_SECRET", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_SECRET", "");
     const company = await createCompany(db);
     await grantBoardUser(db, company.id, "board", ["tools:manage_connections"]);
     const service = createTestToolAccessService(db);
@@ -12566,10 +10572,10 @@ describeEmbeddedPostgres("tool access service", () => {
 
   it.each(["default", "none", "agent", "company"] as const)(
     "negotiates JSON OAuth tokens and preserves MCP agent reach (%s)", async (reach) => {
-      vi.stubEnv("PAPERCLIP_TOOL_OAUTH_MIRO_CLIENT_ID", "");
-      vi.stubEnv("PAPERCLIP_TOOL_OAUTH_MIRO_CLIENT_SECRET", "");
-      vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_ID", "");
-      vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_SECRET", "");
+      vi.stubEnv("WARDMOTE_TOOL_OAUTH_MIRO_CLIENT_ID", "");
+      vi.stubEnv("WARDMOTE_TOOL_OAUTH_MIRO_CLIENT_SECRET", "");
+      vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_ID", "");
+      vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_SECRET", "");
       const company = await createCompany(db);
       await grantBoardUser(db, company.id, "board", ["tools:manage_connections"]);
       const service = createTestToolAccessService(db);
@@ -12707,10 +10713,10 @@ describeEmbeddedPostgres("tool access service", () => {
   );
 
   it("accepts provider-added DCR grants without adopting them", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_HUGGING_FACE_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_HUGGING_FACE_CLIENT_SECRET", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_SECRET", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_HUGGING_FACE_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_HUGGING_FACE_CLIENT_SECRET", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_SECRET", "");
     const company = await createCompany(db);
     const service = createTestToolAccessService(db);
     const connected = await service.connectGalleryApp(company.id, {
@@ -12805,10 +10811,10 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("does not request refresh-token registration from a provider that explicitly omits it", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CODA_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CODA_CLIENT_SECRET", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_SECRET", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CODA_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CODA_CLIENT_SECRET", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_SECRET", "");
     const company = await createCompany(db);
     const service = createTestToolAccessService(db);
     const connected = await service.connectGalleryApp(company.id, {
@@ -12870,10 +10876,10 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("normalizes a public DCR client's zero secret expiry when no secret was issued", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_MIXPANEL_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_MIXPANEL_CLIENT_SECRET", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_SECRET", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_MIXPANEL_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_MIXPANEL_CLIENT_SECRET", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_SECRET", "");
     const company = await createCompany(db);
     const service = createTestToolAccessService(db);
     const connected = await service.connectGalleryApp(company.id, {
@@ -13169,65 +11175,6 @@ describeEmbeddedPostgres("tool access service", () => {
     );
   });
 
-  it.each([false, true])("finishes a second Asana account with a colliding profile name (installed: %s)", async (installed) => {
-    const company = await createCompany(db);
-    const userId = "asana-owner";
-    await grantBoardUser(db, company.id, userId, [], "owner");
-    const agent = await createAgent(db, company.id);
-    const actor = { actorType: "user" as const, actorId: userId };
-    const credentials = {
-      v: 1 as const, accessToken: "asana-access", refreshToken: "asana-refresh", tokenType: "Bearer",
-      accessTokenExpiresAt: new Date(Date.now() + 3_600_000).toISOString(),
-      refreshTokenExpiresAt: null, scopes: ["default"], subject: userId, companyId: company.id,
-      instanceId: "test-instance", environment: "staging" as const,
-      provider: "asana" as const, profile: "asana.mcp" as const,
-    };
-    const connector: PaperclipCloudConnector = {
-      getCapabilities: vi.fn(async () => ["asana.mcp"]),
-      startAuthorization: vi.fn(async ({ returnState }) => ({
-        authorizationUrl: `https://app.asana.com/-/oauth_authorize?state=${encodeURIComponent(returnState)}`,
-        expiresAt: new Date(Date.now() + 600_000).toISOString(),
-      })),
-      claim: vi.fn(async () => credentials), refresh: vi.fn(async () => credentials),
-      revoke: vi.fn(async () => undefined),
-    };
-    const service = createTestToolAccessService(db, { paperclipCloudConnector: connector });
-    const custom = await service.connectGalleryApp(company.id, {
-      galleryKey: "asana", connectionMethodKey: "mcp-own-oauth", name: "Asana", grantKind: "user",
-      oauthClient: { clientId: "asana-client", clientSecret: "asana-secret" },
-    }, actor);
-    const first = await service.finishGalleryAppConnection(company.id, custom.connectionId, {
-      enabledCatalogEntryIds: [], askFirstCatalogEntryIds: [], access: { agentIds: [] },
-    }, actor);
-    await service.updateConnection(custom.connectionId, { name: "Asana custom app" });
-    const managed = await service.connectGalleryApp(company.id, {
-      galleryKey: "asana", connectionMethodKey: "managed", name: "Asana", grantKind: "user",
-      applicationId: custom.application.id,
-    }, actor);
-    expect(managed.connection.name).toBe("Asana");
-    if (installed) await service.putConnectionInstalls(managed.connectionId, {
-      installs: [{ targetType: "agent", targetId: agent.id }],
-    }, actor);
-    const started = await service.startOAuth(company.id, managed.connectionId, {
-      redirectUri: "https://tenant.example/api/tools/oauth/cloud-connector/callback", actor,
-    });
-    mockToolsList([{ name: "get_me", annotations: { readOnlyHint: true } }]);
-    const completed = await service.completePaperclipCloudConnectorCallback({
-      state: new URL(started.authorizationUrl).searchParams.get("state")!, claimId: "asana-claim", actor,
-    });
-    expect(completed.connection).toMatchObject({ status: "active", enabled: true });
-    expect(completed.catalog).toEqual([expect.objectContaining({ toolName: "get_me", status: "active" })]);
-    const repeat = await service.finishGalleryAppConnection(company.id, managed.connectionId, {
-      enabledCatalogEntryIds: completed.catalog.map((entry) => entry.id), askFirstCatalogEntryIds: [],
-      access: { agentIds: installed ? [agent.id] : [] },
-    }, actor);
-    expect(repeat.profile.name).not.toBe(first.profile.name);
-    expect(repeat.profileBindings.map((binding) => binding.targetId)).toEqual(installed ? [agent.id] : []);
-    expect(await db.select().from(toolProfiles).where(eq(toolProfiles.companyId, company.id))).toHaveLength(2);
-    expect(await db.select().from(toolProfiles).where(eq(toolProfiles.id, first.profile.id)))
-      .toEqual([expect.objectContaining({ name: first.profile.name })]);
-  });
-
   it("resumes personal Asana client credentials with database timestamp precision", async () => {
     const company = await createCompany(db);
     const service = createTestToolAccessService(db);
@@ -13502,10 +11449,10 @@ describeEmbeddedPostgres("tool access service", () => {
   ])(
     "rejects DCR responses that return %s",
     async (_label, registrationResponse, field) => {
-      vi.stubEnv("PAPERCLIP_TOOL_OAUTH_NOTION_CLIENT_ID", "");
-      vi.stubEnv("PAPERCLIP_TOOL_OAUTH_NOTION_CLIENT_SECRET", "");
-      vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_ID", "");
-      vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_SECRET", "");
+      vi.stubEnv("WARDMOTE_TOOL_OAUTH_NOTION_CLIENT_ID", "");
+      vi.stubEnv("WARDMOTE_TOOL_OAUTH_NOTION_CLIENT_SECRET", "");
+      vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_ID", "");
+      vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_SECRET", "");
       const company = await createCompany(db);
       const service = createTestToolAccessService(db);
       const connected = await service.connectGalleryApp(company.id, {
@@ -13575,8 +11522,8 @@ describeEmbeddedPostgres("tool access service", () => {
   );
 
   it("fails fast when Notion DCR is attempted from a non-loopback HTTP origin", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_NOTION_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_NOTION_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_ID", "");
     const company = await createCompany(db);
     const service = createTestToolAccessService(db);
     const connected = await service.connectGalleryApp(company.id, {
@@ -13603,9 +11550,9 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("leases rotating OAuth refresh tokens across service instances before concurrent remote app calls", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
     vi.stubEnv(
-      "PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_SECRET",
+      "WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_SECRET",
       "slack-client-secret",
     );
     const company = await createCompany(db);
@@ -13751,9 +11698,9 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("treats invalid_grant as terminal without replaying a rotated refresh token", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
     vi.stubEnv(
-      "PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_SECRET",
+      "WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_SECRET",
       "slack-client-secret",
     );
     const company = await createCompany(db);
@@ -13874,9 +11821,9 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("does not disable a connection when invalid_grant used a superseded refresh-token version", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
     vi.stubEnv(
-      "PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_SECRET",
+      "WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_SECRET",
       "slack-client-secret",
     );
     const company = await createCompany(db);
@@ -13977,9 +11924,9 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("fails closed instead of replaying a refresh token after an abandoned lease", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
     vi.stubEnv(
-      "PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_SECRET",
+      "WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_SECRET",
       "slack-client-secret",
     );
     const company = await createCompany(db);
@@ -14038,8 +11985,8 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("uses OAuth client credentials for shared machine-to-machine MCP connections", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_M2M_CLIENT_ID", "m2m-client-id");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_M2M_CLIENT_SECRET", "m2m-client-secret");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_M2M_CLIENT_ID", "m2m-client-id");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_M2M_CLIENT_SECRET", "m2m-client-secret");
     const company = await createCompany(db);
     const service = createTestToolAccessService(db);
     const connection = await service.createConnection(company.id, {
@@ -14122,9 +12069,9 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it.each(["catalog", "catalog/refresh", "health-check"])("returns reconnect instructions on %s for expired OAuth without a refresh token", async (path) => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
     vi.stubEnv(
-      "PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_SECRET",
+      "WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_SECRET",
       "slack-client-secret",
     );
     const company = await createCompany(db);
@@ -14384,7 +12331,7 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("cancels invalid-signature pending action requests but keeps unsigned in-flight ones out of the review queue without cancelling them", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_ACTION_SIGNING_SECRET", "current-secret");
+    vi.stubEnv("WARDMOTE_TOOL_ACTION_SIGNING_SECRET", "current-secret");
     const company = await createCompany(db);
     const [application] = await db
       .insert(toolApplications)
@@ -16012,14 +13959,14 @@ describeEmbeddedPostgres("tool access service", () => {
 
   it("discovers OAuth for pasted MCP links and completes sign-in without a gallery entry", async () => {
     vi.stubEnv(
-      "PAPERCLIP_TOOL_OAUTH_GENERIC_EXAMPLE_TEST_CLIENT_ID",
+      "WARDMOTE_TOOL_OAUTH_GENERIC_EXAMPLE_TEST_CLIENT_ID",
       "generic-client-id",
     );
     vi.stubEnv(
-      "PAPERCLIP_TOOL_OAUTH_GENERIC_EXAMPLE_TEST_CLIENT_SECRET",
+      "WARDMOTE_TOOL_OAUTH_GENERIC_EXAMPLE_TEST_CLIENT_SECRET",
       "generic-client-secret",
     );
-    vi.stubEnv("PAPERCLIP_PUBLIC_URL", "http://paperclip.test");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "http://paperclip.test");
     const company = await createCompany(db);
     await grantBoardUser(db, company.id, "board-user", [
       "tools:manage_connections",
@@ -20010,7 +17957,7 @@ describe("classifyRisk", () => {
 });
 
 describe("projectedConnectionHeaders", () => {
-  it.each([undefined, "managed", "mcp-key"])(
+  it.each([undefined, "mcp-key"])(
     "adds Actions to the default GitHub toolsets for method %s without saved configuration",
     (connectionMethodKey) => {
       const connection = {

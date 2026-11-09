@@ -12,7 +12,7 @@ import { errorHandler } from "../middleware/error-handler.js";
 import { getEmbeddedPostgresTestSupport, startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";
 
 // Optional reuse of the explicitly disposable browser-test cluster on hosts with limited PostgreSQL startup resources.
-const acceptanceDatabaseUrl = process.env.PAPERCLIP_AGGREGATOR_TEST_DATABASE_URL;
+const acceptanceDatabaseUrl = process.env.WARDMOTE_AGGREGATOR_TEST_DATABASE_URL;
 if (acceptanceDatabaseUrl && !["127.0.0.1", "localhost"].includes(new URL(acceptanceDatabaseUrl).hostname)) throw new Error("The acceptance database must be local and disposable");
 const support = acceptanceDatabaseUrl ? { supported: true } : await getEmbeddedPostgresTestSupport();
 if (!support.supported) console.warn(`Managed-account database tests unavailable: ${support.reason}`);

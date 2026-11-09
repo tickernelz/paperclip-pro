@@ -582,7 +582,7 @@ describe("native same-conversation historical attachment reading", () => {
   });
 
   it("rejects stored MIME types outside an operator restriction before storage retrieval", async () => {
-    vi.stubEnv("PAPERCLIP_ALLOWED_ATTACHMENT_TYPES", "text/plain,image/*");
+    vi.stubEnv("WARDMOTE_ALLOWED_ATTACHMENT_TYPES", "text/plain,image/*");
     onTestFinished(() => {
       vi.unstubAllEnvs();
     });

@@ -281,7 +281,7 @@ try {
   const acpxSidecarSha = sha256File(join(temporaryRoot, acpxSidecarPath));
   const distDigest = sha256Tree(join(temporaryRoot, "dist"));
   const configuredRevision =
-    process.env.PAPERCLIP_RUNNER_SOURCE_REVISION?.trim();
+    process.env.WARDMOTE_RUNNER_SOURCE_REVISION?.trim();
   const revision =
     configuredRevision ??
     execFileSync("git", ["rev-parse", "HEAD"], {
@@ -289,7 +289,7 @@ try {
       encoding: "utf8",
     }).trim();
   if (!/^[0-9a-f]{40}$/.test(revision)) {
-    throw new Error("PAPERCLIP_RUNNER_SOURCE_REVISION must be a full Git SHA");
+    throw new Error("WARDMOTE_RUNNER_SOURCE_REVISION must be a full Git SHA");
   }
   const dirty = configuredRevision
     ? false

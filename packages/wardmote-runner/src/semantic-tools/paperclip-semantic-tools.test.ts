@@ -9,7 +9,7 @@ import type {
   PaperclipSemanticStoredOutcome,
   PaperclipSemanticToolCall,
 } from "./types.js";
-import { PAPERCLIP_SEMANTIC_REDACTED, redactPaperclipSemanticValue } from "./redaction.js";
+import { WARDMOTE_SEMANTIC_REDACTED, redactPaperclipSemanticValue } from "./redaction.js";
 import {
   validatePrpEvent,
   type PrpEvent,
@@ -26,7 +26,7 @@ const correlation = {
 describe("run-scoped semantic tool authority", () => {
   it("masks qualified credential fields and standalone opaque bearer values in audit copies", () => {
     expect(redactPaperclipSemanticValue({ authorizationHeader: "abcdefghijkl", apiKeyProduction: "sensitivevalue", body: "Bearer abcdefghijkl" }))
-      .toEqual({ authorizationHeader: PAPERCLIP_SEMANTIC_REDACTED, apiKeyProduction: PAPERCLIP_SEMANTIC_REDACTED, body: PAPERCLIP_SEMANTIC_REDACTED });
+      .toEqual({ authorizationHeader: WARDMOTE_SEMANTIC_REDACTED, apiKeyProduction: WARDMOTE_SEMANTIC_REDACTED, body: WARDMOTE_SEMANTIC_REDACTED });
   });
   it("preserves credential-related prose and metadata in diagnostic copies", () => {
     const value = {
@@ -35,8 +35,8 @@ describe("run-scoped semantic tool authority", () => {
     };
     expect(redactPaperclipSemanticValue(value)).toEqual(value);
     expect(redactPaperclipSemanticValue({ credentials: { provider: "opaque-value" }, passwordValue: "opaque-value" }))
-      .toEqual({ credentials: PAPERCLIP_SEMANTIC_REDACTED, passwordValue: PAPERCLIP_SEMANTIC_REDACTED });
-    expect(redactPaperclipSemanticValue({ body: "Bearer opaque-credential-value" })).toEqual({ body: PAPERCLIP_SEMANTIC_REDACTED });
+      .toEqual({ credentials: WARDMOTE_SEMANTIC_REDACTED, passwordValue: WARDMOTE_SEMANTIC_REDACTED });
+    expect(redactPaperclipSemanticValue({ body: "Bearer opaque-credential-value" })).toEqual({ body: WARDMOTE_SEMANTIC_REDACTED });
   });
 
   it("projects only bound and currently authorized actions", async () => {
@@ -152,7 +152,7 @@ describe("run-scoped semantic tool authority", () => {
 
     expect(result).toMatchObject({
       ok: true,
-      value: { accessToken: PAPERCLIP_SEMANTIC_REDACTED },
+      value: { accessToken: WARDMOTE_SEMANTIC_REDACTED },
       duplicate: false,
     });
     expect(JSON.stringify(result)).not.toContain("sk_should-never-cross");

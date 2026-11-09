@@ -114,13 +114,13 @@ import {
   deriveTaskKey,
   type WakeupOptions,
   mergeCoalescedContextSnapshot,
-  PAPERCLIP_EXTERNAL_CHAT_EXECUTION_BOUND_KEY,
-  PAPERCLIP_HARNESS_CHECKOUT_KEY,
+  WARDMOTE_EXTERNAL_CHAT_EXECUTION_BOUND_KEY,
+  WARDMOTE_HARNESS_CHECKOUT_KEY,
   attestReviewedExternalChatRun,
   resolveAcceptedPlanWakeRoutingDecision,
   clearInteractionContinuationWakeContext,
   buildPaperclipWakePayload,
-  PAPERCLIP_WAKE_PAYLOAD_KEY,
+  WARDMOTE_WAKE_PAYLOAD_KEY,
   resolveRunScopedMentionedSkillKeys,
   resolveExecutionRunAdapterConfig,
   applyRunScopedMentionedSkillKeys,
@@ -633,7 +633,7 @@ import { computeTaskDrain, applyTaskDrain, startTaskDrain, stopTaskDrain, readTa
 const MAX_LIVE_LOG_CHUNK_BYTES = 8 * 1024;
 
 const ACCEPTED_PLAN_CONVERSION_SKILL_KEY =
-  "paperclipai/paperclip/paperclip-converting-plans-to-tasks";
+  "tickernelz/wardmote/paperclip-converting-plans-to-tasks";
 
 const execFile = promisify(execFileCallback);
 const UNSUCCESSFUL_HEARTBEAT_RUN_TERMINAL_STATUSES = [
@@ -1005,14 +1005,14 @@ export function resolveHeartbeatSchedulingSuppression(
     "worktree_instance" | "database_restore_in_progress" | "task_drain" | "server_shutdown" | null;
 } {
   if (
-    isTruthyRuntimeEnvValue(env.PAPERCLIP_IN_WORKTREE) &&
+    isTruthyRuntimeEnvValue(env.WARDMOTE_IN_WORKTREE) &&
     !overrides.allowWorktreeRunExecution
   ) {
     return { suppressed: true, reason: "worktree_instance" };
   }
   if (
-    isTruthyRuntimeEnvValue(env.PAPERCLIP_DATABASE_RESTORE_IN_PROGRESS) ||
-    isTruthyRuntimeEnvValue(env.PAPERCLIP_RESTORE_IN_PROGRESS)
+    isTruthyRuntimeEnvValue(env.WARDMOTE_DATABASE_RESTORE_IN_PROGRESS) ||
+    isTruthyRuntimeEnvValue(env.WARDMOTE_RESTORE_IN_PROGRESS)
   ) {
     return { suppressed: true, reason: "database_restore_in_progress" };
   }
@@ -1077,7 +1077,7 @@ export function heartbeatService(
   const readLocalRunLimits = async () =>
     resolveLocalRunLimits(runtimeEnv, (await instanceSettings.getGeneral()).localRuns);
   const inWorktreeRuntime = isTruthyRuntimeEnvValue(
-    runtimeEnv.PAPERCLIP_IN_WORKTREE,
+    runtimeEnv.WARDMOTE_IN_WORKTREE,
   );
   // Preview worktree instances suppress the run engine by default. Users can lift
   // that per-worktree via the `enableWorktreeRunExecution` experimental setting
@@ -1107,7 +1107,7 @@ export function heartbeatService(
     try {
       const activation = resolveWorktreeRunExecutionActivation(
         await instanceSettings.getExperimental(),
-        runtimeEnv.PAPERCLIP_INSTANCE_ID?.trim() || null,
+        runtimeEnv.WARDMOTE_INSTANCE_ID?.trim() || null,
       );
       const cutoff = activation.armed ? new Date(activation.cutoff) : null;
       cachedWorktreeRunExecutionOverride = {
@@ -2044,7 +2044,7 @@ export function heartbeatService(
         await dispatchNativeSessionResumptions({
           db,
           runnerInstanceId:
-            runtimeEnv.PAPERCLIP_INSTANCE_ID?.trim() || "paperclip-heartbeat",
+            runtimeEnv.WARDMOTE_INSTANCE_ID?.trim() || "paperclip-heartbeat",
           runIds: [runId],
           dispatch: (claim) => {
             const execution = executeRun(claim.runId, {
@@ -2468,7 +2468,7 @@ export function heartbeatService(
       const isFailedChatRunRetry = await authorizeFailedChatRetryExecution();
       // Never adopt a chat-execution attestation supplied in a wake payload.
       // Reviewed chat turns rebuild it from the current durable owner below.
-      delete context[PAPERCLIP_EXTERNAL_CHAT_EXECUTION_BOUND_KEY];
+      delete context[WARDMOTE_EXTERNAL_CHAT_EXECUTION_BOUND_KEY];
       delete context[EXTERNAL_CHAT_QUESTION_RESPONSE_KEY];
       const providerTraceRequested =
         parseObject(context.debug).providerTrace === "raw";
@@ -2548,7 +2548,7 @@ export function heartbeatService(
             [...resolvedInteractionCheckoutExpectedStatuses()],
             run.id,
           );
-          context[PAPERCLIP_HARNESS_CHECKOUT_KEY] = true;
+          context[WARDMOTE_HARNESS_CHECKOUT_KEY] = true;
         } catch (error) {
           if (!isCheckoutConflictError(error)) throw error;
           const staleness = await runDispatch.cancelStaleQueuedRun({
@@ -2585,10 +2585,10 @@ export function heartbeatService(
             ["todo", "backlog", "blocked"],
             run.id,
           );
-          context[PAPERCLIP_HARNESS_CHECKOUT_KEY] = true;
+          context[WARDMOTE_HARNESS_CHECKOUT_KEY] = true;
         } catch (error) {
           if (!isCheckoutConflictError(error)) throw error;
-          context[PAPERCLIP_HARNESS_CHECKOUT_KEY] = false;
+          context[WARDMOTE_HARNESS_CHECKOUT_KEY] = false;
         }
         issueContext = await getIssueExecutionContext(agent.companyId, issueId);
       }
@@ -2618,7 +2618,7 @@ export function heartbeatService(
         });
         if (!attested)
           throw new Error("reviewed_chat_execution_binding_not_authorized");
-        context[PAPERCLIP_EXTERNAL_CHAT_EXECUTION_BOUND_KEY] = true;
+        context[WARDMOTE_EXTERNAL_CHAT_EXECUTION_BOUND_KEY] = true;
       }
       const wakeCommentId = deriveCommentId(context, null);
       const wakeCommentContext =
@@ -3015,9 +3015,9 @@ export function heartbeatService(
           true,
       });
       if (paperclipWakePayload) {
-        context[PAPERCLIP_WAKE_PAYLOAD_KEY] = paperclipWakePayload;
+        context[WARDMOTE_WAKE_PAYLOAD_KEY] = paperclipWakePayload;
       } else {
-        delete context[PAPERCLIP_WAKE_PAYLOAD_KEY];
+        delete context[WARDMOTE_WAKE_PAYLOAD_KEY];
       }
       const safeWakeComments = (paperclipWakePayload?.comments ?? []).flatMap(
         (comment) =>
@@ -3531,7 +3531,7 @@ export function heartbeatService(
         ? await agentIdentityService(db).ensureAgentIdentity(agent.companyId, agent.id)
         : undefined;
       identityRedactor = createAgentIdentityRedactor(agentIdentity?.privateKeyPem);
-      if (agentIdentity) secretKeys.add("PAPERCLIP_AGENT_PRIVATE_KEY");
+      if (agentIdentity) secretKeys.add("WARDMOTE_AGENT_PRIVATE_KEY");
       const resolvedFailureSecrets = readFailureReportSecrets();
       readFailureReportSecrets = () => [
         ...resolvedFailureSecrets,
@@ -3958,7 +3958,7 @@ export function heartbeatService(
         // whether GitHub is configured or a credential can be acquired.
         networkAccess:
           trustPreset.kind === "standard" &&
-          process.env.PAPERCLIP_RUNNER_NETWORK_ACCESS !== "disabled",
+          process.env.WARDMOTE_RUNNER_NETWORK_ACCESS !== "disabled",
       });
       runtimeConfig = { ...runtimeConfig, env: gitExecutionEnv };
       for (const key of MANAGED_GITHUB_TOKEN_KEYS) secretKeys.add(key);
@@ -3983,7 +3983,7 @@ export function heartbeatService(
         });
         githubLauncherLocation = githubLaunchers.cleanupLocation;
         runtimeConfig = { ...runtimeConfig, env: githubLaunchers.env };
-        secretKeys.add("PAPERCLIP_GITHUB_BROKER_TOKEN");
+        secretKeys.add("WARDMOTE_GITHUB_BROKER_TOKEN");
       }
       context.paperclipEnvironment = {
         id: selectedEnvironment.id,
@@ -4095,9 +4095,9 @@ export function heartbeatService(
       // a one-time "stay on this branch" hint on non-resumed sessions.
       if (executionWorkspace.branchName) {
         const wakePayloadForWorkspace = parseObject(
-          context[PAPERCLIP_WAKE_PAYLOAD_KEY],
+          context[WARDMOTE_WAKE_PAYLOAD_KEY],
         );
-        context[PAPERCLIP_WAKE_PAYLOAD_KEY] = {
+        context[WARDMOTE_WAKE_PAYLOAD_KEY] = {
           ...wakePayloadForWorkspace,
           executionWorkspace: { branchName: executionWorkspace.branchName },
         };

@@ -125,8 +125,8 @@ describe("resolveBundledCatalogRoot", () => {
     expect(resolveBundledCatalogRoot({})).toBe(DEFAULT_BUNDLED_CATALOG_ROOT);
   });
 
-  it("honors PAPERCLIP_BUNDLED_PLUGIN_ROOT", () => {
-    expect(resolveBundledCatalogRoot({ PAPERCLIP_BUNDLED_PLUGIN_ROOT: "/custom/root" })).toBe(
+  it("honors WARDMOTE_BUNDLED_PLUGIN_ROOT", () => {
+    expect(resolveBundledCatalogRoot({ WARDMOTE_BUNDLED_PLUGIN_ROOT: "/custom/root" })).toBe(
       "/custom/root",
     );
   });

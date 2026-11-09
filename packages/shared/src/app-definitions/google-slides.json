@@ -30,38 +30,6 @@
   "redirectConstraints": "https-or-loopback-http",
   "methods": [
     {
-      "key": "paperclip-read",
-      "label": "Connect with Paperclip Cloud",
-      "transport": "mcp_remote",
-      "auth": "oauth",
-      "oauthStrategy": "paperclip_cloud_connector",
-      "connectorProfile": "slides.read",
-      "capabilityProfile": {
-        "key": "read",
-        "label": "Read only",
-        "description": "Read presentation slides and content."
-      },
-      "grantKinds": [
-        "user",
-        "organization"
-      ],
-      "ownershipModes": [
-        "platform_shared"
-      ],
-      "whenToUse": "Use Paperclip Cloud OAuth for read-only Slides access.",
-      "defaults": {
-        "serverUrl": "https://slidesmcp.googleapis.com/mcp/v1",
-        "scopesHint": [
-          "https://www.googleapis.com/auth/presentations.readonly"
-        ]
-      },
-      "guidanceMd": "Connect Google Slides to read presentations.",
-      "warnings": [
-        "Google Workspace MCP servers are in Developer Preview."
-      ],
-      "riskTier": "S3"
-    },
-    {
       "key": "customer-read-oauth",
       "label": "Use your own Google OAuth app",
       "transport": "mcp_remote",
@@ -101,39 +69,6 @@
         "Google Workspace MCP servers are in Developer Preview."
       ],
       "riskTier": "S3"
-    },
-    {
-      "key": "paperclip-write",
-      "label": "Connect with Paperclip Cloud",
-      "transport": "mcp_remote",
-      "auth": "oauth",
-      "oauthStrategy": "paperclip_cloud_connector",
-      "connectorProfile": "slides.write",
-      "capabilityProfile": {
-        "key": "write",
-        "label": "Read & edit",
-        "description": "Read and update presentations."
-      },
-      "grantKinds": [
-        "user",
-        "organization"
-      ],
-      "ownershipModes": [
-        "platform_shared"
-      ],
-      "whenToUse": "Use Paperclip Cloud OAuth to read and update Slides.",
-      "defaults": {
-        "serverUrl": "https://slidesmcp.googleapis.com/mcp/v1",
-        "scopesHint": [
-          "https://www.googleapis.com/auth/presentations"
-        ]
-      },
-      "guidanceMd": "Connect Google Slides to read and update presentations.",
-      "warnings": [
-        "Presentation updates require approval.",
-        "Google Workspace MCP servers are in Developer Preview."
-      ],
-      "riskTier": "S4"
     },
     {
       "key": "customer-write-oauth",

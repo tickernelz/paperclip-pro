@@ -31,7 +31,7 @@ const MATERIALIZATION_NOTE =
   "Enabled skills are materialized into the stable Wardmote-managed prompt bundle on the agent's next run.";
 
 /** Company skill key of the Paperclip core skill that carries beta releases. */
-const PAPERCLIP_CORE_SKILL_KEY = "paperclipai/paperclip/paperclip";
+const WARDMOTE_CORE_SKILL_KEY = "tickernelz/wardmote/paperclip";
 
 /** Build the desired-skill sync payload, carrying any active version pins. */
 export function toDesiredSkillPayload(
@@ -93,7 +93,7 @@ export function AgentSkillsTab({ agent, companyId }: { agent: Agent; companyId?:
   const betaSkillsEnabled = experimentalSettings?.enableBetaSkills === true;
 
   const paperclipCoreSkill = useMemo(
-    () => (companySkills ?? []).find((skill) => skill.key === PAPERCLIP_CORE_SKILL_KEY) ?? null,
+    () => (companySkills ?? []).find((skill) => skill.key === WARDMOTE_CORE_SKILL_KEY) ?? null,
     [companySkills, skillSnapshot],
   );
 
@@ -338,13 +338,13 @@ export function AgentSkillsTab({ agent, companyId }: { agent: Agent; companyId?:
     // runtime context, so disabling an enabled row would only trap stale data.
     const legacyPaperclipBlocked = agent.adapterType === "paperclip_runner"
       && variant === "available"
-      && row.key === PAPERCLIP_CORE_SKILL_KEY;
+      && row.key === WARDMOTE_CORE_SKILL_KEY;
     const rowDisabled = unsupported || legacyPaperclipBlocked;
     const rowDisabledReason = legacyPaperclipBlocked
       ? "Wardmote Runner uses native semantic coordination and cannot attach the legacy Wardmote operational skill."
       : unsupportedMessage;
     const showReleasePicker =
-      releasePickerActive && variant === "enabled" && row.key === PAPERCLIP_CORE_SKILL_KEY;
+      releasePickerActive && variant === "enabled" && row.key === WARDMOTE_CORE_SKILL_KEY;
     const pinnedVersionId = versionPins[row.key] ?? null;
     const pinnedRelease = pinnedVersionId
       ? paperclipReleases.find((release) => release.id === pinnedVersionId) ?? null

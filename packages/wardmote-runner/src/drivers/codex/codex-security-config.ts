@@ -12,9 +12,9 @@ import {
 export function codexNetworkReadOnlyRoots(source: NodeJS.ProcessEnv): string[] {
   if (!codexNetworkAccess(source)) return [];
   const roots = new Set<string>();
-  if (source.PAPERCLIP_RUNNER_NETWORK_ROOTS !== undefined) {
+  if (source.WARDMOTE_RUNNER_NETWORK_ROOTS !== undefined) {
     try {
-      const projected: unknown = JSON.parse(source.PAPERCLIP_RUNNER_NETWORK_ROOTS);
+      const projected: unknown = JSON.parse(source.WARDMOTE_RUNNER_NETWORK_ROOTS);
       if (Array.isArray(projected)) for (const root of projected) {
         if (typeof root === "string" && isAbsolute(root) && resolve(root) !== "/") roots.add(resolve(root));
       }
@@ -154,21 +154,21 @@ export const CODEX_EXTERNAL_SANDBOX_PERMISSION_PROFILE =
   "paperclip-runner-external-sandbox";
 
 export function codexNetworkAccess(source: NodeJS.ProcessEnv = process.env): boolean {
-  return source.PAPERCLIP_RUNNER_NETWORK_ACCESS === "enabled";
+  return source.WARDMOTE_RUNNER_NETWORK_ACCESS === "enabled";
 }
 
 function gitFilesystemRoots(source: NodeJS.ProcessEnv): { read: string[]; write: string[] } {
   const read: string[] = [];
   const write: string[] = [];
   try {
-    const roots: unknown = JSON.parse(source.PAPERCLIP_GIT_METADATA_ROOTS ?? "[]");
+    const roots: unknown = JSON.parse(source.WARDMOTE_GIT_METADATA_ROOTS ?? "[]");
     if (Array.isArray(roots)) for (const root of roots) {
       if (typeof root === "string" && isAbsolute(root) && resolve(root) !== "/") write.push(resolve(root));
     }
   } catch { /* Older controllers do not project Git metadata roots. */ }
-  if (source.PAPERCLIP_GITHUB_AUTH_MODE === "host" && source.PAPERCLIP_GITHUB_HOST_HOME) {
+  if (source.WARDMOTE_GITHUB_AUTH_MODE === "host" && source.WARDMOTE_GITHUB_HOST_HOME) {
     for (const relative of [".gitconfig", ".git-credentials", ".config/git", ".config/gh", ".ssh"]) {
-      read.push(join(source.PAPERCLIP_GITHUB_HOST_HOME, relative));
+      read.push(join(source.WARDMOTE_GITHUB_HOST_HOME, relative));
     }
     for (const root of [source.GH_CONFIG_DIR, source.GIT_CONFIG_GLOBAL, source.GIT_CONFIG_SYSTEM, source.SSH_AUTH_SOCK]) {
       if (root && isAbsolute(root) && resolve(root) !== "/") read.push(resolve(root));
@@ -178,7 +178,7 @@ function gitFilesystemRoots(source: NodeJS.ProcessEnv): { read: string[]; write:
 }
 
 function usesExternalRunnerSandbox(source: NodeJS.ProcessEnv): boolean {
-  return source.PAPERCLIP_RUNNER_EXTERNAL_SANDBOX === "1";
+  return source.WARDMOTE_RUNNER_EXTERNAL_SANDBOX === "1";
 }
 
 const SKILLLESS_BASE_CONFIG = {
@@ -207,12 +207,12 @@ export function codexCommandEnvironment(
     const value = source[key];
     if (value !== undefined) environment[key] = value;
   }
-  if (source.PAPERCLIP_GITHUB_AUTH_MODE === "host" && source.PAPERCLIP_GITHUB_HOST_HOME) {
-    environment.HOME = source.PAPERCLIP_GITHUB_HOST_HOME;
-  } else if (source.PAPERCLIP_GITHUB_LAUNCHER_DIR) {
-    environment.HOME = source.PAPERCLIP_GITHUB_LAUNCHER_DIR;
-    environment.ZDOTDIR = source.PAPERCLIP_GITHUB_LAUNCHER_DIR;
-    environment.BASH_ENV = `${source.PAPERCLIP_GITHUB_LAUNCHER_DIR}/.bashrc`;
+  if (source.WARDMOTE_GITHUB_AUTH_MODE === "host" && source.WARDMOTE_GITHUB_HOST_HOME) {
+    environment.HOME = source.WARDMOTE_GITHUB_HOST_HOME;
+  } else if (source.WARDMOTE_GITHUB_LAUNCHER_DIR) {
+    environment.HOME = source.WARDMOTE_GITHUB_LAUNCHER_DIR;
+    environment.ZDOTDIR = source.WARDMOTE_GITHUB_LAUNCHER_DIR;
+    environment.BASH_ENV = `${source.WARDMOTE_GITHUB_LAUNCHER_DIR}/.bashrc`;
   }
   return environment;
 }
@@ -260,7 +260,7 @@ export function createIsolatedCodexAppServerArgs(
   const inheritedGitHubKeys = [
     ...githubCredentialEnvironmentKeys(source),
     ...configuredEnvironmentKeys(explicitSource),
-    ...["PAPERCLIP_AGENT_KEY_ID", "PAPERCLIP_AGENT_PUBLIC_KEY", "PAPERCLIP_AGENT_PRIVATE_KEY"].filter(key => source[key] !== undefined),
+    ...["WARDMOTE_AGENT_KEY_ID", "WARDMOTE_AGENT_PUBLIC_KEY", "WARDMOTE_AGENT_PRIVATE_KEY"].filter(key => source[key] !== undefined),
   ];
   const hasProjectedEnvironment = inheritedGitHubKeys.length > 0;
   // Codex filters the configured `set` values through include_only as well.
@@ -270,7 +270,7 @@ export function createIsolatedCodexAppServerArgs(
   for (const key of configuredEnvironmentKeys(explicitSource)) delete commandEnvironment[key];
   if (instructionWorkingCopyRoot && source.AGENT_HOME === instructionWorkingCopyRoot) commandEnvironment.AGENT_HOME = instructionWorkingCopyRoot;
   const shellEnvironmentKeys = [...new Set([...inheritedGitHubKeys, ...Object.keys(commandEnvironment)])].sort();
-  if (source.PAPERCLIP_GITHUB_LAUNCHER_DIR) readOnlyRoots = [...readOnlyRoots, source.PAPERCLIP_GITHUB_LAUNCHER_DIR];
+  if (source.WARDMOTE_GITHUB_LAUNCHER_DIR) readOnlyRoots = [...readOnlyRoots, source.WARDMOTE_GITHUB_LAUNCHER_DIR];
   const deniedHostRoots = [
     ...new Set(
       [source.HOME, source.CODEX_HOME]
@@ -290,7 +290,7 @@ export function createIsolatedCodexAppServerArgs(
     ...gitRoots.read.map((path) => `${tomlString(path)}="read"`),
     ...gitRoots.write.map((path) => `${tomlString(path)}="write"`),
     ...(instructionWorkingCopyRoot ? [`${tomlString(resolve(instructionWorkingCopyRoot))}="write"`] : []),
-    ...(source.PAPERCLIP_GITHUB_BROKER_TOKEN && source.GH_CONFIG_DIR
+    ...(source.WARDMOTE_GITHUB_BROKER_TOKEN && source.GH_CONFIG_DIR
       ? [`${tomlString(resolve(source.GH_CONFIG_DIR))}="write"`] : []),
     `":workspace_roots"={"."="write"}`,
   ].join(",");
@@ -302,7 +302,7 @@ export function createIsolatedCodexAppServerArgs(
     ...readOnlyRoots.map((path) => `${tomlString(resolve(path))}="read"`),
     ...[...gitRoots.read, ...gitRoots.write].map((path) => `${tomlString(path)}="read"`),
     ...(instructionWorkingCopyRoot ? [`${tomlString(resolve(instructionWorkingCopyRoot))}="read"`] : []),
-    ...(source.PAPERCLIP_GITHUB_BROKER_TOKEN && source.GH_CONFIG_DIR
+    ...(source.WARDMOTE_GITHUB_BROKER_TOKEN && source.GH_CONFIG_DIR
       ? [`${tomlString(resolve(source.GH_CONFIG_DIR))}="write"`] : []),
     `":workspace_roots"={"."="read"}`,
   ].join(",");

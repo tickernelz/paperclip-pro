@@ -90,15 +90,15 @@ function expectNoImportWork() {
 describe("company import floor", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    delete process.env.PAPERCLIP_HIDDEN_SETTINGS;
+    delete process.env.WARDMOTE_HIDDEN_SETTINGS;
   });
 
   afterEach(() => {
-    delete process.env.PAPERCLIP_HIDDEN_SETTINGS;
+    delete process.env.WARDMOTE_HIDDEN_SETTINGS;
   });
 
   it("floors every import route with settings_operator_managed when company.import is hidden", async () => {
-    process.env.PAPERCLIP_HIDDEN_SETTINGS = "company.import";
+    process.env.WARDMOTE_HIDDEN_SETTINGS = "company.import";
     const app = await createApp(boardAdmin);
 
     for (const route of IMPORT_ROUTES) {
@@ -112,7 +112,7 @@ describe("company import floor", () => {
   });
 
   it("keeps import open when only other company pages are hidden", async () => {
-    process.env.PAPERCLIP_HIDDEN_SETTINGS = "company.secrets,company.members";
+    process.env.WARDMOTE_HIDDEN_SETTINGS = "company.secrets,company.members";
     const app = await createApp(boardAdmin);
 
     const res = await request(app).get("/api/companies/import/jobs/unknown-job");

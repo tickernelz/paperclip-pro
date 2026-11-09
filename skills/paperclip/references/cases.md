@@ -10,7 +10,7 @@ If a case tool reports `Cases are disabled`, stop and report that the operator
 must enable cases before the skill can use this surface.
 
 The case tools are in the `extended` toolset: they are available when the
-operator enables `PAPERCLIP_MCP_TOOLSETS=full`. When they are not
+operator enables `WARDMOTE_MCP_TOOLSETS=full`. When they are not
 loaded, use `paperclipApiRequest` for the same operations. Every tool below
 takes `companyId` only where noted; it defaults to the agent's company.
 

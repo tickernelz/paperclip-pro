@@ -4,7 +4,7 @@ import type {
 } from "../protocol/replay-contract.js";
 import type { NativeSessionCapabilities, NativeTurnControlCapabilities, NativeUserMessage } from "./types.js";
 import {
-  PAPERCLIP_RUNTIME_REQUEST_SCHEMA_V2,
+  WARDMOTE_RUNTIME_REQUEST_SCHEMA_V2,
   parsePaperclipQuestionResponse,
   type PaperclipQuestionResponse,
   type PaperclipQuestionSet,
@@ -384,7 +384,7 @@ export function harnessRuntimeInputExpiredOutcome(
     requestKind: "runtime",
     replayAllowed: false,
     request: {
-      schema: PAPERCLIP_RUNTIME_REQUEST_SCHEMA_V2,
+      schema: WARDMOTE_RUNTIME_REQUEST_SCHEMA_V2,
       requestKind: "runtime",
       requestId: request.requestId,
       type: "input",

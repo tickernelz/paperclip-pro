@@ -659,9 +659,9 @@ describe("instance settings routes", () => {
 
   describe("local run limits in force", () => {
     const envKeys = [
-      "PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS",
-      "PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS",
-      "PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC",
+      "WARDMOTE_MAX_CONCURRENT_LOCAL_RUNS",
+      "WARDMOTE_MAX_CONCURRENT_LOCAL_STARTS",
+      "WARDMOTE_LOCAL_START_WAIT_BYPASS_SEC",
     ] as const;
     const savedEnv: Record<string, string | undefined> = {};
 
@@ -680,7 +680,7 @@ describe("instance settings routes", () => {
     });
 
     it("reports the saved setting, the default, and an environment override", async () => {
-      process.env.PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS = "6";
+      process.env.WARDMOTE_MAX_CONCURRENT_LOCAL_STARTS = "6";
       mockInstanceSettingsService.getGeneral.mockResolvedValue({
         censorUsernameInLogs: false,
         feedbackDataSharingPreference: "prompt",
@@ -698,11 +698,11 @@ describe("instance settings routes", () => {
 
       expect(res.status).toBe(200);
       expect(res.body).toEqual({
-        maxConcurrentRuns: { value: 2, source: "setting", envVar: "PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS" },
-        maxConcurrentStarts: { value: 6, source: "env", envVar: "PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS" },
-        startWaitBypassSec: { value: 120, source: "default", envVar: "PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC" },
-        memoryReservePercent: { value: 20, source: "default", envVar: "PAPERCLIP_LOCAL_MEMORY_RESERVE_PERCENT" },
-        memoryGateCooldownSec: { value: 120, source: "default", envVar: "PAPERCLIP_LOCAL_MEMORY_GATE_COOLDOWN_SEC" },
+        maxConcurrentRuns: { value: 2, source: "setting", envVar: "WARDMOTE_MAX_CONCURRENT_LOCAL_RUNS" },
+        maxConcurrentStarts: { value: 6, source: "env", envVar: "WARDMOTE_MAX_CONCURRENT_LOCAL_STARTS" },
+        startWaitBypassSec: { value: 120, source: "default", envVar: "WARDMOTE_LOCAL_START_WAIT_BYPASS_SEC" },
+        memoryReservePercent: { value: 20, source: "default", envVar: "WARDMOTE_LOCAL_MEMORY_RESERVE_PERCENT" },
+        memoryGateCooldownSec: { value: 120, source: "default", envVar: "WARDMOTE_LOCAL_MEMORY_GATE_COOLDOWN_SEC" },
       });
     });
 
@@ -800,11 +800,11 @@ describe("instance settings routes", () => {
     };
 
     afterEach(() => {
-      delete process.env.PAPERCLIP_HIDDEN_SETTINGS;
+      delete process.env.WARDMOTE_HIDDEN_SETTINGS;
     });
 
     it("rejects a write that changes a hidden general field", async () => {
-      process.env.PAPERCLIP_HIDDEN_SETTINGS = "instance.general.censorUsernameInLogs";
+      process.env.WARDMOTE_HIDDEN_SETTINGS = "instance.general.censorUsernameInLogs";
       const app = await createApp(adminActor);
 
       const res = await request(app)
@@ -817,7 +817,7 @@ describe("instance settings routes", () => {
     });
 
     it("allows a same-value echo of a hidden general field", async () => {
-      process.env.PAPERCLIP_HIDDEN_SETTINGS = "instance.general.censorUsernameInLogs";
+      process.env.WARDMOTE_HIDDEN_SETTINGS = "instance.general.censorUsernameInLogs";
       const app = await createApp(adminActor);
 
       const res = await request(app)
@@ -832,7 +832,7 @@ describe("instance settings routes", () => {
     });
 
     it("deep-compares hidden backupRetention echoes instead of rejecting them", async () => {
-      process.env.PAPERCLIP_HIDDEN_SETTINGS = "instance.general.backupRetention";
+      process.env.WARDMOTE_HIDDEN_SETTINGS = "instance.general.backupRetention";
       mockInstanceSettingsService.getGeneral.mockResolvedValue({
         censorUsernameInLogs: false,
         feedbackDataSharingPreference: "prompt",
@@ -853,7 +853,7 @@ describe("instance settings routes", () => {
     });
 
     it("rejects a write that changes a hidden experimental toggle", async () => {
-      process.env.PAPERCLIP_HIDDEN_SETTINGS = "instance.experimental.enableEnvironments";
+      process.env.WARDMOTE_HIDDEN_SETTINGS = "instance.experimental.enableEnvironments";
       const app = await createApp(adminActor);
 
       const res = await request(app)
@@ -866,7 +866,7 @@ describe("instance settings routes", () => {
     });
 
     it("enforces a wildcard allowlist at the API and preserves hidden values", async () => {
-      process.env.PAPERCLIP_HIDDEN_SETTINGS =
+      process.env.WARDMOTE_HIDDEN_SETTINGS =
         "instance.experimental.*,!instance.experimental.enableIsolatedWorkspaces";
       const app = await createApp(adminActor);
 
@@ -888,7 +888,7 @@ describe("instance settings routes", () => {
     });
 
     it("does not let an allowlist exception bypass an explicit API restriction", async () => {
-      process.env.PAPERCLIP_HIDDEN_SETTINGS =
+      process.env.WARDMOTE_HIDDEN_SETTINGS =
         "instance.experimental.*,!instance.experimental.enableEnvironments,instance.experimental.enableEnvironments";
       const app = await createApp(adminActor);
       const res = await request(app)
@@ -900,7 +900,7 @@ describe("instance settings routes", () => {
     });
 
     it("allows writes to non-hidden experimental toggles while others are hidden", async () => {
-      process.env.PAPERCLIP_HIDDEN_SETTINGS =
+      process.env.WARDMOTE_HIDDEN_SETTINGS =
         "instance.experimental.enableEnvironments,instance.experimental.enableServerInfoDebugView";
       const app = await createApp(adminActor);
 
@@ -915,7 +915,7 @@ describe("instance settings routes", () => {
     });
 
     it("floors every experimental toggle when the whole Experimental page is hidden", async () => {
-      process.env.PAPERCLIP_HIDDEN_SETTINGS = "instance.experimental";
+      process.env.WARDMOTE_HIDDEN_SETTINGS = "instance.experimental";
       const app = await createApp(adminActor);
 
       const res = await request(app)

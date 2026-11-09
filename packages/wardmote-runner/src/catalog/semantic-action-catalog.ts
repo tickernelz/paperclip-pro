@@ -632,7 +632,7 @@ if (byId.size !== descriptors.length)
  * Canonical declarations only. Consumers must not treat membership as
  * permission to expose or invoke an action.
  */
-export const PAPERCLIP_SEMANTIC_ACTION_CATALOG = Object.freeze([
+export const WARDMOTE_SEMANTIC_ACTION_CATALOG = Object.freeze([
   ...byId.values(),
 ]);
 
@@ -643,7 +643,7 @@ export function paperclipSemanticAction(
 }
 
 export function canonicalPaperclipSemanticActionCatalog(): string {
-  return `${JSON.stringify(sortKeys(PAPERCLIP_SEMANTIC_ACTION_CATALOG), null, 2)}\n`;
+  return `${JSON.stringify(sortKeys(WARDMOTE_SEMANTIC_ACTION_CATALOG), null, 2)}\n`;
 }
 
 function deepFreeze<T>(value: T): T {

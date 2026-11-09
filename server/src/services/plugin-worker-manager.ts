@@ -2928,7 +2928,7 @@ export function createPluginWorkerHandle(
       ...options.env,
       PATH: process.env.PATH ?? "",
       NODE_PATH: process.env.NODE_PATH ?? "",
-      PAPERCLIP_PLUGIN_ID: pluginId,
+      WARDMOTE_PLUGIN_ID: pluginId,
       NODE_ENV: process.env.NODE_ENV ?? "production",
       TZ: process.env.TZ ?? "UTC",
     };

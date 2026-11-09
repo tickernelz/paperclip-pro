@@ -17,7 +17,7 @@ sessionStorage; only non-secret settings are stored. Reset preview clears it.
 Individual state stories start independently and do not persist settings.
 
 The real setup's **Copy setup prompt** includes the current Paperclip origin.
-For this preview, start Storybook with `PAPERCLIP_STORYBOOK_API_URL` set to the
+For this preview, start Storybook with `WARDMOTE_STORYBOOK_API_URL` set to the
 real instance URL. The copied prompt then includes that instance instead of the
 Storybook address. Without that setting, it asks for the instance URL.
 

@@ -147,7 +147,7 @@ for source hashes, costs, reports and limits.
 
 The additional `event-follow-up` case expands the catalog to eight cases / 24
 cells. It starts a temporary fixture-only HTTPS callback with `cloudflared`
-(`PAPERCLIP_EVAL_CLOUDFLARED` may select the binary), independently verifies the
+(`WARDMOTE_EVAL_CLOUDFLARED` may select the binary), independently verifies the
 Standard Webhooks signatures, and subscribes through the production MCP 2.0
 endpoint immediately after the paid assistant creates the task. The real agent
 completes its report; the durable event worker delivers the completion webhook.

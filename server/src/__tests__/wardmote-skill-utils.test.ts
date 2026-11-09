@@ -78,7 +78,7 @@ respond() {
 }
 
 attachment_json() {
-  originating_run_id="$PAPERCLIP_RUN_ID"
+  originating_run_id="$WARDMOTE_RUN_ID"
   if [[ -f "$FAKE_CURL_STATE_DIR/originating-run-id" ]]; then
     originating_run_id="$(<"$FAKE_CURL_STATE_DIR/originating-run-id")"
   fi
@@ -103,7 +103,7 @@ if [[ "$method" == "GET" && "$url" == */work-products ]]; then
   if [[ -f "$FAKE_CURL_STATE_DIR/upload-committed" ]]; then
     work_product_json="$(
       jq -nc \
-        --arg runId "$PAPERCLIP_RUN_ID" \
+        --arg runId "$WARDMOTE_RUN_ID" \
         '{
           id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
           type: "artifact",
@@ -139,7 +139,7 @@ if [[ "$method" == "POST" && "$url" == */attachments ]]; then
     (
       sleep "$FAKE_CURL_COMMIT_AFTER_DROP_DELAY"
       : >"$FAKE_CURL_STATE_DIR/upload-committed"
-      printf '%s' "$PAPERCLIP_RUN_ID" >"$FAKE_CURL_STATE_DIR/originating-run-id"
+      printf '%s' "$WARDMOTE_RUN_ID" >"$FAKE_CURL_STATE_DIR/originating-run-id"
     ) >/dev/null 2>&1 &
     exit 56
   fi
@@ -148,7 +148,7 @@ if [[ "$method" == "POST" && "$url" == */attachments ]]; then
     exit 56
   fi
   : >"$FAKE_CURL_STATE_DIR/upload-committed"
-  printf '%s' "$PAPERCLIP_RUN_ID" >"$FAKE_CURL_STATE_DIR/originating-run-id"
+  printf '%s' "$WARDMOTE_RUN_ID" >"$FAKE_CURL_STATE_DIR/originating-run-id"
   if [[ -n "\${FAKE_CURL_AMBIGUOUS_STATUS:-}" && ! -f "$FAKE_CURL_STATE_DIR/upload-status-used" ]]; then
     : >"$FAKE_CURL_STATE_DIR/upload-status-used"
     respond '{"error":"ambiguous upstream response","outcome":"indeterminate","retryable":false}' "$FAKE_CURL_AMBIGUOUS_STATUS"
@@ -171,7 +171,7 @@ if [[ "$method" == "POST" && "$url" == */attachments ]]; then
 fi
 
 if [[ "$method" == "POST" && "$url" == */work-products ]]; then
-  respond "$(jq -nc --arg runId "$PAPERCLIP_RUN_ID" '{ id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", createdByRunId: $runId }')" 201
+  respond "$(jq -nc --arg runId "$WARDMOTE_RUN_ID" '{ id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb", createdByRunId: $runId }')" 201
   exit 0
 fi
 
@@ -189,12 +189,12 @@ exit 2
   const env = {
     ...process.env,
     PATH: `${binDir}:${process.env.PATH ?? ""}`,
-    PAPERCLIP_API_KEY: "test-run-key",
-    PAPERCLIP_API_URL: options.apiUrl ?? "http://paperclip.invalid",
-    PAPERCLIP_COMPANY_ID: "company-1",
-    PAPERCLIP_HELPER_STATE_DIR: lockDir,
-    PAPERCLIP_RUN_ID: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
-    PAPERCLIP_TASK_ID: "issue-1",
+    WARDMOTE_API_KEY: "test-run-key",
+    WARDMOTE_API_URL: options.apiUrl ?? "http://paperclip.invalid",
+    WARDMOTE_COMPANY_ID: "company-1",
+    WARDMOTE_HELPER_STATE_DIR: lockDir,
+    WARDMOTE_RUN_ID: "dddddddd-dddd-4ddd-8ddd-dddddddddddd",
+    WARDMOTE_TASK_ID: "issue-1",
     FAKE_ATTACHMENT_SHA: sha256,
     FAKE_CURL_AMBIGUOUS_STATUS:
       options.ambiguousHttpStatusAfterCommit ?? "",
@@ -253,8 +253,8 @@ describe("paperclip skill utils", () => {
     const entries = await listPaperclipSkillEntries(moduleDir);
 
     expect(entries.map((entry) => entry.key)).toEqual([
-      "paperclipai/paperclip/paperclip",
-      "paperclipai/paperclip/paperclip-create-agent",
+      "tickernelz/wardmote/paperclip",
+      "tickernelz/wardmote/paperclip-create-agent",
     ]);
     expect(entries.map((entry) => entry.runtimeName)).toEqual([
       "paperclip",
@@ -272,7 +272,7 @@ describe("paperclip skill utils", () => {
 
     expect(skillBody).toContain("Generated Artifacts and Work Products");
     expect(skillBody).toContain("references/artifacts.md");
-    expect(skillBody).not.toContain("/api/companies/$PAPERCLIP_COMPANY_ID/issues/$PAPERCLIP_TASK_ID/attachments");
+    expect(skillBody).not.toContain("/api/companies/$WARDMOTE_COMPANY_ID/issues/$WARDMOTE_TASK_ID/attachments");
     expect(referenceBody).toContain("Generated Artifacts and Work Products");
     expect(referenceBody).toContain("scripts/paperclip-upload-artifact.sh");
     expect(referenceBody).toContain("paperclipCreateIssueWorkProduct");
@@ -487,7 +487,7 @@ describe("paperclip skill utils", () => {
     await expect(fs.lstat(staleLockPath)).rejects.toThrow();
   });
 
-  it("accepts PAPERCLIP_API_URL with an existing trailing API path", async () => {
+  it("accepts WARDMOTE_API_URL with an existing trailing API path", async () => {
     const harness = await makeArtifactHelperHarness(cleanupDirs, {
       apiUrl: "http://paperclip.invalid/api/",
     });

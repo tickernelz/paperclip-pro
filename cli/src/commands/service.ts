@@ -35,7 +35,7 @@ async function resolveManager(opts: CommonOptions): Promise<ServiceManager> {
 }
 
 function healthUrl(instanceId: string): string {
-  process.env.PAPERCLIP_INSTANCE_ID = instanceId;
+  process.env.WARDMOTE_INSTANCE_ID = instanceId;
   const config = readConfig(resolveConfigPath());
   return buildLocalHealthUrl(config?.server.host, config?.server.port ?? 3100);
 }
@@ -140,7 +140,7 @@ async function writeHotRestartIntent(status: ServiceStatus, instanceId: string, 
     previousServerPid: status.pid,
     previousServerVersion: health.serverVersion,
     drainRequired,
-    requestedByRunId: process.env.PAPERCLIP_RUN_ID?.trim() || null,
+    requestedByRunId: process.env.WARDMOTE_RUN_ID?.trim() || null,
   }, null, 2)}\n`, "utf8");
   return { requestedAt };
 }

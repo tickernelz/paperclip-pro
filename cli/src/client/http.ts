@@ -235,7 +235,7 @@ function buildConnectionErrorMessage(input: {
     "Try:",
     "- Start Wardmote with `pnpm dev` (from a source checkout) or `npx @tickernelz/wardmote run`.",
     `- Verify the server is reachable with \`curl ${healthUrl}\`.`,
-    `- If Wardmote is running elsewhere, pass \`--api-base ${input.apiBase.replace(/\/+$/, "")}\` or set \`PAPERCLIP_API_URL\`.`,
+    `- If Wardmote is running elsewhere, pass \`--api-base ${input.apiBase.replace(/\/+$/, "")}\` or set \`WARDMOTE_API_URL\`.`,
   );
   return lines.join("\n");
 }

@@ -22,17 +22,17 @@ try {
   // Bound bytes before decoding; JavaScript string length matches the server's ceiling.
   const body = await readBounded(process.stdin, 4 * MAX_BODY_LENGTH);
   if (!body.trim() || body.length > MAX_BODY_LENGTH) throw new Error("Invalid body");
-  const { PAPERCLIP_API_URL, PAPERCLIP_API_KEY, PAPERCLIP_COMPANY_ID, PAPERCLIP_RUN_ID } = process.env;
-  if (!PAPERCLIP_API_URL || !PAPERCLIP_API_KEY || !UUID.test(PAPERCLIP_COMPANY_ID ?? "") || !UUID.test(PAPERCLIP_RUN_ID ?? "")) {
+  const { WARDMOTE_API_URL, WARDMOTE_API_KEY, WARDMOTE_COMPANY_ID, WARDMOTE_RUN_ID } = process.env;
+  if (!WARDMOTE_API_URL || !WARDMOTE_API_KEY || !UUID.test(WARDMOTE_COMPANY_ID ?? "") || !UUID.test(WARDMOTE_RUN_ID ?? "")) {
     throw new Error("Missing run context");
   }
-  const apiUrl = PAPERCLIP_API_URL.replace(/\/+$/, "").replace(/\/api$/, "");
-  const response = await fetch(`${apiUrl}/api/companies/${PAPERCLIP_COMPANY_ID}/agent-commentary`, {
+  const apiUrl = WARDMOTE_API_URL.replace(/\/+$/, "").replace(/\/api$/, "");
+  const response = await fetch(`${apiUrl}/api/companies/${WARDMOTE_COMPANY_ID}/agent-commentary`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${PAPERCLIP_API_KEY}`,
-      "X-Paperclip-Run-Id": PAPERCLIP_RUN_ID,
+      Authorization: `Bearer ${WARDMOTE_API_KEY}`,
+      "X-Paperclip-Run-Id": WARDMOTE_RUN_ID,
     },
     body: JSON.stringify({ kind, body, idempotencyKey }),
     // Never forward run credentials through redirects. Bound the entire HTTP attempt.

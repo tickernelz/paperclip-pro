@@ -6,11 +6,11 @@ const SAVED = { maxConcurrentRuns: 2, maxConcurrentStarts: 3, startWaitBypassSec
 describe("resolveLocalRunLimits", () => {
   it("defaults to 20 running local runs, 4 starts and a 120 second start wait bypass", () => {
     expect(resolveLocalRunLimits({})).toEqual({
-      maxConcurrentRuns: { value: 20, source: "default", envVar: "PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS" },
-      maxConcurrentStarts: { value: 4, source: "default", envVar: "PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS" },
-      startWaitBypassSec: { value: 120, source: "default", envVar: "PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC" },
-      memoryReservePercent: { value: 20, source: "default", envVar: "PAPERCLIP_LOCAL_MEMORY_RESERVE_PERCENT" },
-      memoryGateCooldownSec: { value: 120, source: "default", envVar: "PAPERCLIP_LOCAL_MEMORY_GATE_COOLDOWN_SEC" },
+      maxConcurrentRuns: { value: 20, source: "default", envVar: "WARDMOTE_MAX_CONCURRENT_LOCAL_RUNS" },
+      maxConcurrentStarts: { value: 4, source: "default", envVar: "WARDMOTE_MAX_CONCURRENT_LOCAL_STARTS" },
+      startWaitBypassSec: { value: 120, source: "default", envVar: "WARDMOTE_LOCAL_START_WAIT_BYPASS_SEC" },
+      memoryReservePercent: { value: 20, source: "default", envVar: "WARDMOTE_LOCAL_MEMORY_RESERVE_PERCENT" },
+      memoryGateCooldownSec: { value: 120, source: "default", envVar: "WARDMOTE_LOCAL_MEMORY_GATE_COOLDOWN_SEC" },
     });
   });
 
@@ -29,7 +29,7 @@ describe("resolveLocalRunLimits", () => {
 
   it("lets an explicit environment variable win over the saved setting", () => {
     const limits = resolveLocalRunLimits(
-      { PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS: "7", PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC: "9999" },
+      { WARDMOTE_MAX_CONCURRENT_LOCAL_RUNS: "7", WARDMOTE_LOCAL_START_WAIT_BYPASS_SEC: "9999" },
       SAVED,
     );
     expect(limits.maxConcurrentRuns).toMatchObject({ value: 7, source: "env" });
@@ -39,7 +39,7 @@ describe("resolveLocalRunLimits", () => {
 
   it("ignores a blank or non-numeric environment variable", () => {
     const limits = resolveLocalRunLimits(
-      { PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS: "  ", PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS: "many" },
+      { WARDMOTE_MAX_CONCURRENT_LOCAL_RUNS: "  ", WARDMOTE_MAX_CONCURRENT_LOCAL_STARTS: "many" },
       SAVED,
     );
     expect(limits.maxConcurrentRuns).toMatchObject({ value: 2, source: "setting" });

@@ -8,7 +8,7 @@ import { credentialPath, mcpAccessToken, mcpResource, mcpRpc, replaceMcpCredenti
 
 const resource = "https://paperclip.example/mcp/paperclip";
 let home: string;
-beforeEach(async () => { home = await fs.mkdtemp(path.join(os.tmpdir(), "mcp-credentials-")); vi.stubEnv("PAPERCLIP_HOME", home); });
+beforeEach(async () => { home = await fs.mkdtemp(path.join(os.tmpdir(), "mcp-credentials-")); vi.stubEnv("WARDMOTE_HOME", home); });
 afterEach(async () => { vi.restoreAllMocks(); vi.unstubAllGlobals(); vi.unstubAllEnvs(); await fs.rm(home, { recursive: true, force: true }); });
 async function seed(value: unknown, mode = 0o600) {
   const file = credentialPath(resource);

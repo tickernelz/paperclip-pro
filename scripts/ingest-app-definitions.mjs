@@ -5,7 +5,7 @@ const root = process.cwd();
 // This mode preserves the checked-in ingestion report.
 const definitionsOnly = process.argv.includes("--definitions-only");
 const corpus =
-  process.env.PAPERCLIP_CONTENT_TEMPLATES ??
+  process.env.WARDMOTE_CONTENT_TEMPLATES ??
   path.resolve(
     root,
     "../../paperclip-content/research/connections/vercel/templates",
@@ -264,28 +264,6 @@ const apps = [
     "github.com",
     ["https://api.githubcopilot.com/mcp/*", "https://github.com/*"],
     [
-      method(
-        "managed",
-        "mcp_remote",
-        "oauth",
-        { serverUrl: "https://api.githubcopilot.com/mcp/" },
-        "S3",
-        "Authorize Paperclip, then choose selected repositories in GitHub. You can edit repository access later from GitHub's installation settings.",
-        {
-          label: "Connect GitHub",
-          purpose: "tool",
-          oauthStrategy: "paperclip_cloud_connector",
-          connectorProfile: "github.code",
-          grantKinds: ["user", "agent"],
-          ownershipModes: ["platform_shared"],
-          whenToUse:
-            "Connect your GitHub account for durable MCP, shell Git, gh, and repository access.",
-          warnings: [
-            "Shell Git and gh receive this identity for the run and are not constrained by per-tool Ask-first controls.",
-          ],
-          requiredResourceFilters: ["organization", "repository"],
-        },
-      ),
       method(
         "mcp-key",
         "mcp_remote",
@@ -965,47 +943,6 @@ const apps = [
     ...extra,
   }),
 );
-apps.push({
-  schemaVersion: 1,
-  slug: "gmail",
-  name: "Gmail",
-  description:
-    "Search and read Gmail messages and create drafts without enabling mail sending.",
-  categories: ["communication", "productivity"],
-  featured: true,
-  branding: brandingFor("gmail"),
-  urlPatterns: ["https://gmailmcp.googleapis.com/*"],
-  docsUrl:
-    "https://developers.google.com/workspace/guides/configure-mcp-servers",
-  redirectConstraints: "https-or-loopback-http",
-  methods: [
-    {
-      key: "paperclip-id-oauth",
-      label: "Connect Gmail",
-      transport: "mcp_remote",
-      auth: "oauth",
-      oauthStrategy: "paperclip_id_connector",
-      grantKinds: ["user"],
-      ownershipModes: ["customer"],
-      whenToUse:
-        "Use Paperclip ID for a personal Gmail connection with centrally registered Google OAuth.",
-      defaults: {
-        serverUrl: "https://gmailmcp.googleapis.com/mcp/v1",
-        scopesHint: [
-          "https://www.googleapis.com/auth/gmail.readonly",
-          "https://www.googleapis.com/auth/gmail.compose",
-        ],
-      },
-      guidanceMd:
-        "Connect your Gmail identity. Paperclip can search and read mail and create drafts. Sending mail is not enabled.",
-      warnings: [
-        "This connection is personal. Agents need an explicit install, profile, and delegation before they can use it.",
-      ],
-      riskTier: "S3",
-    },
-  ],
-});
-
 // The reviewed MCP program is a durable input, not another hand-maintained
 // allowlist. Runtime definitions are generated from the same 46-row evidence
 // ledger that the tests and implementation checklist validate.
@@ -1210,17 +1147,6 @@ const apiKeyMethodFor = (
 };
 const specialMethodsFor = (entry) => {
   if (entry.slug === "asana") return [
-    oauthMethodFor(entry, "managed", entry.serverUrl, {
-      label: "Sign in with Asana",
-      ownershipModes: ["platform_shared"],
-      oauthStrategy: "paperclip_cloud_connector",
-      connectorProfile: "asana.mcp",
-      grantKinds: ["user", "agent"],
-      defaults: { serverUrl: entry.serverUrl, scopesHint: ["default"] },
-      guidanceMd: "Sign in to Asana with Paperclip. Asana gives this connection access to the workspaces available to your account.",
-      whenToUse: "Connect your Asana account with Paperclip's app.",
-      warnings: [],
-    }),
     {
       ...customerOAuthMethodFor(entry),
       defaults: {

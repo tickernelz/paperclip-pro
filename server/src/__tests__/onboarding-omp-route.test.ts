@@ -104,7 +104,7 @@ describe("GET /api/onboarding/omp", () => {
 
   it("is ready in the Docker image without probing the gate", async () => {
     const { app } = await appWith({
-      env: { PAPERCLIP_OMP_BUNDLED_VERSION: "18.18.0" },
+      env: { WARDMOTE_OMP_BUNDLED_VERSION: "18.18.0" },
       probe: async () => probeOf("missing", null),
     });
     const res = await request(app).get("/api/onboarding/omp");

@@ -110,22 +110,22 @@ function resolveWorktreeRuntimeContext(
   env: NodeJS.ProcessEnv,
   overrideConfigPath?: string,
 ): WorktreeRuntimeContext | null {
-  if (env.PAPERCLIP_IN_WORKTREE !== "true") return null;
+  if (env.WARDMOTE_IN_WORKTREE !== "true") return null;
 
   const configPath = resolvePaperclipConfigPath(overrideConfigPath);
   const envPath = resolvePaperclipEnvPath(configPath);
   const persistedEnv = readEnvEntries(envPath);
 
-  // PAPERCLIP_IN_WORKTREE can leak in from a parent process or a sourced env
+  // WARDMOTE_IN_WORKTREE can leak in from a parent process or a sourced env
   // file while config resolution still points at a non-worktree target (for
   // example the default instance under <home>/instances/default). Only adopt
   // a target as a worktree when its config sits in a `<root>/.paperclip/`
   // layout and its own persisted env already declares it a worktree;
   // otherwise the repair would rewrite main-instance config and env files.
   if (path.basename(path.dirname(configPath)) !== ".paperclip") return null;
-  if (persistedEnv.PAPERCLIP_IN_WORKTREE !== "true") return null;
+  if (persistedEnv.WARDMOTE_IN_WORKTREE !== "true") return null;
 
-  const persistedConfigPath = nonEmpty(persistedEnv.PAPERCLIP_CONFIG);
+  const persistedConfigPath = nonEmpty(persistedEnv.WARDMOTE_CONFIG);
   const persistedConfigLooksStale =
     persistedConfigPath !== null &&
     path.resolve(expandHomePrefix(persistedConfigPath)) !== path.resolve(configPath) &&
@@ -133,17 +133,17 @@ function resolveWorktreeRuntimeContext(
   const stablePersistedEnv = persistedConfigLooksStale ? {} : persistedEnv;
   const worktreeRoot = path.resolve(path.dirname(configPath), "..");
   const worktreeName =
-    nonEmpty(stablePersistedEnv.PAPERCLIP_WORKTREE_NAME) ??
-    nonEmpty(env.PAPERCLIP_WORKTREE_NAME) ??
+    nonEmpty(stablePersistedEnv.WARDMOTE_WORKTREE_NAME) ??
+    nonEmpty(env.WARDMOTE_WORKTREE_NAME) ??
     path.basename(worktreeRoot);
   const instanceId =
-    nonEmpty(stablePersistedEnv.PAPERCLIP_INSTANCE_ID) ??
-    nonEmpty(env.PAPERCLIP_INSTANCE_ID) ??
+    nonEmpty(stablePersistedEnv.WARDMOTE_INSTANCE_ID) ??
+    nonEmpty(env.WARDMOTE_INSTANCE_ID) ??
     sanitizeWorktreeInstanceId(worktreeName);
   const homeDir = resolveHomeAwarePath(
-    nonEmpty(stablePersistedEnv.PAPERCLIP_HOME) ??
-      nonEmpty(env.PAPERCLIP_HOME) ??
-      nonEmpty(env.PAPERCLIP_WORKTREES_DIR) ??
+    nonEmpty(stablePersistedEnv.WARDMOTE_HOME) ??
+      nonEmpty(env.WARDMOTE_HOME) ??
+      nonEmpty(env.WARDMOTE_WORKTREES_DIR) ??
       "~/.paperclip-worktrees",
   );
   const instanceRoot = path.resolve(homeDir, "instances", instanceId);
@@ -458,11 +458,11 @@ export function maybeRepairLegacyWorktreeConfigAndEnvFiles(): {
 
   applyEmptyWorktreeSigningSecrets(path.resolve(path.dirname(context.configPath), ".."));
 
-  process.env.PAPERCLIP_HOME = context.homeDir;
-  process.env.PAPERCLIP_INSTANCE_ID = context.instanceId;
-  process.env.PAPERCLIP_CONFIG = context.configPath;
-  process.env.PAPERCLIP_CONTEXT = context.contextPath;
-  process.env.PAPERCLIP_WORKTREE_NAME = context.worktreeName;
+  process.env.WARDMOTE_HOME = context.homeDir;
+  process.env.WARDMOTE_INSTANCE_ID = context.instanceId;
+  process.env.WARDMOTE_CONFIG = context.configPath;
+  process.env.WARDMOTE_CONTEXT = context.contextPath;
+  process.env.WARDMOTE_WORKTREE_NAME = context.worktreeName;
 
   let repairedConfig = false;
   if (fs.existsSync(context.configPath)) {
@@ -539,23 +539,23 @@ export function maybeRepairLegacyWorktreeConfigAndEnvFiles(): {
     : null;
   const existingEnvEntries = parseEnvFile(existingContents ?? "");
   const toolActionSigningSecret =
-    nonEmpty(process.env.PAPERCLIP_TOOL_ACTION_SIGNING_SECRET) ??
-    nonEmpty(existingEnvEntries.PAPERCLIP_TOOL_ACTION_SIGNING_SECRET) ??
+    nonEmpty(process.env.WARDMOTE_TOOL_ACTION_SIGNING_SECRET) ??
+    nonEmpty(existingEnvEntries.WARDMOTE_TOOL_ACTION_SIGNING_SECRET) ??
     randomBytes(32).toString("hex");
 
   const managedEnvEntries: Record<string, string> = {
-    PAPERCLIP_HOME: context.homeDir,
-    PAPERCLIP_INSTANCE_ID: context.instanceId,
-    PAPERCLIP_CONFIG: context.configPath,
-    PAPERCLIP_CONTEXT: context.contextPath,
-    PAPERCLIP_IN_WORKTREE: "true",
-    PAPERCLIP_DB_BACKUP_ENABLED: "false",
-    PAPERCLIP_WORKTREE_NAME: context.worktreeName,
-    PAPERCLIP_TOOL_ACTION_SIGNING_SECRET: toolActionSigningSecret,
+    WARDMOTE_HOME: context.homeDir,
+    WARDMOTE_INSTANCE_ID: context.instanceId,
+    WARDMOTE_CONFIG: context.configPath,
+    WARDMOTE_CONTEXT: context.contextPath,
+    WARDMOTE_IN_WORKTREE: "true",
+    WARDMOTE_DB_BACKUP_ENABLED: "false",
+    WARDMOTE_WORKTREE_NAME: context.worktreeName,
+    WARDMOTE_TOOL_ACTION_SIGNING_SECRET: toolActionSigningSecret,
   };
 
-  process.env.PAPERCLIP_DB_BACKUP_ENABLED = "false";
-  process.env.PAPERCLIP_TOOL_ACTION_SIGNING_SECRET = toolActionSigningSecret;
+  process.env.WARDMOTE_DB_BACKUP_ENABLED = "false";
+  process.env.WARDMOTE_TOOL_ACTION_SIGNING_SECRET = toolActionSigningSecret;
   const repairedContents = updateEnvFileContents(
     existingContents ?? emptyWorktreeEnvFileContents(),
     managedEnvEntries,

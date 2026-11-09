@@ -58,8 +58,8 @@ Suppress browser opening explicitly for headless or automated runs with either
 environment variable:
 
 ```sh
-PAPERCLIP_NO_BROWSER=1 pnpm wardmote onboard --yes
-PAPERCLIP_OPEN_ON_LISTEN=false pnpm wardmote onboard --yes
+WARDMOTE_NO_BROWSER=1 pnpm wardmote onboard --yes
+WARDMOTE_OPEN_ON_LISTEN=false pnpm wardmote onboard --yes
 ```
 
 On an existing install, `--yes` now preserves the current config and just starts Wardmote with that setup.
@@ -107,7 +107,7 @@ Show resolved environment configuration:
 pnpm wardmote env
 ```
 
-This now includes bind-oriented deployment settings such as `PAPERCLIP_BIND` and `PAPERCLIP_BIND_HOST` when configured.
+This now includes bind-oriented deployment settings such as `WARDMOTE_BIND` and `WARDMOTE_BIND_HOST` when configured.
 
 ## `wardmote allowed-hostname`
 
@@ -130,7 +130,7 @@ npx @tickernelz/wardmote allowed-hostname my-tailscale-host
 Override with:
 
 ```sh
-PAPERCLIP_HOME=/custom/home PAPERCLIP_INSTANCE_ID=dev pnpm wardmote run
+WARDMOTE_HOME=/custom/home WARDMOTE_INSTANCE_ID=dev pnpm wardmote run
 ```
 
 Or pass `--data-dir` directly on any command:

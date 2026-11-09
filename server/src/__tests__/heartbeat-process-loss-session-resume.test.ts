@@ -83,14 +83,14 @@ type AdapterInput = {
 describeEmbeddedPostgres("process-loss continuation session resume", () => {
   let db!: Db;
   let tempDb: EmbeddedPostgresTestDatabase | null = null;
-  const previousHome = process.env.PAPERCLIP_HOME;
+  const previousHome = process.env.WARDMOTE_HOME;
   let paperclipHome: string | null = null;
 
   beforeAll(async () => {
     paperclipHome = await fs.realpath(
       await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-process-loss-home-")),
     );
-    process.env.PAPERCLIP_HOME = paperclipHome;
+    process.env.WARDMOTE_HOME = paperclipHome;
     tempDb = await startEmbeddedPostgresTestDatabase("paperclip-process-loss-session-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
@@ -104,8 +104,8 @@ describeEmbeddedPostgres("process-loss continuation session resume", () => {
 
   afterAll(async () => {
     await tempDb?.cleanup();
-    if (previousHome === undefined) delete process.env.PAPERCLIP_HOME;
-    else process.env.PAPERCLIP_HOME = previousHome;
+    if (previousHome === undefined) delete process.env.WARDMOTE_HOME;
+    else process.env.WARDMOTE_HOME = previousHome;
     if (paperclipHome) await fs.rm(paperclipHome, { recursive: true, force: true });
   });
 

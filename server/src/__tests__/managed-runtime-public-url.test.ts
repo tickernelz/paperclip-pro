@@ -6,15 +6,15 @@ import { loadConfig } from "../config.js";
 const missingConfigPath = path.join(os.tmpdir(), `paperclip-managed-runtime-config-${process.pid}.json`);
 
 function useIsolatedConfigEnvironment() {
-  vi.stubEnv("PAPERCLIP_CONFIG", missingConfigPath);
-  vi.stubEnv("PAPERCLIP_PUBLIC_URL", "");
-  vi.stubEnv("PAPERCLIP_AUTH_PUBLIC_BASE_URL", "");
+  vi.stubEnv("WARDMOTE_CONFIG", missingConfigPath);
+  vi.stubEnv("WARDMOTE_PUBLIC_URL", "");
+  vi.stubEnv("WARDMOTE_AUTH_PUBLIC_BASE_URL", "");
   vi.stubEnv("BETTER_AUTH_URL", "");
   vi.stubEnv("BETTER_AUTH_BASE_URL", "");
-  vi.stubEnv("PAPERCLIP_AUTH_BASE_URL_MODE", "");
-  vi.stubEnv("PAPERCLIP_DEPLOYMENT_MODE", "local_trusted");
-  vi.stubEnv("PAPERCLIP_DEPLOYMENT_EXPOSURE", "private");
-  vi.stubEnv("PAPERCLIP_BIND", "loopback");
+  vi.stubEnv("WARDMOTE_AUTH_BASE_URL_MODE", "");
+  vi.stubEnv("WARDMOTE_DEPLOYMENT_MODE", "local_trusted");
+  vi.stubEnv("WARDMOTE_DEPLOYMENT_EXPOSURE", "private");
+  vi.stubEnv("WARDMOTE_BIND", "loopback");
   vi.stubEnv("HOST", "127.0.0.1");
 }
 
@@ -25,7 +25,7 @@ afterEach(() => {
 describe("managed runtime public URL config", () => {
   it("configures Better Auth from the managed runtime fallback", () => {
     useIsolatedConfigEnvironment();
-    vi.stubEnv("PAPERCLIP_MANAGED_RUNTIME_PUBLIC_URL", "https://worktree.tail29c1aa.ts.net");
+    vi.stubEnv("WARDMOTE_MANAGED_RUNTIME_PUBLIC_URL", "https://worktree.tail29c1aa.ts.net");
 
     const config = loadConfig();
 
@@ -35,8 +35,8 @@ describe("managed runtime public URL config", () => {
 
   it("keeps explicit operator configuration ahead of the managed fallback", () => {
     useIsolatedConfigEnvironment();
-    vi.stubEnv("PAPERCLIP_PUBLIC_URL", "https://operator.example.com");
-    vi.stubEnv("PAPERCLIP_MANAGED_RUNTIME_PUBLIC_URL", "https://inferred.tail29c1aa.ts.net");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "https://operator.example.com");
+    vi.stubEnv("WARDMOTE_MANAGED_RUNTIME_PUBLIC_URL", "https://inferred.tail29c1aa.ts.net");
 
     const config = loadConfig();
 

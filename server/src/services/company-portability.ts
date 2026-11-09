@@ -357,7 +357,7 @@ function deriveManifestSkillKey(
     return `${owner}/${repo}/${slug}`;
   }
   if (sourceKind === "paperclip_bundled") {
-    return `paperclipai/paperclip/${slug}`;
+    return `tickernelz/wardmote/${slug}`;
   }
   if (sourceType === "url" || sourceKind === "url") {
     try {
@@ -3260,7 +3260,7 @@ function buildManifestFromPackageFiles(
       const canonicalKey = readSkillKey(frontmatter);
       const normalizedSourceKind = owner === "paperclipai"
         && repoName === "paperclip"
-        && canonicalKey?.startsWith("paperclipai/paperclip/")
+        && canonicalKey?.startsWith("tickernelz/wardmote/")
         ? "paperclip_bundled"
         : "github";
       sourceType = "github";
@@ -3508,7 +3508,7 @@ export function companyPortabilityService(db: Db, storage?: StorageService) {
   const secrets = secretService(db);
   const documentsSvc = documentService(db);
   const workProductsSvc = workProductService(db);
-  const strictSecretsMode = process.env.PAPERCLIP_SECRETS_STRICT_MODE === "true";
+  const strictSecretsMode = process.env.WARDMOTE_SECRETS_STRICT_MODE === "true";
   const defaultSecretProvider = getConfiguredSecretProvider();
 
   async function applyImportedAgentPermissionGrants(

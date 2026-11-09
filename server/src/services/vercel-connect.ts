@@ -82,8 +82,8 @@ export function vercelConnectIntegrationStatus(env: NodeJS.ProcessEnv = process.
   authentication: "workload_oidc" | "access_token" | null;
   manageUrl: string;
 } {
-  const integrationEnabled = enabled(env.PAPERCLIP_VERCEL_CONNECT_ENABLED);
-  const hasAccessToken = Boolean(env.PAPERCLIP_VERCEL_CONNECT_ACCESS_TOKEN?.trim());
+  const integrationEnabled = enabled(env.WARDMOTE_VERCEL_CONNECT_ENABLED);
+  const hasAccessToken = Boolean(env.WARDMOTE_VERCEL_CONNECT_ACCESS_TOKEN?.trim());
   const hasWorkloadOidc = Boolean(env.VERCEL_OIDC_TOKEN?.trim());
   return {
     enabled: integrationEnabled,
@@ -124,7 +124,7 @@ export function vercelConnectSdkOptions(
   const hasWorkloadOidc = Boolean(env.VERCEL_OIDC_TOKEN?.trim());
   const vercelToken = hasWorkloadOidc
     ? undefined
-    : env.PAPERCLIP_VERCEL_CONNECT_ACCESS_TOKEN?.trim();
+    : env.WARDMOTE_VERCEL_CONNECT_ACCESS_TOKEN?.trim();
   return {
     ...(vercelToken ? { vercelToken } : {}),
     ...(forceRefresh ? { forceRefresh: true } : {}),
@@ -235,8 +235,8 @@ export function deriveVercelConnectSubject(input: {
   subjectUserId?: string | null;
 }): { subject: ConnectTokenSubject; subjectId?: string } {
   if (input.credential.principalMode === "app") return { subject: { type: "app" } };
-  const instanceId = process.env.PAPERCLIP_INSTANCE_ID
-    ?? process.env.PAPERCLIP_DEPLOYMENT_ID
+  const instanceId = process.env.WARDMOTE_INSTANCE_ID
+    ?? process.env.WARDMOTE_DEPLOYMENT_ID
     ?? "paperclip-instance";
   const subjectId = `pc_${subjectHash([
     instanceId,

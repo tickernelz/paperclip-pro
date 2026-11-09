@@ -1,11 +1,11 @@
 import { readFileSync } from "node:fs";
 import { runInNewContext } from "node:vm";
 import { describe, expect, it } from "vitest";
-import { contextIntegrityScenario, PAPERCLIP_DOCUMENT_CASE } from "./context-integrity-cases.js";
+import { contextIntegrityScenario, WARDMOTE_DOCUMENT_CASE } from "./context-integrity-cases.js";
 import { gradeContextIntegrity, type ContextIntegrityCheckpoint } from "./context-integrity-scoring.js";
 
 function recording() {
-  const scenario = contextIntegrityScenario(PAPERCLIP_DOCUMENT_CASE, "probe");
+  const scenario = contextIntegrityScenario(WARDMOTE_DOCUMENT_CASE, "probe");
   const initial: ContextIntegrityCheckpoint = {
     phase: "initial", issue: { id: "issue", identifier: "DOC-1", issuePrefix: "DOC", appOrigin: "https://paperclip.example", status: "in_progress" },
     documents: [], comments: [], runs: [{ id: "run", status: "running" }],

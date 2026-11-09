@@ -76,16 +76,16 @@ describeEmbeddedPostgres("OpenWA guidance at run start", () => {
   let db!: ReturnType<typeof createDb>;
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
   let paperclipHome: string | null = null;
-  const previousHome = process.env.PAPERCLIP_HOME;
-  const previousApiUrl = process.env.PAPERCLIP_API_URL;
+  const previousHome = process.env.WARDMOTE_HOME;
+  const previousApiUrl = process.env.WARDMOTE_API_URL;
   const captured = new Map<string, Record<string, unknown>>();
 
   beforeAll(async () => {
     tempDb = await startEmbeddedPostgresTestDatabase("openwa-guidance-");
     db = createDb(tempDb.connectionString);
     paperclipHome = await fs.mkdtemp(path.join(os.tmpdir(), "openwa-guidance-home-"));
-    process.env.PAPERCLIP_HOME = paperclipHome;
-    process.env.PAPERCLIP_API_URL = "http://127.0.0.1:3100/api";
+    process.env.WARDMOTE_HOME = paperclipHome;
+    process.env.WARDMOTE_API_URL = "http://127.0.0.1:3100/api";
     registerServerAdapter({
       type: TEST_ADAPTER_TYPE,
       execute: async (ctx) => {
@@ -102,10 +102,10 @@ describeEmbeddedPostgres("OpenWA guidance at run start", () => {
 
   afterAll(async () => {
     unregisterServerAdapter(TEST_ADAPTER_TYPE);
-    if (previousHome === undefined) delete process.env.PAPERCLIP_HOME;
-    else process.env.PAPERCLIP_HOME = previousHome;
-    if (previousApiUrl === undefined) delete process.env.PAPERCLIP_API_URL;
-    else process.env.PAPERCLIP_API_URL = previousApiUrl;
+    if (previousHome === undefined) delete process.env.WARDMOTE_HOME;
+    else process.env.WARDMOTE_HOME = previousHome;
+    if (previousApiUrl === undefined) delete process.env.WARDMOTE_API_URL;
+    else process.env.WARDMOTE_API_URL = previousApiUrl;
     if (paperclipHome) await fs.rm(paperclipHome, { recursive: true, force: true });
     await tempDb?.cleanup();
   });

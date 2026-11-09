@@ -82,7 +82,7 @@ export function gradeNativeCompletionRustCarrier(output, exitCode) {
 }
 export function nativeCompletionPrerequisiteEnvironment(source) {
   return Object.fromEntries(["PATH", "HOME", "TMPDIR", "TMP", "TEMP", "SYSTEMROOT", "LANG", "LC_ALL",
-    "CARGO_HOME", "RUSTUP_HOME", "CI", "GITHUB_ACTIONS", "GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT", "PAPERCLIP_RUNNER_E2E_SOURCE_SHA"].flatMap(name => source[name] === undefined ? [] : [[name, source[name]]]));
+    "CARGO_HOME", "RUSTUP_HOME", "CI", "GITHUB_ACTIONS", "GITHUB_RUN_ID", "GITHUB_RUN_ATTEMPT", "WARDMOTE_RUNNER_E2E_SOURCE_SHA"].flatMap(name => source[name] === undefined ? [] : [[name, source[name]]]));
 }
 function currentSource() {
   const source = nativeCompletionSourceFingerprint();

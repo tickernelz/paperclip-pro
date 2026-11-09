@@ -487,7 +487,7 @@ export function createHeartbeatRecovery(db: Db, dependencies: HeartbeatRecoveryD
       previousServerVersion: intent.previousServerVersion ?? serverVersion,
     };
 
-    if (process.platform === "linux" && runtimeEnv.PAPERCLIP_SERVICE_MANAGED === "1") {
+    if (process.platform === "linux" && runtimeEnv.WARDMOTE_SERVICE_MANAGED === "1") {
       const drainRunIds = snapshotRuns.map((run) => run.runId);
       await writeHotRestartShutdownSnapshot({
         intent: intentWithVersion,
@@ -1909,7 +1909,7 @@ export function createHeartbeatRecovery(db: Db, dependencies: HeartbeatRecoveryD
         : await dispatchNativeSessionResumptions({
             db,
             runnerInstanceId:
-              runtimeEnv.PAPERCLIP_INSTANCE_ID?.trim() || "paperclip-heartbeat",
+              runtimeEnv.WARDMOTE_INSTANCE_ID?.trim() || "paperclip-heartbeat",
             now,
             runIds: [...claimableNativeRunIds],
             dispatch: (claim) => {

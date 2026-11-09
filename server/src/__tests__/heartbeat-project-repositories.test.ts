@@ -32,8 +32,8 @@ suite("task project repository provisioning", () => {
   let heartbeat: ReturnType<typeof heartbeatService>;
   beforeAll(async () => {
     root = await mkdtemp(path.join(os.tmpdir(), "paperclip-project-repos-"));
-    vi.stubEnv("PAPERCLIP_HOME", path.join(root, "home"));
-    vi.stubEnv("PAPERCLIP_MULTI_PROJECT_WORKSPACE_SYNC", "false");
+    vi.stubEnv("WARDMOTE_HOME", path.join(root, "home"));
+    vi.stubEnv("WARDMOTE_MULTI_PROJECT_WORKSPACE_SYNC", "false");
     database = await startEmbeddedPostgresTestDatabase("project-repositories");
     db = createDb(database.connectionString);
     heartbeat = heartbeatService(db);
@@ -52,7 +52,7 @@ suite("task project repository provisioning", () => {
   afterEach(async () => {
     await drainHeartbeatRunsToQuiescence(db, heartbeat);
     setExpensiveWorkspaceGitExecutor(null);
-    vi.stubEnv("PAPERCLIP_MULTI_PROJECT_WORKSPACE_SYNC", "false");
+    vi.stubEnv("WARDMOTE_MULTI_PROJECT_WORKSPACE_SYNC", "false");
     await instanceSettingsService(db).updateExperimental({
       enableIsolatedWorkspaces: false,
       enableIsolatedWorkspacesByDefault: false,
@@ -62,7 +62,7 @@ suite("task project repository provisioning", () => {
   it("isolates repository-free low-trust tasks while preserving reassignment and authorized referenced projects", async () => {
     const companyId = randomUUID(), projectId = randomUUID(), agentId = randomUUID(), environmentId = randomUUID();
     const referencedProjectId = randomUUID(), deniedProjectId = randomUUID();
-    vi.stubEnv("PAPERCLIP_MULTI_PROJECT_WORKSPACE_SYNC", "true");
+    vi.stubEnv("WARDMOTE_MULTI_PROJECT_WORKSPACE_SYNC", "true");
     await instanceSettingsService(db).updateExperimental({ enableIsolatedWorkspaces: true });
     await db.insert(companies).values({ id: companyId, name: "Email company", issuePrefix: `E${companyId.slice(0, 6)}`, defaultResponsibleUserId: "responsible-user" });
     await db.insert(projects).values({ id: projectId, companyId, name: "Onboarding" });

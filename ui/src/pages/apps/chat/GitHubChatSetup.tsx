@@ -6,7 +6,6 @@ import { agentsApi } from "@/api/agents";
 import { chatEndpointsApi } from "@/api/chatEndpoints";
 import { githubChatApi } from "@/api/githubChat";
 import { projectsApi } from "@/api/projects";
-import { toolsApi } from "@/api/tools";
 import { AgentSelect } from "@/components/AgentMultiSelect";
 import { GitHubAgentTrustWarning } from "@/components/GitHubAgentTrustWarning";
 import {
@@ -14,7 +13,6 @@ import {
   SetupWizardFooter,
 } from "@/components/SetupWizard";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -97,7 +95,6 @@ export function GitHubChatSetup() {
     privateKey: "",
     webhookSecret: "",
   });
-  const [appNotCreated, setAppNotCreated] = useState(false);
   const [legacyAccount, setLegacyAccount] = useState("");
   const [identityLinked, setIdentityLinked] = useState(false);
   const [legacyIdentity, setLegacyIdentity] = useState<Awaited<
@@ -120,7 +117,7 @@ export function GitHubChatSetup() {
     queryFn: () => githubChatApi.advance(resume!),
     enabled: !!bot && !existing && !identityOnly,
     refetchInterval: (query) =>
-      ["connected", "create", "identity", "enrollment", "recovery"].includes(
+      ["connected", "create", "identity", "recovery"].includes(
         query.state.data?.state ?? "",
       )
         ? false
@@ -566,23 +563,6 @@ export function GitHubChatSetup() {
           )}
           {footer()}
         </>
-      ) : state?.state === "enrollment" ? (
-        <>
-          <p className="text-sm">
-            Paperclip Cloud receives GitHub events and securely delivers them to
-            this instance.
-          </p>
-          {footer("Connect Paperclip Cloud", async () => {
-            const result = await toolsApi.startCloudConnectorEnrollment(
-              selectedCompanyId!,
-              undefined,
-              `/apps/chat/connect${window.location.search}`,
-            );
-            if (!result.verificationUrl)
-              throw new Error("Cloud enrollment could not be started");
-            window.location.assign(result.verificationUrl);
-          })}
-        </>
       ) : state?.state === "recovery" ? (
         <>
           <p role="status" className="text-sm">
@@ -591,21 +571,7 @@ export function GitHubChatSetup() {
           <Button variant="ghost" onClick={() => setExisting(true)}>
             Use existing App credentials
           </Button>
-          {state.restartableRegistrationId && (
-            <div className="flex items-center gap-2">
-              <Checkbox id="github-app-not-created" checked={appNotCreated} disabled={busy}
-                onCheckedChange={(checked) => setAppNotCreated(checked === true)} />
-              <Label htmlFor="github-app-not-created">I haven't created this App on GitHub.</Label>
-            </div>
-          )}
-          {state.restartableRegistrationId
-            ? footer("Continue to GitHub", async () => {
-                const result = await githubChatApi.restartRegistration(bot.id, state.restartableRegistrationId!);
-                setAppNotCreated(false);
-                queryClient.setQueryData(["github-wizard", bot.id], result);
-                if (result.registration) setSubmitManifest(true);
-              }, !appNotCreated)
-            : footer("Try again", refresh)}
+          {footer("Try again", refresh)}
         </>
       ) : state?.state === "verify" ? (
         <>

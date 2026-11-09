@@ -70,7 +70,7 @@ if (cliArgs[0] === "worktree" && cliArgs[1] === "init") {
   }
   fs.mkdirSync(".paperclip", { recursive: true });
   fs.writeFileSync(".paperclip/config.json", JSON.stringify({ $meta: { source: "fake-cli" } }));
-  fs.writeFileSync(".paperclip/.env", "PAPERCLIP_IN_WORKTREE=true\\n");
+  fs.writeFileSync(".paperclip/.env", "WARDMOTE_IN_WORKTREE=true\\n");
   process.exit(0);
 }
 if (cliArgs[0] === "worktree" && cliArgs[1] === "ensure-seeded") {
@@ -114,13 +114,13 @@ function runProvision(baseCwd, { pathPrefix, setupWorktree, setupInstance, exist
     env: {
       PATH: pathPrefix ? `${pathPrefix}:${testPath}` : testPath,
       HOME: os.homedir(),
-      PAPERCLIP_WORKSPACE_BASE_CWD: baseCwd,
-      PAPERCLIP_WORKSPACE_CWD: worktreeCwd,
-      PAPERCLIP_WORKSPACE_BRANCH: "feature/provision-test",
-      PAPERCLIP_WORKTREES_DIR: worktreesHome,
-      PAPERCLIP_HOME: paperclipHome,
-      PAPERCLIP_PROJECT_WORKSPACE_ID: "project-workspace-1",
-      PAPERCLIP_SEED_EXPECTED_COMPANY_ID: "company-1",
+      WARDMOTE_WORKSPACE_BASE_CWD: baseCwd,
+      WARDMOTE_WORKSPACE_CWD: worktreeCwd,
+      WARDMOTE_WORKSPACE_BRANCH: "feature/provision-test",
+      WARDMOTE_WORKTREES_DIR: worktreesHome,
+      WARDMOTE_HOME: paperclipHome,
+      WARDMOTE_PROJECT_WORKSPACE_ID: "project-workspace-1",
+      WARDMOTE_SEED_EXPECTED_COMPANY_ID: "company-1",
       ...(typeof env === "function" ? env(paperclipHome) : env),
     },
   });
@@ -137,13 +137,13 @@ function runRuntimeProvision(baseCwd, worktreeCwd, { setupInstance } = {}) {
     env: {
       PATH: testPath,
       HOME: os.homedir(),
-      PAPERCLIP_WORKSPACE_BASE_CWD: baseCwd,
-      PAPERCLIP_WORKSPACE_CWD: worktreeCwd,
-      PAPERCLIP_WORKSPACE_BRANCH: "feature/provision-runtime-test",
-      PAPERCLIP_WORKTREES_DIR: worktreesHome,
-      PAPERCLIP_HOME: paperclipHome,
-      PAPERCLIP_PROJECT_WORKSPACE_ID: "project-workspace-1",
-      PAPERCLIP_COMPANY_ID: "company-1",
+      WARDMOTE_WORKSPACE_BASE_CWD: baseCwd,
+      WARDMOTE_WORKSPACE_CWD: worktreeCwd,
+      WARDMOTE_WORKSPACE_BRANCH: "feature/provision-runtime-test",
+      WARDMOTE_WORKTREES_DIR: worktreesHome,
+      WARDMOTE_HOME: paperclipHome,
+      WARDMOTE_PROJECT_WORKSPACE_ID: "project-workspace-1",
+      WARDMOTE_COMPANY_ID: "company-1",
     },
   });
 }
@@ -190,7 +190,7 @@ for (const defaultConfigInEnv of [false, true]) {
     const baseCwd = makeBaseWorkspace({ helpExit: 0, initExit: 0 });
     const { result, worktreeCwd } = runProvision(baseCwd, {
       setupInstance: (home) => fs.rmSync(path.join(home, "instances", "default", "config.json")),
-      env: (home) => defaultConfigInEnv ? { PAPERCLIP_CONFIG: path.join(home, "instances", "default", "config.json") } : {},
+      env: (home) => defaultConfigInEnv ? { WARDMOTE_CONFIG: path.join(home, "instances", "default", "config.json") } : {},
     });
 
     assert.equal(result.status, 0, result.stderr);
@@ -206,7 +206,7 @@ for (const defaultConfigInEnv of [false, true]) {
 test("rejects a missing custom seed source", () => {
   const baseCwd = makeBaseWorkspace({ helpExit: 0, initExit: 0 });
   const { result, worktreeCwd } = runProvision(baseCwd, {
-    env: { PAPERCLIP_CONFIG: path.join(baseCwd, "missing", "config.json") },
+    env: { WARDMOTE_CONFIG: path.join(baseCwd, "missing", "config.json") },
   });
 
   assert.notEqual(result.status, 0);
@@ -363,7 +363,7 @@ test("falls back to an isolated config when the base CLI cannot boot", () => {
     `expected ${dataDir} to live under ${worktreesHome}`,
   );
   const env = fs.readFileSync(path.join(worktreeCwd, ".paperclip", ".env"), "utf8");
-  assert.match(env, /PAPERCLIP_IN_WORKTREE=true/);
+  assert.match(env, /WARDMOTE_IN_WORKTREE=true/);
   assert.equal(
     JSON.parse(fs.readFileSync(path.join(worktreeCwd, ".paperclip", "seed-manifest.json"), "utf8")).state,
     "pending",
@@ -394,13 +394,13 @@ test("reconciles deployment mode from the registered source when reusing a guest
     env: {
       PATH: testPath,
       HOME: os.homedir(),
-      PAPERCLIP_WORKSPACE_BASE_CWD: baseCwd,
-      PAPERCLIP_WORKSPACE_CWD: worktreeCwd,
-      PAPERCLIP_WORKSPACE_BRANCH: "feature/provision-test",
-      PAPERCLIP_WORKTREES_DIR: worktreesHome,
-      PAPERCLIP_HOME: paperclipHome,
-      PAPERCLIP_PROJECT_WORKSPACE_ID: "project-workspace-1",
-      PAPERCLIP_SEED_EXPECTED_COMPANY_ID: "company-1",
+      WARDMOTE_WORKSPACE_BASE_CWD: baseCwd,
+      WARDMOTE_WORKSPACE_CWD: worktreeCwd,
+      WARDMOTE_WORKSPACE_BRANCH: "feature/provision-test",
+      WARDMOTE_WORKTREES_DIR: worktreesHome,
+      WARDMOTE_HOME: paperclipHome,
+      WARDMOTE_PROJECT_WORKSPACE_ID: "project-workspace-1",
+      WARDMOTE_SEED_EXPECTED_COMPANY_ID: "company-1",
     },
   });
 
@@ -440,7 +440,7 @@ if (cliArgs.includes("--help")) {
 if (cliArgs[0] === "worktree" && cliArgs[1] === "init") {
   fs.mkdirSync(".paperclip", { recursive: true });
   fs.writeFileSync(".paperclip/config.json", JSON.stringify({ $meta: { source: "fake-cli" } }));
-  fs.writeFileSync(".paperclip/.env", "PAPERCLIP_IN_WORKTREE=true\\n");
+  fs.writeFileSync(".paperclip/.env", "WARDMOTE_IN_WORKTREE=true\\n");
   process.exit(0);
 }
 process.exit(0);

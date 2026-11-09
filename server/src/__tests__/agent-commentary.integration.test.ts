@@ -23,18 +23,18 @@ import { companyService } from "../services/companies.js";
 describe("internal agent commentary through both transports", () => {
   let server: Awaited<ReturnType<typeof startRunnerApiTestServer>>;
   let home: string;
-  const oldHome = process.env.PAPERCLIP_HOME;
-  const oldSecret = process.env.PAPERCLIP_AGENT_JWT_SECRET;
+  const oldHome = process.env.WARDMOTE_HOME;
+  const oldSecret = process.env.WARDMOTE_AGENT_JWT_SECRET;
   beforeAll(async () => {
     home = await mkdtemp(join(tmpdir(), "paperclip-commentary-"));
-    process.env.PAPERCLIP_HOME = home;
-    process.env.PAPERCLIP_AGENT_JWT_SECRET = randomUUID();
+    process.env.WARDMOTE_HOME = home;
+    process.env.WARDMOTE_AGENT_JWT_SECRET = randomUUID();
     server = await startRunnerApiTestServer();
   }, 90_000);
   afterAll(async () => {
     await server?.close();
-    if (oldHome === undefined) delete process.env.PAPERCLIP_HOME; else process.env.PAPERCLIP_HOME = oldHome;
-    if (oldSecret === undefined) delete process.env.PAPERCLIP_AGENT_JWT_SECRET; else process.env.PAPERCLIP_AGENT_JWT_SECRET = oldSecret;
+    if (oldHome === undefined) delete process.env.WARDMOTE_HOME; else process.env.WARDMOTE_HOME = oldHome;
+    if (oldSecret === undefined) delete process.env.WARDMOTE_AGENT_JWT_SECRET; else process.env.WARDMOTE_AGENT_JWT_SECRET = oldSecret;
     if (home) await rm(home, { recursive: true, force: true });
   });
   type Fixture = Awaited<ReturnType<typeof server.fixture>>;
@@ -243,7 +243,7 @@ describe("internal agent commentary through both transports", () => {
     const body = "Quotes, `backticks`, $(printf should-not-run), and emoji 😭 stay text.\n";
     async function run(apiUrl: string) {
       return new Promise<{ code: number | null; out: string; err: string }>((resolve, reject) => {
-        const child = spawn(process.execPath, [helper, "complaint", "helper-one"], { env: { ...process.env, PAPERCLIP_API_URL: apiUrl, PAPERCLIP_API_KEY: f.token, PAPERCLIP_COMPANY_ID: f.companyId, PAPERCLIP_RUN_ID: f.runId }, stdio: "pipe" });
+        const child = spawn(process.execPath, [helper, "complaint", "helper-one"], { env: { ...process.env, WARDMOTE_API_URL: apiUrl, WARDMOTE_API_KEY: f.token, WARDMOTE_COMPANY_ID: f.companyId, WARDMOTE_RUN_ID: f.runId }, stdio: "pipe" });
         let out = "", err = "";
         child.stdout.on("data", c => out += c); child.stderr.on("data", c => err += c);
         child.on("error", reject); child.on("close", code => resolve({ code, out, err }));

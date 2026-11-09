@@ -63,7 +63,7 @@ The connection starts in this order:
 
 1. The mock core creates a random bootstrap ticket with a five-second lifetime.
 2. The ticket is passed to the runner through
-   `PAPERCLIP_RUNNER_BOOTSTRAP_TICKET`. It is not a command-line argument.
+   `WARDMOTE_RUNNER_BOOTSTRAP_TICKET`. It is not a command-line argument.
 3. The runner opens an unauthenticated WebSocket upgrade with no bearer header,
    then sends only a public credential locator, a fresh client nonce, complete
    runner/run/session identity, approved runner version and digest, negotiated

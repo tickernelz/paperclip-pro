@@ -169,7 +169,7 @@ export function resolveCatalogPackageRoot(from: string = import.meta.url): strin
 }
 
 function buildCatalogPackageRootCandidates() {
-  const configuredRoot = process.env.PAPERCLIP_TEAMS_CATALOG_DIR?.trim();
+  const configuredRoot = process.env.WARDMOTE_TEAMS_CATALOG_DIR?.trim();
   const installed = resolveCatalogPackageRoot();
   const candidates = [
     ...(configuredRoot ? [path.resolve(configuredRoot)] : []),
@@ -713,7 +713,7 @@ async function readCatalogTeamSourceFiles(team: CatalogTeam): Promise<Record<str
 const FALLBACK_SAFE_CATALOG_ADAPTER_TYPE = "claude_local";
 
 function defaultSafeCatalogAdapterType() {
-  return process.env.PAPERCLIP_TEAMS_CATALOG_DEFAULT_ADAPTER_TYPE?.trim() || FALLBACK_SAFE_CATALOG_ADAPTER_TYPE;
+  return process.env.WARDMOTE_TEAMS_CATALOG_DEFAULT_ADAPTER_TYPE?.trim() || FALLBACK_SAFE_CATALOG_ADAPTER_TYPE;
 }
 
 /**
@@ -963,7 +963,7 @@ export function teamsCatalogService(db: Db) {
       ...importPreview.warnings,
       ...(defaultedAdapterSlugs.length > 0
         ? [
-            `Catalog agents without explicit overrides (${defaultedAdapterSlugs.join(", ")}) default to ${defaultAdapterType}. Pass adapterOverrides or PAPERCLIP_TEAMS_CATALOG_DEFAULT_ADAPTER_TYPE to use a different supported adapter.`,
+            `Catalog agents without explicit overrides (${defaultedAdapterSlugs.join(", ")}) default to ${defaultAdapterType}. Pass adapterOverrides or WARDMOTE_TEAMS_CATALOG_DEFAULT_ADAPTER_TYPE to use a different supported adapter.`,
           ]
         : []),
     ];

@@ -218,7 +218,7 @@ export function registerTeamCommands(program: Command): void {
         "When install is denied by agents:create permissions, create a board approval request instead of exiting with the raw 403",
         false,
       )
-      .option("--approval-issue-id <id>", "Issue ID to link to the fallback approval request; defaults to PAPERCLIP_TASK_ID when set")
+      .option("--approval-issue-id <id>", "Issue ID to link to the fallback approval request; defaults to WARDMOTE_TASK_ID when set")
       .action(async (catalogRef: string, opts: TeamInstallOptions) => {
         try {
           const ctx = resolveCommandContext(opts, { requireCompany: true });
@@ -383,7 +383,7 @@ function shouldRequestInstallApproval(error: unknown, opts: TeamInstallOptions):
 }
 
 function isPaperclipTaskRun(): boolean {
-  return Boolean(process.env.PAPERCLIP_TASK_ID?.trim());
+  return Boolean(process.env.WARDMOTE_TASK_ID?.trim());
 }
 
 async function requestInstallApproval(
@@ -453,7 +453,7 @@ function redactInstallSecretValues(options: CatalogTeamInstallOptions): CatalogT
 }
 
 function resolveApprovalIssueIds(opts: TeamInstallOptions): string[] | undefined {
-  const issueId = opts.approvalIssueId?.trim() || process.env.PAPERCLIP_TASK_ID?.trim();
+  const issueId = opts.approvalIssueId?.trim() || process.env.WARDMOTE_TASK_ID?.trim();
   if (!issueId) return undefined;
   return isUuidLike(issueId) ? [issueId] : undefined;
 }

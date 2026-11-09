@@ -11,7 +11,6 @@ import { honchoManagedArguments } from "./honcho-connection.js";
 import { defaultConnectionAgentInstructions } from "@tickernelz/wardmote-shared";
 import { isInsufficientConnectionScope, INSUFFICIENT_CONNECTION_SCOPE_MESSAGE } from "./connection-permission-errors.js";
 import { mcpDiscoveryHttpFailure, retainMcpConnectionFailure, withMcpConnectionFailure } from "./mcp-connection-failure.js";
-import { ASANA_CONNECTOR_SCOPES, isAsanaConnectorProfileId, type AsanaConnectorProfileId } from "@tickernelz/wardmote-shared";
 import { BROWSER_USE_TOOLS } from "@tickernelz/wardmote-shared";
 import { browserUseClient, isBrowserUseConnection } from "./browser-use-client.js";
 import { isLocalBrowserConnection } from "./connectors/local-browser/connection.js";
@@ -176,6 +175,7 @@ import {
   CLASS3_STATIC_LEASE_ALLOWLIST,
   GITHUB_CONNECTOR_PROFILES,
   GOOGLE_WORKSPACE_CONNECTOR_PROFILES,
+  GOOGLE_WORKSPACE_CONNECTOR_PROFILE_IDS,
   connectionIntentPayloadSchema,
   credentialConfigPath,
   getAppDefinitionForUrl,
@@ -264,15 +264,6 @@ import {
 } from "./tool-runtime-supervisor.js";
 import { listConnectionLifecycleEvents } from "./tool-connection-activity.js";
 import { isRetiredComposioConnection, RETIRED_COMPOSIO_MESSAGE } from "@tickernelz/wardmote-shared";
-import {
-  appWithPaperclipCloudConnectorAvailability,
-  paperclipCloudConnectorCapabilitiesFromEnv,
-  createPaperclipCloudConnector,
-  isPaperclipCloudConnectorStrategy,
-  paperclipCloudConnectorConfigFromEnv,
-  PaperclipCloudConnectorError,
-  type PaperclipCloudConnector,
-} from "./paperclip-cloud-connector.js";
 import {
   createVercelConnectClient,
   deriveVercelConnectSubject,
@@ -675,10 +666,6 @@ type ToolAccessServiceOptions = {
   remoteHttpRequest?: (url: string, init: RequestInit) => Promise<Response>;
   /** Smaller reviewed catalog for deterministic discovery fixtures. */
   composioAppToolkits?: readonly string[];
-  /** Test seam for the centrally registered Gmail OAuth broker. */
-  paperclipCloudConnector?: PaperclipCloudConnector | null;
-  /** @deprecated Use paperclipCloudConnector. */
-  paperclipIdGmailConnector?: PaperclipCloudConnector | null;
   /** Test seam for Vercel Connect without live vendor traffic. */
   vercelConnectClient?: VercelConnectClient | null;
 };
@@ -1041,7 +1028,7 @@ function connectionMethodFor(app: AppDefinition, methodKey?: string | null) {
   const toolMethods = app.methods.filter(
     (candidate) =>
       candidate.purpose !== "channel" && candidate.transport !== "chat_sdk"
-      && (availableMethods.has(candidate) || isPaperclipCloudConnectorStrategy(candidate.oauthStrategy)),
+      && availableMethods.has(candidate),
   );
   const method = normalizedMethodKey
     ? (toolMethods.find((candidate) => candidate.key === normalizedMethodKey) ??
@@ -2536,32 +2523,17 @@ export function isGoogleWorkspaceToolAllowed(
   );
 }
 
-type ManagedConnectorProfileId =
-  GoogleWorkspaceConnectorProfileId | GitHubConnectorProfileId | AsanaConnectorProfileId;
-
-function managedConnectorProfile(value: string | undefined): {
-  id: ManagedConnectorProfileId;
-  provider: "google" | "github" | "asana";
-  scopes: readonly string[];
-} | null {
-  if (value && isAsanaConnectorProfileId(value)) {
-    return { id: value, provider: "asana", scopes: ASANA_CONNECTOR_SCOPES };
-  }
-  if (value && isGoogleWorkspaceConnectorProfileId(value)) {
-    return {
-      id: value,
-      provider: "google",
-      scopes: GOOGLE_WORKSPACE_CONNECTOR_PROFILES[value].scopes,
-    };
-  }
-  if (value && isGitHubConnectorProfileId(value)) {
-    return {
-      id: value,
-      provider: "github",
-      scopes: GITHUB_CONNECTOR_PROFILES[value].scopes,
-    };
-  }
-  return null;
+function googleWorkspaceProfileForMethod(
+  appSlug: string | null,
+  capabilityKey: string | undefined,
+): GoogleWorkspaceConnectorProfileId | null {
+  if (!appSlug || !capabilityKey) return null;
+  const match = GOOGLE_WORKSPACE_CONNECTOR_PROFILE_IDS.find(
+    (id) =>
+      GOOGLE_WORKSPACE_CONNECTOR_PROFILES[id].appSlug === appSlug &&
+      id.endsWith(`.${capabilityKey}`),
+  );
+  return match ?? null;
 }
 
 function gitHubRepositoryOwnerType(repository: Record<string, unknown>) {
@@ -3135,30 +3107,6 @@ export function toolAccessService(
   }
   const policySvc = toolAccessPolicyService(db);
   const now = options.now ?? (() => new Date());
-  const configuredCloudConnector =
-    options.paperclipCloudConnector ?? options.paperclipIdGmailConnector;
-  const connectorWasProvided =
-    options.paperclipCloudConnector !== undefined ||
-    options.paperclipIdGmailConnector !== undefined;
-  let cachedCloudConnector = configuredCloudConnector ?? null;
-  const currentCloudConnector = (): PaperclipCloudConnector | null => {
-    if (cachedCloudConnector || connectorWasProvided)
-      return cachedCloudConnector;
-    const config = paperclipCloudConnectorConfigFromEnv();
-    cachedCloudConnector = config
-      ? createPaperclipCloudConnector({ config, now: () => now().getTime() })
-      : null;
-    return cachedCloudConnector;
-  };
-  async function appForConnectionSetup(app: AppDefinition): Promise<AppDefinition> {
-    if (!app.methods.some((method) => isPaperclipCloudConnectorStrategy(method.oauthStrategy))) {
-      return app;
-    }
-    const profiles = connectorWasProvided
-      ? (await currentCloudConnector()?.getCapabilities() ?? [])
-      : await paperclipCloudConnectorCapabilitiesFromEnv();
-    return appWithPaperclipCloudConnectorAvailability(app, profiles);
-  }
   let nextGitHubContinuitySweepAt = 0;
   const vercelConnect =
     options.vercelConnectClient === undefined
@@ -3444,12 +3392,12 @@ export function toolAccessService(
   }
 
   function tokenBrokerAllowedPrivateHosts(): Set<string> {
-    const configured = (process.env.PAPERCLIP_TOKEN_BROKER_ALLOWED_HOSTS ?? "")
+    const configured = (process.env.WARDMOTE_TOKEN_BROKER_ALLOWED_HOSTS ?? "")
       .split(/[,\s]+/)
       .map(normalizeTokenBrokerAllowedHost)
       .filter((host): host is string => host !== null);
     const pagesApiHost = normalizeTokenBrokerAllowedHost(
-      process.env.PAPERCLIP_PAGES_API_URL ?? "",
+      process.env.WARDMOTE_PAGES_API_URL ?? "",
     );
     if (pagesApiHost) configured.push(pagesApiHost);
     return new Set(configured);
@@ -3533,8 +3481,8 @@ export function toolAccessService(
    */
   function firstPartyOrigins(candidate?: string | null): string[] {
     const configured =
-      process.env.PAPERCLIP_PUBLIC_URL?.trim() ||
-      process.env.PAPERCLIP_AUTH_PUBLIC_BASE_URL?.trim() ||
+      process.env.WARDMOTE_PUBLIC_URL?.trim() ||
+      process.env.WARDMOTE_AUTH_PUBLIC_BASE_URL?.trim() ||
       process.env.BETTER_AUTH_URL?.trim() ||
       process.env.BETTER_AUTH_BASE_URL?.trim() ||
       null;
@@ -3609,8 +3557,8 @@ export function toolAccessService(
   function trustedRuntimeHost() {
     return (
       options.trustedLocalStdioRuntimeHost ??
-      process.env.PAPERCLIP_TRUSTED_MCP_RUNTIME_HOST ??
-      process.env.PAPERCLIP_TOOL_RUNTIME_TRUSTED_HOST ??
+      process.env.WARDMOTE_TRUSTED_MCP_RUNTIME_HOST ??
+      process.env.WARDMOTE_TOOL_RUNTIME_TRUSTED_HOST ??
       null
     );
   }
@@ -4722,7 +4670,7 @@ export function toolAccessService(
       readConfigString(config, "tokenExchangeUrl") ??
       readConfigString(config, "pagesTokenExchangeUrl");
     if (url) return url;
-    const pagesApiBase = process.env.PAPERCLIP_PAGES_API_URL?.trim();
+    const pagesApiBase = process.env.WARDMOTE_PAGES_API_URL?.trim();
     if (isPages && pagesApiBase)
       return new URL(
         "/v1/tokens/exchange",
@@ -7273,23 +7221,6 @@ export function toolAccessService(
         })),
       };
       response = await sendToolsList(headers);
-      if (
-        response.status === 401 &&
-        isPaperclipCloudConnectorStrategy(oauthConfig(connection).strategy)
-      ) {
-        const grant = await vaultGrantForConnection(connection, actor);
-        if (grant) {
-          await db
-            .update(connectionGrants)
-            .set({ status: "needs_reauthorization", updatedAt: now() })
-            .where(
-              and(
-                eq(connectionGrants.id, grant.id),
-                eq(connectionGrants.companyId, connection.companyId),
-              ),
-            );
-        }
-      }
     }
     if (!response.ok) {
       if ((response.status === 401 || response.status === 403)
@@ -7824,18 +7755,7 @@ export function toolAccessService(
       ? connectionMethodForConnection(sourceApp, connection)
       : null;
     const sourceCapabilityKey = sourceMethod?.capabilityProfile?.key;
-    const googleProfileValue =
-      sourceMethod?.connectorProfile ??
-      sourceApp?.methods.find(
-        (candidate) =>
-          candidate.connectorProfile &&
-          candidate.capabilityProfile?.key === sourceCapabilityKey,
-      )?.connectorProfile;
-    const googleProfile =
-      googleProfileValue &&
-      isGoogleWorkspaceConnectorProfileId(googleProfileValue)
-        ? googleProfileValue
-        : null;
+    const googleProfile = googleWorkspaceProfileForMethod(sourceTemplateKey, sourceCapabilityKey);
     const preserveReviewedCatalog =
       (isRailwayEndpoint(connection.config.url) || sourceTemplateKey === "enterpret") &&
       existingRows.length > 0;
@@ -8823,7 +8743,7 @@ export function toolAccessService(
     provider: string,
     suffix: "CLIENT_ID" | "CLIENT_SECRET",
   ) {
-    return `PAPERCLIP_TOOL_OAUTH_${provider.replace(/[^a-z0-9]+/gi, "_").toUpperCase()}_${suffix}`;
+    return `WARDMOTE_TOOL_OAUTH_${provider.replace(/[^a-z0-9]+/gi, "_").toUpperCase()}_${suffix}`;
   }
 
   function oauthClientConfig(provider: string) {
@@ -8834,11 +8754,11 @@ export function toolAccessService(
       clientSecretEnv,
       clientId:
         process.env[clientIdEnv] ??
-        process.env.PAPERCLIP_TOOL_OAUTH_CLIENT_ID ??
+        process.env.WARDMOTE_TOOL_OAUTH_CLIENT_ID ??
         null,
       clientSecret:
         process.env[clientSecretEnv] ??
-        process.env.PAPERCLIP_TOOL_OAUTH_CLIENT_SECRET ??
+        process.env.WARDMOTE_TOOL_OAUTH_CLIENT_SECRET ??
         null,
     };
   }
@@ -11418,185 +11338,6 @@ export function toolAccessService(
     const oauthTokenUrl =
       typeof oauth.tokenUrl === "string" ? oauth.tokenUrl : null;
     if (
-      connection.authKind === "oauth" &&
-      connection.credentialSource === "paperclip_vault" &&
-      isPaperclipCloudConnectorStrategy(oauth.strategy)
-    ) {
-      const grantOauth = oauthGrantConfig(initialGrant);
-      const expiresAt =
-        typeof grantOauth.accessTokenExpiresAt === "string"
-          ? Date.parse(grantOauth.accessTokenExpiresAt)
-          : Number.NaN;
-      const refreshedAt =
-        typeof grantOauth.refreshedAt === "string"
-          ? Date.parse(grantOauth.refreshedAt)
-          : Number.NaN;
-      const rotationDue =
-        Number.isFinite(expiresAt) &&
-        (!Number.isFinite(refreshedAt) ||
-          refreshedAt <= Date.now() - 30 * 24 * 60 * 60_000);
-      const refreshDue =
-        Number.isFinite(expiresAt) && expiresAt <= Date.now() + 60 * 60_000;
-      // A GitHub App can deliberately issue a non-expiring ghu_ token. Its
-      // continuity is checked against /user below; only an expiring token pair
-      // enters this rotation path.
-      if (!input.forceRefresh && !refreshDue && !rotationDue)
-        return initialGrant;
-      if (!Number.isFinite(expiresAt)) return initialGrant;
-
-      return singleFlight(
-        oauthGrantRefreshFlights,
-        initialGrant.id,
-        async () => {
-          const lease = await acquireOAuthGrantRefreshLease(
-            connection,
-            initialGrant,
-            true,
-          );
-          if (!lease.leaseId) return lease.grant;
-          try {
-            const grant = lease.grant;
-            const profile = managedConnectorProfile(
-              typeof oauth.connectorProfile === "string"
-                ? oauth.connectorProfile
-                : undefined,
-            );
-            const cloudConnector = currentCloudConnector();
-            const connectorSubject =
-              grant.kind === "agent" && grant.subjectAgentId
-                ? `agent:${grant.subjectAgentId}`
-                : grant.kind === "user" && grant.subjectUserId
-                  ? grant.subjectUserId
-                  : typeof oauth.connectorSubjectUserId === "string"
-                    ? oauth.connectorSubjectUserId
-                    : null;
-            const accessRef = grant.credentialSecretRefs.find(
-              (ref) => ref.configPath === "oauth.access_token",
-            );
-            const refreshRef = grant.credentialSecretRefs.find(
-              (ref) => ref.configPath === "oauth.refresh_token",
-            );
-            if (
-              !profile ||
-              !cloudConnector ||
-              !connectorSubject ||
-              !accessRef ||
-              !refreshRef
-            ) {
-              throw unprocessable("Managed authorization must be reconnected", {
-                code: "oauth_reauthorization_required",
-                setupUrl: connectionSetupUrl(connection),
-                reconnectUrl: connectionReconnectUrl(connection),
-              });
-            }
-            const refreshSecret = await resolveOAuthGrantSecret(
-              connection,
-              grant,
-              refreshRef,
-              input.actor,
-              input,
-            );
-            let credentials;
-            try {
-              credentials = await cloudConnector.refresh({
-                subject: connectorSubject,
-                companyId: connection.companyId,
-                profile: profile.id,
-                refreshToken: refreshSecret.value,
-              });
-            } catch (error) {
-              if (
-                error instanceof PaperclipCloudConnectorError &&
-                error.code === "REAUTHORIZATION_REQUIRED"
-              ) {
-                await db
-                  .update(connectionGrants)
-                  .set({ status: "needs_reauthorization", updatedAt: now() })
-                  .where(
-                    and(
-                      eq(connectionGrants.id, grant.id),
-                      eq(connectionGrants.companyId, grant.companyId),
-                    ),
-                  );
-                throw unprocessable(
-                  "Managed authorization must be reconnected",
-                  {
-                    code: "oauth_reauthorization_required",
-                    setupUrl: connectionSetupUrl(connection),
-                    reconnectUrl: connectionReconnectUrl(connection),
-                  },
-                );
-              }
-              throw error;
-            }
-            const credentialActor: ActorInfo | undefined =
-              grant.kind === "user" && grant.subjectUserId
-                ? { actorType: "user", actorId: grant.subjectUserId }
-                : input.actor;
-            const providerTenant = {
-              ...(grant.providerTenant ?? {}),
-              oauth: {
-                ...withoutOAuthGrantRefreshLease(oauthGrantConfig(grant)),
-                strategy: "paperclip_cloud_connector",
-                accessTokenExpiresAt: credentials.accessTokenExpiresAt,
-                scopes: credentials.scopes,
-                tokenType: credentials.tokenType,
-                refreshedAt: now().toISOString(),
-                ...(credentials.refreshTokenExpiresAt
-                  ? { refreshTokenExpiresAt: credentials.refreshTokenExpiresAt }
-                  : {}),
-              },
-            };
-            const updated = await db.transaction(async (tx) => {
-              const txSecrets = secretService(tx);
-              await txSecrets.rotate(
-                accessRef.secretId,
-                { value: credentials.accessToken },
-                actorForSecret(credentialActor),
-              );
-              if (credentials.refreshToken) {
-                await txSecrets.rotate(
-                  refreshRef.secretId,
-                  { value: credentials.refreshToken },
-                  actorForSecret(credentialActor),
-                );
-              }
-              const [committed] = await tx
-                .update(connectionGrants)
-                .set({
-                  providerTenant,
-                  status: "active",
-                  updatedAt: now(),
-                })
-                .where(
-                  and(
-                    eq(connectionGrants.id, grant.id),
-                    eq(connectionGrants.companyId, grant.companyId),
-                    eq(connectionGrants.status, "active"),
-                    sql`${connectionGrants.providerTenant} -> 'oauth' -> 'refreshLease' ->> 'id' = ${lease.leaseId}`,
-                  ),
-                )
-                .returning();
-              return committed;
-            });
-            if (!updated)
-              throw conflict(
-                "OAuth credentials changed while refresh was in progress",
-                {
-                  code: "oauth_refresh_superseded",
-                  retryable: true,
-                },
-              );
-            return updated;
-          } finally {
-            await clearOAuthGrantRefreshLease(lease.grant, lease.leaseId).catch(
-              () => undefined,
-            );
-          }
-        },
-      );
-    }
-    if (
       connection.authKind !== "oauth" ||
       connection.credentialSource !== "paperclip_vault" ||
       !oauthTokenUrl ||
@@ -12193,44 +11934,6 @@ export function toolAccessService(
       return { updated, previousGitHub };
     });
 
-    const cloudConnector = currentCloudConnector();
-    const subject =
-      updated.kind === "agent" && updated.subjectAgentId
-        ? `agent:${updated.subjectAgentId}`
-        : updated.kind === "user" && updated.subjectUserId
-          ? updated.subjectUserId
-          : null;
-    if (cloudConnector && subject) {
-      const previous = new Set(previousGitHub?.installationIds ?? []);
-      const current = new Set(metadata.installationIds);
-      await Promise.all([
-        ...metadata.installationIds.map((installationId) =>
-          cloudConnector.setWebhookBinding({
-            subject,
-            companyId: connection.companyId,
-            id: `${updated.id}_${installationId}`,
-            installationId,
-            connectionId: connection.id,
-            grantId: updated.id,
-            active: true,
-            accessToken,
-          }),
-        ),
-        ...[...previous]
-          .filter((installationId) => !current.has(installationId))
-          .map((installationId) =>
-            cloudConnector.setWebhookBinding({
-              subject,
-              companyId: connection.companyId,
-              id: `${updated.id}_${installationId}`,
-              installationId,
-              connectionId: connection.id,
-              grantId: updated.id,
-              active: false,
-            }),
-          ),
-      ]);
-    }
     return updated;
   }
 
@@ -12344,7 +12047,7 @@ export function toolAccessService(
     if (input.galleryKey && !definition)
       throw notFound("Tool app gallery entry not found");
 
-    const galleryEntry = definition ? await appForConnectionSetup(definition) : null;
+    const galleryEntry = definition;
 
     let existingApplication: typeof toolApplications.$inferSelect | null = null;
     let requestedResumeConnection: typeof toolConnections.$inferSelect | null =
@@ -12849,20 +12552,6 @@ export function toolAccessService(
             : {}),
         }
       : { ...baseConfig, quarantineNewEntries: false, unverifiedServer: true };
-    if (method && isPaperclipCloudConnectorStrategy(method.oauthStrategy)) {
-      const connectorProfile = method.connectorProfile;
-      const profile = managedConnectorProfile(connectorProfile);
-      if (!profile)
-        throw badRequest("This app has an invalid managed connector profile");
-      config.oauth = {
-        strategy: method.oauthStrategy,
-        provider: profile.provider,
-        connectorProfile: profile.id,
-        resource: method.defaults?.serverUrl,
-        scopes: [...profile.scopes],
-      };
-      config.quarantineNewEntries = true;
-    }
     const acceptsCustomerOAuthClient =
       remoteMcpConnector || (method?.auth === "oauth" && method.ownershipModes.includes("customer"));
     if (galleryEntry && input.oauthClient && !acceptsCustomerOAuthClient) {
@@ -12979,11 +12668,7 @@ export function toolAccessService(
         : requestedGrantKind === "agent"
           ? "per_agent"
           : "shared";
-    const connectionOwnership = isPaperclipCloudConnectorStrategy(
-      method?.oauthStrategy,
-    )
-      ? "platform_shared"
-      : "customer";
+    const connectionOwnership = "customer";
     let applicationRow: typeof toolApplications.$inferSelect | null = null;
     let connectionRow: typeof toolConnections.$inferSelect | null = null;
     let revivedConnectionPrevious: typeof toolConnections.$inferSelect | null =
@@ -14789,105 +14474,6 @@ export function toolAccessService(
         registrationSource: null,
       };
     }
-    if (
-      galleryMethod &&
-      isPaperclipCloudConnectorStrategy(galleryMethod.oauthStrategy)
-    ) {
-      const connectorProfile = galleryMethod.connectorProfile;
-      const managedProfile = managedConnectorProfile(connectorProfile);
-      if (!managedProfile)
-        throw badRequest("This app has an invalid managed connector profile");
-      const providerName = galleryEntry?.name ?? "Google Workspace";
-      const cloudConnector = currentCloudConnector();
-      if (!cloudConnector) {
-        throw unprocessable(
-          `${providerName} connections through Paperclip are not available on this instance yet`,
-          {
-            code: "paperclip_cloud_connector_unavailable",
-          },
-        );
-      }
-      const binding = starterBinding;
-      if (!binding.actorType || !binding.actorId) {
-        throw forbidden(
-          `${providerName} sign-in requires an authenticated actor`,
-        );
-      }
-      const subjectUserId = authorizationSubjectAgentId
-        ? null
-        : (authorizationSubjectUserId ??
-          (binding.actorType === "user" ? binding.actorId : null));
-      if (!subjectUserId && !authorizationSubjectAgentId) {
-        throw forbidden(
-          `Agent-started ${providerName} sign-in requires an authorized identity`,
-        );
-      }
-      if (
-        !authorizationSubjectAgentId &&
-        binding.actorType === "user" &&
-        subjectUserId !== binding.actorId
-      ) {
-        throw forbidden(
-          `Board users may only authorize their own ${providerName} identity`,
-        );
-      }
-      await db
-        .delete(toolOauthStates)
-        .where(lt(toolOauthStates.expiresAt, now()));
-      const state = randomOauthToken();
-      const returnUri = new URL(input.redirectUri);
-      returnUri.pathname = "/api/tools/oauth/cloud-connector/callback";
-      returnUri.search = "";
-      returnUri.hash = "";
-      const session = await cloudConnector.startAuthorization({
-        subject: authorizationSubjectAgentId
-          ? `agent:${authorizationSubjectAgentId}`
-          : subjectUserId!,
-        companyId,
-        profile: managedProfile.id,
-        returnUri: returnUri.toString(),
-        returnState: state,
-      });
-      const remoteExpiry = new Date(session.expiresAt);
-      const expiresAt = Number.isFinite(remoteExpiry.getTime())
-        ? new Date(
-            Math.min(remoteExpiry.getTime(), now().getTime() + 10 * 60 * 1000),
-          )
-        : new Date(now().getTime() + 10 * 60 * 1000);
-      await db.insert(toolOauthStates).values({
-        state,
-        companyId,
-        connectionId: connection.id,
-        // Paperclip Cloud owns PKCE for this flow. The local state row remains the
-        // single-use browser correlator and never stores broker token material.
-        codeVerifier: "paperclip-cloud-connector",
-        createdByActorType: binding.actorType,
-        createdByActorId: binding.actorId,
-        createdBySessionId: binding.sessionId,
-        subjectUserId,
-        subjectAgentId: authorizationSubjectAgentId,
-        requestedScopes: [...managedProfile.scopes],
-        returnTo: input.returnTo,
-        issueId: intentLink?.issueId ?? input.issueId,
-        interactionId: intentLink?.id,
-        expiresAt,
-      });
-      return {
-        connectionId: connection.id,
-        provider: managedProfile.provider,
-        authorizationUrl: session.authorizationUrl,
-        expiresAt: expiresAt.toISOString(),
-        ...(session.handoff ? { handoff: session.handoff } : {}),
-        issuer:
-          managedProfile.provider === "github"
-            ? "https://github.com"
-            : managedProfile.provider === "asana"
-              ? "https://app.asana.com"
-              : "https://accounts.google.com",
-        resource: galleryMethod.defaults?.serverUrl ?? null,
-        registrationSource: null,
-      };
-    }
     const endpoints = await oauthEndpointsForConnection(
       connection,
       null,
@@ -15444,472 +15030,6 @@ export function toolAccessService(
       }
     }
     return finished;
-  }
-
-  async function completePaperclipCloudConnectorCallback(input: {
-    state: string;
-    claimId?: string | null;
-    error?: string | null;
-    actor?: ActorInfo;
-  }): Promise<ConnectToolAppResult> {
-    // Keep the local state live until the sealed claim is in the durable vault.
-    // The broker binds repeat claim requests to this stable state value, so a
-    // transient broker, database, or secret-store failure can retry safely.
-    const stateRow = await validateOAuthState(input.state, input.actor);
-    let connection = await getConnectionRow(
-      stateRow.connectionId,
-      stateRow.companyId,
-    );
-    const preCloudCallbackLifecycle = {
-      status: connection.status,
-      enabled: connection.enabled,
-    };
-    // The connection lifecycle, not the incidental presence of its app profile,
-    // distinguishes setup from reauthorization. New connections and connections
-    // revived after removal are drafts until this callback completes. A profile
-    // may legitimately survive removal because an MCP gateway retains it, or be
-    // intentionally archived on an otherwise active connection; neither case
-    // should invert whether recommended defaults are rebuilt.
-    const shouldFinalizeManagedDefaults = connection.status === "draft";
-    const sourceTemplateKey =
-      typeof connection.config.sourceTemplateKey === "string"
-        ? connection.config.sourceTemplateKey
-        : null;
-    const galleryEntry = sourceTemplateKey
-      ? getConnectableAppDefinition(sourceTemplateKey)
-      : null;
-    const method = galleryEntry
-      ? connectionMethodForConnection(galleryEntry, connection)
-      : null;
-    const providerName = galleryEntry?.name ?? "Google Workspace";
-    if (input.error) {
-      const consumedState = await consumeOAuthState(input.state, input.actor);
-      await rejectPendingOAuthInteraction(consumedState, input.actor);
-      throw new HttpError(
-        400,
-        `${providerName} authorization did not complete. Start a new ${providerName} connection to try again.`,
-        {
-          code:
-            input.error === "access_denied"
-              ? "oauth_authorization_denied"
-              : "paperclip_cloud_connector_failed",
-        },
-      );
-    }
-    if (!input.claimId)
-      throw badRequest(
-        `${providerName} callback is missing a claim identifier`,
-      );
-    const cloudConnector = currentCloudConnector();
-    if (!cloudConnector) {
-      throw unprocessable(
-        `${providerName} connections through Paperclip are not available on this instance yet`,
-        {
-          code: "paperclip_cloud_connector_unavailable",
-        },
-      );
-    }
-    const subjectUserId = stateRow.subjectUserId;
-    const subjectAgentId = stateRow.subjectAgentId;
-    if (
-      !method ||
-      !isPaperclipCloudConnectorStrategy(method.oauthStrategy) ||
-      (!subjectUserId && !subjectAgentId)
-    ) {
-      throw badRequest(
-        "OAuth state does not belong to a managed connector flow",
-      );
-    }
-    const connectorProfile = method.connectorProfile;
-    const profile = managedConnectorProfile(connectorProfile);
-    if (!profile) throw badRequest("Managed connector profile is invalid");
-    const connectorSubject = subjectAgentId
-      ? `agent:${subjectAgentId}`
-      : subjectUserId!;
-    const credentials = await cloudConnector.claim({
-      subject: connectorSubject,
-      companyId: stateRow.companyId,
-      profile: profile.id,
-      claimId: input.claimId,
-      redemptionId: input.state,
-    });
-    const refreshToken = credentials.refreshToken;
-    if ((profile.provider === "google" || profile.provider === "asana") && !refreshToken) {
-      throw unprocessable(
-        `${providerName} did not return offline access. Reconnect and grant the requested permissions.`,
-        {
-          code: "oauth_refresh_missing",
-        },
-      );
-    }
-    const githubMetadata =
-      profile.provider === "github"
-        ? await loadGitHubGrantMetadata(
-            credentials.accessToken,
-            fetch,
-            credentials.appSlug,
-          )
-        : null;
-    const authorizingUserId =
-      subjectUserId ??
-      (stateRow.createdByActorType === "user"
-        ? stateRow.createdByActorId
-        : null);
-    if (!authorizingUserId)
-      throw forbidden(
-        `A signed-in connection manager must authorize ${providerName}`,
-      );
-
-    await db.transaction(async (tx) => {
-      // Keep connector credential persistence serialized with membership
-      // suspension, downgrade, and removal. A successful claim is only durable
-      // while the initiating user still holds connection-management authority.
-      const [membership] = await tx
-        .select({
-          id: companyMemberships.id,
-          membershipRole: companyMemberships.membershipRole,
-        })
-        .from(companyMemberships)
-        .where(
-          and(
-            eq(companyMemberships.companyId, connection.companyId),
-            eq(companyMemberships.principalType, "user"),
-            eq(companyMemberships.principalId, authorizingUserId),
-            eq(companyMemberships.status, "active"),
-            ne(companyMemberships.membershipRole, "viewer"),
-          ),
-        )
-        .limit(1)
-        .for("update");
-      if (!membership) {
-        throw forbidden(
-          `Your company membership no longer permits connection changes. Restore non-viewer access before you connect ${providerName} again.`,
-        );
-      }
-      if (subjectAgentId) {
-        const roleCanManage =
-          membership.membershipRole === "owner" ||
-          membership.membershipRole === "admin";
-        const [explicitManagerGrant] = roleCanManage
-          ? []
-          : await tx
-              .select({
-                id: principalPermissionGrants.id,
-              })
-              .from(principalPermissionGrants)
-              .where(
-                and(
-                  eq(principalPermissionGrants.companyId, connection.companyId),
-                  eq(principalPermissionGrants.principalType, "user"),
-                  eq(principalPermissionGrants.principalId, authorizingUserId),
-                  eq(
-                    principalPermissionGrants.permissionKey,
-                    "tools:manage_connections",
-                  ),
-                ),
-              )
-              .limit(1)
-              .for("update");
-        if (!roleCanManage && !explicitManagerGrant) {
-          throw forbidden(
-            "Only a connection manager can authorize a dedicated agent identity.",
-          );
-        }
-      }
-      const [consumedState] = await tx
-        .delete(toolOauthStates)
-        .where(
-          and(
-            eq(toolOauthStates.state, input.state),
-            gte(toolOauthStates.expiresAt, new Date()),
-          ),
-        )
-        .returning({ state: toolOauthStates.state });
-      if (!consumedState)
-        throw badRequest(
-          "OAuth state was not found, expired, or has already been used",
-        );
-      const txSecrets = secretService(tx);
-      const txSecretContext = { dbClient: tx, secretClient: txSecrets };
-      const personalCredential = connection.credentialPolicy === "per_user";
-      const agentCredential = connection.credentialPolicy === "per_agent";
-      const grantKind: ConnectionGrantKind = agentCredential
-        ? "agent"
-        : personalCredential
-          ? "user"
-          : "organization";
-      const [existingCredentialGrant] = await tx
-        .select()
-        .from(connectionGrants)
-        .where(
-          and(
-            eq(connectionGrants.companyId, connection.companyId),
-            eq(connectionGrants.connectionId, connection.id),
-            eq(connectionGrants.kind, grantKind),
-            agentCredential
-              ? eq(connectionGrants.subjectAgentId, subjectAgentId!)
-              : personalCredential
-                ? eq(connectionGrants.subjectUserId, subjectUserId!)
-                : eq(connectionGrants.isDefault, true),
-          ),
-        )
-        .limit(1);
-      const existingRefs =
-        existingCredentialGrant?.credentialSecretRefs ??
-        (personalCredential || agentCredential
-          ? []
-          : connection.credentialSecretRefs);
-      const accessRef = await createOrRotateOAuthSecret(
-        {
-          companyId: connection.companyId,
-          connection,
-          configPath: "oauth.access_token",
-          label: `${providerName} access token`,
-          value: credentials.accessToken,
-          actor: input.actor,
-          existingRefs,
-          ownerUserId: personalCredential ? subjectUserId! : undefined,
-        },
-        txSecretContext,
-      );
-      const refreshRef = refreshToken
-        ? await createOrRotateOAuthSecret(
-            {
-              companyId: connection.companyId,
-              connection,
-              configPath: "oauth.refresh_token",
-              label: `${providerName} refresh token`,
-              value: refreshToken,
-              actor: input.actor,
-              existingRefs,
-              ownerUserId: personalCredential ? subjectUserId! : undefined,
-            },
-            txSecretContext,
-          )
-        : null;
-      const credentialSecretRefs = [
-        ...existingRefs.filter(
-          (ref) =>
-            ref.configPath !== "oauth.access_token" &&
-            ref.configPath !== "oauth.refresh_token",
-        ),
-        accessRef,
-        ...(refreshRef ? [refreshRef] : []),
-      ];
-      const grantValues = {
-        providerTenant: {
-          name: githubMetadata?.login ?? providerName,
-          externalId: credentials.subject,
-          oauth: {
-            strategy: "paperclip_cloud_connector",
-            accessTokenExpiresAt: credentials.accessTokenExpiresAt,
-            scopes: credentials.scopes,
-            tokenType: credentials.tokenType,
-            ...(credentials.refreshTokenExpiresAt
-              ? { refreshTokenExpiresAt: credentials.refreshTokenExpiresAt }
-              : {}),
-            ...(credentials.accessTokenExpiresAt
-              ? { refreshedAt: now().toISOString() }
-              : {}),
-          },
-          ...(githubMetadata ? { github: githubMetadata } : {}),
-        },
-        credentialSecretRefs,
-        status: "active" as const,
-        revokedAt: null,
-        revokedByAgentId: null,
-        revokedByUserId: null,
-        updatedAt: now(),
-      };
-      if (existingCredentialGrant) {
-        await tx
-          .update(connectionGrants)
-          .set(grantValues)
-          .where(eq(connectionGrants.id, existingCredentialGrant.id));
-      } else {
-        await tx.insert(connectionGrants).values({
-          companyId: connection.companyId,
-          connectionId: connection.id,
-          kind: grantKind,
-          subjectUserId: personalCredential ? subjectUserId : null,
-          subjectAgentId: agentCredential ? subjectAgentId : null,
-          ...grantValues,
-          isDefault: grantKind === "organization",
-          createdByUserId: authorizingUserId,
-        });
-      }
-      const nextConfig = {
-        ...connection.config,
-        oauth: {
-          ...oauthConfig(connection),
-          strategy: "paperclip_cloud_connector",
-          provider: galleryEntry?.slug,
-          connectorProfile,
-          connectorSubjectUserId: subjectUserId,
-          connectorSubjectAgentId: subjectAgentId,
-          resource: method.defaults?.serverUrl,
-          scopes: [...profile.scopes],
-        },
-      };
-      [connection] = await tx
-        .update(toolConnections)
-        .set({
-          status: shouldFinalizeManagedDefaults ? "draft" : "active",
-          enabled: shouldFinalizeManagedDefaults ? false : true,
-          authKind: "oauth",
-          config: nextConfig,
-          transportConfig: nextConfig,
-          credentialRefs:
-            personalCredential || agentCredential
-              ? connection.credentialRefs.filter(
-                  (ref) => ref.name !== "oauth.access_token",
-                )
-              : [
-                  ...connection.credentialRefs.filter(
-                    (ref) => ref.name !== "oauth.access_token",
-                  ),
-                  {
-                    name: "oauth.access_token",
-                    secretId: accessRef.secretId,
-                    version: "latest" as const,
-                    placement: "header" as const,
-                    key: "Authorization",
-                    prefix: "Bearer ",
-                  },
-                ],
-          credentialSecretRefs:
-            personalCredential || agentCredential
-              ? connection.credentialSecretRefs.filter(
-                  (ref) =>
-                    ref.configPath !== "oauth.access_token" &&
-                    ref.configPath !== "oauth.refresh_token",
-                )
-              : credentialSecretRefs,
-          updatedAt: now(),
-        })
-        .where(eq(toolConnections.id, connection.id))
-        .returning();
-      await tx
-        .update(toolApplications)
-        .set({
-          status: shouldFinalizeManagedDefaults ? "draft" : "active",
-          updatedAt: now(),
-        })
-        .where(eq(toolApplications.id, connection.applicationId));
-      await syncCredentialBindings(
-        connection,
-        personalCredential || agentCredential ? credentialSecretRefs : [],
-        tx,
-      );
-      const linkedInteractionKind = stateRow.interactionId
-        ? await tx
-            .select({ kind: issueThreadInteractions.kind })
-            .from(issueThreadInteractions)
-            .where(eq(issueThreadInteractions.id, stateRow.interactionId))
-            .limit(1)
-            .then((rows) => rows[0]?.kind ?? null)
-        : null;
-      if (
-        stateRow.interactionId &&
-        linkedInteractionKind === "request_confirmation"
-      ) {
-        await tx
-          .update(issueThreadInteractions)
-          .set({
-            status: "accepted",
-            result: { version: 1, outcome: "accepted" },
-            resolvedByUserId: authorizingUserId,
-            resolvedAt: now(),
-            updatedAt: now(),
-          })
-          .where(eq(issueThreadInteractions.id, stateRow.interactionId));
-      }
-    });
-    // The transaction above committed the connection's lifecycle write; a
-    // Paperclip Cloud connector callback is the managed variant of an OAuth
-    // callback completion.
-    emitConnectionUpdated(connection, preCloudCallbackLifecycle, "oauth_callback");
-    if (githubMetadata) {
-      const [githubGrant] = await db
-        .select({ id: connectionGrants.id })
-        .from(connectionGrants)
-        .where(
-          and(
-            eq(connectionGrants.companyId, connection.companyId),
-            eq(connectionGrants.connectionId, connection.id),
-            subjectAgentId
-              ? and(
-                  eq(connectionGrants.kind, "agent"),
-                  eq(connectionGrants.subjectAgentId, subjectAgentId),
-                )
-              : and(
-                  eq(connectionGrants.kind, "user"),
-                  eq(connectionGrants.subjectUserId, subjectUserId!),
-                ),
-          ),
-        )
-        .limit(1);
-      if (!githubGrant) throw new Error("GitHub grant was not persisted");
-      await Promise.all(
-        githubMetadata.installationIds.map((installationId) =>
-          cloudConnector.setWebhookBinding({
-            subject: connectorSubject,
-            companyId: connection.companyId,
-            id: `${githubGrant.id}_${installationId}`,
-            installationId,
-            connectionId: connection.id,
-            grantId: githubGrant.id,
-            active: true,
-            accessToken: credentials.accessToken,
-          }),
-        ),
-      );
-    }
-    const refresh = await refreshCatalog(connection.id, input.actor, {
-      enableAllByDefault: false,
-      quarantineManagedOAuthDraft: shouldFinalizeManagedDefaults,
-      skipDefaultProfileSync: true,
-      credentialHeaders: { Authorization: `Bearer ${credentials.accessToken}` },
-    });
-    const recommended = recommendedDefaultsForApp(galleryEntry!, method.key);
-    const suggestedDefaults = subjectAgentId
-      ? { ...recommended, access: { agentIds: [subjectAgentId] } as const }
-      : recommended;
-    const finished = shouldFinalizeManagedDefaults
-      ? await finishOAuthCatalogWithRecommendedDefaults({
-          interactionId: stateRow.interactionId,
-          connection,
-          catalog: refresh.catalog,
-          suggestedDefaults,
-          activateQuarantined: true,
-          actor: input.actor,
-        })
-      : null;
-    const activatedCatalogEntryIds = new Set(
-      shouldFinalizeManagedDefaults
-        ? refresh.catalog
-            .filter((entry) => entry.status === "quarantined")
-            .map((entry) => entry.id)
-        : [],
-    );
-    const catalog = refresh.catalog.map((entry) =>
-      activatedCatalogEntryIds.has(entry.id)
-        ? { ...entry, status: "active" as const }
-        : entry,
-    );
-    const [application] = await db
-      .select()
-      .from(toolApplications)
-      .where(eq(toolApplications.id, connection.applicationId));
-    return {
-      connectionId: connection.id,
-      application: toApplication(application),
-      connection: finished?.connection ?? refresh.connection,
-      catalog,
-      actions: groupedActions(catalog),
-      suggestedDefaults,
-      auth: null,
-    };
   }
 
   async function completeVercelConnectCallback(input: {
@@ -17501,7 +16621,6 @@ export function toolAccessService(
 
     peekOAuthState,
 
-    completePaperclipCloudConnectorCallback,
 
     completeVercelConnectCallback,
 
@@ -18667,15 +17786,6 @@ export function toolAccessService(
             providerRevocation = "failed";
           }
         }
-      } else if (
-        isPaperclipCloudConnectorStrategy(oauthConfig(connection).strategy)
-      ) {
-        // Google revocation is client-wide for a user. The managed Workspace
-        // profiles intentionally share one Paperclip-owned client, so revoking
-        // one token here could invalidate unrelated Gmail, Drive, and Calendar
-        // grants. A per-profile removal is therefore local-only. A future
-        // provider-level disconnect must warn that it removes every profile.
-        providerRevocation = "local_only_shared_client";
       }
       const grant = await db.transaction(async (tx) => {
         const removedDelegations = await tx

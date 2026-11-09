@@ -10,7 +10,7 @@ import { hasConfirmedSandboxStopAndRetain, prepareSandboxStopAndRetain, settleSt
 import { environmentService } from "../services/environments.js";
 import { hasRequiredWorkspaceRecovery } from "../services/workspace-restore-recovery-state.js";
 
-const externalTestDatabaseUrl = process.env.PAPERCLIP_TEST_DATABASE_URL?.trim();
+const externalTestDatabaseUrl = process.env.WARDMOTE_TEST_DATABASE_URL?.trim();
 const support = externalTestDatabaseUrl ? { supported: true } : await getEmbeddedPostgresTestSupport();
 (support.supported ? describe : describe.skip)("legacy remote workspace recovery", () => {
   let db: ReturnType<typeof createDb>;

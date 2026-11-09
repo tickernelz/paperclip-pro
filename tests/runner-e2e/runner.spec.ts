@@ -291,7 +291,7 @@ async function restartIsolatedPaperclipServer(input: {
 }
 
 const executionIds = (() => {
-  const encoded = process.env.PAPERCLIP_RUNNER_E2E_EXECUTION_IDS;
+  const encoded = process.env.WARDMOTE_RUNNER_E2E_EXECUTION_IDS;
   if (encoded) {
     const parsed = JSON.parse(encoded) as unknown;
     if (
@@ -300,24 +300,24 @@ const executionIds = (() => {
       parsed.some((value) => typeof value !== "string")
     ) {
       throw new Error(
-        "PAPERCLIP_RUNNER_E2E_EXECUTION_IDS must be a non-empty JSON string array",
+        "WARDMOTE_RUNNER_E2E_EXECUTION_IDS must be a non-empty JSON string array",
       );
     }
     return parsed;
   }
-  const single = process.env.PAPERCLIP_RUNNER_E2E_EXECUTION_ID;
+  const single = process.env.WARDMOTE_RUNNER_E2E_EXECUTION_ID;
   if (!single)
-    throw new Error("PAPERCLIP_RUNNER_E2E_EXECUTION_IDS is required");
+    throw new Error("WARDMOTE_RUNNER_E2E_EXECUTION_IDS is required");
   return [single];
 })();
 const executions = executionIds.map(runnerExecutionById);
 // Direct Playwright invocation must enforce the same admission boundary as
 // launch.ts before reading any provider credential from the environment.
 assertRunnerE2EPrerequisites(executions);
-const attempt = Number(process.env.PAPERCLIP_RUNNER_E2E_ATTEMPT ?? "1");
-const temporaryRoot = process.env.PAPERCLIP_RUNNER_E2E_TEMP_ROOT;
-const privateRoot = process.env.PAPERCLIP_RUNNER_E2E_PRIVATE_DIR;
-const workspacePath = process.env.PAPERCLIP_RUNNER_E2E_WORKSPACE;
+const attempt = Number(process.env.WARDMOTE_RUNNER_E2E_ATTEMPT ?? "1");
+const temporaryRoot = process.env.WARDMOTE_RUNNER_E2E_TEMP_ROOT;
+const privateRoot = process.env.WARDMOTE_RUNNER_E2E_PRIVATE_DIR;
+const workspacePath = process.env.WARDMOTE_RUNNER_E2E_WORKSPACE;
 if (!temporaryRoot || !privateRoot || !workspacePath)
   throw new Error("Runner E2E temporary/private/workspace paths are required");
 
@@ -900,7 +900,7 @@ for (const execution of executions) {
         executionNonce: nonce,
         workspacePath,
         credentials,
-        daytonaImage: process.env.PAPERCLIP_E2E_DAYTONA_IMAGE,
+        daytonaImage: process.env.WARDMOTE_E2E_DAYTONA_IMAGE,
       });
 
       if (["native-completion", NATIVE_INSTRUCTION_SUITE].includes(execution.suite.id)) {
@@ -919,9 +919,9 @@ for (const execution of executions) {
         ? createRemoteNativeBootstrap({
           api, daytona: await createRemoteFixtureClient(credentials.DAYTONA_API_KEY ?? ""),
           companyId: fixtures.company.id, environmentId: fixtures.environment.id, agentId: fixtures.agent.id,
-          image: process.env.PAPERCLIP_E2E_DAYTONA_IMAGE ?? "",
-          nodeSha256: process.env.PAPERCLIP_E2E_DAYTONA_NODE_SHA256 ?? "",
-          runnerdSha256: process.env.PAPERCLIP_E2E_DAYTONA_RUNNERD_SHA256 ?? "",
+          image: process.env.WARDMOTE_E2E_DAYTONA_IMAGE ?? "",
+          nodeSha256: process.env.WARDMOTE_E2E_DAYTONA_NODE_SHA256 ?? "",
+          runnerdSha256: process.env.WARDMOTE_E2E_DAYTONA_RUNNERD_SHA256 ?? "",
           deadlineAt: startedAtMs + deadlineMs,
           evidence: (name, data) => writeSanitizedJson(snapshotsDir, name, data, secrets),
         }) : undefined;
@@ -1841,7 +1841,7 @@ for (const execution of executions) {
           }
           const journalEvidence = execution.suite.id === "daytona-journal-continuity" && completedTurn === 1
             ? await largeJournalEvidence({
-                stateRoot: path.join(process.env.PAPERCLIP_HOME!, "instances", process.env.PAPERCLIP_INSTANCE_ID!, "runtime", "paperclip-runner", "durable-sessions"),
+                stateRoot: path.join(process.env.WARDMOTE_HOME!, "instances", process.env.WARDMOTE_INSTANCE_ID!, "runtime", "paperclip-runner", "durable-sessions"),
                 runId: chronologicalRuns.at(-1)!.id,
                 minimumBytes: 2 * 1024 * 1024,
                 minimumCompletedStimulusCalls: 240,
@@ -1875,7 +1875,7 @@ for (const execution of executions) {
           })).toBeVisible({ timeout: reviewUiTimeout() });
           const turnReply = page.getByTestId("task-chat-thread")
             .getByTestId("task-chat-agent-bubble")
-            .filter({ hasText: `PAPERCLIP_E2E_WARM_T${completedTurn}_${nonce}` }).last();
+            .filter({ hasText: `WARDMOTE_E2E_WARM_T${completedTurn}_${nonce}` }).last();
           await expect(turnReply).toBeVisible({ timeout: reviewUiTimeout() });
           const pendingReview = waitingState.interactions.find(isPendingWarmConfirmation)!;
           const reviewCard = page.locator(`[id=${JSON.stringify(`interaction-${pendingReview.id}`)}]`);

@@ -105,7 +105,7 @@ import { resolveForcedKubernetesEnvironment } from "../lib/forced-kubernetes-env
 // so existing imports from this file keep working.
 export type { CreateConfigValues } from "@tickernelz/wardmote-adapter-utils";
 import {
-  PAPERCLIP_RUNNER_PERMISSION_CAPABILITIES,
+  WARDMOTE_RUNNER_PERMISSION_CAPABILITIES,
   paperclipRunnerTransitionConfig,
   type CreateConfigValues,
 } from "@tickernelz/wardmote-adapter-utils";

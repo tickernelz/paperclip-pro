@@ -21,7 +21,7 @@ Profiles:
 Override the sample count (minimum five) or port when needed:
 
 ```sh
-PAPERCLIP_ISSUE_PERF_RUNS=7 PAPERCLIP_ISSUE_PERF_PORT=3210 pnpm exec playwright test --config tests/perf/issue-detail/playwright.config.ts
+WARDMOTE_ISSUE_PERF_RUNS=7 WARDMOTE_ISSUE_PERF_PORT=3210 pnpm exec playwright test --config tests/perf/issue-detail/playwright.config.ts
 ```
 
 Outputs include `baseline.md`, `baseline.json`, and a Chrome trace for the first run of each scenario/profile. Open `*.trace.json` in Chrome DevTools Performance to inspect the `issue-detail:*` user-timing marks.
@@ -43,7 +43,7 @@ offset; total scroll offset legitimately changes when history is prepended.
 To run against an existing **disposable local test-drive instance**:
 
 ```sh
-PAPERCLIP_ISSUE_PERF_BASE_URL=http://127.0.0.1:3102 \
+WARDMOTE_ISSUE_PERF_BASE_URL=http://127.0.0.1:3102 \
   pnpm exec playwright test --config tests/perf/issue-detail/playwright.config.ts layout-stability.spec.ts
 ```
 
@@ -60,7 +60,7 @@ a small `sum.mjs` fixture. The script sends a paced job, scrolls up, disconnects
 and reconnects, steers a follow-up, and records through completion:
 
 ```sh
-PAPERCLIP_LAYOUT_LIVE_URL=http://127.0.0.1:3102/LAY/issues/LAY-8 \
+WARDMOTE_LAYOUT_LIVE_URL=http://127.0.0.1:3102/LAY/issues/LAY-8 \
   node tests/perf/issue-detail/live-feed.walkthrough.mjs
 ```
 

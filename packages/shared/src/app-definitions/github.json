@@ -17,35 +17,6 @@
   ],
   "methods": [
     {
-      "key": "managed",
-      "transport": "mcp_remote",
-      "auth": "oauth",
-      "ownershipModes": [
-        "platform_shared"
-      ],
-      "whenToUse": "Connect your GitHub account for durable MCP, shell Git, gh, and repository access.",
-      "defaults": {
-        "serverUrl": "https://api.githubcopilot.com/mcp/"
-      },
-      "guidanceMd": "Authorize Paperclip Cloud, then choose selected repositories in GitHub. You can edit repository access later from GitHub's installation settings.",
-      "riskTier": "S3",
-      "label": "Connect GitHub",
-      "purpose": "tool",
-      "oauthStrategy": "paperclip_cloud_connector",
-      "connectorProfile": "github.code",
-      "grantKinds": [
-        "user",
-        "agent"
-      ],
-      "warnings": [
-        "Shell Git and gh receive this identity for the run and are not constrained by per-tool Ask-first controls."
-      ],
-      "requiredResourceFilters": [
-        "organization",
-        "repository"
-      ]
-    },
-    {
       "key": "mcp-key",
       "transport": "mcp_remote",
       "auth": "api_key",

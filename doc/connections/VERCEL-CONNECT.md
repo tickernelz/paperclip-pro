@@ -26,17 +26,17 @@ Paperclip pins `@vercel/connect` to `0.6.1`.
 
 | Setting | Meaning |
 | --- | --- |
-| `PAPERCLIP_VERCEL_CONNECT_ENABLED=true` | Enables the backend capability for controlled testing and existing connections. It does not currently expose a customer-facing setup entry. |
+| `WARDMOTE_VERCEL_CONNECT_ENABLED=true` | Enables the backend capability for controlled testing and existing connections. It does not currently expose a customer-facing setup entry. |
 | `VERCEL_OIDC_TOKEN` | Workload identity injected by Vercel and preferred when present. |
-| `PAPERCLIP_VERCEL_CONNECT_ACCESS_TOKEN` | BYO instance bootstrap authority for deployments without Vercel workload OIDC. |
-| `PAPERCLIP_INSTANCE_ID` | Included in derived pseudonymous user subjects when configured. |
+| `WARDMOTE_VERCEL_CONNECT_ACCESS_TOKEN` | BYO instance bootstrap authority for deployments without Vercel workload OIDC. |
+| `WARDMOTE_INSTANCE_ID` | Included in derived pseudonymous user subjects when configured. |
 
 The feature flag gates creation only. Existing Vercel-backed connections keep
 resolving when the flag is later disabled, provided workload OIDC or the BYO
 access token is still valid. Missing or invalid authority fails closed and a
 health check marks the connection degraded. Page views never probe Vercel.
 
-Treat `PAPERCLIP_VERCEL_CONNECT_ACCESS_TOKEN` like any other deployment
+Treat `WARDMOTE_VERCEL_CONNECT_ACCESS_TOKEN` like any other deployment
 bootstrap secret: inject it through the host/container secret facility, rotate
 it outside Paperclip, and never put it in `company_secrets`, app config, task
 text, logs, or screenshots. A conventional Vercel personal access token is not

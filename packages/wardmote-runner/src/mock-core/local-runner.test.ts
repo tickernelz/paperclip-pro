@@ -175,7 +175,7 @@ describe("Local runner and fake harness", () => {
 
   it("does not forward arbitrary parent credentials to runner processes", () => {
     const environment = localRunnerInternals.runnerEnvironment();
-    expect(environment.PAPERCLIP_API_KEY).toBeUndefined();
+    expect(environment.WARDMOTE_API_KEY).toBeUndefined();
     expect(environment.OPENAI_API_KEY).toBeUndefined();
     expect(environment.EMAIL_AGENTMAIL_GENERAL_API_KEY).toBeUndefined();
   });

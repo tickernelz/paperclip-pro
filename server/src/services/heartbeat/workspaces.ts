@@ -517,7 +517,7 @@ async function materializeManagedProjectWorkspace(
         [...(auth?.configArgs ?? []), "clone", "--no-hardlinks", "--", input.localSource ?? input.repoUrl, cloneTmpDir],
         {
           env: {
-            // Spread order matters: the sanitizer strips PAPERCLIP_*, which would remove the
+            // Spread order matters: the sanitizer strips WARDMOTE_*, which would remove the
             // credential-helper token env if it came first. GIT_TERMINAL_PROMPT=0 fails a
             // credential-less private clone immediately instead of hanging on a prompt until
             // the clone timeout.
@@ -1213,7 +1213,7 @@ export function buildAnchorFallbackWorkspaceNotes(input: {
 
 /**
  * Build the plural workspace list that a run exposes to the agent through the
- * `PAPERCLIP_WORKSPACES_JSON` environment variable. The list joins the anchor
+ * `WARDMOTE_WORKSPACES_JSON` environment variable. The list joins the anchor
  * project's alternative workspace rows with the read-only referenced (mentioned)
  * project workspaces, so every execution target receives the referenced project
  * paths through the same channel the run already uses for the anchor project.
@@ -1269,7 +1269,7 @@ export function prioritizeProjectWorkspaceCandidatesForRun<
  * the anchor project's workspace exactly as before — the referenced set is inert.
  */
 export const MULTI_PROJECT_WORKSPACE_SYNC_ENV =
-  "PAPERCLIP_MULTI_PROJECT_WORKSPACE_SYNC";
+  "WARDMOTE_MULTI_PROJECT_WORKSPACE_SYNC";
 
 /**
  * True when an environment value explicitly turns a flag off. An unset value is
@@ -1322,7 +1322,7 @@ export function isRemoteExecutionEnvironmentDriver(
  * runs no referenced-project authorization or staging and reverts to the remote drop path.
  */
 export const MULTI_PROJECT_WORKSPACE_SYNC_REMOTE_ENV =
-  "PAPERCLIP_MULTI_PROJECT_WORKSPACE_SYNC_REMOTE";
+  "WARDMOTE_MULTI_PROJECT_WORKSPACE_SYNC_REMOTE";
 
 export function isMultiProjectWorkspaceSyncRemoteEnabled(
   env: Record<string, string | undefined> = process.env,
@@ -2005,7 +2005,7 @@ function stableRuntimeSkillEntries(runtimeSkills: unknown) {
   });
 }
 
-const PAPERCLIP_SESSION_METADATA_KEYS = new Set([
+const WARDMOTE_SESSION_METADATA_KEYS = new Set([
   SESSION_AI_CREDENTIAL_IDENTITY_KEY,
   SESSION_CONFIGURED_MODEL_KEY,
   SESSION_CONFIG_FINGERPRINT_KEY,
@@ -3173,7 +3173,7 @@ export function stripPaperclipSessionMetadataFromSessionParams(
 ) {
   if (!sessionParams) return null;
   const next = { ...sessionParams };
-  for (const key of PAPERCLIP_SESSION_METADATA_KEYS) {
+  for (const key of WARDMOTE_SESSION_METADATA_KEYS) {
     delete next[key];
   }
   return next;

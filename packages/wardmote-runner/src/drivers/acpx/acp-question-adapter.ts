@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 
 import {
-  PAPERCLIP_QUESTION_SET_SCHEMA,
+  WARDMOTE_QUESTION_SET_SCHEMA,
   parsePaperclipQuestionResponse,
   parsePaperclipQuestionSet,
   type PaperclipQuestion,
@@ -86,7 +86,7 @@ export function normalizeAcpFormElicitation(
         Boolean(value) && all.indexOf(value) === position,
     );
   const questionSet = parsePaperclipQuestionSet({
-    schema: PAPERCLIP_QUESTION_SET_SCHEMA,
+    schema: WARDMOTE_QUESTION_SET_SCHEMA,
     title,
     ...(descriptions.length > 0
       ? { description: descriptions.join("\n\n") }

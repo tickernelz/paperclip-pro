@@ -119,11 +119,11 @@ export async function createNativeGitHubAccess(input: {
       ...location, cwd: input.cwd,
       env: {
         ...githubBrokerEnvironment({ PATH: input.env.PATH }, {
-          url: ready ? bridge?.env.PAPERCLIP_API_URL ?? url : "",
-          token: ready ? bridge?.env.PAPERCLIP_API_KEY ?? token : "",
+          url: ready ? bridge?.env.WARDMOTE_API_URL ?? url : "",
+          token: ready ? bridge?.env.WARDMOTE_API_KEY ?? token : "",
         }),
         // Never retain an old run's bridge authentication override.
-        PAPERCLIP_GITHUB_BRIDGE_TOKEN: ready ? bridge?.env.PAPERCLIP_API_KEY ?? token : "",
+        WARDMOTE_GITHUB_BRIDGE_TOKEN: ready ? bridge?.env.WARDMOTE_API_KEY ?? token : "",
       },
     });
     return {

@@ -2,8 +2,8 @@ import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import {
   NATIVE_RUNTIME_ASSET_SCHEMA,
-  PAPERCLIP_EXECUTION_PROMPT,
-  PAPERCLIP_EXECUTION_PROMPT_REVISION,
+  WARDMOTE_EXECUTION_PROMPT,
+  WARDMOTE_EXECUTION_PROMPT_REVISION,
   canonicalNativeRuntimeContextDigest,
   composeNativeSystemInstructions,
   parseNativeRuntimeContext,
@@ -40,7 +40,7 @@ describe("persisted native execution prompts", () => {
   it.each([
     ["snapshot-before-upgrade", "Saved instructions from before the upgrade."],
     ["future-prompt-fixture", "  Saved instructions absent from this release.\n"],
-    [PAPERCLIP_EXECUTION_PROMPT_REVISION, "Saved text under a revision reused by a later release."],
+    [WARDMOTE_EXECUTION_PROMPT_REVISION, "Saved text under a revision reused by a later release."],
     ["__proto__", "The revision is opaque metadata."],
   ])(
     "recovers %s without a prompt catalog or rewriting its saved instructions",
@@ -57,7 +57,7 @@ describe("persisted native execution prompts", () => {
   );
 
   it("keeps the current prompt valid for new executions", () => {
-    const current = savedContext(PAPERCLIP_EXECUTION_PROMPT_REVISION, PAPERCLIP_EXECUTION_PROMPT);
+    const current = savedContext(WARDMOTE_EXECUTION_PROMPT_REVISION, WARDMOTE_EXECUTION_PROMPT);
     expect(parseNativeRuntimeContext(current)).toEqual(current);
   });
 

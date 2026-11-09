@@ -24,9 +24,9 @@ describe("attachment size limit from instance settings", () => {
 
   beforeAll(async () => {
     home = await mkdtemp(path.join(os.tmpdir(), "paperclip-attachment-limit-"));
-    vi.stubEnv("PAPERCLIP_HOME", home);
-    vi.stubEnv("PAPERCLIP_INSTANCE_ID", "default");
-    vi.stubEnv("PAPERCLIP_ATTACHMENT_MAX_BYTES", String(3 * MB));
+    vi.stubEnv("WARDMOTE_HOME", home);
+    vi.stubEnv("WARDMOTE_INSTANCE_ID", "default");
+    vi.stubEnv("WARDMOTE_ATTACHMENT_MAX_BYTES", String(3 * MB));
     tempDb = await startEmbeddedPostgresTestDatabase("paperclip-attachment-limit-");
     db = createDb(tempDb.connectionString);
     const [company] = await db.insert(companies).values({ name: "Limits", issuePrefix: "LIM" }).returning();

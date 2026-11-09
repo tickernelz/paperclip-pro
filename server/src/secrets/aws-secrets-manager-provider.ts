@@ -19,7 +19,7 @@ const AWS_SECRETS_MANAGER_SCHEME = "aws_secrets_manager_v1";
 const DEFAULT_PREFIX = "paperclip";
 const DEFAULT_OWNER_TAG = "paperclip";
 const DEFAULT_VERSION_STAGE = "AWSCURRENT";
-const PAPERCLIP_PENDING_VERSION_STAGE = "PAPERCLIP_PENDING";
+const WARDMOTE_PENDING_VERSION_STAGE = "WARDMOTE_PENDING";
 const DEFAULT_DELETE_RECOVERY_WINDOW_DAYS = 30;
 const AWS_SECRETS_MANAGER_REQUEST_TIMEOUT_MS = 30_000;
 const AWS_CREDENTIAL_CACHE_TTL_MS = 5 * 60_000;
@@ -293,18 +293,18 @@ function readProviderVaultConfig(input: SecretProviderVaultRuntimeConfig): AwsSe
   if (!region) {
     throw unprocessable("AWS Secrets Manager provider vault requires non-secret config: region");
   }
-  const recoveryWindowRaw = process.env.PAPERCLIP_SECRETS_AWS_DELETE_RECOVERY_DAYS?.trim();
+  const recoveryWindowRaw = process.env.WARDMOTE_SECRETS_AWS_DELETE_RECOVERY_DAYS?.trim();
   const recoveryWindow = recoveryWindowRaw ? Number(recoveryWindowRaw) : DEFAULT_DELETE_RECOVERY_WINDOW_DAYS;
   if (!Number.isFinite(recoveryWindow) || recoveryWindow < 7 || recoveryWindow > 30) {
     throw unprocessable(
-      "PAPERCLIP_SECRETS_AWS_DELETE_RECOVERY_DAYS must be an integer between 7 and 30",
+      "WARDMOTE_SECRETS_AWS_DELETE_RECOVERY_DAYS must be an integer between 7 and 30",
     );
   }
 
   return {
     region,
     endpoint:
-      process.env.PAPERCLIP_SECRETS_AWS_ENDPOINT?.trim() ||
+      process.env.WARDMOTE_SECRETS_AWS_ENDPOINT?.trim() ||
       `https://secretsmanager.${region}.amazonaws.com`,
     deploymentId: sanitizePathSegment(
       asOptionalNonEmptyString(input.config.namespace) ?? input.id,
@@ -325,22 +325,22 @@ function readProviderVaultConfig(input: SecretProviderVaultRuntimeConfig): AwsSe
 
 function getAwsConfigReadiness() {
   const region = (
-    process.env.PAPERCLIP_SECRETS_AWS_REGION ??
+    process.env.WARDMOTE_SECRETS_AWS_REGION ??
     process.env.AWS_REGION ??
     process.env.AWS_DEFAULT_REGION
   )?.trim();
-  const deploymentId = process.env.PAPERCLIP_SECRETS_AWS_DEPLOYMENT_ID?.trim();
-  const kmsKeyId = process.env.PAPERCLIP_SECRETS_AWS_KMS_KEY_ID?.trim();
+  const deploymentId = process.env.WARDMOTE_SECRETS_AWS_DEPLOYMENT_ID?.trim();
+  const kmsKeyId = process.env.WARDMOTE_SECRETS_AWS_KMS_KEY_ID?.trim();
   const missingConfig: string[] = [];
 
   if (!region) {
-    missingConfig.push("PAPERCLIP_SECRETS_AWS_REGION or AWS_REGION/AWS_DEFAULT_REGION");
+    missingConfig.push("WARDMOTE_SECRETS_AWS_REGION or AWS_REGION/AWS_DEFAULT_REGION");
   }
   if (!deploymentId) {
-    missingConfig.push("PAPERCLIP_SECRETS_AWS_DEPLOYMENT_ID");
+    missingConfig.push("WARDMOTE_SECRETS_AWS_DEPLOYMENT_ID");
   }
   if (!kmsKeyId) {
-    missingConfig.push("PAPERCLIP_SECRETS_AWS_KMS_KEY_ID");
+    missingConfig.push("WARDMOTE_SECRETS_AWS_KMS_KEY_ID");
   }
 
   return {
@@ -376,11 +376,11 @@ function describeDetectedAwsCredentialSources() {
 function loadAwsSecretsManagerConfig(): AwsSecretsManagerConfig {
   const readiness = getAwsConfigReadiness();
   const region =
-    process.env.PAPERCLIP_SECRETS_AWS_REGION?.trim() ||
+    process.env.WARDMOTE_SECRETS_AWS_REGION?.trim() ||
     process.env.AWS_REGION?.trim() ||
     process.env.AWS_DEFAULT_REGION?.trim();
-  const deploymentId = process.env.PAPERCLIP_SECRETS_AWS_DEPLOYMENT_ID?.trim();
-  const kmsKeyId = process.env.PAPERCLIP_SECRETS_AWS_KMS_KEY_ID?.trim();
+  const deploymentId = process.env.WARDMOTE_SECRETS_AWS_DEPLOYMENT_ID?.trim();
+  const kmsKeyId = process.env.WARDMOTE_SECRETS_AWS_KMS_KEY_ID?.trim();
 
   if (readiness.missingConfig.length > 0) {
     throw unprocessable(
@@ -389,42 +389,42 @@ function loadAwsSecretsManagerConfig(): AwsSecretsManagerConfig {
   }
   if (!region) {
     throw unprocessable(
-      "AWS Secrets Manager provider requires PAPERCLIP_SECRETS_AWS_REGION or AWS_REGION",
+      "AWS Secrets Manager provider requires WARDMOTE_SECRETS_AWS_REGION or AWS_REGION",
     );
   }
   if (!deploymentId) {
     throw unprocessable(
-      "AWS Secrets Manager provider requires PAPERCLIP_SECRETS_AWS_DEPLOYMENT_ID",
+      "AWS Secrets Manager provider requires WARDMOTE_SECRETS_AWS_DEPLOYMENT_ID",
     );
   }
   if (!kmsKeyId) {
     throw unprocessable(
-      "AWS Secrets Manager provider requires PAPERCLIP_SECRETS_AWS_KMS_KEY_ID",
+      "AWS Secrets Manager provider requires WARDMOTE_SECRETS_AWS_KMS_KEY_ID",
     );
   }
 
-  const recoveryWindowRaw = process.env.PAPERCLIP_SECRETS_AWS_DELETE_RECOVERY_DAYS?.trim();
+  const recoveryWindowRaw = process.env.WARDMOTE_SECRETS_AWS_DELETE_RECOVERY_DAYS?.trim();
   const recoveryWindow = recoveryWindowRaw ? Number(recoveryWindowRaw) : DEFAULT_DELETE_RECOVERY_WINDOW_DAYS;
   if (!Number.isFinite(recoveryWindow) || recoveryWindow < 7 || recoveryWindow > 30) {
     throw unprocessable(
-      "PAPERCLIP_SECRETS_AWS_DELETE_RECOVERY_DAYS must be an integer between 7 and 30",
+      "WARDMOTE_SECRETS_AWS_DELETE_RECOVERY_DAYS must be an integer between 7 and 30",
     );
   }
 
   return {
     region,
     endpoint:
-      process.env.PAPERCLIP_SECRETS_AWS_ENDPOINT?.trim() ||
+      process.env.WARDMOTE_SECRETS_AWS_ENDPOINT?.trim() ||
       `https://secretsmanager.${region}.amazonaws.com`,
     deploymentId,
-    prefix: sanitizePathSegment(process.env.PAPERCLIP_SECRETS_AWS_PREFIX?.trim() || DEFAULT_PREFIX),
+    prefix: sanitizePathSegment(process.env.WARDMOTE_SECRETS_AWS_PREFIX?.trim() || DEFAULT_PREFIX),
     kmsKeyId,
     environmentTag:
-      process.env.PAPERCLIP_SECRETS_AWS_ENVIRONMENT?.trim() ||
+      process.env.WARDMOTE_SECRETS_AWS_ENVIRONMENT?.trim() ||
       process.env.NODE_ENV?.trim() ||
       "unknown",
     providerOwnerTag:
-      process.env.PAPERCLIP_SECRETS_AWS_PROVIDER_OWNER?.trim() || DEFAULT_OWNER_TAG,
+      process.env.WARDMOTE_SECRETS_AWS_PROVIDER_OWNER?.trim() || DEFAULT_OWNER_TAG,
     deleteRecoveryWindowDays: recoveryWindow,
   };
 }
@@ -1024,7 +1024,7 @@ export function createAwsSecretsManagerProvider(
     }
     const config = resolveConfig(input?.providerConfig);
     if (!config.prefix) {
-      warnings.push("PAPERCLIP_SECRETS_AWS_PREFIX should be set to a deployment-scoped prefix");
+      warnings.push("WARDMOTE_SECRETS_AWS_PREFIX should be set to a deployment-scoped prefix");
     }
     return { ok: true, warnings };
   }
@@ -1096,16 +1096,16 @@ export function createAwsSecretsManagerProvider(
           requiredProviderConfig: input?.providerConfig
             ? ["region"]
             : [
-                "PAPERCLIP_SECRETS_AWS_REGION or AWS_REGION/AWS_DEFAULT_REGION",
-                "PAPERCLIP_SECRETS_AWS_DEPLOYMENT_ID",
-                "PAPERCLIP_SECRETS_AWS_KMS_KEY_ID",
+                "WARDMOTE_SECRETS_AWS_REGION or AWS_REGION/AWS_DEFAULT_REGION",
+                "WARDMOTE_SECRETS_AWS_DEPLOYMENT_ID",
+                "WARDMOTE_SECRETS_AWS_KMS_KEY_ID",
               ],
           optionalProviderConfig: [
-            "PAPERCLIP_SECRETS_AWS_PREFIX",
-            "PAPERCLIP_SECRETS_AWS_ENVIRONMENT",
-            "PAPERCLIP_SECRETS_AWS_PROVIDER_OWNER",
-            "PAPERCLIP_SECRETS_AWS_ENDPOINT",
-            "PAPERCLIP_SECRETS_AWS_DELETE_RECOVERY_DAYS",
+            "WARDMOTE_SECRETS_AWS_PREFIX",
+            "WARDMOTE_SECRETS_AWS_ENVIRONMENT",
+            "WARDMOTE_SECRETS_AWS_PROVIDER_OWNER",
+            "WARDMOTE_SECRETS_AWS_ENDPOINT",
+            "WARDMOTE_SECRETS_AWS_DELETE_RECOVERY_DAYS",
           ],
           credentialSource: "AWS SDK default credential provider chain",
           detectedCredentialSources: readiness.credentialSources,
@@ -1163,7 +1163,7 @@ export function createAwsSecretsManagerProvider(
         const created = await gateway.putSecretValue({
           SecretId: secretId,
           SecretString: input.value,
-          VersionStages: [PAPERCLIP_PENDING_VERSION_STAGE],
+          VersionStages: [WARDMOTE_PENDING_VERSION_STAGE],
         });
         const normalizedSecretId = created.ARN ?? created.Name ?? secretId;
         return {
@@ -1352,7 +1352,7 @@ export function createAwsSecretsManagerProvider(
           if (material.versionId && gateway.updateSecretVersionStage) {
             await gateway.updateSecretVersionStage({
               SecretId: secretId,
-              VersionStage: PAPERCLIP_PENDING_VERSION_STAGE,
+              VersionStage: WARDMOTE_PENDING_VERSION_STAGE,
               RemoveFromVersionId: material.versionId,
             });
           }

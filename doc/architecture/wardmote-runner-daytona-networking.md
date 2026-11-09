@@ -58,7 +58,7 @@ including the vendored binary in packaged deployments. It must not depend on a
 source checkout or a local Rust build directory being present on the server.
 
 For a controller deployed before this capability check, operators can set
-`PAPERCLIP_RUNNER_REMOTE_BINARY_PATH` in the **server process environment** to a
+`WARDMOTE_RUNNER_REMOTE_BINARY_PATH` in the **server process environment** to a
 current runner binary built for the sandbox's OS and architecture. This bypasses
 image discovery and stages that binary for each run. The agent's environment
 variables do not configure this controller setting. Remove the override after

@@ -57,8 +57,8 @@ test("volatile ids, paths and python tracebacks normalize to one bucket", () => 
   const a = "Path not found: /tmp/paperclip-run-zha-141-84495b02/src/firefox/dom/webidl";
   const b = "Path not found: /tmp/paperclip-run-zha-150-aaaa/src/other.json";
   assert.equal(normalizeErrorMessage(a), normalizeErrorMessage(b));
-  const traceback = 'Traceback (most recent call last):\n  File "<cell>", line 2, in <module>\nKeyError: \'PAPERCLIP_RUN_SCRATCH_DIR\'\n\nCommand exited with code 1';
-  assert.equal(normalizeErrorMessage(traceback), "[exit 1] KeyError: 'PAPERCLIP_RUN_SCRATCH_DIR'");
+  const traceback = 'Traceback (most recent call last):\n  File "<cell>", line 2, in <module>\nKeyError: \'WARDMOTE_RUN_SCRATCH_DIR\'\n\nCommand exited with code 1';
+  assert.equal(normalizeErrorMessage(traceback), "[exit 1] KeyError: 'WARDMOTE_RUN_SCRATCH_DIR'");
 });
 
 test("run analyzer counts async bash hygiene, repeats, timeouts, kills and service rejects", async () => {

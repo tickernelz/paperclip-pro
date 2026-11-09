@@ -14,7 +14,7 @@ import { getExecutionBlocker } from "../services/execution-blocker.js";
 import { remoteTerminationReceipt } from "../services/remote-execution-termination.js";
 import { LEGACY_WORKSPACE_RECOVERY_SCHEMA } from "../services/workspace-restore-recovery-state.js";
 
-const external = process.env.PAPERCLIP_TEST_DATABASE_URL?.trim();
+const external = process.env.WARDMOTE_TEST_DATABASE_URL?.trim();
 const support = external ? { supported: true } : await getEmbeddedPostgresTestSupport();
 
 (support.supported ? describe : describe.skip)("retained workspace repair route", () => {

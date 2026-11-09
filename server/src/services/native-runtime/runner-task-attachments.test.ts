@@ -135,8 +135,8 @@ describe("Dot assigned-task attachment reading", () => {
       { companyId: f.companyId, runId: f.runId, assetId: f.asset.id, reservedBytes: f.body.length },
       { companyId: other.companyId, runId: other.runId, assetId: other.asset.id, reservedBytes: other.body.length },
     ]);
-    vi.stubEnv("PAPERCLIP_AGENT_JWT_SECRET", "synthetic-test-key-not-a-live-credential");
-    vi.stubEnv("PAPERCLIP_API_URL", "http://127.0.0.1:3217");
+    vi.stubEnv("WARDMOTE_AGENT_JWT_SECRET", "synthetic-test-key-not-a-live-credential");
+    vi.stubEnv("WARDMOTE_API_URL", "http://127.0.0.1:3217");
     const fetch = vi.fn().mockResolvedValue(new Response(f.body, { status: 206, headers: { "Content-Type": "text/plain", "Content-Range": `bytes 0-${f.body.length - 1}/${f.body.length}` } }));
     vi.stubGlobal("fetch", fetch);
     const operation = runnerApiCatalog().find(o => o.method === "GET" && o.path === "/api/assets/{assetId}/content")!;

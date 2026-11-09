@@ -18,7 +18,7 @@ async function fixture() {
   await writeFile(join(cli, "package.json"), JSON.stringify({ name: "@tickernelz/wardmote", version: "1.2.3", type: "module", bin: { paperclipai: "./dist/index.js" } }));
   await writeFile(join(server, "package.json"), JSON.stringify({ name: "@tickernelz/wardmote-server", version: "1.2.3", type: "module", exports: { ".": { import: "./dist/index.js" } } }));
   await writeFile(join(cli, "dist/index.js"), "// installed public CLI"); await writeFile(join(server, "dist/index.js"), "// installed public server");
-  const env = { PAPERCLIP_RUNNER_E2E_INSTALLED_CLI: join(cli, "dist/index.js"), PAPERCLIP_RUNNER_E2E_INSTALLED_CLI_SHA256: hash("// installed public CLI"), PAPERCLIP_RUNNER_E2E_INSTALLED_SERVER_ROOT: server, PAPERCLIP_RUNNER_E2E_INSTALLED_SERVER_SHA256: hash("// installed public server") };
+  const env = { WARDMOTE_RUNNER_E2E_INSTALLED_CLI: join(cli, "dist/index.js"), WARDMOTE_RUNNER_E2E_INSTALLED_CLI_SHA256: hash("// installed public CLI"), WARDMOTE_RUNNER_E2E_INSTALLED_SERVER_ROOT: server, WARDMOTE_RUNNER_E2E_INSTALLED_SERVER_SHA256: hash("// installed public server") };
   return { root, cli, server, env };
 }
 it("admits all26 current Pi cases through pinned installed public CLI/server with no overrides", async () => {
@@ -26,25 +26,25 @@ it("admits all26 current Pi cases through pinned installed public CLI/server wit
   for (const cell of cells) expect(await verifyInstalledCli(env, [cell])).toMatchObject({ serverRoot: server, defaultRuntimeResolution: true, qualificationOverride: false });
 });
 it("qualified providers drop ambient admission while pending Copilot retains its exact gate", () => {
-  for (const cell of cells) expect(buildRunnerE2EProcessEnvironment({ PAPERCLIP_RUNNER_ACPX_QUALIFICATION: "ambient" }, [cell]).PAPERCLIP_RUNNER_ACPX_QUALIFICATION).toBeUndefined();
+  for (const cell of cells) expect(buildRunnerE2EProcessEnvironment({ WARDMOTE_RUNNER_ACPX_QUALIFICATION: "ambient" }, [cell]).WARDMOTE_RUNNER_ACPX_QUALIFICATION).toBeUndefined();
   for (const agent of ["copilot"]) {
     const cell = runnerMatrix.find(e => e.profile.qualificationCandidate === agent)!;
-    expect(JSON.parse(buildRunnerE2EProcessEnvironment({}, [cell]).PAPERCLIP_RUNNER_ACPX_QUALIFICATION!)).toEqual([{ agent, model: cell.profile.model }]);
+    expect(JSON.parse(buildRunnerE2EProcessEnvironment({}, [cell]).WARDMOTE_RUNNER_ACPX_QUALIFICATION!)).toEqual([{ agent, model: cell.profile.model }]);
   }
   const changed = { ...cells[0]!, profile: { ...cells[0]!.profile, model: "custom/explicit-model" } };
-  expect(buildRunnerE2EProcessEnvironment({}, [changed]).PAPERCLIP_RUNNER_ACPX_QUALIFICATION).toBeUndefined();
+  expect(buildRunnerE2EProcessEnvironment({}, [changed]).WARDMOTE_RUNNER_ACPX_QUALIFICATION).toBeUndefined();
 });
 it("rejects partial authority, unsupported cells and every runtime/path override", async () => {
   const { env } = await fixture();
   for (const key of installedCliKeys) { const changed = { ...env, [key]: undefined }; await expect(verifyInstalledCli(changed, [cells[0]!])).rejects.toThrow("complete pins"); }
   expect(() => assertInstalledCliSelection(env, [])).toThrow("explicit supported Pi");
   expect(() => assertInstalledCliSelection(env, [runnerMatrix.find(e => e.profile.qualificationCandidate === "cursor")!])).toThrow("explicit supported Pi");
-  for (const key of ["PAPERCLIP_RUNNER_BINARY", "PAPERCLIP_RUNNER_REMOTE_BINARY_PATH", "PAPERCLIP_RUNNER_REMOTE_PROVIDER_PACK_PATH", "PAPERCLIP_RUNNER_ACPX_QUALIFICATION", "PAPERCLIP_ACPX_BUILTIN_ROOT", "PAPERCLIP_ACPX_PROVIDER_PACKAGE_ROOT", "PAPERCLIP_ACPX_PROVIDER_PACKAGE_MANIFEST", "NODE_OPTIONS", "NODE_PATH"]) await expect(verifyInstalledCli({ ...env, [key]: "foreign" }, [cells[0]!])).rejects.toThrow("forbids");
+  for (const key of ["WARDMOTE_RUNNER_BINARY", "WARDMOTE_RUNNER_REMOTE_BINARY_PATH", "WARDMOTE_RUNNER_REMOTE_PROVIDER_PACK_PATH", "WARDMOTE_RUNNER_ACPX_QUALIFICATION", "WARDMOTE_ACPX_BUILTIN_ROOT", "WARDMOTE_ACPX_PROVIDER_PACKAGE_ROOT", "WARDMOTE_ACPX_PROVIDER_PACKAGE_MANIFEST", "NODE_OPTIONS", "NODE_PATH"]) await expect(verifyInstalledCli({ ...env, [key]: "foreign" }, [cells[0]!])).rejects.toThrow("forbids");
 });
 it("rejects stale bytes and another server root instead of falling back to source", async () => {
   const f = await fixture(); const other = await fixture();
-  await expect(verifyInstalledCli({ ...f.env, PAPERCLIP_RUNNER_E2E_INSTALLED_SERVER_ROOT: other.server }, [cells[0]!])).rejects.toThrow("foreign server");
-  await expect(verifyInstalledCli({ ...f.env, PAPERCLIP_RUNNER_E2E_INSTALLED_CLI_SHA256: "0".repeat(64) }, [cells[0]!])).rejects.toThrow("reviewed pins");
+  await expect(verifyInstalledCli({ ...f.env, WARDMOTE_RUNNER_E2E_INSTALLED_SERVER_ROOT: other.server }, [cells[0]!])).rejects.toThrow("foreign server");
+  await expect(verifyInstalledCli({ ...f.env, WARDMOTE_RUNNER_E2E_INSTALLED_CLI_SHA256: "0".repeat(64) }, [cells[0]!])).rejects.toThrow("reviewed pins");
   await writeFile(join(f.server, "dist/index.js"), "changed");
   await expect(verifyInstalledCli(f.env, [cells[0]!])).rejects.toThrow("reviewed pins");
 });
@@ -63,8 +63,8 @@ it("keeps installed proof inputs out of the production server environment", asyn
 });
 
 it.skipIf(process.platform === "win32")("rejects a FIFO entrypoint without waiting for a writer", async () => {
-  const f = await fixture(); await rm(f.env.PAPERCLIP_RUNNER_E2E_INSTALLED_CLI);
-  execFileSync("/usr/bin/mkfifo", [f.env.PAPERCLIP_RUNNER_E2E_INSTALLED_CLI], { timeout: 5000, env: {} });
+  const f = await fixture(); await rm(f.env.WARDMOTE_RUNNER_E2E_INSTALLED_CLI);
+  execFileSync("/usr/bin/mkfifo", [f.env.WARDMOTE_RUNNER_E2E_INSTALLED_CLI], { timeout: 5000, env: {} });
   await expect(verifyInstalledCli(f.env, [cells[0]!])).rejects.toThrow("bounded regular file");
 });
 

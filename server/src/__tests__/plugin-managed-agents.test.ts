@@ -324,12 +324,12 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
   });
 
   it("materializes declared managed agent instructions with local folder paths", async () => {
-    const previousHome = process.env.PAPERCLIP_HOME;
-    const previousInstance = process.env.PAPERCLIP_INSTANCE_ID;
+    const previousHome = process.env.WARDMOTE_HOME;
+    const previousInstance = process.env.WARDMOTE_INSTANCE_ID;
     const tempHome = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-managed-agent-home-")));
     const wikiRoot = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-managed-agent-wiki-")));
-    process.env.PAPERCLIP_HOME = tempHome;
-    process.env.PAPERCLIP_INSTANCE_ID = "test";
+    process.env.WARDMOTE_HOME = tempHome;
+    process.env.WARDMOTE_INSTANCE_ID = "test";
     try {
       const pluginManifest = manifest();
       pluginManifest.localFolders = [
@@ -417,19 +417,19 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
 
 
     } finally {
-      if (previousHome === undefined) delete process.env.PAPERCLIP_HOME;
-      else process.env.PAPERCLIP_HOME = previousHome;
-      if (previousInstance === undefined) delete process.env.PAPERCLIP_INSTANCE_ID;
-      else process.env.PAPERCLIP_INSTANCE_ID = previousInstance;
+      if (previousHome === undefined) delete process.env.WARDMOTE_HOME;
+      else process.env.WARDMOTE_HOME = previousHome;
+      if (previousInstance === undefined) delete process.env.WARDMOTE_INSTANCE_ID;
+      else process.env.WARDMOTE_INSTANCE_ID = previousInstance;
       await fs.rm(tempHome, { recursive: true, force: true });
       await fs.rm(wikiRoot, { recursive: true, force: true });
     }
   });
 
   it("fences plugin instruction reset by exact ownership, current capability and canonical CAS", async () => {
-    const previousHome = process.env.PAPERCLIP_HOME;
+    const previousHome = process.env.WARDMOTE_HOME;
     const tempHome = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), "plugin-reset-cas-")));
-    process.env.PAPERCLIP_HOME = tempHome;
+    process.env.WARDMOTE_HOME = tempHome;
     try {
       const pluginManifest = manifest();
       pluginManifest.agents![0]!.instructions = { content: "# Default\n" };
@@ -475,7 +475,7 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
       const history = await db.select().from(agentInstructionRevisions).where(eq(agentInstructionRevisions.agentId, target.agentId));
       expect(history).toHaveLength(0);
     } finally {
-      if (previousHome === undefined) delete process.env.PAPERCLIP_HOME; else process.env.PAPERCLIP_HOME = previousHome;
+      if (previousHome === undefined) delete process.env.WARDMOTE_HOME; else process.env.WARDMOTE_HOME = previousHome;
       await fs.rm(tempHome, { recursive: true, force: true });
     }
   });
@@ -513,9 +513,9 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
   });
 
   it("preserves current-file authority when relinking after a hard uninstall and reinstall", async () => {
-    const previousHome = process.env.PAPERCLIP_HOME;
+    const previousHome = process.env.WARDMOTE_HOME;
     const tempHome = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), "plugin-reinstall-reset-")));
-    process.env.PAPERCLIP_HOME = tempHome;
+    process.env.WARDMOTE_HOME = tempHome;
     try {
       const pluginManifest = manifest();
       pluginManifest.agents![0]!.instructions = { content: "# Original stock\n" };
@@ -548,7 +548,7 @@ describeEmbeddedPostgres("plugin-managed agents", () => {
       const history = await db.select().from(agentInstructionRevisions).where(eq(agentInstructionRevisions.agentId, created.agentId!));
       expect(history).toHaveLength(0);
     } finally {
-      if (previousHome === undefined) delete process.env.PAPERCLIP_HOME; else process.env.PAPERCLIP_HOME = previousHome;
+      if (previousHome === undefined) delete process.env.WARDMOTE_HOME; else process.env.WARDMOTE_HOME = previousHome;
       await fs.rm(tempHome, { recursive: true, force: true });
     }
   });

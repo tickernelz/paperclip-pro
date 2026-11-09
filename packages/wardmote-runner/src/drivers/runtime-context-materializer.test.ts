@@ -16,8 +16,8 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import {
   NATIVE_RUNTIME_ASSET_SCHEMA,
-  PAPERCLIP_EXECUTION_PROMPT,
-  PAPERCLIP_EXECUTION_PROMPT_REVISION,
+  WARDMOTE_EXECUTION_PROMPT,
+  WARDMOTE_EXECUTION_PROMPT_REVISION,
   canonicalNativeRuntimeContextDigest,
   nativeRuntimePromptDigest,
   parseNativeRuntimeContext,
@@ -59,8 +59,8 @@ function context(
   const digest = "0".repeat(64);
   const value = {
     prompt: {
-      revision: PAPERCLIP_EXECUTION_PROMPT_REVISION,
-      text: PAPERCLIP_EXECUTION_PROMPT,
+      revision: WARDMOTE_EXECUTION_PROMPT_REVISION,
+      text: WARDMOTE_EXECUTION_PROMPT,
       digest: nativeRuntimePromptDigest(),
     },
     instructions: {
@@ -107,14 +107,14 @@ describe("runtime context materialization", () => {
   it("validates native MCP launch bindings before they reach Codex", () => {
     expect(nativeMcpLaunchBinding({})).toBeNull();
     expect(() => nativeMcpLaunchBinding({
-      PAPERCLIP_NATIVE_MCP_NAME: "paperclip",
-      PAPERCLIP_NATIVE_MCP_URL: "http://paperclip.example/mcp",
-      PAPERCLIP_NATIVE_MCP_TOKEN: "x".repeat(40),
+      WARDMOTE_NATIVE_MCP_NAME: "paperclip",
+      WARDMOTE_NATIVE_MCP_URL: "http://paperclip.example/mcp",
+      WARDMOTE_NATIVE_MCP_TOKEN: "x".repeat(40),
     })).toThrow("requires HTTPS or loopback HTTP");
     expect(() => nativeMcpLaunchBinding({
-      PAPERCLIP_NATIVE_MCP_NAME: "paperclip",
-      PAPERCLIP_NATIVE_MCP_URL: "https://user:pass@paperclip.example/mcp#secret",
-      PAPERCLIP_NATIVE_MCP_TOKEN: "x".repeat(40),
+      WARDMOTE_NATIVE_MCP_NAME: "paperclip",
+      WARDMOTE_NATIVE_MCP_URL: "https://user:pass@paperclip.example/mcp#secret",
+      WARDMOTE_NATIVE_MCP_TOKEN: "x".repeat(40),
     })).toThrow("contains forbidden URL data");
   });
 
@@ -143,9 +143,9 @@ describe("runtime context materialization", () => {
       codexHome,
       sourceCodexHome: join(root, "host-home"),
       nativeMcp: nativeMcpLaunchBinding({
-        PAPERCLIP_NATIVE_MCP_NAME: "paperclip-assigned",
-        PAPERCLIP_NATIVE_MCP_URL: "https://paperclip.example/mcp",
-        PAPERCLIP_NATIVE_MCP_TOKEN: "x".repeat(40),
+        WARDMOTE_NATIVE_MCP_NAME: "paperclip-assigned",
+        WARDMOTE_NATIVE_MCP_URL: "https://paperclip.example/mcp",
+        WARDMOTE_NATIVE_MCP_TOKEN: "x".repeat(40),
       }),
     });
 
@@ -179,7 +179,7 @@ name = "Selected connection"
 base_url = "https://openrouter.ai/api/v1"
 wire_api = "responses"
 requires_openai_auth = false
-env_key = "PAPERCLIP_AI_PROVIDER_KEY"
+env_key = "WARDMOTE_AI_PROVIDER_KEY"
 [features]
 shell_snapshot = true
 [mcp_servers.unassigned]
@@ -189,7 +189,7 @@ command = "untrusted-command"
     const config = await readFile(join(target, "config.toml"), "utf8");
     expect(config).toContain('model_provider = "paperclip"');
     expect(config).toContain('base_url = "https://openrouter.ai/api/v1"');
-    expect(config).toContain('env_key = "PAPERCLIP_AI_PROVIDER_KEY"');
+    expect(config).toContain('env_key = "WARDMOTE_AI_PROVIDER_KEY"');
     expect(config).toContain("shell_snapshot = false");
     expect(config).not.toMatch(/unrelated|untrusted|unassigned/);
     await expect(stat(join(target, "auth.json"))).rejects.toThrow();

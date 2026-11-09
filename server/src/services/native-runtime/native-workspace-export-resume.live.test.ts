@@ -17,9 +17,9 @@ import { retryNativeWorkspaceExport } from "./native-workspace-export-retry.js";
 import { recordNativeFinalizationFailure } from "./native-run-finalizer.js";
 import { classifyNativeWorkspaceFailure } from "./native-workspace-failure.js";
 
-const enabled = process.env.PAPERCLIP_LIVE_EXPORT_RESUME === "1";
+const enabled = process.env.WARDMOTE_LIVE_EXPORT_RESUME === "1";
 const describeLive = enabled ? describe : describe.skip;
-const image = process.env.PAPERCLIP_LIVE_EXPORT_RESUME_IMAGE ?? "";
+const image = process.env.WARDMOTE_LIVE_EXPORT_RESUME_IMAGE ?? "";
 const quote = (s: string) => `'${s.replaceAll("'", "'\\''")}'`;
 
 describeLive("live Daytona export-resume failure recovery", () => {
@@ -147,7 +147,7 @@ describeLive("live Daytona export-resume failure recovery", () => {
     } catch { throw new Error("Exact live fixture cleanup failed; provider details withheld"); }
     finally {
       if (temporary) await temporary.cleanup();
-      if (process.env.PAPERCLIP_EXPORT_RESUME_EVIDENCE_PATH) await writeFile(process.env.PAPERCLIP_EXPORT_RESUME_EVIDENCE_PATH, JSON.stringify(evidence, null, 2), { mode: 0o600 });
+      if (process.env.WARDMOTE_EXPORT_RESUME_EVIDENCE_PATH) await writeFile(process.env.WARDMOTE_EXPORT_RESUME_EVIDENCE_PATH, JSON.stringify(evidence, null, 2), { mode: 0o600 });
     }
   }, 90_000);
   it("stops after a failed probe, and recovers a failed stop through a fresh runtime", async () => {

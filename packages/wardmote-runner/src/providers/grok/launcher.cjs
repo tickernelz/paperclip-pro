@@ -3,12 +3,12 @@
 const { isAbsolute, join } = require("node:path");
 const { constants, openSync, fstatSync, readSync, closeSync } = require("node:fs");
 const { spawnSync } = require("node:child_process");
-const executable = process.env.PAPERCLIP_GROK_VERIFIED_EXECUTABLE;
+const executable = process.env.WARDMOTE_GROK_VERIFIED_EXECUTABLE;
 if (!executable || !isAbsolute(executable)) {
   throw new Error("Verified Grok executable is unavailable");
 }
 const environment = { ...process.env };
-delete environment.PAPERCLIP_GROK_VERIFIED_EXECUTABLE;
+delete environment.WARDMOTE_GROK_VERIFIED_EXECUTABLE;
 
 // Grok 1.0.13 can cache the pre-refresh model list during ACP initialization.
 // Refresh an expiring subscription first, without inference or protocol output.

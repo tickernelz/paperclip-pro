@@ -319,7 +319,7 @@ async function managedCodexProviderConfig(sourceHome?: string | null): Promise<s
   const provider = providers?.paperclip as Record<string, unknown> | undefined;
   if (!provider || typeof provider.base_url !== "string" || provider.wire_api !== "responses"
     || provider.requires_openai_auth !== false
-    || (provider.env_key !== undefined && provider.env_key !== "PAPERCLIP_AI_PROVIDER_KEY")) {
+    || (provider.env_key !== undefined && provider.env_key !== "WARDMOTE_AI_PROVIDER_KEY")) {
     throw new Error("Invalid managed Codex provider configuration");
   }
   const url = new URL(provider.base_url);
@@ -327,7 +327,7 @@ async function managedCodexProviderConfig(sourceHome?: string | null): Promise<s
     || (url.protocol !== "https:" && !(url.protocol === "http:" && ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname)))) {
     throw new Error("Invalid managed Codex provider URL");
   }
-  return `model_provider = "paperclip"\n[model_providers.paperclip]\nname = "Paperclip connection"\nbase_url = ${JSON.stringify(provider.base_url)}\nwire_api = "responses"\nrequires_openai_auth = false\n${provider.env_key ? 'env_key = "PAPERCLIP_AI_PROVIDER_KEY"\n' : ""}`;
+  return `model_provider = "paperclip"\n[model_providers.paperclip]\nname = "Paperclip connection"\nbase_url = ${JSON.stringify(provider.base_url)}\nwire_api = "responses"\nrequires_openai_auth = false\n${provider.env_key ? 'env_key = "WARDMOTE_AI_PROVIDER_KEY"\n' : ""}`;
 }
 
 export async function prepareIsolatedCodexHome(input: {

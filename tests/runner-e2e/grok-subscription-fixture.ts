@@ -21,13 +21,13 @@ export async function stageGrokSubscriptionFixture(input: {
 }): Promise<() => Promise<void>> {
   credential(input.raw);
   const env = input.environment;
-  const root = env.PAPERCLIP_RUNNER_E2E_TEMP_ROOT;
+  const root = env.WARDMOTE_RUNNER_E2E_TEMP_ROOT;
   if (!root || !/^[0-9a-f-]{36}$/i.test(input.companyId) ||
-      !/^runner-e2e-[a-z0-9-]+$/.test(env.PAPERCLIP_INSTANCE_ID ?? "")) {
+      !/^runner-e2e-[a-z0-9-]+$/.test(env.WARDMOTE_INSTANCE_ID ?? "")) {
     throw new Error("Grok fixture requires an isolated test company and instance");
   }
   const canonicalRoot = await realpath(root);
-  const home = env.PAPERCLIP_HOME;
+  const home = env.WARDMOTE_HOME;
   if (!home || await realpath(home) !== path.join(canonicalRoot, "paperclip-home")) {
     throw new Error("Grok fixture refuses a home outside its isolated test root");
   }
