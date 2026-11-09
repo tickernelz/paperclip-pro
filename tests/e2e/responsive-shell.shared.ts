@@ -1,5 +1,5 @@
 import path from "node:path";
-import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
+import { expect, test, type APIRequestContext, type Browser, type Page } from "@playwright/test";
 import { json } from "./agent-chat.shared";
 import { hasOverflow, probeResponsive, RESPONSIVE_SIZES, TOUCH_TARGET_BREAKPOINT, type ResponsiveFinding } from "./helpers/responsive-probe";
 
@@ -79,7 +79,7 @@ function screenUrl(route: string) {
   return `/${seed.prefix}/${route.replace(":issue", seed.issue).replace(":ompAgent", seed.ompAgent).replace(":agent", seed.agent)}`;
 }
 
-export function registerResponsiveShell(theme: "light" | "dark") {
+export function useResponsiveSeed() {
   test.beforeAll(async ({ request }) => {
     seed = await seedCompany(request);
   });
@@ -87,30 +87,38 @@ export function registerResponsiveShell(theme: "light" | "dark") {
   test.afterAll(async ({ request }) => {
     await seed?.restore(request);
   });
+}
 
-  for (const size of RESPONSIVE_SIZES) for (const pointer of pointersFor(size.width)) {
-    test(`core screens fit ${size.width}x${size.height} (${theme}, ${pointer} pointer)`, async ({ browser, baseURL }) => {
-      test.setTimeout(180_000);
-      const touch = pointer === "coarse";
-      const context = await browser.newContext({ baseURL, viewport: size, hasTouch: touch, isMobile: touch });
-      const page = await context.newPage();
-      await page.addInitScript((value) => window.localStorage.setItem("paperclip.theme", value), theme);
-      const failures: Array<{ screen: string } & ResponsiveFinding> = [];
-      for (const [screen, route] of SCREENS) {
-        await page.goto(screenUrl(route));
-        await settle(page);
-        expect(await page.evaluate(() => document.documentElement.classList.contains("dark"))).toBe(theme === "dark");
-        const finding = await probeResponsive(page);
-        if (hasOverflow(finding) || finding.smallTargets.length > 0) failures.push({ screen, ...finding });
-      }
-      await test.info().attach(`responsive-${size.width}-${theme}-${pointer}.json`, {
-        contentType: "application/json",
-        body: Buffer.from(JSON.stringify(failures, null, 2)),
-      });
-      await context.close();
-      expect(failures, JSON.stringify(failures, null, 2)).toEqual([]);
-    });
+export function coreScreenCases() {
+  return RESPONSIVE_SIZES.flatMap((size) => pointersFor(size.width).map((pointer) => ({ size, pointer })));
+}
+
+export async function checkCoreScreens(
+  browser: Browser,
+  baseURL: string | undefined,
+  size: (typeof RESPONSIVE_SIZES)[number],
+  theme: "light" | "dark",
+  pointer: "coarse" | "fine",
+) {
+  test.setTimeout(180_000);
+  const touch = pointer === "coarse";
+  const context = await browser.newContext({ baseURL, viewport: size, hasTouch: touch, isMobile: touch });
+  const page = await context.newPage();
+  await page.addInitScript((value) => window.localStorage.setItem("paperclip.theme", value), theme);
+  const failures: Array<{ screen: string } & ResponsiveFinding> = [];
+  for (const [screen, route] of SCREENS) {
+    await page.goto(screenUrl(route));
+    await settle(page);
+    expect(await page.evaluate(() => document.documentElement.classList.contains("dark"))).toBe(theme === "dark");
+    const finding = await probeResponsive(page);
+    if (hasOverflow(finding) || finding.smallTargets.length > 0) failures.push({ screen, ...finding });
   }
+  await test.info().attach(`responsive-${size.width}-${theme}-${pointer}.json`, {
+    contentType: "application/json",
+    body: Buffer.from(JSON.stringify(failures, null, 2)),
+  });
+  await context.close();
+  expect(failures, JSON.stringify(failures, null, 2)).toEqual([]);
 }
 
 export async function probeFlagsOverflowAndSmallTarget(page: Page) {
