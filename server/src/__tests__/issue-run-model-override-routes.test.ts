@@ -87,12 +87,15 @@ interface Seeded extends SeededCompany {
 describeEmbeddedPostgres("per-task adapter model override routes", () => {
   const ctx = useEmbeddedPostgres("paperclip-run-model-override-", {
     resetEach: async (db) => {
-      await db.delete(activityLog);
-      await db.delete(heartbeatRunEvents);
-      await db.delete(heartbeatRuns);
-      await db.delete(agentWakeupRequests);
-      await db.delete(issues);
-      await db.delete(agents);
+      await db.transaction(async (tx) => {
+        await tx.select({ id: agents.id }).from(agents).for("update");
+        await tx.delete(activityLog);
+        await tx.delete(heartbeatRunEvents);
+        await tx.delete(heartbeatRuns);
+        await tx.delete(agentWakeupRequests);
+        await tx.delete(issues);
+        await tx.delete(agents);
+      });
       await resetCompanyIssueFixtures(db);
     },
   });
