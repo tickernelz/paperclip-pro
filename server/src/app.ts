@@ -35,7 +35,7 @@ import { agentAvatarRoutes } from "./routes/agent-avatars.js";
 import { decisionModelRoutes } from "./routes/decision-models.js";
 import { aiConnectionRoutes } from "./routes/ai-connections.js";
 import { projectToolRoutes } from "./routes/project-tools.js";
-import { paperclipMcpRoutes } from "./routes/paperclip-mcp.js";
+import { paperclipMcpRoutes } from "./routes/wardmote-mcp.js";
 import { emailChannelService } from "./services/email-channels.js";
 import { emailRoutes, emailWebhookRoutes } from "./routes/email.js";
 import { toolActionDeliveryService } from "./services/tool-action-delivery.js";

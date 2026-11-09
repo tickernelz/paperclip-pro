@@ -127,7 +127,7 @@ export {
   resolvePaperclipRunnerPermissionMode,
   resolvePaperclipRunnerCursorMode,
   resolvePaperclipRunnerPiThinkingLevel,
-} from "./paperclip-runner-permissions.js";
+} from "./wardmote-runner-permissions.js";
 export {
   PAPERCLIP_RUNNER_INGRESS_PORT,
   PAPERCLIP_RUNNER_CONNECT_PATH_PREFIX,
@@ -150,7 +150,7 @@ export type {
   PaperclipRunnerPermissionMode,
   PaperclipRunnerPermissionOption,
   PaperclipRunnerProvider,
-} from "./paperclip-runner-permissions.js";
+} from "./wardmote-runner-permissions.js";
 // Keep the root adapter-utils entry browser-safe because the UI imports it.
 // The sandbox callback bridge stays available via its dedicated subpath export.
 export type {

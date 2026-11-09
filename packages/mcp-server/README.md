@@ -70,7 +70,7 @@ Tool definitions are built once per process and per (toolset, authority) variant
 
 `tools/list` is **not** paginated: one response carries every tool the caller may see, and no response ever carries `nextCursor`. The cursor mechanism (encode, decode, page size, invalid-cursor error) was removed rather than left inert.
 
-The surface is bounded by the OpenAPI registry - 441 tools for an agent, 716 for company authority - so the whole listing is a bounded ~190-300 KB and splitting it buys nothing. More importantly, a smaller page size is not a free change: a client that sends no cursor and does not follow one would silently lose tools, and this repo's own `paperclip-mcp-routes.test.ts` demonstrated exactly that, seeing 200 of 716 and missing four board tools. A response that is always complete is the contract worth keeping.
+The surface is bounded by the OpenAPI registry - 441 tools for an agent, 716 for company authority - so the whole listing is a bounded ~190-300 KB and splitting it buys nothing. More importantly, a smaller page size is not a free change: a client that sends no cursor and does not follow one would silently lose tools, and this repo's own `wardmote-mcp-routes.test.ts` demonstrated exactly that, seeing 200 of 716 and missing four board tools. A response that is always complete is the contract worth keeping.
 
 ### Annotations
 

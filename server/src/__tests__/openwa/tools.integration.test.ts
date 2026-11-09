@@ -54,7 +54,7 @@ import { openwaAttachmentLocalPaths } from "../../services/openwa/media.js";
 import { executeOpenwaTool, openwaMentionText, OpenwaToolError } from "../../services/openwa/tools.js";
 import { resolveOpenwaApproval } from "../../services/openwa/approvals.js";
 import { openwaToolRoutes } from "../../routes/openwa-tools.js";
-import { paperclipMcpRoutes } from "../../routes/paperclip-mcp.js";
+import { paperclipMcpRoutes } from "../../routes/wardmote-mcp.js";
 import { errorHandler } from "../../middleware/index.js";
 import { FAKE_OPENWA_KEY, FakeOpenwaGateway } from "./fake-gateway.js";
 

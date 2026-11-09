@@ -69,7 +69,7 @@ const apiPrefixes: Record<string, string> = {
   "notifications.ts": "/api",
   "onboarding-omp.ts": "/api",
   "openapi.ts": "/api",
-  "paperclip-mcp.ts": "/api",
+  "wardmote-mcp.ts": "/api",
   "plugin-ui-static.ts": "/api",
   "plugins.ts": "/api",
   "projects.ts": "/api",

@@ -33,7 +33,7 @@ COPY packages/teams-catalog/package.json packages/teams-catalog/
 COPY packages/adapters/omp-local/package.json packages/adapters/omp-local/
 COPY packages/plugins/sdk/package.json packages/plugins/sdk/
 COPY --parents packages/plugins/sandbox-providers/./*/package.json packages/plugins/sandbox-providers/
-COPY packages/plugins/paperclip-plugin-fake-sandbox/package.json packages/plugins/paperclip-plugin-fake-sandbox/
+COPY packages/plugins/plugin-fake-sandbox/package.json packages/plugins/plugin-fake-sandbox/
 COPY packages/plugins/plugin-llm-wiki/package.json packages/plugins/plugin-llm-wiki/
 COPY packages/plugins/plugin-workspace-diff/package.json packages/plugins/plugin-workspace-diff/
 COPY patches/ patches/
