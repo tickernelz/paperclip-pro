@@ -162,7 +162,7 @@ describe.skipIf(!support.supported)('skill source persistence', () => {
     await db.insert(companies).values({ id: legacyCompany, name: 'Legacy', issuePrefix: 'LEG' });
     const [legacy, bundled] = await db.insert(companySkills).values([
       { companyId: legacyCompany, key: 'legacy/custom', slug: 'original-slug', name: 'Original name', markdown: md('legacy'), sourceType: 'github', sourceRef: sha, metadata: { hostname: 'github.com', owner: 'acme', repo: 'skills', trackingRef: 'legacy', repoSkillDir: 'legacy' } },
-      { companyId: legacyCompany, key: 'paperclipai/paperclip/bundled', slug: 'bundled', name: 'Bundled', markdown: md('bundled'), sourceType: 'github', metadata: { hostname: 'github.com', owner: 'acme', repo: 'skills', sourceKind: 'paperclip_bundled' } },
+      { companyId: legacyCompany, key: 'tickernelz/wardmote/bundled', slug: 'bundled', name: 'Bundled', markdown: md('bundled'), sourceType: 'github', metadata: { hostname: 'github.com', owner: 'acme', repo: 'skills', sourceKind: 'paperclip_bundled' } },
     ]).returning();
     const migration = await fs.readFile(new URL('../../../packages/db/src/migrations/0298_conscious_secret_warriors.sql', import.meta.url), 'utf8');
     await db.execute(sql.raw(migration.slice(migration.indexOf('DO $$', migration.indexOf('-- Adopt only')))));

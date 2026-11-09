@@ -126,8 +126,8 @@ describe("AgentMail durable email pipeline", () => {
     const base = { paperclipSkillSync: { desiredSkills: [] } };
     const configured = await applyConnectorSkills(base, [], assignments);
     expect(base.paperclipSkillSync.desiredSkills).toEqual([]);
-    expect(resolvePaperclipDesiredSkillNames(configured, configured.paperclipRuntimeSkills)).toEqual(["paperclipai/paperclip/agentmail"]);
-    expect(resolveLegacyPaperclipDesiredSkillNames(configured, configured.paperclipRuntimeSkills)).toContain("paperclipai/paperclip/agentmail");
+    expect(resolvePaperclipDesiredSkillNames(configured, configured.paperclipRuntimeSkills)).toEqual(["tickernelz/wardmote/agentmail"]);
+    expect(resolveLegacyPaperclipDesiredSkillNames(configured, configured.paperclipRuntimeSkills)).toContain("tickernelz/wardmote/agentmail");
     const markdown = readFileSync(path.join(configured.paperclipRuntimeSkills[0].source, "SKILL.md"), "utf8");
     expect(markdown).toContain(f.endpointId);
     expect(markdown).toContain("agentmail_send");

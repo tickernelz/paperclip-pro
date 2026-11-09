@@ -310,15 +310,6 @@ vi.mock("../services/index.js", () => ({
   executionWorkspaceService: executionWorkspaceServiceFactoryMock,
   externalObjectService: externalObjectsServiceFactoryMock,
   heartbeatService: heartbeatServiceFactoryMock,
-  githubConnectionEventService: vi.fn(() => ({
-    pollOnce: vi.fn(async () => ({
-      leased: 0,
-      processed: 0,
-      duplicate: 0,
-      ignored: 0,
-      failed: 0,
-    })),
-  })),
   issueThreadInteractionService: issueThreadInteractionServiceFactoryMock,
   issueService: vi.fn(() => ({ update: vi.fn(async () => null) })),
   instanceSettingsService: vi.fn(() => ({

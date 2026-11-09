@@ -1727,7 +1727,7 @@ describe("shared ACPX engine runtime behavior", () => {
     const codexHome = path.join(root, "codex-home");
     const operational = {
       ...await createSkill(skillRoot, "paperclip"),
-      key: "paperclipai/paperclip/paperclip",
+      key: "tickernelz/wardmote/paperclip",
     };
 
     await runExecutor({
@@ -1745,7 +1745,7 @@ describe("shared ACPX engine runtime behavior", () => {
     const root = await makeTempRoot();
     const operational = {
       ...await createSkill(path.join(root, "skills"), "paperclip"),
-      key: "paperclipai/paperclip/paperclip",
+      key: "tickernelz/wardmote/paperclip",
     };
     const homes = [path.join(root, "first-home"), path.join(root, "next-home")];
     for (const home of homes) {

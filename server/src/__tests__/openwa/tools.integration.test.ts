@@ -1273,7 +1273,7 @@ describe("OpenWA agent tools (embedded Postgres + fake gateway)", () => {
     await db.update(issues).set({ executionRunId: binding.runId }).where(eq(issues.id, c.issueId));
     await expect(authority.execute({ tool: "openwa_read_chat", callId: "c1", arguments: {} })).resolves.toMatchObject({ chatRef: c.chatRef });
     const configured = await applyConnectorSkills({ paperclipSkillSync: { desiredSkills: [] } }, [], assignments);
-    const bundle = configured.paperclipRuntimeSkills.find((entry) => entry.key === "paperclipai/paperclip/openwa")!;
+    const bundle = configured.paperclipRuntimeSkills.find((entry) => entry.key === "tickernelz/wardmote/openwa")!;
     expect(JSON.parse(await readFile(path.join(bundle.source, "TOOLS.json"), "utf8")).map((tool: { name: string }) => tool.name)).toContain("openwa_send");
     const native = await prepareConnectorSkillDelivery(configured, "paperclip_runner");
     expect(native.instructions).toContain("openwa_send");

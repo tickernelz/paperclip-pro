@@ -1819,7 +1819,7 @@ describeEmbeddedPostgres("tool gateway service", () => {
     expect(vi.mocked(oauthGrantRefresher).mock.calls.some(([input]) => input.forceRefresh === true)).toBe(true);
   });
 
-  it("refreshes a managed OAuth grant after 401 without replaying the call", async () => {
+  it("refreshes a vault OAuth grant after 401 without replaying the call", async () => {
     const { company, agent, run } = await createRunFixture(db);
     const { connection } = await createRemoteMcpToolFixture(db, company.id);
     const accessSecret = await secretService(db).create(company.id, {
@@ -1840,11 +1840,7 @@ describeEmbeddedPostgres("tool gateway service", () => {
       credentialSource: "paperclip_vault",
       config: {
         url: "https://example.invalid/mcp",
-        oauth: {
-          strategy: "paperclip_cloud_connector",
-          connectorProfile: "github.code",
-          connectorSubjectUserId: "responsible-user",
-        },
+        oauth: {},
       },
     }).where(eq(toolConnections.id, connection.id));
     const [grant] = await db.select().from(connectionGrants).where(eq(
@@ -1861,7 +1857,6 @@ describeEmbeddedPostgres("tool gateway service", () => {
       }],
       providerTenant: {
         oauth: {
-          strategy: "paperclip_cloud_connector",
           accessTokenExpiresAt: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
         },
       },

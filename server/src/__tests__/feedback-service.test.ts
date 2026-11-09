@@ -158,7 +158,7 @@ describeEmbeddedPostgres("feedbackService.saveIssueVote", () => {
       {
         id: randomUUID(),
         companyId,
-        key: "paperclipai/paperclip/paperclip",
+        key: "tickernelz/wardmote/paperclip",
         slug: "paperclip",
         name: "Paperclip",
         markdown: "# Paperclip",
@@ -196,7 +196,7 @@ describeEmbeddedPostgres("feedbackService.saveIssueVote", () => {
           instructionsEntryFile: "AGENTS.md",
           instructionsFilePath: instructionsPath,
         },
-        ["paperclipai/paperclip/paperclip", "octo/research/public-skill"],
+        ["tickernelz/wardmote/paperclip", "octo/research/public-skill"],
       ),
       runtimeConfig: {
         heartbeat: {

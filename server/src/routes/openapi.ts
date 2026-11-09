@@ -1784,7 +1784,6 @@ const BOARD_ONLY_OPERATIONS = new Set([
   "POST /api/chat-endpoints/{endpointId}/github/identity",
   "POST /api/chat-endpoints/{endpointId}/github/people/lookup",
   "POST /api/chat-endpoints/{endpointId}/github/registration",
-  "POST /api/chat-endpoints/{endpointId}/github/registration/restart",
   "PUT /api/chat-endpoints/{endpointId}/github/draft",
   "POST /api/chat-endpoints/{endpointId}/github/setup",
   "POST /api/chat-endpoints/{endpointId}/github/identity/start",
@@ -2710,13 +2709,12 @@ const githubPersonResponseSchema = z.object({ githubUserId: z.string(), login: z
 const githubWizardInputSchema = z.object({ name: z.string().trim().min(1).max(34), ownerType: z.enum(["personal", "organization"]), ownerLogin: z.string().regex(/^[A-Za-z0-9](?:[A-Za-z0-9-]{0,37}[A-Za-z0-9])?$/).optional() }).strict();
 const githubWizardCheckSchema = z.object({ key: z.string(), label: z.string(), ok: z.boolean(), detail: z.string() });
 const githubWizardResponseSchema = z.object({
-  endpointId: z.string().uuid(), state: z.enum(["create", "install", "identity", "verify", "connected", "recovery", "enrollment"]),
+  endpointId: z.string().uuid(), state: z.enum(["create", "install", "identity", "verify", "connected", "recovery"]),
   registration: z.object({ registrationUrl: z.string().url(), manifest: z.record(z.string(), z.unknown()), expiresAt: z.string() }).optional(),
   installationUrl: z.string().url().optional(), identity: githubPersonResponseSchema.extend({ avatarUrl: z.string().nullable() }).optional(),
   identityLinked: z.boolean().optional(), identityMethod: z.enum(["dedicated_app", "existing_connection"]).optional(),
   verification: z.object({ ready: z.boolean(), checks: z.array(githubWizardCheckSchema) }).optional(),
   runtimeChecks: z.array(githubWizardCheckSchema).optional(), message: z.string().optional(),
-  restartableRegistrationId: z.string().uuid().optional(),
 });
 const githubReviewResponseSchema = z.object({
       id: z.string().uuid(), companyId: z.string().uuid(), endpointId: z.string().uuid(),
@@ -2785,7 +2783,6 @@ const githubBotOperations: Array<{
     body: githubWizardInputSchema.partial({ ownerType: true }).refine(value => value.ownerType !== "organization" || !!value.ownerLogin, "Enter the GitHub organization"),
     response: z.union([z.object({ expiresAt: z.string(), registrationUrl: z.string().url(), manifest: z.record(z.string(), z.unknown()) }), githubWizardResponseSchema]),
   },
-  { method: "post", suffix: "registration/restart", summary: "Renew an expired unconsumed GitHub registration", description: "Connection managers must confirm that no App was created. Retries resume the same replacement registration; a claimed or uncertain exchange must use existing-App recovery.", body: z.object({ registrationId: z.string().uuid(), appNotCreated: z.literal(true) }).strict(), response: githubWizardResponseSchema },
   { method: "put", suffix: "draft", summary: "Save GitHub App setup choices", description: "Saves the App name and ownership choice on the same assigned draft. Requires connection-management access; creates no provider resources.", body: githubWizardInputSchema, response: z.object({ saved: z.literal(true) }) },
   { method: "post", suffix: "setup", summary: "Advance GitHub App setup", description: "Resumes credential delivery, installation discovery, repository import, and verification. Returns redacted progress or the required human action. Runtime execution is reported separately.", response: githubWizardResponseSchema },
   { method: "post", suffix: "identity/start", summary: "Authorize your identity with the dedicated GitHub App", description: "Starts a member-bound OAuth authorization with PKCE. Does not grant bot execution access through personal credentials.", response: z.object({ authorizationUrl: z.string().url() }) },
@@ -12710,58 +12707,6 @@ registerCurrentRoute({
   path: "/api/tools/oauth/callback",
   tags: ["tool-access"],
   summary: "Handle a tool app OAuth callback",
-});
-
-registerCurrentRoute({
-  method: "get",
-  path: "/api/tools/oauth/cloud-connector/callback",
-  tags: ["tool-access"],
-  summary: "Handle a brokered Paperclip Cloud OAuth callback",
-});
-
-registerCurrentRoute({
-  method: "get",
-  path: "/api/tools/oauth/paperclip-id/callback",
-  tags: ["tool-access"],
-  summary: "Handle a legacy brokered Paperclip ID OAuth callback",
-});
-
-registerCurrentRoute({
-  method: "get",
-  path: "/api/tools/oauth/cloud-connector/enrollment",
-  tags: ["tool-access"],
-  summary: "Get Paperclip Cloud connector enrollment status",
-});
-
-registerCurrentRoute({
-  method: "post",
-  path: "/api/tools/oauth/cloud-connector/enrollment",
-  tags: ["tool-access"],
-  summary: "Start Paperclip Cloud connector enrollment",
-  body: z
-    .object({ companyId: z.string().min(1), label: z.string().optional() })
-    .strict(),
-  responses: {
-    201: r.ok(),
-    400: r.badRequest,
-    401: r.unauthorized,
-    403: r.forbidden,
-    422: r.unprocessable,
-  },
-});
-
-registerCurrentRoute({
-  method: "get",
-  path: "/api/tools/oauth/cloud-connector/enrollment-callback",
-  tags: ["tool-access"],
-  summary: "Complete Paperclip Cloud connector enrollment",
-  query: z
-    .object({
-      enrollment_id: z.string().min(1),
-      approval_code: z.string().min(1),
-      state: z.string().min(1),
-    })
-    .strict(),
 });
 
 registerCurrentRoute({

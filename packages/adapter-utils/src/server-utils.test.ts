@@ -439,7 +439,7 @@ describe("materializePaperclipSkillCopy", () => {
 
 describe("adapter skill snapshots", () => {
   const requiredEntry = {
-    key: "paperclipai/paperclip/paperclip",
+    key: "tickernelz/wardmote/paperclip",
     runtimeName: "paperclip",
     source: "/runtime/paperclip",
   };

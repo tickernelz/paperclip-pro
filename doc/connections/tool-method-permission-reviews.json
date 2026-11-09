@@ -59,23 +59,6 @@
     },
     {
       "app": "asana",
-      "method": "managed",
-      "auth": "oauth",
-      "policy": "explicit",
-      "requestedScopes": [
-        "default"
-      ],
-      "capability": "write",
-      "supportedActions": "Create/update tasks and projects authorized by the account.",
-      "evidence": [
-        "https://developers.asana.com/docs/integrating-with-asanas-mcp-server",
-        "https://mcp.asana.com/.well-known/oauth-protected-resource/v2"
-      ],
-      "reviewedAt": "2026-09-30",
-      "liveProof": "Real OAuth, 39 MCP actions, Get me, and forced-expiry refresh verified with a local broker fixture on 2026-09-30."
-    },
-    {
-      "app": "asana",
       "method": "mcp-own-oauth",
       "auth": "oauth",
       "policy": "explicit",
@@ -551,22 +534,6 @@
     },
     {
       "app": "github",
-      "method": "managed",
-      "auth": "oauth",
-      "policy": "provider-default",
-      "requestedScopes": [],
-      "capability": "provider-controlled",
-      "supportedActions": "Repository contents, issues, pull requests and other granted toolsets; selected repos and installation/PAT permissions apply.",
-      "evidence": [
-        "https://api.githubcopilot.com/.well-known/oauth-protected-resource/mcp/"
-      ],
-      "reviewedAt": "2026-09-30",
-      "liveProof": "not-run",
-      "providerDefaultReason": "Managed github.code uses a GitHub App installation and selected repositories. Installation permissions, not OAuth scope strings, grant code and pull-request writes; retain the managed profile.",
-      "evidenceLimit": "Provider documentation was unavailable or not readable during this review; metadata/registered source only. Account-bound proof remains outstanding."
-    },
-    {
-      "app": "github",
       "method": "mcp-key",
       "auth": "api_key",
       "policy": "provider-key",
@@ -583,23 +550,6 @@
     },
     {
       "app": "gmail",
-      "method": "paperclip-read",
-      "auth": "oauth",
-      "policy": "explicit",
-      "requestedScopes": [
-        "https://www.googleapis.com/auth/gmail.readonly"
-      ],
-      "capability": "read",
-      "supportedActions": "Search and read messages, threads, drafts, and labels.",
-      "evidence": [
-        "https://developers.google.com/workspace/gmail/api/reference/mcp",
-        "https://gmailmcp.googleapis.com/.well-known/oauth-protected-resource/mcp/v1"
-      ],
-      "reviewedAt": "2026-09-30",
-      "liveProof": "not-run"
-    },
-    {
-      "app": "gmail",
       "method": "customer-read-oauth",
       "auth": "oauth",
       "policy": "explicit",
@@ -608,24 +558,6 @@
       ],
       "capability": "read",
       "supportedActions": "Search and read messages, threads, drafts, and labels.",
-      "evidence": [
-        "https://developers.google.com/workspace/gmail/api/reference/mcp",
-        "https://gmailmcp.googleapis.com/.well-known/oauth-protected-resource/mcp/v1"
-      ],
-      "reviewedAt": "2026-09-30",
-      "liveProof": "not-run"
-    },
-    {
-      "app": "gmail",
-      "method": "paperclip-draft",
-      "auth": "oauth",
-      "policy": "explicit",
-      "requestedScopes": [
-        "https://www.googleapis.com/auth/gmail.readonly",
-        "https://www.googleapis.com/auth/gmail.compose"
-      ],
-      "capability": "write",
-      "supportedActions": "Read Gmail and create drafts for review in Gmail.",
       "evidence": [
         "https://developers.google.com/workspace/gmail/api/reference/mcp",
         "https://gmailmcp.googleapis.com/.well-known/oauth-protected-resource/mcp/v1"
@@ -653,26 +585,6 @@
     },
     {
       "app": "google-calendar",
-      "method": "paperclip-read",
-      "auth": "oauth",
-      "policy": "explicit",
-      "requestedScopes": [
-        "https://www.googleapis.com/auth/calendar.calendarlist.readonly",
-        "https://www.googleapis.com/auth/calendar.events.freebusy",
-        "https://www.googleapis.com/auth/calendar.events.readonly"
-      ],
-      "capability": "read",
-      "supportedActions": "Read calendars, events, and availability.",
-      "evidence": [
-        "https://developers.google.com/workspace/calendar/api/reference/mcp",
-        "https://calendarmcp.googleapis.com/.well-known/oauth-protected-resource/mcp/v1"
-      ],
-      "reviewedAt": "2026-09-30",
-      "liveProof": "not-run",
-      "evidenceLimit": "Provider documentation was unavailable or not readable during this review; metadata/registered source only. Account-bound proof remains outstanding."
-    },
-    {
-      "app": "google-calendar",
       "method": "customer-read-oauth",
       "auth": "oauth",
       "policy": "explicit",
@@ -683,25 +595,6 @@
       ],
       "capability": "read",
       "supportedActions": "Read calendars, events, and availability.",
-      "evidence": [
-        "https://developers.google.com/workspace/calendar/api/reference/mcp",
-        "https://calendarmcp.googleapis.com/.well-known/oauth-protected-resource/mcp/v1"
-      ],
-      "reviewedAt": "2026-09-30",
-      "liveProof": "not-run",
-      "evidenceLimit": "Provider documentation was unavailable or not readable during this review; metadata/registered source only. Account-bound proof remains outstanding."
-    },
-    {
-      "app": "google-calendar",
-      "method": "paperclip-write",
-      "auth": "oauth",
-      "policy": "explicit",
-      "requestedScopes": [
-        "https://www.googleapis.com/auth/calendar.calendarlist.readonly",
-        "https://www.googleapis.com/auth/calendar.events"
-      ],
-      "capability": "write",
-      "supportedActions": "Create, update, respond to, and delete events.",
       "evidence": [
         "https://developers.google.com/workspace/calendar/api/reference/mcp",
         "https://calendarmcp.googleapis.com/.well-known/oauth-protected-resource/mcp/v1"
@@ -731,24 +624,6 @@
     },
     {
       "app": "google-chat",
-      "method": "paperclip-read",
-      "auth": "oauth",
-      "policy": "explicit",
-      "requestedScopes": [
-        "https://www.googleapis.com/auth/chat.spaces.readonly",
-        "https://www.googleapis.com/auth/chat.messages.readonly"
-      ],
-      "capability": "read",
-      "supportedActions": "Search conversations and read messages.",
-      "evidence": [
-        "https://developers.google.com/workspace/chat/api/reference/mcp",
-        "https://chatmcp.googleapis.com/.well-known/oauth-protected-resource/mcp/v1"
-      ],
-      "reviewedAt": "2026-09-30",
-      "liveProof": "not-run"
-    },
-    {
-      "app": "google-chat",
       "method": "customer-read-oauth",
       "auth": "oauth",
       "policy": "explicit",
@@ -758,25 +633,6 @@
       ],
       "capability": "read",
       "supportedActions": "Search conversations and read messages.",
-      "evidence": [
-        "https://developers.google.com/workspace/chat/api/reference/mcp",
-        "https://chatmcp.googleapis.com/.well-known/oauth-protected-resource/mcp/v1"
-      ],
-      "reviewedAt": "2026-09-30",
-      "liveProof": "not-run"
-    },
-    {
-      "app": "google-chat",
-      "method": "paperclip-write",
-      "auth": "oauth",
-      "policy": "explicit",
-      "requestedScopes": [
-        "https://www.googleapis.com/auth/chat.spaces.readonly",
-        "https://www.googleapis.com/auth/chat.messages.readonly",
-        "https://www.googleapis.com/auth/chat.messages.create"
-      ],
-      "capability": "write",
-      "supportedActions": "Read Chat and send messages.",
       "evidence": [
         "https://developers.google.com/workspace/chat/api/reference/mcp",
         "https://chatmcp.googleapis.com/.well-known/oauth-protected-resource/mcp/v1"
@@ -805,23 +661,6 @@
     },
     {
       "app": "google-docs",
-      "method": "paperclip-read",
-      "auth": "oauth",
-      "policy": "explicit",
-      "requestedScopes": [
-        "https://www.googleapis.com/auth/documents.readonly"
-      ],
-      "capability": "read",
-      "supportedActions": "Read document text and structure.",
-      "evidence": [
-        "https://developers.google.com/workspace/docs/api/reference/mcp",
-        "https://docsmcp.googleapis.com/.well-known/oauth-protected-resource/mcp/v1"
-      ],
-      "reviewedAt": "2026-09-30",
-      "liveProof": "not-run"
-    },
-    {
-      "app": "google-docs",
       "method": "customer-read-oauth",
       "auth": "oauth",
       "policy": "explicit",
@@ -830,23 +669,6 @@
       ],
       "capability": "read",
       "supportedActions": "Read document text and structure.",
-      "evidence": [
-        "https://developers.google.com/workspace/docs/api/reference/mcp",
-        "https://docsmcp.googleapis.com/.well-known/oauth-protected-resource/mcp/v1"
-      ],
-      "reviewedAt": "2026-09-30",
-      "liveProof": "not-run"
-    },
-    {
-      "app": "google-docs",
-      "method": "paperclip-write",
-      "auth": "oauth",
-      "policy": "explicit",
-      "requestedScopes": [
-        "https://www.googleapis.com/auth/documents"
-      ],
-      "capability": "write",
-      "supportedActions": "Read and update documents.",
       "evidence": [
         "https://developers.google.com/workspace/docs/api/reference/mcp",
         "https://docsmcp.googleapis.com/.well-known/oauth-protected-resource/mcp/v1"
@@ -873,23 +695,6 @@
     },
     {
       "app": "google-drive",
-      "method": "paperclip-read",
-      "auth": "oauth",
-      "policy": "explicit",
-      "requestedScopes": [
-        "https://www.googleapis.com/auth/drive.readonly"
-      ],
-      "capability": "read",
-      "supportedActions": "Search and read files and metadata.",
-      "evidence": [
-        "https://developers.google.com/workspace/drive/api/reference/mcp",
-        "https://drivemcp.googleapis.com/.well-known/oauth-protected-resource/mcp/v1"
-      ],
-      "reviewedAt": "2026-09-30",
-      "liveProof": "not-run"
-    },
-    {
-      "app": "google-drive",
       "method": "customer-read-oauth",
       "auth": "oauth",
       "policy": "explicit",
@@ -898,24 +703,6 @@
       ],
       "capability": "read",
       "supportedActions": "Search and read files and metadata.",
-      "evidence": [
-        "https://developers.google.com/workspace/drive/api/reference/mcp",
-        "https://drivemcp.googleapis.com/.well-known/oauth-protected-resource/mcp/v1"
-      ],
-      "reviewedAt": "2026-09-30",
-      "liveProof": "not-run"
-    },
-    {
-      "app": "google-drive",
-      "method": "paperclip-write",
-      "auth": "oauth",
-      "policy": "explicit",
-      "requestedScopes": [
-        "https://www.googleapis.com/auth/drive.readonly",
-        "https://www.googleapis.com/auth/drive.file"
-      ],
-      "capability": "write",
-      "supportedActions": "Read files and create or copy files.",
       "evidence": [
         "https://developers.google.com/workspace/drive/api/reference/mcp",
         "https://drivemcp.googleapis.com/.well-known/oauth-protected-resource/mcp/v1"
@@ -943,25 +730,6 @@
     },
     {
       "app": "google-people",
-      "method": "paperclip-read",
-      "auth": "oauth",
-      "policy": "explicit",
-      "requestedScopes": [
-        "https://www.googleapis.com/auth/directory.readonly",
-        "https://www.googleapis.com/auth/userinfo.profile",
-        "https://www.googleapis.com/auth/contacts.readonly"
-      ],
-      "capability": "read",
-      "supportedActions": "Search contacts, directory people, and your profile.",
-      "evidence": [
-        "https://developers.google.com/people/api/mcp",
-        "https://people.googleapis.com/.well-known/oauth-protected-resource/mcp/v1"
-      ],
-      "reviewedAt": "2026-09-30",
-      "liveProof": "not-run"
-    },
-    {
-      "app": "google-people",
       "method": "customer-read-oauth",
       "auth": "oauth",
       "policy": "explicit",
@@ -981,23 +749,6 @@
     },
     {
       "app": "google-sheets",
-      "method": "paperclip-read",
-      "auth": "oauth",
-      "policy": "explicit",
-      "requestedScopes": [
-        "https://www.googleapis.com/auth/spreadsheets.readonly"
-      ],
-      "capability": "read",
-      "supportedActions": "Read spreadsheet values and structure.",
-      "evidence": [
-        "https://developers.google.com/workspace/sheets/api/reference/mcp",
-        "https://sheetsmcp.googleapis.com/.well-known/oauth-protected-resource/mcp/v1"
-      ],
-      "reviewedAt": "2026-09-30",
-      "liveProof": "not-run"
-    },
-    {
-      "app": "google-sheets",
       "method": "customer-read-oauth",
       "auth": "oauth",
       "policy": "explicit",
@@ -1006,23 +757,6 @@
       ],
       "capability": "read",
       "supportedActions": "Read spreadsheet values and structure.",
-      "evidence": [
-        "https://developers.google.com/workspace/sheets/api/reference/mcp",
-        "https://sheetsmcp.googleapis.com/.well-known/oauth-protected-resource/mcp/v1"
-      ],
-      "reviewedAt": "2026-09-30",
-      "liveProof": "not-run"
-    },
-    {
-      "app": "google-sheets",
-      "method": "paperclip-write",
-      "auth": "oauth",
-      "policy": "explicit",
-      "requestedScopes": [
-        "https://www.googleapis.com/auth/spreadsheets"
-      ],
-      "capability": "write",
-      "supportedActions": "Read and update spreadsheet values, formulas, and dimensions.",
       "evidence": [
         "https://developers.google.com/workspace/sheets/api/reference/mcp",
         "https://sheetsmcp.googleapis.com/.well-known/oauth-protected-resource/mcp/v1"
@@ -1064,23 +798,6 @@
     },
     {
       "app": "google-slides",
-      "method": "paperclip-read",
-      "auth": "oauth",
-      "policy": "explicit",
-      "requestedScopes": [
-        "https://www.googleapis.com/auth/presentations.readonly"
-      ],
-      "capability": "read",
-      "supportedActions": "Read presentation slides and content.",
-      "evidence": [
-        "https://developers.google.com/workspace/slides/api/reference/mcp",
-        "https://slidesmcp.googleapis.com/.well-known/oauth-protected-resource/mcp/v1"
-      ],
-      "reviewedAt": "2026-09-30",
-      "liveProof": "not-run"
-    },
-    {
-      "app": "google-slides",
       "method": "customer-read-oauth",
       "auth": "oauth",
       "policy": "explicit",
@@ -1089,23 +806,6 @@
       ],
       "capability": "read",
       "supportedActions": "Read presentation slides and content.",
-      "evidence": [
-        "https://developers.google.com/workspace/slides/api/reference/mcp",
-        "https://slidesmcp.googleapis.com/.well-known/oauth-protected-resource/mcp/v1"
-      ],
-      "reviewedAt": "2026-09-30",
-      "liveProof": "not-run"
-    },
-    {
-      "app": "google-slides",
-      "method": "paperclip-write",
-      "auth": "oauth",
-      "policy": "explicit",
-      "requestedScopes": [
-        "https://www.googleapis.com/auth/presentations"
-      ],
-      "capability": "write",
-      "supportedActions": "Read and update presentations.",
       "evidence": [
         "https://developers.google.com/workspace/slides/api/reference/mcp",
         "https://slidesmcp.googleapis.com/.well-known/oauth-protected-resource/mcp/v1"
@@ -1126,26 +826,6 @@
       "evidence": [
         "https://developers.google.com/workspace/slides/api/reference/mcp",
         "https://slidesmcp.googleapis.com/.well-known/oauth-protected-resource/mcp/v1"
-      ],
-      "reviewedAt": "2026-09-30",
-      "liveProof": "not-run"
-    },
-    {
-      "app": "google-workspace-search",
-      "method": "paperclip-read",
-      "auth": "oauth",
-      "policy": "explicit",
-      "requestedScopes": [
-        "https://www.googleapis.com/auth/gmail.readonly",
-        "https://www.googleapis.com/auth/drive.readonly",
-        "https://www.googleapis.com/auth/calendar.readonly",
-        "https://www.googleapis.com/auth/chat.messages.readonly"
-      ],
-      "capability": "read",
-      "supportedActions": "Search Gmail, Drive, Calendar, and Chat without write access.",
-      "evidence": [
-        "https://developers.google.com/workspace/guides/universal-search-mcp",
-        "https://workspacemcp.googleapis.com/.well-known/oauth-protected-resource/mcp/v1"
       ],
       "reviewedAt": "2026-09-30",
       "liveProof": "not-run"

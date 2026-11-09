@@ -20,7 +20,7 @@ Workspace Search.
 
 Google's hosted Workspace MCP servers are Developer Preview services. The app
 cards remain independent even when several services use the same customer-owned
-Google OAuth client or the same Paperclip Cloud broker deployment.
+Google OAuth client.
 
 ## Temporary Connections page visibility hold
 
@@ -33,8 +33,8 @@ runtime tools remain unchanged. This is not an access-control restriction.
 Keep verification instances pinned to their pre-hold app release so reviewers
 can still find and test the integrations. After approval, remove the page's
 `GOOGLE_CONNECTOR_SLUGS` filter and update its visibility tests before upgrading
-those instances. Do not disable the shared definitions or broker profiles to
-control this page's visibility.
+those instances. Do not disable the shared definitions to control this page's
+visibility.
 
 ## Developer Preview enrollment
 
@@ -55,10 +55,8 @@ Enrollment does not authorize every user of an OAuth client. Additional tester
 emails and Cloud projects must be added through Google's member request forms.
 Google's preview terms also prohibit making a pre-GA integration available to
 end users outside the enrolled company or domain unless Google grants explicit
-permission. Consequently, Paperclip-managed Google OAuth is limited to
-registered internal testers during preview. Other companies must enroll their
-own Workspace testers and Cloud project and use a customer-owned OAuth app until
-Google makes Workspace MCP generally available.
+permission. Each company enrolls its own Workspace testers and Cloud project and
+uses its own OAuth app until Google makes Workspace MCP generally available.
 
 ## App matrix
 
@@ -74,20 +72,15 @@ Google makes Workspace MCP generally available.
 | Google People | `https://people.googleapis.com/mcp/v1` | Read contacts |
 | Google Workspace Search | `https://workspacemcp.googleapis.com/mcp/v1` | Search Workspace |
 
-The setup flow asks for the capability first. When the managed method is
-available, it uses Paperclip by default. A small **Use your own Google OAuth app**
-link reveals the custom client fields; **Use Paperclip instead** returns to the
-managed method. The available authentication methods are:
+The setup flow asks for the capability first. The available authentication
+methods are:
 
-- **Connect with Paperclip** uses the Paperclip Cloud broker when that exact
-  profile is returned for this enrolled instance by the signed
-  `POST https://my.paperclip.app/v1/connector/instance-status` request. The
-  anonymous capabilities document is global discovery only and never enables
-  an internal-pilot method locally.
 - **Use your own Google OAuth app** uses customer-supplied OAuth credentials and
-  the app definition's exact reviewed scopes.
-- **Use the Paperclip robot account** remains an additional Google Sheets-only
-  option for explicitly shared spreadsheets.
+  the app definition's exact reviewed scopes. The client's redirect URI is the
+  instance callback `/api/tools/oauth/callback`; see [Gmail
+  connection](./GMAIL.md) for the client setup steps shared by every app.
+- **Use the robot account** remains an additional Google Sheets-only option for
+  explicitly shared spreadsheets.
 
 Before Google consent, the setup flow asks whether the credential is for just
 the connecting user or for any human in the company. A personal choice stores
@@ -96,74 +89,8 @@ default organization grant, while still recording which signed-in Google
 principal completed consent so refresh and reconnect stay bound to that
 principal.
 
-Catalog discovery and connection creation use the same signed, instance-specific
-profile availability. Local enrollment files and Cloud-delivered environment
-identities follow this same path; neither enables managed methods globally in
-the static app definitions. Saved connections remain recognizable for OAuth
-callback, refresh, and revoke, while the broker enforces current profile access.
 Switching capability or authentication methods preserves the selected credential
 owner when the new method supports that owner.
-
-## Broker profiles
-
-The Paperclip-managed method signs every broker request with one explicit
-profile. The broker binds that profile into sessions, one-time claims, sealed
-token envelopes, and refresh. Per-profile removal is local-only for managed
-Google grants. Google's revocation endpoint can invalidate all grants for the
-same user and managed client, so Paperclip does not call it while removing one
-Workspace profile.
-
-| App | Read profile | Write profile |
-| --- | --- | --- |
-| Gmail | `gmail.read` | `gmail.draft` |
-| Drive | `drive.read` | `drive.write` |
-| Docs | `docs.read` | `docs.write` |
-| Sheets | `sheets.read` | `sheets.write` |
-| Slides | `slides.read` | `slides.write` |
-| Calendar | `calendar.read` | `calendar.write` |
-| Chat | `chat.read` | `chat.write` |
-| People | `people.read` | — |
-| Workspace Search | `workspace-search.read` | — |
-
-Every new signed request includes a profile. The Cloud broker rejects a request
-whose provider, profile, or exact scope set does not match its closed registry.
-
-## Instance configuration
-
-All Paperclip-managed Google methods use the existing enrolled-instance keys:
-
-```dotenv
-WARDMOTE_CLOUD_CONNECTOR_BASE_URL=https://my.paperclip.app
-WARDMOTE_CLOUD_CONNECTOR_ENVIRONMENT=production
-WARDMOTE_CLOUD_CONNECTOR_INSTANCE_ID=inst_example
-WARDMOTE_CLOUD_CONNECTOR_SIGN_PRIVATE_KEY=...
-WARDMOTE_CLOUD_CONNECTOR_SEAL_PRIVATE_KEY=...
-```
-
-No per-app client secret is stored on the Paperclip instance for the managed
-path. For customer-owned OAuth, the setup flow collects that customer's Google
-OAuth client ID and secret and stores them through the normal instance-vault
-path.
-
-Cloud-hosted stacks receive these values through the existing per-stack secret
-delivery path. A self-hosted instance creates its keys during enrollment and
-stores them with owner-only permissions in the instance's ignored secret
-directory. The setup page supplies its authenticated same-origin HTTPS address
-to enrollment, so a normal Tailscale-hosted self-hoster does not need to edit
-`config.json` or set `WARDMOTE_PUBLIC_URL`; the enrolled origin becomes the
-durable callback binding. The former `WARDMOTE_ID_CONNECTOR_*` values use an incompatible
-Paperclip ID protocol and are not read aliases. Enroll with Paperclip Cloud and
-reconnect legacy grants before their old access tokens expire.
-
-The gallery requests the broker capability document with a short cache. A
-Paperclip-managed method is omitted unless its exact profile is enabled at the
-broker; the independent app card and customer-owned OAuth method remain
-available. This supports profile-by-profile rollout and rollback without
-collapsing the nine cards into one app.
-
-See [Gmail connection](./GMAIL.md) for the detailed enrollment, signing,
-encryption, environment-isolation, and security review runbook inherited by all
-profiles.
 
 ## Safety boundary
 
@@ -196,13 +123,10 @@ is a valid narrower alternative for app-authorized files, but would require a
 different per-file authorization workflow. Read-only profiles remain separate;
 the project-wide union is not the scope set requested by every connection.
 
-Deploy with the matching Cloud broker registry and test fresh grants in staging
-before production. Signed authorization and refresh requests use exact scope
-sets, so mixed versions fail closed. The broker rejects old broader grants and
-refresh responses without explicit scope evidence for these reduced profiles.
-Reconnect affected connections; do not relabel or globally revoke existing
-tokens. Customer-owned methods request the same reduced sets on new consent;
-previously issued grants are not retroactively narrowed. The 21-scope integration
+Test fresh grants before production. Reconnect affected connections; do not
+relabel or globally revoke existing tokens. Customer-owned methods request the
+reduced sets on new consent; previously issued grants are not retroactively
+narrowed. The 21-scope integration
 union is unchanged by these profile-level reductions. Console must still keep
 Drive/free-busy entries required by other profiles and separately used identity
 scopes. Fresh provider proof is a release requirement, not implied by unit tests.
@@ -210,8 +134,7 @@ scopes. Fresh provider proof is a release requirement, not implied by unit tests
 ### Google Chat scope reduction (2026-09-22)
 
 `chat.read` requests only `chat.spaces.readonly` and `chat.messages.readonly`.
-`chat.write` adds `chat.messages.create`. The same sets apply to both managed
-and customer-owned OAuth methods. Neither requests `chat.memberships.readonly`
+`chat.write` adds `chat.messages.create`. Neither requests `chat.memberships.readonly`
 nor `chat.users.readstate.readonly`.
 
 Conversation lookup, message history, ordinary message search, and the write
@@ -225,13 +148,8 @@ guard also applies to cached catalogs and existing broader grants.
 References: Google's [Chat MCP setup](https://developers.google.com/workspace/chat/api/guides/configure-mcp-server)
 and [message-search parameters](https://developers.google.com/workspace/chat/api/reference/mcp/tools_list/search_messages).
 
-Roll out the app and Cloud broker scope registries together in staging and
-production: their signed requests and sealed credentials use exact scope sets.
-During a mixed-version rollout, Chat authorization/refresh can fail closed.
 Existing Google tokens are not retroactively narrowed or revoked by this code
-change. A refresh response still containing removed scopes, or omitting the
-scope set needed to verify the grant, is rejected by the broker; reconnect
-affected Chat grants for new consent. Do not revoke the
+change; reconnect affected Chat grants for new consent. Do not revoke the
 shared Google client to migrate one profile, because that can break other
 Workspace connections. After deployment, verify fresh reduced-scope consent,
 ordinary Chat search/history and sending, then reconcile Google Console and

@@ -777,8 +777,8 @@ Accept the card above and I write it. This task stays in review until then.`;
         adapterConfig: {
           paperclipSkillSync: {
             desiredSkills: [
-              "paperclipai/paperclip/paperclip",
-              "paperclipai/paperclip/first-task",
+              "tickernelz/wardmote/paperclip",
+              "tickernelz/wardmote/first-task",
             ],
           },
         },
@@ -789,7 +789,7 @@ Accept the card above and I write it. This task stays in review until then.`;
             desiredSkills: string[];
           }
         ).desiredSkills,
-      ).toEqual(["paperclipai/paperclip/first-task"]);
+      ).toEqual(["tickernelz/wardmote/first-task"]);
       expect(patch).not.toHaveProperty("instructionsBundle");
       expect(
         (patch.adapterConfig.env as Record<string, unknown>)[

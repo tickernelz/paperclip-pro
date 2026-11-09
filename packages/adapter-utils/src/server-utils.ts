@@ -3845,7 +3845,7 @@ export async function listPaperclipSkillEntries(
     const entries = await fs.readdir(root, { withFileTypes: true });
     const dirs = entries.filter((entry) => entry.isDirectory());
     return dirs.map((entry) => ({
-      key: `paperclipai/paperclip/${entry.name}`,
+      key: `tickernelz/wardmote/${entry.name}`,
       runtimeName: entry.name,
       source: path.join(root, entry.name),
     }));
@@ -4294,11 +4294,11 @@ export function resolvePaperclipDesiredSkillNames(
  * resolver above.
  */
 export const WARDMOTE_OPERATIONAL_SKILL_KEY =
-  "paperclipai/paperclip/paperclip";
+  "tickernelz/wardmote/paperclip";
 
 export const WARDMOTE_FEEDBACK_SKILL_KEYS = [
-  "paperclipai/paperclip/complain",
-  "paperclipai/paperclip/suggestion-box",
+  "tickernelz/wardmote/complain",
+  "tickernelz/wardmote/suggestion-box",
 ] as const;
 
 /**

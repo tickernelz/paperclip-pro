@@ -2141,9 +2141,7 @@ rl.on("line", (line) => {
   });
 
   it.each([
-    { connectionMethodKey: "managed", transportConfigOnly: false },
     { connectionMethodKey: "mcp-key", transportConfigOnly: false },
-    { connectionMethodKey: "managed", transportConfigOnly: true },
     { connectionMethodKey: "mcp-key", transportConfigOnly: true },
   ])("sends the GitHub Actions toolset for $connectionMethodKey (legacy config: $transportConfigOnly)", async ({ connectionMethodKey, transportConfigOnly }) => {
     const company = await createCompany(db);

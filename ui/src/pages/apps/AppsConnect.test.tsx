@@ -3,7 +3,7 @@
 import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { CONNECTABLE_APP_DEFINITIONS, GOOGLE_WORKSPACE_CONNECTOR_PROFILES, getAppStoreDefinition } from "@tickernelz/wardmote-shared";
+import { CONNECTABLE_APP_DEFINITIONS, getAppStoreDefinition } from "@tickernelz/wardmote-shared";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/api/client";
 import { aiConnectionsApi } from "@/api/ai-connections";
@@ -30,8 +30,6 @@ const connectAppMock = vi.hoisted(() => vi.fn());
 const startOAuthMock = vi.hoisted(() => vi.fn());
 const finishAppMock = vi.hoisted(() => vi.fn());
 const putConnectionInstallsMock = vi.hoisted(() => vi.fn());
-const getCloudConnectorEnrollmentMock = vi.hoisted(() => vi.fn());
-const startCloudConnectorEnrollmentMock = vi.hoisted(() => vi.fn());
 const listAgentsMock = vi.hoisted(() => vi.fn());
 const mockNavigate = vi.hoisted(() => vi.fn());
 const openAggregatorTaskMock = vi.hoisted(() => vi.fn());
@@ -48,19 +46,8 @@ const mockCompany = vi.hoisted(() => ({
 
 const ZAPIER = CONNECTABLE_APP_DEFINITIONS.find((app) => app.slug === "zapier")!;
 const GITHUB = CONNECTABLE_APP_DEFINITIONS.find((app) => app.slug === "github")!;
-const GITHUB_MANAGED = {
-  ...GITHUB,
-  ownershipAvailability: {
-    ...GITHUB.ownershipAvailability,
-    platform_shared: true,
-  },
-};
 const NOTION = CONNECTABLE_APP_DEFINITIONS.find((app) => app.slug === "notion")!;
 const ASANA = CONNECTABLE_APP_DEFINITIONS.find((app) => app.slug === "asana")!;
-const ASANA_MANAGED = {
-  ...ASANA,
-  ownershipAvailability: { ...ASANA.ownershipAvailability, platform_shared: true },
-};
 const BOX = CONNECTABLE_APP_DEFINITIONS.find((app) => app.slug === "box")!;
 const POSTHOG = CONNECTABLE_APP_DEFINITIONS.find((app) => app.slug === "posthog")!;
 const NEON = CONNECTABLE_APP_DEFINITIONS.find((app) => app.slug === "neon")!;
@@ -88,9 +75,6 @@ vi.mock("@/api/tools", () => ({
       finishAppMock(companyId, connectionId, input),
     putConnectionInstalls: (connectionId: string, installs: unknown) =>
       putConnectionInstallsMock(connectionId, installs),
-    getCloudConnectorEnrollment: () => getCloudConnectorEnrollmentMock(),
-    startCloudConnectorEnrollment: (companyId: string, label?: string, returnTo?: string) =>
-      startCloudConnectorEnrollmentMock(companyId, label, returnTo),
   },
 }));
 
@@ -323,23 +307,6 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     });
     finishAppMock.mockResolvedValue({});
     putConnectionInstallsMock.mockResolvedValue({ connectionId: "conn-1", installs: [] });
-    getCloudConnectorEnrollmentMock.mockResolvedValue({
-      configured: true,
-      status: "active",
-      brokerBaseUrl: "https://my-staging.paperclip.app",
-      instanceId: "inst-test",
-      environment: "staging",
-      origins: ["https://paperclip.example.test"],
-    });
-    startCloudConnectorEnrollmentMock.mockResolvedValue({
-      configured: false,
-      status: "pending",
-      brokerBaseUrl: "https://my-staging.paperclip.app",
-      instanceId: "inst-test",
-      environment: "staging",
-      origins: [],
-      verificationUrl: "https://my-staging.paperclip.app/connections/enroll?id=enroll-test",
-    });
     connectAppMock.mockResolvedValue({
       connectionId: "conn-1",
       application: { id: "app-1", name: "example.com" },
@@ -949,50 +916,6 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     expect(container.textContent).not.toContain("Connect for tool access instead");
   });
 
-  it("states the GitHub identity default and keeps its controls one click away", async () => {
-    mockParams.appKey = "github";
-    listGalleryMock.mockResolvedValue({ apps: [GITHUB_MANAGED] });
-    await render();
-
-    // PAP-659 C0: the default is printed, not asked. Nothing about identity or
-    // reach blocks the primary action.
-    expect(container.textContent).toContain("Connects as you, available to all agents.");
-    expect(container.textContent).not.toContain("Connect GitHub as");
-    expect(container.querySelector('[role="radio"]')).toBeNull();
-
-    await openAccessAdvanced();
-
-    expect(container.textContent).toContain("Connect GitHub as");
-    expect(container.textContent).toContain("Which agents may use your GitHub when you’re responsible?");
-    expect(container.textContent).not.toContain("Choose access before adding credentials");
-    expect(container.textContent).not.toContain("Set the identity and agent reach first");
-    expect(container.textContent).not.toContain("Which humans can use this credential?");
-    expect(container.textContent).not.toContain("Choose where this connection will be available.");
-    // Nothing about the credential itself is on screen yet.
-    expect(container.querySelector('input[type="password"]')).toBeNull();
-
-    const radios = Array.from(document.body.querySelectorAll('[role="radio"]'));
-    const myAccount = radios.find((r) => r.textContent?.includes("My GitHub account"));
-    const dedicated = radios.find((r) => r.textContent?.includes("A dedicated account for an agent"));
-    const agentsIPick = radios.find((r) => r.textContent?.includes("Only agents I choose"));
-    const anyAgent = radios.find((r) => r.textContent?.includes("Any agent"));
-    expect(myAccount).toBeTruthy();
-    expect(dedicated).toBeTruthy();
-    expect(myAccount?.textContent).toContain("Agents use it only for runs where you are the responsible person.");
-    expect(dedicated?.textContent).toContain("That agent always uses this account, regardless of who starts the run.");
-    expect(agentsIPick?.textContent).toContain("Only selected agents may use your GitHub when you’re responsible.");
-    expect(anyAgent?.textContent).toContain("Every agent may use your GitHub when you’re responsible.");
-    expect(myAccount?.querySelectorAll('[data-slot="radio-card-icon"] svg')).toHaveLength(1);
-    expect(dedicated?.querySelectorAll('[data-slot="radio-card-icon"] svg')).toHaveLength(1);
-    expect(agentsIPick?.querySelectorAll('[data-slot="radio-card-icon"] svg')).toHaveLength(1);
-    expect(anyAgent?.querySelectorAll('[data-slot="radio-card-icon"] svg')).toHaveLength(2);
-    expect(myAccount?.getAttribute("aria-checked")).toBe("true");
-    expect(dedicated?.getAttribute("aria-checked")).toBe("false");
-    // Every agent is the default reach for the responsible person's identity.
-    expect(agentsIPick?.getAttribute("aria-checked")).toBe("false");
-    expect(anyAgent?.getAttribute("aria-checked")).toBe("true");
-  });
-
   it("keeps provider guidance and card styling out of the access controls", async () => {
     mockParams.appKey = "pagerduty";
     listGalleryMock.mockResolvedValue({ apps: [PAGERDUTY] });
@@ -1169,26 +1092,6 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     expect(gmail?.textContent).not.toContain("Coming soon");
   });
 
-  it("defaults Asana to managed sign-in and allows a custom app before enrollment", async () => {
-    mockSearch.value = "source=asana";
-    listGalleryMock.mockResolvedValue({ apps: [{ ...ASANA, methods: ASANA.methods.filter((method) => !method.oauthStrategy), ownershipAvailability: {
-      ...ASANA.ownershipAvailability, platform_shared: false,
-    } }] });
-    getCloudConnectorEnrollmentMock.mockResolvedValue({ configured: false, status: "not_configured", origins: [] });
-    await render();
-    await passAccessStep();
-    expect(container.textContent).toContain("Connect with Paperclip Cloud");
-    await act(async () => { buttonByText("Use your own Asana OAuth app")!.click(); });
-    await flushReact();
-    expect(container.textContent).toContain("Your OAuth app");
-    expect(container.textContent).toContain("API apps do not work with Asana MCP");
-    expect(container.textContent).not.toContain("You must connect this instance");
-    await act(async () => { setInputValue(container.querySelector<HTMLInputElement>("#curated-oauth-client-id")!, "asana-client"); });
-    await flushReact();
-    expect(buttonByText("Continue to sign in")?.disabled).toBe(true);
-    expect(startCloudConnectorEnrollmentMock).not.toHaveBeenCalled();
-  });
-
   it.each([true, false])("requires the acting user's saved Asana client secret for reuse (%s)", async (hasSavedOAuthClientSecret) => {
     mockSearch.value = "source=asana&resume=conn-asana";
     listGalleryMock.mockResolvedValue({ apps: [ASANA] });
@@ -1250,65 +1153,6 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
         clientId: "box-client-id",
         clientSecret: "box-client-secret",
       },
-    }));
-  });
-
-  it("connects Asana through the shared app without client credentials", async () => {
-    listGalleryMock.mockResolvedValue({ apps: [ASANA_MANAGED] });
-    mockParams.appKey = "asana";
-    await render();
-    await flushReact();
-
-    expect(container.textContent).not.toContain("needs its own OAuth app");
-    expect(container.querySelector("#curated-oauth-client-id")).toBeNull();
-    const primary = buttonByText("Continue to sign in");
-    expect(primary).toBeTruthy();
-    expect(primary?.disabled).toBe(false);
-    await act(async () => { primary!.click(); });
-    await flushReact();
-    expect(connectAppMock).toHaveBeenCalledWith("company-1", expect.objectContaining({
-      galleryKey: "asana", connectionMethodKey: "managed", grantKind: "user",
-    }));
-  });
-
-  it("allows a custom Asana app from the shared sign-in setup", async () => {
-    listGalleryMock.mockResolvedValue({ apps: [ASANA_MANAGED] });
-    mockParams.appKey = "asana";
-    connectAppMock.mockResolvedValueOnce({
-      connectionId: "conn-asana",
-      application: { id: "app-asana", name: "Asana" },
-      connection: { id: "conn-asana" },
-      actions: { readOnly: [], canMakeChanges: [] },
-      catalog: [],
-      suggestedDefaults: {},
-      auth: { kind: "oauth", startUrl: "https://app.asana.com/-/oauth_authorize?state=opaque" },
-    });
-    await render();
-    await flushReact();
-    expect(container.querySelector("#curated-oauth-client-id")).toBeNull();
-
-    await openAccessAdvanced();
-    await flushReact();
-    const customApp = buttonByText("Use your own Asana OAuth app");
-    expect(customApp).toBeTruthy();
-    await act(async () => { customApp!.dispatchEvent(new MouseEvent("click", { bubbles: true })); });
-    await flushReact();
-
-    const clientId = container.querySelector<HTMLInputElement>("#curated-oauth-client-id");
-    const clientSecret = container.querySelector<HTMLInputElement>("#curated-oauth-client-secret");
-    expect(clientId).toBeTruthy();
-    expect(clientSecret).toBeTruthy();
-    await act(async () => {
-      setInputValue(clientId!, "asana-own-client");
-      setInputValue(clientSecret!, "asana-own-secret");
-    });
-    await flushReact();
-    await act(async () => { buttonByText("Continue to sign in")!.click(); });
-    await flushReact();
-
-    expect(connectAppMock).toHaveBeenLastCalledWith("company-1", expect.objectContaining({
-      galleryKey: "asana", connectionMethodKey: "mcp-own-oauth",
-      oauthClient: { clientId: "asana-own-client", clientSecret: "asana-own-secret" },
     }));
   });
 
@@ -1403,187 +1247,6 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     expect(mockNavigate).not.toHaveBeenCalledWith("/apps/connect", { replace: true });
   });
 
-  it("prompts for one-time Cloud registration inside Gmail when managed methods are not yet advertised", async () => {
-    mockParams.appKey = "gmail";
-    listGalleryMock.mockResolvedValue({
-      apps: [{
-        ...GMAIL,
-        methods: GMAIL.methods.filter((method) => !method.oauthStrategy),
-        ownershipAvailability: { platform_shared: false, customer: true, dcr: true },
-      }],
-    });
-    getCloudConnectorEnrollmentMock.mockResolvedValueOnce({
-      configured: false,
-      status: "not_configured",
-      brokerBaseUrl: "https://my-staging.paperclip.app",
-      instanceId: null,
-      environment: "staging",
-      origins: [],
-    });
-
-    await render();
-    await passAccessStep();
-
-    expect(container.textContent).toContain("Connect with Paperclip Cloud");
-    expect(container.textContent).toContain(
-      "You must connect this instance to Paperclip Cloud to connect to Gmail (you only need to do this once).",
-    );
-    expect(buttonByText("Connect with Paperclip Cloud")?.closest(".rounded-xl")?.classList.contains("border-line")).toBe(true);
-    expect(container.textContent).not.toContain("Required once for managed Google sign-in.");
-    expect(container.textContent).not.toContain("needs its own OAuth app");
-
-    await act(async () => {
-      buttonByText("Connect with Paperclip Cloud")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    });
-    await flushReact();
-
-    expect(startCloudConnectorEnrollmentMock).toHaveBeenCalledWith(
-      "company-1",
-      "Wardmote",
-      "/apps/connect?source=gmail&stage=setup",
-    );
-    expect(navigateTopLevelMock).toHaveBeenCalledWith(
-      "https://my-staging.paperclip.app/connections/enroll?id=enroll-test",
-    );
-  });
-
-  it.each([false, true])("retains task access and interaction through enrollment (popup blocked: %s)", async (popupBlocked) => {
-    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-    const popup = { closed: false, location: { assign: vi.fn() }, focus: vi.fn(), close: vi.fn() };
-    const open = vi.spyOn(window, "open").mockReturnValue(popupBlocked ? null : popup as unknown as Window);
-    listGalleryMock.mockResolvedValue({ apps: [{
-      ...GMAIL, methods: GMAIL.methods.filter((method) => !method.oauthStrategy),
-      ownershipAvailability: { platform_shared: false, customer: true, dcr: true },
-    }] });
-    getCloudConnectorEnrollmentMock.mockResolvedValue({ status: "not_configured" });
-    await render(client, false, <ConnectionSetupFlow host="dialog" serviceSlug="gmail" interactionId="intent-1" requestedAgentId="agent-1" />);
-    await passAccessStep();
-    await act(async () => buttonByText("Connect with Paperclip Cloud")?.click());
-    await flushReact();
-    expect(open).toHaveBeenCalled();
-    if (popupBlocked) {
-      expect(popup.location.assign).not.toHaveBeenCalled();
-    } else {
-      expect(popup.location.assign).toHaveBeenCalledWith("https://my-staging.paperclip.app/connections/enroll?id=enroll-test");
-    }
-    const fallback = container.querySelector<HTMLAnchorElement>('a[target="_blank"]');
-    expect(fallback?.textContent).toBe("Open authorization in a new tab");
-    expect(fallback?.href).toBe("https://my-staging.paperclip.app/connections/enroll?id=enroll-test");
-    expect(navigateTopLevelMock).not.toHaveBeenCalled();
-    expect(startCloudConnectorEnrollmentMock).toHaveBeenCalledWith("company-1", "Wardmote", "/apps/connect?source=gmail&stage=setup&intent=intent-1&enrollment_host=dialog");
-    listGalleryMock.mockResolvedValue({ apps: [{ ...GMAIL, ownershipAvailability: { ...GMAIL.ownershipAvailability, platform_shared: true } }] });
-    getCloudConnectorEnrollmentMock.mockResolvedValue({ status: "active" });
-    await act(async () => { await client.invalidateQueries({ queryKey: ["cloud-connector", "enrollment"] }); });
-    await flushReact();
-    await flushReact();
-    if (!popupBlocked) expect(popup.close).toHaveBeenCalled();
-    await openAccessAdvanced();
-    expect(container.textContent).toContain("What should Wardmote be able to do?");
-    connectAppMock.mockResolvedValue({ connectionId: "gmail-1", connection: { id: "gmail-1", credentialPolicy: "per_user" }, auth: { kind: "oauth", startUrl: "https://example.test/unbound" } });
-    await act(async () => buttonByText("Continue to sign in")?.click());
-    await flushReact();
-    expect(connectAppMock).toHaveBeenCalledWith("company-1", expect.objectContaining({ grantKind: "user" }));
-    expect(startOAuthMock).toHaveBeenCalledWith("gmail-1", { asCurrentUser: true, interactionId: "intent-1" });
-    expect(putConnectionInstallsMock).not.toHaveBeenCalled();
-    open.mockRestore();
-  });
-
-  it.each(["request", "missing-url", "invalid-url"])("closes the reserved enrollment popup after %s failure", async (failure) => {
-    const popup = { closed: false, location: { assign: vi.fn() }, focus: vi.fn(), close: vi.fn() };
-    vi.spyOn(window, "open").mockReturnValue(popup as unknown as Window);
-    listGalleryMock.mockResolvedValue({ apps: [{
-      ...GMAIL, methods: GMAIL.methods.filter((method) => !method.oauthStrategy),
-      ownershipAvailability: { platform_shared: false, customer: true, dcr: true },
-    }] });
-    getCloudConnectorEnrollmentMock.mockResolvedValue({ status: "not_configured" });
-    if (failure === "request") {
-      startCloudConnectorEnrollmentMock.mockRejectedValue(new Error("Enrollment unavailable"));
-    } else {
-      startCloudConnectorEnrollmentMock.mockResolvedValue({
-        status: "pending",
-        verificationUrl: failure === "missing-url" ? undefined : "javascript:alert(1)",
-      });
-    }
-    await render(undefined, false, <ConnectionSetupFlow host="dialog" serviceSlug="gmail" interactionId="intent-1" requestedAgentId="agent-1" />);
-    await passAccessStep();
-    await act(async () => buttonByText("Connect with Paperclip Cloud")?.click());
-    await flushReact();
-    expect(popup.close).toHaveBeenCalledOnce();
-    expect(popup.location.assign).not.toHaveBeenCalled();
-    expect(navigateTopLevelMock).not.toHaveBeenCalled();
-    expect(container.textContent).not.toContain("Finish authorization in the opened window");
-  });
-
-  it("binds OAuth to the task even when setup resumes in the page host", async () => {
-    mockSearch.value = "source=gmail&stage=setup&intent=intent-1";
-    listGalleryMock.mockResolvedValue({ apps: [{ ...GMAIL, ownershipAvailability: { ...GMAIL.ownershipAvailability, platform_shared: true } }] });
-    connectAppMock.mockResolvedValue({ connectionId: "gmail-1", connection: { id: "gmail-1", credentialPolicy: "shared" }, auth: { kind: "oauth", startUrl: "https://example.test/unbound" } });
-    await render();
-    await act(async () => buttonByText("Continue to sign in")?.click());
-    await flushReact();
-    expect(startOAuthMock).toHaveBeenCalledWith("gmail-1", { asCurrentUser: false, interactionId: "intent-1" });
-    expect(navigateTopLevelMock).not.toHaveBeenCalledWith("https://example.test/unbound");
-  });
-
-  it.each(["2020-01-01T00:00:00.000Z", "2099-01-01T00:00:00.000Z"])(
-    "revalidates a cached pending enrollment before continuing (expiry %s)",
-    async (expiresAt) => {
-      mockSearch.value = "source=github&stage=setup";
-      listGalleryMock.mockResolvedValue({
-        apps: [{
-          ...GITHUB,
-          methods: GITHUB.methods.filter((method) => !method.oauthStrategy),
-          ownershipAvailability: { platform_shared: false, customer: true, dcr: true },
-        }],
-      });
-      getCloudConnectorEnrollmentMock.mockResolvedValue({
-        configured: false,
-        status: "pending",
-        brokerBaseUrl: "https://my-staging.paperclip.app",
-        instanceId: "inst-test",
-        environment: "staging",
-        origins: [],
-        verificationUrl: "https://my-staging.paperclip.app/connections/enroll?id=cached",
-        expiresAt,
-      });
-
-      await render();
-      await act(async () => {
-        buttonByText("Continue")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-      });
-      await flushReact();
-
-      expect(startCloudConnectorEnrollmentMock).toHaveBeenCalledWith(
-        "company-1", "Wardmote", "/apps/connect?source=github&stage=setup",
-      );
-      expect(navigateTopLevelMock).toHaveBeenCalledWith(
-        "https://my-staging.paperclip.app/connections/enroll?id=enroll-test",
-      );
-      expect(navigateTopLevelMock).not.toHaveBeenCalledWith(
-        "https://my-staging.paperclip.app/connections/enroll?id=cached",
-      );
-    },
-  );
-
-  it("labels GitHub's setup transition as the provider handoff it now is", async () => {
-    mockSearch.value = "source=github";
-    listGalleryMock.mockResolvedValue({ apps: [GITHUB_MANAGED] });
-
-    await render();
-
-    // PAP-659: the screen that used to precede the handoff is gone, so the one
-    // primary action names the provider instead of a generic "Continue".
-    expect(buttonByText("Continue")).toBeUndefined();
-    const handoff = buttonByText("Continue to GitHub");
-    expect(handoff).toBeDefined();
-    expect(handoff?.disabled).toBe(false);
-
-    await openAccessAdvanced();
-    expect(container.textContent).toContain("How do you want to connect?");
-    expect(startOAuthMock).not.toHaveBeenCalled();
-    expect(connectAppMock).not.toHaveBeenCalled();
-  });
-
   it("keeps provider-specific wording and the handoff cue for direct OAuth", async () => {
     mockSearch.value = "source=notion";
     listGalleryMock.mockResolvedValue({ apps: [NOTION] });
@@ -1593,301 +1256,6 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     const continueButton = buttonByText("Continue to Notion");
     expect(continueButton).toBeDefined();
     expect(continueButton?.querySelector(".lucide-arrow-up-right")).not.toBeNull();
-  });
-
-  it("keeps GitHub's personal identity defaults while its managed method awaits enrollment", async () => {
-    mockParams.appKey = "github";
-    listGalleryMock.mockResolvedValue({
-      apps: [{
-        ...GITHUB,
-        methods: GITHUB.methods.filter((method) => !method.oauthStrategy),
-        ownershipAvailability: { platform_shared: false, customer: true, dcr: true },
-      }],
-    });
-    getCloudConnectorEnrollmentMock.mockResolvedValueOnce({
-      configured: false,
-      status: "not_configured",
-      brokerBaseUrl: "https://my-staging.paperclip.app",
-      instanceId: null,
-      environment: "staging",
-      origins: [],
-    });
-
-    await render();
-
-    expect(container.textContent).toContain("Connects as you");
-    await openAccessAdvanced();
-    expect(radioContaining("My GitHub account")?.getAttribute("aria-checked")).toBe("true");
-    expect(radioContaining("Any agent")?.getAttribute("aria-checked")).toBe("true");
-    expect(container.textContent).toContain("Which agents may use your GitHub when you’re responsible?");
-    // Enrolment is the screen; its own action is the only primary one.
-    expect(buttonByText("Connect with Paperclip Cloud")).toBeDefined();
-    expect(buttonByText("Continue to GitHub")).toBeUndefined();
-
-    await passAccessStep();
-
-    expect(container.textContent).toContain("Connect with Paperclip Cloud");
-    expect(container.textContent).not.toContain("GitHub token");
-  });
-
-  it("restores the setup step after the one-time enrollment callback", async () => {
-    mockSearch.value = "source=github&stage=setup&cloud_connector=enrolled";
-    listGalleryMock.mockResolvedValueOnce({ apps: [GITHUB_MANAGED] });
-
-    await render();
-
-    expect(container.textContent).toContain("Continue to GitHub");
-    expect(container.textContent).not.toContain("Connect GitHub as");
-    expect(container.textContent).not.toContain("Connect with Paperclip Cloud");
-  });
-
-  it("explains unavailable GitHub sign-in without silently switching to a PAT", async () => {
-    mockSearch.value = "source=github&stage=setup&cloud_connector=enrolled";
-    listGalleryMock.mockResolvedValueOnce({
-      apps: [{
-        ...GITHUB,
-        methods: GITHUB.methods.filter((method) => !method.oauthStrategy),
-        ownershipAvailability: { platform_shared: false, customer: true, dcr: true },
-      }],
-    });
-
-    await render();
-
-    expect(container.textContent).not.toContain("Chat with an agent");
-    expect(container.textContent).not.toContain("GitHub App ID");
-    expect(container.textContent).toContain("GitHub sign-in is unavailable");
-    expect(container.textContent).not.toContain("Your GitHub key");
-    expect(container.querySelector('input[type="password"]')).toBeNull();
-    expect(buttonByText("Try again")?.disabled).toBe(false);
-
-    listGalleryMock.mockResolvedValue({ apps: [GITHUB_MANAGED] });
-    await act(async () => buttonByText("Try again")!.click());
-    await flushReact();
-    expect(container.textContent).toContain("Continue to GitHub");
-    expect(container.textContent).not.toContain("GitHub sign-in is unavailable");
-  });
-
-  it("keeps GitHub sign-in intent when enrollment recovery reveals an unavailable profile", async () => {
-    mockSearch.value = "source=github&stage=setup&cloud_connector=enrolled";
-    listGalleryMock.mockResolvedValueOnce({
-      apps: [{
-        ...GITHUB,
-        methods: GITHUB.methods.filter((method) => !method.oauthStrategy),
-        ownershipAvailability: { platform_shared: false, customer: true, dcr: true },
-      }],
-    });
-    getCloudConnectorEnrollmentMock
-      .mockRejectedValueOnce(new Error("Cloud unavailable"))
-      .mockResolvedValueOnce({
-        configured: true,
-        status: "active",
-        brokerBaseUrl: "https://my-staging.paperclip.app",
-        instanceId: "inst-test",
-        environment: "staging",
-        origins: ["https://paperclip.example.test"],
-      });
-    const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-
-    await render(queryClient);
-
-    expect(container.textContent).toContain("Wardmote couldn’t check Cloud registration. Try again.");
-    expect(container.textContent).not.toContain("Your GitHub key");
-
-    await act(async () => {
-      await queryClient.invalidateQueries({ queryKey: ["cloud-connector", "enrollment"] });
-    });
-    await flushReact();
-
-    expect(container.textContent).toContain("GitHub sign-in is unavailable");
-    expect(container.textContent).not.toContain("Your GitHub key");
-    expect(buttonByText("Try again")?.disabled).toBe(false);
-  });
-
-  it("preserves a dedicated agent identity across the full-page enrollment callback", async () => {
-    mockParams.appKey = "github";
-    listGalleryMock.mockResolvedValue({
-      apps: [{
-        ...GITHUB,
-        methods: GITHUB.methods.filter((method) => !method.oauthStrategy),
-        ownershipAvailability: { platform_shared: false, customer: true, dcr: true },
-      }],
-      capabilities: {
-        canCreateOrganizationGrant: true,
-        organizationGrantReason: null,
-        canSetCompanyInstall: true,
-        companyInstallReason: null,
-      },
-    });
-    getCloudConnectorEnrollmentMock.mockResolvedValue({
-      configured: false,
-      status: "not_configured",
-      brokerBaseUrl: "https://my-staging.paperclip.app",
-      instanceId: null,
-      environment: "staging",
-      origins: [],
-    });
-
-    await render();
-    await openAccessAdvanced();
-    await act(async () => {
-      radioContaining("A dedicated account for an agent")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    });
-    await flushReact();
-    await act(async () => {
-      buttonByText("Select agents")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    });
-    await flushReact();
-    await act(async () => {
-      document.body.querySelector<HTMLElement>('[aria-label="Allow Ada"]')
-        ?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    });
-    await flushReact();
-    await act(async () => {
-      buttonByText("Connect with Paperclip Cloud")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    });
-    await flushReact();
-
-    expect(JSON.parse(window.sessionStorage.getItem(
-      "paperclip.connector-enrollment-access:github",
-    ) ?? "null")).toEqual({
-      companyId: "company-1",
-      grantKind: "agent",
-      installChoice: "specific",
-      agentIds: ["agent-1"],
-    });
-
-    await act(async () => mountedRoot?.unmount());
-    mountedRoot = null;
-    container.innerHTML = "";
-    mockParams.appKey = undefined;
-    mockSearch.value = "source=github&stage=setup&cloud_connector=enrolled";
-    mockCompany.value = { selectedCompanyId: undefined, selectedCompany: null };
-    listGalleryMock.mockResolvedValue({ apps: [GITHUB_MANAGED] });
-    getCloudConnectorEnrollmentMock.mockResolvedValue({
-      configured: true,
-      status: "active",
-      brokerBaseUrl: "https://my-staging.paperclip.app",
-      instanceId: "inst-test",
-      environment: "staging",
-      origins: ["https://paperclip.example.test"],
-    });
-
-    const coldLoadClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-    await render(coldLoadClient);
-
-    expect(window.sessionStorage.getItem("paperclip.connector-enrollment-access:github")).toBeNull();
-    mockCompany.value = {
-      selectedCompanyId: "company-1",
-      selectedCompany: { id: "company-1", name: "Wardmote" },
-    };
-    await act(async () => {
-      mountedRoot?.render(
-        <QueryClientProvider client={coldLoadClient}>
-          <TooltipProvider><AppsConnect /></TooltipProvider>
-        </QueryClientProvider>,
-      );
-    });
-    await flushReact();
-    await flushReact();
-
-    expect(container.textContent).toContain("Connects as a dedicated agent account");
-    expect(window.sessionStorage.getItem(
-      "paperclip.connector-enrollment-access:github",
-    )).toBeNull();
-    await act(async () => {
-      buttonByText("Continue to GitHub")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-    });
-    await flushReact();
-
-    expect(connectAppMock).toHaveBeenCalledWith("company-1", expect.objectContaining({
-      galleryKey: "github",
-      grantKind: "agent",
-      subjectAgentId: "agent-1",
-    }));
-  });
-
-  it.each([...new Set(Object.values(GOOGLE_WORKSPACE_CONNECTOR_PROFILES).map((profile) => profile.appSlug))]
-    .flatMap((slug) => [false, true].map((enrollmentReturn) => ({ slug, enrollmentReturn }))))(
-    "preserves personal Workspace access for $slug when changing method (enrollment return: $enrollmentReturn)",
-    async ({ slug, enrollmentReturn }) => {
-      const definition = CONNECTABLE_APP_DEFINITIONS.find((app) => app.slug === slug)!;
-      const readMethod = definition.methods.find((method) => method.key === "paperclip-read")!;
-      mockSearch.value = enrollmentReturn
-        ? `source=${slug}&stage=setup&cloud_connector=enrolled`
-        : `source=${slug}`;
-      if (enrollmentReturn) {
-        window.sessionStorage.setItem(`paperclip.connector-enrollment-access:${slug}`, JSON.stringify({
-          companyId: "company-1", grantKind: "user", installChoice: "all", agentIds: [],
-        }));
-      }
-      listGalleryMock.mockResolvedValue({ apps: [{
-        ...definition, ownershipAvailability: { ...definition.ownershipAvailability, platform_shared: true },
-      }] });
-      await render();
-      await openAccessAdvanced();
-      if (!enrollmentReturn) {
-        await act(async () => {
-          radioContaining("Just me")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-        });
-        await flushReact();
-      }
-
-      if (definition.methods.some((method) => method.capabilityProfile?.key !== "read")) {
-        const readChoice = radioContaining(readMethod.capabilityProfile!.label);
-        expect(readChoice).not.toBeNull();
-        await act(async () => {
-          readChoice!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-        });
-      }
-      await flushReact();
-      // Change auth methods too, including apps with only one capability.
-      expect(container.textContent).not.toContain("Connect with Paperclip Cloud");
-      expect(container.textContent).not.toContain("needs its own OAuth app");
-      expect(buttonByText("Continue to sign in")?.disabled).toBe(false);
-      const customerAuth = buttonByText("Use your own Google OAuth app");
-      expect(customerAuth).toBeDefined();
-      expect(customerAuth?.getAttribute("aria-expanded")).toBe("false");
-      await act(async () => {
-        customerAuth!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-      });
-      await flushReact();
-      expect(container.textContent).toContain("needs its own OAuth app");
-      expect(container.textContent).toContain("Client ID");
-      expect(buttonByText("Continue to sign in")?.disabled).toBe(true);
-      const managedAuth = buttonByText("Use Wardmote instead");
-      expect(managedAuth).toBeDefined();
-      expect(managedAuth?.getAttribute("aria-expanded")).toBe("true");
-      const fieldsRegion = document.getElementById(managedAuth!.getAttribute("aria-controls")!);
-      expect(fieldsRegion?.getAttribute("role")).toBe("region");
-      expect(fieldsRegion?.textContent).toContain("Client ID");
-      await act(async () => {
-        managedAuth!.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-      });
-      await flushReact();
-      expect(container.textContent).not.toContain("needs its own OAuth app");
-      await act(async () => {
-        buttonByText("Continue to sign in")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
-      });
-      await flushReact();
-      expect(connectAppMock).toHaveBeenCalledWith("company-1", expect.objectContaining({
-        galleryKey: slug, connectionMethodKey: "paperclip-read", grantKind: "user",
-      }));
-  });
-
-  it("never renders self-host enrollment when the connector identity is already active", async () => {
-    mockSearch.value = "source=gmail&stage=setup";
-    listGalleryMock.mockResolvedValueOnce({
-      apps: [{
-        ...GMAIL,
-        methods: GMAIL.methods.filter((method) => !method.oauthStrategy),
-        ownershipAvailability: { platform_shared: false, customer: true, dcr: true },
-      }],
-    });
-
-    await render();
-
-    expect(container.textContent).not.toContain("You must connect this instance to Paperclip");
-    expect(container.textContent).not.toContain("Connect with Paperclip Cloud");
   });
 
   it("keeps Google Drive prerequisites off access and defaults to its write-capable method", async () => {
@@ -2397,35 +1765,6 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     expect(focus).toHaveBeenCalled();
 
     openSpy.mockRestore();
-    await act(async () => dialogRoot.unmount());
-  });
-
-  it("returns a standalone GitHub popup to its host only after verifying the saved connection", async () => {
-    listGalleryMock.mockResolvedValue({ apps: [GITHUB_MANAGED] });
-    connectAppMock.mockResolvedValue({
-      connectionId: "conn-github", application: { id: "app-github", name: "GitHub" },
-      connection: { id: "conn-github", credentialPolicy: "per_user" },
-      actions: { readOnly: [], canMakeChanges: [] }, catalog: [], suggestedDefaults: {},
-      auth: { kind: "oauth" },
-    });
-    const popup = { closed: false, location: { href: "about:blank", assign: vi.fn() }, focus: vi.fn(), close: vi.fn() };
-    vi.spyOn(window, "open").mockReturnValue(popup as unknown as Window);
-    const onComplete = vi.fn();
-    getConnectionMock.mockResolvedValue({ id: "conn-github", status: "active" });
-    const dialogRoot = await render(undefined, false, <ConnectionSetupFlow host="dialog" serviceSlug="github" forceNewConnection onComplete={onComplete} />);
-    await passAccessStep();
-    await act(async () => buttonByText("Continue to GitHub")!.click());
-    await flushReact();
-    await flushReact();
-    expect(connectAppMock, container.textContent ?? "").toHaveBeenCalled();
-    expect(startOAuthMock, container.textContent ?? "").toHaveBeenCalledWith("conn-github", { asCurrentUser: true });
-    expect(onComplete).not.toHaveBeenCalled();
-    popup.location.href = `${window.location.origin}/CO/apps/conn-github/permissions?success=1`;
-    await act(async () => {
-      await vi.waitFor(() => expect(onComplete).toHaveBeenCalledWith({ connectionId: "conn-github" }), { timeout: 2500 });
-    });
-    expect(getConnectionMock).toHaveBeenCalledWith("conn-github");
-    expect(popup.close).toHaveBeenCalled();
     await act(async () => dialogRoot.unmount());
   });
 
@@ -2945,26 +2284,6 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     expect(mockNavigate).not.toHaveBeenCalled();
     expect(connectAppMock).not.toHaveBeenCalled();
     expect(startOAuthMock).not.toHaveBeenCalled();
-  });
-
-  it("shows installation recovery for GitHub even when an advanced PAT method is available", async () => {
-    const connectionId = "22222222-2222-4222-8222-222222222222";
-    mockSearch.value = `source=github&resume=${connectionId}&oauth=failed&code=github_installation_required&installation_url=https%3A%2F%2Fgithub.com%2Fapps%2Fpaperclip-for-github%2Finstallations%2Fnew`;
-    listGalleryMock.mockResolvedValue({ apps: [GITHUB_MANAGED] });
-    listApplicationsMock.mockResolvedValue({ applications: [{ id: "app-github", status: "draft", metadata: { sourceTemplateKey: "github" } }] });
-    listConnectionsMock.mockResolvedValue({ connections: [{
-      id: connectionId, applicationId: "app-github", authKind: "oauth", credentialPolicy: "per_user", status: "draft",
-      config: { sourceTemplateKey: "github", connectionMethodKey: "managed" }, transportConfig: {},
-    }] });
-    await render();
-    await flushReact();
-    expect(container.textContent).toContain("Install Wardmote and grant at least one repository");
-    expect(container.querySelector('a[href="https://github.com/apps/paperclip-for-github/installations/new"]')?.textContent).toBe("Install the Paperclip Cloud app on GitHub");
-    expect(container.textContent).not.toContain("Your GitHub key");
-    await act(async () => buttonByText("Try again")!.click());
-    await flushReact();
-    expect(startOAuthMock).toHaveBeenCalledWith(connectionId, { asCurrentUser: true });
-    expect(connectAppMock).not.toHaveBeenCalled();
   });
 
   it("returns a declined OAuth draft to the same one-action resume checkpoint", async () => {

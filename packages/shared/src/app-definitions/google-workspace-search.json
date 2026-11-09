@@ -29,42 +29,6 @@
   "redirectConstraints": "https-or-loopback-http",
   "methods": [
     {
-      "key": "paperclip-read",
-      "label": "Connect with Paperclip Cloud",
-      "transport": "mcp_remote",
-      "auth": "oauth",
-      "oauthStrategy": "paperclip_cloud_connector",
-      "connectorProfile": "workspace-search.read",
-      "capabilityProfile": {
-        "key": "read",
-        "label": "Search Workspace",
-        "description": "Search Gmail, Drive, Calendar, and Chat without write access."
-      },
-      "grantKinds": [
-        "user",
-        "organization"
-      ],
-      "ownershipModes": [
-        "platform_shared"
-      ],
-      "whenToUse": "Use Paperclip Cloud OAuth for cross-product Workspace search.",
-      "defaults": {
-        "serverUrl": "https://workspacemcp.googleapis.com/mcp/v1",
-        "scopesHint": [
-          "https://www.googleapis.com/auth/gmail.readonly",
-          "https://www.googleapis.com/auth/drive.readonly",
-          "https://www.googleapis.com/auth/calendar.readonly",
-          "https://www.googleapis.com/auth/chat.messages.readonly"
-        ]
-      },
-      "guidanceMd": "Connect Google Workspace Search for one read-only search tool spanning Gmail, Drive, Calendar, and Chat.",
-      "warnings": [
-        "This requests read access to all four supported search corpora.",
-        "Google Workspace MCP servers are in Developer Preview."
-      ],
-      "riskTier": "S3"
-    },
-    {
       "key": "customer-read-oauth",
       "label": "Use your own Google OAuth app",
       "transport": "mcp_remote",

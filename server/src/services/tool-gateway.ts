@@ -98,13 +98,7 @@ import type {
   ToolMcpGatewayWithTokens,
   UpdateToolMcpGateway,
 } from "@tickernelz/wardmote-shared";
-import {
-  getConnectableAppDefinition,
-  isGitHubConnectorProfileId,
-  isGoogleWorkspaceConnectorProfileId,
-  type GitHubConnectorProfileId,
-  type GoogleWorkspaceConnectorProfileId,
-} from "@tickernelz/wardmote-shared";
+import { getConnectableAppDefinition } from "@tickernelz/wardmote-shared";
 import type {
   AgentToolDescriptor,
   PluginToolDispatcher,
@@ -155,13 +149,6 @@ import {
 } from "./tool-runtime-supervisor.js";
 import { recordToolRuntimeAuditWriteFailure } from "./tool-runtime-metrics.js";
 import { isRetiredComposioConnection, RETIRED_COMPOSIO_MESSAGE } from "@tickernelz/wardmote-shared";
-import {
-  createPaperclipCloudConnector,
-  isPaperclipCloudConnectorStrategy,
-  paperclipCloudConnectorConfigFromEnv,
-  PaperclipCloudConnectorError,
-  type PaperclipCloudConnector,
-} from "./paperclip-cloud-connector.js";
 import {
   createVercelConnectClient,
   vercelGrantReference,
@@ -1112,10 +1099,6 @@ export function createToolGatewayService(
     onToolActionSettled?: (actionRequestId: string) => Promise<unknown>;
     /** Test seam for deterministic remote MCP protocol fixtures. */
     remoteHttpRequest?: (url: string, init: RequestInit) => Promise<Response>;
-    /** Test seam for refreshing personal Gmail grants. */
-    paperclipCloudConnector?: PaperclipCloudConnector | null;
-    /** @deprecated Use paperclipCloudConnector. */
-    paperclipIdGmailConnector?: PaperclipCloudConnector | null;
     /** Refreshes customer-owned/DCR OAuth grants before remote MCP execution. */
     oauthGrantRefresher?: (input: {
       companyId: string;
@@ -1184,25 +1167,6 @@ export function createToolGatewayService(
       grant: typeof connectionGrants.$inferSelect;
       headers: Record<string, string>;
     }
-  >();
-  const configuredCloudConnector =
-    options.paperclipCloudConnector ?? options.paperclipIdGmailConnector;
-  const connectorWasProvided =
-    options.paperclipCloudConnector !== undefined ||
-    options.paperclipIdGmailConnector !== undefined;
-  let cachedCloudConnector = configuredCloudConnector ?? null;
-  const currentCloudConnector = (): PaperclipCloudConnector | null => {
-    if (cachedCloudConnector || connectorWasProvided)
-      return cachedCloudConnector;
-    const config = paperclipCloudConnectorConfigFromEnv();
-    cachedCloudConnector = config
-      ? createPaperclipCloudConnector({ config, now: options.now })
-      : null;
-    return cachedCloudConnector;
-  };
-  const gmailRefreshFlights = new Map<
-    string,
-    Promise<typeof connectionGrants.$inferSelect>
   >();
   const vercelConnect =
     options.vercelConnectClient === undefined
@@ -3746,243 +3710,6 @@ export function createToolGatewayService(
     }
   }
 
-  async function maybeRefreshPaperclipCloudGrant(
-    session: ToolGatewaySession,
-    connection: typeof toolConnections.$inferSelect,
-    grant: typeof connectionGrants.$inferSelect,
-    forceRefresh = false,
-  ): Promise<typeof connectionGrants.$inferSelect> {
-    const oauth = asRecord(asRecord(connection.config)?.oauth);
-    if (!oauth || !isPaperclipCloudConnectorStrategy(oauth.strategy))
-      return grant;
-    const configuredProfile = oauth.connectorProfile;
-    const connectorProfile:
-      GoogleWorkspaceConnectorProfileId | GitHubConnectorProfileId =
-      configuredProfile === undefined
-        ? "gmail.draft"
-        : typeof configuredProfile === "string" &&
-            (isGoogleWorkspaceConnectorProfileId(configuredProfile) ||
-              isGitHubConnectorProfileId(configuredProfile))
-          ? configuredProfile
-          : (() => {
-              throw new ToolGatewayHttpError(
-                422,
-                "Managed authorization has an invalid connector profile",
-                "connector_profile_invalid",
-                {
-                  connectionId: connection.id,
-                  grantId: grant.id,
-                },
-              );
-            })();
-    const connectorSubject =
-      typeof oauth.connectorSubjectAgentId === "string"
-        ? `agent:${oauth.connectorSubjectAgentId}`
-        : typeof oauth.connectorSubjectUserId === "string"
-          ? oauth.connectorSubjectUserId
-          : grant.kind === "agent" && grant.subjectAgentId
-            ? `agent:${grant.subjectAgentId}`
-            : grant.subjectUserId;
-    const grantOauth = asRecord(asRecord(grant.providerTenant)?.oauth);
-    const expiresAt =
-      typeof grantOauth?.accessTokenExpiresAt === "string"
-        ? Date.parse(grantOauth.accessTokenExpiresAt)
-        : Number.NaN;
-    const currentTime = options.now?.() ?? Date.now();
-    // The preferred GitHub App policy yields a non-expiring ghu_ token and no
-    // refresh token. Absence of an expiry is deliberate, not an invitation to
-    // enter the rotation path.
-    if (
-      grantOauth?.accessTokenExpiresAt === null ||
-      grantOauth?.accessTokenExpiresAt === undefined
-    )
-      return grant;
-    const refreshedAt =
-      typeof grantOauth.refreshedAt === "string"
-        ? Date.parse(grantOauth.refreshedAt)
-        : Number.NaN;
-    const rotationDue =
-      !Number.isFinite(refreshedAt) ||
-      refreshedAt <= currentTime - 30 * 24 * 60 * 60_000;
-    if (
-      !forceRefresh &&
-      Number.isFinite(expiresAt) &&
-      expiresAt > currentTime + 60 * 60_000 &&
-      !rotationDue
-    )
-      return grant;
-    if (oauth.strategy === "paperclip_id_connector") {
-      // Paperclip ID used different endpoints, signing metadata, envelope
-      // purposes, and a different Google client. Its refresh token cannot be
-      // exchanged through Paperclip Cloud. Let an unexpired access token finish
-      // its useful life, then require an explicit managed-connector enrollment
-      // and provider reconnect instead of sending it to the wrong client.
-      await db
-        .update(connectionGrants)
-        .set({
-          status: "needs_reauthorization",
-          updatedAt: new Date(currentTime),
-        })
-        .where(eq(connectionGrants.id, grant.id));
-      throw new ToolGatewayHttpError(
-        409,
-        "Legacy authorization must be reconnected through Paperclip Cloud",
-        "connector_reauthorization_required",
-        {
-          connectionId: connection.id,
-          grantId: grant.id,
-        },
-      );
-    }
-    const existingFlight = gmailRefreshFlights.get(grant.id);
-    if (existingFlight) return existingFlight;
-    const refresh = (async () => {
-      const cloudConnector = currentCloudConnector();
-      if (!cloudConnector || !connectorSubject) {
-        await db
-          .update(connectionGrants)
-          .set({
-            status: "needs_reauthorization",
-            updatedAt: new Date(currentTime),
-          })
-          .where(eq(connectionGrants.id, grant.id));
-        throw new ToolGatewayHttpError(
-          409,
-          "Managed authorization must be reconnected",
-          "connector_reauthorization_required",
-          {
-            connectionId: connection.id,
-            grantId: grant.id,
-          },
-        );
-      }
-      const accessRef = grant.credentialSecretRefs.find(
-        (ref) => ref.configPath === "oauth.access_token",
-      );
-      const refreshRef = grant.credentialSecretRefs.find(
-        (ref) => ref.configPath === "oauth.refresh_token",
-      );
-      if (!accessRef || !refreshRef) {
-        await db
-          .update(connectionGrants)
-          .set({
-            status: "needs_reauthorization",
-            updatedAt: new Date(currentTime),
-          })
-          .where(eq(connectionGrants.id, grant.id));
-        throw new ToolGatewayHttpError(
-          409,
-          "Managed authorization must be reconnected",
-          "connector_reauthorization_required",
-          {
-            connectionId: connection.id,
-            grantId: grant.id,
-          },
-        );
-      }
-      const refreshToken = await resolveGrantSecretValue(
-        session,
-        connection,
-        grant,
-        refreshRef,
-      );
-      try {
-        const credentials = await cloudConnector.refresh({
-          subject: connectorSubject,
-          companyId: connection.companyId,
-          profile: connectorProfile,
-          refreshToken,
-        });
-        await secrets.rotate(accessRef.secretId, {
-          value: credentials.accessToken,
-        });
-        if (credentials.refreshToken) {
-          await secrets.rotate(refreshRef.secretId, {
-            value: credentials.refreshToken,
-          });
-        }
-        const providerTenant = {
-          ...(grant.providerTenant ?? {}),
-          oauth: {
-            ...(grant.providerTenant?.oauth ?? {}),
-            strategy: "paperclip_cloud_connector",
-            accessTokenExpiresAt: credentials.accessTokenExpiresAt,
-            scopes: credentials.scopes,
-            tokenType: credentials.tokenType,
-            refreshedAt: new Date(options.now?.() ?? Date.now()).toISOString(),
-            ...(credentials.refreshTokenExpiresAt
-              ? { refreshTokenExpiresAt: credentials.refreshTokenExpiresAt }
-              : {}),
-          },
-        };
-        const [updated] = await db
-          .update(connectionGrants)
-          .set({
-            providerTenant,
-            updatedAt: new Date(options.now?.() ?? Date.now()),
-          })
-          .where(
-            and(
-              eq(connectionGrants.id, grant.id),
-              eq(connectionGrants.status, "active"),
-            ),
-          )
-          .returning();
-        if (!updated) {
-          throw new ToolGatewayHttpError(
-            409,
-            "Managed authorization is no longer active",
-            "connector_reauthorization_required",
-            {
-              connectionId: connection.id,
-              grantId: grant.id,
-            },
-          );
-        }
-        return updated;
-      } catch (error) {
-        if (error instanceof ToolGatewayHttpError) throw error;
-        if (
-          error instanceof PaperclipCloudConnectorError &&
-          error.code === "REAUTHORIZATION_REQUIRED"
-        ) {
-          await db
-            .update(connectionGrants)
-            .set({
-              status: "needs_reauthorization",
-              updatedAt: new Date(options.now?.() ?? Date.now()),
-            })
-            .where(eq(connectionGrants.id, grant.id));
-          throw new ToolGatewayHttpError(
-            409,
-            "Managed authorization must be reconnected",
-            "connector_reauthorization_required",
-            {
-              connectionId: connection.id,
-              grantId: grant.id,
-            },
-          );
-        }
-        throw new ToolGatewayHttpError(
-          502,
-          "Managed authorization could not be refreshed",
-          "connector_refresh_failed",
-          {
-            connectionId: connection.id,
-            grantId: grant.id,
-          },
-        );
-      }
-    })();
-    gmailRefreshFlights.set(grant.id, refresh);
-    try {
-      return await refresh;
-    } finally {
-      if (gmailRefreshFlights.get(grant.id) === refresh)
-        gmailRefreshFlights.delete(grant.id);
-    }
-  }
-
   async function resolveCredentialHeaders(
     session: ToolGatewaySession,
     connection: typeof toolConnections.$inferSelect,
@@ -4158,20 +3885,6 @@ export function createToolGatewayService(
           grantId: grant.id,
         });
       }
-    }
-    const oauth = asRecord(asRecord(connection.config)?.oauth);
-    if (
-      isPaperclipCloudConnectorStrategy(oauth?.strategy) &&
-      !options.oauthGrantRefresher
-    ) {
-      // Compatibility fallback for isolated service consumers. The production
-      // app supplies tool-access's lease/CAS refresher below.
-      grant = await maybeRefreshPaperclipCloudGrant(
-        session,
-        connection,
-        grant,
-        resolveOptions.forceRefresh === true,
-      );
     }
     if (
       connection.authKind === "oauth" &&
@@ -6133,34 +5846,10 @@ export function createToolGatewayService(
         await markRemoteConnectionHealth(connection, "degraded", INSUFFICIENT_CONNECTION_SCOPE_MESSAGE);
         throw new ToolGatewayHttpError(403, INSUFFICIENT_CONNECTION_SCOPE_MESSAGE, "oauth_insufficient_scope", { connectionId: connection.id });
       }
-      const oauth = asRecord(asRecord(connection.config)?.oauth);
       if (
         response.status === 401 &&
         connection.authKind === "oauth" &&
         connection.credentialSource === "paperclip_vault" &&
-        isPaperclipCloudConnectorStrategy(oauth?.strategy)
-      ) {
-        credentialHeaders = {
-          ...projectedConnectionHeaders(connection),
-          ...(await resolveCredentialHeaders(session, connection, grant, {
-            forceRefresh: true,
-          })),
-        };
-        builtHeaders = buildRemoteHeaders({
-          session,
-          connection,
-          credentialHeaders,
-          callerHeaders,
-        });
-        headers = builtHeaders.headers;
-        headerSummary = builtHeaders.summary;
-        await requireExplicitRetryAfterOAuthRefresh(response);
-      }
-      if (
-        response.status === 401 &&
-        connection.authKind === "oauth" &&
-        connection.credentialSource === "paperclip_vault" &&
-        !isPaperclipCloudConnectorStrategy(oauth?.strategy) &&
         options.oauthGrantRefresher
       ) {
         credentialHeaders = {

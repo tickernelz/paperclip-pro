@@ -357,7 +357,7 @@ function deriveManifestSkillKey(
     return `${owner}/${repo}/${slug}`;
   }
   if (sourceKind === "paperclip_bundled") {
-    return `paperclipai/paperclip/${slug}`;
+    return `tickernelz/wardmote/${slug}`;
   }
   if (sourceType === "url" || sourceKind === "url") {
     try {
@@ -3260,7 +3260,7 @@ function buildManifestFromPackageFiles(
       const canonicalKey = readSkillKey(frontmatter);
       const normalizedSourceKind = owner === "paperclipai"
         && repoName === "paperclip"
-        && canonicalKey?.startsWith("paperclipai/paperclip/")
+        && canonicalKey?.startsWith("tickernelz/wardmote/")
         ? "paperclip_bundled"
         : "github";
       sourceType = "github";

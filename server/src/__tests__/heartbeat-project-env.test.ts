@@ -654,13 +654,13 @@ describe("applyRunScopedMentionedSkillKeys", () => {
     const originalConfig = {
       command: "codex",
       paperclipSkillSync: {
-        desiredSkills: ["paperclipai/paperclip/paperclip"],
+        desiredSkills: ["tickernelz/wardmote/paperclip"],
       },
     };
 
     const updatedConfig = applyRunScopedMentionedSkillKeys(originalConfig, [
       "company/company-1/release-changelog",
-      "paperclipai/paperclip/paperclip",
+      "tickernelz/wardmote/paperclip",
       "company/company-1/release-changelog",
     ]);
 
@@ -668,7 +668,7 @@ describe("applyRunScopedMentionedSkillKeys", () => {
       command: "codex",
       paperclipSkillSync: {
         desiredSkills: [
-          "paperclipai/paperclip/paperclip",
+          "tickernelz/wardmote/paperclip",
           "company/company-1/release-changelog",
         ],
       },
@@ -676,7 +676,7 @@ describe("applyRunScopedMentionedSkillKeys", () => {
     expect(originalConfig).toEqual({
       command: "codex",
       paperclipSkillSync: {
-        desiredSkills: ["paperclipai/paperclip/paperclip"],
+        desiredSkills: ["tickernelz/wardmote/paperclip"],
       },
     });
   });

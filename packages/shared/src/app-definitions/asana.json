@@ -17,34 +17,6 @@
   "redirectConstraints": "https-or-loopback-http",
   "methods": [
     {
-      "key": "managed",
-      "transport": "mcp_remote",
-      "auth": "oauth",
-      "ownershipModes": [
-        "platform_shared"
-      ],
-      "whenToUse": "Connect your Asana account with Paperclip Cloud's app.",
-      "defaults": {
-        "serverUrl": "https://mcp.asana.com/v2/mcp",
-        "scopesHint": [
-          "default"
-        ]
-      },
-      "guidanceMd": "Sign in to Asana with Paperclip Cloud. Asana gives this connection access to the workspaces available to your account.",
-      "riskTier": "S3",
-      "label": "Sign in with Asana",
-      "consoleLinks": {
-        "docs": "https://developers.asana.com/docs/integrating-with-asanas-mcp-server"
-      },
-      "warnings": [],
-      "oauthStrategy": "paperclip_cloud_connector",
-      "connectorProfile": "asana.mcp",
-      "grantKinds": [
-        "user",
-        "agent"
-      ]
-    },
-    {
       "key": "mcp-own-oauth",
       "transport": "mcp_remote",
       "auth": "oauth",

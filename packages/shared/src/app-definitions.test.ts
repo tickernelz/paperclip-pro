@@ -321,7 +321,7 @@ describe("AppDefinition catalog", () => {
   it("separates GitHub tools from the review bot without changing the provider identity", () => {
     const github = getConnectableAppDefinition("github")!;
     const bot = getConnectableAppDefinition("github-code-review-bot")!;
-    expect(github.methods.map((method) => method.key)).toEqual(["managed", "mcp-key"]);
+    expect(github.methods.map((method) => method.key)).toEqual(["mcp-key"]);
     expect(github.methods.every((method) => method.purpose === "tool")).toBe(true);
     expect(bot.name).toBe("GitHub Code Review Bot");
     expect(bot.methods).toHaveLength(1);
@@ -699,11 +699,8 @@ describe("AppDefinition catalog", () => {
         (field) => field.key === "readOnly",
       )?.defaultValue,
     ).toBe(false);
+    expect(APP_DEFINITIONS.find((app) => app.slug === "asana")?.methods).toHaveLength(1);
     expect(method("asana")).toMatchObject({
-      key: "managed", ownershipModes: ["platform_shared"], connectorProfile: "asana.mcp",
-      defaults: { serverUrl: "https://mcp.asana.com/v2/mcp", scopesHint: ["default"] },
-    });
-    expect(APP_DEFINITIONS.find((app) => app.slug === "asana")?.methods[1]).toMatchObject({
       key: "mcp-own-oauth", ownershipModes: ["customer"], oauthClientSecretRequired: true,
       defaults: { discoveryUrl: "https://mcp.asana.com/.well-known/oauth-protected-resource/v2" },
       consoleLinks: { register: "https://app.asana.com/0/my-apps" },
@@ -824,7 +821,6 @@ describe("AppDefinition catalog", () => {
       getRecommendedConnectionMethod(
         gmail.methods.filter((candidate) =>
           [
-            "paperclip-read",
             "customer-read-oauth",
             "customer-draft-oauth",
           ].includes(candidate.key),
@@ -837,7 +833,7 @@ describe("AppDefinition catalog", () => {
           (candidate) => candidate.capabilityProfile?.key === "draft",
         ),
       )?.key,
-    ).toBe("paperclip-draft");
+    ).toBe("customer-draft-oauth");
     expect(
       getRecommendedConnectionMethod(
         gmail.methods.filter(
@@ -988,30 +984,17 @@ describe("AppDefinition catalog", () => {
       const app = APP_DEFINITIONS.find(
         (candidate) => candidate.slug === expected.appSlug,
       );
-      const managed = app?.methods.find(
-        (method) => method.connectorProfile === expected.profile,
-      );
-      expect(managed, expected.profile).toMatchObject({
-        auth: "oauth",
-        oauthStrategy: "paperclip_cloud_connector",
-        connectorProfile: expected.profile,
-        capabilityProfile: { key: expected.capability },
-        grantKinds: ["user", "organization"],
-        ownershipModes: ["platform_shared"],
-        defaults: {
-          serverUrl: expected.serverUrl,
-          scopesHint: expected.scopes,
-        },
-        riskTier: expected.riskTier,
-      });
-      expect(managed?.riskTier, `${expected.profile}:write-risk`).toBe(
-        expected.writeTools.length > 0 ? "S4" : "S3",
-      );
+      expect(
+        app?.methods.some((method) => method.ownershipModes.includes("platform_shared")),
+        `${expected.profile}:no-shared-broker`,
+      ).toBe(false);
       const customer = app?.methods.find(
         (method) =>
           method.auth === "oauth" &&
-          method.oauthStrategy === undefined &&
           method.capabilityProfile?.key === expected.capability,
+      );
+      expect(customer?.riskTier, `${expected.profile}:write-risk`).toBe(
+        expected.writeTools.length > 0 ? "S4" : "S3",
       );
       expect(customer, `${expected.profile}:customer-fallback`).toMatchObject({
         grantKinds: ["user", "organization"],
