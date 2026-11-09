@@ -1,6 +1,6 @@
 import path from "node:path";
 import type { AdapterExecutionTarget } from "@tickernelz/wardmote-adapter-utils/execution-target";
-import { writePaperclipMcpMount } from "@tickernelz/wardmote-adapter-utils/paperclip-mcp-mount";
+import { writePaperclipMcpMount } from "@tickernelz/wardmote-adapter-utils/wardmote-mcp-mount";
 import type { RunToolProfile } from "@tickernelz/wardmote-adapter-utils/tool-profile";
 
 export const OMP_ASYNC_BASH_TIMEOUT_SEC = 3600;

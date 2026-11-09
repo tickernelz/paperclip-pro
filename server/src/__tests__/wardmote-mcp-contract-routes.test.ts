@@ -5,7 +5,7 @@ import { afterAll, beforeAll, expect, it } from "vitest";
 import { agents, issues } from "@tickernelz/wardmote-db";
 import { errorHandler } from "../middleware/index.js";
 import { issueRoutes } from "../routes/issues.js";
-import { paperclipMcpRoutes } from "../routes/paperclip-mcp.js";
+import { paperclipMcpRoutes } from "../routes/wardmote-mcp.js";
 import {
   describeEmbeddedPostgres,
   seedCompanyWithBoardAccess,

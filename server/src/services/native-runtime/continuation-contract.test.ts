@@ -14,7 +14,7 @@ import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
 } from "../../__tests__/helpers/embedded-postgres.js";
-import { parseNativeExecutionInput } from "../../vendor/paperclip-runner/index.js";
+import { parseNativeExecutionInput } from "../../vendor/wardmote-runner/index.js";
 import { ensureNativeCompletionContract } from "./completion-contracts.js";
 import { rebindContinuationContract } from "./continuation-contract.js";
 const support = await getEmbeddedPostgresTestSupport();

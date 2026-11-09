@@ -127,11 +127,11 @@ try {
   }
   assert.equal(existsSync(prerequisite), false, 'npm must not provision Grok');
   const server = join(consumer, 'node_modules/@tickernelz/wardmote-server');
-  const installed = join(server, 'dist/vendor/paperclip-runner');
+  const installed = join(server, 'dist/vendor/wardmote-runner');
   const codexVersion = JSON.parse(readFileSync(join(repo, 'packages/wardmote-runner/acpx-profiles.json'), 'utf8')).profiles.codex.agentRuntimeVersion;
   assert.match(codexVersion, /^\d+\.\d+\.\d+$/);
   writeFileSync(join(assets, 'codex-probe.mjs'), installedCodexProbeSource(
-    '/consumer/node_modules/@tickernelz/wardmote-server/dist/vendor/paperclip-runner/index.js', '/consumer', codexVersion), { mode: 0o644 });
+    '/consumer/node_modules/@tickernelz/wardmote-server/dist/vendor/wardmote-runner/index.js', '/consumer', codexVersion), { mode: 0o644 });
   const codex = JSON.parse(isolated(['node', '/packages/codex-probe.mjs']).toString().trim());
   phase('codex_probe');
   assert.equal(codex.codexConsumerHostOnly, true);
@@ -143,8 +143,8 @@ try {
   // separate process prevents module resolution from borrowing this checkout.
   const probe = `
     import assert from 'node:assert/strict';
-    import { verifyQualifiedAcpxInstallation } from '/consumer/node_modules/@tickernelz/wardmote-server/dist/vendor/paperclip-runner/drivers/acpx/installation-integrity.js';
-    import { resolveQualifiedAcpxProfile } from '/consumer/node_modules/@tickernelz/wardmote-server/dist/vendor/paperclip-runner/drivers/acpx/qualified-profiles.js';
+    import { verifyQualifiedAcpxInstallation } from '/consumer/node_modules/@tickernelz/wardmote-server/dist/vendor/wardmote-runner/drivers/acpx/installation-integrity.js';
+    import { resolveQualifiedAcpxProfile } from '/consumer/node_modules/@tickernelz/wardmote-server/dist/vendor/wardmote-runner/drivers/acpx/qualified-profiles.js';
     const profile = resolveQualifiedAcpxProfile('grok', 'grok-4.7');
     const inspect = () => verifyQualifiedAcpxInstallation(profile, () => { throw new Error('Grok must not resolve an npm package'); });
     if (process.argv[2] === 'missing') await assert.rejects(inspect, /prerequisite missing/);

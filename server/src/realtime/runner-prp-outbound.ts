@@ -4,7 +4,7 @@ import type {
   DurablePrpControlPlane,
   PrpWireConnection,
   TransportCloseReason,
-} from "../vendor/paperclip-runner/index.js";
+} from "../vendor/wardmote-runner/index.js";
 
 const DEFAULT_STARTUP_DEADLINE_MS = 60_000;
 const DEFAULT_RECOVERY_GRACE_MS = 120_000;

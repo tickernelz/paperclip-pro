@@ -125,7 +125,7 @@ test('the installed Codex probe exercises the public export and rejects incomple
     const lock = { lockfileVersion: 3, packages: { [platformPath]: entry } };
     writeFileSync(join(consumer, 'package-lock.json'), JSON.stringify(lock));
     const server = join(consumer, 'node_modules/@tickernelz/wardmote-server');
-    const vendor = join(server, 'dist/vendor/paperclip-runner'), drivers = join(vendor, 'drivers/acpx'); mkdirSync(drivers, { recursive: true });
+    const vendor = join(server, 'dist/vendor/wardmote-runner'), drivers = join(vendor, 'drivers/acpx'); mkdirSync(drivers, { recursive: true });
     writeFileSync(join(server, 'package.json'), JSON.stringify({ name: '@tickernelz/wardmote-server', type: 'module' }));
     const integrity = join(drivers, 'installation-integrity.js');
     const security = join(vendor, 'drivers/codex/codex-security-config.js'); mkdirSync(join(vendor, 'drivers/codex'));
@@ -221,7 +221,7 @@ test('the installed Codex probe exercises the public export and rejects incomple
 
 test('actual tar member checks allow Codex JavaScript but reject nested platform packages and native vendor payloads', () => {
   const javascript = ['package/package.json', 'package/node_modules/@openai/codex/package.json',
-    'package/node_modules/@openai/codex/bin/codex.js', 'package/dist/vendor/paperclip-runner/index.js'];
+    'package/node_modules/@openai/codex/bin/codex.js', 'package/dist/vendor/wardmote-runner/index.js'];
   assert.doesNotThrow(() => assertNoBundledCodexPayloads(javascript));
   for (const payload of [
     'package/node_modules/@openai/codex-linux-x64/package.json',

@@ -1,6 +1,6 @@
 import { and, desc, eq, sql } from "drizzle-orm";
 import { heartbeatRunEvents, heartbeatRuns, type Db } from "@tickernelz/wardmote-db";
-import { parseNativeExecutionInput, validatePrpEvent, type PrpTerminalState } from "../../vendor/paperclip-runner/index.js";
+import { parseNativeExecutionInput, validatePrpEvent, type PrpTerminalState } from "../../vendor/wardmote-runner/index.js";
 import { nativeSha256 } from "./canonical.js";
 import { createNativeProviderFailureObservation } from "./native-provider-failure.js";
 

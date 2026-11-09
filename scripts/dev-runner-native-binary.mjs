@@ -48,7 +48,7 @@ export function paperclipRunnerBinaryNeedsBuild({
   if (configuredBinary?.trim()) return false;
 
   const executable = platform === "win32" ? "paperclip-runnerd.exe" : "paperclip-runnerd";
-  const packageRoot = path.join(repoRoot, "packages", "paperclip-runner");
+  const packageRoot = path.join(repoRoot, "packages", "wardmote-runner");
   const stagedBinary = path.join(packageRoot, "dist", "bin", executable);
   const binaryStat = statSync(stagedBinary, { throwIfNoEntry: false });
   if (!binaryStat?.isFile()) return true;

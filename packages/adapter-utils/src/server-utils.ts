@@ -16,12 +16,12 @@ import { buildSshSpawnTarget, type SshRemoteExecutionSpec } from "./ssh.js";
 import { redactCommandText } from "./command-redaction.js";
 import { applyRunOomScoreAdj } from "./run-oom-score.js";
 import { paperclipChatFilePreparationDelivery } from "./chat-file-delivery.js";
-import type { PaperclipAccessMode } from "./paperclip-mcp.js";
+import type { PaperclipAccessMode } from "./wardmote-mcp.js";
 import {
   PAPERCLIP_RUNNER_PERMISSION_CAPABILITIES,
   resolvePaperclipRunnerModel,
   normalizeLegacyRunnerProvider,
-} from "./paperclip-runner-permissions.js";
+} from "./wardmote-runner-permissions.js";
 import type {
   AdapterExecutionContext,
   AgentRuntimeIdentity,

@@ -7,7 +7,7 @@ import { TaskChatCompactInteractionCard } from "@/components/task-chat/TaskChatC
 import { TaskChatProtocolActivityRow } from "@/components/task-chat/TaskChatProtocolActivityRow";
 import { TaskChatProtocolCard } from "@/components/task-chat/TaskChatProtocolCard";
 import type { TaskChatRuntimeRequestDecision } from "@/components/task-chat/task-chat-model";
-import { paperclipRunnerUIAdapter } from "@/adapters/paperclip-runner";
+import { paperclipRunnerUIAdapter } from "@/adapters/wardmote-runner";
 import { transcriptToTaskChatItems } from "@/components/task-chat/transcript-adapter";
 import {
   issueThreadInteractionFixtureMeta,

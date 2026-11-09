@@ -5,7 +5,7 @@ import {
   scaffoldPluginProject,
   shellQuote,
   type ScaffoldPluginOptions,
-} from "../../../../packages/plugins/create-paperclip-plugin/src/index.js";
+} from "../../../../packages/plugins/plugin-creator/src/index.js";
 import pc from "picocolors";
 import {
   addCommonClientOptions,

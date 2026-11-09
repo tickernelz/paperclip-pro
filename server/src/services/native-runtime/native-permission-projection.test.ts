@@ -1,5 +1,5 @@
 import type { Db } from "@tickernelz/wardmote-db";
-import type { PrpEvent } from "../../vendor/paperclip-runner/index.js";
+import type { PrpEvent } from "../../vendor/wardmote-runner/index.js";
 import { describe, expect, it, vi } from "vitest";
 import { projectNativeRuntimeRequest } from "./native-question-bridge.js";
 

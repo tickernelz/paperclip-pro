@@ -2,9 +2,9 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import * as runner from "../../vendor/paperclip-runner/index.js";
+import * as runner from "../../vendor/wardmote-runner/index.js";
 
-import type { PaperclipSemanticToolDefinition } from "../../vendor/paperclip-runner/index.js";
+import type { PaperclipSemanticToolDefinition } from "../../vendor/wardmote-runner/index.js";
 import {
   buildNativeRunnerArguments,
   buildNativeRunnerPreparePayload,

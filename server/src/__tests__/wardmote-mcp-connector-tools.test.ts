@@ -4,7 +4,7 @@ import express from "express";
 import { afterAll, beforeAll, expect, it } from "vitest";
 import { agents, heartbeatRuns, issues } from "@tickernelz/wardmote-db";
 import { errorHandler } from "../middleware/index.js";
-import { paperclipMcpRoutes } from "../routes/paperclip-mcp.js";
+import { paperclipMcpRoutes } from "../routes/wardmote-mcp.js";
 import { toolAccessService } from "../services/tool-access.js";
 import {
   describeEmbeddedPostgres,
@@ -15,7 +15,7 @@ import {
 type Actor = Express.Request["actor"];
 
 describeEmbeddedPostgres("Paperclip MCP connector tools", () => {
-  const ctx = useEmbeddedPostgres("paperclip-mcp-connectors-");
+  const ctx = useEmbeddedPostgres("wardmote-mcp-connectors-");
   let server: Server;
   let origin = "";
   let actor: Actor = { type: "none", source: "none" };

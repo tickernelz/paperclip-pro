@@ -3026,7 +3026,7 @@ function acpxProviderPackageAuthority(
   // Public server packages vendor runner dist directly, without a nested dist
   // directory or a separately published runner package.
   if (basename(sidecarScript) === "acpx-runtime-sidecar.cjs" &&
-      basename(cliDirectory) === "cli" && basename(dirname(cliDirectory)) === "paperclip-runner" &&
+      basename(cliDirectory) === "cli" && basename(dirname(cliDirectory)) === "wardmote-runner" &&
       basename(resolve(cliDirectory, "../..")) === "vendor" &&
       basename(resolve(cliDirectory, "../../..")) === "dist") {
     const serverRoot = resolve(cliDirectory, "../../../..");
@@ -7017,7 +7017,7 @@ class DurablePrpCodexTransport implements CodexAppServerTransport {
 
 export function defaultCapabilityRunnerdBinary(): string {
   // Standalone builds use dist/live; the server vendors that compiled tree
-  // directly under vendor/paperclip-runner. Resolve beside our own live module.
+  // directly under vendor/wardmote-runner. Resolve beside our own live module.
   const outputRoot = resolve(fileURLToPath(new URL("../", import.meta.url)));
   const staged = resolvePackagedRunnerBinary(outputRoot)
     ?? resolvePackagedRunnerBinary(resolve(packageRoot, "dist"));

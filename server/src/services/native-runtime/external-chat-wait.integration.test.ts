@@ -42,7 +42,7 @@ import {
 import type {
   PrpStructuredRunResult,
   PrpTerminalState,
-} from "../../vendor/paperclip-runner/index.js";
+} from "../../vendor/wardmote-runner/index.js";
 
 import { startEmbeddedPostgresTestDatabase } from "../../__tests__/helpers/embedded-postgres.js";
 import { finalizeNativeRun } from "./native-run-finalizer.js";

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
-import * as runner from "../../vendor/paperclip-runner/index.js";
+import * as runner from "../../vendor/wardmote-runner/index.js";
 import * as lifecycle from "./provider-lifecycle.js";
-import { resolveQualifiedAcpxProfile, validatePrpStructuredRunResult } from "../../vendor/paperclip-runner/index.js";
+import { resolveQualifiedAcpxProfile, validatePrpStructuredRunResult } from "../../vendor/wardmote-runner/index.js";
 import { buildQuestionResponseDeliveryEnvelope } from "../question-response-delivery.js";
 import { NATIVE_COMPLETION_CONTRACT_SCHEMA, NATIVE_COMPLETION_POLICY_VERSION } from "./completion-contracts.js";
 import { nativeSha256 } from "./canonical.js";

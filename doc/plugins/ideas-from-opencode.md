@@ -574,7 +574,7 @@ This is critical for operators. Without observability, debugging plugin issues r
 
 A `@tickernelz/wardmote-plugin-test-harness` package should provide a mock host with in-memory stores, synthetic event emission, and `getData`/`performAction`/`executeTool` simulation. Plugin authors should be able to write unit tests without a running Paperclip instance.
 
-A `create-paperclip-plugin` CLI should scaffold a working plugin with manifest, worker, UI bundle, test file, and build config.
+A `plugin-creator` CLI should scaffold a working plugin with manifest, worker, UI bundle, test file, and build config.
 
 Low authoring friction was called out as one of `opencode`'s best qualities. The test harness and starter template are how Paperclip achieves the same.
 
@@ -1677,7 +1677,7 @@ Build:
 - graceful shutdown with configurable deadlines
 - plugin logging and health dashboard
 - uninstall with data retention grace period
-- `@tickernelz/wardmote-plugin-test-harness` and `create-paperclip-plugin` starter template
+- `@tickernelz/wardmote-plugin-test-harness` and `plugin-creator` starter template
 - hot plugin lifecycle (install, uninstall, upgrade, config change without server restart)
 - SDK versioning with multi-version host support and deprecation policy
 
@@ -1732,7 +1732,7 @@ That gets the upside of `opencode`'s extensibility without importing the wrong t
 5. Add agent tool contributions — plugins register namespaced tools that agents can call during runs.
 6. Add plugin observability: structured logging via `ctx.logger`, health dashboard, internal health events.
 7. Add graceful shutdown policy and uninstall data lifecycle with retention grace period.
-8. Ship `@tickernelz/wardmote-plugin-test-harness` and `create-paperclip-plugin` starter template.
+8. Ship `@tickernelz/wardmote-plugin-test-harness` and `plugin-creator` starter template.
 9. Implement hot plugin lifecycle — install, uninstall, upgrade, and config changes without server restart.
 10. Define SDK versioning policy — semver, multi-version host support, deprecation timeline, migration guides, published compatibility matrix.
 11. Build workspace plugins (file browser, terminal, git, process tracking) that resolve workspace paths from the host and handle OS-level operations directly.

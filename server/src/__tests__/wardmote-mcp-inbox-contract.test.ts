@@ -5,7 +5,7 @@ import { afterAll, beforeAll, expect, it } from "vitest";
 import { agents } from "@tickernelz/wardmote-db";
 import { errorHandler } from "../middleware/index.js";
 import { agentRoutes } from "../routes/agents.js";
-import { paperclipMcpRoutes } from "../routes/paperclip-mcp.js";
+import { paperclipMcpRoutes } from "../routes/wardmote-mcp.js";
 import {
   describeEmbeddedPostgres,
   seedCompanyWithBoardAccess,
@@ -22,7 +22,7 @@ type RpcResponse = {
 };
 
 describeEmbeddedPostgres("hosted Paperclip MCP inbox tool", () => {
-  const ctx = useEmbeddedPostgres("paperclip-mcp-inbox-");
+  const ctx = useEmbeddedPostgres("wardmote-mcp-inbox-");
   let server: Server;
   let origin = "";
   let actor: Actor = { type: "none", source: "none" };

@@ -1182,7 +1182,7 @@ provider credentials, user npm configuration, `HOME`, `NODE_OPTIONS` and
 `NODE_PATH` are excluded; TLS certificate validation stays enabled.
 
 The public server carries a self-contained setup tool and small pinned inputs in
-`dist/vendor/paperclip-runner/cli`; the installed host closure lives in that
+`dist/vendor/wardmote-runner/cli`; the installed host closure lives in that
 server package's `provider-assets/pi/<platform>`. Setup validates an existing
 closure again before accepting it. A corrupt existing installation is left
 untouched and rejected; reinstall the same Paperclip release into a clean package

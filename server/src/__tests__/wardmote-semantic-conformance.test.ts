@@ -5,7 +5,7 @@ import {
   CAPABILITY_SEMANTIC_CONFORMANCE_IDS,
   CapabilityMockSemanticConformanceAdapter,
   runSemanticConformanceKit,
-} from "../vendor/paperclip-runner/testing.js";
+} from "../vendor/wardmote-runner/testing.js";
 
 import {
   getEmbeddedPostgresTestSupport,
@@ -15,7 +15,7 @@ import {
   PaperclipProductionSemanticConformanceAdapter,
   seedPaperclipSemanticConformance,
   type PaperclipSemanticConformanceIds,
-} from "./helpers/paperclip-semantic-conformance.js";
+} from "./helpers/wardmote-semantic-conformance.js";
 
 vi.hoisted(() => {
   process.env.PAPERCLIP_HOME = "/tmp/paperclip-semantic-conformance-home";

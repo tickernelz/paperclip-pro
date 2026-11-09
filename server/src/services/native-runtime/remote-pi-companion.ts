@@ -5,7 +5,7 @@ import { type Stats, constants } from "node:fs";
 import * as fs from "node:fs/promises";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { QUALIFIED_ACPX_PROFILES } from "../../vendor/paperclip-runner/index.js";
+import { QUALIFIED_ACPX_PROFILES } from "../../vendor/wardmote-runner/index.js";
 
 const SERVER_ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "../../..");
 const MAX_BYTES = 4 * 1024 ** 3;

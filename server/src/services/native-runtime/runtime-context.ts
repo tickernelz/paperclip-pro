@@ -21,7 +21,7 @@ import {
   parseNativeRuntimeContext,
   type NativeRuntimeAssetReference,
   type NativeRuntimeContextSnapshot,
-} from "../../vendor/paperclip-runner/index.js";
+} from "../../vendor/wardmote-runner/index.js";
 import { resolvePaperclipInstanceRoot } from "../../home-paths.js";
 import { agentInstructionsService, agentInstructionsBundleMode } from "../agent-instructions.js";
 import { agentInstructionRevisionService } from "../agent-instruction-revisions.js";

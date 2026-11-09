@@ -10,10 +10,10 @@ afterEach(async () => { await Promise.all(roots.splice(0).map(root => rm(root, {
 async function fixture() {
   const root = await realpath(await mkdtemp(join(tmpdir(), "cursor-public-setup-")));
   roots.push(root);
-  await mkdir(join(root, "dist/vendor/paperclip-runner/cli"), { recursive: true });
+  await mkdir(join(root, "dist/vendor/wardmote-runner/cli"), { recursive: true });
   await writeFile(join(root, "package.json"), JSON.stringify({ name: "@tickernelz/wardmote-server" }));
   await writeFile(join(root, "dist/index.js"), "throw new Error('must not import server');");
-  const provisioner = join(root, "dist/vendor/paperclip-runner/cli/provision-cursor.cjs");
+  const provisioner = join(root, "dist/vendor/wardmote-runner/cli/provision-cursor.cjs");
   await writeFile(provisioner, "fixture");
   return { root, provisioner, url: pathToFileURL(join(root, "dist/index.js")).href };
 }
