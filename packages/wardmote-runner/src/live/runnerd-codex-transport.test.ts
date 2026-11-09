@@ -1682,7 +1682,7 @@ it("keeps a scoped npm-installed package inside its portable dependency root", a
     deploymentRoot,
     "node_modules",
     "@tickernelz",
-    "wardmote-paperclip-runner",
+    "wardmote-runner",
   );
   await mkdir(join(deployedPackageRoot, "dist", "cli"), { recursive: true });
   try {

@@ -217,7 +217,7 @@ try {
       ".pnpm",
       "node_modules",
       "@tickernelz",
-      "wardmote-paperclip-runner",
+      "wardmote-runner",
     ),
     { recursive: true, force: true },
   );
