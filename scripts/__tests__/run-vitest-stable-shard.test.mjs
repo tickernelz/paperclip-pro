@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { readdirSync } from "node:fs";
+import { globSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import test from "node:test";
@@ -90,14 +90,13 @@ test("the general-server shards form a complete, non-overlapping partition", () 
 
 test("every file the server vitest config includes runs in exactly one server lane", () => {
   const serverRoot = path.join(repoRoot, "server");
-  const included = [
-    ...readdirSync(path.join(serverRoot, "src"), { recursive: true })
-      .filter((file) => file.endsWith(".test.ts"))
-      .map((file) => `server/src/${file.split(path.sep).join("/")}`),
-    ...readdirSync(path.join(serverRoot, "scripts"), { recursive: true })
-      .filter((file) => file.endsWith(".test.mjs"))
-      .map((file) => `server/scripts/${file.split(path.sep).join("/")}`),
-  ];
+  const config = readFileSync(path.join(serverRoot, "vitest.config.ts"), "utf8");
+  const includeList = config.match(/^\s*include:\s*(\[[^\]]*\])/m);
+  assert.ok(includeList, "server/vitest.config.ts must declare test.include as a literal array");
+  const patterns = JSON.parse(includeList[1]);
+  assert.ok(patterns.length > 0);
+  const included = globSync(patterns, { cwd: serverRoot, exclude: (file) => /(^|\/)(node_modules|dist)$/.test(file) })
+    .map((file) => `server/${file.split(path.sep).join("/")}`);
   const general = dryRunJson(["--mode", "general", "--group", "general-server", "--shard-index", "0", "--shard-count", "1"])
     .selectedGeneralServerSuites;
   const serialized = dryRunJson(["--mode", "serialized", "--shard-index", "0", "--shard-count", "1"])
