@@ -63,6 +63,7 @@ export interface MonitorSurfaceCopy {
   tone: "info" | "warning";
   workspaceWait?: boolean;
   pullRequestReview?: boolean;
+  scheduledRetry?: boolean;
 }
 
 function capitalize(value: string): string {
@@ -146,6 +147,7 @@ export function buildMonitorSurfaceCopy(
     bannerMeta,
     stripMeta,
     tone: derived.state === "overdue" ? "warning" : "info",
+    scheduledRetry: isScheduledRetryOnly,
   };
 }
 
@@ -162,11 +164,14 @@ function CheckNowButton({
   onCheckNow,
   checkingNow,
   reviewRequested = false,
+  retry = false,
 }: {
   onCheckNow: () => void;
   checkingNow: boolean;
   reviewRequested?: boolean;
+  retry?: boolean;
 }) {
+  const idleLabel = retry ? "Retry now" : reviewRequested ? "Check status" : "Check now";
   return (
     <Button
       type="button"
@@ -175,10 +180,31 @@ function CheckNowButton({
       className="shrink-0 shadow-none"
       onClick={onCheckNow}
       disabled={checkingNow}
+      data-testid={retry ? "issue-wait-retry-now" : undefined}
     >
-      {checkingNow ? "Checking…" : reviewRequested ? "Check status" : "Check now"}
+      {checkingNow ? (retry ? "Retrying…" : "Checking…") : idleLabel}
     </Button>
   );
+}
+
+function WaitActionButton({
+  copy,
+  onCheckNow,
+  checkingNow,
+  onRetryNow,
+  retryingNow,
+}: {
+  copy: MonitorSurfaceCopy;
+  onCheckNow: (() => void) | null;
+  checkingNow: boolean;
+  onRetryNow: (() => void) | null;
+  retryingNow: boolean;
+}) {
+  if (copy.workspaceWait) return null;
+  if (copy.scheduledRetry) {
+    return onRetryNow ? <CheckNowButton onCheckNow={onRetryNow} checkingNow={retryingNow} retry /> : null;
+  }
+  return onCheckNow ? <CheckNowButton onCheckNow={onCheckNow} checkingNow={checkingNow} reviewRequested={copy.pullRequestReview} /> : null;
 }
 
 function CancelMonitorButton({ onCancel }: { onCancel: () => Promise<unknown> }) {
@@ -223,6 +249,9 @@ export interface IssueMonitorSurfaceProps {
   issue: Issue;
   onCheckNow?: (() => void) | null;
   checkingNow?: boolean;
+  onRetryNow?: (() => void) | null;
+  retryingNow?: boolean;
+  retryError?: string | null;
   workProducts?: IssueWorkProduct[] | null;
   checkError?: string | null;
   onCancelMonitor?: (() => Promise<unknown>) | null;
@@ -237,6 +266,9 @@ export function IssueMonitorBanner({
   issue,
   onCheckNow = null,
   checkingNow = false,
+  onRetryNow = null,
+  retryingNow = false,
+  retryError,
   workProducts,
   checkError,
   onCancelMonitor,
@@ -244,6 +276,7 @@ export function IssueMonitorBanner({
   const reviews = getIssuePullRequests(workProducts).filter(pullRequestNeedsReview);
   const copy = useMonitorSurfaceCopy(issue, reviews.length);
   if (!copy) return null;
+  const actionError = copy.scheduledRetry ? retryError : checkError;
 
   const canCancel = onCancelMonitor && deriveMonitorState(issue).source === "monitor";
 
@@ -253,13 +286,13 @@ export function IssueMonitorBanner({
       icon={Clock}
       title={copy.bannerTitle}
       className={cn("relative my-3", canCancel && "pr-12")}
-      actions={onCheckNow && !copy.workspaceWait ? <CheckNowButton onCheckNow={onCheckNow} checkingNow={checkingNow} reviewRequested={copy.pullRequestReview} /> : null}
+      actions={<WaitActionButton copy={copy} onCheckNow={onCheckNow} checkingNow={checkingNow} onRetryNow={onRetryNow} retryingNow={retryingNow} />}
     >
       {canCancel ? <CancelMonitorButton key={issue.id} onCancel={onCancelMonitor} /> : null}
       <div className="flex flex-col gap-2">
         {copy.pullRequestReview ? <IssuePullRequestLinks products={reviews} /> : null}
         <span>{copy.bannerMeta.join("  ·  ")}</span>
-        {checkError ? <p role="alert">{checkError}</p> : null}
+        {actionError ? <p role="alert">{actionError}</p> : null}
       </div>
     </InlineBanner>
   );
@@ -274,6 +307,9 @@ export function IssueMonitorComposerStrip({
   issue,
   onCheckNow = null,
   checkingNow = false,
+  onRetryNow = null,
+  retryingNow = false,
+  retryError,
   workProducts,
   checkError,
   className,
@@ -281,6 +317,7 @@ export function IssueMonitorComposerStrip({
   const reviews = getIssuePullRequests(workProducts).filter(pullRequestNeedsReview);
   const copy = useMonitorSurfaceCopy(issue, reviews.length);
   if (!copy) return null;
+  const actionError = copy.scheduledRetry ? retryError : checkError;
 
   return (
     <div
@@ -297,7 +334,7 @@ export function IssueMonitorComposerStrip({
             <div className="text-xs text-ink-3">{copy.stripMeta.join(" · ")}</div>
           </div>
         </div>
-        {onCheckNow && !copy.workspaceWait ? <CheckNowButton onCheckNow={onCheckNow} checkingNow={checkingNow} reviewRequested={copy.pullRequestReview} /> : null}
+        <WaitActionButton copy={copy} onCheckNow={onCheckNow} checkingNow={checkingNow} onRetryNow={onRetryNow} retryingNow={retryingNow} />
       </div>
       <p className="mt-1.5 text-xs text-ink-3">
         {copy.pullRequestReview
@@ -306,7 +343,7 @@ export function IssueMonitorComposerStrip({
           ? "You can keep sending instructions while the agent waits."
           : "Sending a reply wakes the agent now — before the scheduled check."}
       </p>
-      {checkError ? <p role="alert" className="text-sm text-bad">{checkError}</p> : null}
+      {actionError ? <p role="alert" className="text-sm text-bad">{actionError}</p> : null}
     </div>
   );
 }
