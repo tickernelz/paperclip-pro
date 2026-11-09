@@ -115,7 +115,24 @@ describe("OpenWA gateway manager", () => {
     await vi.waitFor(() => expect(dialog()?.querySelector('img[alt="WhatsApp login QR code"]')).toBeTruthy());
     await vi.waitFor(() => expect(calls("SessionController_start")).toEqual([{ operationId: "SessionController_start", sessionId: OTHER }]));
     expect(dialog().textContent).not.toContain(refusal);
-    expect(button(dialog(), "Start session")).toBeUndefined();
+    await vi.waitFor(() => expect(button(dialog(), "Start session")).toBeUndefined());
+  });
+
+  it("offers to start the session again when its engine stops while the QR is shown", async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    sessionStatus = ["qr_ready", "disconnected"];
+    render();
+    await vi.waitFor(() => expect(row("Session sales")).toBeTruthy());
+    click(button(row("Session sales"), "Connect"));
+    await vi.waitFor(() => expect(dialog()?.querySelector('img[alt="WhatsApp login QR code"]')).toBeTruthy());
+    expect(calls("SessionController_start")).toEqual([]);
+    await act(() => vi.advanceTimersByTimeAsync(OPENWA_QR_REFRESH_MS));
+    await vi.waitFor(() => expect(button(dialog(), "Start session")).toBeTruthy());
+    expect(calls("SessionController_start")).toHaveLength(1);
+    sessionStatus = ["qr_ready"];
+    click(button(dialog(), "Start session"));
+    await vi.waitFor(() => expect(calls("SessionController_start")).toHaveLength(2));
+    await vi.waitFor(() => expect(button(dialog(), "Start session")).toBeUndefined());
   });
 
   it("asks for an explicit acknowledgement before stopping the agent's own session", async () => {

@@ -365,7 +365,7 @@ export function OpenwaSessionLinker({
           {start.isPending ? "Starting the session…" : qr.isError ? "Waiting for the gateway to issue a QR code…" : "Loading QR code…"}
         </p>
       )}
-      {start.isError && !connected ? (
+      {(engineStopped || start.isError) && !start.isPending && !connected ? (
         <Button size="sm" variant="secondary" onClick={() => startSession()}>
           Start session
         </Button>

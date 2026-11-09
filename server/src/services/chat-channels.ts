@@ -10162,6 +10162,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     }
     let prepared: Awaited<ReturnType<typeof prepareProviderInventory>>;
     let keepOpenwaEndpointActive = false;
+    let credentialsMayBeStored = false;
     try {
       prepared = await prepareProviderInventory(endpoint, credentials);
       const credentialsChangedByDiscovery =
@@ -10248,15 +10249,22 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         (input.credentials && Object.keys(input.credentials).length > 0) ||
         credentialsChangedByDiscovery ||
         openwaMintedKeyId !== null
-      )
+      ) {
+        credentialsMayBeStored = true;
         await persistCredentials(
           endpoint,
           credentials,
           credentialLease,
           actorUserId,
         );
+      }
     } catch (error) {
-      await revokeMintedOpenwaKey();
+      const mintedKeyMayBeStored =
+        credentialsMayBeStored &&
+        (await resolveCredentials(endpoint)
+          .then((stored) => stored.apiKey === credentials.apiKey)
+          .catch(() => true));
+      if (!mintedKeyMayBeStored) await revokeMintedOpenwaKey();
       throw error;
     }
     if (prepared.inventory)

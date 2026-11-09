@@ -664,6 +664,25 @@ describeEmbeddedPostgres("OpenWA setup inspection and configure", () => {
     expect([...live().minted.values()]).toMatchObject([{ active: false }]);
   });
 
+  it("keeps the minted key when the credential write committed but its acknowledgement was lost", async () => {
+    const { app, endpoint, companyId } = await setup();
+    const transaction = db.transaction.bind(db);
+    let lostAcknowledgement = false;
+    vi.spyOn(db, "transaction").mockImplementation((async (...args: Parameters<typeof db.transaction>) => {
+      const result = await transaction(...args);
+      const [connection] = await db.select({ refs: toolConnections.credentialSecretRefs }).from(toolConnections).where(eq(toolConnections.companyId, companyId));
+      if (!lostAcknowledgement && connection?.refs.some((ref) => ref.configPath === "credentials.apiKey")) {
+        lostAcknowledgement = true;
+        throw new Error("Connection terminated unexpectedly");
+      }
+      return result;
+    }) as typeof db.transaction);
+    const response = await configure(app, endpoint.id, { credentials: { adminApiKey: ADMIN_KEY } });
+    expect(lostAcknowledgement).toBe(true);
+    expect(response.status).toBe(500);
+    expect([...live().minted.values()]).toMatchObject([{ active: true }]);
+  });
+
   it("adds an admin key on reconnect without retyping the operator key", async () => {
     const { app, endpoint, companyId } = await setup();
     expect((await configure(app, endpoint.id)).status).toBe(200);
