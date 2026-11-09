@@ -33,14 +33,24 @@ only documentation (`**/*.md`, `docs/**`, `doc/**`, `LICENSE`, the issue and pul
 request templates) the heavy lanes stay skipped and a `Docs` lane runs instead:
 the static gates plus the suites that read repository documentation, selected by
 `scripts/docs-lane-suites.mjs` and run with `pnpm test:run:docs`. Everything else
-runs `Policy`, `Typecheck`, `Build`, `Verify Paperclip Runner`, the sharded
+runs `Policy`, `Typecheck`, `Build`, `Verify Wardmote Runner`, the sharded
 `Tests` and `E2E` matrices. The `verify` aggregate fails when any lane that ran
 did not succeed, and it rejects a run where the heavy lanes and the `Docs` lane
 are inconsistent. The workflow never uses `paths`/`paths-ignore`, because the
 release gate requires a completed `ci.yml` run on the exact tagged commit.
 Shared setup lives in `.github/actions/setup-workspace` and the static gates in
-`.github/actions/policy-checks`; the pnpm store and the Runner Rust cache are
+`.github/actions/policy-checks`; the pnpm store and the Runner Rust caches are
 written only by pushes to `main` and restored everywhere else.
+
+Server test shards run vitest with `WARDMOTE_SERVER_TEST_WORKERS=3`: one fresh
+process per file, longest files first by the manifests in
+`scripts/*-shard-durations.json`. Local runs keep one worker. Each server vitest
+run migrates one embedded Postgres data directory in a global setup, and every
+test file starts its own cluster from a copy of it. `verify` writes each job's
+time against `.github/ci-budgets.json` into the run summary and warns on an
+overrun. `node scripts/ci-timing-report.mjs` reproduces the per-job report for
+recent runs, and `--logs <n> --write-durations scripts` regenerates the shard
+manifests from real runs.
 `.github/workflows/sentry-contract.yml` runs separately and only when the Sentry
 integration files change.
 

@@ -1177,7 +1177,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     getCloudConnectorEnrollmentMock.mockResolvedValue({ configured: false, status: "not_configured", origins: [] });
     await render();
     await passAccessStep();
-    expect(container.textContent).toContain("Connect with Paperclip");
+    expect(container.textContent).toContain("Connect with Paperclip Cloud");
     await act(async () => { buttonByText("Use your own Asana OAuth app")!.click(); });
     await flushReact();
     expect(container.textContent).toContain("Your OAuth app");
@@ -1424,16 +1424,16 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     await render();
     await passAccessStep();
 
-    expect(container.textContent).toContain("Connect with Paperclip");
+    expect(container.textContent).toContain("Connect with Paperclip Cloud");
     expect(container.textContent).toContain(
-      "You must connect this instance to Paperclip to connect to Gmail (you only need to do this once).",
+      "You must connect this instance to Paperclip Cloud to connect to Gmail (you only need to do this once).",
     );
-    expect(buttonByText("Connect with Paperclip")?.closest(".rounded-xl")?.classList.contains("border-line")).toBe(true);
+    expect(buttonByText("Connect with Paperclip Cloud")?.closest(".rounded-xl")?.classList.contains("border-line")).toBe(true);
     expect(container.textContent).not.toContain("Required once for managed Google sign-in.");
     expect(container.textContent).not.toContain("needs its own OAuth app");
 
     await act(async () => {
-      buttonByText("Connect with Paperclip")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      buttonByText("Connect with Paperclip Cloud")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
     await flushReact();
 
@@ -1458,7 +1458,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     getCloudConnectorEnrollmentMock.mockResolvedValue({ status: "not_configured" });
     await render(client, false, <ConnectionSetupFlow host="dialog" serviceSlug="gmail" interactionId="intent-1" requestedAgentId="agent-1" />);
     await passAccessStep();
-    await act(async () => buttonByText("Connect with Paperclip")?.click());
+    await act(async () => buttonByText("Connect with Paperclip Cloud")?.click());
     await flushReact();
     expect(open).toHaveBeenCalled();
     if (popupBlocked) {
@@ -1506,7 +1506,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     }
     await render(undefined, false, <ConnectionSetupFlow host="dialog" serviceSlug="gmail" interactionId="intent-1" requestedAgentId="agent-1" />);
     await passAccessStep();
-    await act(async () => buttonByText("Connect with Paperclip")?.click());
+    await act(async () => buttonByText("Connect with Paperclip Cloud")?.click());
     await flushReact();
     expect(popup.close).toHaveBeenCalledOnce();
     expect(popup.location.assign).not.toHaveBeenCalled();
@@ -1621,12 +1621,12 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     expect(radioContaining("Any agent")?.getAttribute("aria-checked")).toBe("true");
     expect(container.textContent).toContain("Which agents may use your GitHub when you’re responsible?");
     // Enrolment is the screen; its own action is the only primary one.
-    expect(buttonByText("Connect with Paperclip")).toBeDefined();
+    expect(buttonByText("Connect with Paperclip Cloud")).toBeDefined();
     expect(buttonByText("Continue to GitHub")).toBeUndefined();
 
     await passAccessStep();
 
-    expect(container.textContent).toContain("Connect with Paperclip");
+    expect(container.textContent).toContain("Connect with Paperclip Cloud");
     expect(container.textContent).not.toContain("GitHub token");
   });
 
@@ -1638,7 +1638,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
 
     expect(container.textContent).toContain("Continue to GitHub");
     expect(container.textContent).not.toContain("Connect GitHub as");
-    expect(container.textContent).not.toContain("Connect with Paperclip");
+    expect(container.textContent).not.toContain("Connect with Paperclip Cloud");
   });
 
   it("explains unavailable GitHub sign-in without silently switching to a PAT", async () => {
@@ -1743,7 +1743,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     });
     await flushReact();
     await act(async () => {
-      buttonByText("Connect with Paperclip")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      buttonByText("Connect with Paperclip Cloud")?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
     });
     await flushReact();
 
@@ -1841,7 +1841,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
       }
       await flushReact();
       // Change auth methods too, including apps with only one capability.
-      expect(container.textContent).not.toContain("Connect with Paperclip");
+      expect(container.textContent).not.toContain("Connect with Paperclip Cloud");
       expect(container.textContent).not.toContain("needs its own OAuth app");
       expect(buttonByText("Continue to sign in")?.disabled).toBe(false);
       const customerAuth = buttonByText("Use your own Google OAuth app");
@@ -1887,7 +1887,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     await render();
 
     expect(container.textContent).not.toContain("You must connect this instance to Paperclip");
-    expect(container.textContent).not.toContain("Connect with Paperclip");
+    expect(container.textContent).not.toContain("Connect with Paperclip Cloud");
   });
 
   it("keeps Google Drive prerequisites off access and defaults to its write-capable method", async () => {
@@ -2959,7 +2959,7 @@ describe("AppsConnect — Connect with a link (M4 frame)", () => {
     await render();
     await flushReact();
     expect(container.textContent).toContain("Install Wardmote and grant at least one repository");
-    expect(container.querySelector('a[href="https://github.com/apps/paperclip-for-github/installations/new"]')?.textContent).toBe("Install Paperclip on GitHub");
+    expect(container.querySelector('a[href="https://github.com/apps/paperclip-for-github/installations/new"]')?.textContent).toBe("Install the Paperclip Cloud app on GitHub");
     expect(container.textContent).not.toContain("Your GitHub key");
     await act(async () => buttonByText("Try again")!.click());
     await flushReact();
@@ -4509,7 +4509,7 @@ describe("AppsConnect — guided generic MCP flow (PAP-17087)", () => {
     await act(async () => setInputValue(valueInput, "evil.example"));
     await flushReact();
 
-    expect(container.textContent).toContain('Paperclip manages the "Host" header');
+    expect(container.textContent).toContain('Wardmote manages the "Host" header');
     expect(buttonByText("Check link")?.disabled).toBe(true);
     expect(connectAppMock).not.toHaveBeenCalled();
   });

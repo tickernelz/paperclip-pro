@@ -52,8 +52,7 @@ Auth:
   NODE_AUTH_TOKEN, when set, authenticates npm through a temporary userconfig.
   Left empty, npm publish and npm dist-tag add use GitHub Actions OIDC trusted
   publishing, which needs npm 11.21.0+ (or 12.2.0+) and "Allow npm dist-tag"
-  on each package's trusted publisher. NPM_PROMOTE_TOKEN, when set, moves a
-  dist-tag that OIDC refuses with that token instead of failing the run.
+  on each package's trusted publisher.
 EOF
 }
 
@@ -268,18 +267,6 @@ publish_one_tarball() {
   rm -f "$publish_log"
 }
 
-promote_with_token() {
-  local spec="$1" userconfig status=0
-
-  userconfig="$(mktemp "${TMPDIR:-/tmp}/paperclip-npmrc-promote.XXXXXX")"
-  chmod 600 "$userconfig"
-  printf '//registry.npmjs.org/:_authToken=%s\n' "$NPM_PROMOTE_TOKEN" > "$userconfig"
-  env -u ACTIONS_ID_TOKEN_REQUEST_URL -u ACTIONS_ID_TOKEN_REQUEST_TOKEN \
-    NPM_CONFIG_USERCONFIG="$userconfig" npm dist-tag add "$spec" "$PROMOTE_TAG" || status=$?
-  rm -f "$userconfig"
-  return "$status"
-}
-
 promote_to_latest() {
   local package_info="$1"
   local pkg_name pkg_version current
@@ -312,15 +299,7 @@ promote_to_latest() {
       continue
     fi
 
-    if [ -z "${NPM_PROMOTE_TOKEN:-}" ]; then
-      release_fail "npm dist-tag add over OIDC failed for ${pkg_name}; enable \"Allow npm dist-tag\" on its trusted publisher, or set the NPM_TOKEN repository secret so the run can move it with a token."
-    fi
-
-    release_warn "  ${pkg_name}: OIDC refused npm dist-tag add; moving ${PROMOTE_TAG} with NPM_PROMOTE_TOKEN"
-    if ! promote_with_token "${pkg_name}@${pkg_version}"; then
-      release_fail "npm dist-tag add failed for ${pkg_name}@${pkg_version} over OIDC and with NPM_PROMOTE_TOKEN."
-    fi
-    release_info "  ${pkg_name}: ${PROMOTE_TAG} -> ${pkg_version} (token)"
+    release_fail "npm dist-tag add over OIDC failed for ${pkg_name}; enable \"Allow npm dist-tag\" on its trusted publisher, or rerun this version with auth=token."
   done <<< "$package_info"
 }
 

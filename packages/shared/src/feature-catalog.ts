@@ -56,9 +56,9 @@ export const INSTANCE_FEATURE_CATALOG: Record<InstanceFeatureKey, FeatureCatalog
     tier: "managed", cloudDefault: false, selfHostedDefault: false,
   },
   enableNativeRunner: {
-    title: "Paperclip Runner",
+    title: "Wardmote Runner",
     description:
-      "Allow explicitly configured local Codex, OpenCode, and qualified ACPX agents to use the experimental Rust Paperclip Runner, including authenticated sandbox ingress when required. Onboarding remains on legacy adapters.",
+      "Allow explicitly configured local Codex, OpenCode, and qualified ACPX agents to use the experimental Rust Wardmote Runner, including authenticated sandbox ingress when required. Onboarding remains on legacy adapters.",
     tier: "managed",
     cloudDefault: false,
     // On by default for self-hosted instances. Requires a Rust toolchain (or
@@ -245,14 +245,14 @@ export const INSTANCE_FEATURE_CATALOG: Record<InstanceFeatureKey, FeatureCatalog
   enableBuiltInAgents: {
     title: "Built-in Agents",
     description:
-      "Show Paperclip-managed built-in agent surfaces, including roster badges, the Built-in agents tab, and setup controls.",
+      "Show Wardmote-managed built-in agent surfaces, including roster badges, the Built-in agents tab, and setup controls.",
     tier: "managed",
     cloudDefault: false,
     selfHostedDefault: false,
   },
   enableBetaSkills: {
     title: "Beta skills",
-    description: "Allow agents to pin beta releases of the Paperclip core skill.",
+    description: "Allow agents to pin beta releases of the core paperclip skill.",
     tier: "preference",
     cloudDefault: false,
     selfHostedDefault: false,
@@ -305,9 +305,9 @@ export const INSTANCE_FEATURE_CATALOG: Record<InstanceFeatureKey, FeatureCatalog
     selfHostedDefault: false,
   },
   enablePaperclipDeveloperMode: {
-    title: "Paperclip Developer Mode",
+    title: "Wardmote Developer Mode",
     description:
-      "Show internal Paperclip maintainer tools and observability links, including Honeycomb trace queries on run pages.",
+      "Show internal Wardmote maintainer tools and observability links, including Honeycomb trace queries on run pages.",
     tier: "preference",
     cloudDefault: false,
     selfHostedDefault: false,
@@ -355,7 +355,7 @@ export const INSTANCE_FEATURE_CATALOG: Record<InstanceFeatureKey, FeatureCatalog
   enableRunnerPreviewIngress: {
     title: "Runner Preview Ingress (Deprecated)",
     description:
-      "Compatibility-only key retained for older managed configs. Runner ingress follows the Paperclip Runner setting.",
+      "Compatibility-only key retained for older managed configs. Runner ingress follows the Wardmote Runner setting.",
     tier: "managed",
     cloudDefault: false,
     selfHostedDefault: false,

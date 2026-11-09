@@ -413,7 +413,7 @@ export function registerSecretCommands(program: Command): void {
   addCommonClientOptions(
     secrets
       .command("create")
-      .description("Create a Paperclip-managed secret")
+      .description("Create a Wardmote-managed secret")
       .requiredOption("-C, --company-id <id>", "Company ID")
       .requiredOption("--name <name>", "Secret display name")
       .option("--key <key>", "Portable secret key")
@@ -487,7 +487,7 @@ export function registerSecretCommands(program: Command): void {
   addCommonClientOptions(
     secrets
       .command("rotate")
-      .description("Rotate a Paperclip-managed secret value")
+      .description("Rotate a Wardmote-managed secret value")
       .argument("<secretId>", "Secret ID")
       .option("--value <value>", "New secret value")
       .option("--value-env <name>", "Read new secret value from an environment variable")
