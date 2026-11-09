@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, mkdtemp, readdir, readFile, rm, symlink, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { dirname, resolve } from "node:path";
 
 import {
+  TEST_FILE_FAMILIES,
   checkForbiddenImports,
   defaultPackageRoot,
   findSpecifiers,
@@ -202,7 +203,7 @@ test("unexpanded wildcard exports cannot expose the reviewed development harness
   assert.match(violations[0].reason, /outside the standalone boundary/);
 });
 
-async function repositoryBoundary(t, files) {
+async function repositoryBoundary(t, files, links = {}) {
   const root = await mkdtemp(resolve(tmpdir(), "runner-repository-boundary-"));
   t.after(() => rm(root, { recursive: true, force: true }));
   const packageRoot = resolve(root, "packages/runner");
@@ -211,6 +212,10 @@ async function repositoryBoundary(t, files) {
   for (const [file, source] of Object.entries(files)) {
     await mkdir(dirname(resolve(root, file)), { recursive: true });
     await writeFile(resolve(root, file), source);
+  }
+  for (const [file, target] of Object.entries(links)) {
+    await mkdir(dirname(resolve(root, file)), { recursive: true });
+    await symlink(target, resolve(root, file));
   }
   return checkForbiddenImports({ packageRoot, scanRoots: ["src"], cargoRoots: [], checkManifest: false });
 }
@@ -222,8 +227,18 @@ test("test files may import the repository test tree", async (t) => {
   assert.deepEqual(await repositoryBoundary(t, {
     ...repositoryTestFiles,
     "packages/runner/src/backends/measurement.test.ts": `import { helper } from "${repositoryTestHelper}";`,
-    "packages/runner/src/backends/measurement.spec.ts": `import { helper } from "${repositoryTestHelper}";`,
   }), []);
+});
+
+test("only the test family the package excludes from its build is admitted", async (t) => {
+  for (const file of ["measurement.spec.ts", "measurement.spec.tsx"]) {
+    const violations = await repositoryBoundary(t, {
+      ...repositoryTestFiles,
+      [`packages/runner/src/backends/${file}`]: `import { helper } from "${repositoryTestHelper}";`,
+    });
+    assert.equal(violations.length, 1, file);
+    assert.match(violations[0].reason, /may not escape/);
+  }
 });
 
 test("the repository test tree stays closed to production sources", async (t) => {
@@ -244,10 +259,48 @@ test("a test file still may not import outside the package and the test tree", a
   assert.match(violations[0].reason, /may not escape/);
 });
 
-test("published output never carries the test files this boundary admits", async () => {
-  const manifest = JSON.parse(await readFile(resolve(defaultPackageRoot, "package.json"), "utf8"));
-  const tsconfig = JSON.parse(await readFile(resolve(defaultPackageRoot, "tsconfig.json"), "utf8"));
-  assert.ok(manifest.files.every((entry) => entry !== "src" && !entry.startsWith("src/")));
-  assert.ok(tsconfig.exclude.includes("src/**/*.test.ts"));
+test("a directory that only shares the tests name prefix stays closed", async (t) => {
+  const violations = await repositoryBoundary(t, {
+    "tests-evil/runner-e2e/helper.mjs": "export const helper = 1;",
+    "packages/runner/src/backends/measurement.test.ts": 'import "../../../../tests-evil/runner-e2e/helper.mjs";',
+  });
+  assert.equal(violations.length, 1);
+  assert.match(violations[0].reason, /may not escape/);
 });
 
+test("a symlink inside the test tree cannot smuggle a production file past the boundary", async (t) => {
+  const violations = await repositoryBoundary(t, {
+    "server/src/services/heartbeat.ts": "export const heartbeat = 1;",
+    "packages/runner/src/backends/measurement.test.ts": `import { helper } from "${repositoryTestHelper}";`,
+  }, {
+    "tests/runner-e2e/helper.mjs": "../../server/src/services/heartbeat.ts",
+  });
+  assert.equal(violations.length, 1);
+  assert.match(violations[0].reason, /may not escape/);
+});
+
+test("every build config excludes each test family this boundary admits", async () => {
+  const manifest = JSON.parse(await readFile(resolve(defaultPackageRoot, "package.json"), "utf8"));
+  assert.ok(
+    manifest.files.every((entry) => entry !== "src" && !entry.startsWith("src/") && !entry.includes("*")),
+    `published paths must stay explicit and out of src, saw ${manifest.files.join(", ")}`,
+  );
+  const configNames = (await readdir(defaultPackageRoot)).filter((name) => /^tsconfig(\..+)?\.json$/.test(name));
+  assert.ok(configNames.length > 0);
+  for (const name of configNames) {
+    const config = JSON.parse(await readFile(resolve(defaultPackageRoot, name), "utf8"));
+    if (!Array.isArray(config.include)) continue;
+    const compiledRoots = config.include.filter((pattern) => pattern.startsWith("src/"));
+    if (compiledRoots.length === 0) continue;
+    const extensions = [".ts", ".tsx"].filter((ext) => compiledRoots.some((pattern) => pattern.endsWith(ext)));
+    for (const family of TEST_FILE_FAMILIES) {
+      for (const ext of extensions) {
+        const glob = `src/**/*.${family}${ext}`;
+        assert.ok(
+          config.exclude.includes(glob) || config.exclude.includes(`**/*.${family}${ext}`),
+          `${name} must exclude ${glob} while the boundary admits it`,
+        );
+      }
+    }
+  }
+});
