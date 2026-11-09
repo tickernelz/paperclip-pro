@@ -9,7 +9,7 @@ describe("experimental memory connectors", () => {
     expect(instanceExperimentalSettingsSchema.parse({}).enableMemoryConnectors).toBe(false);
     expect(patchInstanceExperimentalSettingsSchema.parse({})).not.toHaveProperty("enableMemoryConnectors");
     expect(patchInstanceExperimentalSettingsSchema.parse({ enableMemoryConnectors: true })).toEqual({ enableMemoryConnectors: true });
-    expect(INSTANCE_FEATURE_CATALOG.enableMemoryConnectors).toMatchObject({ tier: "managed", selfHostedDefault: false, cloudDefault: false });
+    expect(INSTANCE_FEATURE_CATALOG.enableMemoryConnectors).toMatchObject({ selfHostedDefault: false });
     expect(isMemoryConnectorId("notion")).toBe(false);
   });
   it.each(MEMORY_CONNECTOR_IDS)("has a supported, branded %s setup method", (slug) => {

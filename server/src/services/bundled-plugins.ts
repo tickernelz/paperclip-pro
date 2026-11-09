@@ -7,12 +7,6 @@ import { assertDistributionManifestCapabilities, readDistributionPluginCatalog, 
 /**
  * Bundled plugin auto-provisioning.
  *
- * Managed-cloud instances receive a `plugins.autoInstall` key list through
- * `PAPERCLIP_MANAGED_CONFIG` (parsed fail-closed at startup — see
- * `managed-config.ts`). Each key maps to a plugin bundled into
- * the release image under the bundled catalog root. Nobody "installs" on a
- * managed instance: the control plane provisions, tenants use.
- *
  * Two distinct failure postures, deliberately split:
  *
  * 1. **Resolution (this file, `resolveBundledPluginInstalls`) fails to
@@ -130,47 +124,19 @@ export interface ResolvedBundledPlugin {
 }
 
 /**
- * Canonicalize a path for containment comparison. Symlinks are resolved
- * when the path exists so a link inside the catalog cannot point install
- * resolution at a directory outside it; nonexistent paths fall back to a
- * lexical resolve (`..` segments still collapse).
- */
-function canonicalize(p: string): string {
-  const resolved = path.resolve(p);
-  try {
-    return fs.realpathSync(resolved);
-  } catch {
-    return resolved;
-  }
-}
-
-function isInsideRoot(candidate: string, root: string): boolean {
-  const rel = path.relative(root, candidate);
-  return rel === "" || (!rel.startsWith("..") && !path.isAbsolute(rel));
-}
-
-/**
  * Resolve auto-install keys to concrete bundle paths.
  *
- * Throws — and the instance must refuse to start — when a key is not in
- * the bundled catalog, or when `enforceCatalogRoot` is set and the
- * resolved path escapes the catalog root. Callers pass
- * `enforceCatalogRoot: true` for managed (control-plane-driven) key lists
- * and `false` for the self-hosted built-in list, where the legacy
- * kubernetes path override may point anywhere (unchanged behavior).
  */
 export function resolveBundledPluginInstalls(
   keys: readonly string[],
   opts: {
     catalogRoot: string;
     env: Record<string, string | undefined>;
-    enforceCatalogRoot: boolean;
     distributionPlugins?: readonly DistributionPlugin[];
   },
 ): ResolvedBundledPlugin[] {
   const resolved: ResolvedBundledPlugin[] = [];
   const seen = new Set<string>();
-  const canonicalRoot = canonicalize(opts.catalogRoot);
   const distributionPlugins = opts.distributionPlugins ?? readDistributionPluginCatalog(opts.catalogRoot, BUNDLED_PLUGIN_CATALOG);
   for (const key of keys) {
     if (seen.has(key)) continue;
@@ -193,11 +159,6 @@ export function resolveBundledPluginInstalls(
     const localPath = override
       ? path.resolve(override)
       : path.resolve(opts.catalogRoot, entry.relativePath);
-    if (opts.enforceCatalogRoot && !isInsideRoot(canonicalize(localPath), canonicalRoot)) {
-      throw new Error(
-        `bundled plugin "${key}" resolves to "${localPath}", outside the bundled catalog root "${opts.catalogRoot}"; refusing to start`,
-      );
-    }
     resolved.push({ key: entry.key, pluginKey: entry.pluginKey, localPath });
   }
   return resolved;
@@ -376,15 +337,10 @@ async function reenableErroredBundledPlugin(
  *   fails and which no automatic path ever clears. A bundled plugin in
  *   `error` is moved back to `ready` once per boot so `loadAll()` gets a
  *   fresh attempt (see `reenableErroredBundledPlugin`).
- * - A soft-uninstalled plugin is reinstalled only when
- *   `reinstallUninstalled` is set (managed mode, where the control plane
- *   owns provisioning). Self-hosted keeps the pre-refactor behavior of
- *   leaving an operator's uninstall alone.
  */
 export async function ensureBundledPlugins(
   installs: readonly ResolvedBundledPlugin[],
   deps: BundledPluginProvisionerDeps,
-  opts: { reinstallUninstalled: boolean },
 ): Promise<void> {
   const bundleManifestExists = deps.bundleManifestExists ?? defaultBundleManifestExists;
   for (const install of installs) {
@@ -398,7 +354,7 @@ export async function ensureBundledPlugins(
         verifiedManifest = manifest;
       }
       const existing = await deps.registry.getByKey(install.pluginKey);
-      if (existing && (existing.status !== "uninstalled" || !opts.reinstallUninstalled)) {
+      if (existing) {
         // The bundle ships with the release image, so its manifest is the
         // source of truth for a present plugin. Reconcile the persisted
         // manifest when the shipped bundle declares a different version. Without

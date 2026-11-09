@@ -12,7 +12,7 @@ import {
 } from "@tickernelz/wardmote-shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { FeatureSettingGroup, FeatureSettingRow, ManagedByCloudBadge } from "@/components/FeatureSettingRow";
+import { FeatureSettingGroup, FeatureSettingRow } from "@/components/FeatureSettingRow";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
 import { useInstanceFeatureSettings } from "@/hooks/useInstanceFeatureSettings";
 import { getWorktreeInstanceId, isWorktreeRuntime } from "@/lib/worktree-branding";
@@ -104,10 +104,9 @@ export function InstanceAdvanced() {
   const visibleKeys = ADVANCED_KEYS.filter(
     (key) => !features.isHidden(key) && (key !== "enableWorktreeRunExecution" || inWorktree),
   );
-  const defaultOf = (key: InstanceFeatureKey) =>
-    features.isCloudManaged ? INSTANCE_FEATURE_CATALOG[key].cloudDefault : INSTANCE_FEATURE_CATALOG[key].selfHostedDefault;
+  const defaultOf = (key: InstanceFeatureKey) => INSTANCE_FEATURE_CATALOG[key].selfHostedDefault;
   const changed = (key: InstanceFeatureKey) => features.isOn(key) !== defaultOf(key);
-  const resettable = visibleKeys.filter((key) => changed(key) && !features.isManaged(key));
+  const resettable = visibleKeys.filter(changed);
 
   const reset = () => {
     features.save(
@@ -150,19 +149,17 @@ export function InstanceAdvanced() {
         <FeatureSettingGroup key={group} id={`advanced-group-${group}`} title={GROUP_LABELS[group]}>
           {keys.map((key) => {
             const placement = featurePlacement(key, "advanced")!;
-            const managed = features.isManaged(key);
             return (
               <FeatureSettingRow
                 key={key}
                 name={placement.name}
                 summary={placement.summary}
                 checked={features.isOn(key)}
-                disabled={features.pending || managed}
+                disabled={features.pending}
                 onCheckedChange={(next) => features.save({ [key]: next } as PatchInstanceExperimentalSettings)}
                 badges={
                   <>
                     {changed(key) ? <Badge variant="outline">changed</Badge> : null}
-                    {managed ? <ManagedByCloudBadge /> : null}
                   </>
                 }
               >

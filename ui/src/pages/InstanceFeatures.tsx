@@ -17,7 +17,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
-import { FeatureSettingGroup, FeatureSettingRow, ManagedByCloudBadge } from "@/components/FeatureSettingRow";
+import { FeatureSettingGroup, FeatureSettingRow } from "@/components/FeatureSettingRow";
 import { useBreadcrumbs } from "@/context/BreadcrumbContext";
 import { useInstanceFeatureSettings } from "@/hooks/useInstanceFeatureSettings";
 import { INSTANCE_SETTINGS_PATH_PREFIX } from "@/lib/instance-settings";
@@ -77,7 +77,7 @@ export function InstanceFeatures() {
   const applyPreset = (preset: FeaturePresetId) => {
     const patch = Object.fromEntries(
       Object.entries(featurePresetPatch(preset)).filter(
-        ([key]) => !features.isManaged(key as InstanceFeatureKey) && !features.isHidden(key as InstanceFeatureKey),
+        ([key]) => !features.isHidden(key as InstanceFeatureKey),
       ),
     ) as PatchInstanceExperimentalSettings;
     features.save(patch);
@@ -169,9 +169,7 @@ export function InstanceFeatures() {
             {shown.map((key) => {
               const placement = featurePlacement(key, "features")!;
               const on = features.isOn(key);
-              const managed = features.isManaged(key);
               const missing = missingFeatureRequirements(key, settings);
-              const blockedByManaged = !on && missing.some(features.isManaged);
               const lockedUnfinished = !placement.finished && !on;
               return (
                 <FeatureSettingRow
@@ -179,27 +177,26 @@ export function InstanceFeatures() {
                   name={placement.name}
                   summary={placement.summary}
                   checked={on}
-                  disabled={features.pending || managed || lockedUnfinished || blockedByManaged}
+                  disabled={features.pending || lockedUnfinished}
                   onCheckedChange={(next) => toggle(key, next)}
                   status={on ? placement.whenOn : placement.whenOff}
                   badges={
                     <>
                       {placement.finished ? null : <Badge variant="secondary">Not finished yet</Badge>}
-                      {managed ? <ManagedByCloudBadge /> : null}
                     </>
                   }
                 >
                   {placement.requires.length > 0 ? (
                     <p className="text-xs text-ink-3">
                       Needs {placement.requires.map(featureName).join(" and ")}
-                      {missing.length > 0 && !blockedByManaged ? "; turning this on turns it on too." : "."}
+                      {missing.length > 0 ? "; turning this on turns it on too." : "."}
                     </p>
                   ) : null}
                   {key === "enableIsolatedWorkspaces" && on ? (
                     <label className="flex items-start gap-2 text-sm">
                       <Checkbox
                         checked={features.isOn("enableIsolatedWorkspacesByDefault")}
-                        disabled={features.pending || features.isManaged("enableIsolatedWorkspacesByDefault")}
+                        disabled={features.pending}
                         onCheckedChange={(checked) =>
                           features.save({ enableIsolatedWorkspacesByDefault: checked === true })
                         }

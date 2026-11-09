@@ -1404,41 +1404,6 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
     },
   });
 
-  // Managed (platform-provisioned) environments accept exactly one tenant
-  // edit: the env var map. The server's write floor rejects everything
-  // else, so this mutation sends an envVars-only PATCH — the one body
-  // shape the floor admits.
-  const managedEnvironmentEnvVarsMutation = useMutation({
-    mutationFn: async (envVars: EnvironmentFormState["envVars"]) => {
-      if (!editingEnvironmentId) throw new Error("No environment selected");
-      return await environmentsApi.update(editingEnvironmentId, { envVars }, selectedCompanyId);
-    },
-    onSuccess: async (environment) => {
-      if (selectedCompanyId) {
-        await queryClient.invalidateQueries({
-          queryKey: queryKeys.environments.list(selectedCompanyId),
-        });
-      }
-      initializedFormKeyRef.current = null;
-      setEnvironmentForm(createEmptyEnvironmentForm());
-      setEnvironmentFormBaselineKey(null);
-      setEnvironmentVariablesDirty(false);
-      navigate(ENVIRONMENTS_PATH, { replace: true });
-      pushToast({
-        title: "Environment variables updated",
-        body: `${environment.name} will inject the updated variables into future runs.`,
-        tone: "success",
-      });
-    },
-    onError: (error) => {
-      pushToast({
-        title: "Failed to save environment variables",
-        body: error instanceof Error ? error.message : "Environment variables save failed.",
-        tone: "error",
-      });
-    },
-  });
-
   const environmentMutation = useMutation({
     mutationFn: async (form: EnvironmentFormState) => {
       const body = buildEnvironmentPayload(form);
@@ -2095,77 +2060,7 @@ export function CompanyEnvironments({ mode = "list" }: CompanyEnvironmentsProps)
         </div>
       ) : null}
 
-      {isEnvironmentFormPage && mode === "edit" && editingEnvironment && isPlatformManagedEnvironment(editingEnvironment) ? (
-        <SecretRefHintsContext.Provider value={environmentSecretRefHints}>
-        <div data-testid="managed-environment-form-page">
-          <div className="pb-4">
-            <div className="mb-4">
-              <Button size="sm" variant="ghost" asChild>
-                <Link to={ENVIRONMENTS_PATH}>
-                  <ArrowLeft className="mr-1.5 h-3.5 w-3.5" />
-                  Environments
-                </Link>
-              </Button>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-lg font-semibold">{editingEnvironment.name}</h1>
-              <span className="inline-flex items-center gap-1 rounded-full bg-bg-3 px-2 py-0.5 text-xs text-ink-3">
-                <Lock className="h-3 w-3" aria-hidden />
-                Managed by Wardmote
-              </span>
-            </div>
-            <p className="mt-1 max-w-3xl text-sm text-ink-3">
-              {editingEnvironment.description ?? "Your agent runs on a computer managed by Wardmote."}
-            </p>
-            <p className="mt-1 max-w-3xl text-xs text-ink-3">
-              This environment is provisioned and maintained for you. You can add environment
-              variables for your agents; its name and configuration are managed by Wardmote.
-            </p>
-          </div>
-          <div className="py-4">
-            <Field
-              label="Environment variables"
-              hint="Injected into runs that resolve through this environment. Use plain values or organization secrets."
-            >
-              <EnvironmentVariablesEditor
-                ref={environmentVariablesEditorRef}
-                value={environmentForm.envVars}
-                secrets={secrets ?? []}
-                onCreateSecret={async (name, value) => await createSecret.mutateAsync({ name, value })}
-                onChange={(env) =>
-                  setEnvironmentForm((current) => ({ ...current, envVars: env ?? {} }))}
-                onDirtyChange={setEnvironmentVariablesDirty}
-              />
-            </Field>
-            {managedEnvironmentEnvVarsMutation.isError ? (
-              <div className="mt-3 text-xs text-bad">
-                {managedEnvironmentEnvVarsMutation.error instanceof Error
-                  ? managedEnvironmentEnvVarsMutation.error.message
-                  : "Failed to save environment variables"}
-              </div>
-            ) : null}
-          </div>
-          <div className="flex flex-wrap justify-end gap-2 py-4">
-            <Button
-              variant="secondary"
-              onClick={closeEnvironmentForm}
-              disabled={managedEnvironmentEnvVarsMutation.isPending}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={() => managedEnvironmentEnvVarsMutation.mutate(flushEnvironmentForm().envVars)}
-              disabled={managedEnvironmentEnvVarsMutation.isPending}
-            >
-              {managedEnvironmentEnvVarsMutation.isPending ? "Saving..." : "Save environment variables"}
-            </Button>
-          </div>
-        </div>
-        </SecretRefHintsContext.Provider>
-      ) : null}
-
-      {isEnvironmentFormPage &&
-      (mode === "create" || (editingEnvironment && !isPlatformManagedEnvironment(editingEnvironment))) ? (
+      {isEnvironmentFormPage && (mode === "create" || editingEnvironment) ? (
         <SecretRefHintsContext.Provider value={environmentSecretRefHints}>
         <div data-testid="environment-form-page">
           <div className="pb-4">

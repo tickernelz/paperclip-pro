@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import type {
-  InstanceExperimentalSettingsWithManaged,
+  InstanceExperimentalSettings,
   InstanceFeatureKey,
   PatchInstanceExperimentalSettings,
 } from "@tickernelz/wardmote-shared";
@@ -21,19 +21,19 @@ export function useInstanceFeatureSettings() {
   });
 
   const mutation = useMutation<
-    InstanceExperimentalSettingsWithManaged,
+    InstanceExperimentalSettings,
     Error,
     PatchInstanceExperimentalSettings,
-    { previous?: InstanceExperimentalSettingsWithManaged }
+    { previous?: InstanceExperimentalSettings }
   >({
     mutationFn: (patch) => instanceSettingsApi.updateExperimental(patch),
     onMutate: async (patch) => {
       await queryClient.cancelQueries({ queryKey: queryKeys.instance.experimentalSettings });
-      const previous = queryClient.getQueryData<InstanceExperimentalSettingsWithManaged>(
+      const previous = queryClient.getQueryData<InstanceExperimentalSettings>(
         queryKeys.instance.experimentalSettings,
       );
       if (previous) {
-        queryClient.setQueryData<InstanceExperimentalSettingsWithManaged>(
+        queryClient.setQueryData<InstanceExperimentalSettings>(
           queryKeys.instance.experimentalSettings,
           { ...previous, ...patch },
         );
@@ -60,8 +60,6 @@ export function useInstanceFeatureSettings() {
   });
 
   const settings = query.data;
-  const managedKeys = settings?.managedKeys ?? {};
-  const isManaged = (key: InstanceFeatureKey) => managedKeys[key]?.managed === true;
   const isHidden = (key: InstanceFeatureKey) => hidden.has(experimentalSettingKey(key));
   const isOn = (key: InstanceFeatureKey) => settings?.[key] === true;
 
@@ -69,10 +67,8 @@ export function useInstanceFeatureSettings() {
     query,
     settings,
     error,
-    isManaged,
     isHidden,
     isOn,
-    isCloudManaged: settings?.managedKeys !== undefined,
     pending: mutation.isPending,
     save: (patch: PatchInstanceExperimentalSettings) => mutation.mutate(patch),
   };

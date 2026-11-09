@@ -62,10 +62,6 @@ import {
   migrationRefusalError,
   shouldReportStartupFailure,
 } from "./startup-refusals.js";
-import {
-  getManagedInstanceConfig,
-  type ManagedInstanceConfig,
-} from "./services/managed-config.js";
 import { getOperatorSettingDefaults } from "./services/setting-defaults.js";
 import { setupEnvironmentCustomImageTerminalWebSocketServer } from "./realtime/environment-custom-image-terminal-ws.js";
 import { setupLiveEventsWebSocketServer } from "./realtime/live-events-ws.js";
@@ -73,7 +69,6 @@ import { setupLocalBrowserWebSocketServer } from "./realtime/local-browser-ws.js
 import { setupTerminalWebSocketServer } from "./realtime/terminal-ws.js";
 import {
   feedbackService,
-  applyManagedEnvironments,
   attentionService,
   backfillPrincipalAccessCompatibility,
   backfillLegacyToolOAuthTokens,
@@ -759,35 +754,6 @@ async function startServerWithDatabaseTeardown(
     serverPort: listenPort,
     databasePort: resolvedEmbeddedPostgresPort,
   });
-  // Cloud managed-config contract (harness → app). Parse PAPERCLIP_MANAGED_CONFIG
-  // once so a malformed document (blank value, bad JSON, unknown feature key,
-  // unsupported v, missing section) refuses startup with a precise error instead
-  // of silently running without the feature overlay. Absent env = self-hosted:
-  // nothing changes. The parsed document is never persisted; instanceSettingsService
-  // overlays it per read. This MUST run before any instanceSettingsService(db)
-  // construction — that constructor parses the same env, and it would otherwise
-  // throw first, bypassing this fail-closed log path.
-  let managedConfig: ManagedInstanceConfig | null;
-  try {
-    managedConfig = getManagedInstanceConfig();
-    if (managedConfig) {
-      logger.warn(
-        {
-          catalogVersion: managedConfig.catalogVersion,
-          managedFeatureKeys: Object.keys(managedConfig.features).sort(),
-          autoInstallPlugins: [...managedConfig.plugins.autoInstall],
-        },
-        "cloud managed configuration active",
-      );
-    }
-  } catch (err) {
-    logger.error({ err }, "invalid PAPERCLIP_MANAGED_CONFIG; refusing to start (fail closed)");
-    throw err;
-  }
-
-  // Operator setting defaults (PAPERCLIP_SETTING_DEFAULTS). Same fail-closed
-  // posture as the managed-config parse above: malformed JSON or an invalid
-  // value for a known field refuses startup; unknown field names only warn.
   try {
     const operatorDefaults = getOperatorSettingDefaults();
     if (operatorDefaults && Object.keys(operatorDefaults).length > 0) {
@@ -904,10 +870,6 @@ async function startServerWithDatabaseTeardown(
   const decisionServiceOptions = {
     wakeOriginAgent: createDecisionWakeOriginAgent(heartbeat?.wakeup ?? null),
   };
-  // Managed instances drive bundled plugin auto-install from the managed-config
-  // document parsed fail-closed above (`plugins.autoInstall`). Absent env means
-  // self-hosted: createApp falls back to its built-in kubernetes-only default.
-  const managedPluginAutoInstall = managedConfig?.plugins.autoInstall ?? null;
   const app = await createApp(db as any, {
     prepareIdleDatabaseBackup: idleDatabaseBackupEnabled
       ? async () => (await runServerDatabaseBackup("idle")) !== null
@@ -948,7 +910,6 @@ async function startServerWithDatabaseTeardown(
     resolveSession,
     pluginWorkerManager,
     decisionServiceOptions,
-    managedPluginAutoInstall,
   });
   
   if (listenPort !== requestedListenPort) {
@@ -1113,31 +1074,6 @@ async function startServerWithDatabaseTeardown(
     }
   } catch (err) {
     logger.error({ err }, "failed to apply forced execution policy from environment");
-    throw err;
-  }
-
-  // Ensure sandbox environments declared in the managed-config document
-  // (`environments` section) before the heartbeat resumes queued runs. The
-  // document already parsed fail-closed above; the ensure step itself is
-  // fail-safe per entry (a degraded boot beats a fleet-wide crash loop), but
-  // a contradictory deployment that also forces PAPERCLIP_EXECUTION_MODE
-  // throws here and fails startup. `pluginsReady` sequences the ensure after
-  // the bundled-plugin install/load pass so a declared environment never
-  // activates before its provider driver is registered; the worker manager
-  // additionally gates each entry on a live plugin worker (and archives the
-  // row of a provider that did not come up).
-  try {
-    const bundledPluginsStartup = (app as { locals?: { bundledPluginsStartup?: Promise<unknown> } })
-      .locals?.bundledPluginsStartup;
-    const managedEnvironmentsResult = await applyManagedEnvironments(db as any, managedConfig, {
-      pluginsReady: bundledPluginsStartup,
-      workerManager: pluginWorkerManager,
-    });
-    if (managedEnvironmentsResult) {
-      logger.warn(managedEnvironmentsResult, "managed sandbox environments ensured from managed config");
-    }
-  } catch (err) {
-    logger.error({ err }, "failed to apply managed environments from managed config");
     throw err;
   }
 

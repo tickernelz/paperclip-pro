@@ -976,55 +976,6 @@ describeEmbeddedPostgres("environmentService leases", () => {
     expect(rows[0]?.updatedAt.toISOString()).toBe(archivedAt.toISOString());
   });
 
-  it("adopts a pre-existing local row on a cloud-managed instance by stamping the platform marker", async () => {
-    const companyId = randomUUID();
-    await db.insert(companies).values({
-      id: companyId,
-      name: "Acme",
-      status: "active",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-    const [existing] = await db
-      .insert(environments)
-      .values({
-        name: "Tenant Local",
-        driver: "local",
-        status: "active",
-        config: { shell: "zsh" },
-        metadata: { owner: "operator" },
-        createdAt: new Date("2025-01-01T00:00:00.000Z"),
-        updatedAt: new Date("2025-01-01T00:00:00.000Z"),
-      })
-      .returning();
-
-    process.env.PAPERCLIP_CLOUD_TENANT_SERVER_TOKEN = "test-server-token";
-    try {
-      const adopted = await svc.ensureLocalEnvironment(companyId);
-
-      expect(adopted.id).toBe(existing?.id);
-      expect(adopted.name).toBe("Tenant Local");
-      expect(adopted.metadata).toEqual({ owner: "operator", managedByPaperclip: true });
-
-      // Re-ensuring an already-adopted row must not rewrite it.
-      const adoptedRow = await db
-        .select()
-        .from(environments)
-        .where(eq(environments.driver, "local"))
-        .then((rows) => rows[0]);
-      const reused = await svc.ensureLocalEnvironment(companyId);
-      expect(reused.metadata).toEqual({ owner: "operator", managedByPaperclip: true });
-      const reusedRow = await db
-        .select()
-        .from(environments)
-        .where(eq(environments.driver, "local"))
-        .then((rows) => rows[0]);
-      expect(reusedRow?.updatedAt.toISOString()).toBe(adoptedRow?.updatedAt.toISOString());
-    } finally {
-      delete process.env.PAPERCLIP_CLOUD_TENANT_SERVER_TOKEN;
-    }
-  });
-
   it("does not stamp the platform marker on self-hosted instances (regression)", async () => {
     const companyId = randomUUID();
     await db.insert(companies).values({
@@ -1401,90 +1352,6 @@ describeEmbeddedPostgres("environmentService leases", () => {
     expect(activity.at(-1)?.action).toBe("environment.managed_stock_skipped");
   });
 
-  it("platformFullyManaged applies drift instead of preserving it, since no operator can edit this row", async () => {
-    const companyId = await seedCompany();
-    const created = await svc.ensureManagedSandboxEnvironment({
-      companyId,
-      name: "Daytona",
-      description: "Managed stock",
-      provider: "daytona",
-      config: { target: "us" },
-      stockVersion: "v1",
-      platformFullyManaged: true,
-    });
-    // Same drift shape as the plain "classifies operator drift" case above:
-    // from the reconciler's point of view, a row whose content matches
-    // neither the recorded binding hash nor the latest stock hash is
-    // indistinguishable between "an operator edited it" and "two
-    // platform-driven reconciliation passes disagreed" (e.g. a stock hash
-    // recorded by an older app build). `platformFullyManaged` asserts the
-    // caller's deployment rules out the former, so this must apply like any
-    // other stock-outdated row rather than freeze the row and only bump the
-    // binding's bookkeeping.
-    await db
-      .update(environments)
-      .set({
-        config: { provider: "daytona", target: "drifted" },
-      })
-      .where(eq(environments.id, created.environment.id));
-
-    const reconciled = await svc.ensureManagedSandboxEnvironment({
-      companyId,
-      name: "Daytona v2",
-      description: "Managed stock v2",
-      provider: "daytona",
-      config: { target: "eu" },
-      stockVersion: "v2",
-      platformFullyManaged: true,
-    });
-
-    expect(reconciled).toMatchObject({
-      action: "updated",
-      stockStatus: "stock_update_available",
-      updateAvailable: false,
-    });
-    expect(reconciled.environment).toMatchObject({
-      name: "Daytona v2",
-      description: "Managed stock v2",
-      config: { provider: "daytona", target: "eu" },
-    });
-    const [bindingAfter] = await db
-      .select()
-      .from(builtInManagedResources)
-      .where(eq(builtInManagedResources.companyId, companyId));
-    expect(bindingAfter?.stockVersion).toBe("v2");
-    expect(bindingAfter?.stockHash).toBe(reconciled.stockHash);
-  });
-
-  it("platformFullyManaged still preserves an operator-reaffirmed archive decision", async () => {
-    const companyId = await seedCompany();
-    const created = await svc.ensureManagedSandboxEnvironment({
-      companyId,
-      name: "Daytona",
-      provider: "daytona",
-      config: { target: "us" },
-      platformFullyManaged: true,
-    });
-    expect((await svc.archiveManagedSandboxEnvironment({ provider: "daytona" }))?.status)
-      .toBe("archived");
-    expect((await svc.update(created.environment.id, { status: "archived" }))?.status)
-      .toBe("archived");
-
-    const reconciled = await svc.ensureManagedSandboxEnvironment({
-      companyId,
-      name: "Daytona",
-      provider: "daytona",
-      config: { target: "us" },
-      platformFullyManaged: true,
-    });
-    expect(reconciled).toMatchObject({
-      action: "skipped",
-      stockStatus: "operator_modified",
-      updateAvailable: true,
-      environment: { status: "archived" },
-    });
-  });
-
   it("adopts the managed slot on a provider switch and drops the stale kubernetes marker", async () => {
     const companyId = await seedCompany();
     const kubernetes = await svc.ensureKubernetesEnvironment(companyId, { inCluster: true, backend: "job" });
@@ -1658,44 +1525,6 @@ describeEmbeddedPostgres("environmentService leases", () => {
       name: "Daytona",
       provider: "daytona",
       config: { target: "eu" },
-    });
-    expect(reconciliation).toMatchObject({
-      action: "skipped",
-      stockStatus: "operator_modified",
-      updateAvailable: true,
-    });
-    expect(reconciliation.environment.id).toBe(handMade.id);
-    expect(reconciliation.environment.config.target).toBe("us");
-    expect(reconciliation.environment.metadata?.managedByPaperclip).toBeUndefined();
-
-    const rows = await db
-      .select()
-      .from(environments)
-      .where(eq(environments.driver, "sandbox"));
-    expect(rows).toHaveLength(1);
-  });
-
-  it("platformFullyManaged never adopts an unbound same-name sandbox row", async () => {
-    // Same setup as the plain case above: a tenant-created sandbox row holds
-    // the desired name and has no stock binding. It reads as
-    // `operator_modified` too, but there is no prior platform pass for it to
-    // have drifted from — the bypass must require a binding for this exact
-    // row, or it would overwrite the tenant's config and stamp it managed.
-    const companyId = await seedCompany();
-    const handMade = await svc.create({
-      name: "Daytona",
-      driver: "sandbox",
-      status: "active",
-      config: { provider: "daytona", target: "us" },
-    });
-    expect(handMade.metadata?.managedByPaperclip).toBeUndefined();
-
-    const reconciliation = await svc.ensureManagedSandboxEnvironment({
-      companyId,
-      name: "Daytona",
-      provider: "daytona",
-      config: { target: "eu" },
-      platformFullyManaged: true,
     });
     expect(reconciliation).toMatchObject({
       action: "skipped",
