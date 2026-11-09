@@ -367,7 +367,7 @@ On a tag push the workflow:
   or running CI run is polled for about 30 minutes, a completed non-success
   fails immediately, and a commit with no CI run never publishes. `ci.yml` never
   filters its triggers, so every commit gets a run; a documentation-only commit
-  finishes green in the fast lane and stays releasable.
+  runs the full CI like any other and stays releasable once it is green.
 
 The workflow never moves or deletes the tag, and the tag it creates in dispatch
 mode is pushed with `GITHUB_TOKEN`, which GitHub does not let re-trigger a
