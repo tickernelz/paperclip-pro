@@ -226,7 +226,7 @@ describe("company route cross-company authorization", () => {
     resetMockDefaults();
   });
 
-  it.each(["session", "board_key", "cloud_tenant"])(
+  it.each(["session", "board_key"])(
     "limits navigable companies to memberships for a %s instance admin",
     async (source) => {
       mockCompanyService.list.mockResolvedValue([createCompany(companyBId), createCompany(companyAId)]);
@@ -264,11 +264,11 @@ describe("company route cross-company authorization", () => {
     },
   );
 
-  it("includes additional companies where a cloud user has membership", async () => {
+  it("includes additional companies where a user has membership", async () => {
     mockCompanyService.list.mockResolvedValue([createCompany(companyAId), createCompany(companyBId)]);
     const app = await createApp(boardActor({
       userId: "owner-of-both",
-      source: "cloud_tenant",
+      source: "session",
       companyIds: [companyAId, companyBId],
     }));
     const res = await request(app).get("/api/companies?scope=accessible").expect(200);

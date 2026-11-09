@@ -49,7 +49,7 @@ describeEmbeddedPostgres("issue list routes updatedSince filter", () => {
         userId: "cloud-user-1",
         companyIds: [companyId],
         memberships: [{ companyId, membershipRole: "owner", status: "active" }],
-        source: "cloud_tenant",
+        source: "session",
         isInstanceAdmin: false,
       };
       next();
@@ -63,7 +63,7 @@ describeEmbeddedPostgres("issue list routes updatedSince filter", () => {
     return `P${randomUUID().replace(/-/g, "").slice(0, 4).toUpperCase()}`;
   }
 
-  async function seedCloudTenantMember(companyId: string) {
+  async function seedCompanyMember(companyId: string) {
     await db.insert(companyMemberships).values({
       companyId,
       principalType: "user",
@@ -90,7 +90,7 @@ describeEmbeddedPostgres("issue list routes updatedSince filter", () => {
       issuePrefix: uniqueIssuePrefix(),
       requireBoardApprovalForNewAgents: false,
     });
-    await seedCloudTenantMember(companyId);
+    await seedCompanyMember(companyId);
     await db.insert(issues).values({
       id: issueId,
       companyId,
@@ -124,7 +124,7 @@ describeEmbeddedPostgres("issue list routes updatedSince filter", () => {
       issuePrefix: uniqueIssuePrefix(),
       requireBoardApprovalForNewAgents: false,
     });
-    await seedCloudTenantMember(companyId);
+    await seedCompanyMember(companyId);
     await db.insert(issues).values([
       {
         id: staleIssueId,
@@ -161,7 +161,7 @@ describeEmbeddedPostgres("issue list routes updatedSince filter", () => {
       issuePrefix: uniqueIssuePrefix(),
       requireBoardApprovalForNewAgents: false,
     });
-    await seedCloudTenantMember(companyId);
+    await seedCompanyMember(companyId);
 
     const app = createApp(companyId);
     const res = await request(app)

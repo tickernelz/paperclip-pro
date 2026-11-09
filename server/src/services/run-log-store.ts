@@ -91,9 +91,7 @@ export interface DurableRunLogStoreOptions {
 // detail. Live append/tail stays on the pod-local file (fast, no per-chunk PUT);
 // on finalize the complete .ndjson is uploaded to object storage; on read we try
 // local first and fall back to S3 when the local file is gone. This is the fix
-// for "Run log not found" after a deploy/restart (the /paperclip data dir is an
-// emptyDir in cloud_tenant mode -- persistence is disabled to avoid the
-// operator's privileged selinux-relabel init container in our hardened ns).
+// for "Run log not found" after a deploy/restart.
 //
 // Optionally (inflightMirrorMs > 0) the still-running log is ALSO mirrored to
 // the same key at a throttled cadence and flushed on graceful shutdown, so a

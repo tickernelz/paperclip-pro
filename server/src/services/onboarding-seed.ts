@@ -283,11 +283,6 @@ export function onboardingSeedService(db: Db) {
         );
       } else {
         const projectId = await resolveOnboardingProjectId(dbx, projectSvc, companyId, goalId);
-        // The idempotency key is what protects two pushes that arrive at once
-        // — Cloud's reconcile runs off portfolio fetches, which can overlap.
-        // It is deliberately not revision-scoped: if the recorded issue is
-        // lost, a later revision should still dedupe against whatever the
-        // first push created.
         const created = await issueSvc.create(companyId, {
           title: firstTaskTitle,
           ...(firstTaskDetails ? { description: firstTaskDetails } : {}),

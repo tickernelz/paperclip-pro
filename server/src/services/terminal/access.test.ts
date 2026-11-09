@@ -90,10 +90,8 @@ describeEmbeddedPostgres("databaseTerminalActorLoader", () => {
   });
 
   it("denies when the user row is missing", async () => {
-    expect(await load({ actorSource: "cloud_tenant", authSessionId: null })).toMatchObject({ source: "cloud_tenant", userId });
     await db.delete(authUsers).where(eq(authUsers.id, userId));
     expect(await load()).toBeNull();
-    expect(await load({ actorSource: "cloud_tenant", authSessionId: null })).toBeNull();
   });
 
   it("denies a session-sourced grant without a login session id", async () => {

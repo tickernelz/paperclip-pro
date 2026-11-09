@@ -423,10 +423,8 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
       actor = candidate;
       expect((await request(app).get("/api/mcp/setup")).status).toBe(401);
     }
-    for (const source of ["session", "cloud_tenant"] as const) {
-      actor = { type: "board", source, userId: randomUUID() };
-      expect((await request(app).get("/api/mcp/setup")).body).toMatchObject({ enabled: true, serverUrl: config.resource });
-    }
+    actor = { type: "board", source: "session", userId: randomUUID() };
+    expect((await request(app).get("/api/mcp/setup")).body).toMatchObject({ enabled: true, serverUrl: config.resource });
   });
 
   it("rotates refresh tokens and persists revocation on replay", async () => {

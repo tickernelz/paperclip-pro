@@ -5463,17 +5463,15 @@ export function issueRoutes(
     return false;
     }
     if (req.actor.source === "local_implicit" || req.actor.isInstanceAdmin) return true;
-    const instanceAdmin = req.actor.source !== "cloud_tenant"
-      ? await db
-          .select({ id: instanceUserRoles.id })
-          .from(instanceUserRoles)
-          .where(and(
-            eq(instanceUserRoles.userId, req.actor.userId),
-            eq(instanceUserRoles.role, "instance_admin"),
-          ))
-          .limit(1)
-          .then((rows) => rows[0] ?? null)
-      : null;
+    const instanceAdmin = await db
+      .select({ id: instanceUserRoles.id })
+      .from(instanceUserRoles)
+      .where(and(
+        eq(instanceUserRoles.userId, req.actor.userId),
+        eq(instanceUserRoles.role, "instance_admin"),
+      ))
+      .limit(1)
+      .then((rows) => rows[0] ?? null);
     if (instanceAdmin) return true;
     if (
       issue.responsibleUserId === req.actor.userId

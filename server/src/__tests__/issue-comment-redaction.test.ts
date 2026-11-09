@@ -124,9 +124,7 @@ describeEmbeddedPostgres("deleted issue comment redaction", () => {
         userId: "board-user-1",
         companyIds: [companyId],
         memberships: [{ companyId, membershipRole: "owner", status: "active" }],
-        source: "cloud_tenant",
-        // cloud_tenant actors are never instance admins — reads flow through
-        // the active company membership seeded in seedIssue().
+        source: "session",
         isInstanceAdmin: false,
       };
       next();
