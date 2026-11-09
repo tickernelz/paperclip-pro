@@ -32,6 +32,15 @@ export function isDependencyGateRefusedRun(
   return run.status === "cancelled" && run.errorCode === DEPENDENCY_GATE_FAILURE_CODE;
 }
 
+export function isCancelledBeforeLegacyDispatch(
+  run: Pick<Run, "runtimeMode" | "status" | "resultJson"> & Partial<Pick<Run, "executionStage" | "runtimeModeResolvedAt" | "processPid">>,
+): boolean {
+  if (run.runtimeMode !== "legacy" || run.status !== "cancelled") return false;
+  if (run.runtimeModeResolvedAt !== null || run.processPid !== null) return false;
+  if (run.executionStage === "preparing") return true;
+  return run.executionStage === "settled" && typeof run.resultJson?.startupPreparationSettledAt === "string";
+}
+
 /** Error families describe availability, not whether earlier actions happened. */
 export function legacyExecutionNeedsReconciliation(
   run: Pick<Run, "runtimeMode" | "status" | "errorCode" | "resultJson"> & Partial<Pick<Run, "scheduledRetryAttempt" | "scheduledRetryReason" | "contextSnapshot">>,
@@ -200,6 +209,7 @@ export async function terminalizeLegacyExecution(input: {
         fingerprint: `legacy-execution:${run.id}`, attemptCount: 1 });
       return updated;
     }
+    if (isCancelledBeforeLegacyDispatch(updated) && !hasWorkspaceRestoreFailure(updated.resultJson)) return updated;
     const review = task?.status === "in_review" ? parseIssueExecutionState(task.executionState) : null;
     const isCurrentReviewer = review?.status === "pending" &&
       review.currentParticipant?.type === "agent" && review.currentParticipant.agentId === run.agentId;

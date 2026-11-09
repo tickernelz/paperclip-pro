@@ -485,4 +485,32 @@ const support = externalTestDatabaseUrl ? { supported: true } : await getEmbedde
     expect(repaired.evidence.executionReconciliation).toMatchObject({ runId: f.runId });
   });
 
+
+  it("releases the run lock without a reconciliation hold when the run was cancelled before dispatch", async () => {
+    const f = await seed();
+    await db.update(heartbeatRuns).set({ executionStage: "preparing", startedAt: new Date() }).where(eq(heartbeatRuns.id, f.runId));
+    await db.update(issues).set({ executionRunId: f.runId, checkoutRunId: f.runId }).where(eq(issues.id, f.issueId));
+    const [preparing] = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, f.runId));
+    const cancelled = await terminalizeLegacyExecution({ db, run: preparing, status: "cancelled", reconcileIfNeeded: true,
+      patch: { errorCode: "issue_reassigned", finishedAt: new Date(),
+        resultJson: { cancellation: { source: "control_plane", expected: true, initiator: { type: "system" } } } } });
+    expect(cancelled?.status).toBe("cancelled");
+    const [issue] = await db.select().from(issues).where(eq(issues.id, f.issueId));
+    expect(issue).toMatchObject({ executionRunId: null, checkoutRunId: null });
+    expect(await db.select().from(issueRecoveryActions).where(eq(issueRecoveryActions.sourceIssueId, f.issueId))).toEqual([]);
+  });
+
+  it("keeps the reconciliation hold once the run reached the dispatching stage", async () => {
+    const f = await seed();
+    await db.update(heartbeatRuns).set({ executionStage: "dispatching", startedAt: new Date() }).where(eq(heartbeatRuns.id, f.runId));
+    await db.update(issues).set({ executionRunId: f.runId }).where(eq(issues.id, f.issueId));
+    const [dispatching] = await db.select().from(heartbeatRuns).where(eq(heartbeatRuns.id, f.runId));
+    await terminalizeLegacyExecution({ db, run: dispatching, status: "cancelled", reconcileIfNeeded: true,
+      patch: { errorCode: "issue_reassigned", finishedAt: new Date(),
+        resultJson: { cancellation: { source: "control_plane", expected: true, initiator: { type: "system" } } } } });
+    const [issue] = await db.select().from(issues).where(eq(issues.id, f.issueId));
+    expect(issue.executionRunId).toBeNull();
+    expect(await db.select().from(issueRecoveryActions).where(eq(issueRecoveryActions.sourceIssueId, f.issueId))).toHaveLength(1);
+  });
+
 });

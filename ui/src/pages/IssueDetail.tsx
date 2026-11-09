@@ -215,6 +215,7 @@ import {
   hasVisibleMonitorSurface,
 } from "../components/IssueMonitorBanner";
 import { IssueScheduledRetryCard } from "../components/IssueScheduledRetryCard";
+import { useRetryNowMutation } from "../hooks/useRetryNowMutation";
 import { ExternallyConnectedTaskBanner } from "../components/chat/ExternallyConnectedTaskBanner";
 import {
   type IssuePropertiesDocumentDeepLink,
@@ -4355,6 +4356,8 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
     },
   });
 
+  const retryScheduledRetryNow = useRetryNowMutation(issueId);
+
   const checkIssueMonitorNow = useMutation({
     mutationKey: ["check-issue-monitor-now", issueId],
     mutationFn: () => issuesApi.checkMonitorNow(issueId!),
@@ -6919,6 +6922,9 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
         checkError={checkIssueMonitorNow.error?.message}
         onCheckNow={() => checkIssueMonitorNow.mutate()}
         checkingNow={checkIssueMonitorNow.isPending}
+        onRetryNow={() => retryScheduledRetryNow.mutate()}
+        retryingNow={retryScheduledRetryNow.isPending}
+        retryError={retryScheduledRetryNow.lastError?.message}
       />
 
     </div>
@@ -7233,6 +7239,9 @@ export function TaskDetailSurface({ conversation, tasksTab }: { tasksTab?: TaskS
                         checkError={checkIssueMonitorNow.error?.message}
                         onCheckNow={() => checkIssueMonitorNow.mutate()}
                         checkingNow={checkIssueMonitorNow.isPending}
+                        onRetryNow={() => retryScheduledRetryNow.mutate()}
+                        retryingNow={retryScheduledRetryNow.isPending}
+                        retryError={retryScheduledRetryNow.lastError?.message}
                       />
                     ) : null
                   }

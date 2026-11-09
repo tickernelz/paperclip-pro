@@ -1,6 +1,6 @@
 import { isPreDispatchReviewWait } from "./pre-dispatch-review-wait.js";
 import { expect, it } from "vitest";
-import { isDependencyGateRefusedRun, legacyExecutionNeedsReconciliation } from "./legacy-execution-recovery.js";
+import { isCancelledBeforeLegacyDispatch, isDependencyGateRefusedRun, legacyExecutionNeedsReconciliation } from "./legacy-execution-recovery.js";
 
 const stopped = {
   runtimeMode: "legacy", status: "cancelled", errorCode: "cancelled",
@@ -127,4 +127,35 @@ it("recognizes only an unclaimed pre-dispatch review wait receipt", () => {
     { resultJson: { ...run.resultJson, stopReason: "cancelled" } },
     { resultJson: { ...run.resultJson, workspaceRestoreFailure: "restore_unsafe_archive" } },
   ]) expect(isPreDispatchReviewWait({ ...run, ...patch })).toBe(false);
+});
+
+const stoppedWhilePreparing = {
+  runtimeMode: "legacy", status: "cancelled", errorCode: "issue_reassigned",
+  executionStage: "preparing", runtimeModeResolvedAt: null, processPid: null,
+  resultJson: { cancellation: { source: "control_plane", expected: true, initiator: { type: "system" } } },
+};
+
+it("recognizes a run cancelled before the controller reached the dispatching stage", () => {
+  expect(isCancelledBeforeLegacyDispatch(stoppedWhilePreparing)).toBe(true);
+  expect(isCancelledBeforeLegacyDispatch({ ...stoppedWhilePreparing, executionStage: "settled",
+    resultJson: { ...stoppedWhilePreparing.resultJson, startupPreparationSettledAt: "2026-11-09T13:14:24.000Z" } })).toBe(true);
+});
+
+it("does not treat a run that may have entered the adapter as cancelled before dispatch", () => {
+  for (const run of [
+    { ...stoppedWhilePreparing, executionStage: "dispatching" },
+    { ...stoppedWhilePreparing, executionStage: "settled", resultJson: {} },
+    { ...stoppedWhilePreparing, executionStage: undefined },
+    { ...stoppedWhilePreparing, runtimeModeResolvedAt: new Date() },
+    { ...stoppedWhilePreparing, processPid: 4242 },
+    { ...stoppedWhilePreparing, processPid: undefined },
+    { ...stoppedWhilePreparing, status: "failed" },
+    { ...stoppedWhilePreparing, runtimeMode: "native" },
+  ]) {
+    expect(isCancelledBeforeLegacyDispatch(run)).toBe(false);
+  }
+});
+
+it("leaves the shared reconciliation predicate unchanged for pre-dispatch cancellations", () => {
+  expect(legacyExecutionNeedsReconciliation(stoppedWhilePreparing)).toBe(true);
 });
