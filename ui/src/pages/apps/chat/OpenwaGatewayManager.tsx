@@ -318,7 +318,7 @@ export function OpenwaSessionLinker({
   const start = useMutation({
     mutationFn: () =>
       run({ operationId: "SessionController_start", sessionId: session.id }).catch((failure: unknown) => {
-        if (gatewaySaid(failure, /already started/i)) return null;
+        if (gatewaySaid(failure, /already start(ed|ing)/i)) return null;
         throw failure;
       }),
     onSuccess: () => {

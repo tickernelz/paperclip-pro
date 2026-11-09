@@ -102,11 +102,11 @@ describe("OpenWA gateway manager", () => {
     expect(calls("SessionController_getQRCode").length).toBe(fetched);
   });
 
-  it("treats a gateway that says the session is already started as started", async () => {
+  it.each(["Session is already started", "Session is already starting"])("treats a gateway that answers start with %s as started", async (refusal) => {
     sessionStatus = ["failed", "qr_ready"];
     const fallback = mocks.api.runOpenwaGatewayAdmin.getMockImplementation()!;
     mocks.api.runOpenwaGatewayAdmin.mockImplementation(async (endpointId: string, call: Call) => {
-      if (call.operationId === "SessionController_start") throw new ApiError("SessionController_start failed with HTTP 400: Session is already started", 400, null);
+      if (call.operationId === "SessionController_start") throw new ApiError("SessionController_start failed with HTTP 400: " + refusal, 400, null);
       return fallback(endpointId, call);
     });
     render();
@@ -114,7 +114,7 @@ describe("OpenWA gateway manager", () => {
     click(button(row("Session sales"), "Connect"));
     await vi.waitFor(() => expect(dialog()?.querySelector('img[alt="WhatsApp login QR code"]')).toBeTruthy());
     await vi.waitFor(() => expect(calls("SessionController_start")).toEqual([{ operationId: "SessionController_start", sessionId: OTHER }]));
-    expect(dialog().textContent).not.toContain("already started");
+    expect(dialog().textContent).not.toContain(refusal);
     expect(button(dialog(), "Start session")).toBeUndefined();
   });
 
