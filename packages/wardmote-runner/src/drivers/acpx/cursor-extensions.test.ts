@@ -3,13 +3,13 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import { validateAcpxRichEvent } from "./profile-extensions.js";
-import { PAPERCLIP_QUESTION_RESPONSE_SCHEMA } from "../../contracts/question-set.js";
+import { WARDMOTE_QUESTION_RESPONSE_SCHEMA } from "../../contracts/question-set.js";
 import {
   createCursorNotificationNormalizer, createCursorProfileExtensionAdapter, createCursorSubagentNormalizer, cursorWorkspaceArtifactReference,
   normalizeCursorPlanRequest, normalizeCursorQuestionRequest, normalizeCursorSubagentUpdate,
 } from "./cursor-extensions.js";
 
-const response = (answers: Record<string, unknown>) => ({ schema: PAPERCLIP_QUESTION_RESPONSE_SCHEMA, answers });
+const response = (answers: Record<string, unknown>) => ({ schema: WARDMOTE_QUESTION_RESPONSE_SCHEMA, answers });
 const roots: string[] = [];
 afterEach(async () => { await Promise.all(roots.splice(0).map(root => rm(root, { recursive: true, force: true }))); });
 async function workspace() { const root = await mkdtemp(join(tmpdir(), "cursor-extension-")); roots.push(root); return root; }

@@ -229,7 +229,7 @@ operations and inherits the agent run ID:
 
 ```sh
 wardmote email inboxes
-wardmote email thread "$PAPERCLIP_TASK_ID"
+wardmote email thread "$WARDMOTE_TASK_ID"
 wardmote email send --file email-request.json
 wardmote email reply --file email-reply.json
 wardmote email delivery '<publication-uuid>'

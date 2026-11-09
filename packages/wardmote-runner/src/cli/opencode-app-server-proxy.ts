@@ -80,9 +80,9 @@ function text(value: unknown, fallback = ""): string {
 }
 
 function runtimeDirectory(): string {
-  const configured = process.env.PAPERCLIP_OPENCODE_RUNTIME_DIR?.trim();
+  const configured = process.env.WARDMOTE_OPENCODE_RUNTIME_DIR?.trim();
   if (!configured)
-    throw new Error("PAPERCLIP_OPENCODE_RUNTIME_DIR is required");
+    throw new Error("WARDMOTE_OPENCODE_RUNTIME_DIR is required");
   return resolve(configured);
 }
 
@@ -103,7 +103,7 @@ async function open(
     ? params.dynamicTools.map(record)
     : [];
   const runtimeContextPath =
-    process.env.PAPERCLIP_NATIVE_RUNTIME_CONTEXT_PATH?.trim();
+    process.env.WARDMOTE_NATIVE_RUNTIME_CONTEXT_PATH?.trim();
   const runtimeContext = runtimeContextPath
     ? parseNativeRuntimeContext(
         JSON.parse(readFileSync(runtimeContextPath, "utf8")),
@@ -112,7 +112,7 @@ async function open(
   driver = new OpenCodeServerDriver({
     model,
     permissionMode: parseOpenCodeProxyPermissionMode(
-      process.env.PAPERCLIP_OPENCODE_PERMISSION_MODE,
+      process.env.WARDMOTE_OPENCODE_PERMISSION_MODE,
     ),
     command: launchBinding.command,
     commandFd: launchBinding.commandFd,
@@ -120,7 +120,7 @@ async function open(
     runtimeDirectory: runtimeDirectory(),
     environment: withoutAmbientOpenCodeCommand(process.env),
     runnerInstanceId:
-      process.env.PAPERCLIP_RUNNER_INSTANCE_ID ?? "paperclip-runnerd-opencode",
+      process.env.WARDMOTE_RUNNER_INSTANCE_ID ?? "paperclip-runnerd-opencode",
     taskEnvelope: openCodeProxyTaskEnvelope(params),
     conversationMode:
       params.conversationMode === "prepared" ? "prepared" : "task",
@@ -150,9 +150,9 @@ async function open(
       driverKind: "opencode_server",
       driverSessionId: threadId,
       providerSessionId: threadId,
-      runId: process.env.PAPERCLIP_RUN_ID ?? "runnerd-run",
+      runId: process.env.WARDMOTE_RUN_ID ?? "runnerd-run",
       normalizedSessionId:
-        process.env.PAPERCLIP_NORMALIZED_SESSION_ID ?? threadId,
+        process.env.WARDMOTE_NORMALIZED_SESSION_ID ?? threadId,
       activeTurnId: null,
       lastSourceSequence: 0,
     };
@@ -162,9 +162,9 @@ async function open(
     session = recovered.session;
   } else {
     session = await driver.openSession({
-      runId: process.env.PAPERCLIP_RUN_ID ?? "runnerd-run",
+      runId: process.env.WARDMOTE_RUN_ID ?? "runnerd-run",
       normalizedSessionId:
-        process.env.PAPERCLIP_NORMALIZED_SESSION_ID ?? `runnerd-${Date.now()}`,
+        process.env.WARDMOTE_NORMALIZED_SESSION_ID ?? `runnerd-${Date.now()}`,
       workingDirectory: cwd,
     });
   }

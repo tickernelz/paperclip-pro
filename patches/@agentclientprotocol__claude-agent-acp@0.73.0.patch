@@ -56,7 +56,7 @@ index 0214a509eb5e7b777a69e4e34637941c275d27b1..403be02df66e25eee29e7d5bef146270
 +            // not arbitrary provider permission metadata or MCP name prefixes.
 +            ...(process.env.PAPERCLIP_ACPX_ISOLATED_CONTEXT === "1" && {
 +                allowedTools: mcpServers.paperclip?.type === "http"
-+                    && mcpServers.paperclip.url === process.env.PAPERCLIP_ACPX_TASK_TOOL_BRIDGE_URL
++                    && mcpServers.paperclip.url === process.env.WARDMOTE_ACPX_TASK_TOOL_BRIDGE_URL
 +                    ? ["paperclip_finish", "paperclip_block", "read_current_wake_comments", "request_human_input"]
 +                        .map((tool) => `mcp__paperclip__${tool}`)
 +                    : [],

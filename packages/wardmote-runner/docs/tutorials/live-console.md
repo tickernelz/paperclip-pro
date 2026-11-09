@@ -183,7 +183,7 @@ Check the **Credentials in browser** row. It must read `no`.
 This step needs a working Codex login on the machine.
 
 ```sh
-PAPERCLIP_LIVE_CONSOLE_DRIVER=codex \
+WARDMOTE_LIVE_CONSOLE_DRIVER=codex \
   pnpm --filter @tickernelz/wardmote-runner console:live-console
 ```
 

@@ -360,7 +360,7 @@ fi
 trap cleanup_release_state EXIT
 PACK_DIR="$(mktemp -d "${TMPDIR:-/tmp}/paperclip-release-tarballs.XXXXXX")"
 
-export PAPERCLIP_RELEASE_REUSE_UI_DIST=1
+export WARDMOTE_RELEASE_REUSE_UI_DIST=1
 
 release_info ""
 sign_local_browser_extensions() {

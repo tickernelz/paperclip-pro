@@ -21,8 +21,8 @@ import { afterAll, afterEach, describe, expect, it } from "vitest";
 
 import {
   NATIVE_RUNTIME_ASSET_SCHEMA,
-  PAPERCLIP_EXECUTION_PROMPT,
-  PAPERCLIP_EXECUTION_PROMPT_REVISION,
+  WARDMOTE_EXECUTION_PROMPT,
+  WARDMOTE_EXECUTION_PROMPT_REVISION,
   canonicalNativeRuntimeContextDigest,
   nativeRuntimePromptDigest,
   type NativeRuntimeContextSnapshot,
@@ -68,8 +68,8 @@ function runtimeContext(
   const digest = "0".repeat(64);
   const value = {
     prompt: {
-      revision: PAPERCLIP_EXECUTION_PROMPT_REVISION,
-      text: PAPERCLIP_EXECUTION_PROMPT,
+      revision: WARDMOTE_EXECUTION_PROMPT_REVISION,
+      text: WARDMOTE_EXECUTION_PROMPT,
       digest: nativeRuntimePromptDigest(),
     },
     instructions: {
@@ -389,7 +389,7 @@ describe("OpenCodeServerDriver", () => {
       environment: {
         PATH: process.env.PATH,
         OPENROUTER_API_KEY: "fixture-key",
-        PAPERCLIP_PROVIDER_TRACE_PATH: tracePath,
+        WARDMOTE_PROVIDER_TRACE_PATH: tracePath,
       },
     });
     const session = await driver.openSession({
@@ -625,7 +625,7 @@ describe("OpenCodeServerDriver", () => {
       model: "paperclip/team/model-alias",
       runtimeDirectory: root,
       command: fixture,
-      environment: { PATH: process.env.PATH, PAPERCLIP_AI_PROVIDER_URL: "https://gateway.example/v1", PAPERCLIP_AI_PROVIDER_KEY: "selected-gateway-key" },
+      environment: { PATH: process.env.PATH, WARDMOTE_AI_PROVIDER_URL: "https://gateway.example/v1", WARDMOTE_AI_PROVIDER_KEY: "selected-gateway-key" },
     });
     const session = await driver.openSession({ runId: "routing", normalizedSessionId: "routing", workingDirectory: root });
     try {
@@ -638,7 +638,7 @@ describe("OpenCodeServerDriver", () => {
       const shell = await promisify(execFile)("sh", ["-c", 'cat "$1"', "sh", configPath]);
       expect(shell.stdout).not.toContain("selected-gateway-key");
       const environment = JSON.parse(await readFile(join(root, "routing", "data", "fake-environment.json"), "utf8"));
-      expect(environment.keys).not.toContain("PAPERCLIP_AI_PROVIDER_KEY");
+      expect(environment.keys).not.toContain("WARDMOTE_AI_PROVIDER_KEY");
     } finally {
       await session.close({ reason: "test" });
     }
@@ -666,7 +666,7 @@ describe("OpenCodeServerDriver", () => {
     try {
       const driver = new OpenCodeServerDriver({
         model: "paperclip/team/model-alias", runtimeDirectory: root, command: fixture,
-        environment: { PATH: process.env.PATH, PAPERCLIP_AI_PROVIDER_URL: `http://127.0.0.1:${address.port}/custom/v1`, PAPERCLIP_AI_PROVIDER_KEY: key },
+        environment: { PATH: process.env.PATH, WARDMOTE_AI_PROVIDER_URL: `http://127.0.0.1:${address.port}/custom/v1`, WARDMOTE_AI_PROVIDER_KEY: key },
       });
       session = await driver.openSession({ runId: "proxy", normalizedSessionId: "proxy", workingDirectory: root });
       const config = JSON.parse(await readFile(join(root, "proxy", "config", "opencode", "opencode.json"), "utf8"));
@@ -716,7 +716,7 @@ describe("OpenCodeServerDriver", () => {
     const headersAndUrl = async (sessionId: string, noProxy: string) => {
       const driver = new OpenCodeServerDriver({
         model: "paperclip/team/model-alias", runtimeDirectory: root, command: fixture,
-        environment: { ...trustEnvironment, PATH: process.env.PATH, PAPERCLIP_AI_PROVIDER_URL: "http://gateway.invalid/v1", PAPERCLIP_AI_PROVIDER_KEY: "fixture-key", [proxySetting]: `http://127.0.0.1:${address.port}`, NO_PROXY: noProxy },
+        environment: { ...trustEnvironment, PATH: process.env.PATH, WARDMOTE_AI_PROVIDER_URL: "http://gateway.invalid/v1", WARDMOTE_AI_PROVIDER_KEY: "fixture-key", [proxySetting]: `http://127.0.0.1:${address.port}`, NO_PROXY: noProxy },
       });
       const session = await driver.openSession({ runId: sessionId, normalizedSessionId: sessionId, workingDirectory: root });
       const config = JSON.parse(await readFile(join(root, sessionId, "config", "opencode", "opencode.json"), "utf8"));
@@ -758,10 +758,10 @@ describe("OpenCodeServerDriver", () => {
       environment: {
         PATH: process.env.PATH,
         OPENROUTER_API_KEY: "test-openrouter-key",
-        PAPERCLIP_API_KEY: "must-not-leak",
+        WARDMOTE_API_KEY: "must-not-leak",
         UNRELATED_SECRET: "must-not-leak",
-        PAPERCLIP_PROVIDER_TRACE_PATH: tracePath,
-        PAPERCLIP_PROVIDER_TRACE_MAX_BYTES: String(64 * 1024 * 1024),
+        WARDMOTE_PROVIDER_TRACE_PATH: tracePath,
+        WARDMOTE_PROVIDER_TRACE_MAX_BYTES: String(64 * 1024 * 1024),
       },
       onSpawn: async (meta) => {
         spawns.push(meta);
@@ -902,9 +902,9 @@ describe("OpenCodeServerDriver", () => {
       ),
     );
     expect(environment.keys).toContain("OPENROUTER_API_KEY");
-    expect(environment.keys).not.toContain("PAPERCLIP_API_KEY");
+    expect(environment.keys).not.toContain("WARDMOTE_API_KEY");
     expect(environment.keys).not.toContain("UNRELATED_SECRET");
-    expect(environment.keys).not.toContain("PAPERCLIP_PROVIDER_TRACE_PATH");
+    expect(environment.keys).not.toContain("WARDMOTE_PROVIDER_TRACE_PATH");
     expect(environment.projectConfigDisabled).toBe("true");
     expect(environment.modelsFetchDisabled).toBe("true");
     expect(environment.defaultPluginsDisabled).toBe("true");
@@ -1454,7 +1454,7 @@ describe("OpenCodeServerDriver", () => {
       writeFile(join(instructionRoot, "AGENTS.md"), "Read sibling.md\n"),
       writeFile(join(instructionRoot, "sibling.md"), "instruction sibling\n"),
     ]);
-    const systemInstructions = `${PAPERCLIP_EXECUTION_PROMPT}\n\nRead sibling.md\n\nRead-only instruction sibling root: ${instructionRoot}`;
+    const systemInstructions = `${WARDMOTE_EXECUTION_PROMPT}\n\nRead sibling.md\n\nRead-only instruction sibling root: ${instructionRoot}`;
     let submittedPrompt: Record<string, unknown> | null = null;
     const driver = new OpenCodeServerDriver({
       model: "openrouter/deepseek/deepseek-v4-flash-0731",
@@ -1465,9 +1465,9 @@ describe("OpenCodeServerDriver", () => {
       environment: {
         PATH: process.env.PATH,
         OPENROUTER_API_KEY: "fixture-key",
-        PAPERCLIP_NATIVE_MCP_NAME: "paperclip-assigned",
-        PAPERCLIP_NATIVE_MCP_URL: "https://paperclip.example/mcp",
-        PAPERCLIP_NATIVE_MCP_TOKEN: "x".repeat(40),
+        WARDMOTE_NATIVE_MCP_NAME: "paperclip-assigned",
+        WARDMOTE_NATIVE_MCP_URL: "https://paperclip.example/mcp",
+        WARDMOTE_NATIVE_MCP_TOKEN: "x".repeat(40),
       },
       fetch: async (input, init) => {
         if (String(input).endsWith("/prompt_async"))
@@ -1491,7 +1491,7 @@ describe("OpenCodeServerDriver", () => {
     // enabled in config without overwriting the allow/ask/deny or path policy.
     expect(submittedPrompt).not.toHaveProperty("tools");
     expect(JSON.stringify(submittedPrompt?.parts ?? null)).not.toContain(
-      PAPERCLIP_EXECUTION_PROMPT,
+      WARDMOTE_EXECUTION_PROMPT,
     );
     const sessionRoot = join(root, "context");
     const isolatedHomes = (await readdir(sessionRoot)).filter((entry) =>
@@ -2561,8 +2561,8 @@ describe("OpenCodeServerDriver", () => {
       environment: {
         PATH: process.env.PATH,
         OPENROUTER_API_KEY: "fixture-key",
-        PAPERCLIP_AI_PROVIDER_KEY: "fixture-custom-gateway-key",
-        PAPERCLIP_AI_PROVIDER_URL: "https://gateway.example/v1",
+        WARDMOTE_AI_PROVIDER_KEY: "fixture-custom-gateway-key",
+        WARDMOTE_AI_PROVIDER_URL: "https://gateway.example/v1",
       },
     });
     const error = await driver
@@ -2598,8 +2598,8 @@ describe("OpenCodeServerDriver", () => {
       command: fixture,
       environment: {
         PATH: process.env.PATH,
-        PAPERCLIP_AI_PROVIDER_KEY: key,
-        PAPERCLIP_AI_PROVIDER_URL: "https://gateway.example/v1",
+        WARDMOTE_AI_PROVIDER_KEY: key,
+        WARDMOTE_AI_PROVIDER_URL: "https://gateway.example/v1",
       },
       fetch: async (input, init) => {
         if (String(input).endsWith("/session") && init?.method === "POST") {

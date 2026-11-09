@@ -34,7 +34,7 @@ export const INSTANCE_FEATURE_CATALOG: Record<InstanceFeatureKey, FeatureCatalog
     description:
       "Allow explicitly configured local Codex, OpenCode, and qualified ACPX agents to use the experimental Rust Wardmote Runner, including authenticated sandbox ingress when required. Onboarding remains on legacy adapters.",
     // On by default for self-hosted instances. Requires a Rust toolchain (or
-    // PAPERCLIP_RUNNER_BINARY) for `pnpm dev`, which builds runnerd whenever
+    // WARDMOTE_RUNNER_BINARY) for `pnpm dev`, which builds runnerd whenever
     // this is on.
     selfHostedDefault: true,
   },

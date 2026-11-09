@@ -33,9 +33,9 @@ const {
   syncDirectoryToSsh: vi.fn(async () => undefined),
   startAdapterExecutionTargetPaperclipBridge: vi.fn(async () => ({
     env: {
-      PAPERCLIP_API_URL: "http://127.0.0.1:4310",
-      PAPERCLIP_API_KEY: "bridge-token",
-      PAPERCLIP_API_BRIDGE_MODE: "queue_v1",
+      WARDMOTE_API_URL: "http://127.0.0.1:4310",
+      WARDMOTE_API_KEY: "bridge-token",
+      WARDMOTE_API_BRIDGE_MODE: "queue_v1",
     },
     stop: async () => {},
   })),

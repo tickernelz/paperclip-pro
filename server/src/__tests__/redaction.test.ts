@@ -235,7 +235,7 @@ describe("redaction", () => {
           type: "plain",
           value: "sk-plain",
         },
-        PAPERCLIP_API_URL: "http://localhost:3100",
+        WARDMOTE_API_URL: "http://localhost:3100",
       },
     };
 
@@ -260,7 +260,7 @@ describe("redaction", () => {
         type: "plain",
         value: REDACTED_EVENT_VALUE,
       },
-      PAPERCLIP_API_URL: "http://localhost:3100",
+      WARDMOTE_API_URL: "http://localhost:3100",
     });
   });
 
@@ -549,9 +549,9 @@ describe("redaction", () => {
     const input = [
       "Authorization: Bearer live-bearer-token-value",
       `payload {"apiKey":"json-secret-value"}`,
-      `paperclip {"PAPERCLIP_API_KEY":"paperclip-json-secret"}`,
+      `paperclip {"WARDMOTE_API_KEY":"paperclip-json-secret"}`,
       `escaped {\\"apiKey\\":\\"escaped-json-secret\\"}`,
-      `export PAPERCLIP_API_KEY='paperclip-shell-secret'`,
+      `export WARDMOTE_API_KEY='paperclip-shell-secret'`,
       `GITHUB_TOKEN=${githubToken}`,
       `session=${jwt}`,
     ].join("\n");
@@ -808,9 +808,9 @@ second-line\" status=401`,
     const envLines = [
       "AGENT_HOME=/home/user/.paperclip-pro/instances/default",
       "BETTER_AUTH_TRUSTED_ORIGINS=https://paperclip.example.com,http://localhost:3100",
-      `PAPERCLIP_API_KEY=${secret}`,
-      'PAPERCLIP_SANDBOX_READ_PATHS=["/etc/resolv.conf","/etc/hosts"]',
-      "PAPERCLIP_RUNTIME_API_URL=https://paperclip.example.com",
+      `WARDMOTE_API_KEY=${secret}`,
+      'WARDMOTE_SANDBOX_READ_PATHS=["/etc/resolv.conf","/etc/hosts"]',
+      "WARDMOTE_RUNTIME_API_URL=https://paperclip.example.com",
       "PWD=/home/user/.paperclip-pro/instances/default",
     ];
     const line = JSON.stringify({
@@ -837,7 +837,7 @@ second-line\" status=401`,
     const redactedEnvLines = text.result.content[0]!.text.split("\n");
     expect(redactedEnvLines[0]).toBe(envLines[0]);
     expect(redactedEnvLines[1]).toBe(envLines[1]);
-    expect(redactedEnvLines[2]).toBe(`PAPERCLIP_API_KEY=${REDACTED_EVENT_VALUE}`);
+    expect(redactedEnvLines[2]).toBe(`WARDMOTE_API_KEY=${REDACTED_EVENT_VALUE}`);
     expect(redactedEnvLines[3]).toBe(envLines[3]);
     expect(redactedEnvLines[4]).toBe(envLines[4]);
     expect(redactedEnvLines[5]).toBe(envLines[5]);
@@ -905,7 +905,7 @@ second-line\" status=401`,
         "--api-key=sk-inline-example",
       ],
       env: {
-        PAPERCLIP_RESOLVED_COMMAND:
+        WARDMOTE_RESOLVED_COMMAND:
           "env OPENAI_API_KEY=sk-live-example custom-acp --token ghp_example_secret",
         SAFE_VALUE: "visible",
       },
@@ -924,7 +924,7 @@ second-line\" status=401`,
       `--api-key=${REDACTED_EVENT_VALUE}`,
     ]);
     expect(result?.env).toEqual({
-      PAPERCLIP_RESOLVED_COMMAND: `env OPENAI_API_KEY=${REDACTED_EVENT_VALUE} custom-acp --token ${REDACTED_EVENT_VALUE}`,
+      WARDMOTE_RESOLVED_COMMAND: `env OPENAI_API_KEY=${REDACTED_EVENT_VALUE} custom-acp --token ${REDACTED_EVENT_VALUE}`,
       SAFE_VALUE: "visible",
     });
   });

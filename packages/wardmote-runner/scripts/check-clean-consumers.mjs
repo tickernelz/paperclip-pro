@@ -18,15 +18,15 @@ import { fileURLToPath } from "node:url";
 import { withInstalledPackagePackInput } from "./lib/installed-package-pack.mjs";
 
 const runnerRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const scratchParent = process.env.PAPERCLIP_RUN_SCRATCH_DIR
-  ?? process.env.PAPERCLIP_SCRATCH_DIR
+const scratchParent = process.env.WARDMOTE_RUN_SCRATCH_DIR
+  ?? process.env.WARDMOTE_SCRATCH_DIR
   ?? tmpdir();
 await mkdir(scratchParent, { recursive: true });
 const scratchRoot = await mkdtemp(join(scratchParent, "paperclip-package-consumer-"));
 const artifactsRoot = resolve(scratchRoot, "artifacts");
-const publicationRoot = process.env.PAPERCLIP_CLEAN_CONSUMER_OUTPUT_DIR === undefined
+const publicationRoot = process.env.WARDMOTE_CLEAN_CONSUMER_OUTPUT_DIR === undefined
   ? undefined
-  : resolve(process.env.PAPERCLIP_CLEAN_CONSUMER_OUTPUT_DIR);
+  : resolve(process.env.WARDMOTE_CLEAN_CONSUMER_OUTPUT_DIR);
 const pnpmInvocation = resolvePnpmInvocation();
 await mkdir(artifactsRoot, { recursive: true });
 
@@ -49,11 +49,11 @@ try {
   const runnerdArtifact = await stageRunnerdArtifact(artifactsRoot);
   const conformanceRecord = resolve(artifactsRoot, "paperclip-runner-consumer-conformance.json");
   const sourceCommit = (
-    process.env.PAPERCLIP_SOURCE_COMMIT
+    process.env.WARDMOTE_SOURCE_COMMIT
     ?? capture("git", ["rev-parse", "HEAD"], runnerRoot)
   ).trim();
   if (!/^[a-f0-9]{40}$/.test(sourceCommit)) {
-    throw new Error("PAPERCLIP_SOURCE_COMMIT must be a full lowercase Git commit SHA");
+    throw new Error("WARDMOTE_SOURCE_COMMIT must be a full lowercase Git commit SHA");
   }
 
   await verifyRunnerConsumer({
@@ -71,7 +71,7 @@ try {
   }
   process.stdout.write("Clean-consumer pack/install checks passed for the runner root, evals, and testing exports.\n");
 } finally {
-  if (process.env.PAPERCLIP_KEEP_PACKAGE_CONSUMERS !== "1") {
+  if (process.env.WARDMOTE_KEEP_PACKAGE_CONSUMERS !== "1") {
     await rm(scratchRoot, { recursive: true, force: true });
   } else {
     process.stdout.write(`Kept clean-consumer scratch at ${scratchRoot}\n`);
@@ -213,7 +213,7 @@ import { createHash } from "node:crypto";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { defaultCapabilityRunnerdBinary } from "@tickernelz/wardmote-runner";
-import { parsePaperclipRunnerdBuildMetadata, PAPERCLIP_RUNNER_BUILD_METADATA } from "@tickernelz/wardmote-runner/evals";
+import { parsePaperclipRunnerdBuildMetadata, WARDMOTE_RUNNER_BUILD_METADATA } from "@tickernelz/wardmote-runner/evals";
 // This is the installed package's default lookup. The separate eval artifact
 // below must not hide an unusable bundled daemon or repair its permissions.
 const bundledRunnerd = defaultCapabilityRunnerdBinary();
@@ -233,7 +233,7 @@ const bundledMetadata = JSON.parse(execFileSync(bundledRunnerd, ["--build-metada
   encoding: "utf8", timeout: 15_000, maxBuffer: 1024 * 1024,
   env: { PATH: process.env.PATH, HOME: process.cwd() },
 }));
-if (parsePaperclipRunnerdBuildMetadata(bundledMetadata).binaryContractVersion !== PAPERCLIP_RUNNER_BUILD_METADATA.contracts.runnerdArtifact) {
+if (parsePaperclipRunnerdBuildMetadata(bundledMetadata).binaryContractVersion !== WARDMOTE_RUNNER_BUILD_METADATA.contracts.runnerdArtifact) {
   throw new Error("installed default runnerd did not start with the expected contract");
 }
 
@@ -285,16 +285,16 @@ if (!driverConformance.checks.transcriptCompleteness || driverConformance.semant
 }
 
 const runnerd = await evals.resolvePaperclipRunnerdArtifact({
-  executablePath: process.env.PAPERCLIP_RUNNERD_ARTIFACT,
-  expectedSha256: process.env.PAPERCLIP_RUNNERD_SHA256,
+  executablePath: process.env.WARDMOTE_RUNNERD_ARTIFACT,
+  expectedSha256: process.env.WARDMOTE_RUNNERD_SHA256,
 });
 const evalCompatibility = evals.assertPaperclipRunnerEvalCompatibility({
   consumer: "paperclip-runner-clean-consumer",
-  packageVersion: evals.PAPERCLIP_RUNNER_BUILD_METADATA.package.version,
+  packageVersion: evals.WARDMOTE_RUNNER_BUILD_METADATA.package.version,
   runnerd: runnerd.buildMetadata,
   nativeExecutionVersion: 1,
   prp: { minimumVersion: 1, maximumVersion: 1 },
-  catalog: evals.PAPERCLIP_RUNNER_BUILD_METADATA.semanticCatalog,
+  catalog: evals.WARDMOTE_RUNNER_BUILD_METADATA.semanticCatalog,
   driver: {
     contractVersion: driverConformance.contractVersion,
     descriptor: driverConformance.descriptor,
@@ -308,11 +308,11 @@ let mismatchFailedClosed = false;
 try {
   evals.assertPaperclipRunnerEvalCompatibility({
     consumer: "incompatible-runner-clean-consumer",
-    packageVersion: evals.PAPERCLIP_RUNNER_BUILD_METADATA.package.version,
+    packageVersion: evals.WARDMOTE_RUNNER_BUILD_METADATA.package.version,
     runnerd: { ...runnerd.buildMetadata, binaryContractVersion: 999 },
     nativeExecutionVersion: 1,
     prp: { minimumVersion: 1, maximumVersion: 1 },
-    catalog: evals.PAPERCLIP_RUNNER_BUILD_METADATA.semanticCatalog,
+    catalog: evals.WARDMOTE_RUNNER_BUILD_METADATA.semanticCatalog,
     driver: {
       contractVersion: driverConformance.contractVersion,
       descriptor: driverConformance.descriptor,
@@ -341,21 +341,21 @@ const semanticConformance = await testing.runSemanticConformanceKit({
   ],
 });
 
-const packageArtifactPath = process.env.PAPERCLIP_RUNNER_PACKAGE_ARTIFACT;
-const runnerdArtifactPath = process.env.PAPERCLIP_RUNNERD_ARTIFACT;
+const packageArtifactPath = process.env.WARDMOTE_RUNNER_PACKAGE_ARTIFACT;
+const runnerdArtifactPath = process.env.WARDMOTE_RUNNERD_ARTIFACT;
 const packageBytes = await readFile(packageArtifactPath);
 const runnerdBytes = await readFile(runnerdArtifactPath);
 const packageStat = await stat(packageArtifactPath);
 const runnerdStat = await stat(runnerdArtifactPath);
 const runnerdDigest = "sha256:" + createHash("sha256").update(runnerdBytes).digest("hex");
-if (runnerdDigest !== process.env.PAPERCLIP_RUNNERD_SHA256) {
+if (runnerdDigest !== process.env.WARDMOTE_RUNNERD_SHA256) {
   throw new Error("runnerd artifact digest changed after staging");
 }
 
-await writeFile(process.env.PAPERCLIP_CONFORMANCE_RECORD, JSON.stringify({
+await writeFile(process.env.WARDMOTE_CONFORMANCE_RECORD, JSON.stringify({
   schema: "paperclip-runner/clean-consumer-conformance/v1",
   recordedAt: new Date().toISOString(),
-  sourceCommit: process.env.PAPERCLIP_SOURCE_COMMIT,
+  sourceCommit: process.env.WARDMOTE_SOURCE_COMMIT,
   platform: { os: process.platform, arch: process.arch },
   artifacts: {
     package: {
@@ -367,7 +367,7 @@ await writeFile(process.env.PAPERCLIP_CONFORMANCE_RECORD, JSON.stringify({
       filename: basename(runnerdArtifactPath),
       sha256: runnerdDigest,
       byteSize: runnerdStat.size,
-      buildProfile: process.env.PAPERCLIP_RUNNERD_BUILD_PROFILE,
+      buildProfile: process.env.WARDMOTE_RUNNERD_BUILD_PROFILE,
     },
   },
   consumer: {
@@ -401,12 +401,12 @@ await writeFile(process.env.PAPERCLIP_CONFORMANCE_RECORD, JSON.stringify({
 }, null, 2) + "\\n");
 `);
   installAndRun(consumerRoot, {
-    PAPERCLIP_RUNNERD_ARTIFACT: runnerdArtifact.executablePath,
-    PAPERCLIP_RUNNERD_SHA256: runnerdArtifact.sha256,
-    PAPERCLIP_RUNNERD_BUILD_PROFILE: runnerdArtifact.buildProfile,
-    PAPERCLIP_RUNNER_PACKAGE_ARTIFACT: runnerTarball,
-    PAPERCLIP_CONFORMANCE_RECORD: conformanceRecord,
-    PAPERCLIP_SOURCE_COMMIT: sourceCommit,
+    WARDMOTE_RUNNERD_ARTIFACT: runnerdArtifact.executablePath,
+    WARDMOTE_RUNNERD_SHA256: runnerdArtifact.sha256,
+    WARDMOTE_RUNNERD_BUILD_PROFILE: runnerdArtifact.buildProfile,
+    WARDMOTE_RUNNER_PACKAGE_ARTIFACT: runnerTarball,
+    WARDMOTE_CONFORMANCE_RECORD: conformanceRecord,
+    WARDMOTE_SOURCE_COMMIT: sourceCommit,
   });
 }
 
@@ -438,7 +438,7 @@ function installAndRun(consumerRoot, extraEnv = {}) {
   ], consumerRoot, { env: { NODE_ENV: "development" } });
   run(process.execPath, ["verify-default-runnerd.mjs"], consumerRoot, {
     inheritEnv: false,
-    env: { PATH: process.env.PATH, HOME: consumerRoot, EXPECTED_RUNNERD_SHA256: extraEnv.PAPERCLIP_RUNNERD_SHA256 },
+    env: { PATH: process.env.PATH, HOME: consumerRoot, EXPECTED_RUNNERD_SHA256: extraEnv.WARDMOTE_RUNNERD_SHA256 },
   });
   run(process.execPath, ["verify.mjs"], consumerRoot, { env: extraEnv });
 }

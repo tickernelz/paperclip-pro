@@ -1,8 +1,8 @@
 import { resolveQualifiedAcpxProfile } from "../../vendor/wardmote-runner/index.js";
 import {
   isPaperclipRunnerProvider,
-  PAPERCLIP_RUNNER_PERMISSION_CAPABILITIES,
-  PAPERCLIP_RUNNER_ACPX_PROFILES,
+  WARDMOTE_RUNNER_PERMISSION_CAPABILITIES,
+  WARDMOTE_RUNNER_ACPX_PROFILES,
   resolvePaperclipRunnerPermissionMode,
   resolvePaperclipRunnerCursorMode,
   resolvePaperclipRunnerPiThinkingLevel,
@@ -230,7 +230,7 @@ function assertPermissionMode(
   provider: PaperclipRunnerProvider,
   config: Record<string, unknown>,
 ): void {
-  const capability = PAPERCLIP_RUNNER_PERMISSION_CAPABILITIES[provider];
+  const capability = WARDMOTE_RUNNER_PERMISSION_CAPABILITIES[provider];
   if (!capability.configurable) return;
   const configured = config[capability.configKey];
   if (
@@ -476,7 +476,7 @@ export function resolvePaperclipRunnerProviderProfile(
   }
 
   const acpxAgent = config.acpxAgent ?? "claude";
-  const pendingAcpxProfile = PAPERCLIP_RUNNER_ACPX_PROFILES.find(profile => profile.value === acpxAgent && !profile.qualified);
+  const pendingAcpxProfile = WARDMOTE_RUNNER_ACPX_PROFILES.find(profile => profile.value === acpxAgent && !profile.qualified);
   if (pendingAcpxProfile) {
     if (!model) throw new PaperclipRunnerProviderProfileError("paperclip_runner_acpx_model_required", `${pendingAcpxProfile.label} requires an explicit model ID; there is no default model.`);
     // Qualification authority belongs to the isolated server operator. Never

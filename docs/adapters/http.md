@@ -48,4 +48,4 @@ The webhook receives a JSON payload with:
 }
 ```
 
-The external agent uses `PAPERCLIP_API_URL` and an API key to call back to Wardmote.
+The external agent uses `WARDMOTE_API_URL` and an API key to call back to Wardmote.

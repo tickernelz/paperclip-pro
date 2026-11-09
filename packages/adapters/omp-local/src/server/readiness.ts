@@ -9,7 +9,7 @@ import { OMP_CONTEXT_MANAGEMENT_MIN_VERSION, ompVersionAtLeast } from "./setting
 
 export const OMP_MIN_VERSION = OMP_CONTEXT_MANAGEMENT_MIN_VERSION;
 export const OMP_UPDATE_COMMAND = "omp update";
-export const OMP_BUNDLED_VERSION_ENV = "PAPERCLIP_OMP_BUNDLED_VERSION";
+export const OMP_BUNDLED_VERSION_ENV = "WARDMOTE_OMP_BUNDLED_VERSION";
 
 export type OmpInstallState = "missing" | "too_old" | "unknown_version" | "ready";
 
@@ -105,7 +105,7 @@ export async function probeOmpInstall(options: {
   const env = ensurePathInEnv({ ...(options.env ?? process.env) });
   const platform = options.platform ?? process.platform;
   const timeoutMs = options.timeoutMs ?? 15_000;
-  const command = options.command?.trim() || env.PAPERCLIP_OMP_COMMAND?.trim() || null;
+  const command = options.command?.trim() || env.WARDMOTE_OMP_COMMAND?.trim() || null;
   const isPath = command !== null && (path.isAbsolute(command) || command.includes("/") || command.includes("\\"));
   const candidates = isPath
     ? ((await isExecutableFile(command, platform)) ? [command] : [])
@@ -142,7 +142,7 @@ export function ompGateFailure(probe: OmpInstallProbe, platform: NodeJS.Platform
 }
 
 export function ompAgentDir(env: NodeJS.ProcessEnv = process.env, home: string = os.homedir()): string {
-  return env.PI_CODING_AGENT_DIR?.trim() || env.PAPERCLIP_OMP_AGENT_DIR?.trim() || path.join(home, ".omp", "agent");
+  return env.PI_CODING_AGENT_DIR?.trim() || env.WARDMOTE_OMP_AGENT_DIR?.trim() || path.join(home, ".omp", "agent");
 }
 
 async function sessionCwd(file: string): Promise<string | null> {

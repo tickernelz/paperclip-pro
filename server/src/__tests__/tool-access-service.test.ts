@@ -743,7 +743,7 @@ describeEmbeddedPostgres("tool access service", () => {
 
   beforeAll(async () => {
     const externalDatabaseUrl =
-      process.env.PAPERCLIP_TOOL_ACCESS_TEST_DATABASE_URL?.trim();
+      process.env.WARDMOTE_TOOL_ACCESS_TEST_DATABASE_URL?.trim();
     if (externalDatabaseUrl) {
       db = createDb(externalDatabaseUrl);
       await instanceSettingsService(db).updateExperimental({ enableMemoryConnectors: true });
@@ -1147,7 +1147,7 @@ describeEmbeddedPostgres("tool access service", () => {
 
   it("allows an explicitly allowlisted internal token broker through the guarded fetch", async () => {
     vi.stubEnv(
-      "PAPERCLIP_TOKEN_BROKER_ALLOWED_HOSTS",
+      "WARDMOTE_TOKEN_BROKER_ALLOWED_HOSTS",
       "broker.example, 127.0.0.1",
     );
     const company = await createCompany(db);
@@ -3203,7 +3203,7 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("implicitly allowlists the configured Pages API host for internal token brokers", async () => {
-    vi.stubEnv("PAPERCLIP_PAGES_API_URL", "http://127.0.0.1:8787");
+    vi.stubEnv("WARDMOTE_PAGES_API_URL", "http://127.0.0.1:8787");
     const company = await createCompany(db);
     const service = createTestToolAccessService(db, {
       deploymentMode: "authenticated",
@@ -3541,7 +3541,7 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("cancels an ask-first test request when approval signing is unavailable", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_ACTION_SIGNING_SECRET", "");
+    vi.stubEnv("WARDMOTE_TOOL_ACTION_SIGNING_SECRET", "");
     const company = await createCompany(db);
     const userId = `tool-tester-${randomUUID()}`;
     await grantBoardUser(db, company.id, userId, ["tools:use"]);
@@ -3571,7 +3571,7 @@ describeEmbeddedPostgres("tool access service", () => {
 
     expect(res.body).toMatchObject({
       reasonCode: "signing_secret_unconfigured",
-      error: expect.stringContaining("PAPERCLIP_TOOL_ACTION_SIGNING_SECRET"),
+      error: expect.stringContaining("WARDMOTE_TOOL_ACTION_SIGNING_SECRET"),
     });
     const [actionRequest] = await db
       .select()
@@ -5848,9 +5848,9 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("validates a reviewed Vercel connector and stores no provider bearer or vault secret", async () => {
-    vi.stubEnv("PAPERCLIP_VERCEL_CONNECT_ENABLED", "true");
+    vi.stubEnv("WARDMOTE_VERCEL_CONNECT_ENABLED", "true");
     vi.stubEnv(
-      "PAPERCLIP_VERCEL_CONNECT_ACCESS_TOKEN",
+      "WARDMOTE_VERCEL_CONNECT_ACCESS_TOKEN",
       "vercel-bootstrap-authority",
     );
     const company = await createCompany(db);
@@ -5991,9 +5991,9 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("rejects an attached Vercel connector for the wrong reviewed service", async () => {
-    vi.stubEnv("PAPERCLIP_VERCEL_CONNECT_ENABLED", "true");
+    vi.stubEnv("WARDMOTE_VERCEL_CONNECT_ENABLED", "true");
     vi.stubEnv(
-      "PAPERCLIP_VERCEL_CONNECT_ACCESS_TOKEN",
+      "WARDMOTE_VERCEL_CONNECT_ACCESS_TOKEN",
       "vercel-bootstrap-authority",
     );
     const company = await createCompany(db);
@@ -6035,9 +6035,9 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("binds the Vercel OAuth callback to one company, actor, session, and one-time state", async () => {
-    vi.stubEnv("PAPERCLIP_VERCEL_CONNECT_ENABLED", "true");
+    vi.stubEnv("WARDMOTE_VERCEL_CONNECT_ENABLED", "true");
     vi.stubEnv(
-      "PAPERCLIP_VERCEL_CONNECT_ACCESS_TOKEN",
+      "WARDMOTE_VERCEL_CONNECT_ACCESS_TOKEN",
       "vercel-bootstrap-authority",
     );
     const company = await createCompany(db);
@@ -7311,9 +7311,9 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("synchronizes shared OAuth credentials to the organization grant used by gateway calls", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
     vi.stubEnv(
-      "PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_SECRET",
+      "WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_SECRET",
       "slack-client-secret",
     );
     const company = await createCompany(db);
@@ -7467,9 +7467,9 @@ describeEmbeddedPostgres("tool access service", () => {
       tokenScope: string | null,
       requestedScopes?: string[],
     ) {
-      vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+      vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
       vi.stubEnv(
-        "PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_SECRET",
+        "WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_SECRET",
         "slack-client-secret",
       );
       const company = await createCompany(db);
@@ -7601,9 +7601,9 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("creates and resolves an agent-initiated user authorization grant card", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
     vi.stubEnv(
-      "PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_SECRET",
+      "WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_SECRET",
       "slack-client-secret",
     );
     const company = await createCompany(db);
@@ -7902,9 +7902,9 @@ describeEmbeddedPostgres("tool access service", () => {
   it.each(["page", "task"] as const)(
     "activates and discovers actions for a fresh personal OAuth callback from %s without widening task access",
     async (host) => {
-      vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+      vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
       vi.stubEnv(
-        "PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_SECRET",
+        "WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_SECRET",
         "slack-client-secret",
       );
       const company = await createCompany(db);
@@ -8285,9 +8285,9 @@ describeEmbeddedPostgres("tool access service", () => {
   );
 
   it("promotes a personal OAuth identity only after Everyone in the company is chosen", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
     vi.stubEnv(
-      "PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_SECRET",
+      "WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_SECRET",
       "slack-client-secret",
     );
     const company = await createCompany(db);
@@ -8434,9 +8434,9 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("refreshes an expired personal OAuth grant during health checks without moving its tokens onto the connection", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
     vi.stubEnv(
-      "PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_SECRET",
+      "WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_SECRET",
       "slack-client-secret",
     );
     const company = await createCompany(db);
@@ -8574,9 +8574,9 @@ describeEmbeddedPostgres("tool access service", () => {
   // provider's response is judged against. A provider that widens at refresh must not be able
   // to do it quietly.
   it("flags a scope the provider widens at refresh time", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
     vi.stubEnv(
-      "PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_SECRET",
+      "WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_SECRET",
       "slack-client-secret",
     );
     const company = await createCompany(db);
@@ -8688,11 +8688,11 @@ describeEmbeddedPostgres("tool access service", () => {
   // response against the wider list and an asserted extra scope stops looking unrequested.
   it("keeps the narrowed request as the refresh baseline for a generic MCP connection", async () => {
     vi.stubEnv(
-      "PAPERCLIP_TOOL_OAUTH_NARROW_EXAMPLE_TEST_CLIENT_ID",
+      "WARDMOTE_TOOL_OAUTH_NARROW_EXAMPLE_TEST_CLIENT_ID",
       "narrow-client-id",
     );
     vi.stubEnv(
-      "PAPERCLIP_TOOL_OAUTH_NARROW_EXAMPLE_TEST_CLIENT_SECRET",
+      "WARDMOTE_TOOL_OAUTH_NARROW_EXAMPLE_TEST_CLIENT_SECRET",
       "narrow-client-secret",
     );
     const company = await createCompany(db);
@@ -8816,9 +8816,9 @@ describeEmbeddedPostgres("tool access service", () => {
   // scope list is whichever callback ran last, so it is the wrong refresh baseline for at
   // least one of them — the baseline has to live on the grant.
   it("gives each personal grant its own refresh scope baseline", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
     vi.stubEnv(
-      "PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_SECRET",
+      "WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_SECRET",
       "slack-client-secret",
     );
     const company = await createCompany(db);
@@ -8941,9 +8941,9 @@ describeEmbeddedPostgres("tool access service", () => {
   // shape the grants API and the Permissions UI read from.
   describe("over-grant provenance on an organization grant", () => {
     async function connectSharedSlack(authorizationScope: string | null) {
-      vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+      vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
       vi.stubEnv(
-        "PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_SECRET",
+        "WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_SECRET",
         "slack-client-secret",
       );
       const company = await createCompany(db);
@@ -9104,11 +9104,11 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("uses Airtable DCR when both DCR and CIMD are advertised", async () => {
-    vi.stubEnv("PAPERCLIP_PUBLIC_URL", "https://paperclip.example");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_AIRTABLE_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_AIRTABLE_CLIENT_SECRET", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_SECRET", "");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "https://paperclip.example");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_AIRTABLE_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_AIRTABLE_CLIENT_SECRET", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_SECRET", "");
     const restoreMethod = optIntoAirtableDcrRegistration();
     try {
       const company = await createCompany(db);
@@ -9178,11 +9178,11 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("rebinds an Airtable CIMD client through DCR when the curated method opts in", async () => {
-    vi.stubEnv("PAPERCLIP_PUBLIC_URL", "https://paperclip.example");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_AIRTABLE_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_AIRTABLE_CLIENT_SECRET", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_SECRET", "");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "https://paperclip.example");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_AIRTABLE_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_AIRTABLE_CLIENT_SECRET", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_SECRET", "");
     const company = await createCompany(db);
     const service = createTestToolAccessService(db, {
       oauthClientMetadataLookup: async () => [{ address: "93.184.216.34", family: 4 }],
@@ -9250,11 +9250,11 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("does not fall back to Airtable CIMD when DCR is required but unavailable", async () => {
-    vi.stubEnv("PAPERCLIP_PUBLIC_URL", "https://paperclip.example");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_AIRTABLE_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_AIRTABLE_CLIENT_SECRET", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_SECRET", "");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "https://paperclip.example");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_AIRTABLE_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_AIRTABLE_CLIENT_SECRET", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_SECRET", "");
     const restoreMethod = optIntoAirtableDcrRegistration();
     try {
       const company = await createCompany(db);
@@ -9302,11 +9302,11 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("registers Linear against its MCP authorization server instead of the pinned console endpoints", async () => {
-    vi.stubEnv("PAPERCLIP_PUBLIC_URL", "https://paperclip.example");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_LINEAR_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_LINEAR_CLIENT_SECRET", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_SECRET", "");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "https://paperclip.example");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_LINEAR_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_LINEAR_CLIENT_SECRET", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_SECRET", "");
     const company = await createCompany(db);
     const userId = `linear-owner-${randomUUID()}`;
     await grantBoardUser(db, company.id, userId, [], "owner");
@@ -9406,11 +9406,11 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("returns a pre-scoped personal Notion callback directly to Permissions", async () => {
-    vi.stubEnv("PAPERCLIP_PUBLIC_URL", "https://paperclip.example");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_NOTION_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_NOTION_CLIENT_SECRET", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_SECRET", "");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "https://paperclip.example");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_NOTION_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_NOTION_CLIENT_SECRET", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_SECRET", "");
     const company = await createCompany(db);
     const userId = `notion-owner-${randomUUID()}`;
     await grantBoardUser(db, company.id, userId, [], "owner");
@@ -9544,7 +9544,7 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("returns a declined curated OAuth draft to its exact resumable setup route", async () => {
-    vi.stubEnv("PAPERCLIP_PUBLIC_URL", "https://paperclip.example");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "https://paperclip.example");
     const company = await createCompany(db);
     const userId = `notion-resume-${randomUUID()}`;
     await grantBoardUser(db, company.id, userId, [], "owner");
@@ -9628,13 +9628,13 @@ describeEmbeddedPostgres("tool access service", () => {
     "starts and completes OAuth with the same redirect URI at %s",
     async (origin) => {
       const callbackOrigin = origin.replace("http://127.0.0.1:", "http://localhost:");
-      vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+      vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
       vi.stubEnv(
-        "PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_SECRET",
+        "WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_SECRET",
         "slack-client-secret",
       );
       vi.stubEnv(
-        "PAPERCLIP_PUBLIC_URL",
+        "WARDMOTE_PUBLIC_URL",
         origin.startsWith("https:") ? origin : "",
       );
       const company = await createCompany(db);
@@ -9802,10 +9802,10 @@ describeEmbeddedPostgres("tool access service", () => {
   );
 
   it("normalizes a direct numeric loopback origin for OAuth when no public URL is configured", async () => {
-    vi.stubEnv("PAPERCLIP_PUBLIC_URL", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
     vi.stubEnv(
-      "PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_SECRET",
+      "WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_SECRET",
       "slack-client-secret",
     );
     const company = await createCompany(db);
@@ -9825,10 +9825,10 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("does not derive an OAuth callback origin from a non-loopback request host", async () => {
-    vi.stubEnv("PAPERCLIP_PUBLIC_URL", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
     vi.stubEnv(
-      "PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_SECRET",
+      "WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_SECRET",
       "slack-client-secret",
     );
     const company = await createCompany(db);
@@ -9852,10 +9852,10 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("uses an authenticated same-origin HTTPS browser request without public URL config", async () => {
-    vi.stubEnv("PAPERCLIP_PUBLIC_URL", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
     vi.stubEnv(
-      "PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_SECRET",
+      "WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_SECRET",
       "slack-client-secret",
     );
     const company = await createCompany(db);
@@ -9882,10 +9882,10 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("rejects a browser HTTPS origin that does not match the routed request host", async () => {
-    vi.stubEnv("PAPERCLIP_PUBLIC_URL", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
     vi.stubEnv(
-      "PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_SECRET",
+      "WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_SECRET",
       "slack-client-secret",
     );
     const company = await createCompany(db);
@@ -9912,8 +9912,8 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("requires non-viewer board access to start OAuth for active app connections", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
-    vi.stubEnv("PAPERCLIP_PUBLIC_URL", "http://paperclip.test");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "http://paperclip.test");
     const company = await createCompany(db);
     const service = createTestToolAccessService(db);
     const connect = await service.connectGalleryApp(
@@ -9967,8 +9967,8 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("lets the retained personal identity owner reconnect without manager configuration access", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
-    vi.stubEnv("PAPERCLIP_PUBLIC_URL", "http://paperclip.test");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "http://paperclip.test");
     const company = await createCompany(db);
     const userId = `personal-oauth-member-${randomUUID()}`;
     const service = createTestToolAccessService(db);
@@ -10086,12 +10086,12 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("binds OAuth callback completion to the initiating board session", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
     vi.stubEnv(
-      "PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_SECRET",
+      "WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_SECRET",
       "slack-client-secret",
     );
-    vi.stubEnv("PAPERCLIP_PUBLIC_URL", "http://paperclip.test");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "http://paperclip.test");
     const company = await createCompany(db);
     await grantBoardUser(db, company.id, "oauth-operator", [
       "tools:manage_connections",
@@ -10234,10 +10234,10 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("discovers Notion MCP OAuth metadata, registers one public client, and reuses it", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_NOTION_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_NOTION_CLIENT_SECRET", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_SECRET", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_NOTION_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_NOTION_CLIENT_SECRET", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_SECRET", "");
     const company = await createCompany(db);
     const service = createTestToolAccessService(db);
     const connected = await service.connectGalleryApp(company.id, {
@@ -10414,10 +10414,10 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("supports confidential DCR clients without exposing their registration secret", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SUPABASE_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SUPABASE_CLIENT_SECRET", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_SECRET", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_SUPABASE_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_SUPABASE_CLIENT_SECRET", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_SECRET", "");
     const company = await createCompany(db);
     await grantBoardUser(db, company.id, "board", ["tools:manage_connections"]);
     const service = createTestToolAccessService(db);
@@ -10572,10 +10572,10 @@ describeEmbeddedPostgres("tool access service", () => {
 
   it.each(["default", "none", "agent", "company"] as const)(
     "negotiates JSON OAuth tokens and preserves MCP agent reach (%s)", async (reach) => {
-      vi.stubEnv("PAPERCLIP_TOOL_OAUTH_MIRO_CLIENT_ID", "");
-      vi.stubEnv("PAPERCLIP_TOOL_OAUTH_MIRO_CLIENT_SECRET", "");
-      vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_ID", "");
-      vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_SECRET", "");
+      vi.stubEnv("WARDMOTE_TOOL_OAUTH_MIRO_CLIENT_ID", "");
+      vi.stubEnv("WARDMOTE_TOOL_OAUTH_MIRO_CLIENT_SECRET", "");
+      vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_ID", "");
+      vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_SECRET", "");
       const company = await createCompany(db);
       await grantBoardUser(db, company.id, "board", ["tools:manage_connections"]);
       const service = createTestToolAccessService(db);
@@ -10713,10 +10713,10 @@ describeEmbeddedPostgres("tool access service", () => {
   );
 
   it("accepts provider-added DCR grants without adopting them", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_HUGGING_FACE_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_HUGGING_FACE_CLIENT_SECRET", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_SECRET", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_HUGGING_FACE_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_HUGGING_FACE_CLIENT_SECRET", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_SECRET", "");
     const company = await createCompany(db);
     const service = createTestToolAccessService(db);
     const connected = await service.connectGalleryApp(company.id, {
@@ -10811,10 +10811,10 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("does not request refresh-token registration from a provider that explicitly omits it", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CODA_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CODA_CLIENT_SECRET", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_SECRET", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CODA_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CODA_CLIENT_SECRET", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_SECRET", "");
     const company = await createCompany(db);
     const service = createTestToolAccessService(db);
     const connected = await service.connectGalleryApp(company.id, {
@@ -10876,10 +10876,10 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("normalizes a public DCR client's zero secret expiry when no secret was issued", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_MIXPANEL_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_MIXPANEL_CLIENT_SECRET", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_SECRET", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_MIXPANEL_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_MIXPANEL_CLIENT_SECRET", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_SECRET", "");
     const company = await createCompany(db);
     const service = createTestToolAccessService(db);
     const connected = await service.connectGalleryApp(company.id, {
@@ -11449,10 +11449,10 @@ describeEmbeddedPostgres("tool access service", () => {
   ])(
     "rejects DCR responses that return %s",
     async (_label, registrationResponse, field) => {
-      vi.stubEnv("PAPERCLIP_TOOL_OAUTH_NOTION_CLIENT_ID", "");
-      vi.stubEnv("PAPERCLIP_TOOL_OAUTH_NOTION_CLIENT_SECRET", "");
-      vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_ID", "");
-      vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_SECRET", "");
+      vi.stubEnv("WARDMOTE_TOOL_OAUTH_NOTION_CLIENT_ID", "");
+      vi.stubEnv("WARDMOTE_TOOL_OAUTH_NOTION_CLIENT_SECRET", "");
+      vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_ID", "");
+      vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_SECRET", "");
       const company = await createCompany(db);
       const service = createTestToolAccessService(db);
       const connected = await service.connectGalleryApp(company.id, {
@@ -11522,8 +11522,8 @@ describeEmbeddedPostgres("tool access service", () => {
   );
 
   it("fails fast when Notion DCR is attempted from a non-loopback HTTP origin", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_NOTION_CLIENT_ID", "");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_NOTION_CLIENT_ID", "");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_CLIENT_ID", "");
     const company = await createCompany(db);
     const service = createTestToolAccessService(db);
     const connected = await service.connectGalleryApp(company.id, {
@@ -11550,9 +11550,9 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("leases rotating OAuth refresh tokens across service instances before concurrent remote app calls", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
     vi.stubEnv(
-      "PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_SECRET",
+      "WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_SECRET",
       "slack-client-secret",
     );
     const company = await createCompany(db);
@@ -11698,9 +11698,9 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("treats invalid_grant as terminal without replaying a rotated refresh token", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
     vi.stubEnv(
-      "PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_SECRET",
+      "WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_SECRET",
       "slack-client-secret",
     );
     const company = await createCompany(db);
@@ -11821,9 +11821,9 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("does not disable a connection when invalid_grant used a superseded refresh-token version", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
     vi.stubEnv(
-      "PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_SECRET",
+      "WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_SECRET",
       "slack-client-secret",
     );
     const company = await createCompany(db);
@@ -11924,9 +11924,9 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("fails closed instead of replaying a refresh token after an abandoned lease", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
     vi.stubEnv(
-      "PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_SECRET",
+      "WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_SECRET",
       "slack-client-secret",
     );
     const company = await createCompany(db);
@@ -11985,8 +11985,8 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("uses OAuth client credentials for shared machine-to-machine MCP connections", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_M2M_CLIENT_ID", "m2m-client-id");
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_M2M_CLIENT_SECRET", "m2m-client-secret");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_M2M_CLIENT_ID", "m2m-client-id");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_M2M_CLIENT_SECRET", "m2m-client-secret");
     const company = await createCompany(db);
     const service = createTestToolAccessService(db);
     const connection = await service.createConnection(company.id, {
@@ -12069,9 +12069,9 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it.each(["catalog", "catalog/refresh", "health-check"])("returns reconnect instructions on %s for expired OAuth without a refresh token", async (path) => {
-    vi.stubEnv("PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
+    vi.stubEnv("WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_ID", "slack-client-id");
     vi.stubEnv(
-      "PAPERCLIP_TOOL_OAUTH_SLACK_CLIENT_SECRET",
+      "WARDMOTE_TOOL_OAUTH_SLACK_CLIENT_SECRET",
       "slack-client-secret",
     );
     const company = await createCompany(db);
@@ -12331,7 +12331,7 @@ describeEmbeddedPostgres("tool access service", () => {
   });
 
   it("cancels invalid-signature pending action requests but keeps unsigned in-flight ones out of the review queue without cancelling them", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_ACTION_SIGNING_SECRET", "current-secret");
+    vi.stubEnv("WARDMOTE_TOOL_ACTION_SIGNING_SECRET", "current-secret");
     const company = await createCompany(db);
     const [application] = await db
       .insert(toolApplications)
@@ -13959,14 +13959,14 @@ describeEmbeddedPostgres("tool access service", () => {
 
   it("discovers OAuth for pasted MCP links and completes sign-in without a gallery entry", async () => {
     vi.stubEnv(
-      "PAPERCLIP_TOOL_OAUTH_GENERIC_EXAMPLE_TEST_CLIENT_ID",
+      "WARDMOTE_TOOL_OAUTH_GENERIC_EXAMPLE_TEST_CLIENT_ID",
       "generic-client-id",
     );
     vi.stubEnv(
-      "PAPERCLIP_TOOL_OAUTH_GENERIC_EXAMPLE_TEST_CLIENT_SECRET",
+      "WARDMOTE_TOOL_OAUTH_GENERIC_EXAMPLE_TEST_CLIENT_SECRET",
       "generic-client-secret",
     );
-    vi.stubEnv("PAPERCLIP_PUBLIC_URL", "http://paperclip.test");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "http://paperclip.test");
     const company = await createCompany(db);
     await grantBoardUser(db, company.id, "board-user", [
       "tools:manage_connections",

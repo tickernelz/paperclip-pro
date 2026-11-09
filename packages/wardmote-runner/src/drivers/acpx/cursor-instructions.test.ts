@@ -31,9 +31,9 @@ it("refreshes trusted sandbox instructions on recovery and excludes ambient over
     await Promise.all([mkdir(workspace), mkdir(runtimeDirectory)]);
     const recovery = await createAcpxRecoveryBinding({ runtimeDirectory, normalizedSessionId: "cursor-instructions", workingDirectory: workspace, profile: resolveQualifiedAcpxProfile("cursor", "fixture"), requestedModel: "fixture", permissionMode: "approve-reads" });
     for (const text of [content, "updated entry", ""]) {
-      const sandbox = await prepareAcpxRuntimeSandbox({ binding: recovery, agent: "cursor", environment: { PAPERCLIP_CURSOR_INSTRUCTIONS: "ambient injection" }, providerPolicy: { readOnly: true, systemInstructions: text } });
-      expect(sandbox.launchEnvironment.PAPERCLIP_CURSOR_INSTRUCTIONS).toBe(cursorInstructionBinding(text).payload);
-      expect(sandbox.persistedEnvironment.PAPERCLIP_CURSOR_INSTRUCTIONS).toBeUndefined();
+      const sandbox = await prepareAcpxRuntimeSandbox({ binding: recovery, agent: "cursor", environment: { WARDMOTE_CURSOR_INSTRUCTIONS: "ambient injection" }, providerPolicy: { readOnly: true, systemInstructions: text } });
+      expect(sandbox.launchEnvironment.WARDMOTE_CURSOR_INSTRUCTIONS).toBe(cursorInstructionBinding(text).payload);
+      expect(sandbox.persistedEnvironment.WARDMOTE_CURSOR_INSTRUCTIONS).toBeUndefined();
     }
   } finally { await rm(dir, { recursive: true, force: true }); }
 });

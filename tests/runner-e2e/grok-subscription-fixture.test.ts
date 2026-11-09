@@ -18,7 +18,7 @@ async function setup() {
   roots.push(root);
   const home = path.join(root, "paperclip-home");
   await mkdir(home);
-  return { PAPERCLIP_RUNNER_E2E_TEMP_ROOT: root, PAPERCLIP_HOME: home, PAPERCLIP_INSTANCE_ID: "runner-e2e-test" };
+  return { WARDMOTE_RUNNER_E2E_TEMP_ROOT: root, WARDMOTE_HOME: home, WARDMOTE_INSTANCE_ID: "runner-e2e-test" };
 }
 
 it("stages only the explicit company credential privately and cleans refreshed state", async () => {
@@ -37,7 +37,7 @@ it("refuses malformed credentials and nonisolated or redirected homes", async ()
   const environment = await setup();
   await expect(stageGrokSubscriptionFixture({ raw: "{}", companyId, environment })).rejects.toThrow("malformed");
   await expect(stageGrokSubscriptionFixture({ raw, companyId: "../outside", environment })).rejects.toThrow("isolated");
-  await expect(stageGrokSubscriptionFixture({ raw, companyId, environment: { ...environment, PAPERCLIP_HOME: tmpdir() } })).rejects.toThrow("outside");
+  await expect(stageGrokSubscriptionFixture({ raw, companyId, environment: { ...environment, WARDMOTE_HOME: tmpdir() } })).rejects.toThrow("outside");
   const home = resolveManagedGrokHomeDir(environment, companyId);
   await mkdir(path.dirname(home), { recursive: true });
   await symlink(tmpdir(), home);

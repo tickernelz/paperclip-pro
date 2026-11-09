@@ -38,7 +38,7 @@ import { issueReferenceService } from "../services/issue-references.js";
 import { issueService } from "../services/issues.js";
 import type { StorageService } from "../storage/types.js";
 
-const externalTestDatabaseUrl = process.env.PAPERCLIP_TEST_DATABASE_URL;
+const externalTestDatabaseUrl = process.env.WARDMOTE_TEST_DATABASE_URL;
 const embeddedPostgresSupport = externalTestDatabaseUrl
   ? { supported: true }
   : await getEmbeddedPostgresTestSupport();

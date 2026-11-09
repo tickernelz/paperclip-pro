@@ -539,25 +539,25 @@ async function runAttempt(input: {
     const childEnv: NodeJS.ProcessEnv = {
       ...buildRunnerE2EProcessEnvironment(process.env, executions),
       PATH: providerPath,
-      PAPERCLIP_RUNNER_E2E_EXECUTION_IDS: JSON.stringify(
+      WARDMOTE_RUNNER_E2E_EXECUTION_IDS: JSON.stringify(
         executions.map((candidate) => candidate.id),
       ),
-      PAPERCLIP_RUNNER_E2E_ATTEMPT: String(attempt),
-      PAPERCLIP_RUNNER_E2E_INSTALLED_STARTUP_ONLY: options.installedStartupOnly ? "1" : undefined,
-      PAPERCLIP_RUNNER_E2E_PUBLIC_MCP: executions.some(candidate => candidate.task.flow === "public_mcp") ? "1" : "0",
-      PAPERCLIP_RUNNER_E2E_PORT: String(port),
-      PAPERCLIP_RUNNER_E2E_TEMP_ROOT: temporaryRoot,
-      PAPERCLIP_RUNNER_E2E_PRIVATE_DIR: privateDir,
-      PAPERCLIP_RUNNER_E2E_WORKSPACE: workspace,
-      PAPERCLIP_RUNNER_E2E_SERVER_LOG: path.join(privateDir, "server.log"),
-      PAPERCLIP_RUNNER_BINARY: runnerBinary,
-      PAPERCLIP_RUNNER_REMOTE_BINARY_PATH:
+      WARDMOTE_RUNNER_E2E_ATTEMPT: String(attempt),
+      WARDMOTE_RUNNER_E2E_INSTALLED_STARTUP_ONLY: options.installedStartupOnly ? "1" : undefined,
+      WARDMOTE_RUNNER_E2E_PUBLIC_MCP: executions.some(candidate => candidate.task.flow === "public_mcp") ? "1" : "0",
+      WARDMOTE_RUNNER_E2E_PORT: String(port),
+      WARDMOTE_RUNNER_E2E_TEMP_ROOT: temporaryRoot,
+      WARDMOTE_RUNNER_E2E_PRIVATE_DIR: privateDir,
+      WARDMOTE_RUNNER_E2E_WORKSPACE: workspace,
+      WARDMOTE_RUNNER_E2E_SERVER_LOG: path.join(privateDir, "server.log"),
+      WARDMOTE_RUNNER_BINARY: runnerBinary,
+      WARDMOTE_RUNNER_REMOTE_BINARY_PATH:
         installedCli ? undefined : resolvePaperclipRemoteRunnerBinaryForHarness(executions, runnerBinary),
       // Vite's optimized dependency cache embeds revision query strings. A
       // private per-attempt cache prevents an earlier cell or local rebuild
       // from producing `504 Outdated Optimize Dep` during browser bootstrap.
-      PAPERCLIP_VITE_CACHE_DIR: path.join(temporaryRoot, "vite-cache"),
-      PAPERCLIP_RUNNER_E2E_TEST_TIMEOUT_MS: String(
+      WARDMOTE_VITE_CACHE_DIR: path.join(temporaryRoot, "vite-cache"),
+      WARDMOTE_RUNNER_E2E_TEST_TIMEOUT_MS: String(
         Math.max(
           ...executions.map(
             (candidate) =>
@@ -565,12 +565,12 @@ async function runAttempt(input: {
           ),
         ) + 90_000,
       ),
-      PAPERCLIP_HOME: paperclipHome,
-      PAPERCLIP_INSTANCE_ID: instanceId,
-      PAPERCLIP_CONFIG: configPath,
-      PAPERCLIP_AGENT_JWT_SECRET: agentJwtSecret,
-      PAPERCLIP_DECISION_SIGNING_SECRET: decisionSigningSecret,
-      PAPERCLIP_TOOL_ACTION_SIGNING_SECRET: toolActionSigningSecret,
+      WARDMOTE_HOME: paperclipHome,
+      WARDMOTE_INSTANCE_ID: instanceId,
+      WARDMOTE_CONFIG: configPath,
+      WARDMOTE_AGENT_JWT_SECRET: agentJwtSecret,
+      WARDMOTE_DECISION_SIGNING_SECRET: decisionSigningSecret,
+      WARDMOTE_TOOL_ACTION_SIGNING_SECRET: toolActionSigningSecret,
       BETTER_AUTH_SECRET: betterAuthSecret,
     };
     // The database URLs are stripped here and again at the Playwright web-server
@@ -833,7 +833,7 @@ async function runAttempt(input: {
       await chmod(temporaryRoot, 0o700);
       cleanupError = new Error(`Preserving private recovery state after unconfirmed cleanup: ${temporaryRoot}`);
     } else if (shouldKeepFailedDiagnostics({
-      enabled: process.env.PAPERCLIP_RUNNER_E2E_KEEP_FAILED_PRIVATE === "1",
+      enabled: process.env.WARDMOTE_RUNNER_E2E_KEEP_FAILED_PRIVATE === "1",
       expectedResults: executions.length,
       results: publishedResults,
     })) {
@@ -972,7 +972,7 @@ async function main() {
   if (options.installedStartupOnly) {
     assertInstalledStartupOnly(process.env, executions, options);
     assertRunnerE2EPrerequisites(executions);
-    const campaignId = cleanId(process.env.PAPERCLIP_E2E_CAMPAIGN_ID ?? `installed-startup-${Date.now()}`);
+    const campaignId = cleanId(process.env.WARDMOTE_E2E_CAMPAIGN_ID ?? `installed-startup-${Date.now()}`);
     await runAttempt({ executions, attempt: 1, campaignId, options });
     console.log(`PASS installed launch chain (no provider qualification) -> ${path.join(resultsRoot, campaignId, "installed-startup-only")}`);
     return;
@@ -1006,7 +1006,7 @@ async function main() {
   assertNativeCompletionSelection(executions);
   assertNativeInstructionSelection(executions);
   const campaignId = cleanId(
-    process.env.PAPERCLIP_E2E_CAMPAIGN_ID ??
+    process.env.WARDMOTE_E2E_CAMPAIGN_ID ??
       `local-${new Date().toISOString().replace(/[:.]/g, "-")}`,
   );
   const summaryDir = path.join(resultsRoot, campaignId);
@@ -1035,10 +1035,10 @@ async function main() {
   }
   if (
     executions.some((execution) => execution.environment.id === "daytona") &&
-    !isImmutableDaytonaImage(process.env.PAPERCLIP_E2E_DAYTONA_IMAGE)
+    !isImmutableDaytonaImage(process.env.WARDMOTE_E2E_DAYTONA_IMAGE)
   ) {
     throw new Error(
-      "PAPERCLIP_E2E_DAYTONA_IMAGE must be an immutable image@sha256 digest for Daytona cells",
+      "WARDMOTE_E2E_DAYTONA_IMAGE must be an immutable image@sha256 digest for Daytona cells",
     );
   }
 

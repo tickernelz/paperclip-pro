@@ -21,7 +21,7 @@ if (process.argv.includes("--catalog")) {
   process.exit(0);
 }
 if (!process.argv.includes("--jsonl")) throw new Error("Use --catalog or --jsonl; there is no default campaign");
-process.env.PAPERCLIP_AGENT_JWT_SECRET = randomUUID() + randomUUID();
+process.env.WARDMOTE_AGENT_JWT_SECRET = randomUUID() + randomUUID();
 const output = (value: unknown) => process.stdout.write("RUNNER_API_EVAL " + JSON.stringify(value) + "\n");
 const OPENROUTER_MODELS = new Set(["openrouter/anthropic/claude-sonnet-5", "openrouter/deepseek/deepseek-v4-flash-0731", "openrouter/google/gemini-3.8-flash"]);
 // The controller selects and injects one provider credential. The worker never
@@ -109,7 +109,7 @@ try {
           })() : undefined;
         bundle = createRunnerdCodexTransport({
           provider, acpxAgent: "claude", acpxPermissionMode: "approve-reads",
-          environment: { ...providerEnvironment, PAPERCLIP_PROVIDER_TRACE_PATH: join(directory, "provider-trace.jsonl"), PAPERCLIP_PROVIDER_TRACE_MAX_BYTES: String(32 * 1024 * 1024) },
+          environment: { ...providerEnvironment, WARDMOTE_PROVIDER_TRACE_PATH: join(directory, "provider-trace.jsonl"), WARDMOTE_PROVIDER_TRACE_MAX_BYTES: String(32 * 1024 * 1024) },
           codexCommand: request.model === "gpt-5.6-luna" ? realpathSync(execFileSync("which", ["codex"], { encoding: "utf8" }).trim()) : undefined,
           sourceCodexHome: process.env.CODEX_HOME ?? join(homedir(), ".codex"),
           runnerBinary: defaultCapabilityRunnerdBinary(), stateDirectory: join(server.root, `runner-${request.attemptId}`),

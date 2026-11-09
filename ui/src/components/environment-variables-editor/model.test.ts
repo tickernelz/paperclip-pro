@@ -153,7 +153,7 @@ describe("valueFromRows (emit semantics)", () => {
 });
 
 describe("validateName", () => {
-  const reserved = ["PAPERCLIP_"];
+  const reserved = ["WARDMOTE_"];
 
   it("returns null for empty and valid names", () => {
     expect(validateName("", new Set(), reserved)).toBeNull();
@@ -171,7 +171,7 @@ describe("validateName", () => {
   });
 
   it("flags reserved prefixes as warnings", () => {
-    const issue = validateName("PAPERCLIP_HOME", new Set(), reserved);
+    const issue = validateName("WARDMOTE_HOME", new Set(), reserved);
     expect(issue?.level).toBe("warn");
     expect(issue?.message).toMatch(/Reserved prefix/);
   });

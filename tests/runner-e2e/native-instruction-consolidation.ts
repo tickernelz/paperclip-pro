@@ -10,7 +10,7 @@ import { inspectNativeCompletionSourceMetadata, inspectNativeCompletionRunnerd }
 export const NATIVE_INSTRUCTION_SUITE = "native-instruction-consolidation";
 export const NATIVE_INSTRUCTION_BASE_SHA = "2a8a99e4a5f69aa803b3f10b982f583e75a87042";
 export const NATIVE_INSTRUCTION_DEFAULT_SHA256 = "c6318bf7e425cc0dd7acd4ff2905dab5c46ffddedef979afdf06720c82f6e95a";
-export const NATIVE_INSTRUCTION_PREFLIGHT_ENV = "PAPERCLIP_NATIVE_INSTRUCTION_PREFLIGHT";
+export const NATIVE_INSTRUCTION_PREFLIGHT_ENV = "WARDMOTE_NATIVE_INSTRUCTION_PREFLIGHT";
 const root = resolve(import.meta.dirname, "../..");
 const hash = (bytes: Buffer | string) => createHash("sha256").update(bytes).digest("hex");
 const OPENCODE_FEEDBACK_BASE_FILES = {
@@ -191,7 +191,7 @@ export function assertNativeInstructionSelection(executions: readonly MatrixExec
 
 function sourceReceipt() {
   const sourceSha = git("rev-parse", "HEAD");
-  const requestedSource = process.env.PAPERCLIP_RUNNER_E2E_SOURCE_SHA?.trim();
+  const requestedSource = process.env.WARDMOTE_RUNNER_E2E_SOURCE_SHA?.trim();
   if (requestedSource && requestedSource !== sourceSha) throw new Error("Native instruction source differs from requested immutable revision");
   assertNativeInstructionLineage(sourceSha);
   const metadata = inspectNativeCompletionSourceMetadata({ repositoryRoot: root,
@@ -264,7 +264,7 @@ export function prepareNativeInstructionPreflight(directory: string) {
   const measurementPath = join(directory, "native-instruction-measurement.json");
   execFileSync(process.execPath, [join(root, "node_modules/vitest/vitest.mjs"), "run", "src/backends/native-instruction-measurement.test.ts"], {
     cwd: join(root, "packages/wardmote-runner"), timeout: 60_000,
-    env: { ...nativeCompletionPreflightEnvironment(process.env), PAPERCLIP_NATIVE_INSTRUCTION_REPORT: measurementPath }, stdio: "inherit",
+    env: { ...nativeCompletionPreflightEnvironment(process.env), WARDMOTE_NATIVE_INSTRUCTION_REPORT: measurementPath }, stdio: "inherit",
   });
   const measurement = JSON.parse(readFileSync(measurementPath, "utf8"));
   validateNativeInstructionMeasurement(measurement, source);

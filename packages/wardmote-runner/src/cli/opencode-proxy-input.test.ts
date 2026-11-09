@@ -83,7 +83,7 @@ it.each([true, false])("settles a real proxy interrupt with controller feedback 
   const fd = process.platform === "linux" ? openSync(executable, "r") : undefined;
   const runtime = join(root, "runtime");
   const child = spawn(process.execPath, [proxy, "--paperclip-trusted-opencode-executable", fd === undefined ? executable : "/proc/self/fd/3"], {
-    env: { ...process.env, PAPERCLIP_OPENCODE_RUNTIME_DIR: runtime, OPENROUTER_API_KEY: "fixture-key" },
+    env: { ...process.env, WARDMOTE_OPENCODE_RUNTIME_DIR: runtime, OPENROUTER_API_KEY: "fixture-key" },
     stdio: fd === undefined ? ["pipe", "pipe", "pipe"] : ["pipe", "pipe", "pipe", fd],
     detached: process.platform !== "win32",
   });

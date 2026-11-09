@@ -370,7 +370,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
   }
 
   it("derives the exact Cloud chat owner, denies other responders, and saves one answer delivery", async () => {
-    vi.stubEnv("PAPERCLIP_CLOUD_TENANT_SERVER_TOKEN", "test-cloud-token");
+    vi.stubEnv("WARDMOTE_CLOUD_TENANT_SERVER_TOKEN", "test-cloud-token");
     const fixture = await seedChatQuestion();
     const scope = { id: fixture.issueId, companyId: fixture.companyId };
     const created = await interactionsSvc.create(scope, {
@@ -489,7 +489,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
   });
 
   it("lets the implicit local board answer chat questions without an auth row", async () => {
-    vi.stubEnv("PAPERCLIP_DEPLOYMENT_MODE", "local_trusted");
+    vi.stubEnv("WARDMOTE_DEPLOYMENT_MODE", "local_trusted");
     const fixture = await seedSourceQuestionFixture({});
     await db.update(issues).set({
       conversationAgentId: fixture.agentId, conversationUserId: "local-board", conversationState: "active",
@@ -506,7 +506,7 @@ describeEmbeddedPostgres("issueThreadInteractionService", () => {
   });
 
   it("does not infer local-board authority in authenticated mode", async () => {
-    vi.stubEnv("PAPERCLIP_DEPLOYMENT_MODE", "authenticated");
+    vi.stubEnv("WARDMOTE_DEPLOYMENT_MODE", "authenticated");
     const fixture = await seedSourceQuestionFixture({});
     await expect(interactionsSvc.create({ id: fixture.issueId, companyId: fixture.companyId }, {
       ...questionCreateInput(fixture.runId), addresseeUserId: "local-board",

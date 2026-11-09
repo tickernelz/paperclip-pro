@@ -300,8 +300,8 @@ describe("teamsCatalogService", () => {
   });
 
   it("uses the configured safe adapter default for bundled agents", async () => {
-    const previousDefault = process.env.PAPERCLIP_TEAMS_CATALOG_DEFAULT_ADAPTER_TYPE;
-    process.env.PAPERCLIP_TEAMS_CATALOG_DEFAULT_ADAPTER_TYPE = "opencode_local";
+    const previousDefault = process.env.WARDMOTE_TEAMS_CATALOG_DEFAULT_ADAPTER_TYPE;
+    process.env.WARDMOTE_TEAMS_CATALOG_DEFAULT_ADAPTER_TYPE = "opencode_local";
     try {
       const svc = teamsCatalogService({} as any);
 
@@ -315,9 +315,9 @@ describe("teamsCatalogService", () => {
       });
     } finally {
       if (previousDefault === undefined) {
-        delete process.env.PAPERCLIP_TEAMS_CATALOG_DEFAULT_ADAPTER_TYPE;
+        delete process.env.WARDMOTE_TEAMS_CATALOG_DEFAULT_ADAPTER_TYPE;
       } else {
-        process.env.PAPERCLIP_TEAMS_CATALOG_DEFAULT_ADAPTER_TYPE = previousDefault;
+        process.env.WARDMOTE_TEAMS_CATALOG_DEFAULT_ADAPTER_TYPE = previousDefault;
       }
     }
   });

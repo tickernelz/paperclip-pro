@@ -455,7 +455,7 @@ export function SecretsSection() {
     <div className="space-y-4">
       <div className="rounded-md border border-line bg-bg-3/20 px-4 py-3 text-xs text-ink-3">
         Routine secrets apply to every task this routine creates. They override matching keys in
-        project and agent env. <span className="font-mono">PAPERCLIP_*</span> names are reserved.
+        project and agent env. <span className="font-mono">WARDMOTE_*</span> names are reserved.
       </div>
 
 

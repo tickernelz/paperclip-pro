@@ -44,9 +44,9 @@ diff --git a/dist/index.js b/dist/index.js
 +  return void 0;
 +}
 +function paperclipSandboxPolicy(sandboxPolicy) {
-+  const networkAccess = process.env.PAPERCLIP_CODEX_ACP_NETWORK_ACCESS;
++  const networkAccess = process.env.WARDMOTE_CODEX_ACP_NETWORK_ACCESS;
 +  if (sandboxPolicy.type !== "workspaceWrite" || !["true", "false"].includes(networkAccess)) return sandboxPolicy;
-+  return { ...sandboxPolicy, networkAccess: networkAccess === "true" && process.env.PAPERCLIP_RUNNER_NETWORK_ACCESS !== "disabled" };
++  return { ...sandboxPolicy, networkAccess: networkAccess === "true" && process.env.WARDMOTE_RUNNER_NETWORK_ACCESS !== "disabled" };
 +}
  var CodexAcpClient = class {
    codexClient;

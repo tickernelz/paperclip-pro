@@ -27,7 +27,7 @@ describe("persistent agent directories", () => {
   let db: ReturnType<typeof createDb>;
   let copies: ReturnType<typeof agentInstructionWorkingCopyService>;
   let revisions: ReturnType<typeof agentInstructionRevisionService>;
-  const previousHome = process.env.PAPERCLIP_HOME;
+  const previousHome = process.env.WARDMOTE_HOME;
   let home: string;
   let companyId: string, agentId: string, userId: string, root: string;
   const entryFile = "policy/INSTRUCTIONS.txt";
@@ -41,14 +41,14 @@ describe("persistent agent directories", () => {
   }
   beforeAll(async () => {
     home = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), "instruction-working-copies-")));
-    process.env.PAPERCLIP_HOME = home;
+    process.env.WARDMOTE_HOME = home;
     database = await startEmbeddedPostgresTestDatabase("instruction-copies-db-");
     db = createDb(database.connectionString);
     copies = agentInstructionWorkingCopyService(db);
     revisions = agentInstructionRevisionService(db);
   }, 90_000);
   afterAll(async () => {
-    if (previousHome === undefined) delete process.env.PAPERCLIP_HOME; else process.env.PAPERCLIP_HOME = previousHome;
+    if (previousHome === undefined) delete process.env.WARDMOTE_HOME; else process.env.WARDMOTE_HOME = previousHome;
     await database?.cleanup();
     if (home) {
       const writable = async (dir: string) => {
@@ -834,8 +834,8 @@ describe("persistent agent directories", () => {
         const env = { ...process.env, ...input.env };
         const args = [...(input.args ?? [])];
         if (input.stdin != null && (args[0] === "-c" || args[0] === "-lc")) {
-          env.PAPERCLIP_TEST_STDIN = input.stdin;
-          args[1] = `printf '%s' "$PAPERCLIP_TEST_STDIN" | (${args[1]})`;
+          env.WARDMOTE_TEST_STDIN = input.stdin;
+          args[1] = `printf '%s' "$WARDMOTE_TEST_STDIN" | (${args[1]})`;
         }
         try {
           const result = await execFile(input.command, args, { cwd: input.cwd, env, timeout: input.timeoutMs, maxBuffer: 32 * 1024 * 1024 });
@@ -894,8 +894,8 @@ describe("persistent agent directories", () => {
         const env = { ...process.env, ...input.env };
         const args = [...(input.args ?? [])];
         if (input.stdin != null && (args[0] === "-c" || args[0] === "-lc")) {
-          env.PAPERCLIP_TEST_STDIN = input.stdin;
-          args[1] = `printf '%s' "$PAPERCLIP_TEST_STDIN" | (${args[1]})`;
+          env.WARDMOTE_TEST_STDIN = input.stdin;
+          args[1] = `printf '%s' "$WARDMOTE_TEST_STDIN" | (${args[1]})`;
         }
         try {
           const result = await execFile(input.command, args, { cwd: input.cwd, env, timeout: input.timeoutMs, maxBuffer: 32 * 1024 * 1024 });

@@ -13,15 +13,15 @@ import { errorHandler } from "../middleware/index.js";
 import { resolveManagedInstructionsRoot } from "../services/agent-instructions.js";
 
 let database: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | undefined;
-const externalTestDatabaseUrl = process.env.PAPERCLIP_TEST_DATABASE_URL?.trim();
+const externalTestDatabaseUrl = process.env.WARDMOTE_TEST_DATABASE_URL?.trim();
 let db: ReturnType<typeof createDb>;
 let home: string;
 
 beforeAll(async () => {
   home = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-ceo-owner-")));
-  vi.stubEnv("PAPERCLIP_HOME", home);
-  vi.stubEnv("PAPERCLIP_INSTANCE_ID", "ceo-owner");
-  vi.stubEnv("PAPERCLIP_IN_WORKTREE", "false");
+  vi.stubEnv("WARDMOTE_HOME", home);
+  vi.stubEnv("WARDMOTE_INSTANCE_ID", "ceo-owner");
+  vi.stubEnv("WARDMOTE_IN_WORKTREE", "false");
   if (externalTestDatabaseUrl) db = createDb(externalTestDatabaseUrl);
   else {
     database = await startEmbeddedPostgresTestDatabase("paperclip-ceo-owner-db-");

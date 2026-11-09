@@ -2,7 +2,7 @@ import { Ajv2020 } from "ajv/dist/2020.js";
 import type { ValidateFunction } from "ajv/dist/2020.js";
 
 import {
-  PAPERCLIP_SEMANTIC_ACTION_CATALOG,
+  WARDMOTE_SEMANTIC_ACTION_CATALOG,
   paperclipSemanticAction,
 } from "../catalog/semantic-action-catalog.js";
 import type {
@@ -109,7 +109,7 @@ export class PaperclipSemanticDispatcher {
       allowUnionTypes: true,
       strict: true,
     });
-    for (const descriptor of PAPERCLIP_SEMANTIC_ACTION_CATALOG) {
+    for (const descriptor of WARDMOTE_SEMANTIC_ACTION_CATALOG) {
       this.#inputValidators.set(
         descriptor.operationId,
         ajv.compile(descriptor.inputSchema),
@@ -525,7 +525,7 @@ export class PaperclipSemanticDispatcher {
     context: PaperclipSemanticRunContext,
     placement: PaperclipSemanticActionDescriptor["placement"],
   ): void {
-    for (const descriptor of PAPERCLIP_SEMANTIC_ACTION_CATALOG) {
+    for (const descriptor of WARDMOTE_SEMANTIC_ACTION_CATALOG) {
       if (
         descriptor.placement !== placement ||
         !this.#boundOperationIds.has(descriptor.operationId)

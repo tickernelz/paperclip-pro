@@ -282,7 +282,7 @@ export function resolveViteHmrProtocol(
 ): "ws" | "wss" | undefined {
   if (!value) return undefined;
   if (value === "ws" || value === "wss") return value;
-  throw new Error("PAPERCLIP_VITE_HMR_PROTOCOL must be ws or wss");
+  throw new Error("WARDMOTE_VITE_HMR_PROTOCOL must be ws or wss");
 }
 
 export function listenViteHmrServer(
@@ -757,8 +757,8 @@ export async function createApp(
     }),
   );
   const trustedLocalStdioRuntimeHost =
-    process.env.PAPERCLIP_TRUSTED_MCP_RUNTIME_HOST ??
-    process.env.PAPERCLIP_TOOL_RUNTIME_TRUSTED_HOST ??
+    process.env.WARDMOTE_TRUSTED_MCP_RUNTIME_HOST ??
+    process.env.WARDMOTE_TOOL_RUNTIME_TRUSTED_HOST ??
     null;
   api.use(costRoutes(db, { pluginWorkerManager: workerManager }));
   api.use(activityRoutes(db));
@@ -1033,7 +1033,7 @@ export async function createApp(
     } else {
       console.warn("[paperclip] UI dist not found; running in API-only mode");
     }
-    if (process.env.PAPERCLIP_MANAGED_RUNTIME_EXPOSURE === "tailscale_https") {
+    if (process.env.WARDMOTE_MANAGED_RUNTIME_EXPOSURE === "tailscale_https") {
       // The managed-runtime supervisor waits for the app port AND its derived
       // Vite HMR companion port to bind before publishing the service. Static
       // mode has no Vite, so bind the same placeholder listener dev mode uses
@@ -1058,14 +1058,14 @@ export async function createApp(
     const hmrPort = resolveViteHmrPort(opts.serverPort);
     const hmrHost = resolveViteHmrHost(opts.bindHost);
     const hmrProtocol = resolveViteHmrProtocol(
-      process.env.PAPERCLIP_VITE_HMR_PROTOCOL,
+      process.env.WARDMOTE_VITE_HMR_PROTOCOL,
     );
     const hmrServer = createHttpServer((_req, res) => {
       res.writeHead(426, { "Content-Type": "text/plain" });
       res.end("Upgrade Required");
     });
     const { createServer: createViteServer } = await import("vite");
-    const configuredViteCacheDir = process.env.PAPERCLIP_VITE_CACHE_DIR?.trim();
+    const configuredViteCacheDir = process.env.WARDMOTE_VITE_CACHE_DIR?.trim();
     const vite = await createViteServer({
       root: uiRoot,
       ...(configuredViteCacheDir

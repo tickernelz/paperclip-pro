@@ -30,10 +30,10 @@ export async function acquireDaytonaLeaseWithCleanup(input: {
 export async function acquireCommentaryDaytonaTarget(db: Db, fixture: {
   companyId: string; agentId: string; issueId: string; runId: string;
 }, mode: "legacy" | "native") {
-  const envFile = process.env.PAPERCLIP_LIVE_DAYTONA_ENV_FILE;
+  const envFile = process.env.WARDMOTE_LIVE_DAYTONA_ENV_FILE;
   const env = envFile ? parse(await readFile(envFile)) : process.env;
   const apiKey = env.DAYTONA_API_KEY;
-  const image = env.PAPERCLIP_E2E_DAYTONA_IMAGE;
+  const image = env.WARDMOTE_E2E_DAYTONA_IMAGE;
   assert.ok(apiKey, "DAYTONA_API_KEY required");
   assert.match(image ?? "", /@sha256:[a-f0-9]{64}$/, "Immutable Daytona image required");
   // Import only for explicit remote execution; the optional provider is not a server dependency.

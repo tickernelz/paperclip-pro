@@ -33,14 +33,14 @@ async function git(cwd: string, ...args: string[]) {
 }
 
 describe("native warm workspace Git history", () => {
-  const oldHome = process.env.PAPERCLIP_HOME;
-  const oldInstance = process.env.PAPERCLIP_INSTANCE_ID;
+  const oldHome = process.env.WARDMOTE_HOME;
+  const oldInstance = process.env.WARDMOTE_INSTANCE_ID;
   const roots: string[] = [];
   afterEach(async () => {
-    if (oldHome === undefined) delete process.env.PAPERCLIP_HOME;
-    else process.env.PAPERCLIP_HOME = oldHome;
-    if (oldInstance === undefined) delete process.env.PAPERCLIP_INSTANCE_ID;
-    else process.env.PAPERCLIP_INSTANCE_ID = oldInstance;
+    if (oldHome === undefined) delete process.env.WARDMOTE_HOME;
+    else process.env.WARDMOTE_HOME = oldHome;
+    if (oldInstance === undefined) delete process.env.WARDMOTE_INSTANCE_ID;
+    else process.env.WARDMOTE_INSTANCE_ID = oldInstance;
     await Promise.all(roots.splice(0).map(root => rm(root, { recursive: true, force: true })));
   });
 
@@ -48,8 +48,8 @@ describe("native warm workspace Git history", () => {
     "checks Git identity before reusing a warm sandbox: %s", async (change) => {
       const root = await mkdtemp(path.join(os.tmpdir(), "paperclip-warm-history-"));
       roots.push(root);
-      process.env.PAPERCLIP_HOME = path.join(root, "home");
-      process.env.PAPERCLIP_INSTANCE_ID = "test";
+      process.env.WARDMOTE_HOME = path.join(root, "home");
+      process.env.WARDMOTE_INSTANCE_ID = "test";
       const host = path.join(root, "host");
       const remote = path.join(root, "remote");
       async function initRepo(dir: string) {

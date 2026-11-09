@@ -50,7 +50,7 @@ import {
 
 // Explicit private-artifact test lane; production/default dist is never changed.
 const defaultCapabilityRunnerdBinary = () =>
-  process.env.PAPERCLIP_ATTACH_TRANSITION_RUNNER ??
+  process.env.WARDMOTE_ATTACH_TRANSITION_RUNNER ??
   qualifiedCapabilityRunnerdBinary();
 
 function maintenanceFixtureBackendName(fixtureId: string): string {

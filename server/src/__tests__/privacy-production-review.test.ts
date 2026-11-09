@@ -17,7 +17,7 @@ describe("private task production review", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
   let db: ReturnType<typeof createDb>;
   beforeAll(async () => {
-    process.env.PAPERCLIP_ISSUE_PRIVACY_MODE = "enforce";
+    process.env.WARDMOTE_ISSUE_PRIVACY_MODE = "enforce";
     tempDb = await startEmbeddedPostgresTestDatabase("paperclip-private-review-");
     db = createDb(tempDb.connectionString);
     // Load the current route dependency graph during setup, outside assertion timeouts.

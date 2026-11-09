@@ -25,7 +25,7 @@ import {
   startEmbeddedPostgresTestDatabase,
 } from "./helpers/embedded-postgres.js";
 
-for (const key of Object.keys(process.env)) if (key.startsWith("PAPERCLIP_")) delete process.env[key];
+for (const key of Object.keys(process.env)) if (key.startsWith("WARDMOTE_")) delete process.env[key];
 
 describe("autonomy window eligibility", () => {
   const plain = {

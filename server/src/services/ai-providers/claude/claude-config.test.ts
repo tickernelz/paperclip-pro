@@ -39,8 +39,8 @@ describe("prepareClaudeConfigSeed", () => {
   function createEnv(root: string, sourceDir: string): NodeJS.ProcessEnv {
     return {
       HOME: root,
-      PAPERCLIP_HOME: path.join(root, "paperclip-home"),
-      PAPERCLIP_INSTANCE_ID: "test-instance",
+      WARDMOTE_HOME: path.join(root, "paperclip-home"),
+      WARDMOTE_INSTANCE_ID: "test-instance",
       CLAUDE_CONFIG_DIR: sourceDir,
     };
   }
@@ -179,12 +179,12 @@ describe("prepareSandboxClaudeProbeRuntime managed-config diagnostics", () => {
     const sourceDir = path.join(root, "claude-source");
     await fs.mkdir(sourceDir, { recursive: true });
 
-    for (const key of ["CLAUDE_CONFIG_DIR", "PAPERCLIP_HOME", "PAPERCLIP_INSTANCE_ID"]) {
+    for (const key of ["CLAUDE_CONFIG_DIR", "WARDMOTE_HOME", "WARDMOTE_INSTANCE_ID"]) {
       savedEnv[key] = process.env[key];
     }
     process.env.CLAUDE_CONFIG_DIR = sourceDir;
-    process.env.PAPERCLIP_HOME = path.join(root, "paperclip-home");
-    process.env.PAPERCLIP_INSTANCE_ID = "test-instance";
+    process.env.WARDMOTE_HOME = path.join(root, "paperclip-home");
+    process.env.WARDMOTE_INSTANCE_ID = "test-instance";
 
     prepareAdapterExecutionTargetRuntime.mockRejectedValueOnce(
       new Error(`materialize failed with ${opaqueCredMarker} via ${proxyMarker}`),

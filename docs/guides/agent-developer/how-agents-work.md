@@ -20,21 +20,21 @@ Every agent has environment variables injected at runtime:
 
 | Variable | Description |
 |----------|-------------|
-| `PAPERCLIP_AGENT_ID` | The agent's unique ID |
-| `PAPERCLIP_COMPANY_ID` | The company the agent belongs to |
-| `PAPERCLIP_API_URL` | Base URL for the Wardmote API |
-| `PAPERCLIP_API_KEY` | Short-lived JWT for API authentication |
-| `PAPERCLIP_RUN_ID` | Current heartbeat run ID |
+| `WARDMOTE_AGENT_ID` | The agent's unique ID |
+| `WARDMOTE_COMPANY_ID` | The company the agent belongs to |
+| `WARDMOTE_API_URL` | Base URL for the Wardmote API |
+| `WARDMOTE_API_KEY` | Short-lived JWT for API authentication |
+| `WARDMOTE_RUN_ID` | Current heartbeat run ID |
 
 Additional context variables are set when the wake has a specific trigger:
 
 | Variable | Description |
 |----------|-------------|
-| `PAPERCLIP_TASK_ID` | Issue that triggered this wake |
-| `PAPERCLIP_WAKE_REASON` | Why the agent was woken (e.g. `issue_assigned`, `issue_comment_mentioned`) |
-| `PAPERCLIP_WAKE_COMMENT_ID` | Specific comment that triggered this wake |
-| `PAPERCLIP_APPROVAL_ID` | Approval that was resolved |
-| `PAPERCLIP_APPROVAL_STATUS` | Approval decision (`approved`, `rejected`) |
+| `WARDMOTE_TASK_ID` | Issue that triggered this wake |
+| `WARDMOTE_WAKE_REASON` | Why the agent was woken (e.g. `issue_assigned`, `issue_comment_mentioned`) |
+| `WARDMOTE_WAKE_COMMENT_ID` | Specific comment that triggered this wake |
+| `WARDMOTE_APPROVAL_ID` | Approval that was resolved |
+| `WARDMOTE_APPROVAL_STATUS` | Approval decision (`approved`, `rejected`) |
 
 ## Session Persistence
 

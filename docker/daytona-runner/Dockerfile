@@ -33,22 +33,22 @@ COPY cli/package.json ./cli/package.json
 # The complete resolved lock (including transitive integrity hashes) is reviewed.
 # Reject registry-time drift BEFORE installing packages or running lifecycle code.
 # Refresh this digest together with source/provider dependency changes.
-ARG PAPERCLIP_RUNNER_LOCK_SHA256=440f0ccd8a383b32a576dc53b4191d73bb03a91ba0dabfa1c3d79c3039e01aa5
+ARG WARDMOTE_RUNNER_LOCK_SHA256=440f0ccd8a383b32a576dc53b4191d73bb03a91ba0dabfa1c3d79c3039e01aa5
 # pnpm 9 subtracts PNPM_WORKERS from available CPUs; it is not a worker count.
 # Subtract all available CPUs to select its minimum (one tarball worker).
 RUN export PNPM_WORKERS="$(node -p 'require("node:os").availableParallelism()')" \
-    && printf '%s  pnpm-lock.yaml\n' "${PAPERCLIP_RUNNER_LOCK_SHA256}" > /tmp/provider-lock.sha256 \
+    && printf '%s  pnpm-lock.yaml\n' "${WARDMOTE_RUNNER_LOCK_SHA256}" > /tmp/provider-lock.sha256 \
     && sha256sum -c /tmp/provider-lock.sha256 \
     && pnpm install --frozen-lockfile --filter '@tickernelz/wardmote-runner...'
-ARG PAPERCLIP_RUNNER_SOURCE_REVISION
+ARG WARDMOTE_RUNNER_SOURCE_REVISION
 # Optional qualification assets; this never promotes candidate profiles.
-ARG PAPERCLIP_RUNNER_CANDIDATE_PROVIDERS=
-RUN test -n "${PAPERCLIP_RUNNER_SOURCE_REVISION}"
+ARG WARDMOTE_RUNNER_CANDIDATE_PROVIDERS=
+RUN test -n "${WARDMOTE_RUNNER_SOURCE_REVISION}"
 RUN export PNPM_WORKERS="$(node -p 'require("node:os").availableParallelism()')" \
     && pnpm --filter @tickernelz/wardmote-runner build:typescript \
-    && PAPERCLIP_RUNNER_SOURCE_REVISION="${PAPERCLIP_RUNNER_SOURCE_REVISION}" \
+    && WARDMOTE_RUNNER_SOURCE_REVISION="${WARDMOTE_RUNNER_SOURCE_REVISION}" \
       node packages/wardmote-runner/scripts/build-provider-pack.mjs /provider-pack \
-        "--candidate-providers=${PAPERCLIP_RUNNER_CANDIDATE_PROVIDERS}" \
+        "--candidate-providers=${WARDMOTE_RUNNER_CANDIDATE_PROVIDERS}" \
     && chmod -R a+rX /provider-pack
 
 # Fleet sandbox base image. Keep this section aligned with
@@ -58,8 +58,8 @@ FROM daytonaio/sandbox:0.8.0@sha256:eadf88e4391072b7ad4bed27d9cadfc9fe9d8ed375d9
 
 USER root
 
-ENV PAPERCLIP_RUNNER_PROVIDER_PACK_ROOT=/opt/paperclip-runner/provider-pack
-ENV PATH=${PAPERCLIP_RUNNER_PROVIDER_PACK_ROOT}/node_modules/.bin:/usr/local/share/nvm/current/bin:/usr/local/python/current/bin:/usr/local/py-utils/bin:${PATH}
+ENV WARDMOTE_RUNNER_PROVIDER_PACK_ROOT=/opt/paperclip-runner/provider-pack
+ENV PATH=${WARDMOTE_RUNNER_PROVIDER_PACK_ROOT}/node_modules/.bin:/usr/local/share/nvm/current/bin:/usr/local/python/current/bin:/usr/local/py-utils/bin:${PATH}
 
 # Share the pack's latest stable Codex, Claude and OpenCode with every adapter.
 # Never add a second CLI version to work around a runner compatibility pin.
@@ -119,10 +119,10 @@ RUN set -eu; for cli in codex claude opencode; do \
 # Keep revision-dependent metadata below the stable agent CLI installation
 # layers. A source-only image miss can then reuse those expensive layers from
 # the trusted registry cache.
-ARG PAPERCLIP_RUNNER_CONTENT_ID
-ARG PAPERCLIP_RUNNER_SOURCE_REVISION
-RUN test -n "${PAPERCLIP_RUNNER_CONTENT_ID}" \
-    && test -n "${PAPERCLIP_RUNNER_SOURCE_REVISION}"
+ARG WARDMOTE_RUNNER_CONTENT_ID
+ARG WARDMOTE_RUNNER_SOURCE_REVISION
+RUN test -n "${WARDMOTE_RUNNER_CONTENT_ID}" \
+    && test -n "${WARDMOTE_RUNNER_SOURCE_REVISION}"
 
 RUN set -eu; \
     printf '%s\n' 'export PATH=/opt/paperclip-runner/provider-pack/node_modules/.bin:$PATH' \
@@ -155,5 +155,5 @@ RUN /bin/sh -lc 'set -eu; \
     test "$(claude-agent-acp --version)" = "0.73.0"; \
     test "$(codex-acp --version)" = "@agentclientprotocol/codex-acp 1.6.2"'
 
-LABEL io.paperclip.runner.content-id="${PAPERCLIP_RUNNER_CONTENT_ID}" \
-      org.opencontainers.image.revision="${PAPERCLIP_RUNNER_SOURCE_REVISION}"
+LABEL io.paperclip.runner.content-id="${WARDMOTE_RUNNER_CONTENT_ID}" \
+      org.opencontainers.image.revision="${WARDMOTE_RUNNER_SOURCE_REVISION}"

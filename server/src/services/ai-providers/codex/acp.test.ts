@@ -83,8 +83,8 @@ type FakeRuntimeTurn = {
 
 const tempRoots: string[] = [];
 const originalNodeVersion = process.version;
-const originalPaperclipHome = process.env.PAPERCLIP_HOME;
-const originalPaperclipInstanceId = process.env.PAPERCLIP_INSTANCE_ID;
+const originalPaperclipHome = process.env.WARDMOTE_HOME;
+const originalPaperclipInstanceId = process.env.WARDMOTE_INSTANCE_ID;
 const originalCodexHome = process.env.CODEX_HOME;
 const originalOpenAiApiKey = process.env.OPENAI_API_KEY;
 
@@ -131,10 +131,10 @@ function setNodeVersion(version: string): void {
 
 afterEach(async () => {
   setNodeVersion(originalNodeVersion);
-  if (originalPaperclipHome === undefined) delete process.env.PAPERCLIP_HOME;
-  else process.env.PAPERCLIP_HOME = originalPaperclipHome;
-  if (originalPaperclipInstanceId === undefined) delete process.env.PAPERCLIP_INSTANCE_ID;
-  else process.env.PAPERCLIP_INSTANCE_ID = originalPaperclipInstanceId;
+  if (originalPaperclipHome === undefined) delete process.env.WARDMOTE_HOME;
+  else process.env.WARDMOTE_HOME = originalPaperclipHome;
+  if (originalPaperclipInstanceId === undefined) delete process.env.WARDMOTE_INSTANCE_ID;
+  else process.env.WARDMOTE_INSTANCE_ID = originalPaperclipInstanceId;
   if (originalCodexHome === undefined) delete process.env.CODEX_HOME;
   else process.env.CODEX_HOME = originalCodexHome;
   if (originalOpenAiApiKey === undefined) delete process.env.OPENAI_API_KEY;
@@ -233,8 +233,8 @@ class FakeRuntime {
 async function makeTempRoot(prefix: string) {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), prefix));
   tempRoots.push(root);
-  process.env.PAPERCLIP_HOME = path.join(root, "paperclip-home");
-  process.env.PAPERCLIP_INSTANCE_ID = "test";
+  process.env.WARDMOTE_HOME = path.join(root, "paperclip-home");
+  process.env.WARDMOTE_INSTANCE_ID = "test";
   return root;
 }
 
@@ -467,19 +467,19 @@ describe("codex_local ACP lane", () => {
 
   it("enables workspace networking for ACP without changing other env settings", () => {
     expect(buildCodexAcpConfig({ env: { CUSTOM: "kept" } })).toMatchObject({
-      env: { CUSTOM: "kept", PAPERCLIP_CODEX_ACP_NETWORK_ACCESS: "true" },
+      env: { CUSTOM: "kept", WARDMOTE_CODEX_ACP_NETWORK_ACCESS: "true" },
     });
   });
 
   it.each([
-    { env: { PAPERCLIP_CODEX_ACP_NETWORK_ACCESS: "false" } },
+    { env: { WARDMOTE_CODEX_ACP_NETWORK_ACCESS: "false" } },
     { extraArgs: ["-c", "sandbox_workspace_write.network_access=false"] },
     { extraArgs: ["--config=sandbox_workspace_write.network_access=false"] },
     { args: ["-csandbox_workspace_write.network_access=false"] },
     { extraArgs: ["-c", "sandbox_workspace_write.network_access=true", "-c", "sandbox_workspace_write.network_access=false"] },
   ])("preserves explicit ACP network denial %j", (config) => {
     expect(buildCodexAcpConfig(config)).toMatchObject({
-      env: { PAPERCLIP_CODEX_ACP_NETWORK_ACCESS: "false" },
+      env: { WARDMOTE_CODEX_ACP_NETWORK_ACCESS: "false" },
     });
   });
 
@@ -1479,7 +1479,7 @@ describe("resolveCodexAcpBillingIdentity", () => {
   it.each([["openrouter", "api_key", "openrouter"], ["custom", "api_key", "unknown"], ["local", "none", "unknown"]])("classifies managed %s/%s independently of host authentication", (kind, auth, biller) => {
     expect(resolveCodexAcpBillingIdentity({ config: {
       managedAiRouting: { kind, auth },
-      env: { OPENAI_API_KEY: "", PAPERCLIP_AI_PROVIDER_KEY: auth === "none" ? "" : "fixture" },
+      env: { OPENAI_API_KEY: "", WARDMOTE_AI_PROVIDER_KEY: auth === "none" ? "" : "fixture" },
     } })).toEqual({ provider: "openai", biller, billingType: "api" });
   });
   const originalOpenAiKey = process.env.OPENAI_API_KEY;

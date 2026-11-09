@@ -1,4 +1,4 @@
-import { isAssignedSkillContext, PAPERCLIP_DOCUMENT_CASE, type ContextIntegrityCase } from "./context-integrity-cases.js";
+import { isAssignedSkillContext, WARDMOTE_DOCUMENT_CASE, type ContextIntegrityCase } from "./context-integrity-cases.js";
 
 export interface ContextIntegrityCheckpoint {
   phase: "initial" | "comment-1" | "comment-2" | "comment-3" | "final";
@@ -128,7 +128,7 @@ export function gradeContextIntegrity(input: {
   }
   const output = final ? oneOutput(final, input.marker, isAssignedSkillContext(input.id)) : undefined;
   check("single-durable-output", Boolean(output) && final!.documents.length === 1, isAssignedSkillContext(input.id) ? "Exactly one durable task document must contain the skill's marker." : "Exactly one durable packing report document must be saved.");
-  if (input.id === PAPERCLIP_DOCUMENT_CASE) {
+  if (input.id === WARDMOTE_DOCUMENT_CASE) {
     check("saved-document-revision", Boolean(output?.latestRevisionId) && Number.isInteger(output?.latestRevisionNumber) && Number(output?.latestRevisionNumber) > 0,
       "The public saved document must have a persisted revision and the requested content.");
     const route = output && final?.issue.identifier && final.issue.issuePrefix

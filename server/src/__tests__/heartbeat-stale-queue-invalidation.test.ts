@@ -148,7 +148,7 @@ describeEmbeddedPostgres("heartbeat stale queued-run invalidation", () => {
     tempDb = await startEmbeddedPostgresTestDatabase("paperclip-heartbeat-stale-queue-");
     db = createDb(tempDb.connectionString);
     heartbeat = heartbeatService(db, {
-      runtimeEnv: { ...process.env, PAPERCLIP_IN_WORKTREE: "false" },
+      runtimeEnv: { ...process.env, WARDMOTE_IN_WORKTREE: "false" },
       beforeResolvedInteractionContinuationDispatchCheck: async (input) => {
         await beforeContinuationDispatchCheck?.(input);
       },
@@ -229,7 +229,7 @@ describeEmbeddedPostgres("heartbeat stale queued-run invalidation", () => {
     expect((await heartbeat.reconcileStrandedAssignedIssues()).escalated).toBe(0);
     expect((await db.select().from(issues).where(eq(issues.id, issue.id)))[0]).toMatchObject({ status: "todo", assigneeAgentId: agentId });
     await db.update(agents).set({ status: "idle", lifecycleState: "ready" }).where(eq(agents.id, agentId));
-    const recovered = heartbeatService(db, { runtimeEnv: { ...process.env, PAPERCLIP_IN_WORKTREE: "false" } });
+    const recovered = heartbeatService(db, { runtimeEnv: { ...process.env, WARDMOTE_IN_WORKTREE: "false" } });
     await recovered.resumeQueuedRuns();
     expect(await waitForCondition(async () => countExecuteCallsForRun(run!.id) === 1)).toBe(true);
     await recovered.waitForRunExecutionDrain(run!.id);

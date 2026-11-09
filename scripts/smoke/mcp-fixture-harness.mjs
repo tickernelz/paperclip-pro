@@ -18,7 +18,7 @@ const httpServerPath = resolve(repoRoot, "scripts/mcp-fixtures/servers/http-fixt
 
 function parseArgs(argv) {
   const args = {
-    paperclipUrl: process.env.PAPERCLIP_API_URL ?? "http://127.0.0.1:3100/api",
+    paperclipUrl: process.env.WARDMOTE_API_URL ?? "http://127.0.0.1:3100/api",
     requirePaperclip: false,
     json: false,
   };
@@ -63,7 +63,7 @@ async function checkPaperclipHealth(rawUrl, required) {
 function redactHostileText(value) {
   return JSON.stringify(value)
     .replace(/pc_live_[A-Za-z0-9_=-]+/g, "[REDACTED_SECRET]")
-    .replace(/PAPERCLIP_API_KEY/g, "[REDACTED_ENV_NAME]");
+    .replace(/WARDMOTE_API_KEY/g, "[REDACTED_ENV_NAME]");
 }
 
 function fingerprintTool(tool) {
@@ -381,7 +381,7 @@ async function main() {
       assert(response.ok, "malicious result fixture should return a result");
       assert(response.outcome === "malicious_result_quarantined", "malicious result should be quarantined");
       assert(!response.result.redacted.includes("pc_live_should_be_redacted"), "synthetic secret should be redacted");
-      assert(!response.result.redacted.includes("PAPERCLIP_API_KEY"), "env key name should be redacted");
+      assert(!response.result.redacted.includes("WARDMOTE_API_KEY"), "env key name should be redacted");
     });
 
     await runCase(results, "idempotent approved writes only execute once", async () => {

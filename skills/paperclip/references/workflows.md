@@ -2,7 +2,7 @@
 
 Reference material for niche workflows that are pointed to from `SKILL.md`. Load only when the task matches.
 
-Some playbooks below use `extended` toolset tools: they are available when the operator enables `PAPERCLIP_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest`. Each step names the toolset when it matters.
+Some playbooks below use `extended` toolset tools: they are available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest`. Each step names the toolset when it matters.
 
 ---
 

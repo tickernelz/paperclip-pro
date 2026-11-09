@@ -28,7 +28,6 @@
     "test:runner-acceptance:typecheck": "tsc -p tests/runner-acceptance/tsconfig.json",
     "test:run:general": "pnpm run preflight:workspace-links && pnpm --filter @tickernelz/wardmote-plugin-sdk ensure-build-deps && node scripts/run-vitest-stable.mjs --mode general",
     "test:run:serialized": "pnpm run preflight:workspace-links && pnpm --filter @tickernelz/wardmote-plugin-sdk ensure-build-deps && node scripts/run-vitest-stable.mjs --mode serialized",
-    "test:run:docs": "pnpm run preflight:workspace-links && pnpm --filter @tickernelz/wardmote-plugin-sdk ensure-build-deps && node scripts/run-vitest-stable.mjs --mode docs",
     "build:local-browser-extensions": "node scripts/sync-local-browser-shared.mjs && node apps/local-browser/build-artifacts.mjs",
     "generate:local-browser-protocol": "node scripts/generate-local-browser-protocol.mjs",
     "sync:local-browser-shared": "node scripts/sync-local-browser-shared.mjs",

@@ -33,7 +33,6 @@ import {
 import { parseOmpModelsOutput } from "./models.js";
 import { OMP_CONTEXT_MANAGEMENT_MIN_VERSION, ompVersionAtLeast } from "./settings-overlay.js";
 import { rewriteRemoteConfigPaths } from "./execute.js";
-import { legacyEnvKey } from "@tickernelz/wardmote-shared/env-aliases";
 
 const AUTH_ERROR_RE = /(?:auth(?:entication|orization)?\s+(?:required|failed)|api[_ -]?key|invalid\s+(?:key|token)|not\s+logged\s+in|login\s+required|credentials?\s+(?:missing|not found)|unauthorized|\b401\b|\b403\b)/i;
 const CONFIG_ERROR_RE = /(?:models\.ya?ml|config\.ya?ml|validation failed|invalid (?:config|profile|yaml)|yaml.*(?:error|invalid)|unknown (?:setting|provider)|failed to load extension)/i;
@@ -275,7 +274,7 @@ export async function testEnvironment(
     const configuredEnv = stringEnv(executionConfig.env);
     const remoteConfiguredEnv = Object.fromEntries(
       Object.entries(configuredEnv).filter(([key]) =>
-        !legacyEnvKey(key).startsWith("PAPERCLIP_") || legacyEnvKey(key) === "PAPERCLIP_API_KEY" || legacyEnvKey(key) === "PAPERCLIP_API_URL"),
+        !key.startsWith("WARDMOTE_") || key === "WARDMOTE_API_KEY" || key === "WARDMOTE_API_URL"),
     );
     const env = remote
       ? stringEnv(ensurePathInEnv(remoteConfiguredEnv))
@@ -289,8 +288,8 @@ export async function testEnvironment(
       env.OMP_PROFILE = profile;
     }
     if (preparedTarget.agentDir) env.PI_CODING_AGENT_DIR = preparedTarget.agentDir;
-    else if (process.env.PAPERCLIP_OMP_AGENT_DIR?.trim()) {
-      env.PI_CODING_AGENT_DIR = process.env.PAPERCLIP_OMP_AGENT_DIR.trim();
+    else if (process.env.WARDMOTE_OMP_AGENT_DIR?.trim()) {
+      env.PI_CODING_AGENT_DIR = process.env.WARDMOTE_OMP_AGENT_DIR.trim();
     }
 
     const installCheck = await maybeRunSandboxInstallCommand({
@@ -398,10 +397,10 @@ export async function testEnvironment(
     const configuredExtensions = stringList(executionConfig.extensions);
     const configFiles = configuredFiles.length
       ? configuredFiles
-      : remote ? [] : globalList(process.env.PAPERCLIP_OMP_CONFIG_FILES);
+      : remote ? [] : globalList(process.env.WARDMOTE_OMP_CONFIG_FILES);
     const extensions = configuredExtensions.length
       ? configuredExtensions
-      : remote ? [] : globalList(process.env.PAPERCLIP_OMP_EXTENSIONS);
+      : remote ? [] : globalList(process.env.WARDMOTE_OMP_EXTENSIONS);
     const args = ["models", "--json"];
     for (const file of configFiles) args.push("--config", file);
     if (executionConfig.noExtensions === true) args.push("--no-extensions");

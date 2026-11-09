@@ -10,12 +10,12 @@ managed shim installed by `wardmote install` is on `PATH`
 
 ## 1. Where state lives
 
-`PAPERCLIP_HOME` defaults to `~/.wardmote` and every instance path is
+`WARDMOTE_HOME` defaults to `~/.wardmote` and every instance path is
 derived from it (`packages/shared/src/home-paths.ts:16`).
 
 | Path | What it is | Source |
 | --- | --- | --- |
-| `~/.wardmote/instances/<id>/` | Instance root. `<id>` defaults to `default`, overridable with `PAPERCLIP_INSTANCE_ID` or `--instance`. | `packages/shared/src/home-paths.ts:22`, `packages/shared/src/home-paths.ts:30` |
+| `~/.wardmote/instances/<id>/` | Instance root. `<id>` defaults to `default`, overridable with `WARDMOTE_INSTANCE_ID` or `--instance`. | `packages/shared/src/home-paths.ts:22`, `packages/shared/src/home-paths.ts:30` |
 | `~/.wardmote/instances/default/config.json` | Instance configuration. | `packages/shared/src/home-paths.ts:5`, `packages/shared/src/home-paths.ts:37` |
 | `~/.wardmote/instances/default/service.env` | Operator environment sourced by the systemd unit. Never rewritten by the CLI. | `cli/src/services/service-manager.ts:126` |
 | `~/.wardmote/instances/default/db/` | Embedded PostgreSQL data directory (default port `54329`). | `packages/shared/src/home-paths.ts:59`, `packages/shared/src/config-schema.ts:34` |
@@ -44,8 +44,8 @@ every `service start`, `service restart`, and `service install`
 hand is therefore pointless — your edit is discarded on the next CLI-driven
 start.
 
-The rendered unit hardcodes only `PAPERCLIP_SERVICE_MANAGED`,
-`PAPERCLIP_INSTANCE_ID`, and `PAPERCLIP_HOME`, and sources everything else from
+The rendered unit hardcodes only `WARDMOTE_SERVICE_MANAGED`,
+`WARDMOTE_INSTANCE_ID`, and `WARDMOTE_HOME`, and sources everything else from
 an optional per-instance environment file
 (`cli/src/services/service-manager.ts:149`):
 
@@ -79,12 +79,12 @@ deliberately unset: it throttles every task in the cgroup, server and embedded
 Postgres included, and about a quarter of the sampled minutes sat above 55%.
 Set it only from measured data (the shadow memory-gate log plus `memory.events`
 `high`). Run children are
-raised to `oom_score_adj` 500 (`PAPERCLIP_RUN_OOM_SCORE_ADJ`), so the kernel
+raised to `oom_score_adj` 500 (`WARDMOTE_RUN_OOM_SCORE_ADJ`), so the kernel
 kills a run before the server. A user unit cannot lower `OOMScoreAdjust` below
 the user manager's own value. Override a limit in `service.env` with
-`PAPERCLIP_SERVICE_MEMORY_HIGH`, `PAPERCLIP_SERVICE_MEMORY_MAX`,
-`PAPERCLIP_SERVICE_MEMORY_SWAP_MAX` (`infinity`, `NN%`, or a non-zero byte count with
-`K`/`M`/`G`/`T`; `0` is accepted only for `SWAP_MAX`) and `PAPERCLIP_SERVICE_OOM_SCORE_ADJUST` (-1000 to 1000); the
+`WARDMOTE_SERVICE_MEMORY_HIGH`, `WARDMOTE_SERVICE_MEMORY_MAX`,
+`WARDMOTE_SERVICE_MEMORY_SWAP_MAX` (`infinity`, `NN%`, or a non-zero byte count with
+`K`/`M`/`G`/`T`; `0` is accepted only for `SWAP_MAX`) and `WARDMOTE_SERVICE_OOM_SCORE_ADJUST` (-1000 to 1000); the
 CLI rewrites the unit on the next `service start` or `restart`, and a malformed
 value fails those commands instead of being ignored; `service stop` still stops
 the service.
@@ -285,7 +285,7 @@ backup of the backups too — copy them off the box if that matters.
 ## 8. Running the test suite without touching the live instance
 
 The repository's own test helpers can install services, write to
-`PAPERCLIP_HOME`, and call `systemctl`. **Never run the suite with your normal
+`WARDMOTE_HOME`, and call `systemctl`. **Never run the suite with your normal
 environment against a live instance.** Run it inside a disposable home with the
 service managers shimmed out:
 
@@ -297,7 +297,7 @@ for b in systemctl loginctl launchctl journalctl; do
   chmod +x "$SANDBOX/bin/$b"
 done
 export HOME="$SANDBOX/home"
-export PAPERCLIP_HOME="$SANDBOX/paperclip"
+export WARDMOTE_HOME="$SANDBOX/paperclip"
 export XDG_RUNTIME_DIR="$SANDBOX/run"
 export DBUS_SESSION_BUS_ADDRESS=
 export PATH="$SANDBOX/bin:$PATH"
@@ -307,7 +307,7 @@ pnpm test
 
 Why each piece is needed:
 
-- `PAPERCLIP_HOME` is the single root every instance path derives from
+- `WARDMOTE_HOME` is the single root every instance path derives from
   (`packages/shared/src/home-paths.ts:16`), so redirecting it redirects config,
   database, storage, backups, and logs in one move.
 - `HOME` is redirected because the managed install store and the shim path are
@@ -367,7 +367,7 @@ On a tag push the workflow:
   or running CI run is polled for about 30 minutes, a completed non-success
   fails immediately, and a commit with no CI run never publishes. `ci.yml` never
   filters its triggers, so every commit gets a run; a documentation-only commit
-  finishes green in the fast lane and stays releasable.
+  runs the full CI like any other and stays releasable once it is green.
 
 The workflow never moves or deletes the tag, and the tag it creates in dispatch
 mode is pushed with `GITHUB_TOKEN`, which GitHub does not let re-trigger a
@@ -463,12 +463,12 @@ count drops below it.
 
 | Variable | Default | Bounds | Meaning |
 | --- | --- | --- | --- |
-| `PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS` | 20 | 1–64 | Total local CLI runs this controller may have running at once. Never bypassed. |
-| `PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS` | 4 | 1–64 | Local CLI runs allowed to be in their startup phase at once. |
-| `PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC` | 120 | 1–3600 | A queued local run that has waited this long starts anyway, ignoring the startup cap but still inside the total cap. The same window bounds the startup phase: a run that has not reported its startup signal within it stops counting as starting, so a hung boot cannot block the gate forever. |
-| `PAPERCLIP_LOCAL_MEMORY_RESERVE_PERCENT` | 20 | 1–90 | Memory gate, shadow only: no start is delayed. Share of host RAM that must stay available after counting the runs still starting; the verdict is only logged. Also settable under Settings → General. |
-| `PAPERCLIP_LOCAL_MEMORY_GATE_COOLDOWN_SEC` | 120 | 1–3600 | Memory gate, shadow only. Seconds after a host or service OOM kill during which the logged verdict is "would hold". Also settable under Settings → General. |
-| `PAPERCLIP_RUN_OOM_SCORE_ADJ` | 500 | -1000–1000 | Linux only. `oom_score_adj` written to every local run child right after spawn, so the kernel OOM killer picks run processes before the server. Lowering below the server's own value needs `CAP_SYS_RESOURCE`; a failed write is logged once and never stops the run. An invalid value falls back to 500. |
+| `WARDMOTE_MAX_CONCURRENT_LOCAL_RUNS` | 20 | 1–64 | Total local CLI runs this controller may have running at once. Never bypassed. |
+| `WARDMOTE_MAX_CONCURRENT_LOCAL_STARTS` | 4 | 1–64 | Local CLI runs allowed to be in their startup phase at once. |
+| `WARDMOTE_LOCAL_START_WAIT_BYPASS_SEC` | 120 | 1–3600 | A queued local run that has waited this long starts anyway, ignoring the startup cap but still inside the total cap. The same window bounds the startup phase: a run that has not reported its startup signal within it stops counting as starting, so a hung boot cannot block the gate forever. |
+| `WARDMOTE_LOCAL_MEMORY_RESERVE_PERCENT` | 20 | 1–90 | Memory gate, shadow only: no start is delayed. Share of host RAM that must stay available after counting the runs still starting; the verdict is only logged. Also settable under Settings → General. |
+| `WARDMOTE_LOCAL_MEMORY_GATE_COOLDOWN_SEC` | 120 | 1–3600 | Memory gate, shadow only. Seconds after a host or service OOM kill during which the logged verdict is "would hold". Also settable under Settings → General. |
+| `WARDMOTE_RUN_OOM_SCORE_ADJ` | 500 | -1000–1000 | Linux only. `oom_score_adj` written to every local run child right after spawn, so the kernel OOM killer picks run processes before the server. Lowering below the server's own value needs `CAP_SYS_RESOURCE`; a failed write is logged once and never stops the run. An invalid value falls back to 500. |
 
 A run counts as *starting* from the moment it is claimed until its adapter
 declares the child booted. An adapter declares this with the optional
@@ -519,7 +519,7 @@ Each adapter arms exactly one Wardmote surface per run and the prompt it sends
 describes that surface. `paperclipAccessMode(config, env)`
 (`packages/adapter-utils/src/wardmote-mcp.ts`) returns `mcp` when the
 `paperclipMcp` toggle is on (default) and the run carries both
-`PAPERCLIP_API_URL` and a run credential, `rest` otherwise.
+`WARDMOTE_API_URL` and a run credential, `rest` otherwise.
 `paperclipAgentPromptTemplate(access)` and
 `renderPaperclipWakePrompt(..., { paperclipAccess })` render the heartbeat
 contract from that one value, so prompt text cannot drift from what the runtime
@@ -530,9 +530,9 @@ actually mounted.
 | `omp_local` | yes | per-run `--extension <tmpdir>` package with one `.mcp.json` |
 
 Adapters that cannot mount, and every run with `paperclipMcp` off, get
-`paperclipRestGuidance()` instead: `curl` with `$PAPERCLIP_API_URL`,
-`Authorization: Bearer $PAPERCLIP_API_KEY` and
-`X-Paperclip-Run-Id: $PAPERCLIP_RUN_ID`. No `paperclip*` tool name reaches those
+`paperclipRestGuidance()` instead: `curl` with `$WARDMOTE_API_URL`,
+`Authorization: Bearer $WARDMOTE_API_KEY` and
+`X-Paperclip-Run-Id: $WARDMOTE_RUN_ID`. No `paperclip*` tool name reaches those
 prompts. The `paperclip` skill carries the same fallback under
 **No `paperclip*` tools in this runtime**.
 
@@ -544,8 +544,8 @@ per-run `--extension <tmpdir>` package holding a single `.mcp.json`
 appended, so the operator's own `~/.omp/agent/mcp.json` servers keep loading.
 
 By default the entry is `type: http` and points at the server-hosted endpoint
-`$PAPERCLIP_API_URL/mcp/paperclip?toolsets=core`, with
-`Authorization: Bearer ${PAPERCLIP_API_KEY}` (an env reference, never a literal)
+`$WARDMOTE_API_URL/mcp/paperclip?toolsets=core`, with
+`Authorization: Bearer ${WARDMOTE_API_KEY}` (an env reference, never a literal)
 and `X-Paperclip-Run-Id`. That costs no process and no extra memory per run.
 `paperclipMcpTransport: stdio` is the fallback: it spawns the bundled
 `paperclip-mcp-server` with the run's identity in its env. The adapter config

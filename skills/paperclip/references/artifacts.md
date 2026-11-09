@@ -12,7 +12,7 @@ bash scripts/paperclip-upload-artifact.sh path/to/output.webm \
   --summary "Rendered walkthrough for review"
 ```
 
-The helper uses `PAPERCLIP_API_URL`, `PAPERCLIP_API_KEY`, `PAPERCLIP_COMPANY_ID`, `PAPERCLIP_TASK_ID`, and `PAPERCLIP_RUN_ID`. It uploads the file as an issue attachment, creates an attachment-backed artifact work product by default, and prints issue-safe markdown links for your final comment.
+The helper uses `WARDMOTE_API_URL`, `WARDMOTE_API_KEY`, `WARDMOTE_COMPANY_ID`, `WARDMOTE_TASK_ID`, and `WARDMOTE_RUN_ID`. It uploads the file as an issue attachment, creates an attachment-backed artifact work product by default, and prints issue-safe markdown links for your final comment.
 
 ## Inspect What Is Already On The Issue
 
@@ -157,4 +157,4 @@ as an uploaded file.
 The shell helper keeps temporary responses and retry receipts in the assigned
 workspace's private `.paperclip/artifact-helper` directory, so CLI sandboxes can
 write them even when the controller's `TMPDIR` is inaccessible.
-`PAPERCLIP_HELPER_STATE_DIR` overrides that directory when explicitly configured.
+`WARDMOTE_HELPER_STATE_DIR` overrides that directory when explicitly configured.

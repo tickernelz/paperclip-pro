@@ -40,7 +40,7 @@ explicit provisioning permits verified execution. See
 | ACPX (Claude, Codex, Grok) | `acpxPermissionMode` | `approve-all`, `approve-paperclip`, `approve-reads`, `deny-all` | `approve-all` |
 
 The browser-safe source of truth for labels, defaults, and configuration
-validation is `PAPERCLIP_RUNNER_PERMISSION_CAPABILITIES` in
+validation is `WARDMOTE_RUNNER_PERMISSION_CAPABILITIES` in
 `@tickernelz/wardmote-adapter-utils`. Native process boundaries validate the pinned
 provider value again; they must not silently accept an unknown mode.
 

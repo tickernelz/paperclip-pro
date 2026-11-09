@@ -808,7 +808,7 @@ The default ingestion corpus is the Vercel research checkout at
 when necessary:
 
 ```sh
-PAPERCLIP_CONTENT_TEMPLATES=/absolute/path/to/templates \
+WARDMOTE_CONTENT_TEMPLATES=/absolute/path/to/templates \
   pnpm connections:ingest-app-definitions
 ```
 
@@ -1102,7 +1102,7 @@ provider registration. Loopback HTTP is acceptable only when provider and
 Paperclip redirect policies permit it. Browser-started setup on an authenticated
 private instance automatically uses the same-origin HTTPS address that served
 the setup page, including a Tailscale Serve address; the request must pass the
-hostname and board-mutation guards. An explicit `PAPERCLIP_PUBLIC_URL` remains
+hostname and board-mutation guards. An explicit `WARDMOTE_PUBLIC_URL` remains
 available for non-browser starts and unusual proxy topologies. Internal service
 hostnames are not valid browser callback origins.
 
@@ -1341,7 +1341,7 @@ Suggested PR verification block:
 | Direct source link shows generic connection chooser | UI route state | `AppsConnect`, `ConnectionSetupFlow`, source slug lookup, availability. |
 | Finish setup opens Edit config and cannot continue | Draft identity/resume | `resumeConnectionId`, stored `sourceTemplateKey`, `connectionMethodKey`, exact draft status. |
 | OAuth never redirects | Method capability/client resolution | ownership modes, metadata discovery, callback origin, manual-client requirement. |
-| Provider rejects redirect URI | Deployment/provider rule | actual browser origin, `PAPERCLIP_PUBLIC_URL`, `redirectConstraints`, provider app registration. |
+| Provider rejects redirect URI | Deployment/provider rule | actual browser origin, `WARDMOTE_PUBLIC_URL`, `redirectConstraints`, provider app registration. |
 | OAuth succeeds then connection needs reconnect | Grant/secret sync or refresh | organization versus user grant, token refs, default grant sync, expiry/refresh lease, `invalid_grant`. |
 | Tools list but calls return 401 | Token audience/scope/placement | RFC 8707 resource, `scopesHint`, header prefix/name, provider endpoint path. |
 | Health works but Test call fails | Gateway projection/policy | selected grant, managed headers/arguments, effective profile/policy, catalog entry risk/status. |
@@ -1761,7 +1761,7 @@ registers a client on the fly and stores it on the connection:
   re-registering orphans prior grants on providers that bind grants to the
   client.
 - Env-registered clients always win: when
-  `PAPERCLIP_TOOL_OAUTH_<PROVIDER>_CLIENT_ID/_SECRET` are configured, the
+  `WARDMOTE_TOOL_OAUTH_<PROVIDER>_CLIENT_ID/_SECRET` are configured, the
   broker uses them (`customer` ownership) and skips registration. List both
   `customer` and `dcr` in the method's `ownershipModes` when the vendor
   supports both.
@@ -1769,7 +1769,7 @@ registers a client on the fly and stores it on the connection:
 DCR is **one of four** registration tiers, and `ownershipModes` gates only the *curated* path. The broker resolves a
 client in this order: a deployment-preconfigured client, then a Client ID
 Metadata Document when the authorization server advertises one (requires a public
-HTTPS `PAPERCLIP_PUBLIC_URL`), then DCR, then client credentials the operator
+HTTPS `WARDMOTE_PUBLIC_URL`), then DCR, then client credentials the operator
 preregistered and pasted in. A URL-only connection with no `AppDefinition` may
 use the CIMD and DCR tiers too, but only after validated protected-resource and
 authorization-server discovery produced a metadata document. Registered client
@@ -2103,7 +2103,7 @@ a new implementation.
   precedence and be used verbatim (see "MCP-Direct Connections" above).
 - Ownership modes: `dcr` (default, zero setup) and `customer`
   (env-registered classic integration via
-  `PAPERCLIP_TOOL_OAUTH_NOTION_CLIENT_ID/_SECRET`, which always wins when set).
+  `WARDMOTE_TOOL_OAUTH_NOTION_CLIENT_ID/_SECRET`, which always wins when set).
 - Token behavior: access tokens last ~8 h (`expires_in` authoritative).
   Refresh tokens **rotate on every refresh** — the old token is invalidated
   (at most 2 valid per grant) and replaying a stale one can revoke the whole
@@ -2218,8 +2218,8 @@ plain-HTTP non-loopback origins.
   first connect. No Notion integration, no client credentials, no callback
   registration, no Paperclip ID or Paperclip Connect involvement.
 - Optional escape hatch: to use a pre-registered classic Notion integration
-  instead, set `PAPERCLIP_TOOL_OAUTH_NOTION_CLIENT_ID` and
-  `PAPERCLIP_TOOL_OAUTH_NOTION_CLIENT_SECRET`; the env client always takes
+  instead, set `WARDMOTE_TOOL_OAUTH_NOTION_CLIENT_ID` and
+  `WARDMOTE_TOOL_OAUTH_NOTION_CLIENT_SECRET`; the env client always takes
   precedence (`customer` ownership).
 - Instance prerequisites: the instance base URL must be HTTPS on any host or
   loopback HTTP (Notion's redirect-URI rule). A plain-HTTP non-loopback origin

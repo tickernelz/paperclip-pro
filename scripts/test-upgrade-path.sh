@@ -16,7 +16,7 @@ if [ -n "${UPGRADE_PNPM_STORE:-}" ]; then
 fi
 export npm_config_userconfig="$HOME/.npmrc"
 export PATH="$HOME/.local/bin:$PATH"
-unset PAPERCLIP_HOME WARDMOTE_HOME
+unset WARDMOTE_HOME
 REPO="${UPGRADE_REPO:?UPGRADE_REPO is required}"
 SHA="${UPGRADE_SHA:?UPGRADE_SHA is required}"
 PORT="${UPGRADE_PORT:-3197}"
@@ -32,7 +32,11 @@ stop_server() {
   wait "$server_pid" 2>/dev/null || true
   server_pid=""
 }
-trap 'stop_server; rm -rf "$ROOT"' EXIT
+cleanup() {
+  stop_server
+  [ "${CI:-}" = true ] || rm -rf "$ROOT"
+}
+trap cleanup EXIT
 
 start_server() {
   local label="$1"

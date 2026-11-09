@@ -93,9 +93,9 @@ export const CAPABILITY_SEMANTIC_TOOL_CATALOG =
 export const HarnessRuntimeRequestResolutionError =
   runner.HarnessRuntimeRequestResolutionError;
 export const NATIVE_RUNTIME_ASSET_SCHEMA = runner.NATIVE_RUNTIME_ASSET_SCHEMA;
-export const PAPERCLIP_EXECUTION_PROMPT = runner.PAPERCLIP_EXECUTION_PROMPT;
-export const PAPERCLIP_EXECUTION_PROMPT_REVISION =
-  runner.PAPERCLIP_EXECUTION_PROMPT_REVISION;
+export const WARDMOTE_EXECUTION_PROMPT = runner.WARDMOTE_EXECUTION_PROMPT;
+export const WARDMOTE_EXECUTION_PROMPT_REVISION =
+  runner.WARDMOTE_EXECUTION_PROMPT_REVISION;
 export const acpxRuntimeSessionDirectoryName =
   runner.acpxRuntimeSessionDirectoryName;
 export const canonicalNativeRuntimeContextDigest =

@@ -7,7 +7,7 @@ import {
   resolvePaperclipRunnerPermissionMode,
   resolvePaperclipRunnerCursorMode,
   resolvePaperclipRunnerPiThinkingLevel,
-  PAPERCLIP_RUNNER_ACPX_PROFILES,
+  WARDMOTE_RUNNER_ACPX_PROFILES,
   type CreateConfigValues,
 } from "@tickernelz/wardmote-adapter-utils";
 import { DEFAULT_CODEX_LOCAL_BYPASS_APPROVALS_AND_SANDBOX } from "@tickernelz/wardmote-adapter-utils/provider-models/codex";
@@ -102,7 +102,7 @@ export function buildPaperclipRunnerConfig(v: CreateConfigValues): Record<string
     return { provider, lifecycleMode: "per_turn", allowUnmeteredProvider: schemaValues.allowUnmeteredProvider === true, dotWorkspaceAccess: schemaValues.dotWorkspaceAccess === true, dotAttachmentAccess: schemaValues.dotAttachmentAccess === true,
       ...(typeof schemaValues.dotBindingId === "string" ? { dotBindingId: schemaValues.dotBindingId } : {}) };
   }
-  const selectedAcpxProfile = PAPERCLIP_RUNNER_ACPX_PROFILES.find(profile => profile.value === schemaValues.acpxAgent);
+  const selectedAcpxProfile = WARDMOTE_RUNNER_ACPX_PROFILES.find(profile => profile.value === schemaValues.acpxAgent);
   if (provider === "acpx" && selectedAcpxProfile && !selectedAcpxProfile.qualified) {
     throw new Error(`${selectedAcpxProfile.label} is not enabled for production`);
   }

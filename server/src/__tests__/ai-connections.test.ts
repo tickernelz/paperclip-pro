@@ -51,8 +51,8 @@ const create = (userId: string, name: string, ownership: "personal" | "shared" =
 
 beforeAll(async () => {
   home = await realpath(await mkdtemp(path.join(os.tmpdir(), "paperclip-ai-tests-")));
-  vi.stubEnv("PAPERCLIP_HOME", home);
-  vi.stubEnv("PAPERCLIP_INSTANCE_ID", "ai-connection-fixture");
+  vi.stubEnv("WARDMOTE_HOME", home);
+  vi.stubEnv("WARDMOTE_INSTANCE_ID", "ai-connection-fixture");
   database = await startEmbeddedPostgresTestDatabase("paperclip-ai-db-");
   db = createDb(database.connectionString);
   service = aiConnectionService(db);
@@ -849,7 +849,7 @@ describe("managed AI connections", () => {
       const runtime = await prepareManagedAiRuntime(db, { companyId, agentId, responsibleUserId: "alice", binding: selected, adapterType, config: { provider: "codex", model: "openai/gpt-5.4", env: { OPENAI_API_KEY: "ambient" } } });
       try {
         expect(runtime.config.env.OPENAI_API_KEY).toBe("");
-        expect(runtime.config.env.PAPERCLIP_AI_PROVIDER_KEY).toBe("fixture-routed-credential");
+        expect(runtime.config.env.WARDMOTE_AI_PROVIDER_KEY).toBe("fixture-routed-credential");
         const toml = await readFile(path.join(String(runtime.config.env.CODEX_HOME), "config.toml"), "utf8");
         expect(toml).toContain('base_url = "https://openrouter.ai/api/v1"');
         expect(toml).toContain('wire_api = "responses"');

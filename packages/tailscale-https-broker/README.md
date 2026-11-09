@@ -141,7 +141,7 @@ Tailscale-operator service account distinct from the Paperclip app account.
    ```
 
    Put the `BROKER_*` values from the table below in the environment file. Set
-   `PAPERCLIP_TAILSCALE_BROKER_SOCKET=/run/paperclip-tailscale-broker/broker.sock`
+   `WARDMOTE_TAILSCALE_BROKER_SOCKET=/run/paperclip-tailscale-broker/broker.sock`
    on the Paperclip service only if overriding its default.
 
    Environment variables (defaults in `src/config.ts`):

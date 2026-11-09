@@ -8,9 +8,9 @@ export type AcpxPermissionMode = "approve-all" | "approve-paperclip" | "approve-
 export type PaperclipRunnerPermissionMode =
   CodexPermissionMode | OpenCodePermissionMode | AcpxPermissionMode;
 
-export const PAPERCLIP_RUNNER_IDLE_TIMEOUT_DEFAULT_MS = 300_000;
-export const PAPERCLIP_RUNNER_IDLE_TIMEOUT_MAX_MS = 86_400_000;
-export const PAPERCLIP_RUNNER_DEFAULT_MODELS = {
+export const WARDMOTE_RUNNER_IDLE_TIMEOUT_DEFAULT_MS = 300_000;
+export const WARDMOTE_RUNNER_IDLE_TIMEOUT_MAX_MS = 86_400_000;
+export const WARDMOTE_RUNNER_DEFAULT_MODELS = {
   codex: "gpt-5.6-sol",
   acpx: "claude-sonnet-5",
   opencode: "openrouter/deepseek/deepseek-v4-flash-0731",
@@ -45,7 +45,7 @@ export type PaperclipRunnerPermissionCapability =
  * Runtime contracts validate the same native values again at the process
  * boundary; this catalog must remain browser-safe.
  */
-export const PAPERCLIP_RUNNER_PERMISSION_CAPABILITIES = {
+export const WARDMOTE_RUNNER_PERMISSION_CAPABILITIES = {
   codex: {
     configurable: true,
     configKey: "codexPermissionMode",
@@ -156,7 +156,7 @@ export function resolvePaperclipRunnerPermissionMode(
   provider: PaperclipRunnerProvider,
   value: unknown,
 ): PaperclipRunnerPermissionMode | "provider-managed" {
-  const capability = PAPERCLIP_RUNNER_PERMISSION_CAPABILITIES[provider];
+  const capability = WARDMOTE_RUNNER_PERMISSION_CAPABILITIES[provider];
   if (!capability.configurable) return capability.defaultMode;
   return capability.options.some((option) => option.value === value)
     ? (value as PaperclipRunnerPermissionMode)
@@ -179,21 +179,21 @@ export function resolvePaperclipRunnerCursorMode(
 }
 
 export function resolvePaperclipRunnerModel(
-  provider: keyof typeof PAPERCLIP_RUNNER_DEFAULT_MODELS,
+  provider: keyof typeof WARDMOTE_RUNNER_DEFAULT_MODELS,
   value: unknown,
 ): string {
   return typeof value === "string" && value.trim().length > 0
     ? value.trim()
-    : PAPERCLIP_RUNNER_DEFAULT_MODELS[provider];
+    : WARDMOTE_RUNNER_DEFAULT_MODELS[provider];
 }
 
 export function resolvePaperclipRunnerIdleTimeoutMs(value: unknown): number {
   return typeof value === "number" &&
     Number.isSafeInteger(value) &&
     value > 0 &&
-    value <= PAPERCLIP_RUNNER_IDLE_TIMEOUT_MAX_MS
+    value <= WARDMOTE_RUNNER_IDLE_TIMEOUT_MAX_MS
     ? value
-    : PAPERCLIP_RUNNER_IDLE_TIMEOUT_DEFAULT_MS;
+    : WARDMOTE_RUNNER_IDLE_TIMEOUT_DEFAULT_MS;
 }
 
 /** Defaults for converting a local adapter; the operator may override the provider. */
@@ -221,8 +221,8 @@ export function paperclipRunnerTransitionConfig(
       provider === previousProvider ? previousModel : undefined,
     ),
     ...(provider === "acpx" ? { acpxAgent: "claude" } : {}),
-    [PAPERCLIP_RUNNER_PERMISSION_CAPABILITIES[provider].configKey]:
-      PAPERCLIP_RUNNER_PERMISSION_CAPABILITIES[provider].defaultMode,
+    [WARDMOTE_RUNNER_PERMISSION_CAPABILITIES[provider].configKey]:
+      WARDMOTE_RUNNER_PERMISSION_CAPABILITIES[provider].defaultMode,
     lifecycleMode: "per_turn",
   };
 }
@@ -241,7 +241,7 @@ export function normalizeLegacyRunnerProvider(
 }
 
 /** Qualification is a release property, never an operator-configurable bypass. */
-export const PAPERCLIP_RUNNER_ACPX_PROFILES = Object.freeze([
+export const WARDMOTE_RUNNER_ACPX_PROFILES = Object.freeze([
   { value: "grok", label: "Grok Build", qualified: true, credentialEnvironment: ["XAI_API_KEY"] },
   { value: "claude", label: "Claude", qualified: true, credentialEnvironment: ["ANTHROPIC_API_KEY", "CLAUDE_CODE_OAUTH_TOKEN"] },
   { value: "cursor", label: "Cursor", qualified: true, credentialEnvironment: ["CURSOR_API_KEY", "CURSOR_AUTH_TOKEN"] },

@@ -3,11 +3,11 @@
  *
  * The broker only exposes a port whose listener /proc proves to be loopback-only,
  * so an exposed Paperclip dev runtime MUST bind `127.0.0.1`. The server used to
- * request that with env vars alone (`PAPERCLIP_BIND` / `PAPERCLIP_BIND_HOST`),
+ * request that with env vars alone (`WARDMOTE_BIND` / `WARDMOTE_BIND_HOST`),
  * which is not sufficient: the process that has to honour them is the *guest
  * checkout's* `scripts/dev-runner.ts`, and a checkout that predates managed
- * exposure overwrites `PAPERCLIP_BIND` from its own `--bind` argv and deletes
- * `PAPERCLIP_BIND_HOST` outright. A branch pinned at such a commit therefore
+ * exposure overwrites `WARDMOTE_BIND` from its own `--bind` argv and deletes
+ * `WARDMOTE_BIND_HOST` outright. A branch pinned at such a commit therefore
  * bound `0.0.0.0` and every expose was correctly denied with
  * `listener_ownership_mismatch`.
  *
@@ -47,11 +47,11 @@ export function commandSelectsBindMode(command: string): boolean {
  * pass it to `python3 -m http.server`), and appending flags a command does not
  * parse turns a working service into one that exits on startup.
  */
-const PAPERCLIP_DEV_RUNNER_COMMAND =
+const WARDMOTE_DEV_RUNNER_COMMAND =
   /(?:^|[\s;&|])(?:(?:pnpm|npm|yarn|bun)(?:\s+run)?\s+dev(?::once|:watch|:server)?(?=\s|$)|[^\s]*dev-runner(?:\.[cm]?[jt]s)?(?=\s|$))/;
 
 export function isPaperclipDevRunnerCommand(command: string): boolean {
-  return PAPERCLIP_DEV_RUNNER_COMMAND.test(command);
+  return WARDMOTE_DEV_RUNNER_COMMAND.test(command);
 }
 
 /**

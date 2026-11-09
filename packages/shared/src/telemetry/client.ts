@@ -9,7 +9,7 @@ import type {
   TelemetryState,
 } from "./types.js";
 import { type ResolvedTelemetryCaps, resolveCaps } from "./config.js";
-import { PAPERCLIP_EVENTS } from "./generated/paperclip-telemetry.js";
+import { WARDMOTE_EVENTS } from "./generated/paperclip-telemetry.js";
 
 const DEFAULT_ENDPOINTS = [
   "https://telemetry.paperclip.ing/ingest",
@@ -128,7 +128,7 @@ export class TelemetryClient {
    * client would discard anyway.
    */
   isRegisteredEventName(eventName: string): boolean {
-    return Object.hasOwn(PAPERCLIP_EVENTS, eventName);
+    return Object.hasOwn(WARDMOTE_EVENTS, eventName);
   }
 
   /**

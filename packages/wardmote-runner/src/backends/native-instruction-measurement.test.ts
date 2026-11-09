@@ -6,9 +6,9 @@ import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 import { afterAll, describe, expect, it } from "vitest";
 
-import { PAPERCLIP_SEMANTIC_ACTION_CATALOG } from "../catalog/semantic-action-catalog.js";
+import { WARDMOTE_SEMANTIC_ACTION_CATALOG } from "../catalog/semantic-action-catalog.js";
 import { buildNativeModelEnvelope, parseNativeExecutionInput, type NativeExecutionInput } from "../contracts/native-execution.js";
-import { NATIVE_RUNTIME_ASSET_SCHEMA, PAPERCLIP_EXECUTION_PROMPT, PAPERCLIP_EXECUTION_PROMPT_REVISION, nativeRuntimePromptDigest, canonicalNativeRuntimeContextDigest } from "../contracts/runtime-context.js";
+import { NATIVE_RUNTIME_ASSET_SCHEMA, WARDMOTE_EXECUTION_PROMPT, WARDMOTE_EXECUTION_PROMPT_REVISION, nativeRuntimePromptDigest, canonicalNativeRuntimeContextDigest } from "../contracts/runtime-context.js";
 import { PRP_BLOCK_TOOL_DESCRIPTION, PRP_COMPLETION_TOOL_DESCRIPTION } from "../contracts/completion-result.js";
 import { FakeCodexTransport, WORKSPACE } from "../drivers/codex/codex-app-server-driver.test-support.js";
 import { resolveQualifiedAcpxProfile } from "../drivers/acpx/qualified-profiles.js";
@@ -20,7 +20,7 @@ import { inspectNativeCompletionSourceMetadata } from "../../../../tests/runner-
 // This captures Paperclip's real runnerd RPC boundary with a scripted transport.
 // It measures complete Paperclip-supplied instruction/tool/message projections,
 // not provider-owned stock prompts, tokenization, billing or model behavior.
-const tools = PAPERCLIP_SEMANTIC_ACTION_CATALOG
+const tools = WARDMOTE_SEMANTIC_ACTION_CATALOG
   .filter(tool => tool.placement === "core")
   .map(tool => ({ name: tool.operationId, description: tool.description, inputSchema: tool.inputSchema }));
 const identity = { companyId: "company", agentId: "agent", issueId: "issue", runId: "run", sessionId: "session" };
@@ -39,7 +39,7 @@ function execution(provider: NativeExecutionInput["provider"], schema: "v4" | "v
   const entry = readFileSync(new URL("../../../../server/src/onboarding-assets/default/AGENTS.md", import.meta.url), "utf8");
   writeFileSync(`${rootPath}/AGENTS.md`, entry);
   const context = {
-    prompt: { revision: PAPERCLIP_EXECUTION_PROMPT_REVISION, text: PAPERCLIP_EXECUTION_PROMPT, digest: nativeRuntimePromptDigest() },
+    prompt: { revision: WARDMOTE_EXECUTION_PROMPT_REVISION, text: WARDMOTE_EXECUTION_PROMPT, digest: nativeRuntimePromptDigest() },
     instructions: { entryPath: "AGENTS.md", bundle: { schema: NATIVE_RUNTIME_ASSET_SCHEMA, rootPath, digest: sha256(entry), manifestDigest: sha256(entry), fileCount: 1, totalBytes: Buffer.byteLength(entry) } },
     skills: [], mcp: { assignmentSetId: "none", digest: "0".repeat(64), bindingId: null },
   };
@@ -80,7 +80,7 @@ describe("native instruction payload measurement", () => {
       const fresh = transport(provider), resumed = transport(provider), continued = transport(provider);
       const backend = createRunnerdNativeSessionBackend(input, {
         transportFactory: () => fresh, dynamicTools: tools,
-        environment: { PAPERCLIP_WORKSPACE_CWD: WORKSPACE },
+        environment: { WARDMOTE_WORKSPACE_CWD: WORKSPACE },
       });
       const session = await backend.openSession({ identity, workingDirectory: WORKSPACE });
       const checkpoint = await session.snapshot();
@@ -92,7 +92,7 @@ describe("native instruction payload measurement", () => {
       resumed.readResponse = { thread: { id: "thread-1", sessionId: "provider-session-1", cwd: WORKSPACE, turns: [] } };
       const resumeBackend = createRunnerdNativeSessionBackend(input, {
         transportFactory: () => resumed, dynamicTools: tools,
-        environment: { PAPERCLIP_WORKSPACE_CWD: WORKSPACE },
+        environment: { WARDMOTE_WORKSPACE_CWD: WORKSPACE },
       });
       const recovery = await resumeBackend.recoverSession!(checkpoint, { signal: new AbortController().signal });
       expect(recovery.recovered).toBe(true);
@@ -103,7 +103,7 @@ describe("native instruction payload measurement", () => {
       const continuationInput = parseNativeExecutionInput({ ...input, continuationPrompt: "User update: retain the existing document and finish." });
       const continuationBackend = createRunnerdNativeSessionBackend(continuationInput, {
         transportFactory: () => continued, dynamicTools: tools,
-        environment: { PAPERCLIP_WORKSPACE_CWD: WORKSPACE },
+        environment: { WARDMOTE_WORKSPACE_CWD: WORKSPACE },
       });
       const continuationRecovery = await continuationBackend.recoverSession!(checkpoint, { signal: new AbortController().signal });
       expect(continuationRecovery.recovered).toBe(true);
@@ -116,7 +116,7 @@ describe("native instruction payload measurement", () => {
         const setup = captured.calls.find(call => call.method === method)!.params;
         const turn = captured.calls.find(call => call.method === "turn/start")!.params;
         const instructions = setup.developerInstructions ?? setup.baseInstructions;
-        expect(instructions).toContain(PAPERCLIP_EXECUTION_PROMPT);
+        expect(instructions).toContain(WARDMOTE_EXECUTION_PROMPT);
         expect(instructions).toContain("You are an agent in a Paperclip company.");
         const deliveredTools = setup.dynamicTools as Array<{ name: string; description: string }>;
         expect(deliveredTools.filter(tool => tool.name === "paperclip_finish")).toEqual([
@@ -214,7 +214,7 @@ describe("direct OpenCode HTTP instruction boundary", () => {
 });
 
 afterAll(() => {
-  const output = process.env.PAPERCLIP_NATIVE_INSTRUCTION_REPORT;
+  const output = process.env.WARDMOTE_NATIVE_INSTRUCTION_REPORT;
   if (!output) return;
   if (receipts.length !== 18 || directOpenCodeReceipts.length !== 6) throw new Error("Incomplete native instruction measurement; refusing a partial receipt");
   const repositoryRoot = new URL("../../../../", import.meta.url);

@@ -68,8 +68,8 @@ describeEmbeddedPostgres("heartbeat local environment lifecycle", () => {
   let previousAgentJwtSecret: string | undefined;
 
   beforeAll(async () => {
-    previousAgentJwtSecret = process.env.PAPERCLIP_AGENT_JWT_SECRET;
-    process.env.PAPERCLIP_AGENT_JWT_SECRET = "heartbeat-local-environment-test-secret";
+    previousAgentJwtSecret = process.env.WARDMOTE_AGENT_JWT_SECRET;
+    process.env.WARDMOTE_AGENT_JWT_SECRET = "heartbeat-local-environment-test-secret";
     tempDb = await startEmbeddedPostgresTestDatabase("heartbeat-local-environment-");
     db = createDb(tempDb.connectionString);
     heartbeat = heartbeatService(db);
@@ -105,9 +105,9 @@ describeEmbeddedPostgres("heartbeat local environment lifecycle", () => {
     await heartbeat.drainActiveRunExecutions();
     await tempDb?.cleanup();
     if (previousAgentJwtSecret === undefined) {
-      delete process.env.PAPERCLIP_AGENT_JWT_SECRET;
+      delete process.env.WARDMOTE_AGENT_JWT_SECRET;
     } else {
-      process.env.PAPERCLIP_AGENT_JWT_SECRET = previousAgentJwtSecret;
+      process.env.WARDMOTE_AGENT_JWT_SECRET = previousAgentJwtSecret;
     }
   });
 
@@ -197,11 +197,11 @@ describeEmbeddedPostgres("heartbeat local environment lifecycle", () => {
           [
             "const fs = require('node:fs');",
             `fs.writeFileSync(${JSON.stringify(envPath)}, JSON.stringify({`,
-            "agentId: process.env.PAPERCLIP_AGENT_ID ?? null,",
-            "companyId: process.env.PAPERCLIP_COMPANY_ID ?? null,",
-            "apiUrl: process.env.PAPERCLIP_API_URL ?? null,",
-            "runId: process.env.PAPERCLIP_RUN_ID ?? null,",
-            "apiKeyPresent: Boolean(process.env.PAPERCLIP_API_KEY),",
+            "agentId: process.env.WARDMOTE_AGENT_ID ?? null,",
+            "companyId: process.env.WARDMOTE_COMPANY_ID ?? null,",
+            "apiUrl: process.env.WARDMOTE_API_URL ?? null,",
+            "runId: process.env.WARDMOTE_RUN_ID ?? null,",
+            "apiKeyPresent: Boolean(process.env.WARDMOTE_API_KEY),",
             "}));",
           ].join(" "),
         ],

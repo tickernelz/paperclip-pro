@@ -53,11 +53,11 @@ describe("InstanceGeneralSettings sign-out", () => {
     });
     mockInstanceSettingsApi.updateGeneral.mockResolvedValue(undefined);
     mockInstanceSettingsApi.getLocalRunLimits.mockResolvedValue({
-      maxConcurrentRuns: { value: 20, source: "default", envVar: "PAPERCLIP_MAX_CONCURRENT_LOCAL_RUNS" },
-      maxConcurrentStarts: { value: 4, source: "default", envVar: "PAPERCLIP_MAX_CONCURRENT_LOCAL_STARTS" },
-      startWaitBypassSec: { value: 120, source: "default", envVar: "PAPERCLIP_LOCAL_START_WAIT_BYPASS_SEC" },
-      memoryReservePercent: { value: 20, source: "default", envVar: "PAPERCLIP_LOCAL_MEMORY_RESERVE_PERCENT" },
-      memoryGateCooldownSec: { value: 120, source: "default", envVar: "PAPERCLIP_LOCAL_MEMORY_GATE_COOLDOWN_SEC" },
+      maxConcurrentRuns: { value: 20, source: "default", envVar: "WARDMOTE_MAX_CONCURRENT_LOCAL_RUNS" },
+      maxConcurrentStarts: { value: 4, source: "default", envVar: "WARDMOTE_MAX_CONCURRENT_LOCAL_STARTS" },
+      startWaitBypassSec: { value: 120, source: "default", envVar: "WARDMOTE_LOCAL_START_WAIT_BYPASS_SEC" },
+      memoryReservePercent: { value: 20, source: "default", envVar: "WARDMOTE_LOCAL_MEMORY_RESERVE_PERCENT" },
+      memoryGateCooldownSec: { value: 120, source: "default", envVar: "WARDMOTE_LOCAL_MEMORY_GATE_COOLDOWN_SEC" },
     });
     mockAuthApi.signOut.mockResolvedValue({ success: true });
   });

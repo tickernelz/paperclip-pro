@@ -9,7 +9,7 @@ only installed provider; other providers remain unavailable.
 
 - The runner accepts only `ws://` destinations whose complete DNS result is
   loopback. Resolution happens once and reconnects reuse the pinned addresses.
-- A bootstrap ticket is read from `PAPERCLIP_RUNNER_BOOTSTRAP_TICKET`, removed
+- A bootstrap ticket is read from `WARDMOTE_RUNNER_BOOTSTRAP_TICKET`, removed
   from the environment immediately, and never sent over the socket. Both peers
   prove possession through HMAC-SHA-256.
 - A successful bootstrap exchanges the one-use ticket for a connection-bound,

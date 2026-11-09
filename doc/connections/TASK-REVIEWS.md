@@ -75,7 +75,7 @@ outbox.
 Run the credential-free, isolated browser suite:
 
 ```sh
-PAPERCLIP_E2E_PORT=3222 pnpm exec playwright test -c tests/e2e/connection-reviews.config.ts
+WARDMOTE_E2E_PORT=3222 pnpm exec playwright test -c tests/e2e/connection-reviews.config.ts
 ```
 
 This starts a dedicated embedded database/server and local MCP fixture, configures
@@ -89,7 +89,7 @@ scripted process adapter; these results do not prove model-runner behavior.
 Run the opt-in, local model-runner matrix with the harness's normal credentials:
 
 ```sh
-PAPERCLIP_RUNNER_E2E_CONNECTION_REVIEWS=1 pnpm test:e2e:runner -- --suite connection-reviews
+WARDMOTE_RUNNER_E2E_CONNECTION_REVIEWS=1 pnpm test:e2e:runner -- --suite connection-reviews
 ```
 
 The 16 cells cover approve, decline, always allow, and restart/resume for native

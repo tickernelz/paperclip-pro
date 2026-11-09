@@ -63,7 +63,7 @@ backups, admin bootstrap, sandboxed test runs — is in
 Codex ACP workspace sessions enable networking so agents can report task outcomes.
 To disable it explicitly, set `extraArgs` to
 `["-c", "sandbox_workspace_write.network_access=false"]`, or set
-`env.PAPERCLIP_CODEX_ACP_NETWORK_ACCESS="false"`. Execution-target network denial
+`env.WARDMOTE_CODEX_ACP_NETWORK_ACCESS="false"`. Execution-target network denial
 also remains enforced. Read-only ACP mode remains read-only.
 
 ## Node runtime used by background services

@@ -28,7 +28,7 @@ import {
   type StoredDiscordCommandRegistrationOptions,
 } from "./chat-discord-command-registration-store.js";
 
-const external = process.env.PAPERCLIP_TEST_DATABASE_URL;
+const external = process.env.WARDMOTE_TEST_DATABASE_URL;
 const support = external
   ? { supported: true }
   : await getEmbeddedPostgresTestSupport();

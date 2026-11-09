@@ -52,7 +52,7 @@ describe("managed install commands", () => {
     process.env = {
       ...ORIGINAL_ENV,
       HOME: path.join(root, "home"),
-      PAPERCLIP_HOME: path.join(root, "home", ".paperclip"),
+      WARDMOTE_HOME: path.join(root, "home", ".paperclip"),
       PATH: "/usr/bin:/bin",
       SHELL: "/bin/bash",
     };
@@ -286,7 +286,7 @@ describe("managed install commands", () => {
       expect(env, `${call[0]} ${call[1].join(" ")} must run with an explicit env`).toBeDefined();
       expect(env, `${call[0]} ${call[1].join(" ")} must not inherit NODE_ENV`).not.toHaveProperty("NODE_ENV");
     }
-    const uiPackCall = buildCalls.find(([file, , options]) => file === "corepack" && options?.env?.PAPERCLIP_RELEASE_REUSE_UI_DIST === "1");
+    const uiPackCall = buildCalls.find(([file, , options]) => file === "corepack" && options?.env?.WARDMOTE_RELEASE_REUSE_UI_DIST === "1");
     expect(uiPackCall).toBeDefined();
   });
 
@@ -295,7 +295,7 @@ describe("managed install commands", () => {
     const runCommand = createGitCheckoutRunCommand(sha);
     await expect(installGitPayload("paperclipai/paperclip", sha, runCommand, resolveInstallStorePaths())).resolves.toMatchObject({ reused: false });
     const serverBuild = runCommand.mock.calls.find(([file, args]) => file === "corepack" && args.includes("@tickernelz/wardmote-server..."));
-    expect(serverBuild?.[2]?.env?.PAPERCLIP_BUILD_COMMIT).toBe(sha);
+    expect(serverBuild?.[2]?.env?.WARDMOTE_BUILD_COMMIT).toBe(sha);
   });
 
   it("stages the release package assets before packaging so the server tarball carries ui-dist", async () => {
@@ -389,7 +389,7 @@ describe("managed install commands", () => {
     const entrypoint = path.join(manifest!.payloadPath, "node_modules", "@tickernelz", "wardmote", "dist", "index.js");
     expect(resolveCliVersion(entrypoint)).toContain(`managed npm latest; payload ${manifest!.payloadPath}`);
 
-    const userData = path.join(process.env.PAPERCLIP_HOME!, "instances", "default", "keep.txt");
+    const userData = path.join(process.env.WARDMOTE_HOME!, "instances", "default", "keep.txt");
     fs.mkdirSync(path.dirname(userData), { recursive: true });
     fs.writeFileSync(userData, "keep");
     const uninstallService = vi.fn(async () => {

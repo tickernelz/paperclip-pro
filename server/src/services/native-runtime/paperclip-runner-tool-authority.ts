@@ -504,13 +504,13 @@ export class PaperclipRunnerToolAuthority {
         return this.#withInstructionMutationReceipt(call.tool, call.callId, input);
       }
       case "create_skill": {
-        const apiUrl = this.binding.apiUrl ?? process.env.PAPERCLIP_API_URL;
+        const apiUrl = this.binding.apiUrl ?? process.env.WARDMOTE_API_URL;
         const token = createLocalAgentJwt(this.binding.agentId, this.binding.companyId, context.actor.adapterType, this.binding.runId, context.run.responsibleUserId);
         if (!apiUrl || !token) throw new Error("Skill tool authentication is unavailable");
         return callCreateSkillTool({ arguments: input, apiUrl, token, companyId: this.binding.companyId });
       }
       case "update_skill": {
-        const apiUrl = this.binding.apiUrl ?? process.env.PAPERCLIP_API_URL;
+        const apiUrl = this.binding.apiUrl ?? process.env.WARDMOTE_API_URL;
         const token = createLocalAgentJwt(this.binding.agentId, this.binding.companyId, context.actor.adapterType, this.binding.runId, context.run.responsibleUserId);
         if (!apiUrl || !token) throw new Error("Skill tool authentication is unavailable");
         return callUpdateSkillTool({ arguments: input, apiUrl, token, companyId: this.binding.companyId });
@@ -518,7 +518,7 @@ export class PaperclipRunnerToolAuthority {
       case "create_project":
       case "list_project_repositories":
       case "list_projects": {
-        const apiUrl = this.binding.apiUrl ?? process.env.PAPERCLIP_API_URL;
+        const apiUrl = this.binding.apiUrl ?? process.env.WARDMOTE_API_URL;
         const token = createLocalAgentJwt(this.binding.agentId, this.binding.companyId, context.actor.adapterType, this.binding.runId, context.run.responsibleUserId);
         if (!apiUrl || !token) throw new Error("Project tool authentication is unavailable");
         return callProjectTool({ name: call.tool, arguments: input, apiUrl, token,
@@ -706,7 +706,7 @@ export class PaperclipRunnerToolAuthority {
     const context = { ...this.binding, issueIdentifier: bound.issue.identifier, workMode: bound.issue.workMode };
     const { input, operation } = validateRunnerApiCall(value, context);
     await this.#assertDotApiFileAccess(operation.path, input);
-    const apiUrl = this.binding.apiUrl ?? process.env.PAPERCLIP_API_URL;
+    const apiUrl = this.binding.apiUrl ?? process.env.WARDMOTE_API_URL;
     if (!apiUrl) throw new Error("Paperclip API origin is unavailable");
     const token = createLocalAgentJwt(this.binding.agentId, this.binding.companyId, bound.actor.adapterType, this.binding.runId, bound.run.responsibleUserId);
     if (!token) throw new Error("Paperclip run authentication is unavailable");
@@ -1024,7 +1024,7 @@ export class PaperclipRunnerToolAuthority {
       if (review.interaction.status !== expectedStatus) throw badRequest("This review already has a different decision.");
       return { interactionId: review.interaction.id, status: expectedStatus, deduplicated: true };
     }
-    const apiUrl = this.binding.apiUrl ?? process.env.PAPERCLIP_API_URL;
+    const apiUrl = this.binding.apiUrl ?? process.env.WARDMOTE_API_URL;
     const token = createLocalAgentJwt(this.binding.agentId, this.binding.companyId,
       context.actor.adapterType, this.binding.runId, context.run.responsibleUserId);
     if (!apiUrl || !token) throw new Error("Review tool authentication is unavailable");

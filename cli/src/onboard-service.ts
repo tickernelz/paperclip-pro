@@ -40,7 +40,7 @@ type OnboardServiceDashboardDependencies = {
   warn: (message: string) => void;
 };
 
-function envDisablesBrowser(value = process.env.PAPERCLIP_NO_BROWSER): boolean {
+function envDisablesBrowser(value = process.env.WARDMOTE_NO_BROWSER): boolean {
   const normalized = value?.trim().toLowerCase();
   return normalized === "1" || normalized === "true" || normalized === "yes";
 }
@@ -148,7 +148,7 @@ const defaultDependencies: OnboardServiceDependencies = {
       return {
         ok: false,
         installedNow: false,
-        reason: `no executable exists at ${shimPath} (PAPERCLIP_SHIM_PATH), and it is outside the managed install store`,
+        reason: `no executable exists at ${shimPath} (WARDMOTE_SHIM_PATH), and it is outside the managed install store`,
       };
     }
     let manifest: InstallManifest | null = null;

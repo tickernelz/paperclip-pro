@@ -24,14 +24,14 @@ if (!support.supported) console.warn(`Planning fixture API calibration skipped: 
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
   let db: ReturnType<typeof createDb>;
   let root: string;
-  const savedHome = process.env.PAPERCLIP_HOME, savedInstance = process.env.PAPERCLIP_INSTANCE_ID;
+  const savedHome = process.env.WARDMOTE_HOME, savedInstance = process.env.WARDMOTE_INSTANCE_ID;
   let api: Pick<RunnerApi, "get" | "post">;
   let app: express.Express;
   beforeAll(async () => {
     tempDb = await startEmbeddedPostgresTestDatabase("paperclip-plan-fixture-");
     root = await mkdtemp(path.join(os.tmpdir(), "paperclip-plan-fixture-home-"));
-    process.env.PAPERCLIP_HOME = root;
-    process.env.PAPERCLIP_INSTANCE_ID = "default";
+    process.env.WARDMOTE_HOME = root;
+    process.env.WARDMOTE_INSTANCE_ID = "default";
     db = createDb(tempDb.connectionString);
     app = express();
     app.use(express.json());
@@ -53,8 +53,8 @@ if (!support.supported) console.warn(`Planning fixture API calibration skipped: 
     };
   });
   afterAll(async () => {
-    if (savedHome === undefined) delete process.env.PAPERCLIP_HOME; else process.env.PAPERCLIP_HOME = savedHome;
-    if (savedInstance === undefined) delete process.env.PAPERCLIP_INSTANCE_ID; else process.env.PAPERCLIP_INSTANCE_ID = savedInstance;
+    if (savedHome === undefined) delete process.env.WARDMOTE_HOME; else process.env.WARDMOTE_HOME = savedHome;
+    if (savedInstance === undefined) delete process.env.WARDMOTE_INSTANCE_ID; else process.env.WARDMOTE_INSTANCE_ID = savedInstance;
     await tempDb?.cleanup();
     if (root) await rm(root, { recursive: true, force: true });
   });

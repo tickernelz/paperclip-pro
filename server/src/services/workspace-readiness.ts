@@ -47,11 +47,11 @@ type SeedManifestSummary = {
 /**
  * Directory holding this instance's seed markers.
  *
- * `PAPERCLIP_CONFIG` is the authoritative pointer a seeded worktree is started
+ * `WARDMOTE_CONFIG` is the authoritative pointer a seeded worktree is started
  * with; the cwd fallback covers a guest launched without it.
  */
 export function resolveWorkspaceSeedMarkerDir(env: NodeJS.ProcessEnv = process.env): string {
-  const configPath = env.PAPERCLIP_CONFIG?.trim();
+  const configPath = env.WARDMOTE_CONFIG?.trim();
   if (configPath) return path.dirname(path.resolve(configPath));
   return path.resolve(process.cwd(), ".paperclip");
 }

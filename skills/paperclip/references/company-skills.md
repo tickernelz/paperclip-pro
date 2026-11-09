@@ -2,7 +2,7 @@
 
 Use this reference when a board user, CEO, or manager asks you to find a skill, install it into the company library, or assign it to an agent.
 
-**Toolset:** `paperclipListSkills` is in the default `core` toolset. Every other tool on this page is in the `extended` toolset: it is available when the operator enables `PAPERCLIP_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest`. `companyId` is optional on company-scoped tools and defaults to your company.
+**Toolset:** `paperclipListSkills` is in the default `core` toolset. Every other tool on this page is in the `extended` toolset: it is available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest`. `companyId` is optional on company-scoped tools and defaults to your company.
 
 ## What Exists
 

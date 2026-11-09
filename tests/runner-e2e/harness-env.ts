@@ -7,26 +7,26 @@ import { CREDENTIAL_NAMES } from "./types.js";
 import type { MatrixExecution } from "./types.js";
 
 const DATABASE_KEYS = ["DATABASE_URL", "DATABASE_MIGRATION_URL"] as const;
-const AMBIENT_PAPERCLIP_CREDENTIAL_KEYS = [
-  "PAPERCLIP_API_KEY",
-  "PAPERCLIP_AGENT_API_KEY",
-  "PAPERCLIP_TASK_BRIDGE_TOKEN",
-  "PAPERCLIP_SETUP_TOKEN",
-  "PAPERCLIP_SECRETS_MASTER_KEY",
-  "PAPERCLIP_SECRETS_MASTER_KEY_FILE",
+const AMBIENT_WARDMOTE_CREDENTIAL_KEYS = [
+  "WARDMOTE_API_KEY",
+  "WARDMOTE_AGENT_API_KEY",
+  "WARDMOTE_TASK_BRIDGE_TOKEN",
+  "WARDMOTE_SETUP_TOKEN",
+  "WARDMOTE_SECRETS_MASTER_KEY",
+  "WARDMOTE_SECRETS_MASTER_KEY_FILE",
 ] as const;
 const GENERATED_SERVER_SECRET_KEYS = [
-  "PAPERCLIP_AGENT_JWT_SECRET",
-  "PAPERCLIP_DECISION_SIGNING_SECRET",
-  "PAPERCLIP_TOOL_ACTION_SIGNING_SECRET",
+  "WARDMOTE_AGENT_JWT_SECRET",
+  "WARDMOTE_DECISION_SIGNING_SECRET",
+  "WARDMOTE_TOOL_ACTION_SIGNING_SECRET",
   "BETTER_AUTH_SECRET",
 ] as const;
 const AMBIENT_EXTERNAL_STATE_KEYS = [
-  "PAPERCLIP_STORAGE_S3_BUCKET",
-  "PAPERCLIP_STORAGE_S3_REGION",
-  "PAPERCLIP_STORAGE_S3_ENDPOINT",
-  "PAPERCLIP_STORAGE_S3_PREFIX",
-  "PAPERCLIP_STORAGE_S3_FORCE_PATH_STYLE",
+  "WARDMOTE_STORAGE_S3_BUCKET",
+  "WARDMOTE_STORAGE_S3_REGION",
+  "WARDMOTE_STORAGE_S3_ENDPOINT",
+  "WARDMOTE_STORAGE_S3_PREFIX",
+  "WARDMOTE_STORAGE_S3_FORCE_PATH_STYLE",
 ] as const;
 const PROVIDER_SECRET_KEY = /^(?:OPENAI|ANTHROPIC|OPENROUTER|DAYTONA|XAI|GROK|CURSOR|COPILOT|GITHUB|GH)(?:_|$)/;
 
@@ -52,7 +52,7 @@ export function runnerE2EServerControlPaths(temporaryRoot: string) {
 export function resolvePaperclipRunnerBinaryForHarness(
   executions: readonly MatrixExecution[],
   repositoryRoot: string,
-  configuredPath = process.env.PAPERCLIP_RUNNER_BINARY,
+  configuredPath = process.env.WARDMOTE_RUNNER_BINARY,
   platform: NodeJS.Platform = process.platform,
 ): string | undefined {
   if (configuredPath?.trim()) return configuredPath;
@@ -80,7 +80,7 @@ export function resolvePaperclipRunnerBinaryForHarness(
 export function resolvePaperclipRemoteRunnerBinaryForHarness(
   executions: readonly MatrixExecution[],
   runnerBinary: string | undefined,
-  configuredPath = process.env.PAPERCLIP_RUNNER_REMOTE_BINARY_PATH,
+  configuredPath = process.env.WARDMOTE_RUNNER_REMOTE_BINARY_PATH,
   platform: NodeJS.Platform = process.platform,
 ): string | undefined {
   if (configuredPath?.trim()) return configuredPath;
@@ -109,11 +109,11 @@ export function buildRunnerE2EProcessEnvironment(
 ): NodeJS.ProcessEnv {
   const result = { ...source };
   // Announcements are unrelated to the scenarios and obscure screenshot evidence.
-  result.PAPERCLIP_ANNOUNCEMENTS_ENABLED = "false";
+  result.WARDMOTE_ANNOUNCEMENTS_ENABLED = "false";
   delete result.OPENCODE_ALLOW_ALL_MODELS;
   // Discard ambient admission. Only explicit candidate cells authorize the
   // exact model in their isolated server; credentials still use company secrets.
-  delete result.PAPERCLIP_RUNNER_ACPX_QUALIFICATION;
+  delete result.WARDMOTE_RUNNER_ACPX_QUALIFICATION;
   const candidates = new Map<string, string>();
   for (const execution of executions) {
     const agent = execution.profile.qualificationCandidate;
@@ -136,14 +136,14 @@ export function buildRunnerE2EProcessEnvironment(
     candidates.set(agent, execution.profile.model);
   }
   if (candidates.size > 0) {
-    result.PAPERCLIP_RUNNER_ACPX_QUALIFICATION = JSON.stringify(
+    result.WARDMOTE_RUNNER_ACPX_QUALIFICATION = JSON.stringify(
       [...candidates].map(([agent, model]) => ({ agent, model })),
     );
   }
   // These stories explicitly require the native API surface. Other suites
   // retain the server default or any supplied operator restriction.
   if (executions.some((e) => isManagedHiringCase(e.suite.id, e.task.id) || chatNeedsApiTools(e.suite.id, e.task.id))) {
-    result.PAPERCLIP_RUNNER_API_TOOLS_ENABLED = "true";
+    result.WARDMOTE_RUNNER_API_TOOLS_ENABLED = "true";
   }
   if (
     executions.length > 0 &&
@@ -175,7 +175,7 @@ export function buildPaperclipServerEnvironment(
   for (const key of [
     ...CREDENTIAL_NAMES,
     ...DATABASE_KEYS,
-    ...AMBIENT_PAPERCLIP_CREDENTIAL_KEYS,
+    ...AMBIENT_WARDMOTE_CREDENTIAL_KEYS,
     ...AMBIENT_EXTERNAL_STATE_KEYS,
   ]) {
     delete result[key];
@@ -193,8 +193,8 @@ export function assertIsolatedServerEnvironment(
     configPath: string;
   },
 ) {
-  const home = env.PAPERCLIP_HOME;
-  const config = env.PAPERCLIP_CONFIG;
+  const home = env.WARDMOTE_HOME;
+  const config = env.WARDMOTE_CONFIG;
   if (home !== expected.paperclipHome || config !== expected.configPath) {
     throw new Error(
       "Paperclip server environment does not use the allocated home/config paths",
@@ -216,7 +216,7 @@ export function assertIsolatedServerEnvironment(
   for (const key of [
     ...CREDENTIAL_NAMES,
     ...DATABASE_KEYS,
-    ...AMBIENT_PAPERCLIP_CREDENTIAL_KEYS,
+    ...AMBIENT_WARDMOTE_CREDENTIAL_KEYS,
     ...AMBIENT_EXTERNAL_STATE_KEYS,
   ]) {
     if (env[key])

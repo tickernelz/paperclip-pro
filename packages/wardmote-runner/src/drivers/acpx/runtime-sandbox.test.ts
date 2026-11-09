@@ -38,10 +38,10 @@ afterEach(async () => {
 describe("ACPX runtime sandbox", () => {
   it.each([false, true])("allows selected task secrets in Codex shells (agent identity: %s)", async identity => {
     const fixture = await sandboxFixture("codex");
-    const pages = { PAPERCLIP_PAGE_AWS_SECRET_ACCESS_KEY: "task-pages-secret", CUSTOM_TOKEN: "task-service-secret" };
+    const pages = { WARDMOTE_PAGE_AWS_SECRET_ACCESS_KEY: "task-pages-secret", CUSTOM_TOKEN: "task-service-secret" };
     const sandbox = await prepareAcpxRuntimeSandbox({ binding: fixture.binding, agent: "codex", environment: {
       PATH: process.env.PATH, OPENAI_API_KEY: "provider-secret", HOST_SECRET: "unselected-secret",
-      ...configuredEnvironmentProjection(pages), ...(identity ? { PAPERCLIP_AGENT_KEY_ID: "agent-key" } : {}),
+      ...configuredEnvironmentProjection(pages), ...(identity ? { WARDMOTE_AGENT_KEY_ID: "agent-key" } : {}),
     } });
     const config = await readFile(join(sandbox.agentHomeDirectory, "config.toml"), "utf8");
     const keys = JSON.parse(config.split("\n").find(line => line.startsWith("include_only = "))?.slice("include_only = ".length) ?? "[]");
@@ -76,14 +76,14 @@ describe("ACPX runtime sandbox", () => {
       binding: fixture.binding, agent: "codex", environment: {
         PATH: process.env.PATH,
         OPENAI_API_KEY: "provider-secret", MY_SERVICE_TOKEN: "configured-secret",
-        PAPERCLIP_API_KEY: "scoped-run-token",
-        PAPERCLIP_AGENT_KEY_ID: "sha256:test", PAPERCLIP_AGENT_PUBLIC_KEY: "public-identity",
-        PAPERCLIP_AGENT_PRIVATE_KEY: "private-identity",
+        WARDMOTE_API_KEY: "scoped-run-token",
+        WARDMOTE_AGENT_KEY_ID: "sha256:test", WARDMOTE_AGENT_PUBLIC_KEY: "public-identity",
+        WARDMOTE_AGENT_PRIVATE_KEY: "private-identity",
       },
     });
     const config = await readFile(join(sandbox.agentHomeDirectory, "config.toml"), "utf8");
     const keys = JSON.parse(config.split("\n").find(line => line.startsWith("include_only = "))!.slice("include_only = ".length));
-    expect(keys).toEqual(expect.arrayContaining(["PAPERCLIP_API_KEY", "PAPERCLIP_AGENT_PRIVATE_KEY"]));
+    expect(keys).toEqual(expect.arrayContaining(["WARDMOTE_API_KEY", "WARDMOTE_AGENT_PRIVATE_KEY"]));
     expect(keys).not.toContain("OPENAI_API_KEY");
     expect(keys).not.toContain("MY_SERVICE_TOKEN");
     expect(sandbox.launchEnvironment.OPENAI_API_KEY).toBe("provider-secret");
@@ -141,9 +141,9 @@ describe("ACPX runtime sandbox", () => {
           COPILOT_HOME: "/ambient/copilot", COPILOT_PKG_CACHE_HOME: "/ambient/extraction-cache", COPILOT_ALLOW_ALL: "true",
           PAPERCLIP_PI_READ_ONLY: "1", PAPERCLIP_PI_READ_ROOTS: '["/"]', PAPERCLIP_PI_ENTRYPOINT: "/ambient/pi.js",
           HTTPS_PROXY: "https://proxy-user:proxy-password@example.test",
-          PAPERCLIP_NATIVE_MCP_URL:
+          WARDMOTE_NATIVE_MCP_URL:
             "https://mcp.example.test/connect?ticket=secret",
-          PAPERCLIP_NATIVE_MCP_TOKEN: "native-secret",
+          WARDMOTE_NATIVE_MCP_TOKEN: "native-secret",
         },
       });
 
@@ -152,7 +152,7 @@ describe("ACPX runtime sandbox", () => {
       expect(sandbox.launchEnvironment.HTTPS_PROXY).toContain("proxy-password");
       expect(sandbox.launchEnvironment.UNRELATED_SECRET).toBeUndefined();
       expect(
-        sandbox.launchEnvironment.PAPERCLIP_NATIVE_MCP_TOKEN,
+        sandbox.launchEnvironment.WARDMOTE_NATIVE_MCP_TOKEN,
       ).toBeUndefined();
       expect(sandbox.launchEnvironment.HOME).toBe(sandbox.homeDirectory);
       expect(sandbox.launchEnvironment.XDG_CONFIG_HOME).toBe(
@@ -168,10 +168,10 @@ describe("ACPX runtime sandbox", () => {
       expect(sandbox.persistedEnvironment[credentialName]).toBeUndefined();
       expect(sandbox.persistedEnvironment.HTTPS_PROXY).toBeUndefined();
       expect(
-        sandbox.persistedEnvironment.PAPERCLIP_NATIVE_MCP_URL,
+        sandbox.persistedEnvironment.WARDMOTE_NATIVE_MCP_URL,
       ).toBeUndefined();
       expect(
-        sandbox.persistedEnvironment.PAPERCLIP_NATIVE_MCP_TOKEN,
+        sandbox.persistedEnvironment.WARDMOTE_NATIVE_MCP_TOKEN,
       ).toBeUndefined();
       expect(sandbox.persistedEnvironment.HOME).toBe(sandbox.homeDirectory);
       if (agent === "codex") {

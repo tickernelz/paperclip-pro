@@ -8,7 +8,7 @@ const response = (status: number, data: unknown = {}): APIResponse => ({
 afterEach(() => vi.unstubAllEnvs());
 describe("fixture instruction revision fence", () => {
   function api(current: APIResponse, saved = response(200)) {
-    vi.stubEnv("PAPERCLIP_RUNNER_E2E_PORT", "3100");
+    vi.stubEnv("WARDMOTE_RUNNER_E2E_PORT", "3100");
     const request = { get: vi.fn(async () => current), put: vi.fn(async () => saved) };
     return { request, api: new RunnerApi(request as unknown as APIRequestContext) };
   }
@@ -35,7 +35,7 @@ describe("fixture instruction revision fence", () => {
 
 
 it("passes a bounded GET timeout to the request transport without changing its response", async () => {
-  vi.stubEnv("PAPERCLIP_RUNNER_E2E_PORT", "3100");
+  vi.stubEnv("WARDMOTE_RUNNER_E2E_PORT", "3100");
   const get = vi.fn(async () => response(200, { status: "running" }));
   const api = new RunnerApi({ get } as unknown as APIRequestContext);
   await expect(api.get("/api/heartbeat-runs/run", { timeout: 1234 })).resolves.toEqual({ status: "running" });
@@ -44,7 +44,7 @@ it("passes a bounded GET timeout to the request transport without changing its r
 
 
 it("preserves GET HTTP status separately from diagnostic text", async () => {
-  vi.stubEnv("PAPERCLIP_RUNNER_E2E_PORT", "3100");
+  vi.stubEnv("WARDMOTE_RUNNER_E2E_PORT", "3100");
   const api = new RunnerApi({ get: vi.fn(async () => response(503, { error: "PRIVATE" })) } as unknown as APIRequestContext);
   const error = await api.get("/api/environments/env/leases").catch(error => error);
   expect(error).toBeInstanceOf(RunnerApiHttpError);

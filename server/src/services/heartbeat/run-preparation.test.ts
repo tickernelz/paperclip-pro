@@ -1,4 +1,5 @@
 import type { Db } from "@tickernelz/wardmote-db";
+import { RETIRED_ENV_PREFIX } from "@tickernelz/wardmote-shared/retired-env-file";
 import { PgDialect } from "drizzle-orm/pg-core";
 import type { SQL } from "drizzle-orm";
 import { describe, expect, it, vi } from "vitest";
@@ -120,7 +121,7 @@ describe("heartbeat run preparation module", () => {
     expect(database.select).toHaveBeenCalledTimes(2);
   });
 
-  it("drops forbidden bindings under their WARDMOTE_* names like their PAPERCLIP_* names", async () => {
+  it("drops forbidden WARDMOTE_* bindings in any letter case", async () => {
     const forbidden = [
       "API_KEY", "AGENT_KEY_ID", "AGENT_PUBLIC_KEY", "AGENT_PRIVATE_KEY",
       "RUNNER_NETWORK_ACCESS", "RUNNER_NETWORK_ROOTS", "GITHUB_AUTH_MODE", "GITHUB_HOST_HOME",
@@ -130,6 +131,8 @@ describe("heartbeat run preparation module", () => {
     const bindings = Object.fromEntries(forbidden.flatMap((name) => [
       [`WARDMOTE_${name}`, "config-value"],
       [`wardmote_${name.toLowerCase()}`, "config-value"],
+      [`${RETIRED_ENV_PREFIX}${name}`, "config-value"],
+      [`${RETIRED_ENV_PREFIX}${name}`.toLowerCase(), "config-value"],
     ]));
     const passThrough = (_companyId: string, env: Record<string, unknown>) => ({
       env: Object.fromEntries(Object.entries(env).filter((entry): entry is [string, string] => typeof entry[1] === "string")),
@@ -145,7 +148,7 @@ describe("heartbeat run preparation module", () => {
     const result = await resolveExecutionRunAdapterConfig({
       companyId: "company-one",
       managedGitHubCredentials: true,
-      executionRunConfig: { env: { ...bindings, WARDMOTE_GIT_TOKEN: "agent-token", WARDMOTE_CUSTOM: "kept" } },
+      executionRunConfig: { env: { ...bindings, WARDMOTE_GIT_TOKEN: "agent-token", [`${RETIRED_ENV_PREFIX}GIT_TOKEN`]: "agent-token", WARDMOTE_CUSTOM: "kept" } },
       projectEnv: { ...bindings, WARDMOTE_GIT_TOKEN: "project-token", PROJECT_ONLY: "kept" },
       secretsSvc: secretsSvc as never,
     });

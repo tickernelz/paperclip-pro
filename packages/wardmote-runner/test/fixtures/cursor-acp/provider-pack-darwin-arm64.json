@@ -19,9 +19,9 @@
     "distDigest": "sha256:b849c70826bcc0fb353b319b55e779ac9a31a2007fd358ad16f3502ea3bc9160",
     "bridgeDigest": "sha256:4093de09695e15878d1614ff73bdabd95600af1e996055c3c981a7cee67486e2",
     "acpxProfileDigests": {
-      "grok": "sha256:f0b698395a3704ed2ffaf84ea19bdb20c36c8a0a70b7c629c7b6ffe144e59e55",
+      "grok": "sha256:d1b26d304e272b864489149564733bd244660037415e0678177ad038f53845c8",
       "claude": "sha256:9d73d1f0f121fb96cc8badb28c22d5bff02d8582eb2e40360a81c189e1b9422a",
-      "codex": "sha256:c4538599d1ab767db5dff50934f13bb5ba313a59d9c4a83e993fac4617ea63d3"
+      "codex": "sha256:3e88ae296113d4e1ad6a57260d82c3ba97b85794101ae632bfd14f6890e62869"
     },
     "candidateProviders": {
       "cursor": {
@@ -36,7 +36,7 @@
     "artifacts": {
       "grokLauncher": {
         "path": "dist/providers/grok/launcher.cjs",
-        "sha256": "sha256:f0b698395a3704ed2ffaf84ea19bdb20c36c8a0a70b7c629c7b6ffe144e59e55"
+        "sha256": "sha256:d1b26d304e272b864489149564733bd244660037415e0678177ad038f53845c8"
       },
       "nodeCommand": {
         "path": "node_modules/node/bin/node",

@@ -133,7 +133,7 @@ fn pi_credential_environment_keys(binding: Option<&str>) -> Result<Vec<String>, 
                 .all(|c| c.is_ascii_uppercase() || c.is_ascii_digit() || c == b'_');
         // Match pi-provider-config.ts: prefixes such as LD_API_KEY are valid
         // credentials; only the reserved process controls are rejected.
-        let protected_name = (name.starts_with("PAPERCLIP_") && name != "PAPERCLIP_PI_PROVIDERS")
+        let protected_name = (name.starts_with("WARDMOTE_") && name != "WARDMOTE_PI_PROVIDERS")
             || name.starts_with("NODE_")
             || name.starts_with("NPM_")
             || matches!(
@@ -210,9 +210,9 @@ impl AcpxSidecarTransport {
             "codex" => &[
                 "OPENAI_API_KEY",
                 "CODEX_API_KEY",
-                "PAPERCLIP_AI_PROVIDER_KEY",
+                "WARDMOTE_AI_PROVIDER_KEY",
             ],
-            "grok" => &["XAI_API_KEY", "PAPERCLIP_ACPX_GROK_AUTH_JSON_SECRET"],
+            "grok" => &["XAI_API_KEY", "WARDMOTE_ACPX_GROK_AUTH_JSON_SECRET"],
             "pi" => &[],
             "cursor" => &["CURSOR_API_KEY", "CURSOR_AUTH_TOKEN"],
             "copilot" => &["COPILOT_GITHUB_TOKEN"],
@@ -223,9 +223,9 @@ impl AcpxSidecarTransport {
             }
         };
         let mut keys = vec![
-            "PAPERCLIP_AGENT_KEY_ID",
-            "PAPERCLIP_AGENT_PUBLIC_KEY",
-            "PAPERCLIP_AGENT_PRIVATE_KEY",
+            "WARDMOTE_AGENT_KEY_ID",
+            "WARDMOTE_AGENT_PUBLIC_KEY",
+            "WARDMOTE_AGENT_PRIVATE_KEY",
             "LANGUAGE",
             "SSL_CERT_FILE",
             "SSL_CERT_DIR",
@@ -239,19 +239,19 @@ impl AcpxSidecarTransport {
             "no_proxy",
             "all_proxy",
             "RUST_BACKTRACE",
-            "PAPERCLIP_NATIVE_MCP_NAME",
-            "PAPERCLIP_NATIVE_MCP_URL",
+            "WARDMOTE_NATIVE_MCP_NAME",
+            "WARDMOTE_NATIVE_MCP_URL",
             // The qualified sidecar configures the runner-owned gateway. Keep
             // its credential with the name/URL; unrelated secrets stay excluded.
-            "PAPERCLIP_NATIVE_MCP_TOKEN",
-            "PAPERCLIP_ACPX_BUILTIN_ROOT",
-            "PAPERCLIP_ACPX_PROVIDER_PACKAGE_ROOT",
-            "PAPERCLIP_ACPX_PROVIDER_PACKAGE_MANIFEST",
+            "WARDMOTE_NATIVE_MCP_TOKEN",
+            "WARDMOTE_ACPX_BUILTIN_ROOT",
+            "WARDMOTE_ACPX_PROVIDER_PACKAGE_ROOT",
+            "WARDMOTE_ACPX_PROVIDER_PACKAGE_MANIFEST",
         ];
         if matches!(agent, "pi" | "cursor" | "copilot") {
             // Credential values alone are not proof of an explicit task binding.
             // The sidecar checks this controller-minted provider/session marker.
-            keys.push("PAPERCLIP_ACPX_CREDENTIAL_BINDING");
+            keys.push("WARDMOTE_ACPX_CREDENTIAL_BINDING");
         }
         if agent == "claude" {
             keys.extend_from_slice(&[
@@ -270,7 +270,7 @@ impl AcpxSidecarTransport {
         }
         let pi_keys = if agent == "pi" {
             pi_credential_environment_keys(
-                std::env::var("PAPERCLIP_ACPX_CREDENTIAL_BINDING")
+                std::env::var("WARDMOTE_ACPX_CREDENTIAL_BINDING")
                     .ok()
                     .as_deref(),
             )?
@@ -939,7 +939,7 @@ mod tests {
             "HOME",
             "LD_PRELOAD",
             "DYLD_INSERT_LIBRARIES",
-            "PAPERCLIP_NATIVE_MCP_TOKEN",
+            "WARDMOTE_NATIVE_MCP_TOKEN",
             "INVALID-NAME",
         ] {
             let binding = json!({"schema":"paperclip.acpx_credential_binding.v1", "agent":"pi", "sessionId":"session-1", "names":[name]});

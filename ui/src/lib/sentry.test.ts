@@ -398,8 +398,8 @@ function resolveIntegrations(
 describe("buildBrowserSentryInitOptions", () => {
   it("keeps the loaded bundle's release when the server version changes", async () => {
     const commit = "0123456789abcdef0123456789abcdef01234567";
-    vi.stubGlobal("__PAPERCLIP_BUILD_COMMIT__", commit);
-    vi.stubEnv("PAPERCLIP_BUILD_COMMIT", "abcdef0123456789abcdef0123456789abcdef01");
+    vi.stubGlobal("__WARDMOTE_BUILD_COMMIT__", commit);
+    vi.stubEnv("WARDMOTE_BUILD_COMMIT", "abcdef0123456789abcdef0123456789abcdef01");
     try {
       const { buildBrowserSentryInitOptions } = await importFreshSentry();
       expect(buildBrowserSentryInitOptions(DSN).release).toBe(commit);
@@ -410,7 +410,7 @@ describe("buildBrowserSentryInitOptions", () => {
   });
 
   it("does not invent a release for an unstamped bundle", async () => {
-    vi.stubGlobal("__PAPERCLIP_BUILD_COMMIT__", null);
+    vi.stubGlobal("__WARDMOTE_BUILD_COMMIT__", null);
     try {
       const { buildBrowserSentryInitOptions } = await importFreshSentry();
       expect(buildBrowserSentryInitOptions(DSN).release).toBeUndefined();
@@ -537,7 +537,7 @@ describe("captured event shape against the real @sentry/browser SDK", () => {
 
   it("attaches the bundle release to an emitted event without page context", async () => {
     const commit = "0123456789abcdef0123456789abcdef01234567";
-    vi.stubGlobal("__PAPERCLIP_BUILD_COMMIT__", commit);
+    vi.stubGlobal("__WARDMOTE_BUILD_COMMIT__", commit);
     try {
       let captured: Record<string, unknown> | null = null;
       const Sentry = await initRealSentryForTest((event) => { captured = event; });

@@ -34,12 +34,12 @@ const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : 
 describeEmbeddedPostgres("heartbeat run privacy routes", { concurrent: false }, () => {
   let db!: ReturnType<typeof createDb>;
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
-  const previousPrivacyMode = process.env.PAPERCLIP_ISSUE_PRIVACY_MODE;
+  const previousPrivacyMode = process.env.WARDMOTE_ISSUE_PRIVACY_MODE;
 
   beforeAll(async () => {
     tempDb = await startEmbeddedPostgresTestDatabase("paperclip-run-privacy-routes-");
     db = createDb(tempDb.connectionString);
-    process.env.PAPERCLIP_ISSUE_PRIVACY_MODE = "enforce";
+    process.env.WARDMOTE_ISSUE_PRIVACY_MODE = "enforce";
   }, 120_000);
 
   afterEach(async () => {
@@ -57,8 +57,8 @@ describeEmbeddedPostgres("heartbeat run privacy routes", { concurrent: false }, 
   });
 
   afterAll(async () => {
-    if (previousPrivacyMode === undefined) delete process.env.PAPERCLIP_ISSUE_PRIVACY_MODE;
-    else process.env.PAPERCLIP_ISSUE_PRIVACY_MODE = previousPrivacyMode;
+    if (previousPrivacyMode === undefined) delete process.env.WARDMOTE_ISSUE_PRIVACY_MODE;
+    else process.env.WARDMOTE_ISSUE_PRIVACY_MODE = previousPrivacyMode;
     await tempDb?.cleanup();
   });
 
@@ -414,14 +414,14 @@ describeEmbeddedPostgres("heartbeat run privacy routes", { concurrent: false }, 
 
   it("logs would-deny decisions without enforcing them in shadow mode", async () => {
     const fixture = await seedFixture();
-    process.env.PAPERCLIP_ISSUE_PRIVACY_MODE = "shadow";
+    process.env.WARDMOTE_ISSUE_PRIVACY_MODE = "shadow";
     try {
       const response = await request(createApp(fixture.companyId, fixture.otherAgentId))
         .get(`/api/heartbeat-runs/${fixture.privateRunId}`);
       expect(response.status).toBe(200);
       expect(response.body.resultJson.summary).toBe("Read the confidential email");
     } finally {
-      process.env.PAPERCLIP_ISSUE_PRIVACY_MODE = "enforce";
+      process.env.WARDMOTE_ISSUE_PRIVACY_MODE = "enforce";
     }
   });
 });

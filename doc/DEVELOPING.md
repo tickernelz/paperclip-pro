@@ -28,19 +28,21 @@ dependency resolution on every run.
 ## CI
 
 `.github/workflows/ci.yml` is the only workflow on pull requests and pushes to
-`main`. A `scope` job classifies the changed files first. When the change touches
-only documentation (`**/*.md`, `docs/**`, `doc/**`, `LICENSE`, the issue and pull
-request templates) the heavy lanes stay skipped and a `Docs` lane runs instead:
-the static gates plus the suites that read repository documentation, selected by
-`scripts/docs-lane-suites.mjs` and run with `pnpm test:run:docs`. Everything else
-runs `Policy`, `Typecheck`, `Build`, `Verify Wardmote Runner`, the sharded
-`Tests` and `E2E` matrices. The `verify` aggregate fails when any lane that ran
-did not succeed, and it rejects a run where the heavy lanes and the `Docs` lane
-are inconsistent. The workflow never uses `paths`/`paths-ignore`, because the
-release gate requires a completed `ci.yml` run on the exact tagged commit.
+`main`. Every run, documentation-only changes included, starts all lanes at
+once: `Policy`, `Typecheck`, `Build`, `Verify Wardmote Runner`, the sharded
+`Tests` and `E2E` matrices, the browser gates, and on pull requests the upgrade
+path. The `verify` aggregate fails unless every lane succeeded; only the
+pull-request-only upgrade path may be skipped, on pushes to `main`. The
+workflow never uses `paths`/`paths-ignore`, because the release gate requires a
+completed `ci.yml` run on the exact tagged commit.
 Shared setup lives in `.github/actions/setup-workspace` and the static gates in
-`.github/actions/policy-checks`; the pnpm store and the Runner Rust caches are
-written only by pushes to `main` and restored everywhere else.
+`.github/actions/policy-checks`; the workspace `node_modules` trees, the pnpm
+store (pruned to the lockfile) and the Runner Rust caches are written only by
+pushes to `main` and restored everywhere else. A job whose lockfile, workspace
+manifests, patches and setup action match a cached `node_modules` restores it
+and skips `pnpm install`; any other job restores the store and installs. The
+upgrade-path lane restores the store on a hit too (`store: "true"`), because
+the source install it tests runs its own `pnpm install` against it.
 
 Server test shards run vitest with `WARDMOTE_SERVER_TEST_WORKERS=3`: one fresh
 process per file, longest files first by the manifests in
@@ -75,7 +77,7 @@ This starts:
 `pnpm dev` and `pnpm dev:once` are now idempotent for the current repo and instance: if the matching Paperclip dev runner is already alive, Paperclip reports the existing process instead of starting a duplicate.
 
 To run against a separate local state root, pass `--data-dir`. The dev runner
-translates it to an isolated `PAPERCLIP_HOME` before migration checks or server
+translates it to an isolated `WARDMOTE_HOME` before migration checks or server
 startup, so embedded PostgreSQL and other default instance state live under that
 directory:
 
@@ -225,7 +227,7 @@ fixtures and never start an agent.
 
 Use **Composer → Model and effort picker** to review harness-specific model
 choices. Codex uses the curated adapter catalog unless the instance declares
-`PAPERCLIP_ADAPTER_MODELS`; general OpenAI API models are not Codex choices.
+`WARDMOTE_ADAPTER_MODELS`; general OpenAI API models are not Codex choices.
 The Paperclip Runner Codex profile shows the same known model effort levels.
 Its selected effort is saved with the run and sent to Codex for each turn.
 When Codex reports that a selected model is not supported with a ChatGPT account,
@@ -331,7 +333,7 @@ at least one identity source. Supported-platform process probes fail explicitly
 instead of silently treating a live PID as either the original owner or a
 recycled process when identity cannot be established.
 
-Use `--drain-required` only when the deploy intentionally requires the old terminate-and-retry behavior. Without that flag, the old server verifies that the marker targets its own PID, stops new scheduler work, waits for any queue-claim callback already in flight, snapshots currently running heartbeat run IDs and child PIDs, and skips the shutdown drain so eligible detached local-agent processes can keep running. ACP-backed local runs use server-owned stdio and cannot survive their parent server, so the old server instead persists their complete snapshot, changes the marker to `drainRequired` with `drainReason: "active_acp_run"`, and drains only those runs to bounded conversation retries. These retries resume the prior session when compatible, otherwise carry the full task conversation into a fresh session. They do not automatically replay tool calls or require receipts for every prior action. Detached CLI runs remain eligible for adoption during the same mixed restart. If an ACP process terminates but its terminal run update does not persist, startup classifies it as lost with reason `selective_drain_not_finalized` rather than treating the drain as successful. On startup the new server writes `$PAPERCLIP_HOME/instances/${PAPERCLIP_INSTANCE_ID:-default}/hot-restart-report.json` with `previousServerPid`, `newServerPid`, `previousServerVersion`, `newServerVersion`, `drainReason`, `adoptedRunIds`, `finalizedWhileDownRunIds`, `lostRunIds`, and per-run classifications before the normal orphan reaper runs.
+Use `--drain-required` only when the deploy intentionally requires the old terminate-and-retry behavior. Without that flag, the old server verifies that the marker targets its own PID, stops new scheduler work, waits for any queue-claim callback already in flight, snapshots currently running heartbeat run IDs and child PIDs, and skips the shutdown drain so eligible detached local-agent processes can keep running. ACP-backed local runs use server-owned stdio and cannot survive their parent server, so the old server instead persists their complete snapshot, changes the marker to `drainRequired` with `drainReason: "active_acp_run"`, and drains only those runs to bounded conversation retries. These retries resume the prior session when compatible, otherwise carry the full task conversation into a fresh session. They do not automatically replay tool calls or require receipts for every prior action. Detached CLI runs remain eligible for adoption during the same mixed restart. If an ACP process terminates but its terminal run update does not persist, startup classifies it as lost with reason `selective_drain_not_finalized` rather than treating the drain as successful. On startup the new server writes `$WARDMOTE_HOME/instances/${WARDMOTE_INSTANCE_ID:-default}/hot-restart-report.json` with `previousServerPid`, `newServerPid`, `previousServerVersion`, `newServerVersion`, `drainReason`, `adoptedRunIds`, `finalizedWhileDownRunIds`, `lostRunIds`, and per-run classifications before the normal orphan reaper runs.
 
 When Paperclip manages embedded PostgreSQL, it suppresses that dependency's eager
 `SIGINT`/`SIGTERM` cleanup hooks. Paperclip owns signal ordering so the heartbeat
@@ -367,9 +369,9 @@ to spawn, then confirm its run record has an identity (use an authenticated API
 request in authenticated mode):
 
 ```sh
-PAPERCLIP_API_BASE="${PAPERCLIP_API_URL:-http://127.0.0.1:3100}"
-PAPERCLIP_API_BASE="${PAPERCLIP_API_BASE%/api}"
-curl -fsS "$PAPERCLIP_API_BASE/api/heartbeat-runs/$RUN_ID" \
+WARDMOTE_API_BASE="${WARDMOTE_API_URL:-http://127.0.0.1:3100}"
+WARDMOTE_API_BASE="${WARDMOTE_API_BASE%/api}"
+curl -fsS "$WARDMOTE_API_BASE/api/heartbeat-runs/$RUN_ID" \
   | jq -e '.status == "running" and (.processPid != null or .processGroupId != null)'
 ```
 
@@ -380,7 +382,7 @@ explicit outcome for the run that was live before restart:
 ```sh
 jq -e --arg run "$RUN_ID" \
   '(.lostRunIds | length) == 0 and ((.adoptedRunIds + .finalizedWhileDownRunIds) | index($run) != null)' \
-  "$PAPERCLIP_HOME/hot-restart-report.json"
+  "$WARDMOTE_HOME/hot-restart-report.json"
 ```
 
 An alive child appears in `adoptedRunIds`; a child that completed during the
@@ -456,21 +458,9 @@ pnpm test:release-smoke
 
 These browser suites are intended for targeted local verification and CI, not the default agent/human test command.
 
-The documentation fast lane runs alone with:
-
-```sh
-pnpm test:run:docs
-```
-
-`pnpm test:run:docs` runs the suites whose assertions read repository
-documentation and repository skill markdown, listed in
-`scripts/docs-lane-suites.mjs`. CI's `Docs` lane uses it when a change touches
-documentation only. `node --test scripts/__tests__/docs-lane-suites.test.mjs`
-fails when a new documentation-reading suite is not listed.
-
 The default E2E configuration builds the UI into `server/ui-dist` before starting
 its throwaway instance and serves that build with
-`PAPERCLIP_UI_DEV_MIDDLEWARE=false`. This exercises the
+`WARDMOTE_UI_DEV_MIDDLEWARE=false`. This exercises the
 shipped assets, including service-worker takeover and reload, without traversing
 the development server's unbundled module graph on each navigation. Browser
 assertion deadlines and retries remain unchanged. Use `pnpm dev` separately when
@@ -690,7 +680,7 @@ docker build -t paperclip-local .
 docker run --name paperclip \
   -p 3100:3100 \
   -e HOST=0.0.0.0 \
-  -e PAPERCLIP_HOME=/paperclip \
+  -e WARDMOTE_HOME=/paperclip \
   -v "$(pwd)/data/docker-paperclip:/paperclip" \
   paperclip-local
 ```
@@ -729,7 +719,7 @@ Every local install keeps runtime state directly under the selected instance roo
                                                    # per-agent codex_local home
 ```
 
-`PAPERCLIP_HOME` and `PAPERCLIP_INSTANCE_ID` override the home root and instance id respectively. `wardmote onboard` echoes the resolved values in its banner (`Local home: <home> | instance: <id> | config: <path>`) so you can confirm where state will land before continuing.
+`WARDMOTE_HOME` and `WARDMOTE_INSTANCE_ID` override the home root and instance id respectively. `wardmote onboard` echoes the resolved values in its banner (`Local home: <home> | instance: <id> | config: <path>`) so you can confirm where state will land before continuing.
 
 Config updates preserve unrecognized top-level and nested keys so provider or
 plugin extensions survive `configure` and worktree port repair. Likely
@@ -749,14 +739,14 @@ The server will automatically use embedded PostgreSQL and persist data at:
 Override home or instance:
 
 ```sh
-PAPERCLIP_HOME=/custom/path PAPERCLIP_INSTANCE_ID=dev pnpm wardmote run
+WARDMOTE_HOME=/custom/path WARDMOTE_INSTANCE_ID=dev pnpm wardmote run
 ```
 
 No Docker or external database is required for this mode.
 
 ## Issue Privacy Rollout
 
-`PAPERCLIP_ISSUE_PRIVACY_MODE` controls the canonical opt-in issue/project privacy predicate:
+`WARDMOTE_ISSUE_PRIVACY_MODE` controls the canonical opt-in issue/project privacy predicate:
 
 - `enforce` (default): return private issues only to implicit principals, issue grantees, or private-project access members; hide private projects from non-members
 - `shadow`: log structured would-deny decisions but preserve existing reads; use only for rollout diagnosis
@@ -832,7 +822,7 @@ When a local agent run has no resolved project/session workspace, Paperclip fall
 
 - `~/.wardmote/instances/default/workspaces/<agent-id>`
 
-This path honors `PAPERCLIP_HOME` and `PAPERCLIP_INSTANCE_ID` in non-default setups.
+This path honors `WARDMOTE_HOME` and `WARDMOTE_INSTANCE_ID` in non-default setups.
 
 For `codex_local`, Paperclip assigns new and updated agents an isolated Codex home under the instance root and blocks shared host/company Codex homes:
 
@@ -858,7 +848,7 @@ If a repository is detached or its source configuration changes, its previous ta
 
 ## Config Freshness
 
-Agent, project, environment, secret, skill, and workspace config edits are sampled at the next run boundary. A heartbeat that is already running finishes with the config it started with. Native runners project explicitly configured task environment variables into provider processes and tool commands, including custom `PAPERCLIP_*` names such as `PAPERCLIP_PAGE_BUCKET`. Adding, changing, or removing a projected variable replaces a retained provider process at the next run boundary. Unchanged variables permit process reuse. The projection contains names only; secret values stay in the child environment. Ambient host secrets are not projected. Native projections allow up to 128 variable names, 64 KiB per entry, and 256 KiB of values in total. These native launch limits do not apply to legacy adapter configuration. Runtime authority, provider login credentials, and process-loader settings use their existing restricted paths.
+Agent, project, environment, secret, skill, and workspace config edits are sampled at the next run boundary. A heartbeat that is already running finishes with the config it started with. Native runners project explicitly configured task environment variables into provider processes and tool commands, including custom `WARDMOTE_*` names such as `WARDMOTE_PAGE_BUCKET`. Adding, changing, or removing a projected variable replaces a retained provider process at the next run boundary. Unchanged variables permit process reuse. The projection contains names only; secret values stay in the child environment. Ambient host secrets are not projected. Native projections allow up to 128 variable names, 64 KiB per entry, and 256 KiB of values in total. These native launch limits do not apply to legacy adapter configuration. Runtime authority, provider login credentials, and process-loader settings use their existing restricted paths.
 
 When effective run config changes, Paperclip may intentionally skip a saved adapter session, refresh persisted workspace runtime config, replace a reused execution workspace, or avoid reusing a sandbox/environment lease. Fresh execution can lose adapter-specific session, workspace, or sandbox state; correctness of the next run's config takes priority over continuity. Plain environment values affect freshness through value hashes; run result JSON and workspace operation logs expose only the non-sensitive freshness decision categories, without storing secret values, full env maps, provider credentials, or private path details.
 
@@ -873,7 +863,7 @@ The shared scan subprocess sets `GIT_OPTIONAL_LOCKS=0`, including when a caller 
 Workspace snapshots list ignored paths with `git ls-files --others --ignored --exclude-standard --directory -z` so ignored directory contents do not require a full status walk. Changed, untracked, deleted, and ignored filename lists stream into private SQLite manifests. There is no total filename-list byte limit. The parser and each sink chunk are limited to 64 KiB, and each SQLite connection uses a 1 MiB page cache with disk-backed temporary storage. Records must be complete NUL-delimited UTF-8 paths. Invalid, oversized, or incomplete records fail the scan. Explicit file selection excludes files created after the scan. Buffered browser/guard and referenced-source scan bounds stay unchanged. Snapshot failures retain their typed cause instead of becoming a non-Git-folder result. During pre-provider setup, scan timeouts and queue saturation use the existing two automatic failure retries with a 30-second delay. Cancellation, output limits, and other Git errors stop with specific recovery guidance. See `doc/execution-semantics.md` for the ownership and retry-budget contract.
 
 
-Snapshot scans default to a 30-minute execution deadline, including disk backpressure, rather than the short interactive scan deadline. Set `PAPERCLIP_WORKSPACE_GIT_SNAPSHOT_TIMEOUT_MS` to allow slower storage or larger trees (1 second to 24 hours). Disk capacity, filesystem path limits, Git's own resource use, and this execution budget remain practical limits. Each manifest is admitted with a page allowance equal to one quarter of the available bytes above the host reserve at creation. SQLite enforces that allowance before page allocation, so one snapshot cannot consume all available storage. This is a disk-capacity admission policy, not a fixed filename-list byte or record limit. Nested repository and baseline manifests receive separate allowances from the remaining capacity. Manifest writers also check available disk space before creation and at most every 1 MiB of input thereafter. They stop below a 256 MiB free-space reserve. `PAPERCLIP_WORKSPACE_MANIFEST_MIN_FREE_BYTES` can raise or lower the reserve, with a 64 MiB minimum. Concurrent writers can consume space between checks; filesystem quota and write errors still fail the operation. The scheduler keeps the active slot until the child, pipes, and pending sink write finish. Snapshot failures cancel sibling producers and settle all started producers before removing temporary storage.
+Snapshot scans default to a 30-minute execution deadline, including disk backpressure, rather than the short interactive scan deadline. Set `WARDMOTE_WORKSPACE_GIT_SNAPSHOT_TIMEOUT_MS` to allow slower storage or larger trees (1 second to 24 hours). Disk capacity, filesystem path limits, Git's own resource use, and this execution budget remain practical limits. Each manifest is admitted with a page allowance equal to one quarter of the available bytes above the host reserve at creation. SQLite enforces that allowance before page allocation, so one snapshot cannot consume all available storage. This is a disk-capacity admission policy, not a fixed filename-list byte or record limit. Nested repository and baseline manifests receive separate allowances from the remaining capacity. Manifest writers also check available disk space before creation and at most every 1 MiB of input thereafter. They stop below a 256 MiB free-space reserve. `WARDMOTE_WORKSPACE_MANIFEST_MIN_FREE_BYTES` can raise or lower the reserve, with a 64 MiB minimum. Concurrent writers can consume space between checks; filesystem quota and write errors still fail the operation. The scheduler keeps the active slot until the child, pipes, and pending sink write finish. Snapshot failures cancel sibling producers and settle all started producers before removing temporary storage.
 
 Workspace baselines, nested-repository subsets, and merge lookups also use disk-backed manifests. Local archive input uses NUL list files. Deletion replay uploads a NUL manifest and runs bounded argument batches with ancestor symlink checks. Git ignored paths are literal indexed exclusions for staging, baseline capture, and the host merge. Restore transport uses the fixed/configured archive exclusions; it can transfer a remotely created ignored file, but the host merge excludes it. The v2 native recovery descriptor contains manifest references, not file arrays. Recovery checks controller-owned paths and content digests before reading records. Existing v1 descriptors remain readable. Transient manifests are removed on preparation failure and restore completion; native manifests remain until the durable recovery lifecycle is cleaned up.
 
@@ -889,11 +879,11 @@ Sandbox Git sync treats only the selected repository root as a clone source. A s
 
 Environment overrides:
 
-- `PAPERCLIP_WORKSPACE_GIT_SCAN_CONCURRENCY` (default `2`, range `1`–`16`)
-- `PAPERCLIP_WORKSPACE_GIT_SCAN_QUEUE_CAPACITY` (default `32`, range `0`–`1024`)
-- `PAPERCLIP_WORKSPACE_GIT_SCAN_TIMEOUT_MS` (default `8000`, range `100`–`120000`, buffered scans)
-- `PAPERCLIP_WORKSPACE_GIT_SNAPSHOT_TIMEOUT_MS` (default `1800000`, range `1000`–`86400000`, streaming snapshots)
-- `PAPERCLIP_WORKSPACE_GIT_SCAN_CACHE_TTL_MS` (default `10000`, range `0`–`60000`)
+- `WARDMOTE_WORKSPACE_GIT_SCAN_CONCURRENCY` (default `2`, range `1`–`16`)
+- `WARDMOTE_WORKSPACE_GIT_SCAN_QUEUE_CAPACITY` (default `32`, range `0`–`1024`)
+- `WARDMOTE_WORKSPACE_GIT_SCAN_TIMEOUT_MS` (default `8000`, range `100`–`120000`, buffered scans)
+- `WARDMOTE_WORKSPACE_GIT_SNAPSHOT_TIMEOUT_MS` (default `1800000`, range `1000`–`86400000`, streaming snapshots)
+- `WARDMOTE_WORKSPACE_GIT_SCAN_CACHE_TTL_MS` (default `10000`, range `0`–`60000`)
 
 Structured `workspace_git_scan` logs expose the operation name, a non-reversible workspace-path hash, queue and execution durations, active/queued counts, cache and single-flight use, and terminal outcome. Saturation and timeout warnings are rate-limited so an overload does not create a second logging storm.
 
@@ -952,8 +942,8 @@ The default `worktree init` still seeds eagerly. A lean worktree (created withou
 - `pnpm wardmote worktree ensure-seeded` performs the deferred seed **exactly once**. It is lock-guarded and idempotent: only a complete `verified` manifest short-circuits it, so it is safe to call repeatedly and from concurrent processes. Managed workspaces derive the source from the control-plane-provided base project workspace when it carries its own `.paperclip/config.json`, and otherwise from the control plane's own registered instance config; either way the workspace's manifest never selects it. Manual worktrees must pass `--from-config`.
 - `wardmote run` calls `ensureWorktreeSeeded` automatically before doctor/boot. Managed runs transparently seed a lean worktree from their registered base workspace; an unmanaged lean worktree must first run `worktree ensure-seeded --from-config <source-config>`.
 - Managed Paperclip git worktrees default to the repository's `scripts/provision-worktree.sh` when the strategy omits `provisionCommand`. When a registered source config exists, setup creates the isolated config and pending manifest. Runtime startup also runs `scripts/provision-worktree-runtime.sh` automatically when no explicit runtime provision command is configured and the manifest is not verified. Explicitly configured provision commands still take precedence.
-- An environment-configured server may have no local seed config. If neither the base checkout nor the default control-plane instance has one, a fresh worktree prepares its dependencies without creating a development instance. This also applies when `PAPERCLIP_CONFIG` names the default `$PAPERCLIP_HOME/instances/$PAPERCLIP_INSTANCE_ID/config.json` path, as the Docker image does. Setup creates no config, environment file, or seed manifest and does not claim runtime or seed readiness. A later request for a seeded development runtime still needs a canonical registered source config. Once that source exists, provisioning the checkout again creates the development instance normally.
-- A missing custom `PAPERCLIP_CONFIG`, rejected symlink, or non-regular source file still fails setup. An existing worktree with a config, environment file, or seed state also fails if its source disappears; setup never downgrades that instance to a plain checkout. Repair the source before retrying.
+- An environment-configured server may have no local seed config. If neither the base checkout nor the default control-plane instance has one, a fresh worktree prepares its dependencies without creating a development instance. This also applies when `WARDMOTE_CONFIG` names the default `$WARDMOTE_HOME/instances/$WARDMOTE_INSTANCE_ID/config.json` path, as the Docker image does. Setup creates no config, environment file, or seed manifest and does not claim runtime or seed readiness. A later request for a seeded development runtime still needs a canonical registered source config. Once that source exists, provisioning the checkout again creates the development instance normally.
+- A missing custom `WARDMOTE_CONFIG`, rejected symlink, or non-regular source file still fails setup. An existing worktree with a config, environment file, or seed state also fails if its source disappears; setup never downgrades that instance to a plain checkout. Repair the source before retrying.
 - The built-in deferred seed is recorded as its own terminal `workspace_seed` operation. A zero exit code is not enough for success: the operation succeeds only when `.paperclip/seed-manifest.json` contains complete verified evidence; failed, missing, or malformed manifests produce a failed operation with the seed phase in metadata.
 - Worktrees created before lazy seeding shipped may have neither marker. Paperclip adopts them only after their configured database proves a compatible migration journal and the core Paperclip schema; otherwise managed startup creates a pending manifest and performs the normal verified seed. Manual markerless worktrees must provide `--from-config` so the source remains explicit.
 
@@ -975,16 +965,16 @@ Provisioned git worktrees also pause seeded routines that still have enabled sch
 
 That repo-local env also sets:
 
-- `PAPERCLIP_IN_WORKTREE=true`
-- `PAPERCLIP_DB_BACKUP_ENABLED=false`
-- `PAPERCLIP_WORKTREE_NAME=<worktree-name>`
-- `PAPERCLIP_WORKTREE_COLOR=<hex-color>`
+- `WARDMOTE_IN_WORKTREE=true`
+- `WARDMOTE_DB_BACKUP_ENABLED=false`
+- `WARDMOTE_WORKTREE_NAME=<worktree-name>`
+- `WARDMOTE_WORKTREE_COLOR=<hex-color>`
 
 The server/UI use those values for worktree-specific branding such as the top banner and dynamically colored favicon.
-Authenticated worktree servers also use the `PAPERCLIP_INSTANCE_ID` value to scope Better Auth cookie names.
+Authenticated worktree servers also use the `WARDMOTE_INSTANCE_ID` value to scope Better Auth cookie names.
 Browser cookies are shared by host rather than port, so this prevents logging into one `127.0.0.1:<port>` worktree from replacing another worktree server's session cookie.
 
-When Paperclip closes a server-managed git worktree, it also reclaims the isolated instance referenced by that worktree's repo-local `.paperclip/.env`. New server-managed worktrees use a collision-resistant instance id derived from the resolved absolute worktree path, and Paperclip persists the resulting instance root as execution-workspace ownership metadata. Cleanup requires the env pointer to match that persisted root, stops a running embedded PostgreSQL process, and then removes the instance directory. The deletion guard only accepts canonical instance paths below `PAPERCLIP_WORKTREES_DIR/instances/`; legacy or mismatched ownership, pointers to the default/live Paperclip home, and all other locations are logged and left untouched.
+When Paperclip closes a server-managed git worktree, it also reclaims the isolated instance referenced by that worktree's repo-local `.paperclip/.env`. New server-managed worktrees use a collision-resistant instance id derived from the resolved absolute worktree path, and Paperclip persists the resulting instance root as execution-workspace ownership metadata. Cleanup requires the env pointer to match that persisted root, stops a running embedded PostgreSQL process, and then removes the instance directory. The deletion guard only accepts canonical instance paths below `WARDMOTE_WORKTREES_DIR/instances/`; legacy or mismatched ownership, pointers to the default/live Paperclip home, and all other locations are logged and left untouched.
 
 Print shell exports explicitly when needed:
 
@@ -1002,14 +992,14 @@ Opening a managed workspace board no longer depends on knowing which cloned pass
 - **Exchange** — `GET /api/auth/{workspace-handoff}/exchange?ticket=…` on the workspace itself, registered as a Better Auth plugin so session creation and cookie signing use Better Auth's own path. It verifies the signature, expiry, origin, instance, workspace, company, the cloned user's email, and an active membership **in that company**, records the nonce so a replay loses, and answers with an HTTP redirect — which is what keeps the ticket out of browser history. Request logs redact the `ticket` parameter.
 - **Fallback** — direct email/password sign-in still works and the UI labels it accurately as *snapshot-local credentials*. A rejected ticket redirects to `/auth?workspaceHandoffError=<reason>` rather than failing opaquely.
 
-Key material is derived, never shared. The control plane keeps a root secret (`PAPERCLIP_WORKSPACE_HANDOFF_SECRET`, or a domain-separated derivation from the instance's existing signing secret when that is unset) and injects only per-workspace values into the guest process:
+Key material is derived, never shared. The control plane keeps a root secret (`WARDMOTE_WORKSPACE_HANDOFF_SECRET`, or a domain-separated derivation from the instance's existing signing secret when that is unset) and injects only per-workspace values into the guest process:
 
 | Variable | Purpose |
 | --- | --- |
-| `PAPERCLIP_WORKSPACE_HANDOFF_KEY` | Per-workspace ticket verification key. A guest cannot mint a ticket for a sibling workspace. |
-| `PAPERCLIP_WORKSPACE_READINESS_TOKEN` | Bearer token the control plane presents to read this workspace's protected readiness. |
-| `PAPERCLIP_EXECUTION_WORKSPACE_ID` | Execution workspace the guest was provisioned for, used for identity checks. |
-| `PAPERCLIP_EXECUTION_WORKSPACE_COMPANY_ID` | Company whose board the guest represents. Scopes both the membership check and the readiness probes, so "some company in the clone is fine" cannot pass for the one being opened. |
+| `WARDMOTE_WORKSPACE_HANDOFF_KEY` | Per-workspace ticket verification key. A guest cannot mint a ticket for a sibling workspace. |
+| `WARDMOTE_WORKSPACE_READINESS_TOKEN` | Bearer token the control plane presents to read this workspace's protected readiness. |
+| `WARDMOTE_EXECUTION_WORKSPACE_ID` | Execution workspace the guest was provisioned for, used for identity checks. |
+| `WARDMOTE_EXECUTION_WORKSPACE_COMPANY_ID` | Company whose board the guest represents. Scopes both the membership check and the readiness probes, so "some company in the clone is fine" cannot pass for the one being opened. |
 
 Protected `/api/health` on a cloned workspace additionally carries a `workspace` block — `state`, `databaseReady`, `cloneDataReady`, `authHandoffReady`, `seedState`, `seedPhase`, `instanceId`, `executionWorkspaceId`, `failurePhase`. Public health stays redacted. Managed runtime start will not publish `running / healthy` unless that block agrees and names this exact instance and workspace, and runtime-service work products are refreshed from the live runtime row so a port change cannot leave a stale user-facing URL.
 
@@ -1025,7 +1015,7 @@ The workspace UI surfaces `Provisioning database`, `Validating clone`, `Ready`, 
 | `--instance <id>` | Explicit isolated instance id |
 | `--home <path>` | Home root for worktree instances (default: `~/.paperclip-worktrees`) |
 | `--from-config <path>` | Source config.json to seed from |
-| `--from-data-dir <path>` | Source PAPERCLIP_HOME used when deriving the source config |
+| `--from-data-dir <path>` | Source WARDMOTE_HOME used when deriving the source config |
 | `--from-instance <id>` | Source instance id (default: `default`) |
 | `--server-port <port>` | Preferred server port |
 | `--db-port <port>` | Preferred embedded Postgres port |
@@ -1064,7 +1054,7 @@ For an already-created worktree where you want the CLI to decide whether to rebu
 | `--branch <name>` | Existing branch/worktree selector to repair, or a branch name to create under `.paperclip/worktrees` |
 | `--home <path>` | Home root for worktree instances (default: `~/.paperclip-worktrees`) |
 | `--from-config <path>` | Source config.json to seed from |
-| `--from-data-dir <path>` | Source `PAPERCLIP_HOME` used when deriving the source config |
+| `--from-data-dir <path>` | Source `WARDMOTE_HOME` used when deriving the source config |
 | `--from-instance <id>` | Source instance id when deriving the source config (default: `default`) |
 | `--seed-mode <mode>` | Seed profile: `minimal` or `full` (default: `minimal`) |
 | `--no-seed` | Repair metadata only when bootstrapping a missing worktree config |
@@ -1092,7 +1082,7 @@ For an already-created worktree where you want to keep the existing repo-local c
 | `--from <worktree>` | Source worktree path, directory name, branch name, or `current` |
 | `--to <worktree>` | Target worktree path, directory name, branch name, or `current` (defaults to `current`) |
 | `--from-config <path>` | Source config.json to seed from |
-| `--from-data-dir <path>` | Source `PAPERCLIP_HOME` used when deriving the source config |
+| `--from-data-dir <path>` | Source `WARDMOTE_HOME` used when deriving the source config |
 | `--from-instance <id>` | Source instance id when deriving the source config |
 | `--seed-mode <mode>` | Seed profile: `minimal` or `full` (default: `full`) |
 | `--yes` | Skip the destructive confirmation prompt |
@@ -1127,7 +1117,7 @@ Managed workspace repair uses this same verified full-reseed contract through `P
 | `--instance <id>` | Explicit isolated instance id |
 | `--home <path>` | Home root for worktree instances (default: `~/.paperclip-worktrees`) |
 | `--from-config <path>` | Source config.json to seed from |
-| `--from-data-dir <path>` | Source PAPERCLIP_HOME used when deriving the source config |
+| `--from-data-dir <path>` | Source WARDMOTE_HOME used when deriving the source config |
 | `--from-instance <id>` | Source instance id (default: `default`) |
 | `--server-port <port>` | Preferred server port |
 | `--db-port <port>` | Preferred embedded Postgres port |
@@ -1159,7 +1149,7 @@ pnpm wardmote worktree env --json
 eval "$(npx @tickernelz/wardmote worktree env)"
 ```
 
-For project execution worktrees, Paperclip can also run a project-defined provision command after it creates or reuses an isolated git worktree. Configure this on the project's execution workspace policy (`workspaceStrategy.provisionCommand`). The command runs inside the derived worktree and receives `PAPERCLIP_WORKSPACE_*`, `PAPERCLIP_PROJECT_ID`, `PAPERCLIP_AGENT_ID`, and `PAPERCLIP_ISSUE_*` environment variables so each repo can bootstrap itself however it wants.
+For project execution worktrees, Paperclip can also run a project-defined provision command after it creates or reuses an isolated git worktree. Configure this on the project's execution workspace policy (`workspaceStrategy.provisionCommand`). The command runs inside the derived worktree and receives `WARDMOTE_WORKSPACE_*`, `WARDMOTE_PROJECT_ID`, `WARDMOTE_AGENT_ID`, and `WARDMOTE_ISSUE_*` environment variables so each repo can bootstrap itself however it wants.
 
 An issue's partial `workspaceStrategy` inherits omitted fields from the enabled project's strategy when both use the same type. For example, an issue can override `baseRef` without losing the project's provision, runtime provision, or teardown commands. An explicit value, including `null` or an empty string, replaces the project value. Clearing a command restores the runtime's usual default behavior; use `provisionCommand: "true"` for an explicit no-op. A different strategy type or a disabled project policy does not supply these defaults. An issue's `existingBranch` pin also excludes the project's `branchTemplate`.
 
@@ -1186,11 +1176,11 @@ Lease recovery is bounded and explicit. Another issue may reclaim the lane once 
 
 For Tailscale HTTPS exposure, readiness includes stable listener-ownership checks for every requested loopback port (the app and, when configured, its Vite HMR companion). Each listener must belong to the spawned managed process group; an unrelated listener that races onto either reserved port fails the start closed before the broker is asked to expose it.
 
-Managed `paperclip-dev` worktree services enable `PAPERCLIP_UI_DEV_MIDDLEWARE=true` by default, so newly started worktrees hot-reload UI source changes. Managed HTTPS services use this default only when they publish the Paperclip Vite HMR companion listener, which is the default exposure configuration. A service or adapter can explicitly set the variable to `false` when it intentionally needs to exercise the built UI bundle.
+Managed `paperclip-dev` worktree services enable `WARDMOTE_UI_DEV_MIDDLEWARE=true` by default, so newly started worktrees hot-reload UI source changes. Managed HTTPS services use this default only when they publish the Paperclip Vite HMR companion listener, which is the default exposure configuration. A service or adapter can explicitly set the variable to `false` when it intentionally needs to exercise the built UI bundle.
 
 In Vite middleware mode, Paperclip gives HMR a dedicated HTTP server bound to the managed runtime's loopback host. The browser still derives the HMR hostname from the public HTTPS page, and exposed runtimes use secure WebSockets, so listener containment does not break remote hot reload.
 
-When a workspace service runs Paperclip for browser OAuth QA, configure its `expose.urlTemplate` with the canonical URL the browser can reach. Paperclip preserves explicit `PAPERCLIP_PUBLIC_URL` or `BETTER_AUTH_URL` settings; otherwise it uses a valid exposed HTTPS origin (or loopback HTTP) as the managed runtime fallback for Better Auth and `/api/tools/oauth/callback`. Internal service names such as `http://paperclip-dev:<port>` are rejected unless that hostname is genuinely the browser route. Use a unique origin per isolated worktree. See [Execution Workspaces And Runtime Services](../docs/guides/board-operator/execution-workspaces-and-runtime-services.md#browser-reachable-origins-for-oauth-qa) for configuration and verification.
+When a workspace service runs Paperclip for browser OAuth QA, configure its `expose.urlTemplate` with the canonical URL the browser can reach. Paperclip preserves explicit `WARDMOTE_PUBLIC_URL` or `BETTER_AUTH_URL` settings; otherwise it uses a valid exposed HTTPS origin (or loopback HTTP) as the managed runtime fallback for Better Auth and `/api/tools/oauth/callback`. Internal service names such as `http://paperclip-dev:<port>` are rejected unless that hostname is genuinely the browser route. Use a unique origin per isolated worktree. See [Execution Workspaces And Runtime Services](../docs/guides/board-operator/execution-workspaces-and-runtime-services.md#browser-reachable-origins-for-oauth-qa) for configuration and verification.
 
 ## Heartbeat Service Extractions
 
@@ -1335,11 +1325,11 @@ during provider execution. Keep policy changes separate from this extraction.
 ## Wake Context Delivery
 
 Built-in adapters deliver wake context through the run prompt, including structured
-execution-continuation data. They do not export `PAPERCLIP_WAKE_PAYLOAD_JSON`. A
+execution-continuation data. They do not export `WARDMOTE_WAKE_PAYLOAD_JSON`. A
 large JSON environment entry can prevent the agent process from starting with
 `E2BIG`, even when the same context fits in the prompt transport. Configured values
 for this retired variable are ignored. Scalar runtime variables such as
-`PAPERCLIP_TASK_ID` and `PAPERCLIP_WAKE_REASON` remain available.
+`WARDMOTE_TASK_ID` and `WARDMOTE_WAKE_REASON` remain available.
 
 Custom instructions that read the retired variable must use the wake payload in
 the prompt instead. This transport change adds no history limits or truncation;
@@ -1415,7 +1405,7 @@ hold. A generic retry cannot resolve this incident. The runner's
 flag so resumed agents can reuse delegated work and inspect completed results.
 
 For native Codex runs, Paperclip passes the resolved execution workspace as
-`PAPERCLIP_WORKSPACE_CWD` and uses it as the provider containment boundary. A
+`WARDMOTE_WORKSPACE_CWD` and uses it as the provider containment boundary. A
 workspace below the host `HOME` is valid, including the default projectless
 agent workspace. The host `HOME` itself, a directory that contains it, a
 filesystem root, a `CODEX_HOME` overlap, or a canonical path outside the
@@ -1426,8 +1416,8 @@ for the selected model. Preparation selects the closest compatible older model
 of the same class, then the stable Runner default. The task shows a warning with
 the requested model, effective model, and CLI version. Agent and task settings
 stay unchanged. Update the image CLI to restore the requested model on later
-runs. Explicit `PAPERCLIP_RUNNER_REMOTE_CODEX_PATH` and
-`PAPERCLIP_RUNNER_REMOTE_CODEX_NPM_SPEC` settings take precedence. See
+runs. Explicit `WARDMOTE_RUNNER_REMOTE_CODEX_PATH` and
+`WARDMOTE_RUNNER_REMOTE_CODEX_NPM_SPEC` settings take precedence. See
 [execution semantics](execution-semantics.md#remote-codex-model-compatibility).
 
 ### Sandbox ACP input delivery
@@ -1581,7 +1571,7 @@ pnpm exec vitest run server/src/services/native-runtime/native-runner-restart-re
 pnpm --filter @tickernelz/wardmote-runner exec vitest run src/live/runnerd-codex-transport.test.ts -t 'adopts a live runner'
 ```
 
-The suite uses isolated PostgreSQL state, isolated `PAPERCLIP_HOME` roots, real
+The suite uses isolated PostgreSQL state, isolated `WARDMOTE_HOME` roots, real
 `runnerd` processes, and a deterministic fake Codex app server. It covers hot
 and hard restarts with live and dead runners, the result-finalization race,
 incomplete bootstrap, repeated crashes with steering, and fail-closed process
@@ -1751,25 +1741,25 @@ pnpm db:backup
 
 Environment overrides:
 
-- `PAPERCLIP_DB_BACKUP_ENABLED=true|false`
-- `PAPERCLIP_DB_BACKUP_INTERVAL_MINUTES=<minutes>`
-- `PAPERCLIP_DB_BACKUP_IDLE_CHECKPOINT_ENABLED=1` enables verified final backups
+- `WARDMOTE_DB_BACKUP_ENABLED=true|false`
+- `WARDMOTE_DB_BACKUP_INTERVAL_MINUTES=<minutes>`
+- `WARDMOTE_DB_BACKUP_IDLE_CHECKPOINT_ENABLED=1` enables verified final backups
   for owned idle sleep, with restart catch-up. Off by default; see
   [idle sleep safety](idle-sleep-safety.md) for the hosting and storage contract.
-- `PAPERCLIP_DB_BACKUP_RETENTION_DAYS=<days>`
-- `PAPERCLIP_DB_BACKUP_DIR=/absolute/or/~/path`
-- `PAPERCLIP_DB_BACKUP_MAX_AGE_HOURS=<hours>` controls the `/api/health`
+- `WARDMOTE_DB_BACKUP_RETENTION_DAYS=<days>`
+- `WARDMOTE_DB_BACKUP_DIR=/absolute/or/~/path`
+- `WARDMOTE_DB_BACKUP_MAX_AGE_HOURS=<hours>` controls the `/api/health`
   stale-backup warning threshold
-- `PAPERCLIP_DB_BACKUP_ALERT_FILE=/path/to/failure-marker` lets external cron
+- `WARDMOTE_DB_BACKUP_ALERT_FILE=/path/to/failure-marker` lets external cron
   wrappers surface the last failed backup in `/api/health`
-- `PAPERCLIP_WORKSPACE_REAPER_COOLDOWN_DAYS=<days>` sets how long the
+- `WARDMOTE_WORKSPACE_REAPER_COOLDOWN_DAYS=<days>` sets how long the
   terminal-workspace reaper waits after an issue tree becomes terminal before it
   archives the execution workspace and deletes the worktree. A person can reopen
   the work inside this window. The default is `7`. A value of `0` disables the
   cooldown and restores immediate reaping. A negative or non-numeric value falls
   back to the default.
 
-Without `PAPERCLIP_DB_BACKUP_ALERT_FILE`, health checks look for
+Without `WARDMOTE_DB_BACKUP_ALERT_FILE`, health checks look for
 `db-backup-to-s3.failure` in the backup directory, beside the backup directory,
 and in the default sibling `health/` directory.
 
@@ -1782,14 +1772,14 @@ those providers are enabled.
 Agent env vars now support secret references. By default, secret values are stored with local encryption and only secret refs are persisted in agent config.
 
 - Default local key path: `~/.wardmote/instances/default/secrets/master.key`
-- Override key material directly: `PAPERCLIP_SECRETS_MASTER_KEY`
-- Override key file path: `PAPERCLIP_SECRETS_MASTER_KEY_FILE`
+- Override key material directly: `WARDMOTE_SECRETS_MASTER_KEY`
+- Override key file path: `WARDMOTE_SECRETS_MASTER_KEY_FILE`
 - Back up the key file and database together; either one alone is not enough to restore local encrypted secrets.
 
 Strict mode (recommended outside local trusted machines):
 
 ```sh
-PAPERCLIP_SECRETS_STRICT_MODE=true
+WARDMOTE_SECRETS_STRICT_MODE=true
 ```
 
 When strict mode is enabled, sensitive env keys (for example `*_API_KEY`, `*_TOKEN`, `*_SECRET`) must use secret references instead of inline plain values.
@@ -1822,11 +1812,11 @@ are public-only by default even in local/private deployments. To intentionally
 use an internal broker, configure an exact hostname allowlist:
 
 ```sh
-PAPERCLIP_TOKEN_BROKER_ALLOWED_HOSTS=broker.internal.example,10.0.0.42
+WARDMOTE_TOKEN_BROKER_ALLOWED_HOSTS=broker.internal.example,10.0.0.42
 ```
 
 Entries are comma- or whitespace-separated exact hostnames (no wildcards). The
-host configured by `PAPERCLIP_PAGES_API_URL` is included automatically. Every
+host configured by `WARDMOTE_PAGES_API_URL` is included automatically. Every
 broker hostname is resolved once and the request is pinned to the approved
 address; IPv4 and IPv6 link-local destinations remain denied even when their
 host is allowlisted.
@@ -1841,7 +1831,7 @@ Server owners can opt a trusted private service in with a comma-separated list
 of exact origins:
 
 ```sh
-PAPERCLIP_HTTP_ADAPTER_PRIVATE_ENDPOINT_ALLOWLIST=http://hooks.internal.example:8080,https://10.0.0.42
+WARDMOTE_HTTP_ADAPTER_PRIVATE_ENDPOINT_ALLOWLIST=http://hooks.internal.example:8080,https://10.0.0.42
 ```
 
 Each entry must contain only a scheme, hostname, and optional port. Paths,
@@ -1854,7 +1844,7 @@ Link-local destinations remain denied even when explicitly listed.
 Company deletion is intended as a dev/debug capability and can be disabled at runtime:
 
 ```sh
-PAPERCLIP_ENABLE_COMPANY_DELETION=false
+WARDMOTE_ENABLE_COMPANY_DELETION=false
 ```
 
 Default behavior:
@@ -1909,21 +1899,21 @@ uses a live vendor OAuth flow and creates a short-lived connection plus one
 fresh-run proof issue.
 
 ```sh
-INTEGRATIONS_POSTHOG_PAPERCLIP_E2E_EMAIL=operator@example.test \
-INTEGRATIONS_POSTHOG_PAPERCLIP_DEV_LOGIN_PASSWORD='<environment-delivered>' \
+INTEGRATIONS_POSTHOG_WARDMOTE_E2E_EMAIL=operator@example.test \
+INTEGRATIONS_POSTHOG_WARDMOTE_DEV_LOGIN_PASSWORD='<environment-delivered>' \
 INTEGRATIONS_POSTHOG_POSTHOG_PROJECT_ID=483530 \
 pnpm smoke:posthog-live https://paperclip.example.test
 ```
 
 The command fails before browser launch unless all three integration bindings
 are present, and never prints their values. A Paperclip heartbeat derives the
-target origin from its injected `PAPERCLIP_API_URL`; the positional URL (or
+target origin from its injected `WARDMOTE_API_URL`; the positional URL (or
 `--base-url <url>`) selects the running instance for a manual invocation. It
 creates no trace, video, or HAR, begins
 screenshots only after OAuth returns to Paperclip, enables read actions only,
 installs the connection on `CodexCoderPro` only, runs `project-get` with `{}`
 from the board Test panel and a fresh agent run, then removes the connection.
-Sanitized JSON and PNG evidence defaults to `PAPERCLIP_RUN_SCRATCH_DIR` when the
+Sanitized JSON and PNG evidence defaults to `WARDMOTE_RUN_SCRATCH_DIR` when the
 command runs in a heartbeat; set `POSTHOG_EVIDENCE_DIR` for a different output
 directory.
 
@@ -1940,7 +1930,7 @@ See [execution GitHub identity](execution-github-identity.md) for the operation-
 ### Agent persona Storybook
 
 See [agent-personas.md](agent-personas.md) for the dynamic avatar endpoint, cache,
-and character stories. Set `PAPERCLIP_STORYBOOK_API_URL` to your isolated
+and character stories. Set `WARDMOTE_STORYBOOK_API_URL` to your isolated
 Paperclip API URL when running dev Storybook. Published Storybook builds automatically
 package avatar PNGs using the API renderer; static hosting needs no API proxy.
 

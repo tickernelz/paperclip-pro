@@ -19,28 +19,28 @@ import {
 } from "./notion-generic-live-lib.mjs";
 
 const COMPLETE_ENV = {
-  PAPERCLIP_E2E_BASE_URL: "https://paperclip.example.test",
-  PAPERCLIP_E2E_EMAIL: "operator@example.test",
-  PAPERCLIP_DEV_LOGIN_PASSWORD: "not-a-real-password",
-  PAPERCLIP_API_URL: "https://paperclip.example.test/api",
-  PAPERCLIP_API_KEY: "not-a-real-agent-key",
-  PAPERCLIP_RUN_ID: "run-123",
-  PAPERCLIP_TASK_ID: "issue-123",
+  WARDMOTE_E2E_BASE_URL: "https://paperclip.example.test",
+  WARDMOTE_E2E_EMAIL: "operator@example.test",
+  WARDMOTE_DEV_LOGIN_PASSWORD: "not-a-real-password",
+  WARDMOTE_API_URL: "https://paperclip.example.test/api",
+  WARDMOTE_API_KEY: "not-a-real-agent-key",
+  WARDMOTE_RUN_ID: "run-123",
+  WARDMOTE_TASK_ID: "issue-123",
 };
 
 test("preflight reports binding names without exposing supplied values", () => {
   assert.throws(
-    () => preflightNotionGenericLive({ PAPERCLIP_DEV_LOGIN_PASSWORD: "present" }),
+    () => preflightNotionGenericLive({ WARDMOTE_DEV_LOGIN_PASSWORD: "present" }),
     (error) => {
       assert.ok(error instanceof NotionGenericLivePreflightError);
       assert.equal(error.code, "missing_environment");
       assert.deepEqual(error.details.missing, [
-        "PAPERCLIP_E2E_BASE_URL",
-        "PAPERCLIP_E2E_EMAIL",
-        "PAPERCLIP_API_URL",
-        "PAPERCLIP_API_KEY",
-        "PAPERCLIP_RUN_ID",
-        "PAPERCLIP_TASK_ID",
+        "WARDMOTE_E2E_BASE_URL",
+        "WARDMOTE_E2E_EMAIL",
+        "WARDMOTE_API_URL",
+        "WARDMOTE_API_KEY",
+        "WARDMOTE_RUN_ID",
+        "WARDMOTE_TASK_ID",
       ]);
       assert.doesNotMatch(error.message, /present/);
       return true;
@@ -56,13 +56,13 @@ test("preflight requires explicit credential-free HTTPS target and control-plane
     "https://paperclip.example.test/?code=secret",
   ]) {
     assert.throws(
-      () => preflightNotionGenericLive({ ...COMPLETE_ENV, PAPERCLIP_E2E_BASE_URL: baseUrl }),
+      () => preflightNotionGenericLive({ ...COMPLETE_ENV, WARDMOTE_E2E_BASE_URL: baseUrl }),
       (error) => error instanceof NotionGenericLivePreflightError && error.code === "unsafe_base_url",
     );
   }
   const split = preflightNotionGenericLive({
     ...COMPLETE_ENV,
-    PAPERCLIP_API_URL: "https://control-plane.example.test/api",
+    WARDMOTE_API_URL: "https://control-plane.example.test/api",
   });
   assert.equal(split.baseUrl, "https://paperclip.example.test");
   assert.equal(split.apiBaseUrl, "https://control-plane.example.test/api");

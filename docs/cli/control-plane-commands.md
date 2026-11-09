@@ -63,7 +63,7 @@ there.
 
 With agent authentication, use `company list` or `company current` to resolve
 the scoped company. `company list` first tries the board-wide list; if that is
-forbidden, it falls back to `--company-id`, `PAPERCLIP_COMPANY_ID`, context, or
+forbidden, it falls back to `--company-id`, `WARDMOTE_COMPANY_ID`, context, or
 `/api/agents/me` and returns only that scoped company. `company create` requires
 board/instance-admin authentication because it is an instance-wide setup
 command.

@@ -388,7 +388,7 @@ it.each([
 it.each([[503, "transient_infrastructure"], [403, "permanent_infrastructure"], [400, "candidate_failure"]])(
   "normalizes actual RunnerApi HTTP %s status independently of its private body", async (status, failureClass) => {
     vi.useFakeTimers(); vi.setSystemTime(0);
-    vi.stubEnv("PAPERCLIP_RUNNER_E2E_PORT", "3100");
+    vi.stubEnv("WARDMOTE_RUNNER_E2E_PORT", "3100");
     const h = harness(REMOTE_FIXTURE_MIN_SETUP_BUDGET_MS + 1000); h.bootstrap.prompt("actual-api");
     const original = h.api.get.getMockImplementation()!;
     const secret = "PRIVATE body: forbidden secret plaintext 503 timeout socket hang up ".repeat(10_000);

@@ -232,7 +232,7 @@ local harness installation, credential validity, and model availability are
 intentionally checked only when the agent first runs.
 
 When invoked inside a linked Git worktree, the command ignores inherited
-`PAPERCLIP_IN_WORKTREE` state, launches in worktree mode, and verifies **Run
+`WARDMOTE_IN_WORKTREE` state, launches in worktree mode, and verifies **Run
 tasks in this worktree** is armed for the current instance before opening the
 browser. In a primary checkout or non-Git directory it launches without
 worktree mode and does not alter the setting. On reuse, if any company already
@@ -306,7 +306,7 @@ Current CLI behavior:
 - `wardmote onboard` and `wardmote configure --section server` set deployment mode in config
 - server onboarding/configure ask for reachability intent and write `server.bind`
 - `wardmote run --bind <loopback|lan|tailnet>` passes a quickstart bind preset into first-run onboarding when config is missing
-- runtime can override mode with `PAPERCLIP_DEPLOYMENT_MODE`
+- runtime can override mode with `WARDMOTE_DEPLOYMENT_MODE`
 - `wardmote run` and `wardmote doctor` still do not expose a direct low-level `--mode` flag
 
 Canonical behavior is documented in `doc/DEPLOYMENT-MODES.md`.
@@ -340,7 +340,7 @@ Company-scoped commands also support `--company-id <id>`.
 API base resolution order:
 
 1. `--api-base <url>`
-2. `PAPERCLIP_API_URL`
+2. `WARDMOTE_API_URL`
 3. selected context profile `apiBase`
 4. local Paperclip config server port
 5. `http://localhost:3100`
@@ -373,7 +373,7 @@ Store local defaults in `~/.wardmote/context.json`:
 
 ```sh
 npx @tickernelz/wardmote context set --api-base http://localhost:3100 --company-id <company-id>
-npx @tickernelz/wardmote context set --persona agent --agent-id <agent-id> --api-key-env-var-name PAPERCLIP_API_KEY
+npx @tickernelz/wardmote context set --persona agent --agent-id <agent-id> --api-key-env-var-name WARDMOTE_API_KEY
 pnpm wardmote context show
 pnpm wardmote context list
 npx @tickernelz/wardmote context use default
@@ -382,8 +382,8 @@ npx @tickernelz/wardmote context use default
 To avoid storing secrets in context, set `apiKeyEnvVarName` and keep the key in env:
 
 ```sh
-npx @tickernelz/wardmote context set --api-key-env-var-name PAPERCLIP_API_KEY
-export PAPERCLIP_API_KEY=...
+npx @tickernelz/wardmote context set --api-key-env-var-name WARDMOTE_API_KEY
+export WARDMOTE_API_KEY=...
 ```
 
 ## Organization Commands
@@ -417,12 +417,12 @@ Notes:
 
 - With agent authentication, `company list` and `company current` are
   agent-safe company selectors. `company list` first tries the board-wide list;
-  if that is forbidden, it uses `--company-id`, `PAPERCLIP_COMPANY_ID`, context,
+  if that is forbidden, it uses `--company-id`, `WARDMOTE_COMPANY_ID`, context,
   or `/api/agents/me` and then reads only that scoped company.
 - `company create` requires board/instance-admin authentication because it is
   an instance-wide setup command.
-- Deletion is server-gated by `PAPERCLIP_ENABLE_COMPANY_DELETION`.
-- With agent authentication, company deletion is company-scoped. Use the current company ID/prefix (for example via `--company-id` or `PAPERCLIP_COMPANY_ID`), not another company.
+- Deletion is server-gated by `WARDMOTE_ENABLE_COMPANY_DELETION`.
+- With agent authentication, company deletion is company-scoped. Use the current company ID/prefix (for example via `--company-id` or `WARDMOTE_COMPANY_ID`), not another company.
 
 ## Issue Commands
 
@@ -579,7 +579,7 @@ Agent config, instructions, skills, project env, environment, secret, and worksp
 
 - creates a new long-lived agent API key
 - installs missing Paperclip skills into `~/.codex/skills` and `~/.claude/skills`
-- prints `export ...` lines for `PAPERCLIP_API_URL`, `PAPERCLIP_COMPANY_ID`, `PAPERCLIP_AGENT_ID`, and `PAPERCLIP_API_KEY`
+- prints `export ...` lines for `WARDMOTE_API_URL`, `WARDMOTE_COMPANY_ID`, `WARDMOTE_AGENT_ID`, and `WARDMOTE_API_KEY`
 
 Example for shortname-based local setup:
 
@@ -650,7 +650,7 @@ Prompt handoff creates Paperclip work. It does not create a chat session.
 
 ```sh
 npx @tickernelz/wardmote agent-prompt <agent-name-or-id> <agent-api-key> "Prompt here"
-npx @tickernelz/wardmote agent prompt --agent <agent-name-or-id> --api-key-env PAPERCLIP_API_KEY "Prompt here"
+npx @tickernelz/wardmote agent prompt --agent <agent-name-or-id> --api-key-env WARDMOTE_API_KEY "Prompt here"
 npx @tickernelz/wardmote agent prompt --profile my-agent "Prompt here"
 npx @tickernelz/wardmote board prompt --company-id <company-id> --agent <agent-name-or-id> "Prompt here"
 ```
@@ -803,7 +803,7 @@ npx @tickernelz/wardmote teams install <catalog-id-or-key-or-slug> --company-id 
 Preview/install options:
 
 - Under agent authentication, use `wardmote company list --json`,
-  `wardmote company current --json`, or `PAPERCLIP_COMPANY_ID` to select the
+  `wardmote company current --json`, or `WARDMOTE_COMPANY_ID` to select the
   target company. `company list` falls back to the scoped current company when
   board-wide listing is forbidden. `teams install` creates agents and therefore
   requires board authentication, an `agents:create` grant, or an agent with the
@@ -813,7 +813,7 @@ Preview/install options:
 - `--request-approval-on-forbidden` turns a 403 install denial into a linked
   board approval request instead of a raw failed command; use
   `--approval-issue-id <id>` to attach it to a specific issue. During Paperclip
-  task runs with `PAPERCLIP_TASK_ID` set, this fallback is automatic so
+  task runs with `WARDMOTE_TASK_ID` set, this fallback is automatic so
   agent-run walkthroughs leave a pending approval path instead of a raw 403.
 - `--target-manager-agent-id <id>` or `--target-manager-slug <slug>` reparents
   catalog root agents under an existing manager.
@@ -930,9 +930,9 @@ CLI auth challenge endpoints are also exposed for tooling that needs the raw cha
 
 ```sh
 npx @tickernelz/wardmote auth challenge create --payload-json '{...}'
-PAPERCLIP_CHALLENGE_SECRET=<challenge-secret> npx @tickernelz/wardmote auth challenge get <challenge-id> --token-env PAPERCLIP_CHALLENGE_SECRET
-PAPERCLIP_CHALLENGE_SECRET=<challenge-secret> npx @tickernelz/wardmote auth challenge approve <challenge-id> --token-env PAPERCLIP_CHALLENGE_SECRET
-PAPERCLIP_CHALLENGE_SECRET=<challenge-secret> npx @tickernelz/wardmote auth challenge cancel <challenge-id> --token-env PAPERCLIP_CHALLENGE_SECRET
+WARDMOTE_CHALLENGE_SECRET=<challenge-secret> npx @tickernelz/wardmote auth challenge get <challenge-id> --token-env WARDMOTE_CHALLENGE_SECRET
+WARDMOTE_CHALLENGE_SECRET=<challenge-secret> npx @tickernelz/wardmote auth challenge approve <challenge-id> --token-env WARDMOTE_CHALLENGE_SECRET
+WARDMOTE_CHALLENGE_SECRET=<challenge-secret> npx @tickernelz/wardmote auth challenge cancel <challenge-id> --token-env WARDMOTE_CHALLENGE_SECRET
 npx @tickernelz/wardmote auth revoke-current
 ```
 
@@ -1121,12 +1121,12 @@ npx @tickernelz/wardmote heartbeat run --agent-id <agent-id> [--api-base http://
 
 ## Local Storage Defaults
 
-Local Paperclip data lives under the selected instance root. `PAPERCLIP_HOME` chooses the home directory and `PAPERCLIP_INSTANCE_ID` chooses the instance.
+Local Paperclip data lives under the selected instance root. `WARDMOTE_HOME` chooses the home directory and `WARDMOTE_INSTANCE_ID` chooses the instance.
 
 ```text
-~/.wardmote/                                     # PAPERCLIP_HOME
+~/.wardmote/                                     # WARDMOTE_HOME
 └── instances/
-    └── default/                                  # instance root (PAPERCLIP_INSTANCE_ID)
+    └── default/                                  # instance root (WARDMOTE_INSTANCE_ID)
         ├── config.json                           # runtime config
         ├── .env                                  # instance env file
         ├── db/                                   # embedded PostgreSQL data
@@ -1153,7 +1153,7 @@ Default paths for the canonical install:
 Override base home or instance with env vars:
 
 ```sh
-PAPERCLIP_HOME=/custom/home PAPERCLIP_INSTANCE_ID=dev pnpm wardmote run
+WARDMOTE_HOME=/custom/home WARDMOTE_INSTANCE_ID=dev pnpm wardmote run
 ```
 
 ## Storage Configuration

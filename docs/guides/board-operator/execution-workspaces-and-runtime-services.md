@@ -69,7 +69,7 @@ Heartbeat resolves a workspace for the run (code location and session continuity
 
 A managed service that runs Wardmote itself needs one canonical origin for Better Auth and tool OAuth callbacks. Wardmote resolves that origin in this order:
 
-1. Explicit service/runtime configuration such as `PAPERCLIP_PUBLIC_URL` or `BETTER_AUTH_URL`.
+1. Explicit service/runtime configuration such as `WARDMOTE_PUBLIC_URL` or `BETTER_AUTH_URL`.
 2. An explicit instance auth public base URL.
 3. The managed service's rendered `expose.urlTemplate`, injected as a low-priority runtime fallback.
 
@@ -116,7 +116,7 @@ worktree. Both operations run on the server, outside any agent process — so ag
 credential env bindings do not apply to them.
 
 For **private GitHub repositories**, store a token as a **company secret** named one of
-`GITHUB_TOKEN`, `GH_TOKEN`, or `PAPERCLIP_GITHUB_TOKEN` (checked in that order; Settings →
+`GITHUB_TOKEN`, `GH_TOKEN`, or `WARDMOTE_GITHUB_TOKEN` (checked in that order; Settings →
 Secrets). The server resolves it per run and authenticates managed clones and base-ref
 fetches with it. Details and caveats:
 

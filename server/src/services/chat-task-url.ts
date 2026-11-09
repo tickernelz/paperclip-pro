@@ -20,11 +20,11 @@ export function safeChatTaskUrl(
 
 export function publicChatTaskUrl(issueId: string): string | null {
   const configured =
-    process.env.PAPERCLIP_AUTH_PUBLIC_BASE_URL?.trim() ||
+    process.env.WARDMOTE_AUTH_PUBLIC_BASE_URL?.trim() ||
     process.env.BETTER_AUTH_URL?.trim() ||
     process.env.BETTER_AUTH_BASE_URL?.trim() ||
-    process.env.PAPERCLIP_PUBLIC_URL?.trim() ||
+    process.env.WARDMOTE_PUBLIC_URL?.trim() ||
     readConfigFile()?.auth?.publicBaseUrl?.trim() ||
-    process.env.PAPERCLIP_MANAGED_RUNTIME_PUBLIC_URL?.trim();
+    process.env.WARDMOTE_MANAGED_RUNTIME_PUBLIC_URL?.trim();
   return safeChatTaskUrl(configured, issueId);
 }

@@ -63,12 +63,12 @@ export async function startConnectionTarget(config: ConnectionConfig, executions
     // Only bootstrap essentials are inherited. Selected provider keys enter via UI.
     const env: NodeJS.ProcessEnv = Object.fromEntries(["PATH", "HOME", "USER", "LOGNAME", "SHELL", "TMPDIR", "LANG", "LC_ALL", "NODE_EXTRA_CA_CERTS"].flatMap(key => process.env[key] ? [[key, process.env[key]!]] : []));
     Object.assign(env, {
-      PAPERCLIP_HOME: home, PAPERCLIP_INSTANCE_ID: instance, PAPERCLIP_CONFIG: path.join(home, "instances", instance, "config.json"),
-      PAPERCLIP_RUNNER_E2E_TEMP_ROOT: root, PAPERCLIP_RUNNER_E2E_PORT: String(port), PAPERCLIP_RUNNER_E2E_SERVER_LOG: path.join(root, "server.log"),
-      PAPERCLIP_RUNNER_BINARY: resolvePaperclipRunnerBinaryForHarness(executions, repositoryRoot),
-      PAPERCLIP_VITE_CACHE_DIR: path.join(root, "vite-cache"), PAPERCLIP_ANNOUNCEMENTS_ENABLED: "false",
-      PAPERCLIP_AGENT_JWT_SECRET: randomBytes(48).toString("hex"), PAPERCLIP_DECISION_SIGNING_SECRET: randomBytes(48).toString("hex"),
-      PAPERCLIP_TOOL_ACTION_SIGNING_SECRET: randomBytes(48).toString("hex"), BETTER_AUTH_SECRET: randomBytes(48).toString("hex"),
+      WARDMOTE_HOME: home, WARDMOTE_INSTANCE_ID: instance, WARDMOTE_CONFIG: path.join(home, "instances", instance, "config.json"),
+      WARDMOTE_RUNNER_E2E_TEMP_ROOT: root, WARDMOTE_RUNNER_E2E_PORT: String(port), WARDMOTE_RUNNER_E2E_SERVER_LOG: path.join(root, "server.log"),
+      WARDMOTE_RUNNER_BINARY: resolvePaperclipRunnerBinaryForHarness(executions, repositoryRoot),
+      WARDMOTE_VITE_CACHE_DIR: path.join(root, "vite-cache"), WARDMOTE_ANNOUNCEMENTS_ENABLED: "false",
+      WARDMOTE_AGENT_JWT_SECRET: randomBytes(48).toString("hex"), WARDMOTE_DECISION_SIGNING_SECRET: randomBytes(48).toString("hex"),
+      WARDMOTE_TOOL_ACTION_SIGNING_SECRET: randomBytes(48).toString("hex"), BETTER_AUTH_SECRET: randomBytes(48).toString("hex"),
     });
     assertActive();
     child = spawn(process.execPath, runnerE2ETypeScriptProcessArgs(repositoryRoot, path.join(repositoryRoot, "tests/runner-e2e/server.ts")), { cwd: repositoryRoot, env, detached: process.platform !== "win32", stdio: "ignore" });

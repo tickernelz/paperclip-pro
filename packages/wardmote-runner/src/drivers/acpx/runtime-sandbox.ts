@@ -462,15 +462,15 @@ export async function prepareAcpxRuntimeSandbox(input: {
         // also affect provider startup and belongs at the launch boundary.
         "[features]",
         "shell_snapshot = false",
-        ...(input.environment?.PAPERCLIP_AGENT_KEY_ID || taskEnvironmentKeys.length > 0 ? [
+        ...(input.environment?.WARDMOTE_AGENT_KEY_ID || taskEnvironmentKeys.length > 0 ? [
           "[shell_environment_policy]", 'inherit = "all"', "ignore_default_excludes = true",
           `include_only = ${JSON.stringify([...new Set([
             "PATH", "HOME", "LANG", "LANGUAGE", "TZ", "TMPDIR", "TEMP", "TMP", "CODEX_HOME",
-            "PAPERCLIP_AGENT_KEY_ID", "PAPERCLIP_AGENT_PUBLIC_KEY", "PAPERCLIP_AGENT_PRIVATE_KEY",
+            "WARDMOTE_AGENT_KEY_ID", "WARDMOTE_AGENT_PUBLIC_KEY", "WARDMOTE_AGENT_PRIVATE_KEY",
             ...taskEnvironmentKeys,
             // Unselected provider/config secrets keep Codex's default shell exclusions;
             // only Paperclip's scoped API token is required by Bash/curl skills.
-            ...Object.keys(input.environment ?? {}).filter(key => key === "PAPERCLIP_API_KEY" || !/key|secret|token/i.test(key)),
+            ...Object.keys(input.environment ?? {}).filter(key => key === "WARDMOTE_API_KEY" || !/key|secret|token/i.test(key)),
           ])])}`,
         ] : []),
         "",
@@ -493,7 +493,7 @@ export async function prepareAcpxRuntimeSandbox(input: {
     XDG_CONFIG_HOME: configDirectory,
     XDG_DATA_HOME: dataDirectory,
     XDG_CACHE_HOME: cacheDirectory,
-    PAPERCLIP_ACPX_PROFILE: input.agent,
+    WARDMOTE_ACPX_PROFILE: input.agent,
     PAPERCLIP_ACPX_ISOLATED_CONTEXT: "1",
     ...(input.agent === "grok" ? { GROK_HOME: agentHomeDirectory, NO_BROWSER: "1", GROK_DISABLE_AUTOUPDATER: "1" } : {}),
     ...(input.agent === "pi"
@@ -514,7 +514,7 @@ export async function prepareAcpxRuntimeSandbox(input: {
           AGENT_CLI_CREDENTIAL_STORE: "memory",
           NO_OPEN_BROWSER: "1",
           NODE_DISABLE_COMPILE_CACHE: "1",
-          PAPERCLIP_CURSOR_INSTRUCTIONS: cursorInstructionBinding(policy.systemInstructions).payload,
+          WARDMOTE_CURSOR_INSTRUCTIONS: cursorInstructionBinding(policy.systemInstructions).payload,
         }
       : {}),
     ...(input.agent === "copilot"
@@ -725,7 +725,7 @@ function isPersistableEnvironmentName(name: string): boolean {
       name,
     ) ||
     /^(?:HOME|XDG_CONFIG_HOME|XDG_DATA_HOME|XDG_CACHE_HOME)$/.test(name) ||
-    /^(?:PAPERCLIP_ACPX_PROFILE|PAPERCLIP_ACPX_ISOLATED_CONTEXT)$/.test(name) ||
+    /^(?:WARDMOTE_ACPX_PROFILE|PAPERCLIP_ACPX_ISOLATED_CONTEXT)$/.test(name) ||
     /^(?:PI_CODING_AGENT_DIR|PI_SKIP_VERSION_CHECK|PI_TELEMETRY)$/.test(name) ||
     /^(?:CURSOR_CONFIG_DIR|CURSOR_DATA_DIR|AGENT_CLI_CREDENTIAL_STORE|NO_OPEN_BROWSER|NODE_DISABLE_COMPILE_CACHE)$/.test(name) ||
     /^(?:COPILOT_HOME|COPILOT_CACHE_HOME|COPILOT_AUTO_UPDATE|COPILOT_ALLOW_ALL|COPILOT_DISABLE_TERMINAL_TITLE|NO_COLOR)$/.test(name) ||

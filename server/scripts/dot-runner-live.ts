@@ -26,9 +26,9 @@ assert(origin.startsWith("https://"), "DOT_LAB_ORIGIN must be the public HTTPS t
 const port = z.coerce.number().int().min(1024).max(65534).parse(process.env.DOT_LAB_PORT ?? 43127);
 const requestIdSchema = z.string().regex(/^pcmcp_request_[A-Za-z0-9_-]{43}$/);
 const scratch = await mkdtemp(join(tmpdir(), "paperclip-dot-live-"));
-process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE = join(scratch, "master.key");
-delete process.env.PAPERCLIP_SECRETS_MASTER_KEY;
-delete process.env.PAPERCLIP_CLOUD_API_ORIGIN;
+process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = join(scratch, "master.key");
+delete process.env.WARDMOTE_SECRETS_MASTER_KEY;
+delete process.env.WARDMOTE_CLOUD_API_ORIGIN;
 const controlToken = randomBytes(32).toString("base64url");
 const app = express(); app.use(express.json({ limit: "256kb" }));
 const control = express(); control.use(express.json({ limit: "16kb" }));

@@ -29,15 +29,15 @@ vi.mock("../sentry.js", async (importOriginal) => ({
 }));
 
 let database: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
-const externalTestDatabaseUrl = process.env.PAPERCLIP_TEST_DATABASE_URL?.trim();
+const externalTestDatabaseUrl = process.env.WARDMOTE_TEST_DATABASE_URL?.trim();
 let db: ReturnType<typeof createDb>;
 let home: string;
 
 beforeAll(async () => {
   home = await mkdtemp(path.join(os.tmpdir(), "paperclip-hire-ai-"));
-  vi.stubEnv("PAPERCLIP_HOME", home);
-  vi.stubEnv("PAPERCLIP_INSTANCE_ID", "hire-ai");
-  vi.stubEnv("PAPERCLIP_IN_WORKTREE", "false");
+  vi.stubEnv("WARDMOTE_HOME", home);
+  vi.stubEnv("WARDMOTE_INSTANCE_ID", "hire-ai");
+  vi.stubEnv("WARDMOTE_IN_WORKTREE", "false");
   if (externalTestDatabaseUrl) db = createDb(externalTestDatabaseUrl);
   else {
     database = await startEmbeddedPostgresTestDatabase("paperclip-hire-ai-db-");

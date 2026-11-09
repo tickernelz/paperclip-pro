@@ -99,7 +99,7 @@ _paperclip_main()
 export function renderOmpPythonEnvData(env: Record<string, string>): string {
   const data: Record<string, string> = {};
   for (const [key, value] of Object.entries(env)) {
-    if (key.startsWith("PAPERCLIP_") && typeof value === "string") data[key] = value;
+    if (key.startsWith("WARDMOTE_") && typeof value === "string") data[key] = value;
   }
   return `${JSON.stringify(data)}\n`;
 }

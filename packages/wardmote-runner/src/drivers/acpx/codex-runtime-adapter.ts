@@ -433,7 +433,7 @@ export async function openQualifiedAcpxRuntime(
             PAPERCLIP_ACPX_ISOLATED_CONTEXT: "1",
             // This URL comes from the runner-owned authenticated tool bridge,
             // never provider-supplied permission-request metadata.
-            PAPERCLIP_ACPX_TASK_TOOL_BRIDGE_URL: options.mcpServers.find(
+            WARDMOTE_ACPX_TASK_TOOL_BRIDGE_URL: options.mcpServers.find(
               (server) => server.runnerOwned && server.name === "paperclip",
             )?.url ?? "",
           }

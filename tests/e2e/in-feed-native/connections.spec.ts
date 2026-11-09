@@ -25,7 +25,7 @@ for (const journey of ['connect', 'decline', 'restart'] as const) test(`fresh na
   });
   try {
     const port = await listenOnFetchAllowedPort(fixture);
-    const env = { ...process.env, IN_FEED_FIXTURE_KEY: 'not-a-real-model-key', NODE_ENV: 'test', PAPERCLIP_TEST_CONNECTION_DELIVERY_HOLD: journey === 'restart' ? '1' : '0', PATH: `${root}/tests/e2e/fixtures/in-feed-bin:${process.env.PATH}` };
+    const env = { ...process.env, IN_FEED_FIXTURE_KEY: 'not-a-real-model-key', NODE_ENV: 'test', WARDMOTE_TEST_CONNECTION_DELIVERY_HOLD: journey === 'restart' ? '1' : '0', PATH: `${root}/tests/e2e/fixtures/in-feed-bin:${process.env.PATH}` };
     delete env.DATABASE_URL; delete env.DATABASE_MIGRATION_URL;
     processHandle = spawn(process.execPath, ['cli/node_modules/tsx/dist/cli.mjs', 'cli/src/index.ts', 'test-drive', '--harness', 'codex', '--api-key-env', 'IN_FEED_FIXTURE_KEY', '--company-name', 'In-feed native fixture', '--no-browser'], { cwd: root, env, detached: true, stdio: ['ignore', 'pipe', 'pipe'] });
     processHandle.stdout!.on('data', (chunk) => { logs += chunk.toString(); });
@@ -127,7 +127,7 @@ for (const journey of ['connect', 'decline', 'restart'] as const) test(`fresh na
       const exit = new Promise<void>((done) => processHandle!.once('exit', () => done()));
       process.kill(-processHandle!.pid!, 'SIGTERM'); await exit;
       logs = '';
-      processHandle = spawn(process.execPath, ['cli/node_modules/tsx/dist/cli.mjs', 'cli/src/index.ts', 'test-drive', '--harness', 'codex', '--api-key-env', 'IN_FEED_FIXTURE_KEY', '--data-dir', dataDir, '--no-browser'], { cwd: root, env: { ...env, PAPERCLIP_TEST_CONNECTION_DELIVERY_HOLD: '0' }, detached: true, stdio: ['ignore', 'pipe', 'pipe'] });
+      processHandle = spawn(process.execPath, ['cli/node_modules/tsx/dist/cli.mjs', 'cli/src/index.ts', 'test-drive', '--harness', 'codex', '--api-key-env', 'IN_FEED_FIXTURE_KEY', '--data-dir', dataDir, '--no-browser'], { cwd: root, env: { ...env, WARDMOTE_TEST_CONNECTION_DELIVERY_HOLD: '0' }, detached: true, stdio: ['ignore', 'pipe', 'pipe'] });
       processHandle.stdout!.on('data', (chunk) => { logs += chunk.toString(); });
       processHandle.stderr!.on('data', (chunk) => { logs += chunk.toString(); });
       await expect.poll(() => logs.match(/Wardmote is ready at (http:\/\/127\.0\.0\.1:\d+)/)?.[1], { timeout: 100_000 }).toBeTruthy();

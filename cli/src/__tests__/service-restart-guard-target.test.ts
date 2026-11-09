@@ -42,18 +42,18 @@ function writeRuntime(port: number, pid: number): void {
 }
 
 beforeEach(() => {
-  previousHome = process.env.PAPERCLIP_HOME;
-  previousInstance = process.env.PAPERCLIP_INSTANCE_ID;
+  previousHome = process.env.WARDMOTE_HOME;
+  previousInstance = process.env.WARDMOTE_INSTANCE_ID;
   home = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-guardfix-"));
-  process.env.PAPERCLIP_HOME = home;
-  process.env.PAPERCLIP_INSTANCE_ID = INSTANCE;
+  process.env.WARDMOTE_HOME = home;
+  process.env.WARDMOTE_INSTANCE_ID = INSTANCE;
 });
 
 afterEach(() => {
-  if (previousHome === undefined) delete process.env.PAPERCLIP_HOME;
-  else process.env.PAPERCLIP_HOME = previousHome;
-  if (previousInstance === undefined) delete process.env.PAPERCLIP_INSTANCE_ID;
-  else process.env.PAPERCLIP_INSTANCE_ID = previousInstance;
+  if (previousHome === undefined) delete process.env.WARDMOTE_HOME;
+  else process.env.WARDMOTE_HOME = previousHome;
+  if (previousInstance === undefined) delete process.env.WARDMOTE_INSTANCE_ID;
+  else process.env.WARDMOTE_INSTANCE_ID = previousInstance;
   fs.rmSync(home, { recursive: true, force: true });
 });
 

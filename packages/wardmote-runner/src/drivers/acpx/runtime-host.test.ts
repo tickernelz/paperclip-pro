@@ -12,8 +12,8 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import {
   NATIVE_RUNTIME_ASSET_SCHEMA,
-  PAPERCLIP_EXECUTION_PROMPT,
-  PAPERCLIP_EXECUTION_PROMPT_REVISION,
+  WARDMOTE_EXECUTION_PROMPT,
+  WARDMOTE_EXECUTION_PROMPT_REVISION,
   canonicalNativeRuntimeContextDigest,
   nativeRuntimePromptDigest,
   type NativeRuntimeContextSnapshot,
@@ -227,9 +227,9 @@ describe("ACPX runtime host", () => {
   });
 
   it.each([
-    { PAPERCLIP_NATIVE_MCP_NAME: "paperclip-assigned" },
-    { PAPERCLIP_NATIVE_MCP_NAME: "paperclip", PAPERCLIP_NATIVE_MCP_URL: "http://127.0.0.1:3211/mcp", PAPERCLIP_NATIVE_MCP_TOKEN: "x".repeat(40) },
-    { PAPERCLIP_NATIVE_MCP_NAME: "paperclip-assigned", PAPERCLIP_NATIVE_MCP_URL: "http://external.example/mcp", PAPERCLIP_NATIVE_MCP_TOKEN: "x".repeat(40) },
+    { WARDMOTE_NATIVE_MCP_NAME: "paperclip-assigned" },
+    { WARDMOTE_NATIVE_MCP_NAME: "paperclip", WARDMOTE_NATIVE_MCP_URL: "http://127.0.0.1:3211/mcp", WARDMOTE_NATIVE_MCP_TOKEN: "x".repeat(40) },
+    { WARDMOTE_NATIVE_MCP_NAME: "paperclip-assigned", WARDMOTE_NATIVE_MCP_URL: "http://external.example/mcp", WARDMOTE_NATIVE_MCP_TOKEN: "x".repeat(40) },
   ])("rejects invalid assigned connection bindings before runtime launch", async (environment) => {
     const fixture = await hostFixture();
     const openRuntime = vi.fn();
@@ -244,9 +244,9 @@ describe("ACPX runtime host", () => {
       ...fixture.options,
       agent: "claude", model: "claude-sonnet-5",
       environment: { ...fixture.options.environment,
-        PAPERCLIP_NATIVE_MCP_NAME: "paperclip-assigned",
-        PAPERCLIP_NATIVE_MCP_URL: "http://127.0.0.1:3211/mcp/gateway",
-        PAPERCLIP_NATIVE_MCP_TOKEN: "fixture-gateway-token-".repeat(3),
+        WARDMOTE_NATIVE_MCP_NAME: "paperclip-assigned",
+        WARDMOTE_NATIVE_MCP_URL: "http://127.0.0.1:3211/mcp/gateway",
+        WARDMOTE_NATIVE_MCP_TOKEN: "fixture-gateway-token-".repeat(3),
       },
       semanticTools: { tools: [], handler: async () => ({}) },
     }, fixture.dependencies({ openRuntime: async (options) => {
@@ -316,8 +316,8 @@ describe("ACPX runtime host", () => {
     };
     const snapshot = {
       prompt: {
-        revision: PAPERCLIP_EXECUTION_PROMPT_REVISION,
-        text: PAPERCLIP_EXECUTION_PROMPT,
+        revision: WARDMOTE_EXECUTION_PROMPT_REVISION,
+        text: WARDMOTE_EXECUTION_PROMPT,
         digest: nativeRuntimePromptDigest(),
       },
       instructions: { entryPath: "AGENTS.md", bundle },
@@ -615,7 +615,7 @@ describe("ACPX runtime host", () => {
           agent: "codex",
           model: "gpt-5.6-sol",
           permissionMode: "deny-all",
-          environment: { PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET: "{}" },
+          environment: { WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET: "{}" },
           signal: controller.signal,
         },
         fixture.dependencies({ openRuntime }),
@@ -630,7 +630,7 @@ describe("ACPX runtime host", () => {
       stageManagedCodexCredential({
         agentHomeDirectory: credentialHome,
         environment: {
-          PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET: '{"owner":"contender"}',
+          WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET: '{"owner":"contender"}',
         },
       }),
     );
@@ -644,7 +644,7 @@ describe("ACPX runtime host", () => {
         agent: "codex",
         model: "gpt-5.6-sol",
         permissionMode: "deny-all",
-        environment: { PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET: "{}" },
+        environment: { WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET: "{}" },
       },
       fixture.dependencies({ openRuntime: async () => retryRuntime }),
     );
@@ -729,7 +729,7 @@ describe("ACPX runtime host", () => {
           model: "gpt-5.6-sol",
           permissionMode: "approve-reads",
           environment: {
-            PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET: "{}",
+            WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET: "{}",
           },
           assertWorkspaceHeld,
         },
@@ -778,7 +778,7 @@ describe("ACPX runtime host", () => {
         agent: "codex",
         model: "gpt-5.6-sol",
         permissionMode: "deny-all",
-        environment: { PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET: "{}" },
+        environment: { WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET: "{}" },
         semanticTools: {
           tools: [
             {
@@ -1103,11 +1103,11 @@ describe("ACPX runtime host", () => {
     let home = "";
     await expect(AcpxRuntimeHost.open({
       ...fixture.options, agent: "grok", model: "grok-4.7", permissionMode: "approve-reads",
-      environment: { PAPERCLIP_ACPX_GROK_AUTH_JSON_SECRET: JSON.stringify({ "https://accounts.x.ai::11111111-1111-4111-8111-111111111111": { key: "test-expired", refresh_token: "test-refresh" } }) },
+      environment: { WARDMOTE_ACPX_GROK_AUTH_JSON_SECRET: JSON.stringify({ "https://accounts.x.ai::11111111-1111-4111-8111-111111111111": { key: "test-expired", refresh_token: "test-refresh" } }) },
     }, fixture.dependencies({ openRuntime: async (options) => {
       home = options.launchEnvironment.GROK_HOME!;
       expect(options.permissionMode).toBe("approve-reads");
-      expect(options.launchEnvironment).not.toHaveProperty("PAPERCLIP_ACPX_GROK_AUTH_JSON_SECRET");
+      expect(options.launchEnvironment).not.toHaveProperty("WARDMOTE_ACPX_GROK_AUTH_JSON_SECRET");
       expect(await readFile(join(home, "auth.json"), "utf8")).toContain("test-expired");
       throw new Error(failure);
     } }))).rejects.toThrow(failure);
@@ -1128,7 +1128,7 @@ describe("ACPX runtime host", () => {
           model: "gpt-5.6-sol",
           permissionMode: "approve-all",
           environment: {
-            PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET:
+            WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET:
               '{"tokens":{"access_token":"canary"}}',
           },
         },
@@ -1172,7 +1172,7 @@ describe("ACPX runtime host", () => {
           model: "gpt-5.6-sol",
           permissionMode: "approve-all",
           environment: {
-            PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET:
+            WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET:
               '{"owner":"failed-admission"}',
           },
         },
@@ -1194,7 +1194,7 @@ describe("ACPX runtime host", () => {
       stageManagedCodexCredential({
         agentHomeDirectory: credentialHome,
         environment: {
-          PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET: '{"owner":"contender"}',
+          WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET: '{"owner":"contender"}',
         },
       }),
     ).rejects.toThrow("already has an active lease");
@@ -1211,7 +1211,7 @@ describe("ACPX runtime host", () => {
       stageManagedCodexCredential({
         agentHomeDirectory: credentialHome,
         environment: {
-          PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET: '{"owner":"contender"}',
+          WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET: '{"owner":"contender"}',
         },
       }),
     );
@@ -1238,7 +1238,7 @@ describe("ACPX runtime host", () => {
           agent: "codex",
           model: "gpt-5.6-sol",
           permissionMode: "approve-all",
-          environment: { PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET: "{}" },
+          environment: { WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET: "{}" },
         },
         dependencies,
       ),
@@ -1279,7 +1279,7 @@ describe("ACPX runtime host", () => {
           agent: "codex",
           model: "gpt-5.6-sol",
           permissionMode: "approve-all",
-          environment: { PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET: "{}" },
+          environment: { WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET: "{}" },
         },
         dependencies,
       ),
@@ -1316,7 +1316,7 @@ describe("ACPX runtime host", () => {
         model: "gpt-5.6-sol",
         permissionMode: "approve-all",
         environment: {
-          PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET: "{}",
+          WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET: "{}",
         },
       },
       fixture.dependencies({ openRuntime: async () => runtime }),
@@ -1331,7 +1331,7 @@ describe("ACPX runtime host", () => {
       stageManagedCodexCredential({
         agentHomeDirectory: join(host.runtimeRoot(), "codex-home"),
         environment: {
-          PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET: '{"owner":"contender"}',
+          WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET: '{"owner":"contender"}',
         },
       }),
     ).rejects.toThrow("already has an active lease");
@@ -1345,7 +1345,7 @@ describe("ACPX runtime host", () => {
       stageManagedCodexCredential({
         agentHomeDirectory: join(host.runtimeRoot(), "codex-home"),
         environment: {
-          PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET: '{"owner":"contender"}',
+          WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET: '{"owner":"contender"}',
         },
       }),
     );
@@ -1367,7 +1367,7 @@ describe("ACPX runtime host", () => {
         agent: "codex",
         model: "gpt-5.6-sol",
         permissionMode: "approve-all",
-        environment: { PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET: "{}" },
+        environment: { WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET: "{}" },
       },
       fixture.dependencies({ openRuntime: async () => runtime }),
     );
@@ -1383,7 +1383,7 @@ describe("ACPX runtime host", () => {
       stageManagedCodexCredential({
         agentHomeDirectory: credentialHome,
         environment: {
-          PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET: '{"owner":"contender"}',
+          WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET: '{"owner":"contender"}',
         },
       }),
     ).rejects.toThrow("already has an active lease");
@@ -1399,7 +1399,7 @@ describe("ACPX runtime host", () => {
       stageManagedCodexCredential({
         agentHomeDirectory: credentialHome,
         environment: {
-          PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET: '{"owner":"contender"}',
+          WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET: '{"owner":"contender"}',
         },
       }),
     );
@@ -1421,7 +1421,7 @@ describe("ACPX runtime host", () => {
         agent: "codex",
         model: "gpt-5.6-sol",
         permissionMode: "approve-all",
-        environment: { PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET: "{}" },
+        environment: { WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET: "{}" },
       },
       fixture.dependencies({ openRuntime: async () => runtime }),
     );
@@ -1453,7 +1453,7 @@ describe("ACPX runtime host", () => {
         agent: "codex",
         model: "gpt-5.6-sol",
         permissionMode: "approve-all",
-        environment: { PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET: "{}" },
+        environment: { WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET: "{}" },
       },
       fixture.dependencies({ openRuntime: async () => runtime }),
     );
@@ -1484,7 +1484,7 @@ describe("ACPX runtime host", () => {
         agent: "codex",
         model: "gpt-5.6-sol",
         permissionMode: "approve-reads",
-        environment: { PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET: "{}" },
+        environment: { WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET: "{}" },
       },
       fixture.dependencies({ openRuntime: async () => runtime }),
     );
@@ -1530,7 +1530,7 @@ describe("ACPX runtime host", () => {
         agent: "codex",
         model: "gpt-5.6-sol",
         permissionMode: "approve-reads",
-        environment: { PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET: "{}" },
+        environment: { WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET: "{}" },
       },
       fixture.dependencies({ openRuntime: async () => runtime }),
     );
@@ -1560,7 +1560,7 @@ describe("ACPX runtime host", () => {
     let observed: Record<string, unknown> | undefined;
     const host = await AcpxRuntimeHost.open({
       ...fixture.options, agent: "codex", model: "gpt-5.6-sol", permissionMode: "approve-reads",
-      environment: { PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET: "{}" }, clientCapabilities,
+      environment: { WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET: "{}" }, clientCapabilities,
     }, fixture.dependencies({ openRuntime: async (options) => { observed = options.clientCapabilities; return runtime; } }));
     expect(observed).toEqual(clientCapabilities);
     expect(observed).not.toBe(clientCapabilities);
@@ -1585,7 +1585,7 @@ describe("ACPX runtime host", () => {
         agent: "codex",
         model: "gpt-5.6-sol",
         permissionMode: "approve-reads",
-        environment: { PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET: "{}" },
+        environment: { WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET: "{}" },
       },
       fixture.dependencies({ openRuntime: async () => runtime }),
     );
@@ -1613,7 +1613,7 @@ describe("ACPX runtime host", () => {
           agent: "codex",
           model: "gpt-5.6-sol",
           permissionMode: "approve-reads",
-          environment: { PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET: "{}" },
+          environment: { WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET: "{}" },
         },
         fixture.dependencies({ openRuntime: async () => runtime }),
       );
@@ -1652,7 +1652,7 @@ describe("ACPX runtime host", () => {
         agent: "codex",
         model: "gpt-5.6-sol",
         permissionMode: "approve-reads",
-        environment: { PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET: "{}" },
+        environment: { WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET: "{}" },
       },
       fixture.dependencies({ openRuntime: async () => runtime }),
     );
@@ -1669,7 +1669,7 @@ describe("ACPX runtime host", () => {
       stageManagedCodexCredential({
         agentHomeDirectory: credentialHome,
         environment: {
-          PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET: '{"owner":"contender"}',
+          WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET: '{"owner":"contender"}',
         },
       }),
     ).rejects.toThrow("already has an active lease");
@@ -1705,7 +1705,7 @@ describe("ACPX runtime host", () => {
         agent: "codex",
         model: "gpt-5.6-sol",
         permissionMode: "approve-reads",
-        environment: { PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET: "{}" },
+        environment: { WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET: "{}" },
       },
       fixture.dependencies({ openRuntime: async () => runtime }),
     );
@@ -1892,7 +1892,7 @@ describe("ACPX runtime host", () => {
           model: "gpt-5.6-sol",
           permissionMode: "deny-all",
           environment: {
-            PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET: "{}",
+            WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET: "{}",
           },
           signal: controller.signal,
           semanticTools: {
@@ -1916,7 +1916,7 @@ describe("ACPX runtime host", () => {
       stageManagedCodexCredential({
         agentHomeDirectory: credentialHome,
         environment: {
-          PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET: '{"owner":"contender"}',
+          WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET: '{"owner":"contender"}',
         },
       }),
     ).rejects.toThrow("already has an active lease");
@@ -1931,7 +1931,7 @@ describe("ACPX runtime host", () => {
       stageManagedCodexCredential({
         agentHomeDirectory: credentialHome,
         environment: {
-          PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET: '{"owner":"contender"}',
+          WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET: '{"owner":"contender"}',
         },
       }),
     ).rejects.toThrow("already has an active lease");
@@ -1948,7 +1948,7 @@ describe("ACPX runtime host", () => {
       stageManagedCodexCredential({
         agentHomeDirectory: credentialHome,
         environment: {
-          PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET: '{"owner":"contender"}',
+          WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET: '{"owner":"contender"}',
         },
       }),
     );

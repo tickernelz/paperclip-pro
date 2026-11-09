@@ -3,7 +3,7 @@ import { parseAdapterModelsEnv } from "../services/adapter-models-env.js";
 import {
   buildSandboxNpmInstallCommand,
   getAdapterSessionManagement,
-  PAPERCLIP_RUNNER_PERMISSION_CAPABILITIES,
+  WARDMOTE_RUNNER_PERMISSION_CAPABILITIES,
 } from "@tickernelz/wardmote-adapter-utils";
 import type { AdapterLoginCapability } from "@tickernelz/wardmote-adapter-utils";
 import { runAdapterExecutionTargetShellCommand } from "@tickernelz/wardmote-adapter-utils/execution-target";
@@ -304,22 +304,22 @@ const paperclipRunnerAdapter: ServerAdapterModule = {
         key: "codexPermissionMode",
         label: "Codex permission mode",
         type: "select" as const,
-        default: PAPERCLIP_RUNNER_PERMISSION_CAPABILITIES.codex.defaultMode,
-        options: PAPERCLIP_RUNNER_PERMISSION_CAPABILITIES.codex.options.map(
+        default: WARDMOTE_RUNNER_PERMISSION_CAPABILITIES.codex.defaultMode,
+        options: WARDMOTE_RUNNER_PERMISSION_CAPABILITIES.codex.options.map(
           ({ value, label }) => ({ value, label }),
         ),
-        hint: PAPERCLIP_RUNNER_PERMISSION_CAPABILITIES.codex.description,
+        hint: WARDMOTE_RUNNER_PERMISSION_CAPABILITIES.codex.description,
         meta: { visibleWhen: { key: "provider", value: "codex" } },
       },
       {
         key: "opencodePermissionMode",
         label: "OpenCode permission mode",
         type: "select" as const,
-        default: PAPERCLIP_RUNNER_PERMISSION_CAPABILITIES.opencode.defaultMode,
-        options: PAPERCLIP_RUNNER_PERMISSION_CAPABILITIES.opencode.options.map(
+        default: WARDMOTE_RUNNER_PERMISSION_CAPABILITIES.opencode.defaultMode,
+        options: WARDMOTE_RUNNER_PERMISSION_CAPABILITIES.opencode.options.map(
           ({ value, label }) => ({ value, label }),
         ),
-        hint: PAPERCLIP_RUNNER_PERMISSION_CAPABILITIES.opencode.description,
+        hint: WARDMOTE_RUNNER_PERMISSION_CAPABILITIES.opencode.description,
         meta: { visibleWhen: { key: "provider", value: "opencode" } },
       },
       {
@@ -339,11 +339,11 @@ const paperclipRunnerAdapter: ServerAdapterModule = {
         key: "acpxPermissionMode",
         label: "ACPX permission mode",
         type: "select" as const,
-        default: PAPERCLIP_RUNNER_PERMISSION_CAPABILITIES.acpx.defaultMode,
-        options: PAPERCLIP_RUNNER_PERMISSION_CAPABILITIES.acpx.options.map(
+        default: WARDMOTE_RUNNER_PERMISSION_CAPABILITIES.acpx.defaultMode,
+        options: WARDMOTE_RUNNER_PERMISSION_CAPABILITIES.acpx.options.map(
           ({ value, label }) => ({ value, label }),
         ),
-        hint: PAPERCLIP_RUNNER_PERMISSION_CAPABILITIES.acpx.description,
+        hint: WARDMOTE_RUNNER_PERMISSION_CAPABILITIES.acpx.description,
         meta: { visibleWhen: { key: "provider", value: "acpx" } },
       },
       {
@@ -601,7 +601,7 @@ export function getServerAdapter(type: string): ServerAdapterModule {
 }
 
 /**
- * Memoized view of PAPERCLIP_ADAPTER_MODELS, keyed by the raw env string so
+ * Memoized view of WARDMOTE_ADAPTER_MODELS, keyed by the raw env string so
  * tests (and live env mutation) that change the variable are still observed.
  * Parsing happens at most once per distinct raw value instead of per
  * `listAdapterModels` request, and malformed values fail SOFT here: we log the
@@ -614,7 +614,7 @@ let adapterModelsEnvCache: {
 } | null = null;
 
 function getDeclaredAdapterModels(): ReturnType<typeof parseAdapterModelsEnv> {
-  const raw = process.env.PAPERCLIP_ADAPTER_MODELS;
+  const raw = process.env.WARDMOTE_ADAPTER_MODELS;
   if (adapterModelsEnvCache && adapterModelsEnvCache.raw === raw) {
     return adapterModelsEnvCache.value;
   }
@@ -623,7 +623,7 @@ function getDeclaredAdapterModels(): ReturnType<typeof parseAdapterModelsEnv> {
     value = parseAdapterModelsEnv(process.env);
   } catch (err) {
     console.error(
-      "[paperclip] Invalid PAPERCLIP_ADAPTER_MODELS; ignoring declared model lists:",
+      "[paperclip] Invalid WARDMOTE_ADAPTER_MODELS; ignoring declared model lists:",
       err,
     );
   }

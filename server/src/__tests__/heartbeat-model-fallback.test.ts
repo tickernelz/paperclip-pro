@@ -69,7 +69,7 @@ describeEmbeddedPostgres("per-agent fallback models", () => {
   let heartbeat!: ReturnType<typeof heartbeatService>;
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
   let paperclipHome: string | null = null;
-  const previousHome = process.env.PAPERCLIP_HOME;
+  const previousHome = process.env.WARDMOTE_HOME;
   const behaviors = new Map<string, Behavior[]>();
   const captured = new Map<string, { config: Record<string, unknown>; context: Record<string, unknown> }>();
 
@@ -78,7 +78,7 @@ describeEmbeddedPostgres("per-agent fallback models", () => {
     db = createDb(tempDb.connectionString);
     heartbeat = heartbeatService(db);
     paperclipHome = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-model-fallback-home-"));
-    process.env.PAPERCLIP_HOME = paperclipHome;
+    process.env.WARDMOTE_HOME = paperclipHome;
     registerServerAdapter({
       type: "omp_local",
       execute: async (ctx) => {
@@ -99,8 +99,8 @@ describeEmbeddedPostgres("per-agent fallback models", () => {
 
   afterAll(async () => {
     unregisterServerAdapter("omp_local");
-    if (previousHome === undefined) delete process.env.PAPERCLIP_HOME;
-    else process.env.PAPERCLIP_HOME = previousHome;
+    if (previousHome === undefined) delete process.env.WARDMOTE_HOME;
+    else process.env.WARDMOTE_HOME = previousHome;
     if (paperclipHome) await fs.rm(paperclipHome, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 });
     await tempDb?.cleanup();
   });

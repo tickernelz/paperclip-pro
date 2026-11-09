@@ -84,7 +84,7 @@ describe("runner E2E campaign history", () => {
       campaignId: "legacy-source", generatedAt: results[0]!.finishedAt,
       expected: results.map((entry) => entry.executionId), results,
     }));
-    vi.stubEnv("PAPERCLIP_RUNNER_E2E_SOURCE_SHA", "renderer-sha");
+    vi.stubEnv("WARDMOTE_RUNNER_E2E_SOURCE_SHA", "renderer-sha");
     vi.stubEnv("GITHUB_EVENT_NAME", "push");
     await regenerateRunnerDashboard({ bundle: root });
     const regenerated = JSON.parse(await readFile(path.join(root, "normalized-results.json"), "utf8"));
@@ -108,8 +108,8 @@ describe("runner E2E campaign history", () => {
     });
     const published = { ...campaign, source: eventName === undefined ? undefined : { ...source, eventName } };
     await writeFile(path.join(root, "normalized-results.json"), JSON.stringify(published));
-    vi.stubEnv("PAPERCLIP_RUNNER_E2E_SOURCE_SHA", "renderer-sha");
-    vi.stubEnv("PAPERCLIP_RUNNER_E2E_SOURCE_REF", "refs/heads/renderer");
+    vi.stubEnv("WARDMOTE_RUNNER_E2E_SOURCE_SHA", "renderer-sha");
+    vi.stubEnv("WARDMOTE_RUNNER_E2E_SOURCE_REF", "refs/heads/renderer");
     vi.stubEnv("GITHUB_EVENT_NAME", "push");
     await regenerateRunnerDashboard({ bundle: root });
     const regenerated = JSON.parse(await readFile(path.join(root, "normalized-results.json"), "utf8"));
@@ -169,8 +169,8 @@ describe("runner E2E campaign history", () => {
     vi.stubEnv("GITHUB_SERVER_URL", "");
     vi.stubEnv("GITHUB_REPOSITORY", "");
     vi.stubEnv("GITHUB_RUN_ID", "");
-    vi.stubEnv("PAPERCLIP_RUNNER_E2E_SOURCE_SHA", "target-sha");
-    vi.stubEnv("PAPERCLIP_RUNNER_E2E_SOURCE_REF", "refs/heads/target");
+    vi.stubEnv("WARDMOTE_RUNNER_E2E_SOURCE_SHA", "target-sha");
+    vi.stubEnv("WARDMOTE_RUNNER_E2E_SOURCE_REF", "refs/heads/target");
     vi.stubEnv("GITHUB_SHA", "trusted-master-sha");
     vi.stubEnv("GITHUB_REF", "refs/heads/master");
     const execution = runnerMatrix[0]!;

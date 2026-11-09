@@ -14,15 +14,15 @@ import {
   buildInvocationEnvForLogs,
   buildPaperclipEnv,
   buildRuntimeToolsEnv,
-  DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE,
-  DEFAULT_PAPERCLIP_CONVERSATION_PROMPT_TEMPLATE,
+  DEFAULT_WARDMOTE_AGENT_PROMPT_TEMPLATE,
+  DEFAULT_WARDMOTE_CONVERSATION_PROMPT_TEMPLATE,
   paperclipAgentPromptTemplate,
   isPaperclipExternalChatContractTurn,
   isPaperclipExternalChatQuestionResponseTurn,
   isPaperclipExternalChatTurn,
   materializePaperclipSkillCopy,
-  PAPERCLIP_OPERATIONAL_SKILL_KEY,
-  PAPERCLIP_FEEDBACK_SKILL_KEYS,
+  WARDMOTE_OPERATIONAL_SKILL_KEY,
+  WARDMOTE_FEEDBACK_SKILL_KEYS,
   refreshPaperclipWorkspaceEnvForExecution,
   renderPaperclipWakePrompt,
   resolveLegacyPaperclipDesiredSkillNames,
@@ -104,7 +104,7 @@ describe("ensurePaperclipSkillSymlink", () => {
 });
 
 it("reserves identity credentials even for mixed-case inherited or configured keys", () => {
-  const keys = ["PAPERCLIP_AGENT_KEY_ID", "Paperclip_Agent_Public_Key", "paperclip_agent_private_key"];
+  const keys = ["WARDMOTE_AGENT_KEY_ID", "Paperclip_Agent_Public_Key", "paperclip_agent_private_key"];
   const inherited = Object.fromEntries(keys.map(key => [key, "host-override"]));
   expect(sanitizeInheritedPaperclipEnv({ ...inherited, PATH: "/usr/bin" })).toEqual({ PATH: "/usr/bin" });
   for (const key of keys) expect(isForbiddenConfigEnvKey(key)).toBe(true);
@@ -128,25 +128,25 @@ describe("runtime connection tool delivery", () => {
 
   it("delivers the complete environment contract and canonical guidance", () => {
     expect(buildRuntimeToolsEnv(access)).toEqual({
-      PAPERCLIP_RUNTIME_TOOLS_MCP_URL: access.mcpEndpoint,
-      PAPERCLIP_RUNTIME_TOOLS_TOKEN: access.bearerToken,
-      PAPERCLIP_RUNTIME_TOOLS_EXPIRES_AT: access.expiresAt,
-      PAPERCLIP_RUNTIME_TOOLS_CONNECTIONS_SEARCH_URL:
+      WARDMOTE_RUNTIME_TOOLS_MCP_URL: access.mcpEndpoint,
+      WARDMOTE_RUNTIME_TOOLS_TOKEN: access.bearerToken,
+      WARDMOTE_RUNTIME_TOOLS_EXPIRES_AT: access.expiresAt,
+      WARDMOTE_RUNTIME_TOOLS_CONNECTIONS_SEARCH_URL:
         access.rest.connectionsSearch,
-      PAPERCLIP_RUNTIME_TOOLS_CONNECTION_REQUEST_URL:
+      WARDMOTE_RUNTIME_TOOLS_CONNECTION_REQUEST_URL:
         access.rest.connectionRequest,
-      PAPERCLIP_RUNTIME_TOOLS_AVAILABLE:
+      WARDMOTE_RUNTIME_TOOLS_AVAILABLE:
         "connections_search,connection_request",
-      PAPERCLIP_RUNTIME_TOOLS_GUIDANCE: CONNECTION_INTENT_AGENT_GUIDANCE,
+      WARDMOTE_RUNTIME_TOOLS_GUIDANCE: CONNECTION_INTENT_AGENT_GUIDANCE,
     });
   });
 
   it("does not leak descriptor identity through guidance", () => {
     const env = buildRuntimeToolsEnv(access);
-    expect(env.PAPERCLIP_RUNTIME_TOOLS_GUIDANCE).not.toContain(
+    expect(env.WARDMOTE_RUNTIME_TOOLS_GUIDANCE).not.toContain(
       access.bearerToken,
     );
-    expect(env.PAPERCLIP_RUNTIME_TOOLS_GUIDANCE).not.toContain(
+    expect(env.WARDMOTE_RUNTIME_TOOLS_GUIDANCE).not.toContain(
       access.mcpEndpoint,
     );
   });
@@ -156,18 +156,18 @@ describe("runtime connection tool delivery", () => {
   });
 
   it("uses the exact same guidance in the default heartbeat prompt", () => {
-    expect(DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE).toContain(
+    expect(DEFAULT_WARDMOTE_AGENT_PROMPT_TEMPLATE).toContain(
       CONNECTION_INTENT_AGENT_GUIDANCE,
     );
-    expect(DEFAULT_PAPERCLIP_CONVERSATION_PROMPT_TEMPLATE).toContain(CONNECTION_INTENT_AGENT_GUIDANCE);
-    expect(DEFAULT_PAPERCLIP_CONVERSATION_PROMPT_TEMPLATE).not.toContain("Execution contract:");
-    expect(DEFAULT_PAPERCLIP_CONVERSATION_PROMPT_TEMPLATE).not.toContain("child issues");
+    expect(DEFAULT_WARDMOTE_CONVERSATION_PROMPT_TEMPLATE).toContain(CONNECTION_INTENT_AGENT_GUIDANCE);
+    expect(DEFAULT_WARDMOTE_CONVERSATION_PROMPT_TEMPLATE).not.toContain("Execution contract:");
+    expect(DEFAULT_WARDMOTE_CONVERSATION_PROMPT_TEMPLATE).not.toContain("child issues");
   });
 });
 
 describe("legacy adapter skill selection", () => {
   const operationalEntry = {
-    key: PAPERCLIP_OPERATIONAL_SKILL_KEY,
+    key: WARDMOTE_OPERATIONAL_SKILL_KEY,
     runtimeName: "paperclip",
   };
   const optionalEntry = {
@@ -181,7 +181,7 @@ describe("legacy adapter skill selection", () => {
         operationalEntry,
         optionalEntry,
       ]),
-    ).toEqual([PAPERCLIP_OPERATIONAL_SKILL_KEY]);
+    ).toEqual([WARDMOTE_OPERATIONAL_SKILL_KEY]);
   });
 
   it("keeps the operational skill selected after an explicit empty replacement", () => {
@@ -190,7 +190,7 @@ describe("legacy adapter skill selection", () => {
         { paperclipSkillSync: { desiredSkills: [] } },
         [operationalEntry, optionalEntry],
       ),
-    ).toEqual([PAPERCLIP_OPERATIONAL_SKILL_KEY]);
+    ).toEqual([WARDMOTE_OPERATIONAL_SKILL_KEY]);
   });
 
   it("does not force optional skills or synthesize a missing operational entry", () => {
@@ -202,7 +202,7 @@ describe("legacy adapter skill selection", () => {
         operationalEntry,
         optionalEntry,
       ]),
-    ).toEqual([PAPERCLIP_OPERATIONAL_SKILL_KEY, optionalEntry.key]);
+    ).toEqual([WARDMOTE_OPERATIONAL_SKILL_KEY, optionalEntry.key]);
     expect(
       resolveLegacyPaperclipDesiredSkillNames(config, [optionalEntry]),
     ).toEqual([optionalEntry.key]);
@@ -215,10 +215,10 @@ describe("legacy adapter skill selection", () => {
   });
 
   it("makes feedback available to existing legacy agents without opting native agents into API skills", () => {
-    const inventory = [operationalEntry, ...PAPERCLIP_FEEDBACK_SKILL_KEYS.map((key) => ({ key }))];
+    const inventory = [operationalEntry, ...WARDMOTE_FEEDBACK_SKILL_KEYS.map((key) => ({ key }))];
     for (const config of [{}, { paperclipSkillSync: { desiredSkills: [] } }]) {
       expect(resolveLegacyPaperclipDesiredSkillNames(config, inventory)).toEqual([
-        PAPERCLIP_OPERATIONAL_SKILL_KEY, ...PAPERCLIP_FEEDBACK_SKILL_KEYS,
+        WARDMOTE_OPERATIONAL_SKILL_KEY, ...WARDMOTE_FEEDBACK_SKILL_KEYS,
       ]);
       expect(resolvePaperclipDesiredSkillNames(config, inventory)).toEqual([]);
     }
@@ -265,13 +265,13 @@ describe("buildInvocationEnvForLogs", () => {
       { SAFE_VALUE: "visible" },
       {
         resolvedCommand:
-          "env OPENAI_API_KEY=sk-live-example PAPERCLIP_API_KEY='paperclip-quoted-secret' custom-acp --paperclip-api-key=paperclip-flag-secret --token ghp_example_secret",
+          "env OPENAI_API_KEY=sk-live-example WARDMOTE_API_KEY='paperclip-quoted-secret' custom-acp --paperclip-api-key=paperclip-flag-secret --token ghp_example_secret",
       },
     );
 
     expect(loggedEnv.SAFE_VALUE).toBe("visible");
-    expect(loggedEnv.PAPERCLIP_RESOLVED_COMMAND).toBe(
-      "env OPENAI_API_KEY=***REDACTED*** PAPERCLIP_API_KEY='***REDACTED***' custom-acp --paperclip-api-key=***REDACTED*** --token ***REDACTED***",
+    expect(loggedEnv.WARDMOTE_RESOLVED_COMMAND).toBe(
+      "env OPENAI_API_KEY=***REDACTED*** WARDMOTE_API_KEY='***REDACTED***' custom-acp --paperclip-api-key=***REDACTED*** --token ***REDACTED***",
     );
   });
 });
@@ -1258,7 +1258,7 @@ describe("renderPaperclipWakePrompt", () => {
       expect(prompt).not.toContain("acknowledge the latest comment");
       expect(prompt).not.toContain("checkout: already claimed");
       expect(prompt).not.toContain(
-        "POST /api/issues/$PAPERCLIP_TASK_ID/checkout",
+        "POST /api/issues/$WARDMOTE_TASK_ID/checkout",
       );
     }
 
@@ -1528,8 +1528,8 @@ describe("renderPaperclipWakePrompt", () => {
 
   it("keeps task and chat defaults to identity and connection guidance", () => {
     for (const template of [
-      DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE,
-      DEFAULT_PAPERCLIP_CONVERSATION_PROMPT_TEMPLATE,
+      DEFAULT_WARDMOTE_AGENT_PROMPT_TEMPLATE,
+      DEFAULT_WARDMOTE_CONVERSATION_PROMPT_TEMPLATE,
     ]) {
       expect(template).toBe(
         `You are agent {{agent.id}} ({{agent.name}}).\n\n${CONNECTION_INTENT_AGENT_GUIDANCE}`,
@@ -1573,7 +1573,7 @@ describe("renderPaperclipWakePrompt", () => {
       "Create child issues directly when you know what needs to be done",
     );
     expect(template).toContain(
-      "using `issueId: $PAPERCLIP_TASK_ID`",
+      "using `issueId: $WARDMOTE_TASK_ID`",
     );
     // URL paths in prompt text carry real ids or env vars, never brace
     // placeholders: agents paste these lines verbatim, and a literal {issueId}
@@ -1627,7 +1627,7 @@ describe("renderPaperclipWakePrompt", () => {
 
     expect(prompt).toContain("## Paperclip Wake Payload");
     expect(prompt).not.toContain("Execution contract:");
-    expect(DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE).not.toContain(
+    expect(DEFAULT_WARDMOTE_AGENT_PROMPT_TEMPLATE).not.toContain(
       "Execution contract:",
     );
   });
@@ -2075,7 +2075,7 @@ describe("renderPaperclipWakePrompt", () => {
       comments: [],
       fallbackFetchNeeded: false,
     });
-    const composed = [wakePrompt, DEFAULT_PAPERCLIP_AGENT_PROMPT_TEMPLATE].join(
+    const composed = [wakePrompt, DEFAULT_WARDMOTE_AGENT_PROMPT_TEMPLATE].join(
       "\n\n",
     );
     expect(composed).toContain(CONNECTION_INTENT_AGENT_GUIDANCE);
@@ -3582,15 +3582,15 @@ describe("applyPaperclipWorkspaceEnv", () => {
     );
 
     expect(env).toEqual({
-      PAPERCLIP_WORKSPACE_CWD: "/tmp/workspace",
-      PAPERCLIP_WORKSPACE_SOURCE: "project_primary",
-      PAPERCLIP_WORKSPACE_STRATEGY: "git_worktree",
-      PAPERCLIP_WORKSPACE_ID: "workspace-1",
-      PAPERCLIP_WORKSPACE_REPO_URL:
+      WARDMOTE_WORKSPACE_CWD: "/tmp/workspace",
+      WARDMOTE_WORKSPACE_SOURCE: "project_primary",
+      WARDMOTE_WORKSPACE_STRATEGY: "git_worktree",
+      WARDMOTE_WORKSPACE_ID: "workspace-1",
+      WARDMOTE_WORKSPACE_REPO_URL:
         "https://github.com/paperclipai/paperclip.git",
-      PAPERCLIP_WORKSPACE_REPO_REF: "main",
-      PAPERCLIP_WORKSPACE_BRANCH: "feature/test",
-      PAPERCLIP_WORKSPACE_WORKTREE_PATH: "/tmp/worktree",
+      WARDMOTE_WORKSPACE_REPO_REF: "main",
+      WARDMOTE_WORKSPACE_BRANCH: "feature/test",
+      WARDMOTE_WORKSPACE_WORKTREE_PATH: "/tmp/worktree",
       AGENT_HOME: "/tmp/agent-home",
     });
   });
@@ -3804,9 +3804,9 @@ describe("rewriteWorkspaceCwdEnvVarsForExecution", () => {
 describe("refreshPaperclipWorkspaceEnvForExecution", () => {
   it("rewrites Paperclip workspace env to the prepared remote runtime cwd", () => {
     const env: Record<string, string> = {
-      PAPERCLIP_WORKSPACE_CWD: "/remote/workspace",
-      PAPERCLIP_WORKSPACE_WORKTREE_PATH: "/host/worktree",
-      PAPERCLIP_WORKSPACES_JSON: JSON.stringify([
+      WARDMOTE_WORKSPACE_CWD: "/remote/workspace",
+      WARDMOTE_WORKSPACE_WORKTREE_PATH: "/host/worktree",
+      WARDMOTE_WORKSPACES_JSON: JSON.stringify([
         { workspaceId: "workspace-1", cwd: "/remote/workspace" },
         { workspaceId: "workspace-2", cwd: "/tmp/other" },
       ]),
@@ -3841,14 +3841,14 @@ describe("refreshPaperclipWorkspaceEnvForExecution", () => {
         },
       ],
     });
-    expect(env.PAPERCLIP_WORKSPACE_CWD).toBe(
+    expect(env.WARDMOTE_WORKSPACE_CWD).toBe(
       "/remote/workspace/.paperclip-runtime/runs/run-1/workspace",
     );
-    expect(env.PAPERCLIP_WORKSPACE_WORKTREE_PATH).toBeUndefined();
+    expect(env.WARDMOTE_WORKSPACE_WORKTREE_PATH).toBeUndefined();
     expect(env.QA_PROJECT_WORKSPACE_CWD).toBe(
       "/remote/workspace/.paperclip-runtime/runs/run-1/workspace",
     );
-    expect(JSON.parse(env.PAPERCLIP_WORKSPACES_JSON ?? "[]")).toEqual([
+    expect(JSON.parse(env.WARDMOTE_WORKSPACES_JSON ?? "[]")).toEqual([
       {
         workspaceId: "workspace-1",
         cwd: "/remote/workspace/.paperclip-runtime/runs/run-1/workspace",
@@ -3861,9 +3861,9 @@ describe("refreshPaperclipWorkspaceEnvForExecution", () => {
 
   it("forwards resolved adapter env but never overrides Paperclip runtime env", () => {
     const env: Record<string, string> = {
-      PAPERCLIP_RUN_ID: "run-1",
-      PAPERCLIP_TASK_ID: "issue-1",
-      PAPERCLIP_API_URL: "http://runtime:3100",
+      WARDMOTE_RUN_ID: "run-1",
+      WARDMOTE_TASK_ID: "issue-1",
+      WARDMOTE_API_URL: "http://runtime:3100",
     };
 
     refreshPaperclipWorkspaceEnvForExecution({
@@ -3874,58 +3874,58 @@ describe("refreshPaperclipWorkspaceEnvForExecution", () => {
         // Server-resolved secret_ref value arrives as a plain string here.
         OPENROUTER_API_KEY: "resolved-secret-value",
         // Reserved-namespace keys must not clobber runtime identity/wake vars.
-        PAPERCLIP_TASK_ID: "attacker-issue",
-        PAPERCLIP_API_URL: "http://evil:9999",
+        WARDMOTE_TASK_ID: "attacker-issue",
+        WARDMOTE_API_URL: "http://evil:9999",
       },
       workspaceCwd: null,
     });
 
     expect(env.OOGA_BOOGA_123).toBe("plain-value");
     expect(env.OPENROUTER_API_KEY).toBe("resolved-secret-value");
-    expect(env.PAPERCLIP_TASK_ID).toBe("issue-1");
-    expect(env.PAPERCLIP_API_URL).toBe("http://runtime:3100");
+    expect(env.WARDMOTE_TASK_ID).toBe("issue-1");
+    expect(env.WARDMOTE_API_URL).toBe("http://runtime:3100");
   });
 
-  it("applies a configured PAPERCLIP_* key only when Paperclip has not set it", () => {
+  it("applies a configured WARDMOTE_* key only when Paperclip has not set it", () => {
     const env: Record<string, string> = {};
 
     refreshPaperclipWorkspaceEnvForExecution({
       env,
       envConfig: {
-        PAPERCLIP_CLOUD_PROVIDER_TOKEN: "cloud-token",
+        WARDMOTE_CLOUD_PROVIDER_TOKEN: "cloud-token",
       },
       workspaceCwd: null,
     });
 
-    // Paperclip did not assign this PAPERCLIP_*-named key for the run, so the
+    // Paperclip did not assign this WARDMOTE_*-named key for the run, so the
     // configured value flows through to the spawned process.
-    expect(env.PAPERCLIP_CLOUD_PROVIDER_TOKEN).toBe("cloud-token");
+    expect(env.WARDMOTE_CLOUD_PROVIDER_TOKEN).toBe("cloud-token");
   });
 
   it("does not restore the retired wake JSON variable from config", () => {
     const env: Record<string, string> = {};
     refreshPaperclipWorkspaceEnvForExecution({
       env,
-      envConfig: { PAPERCLIP_WAKE_PAYLOAD_JSON: "stale wake" },
+      envConfig: { WARDMOTE_WAKE_PAYLOAD_JSON: "stale wake" },
       workspaceCwd: null,
     });
-    expect(env).not.toHaveProperty("PAPERCLIP_WAKE_PAYLOAD_JSON");
+    expect(env).not.toHaveProperty("WARDMOTE_WAKE_PAYLOAD_JSON");
   });
 
-  it("never accepts PAPERCLIP_API_KEY from config env", () => {
+  it("never accepts WARDMOTE_API_KEY from config env", () => {
     const env: Record<string, string> = {};
 
     refreshPaperclipWorkspaceEnvForExecution({
       env,
       envConfig: {
-        PAPERCLIP_API_KEY: "explicit-key",
+        WARDMOTE_API_KEY: "explicit-key",
       },
       workspaceCwd: null,
     });
 
-    // The harness-minted run token is the only PAPERCLIP_API_KEY source;
+    // The harness-minted run token is the only WARDMOTE_API_KEY source;
     // a configured value is dropped even when Paperclip has not set one.
-    expect(env.PAPERCLIP_API_KEY).toBeUndefined();
+    expect(env.WARDMOTE_API_KEY).toBeUndefined();
   });
 });
 
@@ -3941,10 +3941,10 @@ describe("appendWithByteCap", () => {
 
 describe("buildPaperclipEnv", () => {
   const ENV_KEYS = [
-    "PAPERCLIP_API_URL",
-    "PAPERCLIP_RUNTIME_API_URL",
-    "PAPERCLIP_LISTEN_HOST",
-    "PAPERCLIP_LISTEN_PORT",
+    "WARDMOTE_API_URL",
+    "WARDMOTE_RUNTIME_API_URL",
+    "WARDMOTE_LISTEN_HOST",
+    "WARDMOTE_LISTEN_PORT",
     "HOST",
     "PORT",
   ] as const;
@@ -3965,40 +3965,40 @@ describe("buildPaperclipEnv", () => {
     }
   }
 
-  it("prefers an explicit PAPERCLIP_API_URL override over the derived runtime URL", () => {
+  it("prefers an explicit WARDMOTE_API_URL override over the derived runtime URL", () => {
     withEnv(
       {
-        PAPERCLIP_API_URL: "http://localhost:3100",
-        PAPERCLIP_RUNTIME_API_URL: "http://203.0.113.7:3100",
+        WARDMOTE_API_URL: "http://localhost:3100",
+        WARDMOTE_RUNTIME_API_URL: "http://203.0.113.7:3100",
       },
       () => {
         const env = buildPaperclipEnv({
           id: "agent-1",
           companyId: "company-1",
         });
-        expect(env.PAPERCLIP_API_URL).toBe("http://localhost:3100");
-        expect(env.PAPERCLIP_AGENT_ID).toBe("agent-1");
-        expect(env.PAPERCLIP_COMPANY_ID).toBe("company-1");
+        expect(env.WARDMOTE_API_URL).toBe("http://localhost:3100");
+        expect(env.WARDMOTE_AGENT_ID).toBe("agent-1");
+        expect(env.WARDMOTE_COMPANY_ID).toBe("company-1");
       },
     );
   });
 
   it("falls back to the derived runtime URL when no explicit override is set", () => {
-    withEnv({ PAPERCLIP_RUNTIME_API_URL: "http://203.0.113.7:3100" }, () => {
+    withEnv({ WARDMOTE_RUNTIME_API_URL: "http://203.0.113.7:3100" }, () => {
       const env = buildPaperclipEnv({ id: "agent-1", companyId: "company-1" });
-      expect(env.PAPERCLIP_API_URL).toBe("http://203.0.113.7:3100");
+      expect(env.WARDMOTE_API_URL).toBe("http://203.0.113.7:3100");
     });
   });
 
   it("derives a listen-host URL when neither override is set", () => {
     withEnv(
-      { PAPERCLIP_LISTEN_HOST: "0.0.0.0", PAPERCLIP_LISTEN_PORT: "3200" },
+      { WARDMOTE_LISTEN_HOST: "0.0.0.0", WARDMOTE_LISTEN_PORT: "3200" },
       () => {
         const env = buildPaperclipEnv({
           id: "agent-1",
           companyId: "company-1",
         });
-        expect(env.PAPERCLIP_API_URL).toBe("http://localhost:3200");
+        expect(env.WARDMOTE_API_URL).toBe("http://localhost:3200");
       },
     );
   });

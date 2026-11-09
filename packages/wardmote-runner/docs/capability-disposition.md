@@ -56,7 +56,7 @@ The contract has three parts:
 
 Generation reads the live in-repo skill/reference sources, the legacy MCP tool
 source, and the Paperclip Evals corpus, so it **requires** the external eval
-repository (via `PAPERCLIP_EVALS_ROOT` or a known local path) and is not part of
+repository (via `WARDMOTE_EVALS_ROOT` or a known local path) and is not part of
 the offline path. Checking and testing read only the checked-in derivatives
 under `spec/capability/` and need no external repository.
 

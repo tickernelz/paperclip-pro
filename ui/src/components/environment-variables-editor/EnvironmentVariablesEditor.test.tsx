@@ -567,7 +567,7 @@ describe("EnvironmentVariablesEditor", () => {
   it("renders name warnings as a row spanning the name and value columns", () => {
     render(
       <EnvironmentVariablesEditor
-        value={{ PAPERCLIP_PAGE_BASE_URL: { type: "plain", value: "https://pages.paperclip.ing" } }}
+        value={{ WARDMOTE_PAGE_BASE_URL: { type: "plain", value: "https://pages.paperclip.ing" } }}
         secrets={secrets}
         onChange={() => {}}
         onCreateSecret={async () => secrets[0]}

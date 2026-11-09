@@ -114,16 +114,16 @@ interface TestPaperclipEnv {
 function createBasePaperclipEnv(options: TestPaperclipEnv) {
   const env = { ...process.env };
   for (const key of Object.keys(env)) {
-    if (key.startsWith("PAPERCLIP_")) {
+    if (key.startsWith("WARDMOTE_")) {
       delete env[key];
     }
   }
 
-  env.PAPERCLIP_CONFIG = options.configPath;
-  env.PAPERCLIP_HOME = options.paperclipHome;
-  env.PAPERCLIP_INSTANCE_ID = options.instanceId;
-  env.PAPERCLIP_CONTEXT = path.join(options.paperclipHome, "context.json");
-  env.PAPERCLIP_AUTH_STORE = path.join(options.paperclipHome, "auth.json");
+  env.WARDMOTE_CONFIG = options.configPath;
+  env.WARDMOTE_HOME = options.paperclipHome;
+  env.WARDMOTE_INSTANCE_ID = options.instanceId;
+  env.WARDMOTE_CONTEXT = path.join(options.paperclipHome, "context.json");
+  env.WARDMOTE_AUTH_STORE = path.join(options.paperclipHome, "auth.json");
   if (options.shellHome) {
     env.HOME = options.shellHome;
   }
@@ -152,11 +152,11 @@ function createServerEnv(
   env.HOST = "127.0.0.1";
   env.PORT = String(port);
   env.SERVE_UI = "false";
-  env.PAPERCLIP_DB_BACKUP_ENABLED = "false";
-  env.PAPERCLIP_DECISION_SIGNING_SECRET = "company-import-export-decision-signing-secret";
+  env.WARDMOTE_DB_BACKUP_ENABLED = "false";
+  env.WARDMOTE_DECISION_SIGNING_SECRET = "company-import-export-decision-signing-secret";
   env.HEARTBEAT_SCHEDULER_ENABLED = "false";
-  env.PAPERCLIP_MIGRATION_AUTO_APPLY = "true";
-  env.PAPERCLIP_UI_DEV_MIDDLEWARE = "false";
+  env.WARDMOTE_MIGRATION_AUTO_APPLY = "true";
+  env.WARDMOTE_UI_DEV_MIDDLEWARE = "false";
 
   return env;
 }
@@ -167,10 +167,10 @@ function createCliEnv(options: TestPaperclipEnv) {
   delete env.PORT;
   delete env.HOST;
   delete env.SERVE_UI;
-  delete env.PAPERCLIP_DB_BACKUP_ENABLED;
+  delete env.WARDMOTE_DB_BACKUP_ENABLED;
   delete env.HEARTBEAT_SCHEDULER_ENABLED;
-  delete env.PAPERCLIP_MIGRATION_AUTO_APPLY;
-  delete env.PAPERCLIP_UI_DEV_MIDDLEWARE;
+  delete env.WARDMOTE_MIGRATION_AUTO_APPLY;
+  delete env.WARDMOTE_UI_DEV_MIDDLEWARE;
   return env;
 }
 

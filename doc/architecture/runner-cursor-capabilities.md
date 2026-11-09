@@ -398,7 +398,7 @@ canonical governance or custom entry instructions reached Cursor.
 The owned `paperclip-cursor-instructions-v2` patch preserves the v3 isolation and
 typed-error changes and adds the composed instructions through Cursor's native
 `LocalResourceProvider.additionalRules` path. The sandbox supplies an ephemeral,
-controller-owned `PAPERCLIP_CURSOR_INSTRUCTIONS` payload. Ambient environment
+controller-owned `WARDMOTE_CURSOR_INSTRUCTIONS` payload. Ambient environment
 cannot select or replace it, and it is not persisted in ACPX's launch environment
 record. The payload binds exact UTF-8 content (maximum 32 KiB, no NUL) to SHA-256;
 it includes the already-composed governance, custom entry content and registered

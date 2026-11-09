@@ -273,8 +273,8 @@ describe("OpenWA media ingest and speech-to-text (embedded Postgres + fake gatew
     expect(untypedAsset).toMatchObject({ contentType: "application/octet-stream", originalFilename: "blob.weird" });
   });
 
-  it("rejects a type outside PAPERCLIP_ALLOWED_ATTACHMENT_TYPES without downloading it when an operator restricts types", async () => {
-    vi.stubEnv("PAPERCLIP_ALLOWED_ATTACHMENT_TYPES", "image/*,application/pdf");
+  it("rejects a type outside WARDMOTE_ALLOWED_ATTACHMENT_TYPES without downloading it when an operator restricts types", async () => {
+    vi.stubEnv("WARDMOTE_ALLOWED_ATTACHMENT_TYPES", "image/*,application/pdf");
     try {
       const target = await seed();
       const media = service();

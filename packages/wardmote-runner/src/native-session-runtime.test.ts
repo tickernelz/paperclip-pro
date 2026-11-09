@@ -21,8 +21,8 @@ import type {
 } from "./protocol/replay-contract.js";
 import {
   NATIVE_RUNTIME_ASSET_SCHEMA,
-  PAPERCLIP_EXECUTION_PROMPT,
-  PAPERCLIP_EXECUTION_PROMPT_REVISION,
+  WARDMOTE_EXECUTION_PROMPT,
+  WARDMOTE_EXECUTION_PROMPT_REVISION,
   canonicalNativeRuntimeContextDigest,
   nativeRuntimePromptDigest,
 } from "./contracts/runtime-context.js";
@@ -140,7 +140,7 @@ const input: NativeExecutionInputV1 = {
 function preparedInput(): NativeExecutionInputV5 {
   const digest = "0".repeat(64);
   const context = {
-    prompt: { revision: PAPERCLIP_EXECUTION_PROMPT_REVISION, text: PAPERCLIP_EXECUTION_PROMPT, digest: nativeRuntimePromptDigest() },
+    prompt: { revision: WARDMOTE_EXECUTION_PROMPT_REVISION, text: WARDMOTE_EXECUTION_PROMPT, digest: nativeRuntimePromptDigest() },
     instructions: { entryPath: "AGENTS.md", bundle: { schema: NATIVE_RUNTIME_ASSET_SCHEMA, digest, manifestDigest: digest, rootPath: "/runtime/instructions", fileCount: 1, totalBytes: 1 } },
     skills: [], mcp: { assignmentSetId: "none", digest, bindingId: null },
   } as const;
@@ -470,7 +470,7 @@ describe("executeNativeSession recovery", () => {
     const appended: PrpEvent[] = [];
     const digest = "0".repeat(64);
     const context = {
-      prompt: { revision: PAPERCLIP_EXECUTION_PROMPT_REVISION, text: PAPERCLIP_EXECUTION_PROMPT, digest: nativeRuntimePromptDigest() },
+      prompt: { revision: WARDMOTE_EXECUTION_PROMPT_REVISION, text: WARDMOTE_EXECUTION_PROMPT, digest: nativeRuntimePromptDigest() },
       instructions: { entryPath: "AGENTS.md", bundle: { schema: NATIVE_RUNTIME_ASSET_SCHEMA, digest, manifestDigest: digest, rootPath: "/runtime/instructions", fileCount: 1, totalBytes: 1 } },
       skills: [], mcp: { assignmentSetId: "none", digest, bindingId: null },
     } as const;
@@ -2036,8 +2036,8 @@ describe("executeNativeSession recovery", () => {
     const digest = "0".repeat(64);
     const context = {
       prompt: {
-        revision: PAPERCLIP_EXECUTION_PROMPT_REVISION,
-        text: PAPERCLIP_EXECUTION_PROMPT,
+        revision: WARDMOTE_EXECUTION_PROMPT_REVISION,
+        text: WARDMOTE_EXECUTION_PROMPT,
         digest: nativeRuntimePromptDigest(),
       },
       instructions: {
@@ -6335,7 +6335,7 @@ describe("executeNativeSession recovery", () => {
       },
     } as const;
     const context = {
-      prompt: { revision: PAPERCLIP_EXECUTION_PROMPT_REVISION, text: PAPERCLIP_EXECUTION_PROMPT, digest: nativeRuntimePromptDigest() },
+      prompt: { revision: WARDMOTE_EXECUTION_PROMPT_REVISION, text: WARDMOTE_EXECUTION_PROMPT, digest: nativeRuntimePromptDigest() },
       instructions: { entryPath: "AGENTS.md", bundle: { schema: NATIVE_RUNTIME_ASSET_SCHEMA, digest, manifestDigest: digest, rootPath: "/runtime/instructions", fileCount: 1, totalBytes: 1 } },
       skills: [skill],
       mcp: { assignmentSetId: "none", digest, bindingId: null },

@@ -35,7 +35,7 @@ emit durable release-content cases before handing off the copy. Cases preserve
 the inspectable output; the issue coordinates the work.
 
 Use `skills/paperclip/references/cases.md` for the API contract. Include
-`X-Paperclip-Run-Id` on writes when `PAPERCLIP_RUN_ID` is set. If the API returns
+`X-Paperclip-Run-Id` on writes when `WARDMOTE_RUN_ID` is set. If the API returns
 `403 Cases are disabled`, report that limitation and continue with the requested
 copy artifact.
 

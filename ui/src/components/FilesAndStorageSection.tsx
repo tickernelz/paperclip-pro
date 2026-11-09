@@ -40,7 +40,7 @@ const RULE_LABELS: Record<AttachmentRetentionRule, string> = {
 
 const LIMIT_SOURCE_LABELS: Record<AttachmentLimitSource, string> = {
   setting: "set here",
-  env: "from PAPERCLIP_ATTACHMENT_MAX_BYTES",
+  env: "from WARDMOTE_ATTACHMENT_MAX_BYTES",
   default: "built-in default",
 };
 
@@ -129,7 +129,7 @@ function UploadLimitForm({
       <div className="space-y-1">
         <h3 className="text-sm font-medium">Upload size limit</h3>
         <p className="max-w-2xl text-sm text-ink-3">
-          Largest file anyone can attach, in MB ({ATTACHMENT_MAX_MEGABYTES_MIN}–{ATTACHMENT_MAX_MEGABYTES_MAX}). Leave blank to use the default: the PAPERCLIP_ATTACHMENT_MAX_BYTES environment variable when set, otherwise {DEFAULT_ATTACHMENT_MAX_MEGABYTES} MB.
+          Largest file anyone can attach, in MB ({ATTACHMENT_MAX_MEGABYTES_MIN}–{ATTACHMENT_MAX_MEGABYTES_MAX}). Leave blank to use the default: the WARDMOTE_ATTACHMENT_MAX_BYTES environment variable when set, otherwise {DEFAULT_ATTACHMENT_MAX_MEGABYTES} MB.
         </p>
         {effectiveLimit ? (
           <p className="text-sm" data-testid="attachment-limit-effective">

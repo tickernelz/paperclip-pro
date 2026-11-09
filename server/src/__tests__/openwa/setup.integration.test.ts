@@ -156,7 +156,7 @@ describeEmbeddedPostgres("OpenWA setup inspection and configure", () => {
   let db: ReturnType<typeof createDb>;
   let secretsDir: string;
   let gateway: FakeGateway | undefined;
-  const previousKeyFile = process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE;
+  const previousKeyFile = process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE;
   const services: ChatChannelService[] = [];
   const companyIds: string[] = [];
 
@@ -164,7 +164,7 @@ describeEmbeddedPostgres("OpenWA setup inspection and configure", () => {
     database = await startEmbeddedPostgresTestDatabase("paperclip-openwa-setup-");
     db = createDb(database.connectionString);
     secretsDir = await mkdtemp(path.join(tmpdir(), "openwa-secrets-"));
-    process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE = path.join(secretsDir, "master.key");
+    process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = path.join(secretsDir, "master.key");
   }, 30_000);
 
   afterEach(async () => {
@@ -179,8 +179,8 @@ describeEmbeddedPostgres("OpenWA setup inspection and configure", () => {
   afterAll(async () => {
     await database?.cleanup();
     if (secretsDir) await rm(secretsDir, { recursive: true, force: true });
-    if (previousKeyFile === undefined) delete process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE;
-    else process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE = previousKeyFile;
+    if (previousKeyFile === undefined) delete process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE;
+    else process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = previousKeyFile;
   });
 
   function fakeRuntime(): ChatSdkRuntime {

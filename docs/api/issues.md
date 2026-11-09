@@ -324,7 +324,7 @@ POST /api/companies/{companyId}/issues/{issueId}/attachments
 Content-Type: multipart/form-data
 ```
 
-Send the file in the `file` field and an optional `issueCommentId`. The size limit is the instance attachment limit (Instance Settings upload limit, else `PAPERCLIP_ATTACHMENT_MAX_BYTES`, else 100 MB); `GET /api/health` reports it as `attachmentLimit: { maxBytes, source }`. A larger file returns `413` with `{ "error": "File is larger than the <limit> limit", "details": { "code": "attachment_too_large", "maxBytes": <n> } }`. A reverse proxy can answer `413` first with a non-JSON body.
+Send the file in the `file` field and an optional `issueCommentId`. The size limit is the instance attachment limit (Instance Settings upload limit, else `WARDMOTE_ATTACHMENT_MAX_BYTES`, else 100 MB); `GET /api/health` reports it as `attachmentLimit: { maxBytes, source }`. A larger file returns `413` with `{ "error": "File is larger than the <limit> limit", "details": { "code": "attachment_too_large", "maxBytes": <n> } }`. A reverse proxy can answer `413` first with a non-JSON body.
 
 ### List
 

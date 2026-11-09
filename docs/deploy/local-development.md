@@ -128,5 +128,5 @@ pnpm dev
 Override with environment variables:
 
 ```sh
-PAPERCLIP_HOME=/custom/path PAPERCLIP_INSTANCE_ID=dev pnpm wardmote run
+WARDMOTE_HOME=/custom/path WARDMOTE_INSTANCE_ID=dev pnpm wardmote run
 ```

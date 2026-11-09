@@ -7,9 +7,9 @@ import { setupAggregatorFixture } from "../../../tests/runner-e2e/aggregator-fix
 
 let server: Awaited<ReturnType<typeof startRunnerApiTestServer>>;
 beforeAll(async () => {
-  vi.stubEnv("PAPERCLIP_AGENT_JWT_SECRET", randomUUID());
+  vi.stubEnv("WARDMOTE_AGENT_JWT_SECRET", randomUUID());
   server = await startRunnerApiTestServer({ deploymentMode: "local_trusted" });
-  vi.stubEnv("PAPERCLIP_RUNNER_E2E_PORT", new URL(server.apiUrl).port);
+  vi.stubEnv("WARDMOTE_RUNNER_E2E_PORT", new URL(server.apiUrl).port);
 }, 60_000);
 afterAll(async () => { await server?.close(); vi.unstubAllEnvs(); });
 

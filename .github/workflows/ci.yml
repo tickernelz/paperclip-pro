@@ -13,71 +13,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  scope:
-    name: scope
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    outputs:
-      docs_only: ${{ steps.classify.outputs.docs_only }}
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-          fetch-depth: 0
-
-      - name: Classify the changed files
-        id: classify
-        env:
-          EVENT_NAME: ${{ github.event_name }}
-          PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
-          BEFORE_SHA: ${{ github.event.before }}
-          HEAD_SHA: ${{ github.sha }}
-        run: |
-          set -euo pipefail
-          zeroes="0000000000000000000000000000000000000000"
-          base=""
-          if [ "$EVENT_NAME" = "pull_request" ]; then
-            base="$(git merge-base "$PR_BASE_SHA" "$HEAD_SHA")"
-          elif [ -n "$BEFORE_SHA" ] && [ "$BEFORE_SHA" != "$zeroes" ]; then
-            base="$BEFORE_SHA"
-          else
-            base="$(git rev-parse --verify --quiet "${HEAD_SHA}^" || true)"
-          fi
-
-          if [ -n "$base" ] && git cat-file -e "${base}^{commit}" 2>/dev/null; then
-            echo "comparing $base..$HEAD_SHA"
-            files="$(git diff --name-only "$base" "$HEAD_SHA")"
-          else
-            echo "::notice title=Docs fast lane::no usable base commit; running the full lane"
-            files="$(git ls-files)"
-          fi
-
-          docs_only=true
-          count=0
-          while IFS= read -r file; do
-            [ -n "$file" ] || continue
-            count=$((count + 1))
-            echo "changed: $file"
-            case "$file" in
-              *.md) continue ;;
-              LICENSE) continue ;;
-              docs/*) continue ;;
-              doc/*) continue ;;
-              .github/ISSUE_TEMPLATE/*) continue ;;
-              .github/PULL_REQUEST_TEMPLATE.md) continue ;;
-              .github/PULL_REQUEST_TEMPLATE/*) continue ;;
-            esac
-            docs_only=false
-          done <<< "$files"
-
-          echo "changed files: $count"
-          echo "docs_only: $docs_only"
-          echo "docs_only=$docs_only" >> "$GITHUB_OUTPUT"
-
   policy:
     name: Policy, browser extensions, Docker OMP pin
-    needs: scope
-    if: needs.scope.outputs.docs_only != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -130,8 +67,6 @@ jobs:
 
   typecheck:
     name: Typecheck
-    needs: scope
-    if: needs.scope.outputs.docs_only != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -152,8 +87,6 @@ jobs:
 
   build:
     name: Build
-    needs: scope
-    if: needs.scope.outputs.docs_only != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -178,8 +111,6 @@ jobs:
 
   runner:
     name: Verify Wardmote Runner (${{ matrix.part }})
-    needs: scope
-    if: needs.scope.outputs.docs_only != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     strategy:
@@ -233,8 +164,6 @@ jobs:
 
   general:
     name: Tests (${{ matrix.label }})
-    needs: scope
-    if: needs.scope.outputs.docs_only != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -302,8 +231,6 @@ jobs:
 
   serialized:
     name: Tests (serialized ${{ matrix.shard_index }}/3)
-    needs: scope
-    if: needs.scope.outputs.docs_only != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     strategy:
@@ -322,8 +249,6 @@ jobs:
 
   e2e:
     name: E2E (${{ matrix.shard_index }}/5)
-    needs: scope
-    if: needs.scope.outputs.docs_only != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 35
     strategy:
@@ -356,8 +281,8 @@ jobs:
 
       - name: Run e2e tests
         env:
-          PAPERCLIP_E2E_SKIP_LLM: "true"
-          PAPERCLIP_PLAYWRIGHT_CHANNEL: "chrome"
+          WARDMOTE_E2E_SKIP_LLM: "true"
+          WARDMOTE_PLAYWRIGHT_CHANNEL: "chrome"
         run: |
           specs="$(node ./scripts/e2e-shard.mjs --shard-index ${{ matrix.shard_index }} --shard-count 5)"
           echo "shard ${{ matrix.shard_index }} specs: $specs"
@@ -385,8 +310,6 @@ jobs:
 
   browser-gates:
     name: Mobile shell (WebKit) and contrast gate (rendered colours)
-    needs: scope
-    if: needs.scope.outputs.docs_only != 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -424,8 +347,7 @@ jobs:
 
   upgrade-path:
     name: Upgrade path (published release to this commit)
-    needs: scope
-    if: needs.scope.outputs.docs_only != 'true' && github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 40
     steps:
@@ -433,6 +355,8 @@ jobs:
         with:
           persist-credentials: false
       - uses: ./.github/actions/setup-workspace
+        with:
+          store: "true"
       - name: Runner Rust release cache
         uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6
         with:
@@ -449,29 +373,10 @@ jobs:
           UPGRADE_SHA: ${{ github.event.pull_request.head.sha }}
         run: UPGRADE_PNPM_STORE="$(pnpm store path --silent)" bash scripts/test-upgrade-path.sh
 
-  docs:
-    name: Docs
-    needs: scope
-    if: needs.scope.outputs.docs_only == 'true'
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-          fetch-depth: 0
-
-      - uses: ./.github/actions/setup-workspace
-
-      - uses: ./.github/actions/policy-checks
-
-      - name: Run the documentation-reading test suites
-        run: pnpm test:run:docs
-
   verify:
     name: verify
     if: always()
-    needs: [scope, policy, docs, typecheck, build, runner, general, serialized, e2e, browser-gates, upgrade-path]
+    needs: [policy, typecheck, build, runner, general, serialized, e2e, browser-gates, upgrade-path]
     runs-on: ubuntu-latest
     timeout-minutes: 5
     permissions:
@@ -497,26 +402,9 @@ jobs:
         run: |
           set -euo pipefail
           echo "$RESULTS"
-          failed="$(jq -r 'to_entries | map(select(.value.result != "success" and .value.result != "skipped") | .key + "=" + .value.result) | join(" ")' <<<"$RESULTS")"
+          failed="$(jq -r '(env.PULL_REQUEST_ONLY_LANES | fromjson) as $pr_only | to_entries | map(select(.value.result != "success" and (.value.result != "skipped" or (.key as $k | $pr_only | any(. == $k) | not))) | .key + "=" + .value.result) | join(" ")' <<<"$RESULTS")"
           if [ -n "$failed" ]; then
-            echo "failed lanes: $failed"
+            echo "lanes that did not succeed: $failed"
             exit 1
           fi
-
-          docs="$(jq -r '.docs.result' <<<"$RESULTS")"
-          heavy_lanes='(env.PULL_REQUEST_ONLY_LANES | fromjson) as $pr_only | [to_entries[] | select(.key != "scope" and .key != "docs" and (.key as $k | $pr_only | any(. == $k) | not))]'
-          skipped_heavy="$(jq -r "$heavy_lanes | map(select(.value.result == \"skipped\")) | length" <<<"$RESULTS")"
-          heavy_total="$(jq -r "$heavy_lanes | length" <<<"$RESULTS")"
-
-          if [ "$docs" = "success" ] && [ "$skipped_heavy" -eq "$heavy_total" ]; then
-            echo "docs-only lane: all $heavy_total heavy lanes skipped, Docs green"
-            exit 0
-          fi
-
-          if [ "$docs" = "skipped" ] && [ "$skipped_heavy" -eq 0 ]; then
-            echo "full lane: every heavy lane ran and succeeded"
-            exit 0
-          fi
-
-          echo "inconsistent lane outcome: docs=$docs skipped-heavy=$skipped_heavy/$heavy_total"
-          exit 1
+          echo "every lane ran and succeeded"

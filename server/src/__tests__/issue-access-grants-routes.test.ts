@@ -66,12 +66,12 @@ async function createApp(db: Db, actor: Express.Request["actor"]) {
 describeEmbeddedPostgres("issue access grant and locked edge routes", { concurrent: false }, () => {
   let db!: Db;
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
-  const previousPrivacyMode = process.env.PAPERCLIP_ISSUE_PRIVACY_MODE;
+  const previousPrivacyMode = process.env.WARDMOTE_ISSUE_PRIVACY_MODE;
 
   beforeAll(async () => {
     tempDb = await startEmbeddedPostgresTestDatabase("paperclip-issue-access-grants-");
     db = createDb(tempDb.connectionString);
-    process.env.PAPERCLIP_ISSUE_PRIVACY_MODE = "enforce";
+    process.env.WARDMOTE_ISSUE_PRIVACY_MODE = "enforce";
     // Load the current route dependency graph during setup, outside assertion timeouts.
     await Promise.all([import("../routes/issues.js"), import("../routes/projects.js")]);
   }, 120_000);
@@ -94,8 +94,8 @@ describeEmbeddedPostgres("issue access grant and locked edge routes", { concurre
   });
 
   afterAll(async () => {
-    if (previousPrivacyMode === undefined) delete process.env.PAPERCLIP_ISSUE_PRIVACY_MODE;
-    else process.env.PAPERCLIP_ISSUE_PRIVACY_MODE = previousPrivacyMode;
+    if (previousPrivacyMode === undefined) delete process.env.WARDMOTE_ISSUE_PRIVACY_MODE;
+    else process.env.WARDMOTE_ISSUE_PRIVACY_MODE = previousPrivacyMode;
     await tempDb?.cleanup();
   });
 

@@ -340,10 +340,10 @@ describeEmbeddedPostgres("reopen archived isolated execution workspace", () => {
   });
 
   it("resolves the managed base checkout for a git_worktree row when the project workspace cwd is null", async () => {
-    const previousHome = process.env.PAPERCLIP_HOME;
+    const previousHome = process.env.WARDMOTE_HOME;
     const tempHome = await mkdtemp(join(tmpdir(), "paperclip-reopen-home-"));
     tempDirs.push(tempHome);
-    process.env.PAPERCLIP_HOME = tempHome;
+    process.env.WARDMOTE_HOME = tempHome;
     try {
       const { companyId, projectId, projectWorkspaceId } = await seedManagedCheckoutProject();
       const repoUrl = "https://example.test/acme/widget.git";
@@ -384,8 +384,8 @@ describeEmbeddedPostgres("reopen archived isolated execution workspace", () => {
       const worktreeStat = await stat(deletedWorktree).catch(() => null);
       expect(worktreeStat?.isDirectory()).toBe(true);
     } finally {
-      if (previousHome === undefined) delete process.env.PAPERCLIP_HOME;
-      else process.env.PAPERCLIP_HOME = previousHome;
+      if (previousHome === undefined) delete process.env.WARDMOTE_HOME;
+      else process.env.WARDMOTE_HOME = previousHome;
     }
   });
 

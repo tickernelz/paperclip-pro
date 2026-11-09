@@ -88,7 +88,7 @@ Slack, Discord, GitHub, Teams, and Telegram surfaces.
 
 ### Local test prerequisites
 
-The standard `pnpm test:run` launcher isolates `PAPERCLIP_CONFIG`, `PAPERCLIP_HOME`,
+The standard `pnpm test:run` launcher isolates `WARDMOTE_CONFIG`, `WARDMOTE_HOME`,
 and temporary files. Direct heartbeat/continuation tests must use equivalent
 isolation; otherwise the worktree preview configuration suppresses execution.
 The actual runner-driver fixture also requires:

@@ -117,8 +117,8 @@ describe("OMP default model", () => {
 
 describe("bundledOmpVersion", () => {
   it("reads the Docker pin and ignores blanks", () => {
-    expect(bundledOmpVersion({ PAPERCLIP_OMP_BUNDLED_VERSION: "18.18.0" })).toBe("18.18.0");
-    expect(bundledOmpVersion({ PAPERCLIP_OMP_BUNDLED_VERSION: " " })).toBeNull();
+    expect(bundledOmpVersion({ WARDMOTE_OMP_BUNDLED_VERSION: "18.18.0" })).toBe("18.18.0");
+    expect(bundledOmpVersion({ WARDMOTE_OMP_BUNDLED_VERSION: " " })).toBeNull();
     expect(bundledOmpVersion({})).toBeNull();
   });
 });

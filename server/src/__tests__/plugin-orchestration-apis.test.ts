@@ -1295,12 +1295,12 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
   describe("non-member plugin issue-read privacy (PAP-16091)", () => {
     let previousMode: string | undefined;
     beforeEach(() => {
-      previousMode = process.env.PAPERCLIP_ISSUE_PRIVACY_MODE;
-      process.env.PAPERCLIP_ISSUE_PRIVACY_MODE = "enforce";
+      previousMode = process.env.WARDMOTE_ISSUE_PRIVACY_MODE;
+      process.env.WARDMOTE_ISSUE_PRIVACY_MODE = "enforce";
 });
     afterEach(() => {
-      if (previousMode === undefined) delete process.env.PAPERCLIP_ISSUE_PRIVACY_MODE;
-      else process.env.PAPERCLIP_ISSUE_PRIVACY_MODE = previousMode;
+      if (previousMode === undefined) delete process.env.WARDMOTE_ISSUE_PRIVACY_MODE;
+      else process.env.WARDMOTE_ISSUE_PRIVACY_MODE = previousMode;
     });
 
     async function seedOpenAndPrivate() {
@@ -1490,7 +1490,7 @@ describeEmbeddedPostgres("plugin orchestration APIs", () => {
     });
 
     it("is pass-through when privacy mode is off (enforce flip is the single switch)", async () => {
-      process.env.PAPERCLIP_ISSUE_PRIVACY_MODE = "off";
+      process.env.WARDMOTE_ISSUE_PRIVACY_MODE = "off";
       const { companyId, privateIssueId } = await seedOpenAndPrivate();
       const services = buildHostServices(db, "plugin-record-id", "paperclip.slack-digest", createEventBusStub());
       const ids = (await services.issues.list({ companyId })).map((issue) => issue.id);

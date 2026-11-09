@@ -2,7 +2,6 @@ import fs from "node:fs";
 import net from "node:net";
 import os from "node:os";
 import path from "node:path";
-import { legacyEnvKey } from "@tickernelz/wardmote-shared/env-aliases";
 import { applyPendingMigrations, closeRegisteredClients, ensurePostgresDatabase } from "./client.js";
 import {
   createEmbeddedPostgresLogBuffer,
@@ -47,13 +46,13 @@ export type EmbeddedPostgresTestDatabase = {
 
 let embeddedPostgresSupportPromise: Promise<EmbeddedPostgresTestSupport> | null = null;
 
-const DEFAULT_PAPERCLIP_EMBEDDED_POSTGRES_PORT = 54329;
+const DEFAULT_WARDMOTE_EMBEDDED_POSTGRES_PORT = 54329;
 
 function getReservedTestPorts(): Set<number> {
   const configuredPorts = [
-    DEFAULT_PAPERCLIP_EMBEDDED_POSTGRES_PORT,
-    Number.parseInt(process.env.PAPERCLIP_EMBEDDED_POSTGRES_PORT ?? "", 10),
-    ...String(process.env.PAPERCLIP_TEST_POSTGRES_RESERVED_PORTS ?? "")
+    DEFAULT_WARDMOTE_EMBEDDED_POSTGRES_PORT,
+    Number.parseInt(process.env.WARDMOTE_EMBEDDED_POSTGRES_PORT ?? "", 10),
+    ...String(process.env.WARDMOTE_TEST_POSTGRES_RESERVED_PORTS ?? "")
       .split(",")
       .map((value) => Number.parseInt(value.trim(), 10)),
   ];
@@ -117,7 +116,7 @@ async function getAvailablePort(): Promise<number> {
 export const EMBEDDED_POSTGRES_TEMPLATE_DIR_ENV = "WARDMOTE_TEST_EMBEDDED_POSTGRES_TEMPLATE_DIR";
 
 function embeddedPostgresTemplateDir(): string | null {
-  const dir = (process.env[EMBEDDED_POSTGRES_TEMPLATE_DIR_ENV] ?? process.env[legacyEnvKey(EMBEDDED_POSTGRES_TEMPLATE_DIR_ENV)])?.trim();
+  const dir = (process.env[EMBEDDED_POSTGRES_TEMPLATE_DIR_ENV] ?? process.env[EMBEDDED_POSTGRES_TEMPLATE_DIR_ENV])?.trim();
   return dir && fs.existsSync(path.join(dir, "PG_VERSION")) ? dir : null;
 }
 

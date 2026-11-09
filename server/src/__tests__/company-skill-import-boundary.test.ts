@@ -94,8 +94,8 @@ describeEmbeddedPostgres("company skill local import boundary", () => {
     // Redirect the instance root at temp so the server-derived managedFolder is under our control.
     const home = await fs.mkdtemp(path.join(os.tmpdir(), "paperclip-managed-home-"));
     cleanupDirs.add(home);
-    const previousHome = process.env.PAPERCLIP_HOME;
-    process.env.PAPERCLIP_HOME = home;
+    const previousHome = process.env.WARDMOTE_HOME;
+    process.env.WARDMOTE_HOME = home;
     try {
       await db.insert(companies).values({
         id: companyId,
@@ -137,9 +137,9 @@ describeEmbeddedPostgres("company skill local import boundary", () => {
       });
     } finally {
       if (previousHome === undefined) {
-        delete process.env.PAPERCLIP_HOME;
+        delete process.env.WARDMOTE_HOME;
       } else {
-        process.env.PAPERCLIP_HOME = previousHome;
+        process.env.WARDMOTE_HOME = previousHome;
       }
     }
   });

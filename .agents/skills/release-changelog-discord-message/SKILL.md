@@ -278,7 +278,7 @@ CLIPPERS! v2026.403.0 has dropped!! :paperclip: :paperclip: :paperclip:
 :inbox_tray:  **Inbox overhaul** - there is a new "mine" tab that has mail-client like keyboard shortcuts. It's my new default view for managing work
 :thumbsup:  **Feedback and evals** - you can now vote :thumbsup: / :thumbsdown: on your agent's responses. If you choose to share your traces with me, I'll use it to make Paperclip better. In either case you can export locally for your own org's learning
 :page_with_curl:  **Document revisions** - you can now restore old versions of your documents
-:ping_pong:  **Telemetry** - this version has anonymized telemetry that helps me better understand the basic uses of Paperclip (adapters and so on) - if you hate that, just it disable with `DO_NOT_TRACK=1` or `PAPERCLIP_TELEMETRY_DISABLED=1` environment variables
+:ping_pong:  **Telemetry** - this version has anonymized telemetry that helps me better understand the basic uses of Paperclip (adapters and so on) - if you hate that, just it disable with `DO_NOT_TRACK=1` or `WARDMOTE_TELEMETRY_DISABLED=1` environment variables
 :construction_worker: **Execution Workspaces (experimental)** - Paperclip is not a "code review" tool, but I have been finding worktrees are important for certain projects. Enable it in experimental settings
 :loop:  **Routine variables** - sometimes you need to customize a routine and the new variables feature makes that easy
 

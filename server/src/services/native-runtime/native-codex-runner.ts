@@ -170,10 +170,10 @@ function executableName(): string {
 }
 
 export function resolvePaperclipRunnerBinary(
-  configuredPath = process.env.PAPERCLIP_RUNNER_BINARY,
+  configuredPath = process.env.WARDMOTE_RUNNER_BINARY,
 ): string {
   if (configuredPath && !isAbsolute(configuredPath)) {
-    throw new Error("PAPERCLIP_RUNNER_BINARY must be an absolute path");
+    throw new Error("WARDMOTE_RUNNER_BINARY must be an absolute path");
   }
   if (configuredPath) {
     try {
@@ -202,7 +202,7 @@ export function resolvePaperclipRunnerBinary(
     }
   }
   throw new Error(
-    "paperclip_runner_binary_missing: build @tickernelz/wardmote-runner or set PAPERCLIP_RUNNER_BINARY",
+    "paperclip_runner_binary_missing: build @tickernelz/wardmote-runner or set WARDMOTE_RUNNER_BINARY",
   );
 }
 
@@ -407,7 +407,7 @@ export async function executeNativeCodexRunner(input: {
     env: {
       ...process.env,
       ...input.environment,
-      PAPERCLIP_RUNNER_BOOTSTRAP_TICKET: prepared.bootstrapTicket,
+      WARDMOTE_RUNNER_BOOTSTRAP_TICKET: prepared.bootstrapTicket,
     },
     stdio: ["ignore", "pipe", "pipe"],
   });

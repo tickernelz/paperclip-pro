@@ -8,7 +8,7 @@ import { pathToFileURL } from "node:url";
 import test from "node:test";
 
 const require = createRequire(import.meta.url);
-const acpxRoot = process.env.PAPERCLIP_TEST_ACPX_PACKAGE_ROOT ?? dirname(require.resolve("acpx/package.json"));
+const acpxRoot = process.env.WARDMOTE_TEST_ACPX_PACKAGE_ROOT ?? dirname(require.resolve("acpx/package.json"));
 const { k: AcpClient } = await import(pathToFileURL(join(acpxRoot, "dist/live-checkpoint-BSIrfgVo.js")));
 const deferred = () => Promise.withResolvers();
 const nextTick = () => new Promise(resolve => setImmediate(resolve));

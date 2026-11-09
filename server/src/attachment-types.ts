@@ -1,5 +1,5 @@
 import { DEFAULT_ATTACHMENT_MAX_MEGABYTES, type EffectiveAttachmentLimit } from "@tickernelz/wardmote-shared";
-/** Attachment content-type policy: every type is accepted unless `PAPERCLIP_ALLOWED_ATTACHMENT_TYPES` restricts it to comma-separated MIME patterns. */
+/** Attachment content-type policy: every type is accepted unless `WARDMOTE_ALLOWED_ATTACHMENT_TYPES` restricts it to comma-separated MIME patterns. */
 export const ALLOW_ALL_ATTACHMENT_TYPES: readonly string[] = ["*"];
 
 export const DEFAULT_ATTACHMENT_CONTENT_TYPE = "application/octet-stream";
@@ -261,9 +261,9 @@ export function isInlineAttachmentContentType(contentType: string): boolean {
 let allowedPatternsSource: string | undefined;
 let allowedPatterns: string[] = parseAllowedTypes(undefined);
 
-/** Whether the operator's `PAPERCLIP_ALLOWED_ATTACHMENT_TYPES` restriction (allow-all when unset) admits `contentType`. */
+/** Whether the operator's `WARDMOTE_ALLOWED_ATTACHMENT_TYPES` restriction (allow-all when unset) admits `contentType`. */
 export function isAllowedContentType(contentType: string): boolean {
-  const source = process.env.PAPERCLIP_ALLOWED_ATTACHMENT_TYPES;
+  const source = process.env.WARDMOTE_ALLOWED_ATTACHMENT_TYPES;
   if (source !== allowedPatternsSource) {
     allowedPatternsSource = source;
     allowedPatterns = parseAllowedTypes(source);
@@ -280,12 +280,12 @@ export function setAttachmentLimitSetting(megabytes: number | null | undefined):
     typeof megabytes === "number" && Number.isSafeInteger(megabytes) && megabytes > 0 ? megabytes : null;
 }
 
-/** The attachment size ceiling in force now: saved setting, else PAPERCLIP_ATTACHMENT_MAX_BYTES, else 100 MB. */
+/** The attachment size ceiling in force now: saved setting, else WARDMOTE_ATTACHMENT_MAX_BYTES, else 100 MB. */
 export function getEffectiveAttachmentLimit(): EffectiveAttachmentLimit {
   if (attachmentLimitSettingMegabytes !== null) {
     return { maxBytes: attachmentLimitSettingMegabytes * BYTES_PER_MEGABYTE, source: "setting" };
   }
-  const fromEnv = Number(process.env.PAPERCLIP_ATTACHMENT_MAX_BYTES);
+  const fromEnv = Number(process.env.WARDMOTE_ATTACHMENT_MAX_BYTES);
   if (Number.isSafeInteger(fromEnv) && fromEnv > 0) return { maxBytes: fromEnv, source: "env" };
   return { maxBytes: DEFAULT_ATTACHMENT_MAX_MEGABYTES * BYTES_PER_MEGABYTE, source: "default" };
 }

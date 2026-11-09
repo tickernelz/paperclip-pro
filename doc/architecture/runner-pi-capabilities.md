@@ -2,7 +2,7 @@
 
 ## Current integration — 2026-10-08
 
-The experimental Runner admits **Pi profile 22** (`sha256:e92078bee3c23bec4100aa589013a44613d054cd686826534025d8019e9f39a9`) and
+The experimental Runner admits **Pi profile 22** (`sha256:d5d628c3cb45b9b999e463dd578fb96174d6db411de4c7f8e67fd97703312213`) and
 **Cursor profile 15**. Copilot remains pending at **profile 17**. Legacy
 `pi_local` is unchanged. Pi accepts any explicit caller-selected provider/model
 ID and requires native acknowledgement; qualification models are examples, not
@@ -32,7 +32,7 @@ version, command, permission, and process-ownership checks remain enforced.
 
 Bind the selected provider's credentials in the agent environment, for example
 `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GEMINI_API_KEY`, or `OPENROUTER_API_KEY`.
-Custom models use `PAPERCLIP_PI_PROVIDERS`, an explicit JSON object in Pi's
+Custom models use `WARDMOTE_PI_PROVIDERS`, an explicit JSON object in Pi's
 `models.json` providers format. The runner writes it into the private Pi home,
 forwards explicitly bound credential references, and includes its digest in
 recovery identity. Credential commands and control-plane credential references
@@ -369,8 +369,8 @@ cache and load; these are admission diagnostics, not authenticated qualification
 No timeout or provider-closure identity changes in this repair.
 
 The opt-in regression is `node --test test/pi-closed-startup.test.mjs` from the
-Runner package, with `PAPERCLIP_TEST_PI_STARTUP_PACKAGE_ROOT` pointing at a built
-Runner package containing Pi assets and `PAPERCLIP_TEST_PI_STARTUP_RUNNER_BINARY`
+Runner package, with `WARDMOTE_TEST_PI_STARTUP_PACKAGE_ROOT` pointing at a built
+Runner package containing Pi assets and `WARDMOTE_TEST_PI_STARTUP_RUNNER_BINARY`
 pointing at its compatible daemon. It spawns a clean environment, submits no
 prompt, asserts terminal admission rejection within the unchanged 30-second
 deadline, and verifies the daemon closes. It does not inherit provider credentials.
@@ -628,7 +628,7 @@ against a deterministic RPC fixture. It proves initialization, streaming,
 terminal usage, question versus permission routing, explicit steering, provider
 exit, required sentinel, and typed failure settlement. It requires the exact
 installed pinned package; an absent or unpatched dependency is a failure.
-`PAPERCLIP_TEST_PI_ACP_PACKAGE` can select a separately installed pinned fixture.
+`WARDMOTE_TEST_PI_ACP_PACKAGE` can select a separately installed pinned fixture.
 These fixtures invoke no model or paid API.
 
 At source `f58cfa1cbf4503b93a0be4480f51b492d8203b7c`, all 30 tests in those

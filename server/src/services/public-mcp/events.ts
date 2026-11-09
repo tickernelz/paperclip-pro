@@ -51,7 +51,7 @@ export function createPublicMcpEvents(db: Db, oauth: PublicMcpOAuth, api: ApiDis
   const now = options.now ?? Date.now;
   // Dedicated tenant Dot grants are authenticated locally, including background
   // deliveries. They never use the personal connection's Cloud broker proof.
-  const cloudOrigin = options.enableDotRunner ? undefined : options.cloudOrigin ?? process.env.PAPERCLIP_CLOUD_API_ORIGIN;
+  const cloudOrigin = options.enableDotRunner ? undefined : options.cloudOrigin ?? process.env.WARDMOTE_CLOUD_API_ORIGIN;
   if (cloudOrigin && (new URL(cloudOrigin).protocol !== "https:" || new URL(cloudOrigin).origin !== cloudOrigin)) throw new Error("MCP Events requires a fixed HTTPS Cloud origin.");
   const encrypt = async (value: Destination) => (await localEncryptedProvider.createSecret({ value: JSON.stringify(value) })).material;
   const decrypt = async (s: Subscription): Promise<Destination> => JSON.parse(await localEncryptedProvider.resolveVersion({ material: s.deliveryMaterial, externalRef: null, providerVersionRef: null }));

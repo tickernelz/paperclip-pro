@@ -72,10 +72,10 @@ Local development can use:
 ```sh
 aws sso login --profile paperclip-dev
 AWS_PROFILE=paperclip-dev \
-PAPERCLIP_SECRETS_PROVIDER=aws_secrets_manager \
-PAPERCLIP_SECRETS_AWS_REGION=us-east-1 \
-PAPERCLIP_SECRETS_AWS_DEPLOYMENT_ID=dev-local \
-PAPERCLIP_SECRETS_AWS_KMS_KEY_ID=arn:aws:kms:us-east-1:123456789012:key/abcd-... \
+WARDMOTE_SECRETS_PROVIDER=aws_secrets_manager \
+WARDMOTE_SECRETS_AWS_REGION=us-east-1 \
+WARDMOTE_SECRETS_AWS_DEPLOYMENT_ID=dev-local \
+WARDMOTE_SECRETS_AWS_KMS_KEY_ID=arn:aws:kms:us-east-1:123456789012:key/abcd-... \
 pnpm dev
 ```
 
@@ -89,20 +89,20 @@ should not be written to Paperclip config, committed to `.env` files, stored in
 Required environment variables:
 
 ```sh
-PAPERCLIP_SECRETS_PROVIDER=aws_secrets_manager
-PAPERCLIP_SECRETS_AWS_REGION=us-east-1
-PAPERCLIP_SECRETS_AWS_DEPLOYMENT_ID=prod-us-1
-PAPERCLIP_SECRETS_AWS_KMS_KEY_ID=arn:aws:kms:us-east-1:123456789012:key/abcd-...
+WARDMOTE_SECRETS_PROVIDER=aws_secrets_manager
+WARDMOTE_SECRETS_AWS_REGION=us-east-1
+WARDMOTE_SECRETS_AWS_DEPLOYMENT_ID=prod-us-1
+WARDMOTE_SECRETS_AWS_KMS_KEY_ID=arn:aws:kms:us-east-1:123456789012:key/abcd-...
 ```
 
 Optional environment variables:
 
 ```sh
-PAPERCLIP_SECRETS_AWS_PREFIX=paperclip
-PAPERCLIP_SECRETS_AWS_ENVIRONMENT=production
-PAPERCLIP_SECRETS_AWS_PROVIDER_OWNER=paperclip
-PAPERCLIP_SECRETS_AWS_ENDPOINT=
-PAPERCLIP_SECRETS_AWS_DELETE_RECOVERY_DAYS=30
+WARDMOTE_SECRETS_AWS_PREFIX=paperclip
+WARDMOTE_SECRETS_AWS_ENVIRONMENT=production
+WARDMOTE_SECRETS_AWS_PROVIDER_OWNER=paperclip
+WARDMOTE_SECRETS_AWS_ENDPOINT=
+WARDMOTE_SECRETS_AWS_DELETE_RECOVERY_DAYS=30
 ```
 
 Naming convention for Paperclip-managed secrets:
@@ -330,7 +330,7 @@ Restore checklist:
 4. Confirm the Paperclip runtime role can call `GetSecretValue` on the restored
    managed prefix and approved external prefixes.
 5. Confirm the role still has decrypt access to the CMKs referenced by
-   `PAPERCLIP_SECRETS_AWS_KMS_KEY_ID` and by any external user-secret values.
+   `WARDMOTE_SECRETS_AWS_KMS_KEY_ID` and by any external user-secret values.
 6. Run the live smoke below or a targeted runtime secret resolution test for
    both a company secret and a user-secret value.
 
@@ -393,8 +393,8 @@ This is safe to skip locally. Run it only against a dedicated AWS test namespace
 Prerequisites:
 
 - AWS credentials or workload identity with the deployment-scoped IAM permissions above.
-- `PAPERCLIP_SECRETS_PROVIDER=aws_secrets_manager`
-- The required `PAPERCLIP_SECRETS_AWS_*` environment variables set.
+- `WARDMOTE_SECRETS_PROVIDER=aws_secrets_manager`
+- The required `WARDMOTE_SECRETS_AWS_*` environment variables set.
 
 Suggested smoke:
 

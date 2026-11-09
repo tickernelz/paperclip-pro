@@ -21,8 +21,8 @@ describe.skipIf(!support.supported)("heartbeat environment selection boundary", 
   let home: string;
   beforeAll(async () => {
     home = await mkdtemp(join(tmpdir(), "heartbeat-environment-selection-"));
-    vi.stubEnv("PAPERCLIP_HOME", home);
-    vi.stubEnv("PAPERCLIP_INSTANCE_ID", "environment-selection");
+    vi.stubEnv("WARDMOTE_HOME", home);
+    vi.stubEnv("WARDMOTE_INSTANCE_ID", "environment-selection");
     await mkdir(resolvePaperclipInstanceRoot(), { recursive: true });
     database = await startEmbeddedPostgresTestDatabase("heartbeat-environment-selection-");
     db = createDb(database.connectionString);

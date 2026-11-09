@@ -153,7 +153,7 @@ pnpm --filter @tickernelz/wardmote-runner console:live-console
 Open `http://127.0.0.1:4180/` and press **Live console**. Work through the
 [Live console tutorial](live-console.md) to reach every
 state above from the eleven deterministic demo chats. Add
-`PAPERCLIP_LIVE_CONSOLE_DRIVER=codex` to run the identical screens against a real
+`WARDMOTE_LIVE_CONSOLE_DRIVER=codex` to run the identical screens against a real
 Codex session.
 
 ## Step 7: Run the reusable SDK consumers

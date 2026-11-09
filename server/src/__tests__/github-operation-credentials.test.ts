@@ -57,7 +57,7 @@ const support = await getEmbeddedPostgresTestSupport();
       db: ReturnType<typeof createDb>;
     beforeAll(async () => {
       vi.stubEnv(
-        "PAPERCLIP_AGENT_JWT_SECRET",
+        "WARDMOTE_AGENT_JWT_SECRET",
         "test-github-broker-signing-secret",
       );
       database = await startEmbeddedPostgresTestDatabase(
@@ -809,8 +809,8 @@ const support = await getEmbeddedPostgresTestSupport();
         scope: input, target: null, cwd: process.cwd(), env: { PATH: process.env.PATH },
         resolveCredentials: (binding) => resolveGitHubOperationCredentials(db, binding),
       });
-      const post = () => fetch(`${broker.env.PAPERCLIP_GITHUB_BROKER_URL}/runtime-tools/github/credentials`, {
-        method: "POST", headers: { authorization: `Bearer ${broker.env.PAPERCLIP_GITHUB_BRIDGE_TOKEN}` },
+      const post = () => fetch(`${broker.env.WARDMOTE_GITHUB_BROKER_URL}/runtime-tools/github/credentials`, {
+        method: "POST", headers: { authorization: `Bearer ${broker.env.WARDMOTE_GITHUB_BRIDGE_TOKEN}` },
       });
       try {
         const releaseA = broker.activate(input);

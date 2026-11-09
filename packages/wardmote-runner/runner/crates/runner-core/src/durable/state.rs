@@ -1692,7 +1692,7 @@ impl std::fmt::Debug for IdentityOutputBuffer {
 
 impl IdentityOutputBuffer {
     fn redact(&mut self, stream: &str, payload: &Value, item_id: &str) -> Value {
-        let Ok(key) = std::env::var("PAPERCLIP_AGENT_PRIVATE_KEY") else {
+        let Ok(key) = std::env::var("WARDMOTE_AGENT_PRIVATE_KEY") else {
             return payload.clone();
         };
         if key.is_empty() {
@@ -2083,7 +2083,7 @@ pub(crate) fn redact_text(input: &str) -> String {
 }
 
 pub(crate) fn redact_agent_identity_text(input: &str) -> String {
-    let Ok(key) = std::env::var("PAPERCLIP_AGENT_PRIVATE_KEY") else {
+    let Ok(key) = std::env::var("WARDMOTE_AGENT_PRIVATE_KEY") else {
         return input.to_owned();
     };
     if key.is_empty() {
@@ -4305,15 +4305,15 @@ mod tests {
         let body = format!("{prefix}{}", "A".repeat(64 - prefix.len()));
         let key = format!("-----BEGIN PRIVATE KEY-----\n{body}\n-----END PRIVATE KEY-----\n");
         // Give only this subprocess the key; do not race other tests' environment.
-        if std::env::var_os("PAPERCLIP_IDENTITY_TRUNCATION_TEST").is_none() {
+        if std::env::var_os("WARDMOTE_IDENTITY_TRUNCATION_TEST").is_none() {
             let output = std::process::Command::new(std::env::current_exe().unwrap())
                 .args([
                     "--exact",
                     "durable::state::tests::identity_redaction_precedes_multibyte_truncation",
                     "--nocapture",
                 ])
-                .env("PAPERCLIP_IDENTITY_TRUNCATION_TEST", "1")
-                .env("PAPERCLIP_AGENT_PRIVATE_KEY", &key)
+                .env("WARDMOTE_IDENTITY_TRUNCATION_TEST", "1")
+                .env("WARDMOTE_AGENT_PRIVATE_KEY", &key)
                 .output()
                 .unwrap();
             assert!(

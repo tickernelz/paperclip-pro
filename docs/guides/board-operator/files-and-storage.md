@@ -10,7 +10,7 @@ Instance admins manage file limits and cleanup in **Instance Settings > General 
 The limit applies to every upload (task attachments, images, company logos, case files) and to files that chat channels and agents hand to Wardmote.
 
 - Set a whole number of megabytes from 1 to 500. A change takes effect on the next upload, without a restart.
-- Leave the field blank to use the default: `PAPERCLIP_ATTACHMENT_MAX_BYTES` when the server sets it, otherwise 100 MB.
+- Leave the field blank to use the default: `WARDMOTE_ATTACHMENT_MAX_BYTES` when the server sets it, otherwise 100 MB.
 - The browser rejects a file above the limit before uploading it and shows "File is larger than the <limit> limit". The server answers `413` with the same message.
 - A reverse proxy can stop a large request first. Cloudflare Free and Pro reject request bodies over 100 MB with an HTML `413`; the UI shows the same friendly message in that case.
 

@@ -7,8 +7,8 @@ use their document tool and its contract. Downloadable files follow
 
 ## Create a document
 
-Use the injected `PAPERCLIP_API_URL` and bearer `PAPERCLIP_API_KEY`. Include
-`X-Paperclip-Run-Id: $PAPERCLIP_RUN_ID` on the write and send JSON with
+Use the injected `WARDMOTE_API_URL` and bearer `WARDMOTE_API_KEY`. Include
+`X-Paperclip-Run-Id: $WARDMOTE_RUN_ID` on the write and send JSON with
 `Content-Type: application/json`.
 
 Choose a descriptive document key such as `report`; keys use lowercase letters,

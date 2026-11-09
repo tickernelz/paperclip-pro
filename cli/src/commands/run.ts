@@ -16,7 +16,6 @@ import {
   resolvePaperclipHomeDir,
   resolvePaperclipInstanceId,
 } from "../config/home.js";
-import { legacyEnvKey } from "@tickernelz/wardmote-shared/env-aliases";
 import { appendServiceUserBinDirs, assertForegroundRunAllowed } from "../services/service-manager.js";
 import { removeRuntimeInfoForPid, writeRuntimeInfo } from "../runtime-info.js";
 import { printUpdateNotice } from "../update-notice.js";
@@ -49,7 +48,7 @@ export interface StartedServer {
 
 export async function runCommand(opts: RunOptions): Promise<void> {
   const instanceId = resolvePaperclipInstanceId(opts.instance);
-  process.env.PAPERCLIP_INSTANCE_ID = instanceId;
+  process.env.WARDMOTE_INSTANCE_ID = instanceId;
   if (!opts.skipServiceManagerCheck) {
     await assertForegroundRunAllowed(instanceId, opts.force);
   }
@@ -61,9 +60,9 @@ export async function runCommand(opts: RunOptions): Promise<void> {
   fs.mkdirSync(paths.instanceRoot, { recursive: true });
 
   const configPath = resolveConfigPath(opts.config);
-  process.env.PAPERCLIP_CONFIG = configPath;
+  process.env.WARDMOTE_CONFIG = configPath;
   loadPaperclipEnvFile(configPath);
-  if (process.env[legacyEnvKey("WARDMOTE_SERVICE_MANAGED")] === "1") process.env.PATH = appendServiceUserBinDirs(process.env.PATH);
+  if (process.env["WARDMOTE_SERVICE_MANAGED"] === "1") process.env.PATH = appendServiceUserBinDirs(process.env.PATH);
   await printUpdateNotice(configPath);
 
   p.intro(pc.bgCyan(pc.black(` ${opts.introLabel ?? "wardmote run"} `)));
@@ -148,8 +147,8 @@ function resolveBootstrapInviteBaseUrl(
   startedServer: StartedServer,
 ): string {
   const explicitBaseUrl =
-    process.env.PAPERCLIP_PUBLIC_URL ??
-    process.env.PAPERCLIP_AUTH_PUBLIC_BASE_URL ??
+    process.env.WARDMOTE_PUBLIC_URL ??
+    process.env.WARDMOTE_AUTH_PUBLIC_BASE_URL ??
     process.env.BETTER_AUTH_URL ??
     process.env.BETTER_AUTH_BASE_URL ??
     (config.auth.baseUrlMode === "explicit" ? config.auth.publicBaseUrl : undefined);
@@ -191,10 +190,10 @@ function getMissingModuleSpecifier(err: unknown): string | null {
 }
 
 function maybeEnableUiDevMiddleware(entrypoint: string): void {
-  if (process.env.PAPERCLIP_UI_DEV_MIDDLEWARE !== undefined) return;
+  if (process.env.WARDMOTE_UI_DEV_MIDDLEWARE !== undefined) return;
   const normalized = entrypoint.replaceAll("\\", "/");
   if (normalized.endsWith("/server/src/index.ts") || normalized.endsWith("@tickernelz/wardmote-server/src/index.ts")) {
-    process.env.PAPERCLIP_UI_DEV_MIDDLEWARE = "true";
+    process.env.WARDMOTE_UI_DEV_MIDDLEWARE = "true";
   }
 }
 

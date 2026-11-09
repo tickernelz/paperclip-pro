@@ -755,13 +755,13 @@ keys named `apiKey`, `api_key`, `secret`, `clientSecret`, `verifyToken`, `token`
 
 Media of trigger messages is stored as attachments on the inbound comment
 before the wake, under the normal attachment policy and the instance attachment
-size limit (Instance Settings upload limit, else `PAPERCLIP_ATTACHMENT_MAX_BYTES`,
+size limit (Instance Settings upload limit, else `WARDMOTE_ATTACHMENT_MAX_BYTES`,
 else 100 MB, which matches WhatsApp's 100 MB document limit). Binary media downloads
 are capped at that limit; JSON responses that can carry inline base64 media allow
 the base64 and envelope overhead on top of it. Files of any type are
 accepted (`.bat`, `.exe`, `.apk`, `.zip`, unknown binaries); a missing type is
 stored as `application/octet-stream` with the sender's filename. Only an operator
-restriction in `PAPERCLIP_ALLOWED_ATTACHMENT_TYPES` rejects a type
+restriction in `WARDMOTE_ALLOWED_ATTACHMENT_TYPES` rejects a type
 (`unsupported_type`). Each file has a 30 s deadline;
 on timeout the wake proceeds with the item `pending` and the agent can call
 `openwa_get_media`. Over-cap files are rejected without storing as

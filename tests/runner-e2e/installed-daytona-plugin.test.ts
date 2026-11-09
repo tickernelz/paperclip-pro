@@ -27,8 +27,8 @@ async function fixture() {
   await writeFile(join(plugin.root, "dist/manifest.js"), "// manifest"); await writeFile(join(plugin.root, "dist/worker.js"), "// worker");
   const authority: InstalledDaytonaPluginAuthority = { schema: "paperclip.e2e.installed-daytona-plugin/v1", graphRoot: root, plugin: { ...plugin, manifestSha256: hash("// manifest"), workerSha256: hash("// worker") }, sdk: await pkg("@tickernelz/wardmote-plugin-sdk", sdkVersion, { "@tickernelz/wardmote-shared": "0.3.1" }), shared: await pkg("@tickernelz/wardmote-shared", "0.3.1"), daytona: await pkg("@daytonaio/sdk", "0.203.0") };
   const authorityPath = join(root, "authority.json");
-  const env: NodeJS.ProcessEnv = { PAPERCLIP_RUNNER_E2E_INSTALLED_CLI: "/reviewed/cli", PAPERCLIP_RUNNER_E2E_INSTALLED_CLI_SHA256: "reviewed-separately", PAPERCLIP_RUNNER_E2E_INSTALLED_SERVER_ROOT: "/reviewed/server", PAPERCLIP_RUNNER_E2E_INSTALLED_SERVER_SHA256: "reviewed-separately", PAPERCLIP_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN: plugin.root, PAPERCLIP_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN_AUTHORITY: authorityPath };
-  async function seal() { const bytes = JSON.stringify(authority); await writeFile(authorityPath, bytes); env.PAPERCLIP_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN_AUTHORITY_SHA256 = hash(bytes); }
+  const env: NodeJS.ProcessEnv = { WARDMOTE_RUNNER_E2E_INSTALLED_CLI: "/reviewed/cli", WARDMOTE_RUNNER_E2E_INSTALLED_CLI_SHA256: "reviewed-separately", WARDMOTE_RUNNER_E2E_INSTALLED_SERVER_ROOT: "/reviewed/server", WARDMOTE_RUNNER_E2E_INSTALLED_SERVER_SHA256: "reviewed-separately", WARDMOTE_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN: plugin.root, WARDMOTE_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN_AUTHORITY: authorityPath };
+  async function seal() { const bytes = JSON.stringify(authority); await writeFile(authorityPath, bytes); env.WARDMOTE_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN_AUTHORITY_SHA256 = hash(bytes); }
   await seal(); return { root, authority, env, seal };
 }
 it("admits pinned published plugin and resolved SDK graph without claiming a full graph audit", async () => {
@@ -46,7 +46,7 @@ it("fails closed for absent/partial installed Daytona pins but preserves ordinar
 });
 it("rejects stale authority, worker, manifest and dependency entry bytes", async () => {
   const f = await fixture();
-  await expect(verifyInstalledDaytonaPlugin({ ...f.env, PAPERCLIP_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN_AUTHORITY_SHA256: "0".repeat(64) }, [cell])).rejects.toThrow("reviewed pins");
+  await expect(verifyInstalledDaytonaPlugin({ ...f.env, WARDMOTE_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN_AUTHORITY_SHA256: "0".repeat(64) }, [cell])).rejects.toThrow("reviewed pins");
   for (const [path, original] of [[join(f.authority.plugin.root,"dist/worker.js"),"// worker"], [join(f.authority.plugin.root,"dist/manifest.js"),"// manifest"], [join(f.authority.sdk.root,"dist/index.js"),"// compiled"]]) {
     await writeFile(path!, "// wrong"); await expect(verifyInstalledDaytonaPlugin(f.env,[cell])).rejects.toThrow("reviewed pins"); await writeFile(path!,original!);
   }
@@ -68,7 +68,7 @@ it("rejects linked or escaped roots and a shadowed foreign resolved dependency",
   await expect(verifyInstalledDaytonaPlugin(f.env,[cell])).rejects.toThrow("canonical and unlinked");
 });
 it.skipIf(process.platform === "win32")("rejects a FIFO authority without waiting for a writer", async () => {
-  const f=await fixture();const p=f.env.PAPERCLIP_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN_AUTHORITY!;await rm(p);execFileSync("/usr/bin/mkfifo",[p],{timeout:5000,env:{}});await expect(verifyInstalledDaytonaPlugin(f.env,[cell])).rejects.toThrow("bounded unlinked regular file");
+  const f=await fixture();const p=f.env.WARDMOTE_RUNNER_E2E_INSTALLED_DAYTONA_PLUGIN_AUTHORITY!;await rm(p);execFileSync("/usr/bin/mkfifo",[p],{timeout:5000,env:{}});await expect(verifyInstalledDaytonaPlugin(f.env,[cell])).rejects.toThrow("bounded unlinked regular file");
 });
 it("uses the verified public package in the existing API and rejects changed bytes before any mutation", async () => {
   // This positive fixture models the sanitized installed launcher, not pnpm's parent environment.

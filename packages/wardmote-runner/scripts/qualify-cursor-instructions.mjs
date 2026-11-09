@@ -21,7 +21,7 @@ export async function qualifyCursorInstructions(source, platform, vendorRoot) {
   const payload = content => JSON.stringify({ schema: "paperclip.cursor.instructions.v1", content, digest: `sha256:${sha(content)}` });
   const helper = segment(source, "const paperclipCursorInstructionCrypto=", "var o=n(");
   const makeState = raw => runInNewContext(`${helper};paperclipCursorInstructionState`, {
-    n: id => id === "node:crypto" ? crypto : { DX: Data, f5: Data, i9: Data }, process: { env: { PAPERCLIP_CURSOR_INSTRUCTIONS: raw } }, Buffer,
+    n: id => id === "node:crypto" ? crypto : { DX: Data, f5: Data, i9: Data }, process: { env: { WARDMOTE_CURSOR_INSTRUCTIONS: raw } }, Buffer,
   });
   for (const invalid of [undefined, "{", payload("x\0y"), payload("x".repeat(32769)), payload(text).replace(sha(text), "0".repeat(64))]) assert.throws(() => makeState(invalid)(), /instruction binding/);
   assert.equal(makeState(payload(""))().rules.length, 0);

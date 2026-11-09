@@ -106,7 +106,7 @@ import {
   type PersistedExposureRowSnapshot,
 } from "./runtime-exposure/port-reservation.js";
 import { resolveTailscaleDnsName } from "./runtime-exposure/tailscale-hostname.js";
-import { legacyEnvKey } from "@tickernelz/wardmote-shared/env-aliases";
+import { currentEnvKey } from "@tickernelz/wardmote-shared/retired-env-file";
 
 export function resolveShell(): string {
   const fallback = process.platform === "win32" ? "sh" : "/bin/sh";
@@ -332,7 +332,7 @@ async function isLoopbackPortAvailable(port: number): Promise<boolean> {
 }
 
 function resolveTailscaleBrokerSocketPath(): string {
-  return process.env.PAPERCLIP_TAILSCALE_BROKER_SOCKET?.trim() || DEFAULT_TAILSCALE_BROKER_SOCKET;
+  return process.env.WARDMOTE_TAILSCALE_BROKER_SOCKET?.trim() || DEFAULT_TAILSCALE_BROKER_SOCKET;
 }
 
 function defaultWorkspaceRuntimeExposureDeps(): WorkspaceRuntimeExposureDeps {
@@ -390,7 +390,7 @@ export function setWorkspaceRuntimeExposureDepsForTests(deps: WorkspaceRuntimeEx
 export type ManagedRuntimeHttpsMode = "auto" | "off" | "force";
 
 export function resolveManagedRuntimeHttpsMode(): ManagedRuntimeHttpsMode {
-  const raw = process.env.PAPERCLIP_MANAGED_RUNTIME_HTTPS?.trim().toLowerCase();
+  const raw = process.env.WARDMOTE_MANAGED_RUNTIME_HTTPS?.trim().toLowerCase();
   if (raw === "off" || raw === "false" || raw === "0") return "off";
   if (raw === "force") return "force";
   return "auto";
@@ -685,7 +685,7 @@ export async function ensureServerWorkspaceLinksCurrent(
 export function sanitizeRuntimeServiceBaseEnv(baseEnv: NodeJS.ProcessEnv): NodeJS.ProcessEnv {
   const env: NodeJS.ProcessEnv = { ...baseEnv };
   for (const key of Object.keys(env)) {
-    if (legacyEnvKey(key).startsWith("PAPERCLIP_")) {
+    if (currentEnvKey(key).startsWith("WARDMOTE_")) {
       delete env[key];
     }
   }
@@ -2994,25 +2994,25 @@ function buildWorkspaceCommandEnv(input: {
   created: boolean;
 }) {
   const env: NodeJS.ProcessEnv = { ...process.env };
-  env.PAPERCLIP_WORKSPACE_CWD = input.worktreePath;
-  env.PAPERCLIP_WORKSPACE_PATH = input.worktreePath;
-  env.PAPERCLIP_WORKSPACE_WORKTREE_PATH = input.worktreePath;
-  env.PAPERCLIP_WORKSPACE_BRANCH = input.branchName;
-  env.PAPERCLIP_WORKSPACE_BASE_CWD = input.base.baseCwd;
-  env.PAPERCLIP_WORKSPACE_REPO_ROOT = input.repoRoot;
-  env.PAPERCLIP_WORKSPACE_SOURCE = input.base.source;
-  env.PAPERCLIP_WORKSPACE_REPO_REF = input.base.repoRef ?? "";
-  env.PAPERCLIP_WORKSPACE_REPO_URL = input.base.repoUrl ?? "";
-  env.PAPERCLIP_WORKSPACE_CREATED = input.created ? "true" : "false";
-  env.PAPERCLIP_PROJECT_ID = input.base.projectId ?? "";
-  env.PAPERCLIP_PROJECT_WORKSPACE_ID = input.base.workspaceId ?? "";
-  env.PAPERCLIP_AGENT_ID = input.agent.id ?? "";
-  env.PAPERCLIP_AGENT_NAME = input.agent.name;
-  env.PAPERCLIP_COMPANY_ID = input.agent.companyId;
-  env.PAPERCLIP_ISSUE_ID = input.issue?.id ?? "";
-  env.PAPERCLIP_ISSUE_IDENTIFIER = input.issue?.identifier ?? "";
-  env.PAPERCLIP_ISSUE_TITLE = input.issue?.title ?? "";
-  env.PAPERCLIP_ISSUE_WORK_MODE = input.issue?.workMode ?? "";
+  env.WARDMOTE_WORKSPACE_CWD = input.worktreePath;
+  env.WARDMOTE_WORKSPACE_PATH = input.worktreePath;
+  env.WARDMOTE_WORKSPACE_WORKTREE_PATH = input.worktreePath;
+  env.WARDMOTE_WORKSPACE_BRANCH = input.branchName;
+  env.WARDMOTE_WORKSPACE_BASE_CWD = input.base.baseCwd;
+  env.WARDMOTE_WORKSPACE_REPO_ROOT = input.repoRoot;
+  env.WARDMOTE_WORKSPACE_SOURCE = input.base.source;
+  env.WARDMOTE_WORKSPACE_REPO_REF = input.base.repoRef ?? "";
+  env.WARDMOTE_WORKSPACE_REPO_URL = input.base.repoUrl ?? "";
+  env.WARDMOTE_WORKSPACE_CREATED = input.created ? "true" : "false";
+  env.WARDMOTE_PROJECT_ID = input.base.projectId ?? "";
+  env.WARDMOTE_PROJECT_WORKSPACE_ID = input.base.workspaceId ?? "";
+  env.WARDMOTE_AGENT_ID = input.agent.id ?? "";
+  env.WARDMOTE_AGENT_NAME = input.agent.name;
+  env.WARDMOTE_COMPANY_ID = input.agent.companyId;
+  env.WARDMOTE_ISSUE_ID = input.issue?.id ?? "";
+  env.WARDMOTE_ISSUE_IDENTIFIER = input.issue?.identifier ?? "";
+  env.WARDMOTE_ISSUE_TITLE = input.issue?.title ?? "";
+  env.WARDMOTE_ISSUE_WORK_MODE = input.issue?.workMode ?? "";
   return env;
 }
 
@@ -3274,18 +3274,18 @@ function buildExecutionWorkspaceCleanupEnv(input: {
   projectWorkspaceCwd?: string | null;
 }) {
   const env: NodeJS.ProcessEnv = sanitizeRuntimeServiceBaseEnv(process.env);
-  env.PAPERCLIP_WORKSPACE_CWD = input.workspace.cwd ?? "";
-  env.PAPERCLIP_WORKSPACE_PATH = input.workspace.cwd ?? "";
-  env.PAPERCLIP_WORKSPACE_WORKTREE_PATH =
+  env.WARDMOTE_WORKSPACE_CWD = input.workspace.cwd ?? "";
+  env.WARDMOTE_WORKSPACE_PATH = input.workspace.cwd ?? "";
+  env.WARDMOTE_WORKSPACE_WORKTREE_PATH =
     input.workspace.providerRef ?? input.workspace.cwd ?? "";
-  env.PAPERCLIP_WORKSPACE_BRANCH = input.workspace.branchName ?? "";
-  env.PAPERCLIP_WORKSPACE_BASE_CWD = input.projectWorkspaceCwd ?? "";
-  env.PAPERCLIP_WORKSPACE_REPO_ROOT = input.projectWorkspaceCwd ?? "";
-  env.PAPERCLIP_WORKSPACE_REPO_URL = input.workspace.repoUrl ?? "";
-  env.PAPERCLIP_WORKSPACE_REPO_REF = input.workspace.baseRef ?? "";
-  env.PAPERCLIP_PROJECT_ID = input.workspace.projectId ?? "";
-  env.PAPERCLIP_PROJECT_WORKSPACE_ID = input.workspace.projectWorkspaceId ?? "";
-  env.PAPERCLIP_ISSUE_ID = input.workspace.sourceIssueId ?? "";
+  env.WARDMOTE_WORKSPACE_BRANCH = input.workspace.branchName ?? "";
+  env.WARDMOTE_WORKSPACE_BASE_CWD = input.projectWorkspaceCwd ?? "";
+  env.WARDMOTE_WORKSPACE_REPO_ROOT = input.projectWorkspaceCwd ?? "";
+  env.WARDMOTE_WORKSPACE_REPO_URL = input.workspace.repoUrl ?? "";
+  env.WARDMOTE_WORKSPACE_REPO_REF = input.workspace.baseRef ?? "";
+  env.WARDMOTE_PROJECT_ID = input.workspace.projectId ?? "";
+  env.WARDMOTE_PROJECT_WORKSPACE_ID = input.workspace.projectWorkspaceId ?? "";
+  env.WARDMOTE_ISSUE_ID = input.workspace.sourceIssueId ?? "";
   return env;
 }
 
@@ -5321,11 +5321,11 @@ function isPaperclipDevRuntimeService(input: { serviceName?: string | null; comm
   );
 }
 
-export const MANAGED_RUNTIME_PUBLIC_URL_ENV = "PAPERCLIP_MANAGED_RUNTIME_PUBLIC_URL";
+export const MANAGED_RUNTIME_PUBLIC_URL_ENV = "WARDMOTE_MANAGED_RUNTIME_PUBLIC_URL";
 
 const EXPLICIT_RUNTIME_ORIGIN_ENV_KEYS = [
-  "PAPERCLIP_PUBLIC_URL",
-  "PAPERCLIP_AUTH_PUBLIC_BASE_URL",
+  "WARDMOTE_PUBLIC_URL",
+  "WARDMOTE_AUTH_PUBLIC_BASE_URL",
   "BETTER_AUTH_URL",
   "BETTER_AUTH_BASE_URL",
 ] as const;
@@ -5341,7 +5341,7 @@ function isLoopbackRuntimeHostname(hostname: string) {
 function managedRuntimeOriginError(serviceName: string, reason: string) {
   return new Error(
     `Runtime service "${serviceName}" cannot derive a browser-reachable OAuth callback origin: ${reason}. `
-    + "Configure PAPERCLIP_PUBLIC_URL or BETTER_AUTH_URL for this service, or publish an HTTPS expose.urlTemplate "
+    + "Configure WARDMOTE_PUBLIC_URL or BETTER_AUTH_URL for this service, or publish an HTTPS expose.urlTemplate "
     + "that the operator's browser can reach (loopback HTTP is also supported).",
   );
 }
@@ -6057,8 +6057,8 @@ async function spawnLocalRuntimeService(input: StartLocalRuntimeServiceInput): P
   // An exposed listener MUST be loopback-only or the broker denies it. Env vars
   // alone cannot guarantee that: the process that has to honour them is the
   // *guest checkout's* dev runner, and one from before managed exposure existed
-  // overwrites PAPERCLIP_BIND from its own `--bind` argv and deletes
-  // PAPERCLIP_BIND_HOST — which is exactly how a branch pinned at plain master
+  // overwrites WARDMOTE_BIND from its own `--bind` argv and deletes
+  // WARDMOTE_BIND_HOST — which is exactly how a branch pinned at plain master
   // bound 0.0.0.0 and failed every start (PAP-17256). argv is honoured by every
   // dev-runner version, so put the loopback bind there.
   //
@@ -6260,7 +6260,7 @@ async function spawnLocalRuntimeService(input: StartLocalRuntimeServiceInput): P
     uiDevMiddlewareHasTransport
     && isPaperclipDevRuntimeService({ serviceName, command })
   ) {
-    env.PAPERCLIP_UI_DEV_MIDDLEWARE ??= "true";
+    env.WARDMOTE_UI_DEV_MIDDLEWARE ??= "true";
   }
   if (port) {
     const portEnvKey = asString(portConfig.envKey, "PORT");
@@ -6290,15 +6290,15 @@ async function spawnLocalRuntimeService(input: StartLocalRuntimeServiceInput): P
     // can be arbitrarily old (PAP-17256): the `--bind loopback` argv
     // added above, these env vars for a runner that reads them, and HOST for one
     // old enough to ignore both and infer its bind mode from HOST alone.
-    env.PAPERCLIP_BIND = RUNTIME_EXPOSURE_BIND_MODE;
-    env.PAPERCLIP_BIND_HOST = RUNTIME_EXPOSURE_BIND_HOST;
+    env.WARDMOTE_BIND = RUNTIME_EXPOSURE_BIND_MODE;
+    env.WARDMOTE_BIND_HOST = RUNTIME_EXPOSURE_BIND_HOST;
     env.HOST = RUNTIME_EXPOSURE_BIND_HOST;
-    env.PAPERCLIP_VITE_HMR_PROTOCOL = "wss";
-    env.PAPERCLIP_MANAGED_RUNTIME_EXPOSURE = "tailscale_https";
-    env.PAPERCLIP_ALLOWED_HOSTNAMES = exposureHostname!;
-    env.PAPERCLIP_AUTH_BASE_URL_MODE = "explicit";
-    env.PAPERCLIP_AUTH_PUBLIC_BASE_URL = `https://${exposureHostname}:${port}`;
-    env.PAPERCLIP_PUBLIC_URL = `https://${exposureHostname}:${port}`;
+    env.WARDMOTE_VITE_HMR_PROTOCOL = "wss";
+    env.WARDMOTE_MANAGED_RUNTIME_EXPOSURE = "tailscale_https";
+    env.WARDMOTE_ALLOWED_HOSTNAMES = exposureHostname!;
+    env.WARDMOTE_AUTH_BASE_URL_MODE = "explicit";
+    env.WARDMOTE_AUTH_PUBLIC_BASE_URL = `https://${exposureHostname}:${port}`;
+    env.WARDMOTE_PUBLIC_URL = `https://${exposureHostname}:${port}`;
   }
 
   const expose = parseObject(input.service.expose);

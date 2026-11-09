@@ -356,10 +356,10 @@ function parseArgs(argv) {
 function resolveLogsDir(explicit) {
   if (explicit) return path.resolve(explicit);
   if (process.env.RUN_LOG_BASE_PATH?.trim()) return path.resolve(process.env.RUN_LOG_BASE_PATH.trim());
-  const home = process.env.PAPERCLIP_HOME?.trim()
-    ? path.resolve(process.env.PAPERCLIP_HOME.trim().replace(/^~(?=\/|$)/, os.homedir()))
+  const home = process.env.WARDMOTE_HOME?.trim()
+    ? path.resolve(process.env.WARDMOTE_HOME.trim().replace(/^~(?=\/|$)/, os.homedir()))
     : [".paperclip-pro", ".wardmote"].map((name) => path.resolve(os.homedir(), name)).find((dir) => existsSync(dir)) ?? path.resolve(os.homedir(), ".wardmote");
-  const instance = process.env.PAPERCLIP_INSTANCE_ID?.trim() || "default";
+  const instance = process.env.WARDMOTE_INSTANCE_ID?.trim() || "default";
   return path.resolve(home, "instances", instance, "data", "run-logs");
 }
 

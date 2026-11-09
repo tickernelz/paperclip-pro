@@ -59,7 +59,7 @@ describe("OpenWA activation through the owner test DM (embedded Postgres + fake 
   let database: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
   let db: Db;
   let scratch: string;
-  const oldKey = process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE;
+  const oldKey = process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE;
   const services: ChatChannelService[] = [];
   const gateways: FakeOpenwaGateway[] = [];
   const endpointIds: string[] = [];
@@ -68,7 +68,7 @@ describe("OpenWA activation through the owner test DM (embedded Postgres + fake 
     database = await startEmbeddedPostgresTestDatabase("paperclip-openwa-activation-");
     db = createDb(database.connectionString);
     scratch = await mkdtemp(path.join(tmpdir(), "openwa-activation-"));
-    process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE = path.join(scratch, "master.key");
+    process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = path.join(scratch, "master.key");
     await instanceSettingsService(db).updateExperimental({ enableChatConnectors: true });
   }, 60_000);
   afterEach(async () => {
@@ -80,8 +80,8 @@ describe("OpenWA activation through the owner test DM (embedded Postgres + fake 
   afterAll(async () => {
     await database?.cleanup();
     if (scratch) await rm(scratch, { recursive: true, force: true });
-    if (oldKey === undefined) delete process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE;
-    else process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE = oldKey;
+    if (oldKey === undefined) delete process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE;
+    else process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = oldKey;
   });
 
   async function setup() {

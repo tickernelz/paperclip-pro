@@ -6,8 +6,8 @@ JSON on demand and renders it with native components.
 
 ## Operator configuration
 
-- `PAPERCLIP_ANNOUNCEMENTS_ENABLED=false` disables fetching and display.
-- `PAPERCLIP_ANNOUNCEMENTS_FEED_URL` overrides the public HTTPS manifest URL.
+- `WARDMOTE_ANNOUNCEMENTS_ENABLED=false` disables fetching and display.
+- `WARDMOTE_ANNOUNCEMENTS_FEED_URL` overrides the public HTTPS manifest URL.
   Credentials, query strings, private destinations and redirects are rejected.
 
 Announcements are independent of telemetry. Feed/media requests originate from
@@ -55,11 +55,11 @@ then run:
 node cli/node_modules/tsx/dist/cli.mjs scripts/publish-announcements.ts announcements --dry-run
 ```
 
-Set `PAPERCLIP_PAGE_BUCKET`, optionally `PAPERCLIP_PAGE_BASE_URL`, and the page
-uploader's namespaced `PAPERCLIP_PAGE_AWS_ACCESS_KEY_ID` and
-`PAPERCLIP_PAGE_AWS_SECRET_ACCESS_KEY` (optional `PAPERCLIP_PAGE_AWS_SESSION_TOKEN`),
-or `PAPERCLIP_PAGE_AWS_PROFILE`. Ambient AWS credentials also work.
-For a host serving a subdirectory, `PAPERCLIP_PAGE_DEFAULT_PREFIX` prepends a
+Set `WARDMOTE_PAGE_BUCKET`, optionally `WARDMOTE_PAGE_BASE_URL`, and the page
+uploader's namespaced `WARDMOTE_PAGE_AWS_ACCESS_KEY_ID` and
+`WARDMOTE_PAGE_AWS_SECRET_ACCESS_KEY` (optional `WARDMOTE_PAGE_AWS_SESSION_TOKEN`),
+or `WARDMOTE_PAGE_AWS_PROFILE`. Ambient AWS credentials also work.
+For a host serving a subdirectory, `WARDMOTE_PAGE_DEFAULT_PREFIX` prepends a
 validated path to both S3 keys and public URLs. Use lowercase letters, numbers
 and hyphens in each segment, without leading/trailing slashes.
 
@@ -152,10 +152,10 @@ CloudFront already has permission to read:
 
 ```sh
 aws sso login --profile paperclip-dev
-export PAPERCLIP_PAGE_AWS_PROFILE=paperclip-dev
-export PAPERCLIP_PAGE_BUCKET=paperclipai-runner-e2e-history-078455283791-us-east-1
-export PAPERCLIP_PAGE_BASE_URL=https://d1p6rlowie26tp.cloudfront.net
-export PAPERCLIP_PAGE_DEFAULT_PREFIX=storybook/branches/codex-announcements
+export WARDMOTE_PAGE_AWS_PROFILE=paperclip-dev
+export WARDMOTE_PAGE_BUCKET=paperclipai-runner-e2e-history-078455283791-us-east-1
+export WARDMOTE_PAGE_BASE_URL=https://d1p6rlowie26tp.cloudfront.net
+export WARDMOTE_PAGE_DEFAULT_PREFIX=storybook/branches/codex-announcements
 
 # Copy the public fixture into an ignored directory and edit current.json there.
 mkdir -p .paperclip
@@ -174,16 +174,16 @@ prefix, then verify its matching cache behavior as described above.
 
 Create a test-drive configuration in this worktree. Put the feed override in
 the **selected instance's `.env`**, not just the invoking shell: test-drive
-deliberately clears inherited `PAPERCLIP_*` variables.
+deliberately clears inherited `WARDMOTE_*` variables.
 
 ```sh
 mkdir -p .paperclip/announcement-test-drive/instances/default
 # On a new test directory, create this file. On reuse, update these entries
 # while preserving the file's existing keys.
 cat > .paperclip/announcement-test-drive/instances/default/.env <<'EOF'
-PAPERCLIP_ANNOUNCEMENTS_FEED_URL=https://d1p6rlowie26tp.cloudfront.net/storybook/branches/codex-announcements/announcements/staging/my-preview/v1/current.json
-PAPERCLIP_ANNOUNCEMENTS_ENABLED=true
-PAPERCLIP_DB_BACKUP_ENABLED=false
+WARDMOTE_ANNOUNCEMENTS_FEED_URL=https://d1p6rlowie26tp.cloudfront.net/storybook/branches/codex-announcements/announcements/staging/my-preview/v1/current.json
+WARDMOTE_ANNOUNCEMENTS_ENABLED=true
+WARDMOTE_DB_BACKUP_ENABLED=false
 HEARTBEAT_SCHEDULER_ENABLED=false
 EOF
 

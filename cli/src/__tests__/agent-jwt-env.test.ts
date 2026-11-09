@@ -24,8 +24,8 @@ function tempConfigPath(): string {
 describe("agent jwt env helpers", () => {
   beforeEach(() => {
     process.env = { ...ORIGINAL_ENV };
-    delete process.env.PAPERCLIP_AGENT_JWT_SECRET;
-    delete process.env.PAPERCLIP_TOOL_ACTION_SIGNING_SECRET;
+    delete process.env.WARDMOTE_AGENT_JWT_SECRET;
+    delete process.env.WARDMOTE_TOOL_ACTION_SIGNING_SECRET;
   });
 
   afterEach(() => {
@@ -41,7 +41,7 @@ describe("agent jwt env helpers", () => {
     const envPath = resolveAgentJwtEnvFile(configPath);
     expect(fs.existsSync(envPath)).toBe(true);
     const contents = fs.readFileSync(envPath, "utf-8");
-    expect(contents).toContain("PAPERCLIP_AGENT_JWT_SECRET=");
+    expect(contents).toContain("WARDMOTE_AGENT_JWT_SECRET=");
   });
 
   it("creates an independent tool-action signing secret next to the config", () => {
@@ -51,24 +51,24 @@ describe("agent jwt env helpers", () => {
     expect(result.created).toBe(true);
     expect(result.secret).toHaveLength(64);
     const entries = readPaperclipEnvEntries(resolveAgentJwtEnvFile(configPath));
-    expect(entries.PAPERCLIP_TOOL_ACTION_SIGNING_SECRET).toBe(result.secret);
-    expect(entries.PAPERCLIP_AGENT_JWT_SECRET).toBeUndefined();
+    expect(entries.WARDMOTE_TOOL_ACTION_SIGNING_SECRET).toBe(result.secret);
+    expect(entries.WARDMOTE_AGENT_JWT_SECRET).toBeUndefined();
   });
 
   it("loads secret from .env next to explicit config path", () => {
     const configPath = tempConfigPath();
     const envPath = resolveAgentJwtEnvFile(configPath);
-    fs.writeFileSync(envPath, "PAPERCLIP_AGENT_JWT_SECRET=test-secret\n", { mode: 0o600 });
+    fs.writeFileSync(envPath, "WARDMOTE_AGENT_JWT_SECRET=test-secret\n", { mode: 0o600 });
 
     const loaded = readAgentJwtSecretFromEnv(configPath);
     expect(loaded).toBe("test-secret");
-    expect(process.env.PAPERCLIP_AGENT_JWT_SECRET).toBe("test-secret");
+    expect(process.env.WARDMOTE_AGENT_JWT_SECRET).toBe("test-secret");
   });
 
   it("doctor check passes when secret exists in adjacent .env", () => {
     const configPath = tempConfigPath();
     const envPath = resolveAgentJwtEnvFile(configPath);
-    fs.writeFileSync(envPath, "PAPERCLIP_AGENT_JWT_SECRET=check-secret\n", { mode: 0o600 });
+    fs.writeFileSync(envPath, "WARDMOTE_AGENT_JWT_SECRET=check-secret\n", { mode: 0o600 });
 
     const result = agentJwtSecretCheck(configPath);
     expect(result.status).toBe("pass");
@@ -80,14 +80,14 @@ describe("agent jwt env helpers", () => {
 
     mergePaperclipEnvEntries(
       {
-        PAPERCLIP_WORKTREE_COLOR: "#439edb",
+        WARDMOTE_WORKTREE_COLOR: "#439edb",
       },
       envPath,
     );
 
     const contents = fs.readFileSync(envPath, "utf-8");
-    expect(contents).toContain('PAPERCLIP_WORKTREE_COLOR="#439edb"');
-    expect(readPaperclipEnvEntries(envPath).PAPERCLIP_WORKTREE_COLOR).toBe("#439edb");
+    expect(contents).toContain('WARDMOTE_WORKTREE_COLOR="#439edb"');
+    expect(readPaperclipEnvEntries(envPath).WARDMOTE_WORKTREE_COLOR).toBe("#439edb");
   });
 
   it("preserves operator content and CRLF while updating only managed entries", () => {
@@ -97,9 +97,9 @@ describe("agent jwt env helpers", () => {
       "# operator comment",
       "DATABASE_URL='postgres://operator:encoded@localhost/paperclip'",
       "",
-      "export PAPERCLIP_HOME = '/old path'  # managed path",
-      "PAPERCLIP_DUPLICATE=stale",
-      'PAPERCLIP_DUPLICATE="current"',
+      "export WARDMOTE_HOME = '/old path'  # managed path",
+      "WARDMOTE_DUPLICATE=stale",
+      'WARDMOTE_DUPLICATE="current"',
       "UNKNOWN_VALUE=operator-owned",
       "",
     ].join("\r\n");
@@ -107,9 +107,9 @@ describe("agent jwt env helpers", () => {
 
     mergePaperclipEnvEntries(
       {
-        PAPERCLIP_HOME: "/new path",
-        PAPERCLIP_DUPLICATE: "current",
-        PAPERCLIP_WORKTREE_COLOR: "#439edb",
+        WARDMOTE_HOME: "/new path",
+        WARDMOTE_DUPLICATE: "current",
+        WARDMOTE_WORKTREE_COLOR: "#439edb",
         DATABASE_URL: "postgres://paperclip-must-not-overwrite",
       },
       envPath,
@@ -120,11 +120,11 @@ describe("agent jwt env helpers", () => {
       "# operator comment",
       "DATABASE_URL='postgres://operator:encoded@localhost/paperclip'",
       "",
-      'export PAPERCLIP_HOME = "/new path"  # managed path',
-      "PAPERCLIP_DUPLICATE=current",
-      'PAPERCLIP_DUPLICATE="current"',
+      'export WARDMOTE_HOME = "/new path"  # managed path',
+      "WARDMOTE_DUPLICATE=current",
+      'WARDMOTE_DUPLICATE="current"',
       "UNKNOWN_VALUE=operator-owned",
-      'PAPERCLIP_WORKTREE_COLOR="#439edb"',
+      'WARDMOTE_WORKTREE_COLOR="#439edb"',
       "",
     ].join("\r\n"));
     expect(updated.replaceAll("\r\n", "")).not.toContain("\n");
@@ -135,14 +135,14 @@ describe("agent jwt env helpers", () => {
     const envPath = resolveAgentJwtEnvFile(configPath);
     const original = [
       "# preserve this file byte-for-byte",
-      "export PAPERCLIP_HOME = '/same path'",
+      "export WARDMOTE_HOME = '/same path'",
       "UNKNOWN=\"operator encoding\"",
       "",
     ].join("\n");
     fs.writeFileSync(envPath, original, { mode: 0o600 });
     const previousInode = fs.statSync(envPath).ino;
 
-    mergePaperclipEnvEntries({ PAPERCLIP_HOME: "/same path" }, envPath);
+    mergePaperclipEnvEntries({ WARDMOTE_HOME: "/same path" }, envPath);
 
     expect(fs.readFileSync(envPath, "utf8")).toBe(original);
     expect(fs.statSync(envPath).ino).toBe(previousInode);

@@ -1894,9 +1894,9 @@ describeEmbeddedPostgres(
       const heartbeat = heartbeatService(db, {
         runtimeEnv: {
           ...process.env,
-          PAPERCLIP_IN_WORKTREE: "false",
-          PAPERCLIP_DATABASE_RESTORE_IN_PROGRESS: "false",
-          PAPERCLIP_RESTORE_IN_PROGRESS: "false",
+          WARDMOTE_IN_WORKTREE: "false",
+          WARDMOTE_DATABASE_RESTORE_IN_PROGRESS: "false",
+          WARDMOTE_RESTORE_IN_PROGRESS: "false",
         },
       });
 
