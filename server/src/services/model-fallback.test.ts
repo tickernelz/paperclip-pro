@@ -92,6 +92,14 @@ describe("fallback lineage", () => {
     })).toMatchObject({ start: "a/x", fastRetry: true, availableAt: null });
   });
 
+  it("keeps the primary's second try when its provider wait is shorter than a fallback step", () => {
+    const tenSeconds = new Date(now.getTime() + 10_000);
+    expect(planModelFallbackStep({
+      chain: ["a/x", "b/y"], primary: "a/x", active: "a/x", reason: "rate_limit", attempts: {}, now,
+      notBefore: new Map([["a/x", tenSeconds]]),
+    })).toMatchObject({ start: "a/x", fastRetry: true, availableAt: tenSeconds });
+  });
+
   it("reads a lineage attempt map leniently", () => {
     expect(readModelFallbackAttempts({ "a/x": 2, "b/y": "1", "": 3, "c/z": -1 })).toEqual({ "a/x": 2 });
   });

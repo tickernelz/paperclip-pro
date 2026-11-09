@@ -177,7 +177,11 @@ export function planModelFallbackStep(input: {
     const until = input.notBefore?.get(selector);
     return until && until.getTime() > input.now.getTime() ? until : null;
   };
-  const start = candidates.find((selector) => !coolingUntil(selector))
+  const blocksStep = (selector: string) => {
+    const until = coolingUntil(selector);
+    return Boolean(until && until.getTime() > input.now.getTime() + MODEL_FALLBACK_STEP_DELAY_MS);
+  };
+  const start = candidates.find((selector) => !blocksStep(selector))
     ?? candidates.reduce<string | null>((earliest, selector) =>
       earliest === null || coolingUntil(selector)!.getTime() < coolingUntil(earliest)!.getTime() ? selector : earliest, null);
   return {
