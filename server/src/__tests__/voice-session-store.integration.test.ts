@@ -1233,7 +1233,7 @@ const support = await getEmbeddedPostgresTestSupport();
     const binding = { companyId: f.companyId, agentId: f.agentId };
     const assigned = async () => (await resolveConnectorAssignments(db, binding)).filter(item => item.key === "speko");
     const assignments = await assigned();
-    expect(assignments).toMatchObject([{ skillKey: "paperclipai/paperclip/speko", resources: [{ id: f.endpointId, connectionId: f.connectionId }], tools: [] }]);
+    expect(assignments).toMatchObject([{ skillKey: "tickernelz/wardmote/speko", resources: [{ id: f.endpointId, connectionId: f.connectionId }], tools: [] }]);
     const config = await applyConnectorSkills({}, [], assignments);
     const skill = config.paperclipRuntimeSkills[0];
     const markdown = await readFile(join(skill.source, "SKILL.md"), "utf8");

@@ -39,11 +39,11 @@ describe("ensureOmpSkills", () => {
     await ensureOmpSkills(
       {
         paperclipRuntimeSkills: [...SKILLS, "notes"].map((skill) => ({
-          key: `paperclipai/paperclip/${skill}`,
+          key: `tickernelz/wardmote/${skill}`,
           runtimeName: skill,
           source: skill === "notes" ? path.join(root, "bundled-notes") : bundled(root, "new", skill),
         })),
-        paperclipSkillSync: { desiredSkills: ["paperclipai/paperclip/paperclip"] },
+        paperclipSkillSync: { desiredSkills: ["tickernelz/wardmote/paperclip"] },
       },
       agentDir,
     );
@@ -64,11 +64,11 @@ describe("ensureOmpSkills", () => {
     await ensureOmpSkills(
       {
         paperclipRuntimeSkills: SKILLS.map((skill) => ({
-          key: `paperclipai/paperclip/${skill}`,
+          key: `tickernelz/wardmote/${skill}`,
           runtimeName: skill,
           source: bundled(root, "new", skill),
         })),
-        paperclipSkillSync: { desiredSkills: ["paperclipai/paperclip/paperclip"] },
+        paperclipSkillSync: { desiredSkills: ["tickernelz/wardmote/paperclip"] },
       },
       agentDir,
     );
