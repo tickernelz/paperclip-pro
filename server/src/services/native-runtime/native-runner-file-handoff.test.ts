@@ -1,4 +1,4 @@
-import type { PrpStructuredRunResult } from "../../vendor/paperclip-runner/index.js";
+import type { PrpStructuredRunResult } from "../../vendor/wardmote-runner/index.js";
 import { nativeCompletionFeedback } from "./native-completion-feedback.js";
 import { createHash, randomUUID } from "node:crypto";
 import { spawn } from "node:child_process";

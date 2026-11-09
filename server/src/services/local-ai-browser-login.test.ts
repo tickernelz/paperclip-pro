@@ -3,9 +3,9 @@ import { mkdtemp, mkdir, readFile, realpath, rm, stat, writeFile } from "node:fs
 import os from "node:os";
 import path from "node:path";
 import { startLocalBrowserLogin } from "./local-ai-browser-login.js";
-import { resolveCodexCommand } from "../vendor/paperclip-runner/index.js";
+import { resolveCodexCommand } from "../vendor/wardmote-runner/index.js";
 
-vi.mock("../vendor/paperclip-runner/index.js", () => ({
+vi.mock("../vendor/wardmote-runner/index.js", () => ({
   resolveCodexCommand: vi.fn(),
 }));
 

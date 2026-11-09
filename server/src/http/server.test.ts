@@ -1,7 +1,7 @@
 import { once } from "node:events";
 import { request } from "node:http";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import type { DurablePrpControlPlane } from "../vendor/paperclip-runner/index.js";
+import type { DurablePrpControlPlane } from "../vendor/wardmote-runner/index.js";
 import { registerRunnerPrpAuthority, runnerPrpWebSocketInternals } from "../realtime/runner-prp-ws.js";
 import { createPaperclipHttpServer } from "./server.js";
 

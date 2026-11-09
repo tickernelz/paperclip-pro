@@ -11,7 +11,7 @@ export function bundledRemoteProviderPackManifestPath(moduleUrl = import.meta.ur
   if (/\/src\/live\/bundled-remote-provider-pack\.ts$/.test(url.pathname)) {
     return fileURLToPath(new URL("../../dist/remote-provider-packs/linux-x64/provider-pack.json", url));
   }
-  if (/\/dist\/(?:vendor\/paperclip-runner\/)?live\/bundled-remote-provider-pack\.js$/.test(url.pathname)) {
+  if (/\/dist\/(?:vendor\/wardmote-runner\/)?live\/bundled-remote-provider-pack\.js$/.test(url.pathname)) {
     return fileURLToPath(new URL("../remote-provider-packs/linux-x64/provider-pack.json", url));
   }
   throw new Error("Bundled remote provider pack requires a package file layout");

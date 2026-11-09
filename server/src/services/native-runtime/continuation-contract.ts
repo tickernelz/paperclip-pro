@@ -7,7 +7,7 @@ import {
   nativeRunResults,
   type Db,
 } from "@tickernelz/wardmote-db";
-import type { NativeExecutionInput } from "../../vendor/paperclip-runner/index.js";
+import type { NativeExecutionInput } from "../../vendor/wardmote-runner/index.js";
 
 /** Revise an uncompleted contract at a fenced dispatch boundary; retain its old revision for audit. */
 export async function rebindContinuationContract(

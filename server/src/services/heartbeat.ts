@@ -402,7 +402,7 @@ import {
   parseNativeExecutionInput,
   type NativeExecutionInput,
   type NativeSessionBackend,
-} from "../vendor/paperclip-runner/index.js";
+} from "../vendor/wardmote-runner/index.js";
 import { createNativeSessionHandoffLoader } from "./native-runtime/native-session-handoff.js";
 
 import { getRunLogStore, type RunLogHandle } from "./run-log-store.js";

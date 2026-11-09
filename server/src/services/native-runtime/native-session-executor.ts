@@ -1,10 +1,10 @@
 import { logger } from "../../middleware/logger.js";
-import { configuredEnvironment } from "../../vendor/paperclip-runner/index.js";
+import { configuredEnvironment } from "../../vendor/wardmote-runner/index.js";
 import { agents } from "@tickernelz/wardmote-db";
 import { dotRunnerBroker } from "../dot-runner-broker.js";
-import { CURSOR_DISTRIBUTION_PINS, QUALIFIED_ACPX_PROFILES, QUALIFIED_ACPX_VERSION } from "../../vendor/paperclip-runner/index.js";
-import { isProviderMode } from "../../vendor/paperclip-runner/index.js";
-import { bundledRemoteProviderPackManifestPath, bundledRemoteRunnerBinary } from "../../vendor/paperclip-runner/index.js";
+import { CURSOR_DISTRIBUTION_PINS, QUALIFIED_ACPX_PROFILES, QUALIFIED_ACPX_VERSION } from "../../vendor/wardmote-runner/index.js";
+import { isProviderMode } from "../../vendor/wardmote-runner/index.js";
+import { bundledRemoteProviderPackManifestPath, bundledRemoteRunnerBinary } from "../../vendor/wardmote-runner/index.js";
 import { nativeRetryCancellationEligible, rethrowNativeCancellationLockConflict, assertCancellationRequest, cancellationIntentId as callerCancellationIntentId, cancellationRequestId } from "./native-cancellation-request.js";
 import { readNativePlanWait } from "./native-plan-wait.js";
 import { nativeProviderLifecycle } from "./provider-lifecycle.js";
@@ -87,7 +87,7 @@ import type {
   PersistedNativeSession,
   PrpEvent,
   PrpStructuredRunResult,
-} from "../../vendor/paperclip-runner/index.js";
+} from "../../vendor/wardmote-runner/index.js";
 import {
   NativeProviderTerminalFailure,
   NativeSessionCleanupQuarantinedError,
@@ -111,7 +111,7 @@ import {
   type RunnerProcessHandle,
   type RunnerProcessLaunchSpec,
   type NativeSessionGoalControl,
-} from "../../vendor/paperclip-runner/index.js";
+} from "../../vendor/wardmote-runner/index.js";
 import type { AdapterExecutionTarget } from "@tickernelz/wardmote-adapter-utils/execution-target";
 import { getAdapterSteerTarget } from "@tickernelz/wardmote-adapter-utils/adapter-steer-registry";
 import { createNativeSshCommandRunner } from "./native-ssh-command-runner.js";
@@ -11488,7 +11488,7 @@ async function createRunnerdBackendWithinSessionClaim(
     workspaceBridge: input.execution.provider.kind === "openai_dot" && !!input.dotWorkspaceRoot,
     taskAttachmentRead: dotAttachmentActor?.config.dotAttachmentAccess === true,
     dotRuntime: input.execution.provider.kind === "openai_dot",
-    assertBridgeAuthority: input.execution.provider.kind === "openai_dot" ? () => dotRunnerBroker(input.db).assertRunAuthority(input.execution as import("../../vendor/paperclip-runner/index.js").NativeExecutionInputV6) : undefined,
+    assertBridgeAuthority: input.execution.provider.kind === "openai_dot" ? () => dotRunnerBroker(input.db).assertRunAuthority(input.execution as import("../../vendor/wardmote-runner/index.js").NativeExecutionInputV6) : undefined,
     workspaceRoot: input.dotWorkspaceRoot ?? remoteTarget?.remoteCwd ?? input.execution.workspace.cwd ?? undefined,
     executionTargetKind: target.kind,
     readRemoteWorkspaceFile: remoteTarget && remoteCommandRunner
@@ -11539,8 +11539,8 @@ async function createRunnerdBackendWithinSessionClaim(
     const recoveredProcess = input.restartRecovery?.kind === "reattach_existing_runner" ? input.restartRecovery.process : null;
     const backend = createNativeSessionBackend(input.execution, {
       onSpawn: input.onSpawn, dynamicTools,
-      dynamicToolHandler: async call => { await dotRunnerBroker(input.db).assertRunAuthority(input.execution as import("../../vendor/paperclip-runner/index.js").NativeExecutionInputV6); return authorityEpoch.execute(call); },
-      completionFeedback: async result => { await dotRunnerBroker(input.db).assertRunAuthority(input.execution as import("../../vendor/paperclip-runner/index.js").NativeExecutionInputV6); await authorityEpoch.definitions(); return nativeCompletionFeedback(input.db, input.execution.binding.runId, result); },
+      dynamicToolHandler: async call => { await dotRunnerBroker(input.db).assertRunAuthority(input.execution as import("../../vendor/wardmote-runner/index.js").NativeExecutionInputV6); return authorityEpoch.execute(call); },
+      completionFeedback: async result => { await dotRunnerBroker(input.db).assertRunAuthority(input.execution as import("../../vendor/wardmote-runner/index.js").NativeExecutionInputV6); await authorityEpoch.definitions(); return nativeCompletionFeedback(input.db, input.execution.binding.runId, result); },
       dotRunnerOptions: {
         stateDirectory: root, runnerBinary: remoteDot?.runnerBinary ?? resolvePaperclipRunnerBinary(),
         ...(remoteDot ?? {}),
@@ -11988,7 +11988,7 @@ async function createRunnerdBackendWithinSessionClaim(
     }
     if (!runnerArtifactPrepared) {
       // Upload the same artifact used for the controller identity. The server
-      // vendors the runner under vendor/paperclip-runner/bin, so the package
+      // vendors the runner under vendor/wardmote-runner/bin, so the package
       // development fallback cannot locate it in a deployed server.
       const sourceBinary = controllerRunnerBinary;
       if (!existsSync(sourceBinary)) {

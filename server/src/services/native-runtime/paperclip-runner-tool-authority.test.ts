@@ -25,7 +25,7 @@ import { PaperclipRunnerToolAuthority } from "./paperclip-runner-tool-authority.
 import { createAssignedMcpTools } from "./assigned-mcp-tools.js";
 import type { ToolGatewayService } from "../tool-gateway.js";
 import { READ_CURRENT_WAKE_COMMENTS_TOOL_NAME } from "./current-wake-comments.js";
-import { CAPABILITY_SEMANTIC_TOOL_CATALOG, runnerCodexDynamicToolsFit } from "../../vendor/paperclip-runner/index.js";
+import { CAPABILITY_SEMANTIC_TOOL_CATALOG, runnerCodexDynamicToolsFit } from "../../vendor/wardmote-runner/index.js";
 
 const PUBLIC_BASE_URL_ENV = "WARDMOTE_AUTH_PUBLIC_BASE_URL";
 

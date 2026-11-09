@@ -16,7 +16,7 @@ import {
   attachPaperclipSessionMetadataToSessionParams,
 } from "./workspaces.js";
 import { recordLegacyWorkspaceRestoreFailure } from "../legacy-execution-recovery.js";
-import { configuredEnvironmentProjection } from "../../vendor/paperclip-runner/index.js";
+import { configuredEnvironmentProjection } from "../../vendor/wardmote-runner/index.js";
 import { buildAgentIdentityEnv } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import { externalObjectService } from "../external-objects.js";
 import { isAgentDirectoryCopy } from "../agent-directory-working-copies.js";
@@ -85,7 +85,7 @@ import type { environmentRunOrchestrator } from "../environment-run-orchestrator
 import type { instanceSettingsService } from "../instance-settings.js";
 import type { EffectiveRunSessionConfigMetadata } from "./workspaces.js";
 import type { ProviderResourceDisposition } from "../environment-runtime.js";
-import type { NativeExecutionInput, NativeSessionBackend } from "../../vendor/paperclip-runner/index.js";
+import type { NativeExecutionInput, NativeSessionBackend } from "../../vendor/wardmote-runner/index.js";
 import type { PluginWorkerManager } from "../plugin-worker-manager.js";
 import type { RealizedExecutionWorkspace } from "../workspace-runtime.js";
 import type { reserveWarmNativeInstructionDirectory } from "../native-runtime/index.js";

@@ -220,7 +220,7 @@ describe("ACPX installation integrity", () => {
       "explicit normalized absolute path",
     );
 
-    const runnerPackage = join(root, "packages", "paperclip-runner");
+    const runnerPackage = join(root, "packages", "wardmote-runner");
     const runnerManifest = join(runnerPackage, "package.json");
     const pnpmProviderDirectory = join(
       root,

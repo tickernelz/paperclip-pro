@@ -16,7 +16,7 @@ import { defaultCreateValues } from "./agent-config-defaults";
 import { buildNewAgentHirePayload } from "../lib/new-agent-hire-payload";
 import { ApiError } from "../api/client";
 import { aiConnectionsApi } from "../api/ai-connections";
-import { CodexLocalConfigFields } from "../adapters/paperclip-runner/config-fields";
+import { CodexLocalConfigFields } from "../adapters/wardmote-runner/config-fields";
 import type { AdapterConfigFieldsProps } from "../adapters/types";
 import { DEFAULT_CODEX_LOCAL_MODEL } from "@tickernelz/wardmote-adapter-utils/provider-models/codex";
 

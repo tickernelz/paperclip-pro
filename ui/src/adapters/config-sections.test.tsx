@@ -7,7 +7,7 @@ import type { ComponentType } from "react";
 import { beforeAll, describe, expect, it } from "vitest";
 import { TooltipProvider } from "../components/ui/tooltip";
 import type { AdapterConfigFieldsProps, AdapterConfigSection } from "./types";
-import { CodexLocalConfigFields } from "./paperclip-runner/config-fields";
+import { CodexLocalConfigFields } from "./wardmote-runner/config-fields";
 import { ProcessConfigFields } from "./process/config-fields";
 
 beforeAll(() => { Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true }); });

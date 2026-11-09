@@ -22,7 +22,7 @@ export async function provisionPackageRoot(entrypoint) {
   if (canonical !== resolve(entrypoint)) throw new Error("Pi setup entrypoint must not be linked");
   if (basename(canonical) !== "provision-pi.cjs" || !(await lstat(canonical)).isFile()) throw new Error("Pi setup requires its installed entrypoint");
   const cli = dirname(canonical);
-  const vendored = cli.endsWith("/dist/vendor/paperclip-runner/cli");
+  const vendored = cli.endsWith("/dist/vendor/wardmote-runner/cli");
   if (!vendored && !cli.endsWith("/dist/cli")) throw new Error("Pi setup requires the installed runner or server layout");
   const root = resolve(cli, vendored ? "../../../.." : "../..");
   const manifest = join(root, "package.json");

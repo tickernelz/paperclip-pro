@@ -1,7 +1,7 @@
 import { execFile } from "node:child_process";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { readLinuxProcessStartedAt, type LinuxProcessStartOptions } from "../vendor/paperclip-runner/index.js";
+import { readLinuxProcessStartedAt, type LinuxProcessStartOptions } from "../vendor/wardmote-runner/index.js";
 import {
   resolvePaperclipHomeDir,
   resolvePaperclipInstanceId,

@@ -6,7 +6,7 @@ import { nativeCompletionSource, buildNativeCompletionContract } from "./complet
 import { renderPaperclipWakePrompt } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import { buildNativeExecutionInput } from "./native-execution-input.js";
 import { nativeRuntimeContextFixture } from "./runtime-context.test-fixture.js";
-import { buildNativeModelEnvelope, canonicalNativeRuntimeContextDigest } from "../../vendor/paperclip-runner/index.js";
+import { buildNativeModelEnvelope, canonicalNativeRuntimeContextDigest } from "../../vendor/wardmote-runner/index.js";
 
 describe("LCA-05 explicit native work mode", () => {
   it.each(["standard", "planning", "ask"])("title and description cannot override %s mode", (workMode) => {

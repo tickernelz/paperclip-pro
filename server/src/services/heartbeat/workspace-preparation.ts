@@ -51,7 +51,7 @@ import type {
   IssueExecutionWorkspaceSettings,
   ProjectExecutionWorkspacePolicy,
 } from "@tickernelz/wardmote-shared";
-import type { NativeExecutionInput } from "../../vendor/paperclip-runner/index.js";
+import type { NativeExecutionInput } from "../../vendor/wardmote-runner/index.js";
 import type { NativeRunHistoricalSpan } from "../native-runtime/native-run-trace.js";
 import type { NativeRestartRecoveryClaim } from "../native-runtime/index.js";
 import type { NativeChatWorkspaceScope } from "../native-runtime/native-chat-workspace.js";

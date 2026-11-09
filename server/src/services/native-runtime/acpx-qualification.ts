@@ -1,4 +1,4 @@
-import type { NativeExecutionInput } from "../../vendor/paperclip-runner/index.js";
+import type { NativeExecutionInput } from "../../vendor/wardmote-runner/index.js";
 
 /** Operator-only admission for an exact candidate/model during qualification. */
 export const ACPX_QUALIFICATION_ENV = "WARDMOTE_RUNNER_ACPX_QUALIFICATION";

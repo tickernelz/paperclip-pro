@@ -191,7 +191,7 @@ const paperclipRunnerAdapter: ServerAdapterModule = {
               message: "The remote platform is supported. Runtime package integrity and readiness must still be verified by the remote runner before launch." }],
           };
         }
-        const { probeAcpxClaudeInstallation, probeAcpxGrokInstallation, probeAcpxCursorInstallation, probeAcpxPiInstallation } = await import("../vendor/paperclip-runner/live/index.js");
+        const { probeAcpxClaudeInstallation, probeAcpxGrokInstallation, probeAcpxCursorInstallation, probeAcpxPiInstallation } = await import("../vendor/wardmote-runner/live/index.js");
         await (profile.acpxAgent === "pi" ? probeAcpxPiInstallation : profile.acpxAgent === "grok" ? probeAcpxGrokInstallation : profile.acpxAgent === "cursor" ? probeAcpxCursorInstallation : probeAcpxClaudeInstallation)(profile.model);
         return {
           adapterType: "paperclip_runner", status: "pass" as const, testedAt: new Date().toISOString(),

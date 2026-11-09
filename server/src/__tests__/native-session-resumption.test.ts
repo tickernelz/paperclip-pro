@@ -37,7 +37,7 @@ import {
 import {
   CONTROL_PLANE_CONFORMANCE_RESULT,
   CONTROL_PLANE_CONFORMANCE_TERMINAL,
-} from "../vendor/paperclip-runner/testing.js";
+} from "../vendor/wardmote-runner/testing.js";
 import { startEmbeddedPostgresTestDatabase } from "./helpers/embedded-postgres.js";
 import { drainHeartbeatRunsToQuiescence } from "./helpers/drain-heartbeat-runs.js";
 import { waitForPendingRunFailureReports } from "../services/run-failure-report.js";

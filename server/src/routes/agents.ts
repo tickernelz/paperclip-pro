@@ -178,7 +178,7 @@ import {
   parseHarnessRuntimeRequestResolution,
   type HarnessRuntimeRequestKind,
   type HarnessRuntimeRequestResolution,
-} from "../vendor/paperclip-runner/index.js";
+} from "../vendor/wardmote-runner/index.js";
 import {
   queueRunnerPrpRuntimeRequestResolution,
   RunnerPrpRuntimeRequestResolutionError,

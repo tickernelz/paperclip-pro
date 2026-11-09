@@ -2,7 +2,7 @@ import type { Db, agents, heartbeatRuns, issues } from "@tickernelz/wardmote-db"
 import type { IssueExecutionWorkspaceSettings, ProjectExecutionWorkspacePolicy } from "@tickernelz/wardmote-shared";
 import { parseObject } from "../../adapters/utils.js";
 import { logger } from "../../middleware/logger.js";
-import { parseNativeExecutionInput } from "../../vendor/paperclip-runner/index.js";
+import { parseNativeExecutionInput } from "../../vendor/wardmote-runner/index.js";
 import { isExecutionForcedToKubernetes } from "../execution-allowlist.js";
 import { parseExecutionPolicyBootstrapEnv } from "../execution-policy-bootstrap.js";
 import {

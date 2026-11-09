@@ -62,7 +62,7 @@ import {
   reconcileRetainedNativeSessionCleanup,
   reconcileRetainedNativeSessionCleanups,
 } from "../native-runtime/index.js";
-import { drainRetainedRunnerdMaintenanceOperations } from "../../vendor/paperclip-runner/index.js";
+import { drainRetainedRunnerdMaintenanceOperations } from "../../vendor/wardmote-runner/index.js";
 import { runningProcesses } from "../../adapters/index.js";
 import { parseObject } from "../../adapters/utils.js";
 import {

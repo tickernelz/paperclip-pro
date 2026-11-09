@@ -14,7 +14,7 @@ export async function resolvePiProvisioner(serverUrl: string): Promise<string> {
   const manifest = join(root, "package.json");
   const info = await lstat(manifest);
   if (!info.isFile() || info.isSymbolicLink() || info.size > 65536 || JSON.parse(await readFile(manifest, "utf8")).name !== "@tickernelz/wardmote-server") throw new Error("Pi setup server package identity is invalid");
-  const provisioner = join(root, "dist/vendor/paperclip-runner/cli/provision-pi.cjs");
+  const provisioner = join(root, "dist/vendor/wardmote-runner/cli/provision-pi.cjs");
   if (await realpath(provisioner) !== provisioner || !(await lstat(provisioner)).isFile()) throw new Error("Pi setup entrypoint escapes its server package");
   return provisioner;
 }
@@ -68,7 +68,7 @@ export async function resolveCursorProvisioner(serverUrl: string): Promise<strin
   const manifest = join(root, "package.json");
   const info = await lstat(manifest);
   if (!info.isFile() || info.isSymbolicLink() || info.size > 65536 || JSON.parse(await readFile(manifest, "utf8")).name !== "@tickernelz/wardmote-server") throw new Error("Cursor setup server package identity is invalid");
-  const provisioner = join(root, "dist/vendor/paperclip-runner/cli/provision-cursor.cjs");
+  const provisioner = join(root, "dist/vendor/wardmote-runner/cli/provision-cursor.cjs");
   if (await realpath(provisioner) !== provisioner || !(await lstat(provisioner)).isFile()) throw new Error("Cursor setup entrypoint escapes its server package");
   return provisioner;
 }

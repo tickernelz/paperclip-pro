@@ -1638,7 +1638,7 @@ it("derives the ACPX package authority only from the verified dist/cli layout", 
 
 it("uses the public server npm package as the authority for vendored sidecars", () => {
   expect(runnerdLaunchProfileInternals.acpxProviderPackageAuthority(
-    "/clean/node_modules/@tickernelz/wardmote-server/dist/vendor/paperclip-runner/cli/acpx-runtime-sidecar.cjs",
+    "/clean/node_modules/@tickernelz/wardmote-server/dist/vendor/wardmote-runner/cli/acpx-runtime-sidecar.cjs",
   )).toEqual({
     root: "/clean/node_modules/@tickernelz/wardmote-server",
     manifest: "/clean/node_modules/@tickernelz/wardmote-server/package.json",

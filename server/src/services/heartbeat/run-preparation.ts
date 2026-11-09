@@ -1,7 +1,7 @@
 import { spekoToolsForSession } from "../voice/speko-agent-tools.js";
 import type { ExplicitContinuationOwnerRelay } from "../explicit-native-continuation.js";
 import { githubConfiguredInstructionSources } from "../chat-github-review-policy.js";
-import { CONFIGURED_ENVIRONMENT_KEYS } from "../../vendor/paperclip-runner/index.js";
+import { CONFIGURED_ENVIRONMENT_KEYS } from "../../vendor/wardmote-runner/index.js";
 import { ASSIGNED_MCP_SERVER_NAME } from "../mcp-tool-names.js";
 import { externalConversationStateSql } from "../slack-conversation-state.js";
 import { githubBotConnectionIdsForRun } from "../chat-github-tools.js";

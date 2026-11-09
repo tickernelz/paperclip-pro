@@ -15,7 +15,7 @@ import {
 
 import { redactEventPayload } from "../redaction.js";
 import { appendHeartbeatRunEvent } from "../services/heartbeat-run-events.js";
-import { validatePrpEvent } from "../vendor/paperclip-runner/index.js";
+import { validatePrpEvent } from "../vendor/wardmote-runner/index.js";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,

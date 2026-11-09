@@ -10,7 +10,7 @@ const { probeInstallation, probeGrokInstallation, probePiInstallation } = vi.hoi
   probeGrokInstallation: vi.fn(),
   probePiInstallation: vi.fn(),
 }));
-vi.mock("../vendor/paperclip-runner/live/index.js", () => ({
+vi.mock("../vendor/wardmote-runner/live/index.js", () => ({
   probeAcpxClaudeInstallation: probeInstallation,
   probeAcpxGrokInstallation: probeGrokInstallation,
   probeAcpxPiInstallation: probePiInstallation,

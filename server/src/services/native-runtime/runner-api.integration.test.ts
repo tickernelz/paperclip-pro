@@ -6,7 +6,7 @@ import { eq } from "drizzle-orm";
 import { assets, documents, heartbeatRuns, issues, projects, routineDocuments, routines, runnerApiResponseReservations } from "@tickernelz/wardmote-db";
 import { beforeAll, afterAll, beforeEach, afterEach, describe, expect, it, vi } from "vitest";
 import { startRunnerApiTestServer } from "../../__tests__/helpers/runner-api-server.js";
-import { createRunnerdCodexTransport, defaultCapabilityRunnerdBinary } from "../../vendor/paperclip-runner/index.js";
+import { createRunnerdCodexTransport, defaultCapabilityRunnerdBinary } from "../../vendor/wardmote-runner/index.js";
 import { runnerApiCatalog } from "./runner-api-catalog.js";
 import { registerRunnerPrpAuthority } from "../../realtime/runner-prp-ws.js";
 import { createLocalAgentJwt } from "../../agent-auth-jwt.js";
