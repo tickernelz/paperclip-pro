@@ -10224,7 +10224,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           (stored) =>
             stored.baseUrl === credentials.baseUrl &&
             stored.sessionId === credentials.sessionId &&
-            (stored.apiKey === credentials.apiKey || openwaMintedKeyId !== null),
+            stored.apiKey === credentials.apiKey,
         )
         .catch(() => false));
     if (endpoint.provider === "imessage-photon") {

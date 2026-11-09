@@ -326,8 +326,10 @@ export class FakeOpenwaGateway {
     const url = new URL(req.url ?? "/", this.baseUrl);
     const query = Object.fromEntries(url.searchParams);
     const apiKey = req.headers["x-api-key"];
-    const scoped = typeof apiKey === "string" ? [...this.apiKeys.values()].find((entry) => entry.apiKey === apiKey) : undefined;
-    const key = apiKey === FAKE_OPENWA_KEY ? "operator" : apiKey === FAKE_OPENWA_ADMIN_KEY ? "admin" : null;
+    const issued = typeof apiKey === "string" ? [...this.apiKeys.values()].find((entry) => entry.apiKey === apiKey) : undefined;
+    const ownScoped = issued?.active === true && issued.role === "operator" && issued.allowedSessions.includes(this.sessionId);
+    const scoped = ownScoped ? undefined : issued;
+    const key = apiKey === FAKE_OPENWA_KEY || ownScoped ? "operator" : apiKey === FAKE_OPENWA_ADMIN_KEY ? "admin" : null;
     this.requests.push({ method: req.method ?? "GET", path: url.pathname, query, key: scoped ? "scoped" : key });
     const chunks: Buffer[] = [];
     for await (const chunk of req) chunks.push(chunk as Buffer);
