@@ -1153,35 +1153,12 @@ All endpoints are under `/api` and return JSON.
 - `PATCH /companies/:companyId/branding`
 - `POST /companies/:companyId/archive`
 
-On a Paperclip Cloud-managed instance, `POST /companies` returns `403` with
-code `cloud_managed`; the trusted-header provisioning path and company import
-routes remain the only company-creation paths there.
-
-## 10.1.1 Organization navigation and Cloud invitations
+## 10.1.1 Organization navigation
 
 Core's built-in organization switcher lists this instance's companies. An
 installed plugin can replace it through the generic `organizationSwitcher`
 slot. The built-in menu remains available when no unique usable contribution
-exists. Core does not fetch or render Cloud portfolios in its switcher. Managed
-hosts do not expose local company creation in that built-in menu; their extension
-owns the creation action.
-
-The Cloud Members-page invitation action still uses the following route:
-
-- `GET /cloud/stacks`
-
-The route exists only on a Cloud-managed instance, requires a trusted
-`cloud_tenant` actor, and proxies the current actor's user id plus the current
-stack id to the Cloud tenant portfolio endpoint. Client-supplied user ids are
-never forwarded. Successful responses are cached briefly per user; self-hosted
-instances return `404`.
-
-On Cloud-managed instances, the Members page offers **Invite people** to the
-current stack's owner/admin. It opens that stack's Cloud People settings with a
-full-page navigation. The destination uses the configured Cloud origin and the
-current stack from the authenticated portfolio. The action stays hidden until
-that role is known, or when the portfolio request fails. Hiding the tenant-local
-Invites tab does not hide this Cloud action.
+exists.
 
 ## 10.2 Goals
 

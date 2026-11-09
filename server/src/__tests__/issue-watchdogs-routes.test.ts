@@ -108,7 +108,7 @@ describeEmbeddedPostgres("issue watchdog routes", () => {
         userId: "cloud-user-1",
         companyIds: [companyId],
         memberships: [{ companyId, membershipRole: "owner", status: "active" }],
-        source: "cloud_tenant",
+        source: "session",
         isInstanceAdmin: false,
       };
       next();
@@ -122,7 +122,7 @@ describeEmbeddedPostgres("issue watchdog routes", () => {
     return `W${randomUUID().replace(/-/g, "").slice(0, 5).toUpperCase()}`;
   }
 
-  async function seedCloudTenantMember(companyId: string) {
+  async function seedCompanyMember(companyId: string) {
     await db.insert(companyMemberships).values({
       companyId,
       principalType: "user",
@@ -147,7 +147,7 @@ describeEmbeddedPostgres("issue watchdog routes", () => {
       issuePrefix: uniqueIssuePrefix(),
       requireBoardApprovalForNewAgents: false,
     });
-    await seedCloudTenantMember(companyId);
+    await seedCompanyMember(companyId);
     return companyId;
   }
 

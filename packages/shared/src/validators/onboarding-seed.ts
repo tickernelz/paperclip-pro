@@ -1,15 +1,5 @@
 import { z } from "zod";
 
-/**
- * The onboarding seed Paperclip Cloud pushes into a stack at activation
- * Every field except `revision` is customer free text collected in
- * the Cloud signup wizard, so it is untrusted input and is bounded here to the
- * same limits Cloud enforces before sending.
- *
- * The seed rides the JSON body only. The `x-paperclip-cloud-*` headers are the
- * trusted identity envelope — every member is derived server-side from host +
- * verified domain records — and must never be read for seed content.
- */
 export const MISSION_MAX_LENGTH = 2000;
 export const AGENT_NAME_MAX_LENGTH = 80;
 export const AGENT_ROLE_MAX_LENGTH = 120;

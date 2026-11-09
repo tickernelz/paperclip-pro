@@ -129,9 +129,7 @@ export interface AttachmentRetentionStatus {
  *   ssh, sandbox) may run agents. Preserves single-tenant / local-trusted
  *   behavior.
  * - `"kubernetes"`: force ALL agent execution onto the Kubernetes
- *   sandbox-provider environment and REFUSE local/in-process execution. Used by
- *   shared cloud (cloud_tenant) instances so untrusted tenant agents can never
- *   run in the server process or on an unsandboxed local/ssh adapter.
+ *   sandbox-provider environment and REFUSE local/in-process execution.
  */
 export type InstanceExecutionMode = "kubernetes" | "any";
 

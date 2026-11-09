@@ -71,7 +71,6 @@ import { setupEnvironmentCustomImageTerminalWebSocketServer } from "./realtime/e
 import { setupLiveEventsWebSocketServer } from "./realtime/live-events-ws.js";
 import { setupLocalBrowserWebSocketServer } from "./realtime/local-browser-ws.js";
 import { setupTerminalWebSocketServer } from "./realtime/terminal-ws.js";
-import { cloudActorHeaderSourceFromHeaders, resolveCloudTenantActor } from "./middleware/auth.js";
 import {
   feedbackService,
   applyManagedEnvironments,
@@ -1011,20 +1010,6 @@ async function startServerWithDatabaseTeardown(
   setupLiveEventsWebSocketServer(server, db as any, {
     deploymentMode: config.deploymentMode,
     resolveSessionFromHeaders,
-    // Cloud-proxied browsers carry trusted x-paperclip-cloud-* headers instead
-    // of a local Better Auth session; without this lane every live-events
-    // upgrade behind the Cloud front door 403s forever. The resolver is
-    // self-gating: it returns null unless PAPERCLIP_CLOUD_TENANT_SERVER_TOKEN
-    // is configured and the request presents the matching trust token, so
-    // self-hosted deployments never take this path.
-    resolveCloudActor: async (req) => {
-      const actor = await resolveCloudTenantActor(
-        db as any,
-        cloudActorHeaderSourceFromHeaders(req.headers),
-      );
-      if (!actor?.userId || !actor.companyIds) return null;
-      return { userId: actor.userId, companyIds: actor.companyIds };
-    },
   });
 
   setStartupRecoveryPhase("recovering");

@@ -1791,7 +1791,7 @@ describeEmbeddedPostgres("authorization service", () => {
     });
   });
 
-  it.each(["session", "cloud_tenant"] as const)("allows %s operators to start agents, without granting hiring rights", async (source) => {
+  it.each(["session"] as const)("allows %s operators to start agents, without granting hiring rights", async (source) => {
     const company = await createCompany(db, "wake");
     const agent = await createAgent(db, company.id);
     const userId = await createUser(db);
@@ -1870,81 +1870,6 @@ describeEmbeddedPostgres("authorization service", () => {
       allowed: false,
       reason: "deny_missing_grant",
     });
-  });
-
-  it("never elevates cloud_tenant actors through stale instance_admin rows", async () => {
-    const tenantCompany = await createCompany(db, "CloudTenantStale");
-    const otherCompany = await createCompany(db, "CloudTenantOther");
-    const userId = `user-${randomUUID()}`;
-    const targetAgent = await createAgent(db, otherCompany.id, { role: "engineer" });
-    await db.insert(companyMemberships).values({
-      companyId: tenantCompany.id,
-      principalType: "user",
-      principalId: userId,
-      status: "active",
-      membershipRole: "owner",
-    });
-    // Stale grant left behind by a pre-hardening cloud_tenant deployment.
-    await db.insert(instanceUserRoles).values({ userId, role: "instance_admin" });
-
-    const decision = await authorizationService(db).decide({
-      actor: {
-        type: "board",
-        userId,
-        companyIds: [tenantCompany.id],
-        isInstanceAdmin: false,
-        source: "cloud_tenant",
-      },
-      action: "tasks:assign",
-      resource: { type: "issue", companyId: otherCompany.id, assigneeAgentId: targetAgent.id },
-      scope: { assigneeAgentId: targetAgent.id },
-    });
-
-    expect(decision.allowed).toBe(false);
-    expect(decision.reason).not.toBe("allow_instance_admin");
-
-    // Control: the instanceUserRoles lookup still elevates non-cloud_tenant
-    // board actors, so the carve-out is scoped to the tenant contract only.
-    const sessionDecision = await authorizationService(db).decide({
-      actor: { type: "board", userId, companyIds: [tenantCompany.id], source: "session" },
-      action: "tasks:assign",
-      resource: { type: "issue", companyId: otherCompany.id, assigneeAgentId: targetAgent.id },
-      scope: { assigneeAgentId: targetAgent.id },
-    });
-    expect(sessionDecision).toMatchObject({ allowed: true, reason: "allow_instance_admin" });
-  });
-
-  it("trusts the computed isInstanceAdmin flag on cloud_tenant actors", async () => {
-    // The trusted-header resolver is the only code path that can set
-    // isInstanceAdmin on a cloud_tenant actor (stack owner +
-    // enableOwnerInstanceAdmin). The authorization service must honor the
-    // computed flag without consulting instance_user_roles.
-    const tenantCompany = await createCompany(db, "CloudTenantOwnerAdmin");
-    const otherCompany = await createCompany(db, "CloudTenantOwnerAdminOther");
-    const userId = `user-${randomUUID()}`;
-    const targetAgent = await createAgent(db, otherCompany.id, { role: "engineer" });
-    await db.insert(companyMemberships).values({
-      companyId: tenantCompany.id,
-      principalType: "user",
-      principalId: userId,
-      status: "active",
-      membershipRole: "owner",
-    });
-    // Deliberately NO instanceUserRoles row: elevation is computed, not stored.
-
-    const decision = await authorizationService(db).decide({
-      actor: {
-        type: "board",
-        userId,
-        companyIds: [tenantCompany.id],
-        isInstanceAdmin: true,
-        source: "cloud_tenant",
-      },
-      action: "tasks:assign",
-      resource: { type: "issue", companyId: otherCompany.id, assigneeAgentId: targetAgent.id },
-      scope: { assigneeAgentId: targetAgent.id },
-    });
-    expect(decision).toMatchObject({ allowed: true, reason: "allow_instance_admin" });
   });
 
   it("denies simple-mode assignment to a target agent from another company", async () => {
