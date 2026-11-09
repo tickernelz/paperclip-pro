@@ -36,6 +36,10 @@
     "upstream": {
       "reason": "Sementara: alamat repo upstream paperclipai/paperclip untuk sinkron upstream, sampai Zhafron memutuskan nasib sinkron (rekomendasi Wira: hentikan, hard fork).",
       "approvedBy": "Deskripsi ZHA-5279 butir keputusan 5 (menunggu keputusan Zhafron; tidak diubah sebelum itu)"
+    },
+    "closure-terpin": {
+      "reason": "Berkas yang byte-nya masuk closure distribusi Pi (wrapper pi-acp hasil patch, helper dist/paperclip-runtime.js, extension extensions/paperclip.js) dan dipin per platform (darwin-arm64, darwin-x64, linux-x64) di pi-closure-pins.ts serta identitas profil Pi. Mengganti nama di sini mengubah digest closure, jadi harus bersamaan dengan materialisasi ulang ketiga target dan profil Pi baru. Sementara: dijadwalkan hilang di irisan re-pin closure Pi ZHA-5279; hanya boleh turun.",
+      "approvedBy": "Keputusan otonom Raka 2026-11-09 di ZHA-5279 (Mode full otonom), atas permintaan Wira mencatat pengecualian; sementara sampai irisan re-pin closure Pi"
     }
   },
   "entries": [
@@ -1675,14 +1679,14 @@
     ["packages/wardmote-runner/src/drivers/acpx/permission-policy.test.ts",36,"belum-diganti"],
     ["packages/wardmote-runner/src/drivers/acpx/permission-policy.ts",11,"belum-diganti"],
     ["packages/wardmote-runner/src/drivers/acpx/pi-acp-runtime.test.ts",29,"belum-diganti"],
-    ["packages/wardmote-runner/src/drivers/acpx/pi-acp-runtime.ts",20,"belum-diganti"],
+    ["packages/wardmote-runner/src/drivers/acpx/pi-acp-runtime.ts",20,"closure-terpin"],
     ["packages/wardmote-runner/src/drivers/acpx/pi-extension-adapter.ts",4,"belum-diganti"],
     ["packages/wardmote-runner/src/drivers/acpx/pi-installation.test.ts",9,"belum-diganti"],
     ["packages/wardmote-runner/src/drivers/acpx/pi-installation.ts",3,"belum-diganti"],
     ["packages/wardmote-runner/src/drivers/acpx/pi-native-admission.test.ts",1,"belum-diganti"],
     ["packages/wardmote-runner/src/drivers/acpx/pi-rpc-deltas.test.ts",5,"belum-diganti"],
     ["packages/wardmote-runner/src/drivers/acpx/pi-runtime-extension.test.ts",29,"belum-diganti"],
-    ["packages/wardmote-runner/src/drivers/acpx/pi-runtime-extension.ts",13,"belum-diganti"],
+    ["packages/wardmote-runner/src/drivers/acpx/pi-runtime-extension.ts",13,"closure-terpin"],
     ["packages/wardmote-runner/src/drivers/acpx/pi-verified-runtime.test.ts",5,"belum-diganti"],
     ["packages/wardmote-runner/src/drivers/acpx/pi-verified-runtime.ts",4,"belum-diganti"],
     ["packages/wardmote-runner/src/drivers/acpx/private-snapshot.ts",1,"belum-diganti"],
@@ -2075,7 +2079,7 @@
     ["patches/@chat-adapter__slack@4.39.0.patch",6,"belum-diganti"],
     ["patches/@chat-adapter__telegram@4.39.0.patch",7,"belum-diganti"],
     ["patches/acpx@0.13.1.patch",10,"belum-diganti"],
-    ["patches/pi-acp@0.0.33.patch",59,"belum-diganti"],
+    ["patches/pi-acp@0.0.33.patch",59,"closure-terpin"],
     ["releases/beta/v2026.1006.0-beta.0.md",210,"arsip"],
     ["releases/v0.2.7.md",1,"arsip"],
     ["releases/v0.3.0.md",72,"arsip"],
