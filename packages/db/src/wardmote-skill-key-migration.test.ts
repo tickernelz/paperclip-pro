@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it } from "vitest";
 import postgres from "postgres";
 import { applyPendingMigrations } from "./client.js";
 import {
+  EMBEDDED_POSTGRES_TEST_TIMEOUT_MS,
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
 } from "./test-embedded-postgres.js";
@@ -130,5 +131,5 @@ describeEmbeddedPostgres("wardmote bundled skill key migration", () => {
     expect(await sql`SELECT "id", "key", "metadata", "updated_at" FROM "company_skills" ORDER BY "id"`).toEqual(before);
     expect(await sql`SELECT "id", "adapter_config" FROM "agents" ORDER BY "id"`).toEqual(agentsBefore);
     expect(await sql`SELECT "id", "before_config", "after_config" FROM "agent_config_revisions" ORDER BY "id"`).toEqual(revisionsBefore);
-  });
+  }, EMBEDDED_POSTGRES_TEST_TIMEOUT_MS);
 });
