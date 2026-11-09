@@ -267,13 +267,13 @@ export function OpenwaConnectStep({
             <legend className="text-sm font-medium">WhatsApp session</legend>
             {result.sessions.length === 0 ? (
               <p className="text-sm text-ink-3">This gateway has no WhatsApp session yet. Create one below.</p>
-            ) : !result.eligible && !linking ? (
+            ) : result.eligible || linking ? null : result.canManageSessions ? (
+              <p className="text-sm text-ink-3">No session is ready yet. Link WhatsApp to a session, or create a new one.</p>
+            ) : (
               <p role="alert" className="text-sm text-bad">
-                {result.canManageSessions
-                  ? "No session is ready yet. Link WhatsApp to a session, or create a new one."
-                  : "No session can be connected. Connect WhatsApp in the OpenWA dashboard or free the session from its other channel."}
+                No session can be connected. Connect WhatsApp in the OpenWA dashboard or free the session from its other channel.
               </p>
-            ) : null}
+            )}
             {result.sessions.map((session) => (
               <div key={session.sessionId} className="flex flex-wrap items-center gap-x-2 gap-y-1">
                 <label className="flex min-w-0 flex-1 items-center gap-2 text-sm">

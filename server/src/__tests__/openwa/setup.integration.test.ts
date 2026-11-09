@@ -594,6 +594,10 @@ describeEmbeddedPostgres("OpenWA setup inspection and configure", () => {
     const response = await inspect(app, endpoint.id, { baseUrl: live().baseUrl, adminApiKey: OPERATOR_KEY });
     expect(response.status).toBe(422);
     expect(response.body.details.code).toBe("openwa_admin_key_invalid");
+    const wrong = await inspect(app, endpoint.id, { baseUrl: live().baseUrl, adminApiKey: "wrong-admin-key" });
+    expect(wrong.status).toBe(422);
+    expect(wrong.body.details.code).toBe("openwa_admin_key_invalid");
+    expect(JSON.stringify(wrong.body)).not.toContain("wrong-admin-key");
   });
 
   it("strips zero-width characters pasted into the gateway URL and keys", async () => {

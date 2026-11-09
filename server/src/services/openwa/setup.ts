@@ -164,7 +164,7 @@ export async function inspectOpenwaGateway(
     if ("error" in versionResult && versionResult.error instanceof OpenwaGatewayError && versionResult.error.code === "gateway_unavailable") {
       throw versionResult.error;
     }
-    if (!input.apiKey && validation.valid && validation.role !== "admin") throw adminKeyInvalid();
+    if (!input.apiKey && (!validation.valid || validation.role !== "admin")) throw adminKeyInvalid();
     assertOperatorKey(validation);
     const sessions = await readSessions(gateway);
     const adminRole = !input.adminApiKey ? null : input.apiKey ? await validateAdminKey(gateway) : "admin";
@@ -235,7 +235,7 @@ export async function scopeOpenwaAgentKey(
   if (!agentKey) throw adminKeyRequired();
   try {
     const validation = await client(credentials.baseUrl, agentKey, undefined, credentials.sessionId, options).validateKey("operator");
-    if (!credentials.apiKey && validation.valid && validation.role !== "admin") throw adminKeyInvalid();
+    if (!credentials.apiKey && (!validation.valid || validation.role !== "admin")) throw adminKeyInvalid();
     assertOperatorKey(validation);
     if (validation.role !== "admin")
       return { apiKey: agentKey, ...(credentials.adminApiKey ? { adminApiKey: credentials.adminApiKey } : {}), mintedKeyId: null };
