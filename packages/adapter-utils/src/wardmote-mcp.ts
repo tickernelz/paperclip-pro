@@ -149,7 +149,7 @@ export function renderPaperclipMcpConfig(input: PaperclipMcpServerEntryInput): s
 export function paperclipMcpGuidance(toolsets: string, toolCount: number | null = null): string {
   const lines = [
     `Paperclip's API is mounted as MCP tools on the "${WARDMOTE_MCP_SERVER_NAME}" server (toolsets: ${toolsets}${toolCount === null ? "" : `, ${toolCount} tools`}).`,
-    'Every tool name starts with "paperclip", for example wardmoteListIssues or wardmoteAddComment.',
+    'Every tool name starts with "wardmote", for example wardmoteListIssues or wardmoteAddComment.',
     "These tools are the only way to reach Paperclip; they already carry this run's identity, API key and run id.",
     `When no dedicated tool covers an endpoint, use the ${WARDMOTE_MCP_SERVER_NAME} escape-hatch tool wardmoteApiRequest instead of a shell HTTP client.`,
   ];

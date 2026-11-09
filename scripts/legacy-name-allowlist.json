@@ -690,7 +690,7 @@
     ["packages/adapter-utils/src/types.ts",17,"belum-diganti"],
     ["packages/adapter-utils/src/wardmote-mcp-mount.ts",17,"belum-diganti"],
     ["packages/adapter-utils/src/wardmote-mcp.test.ts",70,"belum-diganti"],
-    ["packages/adapter-utils/src/wardmote-mcp.ts",43,"belum-diganti"],
+    ["packages/adapter-utils/src/wardmote-mcp.ts",42,"belum-diganti"],
     ["packages/adapter-utils/src/wardmote-runner-permissions.test.ts",37,"belum-diganti"],
     ["packages/adapter-utils/src/wardmote-runner-permissions.ts",26,"belum-diganti"],
     ["packages/adapter-utils/src/workspace-git-stream.test.ts",1,"belum-diganti"],
