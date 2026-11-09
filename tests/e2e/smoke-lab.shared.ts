@@ -1,4 +1,4 @@
-import { expect, test, type APIRequestContext, type Page } from "@playwright/test";
+import { expect, type APIRequestContext, type Page } from "@playwright/test";
 import { ciSmokeLabScenarios, type SmokeLabLifecycleTool, type SmokeLabScenario, type SmokeRunStepPath } from "./smoke-lab.catalog";
 
 type SmokeRunStepStatus = "pass" | "fail" | "skipped";
@@ -305,167 +305,166 @@ async function gatewayFetch(request: APIRequestContext, path: string, token: str
   return await request.get(path, { headers });
 }
 
-export const defineSmokeLabSuite = (label: string, scenarios: SmokeLabScenario[]) => test.describe.serial(`Smoke Lab scenario catalog mirror (${label})`, () => {
-  // The lifecycle test walks all CI-safe scenarios and records eight steps per
-  // scenario. Each scenario keeps one representative success screenshot, while
-  // every failed step still captures its own evidence. On a loaded CI runner
-  // the whole walk can take several minutes, so this ceiling keeps enough
-  // headroom for runner variance without slowing a healthy run.
-  test.setTimeout(360_000);
+export const SMOKE_LAB_TIMEOUT_MS = 360_000;
 
-  test(`records the ${label} CI-safe Smoke Lab lifecycle into the results API @smoke-lab`, async ({ page, request }) => {
-    const seed = await newCompany(request, "catalog");
-    const scout = await createScout(request, seed.companyId);
-    await enableSmokeLab(request);
-    const smokeRun = await createSmokeRun(request, seed.companyId, scenarios.length);
-    const failed: string[] = [];
-    const isPartialRun = scenarios.length < ciSmokeLabScenarios.length;
+export async function runSmokeLabLifecycle(options: {
+  page: Page;
+  request: APIRequestContext;
+  label: string;
+  scenarios: SmokeLabScenario[];
+}) {
+  const { page, request, label, scenarios } = options;
+  const seed = await newCompany(request, "catalog");
+  const scout = await createScout(request, seed.companyId);
+  await enableSmokeLab(request);
+  const smokeRun = await createSmokeRun(request, seed.companyId, scenarios.length);
+  const failed: string[] = [];
+  const isPartialRun = scenarios.length < ciSmokeLabScenarios.length;
 
-    try {
-      await startSmokeLabServices(request, seed.companyId);
+  try {
+    await startSmokeLabServices(request, seed.companyId);
 
-      for (const scenario of scenarios) {
-        const fixtures = await installFixtures(request, seed.companyId);
-        const connection = connectionForScenario(fixtures, scenario);
-
-        await runRecordedStep(page, request, seed, smokeRun.id, scenario, "connect", async () => {
-          await navigateForEvidence(page, seed, connection.id, scenario);
-          return scenario.lifecycle.connect;
-        }, true);
-
-        await runRecordedStep(page, request, seed, smokeRun.id, scenario, "discover-catalog", async () => {
-          const discovered = await catalog(request, connection.id);
-          expect(discovered.catalog.map((entry) => entry.toolName)).toContain(scenario.lifecycle.allowedRead.name);
-          return `${scenario.lifecycle.discoverCatalog}: ${discovered.catalog.length} entries`;
-        });
-
-        await runRecordedStep(page, request, seed, smokeRun.id, scenario, "allowed-read", async () => {
-          const read = await testCall(request, connection.id, scout, scenario.lifecycle.allowedRead);
-          expect(read.decision).toBe("allowed");
-          expect(read.error).toBeUndefined();
-          await expectAuditEvent(request, seed.companyId, {
-            connectionId: connection.id,
-            agentId: scout.id,
-            search: scenario.lifecycle.allowedRead.name,
-          });
-          await page.goto(`/${seed.prefix}/activity?action=tool_`);
-          return `Allowed read ${scenario.lifecycle.allowedRead.name}`;
-        });
-
-        await runRecordedStep(page, request, seed, smokeRun.id, scenario, "ask-first-write-approved", async () => {
-          await policy(request, seed.companyId, {
-            name: `${scenario.path} require approval ${Date.now()}`,
-            policyType: "require_approval",
-            priority: 10,
-            selectors: { connectionId: connection.id, toolNames: [scenario.lifecycle.askFirstWrite.name] },
-          });
-          const pending = await testCall(request, connection.id, scout, scenario.lifecycle.askFirstWrite);
-          expect(pending.decision).toBe("ask_first");
-          expect(pending.actionRequestId).toBeTruthy();
-          await page.goto(`/${seed.prefix}/apps/${connection.id}/review`);
-          await approveActionRequest(request, seed.companyId, pending.actionRequestId!);
-          await pollTestCall(request, connection.id, pending.actionRequestId!, "done");
-          return `Approved ask-first call ${scenario.lifecycle.askFirstWrite.name}`;
-        });
-
-        await runRecordedStep(page, request, seed, smokeRun.id, scenario, "denied-blocked-call", async () => {
-          await policy(request, seed.companyId, {
-            name: `${scenario.path} block ${Date.now()}`,
-            policyType: "block",
-            priority: 1,
-            selectors: { connectionId: connection.id, toolNames: [scenario.lifecycle.deniedCall.name] },
-          });
-          const denied = await testCall(request, connection.id, scout, scenario.lifecycle.deniedCall);
-          expect(denied.decision).toBe("off");
-          expect(denied.error?.reasonCode).toBeTruthy();
-          await page.goto(`/${seed.prefix}/apps/${connection.id}/review`);
-          return `Blocked call ${scenario.lifecycle.deniedCall.name}: ${denied.error?.reasonCode}`;
-        });
-
-        await runRecordedStep(page, request, seed, smokeRun.id, scenario, "schema-change-quarantine", async () => {
-          if (connection.transport !== "mcp_remote") {
-            await page.goto(`/${seed.prefix}/activity?action=tool_`);
-            return "Non-HTTP path records governance/quarantine evidence through fixture metadata.";
-          }
-          await json<ToolConnection>(await request.patch(`/api/tool-connections/${connection.id}`, {
-            data: { config: { ...(connection.config ?? {}), quarantineNewEntries: true } },
-          }));
-          await policy(request, seed.companyId, {
-            name: `${scenario.path} allow schema flip ${Date.now()}`,
-            policyType: "allow",
-            priority: 5,
-            selectors: { connectionId: connection.id, toolNames: [scenario.lifecycle.schemaChangeQuarantine.name] },
-          });
-          const flipped = await testCall(request, connection.id, scout, scenario.lifecycle.schemaChangeQuarantine);
-          expect(flipped.decision).toBe("allowed");
-          expect(flipped.error).toBeUndefined();
-          const refresh = await json<{ quarantinedCount: number }>(
-            await request.post(`/api/tool-connections/${connection.id}/catalog/refresh`),
-          );
-          expect(refresh.quarantinedCount).toBeGreaterThan(0);
-          await page.goto(`/${seed.prefix}/apps/connections`);
-          return `Catalog refresh quarantined ${refresh.quarantinedCount} changed entries.`;
-        });
-
-        await runRecordedStep(page, request, seed, smokeRun.id, scenario, "revoke", async () => {
-          if (scenario.transport === "gateway_session") {
-            const session = await createGatewaySession(request, seed.companyId, scout);
-            const listed = await gatewayFetch(request, session.toolsUrl, session.token);
-            expect(listed.ok()).toBe(true);
-            await json(await request.post(`/api/tool-gateway/sessions/${session.sessionId}/revoke`, {
-              data: { companyId: seed.companyId },
-            }));
-            await expectError(await gatewayFetch(request, session.toolsUrl, session.token), 401);
-            await page.goto(`/${seed.prefix}/activity?action=tool_`);
-            return scenario.lifecycle.revoke;
-          }
-          const disabled = await json<ToolConnection>(await request.patch(`/api/tool-connections/${connection.id}`, {
-            data: { enabled: false },
-          }));
-          expect(disabled.enabled).toBe(false);
-          await page.goto(`/${seed.prefix}/apps/${connection.id}`);
-          await json<ToolConnection>(await request.patch(`/api/tool-connections/${connection.id}`, {
-            data: { enabled: true },
-          }));
-          return scenario.lifecycle.revoke;
-        });
-
-        await runRecordedStep(page, request, seed, smokeRun.id, scenario, "audit-evidence", async () => {
-          await expectAuditEvent(request, seed.companyId, {
-            connectionId: connection.id,
-            agentId: scout.id,
-            search: scenario.lifecycle.allowedRead.name,
-          });
-          await page.goto(`/${seed.prefix}/activity?action=tool_`);
-          return scenario.lifecycle.auditEvidence;
-        });
-      }
-    } catch (error) {
-      failed.push(error instanceof Error ? error.message : String(error));
-      throw error;
-    } finally {
-      await updateSmokeRun(request, seed.companyId, smokeRun.id, failed.length > 0 ? "failed" : "passed", {
-        catalog: "tests/e2e/smoke-lab.catalog.ts",
-        scenarioCount: scenarios.length,
-        catalogScenarioCount: ciSmokeLabScenarios.length,
-        partial: isPartialRun,
-        failed,
-      }).catch(() => undefined);
-    }
-
-    const completed = await json<{
-      run: SmokeRun;
-      steps: Array<{ path: string; scenarioStep: string; status: string; screenshotArtifactRef: Json | null }>;
-    }>(
-      await request.get(`/api/companies/${seed.companyId}/smoke-lab/runs/${smokeRun.id}`),
-    );
-    expect(completed.run.status).toBe("passed");
     for (const scenario of scenarios) {
-      const steps = completed.steps.filter((step) => step.path === scenario.path);
-      expect(steps.length, `${scenario.path} should record lifecycle steps`).toBeGreaterThanOrEqual(8);
-      expect(steps.every((step) => step.status === "pass")).toBe(true);
-      const screenshotSteps = steps.filter((step) => step.screenshotArtifactRef?.kind === "playwright_screenshot");
-      expect(screenshotSteps.map((step) => step.scenarioStep)).toEqual(["connect"]);
+      const fixtures = await installFixtures(request, seed.companyId);
+      const connection = connectionForScenario(fixtures, scenario);
+
+      await runRecordedStep(page, request, seed, smokeRun.id, scenario, "connect", async () => {
+        await navigateForEvidence(page, seed, connection.id, scenario);
+        return scenario.lifecycle.connect;
+      }, true);
+
+      await runRecordedStep(page, request, seed, smokeRun.id, scenario, "discover-catalog", async () => {
+        const discovered = await catalog(request, connection.id);
+        expect(discovered.catalog.map((entry) => entry.toolName)).toContain(scenario.lifecycle.allowedRead.name);
+        return `${scenario.lifecycle.discoverCatalog}: ${discovered.catalog.length} entries`;
+      });
+
+      await runRecordedStep(page, request, seed, smokeRun.id, scenario, "allowed-read", async () => {
+        const read = await testCall(request, connection.id, scout, scenario.lifecycle.allowedRead);
+        expect(read.decision).toBe("allowed");
+        expect(read.error).toBeUndefined();
+        await expectAuditEvent(request, seed.companyId, {
+          connectionId: connection.id,
+          agentId: scout.id,
+          search: scenario.lifecycle.allowedRead.name,
+        });
+        await page.goto(`/${seed.prefix}/activity?action=tool_`);
+        return `Allowed read ${scenario.lifecycle.allowedRead.name}`;
+      });
+
+      await runRecordedStep(page, request, seed, smokeRun.id, scenario, "ask-first-write-approved", async () => {
+        await policy(request, seed.companyId, {
+          name: `${scenario.path} require approval ${Date.now()}`,
+          policyType: "require_approval",
+          priority: 10,
+          selectors: { connectionId: connection.id, toolNames: [scenario.lifecycle.askFirstWrite.name] },
+        });
+        const pending = await testCall(request, connection.id, scout, scenario.lifecycle.askFirstWrite);
+        expect(pending.decision).toBe("ask_first");
+        expect(pending.actionRequestId).toBeTruthy();
+        await page.goto(`/${seed.prefix}/apps/${connection.id}/review`);
+        await approveActionRequest(request, seed.companyId, pending.actionRequestId!);
+        await pollTestCall(request, connection.id, pending.actionRequestId!, "done");
+        return `Approved ask-first call ${scenario.lifecycle.askFirstWrite.name}`;
+      });
+
+      await runRecordedStep(page, request, seed, smokeRun.id, scenario, "denied-blocked-call", async () => {
+        await policy(request, seed.companyId, {
+          name: `${scenario.path} block ${Date.now()}`,
+          policyType: "block",
+          priority: 1,
+          selectors: { connectionId: connection.id, toolNames: [scenario.lifecycle.deniedCall.name] },
+        });
+        const denied = await testCall(request, connection.id, scout, scenario.lifecycle.deniedCall);
+        expect(denied.decision).toBe("off");
+        expect(denied.error?.reasonCode).toBeTruthy();
+        await page.goto(`/${seed.prefix}/apps/${connection.id}/review`);
+        return `Blocked call ${scenario.lifecycle.deniedCall.name}: ${denied.error?.reasonCode}`;
+      });
+
+      await runRecordedStep(page, request, seed, smokeRun.id, scenario, "schema-change-quarantine", async () => {
+        if (connection.transport !== "mcp_remote") {
+          await page.goto(`/${seed.prefix}/activity?action=tool_`);
+          return "Non-HTTP path records governance/quarantine evidence through fixture metadata.";
+        }
+        await json<ToolConnection>(await request.patch(`/api/tool-connections/${connection.id}`, {
+          data: { config: { ...(connection.config ?? {}), quarantineNewEntries: true } },
+        }));
+        await policy(request, seed.companyId, {
+          name: `${scenario.path} allow schema flip ${Date.now()}`,
+          policyType: "allow",
+          priority: 5,
+          selectors: { connectionId: connection.id, toolNames: [scenario.lifecycle.schemaChangeQuarantine.name] },
+        });
+        const flipped = await testCall(request, connection.id, scout, scenario.lifecycle.schemaChangeQuarantine);
+        expect(flipped.decision).toBe("allowed");
+        expect(flipped.error).toBeUndefined();
+        const refresh = await json<{ quarantinedCount: number }>(
+          await request.post(`/api/tool-connections/${connection.id}/catalog/refresh`),
+        );
+        expect(refresh.quarantinedCount).toBeGreaterThan(0);
+        await page.goto(`/${seed.prefix}/apps/connections`);
+        return `Catalog refresh quarantined ${refresh.quarantinedCount} changed entries.`;
+      });
+
+      await runRecordedStep(page, request, seed, smokeRun.id, scenario, "revoke", async () => {
+        if (scenario.transport === "gateway_session") {
+          const session = await createGatewaySession(request, seed.companyId, scout);
+          const listed = await gatewayFetch(request, session.toolsUrl, session.token);
+          expect(listed.ok()).toBe(true);
+          await json(await request.post(`/api/tool-gateway/sessions/${session.sessionId}/revoke`, {
+            data: { companyId: seed.companyId },
+          }));
+          await expectError(await gatewayFetch(request, session.toolsUrl, session.token), 401);
+          await page.goto(`/${seed.prefix}/activity?action=tool_`);
+          return scenario.lifecycle.revoke;
+        }
+        const disabled = await json<ToolConnection>(await request.patch(`/api/tool-connections/${connection.id}`, {
+          data: { enabled: false },
+        }));
+        expect(disabled.enabled).toBe(false);
+        await page.goto(`/${seed.prefix}/apps/${connection.id}`);
+        await json<ToolConnection>(await request.patch(`/api/tool-connections/${connection.id}`, {
+          data: { enabled: true },
+        }));
+        return scenario.lifecycle.revoke;
+      });
+
+      await runRecordedStep(page, request, seed, smokeRun.id, scenario, "audit-evidence", async () => {
+        await expectAuditEvent(request, seed.companyId, {
+          connectionId: connection.id,
+          agentId: scout.id,
+          search: scenario.lifecycle.allowedRead.name,
+        });
+        await page.goto(`/${seed.prefix}/activity?action=tool_`);
+        return scenario.lifecycle.auditEvidence;
+      });
     }
-  });
-});
+  } catch (error) {
+    failed.push(error instanceof Error ? error.message : String(error));
+    throw error;
+  } finally {
+    await updateSmokeRun(request, seed.companyId, smokeRun.id, failed.length > 0 ? "failed" : "passed", {
+      catalog: "tests/e2e/smoke-lab.catalog.ts",
+      scenarioCount: scenarios.length,
+      catalogScenarioCount: ciSmokeLabScenarios.length,
+      partial: isPartialRun,
+      failed,
+    }).catch(() => undefined);
+  }
+
+  const completed = await json<{
+    run: SmokeRun;
+    steps: Array<{ path: string; scenarioStep: string; status: string; screenshotArtifactRef: Json | null }>;
+  }>(
+    await request.get(`/api/companies/${seed.companyId}/smoke-lab/runs/${smokeRun.id}`),
+  );
+  expect(completed.run.status).toBe("passed");
+  for (const scenario of scenarios) {
+    const steps = completed.steps.filter((step) => step.path === scenario.path);
+    expect(steps.length, `${scenario.path} should record lifecycle steps`).toBeGreaterThanOrEqual(8);
+    expect(steps.every((step) => step.status === "pass")).toBe(true);
+    const screenshotSteps = steps.filter((step) => step.screenshotArtifactRef?.kind === "playwright_screenshot");
+    expect(screenshotSteps.map((step) => step.scenarioStep)).toEqual(["connect"]);
+  }
+}
