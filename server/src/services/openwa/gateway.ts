@@ -91,6 +91,7 @@ export interface OpenwaKeyValidation {
   valid: boolean;
   role?: "admin" | "operator" | "viewer";
   engineType?: string;
+  scoped?: boolean;
 }
 
 export type OpenwaSessionStatus =

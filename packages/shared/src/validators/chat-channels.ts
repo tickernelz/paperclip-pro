@@ -124,6 +124,13 @@ export const inspectPhotonProjectSchema = z.object({
   projectSecret: z.string().min(1).max(4096),
 }).strict();
 
+const OPENWA_PASTE_NOISE = /[\s\u00AD\u180E\u200B-\u200F\u202A-\u202E\u2060-\u2064\u2066-\u206F\uFEFF]/gu;
+
+/** Removes whitespace and invisible format characters (zero-width spaces, word joiners, bidi marks) that copy-paste leaves in OpenWA URLs and keys. */
+export function stripOpenwaPasteNoise(value: string): string {
+  return value.replace(OPENWA_PASTE_NOISE, "");
+}
+
 export const openwaBaseUrlSchema = z
   .string()
   .trim()
@@ -132,7 +139,7 @@ export const openwaBaseUrlSchema = z
   .transform((value, ctx) => {
     let url: URL;
     try {
-      url = new URL(value);
+      url = new URL(stripOpenwaPasteNoise(value));
     } catch {
       ctx.addIssue({ code: z.ZodIssueCode.custom, message: "Enter the OpenWA gateway URL, for example http://localhost:2785" });
       return z.NEVER;
@@ -151,12 +158,24 @@ export const openwaBaseUrlSchema = z
     return url.origin;
   });
 export const openwaSessionIdSchema = z.string().trim().min(1).max(128).regex(/^[A-Za-z0-9_-]+$/);
-const openwaApiKeyInputSchema = z.string().trim().min(1).max(4096);
-export const inspectOpenwaGatewaySchema = z.object({
-  baseUrl: openwaBaseUrlSchema,
-  apiKey: openwaApiKeyInputSchema,
-  adminApiKey: openwaApiKeyInputSchema.optional(),
-}).strict();
+export const openwaApiKeyInputSchema = z
+  .string()
+  .trim()
+  .min(1)
+  .max(4096)
+  .transform(stripOpenwaPasteNoise)
+  .refine((value) => value.length > 0, { message: "Enter the OpenWA API key" });
+export const inspectOpenwaGatewaySchema = z
+  .object({
+    baseUrl: openwaBaseUrlSchema,
+    apiKey: openwaApiKeyInputSchema.optional(),
+    adminApiKey: openwaApiKeyInputSchema.optional(),
+  })
+  .strict()
+  .refine((value) => Boolean(value.apiKey || value.adminApiKey), {
+    path: ["adminApiKey"],
+    message: "Enter the OpenWA admin API key, or an operator API key",
+  });
 export const openwaChannelConfigurationSchema = z.object({
   baseUrl: openwaBaseUrlSchema,
   sessionId: openwaSessionIdSchema,
@@ -471,6 +490,7 @@ export const openwaGatewayAdminCallSchema = z
     sessionId: z.string().trim().regex(/^[A-Za-z0-9._-]{1,128}$/).optional(),
     args: z.record(z.string(), z.unknown()).default({}),
     confirmOwnSession: z.boolean().optional(),
+    connection: z.object({ baseUrl: openwaBaseUrlSchema, adminApiKey: openwaApiKeyInputSchema }).strict().optional(),
   })
   .strict();
 

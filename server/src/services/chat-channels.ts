@@ -128,8 +128,15 @@ import { validateNativeQuestionResponseInput } from "./native-runtime/native-que
 import type { AskUserQuestionsAnswer, AskUserQuestionsInteraction, IssueThreadInteraction } from "@tickernelz/wardmote-shared";
 import { PhotonCloudClient, PhotonError, photonFailure, photonSharedIdentity, photonSharedScope } from "./photon/cloud.js";
 import { PhotonChatAdapter, photonThreadId, photonReplyReference } from "./photon/adapter.js";
-import { maskOpenwaPhoneNumber, openwaChannelConfigurationSchema, openwaEndpointPolicySchema, photonChannelConfigurationSchema, type OpenwaEndpointPolicy, type PhotonChannelConfiguration } from "@tickernelz/wardmote-shared";
-import { inspectOpenwaGateway, openwaProviderAccountId, openwaSetupReplyDelivered, verifyOpenwaSession } from "./openwa/setup.js";
+import { maskOpenwaPhoneNumber, openwaChannelConfigurationSchema, openwaEndpointPolicySchema, photonChannelConfigurationSchema, stripOpenwaPasteNoise, type OpenwaEndpointPolicy, type PhotonChannelConfiguration } from "@tickernelz/wardmote-shared";
+import {
+  inspectOpenwaGateway,
+  openwaProviderAccountId,
+  openwaSetupReplyDelivered,
+  revokeOpenwaAgentKey,
+  scopeOpenwaAgentKey,
+  verifyOpenwaSession,
+} from "./openwa/setup.js";
 import { assertOpenwaAgentAdapterSupported } from "./openwa/agent-adapter.js";
 import type { LiveEvent as PhotonEvent } from "@photon-ai/advanced-imessage";
 import { defaultSlackAppConfiguration } from "@tickernelz/wardmote-shared";
@@ -830,7 +837,7 @@ const REQUIRED_CREDENTIALS: Record<
 > = {
   speko: ["apiKey", "signingSecret", "agentId"],
   "imessage-photon": ["projectSecret"],
-  openwa: ["apiKey"],
+  openwa: [],
   agentmail: [],
   slack: ["botToken", "signingSecret"],
   discord: ["botToken", "applicationId", "guildId"],
@@ -6336,7 +6343,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     );
     for (const [key, rawValue] of Object.entries(supplied ?? {})) {
       if (typeof rawValue === "string" && rawValue.trim())
-        values[key] = key === "privateKey" ? rawValue : rawValue.trim();
+        values[key] = key === "privateKey" ? rawValue : endpoint.provider === "openwa" ? stripOpenwaPasteNoise(rawValue) : rawValue.trim();
     }
     if (endpoint.provider === "telegram" && !values.webhookSecret) {
       values.webhookSecret = randomBytes(32).toString("hex");
@@ -8370,7 +8377,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
 
   async function inspectOpenwa(
     endpointId: string,
-    input: { baseUrl: string; apiKey: string; adminApiKey?: string },
+    input: { baseUrl: string; apiKey?: string; adminApiKey?: string },
   ) {
     const record = await endpointRecord(endpointId);
     if (!record || record.endpoint.provider !== "openwa")
@@ -10088,6 +10095,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       credentials = { ...credentials, ...configuration, lineId };
     }
     let openwaPolicy: OpenwaEndpointPolicy | null = null;
+    let openwaMintedKeyId: string | null = null;
     if (endpoint.provider === "openwa") {
       const storedPolicy = openwaEndpointPolicySchema.parse(endpoint.policy);
       const configuration = input.openwa
@@ -10101,7 +10109,19 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         throw unprocessable("Confirm both OpenWA attestations before connecting: send pacing is enabled on the gateway, and Paperclip is the only client sending as this session", { code: "openwa_attestations_required" });
       if (endpoint.providerAccountId && endpoint.providerAccountId !== openwaProviderAccountId(configuration.baseUrl, configuration.sessionId))
         throw conflict("A different OpenWA gateway or session requires a new channel", { code: "chat_bot_identity_changed" });
-      credentials = { ...credentials, baseUrl: configuration.baseUrl, sessionId: configuration.sessionId };
+      const agentKey = await scopeOpenwaAgentKey(
+        { baseUrl: configuration.baseUrl, sessionId: configuration.sessionId, apiKey: credentials.apiKey, adminApiKey: credentials.adminApiKey },
+        "wardmote-" + endpoint.id.slice(0, 8),
+        { fetchImpl },
+      );
+      openwaMintedKeyId = agentKey.mintedKeyId;
+      credentials = {
+        ...credentials,
+        apiKey: agentKey.apiKey,
+        ...(agentKey.adminApiKey ? { adminApiKey: agentKey.adminApiKey } : {}),
+        baseUrl: configuration.baseUrl,
+        sessionId: configuration.sessionId,
+      };
       const { triggers: _triggers, ...withoutTriggers } = storedPolicy;
       openwaPolicy = openwaEndpointPolicySchema.parse({
         ...(storedPolicy.numberMode === configuration.numberMode ? storedPolicy : withoutTriggers),
@@ -10109,118 +10129,144 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         attestations: configuration.attestations,
       });
     }
-    const identity = await verifyCredentials(endpoint.provider, credentials);
-    // Once setup has claimed a provider bot identity, every credential repair
-    // must prove that same identity before secrets can be replaced. A process
-    // interruption can leave the endpoint in `attention` after the claim but
-    // before credential persistence; a repeated first-setup request must not
-    // turn that recovery state into an identity-swap escape hatch.
-    if (input.action === "reconnect" || Boolean(endpoint.botExternalId)) {
+    const revokeMintedOpenwaKey = async () => {
+      if (openwaMintedKeyId && credentials.adminApiKey)
+        await revokeOpenwaAgentKey({ baseUrl: credentials.baseUrl, adminApiKey: credentials.adminApiKey }, openwaMintedKeyId, { fetchImpl });
+    };
+    let identity: VerifiedProviderIdentity;
+    try {
+      identity = await verifyCredentials(endpoint.provider, credentials);
+      // Once setup has claimed a provider bot identity, every credential repair
+      // must prove that same identity before secrets can be replaced. A process
+      // interruption can leave the endpoint in `attention` after the claim but
+      // before credential persistence; a repeated first-setup request must not
+      // turn that recovery state into an identity-swap escape hatch.
+      if (input.action === "reconnect" || Boolean(endpoint.botExternalId)) {
+        if (
+          !nativeBotIdentityMatches(
+            endpoint.provider,
+            verifiedCurrentIdentity,
+            identity,
+          )
+        ) {
+          throw conflict(
+            "The provider credentials identify a different bot; create a new connection for that bot instead",
+            { code: "chat_bot_identity_changed" },
+          );
+        }
+      }
+      await assertNativeBotIdentityAvailable(endpoint, identity);
+    } catch (error) {
+      await revokeMintedOpenwaKey();
+      throw error;
+    }
+    let prepared: Awaited<ReturnType<typeof prepareProviderInventory>>;
+    let keepOpenwaEndpointActive = false;
+    let credentialsMayBeStored = false;
+    try {
+      prepared = await prepareProviderInventory(endpoint, credentials);
+      const credentialsChangedByDiscovery =
+        endpoint.provider === "github" &&
+        prepared.credentials.installationId !== credentials.installationId;
+      credentials = prepared.credentials;
+      await options.nativeBotIdentityClaimBarrier?.();
+      // Claim a fresh provider identity before any newly supplied secrets are
+      // persisted. The provider-global unique indexes are the multi-process
+      // arbitration boundary when two setup requests both pass the optimistic
+      // preflight. A process that stops after this small claim leaves a
+      // fail-closed attention endpoint that the same operator can reconnect;
+      // it never leaves credentials bound to the losing endpoint.
+      if (!endpoint.botExternalId) {
+        try {
+          const claimed = await db.transaction(async (tx) => {
+            await credentialLease.assertOwned(tx);
+            await notifyChatEndpointWork(tx);
+            const rows = await tx
+              .update(chatEndpoints)
+              .set({
+                status: "attention",
+                providerAccountId: identity.providerAccountId ?? null,
+                providerAccountLabel: identity.providerAccountLabel ?? null,
+                botExternalId: identity.botExternalId ?? null,
+                botUsername: identity.botUsername ?? null,
+                botDisplayName:
+                  identity.botLabel ??
+                  endpoint.botDisplayName ??
+                  record.assignedAgentName,
+                healthMessage: "Provider setup must be completed",
+                lastError: null,
+                updatedAt: new Date(),
+              })
+              .where(
+                and(
+                  eq(chatEndpoints.id, endpoint.id),
+                  eq(chatEndpoints.status, endpoint.status),
+                  isNull(chatEndpoints.botExternalId),
+                ),
+              )
+              .returning({ id: chatEndpoints.id });
+            await credentialLease.assertOwned(tx);
+            return rows;
+          });
+          if (claimed.length !== 1) {
+            throw conflict("This chat connection changed during setup", {
+              code: "chat_endpoint_setup_changed",
+            });
+          }
+        } catch (error) {
+          if (isNativeBotIdentityUniqueViolation(error)) {
+            throw nativeBotIdentityConflict(endpoint.provider);
+          }
+          throw error;
+        }
+      }
+      keepOpenwaEndpointActive =
+        endpoint.provider === "openwa" &&
+        input.action === "reconnect" &&
+        endpoint.status === "active" &&
+        (identity.providerAccountId ?? null) === endpoint.providerAccountId &&
+        (identity.botExternalId ?? null) === endpoint.botExternalId &&
+        (await resolveCredentials(endpoint)
+          .then(
+            (stored) =>
+              stored.baseUrl === credentials.baseUrl &&
+              stored.sessionId === credentials.sessionId &&
+              stored.apiKey === credentials.apiKey,
+          )
+          .catch(() => false));
+      if (endpoint.provider === "imessage-photon") {
+        await invalidateRuntime(endpoint.id);
+        await credentialLease.assertOwned();
+        if (credentials.allocation === "shared") await db.update(chatEndpoints).set({ allowGroupChats: false }).where(eq(chatEndpoints.id, endpoint.id));
+        await db.update(toolConnections).set({ config: { provider: endpoint.provider, photon: credentials.allocation === "shared" ? { allocation: "shared", projectId: credentials.projectId } : { allocation: "dedicated", projectId: credentials.projectId, lineId: credentials.lineId } } }).where(and(eq(toolConnections.companyId, endpoint.companyId), eq(toolConnections.id, endpoint.connectionId)));
+      }
+      if (endpoint.provider === "openwa") {
+        await invalidateRuntime(endpoint.id);
+        await credentialLease.assertOwned();
+        await db.update(toolConnections).set({ config: { provider: endpoint.provider, openwa: { baseUrl: credentials.baseUrl, sessionId: credentials.sessionId } } }).where(and(eq(toolConnections.companyId, endpoint.companyId), eq(toolConnections.id, endpoint.connectionId)));
+      }
       if (
-        !nativeBotIdentityMatches(
-          endpoint.provider,
-          verifiedCurrentIdentity,
-          identity,
-        )
+        (input.credentials && Object.keys(input.credentials).length > 0) ||
+        credentialsChangedByDiscovery ||
+        openwaMintedKeyId !== null
       ) {
-        throw conflict(
-          "The provider credentials identify a different bot; create a new connection for that bot instead",
-          { code: "chat_bot_identity_changed" },
+        credentialsMayBeStored = true;
+        await persistCredentials(
+          endpoint,
+          credentials,
+          credentialLease,
+          actorUserId,
         );
       }
+    } catch (error) {
+      const mintedKeyMayBeStored =
+        credentialsMayBeStored &&
+        (await resolveCredentials(endpoint)
+          .then((stored) => stored.apiKey === credentials.apiKey)
+          .catch(() => true));
+      if (!mintedKeyMayBeStored) await revokeMintedOpenwaKey();
+      throw error;
     }
-    await assertNativeBotIdentityAvailable(endpoint, identity);
-    const prepared = await prepareProviderInventory(endpoint, credentials);
-    const credentialsChangedByDiscovery =
-      endpoint.provider === "github" &&
-      prepared.credentials.installationId !== credentials.installationId;
-    credentials = prepared.credentials;
-    await options.nativeBotIdentityClaimBarrier?.();
-    // Claim a fresh provider identity before any newly supplied secrets are
-    // persisted. The provider-global unique indexes are the multi-process
-    // arbitration boundary when two setup requests both pass the optimistic
-    // preflight. A process that stops after this small claim leaves a
-    // fail-closed attention endpoint that the same operator can reconnect;
-    // it never leaves credentials bound to the losing endpoint.
-    if (!endpoint.botExternalId) {
-      try {
-        const claimed = await db.transaction(async (tx) => {
-          await credentialLease.assertOwned(tx);
-          await notifyChatEndpointWork(tx);
-          const rows = await tx
-            .update(chatEndpoints)
-            .set({
-              status: "attention",
-              providerAccountId: identity.providerAccountId ?? null,
-              providerAccountLabel: identity.providerAccountLabel ?? null,
-              botExternalId: identity.botExternalId ?? null,
-              botUsername: identity.botUsername ?? null,
-              botDisplayName:
-                identity.botLabel ??
-                endpoint.botDisplayName ??
-                record.assignedAgentName,
-              healthMessage: "Provider setup must be completed",
-              lastError: null,
-              updatedAt: new Date(),
-            })
-            .where(
-              and(
-                eq(chatEndpoints.id, endpoint.id),
-                eq(chatEndpoints.status, endpoint.status),
-                isNull(chatEndpoints.botExternalId),
-              ),
-            )
-            .returning({ id: chatEndpoints.id });
-          await credentialLease.assertOwned(tx);
-          return rows;
-        });
-        if (claimed.length !== 1) {
-          throw conflict("This chat connection changed during setup", {
-            code: "chat_endpoint_setup_changed",
-          });
-        }
-      } catch (error) {
-        if (isNativeBotIdentityUniqueViolation(error)) {
-          throw nativeBotIdentityConflict(endpoint.provider);
-        }
-        throw error;
-      }
-    }
-    const keepOpenwaEndpointActive =
-      endpoint.provider === "openwa" &&
-      input.action === "reconnect" &&
-      endpoint.status === "active" &&
-      (identity.providerAccountId ?? null) === endpoint.providerAccountId &&
-      (identity.botExternalId ?? null) === endpoint.botExternalId &&
-      (await resolveCredentials(endpoint)
-        .then(
-          (stored) =>
-            stored.baseUrl === credentials.baseUrl &&
-            stored.sessionId === credentials.sessionId &&
-            stored.apiKey === credentials.apiKey,
-        )
-        .catch(() => false));
-    if (endpoint.provider === "imessage-photon") {
-      await invalidateRuntime(endpoint.id);
-      await credentialLease.assertOwned();
-      if (credentials.allocation === "shared") await db.update(chatEndpoints).set({ allowGroupChats: false }).where(eq(chatEndpoints.id, endpoint.id));
-      await db.update(toolConnections).set({ config: { provider: endpoint.provider, photon: credentials.allocation === "shared" ? { allocation: "shared", projectId: credentials.projectId } : { allocation: "dedicated", projectId: credentials.projectId, lineId: credentials.lineId } } }).where(and(eq(toolConnections.companyId, endpoint.companyId), eq(toolConnections.id, endpoint.connectionId)));
-    }
-    if (endpoint.provider === "openwa") {
-      await invalidateRuntime(endpoint.id);
-      await credentialLease.assertOwned();
-      await db.update(toolConnections).set({ config: { provider: endpoint.provider, openwa: { baseUrl: credentials.baseUrl, sessionId: credentials.sessionId } } }).where(and(eq(toolConnections.companyId, endpoint.companyId), eq(toolConnections.id, endpoint.connectionId)));
-    }
-    if (
-      (input.credentials && Object.keys(input.credentials).length > 0) ||
-      credentialsChangedByDiscovery
-    )
-      await persistCredentials(
-        endpoint,
-        credentials,
-        credentialLease,
-        actorUserId,
-      );
     if (prepared.inventory)
       await reconcileProviderResourceRows(
         endpoint,
