@@ -8,7 +8,7 @@ vi.mock("@tickernelz/wardmote-adapter-utils/execution-target", async (importOrig
   return { ...actual, runAdapterExecutionTargetProcess: vi.fn() };
 });
 
-vi.mock("./paperclip-mcp.js", async (importOriginal) => {
+vi.mock("./wardmote-mcp.js", async (importOriginal) => {
   const actual = (await importOriginal()) as Record<string, unknown>;
   return { ...actual, probePaperclipMcpServer: vi.fn(), probePaperclipMcpEndpoint: vi.fn() };
 });
@@ -27,14 +27,14 @@ import {
   probePaperclipMcpEndpoint,
   probePaperclipMcpServer,
   resolvePaperclipMcpServerCommand,
-} from "./paperclip-mcp.js";
+} from "./wardmote-mcp.js";
 import { runAdapterExecutionTargetProcess } from "@tickernelz/wardmote-adapter-utils/execution-target";
-import type * as PaperclipMcpModule from "./paperclip-mcp.js";
+import type * as PaperclipMcpModule from "./wardmote-mcp.js";
 
 const runProcessMock = vi.mocked(runAdapterExecutionTargetProcess);
 const probeMock = vi.mocked(probePaperclipMcpServer);
 const endpointProbeMock = vi.mocked(probePaperclipMcpEndpoint);
-const realMcp = await vi.importActual<typeof PaperclipMcpModule>("./paperclip-mcp.js");
+const realMcp = await vi.importActual<typeof PaperclipMcpModule>("./wardmote-mcp.js");
 
 interface Invocation {
   args: string[];
@@ -316,7 +316,7 @@ describe("OMP local Paperclip MCP wiring", () => {
     probeMock.mockImplementation((input) =>
       realMcp.probePaperclipMcpServer({
         ...input,
-        command: { ...input.command, command: path.join(root, "missing-paperclip-mcp"), args: [] },
+        command: { ...input.command, command: path.join(root, "missing-wardmote-mcp"), args: [] },
       }),
     );
     const result = await runResult({ paperclipMcpTransport: "stdio" });

@@ -54,7 +54,7 @@ import { legacyEnvKey } from "@tickernelz/wardmote-shared/env-aliases";
 import {
   paperclipRestGuidance,
   type PaperclipAccessMode,
-} from "@tickernelz/wardmote-adapter-utils/paperclip-mcp";
+} from "@tickernelz/wardmote-adapter-utils/wardmote-mcp";
 import { OMP_INSTALL_COMMAND } from "../metadata.js";
 import {
   prepareOmpRuntimeConfig,
@@ -98,7 +98,7 @@ import {
   writePaperclipMcpExtension,
   type PaperclipMcpExtension,
   type PaperclipMcpProbe,
-} from "./paperclip-mcp.js";
+} from "./wardmote-mcp.js";
 
 const RESULT_TRANSCRIPT_MAX_CHARS = 16 * 1024;
 const RESULT_TOOL_CALL_MAX_CHARS = 4 * 1024;

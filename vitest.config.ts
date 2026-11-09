@@ -10,7 +10,7 @@ export default defineConfig({
       "packages/adapters/omp-local",
       "packages/mcp-server",
       "packages/plugins/sdk",
-      "packages/plugins/create-paperclip-plugin",
+      "packages/plugins/plugin-creator",
       "packages/plugins/sandbox-providers/daytona",
       "server",
       "ui",

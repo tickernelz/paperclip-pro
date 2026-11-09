@@ -1690,7 +1690,7 @@ For developing a plugin against a running Paperclip instance:
 
 ### 27.3 Plugin Starter Template
 
-The host should publish a starter template (`create-paperclip-plugin`) that scaffolds:
+The host should publish a starter template (`plugin-creator`) that scaffolds:
 
 - `package.json` with correct `paperclipPlugin` keys
 - manifest with placeholder values
@@ -1796,7 +1796,7 @@ When a new SDK version is released:
 - graceful shutdown with configurable deadlines
 - plugin logging and health dashboard
 - `@tickernelz/wardmote-plugin-test-harness`
-- `create-paperclip-plugin` starter template
+- `plugin-creator` starter template
 - uninstall with data retention grace period
 - hot plugin lifecycle (install, uninstall, upgrade, config change without server restart)
 - SDK versioning with multi-version host support and deprecation policy
