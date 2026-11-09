@@ -40,6 +40,10 @@
     "closure-terpin": {
       "reason": "Berkas yang byte-nya masuk closure distribusi Pi (wrapper pi-acp hasil patch, helper dist/paperclip-runtime.js, extension extensions/paperclip.js) dan dipin per platform (darwin-arm64, darwin-x64, linux-x64) di pi-closure-pins.ts serta identitas profil Pi. Mengganti nama di sini mengubah digest closure, jadi harus bersamaan dengan materialisasi ulang ketiga target dan profil Pi baru. Sementara: dijadwalkan hilang di irisan re-pin closure Pi ZHA-5279; hanya boleh turun.",
       "approvedBy": "Keputusan otonom Raka 2026-11-09 di ZHA-5279 (Mode full otonom), atas permintaan Wira mencatat pengecualian; sementara sampai irisan re-pin closure Pi"
+    },
+    "nama-lama-ditolak": {
+      "reason": "Nama header lama hanya untuk menolak dan meredaksi (log pino-http, passthrough tool gateway), tidak pernah dibaca sebagai nilai; klien yang masih mengirim nama lama tidak boleh menulis token ke log atau meneruskannya. Satu modul: server/src/services/retired-header-names.ts.",
+      "approvedBy": "Hendra, fix-before-push PR #220 (ZHA-5280 ronde 37, 2026-11-09)"
     }
   },
   "entries": [
@@ -2722,7 +2726,7 @@
     ["server/src/__tests__/tool-gateway-discovery-http.test.ts",1,"belum-diganti"],
     ["server/src/__tests__/tool-gateway-listing-memory.test.ts",1,"belum-diganti"],
     ["server/src/__tests__/tool-gateway-service.test.ts",10,"belum-diganti"],
-    ["server/src/__tests__/tool-gateway.test.ts",18,"belum-diganti"],
+    ["server/src/__tests__/tool-gateway.test.ts",17,"belum-diganti"],
     ["server/src/__tests__/tool-grant-scope.test.ts",1,"belum-diganti"],
     ["server/src/__tests__/tool-oauth-legacy-backfill.test.ts",4,"belum-diganti"],
     ["server/src/__tests__/tool-review-queue-unsigned-request.test.ts",1,"belum-diganti"],
@@ -3345,6 +3349,7 @@
     ["server/src/services/remote-agent-profiles.test.ts",3,"belum-diganti"],
     ["server/src/services/remote-execution-termination.ts",2,"belum-diganti"],
     ["server/src/services/remote-http-fetch.ts",2,"belum-diganti"],
+    ["server/src/services/retired-header-names.ts",1,"nama-lama-ditolak"],
     ["server/src/services/retired-skill-keys.ts",2,"migrasi-otomatis"],
     ["server/src/services/routines.ts",2,"belum-diganti"],
     ["server/src/services/run-failure-report.ts",1,"belum-diganti"],

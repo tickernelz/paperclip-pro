@@ -1,3 +1,5 @@
+import { RETIRED_GITHUB_CAPABILITY_HEADER } from "../services/retired-header-names.js";
+
 export const HTTP_LOG_REDACT_PATHS = [
   "req.headers.authorization",
   "res.headers.location",
@@ -13,6 +15,7 @@ export const HTTP_LOG_REDACT_PATHS = [
   'req.headers["x-api-key"]',
   // Runtime GitHub capabilities authorize credential acquisition for a live run.
   'req.headers["x-wardmote-github-capability"]',
+  `req.headers["${RETIRED_GITHUB_CAPABILITY_HEADER}"]`,
   // Telegram's optional webhook verification header is a reusable bearer
   // secret sent on every provider callback.
   'req.headers["x-telegram-bot-api-secret-token"]',

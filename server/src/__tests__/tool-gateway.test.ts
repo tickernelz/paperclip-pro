@@ -58,6 +58,7 @@ import { createToolGatewayService, ToolGatewayHttpError } from "../services/tool
 import { resolveConnectionGrantSecret } from "../services/connection-credentials.js";
 import { secretService } from "../services/secrets.js";
 import * as cogneeBridge from "../services/cognee-connection.js";
+import { RETIRED_HEADER_PREFIX } from "../services/retired-header-names.js";
 import { createKvDemoHttpServer, type KvDemoHttpServer } from "../../../packages/kv-demo-mcp-server/src/http.js";
 import {
   getEmbeddedPostgresTestSupport,
@@ -2863,7 +2864,8 @@ rl.on("line", (line) => {
     }
   });
 
-  it("drops auth-bearing and Paperclip session headers from passthrough allowlists", async () => {
+  it("drops auth-bearing and Wardmote session headers from passthrough allowlists", async () => {
+    const retiredRunIdHeader = `${RETIRED_HEADER_PREFIX}run-id`;
     const company = await createCompany(db);
     const agent = await createAgent(db, company.id);
     const { run } = await createIssueAndRun(db, company.id, agent.id);
@@ -2871,6 +2873,7 @@ rl.on("line", (line) => {
       expect(fakeRequest.headers.authorization).toBeUndefined();
       expect(fakeRequest.headers["x-auth-token"]).toBeUndefined();
       expect(fakeRequest.headers["x-wardmote-tool-gateway-token"]).toBeUndefined();
+      expect(fakeRequest.headers[retiredRunIdHeader]).toBeUndefined();
       expect(fakeRequest.headers["x-client-request-id"]).toBe("caller-456");
       return {
         body: {
@@ -2897,6 +2900,7 @@ rl.on("line", (line) => {
                   "x-auth-token",
                   "x-client-request-id",
                   "x-wardmote-tool-gateway-token",
+                  retiredRunIdHeader,
                 ],
               },
             },
@@ -2919,6 +2923,7 @@ rl.on("line", (line) => {
           "x-auth-token": "drop-auth-token",
           "x-client-request-id": "caller-456",
           "x-wardmote-tool-gateway-token": "drop-gateway-token",
+          [retiredRunIdHeader]: "drop-retired-run-id",
         },
       });
 
@@ -2934,11 +2939,13 @@ rl.on("line", (line) => {
             "authorization",
             "x-auth-token",
             "x-wardmote-tool-gateway-token",
+            retiredRunIdHeader,
           ]),
           collisionRules: expect.arrayContaining([
             { header: "authorization", source: "caller", action: "dropped_sensitive_header" },
             { header: "x-auth-token", source: "caller", action: "dropped_sensitive_header" },
             { header: "x-wardmote-tool-gateway-token", source: "caller", action: "dropped_sensitive_header" },
+            { header: retiredRunIdHeader, source: "caller", action: "dropped_sensitive_header" },
           ]),
         },
       });
@@ -2950,6 +2957,7 @@ rl.on("line", (line) => {
       expect(persisted).not.toContain("caller-should-drop");
       expect(persisted).not.toContain("drop-auth-token");
       expect(persisted).not.toContain("drop-gateway-token");
+      expect(persisted).not.toContain("drop-retired-run-id");
     } finally {
       await fake.close();
     }

@@ -168,6 +168,7 @@ import {
   verifyToolArgumentsSignature,
 } from "./tool-content-guards.js";
 import { extendApprovedExecutionWaitDeadline } from "./approved-execution-wait.js";
+import { RETIRED_HEADER_PREFIX } from "./retired-header-names.js";
 
 const DEFAULT_SESSION_TTL_MS = 15 * 60 * 1000;
 const MAX_SESSION_TTL_MS = 60 * 60 * 1000;
@@ -530,6 +531,7 @@ const sensitivePassthroughHeaderNames = new Set([
 function isSensitivePassthroughHeader(name: string) {
   return (
     name.startsWith("x-wardmote-") ||
+    name.startsWith(RETIRED_HEADER_PREFIX) ||
     sensitivePassthroughHeaderNames.has(name) ||
     sensitivePassthroughHeaderPattern.test(name)
   );
