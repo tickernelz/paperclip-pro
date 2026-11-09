@@ -245,6 +245,47 @@ describe("IssueMonitorBanner / IssueMonitorComposerStrip rendering", () => {
     flushSync(() => root.unmount());
   });
 
+  it("pulls a scheduled retry forward instead of checking a monitor the issue does not have", () => {
+    const retryWaiting = {
+      status: "in_progress",
+      executionState: null,
+      scheduledRetry: {
+        status: "scheduled_retry",
+        scheduledRetryAt: new Date(NOW.getTime() + 14 * 60 * 60_000).toISOString(),
+        scheduledRetryAttempt: 1,
+      },
+    } as unknown as Issue;
+    const onCheckNow = vi.fn();
+    const onRetryNow = vi.fn();
+    const root = createRoot(container);
+    flushSync(() => {
+      root.render(
+        <>
+          <IssueMonitorBanner issue={retryWaiting} onCheckNow={onCheckNow} onRetryNow={onRetryNow} retryError="Retry refused" checkError="Issue has no scheduled monitor" />
+          <IssueMonitorComposerStrip issue={retryWaiting} onCheckNow={onCheckNow} onRetryNow={onRetryNow} />
+        </>,
+      );
+    });
+
+    const buttons = Array.from(container.querySelectorAll("button"));
+    expect(buttons.map((b) => b.textContent)).toEqual(["Retry now", "Retry now"]);
+    for (const button of buttons) flushSync(() => button.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+    expect(onRetryNow).toHaveBeenCalledTimes(2);
+    expect(onCheckNow).not.toHaveBeenCalled();
+    expect(container.textContent).toContain("Retry refused");
+    expect(container.textContent).not.toContain("Issue has no scheduled monitor");
+
+    const monitorWaiting = { ...retryWaiting, executionState: { monitor: { status: "scheduled", nextCheckAt: new Date(NOW.getTime() + 60 * 60_000).toISOString(), attemptCount: 1 } } } as unknown as Issue;
+    flushSync(() => root.render(<IssueMonitorComposerStrip issue={monitorWaiting} onCheckNow={onCheckNow} onRetryNow={onRetryNow} />));
+    const monitorButton = container.querySelector("button")!;
+    expect(monitorButton.textContent).toBe("Check now");
+    flushSync(() => monitorButton.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+    expect(onCheckNow).toHaveBeenCalledTimes(1);
+    expect(onRetryNow).toHaveBeenCalledTimes(2);
+
+    flushSync(() => root.unmount());
+  });
+
   it("hides the banner and strip when there is no monitor", () => {
     expect(hasVisibleMonitorSurface(issueWithMonitor(null))).toBe(false);
     const root = createRoot(container);
