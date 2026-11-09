@@ -106,6 +106,15 @@ The following imports and package dependencies are rejected:
   internals unless a boundary review explicitly allows a public contract;
 - relative or absolute imports that escape `packages/wardmote-runner/`.
 
+The single exception is a `*.test.*` file in the package that imports from the
+repository `tests/` tree. It holds only while the build configs exclude every
+admitted test family from `src/` — the invariant
+`every build config excludes each test family this boundary admits` fails the
+moment the admitted families and the `tsconfig` excludes disagree, and it also
+rejects published `files` entries that are not explicit paths outside `src`.
+Containment is physical: the target is resolved with `realpath`, so a symlink
+inside `tests/` cannot smuggle a production file past the boundary.
+
 This rule applies to type-only imports, exports, dynamic imports, CommonJS
 `require` calls, Rust include/path attributes, and Cargo path dependencies. The
 negative fixtures under `test-fixtures/` intentionally reference `server/` and
@@ -114,14 +123,18 @@ must fail the checker.
 ## Enforcement
 
 ```sh
-pnpm --filter @tickernelz/wardmote-runner check:forbidden-imports
+pnpm --filter @tickernelz/wardmote-runner check:static
 pnpm --filter @tickernelz/wardmote-runner test
 pnpm --filter @tickernelz/wardmote-runner check:replay-parity
 ```
 
-The first command scans the package source, scripts, and manifest. The test
-command additionally asserts that the negative fixture is rejected. The normal
-scan excludes that fixture so a deliberate proof does not make the package fail.
+`check:static` covers both `check:forbidden-imports`, which scans the package
+source, scripts, and manifest, and `check:tracked-imports`, which fails when an
+import resolves to a file a clean checkout does not have. The `Verify Wardmote
+Runner (checks)` CI job runs `check:static`, so a boundary regression turns the
+pipeline red instead of only `verify`. The test command additionally asserts that
+the negative fixture is rejected; the normal scan excludes that fixture so a
+deliberate proof does not make the package fail.
 
 ## Conformance process boundary
 

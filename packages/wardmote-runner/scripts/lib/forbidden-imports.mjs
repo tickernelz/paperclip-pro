@@ -1,4 +1,4 @@
-import { readFile, readdir } from "node:fs/promises";
+import { readFile, readdir, realpath } from "node:fs/promises";
 import { dirname, isAbsolute, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { API } from "typescript/unstable/sync";
@@ -12,6 +12,9 @@ const RUST_IMPORT_PATTERNS = [
 ];
 const REVIEWED_EVAL_KERNEL = "@tickernelz/wardmote-eval-kernel";
 const REVIEWED_EVAL_HARNESS = "src/eval/workflow-harness.ts";
+export const TEST_FILE_FAMILIES = ["test"];
+const TEST_FILE = new RegExp(`\\.(?:${TEST_FILE_FAMILIES.join("|")})\\.[jt]sx?$`);
+const REPOSITORY_TEST_DIRECTORY = "tests";
 
 const libraryDirectory = dirname(fileURLToPath(import.meta.url));
 export const defaultPackageRoot = resolve(libraryDirectory, "../..");
@@ -163,7 +166,23 @@ function isForbiddenBrowserPackage(specifier) {
   );
 }
 
-function violationReason({ file, packageRoot, specifier, publicRunnerImports, reviewedEvalHarness }) {
+async function isRepositoryTestImport({ file, packageRoot, resolvedImport }) {
+  const relativeFile = relative(packageRoot, file).split(/[\\/]/).join("/");
+  if (!TEST_FILE.test(relativeFile)) {
+    return false;
+  }
+  const repositoryTestRoot = resolve(packageRoot, "../..", REPOSITORY_TEST_DIRECTORY);
+  if (!isInside(repositoryTestRoot, resolvedImport)) {
+    return false;
+  }
+  const [realRoot, realImport] = await Promise.all([
+    realpath(repositoryTestRoot).catch(() => null),
+    realpath(resolvedImport).catch(() => null),
+  ]);
+  return realRoot !== null && realImport !== null && isInside(realRoot, realImport);
+}
+
+async function violationReason({ file, packageRoot, specifier, publicRunnerImports, reviewedEvalHarness }) {
   const relativeFile = relative(packageRoot, file).split(/[\\/]/).join("/");
   const isExampleConsumer = relativeFile.startsWith("examples/");
   if (
@@ -198,7 +217,9 @@ function violationReason({ file, packageRoot, specifier, publicRunnerImports, re
   if (specifier.startsWith(".") || specifier.startsWith("/")) {
     const resolvedImport = resolve(dirname(file), specifier);
     if (!isInside(packageRoot, resolvedImport)) {
-      return "relative imports may not escape packages/wardmote-runner";
+      return (await isRepositoryTestImport({ file, packageRoot, resolvedImport }))
+        ? null
+        : "relative imports may not escape packages/wardmote-runner";
     }
     const segments = relativeFile.split("/");
     const examplesIndex = segments.indexOf("examples");
@@ -310,7 +331,7 @@ export async function checkForbiddenImports({
     && !publicSources.has(resolve(packageRoot, REVIEWED_EVAL_HARNESS));
   for (const { file, source } of sources) {
     for (const { specifier, offset } of specifiers.get(file)) {
-      const reason = violationReason({ file, packageRoot, specifier, publicRunnerImports, reviewedEvalHarness });
+      const reason = await violationReason({ file, packageRoot, specifier, publicRunnerImports, reviewedEvalHarness });
       if (reason === null) continue;
       violations.push({ file, line: source.slice(0, offset).split("\n").length, specifier, reason });
     }
