@@ -20,6 +20,7 @@ import {
   WARDMOTE_MCP_BIN,
   WARDMOTE_MCP_PACKAGE,
   WARDMOTE_MCP_CREDENTIAL_CODE,
+  WARDMOTE_MCP_SERVER_NAME,
   WARDMOTE_MCP_UNAVAILABLE_CODE,
   buildPaperclipMcpServerEntry,
   paperclipMcpEndpoint,
@@ -363,7 +364,7 @@ describe("OMP local Paperclip MCP wiring", () => {
     ) => {
       await options.onLog(
         "stderr",
-        `Warning: MCP server "paperclip" failed to connect: ${reason}; its tools are unavailable for this run.\n`,
+        `Warning: MCP server "${WARDMOTE_MCP_SERVER_NAME}" failed to connect: ${reason}; its tools are unavailable for this run.\n`,
       );
       return {
         exitCode: 0,
@@ -395,7 +396,7 @@ describe("OMP local Paperclip MCP wiring", () => {
         `${JSON.stringify({
           type: "notice",
           level: "warning",
-          message: 'Warning: MCP server "paperclip" failed to connect: MCP subprocess closed stdout before responding; its tools are unavailable for this run.',
+          message: `Warning: MCP server "${WARDMOTE_MCP_SERVER_NAME}" failed to connect: MCP subprocess closed stdout before responding; its tools are unavailable for this run.`,
         })}\n`,
       );
       return {
@@ -411,6 +412,98 @@ describe("OMP local Paperclip MCP wiring", () => {
     const result = await runResult({});
     expect(result.errorCode).toBe(WARDMOTE_MCP_UNAVAILABLE_CODE);
     expect(result.errorMessage).toContain("failed to connect");
+  });
+
+  function streamChunks(chunks: Array<{ stream: "stdout" | "stderr"; chunk: string }>): void {
+    runProcessMock.mockImplementation((async (
+      _runId: string,
+      _target: unknown,
+      _command: string,
+      _args: string[],
+      options: { onLog: (stream: string, chunk: string) => Promise<void> },
+    ) => {
+      for (const entry of chunks) await options.onLog(entry.stream, entry.chunk);
+      return {
+        exitCode: 0,
+        signal: null,
+        timedOut: false,
+        stdout: "",
+        stderr: "",
+        pid: 4321,
+        startedAt: new Date().toISOString(),
+      };
+    }) as never);
+  }
+
+  const connectFailureText = `Warning: MCP server "${WARDMOTE_MCP_SERVER_NAME}" failed to connect: spawn ENOENT; its tools are unavailable for this run.`;
+  const adapterFailureText = `MCP server "${WARDMOTE_MCP_SERVER_NAME}" failed to connect; the agent had no tools.`;
+
+  it.each([
+    {
+      label: "a user prompt echoed back by OMP",
+      frame: {
+        type: "message_start",
+        messageId: "msg-2",
+        message: { role: "user", content: [{ type: "text", text: `Latest run error: ${adapterFailureText}\n${connectFailureText}` }] },
+      },
+    },
+    {
+      label: "a tool result that quotes the warning",
+      frame: {
+        type: "tool_execution_end",
+        toolCallId: "call-1",
+        result: { content: [{ type: "text", text: `stderr: ${connectFailureText}` }] },
+      },
+    },
+    {
+      label: "an assistant message that quotes the warning",
+      frame: {
+        type: "message_end",
+        message: { role: "assistant", content: [{ type: "text", text: connectFailureText }] },
+      },
+    },
+    {
+      label: "a notice frame that only mentions the warning in passing",
+      frame: { type: "notice", level: "info", message: `diagnostic copy: ${connectFailureText}` },
+    },
+  ])("does not fail the run when stdout merely carries $label", async ({ frame }) => {
+    streamChunks([{ stream: "stdout", chunk: `${JSON.stringify(frame)}\n` }]);
+    const logs: Array<{ stream: string; chunk: string }> = [];
+    const result = await runResult({}, logs);
+    expect(result.errorCode).not.toBe(WARDMOTE_MCP_UNAVAILABLE_CODE);
+    expect(result.errorMessage ?? "").not.toContain("failed to connect");
+    expect(logs.some((entry) => entry.chunk.includes("did not connect"))).toBe(false);
+  });
+
+  it("does not fail the run when stderr only quotes the warning mid-line", async () => {
+    streamChunks([{ stream: "stderr", chunk: `[tool] saw: ${connectFailureText}\n` }]);
+    const logs: Array<{ stream: string; chunk: string }> = [];
+    const result = await runResult({}, logs);
+    expect(result.errorCode).not.toBe(WARDMOTE_MCP_UNAVAILABLE_CODE);
+    expect(result.errorMessage ?? "").not.toContain("failed to connect");
+    expect(logs.some((entry) => entry.chunk.includes("did not connect"))).toBe(false);
+  });
+
+  it("fails the run when a genuine notice frame arrives split across stdout chunks", async () => {
+    const line = `${JSON.stringify({ type: "notice", level: "warning", message: connectFailureText })}\n`;
+    const cut = Math.floor(line.length / 2);
+    streamChunks([
+      { stream: "stdout", chunk: line.slice(0, cut) },
+      { stream: "stdout", chunk: line.slice(cut) },
+    ]);
+    const result = await runResult({});
+    expect(result.errorCode).toBe(WARDMOTE_MCP_UNAVAILABLE_CODE);
+  });
+
+  it("fails the run when a genuine stderr warning arrives split across chunks", async () => {
+    const line = `${connectFailureText}\n`;
+    const cut = Math.floor(line.length / 2);
+    streamChunks([
+      { stream: "stderr", chunk: line.slice(0, cut) },
+      { stream: "stderr", chunk: line.slice(cut) },
+    ]);
+    const result = await runResult({});
+    expect(result.errorCode).toBe(WARDMOTE_MCP_UNAVAILABLE_CODE);
   });
 
   it("keeps configured extensions after the generated one", async () => {

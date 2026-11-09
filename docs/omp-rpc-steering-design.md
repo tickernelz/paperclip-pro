@@ -109,9 +109,9 @@ Two consequences worth keeping:
   `Warning: MCP server "…" failed to connect` line is produced inside
   `runPrintMode` only. Under RPC the guard against a tool-less run is the
   adapter's own pre-flight probe, which runs before OMP is spawned and fails the
-  run with `paperclip_mcp_unavailable`. The connect-failure pattern still
-  tolerates the escaped form so a notice would trip it too if OMP ever emits
-  one.
+  run with `paperclip_mcp_unavailable`. The adapter's line-anchored detector
+  also accepts a `notice` frame whose message starts with that warning, so one
+  would trip it if OMP ever emits it; any other stdout frame is never scanned.
 
 ## The contract this implements
 
