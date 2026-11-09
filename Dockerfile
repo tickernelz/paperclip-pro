@@ -25,8 +25,8 @@ COPY packages/adapter-utils/package.json packages/adapter-utils/
 COPY packages/google-sheets-mcp-server/package.json packages/google-sheets-mcp-server/
 COPY packages/kv-demo-mcp-server/package.json packages/kv-demo-mcp-server/
 COPY packages/mcp-server/package.json packages/mcp-server/
-COPY packages/paperclip-eval-kernel/package.json packages/paperclip-eval-kernel/
-COPY packages/paperclip-runner/package.json packages/paperclip-runner/
+COPY packages/eval-kernel/package.json packages/eval-kernel/
+COPY packages/wardmote-runner/package.json packages/wardmote-runner/
 COPY packages/skills-catalog/package.json packages/skills-catalog/
 COPY packages/tailscale-https-broker/package.json packages/tailscale-https-broker/
 COPY packages/teams-catalog/package.json packages/teams-catalog/
@@ -77,7 +77,7 @@ RUN set -eux; \
     rm /tmp/rustup-init
 # Install the package-owned compiler before any application source enters the
 # stage. rustup-init above installs rustup itself, not the selected compiler.
-COPY packages/paperclip-runner/rust-toolchain.toml /tmp/runner-toolchain/rust-toolchain.toml
+COPY packages/wardmote-runner/rust-toolchain.toml /tmp/runner-toolchain/rust-toolchain.toml
 RUN cd /tmp/runner-toolchain && rustup show
 
 # Pin the recipe generator and its dependency lockfile. It is a build-only tool
@@ -86,14 +86,14 @@ FROM rust-toolchain AS rust-chef
 RUN cd /tmp/runner-toolchain && cargo install cargo-chef --version 0.1.73 --locked
 
 FROM rust-chef AS runner-plan
-WORKDIR /app/packages/paperclip-runner
-COPY packages/paperclip-runner/rust-toolchain.toml ./
-COPY packages/paperclip-runner/runner ./runner
+WORKDIR /app/packages/wardmote-runner
+COPY packages/wardmote-runner/rust-toolchain.toml ./
+COPY packages/wardmote-runner/runner ./runner
 RUN cd runner && cargo chef prepare --recipe-path /tmp/runner-recipe.json
 
 FROM rust-chef AS runner-deps
-WORKDIR /app/packages/paperclip-runner/runner
-COPY packages/paperclip-runner/rust-toolchain.toml ../
+WORKDIR /app/packages/wardmote-runner/runner
+COPY packages/wardmote-runner/rust-toolchain.toml ../
 # The recipe changes only when dependency manifests, the lockfile, or target
 # metadata change. Source edits can reuse this compiled dependency layer.
 COPY --from=runner-plan /tmp/runner-recipe.json /tmp/runner-recipe.json
@@ -101,13 +101,13 @@ RUN cargo chef cook --release --locked --package paperclip-runner-core --bin pap
   && find . -mindepth 1 -maxdepth 1 ! -name target -exec rm -rf {} +
 
 FROM runner-deps AS runner-build
-WORKDIR /app/packages/paperclip-runner
+WORKDIR /app/packages/wardmote-runner
 # Rust embeds protocol schemas and fixtures with include_str!. Keep those
 # alongside the complete Cargo workspace so every compile-time input keys
 # this layer. Ordinary server/UI edits can then reuse the native build.
-COPY packages/paperclip-runner/rust-toolchain.toml ./
-COPY packages/paperclip-runner/runner ./runner
-COPY packages/paperclip-runner/protocol ./protocol
+COPY packages/wardmote-runner/rust-toolchain.toml ./
+COPY packages/wardmote-runner/runner ./runner
+COPY packages/wardmote-runner/protocol ./protocol
 # Cargo fingerprints source mtimes. Normalize them here and after the full
 # source copy below so a fresh checkout cannot invalidate unchanged inputs.
 RUN find runner protocol -type f -exec touch -d @0 {} + \
@@ -118,8 +118,8 @@ FROM runner-build AS build
 WORKDIR /app
 COPY --from=deps /app /app
 COPY . .
-RUN find packages/paperclip-runner/runner packages/paperclip-runner/protocol -type f -exec touch -d @0 {} + \
-  && touch -d @0 packages/paperclip-runner/rust-toolchain.toml
+RUN find packages/wardmote-runner/runner packages/wardmote-runner/protocol -type f -exec touch -d @0 {} + \
+  && touch -d @0 packages/wardmote-runner/rust-toolchain.toml
 # Both the browser bundle and server stamp need the source commit. Declare it
 # after the stable dependency layers, before either application build.
 ARG PAPERCLIP_BUILD_COMMIT=""
@@ -134,7 +134,7 @@ RUN pnpm --filter @tickernelz/wardmote-plugin-sdk build
 ENV NODE_OPTIONS=--max-old-space-size=4096
 RUN pnpm --filter @tickernelz/wardmote-server build
 RUN test -f server/dist/index.js || (echo "ERROR: server build output missing" && exit 1)
-RUN rm -rf packages/paperclip-runner/runner/target
+RUN rm -rf packages/wardmote-runner/runner/target
 
 # Remote OpenCode and ACPX runs require a controller-owned provider pack to
 # verify the sandbox installation or stage matching assets. Ship it in the
@@ -146,7 +146,7 @@ FROM build AS runner-provider-pack
 # Never invent a source revision to make an unqualified pack look verified.
 RUN mkdir -p /provider-pack \
   && if [ -n "${PAPERCLIP_BUILD_COMMIT}" ]; then \
-    PAPERCLIP_RUNNER_SOURCE_REVISION="${PAPERCLIP_BUILD_COMMIT}" node packages/paperclip-runner/scripts/build-provider-pack.mjs /provider-pack; \
+    PAPERCLIP_RUNNER_SOURCE_REVISION="${PAPERCLIP_BUILD_COMMIT}" node packages/wardmote-runner/scripts/build-provider-pack.mjs /provider-pack; \
   else \
     echo "Skipping remote provider pack: supply a full PAPERCLIP_BUILD_COMMIT to enable remote OpenCode/ACPX execution"; \
   fi

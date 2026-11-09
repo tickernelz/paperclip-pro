@@ -82,8 +82,8 @@ it("accepts omitted terminal path/kind only with the retained single-path origin
 });
 
 it.each(["cursor", "copilot"] as const)("correlates actual %s passive notices through the public reader and canonical omitted-field updates", async provider => {
-  const { createCursorToolEvidence } = await import("../../packages/paperclip-runner/src/drivers/acpx/cursor-tool-evidence.js");
-  const { createCopilotToolEvidence } = await import("../../packages/paperclip-runner/src/drivers/acpx/copilot-tool-evidence.js");
+  const { createCursorToolEvidence } = await import("../../packages/wardmote-runner/src/drivers/acpx/cursor-tool-evidence.js");
+  const { createCopilotToolEvidence } = await import("../../packages/wardmote-runner/src/drivers/acpx/copilot-tool-evidence.js");
   const { readCursorToolEvidence } = await import("./cursor-native-evidence.js");
   const { readCopilotToolEvidence } = await import("./copilot-evidence.js");
   const create = provider === "cursor" ? createCursorToolEvidence : createCopilotToolEvidence;

@@ -1576,9 +1576,9 @@ failed turn's sandbox running.
 Run the credential-free real-process restart suite with:
 
 ```sh
-pnpm --filter @tickernelz/wardmote-paperclip-runner build:runner-binaries
+pnpm --filter @tickernelz/wardmote-runner build:runner-binaries
 pnpm exec vitest run server/src/services/native-runtime/native-runner-restart-recovery.integration.test.ts
-pnpm --filter @tickernelz/wardmote-paperclip-runner exec vitest run src/live/runnerd-codex-transport.test.ts -t 'adopts a live runner'
+pnpm --filter @tickernelz/wardmote-runner exec vitest run src/live/runnerd-codex-transport.test.ts -t 'adopts a live runner'
 ```
 
 The suite uses isolated PostgreSQL state, isolated `PAPERCLIP_HOME` roots, real

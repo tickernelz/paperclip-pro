@@ -20,7 +20,7 @@ export async function prepareCodexCiSandbox(
   if (process.platform !== "linux" || process.env.GITHUB_ACTIONS !== "true")
     return;
   const runnerRequire = createRequire(
-    path.join(repositoryRoot, "packages/paperclip-runner/package.json"),
+    path.join(repositoryRoot, "packages/wardmote-runner/package.json"),
   );
   const acpRequire = createRequire(
     runnerRequire.resolve("@agentclientprotocol/codex-acp/package.json"),

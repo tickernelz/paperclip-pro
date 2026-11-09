@@ -29,7 +29,7 @@ import {
   HarnessDriverBackend,
   createCodexTaskEnvelope,
   createRunnerdCodexTransport as createCapabilityRunnerdCodexTransport,
-} from "@tickernelz/wardmote-paperclip-runner";
+} from "@tickernelz/wardmote-runner";
 import {
   getEmbeddedPostgresTestSupport,
   startEmbeddedPostgresTestDatabase,
@@ -479,7 +479,7 @@ it("wires exact-session recovery and guarded selected identity into heartbeat pe
 
 const codexResolverOverride = vi.hoisted(() => ({ command: null as string | null, served: [] as string[] }));
 
-vi.mock("../../../../packages/paperclip-runner/src/drivers/codex/codex-command.js", async (importOriginal) => {
+vi.mock("../../../../packages/wardmote-runner/src/drivers/codex/codex-command.js", async (importOriginal) => {
   const original = await importOriginal<Record<string, unknown>>();
   const resolveOriginal = original.resolveCodexCommand as (...args: unknown[]) => string;
   return {
@@ -495,7 +495,7 @@ vi.mock("../../../../packages/paperclip-runner/src/drivers/codex/codex-command.j
 const embeddedSupport = await getEmbeddedPostgresTestSupport();
 const recoveryFakeCodex = resolve(
   import.meta.dirname,
-  "../../../../packages/paperclip-runner/test/fixtures/fake-final-burst-codex-app-server.mjs",
+  "../../../../packages/wardmote-runner/test/fixtures/fake-final-burst-codex-app-server.mjs",
 );
 
 (embeddedSupport.supported && existsSync(defaultCapabilityRunnerdBinary())

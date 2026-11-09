@@ -21,11 +21,11 @@ import { setTimeout as delay } from "node:timers/promises";
 import {
   DurablePrpControlPlane,
   spawnRunner,
-} from "../../packages/paperclip-runner/src/control-plane/durable-prp-control-plane.ts";
+} from "../../packages/wardmote-runner/src/control-plane/durable-prp-control-plane.ts";
 import {
   createRunnerdCodexAppServerArgs,
   defaultCapabilityRunnerdBinary,
-} from "../../packages/paperclip-runner/src/live/runnerd-codex-transport.ts";
+} from "../../packages/wardmote-runner/src/live/runnerd-codex-transport.ts";
 
 const args = process.argv.slice(2);
 if (args.length === 0 || (args.length === 1 && args[0] === "--help")) {

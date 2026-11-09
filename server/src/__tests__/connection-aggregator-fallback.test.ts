@@ -1,5 +1,5 @@
 import Ajv2020 from "ajv/dist/2020.js";
-import { requestHumanInputAction } from "../../../packages/paperclip-runner/src/protocol-actions/request-human-input.js";
+import { requestHumanInputAction } from "../../../packages/wardmote-runner/src/protocol-actions/request-human-input.js";
 import { questionSetToAskUserQuestionsPayload } from "@tickernelz/wardmote-shared";
 import { randomUUID } from "node:crypto";
 import { eq } from "drizzle-orm";

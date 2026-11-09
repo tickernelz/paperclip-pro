@@ -2,7 +2,7 @@ import { readFile, writeFile } from "node:fs/promises";
 import { z } from "zod";
 import { createRequire } from "node:module";
 
-const runnerRequire = createRequire(new URL("../../paperclip-runner/package.json", import.meta.url));
+const runnerRequire = createRequire(new URL("../../wardmote-runner/package.json", import.meta.url));
 const { Ajv } = runnerRequire("ajv");
 const standaloneCode = runnerRequire("ajv/dist/standalone").default;
 import { skillFrontmatterSchema } from "../src/frontmatter.ts";
@@ -31,7 +31,7 @@ const generated = [
   section("function parseYamlFrontmatter"),
   validator,
 ].join("\n\n") + "\n";
-const target = new URL("../../paperclip-runner/src/mock-core/skill-frontmatter.generated.ts", import.meta.url);
+const target = new URL("../../wardmote-runner/src/mock-core/skill-frontmatter.generated.ts", import.meta.url);
 if (process.argv.includes("--check")) {
   if (await readFile(target, "utf8") !== generated) throw new Error("Runner skill frontmatter contract is stale. Regenerate it.");
 } else {

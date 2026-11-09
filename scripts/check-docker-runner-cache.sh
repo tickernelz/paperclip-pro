@@ -65,7 +65,7 @@ docker buildx rm "$baseline_builder"
 docker buildx create --name "$rebuild_builder" --driver docker-container
 python3 - <<'CHECK'
 from pathlib import Path
-p=Path('packages/paperclip-runner/runner/crates/runner-core/src/bin/paperclip-runnerd.rs')
+p=Path('packages/wardmote-runner/runner/crates/runner-core/src/bin/paperclip-runnerd.rs')
 s=p.read_text(); needle='paperclip-runner/runnerd-build-metadata/v1'
 assert s.count(needle)==1
 p.write_text(s.replace(needle,needle+'-cache-probe'))
@@ -85,7 +85,7 @@ step=re.search(r'#(\d+) \[runner-deps[^\n]+ RUN cargo chef cook',log)[1]
 assert f'#{step} CACHED' in log
 assert 'Compiling paperclip-runner-core' in log
 print('PASS: fresh builder imported compiled dependencies; real binary changed.')
-p=Path('packages/paperclip-runner/runner/Cargo.toml')
+p=Path('packages/wardmote-runner/runner/Cargo.toml')
 s=p.read_text(); assert 'serde_json = "1.0"' in s
 p.write_text(s.replace('serde_json = "1.0"','serde_json = ">=1.0.0, <2.0.0"'))
 CHECK

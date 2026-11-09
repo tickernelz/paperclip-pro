@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { createHash } from "node:crypto";
-import { CodexHarnessSession } from "../../packages/paperclip-runner/src/drivers/codex/codex-harness-session.js";
+import { CodexHarnessSession } from "../../packages/wardmote-runner/src/drivers/codex/codex-harness-session.js";
 import { assertSamePiPending, observePiControlPending, readPiStopSettlement, readPiSteeringAcknowledgement, readPiSteeringSettlement } from "./pi-controls-evidence.js";
 import { stopPiAtPendingPermission } from "./pi-controls-flow.js";
 import { piControlFixture, piControlCaller, piCancellationId } from "./pi-controls-test-fixture.js";

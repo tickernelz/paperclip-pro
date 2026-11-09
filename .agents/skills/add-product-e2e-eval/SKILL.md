@@ -14,7 +14,7 @@ protocol cases against the mock control plane belong in
 Locate the repository using `PAPERCLIP_ROOT` when supplied, or
 `git rev-parse --show-toplevel` from a checkout. From outside Git, inspect
 workspace roots such as `~/paperclipai/paperclip`; verify the selected root
-contains `tests/runner-e2e` and `packages/paperclip-runner`. Run commands from
+contains `tests/runner-e2e` and `packages/wardmote-runner`. Run commands from
 that repository root. The copied skill may live outside the checkout.
 Read `doc/evals.md`, then the authoritative
 `tests/runner-e2e/README.md`, `FIXTURES.md`, `SECURITY.md`, and

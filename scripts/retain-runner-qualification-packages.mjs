@@ -55,9 +55,9 @@ export function retainRunnerQualificationPackages({ repo, output, sourceRevision
     // it does not substitute for the public server's packaged runner.
     const runner = join(staging, 'runner');
     mkdirSync(runner);
-    const runnerManifest = JSON.parse(readFileSync(join(repo, 'packages/paperclip-runner/package.json')));
+    const runnerManifest = JSON.parse(readFileSync(join(repo, 'packages/wardmote-runner/package.json')));
     for (const file of runnerManifest.files) {
-      const input = join(repo, 'packages/paperclip-runner', file);
+      const input = join(repo, 'packages/wardmote-runner', file);
       if (existsSync(input)) cpSync(input, join(runner, file), { recursive: true });
     }
     assert.ok(existsSync(join(runner, 'dist/cli/eval-session.js')));

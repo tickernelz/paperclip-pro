@@ -4,7 +4,7 @@ import { createRequire } from "node:module";
 import { runInNewContext } from "node:vm";
 import test from "node:test";
 
-const require = createRequire(new URL("../packages/paperclip-runner/package.json", import.meta.url));
+const require = createRequire(new URL("../packages/wardmote-runner/package.json", import.meta.url));
 const source = readFileSync(require.resolve("@agentclientprotocol/codex-acp"), "utf8");
 const helperStart = source.indexOf("function paperclipSandboxPolicy(");
 const helperEnd = source.indexOf("\nvar CodexAcpClient", helperStart);

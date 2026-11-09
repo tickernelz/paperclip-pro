@@ -1,5 +1,5 @@
 import { installedDaytonaPluginKeys } from "./installed-daytona-plugin.js";
-import { QUALIFIED_ACPX_PROFILES } from "../../packages/paperclip-runner/src/drivers/acpx/qualified-profiles.js";
+import { QUALIFIED_ACPX_PROFILES } from "../../packages/wardmote-runner/src/drivers/acpx/qualified-profiles.js";
 import { installedCliKeys } from "./installed-cli.js";
 import path from "node:path";
 import { chatNeedsApiTools, isManagedHiringCase } from "./chat-cases.js";

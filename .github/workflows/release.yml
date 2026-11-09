@@ -90,8 +90,8 @@ jobs:
             ~/.cargo/registry/index
             ~/.cargo/registry/cache
             ~/.cargo/git/db
-            packages/paperclip-runner/runner/target
-          key: release-cargo-${{ runner.os }}-${{ hashFiles('packages/paperclip-runner/runner/Cargo.lock') }}
+            packages/wardmote-runner/runner/target
+          key: release-cargo-${{ runner.os }}-${{ hashFiles('packages/wardmote-runner/runner/Cargo.lock') }}
           restore-keys: |
             release-cargo-${{ runner.os }}-
 

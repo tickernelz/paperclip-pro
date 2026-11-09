@@ -7,7 +7,7 @@ import { BUILTIN_ADAPTER_TYPES } from "./builtin-adapter-types.js";
 import { listServerAdapters, requireServerAdapter } from "./registry.js";
 
 const { probeInstallation } = vi.hoisted(() => ({ probeInstallation: vi.fn() }));
-vi.mock("@tickernelz/wardmote-paperclip-runner/live", () => ({ probeAcpxClaudeInstallation: probeInstallation }));
+vi.mock("@tickernelz/wardmote-runner/live", () => ({ probeAcpxClaudeInstallation: probeInstallation }));
 
 vi.mock("./plugin-loader.js", () => ({
   buildExternalAdapters: vi.fn(async () => []),

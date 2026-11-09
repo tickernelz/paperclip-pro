@@ -7,7 +7,7 @@ import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 
 const loader = fileURLToPath(new URL("./composer-stop-codex-loader.mjs", import.meta.url));
-const resolver = new URL("../../../packages/paperclip-runner/src/drivers/codex/codex-command.ts", import.meta.url).href;
+const resolver = new URL("../../../packages/wardmote-runner/src/drivers/codex/codex-command.ts", import.meta.url).href;
 function launch(env, source = "") {
   return spawnSync(process.execPath, ["--import", loader, "--input-type=module", "-e", source], {
     encoding: "utf8", env: { ...process.env, NODE_ENV: "test", PAPERCLIP_STOP_CODEX_COMMAND: "", ...env },

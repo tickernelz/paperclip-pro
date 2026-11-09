@@ -14,17 +14,17 @@ export const NATIVE_INSTRUCTION_PREFLIGHT_ENV = "PAPERCLIP_NATIVE_INSTRUCTION_PR
 const root = resolve(import.meta.dirname, "../..");
 const hash = (bytes: Buffer | string) => createHash("sha256").update(bytes).digest("hex");
 const OPENCODE_FEEDBACK_BASE_FILES = {
-  "packages/paperclip-runner/src/backends/native-backend-factory.ts": "8ca5fdcecc13dc8749da5328a22154ec7590356fd4cb77380f802a3018af667c",
-  "packages/paperclip-runner/src/drivers/opencode/opencode-server-driver.ts": "a5bf84966846feab174d1ca94dda60cff06edb7cabb3d7d5d71e07d5a4af3912",
-  "packages/paperclip-runner/src/cli/opencode-app-server-proxy.ts": "1969805c0d72ee7e4bdfc518fb8d31e6aedd4bda750a2922ec0f4d5c359dfbd6",
-  "packages/paperclip-runner/src/cli/opencode-proxy-input.ts": "1102bea34dedfb4b4d2ce9ca8011e95f0fce227a6a0b9d2993ad08df00b4e433",
+  "packages/wardmote-runner/src/backends/native-backend-factory.ts": "8ca5fdcecc13dc8749da5328a22154ec7590356fd4cb77380f802a3018af667c",
+  "packages/wardmote-runner/src/drivers/opencode/opencode-server-driver.ts": "a5bf84966846feab174d1ca94dda60cff06edb7cabb3d7d5d71e07d5a4af3912",
+  "packages/wardmote-runner/src/cli/opencode-app-server-proxy.ts": "1969805c0d72ee7e4bdfc518fb8d31e6aedd4bda750a2922ec0f4d5c359dfbd6",
+  "packages/wardmote-runner/src/cli/opencode-proxy-input.ts": "1102bea34dedfb4b4d2ce9ca8011e95f0fce227a6a0b9d2993ad08df00b4e433",
 } as const;
 export const NATIVE_INSTRUCTION_VARIANTS = {
   baseline: {
     ...OPENCODE_FEEDBACK_BASE_FILES,
-    "packages/paperclip-runner/src/backends/runtime-context.ts": "e7c46e81cc9c93f9a4f805b5091ef08c59ea70c62f208cfda70d6edeed363898",
-    "packages/paperclip-runner/src/backends/codex-native-backend.ts": "f276d436391c9e2f0a7e58ce1302b5c9f1a39ac01c148be257f9d455515a31b9",
-    "packages/paperclip-runner/src/backends/opencode-native-backend.ts": "d54ddde3a3fdffcda3490d813d27b3b4891448e11cd05f61f9bb4b292d9fd6c2",
+    "packages/wardmote-runner/src/backends/runtime-context.ts": "e7c46e81cc9c93f9a4f805b5091ef08c59ea70c62f208cfda70d6edeed363898",
+    "packages/wardmote-runner/src/backends/codex-native-backend.ts": "f276d436391c9e2f0a7e58ce1302b5c9f1a39ac01c148be257f9d455515a31b9",
+    "packages/wardmote-runner/src/backends/opencode-native-backend.ts": "d54ddde3a3fdffcda3490d813d27b3b4891448e11cd05f61f9bb4b292d9fd6c2",
     "server/src/services/native-runtime/paperclip-runner-tool-authority.ts": "2da6963c690a3988bf2617d39e85025600b12a056a61c7b528c3d94ac636f777",
     "server/src/services/native-runtime/native-completion-feedback.ts": "72a8da837e93d1ab6f732bc88cc05de784ed771ab2f538ca1cf4768864cc678b",
     "ui/src/lib/issue-reference.ts": "ed965e30b6221a455e1dec4c6e51b1659b122828b70c289eeb0d95d9c897d242",
@@ -32,9 +32,9 @@ export const NATIVE_INSTRUCTION_VARIANTS = {
   },
   candidate: {
     ...OPENCODE_FEEDBACK_BASE_FILES,
-    "packages/paperclip-runner/src/backends/runtime-context.ts": "cae9075fac25f168972c2be4ddb58052ef2940554458e2757d88a5d0e39805c2",
-    "packages/paperclip-runner/src/backends/codex-native-backend.ts": "affecc515a623e0dfeb338f553ea53ebb7d18baa3d13e4395d17b21000dbee93",
-    "packages/paperclip-runner/src/backends/opencode-native-backend.ts": "d5dc4cc2c06b37d22be47c9f15f828c06b439d8241a8d34498ca4339273eed96",
+    "packages/wardmote-runner/src/backends/runtime-context.ts": "cae9075fac25f168972c2be4ddb58052ef2940554458e2757d88a5d0e39805c2",
+    "packages/wardmote-runner/src/backends/codex-native-backend.ts": "affecc515a623e0dfeb338f553ea53ebb7d18baa3d13e4395d17b21000dbee93",
+    "packages/wardmote-runner/src/backends/opencode-native-backend.ts": "d5dc4cc2c06b37d22be47c9f15f828c06b439d8241a8d34498ca4339273eed96",
     "server/src/services/native-runtime/paperclip-runner-tool-authority.ts": "2da6963c690a3988bf2617d39e85025600b12a056a61c7b528c3d94ac636f777",
     "server/src/services/native-runtime/native-completion-feedback.ts": "72a8da837e93d1ab6f732bc88cc05de784ed771ab2f538ca1cf4768864cc678b",
     "ui/src/lib/issue-reference.ts": "ed965e30b6221a455e1dec4c6e51b1659b122828b70c289eeb0d95d9c897d242",
@@ -42,9 +42,9 @@ export const NATIVE_INSTRUCTION_VARIANTS = {
   },
   corrected: {
     ...OPENCODE_FEEDBACK_BASE_FILES,
-    "packages/paperclip-runner/src/backends/runtime-context.ts": "bbdab79c5b1bd57c4ddbc44edfe745b40eb694aa28a465452964109aedd6104b",
-    "packages/paperclip-runner/src/backends/codex-native-backend.ts": "affecc515a623e0dfeb338f553ea53ebb7d18baa3d13e4395d17b21000dbee93",
-    "packages/paperclip-runner/src/backends/opencode-native-backend.ts": "d5dc4cc2c06b37d22be47c9f15f828c06b439d8241a8d34498ca4339273eed96",
+    "packages/wardmote-runner/src/backends/runtime-context.ts": "bbdab79c5b1bd57c4ddbc44edfe745b40eb694aa28a465452964109aedd6104b",
+    "packages/wardmote-runner/src/backends/codex-native-backend.ts": "affecc515a623e0dfeb338f553ea53ebb7d18baa3d13e4395d17b21000dbee93",
+    "packages/wardmote-runner/src/backends/opencode-native-backend.ts": "d5dc4cc2c06b37d22be47c9f15f828c06b439d8241a8d34498ca4339273eed96",
     "server/src/services/native-runtime/paperclip-runner-tool-authority.ts": "d2360cdaa63902cbf0c6a6109da452ba7e0b2a5aaa76ee5cab9c63b4bf12e584",
     "server/src/services/native-runtime/native-completion-feedback.ts": "72a8da837e93d1ab6f732bc88cc05de784ed771ab2f538ca1cf4768864cc678b",
     "ui/src/lib/issue-reference.ts": "ed965e30b6221a455e1dec4c6e51b1659b122828b70c289eeb0d95d9c897d242",
@@ -52,66 +52,66 @@ export const NATIVE_INSTRUCTION_VARIANTS = {
   },
   feedback: {
     ...OPENCODE_FEEDBACK_BASE_FILES,
-    "packages/paperclip-runner/src/backends/runtime-context.ts": "bbdab79c5b1bd57c4ddbc44edfe745b40eb694aa28a465452964109aedd6104b",
-    "packages/paperclip-runner/src/backends/codex-native-backend.ts": "affecc515a623e0dfeb338f553ea53ebb7d18baa3d13e4395d17b21000dbee93",
-    "packages/paperclip-runner/src/backends/opencode-native-backend.ts": "d5dc4cc2c06b37d22be47c9f15f828c06b439d8241a8d34498ca4339273eed96",
+    "packages/wardmote-runner/src/backends/runtime-context.ts": "bbdab79c5b1bd57c4ddbc44edfe745b40eb694aa28a465452964109aedd6104b",
+    "packages/wardmote-runner/src/backends/codex-native-backend.ts": "affecc515a623e0dfeb338f553ea53ebb7d18baa3d13e4395d17b21000dbee93",
+    "packages/wardmote-runner/src/backends/opencode-native-backend.ts": "d5dc4cc2c06b37d22be47c9f15f828c06b439d8241a8d34498ca4339273eed96",
     "server/src/services/native-runtime/paperclip-runner-tool-authority.ts": "d2360cdaa63902cbf0c6a6109da452ba7e0b2a5aaa76ee5cab9c63b4bf12e584",
     "server/src/services/native-runtime/native-completion-feedback.ts": "1f9da911ec5107c6b7543bc1b4134fc74597a29af6ed40101a895045a9e26ce0",
     "ui/src/lib/issue-reference.ts": "ab578752acc7e185333cb2b701f6db71cedbb44675db042f78fa88417e7b2ddf",
     "ui/src/components/MarkdownBody.tsx": "f3608614b143667f7dba087be81fd1449e4eac268a203e41256d1c99691c2541",
   },
   opencodeFeedback: {
-    "packages/paperclip-runner/src/backends/runtime-context.ts": "bbdab79c5b1bd57c4ddbc44edfe745b40eb694aa28a465452964109aedd6104b",
-    "packages/paperclip-runner/src/backends/codex-native-backend.ts": "affecc515a623e0dfeb338f553ea53ebb7d18baa3d13e4395d17b21000dbee93",
-    "packages/paperclip-runner/src/backends/opencode-native-backend.ts": "d5dc4cc2c06b37d22be47c9f15f828c06b439d8241a8d34498ca4339273eed96",
+    "packages/wardmote-runner/src/backends/runtime-context.ts": "bbdab79c5b1bd57c4ddbc44edfe745b40eb694aa28a465452964109aedd6104b",
+    "packages/wardmote-runner/src/backends/codex-native-backend.ts": "affecc515a623e0dfeb338f553ea53ebb7d18baa3d13e4395d17b21000dbee93",
+    "packages/wardmote-runner/src/backends/opencode-native-backend.ts": "d5dc4cc2c06b37d22be47c9f15f828c06b439d8241a8d34498ca4339273eed96",
     "server/src/services/native-runtime/paperclip-runner-tool-authority.ts": "d2360cdaa63902cbf0c6a6109da452ba7e0b2a5aaa76ee5cab9c63b4bf12e584",
     "server/src/services/native-runtime/native-completion-feedback.ts": "1f9da911ec5107c6b7543bc1b4134fc74597a29af6ed40101a895045a9e26ce0",
     "ui/src/lib/issue-reference.ts": "ab578752acc7e185333cb2b701f6db71cedbb44675db042f78fa88417e7b2ddf",
     "ui/src/components/MarkdownBody.tsx": "f3608614b143667f7dba087be81fd1449e4eac268a203e41256d1c99691c2541",
-    "packages/paperclip-runner/src/backends/native-backend-factory.ts": "63c8aee5548bc1b711a8b92bc348a00b6a7454d7815757380fb719988a90237f",
-    "packages/paperclip-runner/src/drivers/opencode/opencode-server-driver.ts": "9eb9f0aa7336011dc9a28cfec10a7e3eac568923c0f69be9771d71a51b826ba6",
-    "packages/paperclip-runner/src/cli/opencode-app-server-proxy.ts": "6f84af59e2a5e03b2eac48b094da3dfcbf213fe727350c79fbbef4cc554f03d2",
-    "packages/paperclip-runner/src/cli/opencode-proxy-input.ts": "a7bf61c79047bf1aa205b32bbecc962ade4934ebac1fbbb5bcaa3a404f868ce7",
+    "packages/wardmote-runner/src/backends/native-backend-factory.ts": "63c8aee5548bc1b711a8b92bc348a00b6a7454d7815757380fb719988a90237f",
+    "packages/wardmote-runner/src/drivers/opencode/opencode-server-driver.ts": "9eb9f0aa7336011dc9a28cfec10a7e3eac568923c0f69be9771d71a51b826ba6",
+    "packages/wardmote-runner/src/cli/opencode-app-server-proxy.ts": "6f84af59e2a5e03b2eac48b094da3dfcbf213fe727350c79fbbef4cc554f03d2",
+    "packages/wardmote-runner/src/cli/opencode-proxy-input.ts": "a7bf61c79047bf1aa205b32bbecc962ade4934ebac1fbbb5bcaa3a404f868ce7",
   },
   opencodeFeedbackSettlement: {
-    "packages/paperclip-runner/src/backends/runtime-context.ts": "bbdab79c5b1bd57c4ddbc44edfe745b40eb694aa28a465452964109aedd6104b",
-    "packages/paperclip-runner/src/backends/codex-native-backend.ts": "affecc515a623e0dfeb338f553ea53ebb7d18baa3d13e4395d17b21000dbee93",
-    "packages/paperclip-runner/src/backends/opencode-native-backend.ts": "d5dc4cc2c06b37d22be47c9f15f828c06b439d8241a8d34498ca4339273eed96",
+    "packages/wardmote-runner/src/backends/runtime-context.ts": "bbdab79c5b1bd57c4ddbc44edfe745b40eb694aa28a465452964109aedd6104b",
+    "packages/wardmote-runner/src/backends/codex-native-backend.ts": "affecc515a623e0dfeb338f553ea53ebb7d18baa3d13e4395d17b21000dbee93",
+    "packages/wardmote-runner/src/backends/opencode-native-backend.ts": "d5dc4cc2c06b37d22be47c9f15f828c06b439d8241a8d34498ca4339273eed96",
     "server/src/services/native-runtime/paperclip-runner-tool-authority.ts": "d2360cdaa63902cbf0c6a6109da452ba7e0b2a5aaa76ee5cab9c63b4bf12e584",
     "server/src/services/native-runtime/native-completion-feedback.ts": "1f9da911ec5107c6b7543bc1b4134fc74597a29af6ed40101a895045a9e26ce0",
     "ui/src/lib/issue-reference.ts": "ab578752acc7e185333cb2b701f6db71cedbb44675db042f78fa88417e7b2ddf",
     "ui/src/components/MarkdownBody.tsx": "f3608614b143667f7dba087be81fd1449e4eac268a203e41256d1c99691c2541",
-    "packages/paperclip-runner/src/backends/native-backend-factory.ts": "63c8aee5548bc1b711a8b92bc348a00b6a7454d7815757380fb719988a90237f",
-    "packages/paperclip-runner/src/drivers/opencode/opencode-server-driver.ts": "e1b40e56cb05f3851f42ebf3d94be6aca8f0a2025820ddfd15ca01439d9eefb6",
-    "packages/paperclip-runner/src/cli/opencode-app-server-proxy.ts": "6f84af59e2a5e03b2eac48b094da3dfcbf213fe727350c79fbbef4cc554f03d2",
-    "packages/paperclip-runner/src/cli/opencode-proxy-input.ts": "a7bf61c79047bf1aa205b32bbecc962ade4934ebac1fbbb5bcaa3a404f868ce7",
+    "packages/wardmote-runner/src/backends/native-backend-factory.ts": "63c8aee5548bc1b711a8b92bc348a00b6a7454d7815757380fb719988a90237f",
+    "packages/wardmote-runner/src/drivers/opencode/opencode-server-driver.ts": "e1b40e56cb05f3851f42ebf3d94be6aca8f0a2025820ddfd15ca01439d9eefb6",
+    "packages/wardmote-runner/src/cli/opencode-app-server-proxy.ts": "6f84af59e2a5e03b2eac48b094da3dfcbf213fe727350c79fbbef4cc554f03d2",
+    "packages/wardmote-runner/src/cli/opencode-proxy-input.ts": "a7bf61c79047bf1aa205b32bbecc962ade4934ebac1fbbb5bcaa3a404f868ce7",
   },
   opencodeFeedbackResponses: {
-    "packages/paperclip-runner/src/backends/runtime-context.ts": "bbdab79c5b1bd57c4ddbc44edfe745b40eb694aa28a465452964109aedd6104b",
-    "packages/paperclip-runner/src/backends/codex-native-backend.ts": "affecc515a623e0dfeb338f553ea53ebb7d18baa3d13e4395d17b21000dbee93",
-    "packages/paperclip-runner/src/backends/opencode-native-backend.ts": "d5dc4cc2c06b37d22be47c9f15f828c06b439d8241a8d34498ca4339273eed96",
+    "packages/wardmote-runner/src/backends/runtime-context.ts": "bbdab79c5b1bd57c4ddbc44edfe745b40eb694aa28a465452964109aedd6104b",
+    "packages/wardmote-runner/src/backends/codex-native-backend.ts": "affecc515a623e0dfeb338f553ea53ebb7d18baa3d13e4395d17b21000dbee93",
+    "packages/wardmote-runner/src/backends/opencode-native-backend.ts": "d5dc4cc2c06b37d22be47c9f15f828c06b439d8241a8d34498ca4339273eed96",
     "server/src/services/native-runtime/paperclip-runner-tool-authority.ts": "d2360cdaa63902cbf0c6a6109da452ba7e0b2a5aaa76ee5cab9c63b4bf12e584",
     "server/src/services/native-runtime/native-completion-feedback.ts": "1f9da911ec5107c6b7543bc1b4134fc74597a29af6ed40101a895045a9e26ce0",
     "ui/src/lib/issue-reference.ts": "ab578752acc7e185333cb2b701f6db71cedbb44675db042f78fa88417e7b2ddf",
     "ui/src/components/MarkdownBody.tsx": "f3608614b143667f7dba087be81fd1449e4eac268a203e41256d1c99691c2541",
-    "packages/paperclip-runner/src/backends/native-backend-factory.ts": "63c8aee5548bc1b711a8b92bc348a00b6a7454d7815757380fb719988a90237f",
-    "packages/paperclip-runner/src/drivers/opencode/opencode-server-driver.ts": "e1b40e56cb05f3851f42ebf3d94be6aca8f0a2025820ddfd15ca01439d9eefb6",
-    "packages/paperclip-runner/src/cli/opencode-app-server-proxy.ts": "48b6a672bdd63297ef773736e9768cbc5a968a371e85c9356f7733e4d39282a0",
-    "packages/paperclip-runner/src/cli/opencode-proxy-input.ts": "a7bf61c79047bf1aa205b32bbecc962ade4934ebac1fbbb5bcaa3a404f868ce7",
+    "packages/wardmote-runner/src/backends/native-backend-factory.ts": "63c8aee5548bc1b711a8b92bc348a00b6a7454d7815757380fb719988a90237f",
+    "packages/wardmote-runner/src/drivers/opencode/opencode-server-driver.ts": "e1b40e56cb05f3851f42ebf3d94be6aca8f0a2025820ddfd15ca01439d9eefb6",
+    "packages/wardmote-runner/src/cli/opencode-app-server-proxy.ts": "48b6a672bdd63297ef773736e9768cbc5a968a371e85c9356f7733e4d39282a0",
+    "packages/wardmote-runner/src/cli/opencode-proxy-input.ts": "a7bf61c79047bf1aa205b32bbecc962ade4934ebac1fbbb5bcaa3a404f868ce7",
   },
 } as const;
 
 // Admission explicitly binds every changed production path as well as comparison setup.
 const comparisonFiles = new Set([
   ...Object.keys(NATIVE_INSTRUCTION_VARIANTS.baseline),
-  "packages/paperclip-runner/src/backends/runtime-context.test.ts",
-  "packages/paperclip-runner/src/backends/native-backend-factory.test.ts",
-  "packages/paperclip-runner/src/drivers/opencode/opencode-server-driver.test.ts",
-  "packages/paperclip-runner/src/cli/opencode-proxy-completion.test.ts",
-  "packages/paperclip-runner/src/cli/opencode-proxy-input.test.ts",
-  "packages/paperclip-runner/src/live/runnerd-codex-transport.test.ts",
-  "packages/paperclip-runner/test/fixtures/fake-opencode-server.mjs",
-  "packages/paperclip-runner/src/backends/native-instruction-measurement.test.ts",
+  "packages/wardmote-runner/src/backends/runtime-context.test.ts",
+  "packages/wardmote-runner/src/backends/native-backend-factory.test.ts",
+  "packages/wardmote-runner/src/drivers/opencode/opencode-server-driver.test.ts",
+  "packages/wardmote-runner/src/cli/opencode-proxy-completion.test.ts",
+  "packages/wardmote-runner/src/cli/opencode-proxy-input.test.ts",
+  "packages/wardmote-runner/src/live/runnerd-codex-transport.test.ts",
+  "packages/wardmote-runner/test/fixtures/fake-opencode-server.mjs",
+  "packages/wardmote-runner/src/backends/native-instruction-measurement.test.ts",
   "tests/runner-e2e/native-instruction-consolidation.ts",
   "tests/runner-e2e/native-instruction-consolidation.test.ts",
   "tests/runner-e2e/native-completion-git-source.d.mts",
@@ -167,7 +167,7 @@ export function nativeInstructionVariant(read = (file: string) => readFileSync(j
 export function nativeInstructionDefinitionDigest() {
   return hash(nativeCompletionDefinitionDigest() + hash(readFileSync(new URL(import.meta.url)))
     + hash(readFileSync(join(root, "tests/runner-e2e/native-completion-git-source.mjs")))
-    + hash(readFileSync(join(root, "packages/paperclip-runner/src/backends/native-instruction-measurement.test.ts"))));
+    + hash(readFileSync(join(root, "packages/wardmote-runner/src/backends/native-instruction-measurement.test.ts"))));
 }
 
 export function assertNativeInstructionSelection(executions: readonly MatrixExecution[]) {
@@ -215,7 +215,7 @@ function buildFingerprint() {
       else throw new Error(`Unexpected native build entry: ${file}`);
     }
   };
-  visit("packages/paperclip-runner/dist");
+  visit("packages/wardmote-runner/dist");
   return digest.digest("hex");
 }
 
@@ -241,7 +241,7 @@ export function validateNativeInstructionMeasurement(measurement: {
   if (measurement.schema !== "paperclip.native-instruction-measurement.v2"
     || JSON.stringify(directActual) !== JSON.stringify(directExpected)
     || measurement.sourceSha !== source.sourceSha || measurement.sourceDirty !== false || measurement.providerCalls !== 0
-    || measurement.fixtureSha256 !== hash(readFileSync(join(root, "packages/paperclip-runner/src/backends/native-instruction-measurement.test.ts")))
+    || measurement.fixtureSha256 !== hash(readFileSync(join(root, "packages/wardmote-runner/src/backends/native-instruction-measurement.test.ts")))
     || JSON.stringify(actual) !== JSON.stringify(expected) || !files
     || Object.entries(files).some(([file, digest]) => measurement.sourceHashes[file.split('/').at(-1)!] !== digest))
     throw new Error("Invalid or incomplete native instruction measurement");
@@ -250,7 +250,7 @@ export function validateNativeInstructionMeasurement(measurement: {
 export function prepareNativeInstructionPreflight(directory: string) {
   const source = sourceReceipt();
   const build = (script: string, file: string) => {
-    const log = execFileSync("pnpm", ["--filter", "@tickernelz/wardmote-paperclip-runner", script], {
+    const log = execFileSync("pnpm", ["--filter", "@tickernelz/wardmote-runner", script], {
       cwd: root, timeout: 10 * 60_000, env: nativeCompletionPreflightEnvironment(process.env), maxBuffer: 8 * 1024 * 1024,
     });
     writeFileSync(join(directory, file), log);
@@ -263,7 +263,7 @@ export function prepareNativeInstructionPreflight(directory: string) {
   const runnerd = runnerdProof(source), buildSha256 = buildFingerprint();
   const measurementPath = join(directory, "native-instruction-measurement.json");
   execFileSync(process.execPath, [join(root, "node_modules/vitest/vitest.mjs"), "run", "src/backends/native-instruction-measurement.test.ts"], {
-    cwd: join(root, "packages/paperclip-runner"), timeout: 60_000,
+    cwd: join(root, "packages/wardmote-runner"), timeout: 60_000,
     env: { ...nativeCompletionPreflightEnvironment(process.env), PAPERCLIP_NATIVE_INSTRUCTION_REPORT: measurementPath }, stdio: "inherit",
   });
   const measurement = JSON.parse(readFileSync(measurementPath, "utf8"));

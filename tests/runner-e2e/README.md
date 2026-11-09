@@ -14,7 +14,7 @@ For family selection, ownership, provenance, history, and failure taxonomy,
 see the [Paperclip evaluation guide](../../doc/evals.md). This README is the
 authoritative runbook for Product E2E runner cells; the separate Runner Evals
 protocol guide lives at
-`packages/paperclip-runner/docs/runner-protocol-live-evals.md`.
+`packages/wardmote-runner/docs/runner-protocol-live-evals.md`.
 
 This is the billable browser acceptance campaign system for Paperclip runner
 profiles. It is deliberately separate from `tests/e2e`: every independently
@@ -295,7 +295,7 @@ runner binaries:
 ```bash
 pnpm install
 pnpm exec playwright install chromium
-pnpm --filter @tickernelz/wardmote-paperclip-runner build:runner-binaries
+pnpm --filter @tickernelz/wardmote-runner build:runner-binaries
 ```
 
 List cells without loading credentials or starting Paperclip:
@@ -653,7 +653,7 @@ docker buildx imagetools inspect "$image"
 
 The content ID hashes the audited image inputs, including the Dockerfile,
 platform, root package/lock/build configuration, dependency patches,
-`paperclip-eval-kernel`, and `paperclip-runner`. Changes elsewhere in the
+`packages/eval-kernel`, and `packages/wardmote-runner`. Changes elsewhere in the
 repository keep the same tag and reuse the already signed image. The Git SHA is
 stored separately as image provenance. CI reads that provenance back from a
 reused image when it builds the controller-side provider pack, preserving the

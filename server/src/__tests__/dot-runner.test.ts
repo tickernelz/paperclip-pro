@@ -39,7 +39,7 @@ describe("durable Dot Runner integration", () => {
   let db: ReturnType<typeof createDb>;
   let root: string;
   beforeAll(async () => {
-    const runnerRoot = fileURLToPath(new URL("../../../packages/paperclip-runner/", import.meta.url));
+    const runnerRoot = fileURLToPath(new URL("../../../packages/wardmote-runner/", import.meta.url));
     execFileSync("cargo", ["build", "--release", "--locked", "--manifest-path", join(runnerRoot, "runner/Cargo.toml"), "-p", "paperclip-runner-core", "--bin", "paperclip-runnerd"], { cwd: runnerRoot, stdio: "inherit", timeout: 300000 });
     temporary = await startEmbeddedPostgresTestDatabase("paperclip-dot-runner-");
     db = createDb(temporary.connectionString);
