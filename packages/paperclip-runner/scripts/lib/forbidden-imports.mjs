@@ -13,7 +13,7 @@ const RUST_IMPORT_PATTERNS = [
 const REVIEWED_EVAL_KERNEL = "@tickernelz/wardmote-paperclip-eval-kernel";
 const REVIEWED_EVAL_HARNESS = "src/eval/workflow-harness.ts";
 export const TEST_FILE_FAMILIES = ["test"];
-const TEST_FILE = new RegExp(`\\.(?:${TEST_FILE_FAMILIES.join("|")})\\.[cm]?[jt]sx?$`);
+const TEST_FILE = new RegExp(`\\.(?:${TEST_FILE_FAMILIES.join("|")})\\.[jt]sx?$`);
 const REPOSITORY_TEST_DIRECTORY = "tests";
 
 const libraryDirectory = dirname(fileURLToPath(import.meta.url));

@@ -241,6 +241,17 @@ test("only the test family the package excludes from its build is admitted", asy
   }
 });
 
+test("test extensions the build never compiles are not admitted", async (t) => {
+  for (const file of ["measurement.test.mts", "measurement.test.cts"]) {
+    const violations = await repositoryBoundary(t, {
+      ...repositoryTestFiles,
+      ["packages/runner/src/backends/" + file]: 'import { helper } from "' + repositoryTestHelper + '";',
+    });
+    assert.equal(violations.length, 1, file);
+    assert.match(violations[0].reason, /may not escape/);
+  }
+});
+
 test("the repository test tree stays closed to production sources", async (t) => {
   const violations = await repositoryBoundary(t, {
     ...repositoryTestFiles,
