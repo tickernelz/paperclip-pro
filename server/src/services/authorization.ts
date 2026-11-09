@@ -84,7 +84,6 @@ export type AuthorizationActor =
       | "agent_key"
       | "agent_jwt"
       | "mcp_oauth"
-      | "cloud_tenant"
       | "none";
   };
 
@@ -673,7 +672,7 @@ export async function canActorReadIssuePrivacy(db: Db | DbTransaction, actor: Au
 export async function issueReadSqlCondition(db: Db | DbTransaction, actor: AuthorizationActor): Promise<SQL<boolean>> {
   if (issuePrivacyMode() !== "enforce") return sql<boolean>`true`;
   if (actor.source === "local_implicit" || actor.isInstanceAdmin || isCompanyOwnerAgent(actor)) return sql<boolean>`true`;
-  if (actor.type === "board" && !actor.ignoreInstanceAdmin && actor.source !== "cloud_tenant"
+  if (actor.type === "board" && !actor.ignoreInstanceAdmin
     && await db.select({ id: instanceUserRoles.id }).from(instanceUserRoles)
       .where(and(eq(instanceUserRoles.userId, actor.userId ?? ""), eq(instanceUserRoles.role, "instance_admin")))
       .limit(1).then(rows => rows.length > 0)) return sql<boolean>`true`;
@@ -687,7 +686,6 @@ export async function projectReadSqlCondition(db: Db | DbTransaction, actor: Aut
   if (
     actor.type === "board"
     && !actor.ignoreInstanceAdmin
-    && actor.source !== "cloud_tenant"
     && Boolean(await db
       .select({ id: instanceUserRoles.id })
       .from(instanceUserRoles)
@@ -1899,60 +1897,15 @@ export function authorizationService(db: Db | DbTransaction) {
       }
       // MCP grants always use their explicitly consented company membership,
       // even when the consenting person is an instance administrator.
-      // A cloud_tenant actor's computed `isInstanceAdmin` flag is trusted: it
-      // can only be set by the attested trusted-header resolver (stack owner +
-      // `enableOwnerInstanceAdmin`). The `instance_user_roles` DB lookup stays
-      // excluded for cloud_tenant actors, so a stale or hand-inserted
-      // instance_admin row left behind by deployments that ran the
-      // pre-hardening cloud_tenant path still elevates nothing.
       if (
         !input.actor.ignoreInstanceAdmin && input.actor.source !== "mcp_oauth" &&
-        (input.actor.isInstanceAdmin ||
-          (input.actor.source !== "cloud_tenant" && await isInstanceAdmin(input.actor.userId)))
+        (input.actor.isInstanceAdmin || await isInstanceAdmin(input.actor.userId))
       ) {
         return allow({
           action: input.action,
           reason: "allow_instance_admin",
           explanation: "Allowed because the actor is an instance admin.",
         });
-      }
-      // What instance-admin elevation used to give cloud tenant users is
-      // replaced by company-scoped visibility: an active membership in the
-      // resource company grants the same read surface a same-company agent
-      // gets, and non-viewer members may mutate issues inside their company.
-      // Cross-company access stays denied.
-      if (input.actor.source === "cloud_tenant" && input.actor.userId) {
-        const membership = await getActiveMembership(companyId, "user", input.actor.userId);
-        if (membership) {
-          if (
-            input.action === "agent:read" ||
-            input.action === "company_scope:read" ||
-            input.action === "decision_queue:read" ||
-            input.action === "issue:read" ||
-            input.action === "project:read"
-          ) {
-            return allow({
-              action: input.action,
-              reason: "allow_company_member",
-              explanation: "Allowed by active cloud tenant company membership.",
-            });
-          }
-          if (
-            (
-              input.action === "issue:comment" ||
-              input.action === "issue:mutate" ||
-              input.action === "decision_queue:manage" ||
-              input.action === "decision_triage:manage"
-            ) &&
-            membership.membershipRole !== "viewer"
-          ) {
-            return allow({
-              action: input.action,
-              reason: "allow_company_member",
-              explanation: "Allowed by active cloud tenant company membership.",
-            });
-          }
-        }
       }
       if (!input.actor.userId) {
         return deny({

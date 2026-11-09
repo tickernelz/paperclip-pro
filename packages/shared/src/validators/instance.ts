@@ -169,7 +169,7 @@ export const instanceGeneralSettingsSchema = z.object({
   attachmentRetention: attachmentRetentionSettingsSchema.default(DEFAULT_ATTACHMENT_RETENTION),
   localRuns: localRunLimitsSettingsSchema.default(DEFAULT_LOCAL_RUN_LIMITS_SETTINGS),
   // Execution policy. Absent/"any" = unrestricted; "kubernetes" forces the
-  // Kubernetes sandbox provider and denies local/ssh execution (cloud_tenant).
+  // Kubernetes sandbox provider and denies local/ssh execution.
   executionMode: z.enum(["kubernetes", "any"]).optional(),
 }).strict();
 

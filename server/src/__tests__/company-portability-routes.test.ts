@@ -160,24 +160,6 @@ const importRequest = {
   collisionStrategy: "rename",
 };
 
-const cloudHeaders = {
-  "x-paperclip-cloud-stack-id": "stack-alpha",
-  "x-paperclip-cloud-paperclip-company-id": companyId,
-};
-
-function cloudTenantActor() {
-  return {
-    type: "board",
-    userId: "cloud-user-1",
-    userName: "Cloud User",
-    userEmail: "cloud-user@example.com",
-    companyIds: [companyId],
-    memberships: [{ companyId, membershipRole: "owner", status: "active" }],
-    isInstanceAdmin: true,
-    source: "cloud_tenant",
-  };
-}
-
 function createImportResult(action = "updated") {
   return {
     company: { id: companyId, action },
@@ -188,7 +170,7 @@ function createImportResult(action = "updated") {
 
 async function waitForImportJobStatus(app: express.Express, statusUrl: string, status: string) {
   for (let attempt = 0; attempt < 20; attempt += 1) {
-    const res = await request(app).get(statusUrl).set(cloudHeaders);
+    const res = await request(app).get(statusUrl);
     if (res.body.job?.status === status) {
       return res;
     }
@@ -939,99 +921,11 @@ describe("company portability routes", () => {
     expect(mockCompanyPortabilityService.importBundle).not.toHaveBeenCalled();
   });
 
-  it("accepts trusted Cloud async import jobs and reports success by job id", async () => {
-    let resolveImport: (value: ReturnType<typeof createImportResult>) => void = () => undefined;
-    const pendingImport = new Promise<ReturnType<typeof createImportResult>>((resolve) => {
-      resolveImport = resolve;
-    });
-    mockCompanyPortabilityService.importBundle.mockReturnValueOnce(pendingImport);
-    const app = await createApp(cloudTenantActor());
+  it("accepts async import jobs before validating the full import payload", async () => {
+    const app = await createApp(boardActor("board-user-1"));
 
     const accepted = await request(app)
-      .post("/api/companies/import")
-      .set("x-paperclip-cloud-async-import", "1")
-      .set(cloudHeaders)
-      .send(importRequest);
-
-    expect(accepted.status).toBe(202);
-    expect(accepted.body.job.status).toBe("running");
-    expect(accepted.body.statusUrl).toMatch(/^\/api\/companies\/import\/jobs\/tenant-import-/);
-    expect(accepted.body.retryAfterMs).toBe(1000);
-    await waitForCondition(() => mockCompanyPortabilityService.importBundle.mock.calls.length === 1, "import job start");
-    expect(mockCompanyPortabilityService.importBundle).toHaveBeenCalledWith(importRequest, "cloud-user-1", { pauseAutomations: false });
-    expect(mockLogActivity).not.toHaveBeenCalled();
-
-    resolveImport(createImportResult("updated"));
-    const succeeded = await waitForImportJobStatus(app, accepted.body.statusUrl, "succeeded");
-
-    expect(succeeded.status).toBe(200);
-    expect(succeeded.body.job.status).toBe("succeeded");
-    expect(succeeded.body.job.result.companyId).toBe(companyId);
-    expect(succeeded.body.retryAfterMs).toBeUndefined();
-    expect(mockLogActivity).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({
-      action: "company.imported",
-      companyId,
-      details: expect.objectContaining({
-        agentCount: 1,
-        warningCount: 0,
-        companyAction: "updated",
-      }),
-    }));
-
-    const completedAtMs = Date.parse(succeeded.body.job.completedAt);
-
-    // A completed job stays resolvable well past the old 5-minute retention so a
-    // user who steps away during a long import never polls into a false 404.
-    const withinWindow = vi.spyOn(Date, "now").mockReturnValue(completedAtMs + (5 * 60 * 1000) + 1);
-    try {
-      const stillThere = await request(app).get(accepted.body.statusUrl).set(cloudHeaders);
-      expect(stillThere.status).toBe(200);
-      expect(stillThere.body.job.status).toBe("succeeded");
-      expect(stillThere.body.job.result.companyId).toBe(companyId);
-    } finally {
-      withinWindow.mockRestore();
-    }
-
-    // Only past the extended 60-minute window is the in-memory record finally
-    // dropped, and only then does the status route report the job as gone.
-    const nowSpy = vi.spyOn(Date, "now").mockReturnValue(completedAtMs + (60 * 60 * 1000) + 1);
-    try {
-      const expired = await request(app).get(accepted.body.statusUrl).set(cloudHeaders);
-      expect(expired.status).toBe(404);
-      expect(expired.body.error).toBe("Import job not found");
-    } finally {
-      nowSpy.mockRestore();
-    }
-  });
-
-  it("reports trusted Cloud async import job failures with the tenant error message", async () => {
-    mockCompanyPortabilityService.importBundle.mockRejectedValueOnce(new Error("tenant import exploded"));
-    const app = await createApp(cloudTenantActor());
-
-    const accepted = await request(app)
-      .post("/api/companies/import")
-      .set("x-paperclip-cloud-async-import", "1")
-      .set(cloudHeaders)
-      .send(importRequest);
-
-    expect(accepted.status).toBe(202);
-    const failed = await waitForImportJobStatus(app, accepted.body.statusUrl, "failed");
-
-    expect(failed.status).toBe(200);
-    expect(failed.body.job.status).toBe("failed");
-    expect(failed.body.job.error.message).toBe("tenant import exploded");
-    expect(failed.body.retryAfterMs).toBeUndefined();
-    expect(failed.body.message).toBe("tenant import exploded");
-    expect(mockLogActivity).not.toHaveBeenCalled();
-  });
-
-  it("accepts trusted Cloud async import jobs before validating the full import payload", async () => {
-    const app = await createApp(cloudTenantActor());
-
-    const accepted = await request(app)
-      .post("/api/companies/import")
-      .set("x-paperclip-cloud-async-import", "1")
-      .set(cloudHeaders)
+      .post("/api/companies/import?async=1")
       .send({ target: { mode: "existing_company", companyId } });
 
     expect(accepted.status).toBe(202);
@@ -1049,17 +943,16 @@ describe("company portability routes", () => {
 
   it("forwards pauseAutomations from the global import body to the portability service", async () => {
     mockCompanyPortabilityService.importBundle.mockResolvedValueOnce(createImportResult("created"));
-    const app = await createApp(cloudTenantActor());
+    const app = await createApp(boardActor("board-user-1"));
 
     const res = await request(app)
       .post("/api/companies/import")
-      .set(cloudHeaders)
       .send({ ...importRequest, pauseAutomations: true });
 
     expect(res.status).toBe(200);
     expect(mockCompanyPortabilityService.importBundle).toHaveBeenCalledWith(
       { ...importRequest, pauseAutomations: true },
-      "cloud-user-1",
+      "board-user-1",
       { pauseAutomations: true },
     );
   });
@@ -1073,16 +966,13 @@ describe("company portability routes", () => {
     const app = await createBoardApp();
 
     const accepted = await request(app)
-      .post("/api/companies/import")
-      .set("x-paperclip-cloud-async-import", "1")
+      .post("/api/companies/import?async=1")
       .set(TEST_USER_HEADER, "board-user-a")
       .send(importRequest);
 
     expect(accepted.status).toBe(202);
     expect(accepted.body.job.status).toBe("running");
-    // Board jobs get their own id prefix, distinct from the tenant-import prefix.
     expect(accepted.body.statusUrl).toMatch(/^\/api\/companies\/import\/jobs\/import-/);
-    expect(accepted.body.statusUrl).not.toMatch(/\/jobs\/tenant-import-/);
     await waitForCondition(() => mockCompanyPortabilityService.importBundle.mock.calls.length === 1, "board import start");
     expect(mockCompanyPortabilityService.importBundle).toHaveBeenCalledWith(importRequest, "board-user-a", { pauseAutomations: false });
 
@@ -1109,8 +999,7 @@ describe("company portability routes", () => {
     const app = await createBoardApp();
 
     const accepted = await request(app)
-      .post("/api/companies/import")
-      .set("x-paperclip-cloud-async-import", "1")
+      .post("/api/companies/import?async=1")
       .set(TEST_USER_HEADER, "board-user-a")
       .send(importRequest);
 
@@ -1130,16 +1019,14 @@ describe("company portability routes", () => {
     const app = await createBoardApp();
 
     const first = await request(app)
-      .post("/api/companies/import")
-      .set("x-paperclip-cloud-async-import", "1")
+      .post("/api/companies/import?async=1")
       .set(TEST_USER_HEADER, "board-user-a")
       .send(importRequest);
 
     expect(first.status).toBe(202);
 
     const duplicate = await request(app)
-      .post("/api/companies/import")
-      .set("x-paperclip-cloud-async-import", "1")
+      .post("/api/companies/import?async=1")
       .set(TEST_USER_HEADER, "board-user-a")
       .send(importRequest);
 
@@ -1152,8 +1039,7 @@ describe("company portability routes", () => {
     // A different board user is not blocked by the first user's running job.
     mockCompanyPortabilityService.importBundle.mockReturnValueOnce(new Promise(() => undefined));
     const otherUser = await request(app)
-      .post("/api/companies/import")
-      .set("x-paperclip-cloud-async-import", "1")
+      .post("/api/companies/import?async=1")
       .set(TEST_USER_HEADER, "board-user-b")
       .send(importRequest);
 
@@ -1168,8 +1054,7 @@ describe("company portability routes", () => {
       const app = await createBoardApp();
 
       const first = await request(app)
-        .post("/api/companies/import")
-        .set("x-paperclip-cloud-async-import", "1")
+        .post("/api/companies/import?async=1")
         .set(TEST_USER_HEADER, "board-user-a")
         .send(importRequest);
 
@@ -1180,8 +1065,7 @@ describe("company portability routes", () => {
       // wrong result and switch to the wrong company — so the 409 carries no
       // job to watch, and no second import starts.
       const different = await request(app)
-        .post("/api/companies/import")
-        .set("x-paperclip-cloud-async-import", "1")
+        .post("/api/companies/import?async=1")
         .set(TEST_USER_HEADER, "board-user-a")
         .send({ ...importRequest, target: { mode: "new_company", newCompanyName: "A Different Destination" } });
 
@@ -1198,8 +1082,7 @@ describe("company portability routes", () => {
     const app = await createBoardApp();
 
     const accepted = await request(app)
-      .post("/api/companies/import")
-      .set("x-paperclip-cloud-async-import", "1")
+      .post("/api/companies/import?async=1")
       .set(TEST_USER_HEADER, "board-user-a")
       .send(importRequest);
 
@@ -1342,12 +1225,9 @@ describe("company portability routes", () => {
     expect(succeeded.body.job.importResult).toEqual(fullResult);
   });
 
-  it("engages the async path for board sessions via ?async=1, not the stripped cloud header", async () => {
+  it("engages the async path for board sessions via ?async=1", async () => {
     mockCompanyPortabilityService.importBundle.mockReturnValueOnce(new Promise(() => undefined));
     const app = await createBoardApp();
-
-    // The Cloud harness strips inbound x-paperclip-cloud-* headers, so a browser
-    // can only opt into async with the proxy-safe query parameter.
     const accepted = await request(app)
       .post("/api/companies/import?async=1")
       .set(TEST_USER_HEADER, "board-user-a")
@@ -1358,7 +1238,7 @@ describe("company portability routes", () => {
     expect(accepted.body.statusUrl).toMatch(/^\/api\/companies\/import\/jobs\/import-/);
   });
 
-  it("keeps a board import synchronous when neither async signal is present", async () => {
+  it("keeps a board import synchronous without ?async=1", async () => {
     const app = await createBoardApp();
 
     const res = await request(app)
@@ -1368,20 +1248,6 @@ describe("company portability routes", () => {
 
     expect(res.status).toBe(200);
     expect(res.body.company.id).toBe(companyId);
-  });
-
-  it("still engages the async path for cloud tenants via the x-paperclip-cloud-async-import header", async () => {
-    mockCompanyPortabilityService.importBundle.mockReturnValueOnce(new Promise(() => undefined));
-    const app = await createApp(cloudTenantActor());
-
-    const accepted = await request(app)
-      .post("/api/companies/import")
-      .set("x-paperclip-cloud-async-import", "1")
-      .set(cloudHeaders)
-      .send(importRequest);
-
-    expect(accepted.status).toBe(202);
-    expect(accepted.body.statusUrl).toMatch(/^\/api\/companies\/import\/jobs\/tenant-import-/);
   });
 
   it("rejects a truncated zip upload without importing anything", async () => {

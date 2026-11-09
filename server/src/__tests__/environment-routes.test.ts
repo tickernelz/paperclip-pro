@@ -488,7 +488,7 @@ describe("environment routes", () => {
     const ownerAdminActor = {
       type: "board",
       userId: "owner-1",
-      source: "cloud_tenant",
+      source: "session",
       companyIds: ["company-1"],
       memberships: [{ companyId: "company-1", status: "active", membershipRole: "owner" }],
       isInstanceAdmin: true,

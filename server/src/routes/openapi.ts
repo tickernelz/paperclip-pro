@@ -10958,10 +10958,8 @@ registry.registerPath({
     "uploaded as a compressed zip (`multipart/form-data` with a `package` file field plus a " +
     "JSON `meta` field, or a bare `application/zip` body with the `meta` JSON in the `meta` " +
     "query parameter); the zip is unzipped server-side into the same import bundle. " +
-    "Callers can opt into asynchronous processing: trusted Cloud tenants set the " +
-    "`x-paperclip-cloud-async-import: 1` header (browsers cannot — the Cloud harness proxy " +
-    "strips inbound `x-paperclip-cloud-*` headers), while board sessions use the proxy-safe " +
-    "`?async=1` query parameter. Either way the server responds 202 with a job id and status " +
+    "Callers can opt into asynchronous processing with the `?async=1` query parameter; " +
+    "the server then responds 202 with a job id and status " +
     "URL instead of holding the connection open for the whole import. While a board actor " +
     "already has an async job running, a resubmit returns 409 carrying the running job's id " +
     "and status URL. Jobs are held in memory and are lost on restart.",
