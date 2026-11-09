@@ -594,6 +594,8 @@ export interface OpenwaGatewayInspection {
   engine: string | null;
   keyRole: "operator" | "admin" | "viewer";
   adminKey: { role: "operator" | "admin" | "viewer" } | null;
+  canManageSessions: boolean;
+  agentKeyMinted: boolean;
   warnings: string[];
   eligible: boolean;
   sessions: Array<{
@@ -710,6 +712,7 @@ export interface OpenwaGatewayAdminCallInput {
   sessionId?: string;
   args?: Record<string, unknown>;
   confirmOwnSession?: boolean;
+  connection?: { baseUrl: string; adminApiKey: string };
 }
 
 /** Gateway reply to a board-run operation; `revealed` marks a one-time secret (new key, QR, pairing code) returned unmasked. */

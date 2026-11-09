@@ -4,10 +4,11 @@ import { flushSync } from "react-dom";
 import { createRoot, type Root } from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { ApiError } from "@/api/client";
 import { OPENWA_QR_REFRESH_MS, OpenwaGatewayManager } from "./OpenwaGatewayManager";
 
 const mocks = vi.hoisted(() => ({
-  api: { runOpenwaGatewayAdmin: vi.fn() },
+  api: { runOpenwaGatewayAdmin: vi.fn(), setup: vi.fn() },
   pushToast: vi.fn(),
 }));
 vi.mock("@/api/chatEndpoints", () => ({ chatEndpointsApi: mocks.api }));
@@ -129,5 +130,27 @@ describe("OpenWA gateway manager", () => {
     click(button(section(), "Done"));
     await vi.waitFor(() => expect(row("Key ops").textContent).toContain("owa_k1_abcd…"));
     expect(section().textContent).not.toContain("FULL_SECRET");
+  });
+  it("asks for the admin key right where session management was refused, then loads the sessions", async () => {
+    let saved = false;
+    const fallback = mocks.api.runOpenwaGatewayAdmin.getMockImplementation()!;
+    mocks.api.runOpenwaGatewayAdmin.mockImplementation(async (endpointId: string, call: Call) => {
+      if (!saved && call.operationId === "SessionController_findAll")
+        throw new ApiError("Managing OpenWA sessions needs the OpenWA admin key.", 422, { error: "x", details: { code: "openwa_admin_key_required" }, code: "openwa_admin_key_required" });
+      return fallback(endpointId, call);
+    });
+    mocks.api.setup.mockImplementation(async () => {
+      saved = true;
+      return { id: "endpoint-1" };
+    });
+    render();
+    const field = () => document.querySelector<HTMLInputElement>("#openwa-sessions-admin-key");
+    await vi.waitFor(() => expect(field()).toBeTruthy());
+    setValue(field()!, "admin-secret-123");
+    click(button(field()!.parentElement!, "Save admin key"));
+    await vi.waitFor(() => expect(mocks.api.setup).toHaveBeenCalledWith("endpoint-1", { action: "reconnect", credentials: { adminApiKey: "admin-secret-123" } }));
+    await vi.waitFor(() => expect(row("Session sales")).toBeTruthy());
+    expect(field()).toBeNull();
+    expect(document.body.textContent).not.toContain("admin-secret-123");
   });
 });

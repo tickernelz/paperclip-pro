@@ -9,7 +9,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { OpenwaConnectStep } from "./OpenwaConnectStep";
 import { openwaSetupInput } from "./ChatEndpointSetup";
 
-const mocks = vi.hoisted(() => ({ inspectOpenwa: vi.fn() }));
+const mocks = vi.hoisted(() => ({ inspectOpenwa: vi.fn(), runOpenwaGatewayAdmin: vi.fn() }));
 vi.mock("@/api/chatEndpoints", () => ({ chatEndpointsApi: mocks }));
 
 const endpoint = {
@@ -54,12 +54,12 @@ describe("OpenWA connect step", () => {
     client.clear();
     container.remove();
   });
-  const render = () =>
+  const render = (target: ChatEndpoint = endpoint, repairing = false) =>
     flushSync(() =>
       root.render(
         <QueryClientProvider client={client}>
           <TooltipProvider>
-            <OpenwaConnectStep endpoint={endpoint} agentName="Maya" repairing={false} pending={false} onAction={onAction} onSaveExit={() => {}} />
+            <OpenwaConnectStep endpoint={target} agentName="Maya" repairing={repairing} pending={false} onAction={onAction} onSaveExit={() => {}} />
           </TooltipProvider>
         </QueryClientProvider>,
       ),
@@ -137,5 +137,74 @@ describe("OpenWA connect step", () => {
       credentials: { apiKey: "k", adminApiKey: "a" },
       openwa: { baseUrl: "http://localhost:2785", sessionId: "session-a", numberMode: "agent_number", attestations: { pacing: true, soleClient: false } },
     });
+  });
+  it("creates a WhatsApp session with only the admin key, shows its QR, and selects it once it is ready", async () => {
+    const empty = { ...inspection, keyRole: "admin", adminKey: { role: "admin" }, canManageSessions: true, agentKeyMinted: true, warnings: [], eligible: false, sessions: [] };
+    const linked = { ...empty, eligible: true, sessions: [{ sessionId: "new-session", name: "pmo", status: "ready", maskedNumber: "+62xxx...9999", pushName: "PMO", eligible: true }] };
+    mocks.inspectOpenwa.mockResolvedValueOnce(empty).mockResolvedValueOnce(linked);
+    let status = "qr_ready";
+    mocks.runOpenwaGatewayAdmin.mockImplementation(async (_id: string, call: { operationId: string; sessionId?: string }) => {
+      const reply = (data: unknown) => ({ operationId: call.operationId, sessionId: call.sessionId ?? null, data, revealed: false });
+      if (call.operationId === "SessionController_create") return reply({ id: "new-session", name: "pmo", status: "created" });
+      if (call.operationId === "SessionController_findOne") return reply({ id: "new-session", status });
+      if (call.operationId === "SessionController_getQRCode") return reply({ qrCode: "data:image/png;base64,QR" });
+      return reply({});
+    });
+    render();
+    type("#openwa-base-url", "http://localhost:2785");
+    type("#openwa-admin-api-key", "secret-admin-key");
+    click(button("Inspect gateway"));
+    await vi.waitFor(() => expect(container.textContent).toContain("no WhatsApp session yet"));
+    expect(mocks.inspectOpenwa).toHaveBeenCalledWith("endpoint-1", { baseUrl: "http://localhost:2785", adminApiKey: "secret-admin-key" });
+    click(button("Create new WhatsApp session"));
+    click(button("Create and show QR"));
+    expect(container.textContent).toContain("Use 1-64 letters");
+    expect(mocks.runOpenwaGatewayAdmin).not.toHaveBeenCalled();
+    type("#openwa-new-session-name", "pmo");
+    click(button("Create and show QR"));
+    await vi.waitFor(() => expect(container.querySelector('img[alt="WhatsApp login QR code"]')).toBeTruthy());
+    const connection = { baseUrl: "http://localhost:2785", adminApiKey: "secret-admin-key" };
+    expect(mocks.runOpenwaGatewayAdmin.mock.calls.slice(0, 2)).toEqual([
+      ["endpoint-1", { operationId: "SessionController_create", args: { name: "pmo" }, connection }],
+      ["endpoint-1", { operationId: "SessionController_start", sessionId: "new-session", connection }],
+    ]);
+    status = "ready";
+    await vi.waitFor(() => expect(mocks.inspectOpenwa).toHaveBeenCalledTimes(2), { timeout: 6_000 });
+    await vi.waitFor(() => expect(container.querySelector<HTMLInputElement>('input[value="new-session"]')?.checked).toBe(true));
+    expect(container.querySelector('img[alt="WhatsApp login QR code"]')).toBeNull();
+    const [pacing, soleClient] = container.querySelectorAll<HTMLInputElement>('input[type="checkbox"]');
+    click(pacing);
+    click(soleClient);
+    click(button("Connect session"));
+    expect(onAction).toHaveBeenCalledWith("configure", {
+      baseUrl: "http://localhost:2785",
+      adminApiKey: "secret-admin-key",
+      sessionId: "new-session",
+      numberMode: "agent_number",
+      pacing: "true",
+      soleClient: "true",
+    });
+    expect(container.textContent).not.toContain("secret-admin-key");
+  });
+
+  it("adds an admin key on reconnect without retyping the operator key", () => {
+    const saved = {
+      ...endpoint,
+      status: "attention",
+      providerAccountId: "http://localhost:2785#session-a",
+      policy: { numberMode: "agent_number", attestations: { pacing: true, soleClient: true } },
+    } as unknown as ChatEndpoint;
+    render(saved, true);
+    type("#openwa-admin-api-key", "secret-admin-key");
+    click(button("Reconnect OpenWA"));
+    expect(onAction).toHaveBeenCalledWith("reconnect", {
+      baseUrl: "http://localhost:2785",
+      sessionId: "session-a",
+      adminApiKey: "secret-admin-key",
+      numberMode: "agent_number",
+      pacing: "true",
+      soleClient: "true",
+    });
+    expect(openwaSetupInput("reconnect", onAction.mock.calls[0]![1])).toMatchObject({ credentials: { adminApiKey: "secret-admin-key" } });
   });
 });

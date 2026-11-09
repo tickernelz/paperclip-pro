@@ -116,14 +116,22 @@ function assertOperatorKey(validation: OpenwaKeyValidation): asserts validation 
   }
 }
 
+function adminKeyInvalid(): HttpError {
+  return unprocessable("The OpenWA admin key is invalid or does not have the admin role. Copy the admin key that OpenWA printed at its first start.", {
+    code: "openwa_admin_key_invalid",
+  });
+}
+
 async function validateAdminKey(gateway: OpenwaGatewayClient): Promise<"admin"> {
   const validation = await gateway.validateKey("admin");
-  if (!validation.valid || validation.role !== "admin") {
-    throw unprocessable("The OpenWA admin key is invalid or does not have the admin role. Leave it empty unless you enable gateway admin tools.", {
-      code: "openwa_admin_key_invalid",
-    });
-  }
+  if (!validation.valid || validation.role !== "admin") throw adminKeyInvalid();
   return "admin";
+}
+
+function adminKeyRequired(): HttpError {
+  return unprocessable("Enter the OpenWA admin API key, or an operator key limited to one ready session.", {
+    code: "openwa_admin_key_required",
+  });
 }
 
 async function readSessions(gateway: OpenwaGatewayClient): Promise<OpenwaSession[]> {
@@ -138,11 +146,13 @@ async function readSessions(gateway: OpenwaGatewayClient): Promise<OpenwaSession
 
 /** Read-only setup inspection (spec 5.2 steps 1-4); never returns keys or full numbers. */
 export async function inspectOpenwaGateway(
-  input: { baseUrl: string; apiKey: string; adminApiKey?: string },
+  input: { baseUrl: string; apiKey?: string; adminApiKey?: string },
   reservations: OpenwaReservations,
   options: OpenwaSetupOptions = {},
 ): Promise<OpenwaGatewayInspection> {
-  const gateway = client(input.baseUrl, input.apiKey, input.adminApiKey, "", options);
+  const agentKey = input.apiKey || input.adminApiKey;
+  if (!agentKey) throw adminKeyRequired();
+  const gateway = client(input.baseUrl, agentKey, input.adminApiKey, "", options);
   try {
     const [versionResult, validation] = await Promise.all([
       gateway.openApiVersion().then(
@@ -154,9 +164,12 @@ export async function inspectOpenwaGateway(
     if ("error" in versionResult && versionResult.error instanceof OpenwaGatewayError && versionResult.error.code === "gateway_unavailable") {
       throw versionResult.error;
     }
+    if (!input.apiKey && validation.valid && validation.role !== "admin") throw adminKeyInvalid();
     assertOperatorKey(validation);
     const sessions = await readSessions(gateway);
-    const adminRole = input.adminApiKey ? await validateAdminKey(gateway) : null;
+    const adminRole = !input.adminApiKey ? null : input.apiKey ? await validateAdminKey(gateway) : "admin";
+    const agentKeyMinted = validation.role === "admin";
+    const canManageSessions = adminRole !== null || (agentKeyMinted && validation.scoped !== true);
     const gatewayVersion = "version" in versionResult ? versionResult.version : null;
     const warnings: string[] = [];
     if (gatewayVersion === null) {
@@ -164,10 +177,12 @@ export async function inspectOpenwaGateway(
     } else if (gatewayVersion !== OPENWA_GATEWAY_VERSION) {
       warnings.push("The gateway runs OpenWA " + gatewayVersion + "; Paperclip is tested with " + OPENWA_GATEWAY_VERSION + ", so some operations may behave differently.");
     }
-    if (sessions.length > 1) {
+    if (agentKeyMinted && input.apiKey) {
+      warnings.push("The operator API key has the admin role. Wardmote keeps it only for session management and gives the agent a new key limited to the chosen session.");
+    } else if (!agentKeyMinted && sessions.length > 1) {
       warnings.push("This key can see " + sessions.length + " sessions, so it is not scoped to one session. Create an operator key whose allowedSessions contains only the agent's session.");
     }
-    if (sessions.length === 0) {
+    if (sessions.length === 0 && !canManageSessions) {
       throw unprocessable("This OpenWA API key cannot see any session. Create a session in the OpenWA dashboard or scope the key to an existing one.", {
         code: "openwa_no_session",
       });
@@ -176,7 +191,7 @@ export async function inspectOpenwaGateway(
       const digits = openwaPhoneDigits(session.phone);
       const reason =
         session.status !== "ready"
-          ? "The session is " + session.status.replaceAll("_", " ") + "; open the OpenWA dashboard and connect WhatsApp first"
+          ? "The session is " + session.status.replaceAll("_", " ") + (canManageSessions ? "; link WhatsApp to it first" : "; open the OpenWA dashboard and connect WhatsApp first")
           : digits === null
             ? "The session has no phone number yet"
             : reservations.accounts.has(openwaProviderAccountId(input.baseUrl, session.id)) || reservations.numbers.has(digits)
@@ -199,6 +214,8 @@ export async function inspectOpenwaGateway(
       engine: typeof validation.engineType === "string" ? validation.engineType : null,
       keyRole: validation.role,
       adminKey: adminRole ? { role: adminRole } : null,
+      canManageSessions,
+      agentKeyMinted,
       warnings,
       eligible: projected.some((session) => session.eligible),
       sessions: projected,
@@ -206,6 +223,45 @@ export async function inspectOpenwaGateway(
   } catch (error) {
     throw openwaSetupError(error, input.baseUrl);
   }
+}
+
+/** Replaces an admin-role agent key with a new operator key limited to the chosen session, keeping the admin key for board management. */
+export async function scopeOpenwaAgentKey(
+  credentials: { baseUrl: string; sessionId: string; apiKey?: string; adminApiKey?: string },
+  keyName: string,
+  options: OpenwaSetupOptions = {},
+): Promise<{ apiKey: string; adminApiKey?: string; mintedKeyId: string | null }> {
+  const agentKey = credentials.apiKey || credentials.adminApiKey;
+  if (!agentKey) throw adminKeyRequired();
+  try {
+    const validation = await client(credentials.baseUrl, agentKey, undefined, credentials.sessionId, options).validateKey("operator");
+    if (!credentials.apiKey && validation.valid && validation.role !== "admin") throw adminKeyInvalid();
+    assertOperatorKey(validation);
+    if (validation.role !== "admin")
+      return { apiKey: agentKey, ...(credentials.adminApiKey ? { adminApiKey: credentials.adminApiKey } : {}), mintedKeyId: null };
+    const adminApiKey = credentials.adminApiKey || agentKey;
+    const admin = client(credentials.baseUrl, adminApiKey, adminApiKey, credentials.sessionId, options);
+    if (adminApiKey !== agentKey) await validateAdminKey(admin);
+    const created = await admin.createApiKey({ name: keyName, role: "operator", allowedSessions: [credentials.sessionId] });
+    if (!created || typeof created.apiKey !== "string" || !created.apiKey || typeof created.id !== "string")
+      throw new HttpError(502, "The OpenWA gateway did not return the new operator key. Check the gateway version and logs.", {
+        code: "openwa_invalid_response",
+      });
+    return { apiKey: created.apiKey, adminApiKey, mintedKeyId: created.id };
+  } catch (error) {
+    throw openwaSetupError(error, credentials.baseUrl);
+  }
+}
+
+/** Best-effort revoke of an operator key Wardmote minted for a setup attempt that did not complete. */
+export async function revokeOpenwaAgentKey(
+  credentials: { baseUrl: string; adminApiKey: string },
+  keyId: string,
+  options: OpenwaSetupOptions = {},
+): Promise<void> {
+  await client(credentials.baseUrl, credentials.adminApiKey, credentials.adminApiKey, "", options)
+    .revokeApiKey(keyId)
+    .catch(() => undefined);
 }
 
 /** Verifies stored or supplied credentials still identify one ready session (configure, reconnect, resume). */

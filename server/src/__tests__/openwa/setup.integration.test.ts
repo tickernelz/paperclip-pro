@@ -41,6 +41,8 @@ const PHONE = "6281200005678";
 
 type FakeSession = { id: string; name: string; status: string; phone: string | null; pushName: string | null };
 
+type MintedKey = { id: string; name: string; role: string; allowedSessions: string[]; active: boolean };
+
 interface FakeGateway {
   baseUrl: string;
   version: string | null;
@@ -48,6 +50,8 @@ interface FakeGateway {
   sessionsStatus: number;
   sessionsBody: unknown;
   requests: string[];
+  keyedRequests: string[];
+  minted: Map<string, MintedKey>;
   close(): Promise<void>;
 }
 
@@ -58,6 +62,8 @@ async function startFakeGateway(): Promise<FakeGateway> {
     sessionsStatus: 200,
     sessionsBody: undefined as unknown,
     requests: [] as string[],
+    keyedRequests: [] as string[],
+    minted: new Map<string, MintedKey>(),
   };
   const json = (res: ServerResponse, status: number, body: unknown) => {
     res.writeHead(status, { "content-type": "application/json" });
@@ -71,19 +77,44 @@ async function startFakeGateway(): Promise<FakeGateway> {
       if (state.version === null) return json(res, 404, { message: "Not Found", statusCode: 404 });
       return json(res, 200, { openapi: "3.0.0", info: { title: "OpenWA API", version: state.version } });
     }
+    const minted = typeof key === "string" ? state.minted.get(key) : undefined;
+    state.keyedRequests.push(`${minted ? "minted" : key === ADMIN_KEY ? "admin" : "other"} ${req.method} ${url.pathname}`);
+    if (minted && !minted.active) return json(res, 401, { message: "Invalid API key", error: "Unauthorized", statusCode: 401 });
+    if (url.pathname === "/api/auth/api-keys" && req.method === "POST") {
+      if (key !== ADMIN_KEY) return json(res, 403, { message: "Insufficient permissions. Required: admin", statusCode: 403 });
+      let raw = "";
+      req.on("data", (chunk: Buffer) => (raw += chunk.toString("utf8")));
+      req.on("end", () => {
+        const input = JSON.parse(raw || "{}") as { name?: string; role?: string; allowedSessions?: string[] };
+        const entry = { id: randomUUID(), name: String(input.name), role: String(input.role), allowedSessions: input.allowedSessions ?? [], active: true };
+        const apiKey = "owa_minted_" + randomUUID().replaceAll("-", "");
+        state.minted.set(apiKey, entry);
+        json(res, 201, { ...entry, isActive: true, apiKey });
+      });
+      return;
+    }
+    const revoke = /^\/api\/auth\/api-keys\/([^/]+)\/revoke$/.exec(url.pathname);
+    if (revoke && req.method === "POST") {
+      if (key !== ADMIN_KEY) return json(res, 403, { message: "Insufficient permissions. Required: admin", statusCode: 403 });
+      const entry = [...state.minted.values()].find((candidate) => candidate.id === revoke[1]);
+      if (!entry) return json(res, 404, { message: "API key not found", statusCode: 404 });
+      entry.active = false;
+      return json(res, 200, { id: entry.id, isActive: false });
+    }
     if (key === OTHER_SESSION_KEY)
       return json(res, 403, { message: "API key is not allowed for this session", error: "Forbidden", statusCode: 403, code: "FORBIDDEN" });
-    if (key !== OPERATOR_KEY && key !== ADMIN_KEY && key !== CHAT_SCOPED_KEY && key !== VIEWER_KEY)
+    if (!minted && key !== OPERATOR_KEY && key !== ADMIN_KEY && key !== CHAT_SCOPED_KEY && key !== VIEWER_KEY)
       return json(res, 401, { message: "Invalid API key", error: "Unauthorized", statusCode: 401 });
     if (key === CHAT_SCOPED_KEY)
       return json(res, 403, { message: "API key is restricted to selected chats", error: "Forbidden", statusCode: 403 });
     if (url.pathname === "/api/auth/validate" && req.method === "POST") {
-      const role = key === ADMIN_KEY ? "admin" : key === VIEWER_KEY ? "viewer" : "operator";
-      return json(res, 200, { valid: true, role, engineType: "whatsapp-web.js" });
+      const role = minted ? minted.role : key === ADMIN_KEY ? "admin" : key === VIEWER_KEY ? "viewer" : "operator";
+      return json(res, 200, { valid: true, role, engineType: "whatsapp-web.js", ...(minted ? { scoped: true } : {}) });
     }
     if (url.pathname === "/api/sessions" && req.method === "GET") {
       if (state.sessionsStatus !== 200) return json(res, state.sessionsStatus, { message: "Too Many Requests", statusCode: state.sessionsStatus });
-      return json(res, 200, state.sessionsBody ?? state.sessions.map((session) => ({
+      const visible = minted ? state.sessions.filter((session) => minted.allowedSessions.includes(session.id)) : state.sessions;
+      return json(res, 200, state.sessionsBody ?? visible.map((session) => ({
         ...session,
         connectedAt: null,
         lastActive: null,
@@ -243,10 +274,14 @@ describeEmbeddedPostgres("OpenWA setup inspection and configure", () => {
 
   const inspect = (app: express.Express, endpointId: string, body: Record<string, unknown>) =>
     request(app).post(`/api/chat-endpoints/${endpointId}/openwa/inspect`).send(body);
-  const configure = (app: express.Express, endpointId: string, overrides: { attestations?: { pacing: boolean; soleClient: boolean }; sessionId?: string } = {}) =>
+  const configure = (
+    app: express.Express,
+    endpointId: string,
+    overrides: { attestations?: { pacing: boolean; soleClient: boolean }; sessionId?: string; credentials?: Record<string, string> } = {},
+  ) =>
     request(app).post(`/api/chat-endpoints/${endpointId}/setup`).send({
       action: "configure",
-      credentials: { apiKey: OPERATOR_KEY },
+      credentials: overrides.credentials ?? { apiKey: OPERATOR_KEY },
       openwa: {
         baseUrl: live().baseUrl,
         sessionId: overrides.sessionId ?? SESSION_ID,
@@ -267,6 +302,8 @@ describeEmbeddedPostgres("OpenWA setup inspection and configure", () => {
       engine: "whatsapp-web.js",
       keyRole: "operator",
       adminKey: null,
+      canManageSessions: false,
+      agentKeyMinted: false,
       warnings: [],
       eligible: true,
       sessions: [{ sessionId: SESSION_ID, name: "ops", status: "ready", maskedNumber: "+62xxx...5678", pushName: "Ops Desk", eligible: true }],
@@ -533,5 +570,90 @@ describeEmbeddedPostgres("OpenWA setup inspection and configure", () => {
     expect(response.status).toBe(404);
     expect(await storedMode(other.endpoint.id)).toBe("steer");
     expect(await configChanges(other.companyId, other.endpoint.id)).toEqual([]);
+  });
+  const health = (app: express.Express, endpointId: string) => request(app).get(`/api/chat-endpoints/${endpointId}/openwa/health`);
+
+  it("inspects with only the admin key, offers session management, and lists a gateway with no session yet", async () => {
+    const { app, endpoint } = await setup();
+    const response = await inspect(app, endpoint.id, { baseUrl: live().baseUrl, adminApiKey: ADMIN_KEY });
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({ keyRole: "admin", adminKey: { role: "admin" }, canManageSessions: true, agentKeyMinted: true, eligible: true });
+    expect(response.body.warnings.join(" ")).not.toContain("not scoped");
+    live().sessions.splice(0);
+    const empty = await inspect(app, endpoint.id, { baseUrl: live().baseUrl, adminApiKey: ADMIN_KEY });
+    expect(empty.status).toBe(200);
+    expect(empty.body).toMatchObject({ canManageSessions: true, eligible: false, sessions: [] });
+    const operatorOnly = await inspect(app, endpoint.id, { baseUrl: live().baseUrl, apiKey: OPERATOR_KEY });
+    expect(operatorOnly.status).toBe(422);
+    expect(operatorOnly.body.details.code).toBe("openwa_no_session");
+    expect(JSON.stringify([response.body, empty.body])).not.toContain(ADMIN_KEY);
+  });
+
+  it("refuses an operator key in the admin key field", async () => {
+    const { app, endpoint } = await setup();
+    const response = await inspect(app, endpoint.id, { baseUrl: live().baseUrl, adminApiKey: OPERATOR_KEY });
+    expect(response.status).toBe(422);
+    expect(response.body.details.code).toBe("openwa_admin_key_invalid");
+  });
+
+  it("strips zero-width characters pasted into the gateway URL and keys", async () => {
+    const { app, endpoint } = await setup();
+    const response = await inspect(app, endpoint.id, { baseUrl: live().baseUrl + "\u2060", apiKey: "\u200b" + OPERATOR_KEY + "\u2060" });
+    expect(response.status).toBe(200);
+    expect(response.body.baseUrl).toBe(live().baseUrl);
+    const configured = await configure(app, endpoint.id, { credentials: { apiKey: OPERATOR_KEY + "\u200b" } });
+    expect(configured.status).toBe(200);
+    expect(live().minted.size).toBe(0);
+  });
+
+  it("gives the agent a new operator key limited to the session when only the admin key is supplied", async () => {
+    const { app, endpoint, companyId } = await setup();
+    const response = await configure(app, endpoint.id, { credentials: { adminApiKey: ADMIN_KEY } });
+    expect(response.status).toBe(200);
+    expect(response.body).toMatchObject({ status: "verifying", providerAccountId: `${live().baseUrl}#${SESSION_ID}` });
+    const minted = [...live().minted.values()];
+    expect(minted).toEqual([{ id: expect.any(String), name: "wardmote-" + endpoint.id.slice(0, 8), role: "operator", allowedSessions: [SESSION_ID], active: true }]);
+    const [connection] = await db.select().from(toolConnections).where(eq(toolConnections.companyId, companyId));
+    expect(connection.credentialSecretRefs.map((ref) => ref.configPath).sort()).toEqual(["credentials.adminApiKey", "credentials.apiKey"]);
+    const before = live().keyedRequests.length;
+    const checked = await health(app, endpoint.id);
+    expect(checked.status).toBe(200);
+    expect(checked.body.adminKeyConfigured).toBe(true);
+    expect(live().keyedRequests.slice(before)).toContain(`minted GET /api/sessions/${SESSION_ID}`);
+    expect(JSON.stringify(response.body)).not.toContain("owa_minted_");
+    expect(JSON.stringify(response.body)).not.toContain(ADMIN_KEY);
+  });
+
+  it("moves an admin key pasted as the operator key out of the agent's reach", async () => {
+    const { app, endpoint } = await setup();
+    const response = await configure(app, endpoint.id, { credentials: { apiKey: ADMIN_KEY } });
+    expect(response.status).toBe(200);
+    expect([...live().minted.values()]).toMatchObject([{ role: "operator", allowedSessions: [SESSION_ID], active: true }]);
+    const before = live().keyedRequests.length;
+    expect((await health(app, endpoint.id)).body.adminKeyConfigured).toBe(true);
+    const sessionReads = live().keyedRequests.slice(before).filter((line) => line.endsWith(`GET /api/sessions/${SESSION_ID}`));
+    expect(sessionReads.length).toBeGreaterThan(0);
+    expect(sessionReads.every((line) => line.startsWith("minted "))).toBe(true);
+  });
+
+  it("revokes the minted key when the chosen session cannot be verified", async () => {
+    const { app, endpoint } = await setup();
+    live().sessions[0]!.status = "qr_ready";
+    const response = await configure(app, endpoint.id, { credentials: { adminApiKey: ADMIN_KEY } });
+    expect(response.status).toBe(422);
+    expect(response.body.details.code).toBe("openwa_session_not_ready");
+    expect([...live().minted.values()]).toMatchObject([{ active: false }]);
+  });
+
+  it("adds an admin key on reconnect without retyping the operator key", async () => {
+    const { app, endpoint, companyId } = await setup();
+    expect((await configure(app, endpoint.id)).status).toBe(200);
+    expect((await health(app, endpoint.id)).body.adminKeyConfigured).toBe(false);
+    const reconnected = await request(app).post(`/api/chat-endpoints/${endpoint.id}/setup`).send({ action: "reconnect", credentials: { adminApiKey: ADMIN_KEY } });
+    expect(reconnected.status).toBe(200);
+    expect(live().minted.size).toBe(0);
+    const [connection] = await db.select().from(toolConnections).where(eq(toolConnections.companyId, companyId));
+    expect(connection.credentialSecretRefs.map((ref) => ref.configPath).sort()).toEqual(["credentials.adminApiKey", "credentials.apiKey"]);
+    expect((await health(app, endpoint.id)).body.adminKeyConfigured).toBe(true);
   });
 });

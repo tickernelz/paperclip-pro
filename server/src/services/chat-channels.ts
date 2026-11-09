@@ -128,8 +128,15 @@ import { validateNativeQuestionResponseInput } from "./native-runtime/native-que
 import type { AskUserQuestionsAnswer, AskUserQuestionsInteraction, IssueThreadInteraction } from "@tickernelz/wardmote-shared";
 import { PhotonCloudClient, PhotonError, photonFailure, photonSharedIdentity, photonSharedScope } from "./photon/cloud.js";
 import { PhotonChatAdapter, photonThreadId, photonReplyReference } from "./photon/adapter.js";
-import { maskOpenwaPhoneNumber, openwaChannelConfigurationSchema, openwaEndpointPolicySchema, photonChannelConfigurationSchema, type OpenwaEndpointPolicy, type PhotonChannelConfiguration } from "@tickernelz/wardmote-shared";
-import { inspectOpenwaGateway, openwaProviderAccountId, openwaSetupReplyDelivered, verifyOpenwaSession } from "./openwa/setup.js";
+import { maskOpenwaPhoneNumber, openwaChannelConfigurationSchema, openwaEndpointPolicySchema, photonChannelConfigurationSchema, stripOpenwaPasteNoise, type OpenwaEndpointPolicy, type PhotonChannelConfiguration } from "@tickernelz/wardmote-shared";
+import {
+  inspectOpenwaGateway,
+  openwaProviderAccountId,
+  openwaSetupReplyDelivered,
+  revokeOpenwaAgentKey,
+  scopeOpenwaAgentKey,
+  verifyOpenwaSession,
+} from "./openwa/setup.js";
 import { assertOpenwaAgentAdapterSupported } from "./openwa/agent-adapter.js";
 import type { LiveEvent as PhotonEvent } from "@photon-ai/advanced-imessage";
 import { defaultSlackAppConfiguration } from "@tickernelz/wardmote-shared";
@@ -830,7 +837,7 @@ const REQUIRED_CREDENTIALS: Record<
 > = {
   speko: ["apiKey", "signingSecret", "agentId"],
   "imessage-photon": ["projectSecret"],
-  openwa: ["apiKey"],
+  openwa: [],
   agentmail: [],
   slack: ["botToken", "signingSecret"],
   discord: ["botToken", "applicationId", "guildId"],
@@ -6336,7 +6343,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     );
     for (const [key, rawValue] of Object.entries(supplied ?? {})) {
       if (typeof rawValue === "string" && rawValue.trim())
-        values[key] = key === "privateKey" ? rawValue : rawValue.trim();
+        values[key] = key === "privateKey" ? rawValue : endpoint.provider === "openwa" ? stripOpenwaPasteNoise(rawValue) : rawValue.trim();
     }
     if (endpoint.provider === "telegram" && !values.webhookSecret) {
       values.webhookSecret = randomBytes(32).toString("hex");
@@ -8370,7 +8377,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
 
   async function inspectOpenwa(
     endpointId: string,
-    input: { baseUrl: string; apiKey: string; adminApiKey?: string },
+    input: { baseUrl: string; apiKey?: string; adminApiKey?: string },
   ) {
     const record = await endpointRecord(endpointId);
     if (!record || record.endpoint.provider !== "openwa")
@@ -10088,6 +10095,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       credentials = { ...credentials, ...configuration, lineId };
     }
     let openwaPolicy: OpenwaEndpointPolicy | null = null;
+    let openwaMintedKeyId: string | null = null;
     if (endpoint.provider === "openwa") {
       const storedPolicy = openwaEndpointPolicySchema.parse(endpoint.policy);
       const configuration = input.openwa
@@ -10101,7 +10109,19 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         throw unprocessable("Confirm both OpenWA attestations before connecting: send pacing is enabled on the gateway, and Paperclip is the only client sending as this session", { code: "openwa_attestations_required" });
       if (endpoint.providerAccountId && endpoint.providerAccountId !== openwaProviderAccountId(configuration.baseUrl, configuration.sessionId))
         throw conflict("A different OpenWA gateway or session requires a new channel", { code: "chat_bot_identity_changed" });
-      credentials = { ...credentials, baseUrl: configuration.baseUrl, sessionId: configuration.sessionId };
+      const agentKey = await scopeOpenwaAgentKey(
+        { baseUrl: configuration.baseUrl, sessionId: configuration.sessionId, apiKey: credentials.apiKey, adminApiKey: credentials.adminApiKey },
+        "wardmote-" + endpoint.id.slice(0, 8),
+        { fetchImpl },
+      );
+      openwaMintedKeyId = agentKey.mintedKeyId;
+      credentials = {
+        ...credentials,
+        apiKey: agentKey.apiKey,
+        ...(agentKey.adminApiKey ? { adminApiKey: agentKey.adminApiKey } : {}),
+        baseUrl: configuration.baseUrl,
+        sessionId: configuration.sessionId,
+      };
       const { triggers: _triggers, ...withoutTriggers } = storedPolicy;
       openwaPolicy = openwaEndpointPolicySchema.parse({
         ...(storedPolicy.numberMode === configuration.numberMode ? storedPolicy : withoutTriggers),
@@ -10109,27 +10129,34 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
         attestations: configuration.attestations,
       });
     }
-    const identity = await verifyCredentials(endpoint.provider, credentials);
-    // Once setup has claimed a provider bot identity, every credential repair
-    // must prove that same identity before secrets can be replaced. A process
-    // interruption can leave the endpoint in `attention` after the claim but
-    // before credential persistence; a repeated first-setup request must not
-    // turn that recovery state into an identity-swap escape hatch.
-    if (input.action === "reconnect" || Boolean(endpoint.botExternalId)) {
-      if (
-        !nativeBotIdentityMatches(
-          endpoint.provider,
-          verifiedCurrentIdentity,
-          identity,
-        )
-      ) {
-        throw conflict(
-          "The provider credentials identify a different bot; create a new connection for that bot instead",
-          { code: "chat_bot_identity_changed" },
-        );
+    let identity: VerifiedProviderIdentity;
+    try {
+      identity = await verifyCredentials(endpoint.provider, credentials);
+      // Once setup has claimed a provider bot identity, every credential repair
+      // must prove that same identity before secrets can be replaced. A process
+      // interruption can leave the endpoint in `attention` after the claim but
+      // before credential persistence; a repeated first-setup request must not
+      // turn that recovery state into an identity-swap escape hatch.
+      if (input.action === "reconnect" || Boolean(endpoint.botExternalId)) {
+        if (
+          !nativeBotIdentityMatches(
+            endpoint.provider,
+            verifiedCurrentIdentity,
+            identity,
+          )
+        ) {
+          throw conflict(
+            "The provider credentials identify a different bot; create a new connection for that bot instead",
+            { code: "chat_bot_identity_changed" },
+          );
+        }
       }
+      await assertNativeBotIdentityAvailable(endpoint, identity);
+    } catch (error) {
+      if (openwaMintedKeyId && credentials.adminApiKey)
+        await revokeOpenwaAgentKey({ baseUrl: credentials.baseUrl, adminApiKey: credentials.adminApiKey }, openwaMintedKeyId, { fetchImpl });
+      throw error;
     }
-    await assertNativeBotIdentityAvailable(endpoint, identity);
     const prepared = await prepareProviderInventory(endpoint, credentials);
     const credentialsChangedByDiscovery =
       endpoint.provider === "github" &&
@@ -10197,7 +10224,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
           (stored) =>
             stored.baseUrl === credentials.baseUrl &&
             stored.sessionId === credentials.sessionId &&
-            stored.apiKey === credentials.apiKey,
+            (stored.apiKey === credentials.apiKey || openwaMintedKeyId !== null),
         )
         .catch(() => false));
     if (endpoint.provider === "imessage-photon") {
@@ -10213,7 +10240,8 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     }
     if (
       (input.credentials && Object.keys(input.credentials).length > 0) ||
-      credentialsChangedByDiscovery
+      credentialsChangedByDiscovery ||
+      openwaMintedKeyId !== null
     )
       await persistCredentials(
         endpoint,
