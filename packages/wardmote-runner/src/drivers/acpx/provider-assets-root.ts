@@ -64,7 +64,7 @@ export function resolveRunnerProviderAssetsRoot(moduleUrl: string, provider: Nat
     } else if (new RegExp(`/(?:src|dist)/drivers/acpx/${provider}-installation\\.(?:ts|js)$`).test(url.pathname)) packageRoot = fileURLToPath(new URL("../../../", url));
     else if (/\/dist\/cli\/acpx-runtime-sidecar\.(?:cjs|js)$/.test(url.pathname)) packageRoot = fileURLToPath(new URL("../../", url));
     else if (new RegExp(`/dist/vendor/wardmote-runner/drivers/acpx/${provider}-installation\\.(?:js)$`).test(url.pathname)) packageRoot = fileURLToPath(new URL("../../", url));
-    else if (/\/dist\/vendor\/paperclip-runner\/cli\/acpx-runtime-sidecar\.(?:cjs|js)$/.test(url.pathname)) packageRoot = fileURLToPath(new URL("../", url));
+    else if (/\/dist\/vendor\/wardmote-runner\/cli\/acpx-runtime-sidecar\.(?:cjs|js)$/.test(url.pathname)) packageRoot = fileURLToPath(new URL("../", url));
     else throw new Error("Provider factory is outside a verified package layout");
     packageRoot = realpathSync(packageRoot);
   }

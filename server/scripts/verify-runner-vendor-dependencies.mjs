@@ -1,4 +1,4 @@
-// Verify every npm package the vendored paperclip-runner actually imports
+// Verify every npm package the vendored wardmote-runner actually imports
 // at runtime is also declared as a direct dependency of server/package.json.
 //
 // packages/wardmote-runner is private and never published, so the server
@@ -15,7 +15,7 @@
 // of the entry points server actually imports (index.js, testing.js, live/index.js),
 // with `write: false` so nothing is written to disk and `packages:
 // "external"` so npm imports are reported, not inlined. That is precise:
-// paperclip-runner declares dependencies (react-markdown, the codex/opencode
+// wardmote-runner declares dependencies (react-markdown, the codex/opencode
 // CLI packages, ...) that only its unrelated ./react and ./browser export
 // subpaths use, which server never imports, so requiring *every* declared
 // dependency to be mirrored would be over-broad and demand dependencies
@@ -67,7 +67,7 @@ export async function findRunnerExternalPackages(entryPoints) {
   for (const entryPoint of entryPoints) {
     if (!existsSync(entryPoint)) {
       throw new Error(
-        `paperclip-runner vendor check: expected build output at ${entryPoint}. ` +
+        `wardmote-runner vendor check: expected build output at ${entryPoint}. ` +
           `Run "pnpm --filter @tickernelz/wardmote-runner build" first.`,
       );
     }
@@ -110,10 +110,10 @@ function explainMissingDependencies(missing, runnerDependencyNames) {
     const range = runnerDependencyNames.get(name);
     return range
       ? `  "${name}": "${range}"  (matches packages/wardmote-runner/package.json)`
-      : `  "${name}"  (not declared as a paperclip-runner dependency either -- check for a missing or mistyped dependency there first)`;
+      : `  "${name}"  (not declared as a wardmote-runner dependency either -- check for a missing or mistyped dependency there first)`;
   });
   return (
-    `paperclip-runner vendor check: server/package.json is missing the runtime ` +
+    `wardmote-runner vendor check: server/package.json is missing the runtime ` +
     `${missing.length === 1 ? "dependency" : "dependencies"} the vendored runner ` +
     `imports at runtime:\n${lines.join("\n")}\n\n` +
     `packages/wardmote-runner/dist is copied into server's own published package ` +
