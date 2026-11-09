@@ -138,17 +138,8 @@ export type {
   AuthorizationResource,
 } from "./authorization.js";
 export { boardAuthService } from "./board-auth.js";
-export { instanceSettingsService, applyManagedExperimentalOverlay } from "./instance-settings.js";
-export {
-  getManagedInstanceConfig,
-  managedFeatureKeySet,
-  parseManagedConfigEnv,
-  MANAGED_CONFIG_ENV_KEY,
-  type ManagedEnvironmentSpec,
-  type ManagedInstanceConfig,
-} from "./managed-config.js";
+export { instanceSettingsService } from "./instance-settings.js";
 export { bootstrapExecutionPolicyFromEnv } from "./execution-policy-bootstrap.js";
-export { applyManagedEnvironments } from "./managed-environments.js";
 export { buildExportFidelityReport, collectExportFidelityCounts } from "./export-fidelity.js";
 export { companyPortabilityService } from "./company-portability.js";
 export { teamsCatalogService } from "./teams-catalog.js";

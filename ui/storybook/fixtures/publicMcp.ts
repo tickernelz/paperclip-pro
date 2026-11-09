@@ -1,4 +1,4 @@
-import { instanceExperimentalSettingsSchema, type InstanceExperimentalSettingsWithManaged, type McpConnection, type McpConnectionRequest } from "@tickernelz/wardmote-shared";
+import { instanceExperimentalSettingsSchema, type InstanceExperimentalSettings, type McpConnection, type McpConnectionRequest } from "@tickernelz/wardmote-shared";
 import { fn } from "storybook/test";
 
 // Local portrait fixture keeps avatar previews independent of third-party image hosts.
@@ -37,7 +37,7 @@ export function installPublicMcpFixture(fixture: PublicMcpFixture = {}) {
   consentSubmission.mockClear();
   const original = window.fetch;
   let rows = fixture.empty ? [] : (fixture.connections ?? connections).map(row => ({ ...row, revokedAt: fixture.revoked ? "2020-01-02T00:00:00Z" : row.revokedAt }));
-  let settings: InstanceExperimentalSettingsWithManaged = { ...instanceExperimentalSettingsSchema.parse({}), enablePublicMcp: Boolean(fixture.enabled), managedKeys: fixture.managed ? { enablePublicMcp: { managed: true, managedBy: "paperclip-cloud" } } : {} };
+  let settings: InstanceExperimentalSettings = { ...instanceExperimentalSettingsSchema.parse({}), enablePublicMcp: Boolean(fixture.enabled) };
   const error = (message: string, status = 503) => Response.json({ error: message }, { status });
   window.fetch = async (input, init) => {
     const url = new URL(typeof input === "string" ? input : input instanceof URL ? input.href : input.url, location.origin);

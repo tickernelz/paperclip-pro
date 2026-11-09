@@ -32,7 +32,6 @@ import {
 } from "@tickernelz/wardmote-shared";
 import { conflict, forbidden } from "../errors.js";
 import { logActivity } from "./activity-log.js";
-import { isCloudManagedInstance } from "./cloud-instance.js";
 import {
   resourceStatus,
   stockHash,
@@ -105,18 +104,6 @@ export interface ManagedSandboxEnvironmentInput {
   extraMetadata?: Record<string, unknown>;
   /** Version label recorded with the stock binding; hashes remain the drift authority. */
   stockVersion?: string;
-  /**
-   * Asserts the caller's deployment gives no operator any path to hand-edit
-   * this row (currently only true for the PAPERCLIP_MANAGED_CONFIG applier,
-   * where `enableManagedSandboxOnly` removes the tenant's own environment
-   * choice entirely). When set, a plain content-hash mismatch against a real
-   * prior binding is treated as ordinary stock drift instead of an operator
-   * customization to protect — see the `operator_modified` handling below.
-   * Leave unset for any caller (self-hosted `kubernetes-execution-mode`
-   * bootstrap, tests, admin routes) where an operator could realistically
-   * have edited the row through the normal environments UI/API.
-   */
-  platformFullyManaged?: boolean;
 }
 
 export type ManagedSandboxEnvironmentReconcileAction =
@@ -565,39 +552,6 @@ export function environmentService(db: Db) {
         );
         if (operatorReaffirmedArchive) stockStatus = "operator_modified";
 
-        // `platformFullyManaged` callers (currently: the PAPERCLIP_MANAGED_CONFIG
-        // applier) assert that nothing in their deployment can hand-edit this
-        // row — the product gives a cloud-harness tenant no path to it, unlike
-        // the general self-hosted contract this function otherwise protects
-        // (see "classifies operator drift" in environment-service.test.ts,
-        // which exercises a real operator edit and must keep winning). Under
-        // that assertion, a plain content-hash mismatch against a real prior
-        // binding can only be drift between two platform-driven reconciliation
-        // passes (e.g. a stock hash recorded by an older app build before a
-        // later stock field was added), never a customization to protect —
-        // apply it like any other stock-outdated row.
-        //
-        // Two things the bypass must never touch:
-        // - A row with NO matching binding. `row` can be a same-name sandbox
-        //   row that was never Paperclip-managed (the fallback lookup above).
-        //   It also reads as `operator_modified`, but there is no prior
-        //   platform pass to have drifted from — adopting it would overwrite
-        //   a tenant-created environment and stamp it managed. Require a
-        //   binding for this exact row, so "prior binding" is enforced, not
-        //   just documented.
-        // - Archive-reaffirmation. A `sandbox_image` update must never
-        //   resurrect a row something else deliberately kept archived after
-        //   Paperclip's own provider-unavailability archival, so that path
-        //   still skips below regardless of this flag.
-        if (
-          input.platformFullyManaged &&
-          stockStatus === "operator_modified" &&
-          !operatorReaffirmedArchive &&
-          matchingBindings.length > 0
-        ) {
-          stockStatus = "stock_update_available";
-        }
-
         if (stockStatus === "operator_modified") {
           const baseline = matchingBindings[0];
           let baselineDefaults = baseline
@@ -913,16 +867,6 @@ export function environmentService(db: Db) {
      * Idempotently ensure THE local-driver environment row; the partial
      * unique index `environments_local_driver_idx` enforces at most one per
      * instance.
-     *
-     * On a cloud-managed instance an existing row is additionally ADOPTED —
-     * stamped `managedByPaperclip: true` (other metadata preserved) — so the
-     * single local slot is platform-owned there by construction, mirroring
-     * `ensureManagedSandboxEnvironment`'s adoption of the sandbox slot. This
-     * is what lets the environment-routes write floor treat a local row's
-     * platform markers as live state rather than a stale leftover: every
-     * caller (company creation, the heartbeat, run orchestration) converges
-     * the marker. Self-hosted instances keep the historical behavior:
-     * an existing row is returned untouched.
      */
     ensureLocalEnvironment: async (_companyId?: string): Promise<Environment> => {
       const now = new Date();
@@ -964,19 +908,6 @@ export function environmentService(db: Db) {
         .then((rows) => rows[0] ?? null);
       if (!existing) {
         throw new Error("Failed to ensure local environment");
-      }
-      const existingMetadata = (existing.metadata ?? {}) as Record<string, unknown>;
-      if (isCloudManagedInstance() && existingMetadata.managedByPaperclip !== true) {
-        const adopted = await db
-          .update(environments)
-          .set({
-            metadata: { ...existingMetadata, managedByPaperclip: true },
-            updatedAt: new Date(),
-          })
-          .where(eq(environments.id, existing.id))
-          .returning()
-          .then((rows) => rows[0] ?? existing);
-        return toEnvironment(adopted);
       }
       return toEnvironment(existing);
     },

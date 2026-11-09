@@ -31,7 +31,7 @@ export async function startRunnerApiTestServer(options: {
     deploymentMode: options.deploymentMode ?? "authenticated", deploymentExposure: "private",
     allowedHostnames: ["127.0.0.1"], bindHost: "127.0.0.1", authReady: true,
     companyDeletionEnabled: false, instanceId: `eval-${randomUUID()}`,
-    localPluginDir: join(root, "plugins"), managedPluginAutoInstall: [],
+    localPluginDir: join(root, "plugins"),
     decisionServiceOptions: { wakeOriginAgent: async () => undefined },
   });
   const http = createServer(app);

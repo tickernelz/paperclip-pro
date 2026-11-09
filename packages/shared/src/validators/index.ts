@@ -51,8 +51,6 @@ export {
   type InstanceGeneralSettings,
   type PatchInstanceGeneralSettings,
   instanceExperimentalSettingsSchema,
-  instanceExperimentalSettingsWithManagedSchema,
-  managedSettingMetadataSchema,
   patchInstanceExperimentalSettingsSchema,
   patchInstanceSettingsSchema,
   type InstanceExperimentalSettings,

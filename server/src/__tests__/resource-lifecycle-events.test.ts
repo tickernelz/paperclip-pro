@@ -31,8 +31,6 @@ describePostgres("Resource lifecycle events", () => {
   }, 90_000);
   afterAll(async () => { await worker?.stop(); await database?.cleanup(); });
   beforeEach(async () => {
-    vi.stubEnv("PAPERCLIP_MANAGED_CONFIG", undefined);
-    vi.stubEnv("PAPERCLIP_CLOUD_TENANT_SERVER_TOKEN", undefined);
     await worker?.stop();
     worker = configureAgentLifecycle(db, { requiredPluginIds: async () => [], runPlugin: async () => "complete", runHost: async () => "complete" });
     companyId = randomUUID();
@@ -217,8 +215,6 @@ describePostgres("Resource lifecycle events", () => {
   });
 
   it("captures self-hosted lifecycle events without backfilling older resources", async () => {
-    vi.stubEnv("PAPERCLIP_MANAGED_CONFIG", undefined);
-    vi.stubEnv("PAPERCLIP_CLOUD_TENANT_SERVER_TOKEN", undefined);
     const oldAgentId = randomUUID();
     const oldProjectId = randomUUID();
     await db.insert(agents).values({ id: oldAgentId, companyId, name: "Existing agent" });
@@ -232,8 +228,6 @@ describePostgres("Resource lifecycle events", () => {
   });
 
   it("scopes resource identities by company and type", async () => {
-    vi.stubEnv("PAPERCLIP_MANAGED_CONFIG", undefined);
-    vi.stubEnv("PAPERCLIP_CLOUD_TENANT_SERVER_TOKEN", "fixture-token");
     const id = randomUUID();
     await recordResourceCreationEvent(db, companyId, "agent", id);
     await recordResourceCreationEvent(db, companyId, "project", id);

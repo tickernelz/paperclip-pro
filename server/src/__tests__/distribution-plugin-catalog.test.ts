@@ -25,7 +25,7 @@ describe("image-owned plugin catalogs", () => {
   });
   it("resolves selected private bundles alongside built-ins after verifying their bytes", () => {
     const { root, localPath } = fixture();
-    const installs = resolveBundledPluginInstalls(["daytona", "acme.widget"], { catalogRoot: root, env: {}, enforceCatalogRoot: true });
+    const installs = resolveBundledPluginInstalls(["daytona", "acme.widget"], { catalogRoot: root, env: {} });
     expect(installs.map(({ key }) => key)).toEqual(["daytona", "acme.widget"]);
     expect(installs[1]?.localPath).toBe(localPath);
   });

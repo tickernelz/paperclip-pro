@@ -1,17 +1,7 @@
 import type { ReactNode } from "react";
-import { Lock } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ToggleSwitch } from "@/components/ui/toggle-switch";
 import { cn } from "@/lib/utils";
-
-export function ManagedByCloudBadge() {
-  return (
-    <Badge variant="outline" className="text-ink-3">
-      <Lock aria-hidden="true" />
-      Managed by Paperclip Cloud
-    </Badge>
-  );
-}
 
 export function FeatureSettingRow({
   name,
