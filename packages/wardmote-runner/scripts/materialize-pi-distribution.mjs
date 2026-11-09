@@ -108,12 +108,12 @@ export async function writePiDistributionManifest(runtimeRoot) {
 export function piDistributionBootstrapSource() {
   return [
       'const path=require("node:path");',
-      'process.env.WARDMOTE_PI_NODE_EXECUTABLE=path.join(__dirname,"node/bin/node");',
-      'process.env.WARDMOTE_PI_ENTRYPOINT=path.join(__dirname,"node_modules/@earendil-works/pi-coding-agent/dist/cli.js");',
-      'process.env.WARDMOTE_PI_EXTENSION_PATH=path.join(__dirname,"extensions/paperclip.js");',
-      'process.env.WARDMOTE_PI_MODULE_GUARD_PATH=path.join(__dirname,".paperclip-native-module-guard.cjs");',
-      'const protectedRoots=JSON.parse(process.env.WARDMOTE_PI_PROTECTED_ROOTS??"[]");if(!Array.isArray(protectedRoots))throw new Error("Invalid Pi protected roots");',
-      'process.env.WARDMOTE_PI_PROTECTED_ROOTS=JSON.stringify([...protectedRoots,__dirname]);',
+      'process.env.PAPERCLIP_PI_NODE_EXECUTABLE=path.join(__dirname,"node/bin/node");',
+      'process.env.PAPERCLIP_PI_ENTRYPOINT=path.join(__dirname,"node_modules/@earendil-works/pi-coding-agent/dist/cli.js");',
+      'process.env.PAPERCLIP_PI_EXTENSION_PATH=path.join(__dirname,"extensions/paperclip.js");',
+      'process.env.PAPERCLIP_PI_MODULE_GUARD_PATH=path.join(__dirname,".paperclip-native-module-guard.cjs");',
+      'const protectedRoots=JSON.parse(process.env.PAPERCLIP_PI_PROTECTED_ROOTS??"[]");if(!Array.isArray(protectedRoots))throw new Error("Invalid Pi protected roots");',
+      'process.env.PAPERCLIP_PI_PROTECTED_ROOTS=JSON.stringify([...protectedRoots,__dirname]);',
       'import(require("node:url").pathToFileURL(path.join(__dirname,"node_modules/pi-acp/dist/index.js")).href).catch(()=>{process.exitCode=1;});',
       '',
   ].join("\n");

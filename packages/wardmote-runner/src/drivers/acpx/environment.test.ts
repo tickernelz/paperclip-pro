@@ -98,7 +98,7 @@ describe("ACPX launch environment", () => {
       CURSOR_API_KEY: "cursor-key", CURSOR_AUTH_TOKEN: "cursor-token", COPILOT_GITHUB_TOKEN: "copilot-key",
       GH_TOKEN: "gh-key", GITHUB_TOKEN: "github-key", COPILOT_PROVIDER_BASE_URL: "https://unapproved.invalid",
       COPILOT_MODEL: "ambient-model", CURSOR_CONFIG_DIR: "/ambient/cursor", PI_CODING_AGENT_DIR: "/ambient/pi",
-      WARDMOTE_PI_ENTRYPOINT: "/unverified/pi.js", NODE_OPTIONS: "--import=/unverified/hook.js",
+      PAPERCLIP_PI_ENTRYPOINT: "/unverified/pi.js", NODE_OPTIONS: "--import=/unverified/hook.js",
       COPILOT_PKG_CACHE_HOME: "/unverified/cache", COPILOT_ALLOW_ALL: "true",
     };
     expect(createSanitizedAcpxSpawnInput(source, "cursor").env).toEqual({ CURSOR_API_KEY: "cursor-key", CURSOR_AUTH_TOKEN: "cursor-token" });

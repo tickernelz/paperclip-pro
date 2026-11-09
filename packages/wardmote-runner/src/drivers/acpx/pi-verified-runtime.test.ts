@@ -26,7 +26,7 @@ describe("Pi complete runtime manifest", () => {
   it("binds interpreter, Pi, extension, wrapper, native modules and resources", async () => {
     const { root, manifest } = await fixture();
     const result = await verifyPiRuntimeManifest(root, manifest);
-    expect(result.environment.WARDMOTE_PI_EXTENSION_PATH).toBe(await realpath(join(root, "extension.js")));
+    expect(result.environment.PAPERCLIP_PI_EXTENSION_PATH).toBe(await realpath(join(root, "extension.js")));
     expect(result.manifestDigest).toMatch(/^sha256:[a-f0-9]{64}$/);
     await writeFile(join(root, "assets/image.wasm"), "replacement");
     await expect(verifyPiRuntimeManifest(root, manifest)).rejects.toThrow("package graph");

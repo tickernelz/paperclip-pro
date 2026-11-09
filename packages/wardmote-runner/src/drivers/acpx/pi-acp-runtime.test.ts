@@ -287,8 +287,8 @@ describe("Pi ACP bridge", () => {
     await mkdir(join(root, "sessions"));
     for (const name of ["node", "cli.js", "extension.js"]) await writeFile(join(root, name), "verified");
     const environment = {
-      WARDMOTE_ACPX_ISOLATED_CONTEXT: "1", WARDMOTE_PI_READ_ONLY: "0",
-      WARDMOTE_PI_NODE_EXECUTABLE: join(root, "node"), WARDMOTE_PI_ENTRYPOINT: join(root, "cli.js"), WARDMOTE_PI_EXTENSION_PATH: join(root, "extension.js"),
+      PAPERCLIP_ACPX_ISOLATED_CONTEXT: "1", PAPERCLIP_PI_READ_ONLY: "0",
+      PAPERCLIP_PI_NODE_EXECUTABLE: join(root, "node"), PAPERCLIP_PI_ENTRYPOINT: join(root, "cli.js"), PAPERCLIP_PI_EXTENSION_PATH: join(root, "extension.js"),
       PI_CODING_AGENT_DIR: root,
     };
     const launch = createPiLaunchSpec({ cwd: root, mcpServers: [] }, environment);
@@ -296,13 +296,13 @@ describe("Pi ACP bridge", () => {
     expect(launch.args).toEqual(expect.arrayContaining(["--no-extensions", "--no-approve", "--no-skills", "--offline"]));
     const ambient = createPiLaunchSpec({ cwd: root }, { ...environment, AGENT_HOME: "/ambient/unregistered" });
     expect(ambient.env.AGENT_HOME).toBeUndefined();
-    expect(JSON.parse(ambient.env.WARDMOTE_PI_RUNTIME_CONFIGURATION!).agentHome).toBeUndefined();
+    expect(JSON.parse(ambient.env.PAPERCLIP_PI_RUNTIME_CONFIGURATION!).agentHome).toBeUndefined();
     const agentHome = await realpath(root);
-    const bound = createPiLaunchSpec({ cwd: root }, { ...environment, AGENT_HOME: "/ambient/unregistered", WARDMOTE_PI_AGENT_HOME: agentHome });
+    const bound = createPiLaunchSpec({ cwd: root }, { ...environment, AGENT_HOME: "/ambient/unregistered", PAPERCLIP_PI_AGENT_HOME: agentHome });
     expect(bound.env.AGENT_HOME).toBe(agentHome);
-    expect(JSON.parse(bound.env.WARDMOTE_PI_RUNTIME_CONFIGURATION!).agentHome).toBe(agentHome);
-    for (const path of ["/", "relative", join(root, "cli.js")]) expect(() => createPiLaunchSpec({ cwd: root }, { ...environment, WARDMOTE_PI_AGENT_HOME: path })).toThrow("registered directory");
-    expect(() => createPiLaunchSpec({ cwd: root }, { ...environment, WARDMOTE_PI_NODE_EXECUTABLE: "pi" })).toThrow("binding");
+    expect(JSON.parse(bound.env.PAPERCLIP_PI_RUNTIME_CONFIGURATION!).agentHome).toBe(agentHome);
+    for (const path of ["/", "relative", join(root, "cli.js")]) expect(() => createPiLaunchSpec({ cwd: root }, { ...environment, PAPERCLIP_PI_AGENT_HOME: path })).toThrow("registered directory");
+    expect(() => createPiLaunchSpec({ cwd: root }, { ...environment, PAPERCLIP_PI_NODE_EXECUTABLE: "pi" })).toThrow("binding");
     await symlink(join(root, "cli.js"), join(root, "sessions", "escape.jsonl"));
     expect(() => createPiLaunchSpec({ cwd: root, sessionPath: join(root, "sessions", "escape.jsonl") }, environment)).toThrow("escaped");
   });

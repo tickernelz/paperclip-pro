@@ -81,7 +81,7 @@ export interface PiRuntimeConfiguration {
 
 /** This environment is synthesized by the verified wrapper, never the model. */
 export function readPiRuntimeConfiguration(environment: NodeJS.ProcessEnv): PiRuntimeConfiguration {
-  const raw = environment.WARDMOTE_PI_RUNTIME_CONFIGURATION;
+  const raw = environment.PAPERCLIP_PI_RUNTIME_CONFIGURATION;
   if (!raw || Buffer.byteLength(raw) > MAX_CONFIGURATION_BYTES) throw new Error("Pi runtime configuration is missing or oversized");
   const value = asRecord(JSON.parse(raw));
   const invocationNamespace = value.invocationNamespace;
@@ -462,6 +462,6 @@ export async function installPiRuntimeExtension(
 export default async function paperclipPiExtension(pi: PiExtensionApi): Promise<void> {
   const configuration = readPiRuntimeConfiguration(process.env);
   // Do not let the model's shell tool inherit authenticated MCP credentials.
-  delete process.env.WARDMOTE_PI_RUNTIME_CONFIGURATION;
+  delete process.env.PAPERCLIP_PI_RUNTIME_CONFIGURATION;
   await installPiRuntimeExtension(pi, configuration);
 }

@@ -430,7 +430,7 @@ export async function openQualifiedAcpxRuntime(
       ...definedEnvironment(options.launchEnvironment),
       ...(options.profile.agent === "claude"
         ? {
-            WARDMOTE_ACPX_ISOLATED_CONTEXT: "1",
+            PAPERCLIP_ACPX_ISOLATED_CONTEXT: "1",
             // This URL comes from the runner-owned authenticated tool bridge,
             // never provider-supplied permission-request metadata.
             WARDMOTE_ACPX_TASK_TOOL_BRIDGE_URL: options.mcpServers.find(

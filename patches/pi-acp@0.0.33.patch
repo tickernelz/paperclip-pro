@@ -4,7 +4,7 @@
  // src/acp/auth.ts
  var PI_SETUP_METHOD_ID = "pi_terminal_login";
  function getAuthMethods(opts) {
-+  if (process.env.WARDMOTE_ACPX_ISOLATED_CONTEXT === "1") return [];
++  if (process.env.PAPERCLIP_ACPX_ISOLATED_CONTEXT === "1") return [];
    const supportsTerminalAuthMeta = opts?.supportsTerminalAuthMeta ?? true;
    const method = {
      id: PI_SETUP_METHOD_ID,
@@ -485,7 +485,7 @@
    return process.env.PI_CODING_AGENT_DIR ? resolve3(process.env.PI_CODING_AGENT_DIR) : join4(homedir4(), ".pi", "agent");
  }
  function getEnableSkillCommands(cwd) {
-+  if (process.env.WARDMOTE_ACPX_ISOLATED_CONTEXT === "1") return true;
++  if (process.env.PAPERCLIP_ACPX_ISOLATED_CONTEXT === "1") return true;
    const merged = getMergedSettings(cwd);
    const direct = merged.enableSkillCommands;
    if (typeof direct === "boolean") return direct;
@@ -493,7 +493,7 @@
    return true;
  }
  function getQuietStartup(cwd) {
-+  if (process.env.WARDMOTE_ACPX_ISOLATED_CONTEXT === "1") return true;
++  if (process.env.PAPERCLIP_ACPX_ISOLATED_CONTEXT === "1") return true;
    const merged = getMergedSettings(cwd);
    const direct = merged.quietStartup;
    if (typeof direct === "boolean") return direct;
@@ -501,7 +501,7 @@
    const out = [];
    const seen = /* @__PURE__ */ new Set();
    for (const c of [...a, ...b]) {
-+    if (process.env.WARDMOTE_ACPX_ISOLATED_CONTEXT === "1" && !["compact", "session", "autocompact"].includes(c.name)) continue;
++    if (process.env.PAPERCLIP_ACPX_ISOLATED_CONTEXT === "1" && !["compact", "session", "autocompact"].includes(c.name)) continue;
      if (seen.has(c.name)) continue;
      seen.add(c.name);
      out.push(c);
@@ -532,7 +532,7 @@
      }
    }
    async initialize(params) {
-+    if (process.env.WARDMOTE_ACPX_ISOLATED_CONTEXT !== "1") throw RequestError3.invalidParams("Pi requires a qualified Paperclip launch");
++    if (process.env.PAPERCLIP_ACPX_ISOLATED_CONTEXT !== "1") throw RequestError3.invalidParams("Pi requires a qualified Paperclip launch");
      const supportedVersion = 1;
      const requested = params.protocolVersion;
      return {
@@ -855,7 +855,7 @@
    return 0;
  }
  function buildUpdateNotice() {
-+  if (process.env.WARDMOTE_ACPX_ISOLATED_CONTEXT === "1") return null;
++  if (process.env.PAPERCLIP_ACPX_ISOLATED_CONTEXT === "1") return null;
    try {
      const piVersion = spawnSync("pi", ["--version"], { encoding: "utf-8" });
      const installed = (String(piVersion.stdout ?? "").trim() || String(piVersion.stderr ?? "").trim()).replace(
@@ -863,7 +863,7 @@
    }
  }
  function buildStartupInfo(opts) {
-+  if (process.env.WARDMOTE_ACPX_ISOLATED_CONTEXT === "1") return "";
++  if (process.env.PAPERCLIP_ACPX_ISOLATED_CONTEXT === "1") return "";
    void opts.fileCommands;
    const md = [];
    try {
@@ -1240,7 +1240,7 @@
 +    return !isAbsolute(suffix) && suffix !== ".." && !suffix.startsWith(`..${sep}`);
 +  };
 +  if (!within(root, logical) || !within(root, physical)) throw new Error("Pi diff escaped its workspace");
-+  for (const protectedPath of pathArray(environment.WARDMOTE_PI_PROTECTED_ROOTS)) {
++  for (const protectedPath of pathArray(environment.PAPERCLIP_PI_PROTECTED_ROOTS)) {
 +    if (within(protectedPath, logical)) throw new Error("Pi diff targets protected state");
 +    let protectedPhysical        ;
 +    try { protectedPhysical = realpathSync(protectedPath); } catch { continue; }
@@ -1262,15 +1262,15 @@
 +  params                                                               ,
 +  environment                   ,
 +)                                                                                           {
-+  if (environment.WARDMOTE_ACPX_ISOLATED_CONTEXT !== "1") throw new Error("Pi requires an isolated runner launch");
-+  const command = requiredFile(environment, "WARDMOTE_PI_NODE_EXECUTABLE");
-+  const entrypoint = requiredFile(environment, "WARDMOTE_PI_ENTRYPOINT");
-+  const extension = requiredFile(environment, "WARDMOTE_PI_EXTENSION_PATH");
-+  if (environment.WARDMOTE_PI_READ_ONLY !== "0" && environment.WARDMOTE_PI_READ_ONLY !== "1") throw new Error("Pi requires an explicit read-only policy");
-+  const readRoots = pathArray(environment.WARDMOTE_PI_READ_ROOTS);
-+  const protectedRoots = pathArray(environment.WARDMOTE_PI_PROTECTED_ROOTS);
++  if (environment.PAPERCLIP_ACPX_ISOLATED_CONTEXT !== "1") throw new Error("Pi requires an isolated runner launch");
++  const command = requiredFile(environment, "PAPERCLIP_PI_NODE_EXECUTABLE");
++  const entrypoint = requiredFile(environment, "PAPERCLIP_PI_ENTRYPOINT");
++  const extension = requiredFile(environment, "PAPERCLIP_PI_EXTENSION_PATH");
++  if (environment.PAPERCLIP_PI_READ_ONLY !== "0" && environment.PAPERCLIP_PI_READ_ONLY !== "1") throw new Error("Pi requires an explicit read-only policy");
++  const readRoots = pathArray(environment.PAPERCLIP_PI_READ_ROOTS);
++  const protectedRoots = pathArray(environment.PAPERCLIP_PI_PROTECTED_ROOTS);
 +  const workspace = realpathSync(params.cwd);
-+  const suppliedAgentHome = environment.WARDMOTE_PI_AGENT_HOME;
++  const suppliedAgentHome = environment.PAPERCLIP_PI_AGENT_HOME;
 +  let agentHome                    ;
 +  if (suppliedAgentHome !== undefined) {
 +    if (!isAbsolute(suppliedAgentHome) || /[\0\r\n]/.test(suppliedAgentHome) || suppliedAgentHome === "/" || !lstatSync(suppliedAgentHome).isDirectory() || realpathSync(suppliedAgentHome) !== suppliedAgentHome) throw new Error("Pi agent files require a canonical registered directory");
@@ -1279,14 +1279,14 @@
 +  const invocationNamespace = randomUUID();
 +  const configuration = JSON.stringify({
 +    invocationNamespace, workspace, servers: params.mcpServers ?? [],
-+    readOnly: environment.WARDMOTE_PI_READ_ONLY === "1",
++    readOnly: environment.PAPERCLIP_PI_READ_ONLY === "1",
 +    readRoots, protectedRoots,
 +    ...(agentHome ? { agentHome } : {}),
-+    instructions: environment.WARDMOTE_PI_SYSTEM_INSTRUCTIONS ?? "",
++    instructions: environment.PAPERCLIP_PI_SYSTEM_INSTRUCTIONS ?? "",
 +  });
 +  if (Buffer.byteLength(configuration) > 64 * 1024) throw new Error("Pi launch configuration exceeds its bound");
-+  const guard = environment.WARDMOTE_PI_MODULE_GUARD_PATH === undefined ? []
-+    : ["--require", requiredFile(environment, "WARDMOTE_PI_MODULE_GUARD_PATH")];
++  const guard = environment.PAPERCLIP_PI_MODULE_GUARD_PATH === undefined ? []
++    : ["--require", requiredFile(environment, "PAPERCLIP_PI_MODULE_GUARD_PATH")];
 +  const args = [...guard, entrypoint, "--mode", "rpc", "--no-extensions", "--no-skills", "--no-prompt-templates", "--no-themes", "--no-approve", "--offline", "-e", extension];
 +  for (const root of readRoots) args.push("--skill", root);
 +  if (params.sessionPath) {
@@ -1298,7 +1298,7 @@
 +    if (!suffix || isAbsolute(suffix) || suffix === ".." || suffix.startsWith(`..${sep}`) || !lstatSync(params.sessionPath).isFile()) throw new Error("Pi session escaped its private home");
 +    args.push("--session", sessionPath);
 +  }
-+  const env                    = { ...environment, WARDMOTE_PI_RUNTIME_CONFIGURATION: configuration };
++  const env                    = { ...environment, PAPERCLIP_PI_RUNTIME_CONFIGURATION: configuration };
 +  // Ambient AGENT_HOME never grants filesystem authority. Only the runner's
 +  // authenticated working-copy binding reaches both the model and tool gate.
 +  if (agentHome) env.AGENT_HOME = agentHome; else delete env.AGENT_HOME;

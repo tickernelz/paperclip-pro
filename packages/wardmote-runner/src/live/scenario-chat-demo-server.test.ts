@@ -79,8 +79,8 @@ describe("Scenario chat deployment boundary", () => {
     expect(forbiddenScenarioChatEnvironmentNames(unsafe)).toEqual([
       "AWS_SECRET_ACCESS_KEY",
       "OPENAI_API_KEY",
-      "WARDMOTE_API_KEY",
       "VERCEL_TOKEN",
+      "WARDMOTE_API_KEY",
     ]);
     expect(() => assertScenarioChatEnvironmentSafe(unsafe)).toThrow(/forbidden environment names/);
     expect(() => assertScenarioChatEnvironmentSafe({

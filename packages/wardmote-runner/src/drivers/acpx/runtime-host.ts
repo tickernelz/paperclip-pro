@@ -489,7 +489,7 @@ export class AcpxRuntimeHost {
         ]) : null;
       if (agentFiles) {
         launchEnvironment = Object.freeze({ ...launchEnvironment, AGENT_HOME: agentFiles.root,
-          ...(options.agent === "pi" ? { WARDMOTE_PI_AGENT_HOME: agentFiles.root } : {}),
+          ...(options.agent === "pi" ? { PAPERCLIP_PI_AGENT_HOME: agentFiles.root } : {}),
         });
       }
       if (options.agent === "copilot") {
@@ -519,7 +519,7 @@ export class AcpxRuntimeHost {
           },
         };
         launchEnvironment = Object.freeze({ ...launchEnvironment,
-          WARDMOTE_PI_READ_ROOTS: JSON.stringify([...(options.providerPolicy?.readRoots ?? []), ...skills.readRoots]),
+          PAPERCLIP_PI_READ_ROOTS: JSON.stringify([...(options.providerPolicy?.readRoots ?? []), ...skills.readRoots]),
         });
       }
       if (options.agent === "claude" || options.agent === "grok") {

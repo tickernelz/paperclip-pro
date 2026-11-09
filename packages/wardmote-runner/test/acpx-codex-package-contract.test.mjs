@@ -184,7 +184,7 @@ test("authentication rejects invalid isolated environments without host fallback
 
 test("the Codex patch enforces isolated instructions, tools, and skills", () => {
   for (const token of [
-    "WARDMOTE_ACPX_ISOLATED_CONTEXT",
+    "PAPERCLIP_ACPX_ISOLATED_CONTEXT",
     "baseInstructions",
     "rawInput: { serverName: params.serverName }",
     '"features.apps": false',
@@ -206,7 +206,7 @@ test("the Codex patch keeps MCP tool approvals on the governed permission channe
 
 test("the Claude patch removes ambient project and local configuration", () => {
   for (const token of [
-    "WARDMOTE_ACPX_ISOLATED_CONTEXT",
+    "PAPERCLIP_ACPX_ISOLATED_CONTEXT",
     'settingSources: ["user"]',
     "userProvidedOptions?.mcpServers",
   ]) {

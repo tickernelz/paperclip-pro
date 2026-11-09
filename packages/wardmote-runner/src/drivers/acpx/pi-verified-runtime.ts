@@ -152,9 +152,9 @@ async function bindPiRuntimeManifestPaths(root: string, manifest: PiRuntimeManif
   await boundPath(manifest.wrapperEntrypoint);
   return {
     environment: {
-      WARDMOTE_PI_NODE_EXECUTABLE: await boundPath(manifest.node),
-      WARDMOTE_PI_ENTRYPOINT: await boundPath(manifest.piEntrypoint),
-      WARDMOTE_PI_EXTENSION_PATH: await boundPath(manifest.extension),
+      PAPERCLIP_PI_NODE_EXECUTABLE: await boundPath(manifest.node),
+      PAPERCLIP_PI_ENTRYPOINT: await boundPath(manifest.piEntrypoint),
+      PAPERCLIP_PI_EXTENSION_PATH: await boundPath(manifest.extension),
     },
     manifestDigest: hash(JSON.stringify({ ...manifest, files: sorted })),
   };

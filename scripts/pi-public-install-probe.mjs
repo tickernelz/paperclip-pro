@@ -21,7 +21,7 @@ const { resolvePaperclipRunnerBinary } = await import(pathToFileURL(join(server,
 const { createCapabilityRunnerdCodexTransport } = await import(pathToFileURL(join(server, 'dist/vendor/wardmote-runner/live/runnerd-codex-transport.js')));
 const { QUALIFIED_ACPX_PROFILES } = await import(pathToFileURL(join(server, 'dist/vendor/wardmote-runner/drivers/acpx/qualified-profiles.js')));
 assert.equal(QUALIFIED_ACPX_PROFILES.pi.agentProfileVersion, 22);
-assert.equal(QUALIFIED_ACPX_PROFILES.pi.commandDigest, 'sha256:e92078bee3c23bec4100aa589013a44613d054cd686826534025d8019e9f39a9');
+assert.equal(QUALIFIED_ACPX_PROFILES.pi.commandDigest, 'sha256:d5d628c3cb45b9b999e463dd578fb96174d6db411de4c7f8e67fd97703312213');
 assert.equal(Object.hasOwn(QUALIFIED_ACPX_PROFILES.pi, 'qualificationModel'), false);
 assert.equal(Object.hasOwn(QUALIFIED_ACPX_PROFILES.pi, 'reportedModelId'), false);
 const daemon = resolvePaperclipRunnerBinary();

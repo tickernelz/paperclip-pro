@@ -37,9 +37,9 @@ async function fixture(t, extra = {}) {
     cwd: join(root, "workspace"), stdio: "pipe",
     env: {
       PATH: process.env.PATH, HOME: root, PI_CODING_AGENT_DIR: join(root, "agent"),
-      WARDMOTE_ACPX_ISOLATED_CONTEXT: "1", WARDMOTE_PI_READ_ONLY: "0",
-      WARDMOTE_PI_NODE_EXECUTABLE: await realpath(process.execPath),
-      WARDMOTE_PI_ENTRYPOINT: fakePi, WARDMOTE_PI_EXTENSION_PATH: join(root, "extension.js"),
+      PAPERCLIP_ACPX_ISOLATED_CONTEXT: "1", PAPERCLIP_PI_READ_ONLY: "0",
+      PAPERCLIP_PI_NODE_EXECUTABLE: await realpath(process.execPath),
+      PAPERCLIP_PI_ENTRYPOINT: fakePi, PAPERCLIP_PI_EXTENSION_PATH: join(root, "extension.js"),
       ...extra,
     },
   });

@@ -443,7 +443,7 @@ describe("Codex ACPX runtime adapter", () => {
 
       expect(runtimeOptions?.spawnEnvironment?.()).toEqual({
         PATH: "/verified/bin",
-        WARDMOTE_ACPX_ISOLATED_CONTEXT: "1",
+        PAPERCLIP_ACPX_ISOLATED_CONTEXT: "1",
         WARDMOTE_ACPX_TASK_TOOL_BRIDGE_URL: "",
       });
       expect(runtime.ensureSession).toHaveBeenCalledWith(
@@ -475,7 +475,7 @@ describe("Codex ACPX runtime adapter", () => {
         },
       });
       expect(runtimeOptions?.spawnEnvironment?.()).toEqual({
-        WARDMOTE_ACPX_ISOLATED_CONTEXT: "1",
+        PAPERCLIP_ACPX_ISOLATED_CONTEXT: "1",
         WARDMOTE_ACPX_TASK_TOOL_BRIDGE_URL: binding === "runner-owned" ? "http://127.0.0.1:3210/mcp" : "",
       });
     },

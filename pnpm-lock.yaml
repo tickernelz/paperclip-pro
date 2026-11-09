@@ -16,10 +16,10 @@ overrides:
 
 patchedDependencies:
   '@agentclientprotocol/claude-agent-acp@0.73.0':
-    hash: 4g5wrdkcu5ihahy4ui2c5ftlhq
+    hash: q6yxjh77hijnnk2zmq53vwi55a
     path: patches/@agentclientprotocol__claude-agent-acp@0.73.0.patch
   '@agentclientprotocol/codex-acp@1.6.2':
-    hash: zjehrd7jghz7so7mrwex6pfwkm
+    hash: mqpwagqmnp7tmc7bgcjmlguobm
     path: patches/@agentclientprotocol__codex-acp@1.6.2.patch
   '@chat-adapter/discord@4.39.0':
     hash: nywlhls7dd4npegrgax7jqdbxa
@@ -576,10 +576,10 @@ importers:
     dependencies:
       '@agentclientprotocol/claude-agent-acp':
         specifier: 0.73.0
-        version: 0.73.0(patch_hash=4g5wrdkcu5ihahy4ui2c5ftlhq)(@modelcontextprotocol/sdk@1.31.0(zod@4.6.5))
+        version: 0.73.0(patch_hash=q6yxjh77hijnnk2zmq53vwi55a)(@modelcontextprotocol/sdk@1.31.0(zod@4.6.5))
       '@agentclientprotocol/codex-acp':
         specifier: 1.6.2
-        version: 1.6.2(patch_hash=zjehrd7jghz7so7mrwex6pfwkm)
+        version: 1.6.2(patch_hash=mqpwagqmnp7tmc7bgcjmlguobm)
       '@openai/codex':
         specifier: 0.160.0
         version: 0.160.0
@@ -659,7 +659,7 @@ importers:
     dependencies:
       '@agentclientprotocol/codex-acp':
         specifier: 1.6.2
-        version: 1.6.2(patch_hash=zjehrd7jghz7so7mrwex6pfwkm)
+        version: 1.6.2(patch_hash=mqpwagqmnp7tmc7bgcjmlguobm)
       '@ai-sdk/amazon-bedrock':
         specifier: 5.0.113
         version: 5.0.113(zod@4.4.3)
@@ -9130,7 +9130,7 @@ snapshots:
 
   '@adobe/css-tools@4.5.0': {}
 
-  '@agentclientprotocol/claude-agent-acp@0.73.0(patch_hash=4g5wrdkcu5ihahy4ui2c5ftlhq)(@modelcontextprotocol/sdk@1.31.0(zod@4.6.5))':
+  '@agentclientprotocol/claude-agent-acp@0.73.0(patch_hash=q6yxjh77hijnnk2zmq53vwi55a)(@modelcontextprotocol/sdk@1.31.0(zod@4.6.5))':
     dependencies:
       '@agentclientprotocol/sdk': 1.4.0(zod@4.4.3)
       '@anthropic-ai/claude-agent-sdk': 0.3.286(@modelcontextprotocol/sdk@1.31.0(zod@4.6.5))(zod@4.4.3)
@@ -9139,7 +9139,7 @@ snapshots:
       - '@anthropic-ai/sdk'
       - '@modelcontextprotocol/sdk'
 
-  '@agentclientprotocol/codex-acp@1.6.2(patch_hash=zjehrd7jghz7so7mrwex6pfwkm)':
+  '@agentclientprotocol/codex-acp@1.6.2(patch_hash=mqpwagqmnp7tmc7bgcjmlguobm)':
     dependencies:
       '@agentclientprotocol/sdk': 1.4.0(zod@4.4.3)
       '@openai/codex': 0.160.0
