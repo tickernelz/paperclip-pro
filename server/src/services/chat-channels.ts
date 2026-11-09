@@ -53,7 +53,6 @@ import type { GitHubReviewEventContext, GitHubIssueEventContext, GitHubAutomatic
 import { githubChatReviewService } from "./chat-github-reviews.js";
 import { githubResponseCommentService } from "./chat-github-response-comments.js";
 import { githubChatWizardService } from "./chat-github-wizard.js";
-import { registerGitHubBotCloudIngress } from "./chat-github-cloud-ingress.js";
 import { githubChatRegistrationService } from "./chat-github-registration.js";
 import { githubChatPrincipalAccess } from "./chat-github-access.js";
 import { githubAppJwt } from "./chat-github-client.js";
@@ -9960,7 +9959,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     ) {
       throw unprocessable("Unsupported chat endpoint setup action");
     }
-    if (!getWebhookPublicBaseUrl() && !leasedChatProvider(endpoint.provider) && !(endpoint.provider === "github" && endpoint.setup.github?.cloudRegistrationId)) {
+    if (!getWebhookPublicBaseUrl() && !leasedChatProvider(endpoint.provider)) {
       throw unprocessable(
         `A public HTTPS Paperclip URL is required before connecting ${PROVIDER_LABELS[endpoint.provider]}`,
       );
@@ -10325,13 +10324,7 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       const next = await endpointRecord(endpoint.id);
       if (!next) throw notFound("Chat endpoint not found");
       await invalidateRuntime(endpoint.id);
-      if (endpoint.provider === "github" && input.action === "reconnect" && endpoint.setup.github?.cloudRegistrationId) {
-        if (!actorUserId) throw forbidden("A configuring member is required to recover this App");
-        await credentialLease.assertOwned();
-        await githubWizard.repairCloud(endpoint.id, actorUserId);
-        await credentialLease.assertOwned();
-      }
-      if (endpoint.provider === "github" && input.action === "reconnect" && !endpoint.setup.github?.cloudRegistrationId) {
+      if (endpoint.provider === "github" && input.action === "reconnect") {
         // The immutable App and its installation were verified above. Repair
         // only its callback using the stored secret; never reinstall it or
         // change repository access. Keep historical signed-ping evidence, but
@@ -39988,36 +39981,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
     },
     finish: (id, userId) => test(id, { optionalSlackTestForUser: userId }),
   });
-  const unregisterGitHubCloudIngress = registerGitHubBotCloudIngress(
-    db,
-    async (endpoint, request) => {
-      const record = await endpointRecord(endpoint.id);
-      if (
-        !record ||
-        record.endpoint.companyId !== endpoint.companyId ||
-        record.endpoint.connectionId !== endpoint.connectionId ||
-        record.endpoint.assignedAgentId !== endpoint.assignedAgentId ||
-        record.endpoint.setup.github?.cloudRegistrationId !==
-          endpoint.setup.github?.cloudRegistrationId
-      )
-        throw forbidden("GitHub Cloud event binding changed");
-      // A manifest ping may arrive before its webhook verifier reaches the vault.
-      // Keep the sealed delivery queued until the stack can authenticate it.
-      if (!record.credentialSecretRefs.some((ref) => ref.configPath === "credentials.webhookSecret"))
-        throw conflict("GitHub webhook credentials are not ready");
-      // Preserve the exact provider payload and signature. Authentication, lifecycle
-      // checks and durable admission all run in the stack's canonical ingress.
-      const response = await handleWebhook(
-        record.endpoint.publicId,
-        "github",
-        request,
-      );
-      if ([400, 401, 403, 404, 413, 422].includes(response.status)) return; // Discard hostile transport without retrying it indefinitely.
-      if (!response.ok)
-        throw conflict("GitHub Cloud ingress could not be durably accepted");
-    },
-  );
-
   const unregisterOpenwaApprovalWakes = registerOpenwaApprovalWakeRuntime(db, { wakeup: (agentId, opts) => options.heartbeat.wakeup(agentId, opts) });
   const unregisterOpenwaFollowups = registerOpenwaFollowupRuntime(db, { wakeup: (agentId, opts) => options.heartbeat.wakeup(agentId, opts) });
   const openwaRunEndTasks = new Set<Promise<void>>();
@@ -40277,7 +40240,6 @@ export function chatChannelService(db: Db, options: ChatChannelServiceOptions) {
       openwaBurstTimers.clear();
       await Promise.allSettled([...openwaRunEndTasks]);
       voice.unregisterAgentTools();
-      unregisterGitHubCloudIngress();
       unregisterCommittedResponseAuthority();
       await Promise.allSettled([...publicationEndpointTasks.values()]);
       await Promise.allSettled([...backgroundMessageTasks]);

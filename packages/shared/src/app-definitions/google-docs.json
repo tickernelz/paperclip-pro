@@ -30,38 +30,6 @@
   "redirectConstraints": "https-or-loopback-http",
   "methods": [
     {
-      "key": "paperclip-read",
-      "label": "Connect with Paperclip Cloud",
-      "transport": "mcp_remote",
-      "auth": "oauth",
-      "oauthStrategy": "paperclip_cloud_connector",
-      "connectorProfile": "docs.read",
-      "capabilityProfile": {
-        "key": "read",
-        "label": "Read only",
-        "description": "Read document text and structure."
-      },
-      "grantKinds": [
-        "user",
-        "organization"
-      ],
-      "ownershipModes": [
-        "platform_shared"
-      ],
-      "whenToUse": "Use Paperclip Cloud OAuth for read-only Docs access.",
-      "defaults": {
-        "serverUrl": "https://docsmcp.googleapis.com/mcp/v1",
-        "scopesHint": [
-          "https://www.googleapis.com/auth/documents.readonly"
-        ]
-      },
-      "guidanceMd": "Connect Google Docs to read documents.",
-      "warnings": [
-        "Google Workspace MCP servers are in Developer Preview."
-      ],
-      "riskTier": "S3"
-    },
-    {
       "key": "customer-read-oauth",
       "label": "Use your own Google OAuth app",
       "transport": "mcp_remote",
@@ -101,39 +69,6 @@
         "Google Workspace MCP servers are in Developer Preview."
       ],
       "riskTier": "S3"
-    },
-    {
-      "key": "paperclip-write",
-      "label": "Connect with Paperclip Cloud",
-      "transport": "mcp_remote",
-      "auth": "oauth",
-      "oauthStrategy": "paperclip_cloud_connector",
-      "connectorProfile": "docs.write",
-      "capabilityProfile": {
-        "key": "write",
-        "label": "Read & edit",
-        "description": "Read and update documents."
-      },
-      "grantKinds": [
-        "user",
-        "organization"
-      ],
-      "ownershipModes": [
-        "platform_shared"
-      ],
-      "whenToUse": "Use Paperclip Cloud OAuth to read and update Docs.",
-      "defaults": {
-        "serverUrl": "https://docsmcp.googleapis.com/mcp/v1",
-        "scopesHint": [
-          "https://www.googleapis.com/auth/documents"
-        ]
-      },
-      "guidanceMd": "Connect Google Docs to read and update documents.",
-      "warnings": [
-        "Document updates require approval.",
-        "Google Workspace MCP servers are in Developer Preview."
-      ],
-      "riskTier": "S4"
     },
     {
       "key": "customer-write-oauth",

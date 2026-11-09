@@ -1,7 +1,7 @@
 import { isRetiredComposioConnection, RETIRED_COMPOSIO_MESSAGE } from "@tickernelz/wardmote-shared";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { AppWindow, Cloud, Loader2, ShieldAlert, ShieldCheck, ShieldQuestion, Trash2 } from "lucide-react";
+import { AppWindow, Loader2, ShieldAlert, ShieldQuestion, Trash2 } from "lucide-react";
 import type {
   ToolApplication,
   ToolConnection,
@@ -115,7 +115,7 @@ export function Connections() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const { pushToast } = useToast();
-  const { selectedCompany, selectedCompanyId } = useCompany();
+  const { selectedCompanyId } = useCompany();
   const { setBreadcrumbs } = useBreadcrumbs();
   const reviewCount = useReviewCount();
   const [filter, setFilter] = useState<StatusFilter>("all");
@@ -159,22 +159,6 @@ export function Connections() {
     queryFn: () => accessApi.listUserDirectory(selectedCompanyId!),
     enabled: !!selectedCompanyId,
   });
-  const connectorEnrollmentQuery = useQuery({
-    queryKey: ["cloud-connector", "enrollment"],
-    queryFn: () => toolsApi.getCloudConnectorEnrollment(),
-  });
-  const startConnectorEnrollment = useMutation({
-    mutationFn: () => toolsApi.startCloudConnectorEnrollment(selectedCompanyId!, selectedCompany?.name),
-    onSuccess: (status) => {
-      if (status.verificationUrl) window.location.assign(status.verificationUrl);
-    },
-    onError: (error) => pushToast({
-      title: "Couldn’t reach Paperclip Cloud",
-      body: error instanceof Error ? error.message : "Try again in a moment.",
-      tone: "error",
-    }),
-  });
-
   const deleteConnection = useMutation({
     mutationFn: (target: {
       id: string;
@@ -312,18 +296,6 @@ export function Connections() {
 
   return (
     <div className="max-w-5xl space-y-5">
-      {!connectorEnrollmentQuery.isLoading ? (
-        <CloudConnectorEnrollmentBanner
-          status={connectorEnrollmentQuery.data}
-          unavailable={connectorEnrollmentQuery.isError}
-          busy={startConnectorEnrollment.isPending}
-          onEnable={() => {
-            const verificationUrl = connectorEnrollmentQuery.data?.verificationUrl;
-            if (verificationUrl) window.location.assign(verificationUrl);
-            else startConnectorEnrollment.mutate();
-          }}
-        />
-      ) : null}
       {loading ? (
         <div className="space-y-3">
           <Skeleton className="h-8 w-40" />
@@ -569,57 +541,6 @@ export function Connections() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
-  );
-}
-
-function CloudConnectorEnrollmentBanner({
-  status,
-  unavailable,
-  busy,
-  onEnable,
-}: {
-  status: Awaited<ReturnType<typeof toolsApi.getCloudConnectorEnrollment>> | undefined;
-  unavailable: boolean;
-  busy: boolean;
-  onEnable: () => void;
-}) {
-  if (status?.configured) {
-    return (
-      <div className="flex flex-wrap items-center gap-3 rounded-lg border border-line bg-bg-2 px-4 py-3">
-        <ShieldCheck className="h-5 w-5 text-accent" />
-        <div className="min-w-0 flex-1">
-          <div className="text-sm font-semibold text-ink">Paperclip Cloud sign-in is ready</div>
-          <div className="truncate text-xs text-ink-3">
-            Provider authorization uses {status.brokerBaseUrl}; credentials stay in this instance.
-          </div>
-        </div>
-      </div>
-    );
-  }
-  if (unavailable) {
-    return (
-      <div className="flex items-center gap-3 rounded-lg border border-line bg-bg-2 px-4 py-3">
-        <Cloud className="h-5 w-5 text-ink-3" />
-        <div className="text-sm text-ink-3">Paperclip Cloud enrollment status is unavailable.</div>
-      </div>
-    );
-  }
-  return (
-    <div className="flex flex-wrap items-center gap-3 rounded-lg border border-line bg-bg-2 px-4 py-3">
-      <Cloud className="h-5 w-5 text-ink-3" />
-      <div className="min-w-0 flex-1">
-        <div className="text-sm font-semibold text-ink">
-          {status?.status === "pending" ? "Finish Paperclip Cloud enrollment" : "Enable Paperclip Cloud sign-in"}
-        </div>
-        <div className="text-xs text-ink-3">
-          Confirm this server’s exact address before Cloud can return encrypted Google credentials to it.
-        </div>
-      </div>
-      <Button variant="secondary" size="sm" disabled={busy} onClick={onEnable}>
-        {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-        {status?.status === "pending" ? "Continue enrollment" : "Enable"}
-      </Button>
     </div>
   );
 }
