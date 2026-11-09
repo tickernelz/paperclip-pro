@@ -811,6 +811,17 @@ async function isLoopbackPortBindable(port: number) {
   });
 }
 
+async function findFreeLoopbackPortOutsideEphemeralRange() {
+  const ephemeral = readEphemeralPortRange();
+  for (let attempt = 0; attempt < 500; attempt += 1) {
+    const candidate = 20_000 + Math.floor(Math.random() * 20_000);
+    if (candidate >= ephemeral.low && candidate <= ephemeral.high) continue;
+    if (candidate >= 42_000 && candidate <= 42_999) continue;
+    if (await isLoopbackPortBindable(candidate)) return candidate;
+  }
+  throw new Error("Failed to find a free loopback test port outside the ephemeral and broker ranges");
+}
+
 async function reserveLoopbackPortWithCompanion() {
   const ephemeral = readEphemeralPortRange();
   const usable = (port: number) =>
@@ -7422,7 +7433,7 @@ describeEmbeddedPostgres("workspace runtime service control persistence", () => 
     const fixture = await createRuntimeFixture();
     const cleanupRuntimeHome = await createRuntimeHome();
     const workspace = fixture.workspaces[0]!;
-    const basePort = await findFreePort();
+    const basePort = await findFreeLoopbackPortOutsideEphemeralRange();
     const spawnedMarkerPath = path.join(workspace.cwd, "slow-readiness-spawned.marker");
     const releaseMarkerPath = path.join(workspace.cwd, "slow-readiness-release.marker");
     const serverScript = [
