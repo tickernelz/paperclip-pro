@@ -69,7 +69,6 @@ export const EXCLUDED_OPERATIONS: Record<string, string> = {
   "POST /api/companies/{companyId}/imports/apply": "company_transfer",
   "POST /api/issues/{id}/admin/force-release": "runner_lifecycle_authority",
   "POST /api/issues/{id}/low-trust/promotions": "trust_boundary",
-  "POST /api/companies/{companyId}/onboarding-seed": "instance_setup",
   "POST /api/companies/import/transfers/{transferId}/apply": "company_transfer",
   "POST /api/tool-gateway/sessions": "credential_surface",
   "POST /api/tool-gateway/sessions/{sessionId}/revoke": "credential_surface",
