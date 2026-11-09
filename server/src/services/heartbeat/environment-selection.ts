@@ -181,10 +181,10 @@ export async function selectHeartbeatEnvironment(db: Db, input: HeartbeatEnviron
         bootstrap = parseExecutionPolicyBootstrapEnv(process.env);
         if (!bootstrap) {
           bootstrapSkipReason =
-            'PAPERCLIP_EXECUTION_MODE bootstrap env is not kubernetes-forced (absent or "any")';
+            'WARDMOTE_EXECUTION_MODE bootstrap env is not kubernetes-forced (absent or "any")';
         }
       } catch (err) {
-        bootstrapSkipReason = `PAPERCLIP_EXECUTION_MODE bootstrap env failed to parse: ${
+        bootstrapSkipReason = `WARDMOTE_EXECUTION_MODE bootstrap env failed to parse: ${
           err instanceof Error ? err.message : String(err)
         }`;
       }
@@ -211,7 +211,7 @@ export async function selectHeartbeatEnvironment(db: Db, input: HeartbeatEnviron
       throw new Error(
         "Instance execution policy requires the Kubernetes sandbox provider " +
           "(executionMode=kubernetes) but no managed Kubernetes environment is " +
-          "configured for this company. Configure one (PAPERCLIP_K8S_* env on the " +
+          "configured for this company. Configure one (WARDMOTE_K8S_* env on the " +
           "cloud instance) before running agents; refusing to fall back to local execution.",
       );
     }

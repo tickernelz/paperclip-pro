@@ -98,8 +98,8 @@ function recordParentContext() {
 describe("resolveEnvironmentExecutionTarget", () => {
   beforeEach(() => {
     mockResolveEnvironmentDriverConfigForRuntime.mockReset();
-    delete process.env.PAPERCLIP_API_URL;
-    delete process.env.PAPERCLIP_RUNTIME_API_URL;
+    delete process.env.WARDMOTE_API_URL;
+    delete process.env.WARDMOTE_RUNTIME_API_URL;
   });
 
   it("uses a bounded default cwd for sandbox targets when lease metadata omits remoteCwd", async () => {

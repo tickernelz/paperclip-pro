@@ -74,7 +74,7 @@ new versioned artwork, `node scripts/sync-agent-palette-tokens.mjs` synchronizes
 the TS palette data; `--check` detects drift. This does not generate images.
 
 Storybook: **Agents / Personas**. Run with
-`PAPERCLIP_STORYBOOK_API_URL=http://localhost:<isolated-port> pnpm storybook`.
+`WARDMOTE_STORYBOOK_API_URL=http://localhost:<isolated-port> pnpm storybook`.
 `pnpm build-storybook` automatically packages all finite avatar presets (17
 palettes plus muted gray, nine poses, eleven logical sizes, both densities).
 The build uses the same bounded Node worker pool, SVG renderer, and Sharp pipeline

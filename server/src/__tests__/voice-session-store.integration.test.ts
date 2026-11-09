@@ -1334,13 +1334,13 @@ const support = await getEmbeddedPostgresTestSupport();
 
   it("delivers the phone tool to the assigned agent's actual runtime MCP server", async () => {
     const f = await phoneToolFixture();
-    const previousUrl = process.env.PAPERCLIP_API_URL;
-    process.env.PAPERCLIP_API_URL = "http://127.0.0.1:3100";
+    const previousUrl = process.env.WARDMOTE_API_URL;
+    process.env.WARDMOTE_API_URL = "http://127.0.0.1:3100";
     try {
       const servers = await buildPaperclipRuntimeMcpServers({ db, agent: { id: f.agentId, companyId: f.companyId, name: "Phone tool agent" }, runId: f.runId });
       expect(servers).toHaveLength(1);
       expect(servers[0]).toMatchObject({ url: expect.stringContaining("/mcp/gateways/") });
-    } finally { if (previousUrl === undefined) delete process.env.PAPERCLIP_API_URL; else process.env.PAPERCLIP_API_URL = previousUrl; }
+    } finally { if (previousUrl === undefined) delete process.env.WARDMOTE_API_URL; else process.env.WARDMOTE_API_URL = previousUrl; }
   });
 
 });

@@ -172,8 +172,8 @@ on its exact lease; an explicit mismatched pin is still rejected.
 
 The opt-in `native-workspace-export-resume.live.test.ts` is a provider-boundary
 fault integration, separate from the browser Product E2E. After building the
-Daytona plugin, run that exact Vitest file with `PAPERCLIP_LIVE_EXPORT_RESUME=1`,
-`DAYTONA_API_KEY`, and `PAPERCLIP_LIVE_EXPORT_RESUME_IMAGE` set to an immutable
+Daytona plugin, run that exact Vitest file with `WARDMOTE_LIVE_EXPORT_RESUME=1`,
+`DAYTONA_API_KEY`, and `WARDMOTE_LIVE_EXPORT_RESUME_IMAGE` set to an immutable
 image digest. It creates one disposable ephemeral sandbox and database, injects probe and stop transport failures, and verifies a fresh runtime can stop the sandbox while preserving exact nonce bytes. It also injects three transient failures at the production finalizer boundary and verifies retained work plus export-only retry admission. This boundary test does not claim physical copyback or result commitment; historical browser Product E2E supplied that proof before automatic unsafe-export recovery. It deletes only that owned fixture after proof.
 
 ### Historical unsafe exports

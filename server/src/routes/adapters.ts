@@ -61,7 +61,7 @@ const execFileAsync = promisify(execFile);
 
 /**
  * Floor: when the hosting operator hides the Adapters settings surface
- * (`instance.adapters` in PAPERCLIP_HIDDEN_SETTINGS), adapter management
+ * (`instance.adapters` in WARDMOTE_HIDDEN_SETTINGS), adapter management
  * writes are rejected alongside it. Reads stay open — adapter metadata is
  * consumed by agent-creation UIs outside the hidden page.
  */

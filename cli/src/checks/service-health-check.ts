@@ -44,7 +44,7 @@ export async function serviceHealthChecks(
   config: PaperclipConfig,
   dependencies: Partial<ServiceCheckDependencies> = {},
 ): Promise<CheckResult[]> {
-  if (process.env.PAPERCLIP_SERVICE_MANAGED === "1") return [];
+  if (process.env.WARDMOTE_SERVICE_MANAGED === "1") return [];
 
   const deps: ServiceCheckDependencies = {
     detect: (instanceId) => detectServiceManager({ instanceId }),
@@ -104,7 +104,7 @@ export async function serviceHealthChecks(
             repairHint:
               path.resolve(serviceExecutable) === path.resolve(resolveInstallStorePaths().shimPath)
                 ? "Run `wardmote install` to restore the managed payload and shim, then `wardmote service start`"
-                : `Restore the executable at ${serviceExecutable}, or unset PAPERCLIP_SHIM_PATH and run \`wardmote install\` followed by \`wardmote service install\` to re-point the service at the managed shim`,
+                : `Restore the executable at ${serviceExecutable}, or unset WARDMOTE_SHIM_PATH and run \`wardmote install\` followed by \`wardmote service install\` to re-point the service at the managed shim`,
           }
         : health.ok
           ? {

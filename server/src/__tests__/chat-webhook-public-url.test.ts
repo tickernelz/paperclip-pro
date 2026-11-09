@@ -12,17 +12,17 @@ const missingConfigPath = path.join(
 );
 
 function useIsolatedConfigEnvironment() {
-  vi.stubEnv("PAPERCLIP_CONFIG", missingConfigPath);
-  vi.stubEnv("PAPERCLIP_PUBLIC_URL", "");
-  vi.stubEnv("PAPERCLIP_AUTH_PUBLIC_BASE_URL", "");
-  vi.stubEnv("PAPERCLIP_MANAGED_RUNTIME_PUBLIC_URL", "");
+  vi.stubEnv("WARDMOTE_CONFIG", missingConfigPath);
+  vi.stubEnv("WARDMOTE_PUBLIC_URL", "");
+  vi.stubEnv("WARDMOTE_AUTH_PUBLIC_BASE_URL", "");
+  vi.stubEnv("WARDMOTE_MANAGED_RUNTIME_PUBLIC_URL", "");
   vi.stubEnv("BETTER_AUTH_URL", "");
   vi.stubEnv("BETTER_AUTH_BASE_URL", "");
-  vi.stubEnv("PAPERCLIP_AUTH_BASE_URL_MODE", "");
-  vi.stubEnv("PAPERCLIP_ALLOWED_HOSTNAMES", "");
-  vi.stubEnv("PAPERCLIP_DEPLOYMENT_MODE", "local_trusted");
-  vi.stubEnv("PAPERCLIP_DEPLOYMENT_EXPOSURE", "private");
-  vi.stubEnv("PAPERCLIP_BIND", "loopback");
+  vi.stubEnv("WARDMOTE_AUTH_BASE_URL_MODE", "");
+  vi.stubEnv("WARDMOTE_ALLOWED_HOSTNAMES", "");
+  vi.stubEnv("WARDMOTE_DEPLOYMENT_MODE", "local_trusted");
+  vi.stubEnv("WARDMOTE_DEPLOYMENT_EXPOSURE", "private");
+  vi.stubEnv("WARDMOTE_BIND", "loopback");
   vi.stubEnv("HOST", "127.0.0.1");
 }
 
@@ -46,7 +46,7 @@ describe("chat webhook public URL", () => {
       "https://hooks.example.test/#synthetic-canary",
     ]) {
       expect(() => parseChatWebhookPublicBaseUrl(invalid)).toThrow(
-        "PAPERCLIP_CHAT_WEBHOOK_PUBLIC_URL must be an HTTPS origin",
+        "WARDMOTE_CHAT_WEBHOOK_PUBLIC_URL must be an HTTPS origin",
       );
     }
   });
@@ -55,7 +55,7 @@ describe("chat webhook public URL", () => {
     const canary = "synthetic-webhook-origin-secret";
     useIsolatedConfigEnvironment();
     vi.stubEnv(
-      "PAPERCLIP_CHAT_WEBHOOK_PUBLIC_URL",
+      "WARDMOTE_CHAT_WEBHOOK_PUBLIC_URL",
       `https://user:${canary}@hooks.example.test/private?token=${canary}`,
     );
 
@@ -67,7 +67,7 @@ describe("chat webhook public URL", () => {
     }
 
     expect(message).toContain(
-      "PAPERCLIP_CHAT_WEBHOOK_PUBLIC_URL must be an HTTPS origin",
+      "WARDMOTE_CHAT_WEBHOOK_PUBLIC_URL must be an HTTPS origin",
     );
     expect(message).not.toContain(canary);
   });
@@ -75,7 +75,7 @@ describe("chat webhook public URL", () => {
   it("keeps webhook ingress separate from board auth and host trust", () => {
     useIsolatedConfigEnvironment();
     vi.stubEnv(
-      "PAPERCLIP_CHAT_WEBHOOK_PUBLIC_URL",
+      "WARDMOTE_CHAT_WEBHOOK_PUBLIC_URL",
       "https://hooks.example.test/",
     );
 
@@ -92,7 +92,7 @@ describe("chat webhook public URL", () => {
   it("does not trust the webhook-only origin for board mutations", () => {
     useIsolatedConfigEnvironment();
     vi.stubEnv(
-      "PAPERCLIP_CHAT_WEBHOOK_PUBLIC_URL",
+      "WARDMOTE_CHAT_WEBHOOK_PUBLIC_URL",
       "https://hooks.example.test",
     );
     const middleware = boardMutationGuard();
@@ -124,9 +124,9 @@ describe("chat webhook public URL", () => {
 
   it("preserves the existing board origin while using a distinct webhook origin", () => {
     useIsolatedConfigEnvironment();
-    vi.stubEnv("PAPERCLIP_PUBLIC_URL", "https://board.example.test");
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "https://board.example.test");
     vi.stubEnv(
-      "PAPERCLIP_CHAT_WEBHOOK_PUBLIC_URL",
+      "WARDMOTE_CHAT_WEBHOOK_PUBLIC_URL",
       "https://hooks.example.test",
     );
 

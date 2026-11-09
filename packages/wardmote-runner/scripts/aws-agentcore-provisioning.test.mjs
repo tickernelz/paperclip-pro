@@ -102,7 +102,7 @@ test("AgentCore wrapper is valid shell and writes only nonsecret profile metadat
   assert.ok(teardownBlock.length > 0);
   assert.doesNotMatch(generatedBlock, /AWS_ACCESS_KEY_ID|AWS_SECRET_ACCESS_KEY|AWS_SESSION_TOKEN|Authorization|X-Amz-Signature/);
   assert.doesNotMatch(teardownBlock, /AWS_ACCESS_KEY_ID|AWS_SECRET_ACCESS_KEY|AWS_SESSION_TOKEN|Authorization|X-Amz-Signature/);
-  assert.match(teardownBlock, /PAPERCLIP_AWS_AGENTCORE_STACK_NAME=\$STACK_NAME/);
+  assert.match(teardownBlock, /WARDMOTE_AWS_AGENTCORE_STACK_NAME=\$STACK_NAME/);
   assert.match(teardownBlock, /chmod 600 "\$tmp"/);
   assert.match(source, /chmod 600 "\$tmp"/);
   assert.match(source, /printf '%q\\n'/);
@@ -143,10 +143,10 @@ test("AgentCore wrapper is valid shell and writes only nonsecret profile metadat
   assert.match(source, /--github-oidc-provider-arn/);
   assert.match(source, /GitHubOidcProviderArn=\$GITHUB_OIDC_PROVIDER_ARN/);
   assert.match(source, /BedrockMarketplaceProductId=\$MARKETPLACE_PRODUCT_ID/);
-  assert.match(generatedBlock, /PAPERCLIP_AWS_AGENTCORE_CONTEXT_BUCKET=\$context_bucket/);
-  assert.match(generatedBlock, /PAPERCLIP_AWS_AGENTCORE_CONTEXT_PREFIX=\$context_prefix/);
-  assert.match(generatedBlock, /PAPERCLIP_AWS_AGENTCORE_CONTEXT_KMS_KEY_ARN=\$context_kms_key_arn/);
-  assert.match(generatedBlock, /PAPERCLIP_AWS_AGENTCORE_EXECUTION_ROLE_ARN=\$role_arn/);
+  assert.match(generatedBlock, /WARDMOTE_AWS_AGENTCORE_CONTEXT_BUCKET=\$context_bucket/);
+  assert.match(generatedBlock, /WARDMOTE_AWS_AGENTCORE_CONTEXT_PREFIX=\$context_prefix/);
+  assert.match(generatedBlock, /WARDMOTE_AWS_AGENTCORE_CONTEXT_KMS_KEY_ARN=\$context_kms_key_arn/);
+  assert.match(generatedBlock, /WARDMOTE_AWS_AGENTCORE_EXECUTION_ROLE_ARN=\$role_arn/);
   assert.match(source, /ContextPrefix=\$CONTEXT_PREFIX/);
   assert.match(source, /s3 rm "s3:\/\/\$context_bucket\/\$context_prefix\/assets\/" --recursive/);
   assert.ok(source.indexOf("delete-harness-endpoint") < source.lastIndexOf("cloudformation delete-stack"));
@@ -225,9 +225,9 @@ test("Runner Lab accepts and resolves the complete qualified AgentCore profile",
   assert.match(source, /AWS AgentCore requires exact model global\.anthropic\.claude-sonnet-4-6/);
   assert.match(source, /function resolveAgentCoreProfile\(configuration\)/);
   for (const field of [
-    "PAPERCLIP_AWS_AGENTCORE_CONTEXT_BUCKET",
-    "PAPERCLIP_AWS_AGENTCORE_CONTEXT_PREFIX",
-    "PAPERCLIP_AWS_AGENTCORE_CONTEXT_KMS_KEY_ARN",
+    "WARDMOTE_AWS_AGENTCORE_CONTEXT_BUCKET",
+    "WARDMOTE_AWS_AGENTCORE_CONTEXT_PREFIX",
+    "WARDMOTE_AWS_AGENTCORE_CONTEXT_KMS_KEY_ARN",
   ]) assert.match(source, new RegExp(field));
   assert.match(source, /agentCoreProfile: resolveAgentCoreProfile\(configuration\)/);
   assert.match(source, /agentCoreProfileId: snapshot\.config\.agentCoreProfile\.profileId/);
@@ -241,7 +241,7 @@ test("Runner Lab qualifies Claude Managed and exposes remote governance for both
   assert.match(source, /Claude Managed requires exact model claude-sonnet-5/);
   assert.match(source, /function resolveManagedProfile\(configuration\)/);
   for (const field of [
-    "PAPERCLIP_CLAUDE_MANAGED_PROFILE_ID",
+    "WARDMOTE_CLAUDE_MANAGED_PROFILE_ID",
     "ANTHROPIC_API_KEY",
     "ANTHROPIC_MANAGED_AGENT_ID",
     "ANTHROPIC_MANAGED_AGENT_VERSION",

@@ -22,15 +22,15 @@ import { startRunnerApiTestServer } from "./helpers/runner-api-server.js";
 
 describe("task titles", () => {
   let server: Awaited<ReturnType<typeof startRunnerApiTestServer>>;
-  const originalSecret = process.env.PAPERCLIP_AGENT_JWT_SECRET;
+  const originalSecret = process.env.WARDMOTE_AGENT_JWT_SECRET;
   beforeAll(async () => {
-    process.env.PAPERCLIP_AGENT_JWT_SECRET = randomUUID();
+    process.env.WARDMOTE_AGENT_JWT_SECRET = randomUUID();
     server = await startRunnerApiTestServer();
   }, 60_000);
   afterAll(async () => {
     await server?.close();
-    if (originalSecret === undefined) delete process.env.PAPERCLIP_AGENT_JWT_SECRET;
-    else process.env.PAPERCLIP_AGENT_JWT_SECRET = originalSecret;
+    if (originalSecret === undefined) delete process.env.WARDMOTE_AGENT_JWT_SECRET;
+    else process.env.WARDMOTE_AGENT_JWT_SECRET = originalSecret;
   });
   type Fixture = Awaited<ReturnType<typeof server.fixture>>;
   const token = (f: Fixture) => createLocalAgentJwt(f.agentId, f.companyId, "paperclip_runner", f.runId, f.responsibleUserId)!;

@@ -111,7 +111,7 @@ for (const journey of [
       const port = await listenOnFetchAllowedPort(fixture);
       const env = {
         ...process.env,
-        PAPERCLIP_RECOVERY_CEO_LINEAGE: journey === "ceo_lineage" ? "1" : "0",
+        WARDMOTE_RECOVERY_CEO_LINEAGE: journey === "ceo_lineage" ? "1" : "0",
         IN_FEED_FIXTURE_KEY: "not-a-real-model-key",
         NODE_ENV: "test",
         PATH: `${root}/tests/e2e/fixtures/recovery-bin:${process.env.PATH}`,

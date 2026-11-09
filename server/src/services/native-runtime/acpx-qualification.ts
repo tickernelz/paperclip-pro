@@ -1,7 +1,7 @@
 import type { NativeExecutionInput } from "../../vendor/wardmote-runner/index.js";
 
 /** Operator-only admission for an exact candidate/model during qualification. */
-export const ACPX_QUALIFICATION_ENV = "PAPERCLIP_RUNNER_ACPX_QUALIFICATION";
+export const ACPX_QUALIFICATION_ENV = "WARDMOTE_RUNNER_ACPX_QUALIFICATION";
 export type AcpxQualificationCandidate = "cursor" | "copilot" | "pi";
 
 export function resolveAcpxQualification(

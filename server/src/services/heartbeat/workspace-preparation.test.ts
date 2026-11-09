@@ -26,7 +26,7 @@ describe.skipIf(!support.supported)("heartbeat workspace preparation boundary", 
 
   beforeAll(async () => {
     home = await mkdtemp(join(tmpdir(), "paperclip-workspace-preparation-"));
-    vi.stubEnv("PAPERCLIP_HOME", home);
+    vi.stubEnv("WARDMOTE_HOME", home);
     database = await startEmbeddedPostgresTestDatabase("paperclip-workspace-preparation");
     db = createDb(database.connectionString);
     await db.execute(sql`set client_min_messages = warning`);

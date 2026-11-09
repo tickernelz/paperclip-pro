@@ -119,8 +119,8 @@ export function resolveManagedGrokHomeDir(
   companyId?: string,
 ): string {
   const instanceRoot = resolvePaperclipInstanceRootForAdapter({
-    homeDir: nonEmpty(env.PAPERCLIP_HOME) ?? undefined,
-    instanceId: nonEmpty(env.PAPERCLIP_INSTANCE_ID) ?? undefined,
+    homeDir: nonEmpty(env.WARDMOTE_HOME) ?? undefined,
+    instanceId: nonEmpty(env.WARDMOTE_INSTANCE_ID) ?? undefined,
     env,
   });
   return companyId

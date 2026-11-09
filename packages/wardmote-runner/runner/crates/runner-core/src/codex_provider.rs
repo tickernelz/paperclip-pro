@@ -32,21 +32,21 @@ const WARM_ATTACHMENT_TAIL_DRAIN_LIMIT: usize = 256;
 const WARM_ATTACHMENT_QUIET_WINDOW: Duration = Duration::from_millis(10);
 const WARM_ATTACHMENT_DRAIN_DEADLINE: Duration = Duration::from_millis(100);
 const OPENCODE_PROVIDER_ENVIRONMENT_KEYS: &[&str] = &[
-    "PAPERCLIP_AI_PROVIDER_KEY",
-    "PAPERCLIP_AI_PROVIDER_URL",
-    "PAPERCLIP_AGENT_KEY_ID",
-    "PAPERCLIP_AGENT_PUBLIC_KEY",
-    "PAPERCLIP_AGENT_PRIVATE_KEY",
+    "WARDMOTE_AI_PROVIDER_KEY",
+    "WARDMOTE_AI_PROVIDER_URL",
+    "WARDMOTE_AGENT_KEY_ID",
+    "WARDMOTE_AGENT_PUBLIC_KEY",
+    "WARDMOTE_AGENT_PRIVATE_KEY",
     "OPENROUTER_API_KEY",
-    "PAPERCLIP_NATIVE_MCP_NAME",
-    "PAPERCLIP_NATIVE_MCP_URL",
-    "PAPERCLIP_NATIVE_MCP_TOKEN",
-    "PAPERCLIP_OPENCODE_PERMISSION_MODE",
-    "PAPERCLIP_OPENCODE_RUNTIME_DIR",
-    "PAPERCLIP_RUNNER_INSTANCE_ID",
-    "PAPERCLIP_RUN_ID",
-    "PAPERCLIP_NORMALIZED_SESSION_ID",
-    "PAPERCLIP_NATIVE_RUNTIME_CONTEXT_PATH",
+    "WARDMOTE_NATIVE_MCP_NAME",
+    "WARDMOTE_NATIVE_MCP_URL",
+    "WARDMOTE_NATIVE_MCP_TOKEN",
+    "WARDMOTE_OPENCODE_PERMISSION_MODE",
+    "WARDMOTE_OPENCODE_RUNTIME_DIR",
+    "WARDMOTE_RUNNER_INSTANCE_ID",
+    "WARDMOTE_RUN_ID",
+    "WARDMOTE_NORMALIZED_SESSION_ID",
+    "WARDMOTE_NATIVE_RUNTIME_CONTEXT_PATH",
 ];
 const TRUSTED_OPENCODE_EXECUTABLE_ARG: &str = "--paperclip-trusted-opencode-executable";
 const MAX_PROVIDER_STDERR_LINES: usize = 32;
@@ -171,8 +171,8 @@ struct ProviderTraceSink {
 
 impl ProviderTraceSink {
     fn from_environment() -> Option<Self> {
-        let trace_path = std::env::var_os("PAPERCLIP_PROVIDER_TRACE_PATH")?;
-        let max_bytes = std::env::var("PAPERCLIP_PROVIDER_TRACE_MAX_BYTES")
+        let trace_path = std::env::var_os("WARDMOTE_PROVIDER_TRACE_PATH")?;
+        let max_bytes = std::env::var("WARDMOTE_PROVIDER_TRACE_MAX_BYTES")
             .ok()
             .and_then(|value| value.parse::<usize>().ok())
             .filter(|value| *value > 0)
@@ -250,7 +250,7 @@ impl ProviderTraceSink {
         // Raw protocol frames can contain arbitrary private-key fragments.
         // Preserve trace metadata without retaining raw content for identity runs.
         let redacted =
-            if std::env::var("PAPERCLIP_AGENT_PRIVATE_KEY").is_ok_and(|key| !key.is_empty()) {
+            if std::env::var("WARDMOTE_AGENT_PRIVATE_KEY").is_ok_and(|key| !key.is_empty()) {
                 "[REDACTED: agent identity runtime]".to_owned()
             } else {
                 String::from_utf8_lossy(raw).into_owned()
@@ -715,17 +715,17 @@ struct ProviderExitDrain {
 // entry from this static ceiling, but cannot introduce another environment
 // variable by changing GIT_CONFIG_COUNT.
 const GITHUB_CREDENTIAL_ENVIRONMENT_KEYS: &[&str] = &[
-    "PAPERCLIP_RUNNER_NETWORK_ACCESS",
-    "PAPERCLIP_RUNNER_NETWORK_ROOTS",
-    "PAPERCLIP_GITHUB_AUTH_MODE",
-    "PAPERCLIP_GITHUB_HOST_HOME",
-    "PAPERCLIP_GIT_METADATA_ROOTS",
+    "WARDMOTE_RUNNER_NETWORK_ACCESS",
+    "WARDMOTE_RUNNER_NETWORK_ROOTS",
+    "WARDMOTE_GITHUB_AUTH_MODE",
+    "WARDMOTE_GITHUB_HOST_HOME",
+    "WARDMOTE_GIT_METADATA_ROOTS",
     "GIT_SSH",
     "ZDOTDIR",
     "BASH_ENV",
-    "PAPERCLIP_GITHUB_BROKER_URL",
-    "PAPERCLIP_GITHUB_BROKER_TOKEN",
-    "PAPERCLIP_GITHUB_LAUNCHER_DIR",
+    "WARDMOTE_GITHUB_BROKER_URL",
+    "WARDMOTE_GITHUB_BROKER_TOKEN",
+    "WARDMOTE_GITHUB_LAUNCHER_DIR",
     "GH_CONFIG_DIR",
     "GH_ENTERPRISE_TOKEN",
     "GITHUB_ENTERPRISE_TOKEN",
@@ -736,10 +736,10 @@ const GITHUB_CREDENTIAL_ENVIRONMENT_KEYS: &[&str] = &[
     "SSH_ASKPASS",
     "SSH_AUTH_SOCK",
     "GIT_SSH_COMMAND",
-    "PAPERCLIP_GITHUB_BRIDGE_TOKEN",
+    "WARDMOTE_GITHUB_BRIDGE_TOKEN",
     "GH_TOKEN",
     "GITHUB_TOKEN",
-    "PAPERCLIP_GIT_TOKEN",
+    "WARDMOTE_GIT_TOKEN",
     "GIT_TERMINAL_PROMPT",
     "GIT_CONFIG_COUNT",
     "GIT_AUTHOR_NAME",
@@ -813,14 +813,14 @@ const GITHUB_CREDENTIAL_ENVIRONMENT_KEYS: &[&str] = &[
 ];
 
 const CODEX_PROVIDER_ENVIRONMENT_KEYS: &[&str] = &[
-    "PAPERCLIP_AI_PROVIDER_KEY",
-    "PAPERCLIP_AGENT_KEY_ID",
-    "PAPERCLIP_AGENT_PUBLIC_KEY",
-    "PAPERCLIP_AGENT_PRIVATE_KEY",
+    "WARDMOTE_AI_PROVIDER_KEY",
+    "WARDMOTE_AGENT_KEY_ID",
+    "WARDMOTE_AGENT_PUBLIC_KEY",
+    "WARDMOTE_AGENT_PRIVATE_KEY",
     "CODEX_HOME",
     "OPENAI_API_KEY",
     "CODEX_API_KEY",
-    "PAPERCLIP_RUNNER_EXTERNAL_SANDBOX",
+    "WARDMOTE_RUNNER_EXTERNAL_SANDBOX",
 ];
 
 fn codex_permission_profile(provider: &str, external_sandbox: bool) -> &'static str {
@@ -907,7 +907,7 @@ impl CodexProvider {
         let permission_profile = codex_permission_profile(
             &config.provider,
             config.externally_sandboxed
-                || std::env::var("PAPERCLIP_RUNNER_EXTERNAL_SANDBOX").as_deref() == Ok("1"),
+                || std::env::var("WARDMOTE_RUNNER_EXTERNAL_SANDBOX").as_deref() == Ok("1"),
         );
         let (dynamic_tools, authorized_tool_ids) =
             codex_dynamic_tools(authorized_tools.iter().cloned())?;
@@ -4624,27 +4624,27 @@ done
 
     #[test]
     fn does_not_forward_an_ambient_opencode_command_override() {
-        assert!(!OPENCODE_PROVIDER_ENVIRONMENT_KEYS.contains(&"PAPERCLIP_OPENCODE_COMMAND"));
+        assert!(!OPENCODE_PROVIDER_ENVIRONMENT_KEYS.contains(&"WARDMOTE_OPENCODE_COMMAND"));
     }
 
     #[test]
     fn github_credentials_cross_only_the_bounded_provider_environment() {
         assert_eq!(GITHUB_CREDENTIAL_ENVIRONMENT_KEYS.len(), 95);
         for key in [
-            "PAPERCLIP_RUNNER_NETWORK_ACCESS",
-            "PAPERCLIP_RUNNER_NETWORK_ROOTS",
-            "PAPERCLIP_GITHUB_AUTH_MODE",
-            "PAPERCLIP_GITHUB_HOST_HOME",
-            "PAPERCLIP_GIT_METADATA_ROOTS",
+            "WARDMOTE_RUNNER_NETWORK_ACCESS",
+            "WARDMOTE_RUNNER_NETWORK_ROOTS",
+            "WARDMOTE_GITHUB_AUTH_MODE",
+            "WARDMOTE_GITHUB_HOST_HOME",
+            "WARDMOTE_GIT_METADATA_ROOTS",
             "GIT_SSH",
-            "PAPERCLIP_GITHUB_BROKER_URL",
-            "PAPERCLIP_GITHUB_BROKER_TOKEN",
-            "PAPERCLIP_GITHUB_LAUNCHER_DIR",
+            "WARDMOTE_GITHUB_BROKER_URL",
+            "WARDMOTE_GITHUB_BROKER_TOKEN",
+            "WARDMOTE_GITHUB_LAUNCHER_DIR",
             "GH_CONFIG_DIR",
-            "PAPERCLIP_GITHUB_BRIDGE_TOKEN",
+            "WARDMOTE_GITHUB_BRIDGE_TOKEN",
             "GH_TOKEN",
             "GITHUB_TOKEN",
-            "PAPERCLIP_GIT_TOKEN",
+            "WARDMOTE_GIT_TOKEN",
             "GIT_TERMINAL_PROMPT",
             "GIT_CONFIG_COUNT",
             "GIT_AUTHOR_NAME",
@@ -4664,8 +4664,8 @@ done
 
     #[test]
     fn codex_provider_accepts_only_the_controller_derived_external_sandbox_bit() {
-        assert!(CODEX_PROVIDER_ENVIRONMENT_KEYS.contains(&"PAPERCLIP_RUNNER_EXTERNAL_SANDBOX"));
-        assert!(!CODEX_PROVIDER_ENVIRONMENT_KEYS.contains(&"PAPERCLIP_SANDBOX_MODE"));
+        assert!(CODEX_PROVIDER_ENVIRONMENT_KEYS.contains(&"WARDMOTE_RUNNER_EXTERNAL_SANDBOX"));
+        assert!(!CODEX_PROVIDER_ENVIRONMENT_KEYS.contains(&"WARDMOTE_SANDBOX_MODE"));
         assert_eq!(
             codex_permission_profile("codex", true),
             "paperclip-runner-external-sandbox"

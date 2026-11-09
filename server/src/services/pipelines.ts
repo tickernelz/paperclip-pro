@@ -2380,7 +2380,7 @@ export function pipelineService(db: Db, deps: { heartbeat?: IssueAssignmentWakeu
     return [
       "### Breakdown Mechanics",
       "",
-      `When the work should be split into ${input.config.pieceNoun}s, call paperclipBreakdownCase with caseId: "${input.caseId}". That tool is available when the operator enables PAPERCLIP_MCP_TOOLSETS=core,extended; otherwise call paperclipApiRequest with method: "POST" and path: "/cases/${input.caseId}/breakdown".`,
+      `When the work should be split into ${input.config.pieceNoun}s, call paperclipBreakdownCase with caseId: "${input.caseId}". That tool is available when the operator enables WARDMOTE_MCP_TOOLSETS=core,extended; otherwise call paperclipApiRequest with method: "POST" and path: "/cases/${input.caseId}/breakdown".`,
       "",
       "Send these arguments:",
       "",
@@ -3779,7 +3779,7 @@ export function pipelineService(db: Db, deps: { heartbeat?: IssueAssignmentWakeu
       const normalizedEnv = input.env === null
         ? null
         : await secretsSvc.normalizeEnvBindingsForPersistence(input.companyId, input.env, {
-            strictMode: process.env.PAPERCLIP_SECRETS_STRICT_MODE === "true",
+            strictMode: process.env.WARDMOTE_SECRETS_STRICT_MODE === "true",
             fieldPath: "env",
           }) as Record<string, EnvBinding>;
       const actorPatch = routineActorPatch(input.actor);

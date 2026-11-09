@@ -9,7 +9,7 @@ import { expect, type BrowserContext, type Page } from "@playwright/test";
 const require = createRequire(path.resolve(import.meta.dirname, "../../server/package.json"));
 const { Client } = await import(require.resolve("@modelcontextprotocol/sdk/client/index.js"));
 const { StreamableHTTPClientTransport } = await import(require.resolve("@modelcontextprotocol/sdk/client/streamableHttp.js"));
-export const origin = `http://127.0.0.1:${process.env.PAPERCLIP_RUNNER_E2E_PORT ?? process.env.PAPERCLIP_PUBLIC_MCP_EVAL_PORT ?? 3298}`;
+export const origin = `http://127.0.0.1:${process.env.WARDMOTE_RUNNER_E2E_PORT ?? process.env.WARDMOTE_PUBLIC_MCP_EVAL_PORT ?? 3298}`;
 export const resource = origin + "/mcp/paperclip";
 export interface Team { id: string; name: string; issuePrefix: string }
 export interface Agent { id: string; name: string; status: string }
@@ -145,7 +145,7 @@ export async function eventReceiver(secrets: string[], startupFailures: string[]
   server.listen(0, "127.0.0.1"); await once(server, "listening");
   const address = server.address();
   if (!address || typeof address === "string") throw new Error("Event receiver did not start");
-  const tunnel = spawn(process.env.PAPERCLIP_EVAL_CLOUDFLARED ?? "cloudflared", ["tunnel", "--no-autoupdate", "--protocol", "http2", "--url", `http://127.0.0.1:${address.port}`], { stdio: ["ignore", "pipe", "pipe"] });
+  const tunnel = spawn(process.env.WARDMOTE_EVAL_CLOUDFLARED ?? "cloudflared", ["tunnel", "--no-autoupdate", "--protocol", "http2", "--url", `http://127.0.0.1:${address.port}`], { stdio: ["ignore", "pipe", "pipe"] });
   const close = async () => {
     if (tunnel.pid && tunnel.exitCode === null && tunnel.signalCode === null) {
       const exited = once(tunnel, "exit").catch(() => {});

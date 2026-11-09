@@ -1,5 +1,4 @@
 import type { Request } from "express";
-import { legacyEnvKey } from "@tickernelz/wardmote-shared/env-aliases";
 
 export function requestBaseUrl(req: Request) {
   const forwardedProto = req.header("x-forwarded-proto");
@@ -18,7 +17,7 @@ export function resolveBaseUrl(req: Request, authPublicBaseUrl?: string): string
 
 export function runtimePublicOrigin(env: NodeJS.ProcessEnv = process.env): string | null {
   const candidate = ["WARDMOTE_PUBLIC_URL", "WARDMOTE_AUTH_PUBLIC_BASE_URL", "WARDMOTE_API_URL"]
-    .map((key) => env[legacyEnvKey(key)]?.trim())
+    .map((key) => env[key]?.trim())
     .find((value) => value);
   if (!candidate) return null;
   try {

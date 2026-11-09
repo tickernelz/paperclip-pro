@@ -48,7 +48,6 @@ import {
   type AcpxTerminalSessionFailure,
   type AcpxTerminalSessionFailureDiagnostic,
 } from "./terminal-session-failure.js";
-import { legacyEnvKey } from "@tickernelz/wardmote-shared/env-aliases";
 import { resolveDefaultPaperclipHomeDir } from "@tickernelz/wardmote-shared/home-paths";
 export type { AcpxTerminalSessionFailure } from "./terminal-session-failure.js";
 import type { WorkspaceRestoreFailureCode, WorkspaceRestoreOutcome } from "../workspace-restore-merge.js";
@@ -59,7 +58,7 @@ import {
 } from "../workspace-restore-merge.js";
 import {
   paperclipAgentPromptTemplate,
-  DEFAULT_PAPERCLIP_CONVERSATION_PROMPT_TEMPLATE,
+  DEFAULT_WARDMOTE_CONVERSATION_PROMPT_TEMPLATE,
   applyPaperclipWorkspaceEnv,
   asNumber,
   asString,
@@ -89,7 +88,7 @@ import {
   type PaperclipSkillEntry,
 } from "@tickernelz/wardmote-adapter-utils/server-utils";
 import {
-  PAPERCLIP_MCP_SERVER_NAME,
+  WARDMOTE_MCP_SERVER_NAME,
   paperclipAccessGuidance,
   paperclipAccessMode,
   paperclipMcpToolsets,
@@ -181,7 +180,7 @@ import {
 } from "./startup-timing.js";
 
 const defaultModuleDir = path.dirname(fileURLToPath(import.meta.url));
-const PAPERCLIP_MANAGED_CODEX_SKILLS_MANIFEST = ".paperclip-managed-skills.json";
+const WARDMOTE_MANAGED_CODEX_SKILLS_MANIFEST = ".paperclip-managed-skills.json";
 const BENIGN_NES_CLOSE_STDERR = /method: ['"]nes\/close['"].*-32601/;
 
 function routeChildStderr(state: ChildStderrState, chunk: string) {
@@ -815,8 +814,8 @@ export async function referencedSourceContentSignature(
 }
 
 function defaultPaperclipInstanceDir(): string {
-  const home = process.env.PAPERCLIP_HOME?.trim() || resolveDefaultPaperclipHomeDir();
-  const instanceId = process.env.PAPERCLIP_INSTANCE_ID?.trim() || "default";
+  const home = process.env.WARDMOTE_HOME?.trim() || resolveDefaultPaperclipHomeDir();
+  const instanceId = process.env.WARDMOTE_INSTANCE_ID?.trim() || "default";
   return resolvePaperclipInstanceRootForAdapter({
     homeDir: home,
     instanceId,
@@ -1242,7 +1241,7 @@ async function prepareClaudeSkillRuntime(input: {
 }
 
 async function readManagedCodexSkillsManifest(skillsHome: string): Promise<Set<string>> {
-  const manifestPath = path.join(skillsHome, PAPERCLIP_MANAGED_CODEX_SKILLS_MANIFEST);
+  const manifestPath = path.join(skillsHome, WARDMOTE_MANAGED_CODEX_SKILLS_MANIFEST);
   try {
     const raw = JSON.parse(await fs.readFile(manifestPath, "utf8")) as unknown;
     const parsed = parseObject(raw);
@@ -1258,7 +1257,7 @@ async function readManagedCodexSkillsManifest(skillsHome: string): Promise<Set<s
 async function writeManagedCodexSkillsManifest(skillsHome: string, skillNames: Iterable<string>): Promise<void> {
   const managedSkillNames = Array.from(new Set(skillNames)).sort();
   await fs.writeFile(
-    path.join(skillsHome, PAPERCLIP_MANAGED_CODEX_SKILLS_MANIFEST),
+    path.join(skillsHome, WARDMOTE_MANAGED_CODEX_SKILLS_MANIFEST),
     `${JSON.stringify({ version: 1, managedSkillNames }, null, 2)}\n`,
     "utf8",
   );
@@ -1945,7 +1944,7 @@ async function buildRuntime(input: {
       contentSignature: await referencedSourceContentSignature(entry.localPath, ignoreResolution),
     })),
   );
-  // Referenced-project workspace hints exposed to the agent through PAPERCLIP_WORKSPACES_JSON. The
+  // Referenced-project workspace hints exposed to the agent through WARDMOTE_WORKSPACES_JSON. The
   // list joins the anchor project's alternative workspaces with the referenced (mentioned) projects.
   // On the confined sandbox lane the run repoints each referenced hint at its staged directory after
   // staging below. Empty unless run prep resolved referenced projects or alternative workspaces.
@@ -2016,8 +2015,8 @@ async function buildRuntime(input: {
   }));
   const paperclipEnvForAccess = {
     ...buildPaperclipEnv(agent, { sameHost: !executionTargetIsRemote }),
-    PAPERCLIP_RUN_ID: runId,
-    ...(authToken ? { PAPERCLIP_API_KEY: authToken } : {}),
+    WARDMOTE_RUN_ID: runId,
+    ...(authToken ? { WARDMOTE_API_KEY: authToken } : {}),
   };
   const paperclipAccess = paperclipAccessMode(config, paperclipEnvForAccess);
   const paperclipToolsets = paperclipMcpToolsets(config);
@@ -2028,7 +2027,7 @@ async function buildRuntime(input: {
     });
     mcpServers.unshift({
       type: "http",
-      name: PAPERCLIP_MCP_SERVER_NAME,
+      name: WARDMOTE_MCP_SERVER_NAME,
       url: target.url,
       headers: Object.entries(target.headers).map(([name, value]) => ({ name, value })),
     });
@@ -2047,7 +2046,7 @@ async function buildRuntime(input: {
   const envConfig = parseObject(config.env);
   const env: Record<string, string> = {
     ...buildPaperclipEnv(agent, { sameHost: !executionTargetIsRemote }, input.ctx.agentIdentity),
-    PAPERCLIP_RUN_ID: runId,
+    WARDMOTE_RUN_ID: runId,
   };
   const wakeTaskId =
     (typeof context.taskId === "string" && context.taskId.trim()) ||
@@ -2064,13 +2063,13 @@ async function buildRuntime(input: {
     ? context.issueIds.filter((value): value is string => typeof value === "string" && value.trim().length > 0)
     : [];
   const issueWorkMode = readPaperclipIssueWorkModeFromContext(context);
-  if (wakeTaskId) env.PAPERCLIP_TASK_ID = wakeTaskId;
-  if (issueWorkMode) env.PAPERCLIP_ISSUE_WORK_MODE = issueWorkMode;
-  if (wakeReason) env.PAPERCLIP_WAKE_REASON = wakeReason;
-  if (wakeCommentId) env.PAPERCLIP_WAKE_COMMENT_ID = wakeCommentId;
-  if (approvalId) env.PAPERCLIP_APPROVAL_ID = approvalId;
-  if (approvalStatus) env.PAPERCLIP_APPROVAL_STATUS = approvalStatus;
-  if (linkedIssueIds.length > 0) env.PAPERCLIP_LINKED_ISSUE_IDS = linkedIssueIds.join(",");
+  if (wakeTaskId) env.WARDMOTE_TASK_ID = wakeTaskId;
+  if (issueWorkMode) env.WARDMOTE_ISSUE_WORK_MODE = issueWorkMode;
+  if (wakeReason) env.WARDMOTE_WAKE_REASON = wakeReason;
+  if (wakeCommentId) env.WARDMOTE_WAKE_COMMENT_ID = wakeCommentId;
+  if (approvalId) env.WARDMOTE_APPROVAL_ID = approvalId;
+  if (approvalStatus) env.WARDMOTE_APPROVAL_STATUS = approvalStatus;
+  if (linkedIssueIds.length > 0) env.WARDMOTE_LINKED_ISSUE_IDS = linkedIssueIds.join(",");
   applyPaperclipWorkspaceEnv(env, {
     workspaceCwd: shapedWorkspaceEnv.workspaceCwd,
     workspaceSource,
@@ -2092,14 +2091,14 @@ async function buildRuntime(input: {
   // forward to the spawned agent process. Captured so a stable hash of it can be
   // folded into the session fingerprint below — a change here must invalidate a
   // warm/resumable session so the next launch picks up the latest env. Only
-  // user/adapter-configured env flows through this loop; per-wake PAPERCLIP_*
-  // runtime vars (PAPERCLIP_RUN_ID, wake/approval ids, ...) were assigned to
+  // user/adapter-configured env flows through this loop; per-wake WARDMOTE_*
+  // runtime vars (WARDMOTE_RUN_ID, wake/approval ids, ...) were assigned to
   // `env` above and are never present in shapedEnvConfig, so they inherently
   // stay out of the hash and don't reset the session every heartbeat.
   const resolvedAdapterEnv: Record<string, string> = {};
   const scratch = parseObject(context.paperclipScratch);
   const scratchKeys = scratch.type === "heartbeat_run" && typeof scratch.dir === "string"
-    ? new Set(["PAPERCLIP_RUN_SCRATCH_DIR", "PAPERCLIP_TASK_SCRATCH_DIR", "PAPERCLIP_SCRATCH_DIR", "PAPERCLIP_TMPDIR",
+    ? new Set(["WARDMOTE_RUN_SCRATCH_DIR", "WARDMOTE_TASK_SCRATCH_DIR", "WARDMOTE_SCRATCH_DIR", "WARDMOTE_TMPDIR",
       ...(Array.isArray(scratch.tempKeysApplied) ? scratch.tempKeysApplied.filter((key): key is string =>
         typeof key === "string" && ["TMPDIR", "TEMP", "TMP"].includes(key)) : [])])
     : new Set<string>();
@@ -2108,20 +2107,20 @@ async function buildRuntime(input: {
   );
   for (const [key, value] of Object.entries(shapedEnvConfig)) {
     if (typeof value !== "string") continue;
-    // Runtime PAPERCLIP_* always wins over config: skip a PAPERCLIP_* key that
-    // Paperclip has already assigned this run. PAPERCLIP_API_KEY is never
+    // Runtime WARDMOTE_* always wins over config: skip a WARDMOTE_* key that
+    // Paperclip has already assigned this run. WARDMOTE_API_KEY is never
     // accepted from config — the harness-minted run token is the only source.
-    // A PAPERCLIP_* key Paperclip did NOT set is stable per-run config, so it
+    // A WARDMOTE_* key Paperclip did NOT set is stable per-run config, so it
     // applies and feeds the fingerprint hash below.
     if (isForbiddenConfigEnvKey(key)) continue;
-    if (isPaperclipRuntimeEnvKey(key) && legacyEnvKey(key) in env) continue;
+    if (isPaperclipRuntimeEnvKey(key) && key in env) continue;
     env[key] = value;
     // The server rotates run-owned scratch paths on every wake. Still forward
     // them, but only hash actual adapter settings. User-supplied temp overrides
     // are absent from tempKeysApplied and keep their compatibility protection.
     if (!scratchKeys.has(key) || !scratchPaths.has(value)) resolvedAdapterEnv[key] = value;
   }
-  if (authToken) env.PAPERCLIP_API_KEY = authToken;
+  if (authToken) env.WARDMOTE_API_KEY = authToken;
   // For the claude agent, set model via ANTHROPIC_MODEL at startup rather than
   // via session/set_config_option — the ACP server's set_config_option handler
   // validates the value against its internal available-models list and rejects
@@ -2142,10 +2141,10 @@ async function buildRuntime(input: {
       existingConfig: env.CODEX_CONFIG,
       ...(input.ctx.agentIdentity ? { identityEnvironmentKeys: [...new Set([
         "PATH", "HOME", "LANG", "TMPDIR", "CODEX_HOME",
-        "PAPERCLIP_AGENT_KEY_ID", "PAPERCLIP_AGENT_PUBLIC_KEY", "PAPERCLIP_AGENT_PRIVATE_KEY",
+        "WARDMOTE_AGENT_KEY_ID", "WARDMOTE_AGENT_PUBLIC_KEY", "WARDMOTE_AGENT_PRIVATE_KEY",
         // Preserve Codex's default secret-name exclusions. The short-lived
         // Paperclip API token is required by the agent skill's Bash/curl calls.
-        ...Object.keys(env).filter(key => key === "PAPERCLIP_API_KEY" || !/key|secret|token/i.test(key)),
+        ...Object.keys(env).filter(key => key === "WARDMOTE_API_KEY" || !/key|secret|token/i.test(key)),
       ])] } : {}),
       requestedModel,
       requestedThinkingEffort,
@@ -2343,8 +2342,8 @@ async function buildRuntime(input: {
     ...(toolProfile === "read_only" ? { toolProfile } : {}),
     secretManifestHash: shortHash(secretManifest),
     // Fold the resolved adapter env (all applied user-configured values —
-    // plain, secret_ref, and stable PAPERCLIP_* config such as an explicit
-    // PAPERCLIP_API_KEY) into the fingerprint so a change to any forwarded value
+    // plain, secret_ref, and stable WARDMOTE_* config such as an explicit
+    // WARDMOTE_API_KEY) into the fingerprint so a change to any forwarded value
     // invalidates a warm handle / resumable session and forces a fresh launch
     // that sources the latest env. secretManifestHash alone misses plain-value
     // edits and same-version secret rotations. Per-wake runtime vars never enter
@@ -2489,7 +2488,7 @@ async function buildRuntime(input: {
           stagedProjectDirs,
         }).workspaceHints;
         if (shapedHints.length > 0) {
-          env.PAPERCLIP_WORKSPACES_JSON = JSON.stringify(shapedHints);
+          env.WARDMOTE_WORKSPACES_JSON = JSON.stringify(shapedHints);
         }
       },
       onReuseLog: () =>
@@ -2504,7 +2503,7 @@ async function buildRuntime(input: {
           runtimeRootDir,
           adapterKey: input.engine.adapterType,
           timeoutSec,
-          hostApiToken: env.PAPERCLIP_API_KEY,
+          hostApiToken: env.WARDMOTE_API_KEY,
           enableSandboxDuplexBridge: adapterExecutionTargetEnablesSandboxDuplexBridge(remoteTarget),
           duplexObservabilityRecorder: adapterExecutionTargetDuplexObservabilityRecorder(remoteTarget),
           onLog: input.ctx.onLog,
@@ -3096,12 +3095,12 @@ function guardEnsureSession(params: {
 
 function renderPaperclipEnvNote(env: Record<string, string>): string {
   const paperclipKeys = Object.keys(env)
-    .filter((key) => key.startsWith("PAPERCLIP_"))
+    .filter((key) => key.startsWith("WARDMOTE_"))
     .sort();
   if (paperclipKeys.length === 0) return "";
   return [
     "Paperclip runtime note:",
-    `The following PAPERCLIP_* environment variables are available in this run: ${paperclipKeys.join(", ")}`,
+    `The following WARDMOTE_* environment variables are available in this run: ${paperclipKeys.join(", ")}`,
     "Do not assume these variables are missing without checking your shell environment.",
   ].join("\n");
 }
@@ -3111,9 +3110,9 @@ function renderApiAccessNote(
   access: PaperclipAccessMode,
   toolsets: string,
 ): string {
-  if (!env.PAPERCLIP_API_URL || !env.PAPERCLIP_API_KEY) return "";
+  if (!env.WARDMOTE_API_URL || !env.WARDMOTE_API_KEY) return "";
   const lines = ["Paperclip API access note:", paperclipAccessGuidance(access, { toolsets })];
-  if (!env.PAPERCLIP_TASK_ID) {
+  if (!env.WARDMOTE_TASK_ID) {
     lines.push("Use a real issue id from the current context before making issue write requests.");
   }
   return lines.join("\n");
@@ -3136,7 +3135,7 @@ async function buildPrompt(
   const promptTemplate = hasCustomPromptTemplate
     ? configuredPromptTemplate
     : context.conversationMode === true
-      ? DEFAULT_PAPERCLIP_CONVERSATION_PROMPT_TEMPLATE
+      ? DEFAULT_WARDMOTE_CONVERSATION_PROMPT_TEMPLATE
       : paperclipAgentPromptTemplate(paperclipAccess);
   const instructionsFilePath = asString(config.instructionsFilePath, "").trim();
   const instructionsDir = instructionsFilePath ? `${path.dirname(instructionsFilePath)}/` : "";

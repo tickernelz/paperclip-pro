@@ -149,7 +149,7 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
   let database: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
   let db: Db;
   let scratch: string;
-  const previous = { home: process.env.PAPERCLIP_HOME, api: process.env.PAPERCLIP_API_URL, key: process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE };
+  const previous = { home: process.env.WARDMOTE_HOME, api: process.env.WARDMOTE_API_URL, key: process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE };
   const captured = new Map<string, Record<string, unknown>>();
   const steered = new Map<string, string[]>();
   const holds = new Map<string, () => void>();
@@ -163,9 +163,9 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
     database = await startEmbeddedPostgresTestDatabase("paperclip-openwa-steering-");
     db = createDb(database.connectionString);
     scratch = await mkdtemp(path.join(os.tmpdir(), "openwa-steering-"));
-    process.env.PAPERCLIP_HOME = scratch;
-    process.env.PAPERCLIP_API_URL = "http://127.0.0.1:3100/api";
-    process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE = path.join(scratch, "master.key");
+    process.env.WARDMOTE_HOME = scratch;
+    process.env.WARDMOTE_API_URL = "http://127.0.0.1:3100/api";
+    process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = path.join(scratch, "master.key");
     registerServerAdapter({
       type: ADAPTER_TYPE,
       supportsLocalAgentJwt: true,
@@ -233,7 +233,7 @@ describeEmbeddedPostgres("OpenWA wake classes, steering and follow-up owner runs
     unregisterServerAdapter(ADAPTER_TYPE);
     await database?.cleanup();
     if (scratch) await rm(scratch, { recursive: true, force: true });
-    for (const [key, value] of [["PAPERCLIP_HOME", previous.home], ["PAPERCLIP_API_URL", previous.api], ["PAPERCLIP_SECRETS_MASTER_KEY_FILE", previous.key]] as const) {
+    for (const [key, value] of [["WARDMOTE_HOME", previous.home], ["WARDMOTE_API_URL", previous.api], ["WARDMOTE_SECRETS_MASTER_KEY_FILE", previous.key]] as const) {
       if (value === undefined) delete process.env[key];
       else process.env[key] = value;
     }

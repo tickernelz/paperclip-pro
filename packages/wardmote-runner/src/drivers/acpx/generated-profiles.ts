@@ -14,7 +14,7 @@ export const QUALIFIED_ACPX_PROFILE_DATA = {
     "agentServerVersion": "1",
     "agentRuntimePackage": "native:grok",
     "agentRuntimeVersion": "1.0.13",
-    "commandDigest": "sha256:f0b698395a3704ed2ffaf84ea19bdb20c36c8a0a70b7c629c7b6ffe144e59e55",
+    "commandDigest": "sha256:d1b26d304e272b864489149564733bd244660037415e0678177ad038f53845c8",
     "permissionPolicy": "interactive"
   },
   "pi": {
@@ -22,12 +22,12 @@ export const QUALIFIED_ACPX_PROFILE_DATA = {
     "protocolVersion": 1,
     "acpxVersion": "0.13.1",
     "agent": "pi",
-    "agentProfileVersion": 22,
+    "agentProfileVersion": 23,
     "agentServerPackage": "pi-acp",
     "agentServerVersion": "0.0.33",
     "agentRuntimePackage": "@earendil-works/pi-coding-agent",
     "agentRuntimeVersion": "1.0.0",
-    "commandDigest": "sha256:e92078bee3c23bec4100aa589013a44613d054cd686826534025d8019e9f39a9",
+    "commandDigest": "sha256:d5d628c3cb45b9b999e463dd578fb96174d6db411de4c7f8e67fd97703312213",
     "permissionPolicy": "interactive"
   },
   "cursor": {
@@ -48,12 +48,12 @@ export const QUALIFIED_ACPX_PROFILE_DATA = {
     "protocolVersion": 1,
     "acpxVersion": "0.13.1",
     "agent": "copilot",
-    "agentProfileVersion": 17,
+    "agentProfileVersion": 18,
     "agentServerPackage": "@github/copilot",
     "agentServerVersion": "1.0.88",
     "agentRuntimePackage": null,
     "agentRuntimeVersion": null,
-    "commandDigest": "sha256:481d0852ae8272a90f9912723d540518a874a0da65a9070e33b52ea1a14cbd7f",
+    "commandDigest": "sha256:92e2ada138c9d339e2a2e959c68b44f6278929e860f564e6a18c229c3f9d3e90",
     "qualificationStatus": "pending",
     "permissionPolicy": "interactive"
   },
@@ -80,7 +80,7 @@ export const QUALIFIED_ACPX_PROFILE_DATA = {
     "agentServerVersion": "1.6.2",
     "agentRuntimePackage": "@openai/codex",
     "agentRuntimeVersion": "0.160.0",
-    "commandDigest": "sha256:c4538599d1ab767db5dff50934f13bb5ba313a59d9c4a83e993fac4617ea63d3",
+    "commandDigest": "sha256:3e88ae296113d4e1ad6a57260d82c3ba97b85794101ae632bfd14f6890e62869",
     "permissionPolicy": "interactive"
   }
 } as const;

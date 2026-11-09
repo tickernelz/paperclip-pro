@@ -118,7 +118,7 @@ function reportRetainedAcpxCleanupFailure(
       errorName,
     }),
     {
-      code: "PAPERCLIP_ACPX_RETAINED_CLEANUP_FAILURE",
+      code: "WARDMOTE_ACPX_RETAINED_CLEANUP_FAILURE",
       type: "PaperclipRunnerCleanupWarning",
     },
   );

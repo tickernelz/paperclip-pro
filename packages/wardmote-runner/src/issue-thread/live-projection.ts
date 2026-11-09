@@ -632,7 +632,7 @@ function networkGuardRecord(
     outcome: realPaperclipRequests === 0 ? "no_real_paperclip_request" : "real_paperclip_request",
     reason:
       `Real Paperclip API requests: ${realPaperclipRequests}. ` +
-      `Child PAPERCLIP_* environment keys: ${
+      `Child WARDMOTE_* environment keys: ${
         childPaperclipEnvironmentKeys.length === 0
           ? "none"
           : childPaperclipEnvironmentKeys.join(", ")

@@ -73,7 +73,7 @@ export function resolveToolsets(
   const requested =
     (flagIndex >= 0 ? argv[flagIndex + 1] : undefined) ??
     inline?.slice("--toolsets=".length) ??
-    env.PAPERCLIP_MCP_TOOLSETS;
+    env.WARDMOTE_MCP_TOOLSETS;
   for (const name of (requested ?? "").split(",").map((entry) => entry.trim().toLowerCase())) {
     if (name && !TOOLSET_SELECTIONS.has(name) && !DEPRECATED_TOOLSET_SELECTIONS[name]) {
       console.error(`Ignoring unknown Wardmote MCP toolset "${name}"`);
@@ -96,22 +96,22 @@ export function normalizeApiUrl(apiUrl: string): string {
 }
 
 export function readConfigFromEnv(env: NodeJS.ProcessEnv = process.env): PaperclipMcpConfig {
-  const apiUrl = nonEmpty(env.PAPERCLIP_API_URL);
+  const apiUrl = nonEmpty(env.WARDMOTE_API_URL);
   if (!apiUrl) {
-    throw new Error("Missing WARDMOTE_API_URL (or PAPERCLIP_API_URL)");
+    throw new Error("Missing WARDMOTE_API_URL");
   }
-  const apiKey = nonEmpty(env.PAPERCLIP_API_KEY);
+  const apiKey = nonEmpty(env.WARDMOTE_API_KEY);
   if (!apiKey) {
-    throw new Error("Missing WARDMOTE_API_KEY (or PAPERCLIP_API_KEY)");
+    throw new Error("Missing WARDMOTE_API_KEY");
   }
 
   return {
     apiUrl: normalizeApiUrl(apiUrl),
     apiKey,
-    companyId: nonEmpty(env.PAPERCLIP_COMPANY_ID),
-    agentId: nonEmpty(env.PAPERCLIP_AGENT_ID),
-    runId: nonEmpty(env.PAPERCLIP_RUN_ID),
+    companyId: nonEmpty(env.WARDMOTE_COMPANY_ID),
+    agentId: nonEmpty(env.WARDMOTE_AGENT_ID),
+    runId: nonEmpty(env.WARDMOTE_RUN_ID),
     toolsets: resolveToolsets(env),
-    agentRole: nonEmpty(env.PAPERCLIP_AGENT_ROLE),
+    agentRole: nonEmpty(env.WARDMOTE_AGENT_ROLE),
   };
 }

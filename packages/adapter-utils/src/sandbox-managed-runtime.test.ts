@@ -2636,7 +2636,7 @@ describe("sandbox managed runtime", () => {
   });
 
   it("authors the advisory access intent ro on referenced-project inbound mappings", async () => {
-    const flagKey = "PAPERCLIP_MULTI_PROJECT_WORKSPACE_SYNC";
+    const flagKey = "WARDMOTE_MULTI_PROJECT_WORKSPACE_SYNC";
     const priorFlag = process.env[flagKey];
     process.env[flagKey] = "1";
     try {
@@ -2694,7 +2694,7 @@ describe("sandbox managed runtime", () => {
   });
 
   it("reports the real transferred bytes for a referenced project's inbound staging", async () => {
-    const flagKey = "PAPERCLIP_MULTI_PROJECT_WORKSPACE_SYNC";
+    const flagKey = "WARDMOTE_MULTI_PROJECT_WORKSPACE_SYNC";
     const priorFlag = process.env[flagKey];
     process.env[flagKey] = "1";
     try {
@@ -2771,12 +2771,12 @@ describe("sandbox managed runtime", () => {
   // host filesystem (host FS stands in for the sandbox FS). The runner exposes no
   // native syncIn, so staging rides the base64/tar fallback, the same transport a
   // provider without native sync uses. In production the kill-switch
-  // `PAPERCLIP_MULTI_PROJECT_WORKSPACE_SYNC` gates whether run prep resolves any
+  // `WARDMOTE_MULTI_PROJECT_WORKSPACE_SYNC` gates whether run prep resolves any
   // referenced projects (OFF ⇒ none reach this layer). Enable it in-test only to
   // model the ON scenario, and prove multi-project isolation plus one-failure
   // isolation end-to-end.
   it("stages multiple referenced projects into isolated sandbox dirs end-to-end, skipping a failing source", async () => {
-    const flagKey = "PAPERCLIP_MULTI_PROJECT_WORKSPACE_SYNC";
+    const flagKey = "WARDMOTE_MULTI_PROJECT_WORKSPACE_SYNC";
     const priorFlag = process.env[flagKey];
     process.env[flagKey] = "1";
     try {

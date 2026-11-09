@@ -222,15 +222,15 @@ describe("generated Paperclip API tools", () => {
 
   it("defaults to the core toolset and honours explicit selection", () => {
     expect(resolveToolsets({}, [])).toEqual(["core"]);
-    expect(resolveToolsets({ PAPERCLIP_MCP_TOOLSETS: "core,extended" }, [])).toEqual([
+    expect(resolveToolsets({ WARDMOTE_MCP_TOOLSETS: "core,extended" }, [])).toEqual([
       "core",
       "extended",
     ]);
-    expect(resolveToolsets({ PAPERCLIP_MCP_TOOLSETS: "core" }, ["--toolsets", "all"])).toEqual([
+    expect(resolveToolsets({ WARDMOTE_MCP_TOOLSETS: "core" }, ["--toolsets", "all"])).toEqual([
       "core",
       "extended",
     ]);
-    expect(resolveToolsets({ PAPERCLIP_MCP_TOOLSETS: "nonsense" }, [])).toEqual(["core"]);
+    expect(resolveToolsets({ WARDMOTE_MCP_TOOLSETS: "nonsense" }, [])).toEqual(["core"]);
   });
 
   it("never collides with a curated tool name or repeats a route", () => {

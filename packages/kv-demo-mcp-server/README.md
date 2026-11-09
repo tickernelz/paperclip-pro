@@ -95,7 +95,7 @@ The wizard hits this API under the hood:
 curl -fsS -X POST \
   -H "Authorization: Bearer $BOARD_API_KEY" \
   -H "Content-Type: application/json" \
-  "$PAPERCLIP_URL/api/companies/$COMPANY_ID/tools/apps/connect" \
+  "$WARDMOTE_URL/api/companies/$COMPANY_ID/tools/apps/connect" \
   -d '{
     "link": "http://127.0.0.1:8848/mcp",
     "name": "KV demo"
@@ -125,7 +125,7 @@ If a token is set, add the `credentialValues` block:
 - **`local_stdio` (not used here)** — runs MCP servers as supervised child
   processes inside Paperclip's runtime slots. Reserved for *trusted local
   deployments* (developer laptop, `local_trusted` or
-  `authenticated/private` with `PAPERCLIP_TRUSTED_MCP_RUNTIME_HOST` set on a
+  `authenticated/private` with `WARDMOTE_TRUSTED_MCP_RUNTIME_HOST` set on a
   single trusted worker). Each runtime slot has its own process, which would
   give each slot its own in-memory store — you would lose the shared-state
   property that makes this demo work. Use the approved stdio templates that
@@ -189,7 +189,7 @@ records stay intact unless you also archive the connection.
   curl -fsS -X PATCH \
     -H "Authorization: Bearer $BOARD_API_KEY" \
     -H "Content-Type: application/json" \
-    "$PAPERCLIP_URL/api/tool-connections/$CONNECTION_ID" \
+    "$WARDMOTE_URL/api/tool-connections/$CONNECTION_ID" \
     -d '{ "enabled": false, "status": "disabled" }'
   ```
 - **Archive the application** when you are fully done. Audit history is
@@ -199,7 +199,7 @@ records stay intact unless you also archive the connection.
   curl -fsS -X PATCH \
     -H "Authorization: Bearer $BOARD_API_KEY" \
     -H "Content-Type: application/json" \
-    "$PAPERCLIP_URL/api/tool-applications/$APPLICATION_ID" \
+    "$WARDMOTE_URL/api/tool-applications/$APPLICATION_ID" \
     -d '{ "status": "archived" }'
   ```
 

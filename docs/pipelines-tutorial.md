@@ -13,9 +13,9 @@ The walkthrough intentionally labels conventions separately from primitives. Tho
 Run this against a dev Wardmote instance with a board token or an agent token that can manage pipelines, routines, and issues.
 
 ```sh
-export PAPERCLIP_API_URL=http://localhost:3100
-export PAPERCLIP_COMPANY_ID=<company-id>
-export PAPERCLIP_API_KEY=<token>
+export WARDMOTE_API_URL=http://localhost:3100
+export WARDMOTE_COMPANY_ID=<company-id>
+export WARDMOTE_API_KEY=<token>
 
 # Optional: assign routine-created drafting issues to a specific agent.
 export DRAFTING_AGENT_ID=<agent-id>
@@ -46,7 +46,7 @@ cat > /tmp/release-stages.json <<'JSON'
 JSON
 
 wardmote pipelines create \
-  -C "$PAPERCLIP_COMPANY_ID" \
+  -C "$WARDMOTE_COMPANY_ID" \
   --key "$RELEASE_PIPELINE" \
   --name "Release Coverage $RUN_KEY" \
   --stages-file /tmp/release-stages.json
@@ -84,7 +84,7 @@ cat > /tmp/feature-stages.json <<'JSON'
 JSON
 
 wardmote pipelines create \
-  -C "$PAPERCLIP_COMPANY_ID" \
+  -C "$WARDMOTE_COMPANY_ID" \
   --key "$FEATURE_PIPELINE" \
   --name "Feature Content $RUN_KEY" \
   --stages-file /tmp/feature-stages.json
@@ -135,7 +135,7 @@ cat > /tmp/content-stages.json <<'JSON'
 JSON
 
 wardmote pipelines create \
-  -C "$PAPERCLIP_COMPANY_ID" \
+  -C "$WARDMOTE_COMPANY_ID" \
   --key "$CONTENT_PIPELINE" \
   --name "Content Production $RUN_KEY" \
   --stages-file /tmp/content-stages.json
@@ -155,7 +155,7 @@ cat > /tmp/release-transitions.json <<'JSON'
 JSON
 
 wardmote pipelines set-transitions \
-  -C "$PAPERCLIP_COMPANY_ID" \
+  -C "$WARDMOTE_COMPANY_ID" \
   "$RELEASE_PIPELINE" \
   --file /tmp/release-transitions.json
 ```
@@ -176,7 +176,7 @@ Convention: asset cases store `briefedFromVersion` in `fields` so assembly revie
 MD
 
 wardmote pipelines guidance put \
-  -C "$PAPERCLIP_COMPANY_ID" \
+  -C "$WARDMOTE_COMPANY_ID" \
   "$CONTENT_PIPELINE" \
   --file /tmp/content-guidance.md
 ```
@@ -196,13 +196,13 @@ JSON
 
 export DRAFTING_ROUTINE_ID="$(
   wardmote routine create \
-    -C "$PAPERCLIP_COMPANY_ID" \
+    -C "$WARDMOTE_COMPANY_ID" \
     --payload-json "$(jq -c . /tmp/drafting-routine.json)" \
     --json | jq -r '.id'
 )"
 
 wardmote pipelines set-automation \
-  -C "$PAPERCLIP_COMPANY_ID" \
+  -C "$WARDMOTE_COMPANY_ID" \
   "$CONTENT_PIPELINE" \
   --stage drafting \
   --routine "$DRAFTING_ROUTINE_ID" \
@@ -222,7 +222,7 @@ Create the release root:
 ```sh
 export RELEASE_CASE_ID="$(
   wardmote pipelines ingest \
-    -C "$PAPERCLIP_COMPANY_ID" \
+    -C "$WARDMOTE_COMPANY_ID" \
     "$RELEASE_PIPELINE" \
     --case-key "release-$RUN_KEY" \
     --stage intake \
@@ -258,7 +258,7 @@ jq -n --arg parent "$RELEASE_CASE_ID" '{
 }' > /tmp/feature-cases.json
 
 wardmote pipelines ingest-batch \
-  -C "$PAPERCLIP_COMPANY_ID" \
+  -C "$WARDMOTE_COMPANY_ID" \
   "$FEATURE_PIPELINE" \
   --file /tmp/feature-cases.json \
   --json | tee /tmp/feature-cases-result.json
@@ -280,7 +280,7 @@ jq -n --arg main "$FEATURE_MAIN" --arg drop "$FEATURE_DROP" '{
 }' > /tmp/feature-review.json
 
 wardmote pipelines review-bulk \
-  -C "$PAPERCLIP_COMPANY_ID" \
+  -C "$WARDMOTE_COMPANY_ID" \
   --file /tmp/feature-review.json
 ```
 
@@ -330,7 +330,7 @@ jq -n --arg parent "$FEATURE_MAIN" '{
 }' > /tmp/content-cases.json
 
 wardmote pipelines ingest-batch \
-  -C "$PAPERCLIP_COMPANY_ID" \
+  -C "$WARDMOTE_COMPANY_ID" \
   "$CONTENT_PIPELINE" \
   --file /tmp/content-cases.json \
   --json | tee /tmp/content-cases-result.json
@@ -353,7 +353,7 @@ export TWEET_CASE="$(content_case_id launch-tweet)"
 
 export SUGGESTION_ID="$(
   wardmote pipelines case suggest \
-    -C "$PAPERCLIP_COMPANY_ID" \
+    -C "$WARDMOTE_COMPANY_ID" \
     "$BLOG_CASE" \
     --to assets \
     --rationale "Draft is stable enough to brief asset work." \
@@ -362,7 +362,7 @@ export SUGGESTION_ID="$(
 )"
 
 wardmote pipelines case resolve-suggestion \
-  -C "$PAPERCLIP_COMPANY_ID" \
+  -C "$WARDMOTE_COMPANY_ID" \
   "$BLOG_CASE" \
   --suggestion "$SUGGESTION_ID" \
   --accept \
@@ -376,7 +376,7 @@ The draft can still change while dependent work exists. A material update to the
 ```sh
 export TWEET_WORK_ISSUE="$(
   wardmote issue create \
-    -C "$PAPERCLIP_COMPANY_ID" \
+    -C "$WARDMOTE_COMPANY_ID" \
     --title "Work issue for launch tweet $RUN_KEY" \
     --description "Receives drift comments from the upstream blog case." \
     --status todo \
@@ -385,13 +385,13 @@ export TWEET_WORK_ISSUE="$(
 )"
 
 curl -sS -X POST \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
+  -H "Authorization: Bearer $WARDMOTE_API_KEY" \
   -H "Content-Type: application/json" \
   --data "$(jq -cn --arg issueId "$TWEET_WORK_ISSUE" '{ issueId: $issueId, role: "work" }')" \
-  "$PAPERCLIP_API_URL/api/cases/$TWEET_CASE/issue-links" >/dev/null
+  "$WARDMOTE_API_URL/api/cases/$TWEET_CASE/issue-links" >/dev/null
 
 wardmote pipelines case edit \
-  -C "$PAPERCLIP_COMPANY_ID" \
+  -C "$WARDMOTE_COMPANY_ID" \
   "$BLOG_CASE" \
   --expected-version 2 \
   --summary "Draft changed while dependent tweet work was already briefed." \
@@ -402,13 +402,13 @@ If a worker tries to patch with the stale version, the API returns `409` with `c
 
 ```sh
 wardmote pipelines case edit \
-  -C "$PAPERCLIP_COMPANY_ID" \
+  -C "$WARDMOTE_COMPANY_ID" \
   "$BLOG_CASE" \
   --expected-version 2 \
   --title "Stale edit"
 
 # Recovery:
-wardmote pipelines case get -C "$PAPERCLIP_COMPANY_ID" "$BLOG_CASE" --json
+wardmote pipelines case get -C "$WARDMOTE_COMPANY_ID" "$BLOG_CASE" --json
 ```
 
 ## Step 5: Assets
@@ -416,7 +416,7 @@ wardmote pipelines case get -C "$PAPERCLIP_COMPANY_ID" "$BLOG_CASE" --json
 The Assets automation creates asset cases under the feature. In v1 the tutorial uses an explicit batch file; in the product, this is the stage-template convention.
 
 ```sh
-export BLOG_VERSION="$(wardmote pipelines case get -C "$PAPERCLIP_COMPANY_ID" "$BLOG_CASE" --json | jq -r '.case.version')"
+export BLOG_VERSION="$(wardmote pipelines case get -C "$WARDMOTE_COMPANY_ID" "$BLOG_CASE" --json | jq -r '.case.version')"
 
 jq -n --arg parent "$FEATURE_MAIN" --argjson briefVersion "$BLOG_VERSION" '{
   items: [
@@ -438,7 +438,7 @@ jq -n --arg parent "$FEATURE_MAIN" --argjson briefVersion "$BLOG_VERSION" '{
 }' > /tmp/asset-cases.json
 
 wardmote pipelines ingest-batch \
-  -C "$PAPERCLIP_COMPANY_ID" \
+  -C "$WARDMOTE_COMPANY_ID" \
   "$CONTENT_PIPELINE" \
   --file /tmp/asset-cases.json \
   --json | tee /tmp/asset-cases-result.json
@@ -452,17 +452,17 @@ asset_case_id() {
 export HERO_CASE="$(asset_case_id blog-hero-image)"
 export CARD_CASE="$(asset_case_id blog-social-card)"
 
-wardmote pipelines case transition -C "$PAPERCLIP_COMPANY_ID" "$HERO_CASE" --to published --expected-version 1 --reason "Hero image done."
-wardmote pipelines case transition -C "$PAPERCLIP_COMPANY_ID" "$CARD_CASE" --to dropped --expected-version 1 --reason "Social card not needed."
+wardmote pipelines case transition -C "$WARDMOTE_COMPANY_ID" "$HERO_CASE" --to published --expected-version 1 --reason "Hero image done."
+wardmote pipelines case transition -C "$WARDMOTE_COMPANY_ID" "$CARD_CASE" --to dropped --expected-version 1 --reason "Social card not needed."
 ```
 
 When both asset cases are terminal, move the blog case to `assembly`.
 
 ```sh
-export BLOG_ASSETS_VERSION="$(wardmote pipelines case get -C "$PAPERCLIP_COMPANY_ID" "$BLOG_CASE" --json | jq -r '.case.version')"
+export BLOG_ASSETS_VERSION="$(wardmote pipelines case get -C "$WARDMOTE_COMPANY_ID" "$BLOG_CASE" --json | jq -r '.case.version')"
 
 wardmote pipelines case transition \
-  -C "$PAPERCLIP_COMPANY_ID" \
+  -C "$WARDMOTE_COMPANY_ID" \
   "$BLOG_CASE" \
   --to assembly \
   --expected-version "$BLOG_ASSETS_VERSION" \
@@ -487,13 +487,13 @@ jq -n --arg parent "$BLOG_CASE" '{
 }' > /tmp/assembly-cases.json
 
 wardmote pipelines ingest-batch \
-  -C "$PAPERCLIP_COMPANY_ID" \
+  -C "$WARDMOTE_COMPANY_ID" \
   "$CONTENT_PIPELINE" \
   --file /tmp/assembly-cases.json \
   --json | tee /tmp/assembly-cases-result.json
 
 export ASSEMBLY_CASE="$(jq -r '.[0].case.id' /tmp/assembly-cases-result.json)"
-wardmote pipelines case transition -C "$PAPERCLIP_COMPANY_ID" "$ASSEMBLY_CASE" --to published --expected-version 1 --reason "Assembly complete."
+wardmote pipelines case transition -C "$WARDMOTE_COMPANY_ID" "$ASSEMBLY_CASE" --to published --expected-version 1 --reason "Assembly complete."
 ```
 
 ## Step 7: Blocker Guard
@@ -502,7 +502,7 @@ The tweet is blocked by the blog case through `blockedByCaseKeys`. This transiti
 
 ```sh
 wardmote pipelines case transition \
-  -C "$PAPERCLIP_COMPANY_ID" \
+  -C "$WARDMOTE_COMPANY_ID" \
   "$TWEET_CASE" \
   --to assets \
   --expected-version 1 \
@@ -514,16 +514,16 @@ wardmote pipelines case transition \
 Approve the blog in Final Review, then publish it.
 
 ```sh
-export BLOG_REVIEW_VERSION="$(wardmote pipelines case get -C "$PAPERCLIP_COMPANY_ID" "$BLOG_CASE" --json | jq -r '.case.version')"
+export BLOG_REVIEW_VERSION="$(wardmote pipelines case get -C "$WARDMOTE_COMPANY_ID" "$BLOG_CASE" --json | jq -r '.case.version')"
 
 wardmote pipelines case review \
-  -C "$PAPERCLIP_COMPANY_ID" \
+  -C "$WARDMOTE_COMPANY_ID" \
   "$BLOG_CASE" \
   --approve \
   --expected-version "$BLOG_REVIEW_VERSION"
 
 wardmote pipelines case transition \
-  -C "$PAPERCLIP_COMPANY_ID" \
+  -C "$WARDMOTE_COMPANY_ID" \
   "$BLOG_CASE" \
   --to published \
   --expected-version "$((BLOG_REVIEW_VERSION + 1))" \
@@ -535,25 +535,25 @@ wardmote pipelines case transition \
 The changelog demonstrates the edit loop: Final Review requests changes, the same case re-enters `drafting`, the same work references continue, and the case comes back to Final Review for approval.
 
 ```sh
-wardmote pipelines case transition -C "$PAPERCLIP_COMPANY_ID" "$CHANGELOG_CASE" --to final_review --expected-version 1 --reason "Draft ready for final review."
+wardmote pipelines case transition -C "$WARDMOTE_COMPANY_ID" "$CHANGELOG_CASE" --to final_review --expected-version 1 --reason "Draft ready for final review."
 
 wardmote pipelines case review \
-  -C "$PAPERCLIP_COMPANY_ID" \
+  -C "$WARDMOTE_COMPANY_ID" \
   "$CHANGELOG_CASE" \
   --request-changes \
   --reason "Tighten the framing before publishing." \
   --expected-version 2
 
 wardmote pipelines case edit \
-  -C "$PAPERCLIP_COMPANY_ID" \
+  -C "$WARDMOTE_COMPANY_ID" \
   "$CHANGELOG_CASE" \
   --expected-version 3 \
   --summary "Revised changelog entry after requested changes." \
   --fields-json '{"contentType":"changelog","typedWorkRefs":{"draftPath":"workspaces/release/changelog.md"},"changeRequestAddressed":true}'
 
-wardmote pipelines case transition -C "$PAPERCLIP_COMPANY_ID" "$CHANGELOG_CASE" --to final_review --expected-version 4 --reason "Revised draft ready."
-wardmote pipelines case review -C "$PAPERCLIP_COMPANY_ID" "$CHANGELOG_CASE" --approve --expected-version 5
-wardmote pipelines case transition -C "$PAPERCLIP_COMPANY_ID" "$CHANGELOG_CASE" --to published --expected-version 6 --reason "Published after request-changes loop."
+wardmote pipelines case transition -C "$WARDMOTE_COMPANY_ID" "$CHANGELOG_CASE" --to final_review --expected-version 4 --reason "Revised draft ready."
+wardmote pipelines case review -C "$WARDMOTE_COMPANY_ID" "$CHANGELOG_CASE" --approve --expected-version 5
+wardmote pipelines case transition -C "$WARDMOTE_COMPANY_ID" "$CHANGELOG_CASE" --to published --expected-version 6 --reason "Published after request-changes loop."
 ```
 
 ## Step 10: Final Review Drop
@@ -561,10 +561,10 @@ wardmote pipelines case transition -C "$PAPERCLIP_COMPANY_ID" "$CHANGELOG_CASE" 
 Now that the blog blocker is done, the tweet can reach Final Review. The reviewer drops it, which is terminal and still counts toward rollup completion.
 
 ```sh
-wardmote pipelines case transition -C "$PAPERCLIP_COMPANY_ID" "$TWEET_CASE" --to final_review --expected-version 1 --reason "Blog blocker is now done."
+wardmote pipelines case transition -C "$WARDMOTE_COMPANY_ID" "$TWEET_CASE" --to final_review --expected-version 1 --reason "Blog blocker is now done."
 
 wardmote pipelines case review \
-  -C "$PAPERCLIP_COMPANY_ID" \
+  -C "$WARDMOTE_COMPANY_ID" \
   "$TWEET_CASE" \
   --reject \
   --reason "Drop this tweet; blog already covers the announcement." \
@@ -584,7 +584,7 @@ Inspect the release rollup:
 
 ```sh
 wardmote pipelines case rollup \
-  -C "$PAPERCLIP_COMPANY_ID" \
+  -C "$WARDMOTE_COMPANY_ID" \
   "$RELEASE_CASE_ID" \
   --json
 ```
@@ -607,7 +607,7 @@ Reflection can pull provenance from case events:
 
 ```sh
 wardmote pipelines case events \
-  -C "$PAPERCLIP_COMPANY_ID" \
+  -C "$WARDMOTE_COMPANY_ID" \
   "$CHANGELOG_CASE" \
   --json
 ```
@@ -618,7 +618,7 @@ For rollup provenance:
 
 ```sh
 wardmote pipelines case events \
-  -C "$PAPERCLIP_COMPANY_ID" \
+  -C "$WARDMOTE_COMPANY_ID" \
   "$RELEASE_CASE_ID" \
   --json
 ```
@@ -630,9 +630,9 @@ Look for `children_terminal` followed by the auto `transitioned` event.
 Run the same flow end to end:
 
 ```sh
-PAPERCLIP_API_URL=http://localhost:3100 \
-PAPERCLIP_COMPANY_ID=<company-id> \
-PAPERCLIP_API_KEY=<token> \
+WARDMOTE_API_URL=http://localhost:3100 \
+WARDMOTE_COMPANY_ID=<company-id> \
+WARDMOTE_API_KEY=<token> \
 pnpm smoke:pipelines-tutorial
 ```
 

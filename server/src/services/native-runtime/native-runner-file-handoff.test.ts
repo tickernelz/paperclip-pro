@@ -775,7 +775,7 @@ describe("native runner file handoff", () => {
     );
     expect(prompt).toContain(relativePath!);
     expect(prompt).not.toContain("/api/attachments/");
-    expect(prompt).not.toContain("PAPERCLIP_API_KEY");
+    expect(prompt).not.toContain("WARDMOTE_API_KEY");
     await stage.cleanup();
     await expect(
       readFile(path.join(workspaceRoot, relativePath!)),

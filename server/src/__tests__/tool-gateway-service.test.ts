@@ -940,7 +940,7 @@ describeEmbeddedPostgres("tool gateway service", () => {
   });
 
   it("does not leave unsigned action requests pending when signing is unavailable", async () => {
-    vi.stubEnv("PAPERCLIP_TOOL_ACTION_SIGNING_SECRET", "");
+    vi.stubEnv("WARDMOTE_TOOL_ACTION_SIGNING_SECRET", "");
     const { company, agent, run } = await createRunFixture(db);
     await db.insert(toolPolicies).values({
       companyId: company.id,

@@ -76,7 +76,7 @@ export function isProcessAlive(pid: number): boolean {
 }
 
 export function resolveConfiguredInstanceApiBase(instanceId: string): string {
-  process.env.PAPERCLIP_INSTANCE_ID = instanceId;
+  process.env.WARDMOTE_INSTANCE_ID = instanceId;
   const config = readConfig(resolveConfigPath());
   return buildLocalAppUrl(config?.server.host, config?.server.port ?? 3100);
 }

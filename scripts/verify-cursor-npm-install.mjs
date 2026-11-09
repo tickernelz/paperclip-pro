@@ -13,7 +13,7 @@ import { cursorConsumerDockerArgs, prepareCursorInstallAccount } from './cursor-
 const repo = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const root = mkdtempSync(join(tmpdir(), 'paperclip-cursor-public-install-'));
 console.log(`Verification evidence: ${root}`);
-const env = { ...process.env, NODE_PATH: '', PAPERCLIP_RELEASE_REUSE_UI_DIST: '1', npm_config_ignore_scripts: 'false', npm_config_audit: 'false', npm_config_fund: 'false' };
+const env = { ...process.env, NODE_PATH: '', WARDMOTE_RELEASE_REUSE_UI_DIST: '1', npm_config_ignore_scripts: 'false', npm_config_audit: 'false', npm_config_fund: 'false' };
 for (const key of Object.keys(env)) if (/^(OPENAI|ANTHROPIC|OPENROUTER|DAYTONA|XAI|GROK|CURSOR|COPILOT|GITHUB|GH)(_|$)/.test(key) || /CANDIDATE/.test(key)) delete env[key];
 const run = (command, args, cwd = root) => execFileSync(command, args, { cwd, env, stdio: 'pipe', maxBuffer: 64 * 1024 * 1024 });
 const sourceRevision = run('git', ['rev-parse', 'HEAD'], repo).toString().trim();

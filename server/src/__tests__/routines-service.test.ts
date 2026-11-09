@@ -38,8 +38,8 @@ import { secretService } from "../services/secrets.ts";
 
 const embeddedPostgresSupport = await getEmbeddedPostgresTestSupport();
 const describeEmbeddedPostgres = embeddedPostgresSupport.supported ? describe : describe.skip;
-const originalSecretsProviderEnv = process.env.PAPERCLIP_SECRETS_PROVIDER;
-const originalPaperclipApiUrlEnv = process.env.PAPERCLIP_API_URL;
+const originalSecretsProviderEnv = process.env.WARDMOTE_SECRETS_PROVIDER;
+const originalPaperclipApiUrlEnv = process.env.WARDMOTE_API_URL;
 
 if (!embeddedPostgresSupport.supported) {
   console.warn(
@@ -52,16 +52,16 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
   let tempDb: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>> | null = null;
 
   beforeAll(async () => {
-    process.env.PAPERCLIP_API_URL = "http://localhost:3100";
+    process.env.WARDMOTE_API_URL = "http://localhost:3100";
     tempDb = await startEmbeddedPostgresTestDatabase("paperclip-routines-service-");
     db = createDb(tempDb.connectionString);
   }, 20_000);
 
   afterEach(async () => {
     if (originalSecretsProviderEnv === undefined) {
-      delete process.env.PAPERCLIP_SECRETS_PROVIDER;
+      delete process.env.WARDMOTE_SECRETS_PROVIDER;
     } else {
-      process.env.PAPERCLIP_SECRETS_PROVIDER = originalSecretsProviderEnv;
+      process.env.WARDMOTE_SECRETS_PROVIDER = originalSecretsProviderEnv;
     }
     await db.delete(activityLog);
     await db.delete(issueInboxArchives);
@@ -89,9 +89,9 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
   afterAll(async () => {
     await tempDb?.cleanup();
     if (originalPaperclipApiUrlEnv === undefined) {
-      delete process.env.PAPERCLIP_API_URL;
+      delete process.env.WARDMOTE_API_URL;
     } else {
-      process.env.PAPERCLIP_API_URL = originalPaperclipApiUrlEnv;
+      process.env.WARDMOTE_API_URL = originalPaperclipApiUrlEnv;
     }
   });
 
@@ -2284,7 +2284,7 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
   });
 
   it("rejects an HMAC webhook replay when automatic execution is suppressed", async () => {
-    const runtimeEnv = { PAPERCLIP_IN_WORKTREE: "yes", PAPERCLIP_INSTANCE_ID: "worktree-routines-test" };
+    const runtimeEnv = { WARDMOTE_IN_WORKTREE: "yes", WARDMOTE_INSTANCE_ID: "worktree-routines-test" };
     const { routine, svc } = await seedFixture({ runtimeEnv });
     const { trigger, secretMaterial } = await svc.createTrigger(
       routine.id,
@@ -2321,7 +2321,7 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
   });
 
   it("uses the configured provider for generated webhook trigger secrets", async () => {
-    process.env.PAPERCLIP_SECRETS_PROVIDER = "aws_secrets_manager";
+    process.env.WARDMOTE_SECRETS_PROVIDER = "aws_secrets_manager";
     const originalGetSecretProvider = providerRegistry.getSecretProvider;
     const getSecretProviderSpy = vi.spyOn(providerRegistry, "getSecretProvider").mockImplementation((provider) => {
       if (provider !== "aws_secrets_manager") {
@@ -2599,7 +2599,7 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
   });
 
   it("records suppressed automatic runs when worktree execution is disabled while allowing manual runs", async () => {
-    const runtimeEnv = { PAPERCLIP_IN_WORKTREE: "yes", PAPERCLIP_INSTANCE_ID: "worktree-routines-test" };
+    const runtimeEnv = { WARDMOTE_IN_WORKTREE: "yes", WARDMOTE_INSTANCE_ID: "worktree-routines-test" };
     const { companyId, routine, svc } = await seedFixture({ runtimeEnv });
     const { trigger: scheduleTrigger } = await svc.createTrigger(
       routine.id,
@@ -2630,7 +2630,7 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
   });
 
   it("dispatches only post-cutoff scheduled routines in an armed worktree", async () => {
-    const runtimeEnv = { PAPERCLIP_IN_WORKTREE: "true", PAPERCLIP_INSTANCE_ID: "worktree-routines-test" };
+    const runtimeEnv = { WARDMOTE_IN_WORKTREE: "true", WARDMOTE_INSTANCE_ID: "worktree-routines-test" };
     const { companyId, agentId, projectId, routine: oldRoutine, svc } = await seedFixture({ runtimeEnv });
     const cutoff = new Date("2025-01-01T00:00:00.000Z");
     await armWorktreeExecution(cutoff);
@@ -2770,7 +2770,7 @@ describeEmbeddedPostgres("routine service live-execution coalescing", () => {
   });
 
   it("applies the armed cutoff to webhook dispatch but not manual API runs", async () => {
-    const runtimeEnv = { PAPERCLIP_IN_WORKTREE: "true", PAPERCLIP_INSTANCE_ID: "worktree-routines-test" };
+    const runtimeEnv = { WARDMOTE_IN_WORKTREE: "true", WARDMOTE_INSTANCE_ID: "worktree-routines-test" };
     const { routine, svc } = await seedFixture({ runtimeEnv });
     await armWorktreeExecution(new Date("2025-01-01T00:00:00.000Z"));
     await db.update(routines).set({ createdAt: new Date("2024-12-31T23:59:59.000Z") }).where(eq(routines.id, routine.id));

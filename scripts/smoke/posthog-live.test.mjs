@@ -11,23 +11,23 @@ import {
 } from "./posthog-live-lib.mjs";
 
 const COMPLETE_ENV = {
-  PAPERCLIP_API_URL: "https://paperclip.example.test/api",
-  INTEGRATIONS_POSTHOG_PAPERCLIP_E2E_EMAIL: "operator@example.test",
-  INTEGRATIONS_POSTHOG_PAPERCLIP_DEV_LOGIN_PASSWORD: "not-a-real-password",
+  WARDMOTE_API_URL: "https://paperclip.example.test/api",
+  INTEGRATIONS_POSTHOG_WARDMOTE_E2E_EMAIL: "operator@example.test",
+  INTEGRATIONS_POSTHOG_WARDMOTE_DEV_LOGIN_PASSWORD: "not-a-real-password",
   INTEGRATIONS_POSTHOG_POSTHOG_PROJECT_ID: "483530",
 };
 
 test("preflight reports only missing binding names", () => {
   assert.throws(
     () => preflightPosthogLive({
-      PAPERCLIP_API_URL: "https://paperclip.example.test/api",
-      INTEGRATIONS_POSTHOG_PAPERCLIP_DEV_LOGIN_PASSWORD: "present",
+      WARDMOTE_API_URL: "https://paperclip.example.test/api",
+      INTEGRATIONS_POSTHOG_WARDMOTE_DEV_LOGIN_PASSWORD: "present",
     }),
     (error) => {
       assert.ok(error instanceof PosthogLivePreflightError);
       assert.equal(error.code, "missing_environment");
       assert.deepEqual(error.details.missing, [
-        "INTEGRATIONS_POSTHOG_PAPERCLIP_E2E_EMAIL",
+        "INTEGRATIONS_POSTHOG_WARDMOTE_E2E_EMAIL",
         "INTEGRATIONS_POSTHOG_POSTHOG_PROJECT_ID",
       ]);
       assert.doesNotMatch(error.message, /present/);
@@ -43,7 +43,7 @@ test("preflight rejects credential-bearing and non-HTTPS remote URLs", () => {
     "http://example.test",
   ]) {
     assert.throws(
-      () => preflightPosthogLive({ ...COMPLETE_ENV, PAPERCLIP_API_URL: baseUrl }),
+      () => preflightPosthogLive({ ...COMPLETE_ENV, WARDMOTE_API_URL: baseUrl }),
       (error) => error instanceof PosthogLivePreflightError && error.code === "unsafe_base_url",
     );
   }
@@ -60,7 +60,7 @@ test("preflight derives the current Paperclip origin and accepts an explicit tar
     "https://other-paperclip.example.test",
   );
   assert.throws(
-    () => preflightPosthogLive({ ...COMPLETE_ENV, PAPERCLIP_API_URL: "" }),
+    () => preflightPosthogLive({ ...COMPLETE_ENV, WARDMOTE_API_URL: "" }),
     (error) => error instanceof PosthogLivePreflightError && error.code === "missing_base_url",
   );
 });

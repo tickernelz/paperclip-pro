@@ -22,8 +22,8 @@ current run. Never pass company, endpoint, session, issue, run or profile values
 as tool arguments.
 
 For CLI/sandbox runtimes, POST the same strict arguments to
-`$PAPERCLIP_API_URL/api/companies/$PAPERCLIP_COMPANY_ID/openwa/tasks/$PAPERCLIP_TASK_ID/tools`
-with `Authorization: Bearer $PAPERCLIP_API_KEY`, `X-Paperclip-Run-Id: $PAPERCLIP_RUN_ID`
+`$WARDMOTE_API_URL/api/companies/$WARDMOTE_COMPANY_ID/openwa/tasks/$WARDMOTE_TASK_ID/tools`
+with `Authorization: Bearer $WARDMOTE_API_KEY`, `X-Paperclip-Run-Id: $WARDMOTE_RUN_ID`
 and JSON `{ "tool": "openwa_read_chat", "arguments": {} }`. Read the adjacent
 `TOOLS.json` file for every tool's exact argument schema. Never print credentials.
 

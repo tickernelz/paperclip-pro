@@ -164,7 +164,7 @@ export async function disposeGitWorkspaceSnapshot(snapshot: GitWorkspaceSnapshot
 
 /** Snapshot deadlines include disk backpressure. Operators can allow up to 24h. */
 export function workspaceSnapshotTimeoutMs(): number {
-  const configured = Number(process.env.PAPERCLIP_WORKSPACE_GIT_SNAPSHOT_TIMEOUT_MS);
+  const configured = Number(process.env.WARDMOTE_WORKSPACE_GIT_SNAPSHOT_TIMEOUT_MS);
   return Number.isFinite(configured) && configured >= 1000 ? Math.min(configured, 86_400_000) : 30 * 60_000;
 }
 

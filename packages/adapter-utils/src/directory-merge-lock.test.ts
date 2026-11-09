@@ -37,9 +37,9 @@ describe("directory merge lock process lifetime", () => {
     directories.push(root);
     const target = path.join(root, "target");
     await mkdir(target);
-    const env = { ...process.env, PAPERCLIP_HOME: path.join(root, "home"), PAPERCLIP_INSTANCE_ID: "test" };
+    const env = { ...process.env, WARDMOTE_HOME: path.join(root, "home"), WARDMOTE_INSTANCE_ID: "test" };
     const key = createHash("sha256").update(await realpath(target)).digest("hex");
-    const lock = path.join(env.PAPERCLIP_HOME, "instances", "test", "locks", "directory-merge", `${key}.lock`);
+    const lock = path.join(env.WARDMOTE_HOME, "instances", "test", "locks", "directory-merge", `${key}.lock`);
     return { target, env, lock };
   }
 

@@ -45,11 +45,11 @@ bash skills/paperclip/scripts/paperclip-upload-artifact.sh path/to/output.webm \
 The helper uses the authenticated Paperclip API from the current heartbeat
 environment:
 
-- `PAPERCLIP_API_URL`
-- `PAPERCLIP_API_KEY`
-- `PAPERCLIP_COMPANY_ID`
-- `PAPERCLIP_TASK_ID`
-- `PAPERCLIP_RUN_ID`
+- `WARDMOTE_API_URL`
+- `WARDMOTE_API_KEY`
+- `WARDMOTE_COMPANY_ID`
+- `WARDMOTE_TASK_ID`
+- `WARDMOTE_RUN_ID`
 
 It uploads the file to
 `POST /api/companies/{companyId}/issues/{issueId}/attachments` and creates an
@@ -164,9 +164,9 @@ If the helper is unavailable, use the same API shape:
 
 ```sh
 curl -sS -X POST \
-  "$PAPERCLIP_API_URL/api/companies/$PAPERCLIP_COMPANY_ID/issues/$PAPERCLIP_TASK_ID/attachments" \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
-  -H "X-Paperclip-Run-Id: $PAPERCLIP_RUN_ID" \
+  "$WARDMOTE_API_URL/api/companies/$WARDMOTE_COMPANY_ID/issues/$WARDMOTE_TASK_ID/attachments" \
+  -H "Authorization: Bearer $WARDMOTE_API_KEY" \
+  -H "X-Paperclip-Run-Id: $WARDMOTE_RUN_ID" \
   -F 'file=@"dist/demo.mp4";type=video/mp4'
 ```
 
@@ -174,9 +174,9 @@ Then create a work product when the uploaded file is the deliverable:
 
 ```sh
 curl -sS -X POST \
-  "$PAPERCLIP_API_URL/api/issues/$PAPERCLIP_TASK_ID/work-products" \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
-  -H "X-Paperclip-Run-Id: $PAPERCLIP_RUN_ID" \
+  "$WARDMOTE_API_URL/api/issues/$WARDMOTE_TASK_ID/work-products" \
+  -H "Authorization: Bearer $WARDMOTE_API_KEY" \
+  -H "X-Paperclip-Run-Id: $WARDMOTE_RUN_ID" \
   -H "Content-Type: application/json" \
   --data-binary @artifact-work-product.json
 ```
@@ -207,7 +207,7 @@ To run the same suite on disposable Daytona sandboxes, install the standalone
 Daytona plugin's dependencies and set `DAYTONA_API_KEY` in the test process:
 
 ```sh
-PAPERCLIP_FILE_DELIVERY_DAYTONA=1 pnpm exec vitest run server/src/__tests__/file-delivery-bridges.test.ts
+WARDMOTE_FILE_DELIVERY_DAYTONA=1 pnpm exec vitest run server/src/__tests__/file-delivery-bridges.test.ts
 ```
 
 The live fixture deletes each sandbox before checking that its attachments

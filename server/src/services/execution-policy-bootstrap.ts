@@ -4,7 +4,7 @@
  * Lets an operator / gitops deployment force the instance onto the Kubernetes
  * sandbox provider purely via environment variables, with no manual product-API
  * calls. On startup we:
- *   1. Parse `PAPERCLIP_EXECUTION_MODE` (+ `PAPERCLIP_K8S_*`) from the env.
+ *   1. Parse `WARDMOTE_EXECUTION_MODE` (+ `WARDMOTE_K8S_*`) from the env.
  *   2. Persist `executionMode` into instance general settings (so the per-run
  *      heartbeat guard enforces it).
  *   3. Idempotently ensure a configured Kubernetes sandbox environment for every
@@ -46,7 +46,7 @@ function parsePositiveIntMs(value: string | undefined): number | undefined {
   const parsed = Number(trimmed);
   if (!Number.isFinite(parsed) || !Number.isInteger(parsed) || parsed <= 0) {
     throw new Error(
-      `PAPERCLIP_K8S_RPC_TIMEOUT_MS must be a positive integer of milliseconds (got "${value}").`,
+      `WARDMOTE_K8S_RPC_TIMEOUT_MS must be a positive integer of milliseconds (got "${value}").`,
     );
   }
   return parsed;
@@ -63,66 +63,66 @@ function parseList(value: string | undefined): string[] | undefined {
 
 /**
  * Parse the forced-execution-mode env config. Returns null when execution is
- * unrestricted (no env, or `PAPERCLIP_EXECUTION_MODE=any`). Throws on an
+ * unrestricted (no env, or `WARDMOTE_EXECUTION_MODE=any`). Throws on an
  * unrecognized mode so a misconfigured deployment fails loudly instead of
  * silently allowing local execution.
  */
 export function parseExecutionPolicyBootstrapEnv(
   env: ExecutionPolicyBootstrapEnv,
 ): ExecutionPolicyBootstrap | null {
-  const raw = env.PAPERCLIP_EXECUTION_MODE?.trim();
+  const raw = env.WARDMOTE_EXECUTION_MODE?.trim();
   if (!raw || raw === "any") return null;
   if (raw !== "kubernetes") {
     throw new Error(
-      `PAPERCLIP_EXECUTION_MODE must be "kubernetes" or "any" (got "${raw}").`,
+      `WARDMOTE_EXECUTION_MODE must be "kubernetes" or "any" (got "${raw}").`,
     );
   }
 
   const kubernetesConfig: KubernetesEnvironmentConfigInput = {
     // inCluster defaults to false (matches the plugin schema default); an
-    // in-cluster cloud deployment sets PAPERCLIP_K8S_IN_CLUSTER=true.
-    inCluster: parseBool(env.PAPERCLIP_K8S_IN_CLUSTER) ?? false,
+    // in-cluster cloud deployment sets WARDMOTE_K8S_IN_CLUSTER=true.
+    inCluster: parseBool(env.WARDMOTE_K8S_IN_CLUSTER) ?? false,
   };
 
-  const backend = env.PAPERCLIP_K8S_BACKEND?.trim();
+  const backend = env.WARDMOTE_K8S_BACKEND?.trim();
   if (backend) {
     if (backend !== "job" && backend !== "sandbox-cr") {
       throw new Error(
-        `PAPERCLIP_K8S_BACKEND must be "job" or "sandbox-cr" (got "${backend}").`,
+        `WARDMOTE_K8S_BACKEND must be "job" or "sandbox-cr" (got "${backend}").`,
       );
     }
     kubernetesConfig.backend = backend;
   }
 
-  const egressMode = env.PAPERCLIP_K8S_EGRESS_MODE?.trim();
+  const egressMode = env.WARDMOTE_K8S_EGRESS_MODE?.trim();
   if (egressMode) {
     if (egressMode !== "cilium" && egressMode !== "standard") {
       throw new Error(
-        `PAPERCLIP_K8S_EGRESS_MODE must be "cilium" or "standard" (got "${egressMode}").`,
+        `WARDMOTE_K8S_EGRESS_MODE must be "cilium" or "standard" (got "${egressMode}").`,
       );
     }
     kubernetesConfig.egressMode = egressMode;
   }
 
-  const runtimeClassName = env.PAPERCLIP_K8S_RUNTIME_CLASS_NAME?.trim();
+  const runtimeClassName = env.WARDMOTE_K8S_RUNTIME_CLASS_NAME?.trim();
   if (runtimeClassName) kubernetesConfig.runtimeClassName = runtimeClassName;
 
-  const namespacePrefix = env.PAPERCLIP_K8S_NAMESPACE_PREFIX?.trim();
+  const namespacePrefix = env.WARDMOTE_K8S_NAMESPACE_PREFIX?.trim();
   if (namespacePrefix) kubernetesConfig.namespacePrefix = namespacePrefix;
 
-  const imageRegistry = env.PAPERCLIP_K8S_IMAGE_REGISTRY?.trim();
+  const imageRegistry = env.WARDMOTE_K8S_IMAGE_REGISTRY?.trim();
   if (imageRegistry) kubernetesConfig.imageRegistry = imageRegistry;
 
-  const rpcTimeoutMs = parsePositiveIntMs(env.PAPERCLIP_K8S_RPC_TIMEOUT_MS);
+  const rpcTimeoutMs = parsePositiveIntMs(env.WARDMOTE_K8S_RPC_TIMEOUT_MS);
   if (rpcTimeoutMs !== undefined) kubernetesConfig.timeoutMs = rpcTimeoutMs;
 
-  const adapterType = env.PAPERCLIP_K8S_ADAPTER_TYPE?.trim();
+  const adapterType = env.WARDMOTE_K8S_ADAPTER_TYPE?.trim();
   if (adapterType) kubernetesConfig.adapterType = adapterType;
 
-  const egressAllowFqdns = parseList(env.PAPERCLIP_K8S_EGRESS_ALLOW_FQDNS);
+  const egressAllowFqdns = parseList(env.WARDMOTE_K8S_EGRESS_ALLOW_FQDNS);
   if (egressAllowFqdns) kubernetesConfig.egressAllowFqdns = egressAllowFqdns;
 
-  const egressAllowCidrs = parseList(env.PAPERCLIP_K8S_EGRESS_ALLOW_CIDRS);
+  const egressAllowCidrs = parseList(env.WARDMOTE_K8S_EGRESS_ALLOW_CIDRS);
   if (egressAllowCidrs) kubernetesConfig.egressAllowCidrs = egressAllowCidrs;
 
   const adapters = parseAdapterRegistryEnv(env);

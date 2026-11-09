@@ -20,7 +20,7 @@ export class AcpxApprovalRequiredError extends Error {
 // automatic provider permission. These operations implement the bounded plan,
 // task, and handoff workflow; governance decisions, generic APIs, and workspace
 // controls deliberately stay outside it. Asking a human does not approve work.
-const AUTOMATIC_PAPERCLIP_WORKFLOW_ACTIONS = new Set([
+const AUTOMATIC_WARDMOTE_WORKFLOW_ACTIONS = new Set([
   "report_progress", "answer_status_question", "write_document",
   "request_human_input", "register_deliverable", "finish_task", "block_task",
   "set_task_title", "request_review", "create_task", "reassign_task", "set_dependencies",
@@ -50,7 +50,7 @@ export function claudePaperclipPermissionRules(
     // authenticated bridge and controller still validate run authority,
     // company scope, claims, task mode, and governed-action approvals.
     return isRead || (action && (
-      mode === "approve-paperclip" && AUTOMATIC_PAPERCLIP_WORKFLOW_ACTIONS.has(name)
+      mode === "approve-paperclip" && AUTOMATIC_WARDMOTE_WORKFLOW_ACTIONS.has(name)
     ))
       ? [`mcp__paperclip__${name}`]
       : [];

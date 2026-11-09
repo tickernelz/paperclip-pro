@@ -9,11 +9,11 @@ Use this skill for the **Runner Evals** family: a real Runner/provider session
 against a seeded mock control plane. Product browser/server/database/Daytona
 coverage belongs in [add-product-e2e-eval](../add-product-e2e-eval/SKILL.md).
 
-Locate the Paperclip checkout using `PAPERCLIP_ROOT` when supplied, or
+Locate the Paperclip checkout using `WARDMOTE_ROOT` when supplied, or
 `git rev-parse --show-toplevel` from a checkout. From outside Git, inspect the
 workspace roots (for example `~/paperclipai/paperclip`) and verify that the
 selected root contains `packages/wardmote-runner` and `tests/runner-e2e`.
-Locate `paperclip-evals` using `PAPERCLIP_EVALS_ROOT` or a discovered sibling;
+Locate `paperclip-evals` using `WARDMOTE_EVALS_ROOT` or a discovered sibling;
 a worktree's parent directory need not contain that repository. Read
 `doc/evals.md` and `packages/wardmote-runner/docs/runner-protocol-live-evals.md`,
 then inspect the nearest existing case, roster, schema, and report test before

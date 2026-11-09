@@ -202,7 +202,7 @@ export async function execute(
 | Helper | Purpose |
 |--------|---------|
 | `runChildProcess(command, opts)` | Spawn a child process with timeout, grace period, and streaming callbacks |
-| `buildPaperclipEnv(agent)` | Inject `PAPERCLIP_*` environment variables |
+| `buildPaperclipEnv(agent)` | Inject `WARDMOTE_*` environment variables |
 | `renderTemplate(template, data)` | `{{variable}}` substitution in prompt templates |
 | `asString(v)`, `asNumber(v)`, `asBoolean(v)` | Safe config value extraction |
 

@@ -229,7 +229,7 @@ let currentActor: Record<string, unknown> = {
   source: "local_implicit",
 };
 const routeOptions: Record<string, unknown> = {};
-const originalSecretsProviderEnv = process.env.PAPERCLIP_SECRETS_PROVIDER;
+const originalSecretsProviderEnv = process.env.WARDMOTE_SECRETS_PROVIDER;
 
 // The routes open a transaction around environment writes and their binding
 // syncs. Service calls are mocked, so the executor never runs a real query —
@@ -263,9 +263,9 @@ function createApp(actor: Record<string, unknown>, options: Record<string, unkno
 describe("environment routes", () => {
   afterAll(async () => {
     if (originalSecretsProviderEnv === undefined) {
-      delete process.env.PAPERCLIP_SECRETS_PROVIDER;
+      delete process.env.WARDMOTE_SECRETS_PROVIDER;
     } else {
-      process.env.PAPERCLIP_SECRETS_PROVIDER = originalSecretsProviderEnv;
+      process.env.WARDMOTE_SECRETS_PROVIDER = originalSecretsProviderEnv;
     }
     if (!server) return;
     await new Promise<void>((resolve, reject) => {
@@ -348,7 +348,7 @@ describe("environment routes", () => {
     mockSecretService.replaceSecretRefsForInstanceTarget.mockResolvedValue([]);
     mockSecretService.remove.mockResolvedValue(null);
     mockSecretService.resolveSecretValueForEphemeralAccess.mockResolvedValue("resolved-provider-key");
-    delete process.env.PAPERCLIP_SECRETS_PROVIDER;
+    delete process.env.WARDMOTE_SECRETS_PROVIDER;
     mockValidatePluginEnvironmentDriverConfig.mockReset();
     mockValidatePluginEnvironmentDriverConfig.mockImplementation(async ({ config }) => config);
     mockValidatePluginSandboxProviderConfig.mockReset();
@@ -1410,7 +1410,7 @@ describe("environment routes", () => {
   });
 
   it("uses the configured provider for SSH private key secret materialization", async () => {
-    process.env.PAPERCLIP_SECRETS_PROVIDER = "aws_secrets_manager";
+    process.env.WARDMOTE_SECRETS_PROVIDER = "aws_secrets_manager";
     const environment = {
       ...createEnvironment(),
       id: "env-ssh",
@@ -1794,7 +1794,7 @@ describe("environment routes", () => {
   });
 
   it("uses the configured provider for schema-driven sandbox secret fields", async () => {
-    process.env.PAPERCLIP_SECRETS_PROVIDER = "aws_secrets_manager";
+    process.env.WARDMOTE_SECRETS_PROVIDER = "aws_secrets_manager";
     const environment = {
       ...createEnvironment(),
       id: "env-sandbox-secure-plugin",

@@ -32,10 +32,10 @@ async function handleRequest(request) {
   }
   if (request.method === "session/new") return { sessionId: randomUUID() };
   if (request.method === "session/prompt") {
-    const typedFailure = process.env.PAPERCLIP_ACPX_TYPED_FAILURE_FILE
-      ? JSON.parse(await readFile(process.env.PAPERCLIP_ACPX_TYPED_FAILURE_FILE, "utf8"))
+    const typedFailure = process.env.WARDMOTE_ACPX_TYPED_FAILURE_FILE
+      ? JSON.parse(await readFile(process.env.WARDMOTE_ACPX_TYPED_FAILURE_FILE, "utf8"))
       : {};
-    const typedFailureCanary = typedFailure.title ?? process.env.PAPERCLIP_ACPX_TYPED_FAILURE_CANARY;
+    const typedFailureCanary = typedFailure.title ?? process.env.WARDMOTE_ACPX_TYPED_FAILURE_CANARY;
     if (typedFailureCanary) {
       if (!supportsTypedSessionFailure) {
         throw new Error(
@@ -45,7 +45,7 @@ async function handleRequest(request) {
       const sessionFailure = {
         id: `${request.params.sessionId}:error`,
         revision: 1,
-        category: typedFailure.category ?? process.env.PAPERCLIP_ACPX_TYPED_FAILURE_CATEGORY ?? "request",
+        category: typedFailure.category ?? process.env.WARDMOTE_ACPX_TYPED_FAILURE_CATEGORY ?? "request",
         severity: "error",
         title: typedFailureCanary,
         ...(typedFailure.details
@@ -69,7 +69,7 @@ async function handleRequest(request) {
         _meta: { jetbrains: { air: { version: 1, sessionFailure } } },
       };
     }
-    const typedWarningCanary = process.env.PAPERCLIP_ACPX_TYPED_WARNING_CANARY;
+    const typedWarningCanary = process.env.WARDMOTE_ACPX_TYPED_WARNING_CANARY;
     let responseMeta;
     if (typedWarningCanary) {
       if (!supportsTypedSessionFailure) {
@@ -104,7 +104,7 @@ async function handleRequest(request) {
           sessionUpdate: "agent_message_chunk",
           content: {
             type: "text",
-            text: process.env.PAPERCLIP_ACPX_SPAWN_SMOKE ?? "missing",
+            text: process.env.WARDMOTE_ACPX_SPAWN_SMOKE ?? "missing",
           },
         },
       },

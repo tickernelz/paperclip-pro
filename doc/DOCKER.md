@@ -19,8 +19,8 @@ Build arguments:
 | `USER_UID` | `1000` | UID for the container `node` user (match your host UID to avoid permission issues on bind mounts) |
 | `USER_GID` | `1000` | GID for the container `node` group |
 | `CLI_TOOLS_CACHE_EPOCH` | empty | Refresh the CLI-install layer; CI supplies the current ISO week |
-| `PAPERCLIP_BUILD_VERSION` | empty | Runtime version when Git metadata is unavailable |
-| `PAPERCLIP_BUILD_COMMIT` | empty | Source commit written into the server build stamp and runtime environment |
+| `WARDMOTE_BUILD_VERSION` | empty | Runtime version when Git metadata is unavailable |
+| `WARDMOTE_BUILD_COMMIT` | empty | Source commit written into the server build stamp and runtime environment |
 
 Changing the build version or commit preserves the CLI-install cache. The
 tool layer refreshes when its weekly epoch, base image, installation command,
@@ -42,14 +42,14 @@ own images from this public base without rebuilding Core.
 
 Stamped standard images include the build-owned remote provider pack at
 `/opt/paperclip-runner/provider-pack` and set
-`PAPERCLIP_RUNNER_REMOTE_PROVIDER_PACK_PATH` to that directory. Downstream
+`WARDMOTE_RUNNER_REMOTE_PROVIDER_PACK_PATH` to that directory. Downstream
 compositions and the explicit `cloud` target inherit both. The pack is required
 on the controller for remote OpenCode and ACPX runs, even when the sandbox has
 preinstalled providers; setting the environment variable alone cannot repair an
 image that omits the pack. Rebuild and redeploy from a standard image containing
 the pack if runs fail with `runner_remote_provider_artifact_incompatible`.
 
-Local Docker builds must supply a full `PAPERCLIP_BUILD_COMMIT` to include a
+Local Docker builds must supply a full `WARDMOTE_BUILD_COMMIT` to include a
 qualified pack. Unstamped builds remain usable for local adapters and skip pack
 generation. The pack stays root-owned and readable by remapped runtime UIDs.
 
@@ -76,9 +76,9 @@ docker build -t paperclip-local . && \
 docker run --name paperclip \
   -p 3100:3100 \
   -e HOST=0.0.0.0 \
-  -e PAPERCLIP_HOME=/paperclip \
+  -e WARDMOTE_HOME=/paperclip \
   -e BETTER_AUTH_SECRET=$(openssl rand -hex 32) \
-  -e PAPERCLIP_TOOL_ACTION_SIGNING_SECRET=$(openssl rand -hex 32) \
+  -e WARDMOTE_TOOL_ACTION_SIGNING_SECRET=$(openssl rand -hex 32) \
   -v "$(pwd)/data/docker-paperclip:/paperclip" \
   paperclip-local
 ```
@@ -102,7 +102,7 @@ Single container, no external database. Data persists via a bind mount.
 
 ```sh
 BETTER_AUTH_SECRET=$(openssl rand -hex 32) \
-PAPERCLIP_TOOL_ACTION_SIGNING_SECRET=$(openssl rand -hex 32) \
+WARDMOTE_TOOL_ACTION_SIGNING_SECRET=$(openssl rand -hex 32) \
   docker compose -f docker/docker-compose.quickstart.yml up --build
 ```
 
@@ -114,13 +114,13 @@ Defaults:
 Optional overrides:
 
 ```sh
-PAPERCLIP_PORT=3200 PAPERCLIP_DATA_DIR=../data/pc \
+WARDMOTE_PORT=3200 WARDMOTE_DATA_DIR=../data/pc \
   docker compose -f docker/docker-compose.quickstart.yml up --build
 ```
 
-**Note:** `PAPERCLIP_DATA_DIR` is resolved relative to the compose file (`docker/`), so `../data/pc` maps to `data/pc` in the project root.
+**Note:** `WARDMOTE_DATA_DIR` is resolved relative to the compose file (`docker/`), so `../data/pc` maps to `data/pc` in the project root.
 
-If you change host port or use a non-local domain, set `PAPERCLIP_PUBLIC_URL` to the external URL you will use in browser/auth flows.
+If you change host port or use a non-local domain, set `WARDMOTE_PUBLIC_URL` to the external URL you will use in browser/auth flows.
 
 Pass `OPENAI_API_KEY` and/or `ANTHROPIC_API_KEY` to enable local adapter runs.
 
@@ -152,12 +152,12 @@ For authenticated deployments, set one canonical public URL and let Paperclip de
 services:
   paperclip:
     environment:
-      PAPERCLIP_DEPLOYMENT_MODE: authenticated
-      PAPERCLIP_DEPLOYMENT_EXPOSURE: private
-      PAPERCLIP_PUBLIC_URL: https://desk.koker.net
+      WARDMOTE_DEPLOYMENT_MODE: authenticated
+      WARDMOTE_DEPLOYMENT_EXPOSURE: private
+      WARDMOTE_PUBLIC_URL: https://desk.koker.net
 ```
 
-`PAPERCLIP_PUBLIC_URL` is used as the primary source for:
+`WARDMOTE_PUBLIC_URL` is used as the primary source for:
 
 - auth public base URL
 - Better Auth base URL defaults
@@ -174,27 +174,27 @@ public deployments should run the high-entropy CLI invite fallback instead:
 pnpm wardmote auth bootstrap-ceo
 ```
 
-Granular overrides remain available if needed (`PAPERCLIP_AUTH_PUBLIC_BASE_URL`, `BETTER_AUTH_URL`, `BETTER_AUTH_TRUSTED_ORIGINS`, `PAPERCLIP_ALLOWED_HOSTNAMES`).
+Granular overrides remain available if needed (`WARDMOTE_AUTH_PUBLIC_BASE_URL`, `BETTER_AUTH_URL`, `BETTER_AUTH_TRUSTED_ORIGINS`, `WARDMOTE_ALLOWED_HOSTNAMES`).
 
-Set `PAPERCLIP_ALLOWED_HOSTNAMES` explicitly only when you need additional hostnames beyond the public URL host (for example Tailscale/LAN aliases or multiple private hostnames).
+Set `WARDMOTE_ALLOWED_HOSTNAMES` explicitly only when you need additional hostnames beyond the public URL host (for example Tailscale/LAN aliases or multiple private hostnames).
 
 ### Optional Vercel Connect credentials
 
 Vercel Connect's backend integration is retained for controlled testing and
 existing Vercel-backed connections, but its new-connection UI is currently
 withheld from **Apps → Browse**. Setting
-`PAPERCLIP_VERCEL_CONNECT_ENABLED=true` does not expose a customer-facing setup
+`WARDMOTE_VERCEL_CONNECT_ENABLED=true` does not expose a customer-facing setup
 entry. Native provider setup screens remain unchanged. Vercel-hosted deployments use the
 workload OIDC token Vercel injects. Other hosted and self-hosted deployments
-can provide `PAPERCLIP_VERCEL_CONNECT_ACCESS_TOKEN` as a deployment bootstrap
+can provide `WARDMOTE_VERCEL_CONNECT_ACCESS_TOKEN` as a deployment bootstrap
 secret only when that token type is accepted by the live Connect API:
 
 ```yaml
 services:
   paperclip:
     environment:
-      PAPERCLIP_VERCEL_CONNECT_ENABLED: "true"
-      PAPERCLIP_VERCEL_CONNECT_ACCESS_TOKEN: ${PAPERCLIP_VERCEL_CONNECT_ACCESS_TOKEN}
+      WARDMOTE_VERCEL_CONNECT_ENABLED: "true"
+      WARDMOTE_VERCEL_CONNECT_ACCESS_TOKEN: ${WARDMOTE_VERCEL_CONNECT_ACCESS_TOKEN}
 ```
 
 Do not save that access token in a company secret or connection config. It is
@@ -222,7 +222,7 @@ You do not run a shell command or configure a CLI home.
 docker run --name paperclip \
   -p 3100:3100 \
   -e HOST=0.0.0.0 \
-  -e PAPERCLIP_HOME=/paperclip \
+  -e WARDMOTE_HOME=/paperclip \
   -v "$(pwd)/data/docker-paperclip:/paperclip" \
   paperclip-local
 ```
@@ -263,7 +263,7 @@ The `docker/quadlet/` directory contains unit files to run Paperclip + PostgreSQ
    ```sh
    cat > ~/.config/containers/systemd/paperclip.env <<EOL
    BETTER_AUTH_SECRET=$(openssl rand -hex 32)
-   PAPERCLIP_TOOL_ACTION_SIGNING_SECRET=$(openssl rand -hex 32)
+   WARDMOTE_TOOL_ACTION_SIGNING_SECRET=$(openssl rand -hex 32)
    POSTGRES_USER=paperclip
    POSTGRES_PASSWORD=paperclip
    POSTGRES_DB=paperclip
@@ -319,7 +319,7 @@ Useful overrides:
 
 ```sh
 HOST_PORT=3200 PAPERCLIPAI_VERSION=latest ./scripts/docker-onboard-smoke.sh
-PAPERCLIP_DEPLOYMENT_MODE=authenticated PAPERCLIP_DEPLOYMENT_EXPOSURE=private ./scripts/docker-onboard-smoke.sh
+WARDMOTE_DEPLOYMENT_MODE=authenticated WARDMOTE_DEPLOYMENT_EXPOSURE=private ./scripts/docker-onboard-smoke.sh
 SMOKE_DETACH=true SMOKE_METADATA_FILE=/tmp/paperclip-smoke.env PAPERCLIPAI_VERSION=latest ./scripts/docker-onboard-smoke.sh
 ```
 
@@ -329,7 +329,7 @@ Notes:
 - Container runtime user id defaults to your local `id -u` so the mounted data dir stays writable while avoiding root runtime.
 - Smoke script defaults to `authenticated/private` mode so `HOST=0.0.0.0` can be exposed to the host.
 - Smoke script defaults host port to `3131` to avoid conflicts with local Paperclip on `3100`.
-- Smoke script also defaults `PAPERCLIP_PUBLIC_URL` to `http://localhost:<HOST_PORT>` so bootstrap invite URLs and auth callbacks use the reachable host port instead of the container's internal `3100`.
+- Smoke script also defaults `WARDMOTE_PUBLIC_URL` to `http://localhost:<HOST_PORT>` so bootstrap invite URLs and auth callbacks use the reachable host port instead of the container's internal `3100`.
 - In authenticated mode, the smoke script defaults `SMOKE_AUTO_BOOTSTRAP=true` and drives the real bootstrap path automatically: it signs up a real user, runs `wardmote auth bootstrap-ceo` inside the container to mint a real bootstrap invite, accepts that invite over HTTP, and verifies board session access.
 - Run the script in the foreground to watch the onboarding flow; stop with `Ctrl+C` after validation.
 - Set `SMOKE_DETACH=true` to leave the container running for automation and optionally write shell-ready metadata to `SMOKE_METADATA_FILE`.

@@ -2039,7 +2039,7 @@ async function resolveCurrentCompanyId(ctx: { companyId?: string; api: { get<T>(
   } catch (error) {
     if (error instanceof ApiRequestError && (error.status === 401 || error.status === 403)) {
       throw new Error(
-        "Current company is not available. Pass --company-id, set PAPERCLIP_COMPANY_ID, set a context profile companyId, or authenticate with an agent API key.",
+        "Current company is not available. Pass --company-id, set WARDMOTE_COMPANY_ID, set a context profile companyId, or authenticate with an agent API key.",
       );
     }
     throw error;
@@ -2048,7 +2048,7 @@ async function resolveCurrentCompanyId(ctx: { companyId?: string; api: { get<T>(
   const fromAgent = agent?.companyId?.trim();
   if (fromAgent) return fromAgent;
   throw new Error(
-    "Current company is not available. Pass --company-id, set PAPERCLIP_COMPANY_ID, set a context profile companyId, or authenticate with an agent API key.",
+    "Current company is not available. Pass --company-id, set WARDMOTE_COMPANY_ID, set a context profile companyId, or authenticate with an agent API key.",
   );
 }
 

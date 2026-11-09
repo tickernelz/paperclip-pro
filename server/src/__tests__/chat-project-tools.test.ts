@@ -15,9 +15,9 @@ import { getEmbeddedPostgresTestSupport } from "./helpers/embedded-postgres.js";
 const support = await getEmbeddedPostgresTestSupport();
 (support.supported ? describe : describe.skip)("chat project tool handoff", () => {
   let server: Awaited<ReturnType<typeof startRunnerApiTestServer>>;
-  const originalSecret = process.env.PAPERCLIP_AGENT_JWT_SECRET;
-  beforeAll(async () => { process.env.PAPERCLIP_AGENT_JWT_SECRET = randomUUID(); server = await startRunnerApiTestServer(); }, 60_000);
-  afterAll(async () => { await server?.close(); if (originalSecret === undefined) delete process.env.PAPERCLIP_AGENT_JWT_SECRET; else process.env.PAPERCLIP_AGENT_JWT_SECRET = originalSecret; });
+  const originalSecret = process.env.WARDMOTE_AGENT_JWT_SECRET;
+  beforeAll(async () => { process.env.WARDMOTE_AGENT_JWT_SECRET = randomUUID(); server = await startRunnerApiTestServer(); }, 60_000);
+  afterAll(async () => { await server?.close(); if (originalSecret === undefined) delete process.env.WARDMOTE_AGENT_JWT_SECRET; else process.env.WARDMOTE_AGENT_JWT_SECRET = originalSecret; });
   const call = (fixture: Awaited<ReturnType<typeof server.fixture>>, tool: string, args: Record<string, unknown>) => fixture.authority.execute({ tool, arguments: args, callId: randomUUID() });
 
   it("pages only visible projects and prefilters low-trust agent and run scopes", async () => {

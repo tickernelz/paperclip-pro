@@ -80,9 +80,9 @@ describe("paperclip issue update helper", () => {
         cwd: options.cwd,
         env: {
           ...process.env,
-          PAPERCLIP_API_URL: apiUrl,
-          PAPERCLIP_API_KEY: "test-key",
-          PAPERCLIP_RUN_ID: "test-run",
+          WARDMOTE_API_URL: apiUrl,
+          WARDMOTE_API_KEY: "test-key",
+          WARDMOTE_RUN_ID: "test-run",
         },
         stdio: ["pipe", "pipe", "pipe"],
       });

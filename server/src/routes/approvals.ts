@@ -65,7 +65,7 @@ export function approvalRoutes(
   const issueApprovalsSvc = issueApprovalService(db);
   const issuesSvc = issueService(db);
   const secretsSvc = secretService(db);
-  const strictSecretsMode = process.env.PAPERCLIP_SECRETS_STRICT_MODE === "true";
+  const strictSecretsMode = process.env.WARDMOTE_SECRETS_STRICT_MODE === "true";
 
   async function lostReviewPathIssueIds(
     companyId: string,

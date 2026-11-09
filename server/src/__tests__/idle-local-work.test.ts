@@ -32,7 +32,7 @@ describe("idle cleanup inspection", () => {
     expect(await inspectIdleSpool(root)).toBe("unknown");
   });
   it("checks custom spool directories as well as the default paths", async () => {
-    vi.stubEnv("PAPERCLIP_HOME", root);
+    vi.stubEnv("WARDMOTE_HOME", root);
     vi.stubEnv("SANDBOX_ORPHAN_CLEANUP_SPOOL_DIR", path.join(root, "orphans"));
     const custom = path.join(root, "custom-accounting");
     registerIdleSpoolDirectory(custom);

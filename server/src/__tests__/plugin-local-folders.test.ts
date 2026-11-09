@@ -282,15 +282,15 @@ describe("plugin local folders", () => {
   });
 
   it("roots default plugin data in the configured Paperclip home, not the real user home", () => {
-    const previous = process.env.PAPERCLIP_HOME;
-    process.env.PAPERCLIP_HOME = path.join(os.tmpdir(), "paperclip-plugin-home-probe");
+    const previous = process.env.WARDMOTE_HOME;
+    process.env.WARDMOTE_HOME = path.join(os.tmpdir(), "paperclip-plugin-home-probe");
     try {
       expect(defaultLocalFolderBasePath("acme.plugin", "company-1")).toBe(
         path.join(os.tmpdir(), "paperclip-plugin-home-probe", "plugin-data", "company-1", "acme.plugin"),
       );
     } finally {
-      if (previous === undefined) delete process.env.PAPERCLIP_HOME;
-      else process.env.PAPERCLIP_HOME = previous;
+      if (previous === undefined) delete process.env.WARDMOTE_HOME;
+      else process.env.WARDMOTE_HOME = previous;
     }
   });
 });

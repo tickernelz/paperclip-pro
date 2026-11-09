@@ -34,7 +34,7 @@ export const DEFAULT_BUNDLED_CATALOG_ROOT = "/app/packages/plugins";
 /**
  * Env var that relocates the bundled catalog root (dev images, tests).
  */
-export const BUNDLED_CATALOG_ROOT_ENV_VAR = "PAPERCLIP_BUNDLED_PLUGIN_ROOT";
+export const BUNDLED_CATALOG_ROOT_ENV_VAR = "WARDMOTE_BUNDLED_PLUGIN_ROOT";
 
 export interface BundledPluginCatalogEntry {
   /** Key the managed config's `plugins.autoInstall` list uses. */
@@ -86,7 +86,7 @@ export const BUNDLED_PLUGIN_CATALOG: readonly BundledPluginCatalogEntry[] = [
     key: "kubernetes",
     pluginKey: "paperclip.kubernetes-sandbox-provider",
     relativePath: "sandbox-providers/kubernetes",
-    pathOverrideEnvVar: "PAPERCLIP_KUBERNETES_PLUGIN_PATH",
+    pathOverrideEnvVar: "WARDMOTE_KUBERNETES_PLUGIN_PATH",
   },
   {
     key: "modal",

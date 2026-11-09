@@ -54,7 +54,7 @@ describe("buildInviteOnboardingTextDocument", () => {
     expect(text).toContain("agentDefaultsPayload.paperclipApiUrl");
     expect(text).toContain("Do not rotate or invent a Paperclip key manually");
     expect(text).toContain("set the first reachable candidate as agentDefaultsPayload.paperclipApiUrl");
-    expect(text).toContain("PAPERCLIP_API_KEY");
+    expect(text).toContain("WARDMOTE_API_KEY");
     expect(text).toContain("Store the parsed token field from the raw HTTP JSON response");
     expect(text).toContain("A token value containing literal ... or [redacted]");
     expect(text).toContain("The response body includes the full token exactly once");

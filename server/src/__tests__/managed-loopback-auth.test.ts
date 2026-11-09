@@ -51,8 +51,8 @@ describeEmbeddedPostgres("managed runtime loopback auth cookies", () => {
 
   it("uses a loopback sign-in cookie on the next request while keeping the public cookie secure", async () => {
     vi.stubEnv("BETTER_AUTH_SECRET", "managed-loopback-auth-test-secret");
-    vi.stubEnv("PAPERCLIP_MANAGED_RUNTIME_PUBLIC_URL", publicOrigin);
-    vi.stubEnv("PAPERCLIP_PUBLIC_URL", "");
+    vi.stubEnv("WARDMOTE_MANAGED_RUNTIME_PUBLIC_URL", publicOrigin);
+    vi.stubEnv("WARDMOTE_PUBLIC_URL", "");
 
     const db = createDb(tempDb!.connectionString);
     const config = {

@@ -213,11 +213,11 @@ for (const name of [
 Object.assign(process.env, {
   TMPDIR: join(smokeRoot, "tmp"),
   HOME: join(smokeRoot, "home"),
-  PAPERCLIP_HOME: join(smokeRoot, "paperclip-home"),
+  WARDMOTE_HOME: join(smokeRoot, "paperclip-home"),
   CODEX_HOME: join(smokeRoot, "codex-home"),
   CLAUDE_CONFIG_DIR: join(smokeRoot, "claude-home"),
   NO_BROWSER: "1",
-  PAPERCLIP_OPEN_ON_LISTEN: "false",
+  WARDMOTE_OPEN_ON_LISTEN: "false",
 });
 
 let cleanupPromise;
@@ -303,9 +303,9 @@ try {
             // This smoke proves the provider launch/message/semantic-terminal path.
             // Usage conformance remains covered by the dedicated eval campaign.
             allowMissingUsage: true,
-            expectedAssistantText: "PAPERCLIP_LOCAL_PROVIDER_SMOKE_OK",
+            expectedAssistantText: "WARDMOTE_LOCAL_PROVIDER_SMOKE_OK",
             promptOverride:
-              "Reply with exactly PAPERCLIP_LOCAL_PROVIDER_SMOKE_OK and no other text. Do not call tools.",
+              "Reply with exactly WARDMOTE_LOCAL_PROVIDER_SMOKE_OK and no other text. Do not call tools.",
             runnerBinary: runnerd,
           }),
       });

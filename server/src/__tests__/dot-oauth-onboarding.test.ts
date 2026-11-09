@@ -171,10 +171,10 @@ describe("Dot onboarding with an operator-issued pairing capability", () => {
     expect(device.verification_uri).toBe(browserOrigin + "/mcp-device");
   });
   it("validates a separately configured browser origin", () => {
-    expect(publicMcpConfig({ PAPERCLIP_PUBLIC_URL: config.origin, PAPERCLIP_MCP_AUTHORIZATION_ORIGIN: "https://browser.example:10000" }))
+    expect(publicMcpConfig({ WARDMOTE_PUBLIC_URL: config.origin, WARDMOTE_MCP_AUTHORIZATION_ORIGIN: "https://browser.example:10000" }))
       .toMatchObject({ origin: config.origin, resource: config.origin + "/mcp/paperclip", authorizationOrigin: "https://browser.example:10000" });
     for (const invalid of ["http://browser.example", "https://secret@browser.example", "https://browser.example/path", "https://browser.example?next=evil", "https://browser.example#fragment"])
-      expect(() => publicMcpConfig({ PAPERCLIP_PUBLIC_URL: config.origin, PAPERCLIP_MCP_AUTHORIZATION_ORIGIN: invalid })).toThrow();
+      expect(() => publicMcpConfig({ WARDMOTE_PUBLIC_URL: config.origin, WARDMOTE_MCP_AUTHORIZATION_ORIGIN: invalid })).toThrow();
   });
   it.each(["mcp", "dot-mcp"])("connects via %s without a board session, binds the exact agent, and consumes the capability once", async prefix => {
     const f = await fixture();

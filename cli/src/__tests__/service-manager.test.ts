@@ -19,7 +19,7 @@ const temporaryDirectories: string[] = [];
 
 afterEach(async () => {
   await Promise.all(temporaryDirectories.splice(0).map((directory) => fs.rm(directory, { recursive: true, force: true })));
-  delete process.env.PAPERCLIP_SERVICE_MANAGED;
+  delete process.env.WARDMOTE_SERVICE_MANAGED;
 });
 
 async function temporaryDirectory(): Promise<string> {
@@ -72,7 +72,7 @@ describe("service definition generation", () => {
   it("sources an optional per-instance environment file so operator environment survives unit rewrites", () => {
     const unit = renderSystemdUnit({ instanceId: "team-a", shimPath: "/home/alice/.local/bin/paperclip-pro", homeDir: "/home/alice/.paperclip" });
     expect(unit).toContain("EnvironmentFile=-/home/alice/.paperclip/instances/team-a/service.env");
-    expect(unit.indexOf("EnvironmentFile=-")).toBeLessThan(unit.indexOf('Environment="PAPERCLIP_HOME='));
+    expect(unit.indexOf("EnvironmentFile=-")).toBeLessThan(unit.indexOf('Environment="WARDMOTE_HOME='));
   });
 
   it("escapes systemd variable and specifier expansion in configured values", () => {
@@ -83,7 +83,7 @@ describe("service definition generation", () => {
     });
 
     expect(unit).toContain('ExecStart="/home/$$USER/%%i/paperclip-pro" run --instance "team-$$USER-%%i"');
-    expect(unit).toContain('Environment="PAPERCLIP_HOME=/home/$$USER/%%i/.paperclip"');
+    expect(unit).toContain('Environment="WARDMOTE_HOME=/home/$$USER/%%i/.paperclip"');
     expect(unit).toContain("EnvironmentFile=-/home/$USER/%%i/.paperclip/instances/team-$USER-%%i/service.env");
   });
 
@@ -162,23 +162,23 @@ describe("systemd memory protection", () => {
   it("reads operator limits from service.env and ignores unrelated keys", () => {
     expect(parseServiceMemoryOverrides([
       "# operator notes",
-      "PAPERCLIP_PORT=3100",
-      'PAPERCLIP_SERVICE_MEMORY_MAX="18G"',
-      "PAPERCLIP_SERVICE_MEMORY_HIGH=50%",
-      "PAPERCLIP_SERVICE_OOM_SCORE_ADJUST=100",
+      "WARDMOTE_PORT=3100",
+      'WARDMOTE_SERVICE_MEMORY_MAX="18G"',
+      "WARDMOTE_SERVICE_MEMORY_HIGH=50%",
+      "WARDMOTE_SERVICE_OOM_SCORE_ADJUST=100",
       "",
     ].join("\n"))).toEqual({ max: "18G", high: "50%", oomScoreAdjust: 100 });
-    expect(parseServiceMemoryOverrides("PAPERCLIP_PORT=3100\n")).toEqual({});
+    expect(parseServiceMemoryOverrides("WARDMOTE_PORT=3100\n")).toEqual({});
   });
 
   it.each([
-    "PAPERCLIP_SERVICE_MEMORY_MAX=everything",
-    "PAPERCLIP_SERVICE_OOM_SCORE_ADJUST=abc",
-    "PAPERCLIP_SERVICE_OOM_SCORE_ADJUST=",
-    "PAPERCLIP_SERVICE_OOM_SCORE_ADJUST=0x1F4",
-    "PAPERCLIP_SERVICE_OOM_SCORE_ADJUST=1e2",
-    "PAPERCLIP_SERVICE_MEMORY_MAX=0",
-    "PAPERCLIP_SERVICE_MEMORY_HIGH=",
+    "WARDMOTE_SERVICE_MEMORY_MAX=everything",
+    "WARDMOTE_SERVICE_OOM_SCORE_ADJUST=abc",
+    "WARDMOTE_SERVICE_OOM_SCORE_ADJUST=",
+    "WARDMOTE_SERVICE_OOM_SCORE_ADJUST=0x1F4",
+    "WARDMOTE_SERVICE_OOM_SCORE_ADJUST=1e2",
+    "WARDMOTE_SERVICE_MEMORY_MAX=0",
+    "WARDMOTE_SERVICE_MEMORY_HIGH=",
   ])("rejects a malformed service.env override (%s)", (line) => {
     expect(() => parseServiceMemoryOverrides(line)).toThrow("Invalid");
   });
@@ -192,12 +192,12 @@ describe("systemd memory protection", () => {
       return { stdout: "", stderr: "" };
     }, homeDir, path.join(userHome, ".local/bin/paperclip-pro"), userHome);
     await fs.mkdir(path.join(homeDir, "instances", "default"), { recursive: true });
-    await fs.writeFile(path.join(homeDir, "instances", "default", "service.env"), "PAPERCLIP_SERVICE_MEMORY_MAX=everything\n", "utf8");
+    await fs.writeFile(path.join(homeDir, "instances", "default", "service.env"), "WARDMOTE_SERVICE_MEMORY_MAX=everything\n", "utf8");
 
     await manager.stop();
     expect(calls).toEqual(["systemctl --user stop paperclip-pro.service"]);
-    await expect(manager.restart()).rejects.toThrow("Invalid PAPERCLIP_SERVICE_MEMORY_MAX");
-    await expect(manager.start()).rejects.toThrow("Invalid PAPERCLIP_SERVICE_MEMORY_MAX");
+    await expect(manager.restart()).rejects.toThrow("Invalid WARDMOTE_SERVICE_MEMORY_MAX");
+    await expect(manager.start()).rejects.toThrow("Invalid WARDMOTE_SERVICE_MEMORY_MAX");
     expect(calls).toEqual(["systemctl --user stop paperclip-pro.service"]);
   });
 
@@ -212,7 +212,7 @@ describe("systemd memory protection", () => {
     await fs.mkdir(path.dirname(manager.definitionPath), { recursive: true });
     await fs.writeFile(manager.definitionPath, manager.renderDefinition(), "utf8");
     await fs.mkdir(path.join(homeDir, "instances", "default"), { recursive: true });
-    await fs.writeFile(path.join(homeDir, "instances", "default", "service.env"), "PAPERCLIP_SERVICE_MEMORY_MAX=18G\n", "utf8");
+    await fs.writeFile(path.join(homeDir, "instances", "default", "service.env"), "WARDMOTE_SERVICE_MEMORY_MAX=18G\n", "utf8");
 
     await manager.restart();
 
@@ -389,7 +389,7 @@ describe("single-writer guard", () => {
   });
 
   it("allows the supervisor-owned process", async () => {
-    process.env.PAPERCLIP_SERVICE_MANAGED = "1";
+    process.env.WARDMOTE_SERVICE_MANAGED = "1";
     await expect(assertForegroundRunAllowed("default", false, detector)).resolves.toBeUndefined();
   });
 

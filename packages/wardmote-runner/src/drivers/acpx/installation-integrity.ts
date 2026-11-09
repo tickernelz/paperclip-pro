@@ -47,7 +47,7 @@ const PROVIDER_GUARDIAN_HANDSHAKE_TIMEOUT_MS = 5_000;
 // surviving provider to hold the entire cleanup result indefinitely.
 const NATIVE_SNAPSHOT_EXIT_TIMEOUT_MS = 10_000;
 const VERIFIED_PROVIDER_RUNTIME_TARGET_ENV =
-  "PAPERCLIP_ACPX_VERIFIED_PROVIDER_RUNTIME_TARGET";
+  "WARDMOTE_ACPX_VERIFIED_PROVIDER_RUNTIME_TARGET";
 
 const QUALIFIED_CLAUDE_LINUX_X64_RUNTIME = Object.freeze({
   runtimePackageName: "@anthropic-ai/claude-agent-sdk",
@@ -507,7 +507,7 @@ export async function verifyNativeAcpxInstallation(
           if (args.length !== 0) throw new Error("Native ACPX distribution accepts only its fixed profile arguments");
           return lease.spawn([], { ...options, env: {
             ...(options.env ?? process.env),
-            PAPERCLIP_ACPX_NATIVE_GUARDED: lifetime === undefined ? "0" : "1",
+            WARDMOTE_ACPX_NATIVE_GUARDED: lifetime === undefined ? "0" : "1",
           } }, lifetime);
         },
         close: () => lease.close(),
@@ -600,7 +600,7 @@ interface VerifiedAcpxRuntimeExecutable {
   path: string;
   digest: string;
   identity: VerifiedAcpxCommandIdentity;
-  environmentVariable: "CLAUDE_CODE_EXECUTABLE" | "CODEX_PATH" | "PAPERCLIP_GROK_VERIFIED_EXECUTABLE";
+  environmentVariable: "CLAUDE_CODE_EXECUTABLE" | "CODEX_PATH" | "WARDMOTE_GROK_VERIFIED_EXECUTABLE";
 }
 
 interface AcpxPackageMetadata {
@@ -635,10 +635,10 @@ export async function verifyQualifiedAcpxInstallation(
 ): Promise<VerifiedAcpxInstallation> {
   // Keep the selected package authority available when its bundled Codex
   // wrapper delegates platform installation to the published server manifest.
-  if (profile.agent === "codex" && resolvePackageJson === defaultPackageJsonResolver && process.env.PAPERCLIP_ACPX_PROVIDER_PACKAGE_ROOT !== undefined) {
+  if (profile.agent === "codex" && resolvePackageJson === defaultPackageJsonResolver && process.env.WARDMOTE_ACPX_PROVIDER_PACKAGE_ROOT !== undefined) {
     resolvePackageJson = createAcpxPackageJsonResolver(
-      process.env.PAPERCLIP_ACPX_PROVIDER_PACKAGE_ROOT,
-      process.env.PAPERCLIP_ACPX_PROVIDER_PACKAGE_MANIFEST,
+      process.env.WARDMOTE_ACPX_PROVIDER_PACKAGE_ROOT,
+      process.env.WARDMOTE_ACPX_PROVIDER_PACKAGE_MANIFEST,
     );
   }
   const builtin = profile.agent === "grok";
@@ -917,11 +917,11 @@ function defaultPackageJsonResolver(
   packageName: string,
   issuerPackageJsonPath?: string,
 ): string {
-  const providerPackageRoot = process.env.PAPERCLIP_ACPX_PROVIDER_PACKAGE_ROOT;
+  const providerPackageRoot = process.env.WARDMOTE_ACPX_PROVIDER_PACKAGE_ROOT;
   if (providerPackageRoot !== undefined) {
     return createAcpxPackageJsonResolver(
       providerPackageRoot,
-      process.env.PAPERCLIP_ACPX_PROVIDER_PACKAGE_MANIFEST,
+      process.env.WARDMOTE_ACPX_PROVIDER_PACKAGE_MANIFEST,
     )(packageName, issuerPackageJsonPath);
   }
   // Source-mode and direct runtimes still have a stable module URL. The
@@ -957,7 +957,7 @@ async function readPackageJson(
 export function builtinGrokLauncherPath(moduleUrl: string = import.meta.url): string {
   // Only the controller supplies this path to the descriptor-loaded sidecar;
   // createSanitizedAcpxSpawnInput excludes it from provider environments.
-  const root = process.env.PAPERCLIP_ACPX_BUILTIN_ROOT;
+  const root = process.env.WARDMOTE_ACPX_BUILTIN_ROOT;
   if (root !== undefined) {
     if (!isAbsolute(root) || root.includes("\0") || resolve(root) !== root) throw new Error("Invalid builtin provider root");
     return resolve(root, "grok/launcher.cjs");
@@ -982,7 +982,7 @@ export async function verifyProvisionedGrokExecutable(executablePath = GROK_PRER
   const verified = await openVerifiedRuntimeExecutable(executablePath, `sha256:${digest}`, "grok");
   await verified.handle.close();
   return { path: executablePath, digest: `sha256:${digest}`, identity: verified.identity,
-    environmentVariable: "PAPERCLIP_GROK_VERIFIED_EXECUTABLE" };
+    environmentVariable: "WARDMOTE_GROK_VERIFIED_EXECUTABLE" };
 }
 
 async function verifyQualifiedRuntimeExecutable(input: {
@@ -1889,7 +1889,7 @@ function snapshotBootstrap(format: AcpxCommandFormat, guarded = false): string {
     'if ((serverPackageFormat !== "module" && serverPackageFormat !== "commonjs") || !Array.isArray(dependencyAncestorFormats) || dependencyAncestorFormats.length !== dependencyAncestorCount || dependencyAncestorFormats.some((value) => value !== "module" && value !== "commonjs")) throw new Error("ACPX provider package formats are invalid");',
     'if (providerRuntimeExecutableCount !== 0 && providerRuntimeExecutableCount !== 1) throw new Error("ACPX provider runtime executable count is invalid");',
     `const providerRuntimeExecutableFd = ${DEPENDENCY_ANCESTOR_FD_START} + dependencyAncestorCount;`,
-    'if (providerRuntimeExecutableCount === 1) { if (providerRuntimeEnvironmentVariable !== "CODEX_PATH" && providerRuntimeEnvironmentVariable !== "CLAUDE_CODE_EXECUTABLE" && providerRuntimeEnvironmentVariable !== "PAPERCLIP_GROK_VERIFIED_EXECUTABLE") throw new Error("ACPX provider runtime environment target is invalid"); fs.fstatSync(providerRuntimeExecutableFd); process.env[providerRuntimeEnvironmentVariable] = privateSnapshot ? privateSnapshot.executable : "/proc/" + process.pid + "/fd/" + providerRuntimeExecutableFd; } else if (providerRuntimeEnvironmentVariable !== undefined) throw new Error("ACPX provider runtime environment target is unexpected");',
+    'if (providerRuntimeExecutableCount === 1) { if (providerRuntimeEnvironmentVariable !== "CODEX_PATH" && providerRuntimeEnvironmentVariable !== "CLAUDE_CODE_EXECUTABLE" && providerRuntimeEnvironmentVariable !== "WARDMOTE_GROK_VERIFIED_EXECUTABLE") throw new Error("ACPX provider runtime environment target is invalid"); fs.fstatSync(providerRuntimeExecutableFd); process.env[providerRuntimeEnvironmentVariable] = privateSnapshot ? privateSnapshot.executable : "/proc/" + process.pid + "/fd/" + providerRuntimeExecutableFd; } else if (providerRuntimeEnvironmentVariable !== undefined) throw new Error("ACPX provider runtime environment target is unexpected");',
     ...(guarded
       ? [
           `const guardianFd = ${DEPENDENCY_ANCESTOR_FD_START} + dependencyAncestorCount + providerRuntimeExecutableCount;`,

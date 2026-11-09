@@ -4,7 +4,7 @@ import { accessSync, constants } from "node:fs";
 import { registerHooks } from "node:module";
 import { isAbsolute } from "node:path";
 
-const command = process.env.PAPERCLIP_STOP_CODEX_COMMAND;
+const command = process.env.WARDMOTE_STOP_CODEX_COMMAND;
 if (process.env.NODE_ENV !== "test" || !command || !isAbsolute(command)) {
   throw new Error("Composer Stop requires an absolute fixture command in NODE_ENV=test");
 }

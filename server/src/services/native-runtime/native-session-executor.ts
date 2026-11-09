@@ -765,7 +765,7 @@ export function buildNativeProviderEnvironment(
   );
   const environment = { ...inherited, ...configured };
   if (assignedWorkspaceCwd?.trim()) {
-    environment.PAPERCLIP_WORKSPACE_CWD = assignedWorkspaceCwd;
+    environment.WARDMOTE_WORKSPACE_CWD = assignedWorkspaceCwd;
   }
   return environment;
 }
@@ -1781,7 +1781,7 @@ function legacyCompanyNativeSessionScopeKey(
 
 function runnerdStateBase(): string {
   return (
-    process.env.PAPERCLIP_RUNNER_STATE_DIR ??
+    process.env.WARDMOTE_RUNNER_STATE_DIR ??
     resolve(
       resolvePaperclipInstanceRoot(),
       "runtime",
@@ -7561,7 +7561,7 @@ export async function executePaperclipNativeSession(input: {
     },
   ) => Promise<unknown>;
 }): Promise<AdapterExecutionResult> {
-  const agentKeyId = input.runnerEnvironment?.PAPERCLIP_AGENT_KEY_ID;
+  const agentKeyId = input.runnerEnvironment?.WARDMOTE_AGENT_KEY_ID;
   if (agentKeyId) {
     // Recovered pre-upgrade inputs also need the current public identity marker
     // before deciding whether an already-running provider can be reused.
@@ -7719,7 +7719,7 @@ export async function executePaperclipNativeSession(input: {
 async function executePaperclipNativeSessionWithinScope(
   input: Parameters<typeof executePaperclipNativeSession>[0],
 ): Promise<AdapterExecutionResult> {
-  const identityRedactor = createAgentIdentityRedactor(input.runnerEnvironment?.PAPERCLIP_AGENT_PRIVATE_KEY);
+  const identityRedactor = createAgentIdentityRedactor(input.runnerEnvironment?.WARDMOTE_AGENT_PRIVATE_KEY);
   const redactIdentityText = (text: string) => redactSensitiveText(
     identityRedactor.chunk("diagnostic", text) + identityRedactor.finish("diagnostic"),
   );
@@ -8217,7 +8217,7 @@ async function executePaperclipNativeSessionWithinScope(
       controlPlaneSourceInstanceId: controlPlaneInstanceId,
     },
     {
-      privateKeyPem: input.runnerEnvironment?.PAPERCLIP_AGENT_PRIVATE_KEY,
+      privateKeyPem: input.runnerEnvironment?.WARDMOTE_AGENT_PRIVATE_KEY,
       assertControllerActive,
       onCommittedEvent: async (event) => {
         await observeAccountingEvent(event);
@@ -8505,7 +8505,7 @@ async function executePaperclipNativeSessionWithinScope(
       // Old run-scoped environments still require process replacement. A
       // session-owned broker can change run authority without replacing it.
       const hasBrokerCapability = Boolean(
-        !input.managedGitHub && input.runnerEnvironment?.PAPERCLIP_GITHUB_BROKER_TOKEN,
+        !input.managedGitHub && input.runnerEnvironment?.WARDMOTE_GITHUB_BROKER_TOKEN,
       );
       const credentialRunChanged =
         Boolean(entry.credentialRunId) !== hasBrokerCapability ||
@@ -8522,9 +8522,9 @@ async function executePaperclipNativeSessionWithinScope(
         Boolean(entry.githubAccess) !== Boolean(input.managedGitHub) ||
         entry.githubAccess?.ready === false ||
         entry.githubAuthenticationMode !==
-          input.runnerEnvironment?.PAPERCLIP_GITHUB_AUTH_MODE ||
+          input.runnerEnvironment?.WARDMOTE_GITHUB_AUTH_MODE ||
         entry.networkAccess !==
-          (input.runnerEnvironment?.PAPERCLIP_RUNNER_NETWORK_ACCESS ===
+          (input.runnerEnvironment?.WARDMOTE_RUNNER_NETWORK_ACCESS ===
             "enabled")
       ) {
         const preparedCopy = entry.instructionPreparationRunId === input.execution.binding.runId;
@@ -8914,13 +8914,13 @@ async function executePaperclipNativeSessionWithinScope(
                     agentId: input.execution.binding.agentId,
                     managedAiCredentialIdentity: input.managedAiCredentialIdentity,
                     githubAuthenticationMode:
-                      input.runnerEnvironment?.PAPERCLIP_GITHUB_AUTH_MODE,
+                      input.runnerEnvironment?.WARDMOTE_GITHUB_AUTH_MODE,
                     networkAccess:
                       input.runnerEnvironment
-                        ?.PAPERCLIP_RUNNER_NETWORK_ACCESS === "enabled",
+                        ?.WARDMOTE_RUNNER_NETWORK_ACCESS === "enabled",
                     githubAccess,
                     credentialRunId: !input.managedGitHub && input.runnerEnvironment
-                      ?.PAPERCLIP_GITHUB_BROKER_TOKEN
+                      ?.WARDMOTE_GITHUB_BROKER_TOKEN
                       ? input.execution.binding.runId
                       : undefined,
                     session,
@@ -11304,7 +11304,7 @@ async function prepareRemoteDotRunner({ input, target, runner, root, identity }:
         const [os, arch] = platform.stdout.trim().split(/\r?\n/);
         if (platform.exitCode !== 0 || platform.timedOut || os !== (process.platform === "darwin" ? "Darwin" : "Linux")
           || ![process.arch === "x64" ? "x86_64" : "aarch64", process.arch].includes(arch)) {
-          throw new Error("runner_remote_artifact_platform_mismatch: configure PAPERCLIP_RUNNER_REMOTE_BINARY_PATH for the sandbox platform");
+          throw new Error("runner_remote_artifact_platform_mismatch: configure WARDMOTE_RUNNER_REMOTE_BINARY_PATH for the sandbox platform");
         }
       }
       await stageRemoteRunnerFile({ target, runner, sourcePath: runnerBinary, targetPath: remoteBinary, mode: 0o700 });
@@ -11445,9 +11445,9 @@ async function createRunnerdBackendWithinSessionClaim(
   // the assigned gateway on the control plane instead of asking the sandbox to
   // reach the host's HTTP origin (which may be private or loopback-only).
   const relayAssignedMcp = (remoteTarget !== null && input.execution.provider.kind === "codex") || input.execution.provider.kind === "openai_dot";
-  const assignedMcpUrl = input.runnerEnvironment?.PAPERCLIP_NATIVE_MCP_URL;
-  const assignedMcpToken = input.runnerEnvironment?.PAPERCLIP_NATIVE_MCP_TOKEN;
-  const assignedMcpName = input.runnerEnvironment?.PAPERCLIP_NATIVE_MCP_NAME;
+  const assignedMcpUrl = input.runnerEnvironment?.WARDMOTE_NATIVE_MCP_URL;
+  const assignedMcpToken = input.runnerEnvironment?.WARDMOTE_NATIVE_MCP_TOKEN;
+  const assignedMcpName = input.runnerEnvironment?.WARDMOTE_NATIVE_MCP_NAME;
   const hasAssignedMcp = Boolean(assignedMcpName || assignedMcpUrl || assignedMcpToken);
   if (relayAssignedMcp && hasAssignedMcp && (!assignedMcpName?.trim() || !assignedMcpUrl?.trim() || !assignedMcpToken?.trim())) {
     throw new Error("assigned native MCP launch binding is incomplete");
@@ -11595,7 +11595,7 @@ async function createRunnerdBackendWithinSessionClaim(
       !lstatSync(configuredProviderPackRoot).isDirectory()
     ) {
       throw new Error(
-        "runner_remote_provider_artifact_incompatible: configure PAPERCLIP_RUNNER_REMOTE_PROVIDER_PACK_PATH with the build-owned provider pack",
+        "runner_remote_provider_artifact_incompatible: configure WARDMOTE_RUNNER_REMOTE_PROVIDER_PACK_PATH with the build-owned provider pack",
       );
     }
     expectedProviderPackManifest = readRemoteProviderPackManifest(
@@ -11748,7 +11748,7 @@ async function createRunnerdBackendWithinSessionClaim(
     const version = parseCodexCliVersion(versionOutput);
     if (!version || !isSupportedRemoteCodexVersion(version)) {
       throw new Error(
-        `runner_remote_provider_artifact_incompatible: supported Codex versions ${REMOTE_CODEX_SUPPORTED_RANGE}, received ${version ?? "an unrecognized or prerelease version"}; install a supported stable Codex release or configure PAPERCLIP_RUNNER_REMOTE_CODEX_NPM_SPEC=@openai/codex@${REMOTE_PROVIDER_PACK_PINS.codex}`,
+        `runner_remote_provider_artifact_incompatible: supported Codex versions ${REMOTE_CODEX_SUPPORTED_RANGE}, received ${version ?? "an unrecognized or prerelease version"}; install a supported stable Codex release or configure WARDMOTE_RUNNER_REMOTE_CODEX_NPM_SPEC=@openai/codex@${REMOTE_PROVIDER_PACK_PINS.codex}`,
       );
     }
     // A Codex inside the compatibility window can still be too old for the
@@ -11763,7 +11763,7 @@ async function createRunnerdBackendWithinSessionClaim(
     const modelMinimum = minimumCodexCliVersionForModel(configuredModel);
     if (modelMinimum && !codexCliVersionAtLeast(version, modelMinimum)) {
       throw new Error(
-        `runner_remote_provider_artifact_incompatible: ${normalizeCodexModel(configuredModel)} requires Codex ${modelMinimum} or newer with ChatGPT sign-in, received ${version} from the sandbox image; promote a sandbox image with Codex ${REMOTE_PROVIDER_PACK_PINS.codex} or configure PAPERCLIP_RUNNER_REMOTE_CODEX_NPM_SPEC=@openai/codex@${REMOTE_PROVIDER_PACK_PINS.codex}`,
+        `runner_remote_provider_artifact_incompatible: ${normalizeCodexModel(configuredModel)} requires Codex ${modelMinimum} or newer with ChatGPT sign-in, received ${version} from the sandbox image; promote a sandbox image with Codex ${REMOTE_PROVIDER_PACK_PINS.codex} or configure WARDMOTE_RUNNER_REMOTE_CODEX_NPM_SPEC=@openai/codex@${REMOTE_PROVIDER_PACK_PINS.codex}`,
       );
     }
     if (version !== REMOTE_PROVIDER_PACK_PINS.codex && !reportedCodexVersions.has(version)) {
@@ -12027,7 +12027,7 @@ async function createRunnerdBackendWithinSessionClaim(
           !archMatches
         ) {
           throw new Error(
-            "runner_remote_artifact_platform_mismatch: configure PAPERCLIP_RUNNER_REMOTE_BINARY_PATH for the remote OS and architecture",
+            "runner_remote_artifact_platform_mismatch: configure WARDMOTE_RUNNER_REMOTE_BINARY_PATH for the remote OS and architecture",
           );
         }
       }
@@ -12122,7 +12122,7 @@ async function createRunnerdBackendWithinSessionClaim(
       );
       if (!preinstalledCodex) {
         throw new Error(
-          "runner_remote_codex_artifact_unavailable: install codex in the sandbox image or configure PAPERCLIP_RUNNER_REMOTE_CODEX_NPM_SPEC",
+          "runner_remote_codex_artifact_unavailable: install codex in the sandbox image or configure WARDMOTE_RUNNER_REMOTE_CODEX_NPM_SPEC",
         );
       }
       await measureNativeRunnerSpan(
@@ -13101,14 +13101,14 @@ async function createRunnerdBackendWithinSessionClaim(
   if (relayAssignedMcp) {
     // The server-held tool authority owns this credential. Do not deliver a
     // duplicate HTTP MCP server or its bearer token to the remote provider.
-    delete effectiveRunnerEnvironmentBase.PAPERCLIP_NATIVE_MCP_NAME;
-    delete effectiveRunnerEnvironmentBase.PAPERCLIP_NATIVE_MCP_URL;
-    delete effectiveRunnerEnvironmentBase.PAPERCLIP_NATIVE_MCP_TOKEN;
+    delete effectiveRunnerEnvironmentBase.WARDMOTE_NATIVE_MCP_NAME;
+    delete effectiveRunnerEnvironmentBase.WARDMOTE_NATIVE_MCP_URL;
+    delete effectiveRunnerEnvironmentBase.WARDMOTE_NATIVE_MCP_TOKEN;
   }
   // This authority bit is derived only from the selected execution target.
   // Never let an agent, environment binding, or host variable disable the
   // Codex sandbox for a local runner by supplying the same key.
-  delete effectiveRunnerEnvironmentBase.PAPERCLIP_RUNNER_EXTERNAL_SANDBOX;
+  delete effectiveRunnerEnvironmentBase.WARDMOTE_RUNNER_EXTERNAL_SANDBOX;
   const effectiveRunnerEnvironment: NodeJS.ProcessEnv = remoteRuntimeRoot
     ? {
         ...effectiveRunnerEnvironmentBase,
@@ -13118,14 +13118,14 @@ async function createRunnerdBackendWithinSessionClaim(
         // grant and the provider cannot initialize its shell sandbox or edit.
         HOME: posix.join(remoteRunnerFilesystemRoot!, "codex-home"),
         CODEX_HOME: posix.join(remoteRunnerFilesystemRoot!, "codex-home"),
-        PAPERCLIP_WORKSPACE_CWD: remoteTarget!.remoteCwd,
+        WARDMOTE_WORKSPACE_CWD: remoteTarget!.remoteCwd,
         ...(remoteTarget!.transport === "sandbox"
-          ? { PAPERCLIP_RUNNER_EXTERNAL_SANDBOX: "1" }
+          ? { WARDMOTE_RUNNER_EXTERNAL_SANDBOX: "1" }
           : {}),
       }
     : {
         ...effectiveRunnerEnvironmentBase,
-        PAPERCLIP_WORKSPACE_CWD: input.execution.workspace.cwd,
+        WARDMOTE_WORKSPACE_CWD: input.execution.workspace.cwd,
       };
   const archiveContinuityState = async () => {
     if (hasRetainedWarmTransitionEvidence(root)) {

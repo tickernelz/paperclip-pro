@@ -6,7 +6,7 @@ import {
   runAdapterExecutionTargetShellCommand,
 } from "./execution-target.js";
 import {
-  PAPERCLIP_MCP_SERVER_NAME,
+  WARDMOTE_MCP_SERVER_NAME,
   paperclipMcpEndpoint,
   paperclipMcpHttpHeaders,
 } from "./wardmote-mcp.js";
@@ -28,10 +28,10 @@ export function paperclipMcpHttpTarget(input: {
   toolsets: string;
 }): PaperclipMcpHttpTarget {
   return {
-    url: paperclipMcpEndpoint(input.env.PAPERCLIP_API_URL ?? "", input.toolsets),
+    url: paperclipMcpEndpoint(input.env.WARDMOTE_API_URL ?? "", input.toolsets),
     headers: paperclipMcpHttpHeaders({
-      apiKey: (input.env.PAPERCLIP_API_KEY ?? "").trim(),
-      runId: input.env.PAPERCLIP_RUN_ID ?? "",
+      apiKey: (input.env.WARDMOTE_API_KEY ?? "").trim(),
+      runId: input.env.WARDMOTE_RUN_ID ?? "",
     }),
   };
 }
@@ -40,7 +40,7 @@ export function paperclipMcpHttpTarget(input: {
 export function renderPaperclipGeminiSettings(target: PaperclipMcpHttpTarget): string {
   const settings = {
     mcpServers: {
-      [PAPERCLIP_MCP_SERVER_NAME]: { httpUrl: target.url, headers: target.headers },
+      [WARDMOTE_MCP_SERVER_NAME]: { httpUrl: target.url, headers: target.headers },
     },
   };
   return `${JSON.stringify(settings, null, 2)}\n`;
@@ -51,7 +51,7 @@ export function renderPaperclipOpenCodeConfig(target: PaperclipMcpHttpTarget): s
   const config = {
     $schema: "https://opencode.ai/config.json",
     mcp: {
-      [PAPERCLIP_MCP_SERVER_NAME]: {
+      [WARDMOTE_MCP_SERVER_NAME]: {
         type: "remote",
         url: target.url,
         enabled: true,
@@ -73,7 +73,7 @@ export function renderPaperclipGrokConfig(target: PaperclipMcpHttpTarget): strin
     .map(([key, value]) => `${tomlString(key)} = ${tomlString(value)}`)
     .join(", ");
   return [
-    `[mcp_servers.${tomlString(PAPERCLIP_MCP_SERVER_NAME)}]`,
+    `[mcp_servers.${tomlString(WARDMOTE_MCP_SERVER_NAME)}]`,
     `url = ${tomlString(target.url)}`,
     "enabled = true",
     `headers = { ${headers} }`,
@@ -125,9 +125,9 @@ export async function writePaperclipMcpMount(input: {
   };
   const heredoc = [
     `mkdir -p ${quotedDir}`,
-    `cat > ${quotedFile} <<'PAPERCLIP_MCP_MOUNT'`,
+    `cat > ${quotedFile} <<'WARDMOTE_MCP_MOUNT'`,
     input.content.replace(/\n$/, ""),
-    "PAPERCLIP_MCP_MOUNT",
+    "WARDMOTE_MCP_MOUNT",
     `chmod 600 ${quotedFile}`,
   ].join("\n");
   await runAdapterExecutionTargetShellCommand(input.runId, input.target, heredoc, shellOptions);

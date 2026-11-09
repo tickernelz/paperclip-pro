@@ -253,12 +253,12 @@ export function toolAccessRoutes(
 
   function configuredPublicBaseUrl() {
     const raw = (
-      process.env.PAPERCLIP_AUTH_PUBLIC_BASE_URL?.trim()
+      process.env.WARDMOTE_AUTH_PUBLIC_BASE_URL?.trim()
       || process.env.BETTER_AUTH_URL?.trim()
       || process.env.BETTER_AUTH_BASE_URL?.trim()
       || options.authPublicBaseUrl?.trim()
-      || process.env.PAPERCLIP_PUBLIC_URL?.trim()
-      || process.env.PAPERCLIP_MANAGED_RUNTIME_PUBLIC_URL?.trim()
+      || process.env.WARDMOTE_PUBLIC_URL?.trim()
+      || process.env.WARDMOTE_MANAGED_RUNTIME_PUBLIC_URL?.trim()
     );
     if (!raw) return null;
     try {
@@ -753,7 +753,7 @@ function connectorEnrollmentPrincipal(req: Request): string {
           reason: vercelConnect.enabled
             ? vercelConnect.configured
               ? null
-              : "Vercel Connect needs workload OIDC or PAPERCLIP_VERCEL_CONNECT_ACCESS_TOKEN."
+              : "Vercel Connect needs workload OIDC or WARDMOTE_VERCEL_CONNECT_ACCESS_TOKEN."
             : "Vercel Connect setup is disabled on this Paperclip instance.",
         },
       },

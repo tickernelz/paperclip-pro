@@ -53,7 +53,7 @@ function worker(initialCaches: string[] = []) {
   for (const name of initialCaches) void storage.open(name);
   const fetch = vi.fn<(request: Request) => Promise<Response>>();
   const skipWaiting = vi.fn(async () => undefined);
-  const source = readFileSync(new URL("../../public/sw.js", import.meta.url), "utf8").replace("__PAPERCLIP_BUILD_ID__", "fixture-production");
+  const source = readFileSync(new URL("../../public/sw.js", import.meta.url), "utf8").replace("__WARDMOTE_BUILD_ID__", "fixture-production");
   vm.runInNewContext(source, {
     self: {
       location: { origin: ORIGIN },

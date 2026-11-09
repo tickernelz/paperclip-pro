@@ -153,8 +153,8 @@ export function buildPluginWorkerEnv(input: {
 }): Record<string, string> {
   const processEnv = input.processEnv ?? process.env;
   const env: Record<string, string> = {
-    PAPERCLIP_DEPLOYMENT_MODE: input.instanceInfo.deploymentMode ?? "",
-    PAPERCLIP_DEPLOYMENT_EXPOSURE: input.instanceInfo.deploymentExposure ?? "",
+    WARDMOTE_DEPLOYMENT_MODE: input.instanceInfo.deploymentMode ?? "",
+    WARDMOTE_DEPLOYMENT_EXPOSURE: input.instanceInfo.deploymentExposure ?? "",
   };
   const canRegisterEnvironmentDrivers = Array.isArray(input.manifest.capabilities)
     && input.manifest.capabilities.includes("environment.drivers.register");
@@ -784,8 +784,8 @@ function formatLocalPluginManualBuildHint(
   const manualBuildCommand = buildLocalPluginRecoveryCommand(packageRoot, pkgJson, { repoRoot: options.repoRoot });
   if (!manualBuildCommand) return "";
 
-  const autoBuildDisabled = (options.processEnv ?? process.env)["PAPERCLIP_DISABLE_PLUGIN_AUTOBUILD"] === "1"
-    ? " Auto-build is disabled by PAPERCLIP_DISABLE_PLUGIN_AUTOBUILD=1."
+  const autoBuildDisabled = (options.processEnv ?? process.env)["WARDMOTE_DISABLE_PLUGIN_AUTOBUILD"] === "1"
+    ? " Auto-build is disabled by WARDMOTE_DISABLE_PLUGIN_AUTOBUILD=1."
     : "";
 
   return `${autoBuildDisabled} Run \`${manualBuildCommand}\` from the repo root and retry.`;
@@ -879,7 +879,7 @@ export async function ensureLocalPluginBuilt(
   } = {},
 ): Promise<void> {
   const processEnv = options.processEnv ?? process.env;
-  if (processEnv["PAPERCLIP_DISABLE_PLUGIN_AUTOBUILD"] === "1") return;
+  if (processEnv["WARDMOTE_DISABLE_PLUGIN_AUTOBUILD"] === "1") return;
   if (!isRepoBundledPluginPath(packageRoot, { repoRoot: options.repoRoot })) return;
 
   const missingEntrypoints = listMissingDeclaredPluginEntrypoints(packageRoot, pkgJson);

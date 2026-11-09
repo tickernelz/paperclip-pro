@@ -130,7 +130,7 @@ describe("OMP settings overlay", () => {
 
     expect(overlay.path).toBe("/remote/root/settings-overlay/config.yml");
     const heredoc = runShellMock.mock.calls[0]?.[2] ?? "";
-    const written = heredoc.split("<<'PAPERCLIP_OMP_OVERLAY'\n")[1].split("\nPAPERCLIP_OMP_OVERLAY")[0];
+    const written = heredoc.split("<<'WARDMOTE_OMP_OVERLAY'\n")[1].split("\nWARDMOTE_OMP_OVERLAY")[0];
     expect(parseYaml(written)).toEqual(parseYaml(renderOmpSettingsOverlay(config)));
     expect((parseYaml(written) as { task: { maxRecursionDepth: number } }).task.maxRecursionDepth).toBe(0);
   });

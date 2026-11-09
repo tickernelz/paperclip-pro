@@ -222,6 +222,6 @@ describe("plugin target diagnostics", () => {
 
     expect(rendered).toContain("unreachable");
     expect(rendered).toContain("--api-base");
-    expect(rendered).toContain("PAPERCLIP_API_URL");
+    expect(rendered).toContain("WARDMOTE_API_URL");
   });
 });

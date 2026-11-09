@@ -20,10 +20,10 @@ import {
 } from "./helpers/embedded-postgres.js";
 
 vi.hoisted(() => {
-  process.env.PAPERCLIP_HOME = "/tmp/paperclip-test-home";
-  process.env.PAPERCLIP_INSTANCE_ID = "vitest";
-  process.env.PAPERCLIP_LOG_DIR = "/tmp/paperclip-test-home/logs";
-  process.env.PAPERCLIP_IN_WORKTREE = "false";
+  process.env.WARDMOTE_HOME = "/tmp/paperclip-test-home";
+  process.env.WARDMOTE_INSTANCE_ID = "vitest";
+  process.env.WARDMOTE_LOG_DIR = "/tmp/paperclip-test-home/logs";
+  process.env.WARDMOTE_IN_WORKTREE = "false";
 });
 
 vi.mock("../services/issue-assignment-wakeup.js", () => ({

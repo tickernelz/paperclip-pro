@@ -53,8 +53,8 @@ npx @tickernelz/wardmote context use default
 To avoid storing secrets in context, use an env var:
 
 ```sh
-npx @tickernelz/wardmote context set --api-key-env-var-name PAPERCLIP_API_KEY
-export PAPERCLIP_API_KEY=...
+npx @tickernelz/wardmote context set --api-key-env-var-name WARDMOTE_API_KEY
+export WARDMOTE_API_KEY=...
 ```
 
 Secret operations are available under `wardmote secrets`:

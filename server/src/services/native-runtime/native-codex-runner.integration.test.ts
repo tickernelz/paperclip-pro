@@ -251,7 +251,7 @@ describeEmbeddedPostgres("native Codex server vertical slice", () => {
         },
       },
     });
-    expect(logs.join("\n")).not.toContain("PAPERCLIP_RUNNER_BOOTSTRAP_TICKET");
+    expect(logs.join("\n")).not.toContain("WARDMOTE_RUNNER_BOOTSTRAP_TICKET");
 
     const [persistedResult] = await db
       .select()

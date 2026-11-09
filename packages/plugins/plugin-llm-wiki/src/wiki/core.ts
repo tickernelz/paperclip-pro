@@ -3,10 +3,10 @@ import type { Agent, AgentSessionEvent, Issue, IssueComment, PluginContext, Plug
 import type { IssueDocument, PluginIssueOriginKind, PluginManagedRoutineResolution, PluginManagedSkillResolution } from "@tickernelz/wardmote-plugin-sdk/types";
 import {
   DEFAULT_MAX_SOURCE_BYTES,
-  DEFAULT_MAX_PAPERCLIP_CURSOR_WINDOW_CHARS,
-  DEFAULT_MAX_PAPERCLIP_ISSUE_SOURCE_CHARS,
-  DEFAULT_MAX_PAPERCLIP_ROUTINE_RUN_CHARS,
-  DEFAULT_PAPERCLIP_COST_CENTS_PER_1K_CHARS,
+  DEFAULT_MAX_WARDMOTE_CURSOR_WINDOW_CHARS,
+  DEFAULT_MAX_WARDMOTE_ISSUE_SOURCE_CHARS,
+  DEFAULT_MAX_WARDMOTE_ROUTINE_RUN_CHARS,
+  DEFAULT_WARDMOTE_COST_CENTS_PER_1K_CHARS,
   PLUGIN_ID,
   WIKI_MAINTAINER_AGENT_KEY,
   WIKI_MANAGED_SKILL_KEYS,
@@ -29,10 +29,10 @@ const EVENT_INGESTION_STATE_NAMESPACE = "llm-wiki";
 const EVENT_INGESTION_STATE_KEY = "event-ingestion";
 const EVENT_INGESTION_DEDUP_NAMESPACE = "llm-wiki-event-ingestion";
 const MAX_EVENT_SOURCE_CHARS = 20000;
-const MAX_PAPERCLIP_INGESTION_PROFILE_SOURCE_COUNT = 3;
-const MAX_PAPERCLIP_DISTILLATION_FAN_OUT = 25;
-const MAX_PAPERCLIP_PROFILE_SELECTED_PROJECTS = 25;
-const MAX_PAPERCLIP_PROFILE_ROOT_ISSUES = 25;
+const MAX_WARDMOTE_INGESTION_PROFILE_SOURCE_COUNT = 3;
+const MAX_WARDMOTE_DISTILLATION_FAN_OUT = 25;
+const MAX_WARDMOTE_PROFILE_SELECTED_PROJECTS = 25;
+const MAX_WARDMOTE_PROFILE_ROOT_ISSUES = 25;
 const PROTECTED_WIKI_CONTROL_FILES = new Set(["AGENTS.md", "IDEA.md"]);
 export const PUBLIC_DISTILLATION_AUTO_APPLY_RESTRICTION =
   "Authenticated/public deployments always require manual review before wiki writes.";
@@ -552,7 +552,7 @@ function normalizeBundleLimit(value: unknown, fallback: number): number {
 }
 
 function normalizeCostRate(value: unknown): number {
-  if (typeof value !== "number" || !Number.isFinite(value)) return DEFAULT_PAPERCLIP_COST_CENTS_PER_1K_CHARS;
+  if (typeof value !== "number" || !Number.isFinite(value)) return DEFAULT_WARDMOTE_COST_CENTS_PER_1K_CHARS;
   return Math.max(0, value);
 }
 
@@ -640,20 +640,20 @@ async function resolvePaperclipDistillationLimits(
   ctx: PluginContext,
   input: Pick<PaperclipSourceBundleInput, "companyId" | "maxCharacters" | "maxCharactersPerSource" | "routineRun">,
 ): Promise<PaperclipDistillationLimits> {
-  assertRequestedCharacterLimit("maxCharacters", input.maxCharacters, DEFAULT_MAX_PAPERCLIP_CURSOR_WINDOW_CHARS);
-  assertRequestedCharacterLimit("maxCharactersPerSource", input.maxCharactersPerSource, DEFAULT_MAX_PAPERCLIP_ISSUE_SOURCE_CHARS);
+  assertRequestedCharacterLimit("maxCharacters", input.maxCharacters, DEFAULT_MAX_WARDMOTE_CURSOR_WINDOW_CHARS);
+  assertRequestedCharacterLimit("maxCharactersPerSource", input.maxCharactersPerSource, DEFAULT_MAX_WARDMOTE_ISSUE_SOURCE_CHARS);
   const config = await ctx.config.get(input.companyId) as Record<string, unknown>;
   const maxCharactersPerSource = Math.min(
-    normalizeBundleLimit(input.maxCharactersPerSource, DEFAULT_MAX_PAPERCLIP_ISSUE_SOURCE_CHARS),
-    normalizeBundleLimit(config.maxPaperclipIssueSourceCharacters, DEFAULT_MAX_PAPERCLIP_ISSUE_SOURCE_CHARS),
+    normalizeBundleLimit(input.maxCharactersPerSource, DEFAULT_MAX_WARDMOTE_ISSUE_SOURCE_CHARS),
+    normalizeBundleLimit(config.maxPaperclipIssueSourceCharacters, DEFAULT_MAX_WARDMOTE_ISSUE_SOURCE_CHARS),
   );
   const cursorWindowCap = normalizeBundleLimit(
     config.maxPaperclipCursorWindowCharacters,
-    DEFAULT_MAX_PAPERCLIP_CURSOR_WINDOW_CHARS,
+    DEFAULT_MAX_WARDMOTE_CURSOR_WINDOW_CHARS,
   );
   const routineRunCap = normalizeBundleLimit(
     config.maxPaperclipRoutineRunCharacters,
-    DEFAULT_MAX_PAPERCLIP_ROUTINE_RUN_CHARS,
+    DEFAULT_MAX_WARDMOTE_ROUTINE_RUN_CHARS,
   );
   const requestedMaxCharacters = normalizeBundleLimit(input.maxCharacters, cursorWindowCap);
   const hardCharacterCap = input.routineRun ? Math.min(cursorWindowCap, routineRunCap) : cursorWindowCap;
@@ -734,8 +734,8 @@ function defaultPaperclipIngestionProfile(input: {
       workProducts: "off",
     },
     cursor: {
-      maxWindowCharacters: DEFAULT_MAX_PAPERCLIP_CURSOR_WINDOW_CHARS,
-      maxCharactersPerSource: DEFAULT_MAX_PAPERCLIP_ISSUE_SOURCE_CHARS,
+      maxWindowCharacters: DEFAULT_MAX_WARDMOTE_CURSOR_WINDOW_CHARS,
+      maxCharactersPerSource: DEFAULT_MAX_WARDMOTE_ISSUE_SOURCE_CHARS,
       minSourceAgeMinutes: 15,
       maxWindowsPerRun: 6,
       staleAfterHours: 72,
@@ -764,15 +764,15 @@ function normalizePaperclipIngestionSourceScope(value: unknown): PaperclipIngest
       : undefined;
     return {
       kind,
-      limit: normalizeLimit(record.limit, 3, MAX_PAPERCLIP_PROFILE_SELECTED_PROJECTS),
+      limit: normalizeLimit(record.limit, 3, MAX_WARDMOTE_PROFILE_SELECTED_PROJECTS),
       ...(statuses && statuses.length > 0 ? { statuses: [...new Set(statuses)] } : {}),
     };
   }
   if (kind === "selected_projects") {
-    return { kind, projectIds: stringArray(record.projectIds).slice(0, MAX_PAPERCLIP_PROFILE_SELECTED_PROJECTS) };
+    return { kind, projectIds: stringArray(record.projectIds).slice(0, MAX_WARDMOTE_PROFILE_SELECTED_PROJECTS) };
   }
   if (kind === "root_issues") {
-    return { kind, issueIds: stringArray(record.issueIds).slice(0, MAX_PAPERCLIP_PROFILE_ROOT_ISSUES) };
+    return { kind, issueIds: stringArray(record.issueIds).slice(0, MAX_WARDMOTE_PROFILE_ROOT_ISSUES) };
   }
   if (kind === "company_all") {
     return { kind, requiresBoardConfirmation: true };
@@ -810,8 +810,8 @@ function normalizePaperclipIngestionProfile(
       workProducts: sourceKinds.workProducts === "metadata_only" ? "metadata_only" : "off",
     },
     cursor: {
-      maxWindowCharacters: normalizeLimit(cursor.maxWindowCharacters, fallback.cursor.maxWindowCharacters, DEFAULT_MAX_PAPERCLIP_CURSOR_WINDOW_CHARS),
-      maxCharactersPerSource: normalizeLimit(cursor.maxCharactersPerSource, fallback.cursor.maxCharactersPerSource, DEFAULT_MAX_PAPERCLIP_ISSUE_SOURCE_CHARS),
+      maxWindowCharacters: normalizeLimit(cursor.maxWindowCharacters, fallback.cursor.maxWindowCharacters, DEFAULT_MAX_WARDMOTE_CURSOR_WINDOW_CHARS),
+      maxCharactersPerSource: normalizeLimit(cursor.maxCharactersPerSource, fallback.cursor.maxCharactersPerSource, DEFAULT_MAX_WARDMOTE_ISSUE_SOURCE_CHARS),
       minSourceAgeMinutes: normalizeLimit(cursor.minSourceAgeMinutes, fallback.cursor.minSourceAgeMinutes, 24 * 60),
       maxWindowsPerRun: normalizeLimit(cursor.maxWindowsPerRun, fallback.cursor.maxWindowsPerRun, 25),
       staleAfterHours: normalizeLimit(cursor.staleAfterHours, fallback.cursor.staleAfterHours, 24 * 30),
@@ -990,16 +990,16 @@ async function validatePaperclipIngestionProfile(ctx: PluginContext, input: {
   if (input.profile.enabled && input.profile.sourceScopes.length === 0) {
     throw new Error("Paperclip ingestion profile must include at least one source scope before it can be enabled.");
   }
-  if (input.profile.sourceScopes.length > MAX_PAPERCLIP_INGESTION_PROFILE_SOURCE_COUNT) {
-    throw new Error(`Paperclip ingestion profile sources exceed the hard cap of ${MAX_PAPERCLIP_INGESTION_PROFILE_SOURCE_COUNT}.`);
+  if (input.profile.sourceScopes.length > MAX_WARDMOTE_INGESTION_PROFILE_SOURCE_COUNT) {
+    throw new Error(`Paperclip ingestion profile sources exceed the hard cap of ${MAX_WARDMOTE_INGESTION_PROFILE_SOURCE_COUNT}.`);
   }
   for (const scope of input.profile.sourceScopes) {
     if (scope.kind === "company_all" && input.space.slug !== DEFAULT_SPACE_SLUG) {
       throw new Error("Everything in the company is only available on the default wiki space.");
     }
     if (scope.kind === "selected_projects") {
-      if (scope.projectIds.length > MAX_PAPERCLIP_PROFILE_SELECTED_PROJECTS) {
-        throw new Error(`selected_projects exceeds the hard cap of ${MAX_PAPERCLIP_PROFILE_SELECTED_PROJECTS}.`);
+      if (scope.projectIds.length > MAX_WARDMOTE_PROFILE_SELECTED_PROJECTS) {
+        throw new Error(`selected_projects exceeds the hard cap of ${MAX_WARDMOTE_PROFILE_SELECTED_PROJECTS}.`);
       }
       for (const projectId of scope.projectIds) {
         const project = await ctx.projects.get(projectId, input.companyId);
@@ -1007,8 +1007,8 @@ async function validatePaperclipIngestionProfile(ctx: PluginContext, input: {
       }
     }
     if (scope.kind === "root_issues") {
-      if (scope.issueIds.length > MAX_PAPERCLIP_PROFILE_ROOT_ISSUES) {
-        throw new Error(`root_issues exceeds the hard cap of ${MAX_PAPERCLIP_PROFILE_ROOT_ISSUES}.`);
+      if (scope.issueIds.length > MAX_WARDMOTE_PROFILE_ROOT_ISSUES) {
+        throw new Error(`root_issues exceeds the hard cap of ${MAX_WARDMOTE_PROFILE_ROOT_ISSUES}.`);
       }
       for (const issueId of scope.issueIds) {
         const issue = await ctx.issues.get(issueId, input.companyId);
@@ -1111,8 +1111,8 @@ export async function listPaperclipIngestionCandidates(ctx: PluginContext, input
     spaceSlug: DEFAULT_SPACE_SLUG,
   }, "profile_update");
   const sourceKeys = Object.keys(input.settings.sources ?? {});
-  if (sourceKeys.length > MAX_PAPERCLIP_INGESTION_PROFILE_SOURCE_COUNT) {
-    throw new Error(`Paperclip ingestion profile sources exceed the hard cap of ${MAX_PAPERCLIP_INGESTION_PROFILE_SOURCE_COUNT}.`);
+  if (sourceKeys.length > MAX_WARDMOTE_INGESTION_PROFILE_SOURCE_COUNT) {
+    throw new Error(`Paperclip ingestion profile sources exceed the hard cap of ${MAX_WARDMOTE_INGESTION_PROFILE_SOURCE_COUNT}.`);
   }
   assertRequestedCharacterLimit("maxCharacters", input.settings.maxCharacters, MAX_EVENT_SOURCE_CHARS);
   const current = await getEventIngestionSettings(ctx, input.companyId);
@@ -2477,8 +2477,8 @@ export async function enableActiveProjectDistillation(ctx: PluginContext, input:
 }): Promise<EnableActiveProjectDistillationResult> {
   const wikiId = normalizeWikiId(input.wikiId);
   const space = await requirePaperclipIngestionPolicy(ctx, { companyId: input.companyId, wikiId, spaceSlug: input.spaceSlug }, "candidate_search", { requireEnabledProfile: true });
-  if (typeof input.limit === "number" && Number.isFinite(input.limit) && Math.floor(input.limit) > MAX_PAPERCLIP_DISTILLATION_FAN_OUT) {
-    throw new Error(`Paperclip ingestion fan-out exceeds the hard cap of ${MAX_PAPERCLIP_DISTILLATION_FAN_OUT} enabled profiles.`);
+  if (typeof input.limit === "number" && Number.isFinite(input.limit) && Math.floor(input.limit) > MAX_WARDMOTE_DISTILLATION_FAN_OUT) {
+    throw new Error(`Paperclip ingestion fan-out exceeds the hard cap of ${MAX_WARDMOTE_DISTILLATION_FAN_OUT} enabled profiles.`);
   }
   const limit = normalizeLimit(input.limit ?? 3, 3, 25);
   const projects = await ctx.projects.list({ companyId: input.companyId, limit: 200 });
@@ -3316,8 +3316,8 @@ async function autoApplyEnabled(ctx: PluginContext, companyId: string, requested
 }
 
 export function getDistillationAutoApplyRestriction(): DistillationAutoApplyRestriction {
-  const rawMode = process.env.PAPERCLIP_DEPLOYMENT_MODE;
-  const rawExposure = process.env.PAPERCLIP_DEPLOYMENT_EXPOSURE;
+  const rawMode = process.env.WARDMOTE_DEPLOYMENT_MODE;
+  const rawExposure = process.env.WARDMOTE_DEPLOYMENT_EXPOSURE;
   const deploymentMode =
     rawMode === "local_trusted" || rawMode === "authenticated" ? rawMode : null;
   const deploymentExposure =
@@ -3715,8 +3715,8 @@ async function routePaperclipCursorObservation(ctx: PluginContext, input: {
     if (!profile.sourceKinds[input.sourceKind]) continue;
     if (!(await paperclipProfileIncludesIssue(ctx, { companyId: input.companyId, issue: input.issue, profile }))) continue;
     eligibleProfileCount += 1;
-    if (eligibleProfileCount > MAX_PAPERCLIP_DISTILLATION_FAN_OUT) {
-      throw new Error(`Paperclip ingestion fan-out exceeds the hard cap of ${MAX_PAPERCLIP_DISTILLATION_FAN_OUT} enabled profiles.`);
+    if (eligibleProfileCount > MAX_WARDMOTE_DISTILLATION_FAN_OUT) {
+      throw new Error(`Paperclip ingestion fan-out exceeds the hard cap of ${MAX_WARDMOTE_DISTILLATION_FAN_OUT} enabled profiles.`);
     }
     if (await ctx.state.get(eventIngestionDedupKey(input.companyId, space.wikiId, space.id, input.sourceKind, input.sourceId))) {
       continue;

@@ -44,8 +44,8 @@ export async function runProbe(packInput, output, scenario, token) {
   assert.ok(typeof token === "string" && token.trim() && !token.includes("\0"), "explicit Copilot token required");
   const pack = await realpath(packInput);
   const manifest = JSON.parse(await readFile(join(pack, "provider-pack.json"), "utf8"));
-  process.env.PAPERCLIP_ACPX_PROVIDER_PACKAGE_ROOT = pack;
-  process.env.PAPERCLIP_ACPX_PROVIDER_PACKAGE_MANIFEST = join(pack, "package.json");
+  process.env.WARDMOTE_ACPX_PROVIDER_PACKAGE_ROOT = pack;
+  process.env.WARDMOTE_ACPX_PROVIDER_PACKAGE_MANIFEST = join(pack, "package.json");
   const { verifyAcpxProfileInstallation, assertAcpxProfileEnvironment } = await import(pathToFileURL(join(pack, "dist/drivers/acpx/profile-installation.js")));
   const { resolveQualifiedAcpxProfile } = await import(pathToFileURL(join(pack, "dist/drivers/acpx/qualified-profiles.js")));
   const { COPILOT_ACP_CLIENT_CAPABILITIES } = await import(pathToFileURL(join(pack, "dist/drivers/acpx/copilot-events.js")));

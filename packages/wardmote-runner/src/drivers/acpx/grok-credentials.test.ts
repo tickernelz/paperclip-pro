@@ -14,12 +14,12 @@ async function home() { const path = await mkdtemp(join(tmpdir(), "grok-credenti
 afterEach(async () => { await Promise.all(roots.splice(0).map(path => rm(path, { recursive: true, force: true }))); });
 
 describe("Grok isolated credentials", () => {
-  it.each([{}, { PAPERCLIP_ACPX_GROK_AUTH_JSON_SECRET: "{}" }, { PAPERCLIP_ACPX_GROK_AUTH_JSON_SECRET: "not-json" }, { PAPERCLIP_ACPX_GROK_AUTH_JSON_SECRET: credential, XAI_API_KEY: "test-key" }])("rejects missing, malformed and ambiguous sources", async environment => {
+  it.each([{}, { WARDMOTE_ACPX_GROK_AUTH_JSON_SECRET: "{}" }, { WARDMOTE_ACPX_GROK_AUTH_JSON_SECRET: "not-json" }, { WARDMOTE_ACPX_GROK_AUTH_JSON_SECRET: credential, XAI_API_KEY: "test-key" }])("rejects missing, malformed and ambiguous sources", async environment => {
     await expect(stageManagedGrokCredential({ agentHomeDirectory: await home(), environment })).rejects.toThrow(/required|malformed|ambiguous/);
   });
   it("stages only subscription auth privately and retains refreshed auth until controller copyback", async () => {
     const directory = await home();
-    const lease = await stageManagedGrokCredential({ agentHomeDirectory: directory, environment: { PAPERCLIP_ACPX_GROK_AUTH_JSON_SECRET: credential } });
+    const lease = await stageManagedGrokCredential({ agentHomeDirectory: directory, environment: { WARDMOTE_ACPX_GROK_AUTH_JSON_SECRET: credential } });
     expect((await stat(join(directory, "auth.json"))).mode & 0o777).toBe(0o600);
     expect(await readFile(join(directory, "auth.json"), "utf8")).toBe(credential);
     const refreshed = credential.replace("test-token", "refreshed-token");
@@ -32,7 +32,7 @@ describe("Grok isolated credentials", () => {
   it.each([true, false])("removes diagnostic logs after shutdown without removing session history (admitted=%s)", async retainRefresh => {
     const directory = await home();
     const lease = await stageManagedGrokCredential({ agentHomeDirectory: directory,
-      environment: { PAPERCLIP_ACPX_GROK_AUTH_JSON_SECRET: credential }, retainRefresh: () => retainRefresh });
+      environment: { WARDMOTE_ACPX_GROK_AUTH_JSON_SECRET: credential }, retainRefresh: () => retainRefresh });
     await mkdir(join(directory, "logs"));
     await mkdir(join(directory, "sessions"));
     await writeFile(join(directory, "logs", "unified.jsonl"), credential, { mode: 0o600 });
@@ -52,7 +52,7 @@ describe("Grok isolated credentials", () => {
   });
   it("fences concurrent refresh owners and removes a stale refresh before the next turn", async () => {
     const directory = await home();
-    const options = { agentHomeDirectory: directory, environment: { PAPERCLIP_ACPX_GROK_AUTH_JSON_SECRET: credential } };
+    const options = { agentHomeDirectory: directory, environment: { WARDMOTE_ACPX_GROK_AUTH_JSON_SECRET: credential } };
     const first = await stageManagedGrokCredential(options);
     await expect(stageManagedGrokCredential(options)).rejects.toThrow(/active lease|owned/);
     await first.close();
@@ -62,7 +62,7 @@ describe("Grok isolated credentials", () => {
   });
   it("rejects a substituted refresh symlink without releasing ownership or copying its target", async () => {
     const directory = await home();
-    const options = { agentHomeDirectory: directory, environment: { PAPERCLIP_ACPX_GROK_AUTH_JSON_SECRET: credential } };
+    const options = { agentHomeDirectory: directory, environment: { WARDMOTE_ACPX_GROK_AUTH_JSON_SECRET: credential } };
     const lease = await stageManagedGrokCredential(options);
     const target = join(await home(), "private.json");
     await writeFile(target, "unrelated", { mode: 0o600 });
@@ -76,7 +76,7 @@ describe("Grok isolated credentials", () => {
     await lease.close();
   });
   it("never passes other providers, host homes or the inline credential to Grok", () => {
-    const result = createSanitizedAcpxSpawnInput({ XAI_API_KEY: "selected", HOME: "/host", GROK_HOME: "/host/.grok", OPENAI_API_KEY: "other", PAPERCLIP_ACPX_GROK_AUTH_JSON_SECRET: credential }, "grok");
+    const result = createSanitizedAcpxSpawnInput({ XAI_API_KEY: "selected", HOME: "/host", GROK_HOME: "/host/.grok", OPENAI_API_KEY: "other", WARDMOTE_ACPX_GROK_AUTH_JSON_SECRET: credential }, "grok");
     expect(result.env).toEqual({ XAI_API_KEY: "selected" });
   });
   it("cannot pass model verification with a missing or mismatched model", async () => {

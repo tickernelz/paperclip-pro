@@ -38,7 +38,7 @@ By default the workflow gardens only pull requests authored by this instance's G
 - `--cooldown-hours <N>`: repeat-gardening cooldown, default `48`.
 - `--max-rounds <N>`: maximum gardening rounds per PR, default `3`.
 
-Use a run-owned directory such as `$PAPERCLIP_RUN_SCRATCH_DIR/pr-gardening` for generated files.
+Use a run-owned directory such as `$WARDMOTE_RUN_SCRATCH_DIR/pr-gardening` for generated files.
 
 ## Stage A — Discover Candidates
 

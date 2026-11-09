@@ -134,7 +134,7 @@ function runnerdFixture() {
   }
   pack();
   const input = { repositoryRoot: root, sourceSha: "a".repeat(40), sourceFingerprint: "b".repeat(64), environment: {
-    GITHUB_ACTIONS: "true", PAPERCLIP_RUNNER_E2E_SOURCE_SHA: "a".repeat(40), GITHUB_RUN_ID: "12345", GITHUB_RUN_ATTEMPT: "2" } };
+    GITHUB_ACTIONS: "true", WARDMOTE_RUNNER_E2E_SOURCE_SHA: "a".repeat(40), GITHUB_RUN_ID: "12345", GITHUB_RUN_ATTEMPT: "2" } };
   return { root, binary, directory, pack, input };
 }
 test("native hosted runnerd proof binds the actual selected debug executable to the trusted same-run archive", () => {
@@ -151,7 +151,7 @@ test("native hosted runnerd proof binds the actual selected debug executable to 
   assert.equal(local.binaryBytes, readFileSync(f.binary).length); assert.equal(local.archiveMemberBytes, null);
 });
 for (const [name, mutate] of [
-  ["wrong trusted source SHA", f => { f.input.environment.PAPERCLIP_RUNNER_E2E_SOURCE_SHA = "c".repeat(40); }],
+  ["wrong trusted source SHA", f => { f.input.environment.WARDMOTE_RUNNER_E2E_SOURCE_SHA = "c".repeat(40); }],
   ["missing workflow run", f => { delete f.input.environment.GITHUB_RUN_ID; }],
   ["malformed workflow attempt", f => { f.input.environment.GITHUB_RUN_ATTEMPT = "../2"; }],
   ["newline in workflow run", f => { f.input.environment.GITHUB_RUN_ID = "12345\n"; }],

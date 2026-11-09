@@ -111,7 +111,7 @@ describe("managed install store", () => {
     const shim = fs.readFileSync(paths.shimPath, "utf8");
     expect(shim).toContain(process.execPath);
     expect(shim).toContain(paths.currentPath);
-    expect(shim).not.toContain("PAPERCLIP_HOME");
+    expect(shim).not.toContain("WARDMOTE_HOME");
     expect(fs.statSync(paths.shimPath).mode & 0o777).toBe(0o755);
 
     const rcPath = path.join(root, "home", ".bashrc");
@@ -231,16 +231,16 @@ describe("managed install store", () => {
     expect(() => writeManagedShim(paths)).toThrow("multiply linked shim");
   });
 
-  it("places the shim where PAPERCLIP_SHIM_PATH points, matching the service manager", () => {
+  it("places the shim where WARDMOTE_SHIM_PATH points, matching the service manager", () => {
     const override = path.join(root, "isolated", "bin", "wardmote");
-    const previous = process.env.PAPERCLIP_SHIM_PATH;
-    process.env.PAPERCLIP_SHIM_PATH = override;
+    const previous = process.env.WARDMOTE_SHIM_PATH;
+    process.env.WARDMOTE_SHIM_PATH = override;
     try {
       expect(resolveInstallStorePaths({ homeDir: path.join(root, "home") }).shimPath).toBe(override);
       expect(resolveServiceShimPath(path.join(root, "home"))).toBe(override);
     } finally {
-      if (previous === undefined) delete process.env.PAPERCLIP_SHIM_PATH;
-      else process.env.PAPERCLIP_SHIM_PATH = previous;
+      if (previous === undefined) delete process.env.WARDMOTE_SHIM_PATH;
+      else process.env.WARDMOTE_SHIM_PATH = previous;
     }
 
     expect(resolveInstallStorePaths({ homeDir: path.join(root, "home") }).shimPath).toBe(

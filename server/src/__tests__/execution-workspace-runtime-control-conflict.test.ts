@@ -182,9 +182,9 @@ function createRegisteredRepairFixture(
   fs.mkdirSync(configDir, { recursive: true });
   fs.mkdirSync(path.dirname(sourceConfigPath), { recursive: true });
   fs.writeFileSync(sourceConfigPath, "{}\n");
-  fs.writeFileSync(path.join(path.dirname(sourceConfigPath), ".env"), "PAPERCLIP_INSTANCE_ID=repair-source\n");
+  fs.writeFileSync(path.join(path.dirname(sourceConfigPath), ".env"), "WARDMOTE_INSTANCE_ID=repair-source\n");
   fs.writeFileSync(path.join(configDir, "config.json"), "{}\n");
-  fs.writeFileSync(path.join(configDir, ".env"), `PAPERCLIP_INSTANCE_ID=${targetInstanceId}\n`);
+  fs.writeFileSync(path.join(configDir, ".env"), `WARDMOTE_INSTANCE_ID=${targetInstanceId}\n`);
   if (options.withCli !== false) {
     fs.mkdirSync(path.dirname(cliRunner), { recursive: true });
     fs.mkdirSync(path.dirname(cliEntry), { recursive: true });
@@ -405,7 +405,7 @@ describe("execution workspace runtime control conflict and failure reconciliatio
         fs.writeFileSync(attackerConfig, "{}\n");
         fs.writeFileSync(
           path.join(attackerDir, ".env"),
-          `PAPERCLIP_INSTANCE_ID=${variant === "foreign_instance" ? "foreign-source" : "repair-source"}\n`,
+          `WARDMOTE_INSTANCE_ID=${variant === "foreign_instance" ? "foreign-source" : "repair-source"}\n`,
         );
         const diagnosticPath = variant === "instance_mismatch"
           ? fixture.sourceConfigPath
@@ -537,7 +537,7 @@ describe("execution workspace runtime control conflict and failure reconciliatio
         workspaceCwd: fixture.workspaceCwd,
         executionWorkspaceId,
         companyId: "company-1",
-        env: { PAPERCLIP_WORKSPACE_HANDOFF_SECRET: "test-root-secret" },
+        env: { WARDMOTE_WORKSPACE_HANDOFF_SECRET: "test-root-secret" },
       })?.instanceId).toBe(recordedInstanceId);
       mockEnsurePersistedExecutionWorkspaceAvailable.mockResolvedValue({ cwd: fixture.workspaceCwd });
       mockStartRuntimeServices.mockResolvedValue([{
@@ -551,9 +551,9 @@ describe("execution workspace runtime control conflict and failure reconciliatio
           "--seed-mode", "full", "--yes", "--backup-target",
         ]));
         expect(options.env).toMatchObject({
-          PAPERCLIP_SEED_EXPECTED_COMPANY_ID: "company-1",
-          PAPERCLIP_WORKSPACE_BASE_CWD: fixture.baseCwd,
-          PAPERCLIP_PROJECT_WORKSPACE_ID: projectWorkspaceId,
+          WARDMOTE_SEED_EXPECTED_COMPANY_ID: "company-1",
+          WARDMOTE_WORKSPACE_BASE_CWD: fixture.baseCwd,
+          WARDMOTE_PROJECT_WORKSPACE_ID: projectWorkspaceId,
         });
         const child = new EventEmitter() as EventEmitter & {
           stdout: PassThrough;

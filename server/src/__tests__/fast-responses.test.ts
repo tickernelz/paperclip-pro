@@ -43,8 +43,8 @@ beforeAll(async () => {
   home = await realpath(
     await mkdtemp(path.join(os.tmpdir(), "paperclip-fast-response-")),
   );
-  vi.stubEnv("PAPERCLIP_HOME", home);
-  vi.stubEnv("PAPERCLIP_INSTANCE_ID", "fast-response-fixture");
+  vi.stubEnv("WARDMOTE_HOME", home);
+  vi.stubEnv("WARDMOTE_INSTANCE_ID", "fast-response-fixture");
   database = await startEmbeddedPostgresTestDatabase(
     "paperclip-fast-response-db-",
   );

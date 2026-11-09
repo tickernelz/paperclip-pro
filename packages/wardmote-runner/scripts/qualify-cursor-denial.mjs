@@ -127,8 +127,8 @@ export async function runDenial(packInput, privateParent, token) {
     for (const key of ["HOME", "XDG_CONFIG_HOME", "XDG_DATA_HOME", "XDG_CACHE_HOME", "CURSOR_CONFIG_DIR", "CURSOR_DATA_DIR", "NODE_COMPILE_CACHE", "TMPDIR"]) {
       env[key] = join(root, key.toLowerCase()); await mkdir(env[key], { mode: 0o700 });
     }
-    process.env.PAPERCLIP_ACPX_PROVIDER_PACKAGE_ROOT = pack;
-    process.env.PAPERCLIP_ACPX_PROVIDER_PACKAGE_MANIFEST = join(pack, "package.json");
+    process.env.WARDMOTE_ACPX_PROVIDER_PACKAGE_ROOT = pack;
+    process.env.WARDMOTE_ACPX_PROVIDER_PACKAGE_MANIFEST = join(pack, "package.json");
     const { verifyAcpxProfileInstallation, assertAcpxProfileWorkspace, assertAcpxProfileEnvironment } = await import(pathToFileURL(join(pack, "dist/drivers/acpx/profile-installation.js")));
     const { resolveQualifiedAcpxProfile } = await import(pathToFileURL(join(pack, "dist/drivers/acpx/qualified-profiles.js")));
     assertAcpxProfileEnvironment("cursor", { CURSOR_AUTH_TOKEN: token });

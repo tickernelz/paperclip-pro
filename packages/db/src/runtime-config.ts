@@ -55,8 +55,8 @@ function findConfigFileFromAncestors(startDir: string): string | null {
 }
 
 function resolvePaperclipConfigPath(): string {
-  if (process.env.PAPERCLIP_CONFIG?.trim()) {
-    return path.resolve(process.env.PAPERCLIP_CONFIG.trim());
+  if (process.env.WARDMOTE_CONFIG?.trim()) {
+    return path.resolve(process.env.WARDMOTE_CONFIG.trim());
   }
   return findConfigFileFromAncestors(process.cwd()) ?? resolvePaperclipConfigPathForInstance();
 }

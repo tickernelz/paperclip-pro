@@ -16,7 +16,7 @@ import { serviceWorkerBuildIdFromFileName } from "./service-worker-build-id";
  * from the bundle makes `sw.js` change exactly when the app does.
  */
 
-export const SERVICE_WORKER_BUILD_ID_PLACEHOLDER = "__PAPERCLIP_BUILD_ID__";
+export const SERVICE_WORKER_BUILD_ID_PLACEHOLDER = "__WARDMOTE_BUILD_ID__";
 
 /**
  * Replace the build-id placeholder in a service-worker source string.

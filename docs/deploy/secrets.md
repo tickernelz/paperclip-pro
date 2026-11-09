@@ -49,10 +49,10 @@ can be human-readable; the binding key is what the agent process receives.
 
 Project env applies to every issue run in that project. When a project env key
 matches an agent env key, the project value wins before Wardmote injects its
-own `PAPERCLIP_*` runtime variables.
+own `WARDMOTE_*` runtime variables.
 
 Separately from env bindings, the **server itself** consumes a company secret
-named `GITHUB_TOKEN`, `GH_TOKEN`, or `PAPERCLIP_GITHUB_TOKEN` (by name, no
+named `GITHUB_TOKEN`, `GH_TOKEN`, or `WARDMOTE_GITHUB_TOKEN` (by name, no
 binding needed) to authenticate server-side git operations — cloning private
 GitHub repos for repo-only project workspaces and refreshing worktree base
 refs. See
@@ -210,22 +210,22 @@ npx @tickernelz/wardmote secrets doctor --company-id <company-id>
 
 | Variable | Description |
 |----------|-------------|
-| `PAPERCLIP_SECRETS_MASTER_KEY` | 32-byte key as base64, hex, or raw string |
-| `PAPERCLIP_SECRETS_MASTER_KEY_FILE` | Custom key file path |
-| `PAPERCLIP_SECRETS_STRICT_MODE` | Set to `true` to enforce secret refs |
+| `WARDMOTE_SECRETS_MASTER_KEY` | 32-byte key as base64, hex, or raw string |
+| `WARDMOTE_SECRETS_MASTER_KEY_FILE` | Custom key file path |
+| `WARDMOTE_SECRETS_STRICT_MODE` | Set to `true` to enforce secret refs |
 
 ## Strict Mode
 
 When strict mode is enabled, sensitive env keys (matching `*_API_KEY`, `*_TOKEN`, `*_SECRET`) must use secret references instead of inline plain values.
 
 ```sh
-PAPERCLIP_SECRETS_STRICT_MODE=true
+WARDMOTE_SECRETS_STRICT_MODE=true
 ```
 
 Recommended for any deployment beyond local trusted.
 
 Authenticated deployments default strict mode on unless explicitly overridden by
-configuration or `PAPERCLIP_SECRETS_STRICT_MODE=false`.
+configuration or `WARDMOTE_SECRETS_STRICT_MODE=false`.
 
 ## External References
 
@@ -352,7 +352,7 @@ key file is backed up alongside the database.
 **AWS Secrets Manager vaults** read the per-vault `region`, `namespace`,
 `secretNamePrefix`, `kmsKeyId`, `ownerTag`, and `environmentTag` to route
 managed writes and external-reference reads. The vault config supplements (and
-can override) the deployment-level `PAPERCLIP_SECRETS_AWS_*` env. Bootstrap
+can override) the deployment-level `WARDMOTE_SECRETS_AWS_*` env. Bootstrap
 credentials still come from the AWS SDK default credential chain — see
 `doc/SECRETS-AWS-PROVIDER.md` for the full IAM and KMS contract.
 
@@ -459,7 +459,7 @@ create or resolve AWS-backed company secrets, regardless of whether you use the
 deployment-level default or a per-company vault.
 
 For Paperclip Cloud, provision the server runtime IAM role/workload identity,
-KMS key, deployment prefix, and non-secret `PAPERCLIP_SECRETS_AWS_*` environment
+KMS key, deployment prefix, and non-secret `WARDMOTE_SECRETS_AWS_*` environment
 configuration before enabling AWS-backed secrets in the board UI. For
 self-hosted and local runs, use the AWS SDK default credential chain: instance
 profile, ECS task role, EKS IRSA/OIDC web identity, AWS SSO/shared config via

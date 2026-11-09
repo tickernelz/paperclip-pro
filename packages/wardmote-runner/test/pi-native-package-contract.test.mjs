@@ -12,7 +12,7 @@ import test from "node:test";
 
 // Tests run real pinned Pi RPC without live provider credentials. The final
 // stream regressions use synthetic loopback responses and a socket deny guard.
-const packageRoot = process.env.PAPERCLIP_TEST_PI_RUNTIME_ROOT
+const packageRoot = process.env.WARDMOTE_TEST_PI_RUNTIME_ROOT
   ?? dirname(dirname(fileURLToPath(import.meta.resolve("@earendil-works/pi-coding-agent"))));
 const metadata = JSON.parse(await readFile(join(packageRoot, "package.json"), "utf8"));
 const extensionSource = await readFile(new URL("../src/drivers/acpx/pi-runtime-extension.ts", import.meta.url), "utf8");
@@ -384,8 +384,8 @@ for (const scenario of ["hello", "interleaved-tools", "provider-error", "provide
       } finally { await rm(root, { recursive: true, force: true }); }
     });
     await mkdir(join(root, "workspace")); await mkdir(join(root, "agent"));
-    const wrapperRoot = process.env.PAPERCLIP_TEST_PI_ACP_PACKAGE
-      ? dirname(process.env.PAPERCLIP_TEST_PI_ACP_PACKAGE)
+    const wrapperRoot = process.env.WARDMOTE_TEST_PI_ACP_PACKAGE
+      ? dirname(process.env.WARDMOTE_TEST_PI_ACP_PACKAGE)
       : join(dirname(dirname(packageRoot)), "pi-acp");
     const calls = []; const modelRequests = []; const reasoningRequests = [];
     const agentHomes = [join(root, "run-1-agent"), join(root, "run-2-agent")];

@@ -2,7 +2,7 @@
 
 ## Tools
 
-Tools marked extended load only when the operator enables `PAPERCLIP_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest` (`method`, `path` relative to `/api`, `jsonBody` as a JSON string) for the same job.
+Tools marked extended load only when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest` (`method`, `path` relative to `/api`, `jsonBody` as a JSON string) for the same job.
 
 | Job | Tool | Key arguments |
 | --- | ---- | ------------- |
@@ -106,4 +106,4 @@ For hire approvals:
 - `pending_approval` agents cannot run heartbeats, receive assignments, or create keys.
 - All actions are logged in activity for auditability.
 - Use markdown in issue/approval comments and include links to approval, agent, and source issue.
-- After approval resolution, requester may be woken with `PAPERCLIP_APPROVAL_ID` and should reconcile linked issues.
+- After approval resolution, requester may be woken with `WARDMOTE_APPROVAL_ID` and should reconcile linked issues.

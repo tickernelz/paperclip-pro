@@ -216,9 +216,9 @@ export async function envLabDoctorCommand(opts: { instance?: string; json?: bool
   // value, so no shell reads the argument. See `doc/CLI.md`, "safe invocation".
   //
   // The doctor diagnoses the instance that `resolvePaperclipInstanceId` selects
-  // from `opts.instance` or the `PAPERCLIP_INSTANCE_ID` environment variable.
+  // from `opts.instance` or the `WARDMOTE_INSTANCE_ID` environment variable.
   // The hint pins that resolved instance, so a contributor who pastes the hint
-  // in a shell without `PAPERCLIP_INSTANCE_ID` stops the diagnosed fixture, not
+  // in a shell without `WARDMOTE_INSTANCE_ID` stops the diagnosed fixture, not
   // the default instance.
   const cleanupInstance = resolvePaperclipInstanceId(opts.instance);
   p.log.message(`Cleanup: ${pc.dim(buildEnvLabCleanupCommand({ instance: cleanupInstance }))}`);

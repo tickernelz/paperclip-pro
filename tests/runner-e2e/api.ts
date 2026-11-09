@@ -35,8 +35,8 @@ export class RunnerApi {
   }
 
   constructor(readonly request: APIRequestContext) {
-    const port = process.env.PAPERCLIP_RUNNER_E2E_PORT?.trim();
-    if (!port) throw new Error("PAPERCLIP_RUNNER_E2E_PORT is required");
+    const port = process.env.WARDMOTE_RUNNER_E2E_PORT?.trim();
+    if (!port) throw new Error("WARDMOTE_RUNNER_E2E_PORT is required");
     this.baseURL = `http://127.0.0.1:${port}`;
   }
 

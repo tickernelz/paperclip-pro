@@ -45,10 +45,10 @@ const challenge = createHash("sha256").update(verifier).digest("base64url");
 describe("public MCP configuration", () => {
   it("uses the configured origin independently of the retired environment gate", () => {
     expect(publicMcpConfig({})).toBeNull();
-    expect(() => publicMcpConfig({ PAPERCLIP_PUBLIC_URL: "http://example.com" })).toThrow();
-    expect(publicMcpConfig({ PAPERCLIP_PUBLIC_URL: "http://localhost:3100" })?.resource).toBe("http://localhost:3100/mcp/paperclip");
+    expect(() => publicMcpConfig({ WARDMOTE_PUBLIC_URL: "http://example.com" })).toThrow();
+    expect(publicMcpConfig({ WARDMOTE_PUBLIC_URL: "http://localhost:3100" })?.resource).toBe("http://localhost:3100/mcp/paperclip");
     expect(publicMcpConfig({}, "https://paperclip.example")?.origin).toBe("https://paperclip.example");
-    expect(publicMcpConfig({ PAPERCLIP_PUBLIC_MCP_ENABLED: "true" })).toBeNull();
+    expect(publicMcpConfig({ WARDMOTE_PUBLIC_MCP_ENABLED: "true" })).toBeNull();
     expect(publicMcpCapabilities.map((c) => c.name)).not.toEqual(expect.arrayContaining(["run_tool", "call_api"]));
   });
 });
@@ -58,7 +58,7 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
   let db: ReturnType<typeof createDb>;
   let oauth: ReturnType<typeof createPublicMcpOAuth>;
   beforeAll(async () => {
-    vi.stubEnv("PAPERCLIP_SECRETS_MASTER_KEY", randomBytes(32).toString("base64"));
+    vi.stubEnv("WARDMOTE_SECRETS_MASTER_KEY", randomBytes(32).toString("base64"));
     temp = await startEmbeddedPostgresTestDatabase("paperclip-public-mcp-");
     db = createDb(temp.connectionString);
     oauth = createPublicMcpOAuth(db, config);
@@ -968,7 +968,7 @@ describe.skipIf(!support.supported)("public MCP OAuth and tool boundary", () => 
     expect(invalid.body.result.structuredContent.issues[0].message).toContain("UUID");
     expect(dispatch).not.toHaveBeenCalled();
     const pending = await oauth.authorize({ client_id: f.client.client_id, redirect_uri: redirectUri, resource: config.resource, response_type: "code", code_challenge: challenge, code_challenge_method: "S256" });
-    vi.stubEnv("PAPERCLIP_CLOUD_API_ORIGIN", "https://cloud.example.test");
+    vi.stubEnv("WARDMOTE_CLOUD_API_ORIGIN", "https://cloud.example.test");
     try {
       const described = await request(app).get(`/api/mcp/requests/${pending.split("/").at(-1)}`);
       expect(described.body.setupUrl).toBe("https://cloud.example.test/orgs/new");

@@ -125,7 +125,7 @@ returns a value:
    `dist/build-info.json`. The stamp wins so the reported version tracks the
    true built commit and cannot go stale across rebuilds. The build script
    reads the commit from `git rev-parse --short HEAD` first. A Docker image
-   build excludes `.git`, so the build script reads the `PAPERCLIP_BUILD_COMMIT`
+   build excludes `.git`, so the build script reads the `WARDMOTE_BUILD_COMMIT`
    environment variable instead. Pass the built commit in that variable so the
    image stamp records the true commit.
 2. **A runtime `git rev-parse --short HEAD`.** This covers `tsx src/index.ts`
@@ -826,7 +826,7 @@ The server sets `release` to the full source commit from its build metadata.
 An explicit `SENTRY_RELEASE` overrides that default. If neither is available,
 the server leaves the release unset.
 
-The browser also sets `release`, using the full `PAPERCLIP_BUILD_COMMIT`
+The browser also sets `release`, using the full `WARDMOTE_BUILD_COMMIT`
 supplied when its bundle is built, or the checkout commit for source and npm
 builds. The server reads its packaged build stamp when no deployment marker
 is present. Docker passes the same commit to both

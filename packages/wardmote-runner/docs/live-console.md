@@ -27,8 +27,8 @@ Two environment variables change the driver behind the console:
 
 | Variable | Default | Effect |
 | --- | --- | --- |
-| `PAPERCLIP_LIVE_CONSOLE_DRIVER` | `demo` | `codex` starts the real `codex app-server` driver behind the same routes |
-| `PAPERCLIP_LIVE_CONSOLE_CHUNK_DELAY_MS` | `45` | Milliseconds between streamed chunks in the demo driver |
+| `WARDMOTE_LIVE_CONSOLE_DRIVER` | `demo` | `codex` starts the real `codex app-server` driver behind the same routes |
+| `WARDMOTE_LIVE_CONSOLE_CHUNK_DELAY_MS` | `45` | Milliseconds between streamed chunks in the demo driver |
 
 ## Where state comes from
 

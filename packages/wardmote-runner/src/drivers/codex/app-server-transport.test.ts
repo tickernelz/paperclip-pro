@@ -18,11 +18,11 @@ function nodeTransport(
 describe("Codex app-server transport limits", () => {
   it("passes the selected managed provider key without admitting arbitrary host secrets", () => {
     expect(createSanitizedCodexEnvironment({
-      PAPERCLIP_AI_PROVIDER_KEY: "selected-provider-key",
+      WARDMOTE_AI_PROVIDER_KEY: "selected-provider-key",
       CODEX_HOME: "/isolated/connection",
       OPENROUTER_API_KEY: "ambient-other-key",
       DATABASE_URL: "private-database",
-    })).toEqual({ PAPERCLIP_AI_PROVIDER_KEY: "selected-provider-key", CODEX_HOME: "/isolated/connection" });
+    })).toEqual({ WARDMOTE_AI_PROVIDER_KEY: "selected-provider-key", CODEX_HOME: "/isolated/connection" });
   });
 
   it("passes only bounded controller-projected GitHub credentials", () => {
@@ -30,25 +30,25 @@ describe("Codex app-server transport limits", () => {
       createSanitizedCodexEnvironment({
         PATH: "/safe/bin",
         GH_TOKEN: "github-token",
-        PAPERCLIP_GIT_TOKEN: "github-token",
+        WARDMOTE_GIT_TOKEN: "github-token",
         GIT_TERMINAL_PROMPT: "0",
         GIT_CONFIG_COUNT: "1",
         GIT_CONFIG_KEY_0: "credential.https://github.com.helper",
         GIT_CONFIG_VALUE_0: "!trusted-helper",
         GIT_CONFIG_KEY_1: "must.not.cross",
         GIT_CONFIG_VALUE_1: "must-not-cross",
-        PAPERCLIP_RUNNER_EXTERNAL_SANDBOX: "1",
+        WARDMOTE_RUNNER_EXTERNAL_SANDBOX: "1",
         DATABASE_URL: "must-not-cross",
       }),
     ).toEqual({
       PATH: "/safe/bin",
       GH_TOKEN: "github-token",
-      PAPERCLIP_GIT_TOKEN: "github-token",
+      WARDMOTE_GIT_TOKEN: "github-token",
       GIT_TERMINAL_PROMPT: "0",
       GIT_CONFIG_COUNT: "1",
       GIT_CONFIG_KEY_0: "credential.https://github.com.helper",
       GIT_CONFIG_VALUE_0: "!trusted-helper",
-      PAPERCLIP_RUNNER_EXTERNAL_SANDBOX: "1",
+      WARDMOTE_RUNNER_EXTERNAL_SANDBOX: "1",
     });
 
     const invalid = createSanitizedCodexEnvironment({
@@ -68,7 +68,7 @@ describe("Codex app-server transport limits", () => {
       .toBe("Basic API foundation");
   });
 
-  it.each(["PAPERCLIP_API_KEY", "OPENAI_API_KEY", "OPENROUTER_API_KEY", "CUSTOM_API_KEY"])(
+  it.each(["WARDMOTE_API_KEY", "OPENAI_API_KEY", "OPENROUTER_API_KEY", "CUSTOM_API_KEY"])(
     "redacts the complete %s environment value through the shared text helper",
     (key) => {
       expect(redactCodexDiagnostic(`${key}=private;still-private`))

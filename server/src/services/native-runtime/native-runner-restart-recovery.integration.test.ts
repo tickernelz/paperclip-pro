@@ -148,8 +148,8 @@ describeEmbeddedPostgres("native runner restart recovery with real processes", (
     );
     runtimeRoot = await mkdtemp(resolve(tmpdir(), "native-restart-runtime-"));
     paperclipHome = await mkdtemp(resolve(tmpdir(), "native-restart-home-"));
-    originalPaperclipHome = process.env.PAPERCLIP_HOME;
-    process.env.PAPERCLIP_HOME = paperclipHome;
+    originalPaperclipHome = process.env.WARDMOTE_HOME;
+    process.env.WARDMOTE_HOME = paperclipHome;
     const controllerStartedAt = await readProcessStartedAt(process.pid);
     successor = {
       bootId: randomUUID(),
@@ -197,8 +197,8 @@ describeEmbeddedPostgres("native runner restart recovery with real processes", (
       rm(runtimeRoot, { recursive: true, force: true }),
       rm(paperclipHome, { recursive: true, force: true }),
     ]);
-    if (originalPaperclipHome === undefined) delete process.env.PAPERCLIP_HOME;
-    else process.env.PAPERCLIP_HOME = originalPaperclipHome;
+    if (originalPaperclipHome === undefined) delete process.env.WARDMOTE_HOME;
+    else process.env.WARDMOTE_HOME = originalPaperclipHome;
   });
 
   async function seedRun(

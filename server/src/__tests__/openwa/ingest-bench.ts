@@ -416,7 +416,7 @@ export async function runOpenwaIngestBenchmark(input: { argv: string[]; root: st
   const gc = collectGarbage();
   const startedAt = new Date().toISOString();
   const runDir = await mkdtemp(path.join(input.scratch, "run-"));
-  process.env.PAPERCLIP_SECRETS_MASTER_KEY_FILE = path.join(runDir, "master.key");
+  process.env.WARDMOTE_SECRETS_MASTER_KEY_FILE = path.join(runDir, "master.key");
   const instrumentation = new Instrumentation();
   instrumentation.patchSocketAndReceiver();
   registerServerAdapter({

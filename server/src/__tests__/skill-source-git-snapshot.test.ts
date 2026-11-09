@@ -58,7 +58,7 @@ describe('Git skill snapshots', () => {
     const fetch = interception.commands.find(command => command.args.includes('fetch'))!;
     expect(fetch.args).toContain('--depth=1');
     expect(fetch.args.join(' ')).not.toContain('test-token');
-    expect(fetch.env.PAPERCLIP_GIT_TOKEN).toBe('test-token-never-on-disk');
+    expect(fetch.env.WARDMOTE_GIT_TOKEN).toBe('test-token-never-on-disk');
     const authKey = Object.entries(fetch.env).find(([, value]) => value === 'http.https://github.com/.extraHeader')![0];
     expect(fetch.env[authKey.replace('_KEY_', '_VALUE_')]).toBe(`Authorization: Basic ${Buffer.from('x-access-token:test-token-never-on-disk').toString('base64')}`);
     expect(fetch.env.GIT_TRACE).toBeUndefined();

@@ -22,14 +22,14 @@ function required(name: string) {
   return value;
 }
 
-const logPath = required("PAPERCLIP_RUNNER_E2E_SERVER_LOG");
-const temporaryRoot = required("PAPERCLIP_RUNNER_E2E_TEMP_ROOT");
-const paperclipHome = required("PAPERCLIP_HOME");
-const configPath = required("PAPERCLIP_CONFIG");
-const port = required("PAPERCLIP_RUNNER_E2E_PORT");
+const logPath = required("WARDMOTE_RUNNER_E2E_SERVER_LOG");
+const temporaryRoot = required("WARDMOTE_RUNNER_E2E_TEMP_ROOT");
+const paperclipHome = required("WARDMOTE_HOME");
+const configPath = required("WARDMOTE_CONFIG");
+const port = required("WARDMOTE_RUNNER_E2E_PORT");
 const repositoryRoot = path.resolve(import.meta.dirname, "../..");
 const paperclipCli = path.join(repositoryRoot, "tests/runner-e2e/server-entry.ts");
-const executionIds: string[] = JSON.parse(process.env.PAPERCLIP_RUNNER_E2E_EXECUTION_IDS ?? "[]");
+const executionIds: string[] = JSON.parse(process.env.WARDMOTE_RUNNER_E2E_EXECUTION_IDS ?? "[]");
 const selectedExecutions = usesInstalledCli(process.env) ? executionIds.map(id => {
   const execution = runnerMatrix.find(row => row.id === id);
   if (!execution) throw new Error("Unknown installed CLI proof execution");
@@ -42,8 +42,8 @@ const {
 } = runnerE2EServerControlPaths(temporaryRoot);
 const restartTimeoutMs = 180_000;
 const gracefulStopTimeoutMs = 30_000;
-const installedRelease = process.env.PAPERCLIP_RUNNER_E2E_INSTALLED_CLI
-  ? installedReleaseLaunch(process.env.PAPERCLIP_RUNNER_E2E_INSTALLED_CLI) : null;
+const installedRelease = process.env.WARDMOTE_RUNNER_E2E_INSTALLED_CLI
+  ? installedReleaseLaunch(process.env.WARDMOTE_RUNNER_E2E_INSTALLED_CLI) : null;
 const serverEnvironment = buildPaperclipServerEnvironment(installedRelease
   ? installedReleaseEnvironment(process.env, repositoryRoot, path.join(temporaryRoot, "provider-bin"))
   : process.env, {
@@ -52,40 +52,40 @@ const serverEnvironment = buildPaperclipServerEnvironment(installedRelease
   // Keep provider caches attempt-private without changing Playwright's browser
   // cache lookup in the parent process.
   XDG_CACHE_HOME: path.join(temporaryRoot, "xdg-cache"),
-  PAPERCLIP_HOME: paperclipHome,
-  PAPERCLIP_CONFIG: configPath,
-  PAPERCLIP_INSTANCE_ID: required("PAPERCLIP_INSTANCE_ID"),
-  PAPERCLIP_AGENT_JWT_SECRET: required("PAPERCLIP_AGENT_JWT_SECRET"),
-  PAPERCLIP_DECISION_SIGNING_SECRET: required(
-    "PAPERCLIP_DECISION_SIGNING_SECRET",
+  WARDMOTE_HOME: paperclipHome,
+  WARDMOTE_CONFIG: configPath,
+  WARDMOTE_INSTANCE_ID: required("WARDMOTE_INSTANCE_ID"),
+  WARDMOTE_AGENT_JWT_SECRET: required("WARDMOTE_AGENT_JWT_SECRET"),
+  WARDMOTE_DECISION_SIGNING_SECRET: required(
+    "WARDMOTE_DECISION_SIGNING_SECRET",
   ),
-  PAPERCLIP_TOOL_ACTION_SIGNING_SECRET: required(
-    "PAPERCLIP_TOOL_ACTION_SIGNING_SECRET",
+  WARDMOTE_TOOL_ACTION_SIGNING_SECRET: required(
+    "WARDMOTE_TOOL_ACTION_SIGNING_SECRET",
   ),
   BETTER_AUTH_SECRET: required("BETTER_AUTH_SECRET"),
-  PAPERCLIP_BIND: "loopback",
-  PAPERCLIP_BIND_HOST: "127.0.0.1",
-  PAPERCLIP_DEPLOYMENT_MODE: process.env.PAPERCLIP_RUNNER_E2E_PUBLIC_MCP === "1" ? "authenticated" : "local_trusted",
-  ...(process.env.PAPERCLIP_RUNNER_E2E_PUBLIC_MCP === "1" ? {
-    PAPERCLIP_PUBLIC_URL: `http://127.0.0.1:${port}`,
-    PAPERCLIP_AUTH_PUBLIC_BASE_URL: `http://127.0.0.1:${port}`,
-    PAPERCLIP_AUTH_BASE_URL_MODE: "explicit",
+  WARDMOTE_BIND: "loopback",
+  WARDMOTE_BIND_HOST: "127.0.0.1",
+  WARDMOTE_DEPLOYMENT_MODE: process.env.WARDMOTE_RUNNER_E2E_PUBLIC_MCP === "1" ? "authenticated" : "local_trusted",
+  ...(process.env.WARDMOTE_RUNNER_E2E_PUBLIC_MCP === "1" ? {
+    WARDMOTE_PUBLIC_URL: `http://127.0.0.1:${port}`,
+    WARDMOTE_AUTH_PUBLIC_BASE_URL: `http://127.0.0.1:${port}`,
+    WARDMOTE_AUTH_BASE_URL_MODE: "explicit",
     // Use empty provider configuration as the managed homes' seed. A local
     // operator's installed plugins, MCP connections and auth are not fixtures.
     CODEX_HOME: path.join(temporaryRoot, "provider-config", "codex"),
     CLAUDE_CONFIG_DIR: path.join(temporaryRoot, "provider-config", "claude"),
   } : {}),
-  PAPERCLIP_DEPLOYMENT_EXPOSURE: "private",
+  WARDMOTE_DEPLOYMENT_EXPOSURE: "private",
   SERVE_UI: "true",
-  PAPERCLIP_STORAGE_PROVIDER: "local_disk",
-  PAPERCLIP_STORAGE_LOCAL_DIR: path.join(temporaryRoot, "storage"),
-  PAPERCLIP_SECRETS_PROVIDER: "local_encrypted",
-  PAPERCLIP_SECRETS_STRICT_MODE: "true",
-  PAPERCLIP_DB_BACKUP_ENABLED: "false",
-  PAPERCLIP_DB_BACKUP_DIR: path.join(temporaryRoot, "backups"),
+  WARDMOTE_STORAGE_PROVIDER: "local_disk",
+  WARDMOTE_STORAGE_LOCAL_DIR: path.join(temporaryRoot, "storage"),
+  WARDMOTE_SECRETS_PROVIDER: "local_encrypted",
+  WARDMOTE_SECRETS_STRICT_MODE: "true",
+  WARDMOTE_DB_BACKUP_ENABLED: "false",
+  WARDMOTE_DB_BACKUP_DIR: path.join(temporaryRoot, "backups"),
   // Onboarding normally opens the app after listen. Browser ownership belongs
   // to Playwright in this harness, so never create a developer desktop tab.
-  PAPERCLIP_OPEN_ON_LISTEN: "false",
+  WARDMOTE_OPEN_ON_LISTEN: "false",
 });
 assertIsolatedServerEnvironment(serverEnvironment, {
   temporaryRoot,
@@ -101,7 +101,7 @@ const definedServerEnvironment = Object.fromEntries(
 await Promise.all([
   mkdir(path.dirname(logPath), { recursive: true }),
   mkdir(controlDirectory, { recursive: true, mode: 0o700 }),
-  ...(process.env.PAPERCLIP_RUNNER_E2E_PUBLIC_MCP === "1" ? [
+  ...(process.env.WARDMOTE_RUNNER_E2E_PUBLIC_MCP === "1" ? [
     mkdir(path.join(temporaryRoot, "provider-config", "codex"), { recursive: true, mode: 0o700 }),
     mkdir(path.join(temporaryRoot, "provider-config", "claude"), { recursive: true, mode: 0o700 }),
   ] : []),
@@ -335,7 +335,7 @@ for (const signal of ["SIGINT", "SIGTERM", "SIGHUP"] as const) {
 }
 
 async function supervise() {
-  const executionIds: string[] = JSON.parse(process.env.PAPERCLIP_RUNNER_E2E_EXECUTION_IDS ?? "[]");
+  const executionIds: string[] = JSON.parse(process.env.WARDMOTE_RUNNER_E2E_EXECUTION_IDS ?? "[]");
   if (executionIds.some(id => id.includes(".legacy-claude.local.") || /\.assistant-claude-(?:haiku|sonnet)\.local\./.test(id))) {
     definedServerEnvironment.PATH = await qualifyLegacyClaudeCli(temporaryRoot, definedServerEnvironment);
   }

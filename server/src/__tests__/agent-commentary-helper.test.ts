@@ -54,7 +54,7 @@ describe("standalone Node commentary helper", () => {
       const child = spawn(process.execPath, [helper, ...args], {
         cwd: root,
         // No Python, shell, or other executable is available through PATH.
-        env: { ...process.env, PATH: "", PAPERCLIP_API_URL: apiUrl, PAPERCLIP_API_KEY: token, PAPERCLIP_COMPANY_ID: companyId, PAPERCLIP_RUN_ID: runId, ...env },
+        env: { ...process.env, PATH: "", WARDMOTE_API_URL: apiUrl, WARDMOTE_API_KEY: token, WARDMOTE_COMPANY_ID: companyId, WARDMOTE_RUN_ID: runId, ...env },
         stdio: "pipe",
       });
       let out = "", err = "";
@@ -93,8 +93,8 @@ describe("standalone Node commentary helper", () => {
 
   it.each([
     ["invalid kind", ["unknown"], {}],
-    ["missing credential", ["complaint"], { PAPERCLIP_API_KEY: "" }],
-    ["invalid run", ["complaint"], { PAPERCLIP_RUN_ID: "not-a-run" }],
+    ["missing credential", ["complaint"], { WARDMOTE_API_KEY: "" }],
+    ["invalid run", ["complaint"], { WARDMOTE_RUN_ID: "not-a-run" }],
   ] as const)("rejects %s without making a request", async (_name, args, env) => {
     const target = await endpoint();
     expect(await run(target.url, "private body", [...args], env)).toEqual({ code: 0, out: "", err: diagnostic });

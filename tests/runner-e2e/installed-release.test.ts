@@ -43,13 +43,13 @@ describe("ordinary installed release smoke", () => {
 
   it("removes repository executables, provider packs, native paths and loader injection", () => {
     const source = { PATH: "/repo/packages/node_modules/.bin:/tmp/provider-bin:/usr/bin:/tmp/node/bin", NODE_OPTIONS: "--import /repo/loader", NODE_PATH: "/repo/node_modules",
-      PAPERCLIP_RUNNER_BINARY: "/repo/runner", PAPERCLIP_RUNNER_PROVIDER_PACK_ROOT: "/private/pack",
-      PAPERCLIP_RUNNER_REMOTE_PROVIDER_PACK_PATH: "/private/pack", PAPERCLIP_ACPX_BUILTIN_ROOT: "/repo/providers",
-      PAPERCLIP_NATIVE_RUNTIME_CONTEXT_PATH: "/repo/context", PAPERCLIP_RUNNER_E2E_PORT: "3100", PAPERCLIP_HOME: "/tmp/home" };
-    expect(installedReleaseEnvironment(source, "/repo", "/tmp/provider-bin")).toEqual({ PATH: "/usr/bin:/tmp/node/bin", PAPERCLIP_RUNNER_E2E_PORT: "3100", PAPERCLIP_HOME: "/tmp/home" });
-    expect(source.PAPERCLIP_RUNNER_BINARY).toBe("/repo/runner");
+      WARDMOTE_RUNNER_BINARY: "/repo/runner", WARDMOTE_RUNNER_PROVIDER_PACK_ROOT: "/private/pack",
+      WARDMOTE_RUNNER_REMOTE_PROVIDER_PACK_PATH: "/private/pack", WARDMOTE_ACPX_BUILTIN_ROOT: "/repo/providers",
+      WARDMOTE_NATIVE_RUNTIME_CONTEXT_PATH: "/repo/context", WARDMOTE_RUNNER_E2E_PORT: "3100", WARDMOTE_HOME: "/tmp/home" };
+    expect(installedReleaseEnvironment(source, "/repo", "/tmp/provider-bin")).toEqual({ PATH: "/usr/bin:/tmp/node/bin", WARDMOTE_RUNNER_E2E_PORT: "3100", WARDMOTE_HOME: "/tmp/home" });
+    expect(source.WARDMOTE_RUNNER_BINARY).toBe("/repo/runner");
   });
   it("rejects qualification admission instead of silently relabeling it as production", () => {
-    expect(() => installedReleaseEnvironment({ PAPERCLIP_RUNNER_ACPX_QUALIFICATION: "cursor" }, "/repo", "/tmp/provider-bin")).toThrow("production admission");
+    expect(() => installedReleaseEnvironment({ WARDMOTE_RUNNER_ACPX_QUALIFICATION: "cursor" }, "/repo", "/tmp/provider-bin")).toThrow("production admission");
   });
 });

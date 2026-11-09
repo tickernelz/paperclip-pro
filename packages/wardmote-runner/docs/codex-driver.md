@@ -78,7 +78,7 @@ permission profile requesting read-only minimal runtime files, no host-home or
 Codex-home access, and write access to the assigned workspace. The driver
 refuses filesystem-root workspaces, workspaces containing host `HOME`, and any
 workspace overlapping host `CODEX_HOME`. A workspace below host `HOME` is
-valid, but when `PAPERCLIP_WORKSPACE_CWD` is present its canonical path must be
+valid, but when `WARDMOTE_WORKSPACE_CWD` is present its canonical path must be
 equal to or below that assigned workspace so sibling and symlink escapes fail
 before provider startup.
 

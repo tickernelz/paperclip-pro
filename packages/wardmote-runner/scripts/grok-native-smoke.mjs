@@ -27,7 +27,7 @@ if (values.auth === 'api') {
   const serverRequire=createRequire(new URL('../../../server/package.json',import.meta.url));
   const { tsImport } = await import(serverRequire.resolve('tsx/esm/api'));
   ({ copyBackGrokAuth } = await tsImport('../../adapters/grok-local/src/server/grok-auth-copyback.ts', import.meta.url));
-  environment.PAPERCLIP_ACPX_GROK_AUTH_JSON_SECRET = await readFile(values['auth-file'], 'utf8');
+  environment.WARDMOTE_ACPX_GROK_AUTH_JSON_SECRET = await readFile(values['auth-file'], 'utf8');
 }
 const report = { schema: 'paperclip.grok-native-smoke.v1', auth: values.auth, sourceRevision: execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), sourceDirty: execFileSync('git', ['status', '--porcelain'], { encoding: 'utf8' }).length > 0, profile: QUALIFIED_ACPX_PROFILES.grok, platform: `${process.platform}-${process.arch}`, startedAt: new Date().toISOString(), attempts: [] };
 const binary = await readFile('/opt/paperclip/providers/grok/1.0.13/grok');
@@ -49,7 +49,7 @@ for (let repetition=1; repetition<=repetitions; repetition++) {
     await host.close({reason});
     if(copyBackGrokAuth) {
       await copyBackGrokAuth({hostHomeDir:dirname(resolve(values['auth-file'])),readSandboxAuth:()=>readFile(join(runtimeRoot,'grok-home','auth-refresh.json')),log:()=>{}});
-      environment.PAPERCLIP_ACPX_GROK_AUTH_JSON_SECRET=await readFile(values['auth-file'],'utf8');
+      environment.WARDMOTE_ACPX_GROK_AUTH_JSON_SECRET=await readFile(values['auth-file'],'utf8');
     }
     host=null;
   }

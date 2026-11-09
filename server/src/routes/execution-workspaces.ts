@@ -716,9 +716,9 @@ export function executionWorkspaceRoutes(db: Db, opts: { pluginWorkerManager?: P
               cwd: baseWorkspaceCwd,
               env: {
                 ...process.env,
-                PAPERCLIP_SEED_EXPECTED_COMPANY_ID: existing.companyId,
-                PAPERCLIP_WORKSPACE_BASE_CWD: baseWorkspaceCwd,
-                PAPERCLIP_PROJECT_WORKSPACE_ID: existing.projectWorkspaceId ?? "",
+                WARDMOTE_SEED_EXPECTED_COMPANY_ID: existing.companyId,
+                WARDMOTE_WORKSPACE_BASE_CWD: baseWorkspaceCwd,
+                WARDMOTE_PROJECT_WORKSPACE_ID: existing.projectWorkspaceId ?? "",
               },
               stdio: ["ignore", "pipe", "pipe"],
             });

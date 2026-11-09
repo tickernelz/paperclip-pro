@@ -18,7 +18,7 @@ A local shell runs as the user that runs Paperclip, so it can read anything that
 
 Every mutating route and the WebSocket upgrade require a trusted origin:
 
-- `auth.publicBaseUrl` and `PAPERCLIP_PUBLIC_URL`, matched exactly
+- `auth.publicBaseUrl` and `WARDMOTE_PUBLIC_URL`, matched exactly
 - each `server.allowedHostnames` entry, over https on the default port only
 - the server's own address, `http://<bind host>:<listen port>`, for local use
 

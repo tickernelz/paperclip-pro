@@ -73,7 +73,7 @@ describe("GET /health", () => {
     vi.unstubAllEnvs();
   });
   beforeEach(() => {
-    vi.stubEnv("PAPERCLIP_ATTACHMENT_MAX_BYTES", "");
+    vi.stubEnv("WARDMOTE_ATTACHMENT_MAX_BYTES", "");
   });
   it("returns 200 with status ok", async () => {
     const app = createApp();
@@ -101,7 +101,7 @@ describe("GET /health", () => {
 
   it("lists operator-hidden settings and drops unknown keys", async () => {
     const app = createApp(undefined, testServerInfo, undefined, {
-      PAPERCLIP_HIDDEN_SETTINGS: "instance.plugins,instance.adapters,instance.bogus",
+      WARDMOTE_HIDDEN_SETTINGS: "instance.plugins,instance.adapters,instance.bogus",
     });
 
     const res = await request(app).get("/health");
@@ -120,7 +120,7 @@ describe("GET /health", () => {
   });
 
   it("publishes concrete wildcard restrictions to the UI and refreshes changed exceptions", async () => {
-    const env = { PAPERCLIP_HIDDEN_SETTINGS: "instance.plugins,instance.experimental.*,!instance.experimental.enableEnvironments" };
+    const env = { WARDMOTE_HIDDEN_SETTINGS: "instance.plugins,instance.experimental.*,!instance.experimental.enableEnvironments" };
     const app = createApp(undefined, testServerInfo, undefined, env);
     const first = await request(app).get("/health");
     expect(first.status).toBe(200);
@@ -129,7 +129,7 @@ describe("GET /health", () => {
     expect(first.body.hiddenSettings).not.toContain("instance.experimental.enableEnvironments");
     expect(first.body.hiddenSettings.some((key: string) => key.includes("*") || key.startsWith("!"))).toBe(false);
 
-    env.PAPERCLIP_HIDDEN_SETTINGS = "instance.experimental.*,!instance.experimental.enableMemoryConnectors";
+    env.WARDMOTE_HIDDEN_SETTINGS = "instance.experimental.*,!instance.experimental.enableMemoryConnectors";
     const second = await request(app).get("/health");
     expect(second.body.hiddenSettings).toContain("instance.experimental.enableEnvironments");
     expect(second.body.hiddenSettings).not.toContain("instance.experimental.enableMemoryConnectors");

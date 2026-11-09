@@ -23,7 +23,7 @@ E2E_REF="${E2E_REF:-master}"
 E2E_SERVICE_TIMEOUT_SECS="${E2E_SERVICE_TIMEOUT_SECS:-300}"
 
 # A clean environment: no inherited Paperclip or build-mode state.
-for var in $(env | grep -o '^PAPERCLIP_[A-Z_]*' || true); do unset "$var"; done
+for var in $(env | grep -o '^WARDMOTE_[A-Z_]*' || true); do unset "$var"; done
 unset NODE_ENV npm_config_prefix 2>/dev/null || true
 export COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 export CI="${CI:-1}"
@@ -68,7 +68,7 @@ if corepack pnpm install --frozen-lockfile > "$HOME/e2e-bootstrap-install.log" 2
 else
   tail -40 "$HOME/e2e-bootstrap-install.log"; fail_ "1b bootstrap pnpm install"; exit 1
 fi
-if PAPERCLIP_README_ASSET_REF="$E2E_REF" \
+if WARDMOTE_README_ASSET_REF="$E2E_REF" \
     bash scripts/build-npm.sh --skip-checks --skip-typecheck > "$HOME/e2e-bootstrap-build.log" 2>&1; then
   pass "1c bootstrap build-npm.sh"
 else

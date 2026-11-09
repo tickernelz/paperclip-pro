@@ -29,9 +29,9 @@ describe("agent cryptographic identity", () => {
 
   beforeAll(async () => {
     directory = await mkdtemp(join(tmpdir(), "paperclip-identity-"));
-    vi.stubEnv("PAPERCLIP_HOME", directory);
-    vi.stubEnv("PAPERCLIP_SECRETS_MASTER_KEY", "");
-    vi.stubEnv("PAPERCLIP_SECRETS_MASTER_KEY_FILE", join(directory, "master.key"));
+    vi.stubEnv("WARDMOTE_HOME", directory);
+    vi.stubEnv("WARDMOTE_SECRETS_MASTER_KEY", "");
+    vi.stubEnv("WARDMOTE_SECRETS_MASTER_KEY_FILE", join(directory, "master.key"));
     database = await startEmbeddedPostgresTestDatabase("paperclip-identity-");
     db = createDb(database.connectionString);
     companyId = randomUUID();
@@ -96,10 +96,10 @@ describe("agent cryptographic identity", () => {
     const identity = await agentIdentityService(db).ensureAgentIdentity(companyId, agent.id);
     const [stored] = await db.select().from(agentIdentityKeys).where(eq(agentIdentityKeys.agentId, agent.id));
     expect(JSON.stringify(stored)).not.toContain(identity.privateKeyPem.split("\n")[1]);
-    vi.stubEnv("PAPERCLIP_SECRETS_MASTER_KEY", randomBytes(32).toString("base64"));
+    vi.stubEnv("WARDMOTE_SECRETS_MASTER_KEY", randomBytes(32).toString("base64"));
     await expect(agentIdentityService(db).ensureAgentIdentity(companyId, agent.id)).rejects.toThrow("decryption failed");
     expect(await agentIdentityService(db).getPublicIdentity(companyId, agent.id)).toMatchObject({ keyId: identity.keyId });
-    vi.stubEnv("PAPERCLIP_SECRETS_MASTER_KEY", "");
+    vi.stubEnv("WARDMOTE_SECRETS_MASTER_KEY", "");
     await db.update(agentIdentityKeys).set({ privateKeyMaterial: { ...stored.privateKeyMaterial, ciphertext: "AAAA" } }).where(eq(agentIdentityKeys.agentId, agent.id));
     await expect(agentIdentityService(db).ensureAgentIdentity(companyId, agent.id)).rejects.toThrow();
     const other = generateKeyPairSync("ed25519").publicKey.export({ type: "spki", format: "pem" }).toString();
@@ -118,12 +118,12 @@ describe("agent cryptographic identity", () => {
       const publicIdentity = await restarted.getPublicIdentity(companyId, agent.id);
       if (restart) expect(publicIdentity!.publicKeyPem).toBe(publicPem);
       publicPem = publicIdentity!.publicKeyPem;
-      vi.stubEnv("PAPERCLIP_AGENT_PRIVATE_KEY", "inherited override");
+      vi.stubEnv("WARDMOTE_AGENT_PRIVATE_KEY", "inherited override");
       const logs: string[] = [];
       const metas: unknown[] = [];
       await execute({
         runId: randomUUID(), agent, agentIdentity: identity,
-        config: { command: process.execPath, cwd: directory, args: ["-e", `const {sign}=require('node:crypto'); process.stdout.write(sign(null,Buffer.from(process.env.CHALLENGE,'base64'),process.env.PAPERCLIP_AGENT_PRIVATE_KEY).toString('base64'));`], env: { CHALLENGE: challenge, PAPERCLIP_AGENT_PRIVATE_KEY: "configured override" } },
+        config: { command: process.execPath, cwd: directory, args: ["-e", `const {sign}=require('node:crypto'); process.stdout.write(sign(null,Buffer.from(process.env.CHALLENGE,'base64'),process.env.WARDMOTE_AGENT_PRIVATE_KEY).toString('base64'));`], env: { CHALLENGE: challenge, WARDMOTE_AGENT_PRIVATE_KEY: "configured override" } },
         context: {}, runtime: { sessionId: null, sessionParams: null, taskKey: null },
         onLog: async (_stream, chunk) => { logs.push(chunk); }, onMeta: async meta => { metas.push(meta); },
       });
@@ -144,8 +144,8 @@ describe("agent cryptographic identity", () => {
     const challenge = randomBytes(32).toString("base64");
     await db.update(agents).set({ adapterType: "process", adapterConfig: {
       command: process.execPath, cwd: directory,
-      args: ["-e", `const {sign}=require('node:crypto'); const k=process.env.PAPERCLIP_AGENT_PRIVATE_KEY; console.log('SIGNATURE:'+sign(null,Buffer.from(process.env.CHALLENGE,'base64'),k).toString('base64')); process.stdout.write(k.slice(0,40)); setTimeout(()=>process.stdout.write(k.slice(40)),30);`],
-      env: { CHALLENGE: challenge, PAPERCLIP_AGENT_PRIVATE_KEY: "ignored override" },
+      args: ["-e", `const {sign}=require('node:crypto'); const k=process.env.WARDMOTE_AGENT_PRIVATE_KEY; console.log('SIGNATURE:'+sign(null,Buffer.from(process.env.CHALLENGE,'base64'),k).toString('base64')); process.stdout.write(k.slice(0,40)); setTimeout(()=>process.stdout.write(k.slice(40)),30);`],
+      env: { CHALLENGE: challenge, WARDMOTE_AGENT_PRIVATE_KEY: "ignored override" },
     } }).where(eq(agents.id, agent.id));
     let previousKeyId = "";
     for (let restart = 0; restart < 2; restart++) {

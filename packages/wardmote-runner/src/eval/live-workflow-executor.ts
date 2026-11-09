@@ -577,7 +577,7 @@ function candidateTransportEnvironment(
             required.has(name)),
       ),
     ),
-    PAPERCLIP_PROVIDER_TRACE_PATH: tracePath,
+    WARDMOTE_PROVIDER_TRACE_PATH: tracePath,
   };
 }
 

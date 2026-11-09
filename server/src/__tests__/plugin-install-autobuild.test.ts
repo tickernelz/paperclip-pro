@@ -196,7 +196,7 @@ describe("ensureLocalPluginBuilt", () => {
     expect(execStub).not.toHaveBeenCalled();
   });
 
-  it("skips auto-build when PAPERCLIP_DISABLE_PLUGIN_AUTOBUILD=1", async () => {
+  it("skips auto-build when WARDMOTE_DISABLE_PLUGIN_AUTOBUILD=1", async () => {
     const fixture = await createBundledPluginFixture("skip");
     cleanupPaths.add(fixture.packageRoot);
 
@@ -205,7 +205,7 @@ describe("ensureLocalPluginBuilt", () => {
       fixture.packageRoot,
       JSON.parse(await readFile(path.join(fixture.packageRoot, "package.json"), "utf8")) as Record<string, unknown>,
       {
-        processEnv: { PAPERCLIP_DISABLE_PLUGIN_AUTOBUILD: "1" },
+        processEnv: { WARDMOTE_DISABLE_PLUGIN_AUTOBUILD: "1" },
         execFileAsyncImpl: execStub,
       },
     );
@@ -300,7 +300,7 @@ describeEmbeddedPostgres("plugin install auto-build route", () => {
       await rm(cleanupPath, { recursive: true, force: true });
     }
     cleanupPaths.clear();
-    delete process.env["PAPERCLIP_DISABLE_PLUGIN_AUTOBUILD"];
+    delete process.env["WARDMOTE_DISABLE_PLUGIN_AUTOBUILD"];
   });
 
   afterAll(async () => {
@@ -372,7 +372,7 @@ describeEmbeddedPostgres("plugin install auto-build route", () => {
   }, 60_000);
 
   it("returns the manual build command when auto-build is disabled and dist is missing", async () => {
-    process.env["PAPERCLIP_DISABLE_PLUGIN_AUTOBUILD"] = "1";
+    process.env["WARDMOTE_DISABLE_PLUGIN_AUTOBUILD"] = "1";
     const fixture = await createBundledPluginFixture("disabled");
     cleanupPaths.add(fixture.packageRoot);
     const app = await createInstallApp(db);
@@ -389,7 +389,7 @@ describeEmbeddedPostgres("plugin install auto-build route", () => {
   }, 20_000);
 
   it("returns the standalone bootstrap command when auto-build is disabled for sandbox-provider plugins", async () => {
-    process.env["PAPERCLIP_DISABLE_PLUGIN_AUTOBUILD"] = "1";
+    process.env["WARDMOTE_DISABLE_PLUGIN_AUTOBUILD"] = "1";
     const fixture = await createBundledPluginFixture("standalone-disabled", { rootDir: standaloneRepoPluginRoot });
     cleanupPaths.add(fixture.packageRoot);
     const app = await createInstallApp(db);

@@ -20,18 +20,18 @@ describe("owner-chat instruction authority", () => {
   let database: Awaited<ReturnType<typeof startEmbeddedPostgresTestDatabase>>;
   let db: ReturnType<typeof createDb>;
   let home: string;
-  const previousHome = process.env.PAPERCLIP_HOME;
+  const previousHome = process.env.WARDMOTE_HOME;
   const initial = "# Ralph\nOriginal instructions\n";
 
   beforeAll(async () => {
     home = await fs.realpath(await fs.mkdtemp(path.join(os.tmpdir(), "owner-chat-instructions-")));
-    process.env.PAPERCLIP_HOME = home;
+    process.env.WARDMOTE_HOME = home;
     database = await startEmbeddedPostgresTestDatabase("owner-chat-instructions-db-");
     db = createDb(database.connectionString);
   }, 60_000);
   afterAll(async () => {
-    if (previousHome === undefined) delete process.env.PAPERCLIP_HOME;
-    else process.env.PAPERCLIP_HOME = previousHome;
+    if (previousHome === undefined) delete process.env.WARDMOTE_HOME;
+    else process.env.WARDMOTE_HOME = previousHome;
     await database?.cleanup();
     if (home) {
       const makeWritable = async (dir: string) => {

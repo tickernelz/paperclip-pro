@@ -15,7 +15,7 @@ export async function stageManagedGrokCredential(input: {
   retainRefresh?: () => boolean;
 }): Promise<AcpxProviderLifetimeLease> {
   const source = input.environment ?? {};
-  const inline = source.PAPERCLIP_ACPX_GROK_AUTH_JSON_SECRET;
+  const inline = source.WARDMOTE_ACPX_GROK_AUTH_JSON_SECRET;
   const apiKey = source.XAI_API_KEY;
   if (inline && apiKey) throw new Error("Grok credential source is ambiguous");
   if (!inline && !apiKey) throw new Error("Grok login or explicit XAI_API_KEY is required");
@@ -35,7 +35,7 @@ export async function stageManagedGrokCredential(input: {
   }
   const lease = await stageManagedCodexCredential({
     agentHomeDirectory: input.agentHomeDirectory,
-    environment: inline ? { PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET: inline } : { OPENAI_API_KEY: apiKey },
+    environment: inline ? { WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET: inline } : { OPENAI_API_KEY: apiKey },
   });
   const refresh = join(input.agentHomeDirectory, GROK_AUTH_REFRESH_FILE);
   await rm(refresh, { force: true }).catch(async (error) => { await lease.close(); throw error; });

@@ -7,8 +7,8 @@ import { fileURLToPath } from "node:url";
 
 import {
   NATIVE_RUNTIME_ASSET_SCHEMA,
-  PAPERCLIP_EXECUTION_PROMPT,
-  PAPERCLIP_EXECUTION_PROMPT_REVISION,
+  WARDMOTE_EXECUTION_PROMPT,
+  WARDMOTE_EXECUTION_PROMPT_REVISION,
   canonicalNativeRuntimeContextDigest,
   composeNativeSystemInstructions,
   nativeRuntimePromptDigest,
@@ -17,7 +17,7 @@ import {
 } from "../contracts/runtime-context.js";
 import { projectCapabilityDevtools } from "../devtools/index.js";
 import { resolveQualifiedAcpxProfile } from "../drivers/acpx/qualified-profiles.js";
-import { PAPERCLIP_RUNNER_BUILD_METADATA } from "../evals/build-metadata.js";
+import { WARDMOTE_RUNNER_BUILD_METADATA } from "../evals/build-metadata.js";
 import { projectCapabilityIssueThread } from "../issue-thread/live-projection.js";
 import {
   CapabilityLiveSessionService,
@@ -147,14 +147,14 @@ export async function prepareEvalRuntimeContext(
   await chmod(instructionRoot, 0o555);
 
   const semanticCatalogDigest =
-    PAPERCLIP_RUNNER_BUILD_METADATA.semanticCatalog.sha256.replace(
+    WARDMOTE_RUNNER_BUILD_METADATA.semanticCatalog.sha256.replace(
       /^sha256:/,
       "",
     );
   const context = {
     prompt: {
-      revision: PAPERCLIP_EXECUTION_PROMPT_REVISION,
-      text: PAPERCLIP_EXECUTION_PROMPT,
+      revision: WARDMOTE_EXECUTION_PROMPT_REVISION,
+      text: WARDMOTE_EXECUTION_PROMPT,
       digest: nativeRuntimePromptDigest(),
     },
     instructions: {
@@ -464,7 +464,7 @@ export async function runEvalSessionCli(
     await writeFile(cli.outputPath, `${JSON.stringify({
       schema: "paperclip-runner/eval-session-artifact/v1",
       attemptId: request.attemptId,
-      build: PAPERCLIP_RUNNER_BUILD_METADATA,
+      build: WARDMOTE_RUNNER_BUILD_METADATA,
       runnerd: { path: "[withheld]", sha256: `sha256:${actualDigest}` },
       requestedModel: request.model,
       ...(cli.candidateProfile === undefined ? {} : { diagnosticCandidateProfile: cli.candidateProfile }),
@@ -543,7 +543,7 @@ export async function runEvalSessionCli(
       attemptId: request.attemptId,
       infrastructureError: error instanceof Error ? error.message : String(error),
       infrastructureFailure: failureClass(error),
-      build: PAPERCLIP_RUNNER_BUILD_METADATA,
+      build: WARDMOTE_RUNNER_BUILD_METADATA,
       runnerd: { path: "[withheld]", sha256: `sha256:${actualDigest}` },
       requestedModel: request.model,
       ...(cli.candidateProfile === undefined ? {} : { diagnosticCandidateProfile: cli.candidateProfile }),

@@ -1,6 +1,6 @@
 import { capabilityCanonicalOperation } from "./catalog/index.js";
 
-export const PAPERCLIP_RUNNER_COMPATIBILITY = Object.freeze({
+export const WARDMOTE_RUNNER_COMPATIBILITY = Object.freeze({
   schema: "paperclip.runner.compatibility.v1" as const,
   packageName: "@tickernelz/wardmote-runner" as const,
   packageVersion: "0.0.0" as const,
@@ -20,7 +20,7 @@ export const PAPERCLIP_RUNNER_COMPATIBILITY = Object.freeze({
 });
 
 export type PaperclipRunnerCompatibilityComponent =
-  keyof typeof PAPERCLIP_RUNNER_COMPATIBILITY.components;
+  keyof typeof WARDMOTE_RUNNER_COMPATIBILITY.components;
 
 export type PaperclipRunnerCompatibilityIssueCode =
   | "component_version_mismatch"
@@ -77,13 +77,13 @@ export class PaperclipRunnerCompatibilityError extends Error {
  */
 export function assertPaperclipRunnerCompatibility(
   requirement: PaperclipRunnerCompatibilityRequirement,
-): typeof PAPERCLIP_RUNNER_COMPATIBILITY {
+): typeof WARDMOTE_RUNNER_COMPATIBILITY {
   const issues: PaperclipRunnerCompatibilityIssue[] = [];
 
   for (const [component, received] of Object.entries(requirement.components ?? {}) as Array<
     [PaperclipRunnerCompatibilityComponent, number]
   >) {
-    const expected = PAPERCLIP_RUNNER_COMPATIBILITY.components[component];
+    const expected = WARDMOTE_RUNNER_COMPATIBILITY.components[component];
     if (received !== expected) {
       issues.push({
         code: "component_version_mismatch",
@@ -96,7 +96,7 @@ export function assertPaperclipRunnerCompatibility(
   }
 
   if (requirement.evalCorpusVersion !== undefined) {
-    const { minimum, maximum } = PAPERCLIP_RUNNER_COMPATIBILITY.evalCorpus;
+    const { minimum, maximum } = WARDMOTE_RUNNER_COMPATIBILITY.evalCorpus;
     if (
       requirement.evalCorpusVersion < minimum
       || requirement.evalCorpusVersion > maximum
@@ -150,5 +150,5 @@ export function assertPaperclipRunnerCompatibility(
   if (issues.length > 0) {
     throw new PaperclipRunnerCompatibilityError(requirement.consumer, issues);
   }
-  return PAPERCLIP_RUNNER_COMPATIBILITY;
+  return WARDMOTE_RUNNER_COMPATIBILITY;
 }

@@ -100,10 +100,10 @@ scenario session can never be handed to the chat route or the reverse.
 `ControlPlanePort`; no code path reaches a Paperclip URL. The projection turns
 that into a record rather than a claim: the Control plane section of the
 Evidence drawer carries a `network-guard-<sessionId>` row reading
-`Real Paperclip API requests: 0. Child PAPERCLIP_* environment keys: none.`
+`Real Paperclip API requests: 0. Child WARDMOTE_* environment keys: none.`
 
 The child environment is allowlisted by `createSanitizedCodexEnvironment`, so no
-`PAPERCLIP_*` value reaches runnerd or Codex, and the browser receives no
+`WARDMOTE_*` value reaches runnerd or Codex, and the browser receives no
 provider, runner, or control-plane credential.
 
 ## DevTools state inspector

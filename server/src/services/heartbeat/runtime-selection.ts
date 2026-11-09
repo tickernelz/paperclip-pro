@@ -712,8 +712,8 @@ export async function selectHeartbeatRuntime(db: Db, input: HeartbeatRuntimeSele
         ? await readRemoteCodexModelCliVersion({
             model: requestedNativeProvider.model,
             target: executionTarget,
-            remoteCodexPath: runtimeEnv.PAPERCLIP_RUNNER_REMOTE_CODEX_PATH,
-            remoteCodexNpmSpec: runtimeEnv.PAPERCLIP_RUNNER_REMOTE_CODEX_NPM_SPEC,
+            remoteCodexPath: runtimeEnv.WARDMOTE_RUNNER_REMOTE_CODEX_PATH,
+            remoteCodexNpmSpec: runtimeEnv.WARDMOTE_RUNNER_REMOTE_CODEX_NPM_SPEC,
           }) : null;
       const nativeProvider = codexCliVersion
         ? resolvePaperclipRunnerNativeProviderInput({

@@ -312,7 +312,7 @@ arbitrary `env` in either schema.
 
 The runner, package driver, and model/harness never receive:
 
-- the local agent JWT, `PAPERCLIP_API_KEY`, a board session, or a board API key;
+- the local agent JWT, `WARDMOTE_API_KEY`, a board session, or a board API key;
 - managed MCP gateway credentials, runner-lease/bootstrap credentials, or
   credential-broker secret material;
 - rendered Paperclip wake text, Paperclip skill instructions, the Paperclip API
@@ -1046,17 +1046,17 @@ pnpm --filter @tickernelz/wardmote-runner trace:standalone -- \
 ```
 
 First real Paperclip tracer and inspection (against an isolated local dev
-instance with the five `PAPERCLIP_*` identifiers/auth variables already set):
+instance with the five `WARDMOTE_*` identifiers/auth variables already set):
 
 ```sh
 pnpm --filter @tickernelz/wardmote-runner trace:standalone -- \
   --target paperclip --scenario happy-path
 
-PAPERCLIP_API_BASE="${PAPERCLIP_API_URL%/}"
-PAPERCLIP_API_BASE="${PAPERCLIP_API_BASE%/api}"
+WARDMOTE_API_BASE="${WARDMOTE_API_URL%/}"
+WARDMOTE_API_BASE="${WARDMOTE_API_BASE%/api}"
 curl -fsS \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
-  "$PAPERCLIP_API_BASE/api/heartbeat-runs/$PAPERCLIP_RUN_ID/events?after=0&limit=200" \
+  -H "Authorization: Bearer $WARDMOTE_API_KEY" \
+  "$WARDMOTE_API_BASE/api/heartbeat-runs/$WARDMOTE_RUN_ID/events?after=0&limit=200" \
   | jq '[.[] | select(.sourceEventId != null)] | {count: length, events: map({sourceSeq, sourceEventId, eventType})}'
 ```
 

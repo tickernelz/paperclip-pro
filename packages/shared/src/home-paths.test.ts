@@ -23,7 +23,7 @@ describe("default home", () => {
   beforeEach(() => {
     userHome = fs.mkdtempSync(path.join(os.tmpdir(), "wardmote-home-"));
     vi.spyOn(os, "homedir").mockReturnValue(userHome);
-    vi.stubEnv("PAPERCLIP_HOME", "");
+    vi.stubEnv("WARDMOTE_HOME", "");
   });
 
   afterEach(() => {
@@ -59,7 +59,7 @@ describe("default home", () => {
   });
 
   it("lets an explicit home win", async () => {
-    vi.stubEnv("PAPERCLIP_HOME", "/srv/wardmote");
+    vi.stubEnv("WARDMOTE_HOME", "/srv/wardmote");
     const { resolvePaperclipHomeDir } = await homePaths();
     expect(resolvePaperclipHomeDir()).toBe("/srv/wardmote");
   });
@@ -87,8 +87,8 @@ afterEach(() => {
 describe("home path resolution", () => {
   it("resolves config and runtime data directly under the instance root", () => {
     const home = fs.mkdtempSync(path.join(os.tmpdir(), "paperclip-home-paths-"));
-    process.env.PAPERCLIP_HOME = home;
-    delete process.env.PAPERCLIP_INSTANCE_ID;
+    process.env.WARDMOTE_HOME = home;
+    delete process.env.WARDMOTE_INSTANCE_ID;
 
     const instanceRoot = path.join(home, "instances", "default");
     expect(resolvePaperclipInstanceRoot()).toBe(instanceRoot);

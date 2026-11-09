@@ -11,8 +11,8 @@ import { withCopilotSmokeResources } from "./copilot-smoke-resources.mjs";
 const pack = await realpath(resolve(process.argv[2] ?? "provider-pack"));
 const manifest = JSON.parse(await readFile(join(pack, "provider-pack.json"), "utf8"));
 // Bind the audited pack explicitly, just as the verified sidecar launcher does.
-process.env.PAPERCLIP_ACPX_PROVIDER_PACKAGE_ROOT = pack;
-process.env.PAPERCLIP_ACPX_PROVIDER_PACKAGE_MANIFEST = join(pack, "package.json");
+process.env.WARDMOTE_ACPX_PROVIDER_PACKAGE_ROOT = pack;
+process.env.WARDMOTE_ACPX_PROVIDER_PACKAGE_MANIFEST = join(pack, "package.json");
 const candidate = manifest.payload.candidateProviders?.copilot;
 assert.equal(candidate?.version, "1.0.88");
 assert.equal(candidate.qualification, "pending");

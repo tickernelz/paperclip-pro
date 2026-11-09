@@ -668,7 +668,7 @@ export class CodexAppServerDriver implements HarnessDriver {
       | "activeTurnId"
     >;
   }): CodexAppServerTransport {
-    const workingDirectory = context?.workingDirectory ?? this.#options.environment?.PAPERCLIP_WORKSPACE_CWD;
+    const workingDirectory = context?.workingDirectory ?? this.#options.environment?.WARDMOTE_WORKSPACE_CWD;
     if (!this.#options.transportFactory && this.#options.environment?.CODEX_HOME && workingDirectory) {
       trustCodexStartupRoot(this.#options.environment.CODEX_HOME, workingDirectory);
     }
@@ -868,7 +868,7 @@ export class CodexAppServerDriver implements HarnessDriver {
           minimalRuntimeAccess: "read",
           workspaceAccess: requestedMode === "plan" ? "read" : "write",
           networkAccess: codexNetworkAccess(this.#options.environment),
-          githubAuthenticationMode: this.#options.environment?.PAPERCLIP_GITHUB_AUTH_MODE ?? "managed",
+          githubAuthenticationMode: this.#options.environment?.WARDMOTE_GITHUB_AUTH_MODE ?? "managed",
         },
         approvalPolicy: boundedCodexValue(
           response.approvalPolicy ??

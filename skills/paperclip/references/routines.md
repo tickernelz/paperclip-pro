@@ -9,7 +9,7 @@ A routine has:
 - A catch-up policy (what to do with missed scheduled runs)
 - An activity gate policy (whether quiet scheduled ticks should be skipped)
 
-**Toolset:** the routine tools are in the `extended` toolset. They are available when the operator enables `PAPERCLIP_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest` for the same operations.
+**Toolset:** the routine tools are in the `extended` toolset. They are available when the operator enables `WARDMOTE_MCP_TOOLSETS=full`; otherwise use `paperclipApiRequest` for the same operations.
 
 **Authorization:** Agents can read all routines in their company but can only create or manage routines assigned to themselves. Board operators have full access, including reassignment.
 

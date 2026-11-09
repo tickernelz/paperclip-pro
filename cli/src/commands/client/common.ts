@@ -35,7 +35,7 @@ export function addCommonClientOptions(command: Command, opts?: { includeCompany
     .option("--profile <name>", "CLI context profile name")
     .option("--api-base <url>", "Base URL for the Wardmote API")
     .option("--api-key <token>", "Bearer token for agent-authenticated calls")
-    .option("--run-id <id>", "Heartbeat run id for agent-authenticated mutations (checkout/release/interactions/in-progress update); falls back to $PAPERCLIP_RUN_ID")
+    .option("--run-id <id>", "Heartbeat run id for agent-authenticated mutations (checkout/release/interactions/in-progress update); falls back to $WARDMOTE_RUN_ID")
     .option("--json", "Output raw JSON");
 
   if (opts?.includeCompany) {
@@ -61,20 +61,20 @@ export function resolveCommandContext(
 
   const companyId =
     options.companyId?.trim() ||
-    process.env.PAPERCLIP_COMPANY_ID?.trim() ||
+    process.env.WARDMOTE_COMPANY_ID?.trim() ||
     profile.companyId;
 
   if (opts?.requireCompany && !companyId) {
     throw new Error(
-      "Company ID is required. Pass --company-id, set PAPERCLIP_COMPANY_ID, or set context profile companyId via `wardmote context set`.",
+      "Company ID is required. Pass --company-id, set WARDMOTE_COMPANY_ID, or set context profile companyId via `wardmote context set`.",
     );
   }
 
   // Agent-authenticated mutations (checkout, release, interactions, PATCH of an
   // in-progress issue) require the X-Paperclip-Run-Id header (the server returns
   // "401 Agent run id required" without it). Source it from --run-id, else the
-  // PAPERCLIP_RUN_ID env the adapter/embodiment context already exports.
-  const runId = options.runId?.trim() || process.env.PAPERCLIP_RUN_ID?.trim() || undefined;
+  // WARDMOTE_RUN_ID env the adapter/embodiment context already exports.
+  const runId = options.runId?.trim() || process.env.WARDMOTE_RUN_ID?.trim() || undefined;
 
   const api = new PaperclipApiClient({
     apiBase,
@@ -111,7 +111,7 @@ export function resolveCommandContext(
 export function resolveApiBase(options: Pick<BaseClientOptions, "apiBase" | "config">, profile: ClientContextProfile = {}): string {
   return normalizeApiBase(
     options.apiBase?.trim() ||
-    process.env.PAPERCLIP_API_URL?.trim() ||
+    process.env.WARDMOTE_API_URL?.trim() ||
     profile.apiBase ||
     inferApiBaseFromConfig(options.config),
   );
@@ -166,7 +166,7 @@ function resolveApiKey(
   const optionValue = options.apiKey?.trim();
   if (optionValue) return { value: optionValue, source: "explicit" };
 
-  const envValue = process.env.PAPERCLIP_API_KEY?.trim();
+  const envValue = process.env.WARDMOTE_API_KEY?.trim();
   if (envValue) return { value: envValue, source: "env" };
 
   const profileEnvValue = readKeyFromProfileEnv(profile);
@@ -256,8 +256,8 @@ function renderValue(value: unknown): string {
 }
 
 export function inferApiBaseFromConfig(configPath?: string): string {
-  const envHost = process.env.PAPERCLIP_SERVER_HOST?.trim() || "localhost";
-  let port = Number(process.env.PAPERCLIP_SERVER_PORT || "");
+  const envHost = process.env.WARDMOTE_SERVER_HOST?.trim() || "localhost";
+  let port = Number(process.env.WARDMOTE_SERVER_PORT || "");
 
   if (!Number.isFinite(port) || port <= 0) {
     try {

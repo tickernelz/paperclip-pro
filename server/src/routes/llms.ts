@@ -41,7 +41,7 @@ export function llmRoutes(db: Db) {
       "- paperclipListAgentConfigurations",
       "- paperclipGetAgentConfiguration",
       "- paperclipCreateAgentHire",
-      "  Available when the operator enables PAPERCLIP_MCP_TOOLSETS=core,extended; otherwise use paperclipApiRequest.",
+      "  Available when the operator enables WARDMOTE_MCP_TOOLSETS=core,extended; otherwise use paperclipApiRequest.",
       "",
       "Agent identity references:",
       "- GET /llms/agent-icons.txt",

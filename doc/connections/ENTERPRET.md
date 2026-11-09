@@ -447,7 +447,7 @@ shapes.
 ### Earlier OAuth QA (2026-09-25)
 
 - Environment: an **isolated, issue-owned Paperclip runtime** on the maintainer
-  host — its own `PAPERCLIP_HOME`, its own embedded Postgres, its own ports,
+  host — its own `WARDMOTE_HOME`, its own embedded Postgres, its own ports,
   reachable tailnet-only over HTTPS. It shared nothing with any other instance:
   no database, no credentials, no ports, no worktree. Torn down after the run.
 - Deployment shape: **self-hosted, same machine.** Self-hosted VPS and Cloud

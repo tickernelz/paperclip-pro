@@ -67,12 +67,12 @@ passed.
 
 Use environment variables when available. Do not print API keys or passwords.
 
-- `PAPERCLIP_API_URL`: main control-plane API URL
-- `PAPERCLIP_API_KEY`: agent API key
-- `PAPERCLIP_RUN_ID`: current run id for runtime-service mutations
-- `PAPERCLIP_TASK_ID`: current issue id
-- `PAPERCLIP_COMPANY_ID`: company id
-- `PAPERCLIP_AGENT_ID`: current agent id
+- `WARDMOTE_API_URL`: main control-plane API URL
+- `WARDMOTE_API_KEY`: agent API key
+- `WARDMOTE_RUN_ID`: current run id for runtime-service mutations
+- `WARDMOTE_TASK_ID`: current issue id
+- `WARDMOTE_COMPANY_ID`: company id
+- `WARDMOTE_AGENT_ID`: current agent id
 - execution workspace id for the worktree service
 - runtime workspace command id, usually `service:paperclip-dev`
 - expected service URL, for example `http://paperclip-dev:40631`
@@ -115,18 +115,18 @@ Use the runtime-service endpoints on the main control plane. Include
 
 ```sh
 curl -sS -X POST \
-  "$PAPERCLIP_API_URL/api/execution-workspaces/$EXECUTION_WORKSPACE_ID/runtime-services/stop" \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
-  -H "X-Paperclip-Run-Id: $PAPERCLIP_RUN_ID" \
+  "$WARDMOTE_API_URL/api/execution-workspaces/$EXECUTION_WORKSPACE_ID/runtime-services/stop" \
+  -H "Authorization: Bearer $WARDMOTE_API_KEY" \
+  -H "X-Paperclip-Run-Id: $WARDMOTE_RUN_ID" \
   -H "Content-Type: application/json" \
   --data-binary '{"workspaceCommandId":"service:paperclip-dev"}'
 ```
 
 ```sh
 curl -sS -X POST \
-  "$PAPERCLIP_API_URL/api/execution-workspaces/$EXECUTION_WORKSPACE_ID/runtime-services/start" \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
-  -H "X-Paperclip-Run-Id: $PAPERCLIP_RUN_ID" \
+  "$WARDMOTE_API_URL/api/execution-workspaces/$EXECUTION_WORKSPACE_ID/runtime-services/start" \
+  -H "Authorization: Bearer $WARDMOTE_API_KEY" \
+  -H "X-Paperclip-Run-Id: $WARDMOTE_RUN_ID" \
   -H "Content-Type: application/json" \
   --data-binary '{"workspaceCommandId":"service:paperclip-dev"}'
 ```
@@ -180,9 +180,9 @@ If the port owner is a sibling workspace's process (port squat):
 
 ```sh
 curl -sS -X POST \
-  "$PAPERCLIP_API_URL/api/execution-workspaces/$EXECUTION_WORKSPACE_ID/runtime-services/restart" \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY" \
-  -H "X-Paperclip-Run-Id: $PAPERCLIP_RUN_ID" \
+  "$WARDMOTE_API_URL/api/execution-workspaces/$EXECUTION_WORKSPACE_ID/runtime-services/restart" \
+  -H "Authorization: Bearer $WARDMOTE_API_KEY" \
+  -H "X-Paperclip-Run-Id: $WARDMOTE_RUN_ID" \
   -H "Content-Type: application/json" \
   --data-binary '{"workspaceCommandId":"service:paperclip-dev"}'
 ```
@@ -257,8 +257,8 @@ record.
 
 ```sh
 curl -sS \
-  "$PAPERCLIP_API_URL/api/execution-workspaces/$EXECUTION_WORKSPACE_ID" \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY" | jq
+  "$WARDMOTE_API_URL/api/execution-workspaces/$EXECUTION_WORKSPACE_ID" \
+  -H "Authorization: Bearer $WARDMOTE_API_KEY" | jq
 ```
 
 The target service should show:
@@ -280,7 +280,7 @@ execution workspace through the served app when agent auth is available there:
 ```sh
 curl -sS \
   "$SERVICE_URL/api/execution-workspaces/$EXECUTION_WORKSPACE_ID" \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY" | jq
+  -H "Authorization: Bearer $WARDMOTE_API_KEY" | jq
 ```
 
 The served app should agree that the service is `running` / `healthy` at the
@@ -299,9 +299,9 @@ Minimum API checks:
 ```sh
 curl -sS "$SERVICE_URL/api/health" | jq '.status, .bootstrapStatus'
 curl -sS "$SERVICE_URL/api/companies" \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY" | jq
+  -H "Authorization: Bearer $WARDMOTE_API_KEY" | jq
 curl -sS "$SERVICE_URL/api/agents/me" \
-  -H "Authorization: Bearer $PAPERCLIP_API_KEY" | jq
+  -H "Authorization: Bearer $WARDMOTE_API_KEY" | jq
 ```
 
 Then verify at least one expected cloned product record through the API, such

@@ -1,4 +1,4 @@
-export const PAPERCLIP_EVAL_KERNEL_COMPATIBILITY = Object.freeze({
+export const WARDMOTE_EVAL_KERNEL_COMPATIBILITY = Object.freeze({
   schema: "paperclip.eval-kernel.compatibility.v1" as const,
   packageName: "@tickernelz/wardmote-eval-kernel" as const,
   packageVersion: "0.1.0" as const,

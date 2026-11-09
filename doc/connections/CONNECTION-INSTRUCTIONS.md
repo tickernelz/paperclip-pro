@@ -87,7 +87,7 @@ Custom integration contracts:
   This server-owned field overrides `payloadTemplate`. Append its text alongside
   agent instructions before invoking a model; do not reuse a session with a
   different digest.
-- **Process adapter:** `PAPERCLIP_CONNECTION_INSTRUCTIONS_FILE` points to a private
+- **Process adapter:** `WARDMOTE_CONNECTION_INSTRUCTIONS_FILE` points to a private
   JSON file containing the same snapshot. Read it during the invocation and
   append `.text` to your model prompt. It is empty when no instructions apply.
   Configured or inherited paths cannot override it. The temporary file is removed

@@ -8,7 +8,7 @@ import { shellQuote } from "@tickernelz/wardmote-adapter-utils/ssh";
 
 /** Opt-in, bounded live fixture. Every invocation owns and deletes its sandbox. */
 export async function startDotDaytona(localRoot: string) {
-  const image = process.env.PAPERCLIP_DOT_DAYTONA_IMAGE;
+  const image = process.env.WARDMOTE_DOT_DAYTONA_IMAGE;
   if (!image || !/@sha256:[a-f0-9]{64}$/.test(image)) throw new Error("Dot live tests require an immutable Daytona image digest");
   const require = createRequire(new URL("../../../../packages/plugins/sandbox-providers/daytona/package.json", import.meta.url));
   const { Daytona } = require("@daytonaio/sdk");
@@ -62,8 +62,8 @@ export async function startDotDaytona(localRoot: string) {
   try {
     const setup = await runner.execute({ command: "mkdir", args: ["-p", workspace], timeoutMs: 10000 });
     if (setup.exitCode !== 0) throw new Error("Daytona test workspace creation failed");
-    const binary = process.env.PAPERCLIP_DOT_DAYTONA_RUNNER_BINARY
-      ? await readFile(process.env.PAPERCLIP_DOT_DAYTONA_RUNNER_BINARY)
+    const binary = process.env.WARDMOTE_DOT_DAYTONA_RUNNER_BINARY
+      ? await readFile(process.env.WARDMOTE_DOT_DAYTONA_RUNNER_BINARY)
       : await sandbox.fs.downloadFile("/usr/local/bin/paperclip-runnerd");
     const runnerBinary = join(localRoot, "daytona-paperclip-runnerd");
     await writeFile(runnerBinary, binary, { mode: 0o700 });
@@ -73,7 +73,7 @@ export async function startDotDaytona(localRoot: string) {
     const metadata = await runner.execute({ command: qualificationBinary, args: ["--build-metadata"], timeoutMs: 10000 });
     if (metadata.exitCode !== 0) throw new Error("Daytona qualification runner build metadata missing");
     const evidence = { image, sandboxId: sandbox.id, binarySha256: createHash("sha256").update(binary).digest("hex"), metadata: JSON.parse(metadata.stdout) };
-    const evidencePath = process.env.PAPERCLIP_DOT_DAYTONA_EVIDENCE;
+    const evidencePath = process.env.WARDMOTE_DOT_DAYTONA_EVIDENCE;
     if (evidencePath) await writeFile(evidencePath, JSON.stringify(evidence, null, 2));
     const target: AdapterSandboxExecutionTarget = {
       kind: "remote", transport: "sandbox", providerKey: "daytona", environmentId: randomUUID(),

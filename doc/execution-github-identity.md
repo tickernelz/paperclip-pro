@@ -67,7 +67,7 @@ while preserving the settled conversation.
 Runner network access is independent of GitHub credentials. The controller
 enables networking for standard-trust execution. Low-trust runs and runners
 without a controller network decision retain a restricted default. An operator
-can set `PAPERCLIP_RUNNER_NETWORK_ACCESS=disabled` to restrict normal execution;
+can set `WARDMOTE_RUNNER_NETWORK_ACCESS=disabled` to restrict normal execution;
 user environment bindings cannot override that decision. Outer execution-
 environment network restrictions still apply. The controller projects the assigned worktree's Git metadata paths so
 Git can operate without exposing unrelated workspace or provider state. The

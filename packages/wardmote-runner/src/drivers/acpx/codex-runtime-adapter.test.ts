@@ -444,7 +444,7 @@ describe("Codex ACPX runtime adapter", () => {
       expect(runtimeOptions?.spawnEnvironment?.()).toEqual({
         PATH: "/verified/bin",
         PAPERCLIP_ACPX_ISOLATED_CONTEXT: "1",
-        PAPERCLIP_ACPX_TASK_TOOL_BRIDGE_URL: "",
+        WARDMOTE_ACPX_TASK_TOOL_BRIDGE_URL: "",
       });
       expect(runtime.ensureSession).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -460,7 +460,7 @@ describe("Codex ACPX runtime adapter", () => {
     async (binding) => {
       const options = openOptions(fakeCommand());
       options.profile = resolveQualifiedAcpxProfile("claude", "claude-sonnet-5");
-      options.launchEnvironment = { PAPERCLIP_ACPX_TASK_TOOL_BRIDGE_URL: "http://untrusted.invalid/mcp" };
+      options.launchEnvironment = { WARDMOTE_ACPX_TASK_TOOL_BRIDGE_URL: "http://untrusted.invalid/mcp" };
       options.mcpServers = binding === "absent" ? [] : [{
         name: "paperclip", url: "http://127.0.0.1:3210/mcp",
         bearerToken: "bridge-secret", runnerOwned: binding === "runner-owned",
@@ -476,7 +476,7 @@ describe("Codex ACPX runtime adapter", () => {
       });
       expect(runtimeOptions?.spawnEnvironment?.()).toEqual({
         PAPERCLIP_ACPX_ISOLATED_CONTEXT: "1",
-        PAPERCLIP_ACPX_TASK_TOOL_BRIDGE_URL: binding === "runner-owned" ? "http://127.0.0.1:3210/mcp" : "",
+        WARDMOTE_ACPX_TASK_TOOL_BRIDGE_URL: binding === "runner-owned" ? "http://127.0.0.1:3210/mcp" : "",
       });
     },
   );

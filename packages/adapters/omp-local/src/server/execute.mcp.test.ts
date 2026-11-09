@@ -17,10 +17,10 @@ import { execute } from "./execute.js";
 import { OMP_TOOL_GUARD_FILE_NAME } from "./tool-guard.js";
 import { OMP_PYTHON_ENV_FILE_NAME, OMP_PYTHON_SITECUSTOMIZE_FILE_NAME } from "./python-env.js";
 import {
-  PAPERCLIP_MCP_BIN,
-  PAPERCLIP_MCP_PACKAGE,
-  PAPERCLIP_MCP_CREDENTIAL_CODE,
-  PAPERCLIP_MCP_UNAVAILABLE_CODE,
+  WARDMOTE_MCP_BIN,
+  WARDMOTE_MCP_PACKAGE,
+  WARDMOTE_MCP_CREDENTIAL_CODE,
+  WARDMOTE_MCP_UNAVAILABLE_CODE,
   buildPaperclipMcpServerEntry,
   paperclipMcpEndpoint,
   paperclipMcpToolsets,
@@ -181,19 +181,19 @@ describe("OMP local Paperclip MCP wiring", () => {
     expect(invocation.mcpServer).toMatchObject({
       type: "http",
       enabled: true,
-      url: paperclipMcpEndpoint(invocation.env.PAPERCLIP_API_URL, "core"),
+      url: paperclipMcpEndpoint(invocation.env.WARDMOTE_API_URL, "core"),
       headers: {
-        Authorization: "Bearer ${PAPERCLIP_API_KEY}",
+        Authorization: "Bearer ${WARDMOTE_API_KEY}",
         "X-Paperclip-Run-Id": "run-mcp",
       },
     });
-    expect(invocation.env.PAPERCLIP_API_KEY).toBe("run-jwt");
+    expect(invocation.env.WARDMOTE_API_KEY).toBe("run-jwt");
     expect(invocation.systemPrompt).toContain("paperclipListIssues");
   });
 
   it("passes the configured toolsets to the endpoint", async () => {
     const invocation = await run({ paperclipMcpToolsets: " extended , core " });
-    expect(invocation.mcpServer?.url).toBe(paperclipMcpEndpoint(invocation.env.PAPERCLIP_API_URL, "extended,core"));
+    expect(invocation.mcpServer?.url).toBe(paperclipMcpEndpoint(invocation.env.WARDMOTE_API_URL, "extended,core"));
     expect(invocation.mcpServer?.url).toContain("toolsets=extended%2Ccore");
     expect(invocation.systemPrompt).toContain("toolsets: extended,core");
   });
@@ -217,13 +217,13 @@ describe("OMP local Paperclip MCP wiring", () => {
       wakeReason: "issue_commented",
       paperclipWake: { reason: "issue_commented", issue: { id: "issue-1", identifier: "ZHA-1", title: "Big" }, comments: [{ id: "c1", body }] },
     });
-    expect(invocation.env).not.toHaveProperty("PAPERCLIP_WAKE_PAYLOAD_JSON");
-    expect(invocation.env.PAPERCLIP_TASK_ID).toBe("issue-1");
-    expect(invocation.env.PAPERCLIP_WAKE_REASON).toBe("issue_commented");
+    expect(invocation.env).not.toHaveProperty("WARDMOTE_WAKE_PAYLOAD_JSON");
+    expect(invocation.env.WARDMOTE_TASK_ID).toBe("issue-1");
+    expect(invocation.env.WARDMOTE_WAKE_REASON).toBe("issue_commented");
     expect(Math.max(...Object.values(invocation.env).map((value) => String(value).length))).toBeLessThan(131_072);
   });
 
-  it("hands the Python kernel the run's PAPERCLIP_* env through a private sitecustomize dir", async () => {
+  it("hands the Python kernel the run's WARDMOTE_* env through a private sitecustomize dir", async () => {
     const previous = process.env.PYTHONPATH;
     process.env.PYTHONPATH = "/opt/existing-site";
     try {
@@ -234,10 +234,10 @@ describe("OMP local Paperclip MCP wiring", () => {
       expect(bridge!.hasSitecustomize).toBe(true);
       expect(bridge!.dataMode).toBe(0o600);
       const forwarded = Object.fromEntries(
-        Object.entries(invocation.env).filter(([key]) => key.startsWith("PAPERCLIP_")),
+        Object.entries(invocation.env).filter(([key]) => key.startsWith("WARDMOTE_")),
       );
       expect(bridge!.data).toEqual(forwarded);
-      expect(bridge!.data.PAPERCLIP_API_KEY).toBe("run-jwt");
+      expect(bridge!.data.WARDMOTE_API_KEY).toBe("run-jwt");
       expect(invocation.args.join("\n")).not.toContain("run-jwt");
       expect(invocation.env.PYTHONPATH).not.toContain("run-jwt");
       await expect(fs.access(bridge!.dir)).rejects.toThrow();
@@ -252,11 +252,11 @@ describe("OMP local Paperclip MCP wiring", () => {
     expect(invocation.mcpServer).toMatchObject({ type: "stdio", enabled: true });
     expect(invocation.mcpServer?.args).toEqual(expect.arrayContaining(["--toolsets", "core"]));
     expect(invocation.mcpServer?.env).toMatchObject({
-      PAPERCLIP_API_KEY: "${PAPERCLIP_API_KEY}",
-      PAPERCLIP_AGENT_ID: "agent-1",
-      PAPERCLIP_COMPANY_ID: "company-1",
-      PAPERCLIP_RUN_ID: "run-mcp",
-      PAPERCLIP_MCP_TOOLSETS: "core",
+      WARDMOTE_API_KEY: "${WARDMOTE_API_KEY}",
+      WARDMOTE_AGENT_ID: "agent-1",
+      WARDMOTE_COMPANY_ID: "company-1",
+      WARDMOTE_RUN_ID: "run-mcp",
+      WARDMOTE_MCP_TOOLSETS: "core",
     });
   });
 
@@ -265,9 +265,9 @@ describe("OMP local Paperclip MCP wiring", () => {
     expect(invocation.mcpDir).toBeTruthy();
     expect(invocation.mcpServer).toMatchObject({ enabled: false });
     expect(invocation.systemPrompt).not.toMatch(/\bpaperclip[A-Z]\w*/);
-    expect(invocation.systemPrompt).toContain("Authorization: Bearer $PAPERCLIP_API_KEY");
-    expect(invocation.systemPrompt).toContain("X-Paperclip-Run-Id: $PAPERCLIP_RUN_ID");
-    expect(invocation.systemPrompt).toContain("POST /api/issues/$PAPERCLIP_TASK_ID/interactions");
+    expect(invocation.systemPrompt).toContain("Authorization: Bearer $WARDMOTE_API_KEY");
+    expect(invocation.systemPrompt).toContain("X-Paperclip-Run-Id: $WARDMOTE_RUN_ID");
+    expect(invocation.systemPrompt).toContain("POST /api/issues/$WARDMOTE_TASK_ID/interactions");
     expect(probeMock).not.toHaveBeenCalled();
     expect(endpointProbeMock).not.toHaveBeenCalled();
     const logs: Array<{ stream: string; chunk: string }> = [];
@@ -288,7 +288,7 @@ describe("OMP local Paperclip MCP wiring", () => {
     );
     const logs: Array<{ stream: string; chunk: string }> = [];
     const result = await runResult({}, logs);
-    expect(result.errorCode).toBe(PAPERCLIP_MCP_UNAVAILABLE_CODE);
+    expect(result.errorCode).toBe(WARDMOTE_MCP_UNAVAILABLE_CODE);
     expect(result.errorFamily).toBe("transient_upstream");
     const retryDelayMs = new Date(result.retryNotBefore as string).getTime() - Date.now();
     expect(retryDelayMs).toBeGreaterThan(20_000);
@@ -306,7 +306,7 @@ describe("OMP local Paperclip MCP wiring", () => {
       }),
     );
     const result = await runResult({});
-    expect(result.errorCode).toBe(PAPERCLIP_MCP_UNAVAILABLE_CODE);
+    expect(result.errorCode).toBe(WARDMOTE_MCP_UNAVAILABLE_CODE);
     expect(result.errorFamily).toBeUndefined();
     expect(result.retryNotBefore).toBeUndefined();
     expect(runProcessMock).not.toHaveBeenCalled();
@@ -321,7 +321,7 @@ describe("OMP local Paperclip MCP wiring", () => {
     );
     const result = await runResult({ paperclipMcpTransport: "stdio" });
     expect(probeMock).toHaveBeenCalled();
-    expect(result.errorCode).toBe(PAPERCLIP_MCP_UNAVAILABLE_CODE);
+    expect(result.errorCode).toBe(WARDMOTE_MCP_UNAVAILABLE_CODE);
     expect(result.errorMessage).toContain("ENOENT");
     expect(result.errorFamily).toBeUndefined();
     expect(result.retryNotBefore).toBeUndefined();
@@ -337,7 +337,7 @@ describe("OMP local Paperclip MCP wiring", () => {
       durationMs: 18,
     });
     const result = await runResult({});
-    expect(result.errorCode).toBe(PAPERCLIP_MCP_CREDENTIAL_CODE);
+    expect(result.errorCode).toBe(WARDMOTE_MCP_CREDENTIAL_CODE);
     expect(result.errorFamily).toBeUndefined();
     expect(result.retryNotBefore).toBeUndefined();
     expect(result.errorMessage).toContain("rejected this run's credentials");
@@ -376,7 +376,7 @@ describe("OMP local Paperclip MCP wiring", () => {
       };
     }) as never);
     const result = await runResult({});
-    expect(result.errorCode).toBe(PAPERCLIP_MCP_UNAVAILABLE_CODE);
+    expect(result.errorCode).toBe(WARDMOTE_MCP_UNAVAILABLE_CODE);
     expect(result.errorFamily).toBe(errorFamily);
     expect(result.retryNotBefore === undefined).toBe(errorFamily === undefined);
     expect(result.errorMessage).toContain("failed to connect");
@@ -409,7 +409,7 @@ describe("OMP local Paperclip MCP wiring", () => {
       };
     }) as never);
     const result = await runResult({});
-    expect(result.errorCode).toBe(PAPERCLIP_MCP_UNAVAILABLE_CODE);
+    expect(result.errorCode).toBe(WARDMOTE_MCP_UNAVAILABLE_CODE);
     expect(result.errorMessage).toContain("failed to connect");
   });
 
@@ -423,32 +423,31 @@ describe("OMP local Paperclip MCP wiring", () => {
   });
 
   it("declares nothing when the run has no Paperclip API key", async () => {
-    const previous = process.env.PAPERCLIP_API_KEY;
-    delete process.env.PAPERCLIP_API_KEY;
+    const previous = process.env.WARDMOTE_API_KEY;
+    delete process.env.WARDMOTE_API_KEY;
     try {
       const invocation = await run({}, null);
       expect(invocation.extensionDirs).toHaveLength(0);
       expect(invocation.toolGuardPath).toBeTruthy();
       expect(invocation.mcpServer).toBeNull();
     } finally {
-      if (previous !== undefined) process.env.PAPERCLIP_API_KEY = previous;
+      if (previous !== undefined) process.env.WARDMOTE_API_KEY = previous;
     }
   });
 
   it("never takes the API key or agent identity from config under either name", async () => {
-    const previous = process.env.PAPERCLIP_API_KEY;
-    delete process.env.PAPERCLIP_API_KEY;
+    const previous = process.env.WARDMOTE_API_KEY;
+    delete process.env.WARDMOTE_API_KEY;
     try {
       const invocation = await run({
         env: { WARDMOTE_API_KEY: "config-key", WARDMOTE_AGENT_PRIVATE_KEY: "config-identity", WARDMOTE_CUSTOM: "kept" },
       }, null);
-      expect(invocation.env.PAPERCLIP_API_KEY).toBeUndefined();
       expect(invocation.env.WARDMOTE_API_KEY).toBeUndefined();
       expect(invocation.env.WARDMOTE_AGENT_PRIVATE_KEY).toBeUndefined();
       expect(invocation.env.WARDMOTE_CUSTOM).toBe("kept");
       expect(invocation.mcpServer).toBeNull();
     } finally {
-      if (previous !== undefined) process.env.PAPERCLIP_API_KEY = previous;
+      if (previous !== undefined) process.env.WARDMOTE_API_KEY = previous;
     }
   });
 
@@ -516,9 +515,9 @@ describe("OMP local Paperclip MCP wiring", () => {
   it("hands the stdio server the connection endpoints under the names it reads", async () => {
     const invocation = await runWithRuntimeTools();
     expect(invocation.env).toMatchObject({
-      PAPERCLIP_RUNTIME_TOOLS_TOKEN: "runtime-token",
-      PAPERCLIP_RUNTIME_TOOLS_CONNECTIONS_SEARCH_URL: "http://127.0.0.1:3100/runtime-tools/connections/search",
-      PAPERCLIP_RUNTIME_TOOLS_CONNECTION_REQUEST_URL: "http://127.0.0.1:3100/runtime-tools/connections/request",
+      WARDMOTE_RUNTIME_TOOLS_TOKEN: "runtime-token",
+      WARDMOTE_RUNTIME_TOOLS_CONNECTIONS_SEARCH_URL: "http://127.0.0.1:3100/runtime-tools/connections/search",
+      WARDMOTE_RUNTIME_TOOLS_CONNECTION_REQUEST_URL: "http://127.0.0.1:3100/runtime-tools/connections/request",
     });
   });
 
@@ -536,7 +535,7 @@ describe("Paperclip MCP server resolution", () => {
   const root = path.join("/opt", "paperclip", "node_modules", "@tickernelz", "adapter", "dist", "server");
 
   it("prefers the nearest bin shim", () => {
-    const bin = path.join("/opt", "paperclip", "node_modules", ".bin", PAPERCLIP_MCP_BIN);
+    const bin = path.join("/opt", "paperclip", "node_modules", ".bin", WARDMOTE_MCP_BIN);
     const resolved = resolvePaperclipMcpServerCommand({
       searchFrom: root,
       exists: (candidate) => candidate === bin,
@@ -545,7 +544,7 @@ describe("Paperclip MCP server resolution", () => {
   });
 
   it("falls back to the package entry point when no shim exists", () => {
-    const dist = path.join("/opt", "paperclip", "node_modules", PAPERCLIP_MCP_PACKAGE, "dist", "stdio.js");
+    const dist = path.join("/opt", "paperclip", "node_modules", WARDMOTE_MCP_PACKAGE, "dist", "stdio.js");
     const resolved = resolvePaperclipMcpServerCommand({
       searchFrom: root,
       exists: (candidate) => candidate === dist,
@@ -556,7 +555,7 @@ describe("Paperclip MCP server resolution", () => {
 
   it("falls back to PATH when the package is absent", () => {
     const resolved = resolvePaperclipMcpServerCommand({ searchFrom: root, exists: () => false });
-    expect(resolved).toEqual({ command: PAPERCLIP_MCP_BIN, args: [], source: "path" });
+    expect(resolved).toEqual({ command: WARDMOTE_MCP_BIN, args: [], source: "path" });
   });
 
   it("uses the package entry that ships with an install", () => {
@@ -566,7 +565,7 @@ describe("Paperclip MCP server resolution", () => {
       nodePath: "/usr/bin/node",
     });
     expect(resolved.source).toBe("dist");
-    expect(resolved.args[0]).toContain(PAPERCLIP_MCP_PACKAGE);
+    expect(resolved.args[0]).toContain(WARDMOTE_MCP_PACKAGE);
   });
 });
 
@@ -579,12 +578,12 @@ describe("Paperclip MCP server entry", () => {
       transport: "stdio",
       command: { command: "paperclip-mcp-server", args: [], source: "path" },
       toolsets: "core",
-      env: { PAPERCLIP_API_URL: "http://localhost:3100", PAPERCLIP_API_KEY: "k", PAPERCLIP_RUN_ID: "  " },
+      env: { WARDMOTE_API_URL: "http://localhost:3100", WARDMOTE_API_KEY: "k", WARDMOTE_RUN_ID: "  " },
     });
     expect(entry.env).toEqual({
-      PAPERCLIP_API_URL: "http://localhost:3100",
-      PAPERCLIP_API_KEY: "${PAPERCLIP_API_KEY}",
-      PAPERCLIP_MCP_TOOLSETS: "core",
+      WARDMOTE_API_URL: "http://localhost:3100",
+      WARDMOTE_API_KEY: "${WARDMOTE_API_KEY}",
+      WARDMOTE_MCP_TOOLSETS: "core",
     });
   });
 
@@ -594,7 +593,7 @@ describe("Paperclip MCP server entry", () => {
       transport: "stdio",
       command: { command: "paperclip-mcp-server", args: [], source: "path" },
       toolsets: "core",
-      env: { PAPERCLIP_API_KEY: "super-secret-token" },
+      env: { WARDMOTE_API_KEY: "super-secret-token" },
     });
     expect(JSON.stringify(entry)).not.toContain("super-secret-token");
   });

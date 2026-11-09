@@ -92,7 +92,7 @@ describe("Paperclip MCP toolsets", () => {
   });
 
   it("resolves the same union from the flag and the environment", () => {
-    expect(resolveToolsets({ PAPERCLIP_MCP_TOOLSETS: "extended" }, [])).toEqual([
+    expect(resolveToolsets({ WARDMOTE_MCP_TOOLSETS: "extended" }, [])).toEqual([
       "core",
       "extended",
     ]);

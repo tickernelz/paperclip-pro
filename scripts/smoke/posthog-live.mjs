@@ -533,7 +533,7 @@ async function runSmoke({ config, chromium }) {
   const connectionName = `PostHog live self-test ${startedAt.toISOString()}`;
   const outputDirectory = process.env.POSTHOG_EVIDENCE_DIR
     ? path.resolve(process.env.POSTHOG_EVIDENCE_DIR)
-    : path.join(process.env.PAPERCLIP_RUN_SCRATCH_DIR || process.cwd(), `posthog-live-${runKey}`);
+    : path.join(process.env.WARDMOTE_RUN_SCRATCH_DIR || process.cwd(), `posthog-live-${runKey}`);
   await mkdir(outputDirectory, { recursive: true });
 
   const summary = {
@@ -887,7 +887,7 @@ async function runSmoke({ config, chromium }) {
     };
 
     activeCheckpoint = "E.create-proof-issue";
-    const parentIssueId = process.env.POSTHOG_PROOF_PARENT_ISSUE_ID || process.env.PAPERCLIP_TASK_ID;
+    const parentIssueId = process.env.POSTHOG_PROOF_PARENT_ISSUE_ID || process.env.WARDMOTE_TASK_ID;
     if (!parentIssueId) fail("E.create-proof-issue", "parent_issue_id_missing");
     const child = await apiJson(
       context.request,

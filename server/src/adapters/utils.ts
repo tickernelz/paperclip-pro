@@ -67,7 +67,7 @@ export function buildInvocationEnvForLogs(
 
   const resolvedCommand = options.resolvedCommand?.trim();
   if (resolvedCommand) {
-    merged[options.resolvedCommandEnvKey ?? "PAPERCLIP_RESOLVED_COMMAND"] =
+    merged[options.resolvedCommandEnvKey ?? "WARDMOTE_RESOLVED_COMMAND"] =
       serverUtils.redactCommandTextForLogs(resolvedCommand);
   }
 

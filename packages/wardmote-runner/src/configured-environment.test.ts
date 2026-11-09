@@ -6,11 +6,11 @@ import { createCapabilityRunnerdProviderEnvironment } from './live/runnerd-codex
 import { spawnRunner } from './control-plane/durable-prp-control-plane.js';
 
 const pages = {
-  PAPERCLIP_PAGE_AWS_ACCESS_KEY_ID: 'fake-page-access-key',
-  PAPERCLIP_PAGE_AWS_SECRET_ACCESS_KEY: 'fake-page-secret',
-  PAPERCLIP_PAGE_BUCKET: 'pages.example.test',
+  WARDMOTE_PAGE_AWS_ACCESS_KEY_ID: 'fake-page-access-key',
+  WARDMOTE_PAGE_AWS_SECRET_ACCESS_KEY: 'fake-page-secret',
+  WARDMOTE_PAGE_BUCKET: 'pages.example.test',
 };
-const source = { ...configuredEnvironmentProjection(pages), PATH: '/bin', ...pages, DATABASE_URL: 'host-secret-must-not-cross', NODE_OPTIONS: '--require=/untrusted/bootstrap.js', PAPERCLIP_API_KEY: 'controller-api-key-must-not-cross' };
+const source = { ...configuredEnvironmentProjection(pages), PATH: '/bin', ...pages, DATABASE_URL: 'host-secret-must-not-cross', NODE_OPTIONS: '--require=/untrusted/bootstrap.js', WARDMOTE_API_KEY: 'controller-api-key-must-not-cross' };
 const identity = { runnerInstanceId: 'runner-proof', environmentLeaseId: 'lease-proof', runId: 'run-proof', normalizedSessionId: 'session-proof', turnId: 'turn-proof', itemId: 'item-proof' };
 function shellKeys() {
   const args = createIsolatedCodexAppServerArgs(source);
@@ -33,24 +33,24 @@ describe('controller-configured environment across native runner boundaries', ()
     expect(launched).toMatchObject(pages);
     expect(launched!.DATABASE_URL).toBeUndefined();
     expect(launched!.NODE_OPTIONS).toBeUndefined();
-    expect(launched!.PAPERCLIP_API_KEY).toBeUndefined();
+    expect(launched!.WARDMOTE_API_KEY).toBeUndefined();
   });
   it('allows configured Pages values into model-issued shell commands without serializing secrets into argv', () => {
     const { keys, serialized } = shellKeys();
     expect(keys).toEqual(expect.arrayContaining(Object.keys(pages)));
     expect(keys).not.toContain('DATABASE_URL');
     expect(keys).not.toContain('NODE_OPTIONS');
-    expect(keys).not.toContain('PAPERCLIP_API_KEY');
+    expect(keys).not.toContain('WARDMOTE_API_KEY');
     for (const value of Object.values(pages)) expect(serialized).not.toContain(value);
   });
   it('continues to exclude unbound ambient Pages credentials and host secrets', () => {
-    vi.stubEnv('PAPERCLIP_PAGE_AWS_SECRET_ACCESS_KEY', 'ambient-page-secret');
+    vi.stubEnv('WARDMOTE_PAGE_AWS_SECRET_ACCESS_KEY', 'ambient-page-secret');
     try {
-      expect(createSanitizedCodexEnvironment().PAPERCLIP_PAGE_AWS_SECRET_ACCESS_KEY).toBeUndefined();
+      expect(createSanitizedCodexEnvironment().WARDMOTE_PAGE_AWS_SECRET_ACCESS_KEY).toBeUndefined();
       const sanitized = createSanitizedCodexEnvironment(source);
       expect(sanitized.DATABASE_URL).toBeUndefined();
       expect(sanitized.NODE_OPTIONS).toBeUndefined();
-      expect(sanitized.PAPERCLIP_API_KEY).toBeUndefined();
+      expect(sanitized.WARDMOTE_API_KEY).toBeUndefined();
     } finally { vi.unstubAllEnvs(); }
   });
 });
@@ -65,22 +65,22 @@ describe("configured environment authority", () => {
   });
 
   it("projects ordinary task credentials only when explicitly selected", () => {
-    const projected = configuredEnvironmentProjection({ DATABASE_URL: "task-db", CUSTOM_FLAG: "on", NODE_OPTIONS: "unsafe", PAPERCLIP_API_KEY: "controller" });
+    const projected = configuredEnvironmentProjection({ DATABASE_URL: "task-db", CUSTOM_FLAG: "on", NODE_OPTIONS: "unsafe", WARDMOTE_API_KEY: "controller" });
     expect(createSanitizedCodexEnvironment(projected)).toMatchObject({ DATABASE_URL: "task-db", CUSTOM_FLAG: "on" });
     expect(projected.NODE_OPTIONS).toBeUndefined();
-    expect(projected.PAPERCLIP_API_KEY).toBeUndefined();
+    expect(projected.WARDMOTE_API_KEY).toBeUndefined();
   });
 
   it("does not accept an ambient projection in the provider or shell policy", () => {
-    vi.stubEnv(CONFIGURED_ENVIRONMENT_KEYS, JSON.stringify(["PAPERCLIP_PAGE_AWS_SECRET_ACCESS_KEY"]));
-    vi.stubEnv("PAPERCLIP_PAGE_AWS_SECRET_ACCESS_KEY", "ambient-secret");
+    vi.stubEnv(CONFIGURED_ENVIRONMENT_KEYS, JSON.stringify(["WARDMOTE_PAGE_AWS_SECRET_ACCESS_KEY"]));
+    vi.stubEnv("WARDMOTE_PAGE_AWS_SECRET_ACCESS_KEY", "ambient-secret");
     try {
-      expect(createSanitizedCodexEnvironment().PAPERCLIP_PAGE_AWS_SECRET_ACCESS_KEY).toBeUndefined();
-      expect(createIsolatedCodexAppServerArgs().join("\n")).not.toContain("PAPERCLIP_PAGE_AWS_SECRET_ACCESS_KEY");
+      expect(createSanitizedCodexEnvironment().WARDMOTE_PAGE_AWS_SECRET_ACCESS_KEY).toBeUndefined();
+      expect(createIsolatedCodexAppServerArgs().join("\n")).not.toContain("WARDMOTE_PAGE_AWS_SECRET_ACCESS_KEY");
     } finally { vi.unstubAllEnvs(); }
   });
 
-  it.each(["not-json", "[1]", '["NODE_OPTIONS"]', '["PAPERCLIP_API_KEY"]', '["PAPERCLIP_RUNNER_BOOTSTRAP_TICKET"]', '["OPENAI_API_KEY"]', '["LD_PRELOAD"]', '["bad=name"]', '["CUSTOM","CUSTOM"]', '["MISSING"]'])
+  it.each(["not-json", "[1]", '["NODE_OPTIONS"]', '["WARDMOTE_API_KEY"]', '["WARDMOTE_RUNNER_BOOTSTRAP_TICKET"]', '["OPENAI_API_KEY"]', '["LD_PRELOAD"]', '["bad=name"]', '["CUSTOM","CUSTOM"]', '["MISSING"]'])
     ("rejects malformed or reserved projection %s", raw => {
       expect(() => configuredEnvironment({ [CONFIGURED_ENVIRONMENT_KEYS]: raw })).toThrow("Invalid configured environment");
     });

@@ -87,8 +87,8 @@ Add these settings to the disposable instance's `instances/default/.env`, alongs
 the native API-tools flag, and restart test-drive:
 
 ```dotenv
-PAPERCLIP_RUNNER_REMOTE_PROVIDER_PACK_PATH=/tmp/hiring-native-artifacts/provider-pack
-PAPERCLIP_RUNNER_REMOTE_BINARY_PATH=/tmp/hiring-native-artifacts/paperclip-runnerd
+WARDMOTE_RUNNER_REMOTE_PROVIDER_PACK_PATH=/tmp/hiring-native-artifacts/provider-pack
+WARDMOTE_RUNNER_REMOTE_BINARY_PATH=/tmp/hiring-native-artifacts/paperclip-runnerd
 ```
 
 Run the Daytona command with `HIRING_AI_RUNNER=native` and

@@ -25,7 +25,7 @@ import type { ChatFileTransferPhase } from "@tickernelz/wardmote-shared";
 import type { TeamsFileTransferSummary } from "./chat-teams-file-transfers.js";
 import { projectTeamsFilePublication } from "./chat-teams-file-publication.js";
 
-const external = process.env.PAPERCLIP_TEST_DATABASE_URL;
+const external = process.env.WARDMOTE_TEST_DATABASE_URL;
 const support = external
   ? { supported: true }
   : await getEmbeddedPostgresTestSupport();

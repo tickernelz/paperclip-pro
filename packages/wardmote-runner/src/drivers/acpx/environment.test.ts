@@ -29,14 +29,14 @@ describe("ACPX launch environment", () => {
       CLAUDE_CODE_USE_BEDROCK: "1", AWS_REGION: "us-east-1",
       AWS_BEARER_TOKEN_BEDROCK: "bedrock-key",
       AWS_ACCESS_KEY_ID: "general-aws-key", AWS_SECRET_ACCESS_KEY: "general-aws-secret", AWS_SESSION_TOKEN: "general-aws-session",
-      PAPERCLIP_AI_PROVIDER_KEY: "codex-key", UNRELATED_SECRET: "private",
+      WARDMOTE_AI_PROVIDER_KEY: "codex-key", UNRELATED_SECRET: "private",
     };
     expect(createSanitizedAcpxSpawnInput(source, "claude").env).toEqual({
       ANTHROPIC_BASE_URL: source.ANTHROPIC_BASE_URL,
       ANTHROPIC_AUTH_TOKEN: "selected-key", CLAUDE_CODE_USE_BEDROCK: "1",
       AWS_REGION: "us-east-1", AWS_BEARER_TOKEN_BEDROCK: "bedrock-key",
     });
-    expect(createSanitizedAcpxSpawnInput(source, "codex").env).toEqual({ PAPERCLIP_AI_PROVIDER_KEY: "codex-key" });
+    expect(createSanitizedAcpxSpawnInput(source, "codex").env).toEqual({ WARDMOTE_AI_PROVIDER_KEY: "codex-key" });
     expect(createSanitizedAcpxSpawnInput(source, "cursor").env).toEqual({});
   });
 
@@ -48,10 +48,10 @@ describe("ACPX launch environment", () => {
       OPENAI_API_KEY: "openai-secret",
       ANTHROPIC_API_KEY: "anthropic-secret",
       OPENROUTER_API_KEY: "openrouter-secret",
-      PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET:
+      WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET:
         '{"tokens":{"access_token":"managed-secret"}}',
-      PAPERCLIP_RUNNER_BOOTSTRAP_TICKET: "transport-secret",
-      PAPERCLIP_NATIVE_MCP_TOKEN: "bridge-secret",
+      WARDMOTE_RUNNER_BOOTSTRAP_TICKET: "transport-secret",
+      WARDMOTE_NATIVE_MCP_TOKEN: "bridge-secret",
       UNRELATED_SECRET: "not-visible",
     };
 
@@ -76,9 +76,9 @@ describe("ACPX launch environment", () => {
       OPENAI_API_KEY: "openai-secret",
       ANTHROPIC_API_KEY: "anthropic-secret",
     });
-    expect(codex.env).not.toHaveProperty("PAPERCLIP_NATIVE_MCP_TOKEN");
+    expect(codex.env).not.toHaveProperty("WARDMOTE_NATIVE_MCP_TOKEN");
     expect(codex.env).not.toHaveProperty(
-      "PAPERCLIP_ACPX_CODEX_AUTH_JSON_SECRET",
+      "WARDMOTE_ACPX_CODEX_AUTH_JSON_SECRET",
     );
     expect(Object.isFrozen(codex)).toBe(true);
     expect(Object.isFrozen(codex.env)).toBe(true);
