@@ -87,3 +87,4 @@ test-results/
 .paperclip-runner-prp/
 apps/local-browser/firefox/.amo-upload-uuid
 ui/public/downloads/.staging
+.upgrade-cache/
