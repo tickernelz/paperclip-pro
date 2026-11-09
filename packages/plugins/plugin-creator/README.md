@@ -1,15 +1,15 @@
-# @tickernelz/wardmote-plugin-creator
+# @tickernelz/wardmote-create-paperclip-plugin
 
 Scaffolding tool for creating new Paperclip plugins.
 
 ```bash
-npx @tickernelz/wardmote-plugin-creator my-plugin
+npx @tickernelz/wardmote-create-paperclip-plugin my-plugin
 ```
 
 Or with options:
 
 ```bash
-npx @tickernelz/wardmote-plugin-creator @acme/my-plugin \
+npx @tickernelz/wardmote-create-paperclip-plugin @acme/my-plugin \
   --template connector \
   --category connector \
   --display-name "Acme Connector" \

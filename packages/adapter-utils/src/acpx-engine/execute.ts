@@ -1675,7 +1675,7 @@ async function writePaperclipClaudeSettings(input: {
     "Bash(curl:*)",
     "Bash(env:*)",
     "Bash(env)",
-    `Bash(${input.cwd}/scripts/wardmote-issue-update.sh:*)`,
+    `Bash(${input.cwd}/scripts/paperclip-issue-update.sh:*)`,
     `Bash(${input.cwd}/scripts/paperclip:*)`,
   ]);
 

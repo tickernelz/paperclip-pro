@@ -30,7 +30,7 @@ const nonServerProjects = [
   "@tickernelz/wardmote-mcp-server",
   "@tickernelz/wardmote-plugin-daytona",
   "@tickernelz/wardmote-plugin-sdk",
-  "@tickernelz/wardmote-plugin-creator",
+  "@tickernelz/wardmote-create-paperclip-plugin",
   "@tickernelz/wardmote-ui",
   "@tickernelz/wardmote",
 ];

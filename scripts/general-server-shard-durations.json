@@ -413,7 +413,7 @@
     "server/src/__tests__/owner-chat-instruction-authority.test.ts": 3929,
     "server/src/__tests__/owner-decision-relay-postgres.test.ts": 6514,
     "server/src/__tests__/wardmote-env.test.ts": 5,
-    "server/src/__tests__/wardmote-issue-update-helper.test.ts": 4442,
+    "server/src/__tests__/paperclip-issue-update-helper.test.ts": 4442,
     "server/src/__tests__/wardmote-mcp-connector-tools.test.ts": 1513,
     "server/src/__tests__/wardmote-mcp-inbox-contract.test.ts": 763,
     "server/src/__tests__/wardmote-mcp-required-body.test.ts": 978,

@@ -2,7 +2,7 @@ export const RELEASE_PACKAGE_NAMES: readonly string[] = [
   "@tickernelz/wardmote",
   "@tickernelz/wardmote-adapter-omp-local",
   "@tickernelz/wardmote-adapter-utils",
-  "@tickernelz/wardmote-plugin-creator",
+  "@tickernelz/wardmote-create-paperclip-plugin",
   "@tickernelz/wardmote-db",
   "@tickernelz/wardmote-mcp-server",
   "@tickernelz/wardmote-plugin-cloudflare-sandbox",
