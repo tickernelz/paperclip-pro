@@ -653,7 +653,7 @@ docker buildx imagetools inspect "$image"
 
 The content ID hashes the audited image inputs, including the Dockerfile,
 platform, root package/lock/build configuration, dependency patches,
-`paperclip-eval-kernel`, and `paperclip-runner`. Changes elsewhere in the
+`packages/eval-kernel`, and `packages/wardmote-runner`. Changes elsewhere in the
 repository keep the same tag and reuse the already signed image. The Git SHA is
 stored separately as image provenance. CI reads that provenance back from a
 reused image when it builds the controller-side provider pack, preserving the
