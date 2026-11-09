@@ -73,9 +73,9 @@ const ignoredRunnerDevelopmentDirectoryPaths = new Set([
 const runnerDocumentationFilePattern = /\.md$/;
 const runnerTestFilePattern = /\.(?:spec|test)\.(?:[cm]?[jt]sx?)$/;
 const runnerRustIntegrationTestPathPattern =
-  /^packages\/paperclip-runner\/runner\/crates\/[^/]+\/tests(?:\/|$)/;
+  /^packages\/wardmote-runner\/runner\/crates\/[^/]+\/tests(?:\/|$)/;
 const runnerSmokeScriptPattern =
-  /^packages\/paperclip-runner\/scripts\/[^/]+-smoke\.mjs$/;
+  /^packages\/wardmote-runner\/scripts\/[^/]+-smoke\.mjs$/;
 
 export interface DaytonaImageContentOptions {
   repositoryRoot?: string;

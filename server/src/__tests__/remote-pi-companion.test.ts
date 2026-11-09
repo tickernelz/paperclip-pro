@@ -110,7 +110,7 @@ it.each(["new", "existing"])("defers actual SIGTERM on the %s import path and dr
   await build({ entryPoints: [new URL("../services/native-runtime/remote-pi-companion.ts", import.meta.url).pathname], outfile: bundle,
     platform: "node", format: "esm", target: "node24", bundle: true, logLevel: "silent",
     plugins: [{ name: "source-owned-profile-only", setup(builder) {
-      builder.onResolve({ filter: /vendor\/paperclip-runner\/index\.js$/ }, () => ({ path: new URL("../../../packages/wardmote-runner/src/drivers/acpx/qualified-profiles.ts", import.meta.url).pathname }));
+      builder.onResolve({ filter: /vendor\/wardmote-runner\/index\.js$/ }, () => ({ path: new URL("../../../packages/wardmote-runner/src/drivers/acpx/qualified-profiles.ts", import.meta.url).pathname }));
     } }],
   });
   const script = join(f.root, "cancel.mjs");
