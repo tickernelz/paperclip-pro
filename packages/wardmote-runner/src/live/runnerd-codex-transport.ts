@@ -3026,7 +3026,7 @@ function acpxProviderPackageAuthority(
   // Public server packages vendor runner dist directly, without a nested dist
   // directory or a separately published runner package.
   if (basename(sidecarScript) === "acpx-runtime-sidecar.cjs" &&
-      basename(cliDirectory) === "cli" && basename(dirname(cliDirectory)) === "paperclip-runner" &&
+      basename(cliDirectory) === "cli" && basename(dirname(cliDirectory)) === "wardmote-runner" &&
       basename(resolve(cliDirectory, "../..")) === "vendor" &&
       basename(resolve(cliDirectory, "../../..")) === "dist") {
     const serverRoot = resolve(cliDirectory, "../../../..");
