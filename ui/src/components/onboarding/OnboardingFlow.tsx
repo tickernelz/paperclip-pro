@@ -23,6 +23,7 @@ import { companyPrefixFromOnboardingPath, resolveRouteOnboardingOptions } from "
 import { queryKeys } from "../../lib/queryKeys";
 import { useLocation, useNavigate } from "../../lib/router";
 import { cn } from "../../lib/utils";
+import { MootMark } from "../MootMark";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogPortal, DialogTitle } from "../ui/dialog";
 import { Input } from "../ui/input";
@@ -736,7 +737,7 @@ function OnboardingFlowDialog({ companyId, onClose }: { companyId: string | null
         >
           <main className="flex min-h-dvh min-w-0 flex-col gap-4.5 px-4 py-5 sm:px-8 sm:py-8 lg:px-14 lg:py-10">
             <div className="flex items-center gap-2.5">
-              <span aria-hidden className="grid size-6.5 place-items-center rounded-md bg-accent text-sm font-bold text-accent-ink">P</span>
+              <MootMark className="size-6.5 shrink-0 text-ink" aria-hidden="true" />
               <b className="text-base font-semibold">{BRAND}</b>
             </div>
             <Steps step={step} />

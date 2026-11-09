@@ -2444,7 +2444,7 @@ function StandardConnectionSetupFlow({
         <div className="mx-auto max-w-xl rounded-xl border border-line bg-bg-2 p-6">
           <h2 className="text-lg font-semibold text-ink">{entry.name} sign-in is unavailable</h2>
           <p className="mt-2 text-sm text-ink-3">
-            This instance is connected to Paperclip, but {entry.name} sign-in is not currently available. Try again shortly or contact your instance administrator.
+            This instance is connected to Paperclip Cloud, but {entry.name} sign-in is not currently available. Try again shortly or contact your instance administrator.
           </p>
           {customOAuthMethod ? (
             <Button type="button" variant="link" className="mt-4 h-auto p-0 text-xs" onClick={() => setConnectionMethodKey(customOAuthMethod.key)}>
@@ -2468,10 +2468,10 @@ function StandardConnectionSetupFlow({
               </div>
               <div className="min-w-0">
                 <h2 className="text-lg font-semibold text-ink">
-                  Connect with Paperclip
+                  Connect with Paperclip Cloud
                 </h2>
                 <p className="mt-2 text-sm text-ink-3">
-                  You must connect this instance to Paperclip to connect to {entry.name} (you only need to do this once).
+                  You must connect this instance to Paperclip Cloud to connect to {entry.name} (you only need to do this once).
                 </p>
               </div>
             </div>
@@ -2516,7 +2516,7 @@ function StandardConnectionSetupFlow({
                 {startConnectorEnrollment.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                 {connectorEnrollmentQuery.data?.status === "pending"
                   ? "Continue"
-                  : "Connect with Paperclip"}
+                  : "Connect with Paperclip Cloud"}
               </Button>
             </div>
           </div>
@@ -2825,7 +2825,7 @@ export function OAuthConnectStateScreen({
             {recoveryActions.installationUrl ? (
               <Button type="button" variant="secondary" asChild>
                 <a href={recoveryActions.installationUrl} target="_blank" rel="noreferrer">
-                  Install Paperclip on GitHub
+                  Install the Paperclip Cloud app on GitHub
                   <ArrowUpRight className="ml-1.5 h-3.5 w-3.5" />
                 </a>
               </Button>
