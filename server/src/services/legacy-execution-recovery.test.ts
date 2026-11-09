@@ -135,12 +135,13 @@ const stoppedWhilePreparing = {
   resultJson: { cancellation: { source: "control_plane", expected: true, initiator: { type: "system" } } },
 };
 
-it("does not hold a reassigned run that was stopped before it reached the dispatching stage", () => {
+it("recognizes a run cancelled before the controller reached the dispatching stage", () => {
   expect(isCancelledBeforeLegacyDispatch(stoppedWhilePreparing)).toBe(true);
-  expect(legacyExecutionNeedsReconciliation(stoppedWhilePreparing)).toBe(false);
+  expect(isCancelledBeforeLegacyDispatch({ ...stoppedWhilePreparing, executionStage: "settled",
+    resultJson: { ...stoppedWhilePreparing.resultJson, startupPreparationSettledAt: "2026-11-09T13:14:24.000Z" } })).toBe(true);
 });
 
-it("keeps the hold once the controller may have entered the adapter", () => {
+it("does not treat a run that may have entered the adapter as cancelled before dispatch", () => {
   for (const run of [
     { ...stoppedWhilePreparing, executionStage: "dispatching" },
     { ...stoppedWhilePreparing, executionStage: "settled", resultJson: {} },
@@ -149,19 +150,12 @@ it("keeps the hold once the controller may have entered the adapter", () => {
     { ...stoppedWhilePreparing, processPid: 4242 },
     { ...stoppedWhilePreparing, processPid: undefined },
     { ...stoppedWhilePreparing, status: "failed" },
+    { ...stoppedWhilePreparing, runtimeMode: "native" },
   ]) {
     expect(isCancelledBeforeLegacyDispatch(run)).toBe(false);
-    expect(legacyExecutionNeedsReconciliation(run)).toBe(true);
   }
 });
 
-it("accepts the executor's own no-dispatch receipt on a settled run", () => {
-  const settled = { ...stoppedWhilePreparing, executionStage: "settled",
-    resultJson: { ...stoppedWhilePreparing.resultJson, startupPreparationSettledAt: "2026-11-09T13:14:24.000Z" } };
-  expect(legacyExecutionNeedsReconciliation(settled)).toBe(false);
-});
-
-it("still holds unrestored workspace files even when no provider work started", () => {
-  expect(legacyExecutionNeedsReconciliation({ ...stoppedWhilePreparing,
-    resultJson: { ...stoppedWhilePreparing.resultJson, workspaceRestoreFailure: "restore_unsafe_archive" } })).toBe(true);
+it("leaves the shared reconciliation predicate unchanged for pre-dispatch cancellations", () => {
+  expect(legacyExecutionNeedsReconciliation(stoppedWhilePreparing)).toBe(true);
 });

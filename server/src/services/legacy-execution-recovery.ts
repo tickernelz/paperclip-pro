@@ -43,7 +43,7 @@ export function isCancelledBeforeLegacyDispatch(
 
 /** Error families describe availability, not whether earlier actions happened. */
 export function legacyExecutionNeedsReconciliation(
-  run: Pick<Run, "runtimeMode" | "status" | "errorCode" | "resultJson"> & Partial<Pick<Run, "scheduledRetryAttempt" | "scheduledRetryReason" | "contextSnapshot" | "executionStage" | "runtimeModeResolvedAt" | "processPid">>,
+  run: Pick<Run, "runtimeMode" | "status" | "errorCode" | "resultJson"> & Partial<Pick<Run, "scheduledRetryAttempt" | "scheduledRetryReason" | "contextSnapshot">>,
 ): boolean {
   if (
     run.runtimeMode === "native" ||
@@ -54,7 +54,6 @@ export function legacyExecutionNeedsReconciliation(
   if (isDependencyGateRefusedRun(run)) return false;
   // A fresh model turn cannot repair or verify unrestored files.
   if (run.resultJson?.workspaceRestoreFailure === "restore_unsafe_archive" || hasRequiredWorkspaceRecovery(run.resultJson)) return true;
-  if (isCancelledBeforeLegacyDispatch(run)) return false;
   // A fresh conversation turn lets the agent decide what remains. The retry
   // scheduler, not an action-outcome hold, owns the automatic attempt limit.
   if (hasConversationContinuationPolicy(run.resultJson)) return false;
@@ -210,6 +209,7 @@ export async function terminalizeLegacyExecution(input: {
         fingerprint: `legacy-execution:${run.id}`, attemptCount: 1 });
       return updated;
     }
+    if (isCancelledBeforeLegacyDispatch(updated) && !hasWorkspaceRestoreFailure(updated.resultJson)) return updated;
     const review = task?.status === "in_review" ? parseIssueExecutionState(task.executionState) : null;
     const isCurrentReviewer = review?.status === "pending" &&
       review.currentParticipant?.type === "agent" && review.currentParticipant.agentId === run.agentId;
