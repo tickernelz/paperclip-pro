@@ -80,7 +80,6 @@ import {
   executionWorkspaceService,
   heartbeatService,
   issueThreadInteractionService,
-  githubConnectionEventService,
   issueService,
   instanceSettingsService,
   reconcileBuiltInAgentsOnStartup,
@@ -1234,9 +1233,6 @@ async function startServerWithDatabaseTeardown(
     if (isIdleTaskDrainActive() || heartbeatSchedulerStopped) return;
     trackHeartbeatSchedulerWork(runEnvironmentLeaseCleanupSweep(ENVIRONMENT_LEASE_CLEANUP_SWEEP_BACKOFF_MS));
   };
-  const githubConnectionEvents = githubConnectionEventService(db as any, {
-    wakeup: environmentLeaseCleanupHeartbeat.wakeup,
-  });
   const tools = toolAccessService(db as any, {
     deploymentMode: config.deploymentMode,
     deploymentExposure: config.deploymentExposure,
@@ -1244,18 +1240,6 @@ async function startServerWithDatabaseTeardown(
       ?? process.env.PAPERCLIP_TOOL_RUNTIME_TRUSTED_HOST
       ?? null,
   });
-  const scheduleGitHubConnectionEventPoll = () => {
-    if (isIdleTaskDrainActive() || heartbeatSchedulerStopped) return;
-    trackHeartbeatSchedulerWork(githubConnectionEvents.pollOnce()
-      .then((result) => {
-        if (result.leased > 0 || result.failed > 0) {
-          logger.info(result, "GitHub connection event poll completed");
-        }
-      })
-      .catch((err) => {
-        logger.error({ err }, "GitHub connection event poll failed");
-      }));
-  };
   const scheduleGitHubConnectionContinuitySweep = () => {
     if (isIdleTaskDrainActive() || heartbeatSchedulerStopped) return;
     trackHeartbeatSchedulerWork(tools.sweepGitHubConnectionContinuity()
@@ -1280,7 +1264,6 @@ async function startServerWithDatabaseTeardown(
     logger.error({ err }, "startup question-response delivery sweep failed");
   });
   await Promise.all([fastResponseWorker, ...deliveryWorkers].map(worker => worker.ready));
-  scheduleGitHubConnectionEventPoll();
   scheduleGitHubConnectionContinuitySweep();
 
   if (heartbeat) {
@@ -1665,7 +1648,6 @@ async function startServerWithDatabaseTeardown(
 
         if (isIdleTaskDrainActive() || heartbeatSchedulerStopped) return;
         scheduleMergedPullRequestConfirmationSweep();
-        scheduleGitHubConnectionEventPoll();
         scheduleGitHubConnectionContinuitySweep();
         scheduleTerminalWorkspaceSweep();
         scheduleAdapterLoginReaperSweep();
@@ -1828,7 +1810,6 @@ async function startServerWithDatabaseTeardown(
       trackHeartbeatSchedulerWork(accountingHeartbeat.reconcileCostAccounting().catch((err) => logger.error({ err }, "Cost accounting recovery failed")));
       scheduleExternalObjectRefreshSweep(new Date());
       scheduleEnvironmentLeaseCleanupSweep();
-      scheduleGitHubConnectionEventPoll();
       scheduleGitHubConnectionContinuitySweep();
     });
   }

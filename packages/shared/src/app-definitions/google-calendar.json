@@ -29,40 +29,6 @@
   "redirectConstraints": "https-or-loopback-http",
   "methods": [
     {
-      "key": "paperclip-read",
-      "label": "Connect with Paperclip Cloud",
-      "transport": "mcp_remote",
-      "auth": "oauth",
-      "oauthStrategy": "paperclip_cloud_connector",
-      "connectorProfile": "calendar.read",
-      "capabilityProfile": {
-        "key": "read",
-        "label": "Read only",
-        "description": "Read calendars, events, and availability."
-      },
-      "grantKinds": [
-        "user",
-        "organization"
-      ],
-      "ownershipModes": [
-        "platform_shared"
-      ],
-      "whenToUse": "Use Paperclip Cloud OAuth for read-only Calendar access.",
-      "defaults": {
-        "serverUrl": "https://calendarmcp.googleapis.com/mcp/v1",
-        "scopesHint": [
-          "https://www.googleapis.com/auth/calendar.calendarlist.readonly",
-          "https://www.googleapis.com/auth/calendar.events.freebusy",
-          "https://www.googleapis.com/auth/calendar.events.readonly"
-        ]
-      },
-      "guidanceMd": "Connect Google Calendar to read schedules and availability.",
-      "warnings": [
-        "Google Workspace MCP servers are in Developer Preview."
-      ],
-      "riskTier": "S3"
-    },
-    {
       "key": "customer-read-oauth",
       "label": "Use your own Google OAuth app",
       "transport": "mcp_remote",
@@ -104,40 +70,6 @@
         "Google Workspace MCP servers are in Developer Preview."
       ],
       "riskTier": "S3"
-    },
-    {
-      "key": "paperclip-write",
-      "label": "Connect with Paperclip Cloud",
-      "transport": "mcp_remote",
-      "auth": "oauth",
-      "oauthStrategy": "paperclip_cloud_connector",
-      "connectorProfile": "calendar.write",
-      "capabilityProfile": {
-        "key": "write",
-        "label": "Read & manage",
-        "description": "Create, update, respond to, and delete events."
-      },
-      "grantKinds": [
-        "user",
-        "organization"
-      ],
-      "ownershipModes": [
-        "platform_shared"
-      ],
-      "whenToUse": "Use Paperclip Cloud OAuth to read and manage Calendar events.",
-      "defaults": {
-        "serverUrl": "https://calendarmcp.googleapis.com/mcp/v1",
-        "scopesHint": [
-          "https://www.googleapis.com/auth/calendar.calendarlist.readonly",
-          "https://www.googleapis.com/auth/calendar.events"
-        ]
-      },
-      "guidanceMd": "Connect Google Calendar to read and manage events.",
-      "warnings": [
-        "All event mutations require approval.",
-        "Google Workspace MCP servers are in Developer Preview."
-      ],
-      "riskTier": "S4"
     },
     {
       "key": "customer-write-oauth",

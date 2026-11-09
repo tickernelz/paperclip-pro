@@ -29,40 +29,6 @@
   "redirectConstraints": "https-or-loopback-http",
   "methods": [
     {
-      "key": "paperclip-read",
-      "label": "Connect with Paperclip Cloud",
-      "transport": "mcp_remote",
-      "auth": "oauth",
-      "oauthStrategy": "paperclip_cloud_connector",
-      "connectorProfile": "people.read",
-      "capabilityProfile": {
-        "key": "read",
-        "label": "Read contacts",
-        "description": "Search contacts, directory people, and your profile."
-      },
-      "grantKinds": [
-        "user",
-        "organization"
-      ],
-      "ownershipModes": [
-        "platform_shared"
-      ],
-      "whenToUse": "Use Paperclip Cloud OAuth for Google People access.",
-      "defaults": {
-        "serverUrl": "https://people.googleapis.com/mcp/v1",
-        "scopesHint": [
-          "https://www.googleapis.com/auth/directory.readonly",
-          "https://www.googleapis.com/auth/userinfo.profile",
-          "https://www.googleapis.com/auth/contacts.readonly"
-        ]
-      },
-      "guidanceMd": "Connect Google People to search contacts and directory profiles.",
-      "warnings": [
-        "Google Workspace MCP servers are in Developer Preview."
-      ],
-      "riskTier": "S3"
-    },
-    {
       "key": "customer-read-oauth",
       "label": "Use your own Google OAuth app",
       "transport": "mcp_remote",

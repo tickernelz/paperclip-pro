@@ -150,16 +150,7 @@ export function getRecommendedConnectionMethod(
     const capabilityKey = method.capabilityProfile?.key;
     return capabilityKey === "write" || capabilityKey === "draft";
   });
-  const managedMethods = methods.filter((method) =>
-    method.oauthStrategy === "paperclip_cloud_connector"
-    || method.oauthStrategy === "paperclip_id_connector"
-  );
-
-  // Prefer the permissions needed for agent work, then the simplest sign-in.
-  // Explicit read-only selections pass their own capability group here.
-  return recommendedCapability(managedMethods)
-    ?? recommendedCapability(methods)
-    ?? managedMethods[0]
+  return recommendedCapability(methods)
     ?? methods[0]
     ?? null;
 }
@@ -175,15 +166,11 @@ export function getAvailableConnectionMethod(
 }
 
 export function connectionMethodSupportsAutomaticOAuth(method: ConnectionMethodDef | null | undefined): boolean {
-  return method?.auth === "oauth" && (
-    (method.oauthStrategy === "paperclip_cloud_connector" || method.oauthStrategy === "paperclip_id_connector")
-    || method.ownershipModes.includes("dcr")
-  );
+  return method?.auth === "oauth" && method.ownershipModes.includes("dcr");
 }
 
 export function connectionMethodAcceptsCustomerOAuthClient(method: ConnectionMethodDef | null | undefined): boolean {
   return method?.auth === "oauth"
-    && !method.oauthStrategy
     && method.ownershipModes.includes("customer");
 }
 

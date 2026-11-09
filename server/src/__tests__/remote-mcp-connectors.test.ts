@@ -54,7 +54,7 @@ describe("remote connector lifecycle", () => {
     const org = await company();
     const app = express();
     app.use((req, _res, next) => { req.actor = { type: "board", userId: actor.actorId, source: "local_implicit", isInstanceAdmin: true }; next(); });
-    app.use("/api", toolAccessRoutes(db, { paperclipCloudConnector: null }));
+    app.use("/api", toolAccessRoutes(db));
 
     const publicBaseUrlEnv = process.env.PAPERCLIP_AUTH_PUBLIC_BASE_URL;
     const otherPublicUrlNames = ["BETTER_AUTH_URL", "BETTER_AUTH_BASE_URL", "PAPERCLIP_PUBLIC_URL", "PAPERCLIP_MANAGED_RUNTIME_PUBLIC_URL"] as const;
@@ -101,7 +101,7 @@ describe("remote connector lifecycle", () => {
     const org = await company(); const remote = remoteFixture();
     const app = express();
     app.use((req, _res, next) => { req.actor = { type: "board", userId: actor.actorId, source: "local_implicit", isInstanceAdmin: true }; next(); });
-    app.use("/api", toolAccessRoutes(db, { paperclipCloudConnector: null }));
+    app.use("/api", toolAccessRoutes(db));
     const gallery = await request(app).get(`/api/companies/${org.id}/tools/gallery`);
     expect(gallery.status).toBe(200);
     expect(gallery.body.apps.map((entry: { slug: string }) => entry.slug)).toEqual(expect.arrayContaining(["zapier", "arcade", "composio", "executor", "notion"]));

@@ -42,7 +42,6 @@ export const githubChatApi = {
     }),
   registration: (id: string, input: GitHubAppRegistrationInput) =>
     api.post<GitHubAppWizardState>(`${path(id)}/registration`, input),
-  restartRegistration: (id: string, registrationId: string) => api.post<GitHubAppWizardState>(`${path(id)}/registration/restart`, { registrationId, appNotCreated: true }),
   saveDraft: (id: string, input: GitHubAppRegistrationInput) => api.put<{ saved: true }>(`${path(id)}/draft`, input),
   advance: (id: string) => api.post<GitHubAppWizardState>(`${path(id)}/setup`, {}),
   startIdentity: (id: string) => api.post<{ authorizationUrl: string }>(`${path(id)}/identity/start`, {}),

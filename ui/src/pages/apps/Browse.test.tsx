@@ -971,24 +971,6 @@ describe("Connectors landing page", () => {
     expect(navigateMock).toHaveBeenLastCalledWith("/apps/connect?source=github");
   });
 
-  it("names what the card will actually ask for", async () => {
-    // PAP-659 C4. The verb is derived from the connector's resolved default
-    // method, so it changes with what this instance can do rather than being a
-    // fixed string: Notion signs in, GitHub-without-the-cloud-connector wants a
-    // token, and GitHub with it signs in too.
-    const github = getAppStoreDefinition("github")!;
-    listGalleryMock.mockResolvedValue({
-      apps: [
-        getAppStoreDefinition("notion"),
-        { ...github, ownershipAvailability: { ...github.ownershipAvailability, platform_shared: true } },
-      ],
-    });
-    await renderBrowse();
-    expect(container.querySelector('button[aria-label="Connect Notion"]')).not.toBeNull();
-    expect(container.querySelector('button[aria-label="Connect GitHub"]')).not.toBeNull();
-    expect(container.querySelector('button[aria-label="Add key GitHub"]')).toBeNull();
-  });
-
   it("separates tools and saved bots and gates bots independently of chat connectors", async () => {
     listGalleryMock.mockResolvedValue({ apps: ["github", "github-code-review-bot"].map(getAppStoreDefinition) });
     listApplicationsMock.mockResolvedValue({ applications: [

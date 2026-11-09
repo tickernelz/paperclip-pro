@@ -953,12 +953,8 @@ describe("openapi routes", () => {
     const { spec } = loadSpecRoutes();
     const root = "/api/chat-endpoints/{endpointId}/github/";
     const setup = spec.paths[root + "setup"].post.responses["200"].content["application/json"].schema;
-    expect(setup.properties.restartableRegistrationId.format).toBe("uuid");
-    const restart = spec.paths[root + "registration/restart"].post;
-    expect(restart["x-paperclip-authorization"]).toEqual({ actor: "board" });
-    const restartInput = restart.requestBody.content["application/json"].schema;
-    expect(restartInput.required).toEqual(expect.arrayContaining(["registrationId", "appNotCreated"]));
-    expect(restartInput.properties.appNotCreated.enum ?? [restartInput.properties.appNotCreated.const]).toEqual([true]);
+    expect(setup.properties).not.toHaveProperty("restartableRegistrationId");
+    expect(spec.paths).not.toHaveProperty(root + "registration/restart");
     const receipt = spec.paths[root + "draft"].put.responses["200"].content["application/json"].schema;
     expect(receipt.required).toEqual(["saved"]);
     expect(receipt.properties).not.toHaveProperty("state");
